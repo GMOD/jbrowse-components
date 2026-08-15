@@ -11,6 +11,7 @@ import { sharedBackendKey } from '@jbrowse/render-core/keyedUploadSync'
 import {
   NO_CIGAR_OPS,
   SyntenyFetchStateMixin,
+  featureAttributes,
   getCoarseBpPerPxThreshold,
   isDataCurrent,
   regionSignature,
@@ -104,7 +105,11 @@ export interface FeatPos {
     refName: string
     assemblyName: string
   }
-  identity?: number
+  // Every numeric channel this feature carried a value for, keyed by channel
+  // name — not `identity` alone, which is what the tooltip and the feature
+  // panel used to show while the fetch carried mapping quality, dN/dS and any
+  // column the track declared. `featureAttributes` drops the -1 sentinel.
+  attributes: Record<string, number>
 }
 
 // The worker sizes its viewport cull in px at fetch time, so zooming out by
@@ -126,7 +131,6 @@ export function getFeatureAtIndex(
   data: SyntenyFeatureData,
   i: number,
 ): FeatPos {
-  const identity = data.attributes.identity?.[i] ?? -1
   return {
     id: data.featureIds[i]!,
     strand: data.strands[i]!,
@@ -141,7 +145,7 @@ export function getFeatureAtIndex(
       refName: data.mateRefNameDict[data.mateRefNameIds[i]!]!,
       assemblyName: data.mateAssemblyNameDict[data.mateAssemblyNameIds[i]!]!,
     },
-    identity: identity === -1 ? undefined : identity,
+    attributes: featureAttributes(data.attributes, i),
   }
 }
 

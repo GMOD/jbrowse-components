@@ -24,6 +24,7 @@ function feat({
       refName: 'chr1_pat',
       assemblyName: 'hg002pat',
     },
+    attributes: {},
   }
 }
 

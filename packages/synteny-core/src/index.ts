@@ -103,6 +103,10 @@ export {
   declaredAttributes,
 } from './attributeChannels.ts'
 export {
+  attributeTooltipLines,
+  featureAttributes,
+} from './attributeTooltipLines.ts'
+export {
   ATTRIBUTE_PREFIX,
   continuousRampConfig,
   dnDsRatio,

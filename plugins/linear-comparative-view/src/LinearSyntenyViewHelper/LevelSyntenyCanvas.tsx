@@ -75,7 +75,9 @@ function openSyntenyFeatureWidget(
       name: feat.name,
       assemblyName: feat.assemblyName,
       mate: feat.mate,
-      identity: feat.identity,
+      // every numeric channel the fetch carried for it, so the panel shows
+      // mapping quality and a declared column too rather than identity alone
+      ...feat.attributes,
     },
     {
       widget: { type: 'SyntenyFeatureWidget', id: 'syntenyFeature' },

@@ -177,15 +177,17 @@ describe('the lines a track may not have', () => {
 })
 
 describe('attributes', () => {
+  // Labelled the way the legend labels the mode that paints each channel, not
+  // by the wire name — `mappingQual: 60` was the tooltip reading out a buffer.
   test('lists every channel that has a value', () => {
-    expect(lines().slice(5)).toEqual(['identity: 0.988', 'mappingQual: 60'])
+    expect(lines().slice(5)).toEqual(['Identity: 0.988', 'Mapping quality: 60'])
   })
 
   // -1 is the worker's missing sentinel, so meanIdentity and dnds above are
   // absent rather than reported as -1.
   test('omits the missing sentinel', () => {
-    expect(lines().join(',')).not.toContain('meanIdentity')
-    expect(lines().join(',')).not.toContain('dnds')
+    expect(lines().join(',')).not.toContain('Mean query identity')
+    expect(lines().join(',')).not.toContain('dN/dS')
   })
 
   test('keeps a declared column under its own name', () => {

@@ -70,6 +70,7 @@ test('getTooltipLines appends the CIGAR operator line only when given one', () =
     end: 200,
     assemblyName: 'hg38',
     mate: { start: 300, end: 380, refName: 'chr2', assemblyName: 'mm10' },
+    attributes: {},
   }
   expect(getTooltipLines(feat)).not.toContain('CIGAR operator: 50D')
   expect(getTooltipLines(feat, { op: 'D', length: 50 })).toContain(
@@ -90,6 +91,7 @@ test('getTooltipLines emits no markup, and drops the lines it has no value for',
     end: 200,
     assemblyName: 'hg38',
     mate: { start: 300, end: 380, refName: 'chr2', assemblyName: 'mm10' },
+    attributes: {},
   }
   const lines = getTooltipLines(feat)
   expect(lines.some(l => l.includes('<br'))).toBe(false)
@@ -99,4 +101,27 @@ test('getTooltipLines emits no markup, and drops the lines it has no value for',
   expect(lines.some(l => l.startsWith('Identity:'))).toBe(false)
   expect(lines.some(l => l.startsWith('Name:'))).toBe(false)
   expect(lines).toContain('Inverted: true')
+})
+
+// It listed identity and nothing else, while the fetch carried mapping quality,
+// dN/dS and every column an MCScan table declares — all of which the dotplot
+// tooltip showed for the same track.
+test('getTooltipLines lists every numeric channel the feature carries', () => {
+  const feat: FeatPos = {
+    id: 'f1',
+    strand: 1,
+    name: 'gene1',
+    refName: 'chr1',
+    start: 100,
+    end: 200,
+    assemblyName: 'hg38',
+    mate: { start: 300, end: 380, refName: 'chr2', assemblyName: 'mm10' },
+    attributes: { identity: 0.987, mappingQual: 60, ka_ks: 1.5 },
+  }
+  const lines = getTooltipLines(feat)
+  expect(lines).toContain('Identity: 0.987')
+  expect(lines).toContain('Mapping quality: 60')
+  expect(lines).toContain('ka_ks: 1.5')
+  // still last, after the channels
+  expect(lines.at(-1)).toBe('Name: gene1')
 })

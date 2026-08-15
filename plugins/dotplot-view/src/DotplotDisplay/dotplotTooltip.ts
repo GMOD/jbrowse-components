@@ -1,4 +1,5 @@
 import { toLocale } from '@jbrowse/core/util'
+import { attributeTooltipLines, featureAttributes } from '@jbrowse/synteny-core'
 
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotRpcData } from './types.ts'
@@ -58,26 +59,18 @@ function axisSpan(
   }
 }
 
-// Integers (mapping quality, a declared count) read better unabbreviated;
-// ratios (identity, dn/ds) need their significant digits and not 17 of them.
-function formatAttribute(value: number) {
-  return Number.isInteger(value)
-    ? toLocale(value)
-    : String(Number(value.toPrecision(3)))
-}
-
 /**
  * The hover tooltip for one dotplot feature, as lines.
  *
- * Lines rather than synteny's `<br/>`-joined HTML string: a refName comes out of
- * a file and can hold anything, and the caller renders these as text nodes, so
- * nothing here has to be trusted or sanitized on the way to the screen.
+ * Lines rather than an HTML string: a refName comes out of a file and can hold
+ * anything, and `ComparativeTooltip` renders these as text nodes, so nothing
+ * here has to be trusted or sanitized on the way to the screen.
  *
  * The two spans are the DRAWN ones (the trimmed cumBp endpoints), not
  * `alignmentLengths` — that is the feature's full reference span, which on a
  * block trimmed to the displayed region disagrees with the locations printed
- * right above it. Every numeric channel the fetch carries a value for is
- * listed; -1 is the worker's missing sentinel (see `computeDotplotColors`).
+ * right above it. The numeric channels come off the shared builder, so they are
+ * named and rounded the same here and in the synteny tooltip.
  */
 export function getDotplotTooltipLines({
   rpcData,
@@ -104,13 +97,8 @@ export function getDotplotTooltipLines({
     `Inverted: ${strands[featureIdx] === -1}`,
     `x len: ${toLocale(h.length)}`,
     `y len: ${toLocale(v.length)}`,
+    ...attributeTooltipLines(featureAttributes(attributes, featureIdx)),
   ]
-  for (const [name, values] of Object.entries(attributes)) {
-    const value = values[featureIdx]
-    if (value !== undefined && value >= 0) {
-      lines.push(`${name}: ${formatAttribute(value)}`)
-    }
-  }
   if (cigarOp) {
     lines.push(`CIGAR operator: ${toLocale(cigarOp.length)}${cigarOp.op}`)
   }

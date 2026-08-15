@@ -21,6 +21,7 @@ const feat: FeatPos = {
     refName: 'Pp01',
     assemblyName: 'peach',
   },
+  attributes: {},
 }
 
 const data = packSyntenyFeatureData([

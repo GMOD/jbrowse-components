@@ -31,6 +31,7 @@ const feat: FeatPos = {
     refName: 'Pp01',
     assemblyName: 'peach',
   },
+  attributes: {},
 }
 
 function step(over: Partial<FollowStep> = {}): FollowStep {

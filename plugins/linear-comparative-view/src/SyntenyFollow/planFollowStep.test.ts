@@ -43,6 +43,7 @@ describe('windowInsideFeat reads the anchor axis, refName included', () => {
       refName: 'chr1_pat',
       assemblyName: 'hg002pat',
     },
+    attributes: {},
   }
 
   test('the query axis when the mate row moves', () => {

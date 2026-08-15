@@ -1,4 +1,5 @@
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
+import { attributeTooltipLines } from '@jbrowse/synteny-core'
 
 import {
   KIND_CIGAR_D,
@@ -55,7 +56,8 @@ export function getCigarOpAtInstance(
 // can hold anything; `ComparativeTooltip` renders these as text nodes, so
 // nothing here has to be sanitized on the way to the screen. This used to be
 // one string, which bought a `SanitizedHTML` on the render path to undo the
-// join. Same shape as the dotplot's `getDotplotTooltipLines`.
+// join. Same shape as the dotplot's `getDotplotTooltipLines`, whose numeric
+// channels come off the same `attributeTooltipLines`.
 export function getTooltipLines(feat: FeatPos, cigarOp?: CigarOpInfo) {
   const l1 = feat.end - feat.start
   const l2 = feat.mate.end - feat.mate.start
@@ -65,9 +67,7 @@ export function getTooltipLines(feat: FeatPos, cigarOp?: CigarOpInfo) {
     `Inverted: ${feat.strand === -1}`,
     `Query len: ${toLocale(l1)}`,
     `Target len: ${toLocale(l2)}`,
-    feat.identity !== undefined
-      ? `Identity: ${feat.identity.toPrecision(2)}`
-      : '',
+    ...attributeTooltipLines(feat.attributes),
     cigarOp ? `CIGAR operator: ${toLocale(cigarOp.length)}${cigarOp.op}` : '',
     feat.name ? `Name: ${feat.name}` : '',
   ].filter(Boolean)

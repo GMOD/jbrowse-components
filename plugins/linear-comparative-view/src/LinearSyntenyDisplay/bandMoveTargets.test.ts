@@ -29,6 +29,7 @@ const feat: FeatPos = {
     refName: 'chr8_PATERNAL',
     assemblyName: 'hg002pat',
   },
+  attributes: {},
 }
 
 const onQuery = panel({ refName: 'chr8_MATERNAL', start: 2e6, end: 2.1e6 })
