@@ -213,6 +213,16 @@ describe('PairwiseIndexedPAFAdapter', () => {
       })
       expect(refNames).toContain('ctgA')
     })
+
+    // -1 from the shared side rule, and the empty answer is what the other
+    // three pairwise adapters give. This one used to throw on a missing name,
+    // which made "the caller has not resolved an assembly yet" an error here
+    // and an ordinary [] everywhere else.
+    it('answers empty for an unlisted assembly, and for none at all', async () => {
+      const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
+      expect(await adapter.getRefNames({ assemblyName: 'mouse' })).toEqual([])
+      expect(await adapter.getRefNames({})).toEqual([])
+    })
   })
 
   // The prefix is the perspective letter (flip) upper-cased for the coarse tier.
