@@ -35,6 +35,39 @@ from the same fetch, so they agree. `features/derivativePaths/computePaths.ts`
 and `features/arcs/compute.ts` compare `a.refName !== b.refName` and are
 correct. Only feature-against-view-state straddles.
 
+## The main-thread normalization layer
+
+Everything above is about the boundary. On the main thread the rule is that
+**any reading of user-supplied refName text resolves through
+`getCanonicalRefName`**, which handles aliases *and* casing; testing
+`region.refName` directly gets neither, and the failure is indistinguishable
+from "this assembly has no such contigs". For anything matching refName text:
+
+- **Match over `allRefNames`, not `regions`** — it is a strict superset of the
+  canonical names.
+- **Resolve hits to canonical, then emit by walking `regions`**, which keeps
+  assembly order and dedupes several names for one contig.
+- **Case-insensitivity is the regex's `i` flag, not a wider list.**
+
+`selectNamedRegions.ts` holds the only two readings of `*`, and `globToRegExp`
+is module-private to keep it that way.
+
+**A display reading a refName out of its own state calls
+`canonicalizeViewRefName`** (`@jbrowse/core/util`). A menu copy and a search
+result are canonical by construction; a **session spec, config slot or URL** is
+whatever a person typed. It falls back to the input before aliases load, since
+`getCanonicalRefName` throws until then and these getters run from the first
+render. Normalize once where the state is read, not at each comparison.
+
+It is assembly-dependent: `chr12` matches nothing on an assembly canonicalized
+`12`, so a spec key works in the config it was written against and quietly does
+nothing in the next.
+
+**None of this applies worker-side** — that is the whole point of the boundary
+above, and canonicalizing an operand compared in the worker breaks exactly the
+aliased tracks the rule exists for. Check which side a comparison runs on;
+alignments layout looks worker-side and is not (ADR-053).
+
 ## Six plugins hit it; six invented a different fix
 
 | plugin | the un-requested refName | what it does about it |

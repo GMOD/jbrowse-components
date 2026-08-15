@@ -35,6 +35,24 @@ protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 
 ---
 
+## The two surfaces that exist today, and how to remove from them
+
+Whatever the policy ends up being, these two are already checked:
+
+- **`ReExports/modules.ts`** — the `@jbrowse/core/*` modules external plugins
+  resolve against, pinned by `abi.test.ts` against `abiBaseline.json`. A removal
+  fails there. To drop a name, delete it from the baseline in the same commit
+  and say in the message which published plugins you checked.
+- **The session, and it fails quieter.** Plugins look members up behind
+  `'x' in session`, so removing one throws nothing at all — no compile error, no
+  test failure, just a plugin that stops asking. `pluginFacingSessionApi.test.ts`
+  pins what published bundles actually call, and performs the call rather than
+  asserting the member exists.
+
+**The signature is as public as the name.** A required second argument breaks a
+duck-typed caller exactly as deleting the member would, so plugin-facing
+arguments may be added **optional** and never made required.
+
 ## The symptom
 
 A design decision (e.g. the legacy block-render stack behind `BaseLinearDisplay`)

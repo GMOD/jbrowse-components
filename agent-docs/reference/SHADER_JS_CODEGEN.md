@@ -181,6 +181,18 @@ before the reason, free text after. Both halves are checked on every full build:
 a skip naming a function the emitter can no longer see, or one that turns out to
 be exported, fails `pnpm gen:shaders`. That is the part a prose list cannot do.
 
+## Check `gen:shaders`' exit code, not its output and not `git status`
+
+A `.slang` that fails to compile leaves its `.generated.ts` **untouched**, so
+`tsc` and jest both pass off the stale module and nothing in the working tree
+says a shader is out of date. Verify by grepping the emitted WGSL for what you
+just wrote.
+
+**The likeliest cause of a stale-generated case: a pass naming a packed colour
+uniform must `import colorPack;` itself.** Slang does not re-export through an
+import, so reaching the symbol through a module that imports it compiles
+nowhere.
+
 ## Bumping `SLANG_VERSION`
 
 ```sh

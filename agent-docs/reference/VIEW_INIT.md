@@ -9,6 +9,26 @@ How a linear genome view gets navigated, tracked, and highlighted at launch.
 One declarative blob (`InitState`) feeds three surfaces (URL params, embedded
 `createViewState`, session/config JSON) through one processing path.
 
+## An assembly name read off a track config: canonical, **and** screened
+
+A track config's `assemblyNames` may name an alias, and may name an assembly the
+session has no configuration for. Any such name reaching an **`AssemblySelector`
+value** or a **view init** must be both:
+
+- **canonical** — `canonicalAssemblyNames` (`@jbrowse/core/util/tracks`).
+  `AssemblySelector` blanks a value that is not one of the session's own
+  `assemblyNames`, so an alias renders as an empty field with nothing said. The
+  matching helpers already canonicalize both sides, so an alias-named track is
+  found and then hands over a name the form cannot show.
+- **present** — `assemblyManager.has`, never
+  `getCanonicalAssemblyName(...) !== undefined`. A missing name is not a blank
+  row but a broken view: the init error sets the view's error, `showImportForm`
+  reads it, and the user's stack is replaced by an import form.
+
+Keep one derivation per path (`connectedEndpoints`, `syntenyTrackRows`). Nothing
+renames assembly names at the RPC boundary, so unlike refNames
+(REFNAME_NAMESPACES.md) there is no worker-side exception.
+
 ## The shape
 
 `InitState` (`plugins/linear-genome-view/src/LinearGenomeView/types.ts`):

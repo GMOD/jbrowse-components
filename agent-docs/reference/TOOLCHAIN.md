@@ -82,6 +82,56 @@ overload fell back to the untyped signature. On an accumulating point the same
 cause reads differently — `contributeToExtensionPoint` rejects the name outright,
 since an unseen registry entry leaves it out of `AccumulatingPointName`.
 
+## Check what your worktree branched from before trusting a gate in it
+
+`EnterWorktree`'s base ref is **origin**'s default branch, which with several
+agents landing all day can be a whole day behind local `main`. So a gate fails
+on a fix your branch predates, and reads as "my edit broke it".
+
+```sh
+git merge-base --is-ancestor main HEAD && echo ok || git reset --hard main
+```
+
+**`reset --hard` is only right before you have commits of your own**; from then
+on `git rebase main` is the same check's answer and is also what makes the
+landing a fast-forward. Run it again before landing. The tell is a `git diff
+main` naming files you never opened — that is main's commits missing from your
+branch, which `git log main..HEAD -- <path>` distinguishes.
+
+**Prefer the cheap decisive check over a browser probe** for "does release X
+have symbol Y": `git ls-remote --tags origin`, then
+`git cat-file -e <tag>:<path>`. Use `ls-remote`, not local tags, or a stale
+checkout answers "no release yet" forever.
+
+## A hand-made worktree is not an installed one
+
+`EnterWorktree` installs; `git worktree add` does not, and `tsc` dies without the
+gitignored `buildInfo.ts` the install writes. Don't symlink `node_modules` from
+the primary checkout — the per-package `@jbrowse/*` links are relative, so
+cross-package imports resolve back to its sources.
+
+Figures are the one thing the install does not bring: `pnpm figures:pull`, or
+symlink both gitignored corpora (`website/static/img`,
+`products/jbrowse-img/img`). Miss the second and `pnpm autogen` **dies** on the
+jbrowse-img generator rather than reporting it stale, so every later generator
+silently never runs.
+
+`website/scripts/*.ts` needs `puppeteer`, which is not hoisted to the root —
+resolve it from `packages/browser-test-utils/`.
+
+## What `pnpm autogen` owns
+
+It rewrites every generated-and-committed artifact and is the answer to almost
+any "X is out of date" CI failure. It owns `package.json` `exports` maps,
+`tsconfig.build.esm.json` `references`, and the JSDoc doc tables — never
+hand-edit those. Shaders are the exception and belong to `pnpm gen:shaders`
+(SHADER_JS_CODEGEN.md).
+
+`pnpm format` is safe bare — it rewrites only mis-formatted files, ~7s
+whole-tree, and scoping it risks missing a file a repo-wide `--fix` just
+rewrote. But `agent-docs` is on `.prettierignore` and **naming it explicitly
+overrides that**, rewrapping 9k lines of prose.
+
 ## `pnpm autogen` needs a clean tree
 
 `pnpm gendocs` resolves sources through the `@jbrowse/*` workspace links, so in
