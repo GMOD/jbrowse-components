@@ -18,3 +18,14 @@ export function isRpcResult(value: unknown): value is RpcResult {
     value.__rpcResult === true
   )
 }
+
+/**
+ * Take the `rpcResult` envelope off if there is one. Distributes over a union,
+ * because a method can wrap one arm and not another — only the data half of the
+ * canvas gates owns buffers worth transferring.
+ */
+export type UnwrapRpcResult<T> = T extends RpcResult<infer V> ? V : T
+
+export function unwrapRpcResult<T>(value: T) {
+  return (isRpcResult(value) ? value.value : value) as UnwrapRpcResult<T>
+}

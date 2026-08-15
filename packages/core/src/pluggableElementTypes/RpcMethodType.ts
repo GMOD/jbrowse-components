@@ -2,7 +2,7 @@ import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { renameRegionsIfNeeded } from '../util/index.ts'
 import { resolveUriLocation } from '../util/io/index.ts'
-import { isRpcResult } from '../util/rpc.ts'
+import { unwrapRpcResult } from '../util/rpc.ts'
 import {
   getBlobMap,
   getFileFromCache,
@@ -19,6 +19,7 @@ import PluggableElementBase from './PluggableElementBase.ts'
 import type PluginManager from '../PluginManager.ts'
 import type {
   RpcCallContext,
+  RpcCallReturn,
   RpcExecuteArgs,
   RpcSession,
   RpcWireReturn,
@@ -207,7 +208,13 @@ export function convertFileHandleLocations(
  * conditional TypeScript cannot resolve, so the shared body has nothing to
  * check against. `DiagonalizeRpcBase` is the only such base in the tree, and it
  * ties its pinned type back by constraining `MethodName` to the keys whose wire
- * actually is that type.
+ * actually is that type. The three rename-region bases forwarded the parameter
+ * for a while after nothing passed it — a generic base forwarding it and a
+ * generic base needing it look identical, so the tell is whether the body reads
+ * the type, and theirs never did.
+ *
+ * The way back is {@link deserializeReturn}, checked against the same entry's
+ * `return`.
  */
 export default abstract class RpcMethodType<
   MethodName extends string = string,
@@ -349,12 +356,30 @@ export default abstract class RpcMethodType<
     serializedArgs: RpcExecuteArgs<MethodName>,
   ): Promise<WireReturn>
 
-  async deserializeReturn(serializedReturn: unknown, _args: unknown) {
-    // Unwrap rpcResult if present (needed for MainThreadRpcDriver where the
-    // rpcResult wrapper isn't stripped by the worker message handler)
-    return isRpcResult(serializedReturn)
-      ? serializedReturn.value
-      : serializedReturn
+  /**
+   * The wire shape, rebuilt into what the caller of `rpcManager.call` holds —
+   * the registry entry's `return`. Overridden by the three methods whose two
+   * differ (features travel serialized and arrive as `SimpleFeature`s); for
+   * everyone else the whole job is taking off the `rpcResult` envelope, which
+   * MainThreadRpcDriver needs because nothing stripped it on that path.
+   *
+   * The registry `return` is checked against `execute` on the way in (through
+   * {@link RpcWireReturn}) and this is what checks it on the way back out. It
+   * checks covariantly, so unlike the arguments it cannot be widened past.
+   *
+   * An override calls {@link unwrapRpcResult} rather than `super`, because the
+   * envelope is all it wants and `super` now promises the rebuilt value it is
+   * the one rebuilding. The cast below is the claim that stands for every
+   * method that does NOT override: unwrapped wire is the declared `return`.
+   * True by construction for a `transferables: true` or bare entry, since both
+   * derive their wire from that `return`; an explicit `wire:` restates, so it
+   * is the one that has to override or agree.
+   */
+  async deserializeReturn(
+    serializedReturn: RpcWireReturn<MethodName>,
+    _args: unknown,
+  ): Promise<RpcCallReturn<MethodName>> {
+    return unwrapRpcResult(serializedReturn) as RpcCallReturn<MethodName>
   }
 
   private async augmentLocationObjects(thing: Record<string, unknown>) {

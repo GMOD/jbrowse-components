@@ -1,4 +1,5 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
+import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
@@ -37,15 +38,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions<'SyntenyDiscoverMates'> {
   name = 'SyntenyDiscoverMates' as const
 
-  async deserializeReturn(
-    ret: SyntenyDiscoverMatesReturn,
-    args: unknown,
-  ): Promise<MateDiscoveryResult> {
-    // the base unwraps the rpcResult envelope, and types that as unknown
-    const { mates, unconfigured } = (await super.deserializeReturn(
-      ret,
-      args,
-    )) as SyntenyDiscoverMatesReturn
+  async deserializeReturn(ret: SyntenyDiscoverMatesReturn, _args: unknown) {
+    const { mates, unconfigured } = unwrapRpcResult(ret)
     return {
       mates: mates.map(({ assemblyName, feature }) => ({
         assemblyName,

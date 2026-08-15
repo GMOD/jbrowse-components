@@ -1,6 +1,7 @@
 import { getClip } from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
+import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -76,19 +77,16 @@ export interface BreakpointSerializedFeature {
 export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegions<'BreakpointGetFeatures'> {
   name = 'BreakpointGetFeatures' as const
 
-  async deserializeReturn(feats: BreakpointSerializedFeature[], args: unknown) {
-    const superDeserialized = (await super.deserializeReturn(
-      feats,
-      args,
-    )) as BreakpointSerializedFeature[]
-    return superDeserialized.map(
+  async deserializeReturn(
+    feats: BreakpointSerializedFeature[],
+    _args: unknown,
+  ) {
+    return unwrapRpcResult(feats).map(
       feat => new SimpleFeature(feat as unknown as SimpleFeatureSerialized),
     )
   }
 
-  async execute(
-    args: RpcExecuteArgs<'BreakpointGetFeatures'>,
-  ): Promise<BreakpointSerializedFeature[]> {
+  async execute(args: RpcExecuteArgs<'BreakpointGetFeatures'>) {
     const {
       stopToken,
       statusCallback,

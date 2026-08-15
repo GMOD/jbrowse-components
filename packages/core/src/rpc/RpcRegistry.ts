@@ -1,4 +1,5 @@
 import type { StatusCallback } from '../util/progress.ts'
+import type { UnwrapRpcResult } from '../util/rpc.ts'
 import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { NoAssemblyRegion } from '../util/types/index.ts'
@@ -97,9 +98,9 @@ export type RpcReturn<M extends RpcMethodName> = RpcRegistry[M]['return']
  *
  * Deliberately NOT part of any method's `args`. They are properties of the
  * call, not of the payload — every method can be cancelled and every method can
- * report — so they ride `rpcManager.call`'s fourth parameter and
- * `BaseRpcDriver.call` merges them into what the worker sees. A registry entry
- * that declares them is stating something it does not get to decide.
+ * report — so they are part of {@link RpcCallArgs} instead, accepted for every
+ * method whatever its entry says. A registry entry that declares them is stating
+ * something it does not get to decide.
  *
  * They used to be per-entry, and the cost was not the 82 repeated lines: it was
  * that omitting them made a method silently uncancellable and silent, with the
@@ -252,6 +253,34 @@ type WireOf<Entry> = Entry extends { wire: infer W }
     : Entry extends { return: infer R }
       ? R
       : never
+
+/**
+ * {@link RpcWireReturn} with the `rpcResult` envelope off: what
+ * {@link unwrapRpcResult} hands a `deserializeReturn` to rebuild the caller's
+ * value from, and — for the majority of methods, which do not override it —
+ * what the caller gets.
+ */
+export type RpcUnwrappedWireReturn<M extends string> = UnwrapRpcResult<
+  RpcWireReturn<M>
+>
+
+/**
+ * What the CALLER of a registered method ends up holding: the entry's `return`.
+ *
+ * The counterpart of {@link RpcCallArgs}, and here rather than on `RpcManager`
+ * for the reason that one is: `RpcManager.call` is not the only signature that
+ * has to state it. `RpcMethodType.deserializeReturn` — the code that actually
+ * PRODUCES this value, by rebuilding the wire shape — returned `unknown`, so
+ * the registry's `return` was a claim checked against `execute` (through
+ * {@link RpcWireReturn}) and against nothing at all on the way back out;
+ * `RpcManager.call` then cast to it. Typing the hook with this is what closes
+ * that half, and it closes covariantly, which is the direction that bites.
+ */
+export type RpcCallReturn<M extends string> = M extends RpcMethodName
+  ? RpcReturn<M & RpcMethodName>
+  : string extends M
+    ? unknown
+    : NotInRpcRegistry<M>
 
 /**
  * Registry entries that declare a field belonging to the CALL rather than to
