@@ -105,32 +105,29 @@ function canonicalRank(feature: Feature, field: string, wanted: string[]) {
 interface IsoformScore {
   canonical: number
   coding: boolean
-  size: number
 }
 
-// Everything the two orderings below ask about a gene's children, measured
-// once. `hasCodingSubfeature` and `codingLength` each walk the whole subtree,
-// and the ranking (which the cap and `longestCoding` share) and the stack sort
-// would otherwise each measure the same gene again.
+// The two terms BOTH orderings below lead with, per child, measured once —
+// `hasCodingSubfeature` walks the whole subtree, and the ranking (which the cap
+// and `longestCoding` share) and the stack sort each used to walk it again.
+//
+// Protein length is deliberately not here: only the ranking needs it, and
+// `codingLength` walks the subtree a second time. Every gene on screen pays for
+// this map on every layout, while the ranking runs only when a gene is actually
+// collapsing.
 function scoreIsoforms(features: Feature[], config: DisplayConfig) {
   const { canonicalTranscriptField: field, canonicalTranscriptTags } = config
   const wanted = canonicalTranscriptTags.map(t => t.toLowerCase())
   return new Map<string, IsoformScore>(
-    features.map(feature => {
-      const coding = hasCodingSubfeature(feature)
-      return [
-        feature.id(),
-        {
-          canonical: wanted.length
-            ? canonicalRank(feature, field, wanted)
-            : Infinity,
-          coding,
-          size: coding
-            ? codingLength(feature)
-            : feature.get('end') - feature.get('start'),
-        },
-      ]
-    }),
+    features.map(feature => [
+      feature.id(),
+      {
+        canonical: wanted.length
+          ? canonicalRank(feature, field, wanted)
+          : Infinity,
+        coding: hasCodingSubfeature(feature),
+      },
+    ]),
   )
 }
 
@@ -150,10 +147,22 @@ type Scores = ReturnType<typeof scoreIsoforms>
 //
 // A coding-length tie resolves to the LATER isoform (DPP6 and other fixtures
 // depend on it), which a stable sort would break the other way — hence the
-// explicit index tiebreak.
+// explicit index tiebreak. Sized once per isoform, not inside the comparator,
+// which would re-walk each subtree O(n log n) times.
 function rankIsoforms(isoforms: Feature[], scores: Scores): Feature[] {
   return isoforms
-    .map((feature, index) => ({ feature, index, ...scores.get(feature.id())! }))
+    .map((feature, index) => {
+      const { canonical, coding } = scores.get(feature.id())!
+      return {
+        feature,
+        index,
+        canonical,
+        coding,
+        size: coding
+          ? codingLength(feature)
+          : feature.get('end') - feature.get('start'),
+      }
+    })
     .sort(
       (a, b) =>
         a.canonical - b.canonical ||

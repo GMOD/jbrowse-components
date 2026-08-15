@@ -721,18 +721,17 @@ export function processFeatureRecord(
   collector: Collector,
 ) {
   const { feature } = layout
-  // A gene in longestCoding mode collapses to a single transcript, but the gene
-  // feature's own start/end still span every (now-hidden) isoform. Anchor the
-  // label + hit box to the rendered transcript's extent so the name doesn't
-  // float left of the visible glyph over empty track.
-  const collapsedChildren = layout.isoformsCollapsed
-    ? layout.children
-    : undefined
-  const featureStart = collapsedChildren
-    ? Math.min(...collapsedChildren.map(c => c.feature.get('start')))
+  // A gene that dropped isoforms — collapsed to one by `longestCoding`, or
+  // truncated to the rows the track has by the height cap — still carries its
+  // own start/end spanning every hidden one. Anchor the label + hit box to what
+  // actually drew, so the name doesn't float left of the visible glyph over
+  // empty track.
+  const drawn = layout.isoformsCollapsed ? layout.children : undefined
+  const featureStart = drawn
+    ? Math.min(...drawn.map(c => c.feature.get('start')))
     : feature.get('start')
-  const featureEnd = collapsedChildren
-    ? Math.max(...collapsedChildren.map(c => c.feature.get('end')))
+  const featureEnd = drawn
+    ? Math.max(...drawn.map(c => c.feature.get('end')))
     : feature.get('end')
   const strand = feature.get('strand') ?? 0
 
