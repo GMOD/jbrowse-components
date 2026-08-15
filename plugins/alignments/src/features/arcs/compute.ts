@@ -1297,7 +1297,7 @@ function clusteredInterchromSupport(
   // INTERCHROMOSOMAL arc rather than in two arrays sized to `arcs`: intra-chrom
   // connections outnumber these by ~10:1 on deep short-read data (9204 arcs, 865
   // of them interchromosomal, measured at 1:2,000,000 on HG002 300x), and only
-  // `support` has to span the whole feed.
+  // `clusterOf` has to span the whole feed.
   const byContigPair = new Map<string, ClusterEntry[]>()
   for (let i = 0; i < arcs.length; i++) {
     const arc = arcs[i]!
