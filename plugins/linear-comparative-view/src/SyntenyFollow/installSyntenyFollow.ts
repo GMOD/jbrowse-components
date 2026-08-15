@@ -1,6 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import { navToResolvedSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
 import { alreadyShowing } from './alreadyShowing.ts'
@@ -171,14 +171,24 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // dependency of its own write
         self.setFollowUnaligned(plans.some(p => p?.unaligned))
         self.setFollowApproximate(plans.some(p => p?.approximate))
-        for (const plan of plans) {
-          if (plan?.work) {
-            const { work } = plan
-            execute(work).catch((e: unknown) => {
-              reportError(work.pair.level, e)
-            })
+        // UNTRACKED, because `execute` runs synchronously up to its first
+        // `await` and so still inside this reaction. `FollowStep` is meant to
+        // be everything it needs, but the resolve reaches the display for
+        // `adapterConfig` and `lodTier` — and `lodTier` is derived from both
+        // connected views' RAW bpPerPx, which the frame pass writes every
+        // frame. That made one settled resolve register the moving row's zoom
+        // as a dependency of the debounced pass, costing an extra full plan
+        // (the envelope scan included) per settle.
+        untracked(() => {
+          for (const plan of plans) {
+            if (plan?.work) {
+              const { work } = plan
+              execute(work).catch((e: unknown) => {
+                reportError(work.pair.level, e)
+              })
+            }
           }
-        }
+        })
       },
       { name: 'SyntenyFollow' },
     ),
