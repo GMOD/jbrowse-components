@@ -76,6 +76,7 @@ before anyone noticed.
 | [The SV inspector rebuilds its chord track per filter](#the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
+| [The synteny RPC transfers a detached buffer](#the-synteny-rpc-transfers-an-already-detached-buffer-on-the-hg002-chain) | synteny, RPC | find which buffer index 19 is; it is not a duplicate within one list |
 
 ## Ready to build: small and self-contained
 
@@ -1129,6 +1130,35 @@ implementer's call, hence here rather than in the small-items section.
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
+
+### The synteny RPC transfers an already-detached buffer on the HG002 chain
+
+`executeSyntenyFeaturesAndPositions`' `rpcResult` throws
+`DataCloneError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope':
+ArrayBuffer at index 19 is already detached`, and the view renders an error
+banner where the ribbons should be. **Every `hg002_haplotypes_*` figure is
+currently unrenderable** — `location_markers`, `follow_panel` and
+`8p23_inversion` all fail, on every capture, at the same index.
+
+What is established, so nobody re-derives it:
+
+- **It is on main**, not from any figure change. Reproduced with the working
+  tree's only synteny edit reverted to HEAD and the app rebuilt.
+- **It is not a duplicate within one transfer list.** Wrapping that list in a
+  `Set` was tried and the failure did not move — same index, same message. So
+  the buffer was detached by an EARLIER postMessage, which means something is
+  handing out an array that a previous call already transferred.
+- **It is not universal to synteny.** `pangenome/rgfa_paa_bubble`
+  (AllVsAllPAFAdapter) renders normally. The failing three all read the Q100
+  chain, so start with what that adapter hands back and whether any of it
+  survives between calls.
+- **Index 19 is in the instance half of the list**, which is 7 entries long and
+  last: with four attribute channels it is `instanceFeatureIdx`, with three
+  `alignmentLengths`. Print the list's length and the identity of each buffer
+  before deciding which.
+
+First move: log `buffer.byteLength` per entry at the throw — a detached buffer
+reports 0, so which one it is takes one run rather than an argument.
 
 ### Walk the CIGAR once for a read's whole MM tag, not once per group
 

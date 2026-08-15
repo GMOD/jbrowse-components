@@ -433,6 +433,40 @@ export function buildSyntenyGeometry({
         continue
       }
 
+      // AND CAPPED ON HOW FAR IT TRAVELS. A tick is a line from a point in the
+      // top view to the point it maps to in the bottom one, and the hull test
+      // above keeps it whenever that LINE touches the frame — which is the
+      // right geometry and, past a certain shear, a useless mark: the line
+      // enters the band at one edge and leaves at the other, drawing a few
+      // degrees off horizontal with neither of its ends anywhere a reader can
+      // look. `hg002_haplotypes_location_markers` shipped with one of these
+      // across the top of its ribbon and was denied for it twice ("please
+      // double check previous agents notes about the almost horizontal line. i
+      // dont like it"); rendering the same window with markers off is what
+      // identified it, since it looks like a border rather than a mark.
+      //
+      // THIS OVERRIDES THE HULL RULE'S DISTINCTIVE CASE, and saying so is the
+      // point of the comment. A tick with its two ends outside the emit window
+      // in OPPOSITE directions — the case the hull test was written for, where
+      // testing the ends separately dropped ticks the renderers were fixed to
+      // keep — has a shear of at least the emit window's whole width, which is
+      // several times this cap. So that branch is now unreachable, and the hull
+      // test above is left doing the ordinary same-direction off-screen cull.
+      // The two rules cannot both hold: the shape the hull rule protects and
+      // the shape the review rejected are the same shape.
+      //
+      // What survives is what a marker is for. An inversion or an indel INSIDE
+      // the frame shears a tick by at most about what is on screen, so the cap
+      // is above every correspondence a reader could follow with their eyes and
+      // below every one they could not.
+      //
+      // viewWidth, not the emit window: the buffer exists so a pan of up to a
+      // buffer does not refetch, and a rule keyed to it would keep or drop a
+      // tick differently depending on how far the last fetch had panned.
+      if (Math.abs(screenTopX - screenBottomX) > viewWidth) {
+        continue
+      }
+
       addInstance(
         markerBp1,
         markerBp1,
