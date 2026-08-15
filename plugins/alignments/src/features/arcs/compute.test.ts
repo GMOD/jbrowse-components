@@ -419,6 +419,61 @@ describe('computeArcsFromPileupData', () => {
         bothContigs({ drawInter: true, minInterchromSupport: 3 }).crossRegion,
       ).toEqual([])
     })
+
+    // What the windowed count is FOR, beyond the floor it was written for: it is
+    // the number an interchromosomal arc is drawn and reported with. Coalescing
+    // counts exact coincidences, which for scattered mate-pair support is 1
+    // apiece — so every arc over a four-read translocation drew at a lone
+    // mismapping's weight and the hover said "Supported by 1 read".
+    //
+    // The floor is off here (support 1, the menu's `all`), because the count has
+    // to be right when nothing is being filtered.
+    test('an interchromosomal arc is weighted by its cluster, not by coincidence', () => {
+      const names = ['a', 'b', 'c', 'd']
+      const chr1Starts = [2000, 2100, 2200, 2300]
+      const chr2Starts = [5000, 5100, 5200, 5300]
+      const side = (
+        starts: number[],
+        mateBps: number[],
+        mateRef: string,
+        pairBit: number,
+        keyPrefix: string,
+      ) =>
+        makePileupData({
+          readPositions: new Uint32Array(starts.flatMap(s => [s, s + 100])),
+          readFlags: new Uint16Array(names.length).fill(
+            SAM_FLAG_PAIRED | pairBit,
+          ),
+          readStrands: new Int8Array(names.length).fill(1),
+          readInsertSizes: new Float32Array(names.length),
+          readPairOrientations: new Uint8Array(names.length).fill(1),
+          readKeys: names.map(n => `${keyPrefix}${n}`),
+          ...namesToBlock(names),
+          ...nextRefsToTable(names.map(() => mateRef)),
+          readNextPositions: new Uint32Array(mateBps),
+          insertSizeStats: { upper: 600, lower: 100 },
+        })
+      const { crossRegion } = computeArcsFromPileupData(
+        new Map([
+          [
+            0,
+            side(chr1Starts, chr2Starts, 'chr2', SAM_FLAG_FIRST_IN_PAIR, 'c1'),
+          ],
+          [
+            1,
+            side(chr2Starts, chr1Starts, 'chr1', SAM_FLAG_SECOND_IN_PAIR, 'c2'),
+          ],
+        ]),
+        [
+          { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
+          { refName: 'chr2', start: 4000, end: 9000, displayedRegionIndex: 1 },
+        ],
+        { colorByType: 'insertSize', drawInter: true, drawLongRange: true },
+      )
+      // Four arcs, no two of them coalescing — and every one carrying the four
+      // reads behind the event rather than the one at its own bp.
+      expect(crossRegion.map(a => a.support)).toEqual([4, 4, 4, 4])
+    })
   })
 
   // A connection between two chromosomes draws as ONE arc when both of its ends

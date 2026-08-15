@@ -335,8 +335,32 @@ export interface ComputedArc {
   // junction, the genomic radius for a curved arc. The reported quantity, as
   // opposed to the drawn one — see `ArcsUploadData.arcSpanBp`.
   spanBp: number
-  // How many connections were coalesced into this arc — see `resolveArcs`.
-  // Always >= 1.
+  // The reads standing behind this arc. Always >= 1, and the number
+  // `arcLineWidth` turns into a stroke width and the hover reports.
+  //
+  // HOW THEY ARE COUNTED DEPENDS ON THE FAMILY, because "reads that agree on
+  // this junction" is not one measurement:
+  //
+  //   - Same-chromosome: the connections coalesced onto this exact coordinate
+  //     (`resolveArcs`, keyed by `arcKey`). A split read knows its breakpoint to
+  //     the base and a pair's endpoints are its own, so agreement IS coincidence
+  //     and counting it is exact.
+  //   - Interchromosomal: the size of its WINDOWED cluster
+  //     (`clusteredInterchromSupport`). Mate-pair support for a translocation
+  //     scatters over a fragment length rather than stacking on a base — 862 of
+  //     865 connections were the sole occupant of their coordinate on HG002 300x
+  //     — so the exact count reads 1 for essentially every one of them. It said
+  //     "Supported by 1 read" over a hundred-pair translocation and drew it at
+  //     a lone mismapping's weight: the whole channel this field exists to feed,
+  //     reading empty in the family that needs it most.
+  //
+  // Not two meanings — one statement measured the way each family's evidence
+  // actually distributes. The windowed count is already what
+  // `minInterchromSupport` filters on, so the number drawn and the number
+  // filtered are one number rather than two free to disagree.
+  //
+  // A tick keeps the coordinate count either way; `pushLine` says why the
+  // windowed one does not transfer onto half a junction.
   support: number
   // The `arcKey` this arc was deduped under, so it is unique across the array.
   // Only `resolveArcs`' sort reads it, as the tie-break that makes paint order
@@ -409,11 +433,15 @@ export interface CrossRegionArc extends ComputedArc {
 // per distinct breakpoint, not one per supporting read — see `resolveArcs`.
 export interface ComputedLine {
   x: ArcEndpoint
-  // Reads through this breakpoint, exactly as `ComputedArc.support` counts them
-  // for an arc, and drawn the same way: `arcLineWidth` turns it into a stroke
-  // width in all three renderers. A translocation carrying 40 reads and one
-  // carrying a single mismapped pair are not the same claim, and until the
-  // ticks were coalesced there was nowhere for that count to go.
+  // Reads through this breakpoint, drawn the same way an arc's is:
+  // `arcLineWidth` turns it into a stroke width in all three renderers. A
+  // translocation carrying 40 reads and one carrying a single mismapped pair are
+  // not the same claim, and until the ticks were coalesced there was nowhere for
+  // that count to go.
+  //
+  // The reads at this COORDINATE, not the windowed cluster an interchromosomal
+  // arc counts — see `pushLine`, and `ComputedArc.support` for the two
+  // measurements side by side.
   support: number
   // The refName(s) on the FAR side of this breakpoint, sorted and unique. The
   // one fact a tick is drawn to convey and the only one it could not answer: a
@@ -1127,6 +1155,10 @@ const DEFAULT_INTERCHROM_WINDOW_BP = 1000
 // so walking the whole array is what lets the two agree BY INDEX rather than by
 // a counter kept in step with a filter.
 //
+// THE MARK'S OWN `support` IS THIS NUMBER, not just the floor's input — see
+// `ComputedArc.support`, which is why this runs at every setting rather than
+// only above the floor.
+//
 // A mate-pair breakpoint is not localized to a base. The two mates straddle it,
 // so a read supporting a translocation can start anywhere within about one
 // fragment length of it, and the fetched pairs land scattered across that span
@@ -1316,15 +1348,17 @@ function resolveArcs(
   // too narrow to hold one cluster together on a 3 kb mate-pair library, where
   // it would split a real translocation into the singletons the floor then eats.
   //
-  // Skipped outright at support 1 — the menu's `all` position — where the pass
-  // is pure overhead because nothing can be filtered out.
-  const interchromSupport =
-    minInterchromSupport > 1
-      ? clusteredInterchromSupport(
-          pendingArcs,
-          stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,
-        )
-      : undefined
+  // RUN AT EVERY SETTING, including the menu's `all` position where nothing can
+  // be filtered out, because the floor is no longer the only consumer: this is
+  // also what an interchromosomal mark's `support` IS. See
+  // `ComputedArc.support`. The pass builds one small record per
+  // interchromosomal connection and sorts it — ~10% of the feed on deep
+  // short-read data — against an `arcKey` string built for every connection that
+  // survives, so making it unconditional is not what this loop costs.
+  const interchromSupport = clusteredInterchromSupport(
+    pendingArcs,
+    stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,
+  )
 
   // One tick per breakpoint, COUNTING the reads that agree on it — the same
   // move `arcKey` makes for arcs, and for the same two reasons.
@@ -1340,6 +1374,22 @@ function resolveArcs(
   // Coalescing is what lets `support` become a channel (`arcLineWidth`, the
   // same curve the arcs use) instead of being thrown away, and what gives the
   // hover something to report. Deduping alone would have been lossy.
+  //
+  // COUNTED AT THE COORDINATE, and deliberately not swapped for the windowed
+  // cluster count an interchromosomal ARC now carries (`ComputedArc.support`).
+  // A tick is HALF a junction: a coordinate whose far side this view cannot
+  // show, and — `partnerRefNames` being plural — possibly more than one far side
+  // at once. So the reads that landed on it are the thing it can honestly
+  // report, where an arc has a whole junction to count the reads OF.
+  //
+  // The cluster count does not transfer onto it. Two singleton events sharing a
+  // chr1 base (`a breakpoint reaching two chromosomes names both`) would report
+  // the larger, 1, for the two reads sitting there; and two coordinates of ONE
+  // event would each report the whole event, hiding that one of them carries
+  // twice the reads. Summing the distinct clusters reaching a coordinate is the
+  // number that survives both, and it wants a cluster identity per connection
+  // rather than a count — worth doing if a tick's weight ever has to carry an
+  // event, and not for its own sake.
   function pushLine(refName: string, bp: number, partnerRef: string) {
     const key = `${refName}\0${bp}`
     const seen = byLineKey.get(key)
@@ -1376,6 +1426,10 @@ function resolveArcs(
     // endpoints. Taken here rather than on `arc` because they are only kept on
     // the cross-region half — see `CrossRegionArc.p1Dir`.
     feetDirs: { p1Dir: number; p2Dir: number },
+    // The reads this connection already stands for, when its family cannot be
+    // counted a read at a time — `ComputedArc.support`. Absent means COUNT: each
+    // connection is one more read agreeing on this junction to the base.
+    clusterSupport?: number,
   ) {
     const key = arcKey({
       p1Ref: arc.p1.refName,
@@ -1388,12 +1442,18 @@ function resolveArcs(
     })
     const seen = byKey.get(key)
     if (seen) {
-      seen.support++
+      // Nothing to add on the clustered arm, and that is an invariant rather
+      // than a shortcut: every connection coalescing onto one arc shares both
+      // coordinates, so it is in the same cluster and arrived with the same
+      // number. One arc is one junction is one cluster.
+      if (clusterSupport === undefined) {
+        seen.support++
+      }
       return
     }
     const computed: ComputedArc = {
       ...arc,
-      support: 1,
+      support: clusterSupport ?? 1,
       // kept for the sort's tie-break below, where it is the only thing that
       // does not depend on what order the reads arrived in
       key,
@@ -1466,11 +1526,10 @@ function resolveArcs(
       // keeps every mark at the coordinate its own read put it at. Merging a
       // cluster would have to invent a position for it, which is the thing
       // `arcKey`'s exact-coordinate rule exists to refuse.
-      if (
-        drawInter &&
-        (interchromSupport === undefined ||
-          interchromSupport[i]! >= minInterchromSupport)
-      ) {
+      // The reads behind this connection, and the number both its marks are
+      // drawn and reported with — see `ComputedArc.support`.
+      const support = interchromSupport[i]!
+      if (drawInter && support >= minInterchromSupport) {
         // AN ARC WHEN BOTH FEET ARE ON SCREEN, ticks otherwise — decided per
         // connection, so a breakpoint reaching one displayed and one undisplayed
         // chromosome gets an arc *and* a tick and both counts stay honest.
@@ -1513,6 +1572,7 @@ function resolveArcs(
             p1RegionIndex,
             p2RegionIndex,
             arc,
+            support,
           )
         } else {
           // Each endpoint's tick names the OTHER endpoint's chromosome — that is
