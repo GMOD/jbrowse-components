@@ -19,12 +19,20 @@ Genes with many isoforms can stack into tall, hard-to-read blocks. The **Gene
 glyph** option in the track menu controls how a gene's transcripts are drawn:
 
 - Auto (default) - stacks every transcript when you are zoomed in, but collapses
-  each gene to its single longest coding transcript when you are zoomed out, so
-  dense regions stay legible.
+  each gene to a single transcript when you are zoomed out, so dense regions
+  stay legible. Zoomed in it also keeps only as many isoforms per gene as the
+  track's height has rows for, rather than hiding the last ones inside the
+  track's own scrollbar.
 - All transcripts - always draws every transcript on its own row.
-- Longest coding transcript - collapses each gene to one isoform: the longest by
-  protein length, or, for a gene with no coding isoform at all, the one with the
-  widest genomic span.
+- Representative transcript - collapses each gene to one isoform.
+
+Which isoform that is comes from the annotation where it says: a transcript
+tagged `RefSeq Select` or `MANE Select` (NCBI), or `MANE_Select` /
+`Ensembl_canonical` (Ensembl, GENCODE) is the one kept, and it is also the first
+one drawn when a gene is stacked. Failing a tag, it is the longest by protein
+length — or, for a gene with no coding isoform at all, the one with the widest
+genomic span. The attribute read and the tags that count are the
+`canonicalTranscriptField` and `canonicalTranscriptTags` config slots.
 
 ## Collapsing introns
 

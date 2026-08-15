@@ -7,16 +7,16 @@ import { geneGlyphTooltip } from './geneGlyphTooltip.ts'
 import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 
 // Bottom-right control for isoform collapse, shown (see showGeneGlyphNotice)
-// only while genes are collapsed to their longest coding transcript, so the user
-// always has a visible sign that transcripts are hidden. It's present under
-// 'auto' too, where the collapse is a zoom-driven decision the user never made
-// and would otherwise have no cue for.
+// only while genes are collapsed to one transcript, so the user always has a
+// visible sign that transcripts are hidden. It's present under 'auto' too, where
+// the collapse is a zoom-driven decision the user never made and would otherwise
+// have no cue for.
 //
 // Two looks for the same control, and the only difference between them is
-// whether it carries a label. Until dismissed it's a loud text chip ("Longest
+// whether it carries a label. Until dismissed it's a loud text chip ("One
 // isoform") whose (×) is a passive acknowledgement; dismissing shrinks it to the
 // quiet always-there icon (it never removes the control, so re-opening the menu
-// is one click away). Both open the same Auto / All / Longest-coding options as
+// is one click away). Both open the same Auto / All / Representative options as
 // the track menu's "Gene glyph" radio.
 const GeneGlyphControl = observer(function GeneGlyphControl({
   collapsed,
@@ -41,9 +41,7 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
   // a gene drawn with 7 of its 28 transcripts looks exactly like a gene with 7,
   // so the chip names which collapse it is rather than leaving it to the tooltip
   const label =
-    maxIsoforms === undefined
-      ? 'Longest isoform'
-      : `Top ${maxIsoforms} isoforms`
+    maxIsoforms === undefined ? 'One isoform' : `Top ${maxIsoforms} isoforms`
   return (
     <TrackControl
       icon="isoform"

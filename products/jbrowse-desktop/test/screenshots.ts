@@ -264,7 +264,7 @@ const SAMPLE_SEQ =
   'AGTTTCCATAGGTCTGAAAATGTTTCCTGACTCAGAGTGGGCTCGACGCTAGGATCTGACTGCGGCTCCTCCATGGCAGTGACCCGGAAGGCAGTCTGGCTGCTACAAGAGGAAAAGTGGGGATCCAGCATGAGACACTTCCAACCC'
 
 // Track menu of the first track in the view (hg19's RefSeq lane) -> Gene glyph
-// -> Longest coding transcript. At the 205 bp the BLAT hit frames, "All
+// -> Representative transcript. At the 205 bp the BLAT hit frames, "All
 // transcripts" is four near-identical TP53 models with the same exon under the
 // hit, so the reader compares the hit against a stack instead of against one
 // gene. Menu rows go by testid: their labels also appear in the track label

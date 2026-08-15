@@ -296,8 +296,9 @@ describe('layoutSubfeatures layout', () => {
   // the height cap keeps first.
   describe('canonical transcript tag', () => {
     // 'short' is tagged and 'long' has three times the CDS, so every assertion
-    // below is the tag beating the measurement
-    function geneWithTag(attributes: Record<string, unknown>) {
+    // below is the tag beating the measurement. `tagLast` puts the tagged one
+    // second, where only a reorder can bring it to the front.
+    function geneWithTag(attributes: Record<string, unknown>, tagLast = false) {
       const short = mockFeature({
         type: 'mRNA',
         name: 'short',
@@ -322,7 +323,7 @@ describe('layoutSubfeatures layout', () => {
         name: 'TestGene',
         start: 100,
         end: 500,
-        subfeatures: [short, long],
+        subfeatures: tagLast ? [long, short] : [short, long],
       })
     }
 
@@ -377,6 +378,32 @@ describe('layoutSubfeatures layout', () => {
           { geneGlyphMode: 'all', maxIsoforms: 1 },
         ),
       ).toEqual(['short'])
+    })
+
+    // The isoform a capped gene keeps first should also be the one it draws
+    // first, so the gene reads top-down. Both isoforms here are coding, so the
+    // coding-first stack sort is a no-op and only the tag can reorder them.
+    it('stacks on top of the untagged isoforms', () => {
+      const layout = layoutSubfeatures({
+        feature: geneWithTag({ tag: 'RefSeq Select' }, true),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
+      })
+      expect(layout.children.map(c => c.feature.get('name'))).toEqual([
+        'short',
+        'long',
+      ])
+      expect(layout.children[0]!.y).toBe(0)
+    })
+
+    it('leaves an untagged gene stacked in its original order', () => {
+      const layout = layoutSubfeatures({
+        feature: geneWithTag({}, true),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
+      })
+      expect(layout.children.map(c => c.feature.get('name'))).toEqual([
+        'long',
+        'short',
+      ])
     })
   })
 

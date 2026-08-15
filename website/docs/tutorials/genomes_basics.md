@@ -49,13 +49,13 @@ starts. Type `TP53` into the location box and press Enter. The hosted config
 ships a name index, so gene symbols resolve with no setup, and coordinates like
 `chr17:7,668,400-7,687,550` work anywhere a symbol does.
 
-<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, answered by the config's own name index. Middle: what Enter opens, with the isoform control circled. Bottom: the same view after picking Longest coding transcript from it." />
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, answered by the config's own name index. Middle: what Enter opens, with the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
 
 RefSeq All draws each transcript of a gene on its own row and writes the gene
 name under the stack, and TP53 has more transcripts than a track opens tall
 enough to show, so both the last rows and the name end up behind its scrollbar.
 That is the middle panel. The circled control at the bottom right of the track
-opens **Auto / All transcripts / Longest coding transcript**; picking the last
+opens **Auto / All transcripts / Representative transcript**; picking the last
 collapses the stack to one transcript with the gene name under it, which is the
 bottom panel and what the rest of this page uses.
 
@@ -101,7 +101,7 @@ shrinks the chip to the icon circled below, which stays in that corner and opens
 the same options — and at this zoom it matters more, since the default draws the
 codon row once per transcript.
 
-<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Longest coding transcript options as the track menu's Gene glyph radio." />
+<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
 
 At that zoom the score is visibly one bar per base, and within a codon the third
 base is the short one: most third-position changes leave the amino acid alone,

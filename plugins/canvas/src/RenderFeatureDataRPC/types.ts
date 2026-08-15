@@ -37,7 +37,7 @@ export interface FeatureLayout {
   // this layout reserves a `below` label row of its own, under its body
   ownsLabelRow?: boolean
   // set when geneGlyphMode === 'longestCoding' collapsed a multi-isoform gene
-  // down to its single longest coding transcript (layoutSubfeatures)
+  // down to its single representative transcript (layoutSubfeatures)
   isoformsCollapsed?: boolean
   // set when this gene has >1 isoform, independent of the current glyph mode —
   // drives the always-visible gene-glyph control (which only makes sense when

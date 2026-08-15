@@ -24,10 +24,13 @@ export function geneGlyphTooltip({
   maxIsoforms?: number
   noticeShowing: boolean
 }) {
+  // "one transcript", not "the longest coding" one: an annotation that names its
+  // own representative isoform (RefSeq Select, MANE Select) decides this, and
+  // protein length is only the fallback for one that doesn't
   const showing = !collapsed
     ? 'Showing all transcripts per gene'
     : maxIsoforms === undefined
-      ? 'Showing the longest coding transcript per gene'
+      ? "Showing one transcript per gene — the annotation's representative one where it names one, else the longest coding"
       : `Showing up to ${maxIsoforms} transcript${maxIsoforms === 1 ? '' : 's'} per gene — as many as fit this track's height`
   const auto =
     mode === 'auto' && collapsed && maxIsoforms === undefined

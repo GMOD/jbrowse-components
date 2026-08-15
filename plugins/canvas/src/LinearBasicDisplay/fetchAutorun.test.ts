@@ -1269,7 +1269,7 @@ describe('showLabels auto density gate', () => {
   })
 })
 
-// 'auto' geneGlyphMode collapses genes to their longest coding transcript once
+// 'auto' geneGlyphMode collapses genes to one representative transcript once
 // zoomed out past 100 bp/px; below that every transcript stacks. The 200kb
 // region (width 800 → up to 250 bp/px) is wide enough to straddle the
 // threshold, unlike the default region.

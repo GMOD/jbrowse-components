@@ -1,7 +1,10 @@
 // Single source of truth for the geneGlyphMode display setting.
 //
 // 'auto' switches based on zoom, 'all' shows every transcript, 'longestCoding'
-// shows only the longest coding transcript.
+// shows one transcript per gene. The value name is historical and stays for
+// config compatibility: since the isoform ranking learned to read RefSeq
+// Select / MANE Select, coding length is what it falls back to rather than
+// what it does, so the label says "representative".
 export const GENE_GLYPH_MODES = ['auto', 'all', 'longestCoding'] as const
 
 export type GeneGlyphMode = (typeof GENE_GLYPH_MODES)[number]
@@ -11,7 +14,7 @@ export type GeneGlyphMode = (typeof GENE_GLYPH_MODES)[number]
 export const GENE_GLYPH_MODE_OPTIONS = [
   { value: 'auto', label: 'Auto' },
   { value: 'all', label: 'All transcripts' },
-  { value: 'longestCoding', label: 'Longest coding transcript' },
+  { value: 'longestCoding', label: 'Representative transcript' },
 ] as const satisfies readonly { value: GeneGlyphMode; label: string }[]
 
 // The old CanvasFeatureRenderer had a 'longest' value (longest transcript,

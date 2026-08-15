@@ -37,6 +37,19 @@ describe('gene-glyph control tooltip', () => {
     expect(tooltip).toBe('Showing all transcripts per gene. Click to change.')
   })
 
+  // The collapse stopped being "the longest coding transcript" when the ranking
+  // learned to read RefSeq Select / MANE Select — a tag outranks protein length,
+  // so the tooltip must not promise a measurement it may not have made.
+  it('describes the collapse as one transcript, not the longest coding', () => {
+    const tooltip = geneGlyphTooltip({
+      mode: 'longestCoding',
+      collapsed: true,
+      noticeShowing: false,
+    })
+    expect(tooltip).toContain('one transcript per gene')
+    expect(tooltip).toContain("annotation's representative one")
+  })
+
   it('says when the collapse was the zoom’s decision rather than the user’s', () => {
     expect(
       geneGlyphTooltip({ mode: 'auto', collapsed: true, noticeShowing: true }),

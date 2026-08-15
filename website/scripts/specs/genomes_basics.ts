@@ -339,7 +339,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
         viewportHeight: 340,
         actions: [
           { type: 'click', selector: '[data-testid="track-control-isoform"]' },
-          { type: 'click', text: 'Longest coding transcript' },
+          { type: 'click', text: 'Representative transcript' },
           { type: 'delay', ms: 1500 },
           PARK_CURSOR,
         ],
@@ -482,7 +482,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
 
   // The isoform control, which the next figure's session sets declaratively and
   // a reader reaches by clicking. It has two looks one dismissal apart: while
-  // transcripts are collapsed it is the loud "Longest isoform" chip, and its (x)
+  // transcripts are collapsed it is the loud "One isoform" chip, and its (x)
   // shrinks it to the quiet icon that is always in that corner afterwards.
   //
   // THE ICON IS WHAT THE FIGURE SHOWS (review: "i want the circle on the small
@@ -533,7 +533,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 400 },
       // then open the popover from the icon itself
       { type: 'click', selector: '[data-testid="track-control-isoform"]' },
-      { type: 'waitForText', text: 'Longest coding transcript' },
+      { type: 'waitForText', text: 'Representative transcript' },
       { type: 'delay', ms: 800 },
     ],
     // A ring on the icon that opened the popover. The popover is a MUI menu, so

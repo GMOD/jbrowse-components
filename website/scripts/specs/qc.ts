@@ -149,7 +149,7 @@ const geneTrack = (height: number, showOnlyGenes: boolean) => ({
   showOnlyGenes,
   // ONE TRANSCRIPT PER GENE (reviewer, on two of the three figures here: "use
   // longestisoform on the gene track"). Collapsing raises the display's loud
-  // "Longest isoform" chip at the right edge of the lane, and in a 2.5 Mb frame
+  // "One isoform" chip at the right edge of the lane, and in a 2.5 Mb frame
   // it lands on a gene label; that is why an earlier round named 'all' instead
   // and paid a stacked row per multi-transcript gene. The chip is chrome, so
   // HIDE_ISOFORM_CHIP takes it out of the capture rather than the collapsing
