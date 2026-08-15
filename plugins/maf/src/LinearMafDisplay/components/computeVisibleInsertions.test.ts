@@ -5,21 +5,23 @@ import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendT
 
 const enc = new TextEncoder()
 
-// One block at bp 100, `refSeq` with `-` marking reference-insertion columns.
+// `refSeq` with `-` marking reference-insertion columns.
+function oneBlock(startBp: number, refSeq: string, alignments: string[]) {
+  return {
+    startBp,
+    endBp: startBp + refSeq.replaceAll('-', '').length,
+    refSeqBytes: enc.encode(refSeq),
+    rows: alignments.map((alignment, rowIndex) => ({
+      rowIndex,
+      alignmentBytes: enc.encode(alignment),
+    })),
+    empties: [],
+  }
+}
+
 function regionData(refSeq: string, alignments: string[]): MafRegionData {
   return {
-    blocks: [
-      {
-        startBp: 100,
-        endBp: 100 + refSeq.replaceAll('-', '').length,
-        refSeqBytes: enc.encode(refSeq),
-        rows: alignments.map((alignment, rowIndex) => ({
-          rowIndex,
-          alignmentBytes: enc.encode(alignment),
-        })),
-        empties: [],
-      },
-    ],
+    blocks: [oneBlock(100, refSeq, alignments)],
     coverage: emptyMafCoverage(100),
   }
 }
@@ -84,4 +86,50 @@ test('insertions sharing a pixel column collapse to the longest', () => {
 test('the collapse is per row, not across rows', () => {
   const markers = run('A--A---A', ['AGGACCCA', 'AGGACCCA'], { bpPerPx: 1000 })
   expect(markers.map(m => m.rowTop)).toEqual([1.5, 16.5])
+})
+
+// The merge carries one pixel column per row rather than an index of them,
+// which is only sound because a row's events arrive in ascending bp. Blocks
+// ascend and the walk is block-major, so a row's two blocks are separated in
+// the stream by every other row's events from the first block — this is the
+// case that fails if the state is a single pair rather than one per row.
+test('insertions collapse across a block boundary', () => {
+  const markers = computeVisibleInsertions({
+    view: {
+      visibleRegions: [
+        {
+          displayedRegionIndex: 0,
+          start: 100,
+          end: 200,
+          screenStartPx: 0,
+          reversed: false,
+        },
+      ],
+      bpPerPx: 1000,
+    },
+    rpcDataMap: new Map<number, MafRegionData>([
+      [
+        0,
+        {
+          blocks: [
+            // block at 100 carries a 1bp insertion, block at 102 a 3bp one, and
+            // at 1000bp/px both land in pixel column 0 of each row
+            oneBlock(100, 'A-A', ['AGA', 'AGA']),
+            oneBlock(102, 'A---A', ['ACCCA', 'A---A']),
+          ],
+          coverage: emptyMafCoverage(100),
+        },
+      ],
+    ]),
+    rowHeight: 15,
+    rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
+  })
+  // row 0 sees both and keeps the longer; row 1 has an insertion only in the
+  // first block, so its marker must survive the second block's row 0 event
+  expect(markers.map(m => [m.rowTop, m.length])).toEqual([
+    [1.5, 3],
+    [16.5, 1],
+  ])
 })

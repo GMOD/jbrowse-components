@@ -23,9 +23,12 @@
 //   first    one call against a region object the caches have not seen. For the
 //            working tree this includes building the event index; for the
 //            baseline it is just a normal call, so the baseline's two numbers
-//            are the same and that is the honest picture.
-//   pan      one call against a region object already in hand — the steady
-//            state, which is every frame after the first.
+//            are proportional and that is the honest picture.
+//   pan      a whole sweep across every pan position, against a region object
+//            already in hand — the steady state, which is every frame after the
+//            first. A sweep rather than one frame so that a round is a repeat
+//            of the SAME work: picking the frame by round index made `min`
+//            across rounds a min across twelve different workloads.
 //
 // A ratio under 1.00 in the `first` column and far over it in `pan` is the
 // trade being made, not a bug. Quoting only the second would be a story.
@@ -210,20 +213,42 @@ function makeFrames(s: Shape, regionEnd: number, frames: number) {
 
 // --- identity -------------------------------------------------------------
 
+// As a multiset, not element by element: the overlays are free to emit markers
+// in a different order, since every marker carries its own position and rows
+// occupy disjoint bands, so two arrays holding the same markers paint the same
+// pixels. What the comparison must not do is get looser than that — a dropped
+// marker, a shifted `xCenter`, a wrong `length` all still fail.
+function keyOf(marker: Marker) {
+  return Object.keys(marker)
+    .sort()
+    .map(k => `${k}=${marker[k]!}`)
+    .join(' ')
+}
+
 function firstDifference(a: Marker[], b: Marker[]) {
   if (a.length !== b.length) {
     return `marker count ${a.length} vs ${b.length}`
   }
-  for (let i = 0; i < a.length; i++) {
-    for (const key of Object.keys(a[i]!)) {
-      const x = a[i]![key]!
-      const y = b[i]![key]
-      if (x !== y) {
-        return `marker[${i}].${key}: ${x} vs ${String(y)}`
-      }
+  const counts = new Map<string, number>()
+  for (const marker of a) {
+    const key = keyOf(marker)
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  for (const marker of b) {
+    const key = keyOf(marker)
+    const n = counts.get(key)
+    if (n === undefined) {
+      return `only the second side has {${key}}`
+    }
+    counts.set(key, n - 1)
+    if (n === 1) {
+      counts.delete(key)
     }
   }
-  return undefined
+  const [leftover] = counts.keys()
+  return leftover === undefined
+    ? undefined
+    : `only the first side has {${leftover}}`
 }
 
 // --- shapes ---------------------------------------------------------------
@@ -264,8 +289,7 @@ const SHAPES: Shape[] = [
   },
   // Few large blocks: the shape a hal2maf export without chunking produces, and
   // the one where a block-level bp cull buys nothing because a block is wider
-  // than the screen — so it is also the one shape where deletion labels really
-  // do draw at this zoom and the deletion walk has to run.
+  // than the screen.
   {
     name: '30-way, 20kb blocks, 180kb visible',
     rows: 30,
@@ -274,6 +298,26 @@ const SHAPES: Shape[] = [
     refGapEvery: 29,
     rowGapEvery: 400,
     rowGapRun: 60,
+    invertedEvery: 97,
+    visibleBp: 180_000,
+  },
+  // The one shape whose deletions actually LABEL, and it takes both knobs to
+  // get there. A label needs the run to clear the narrowest digit — 7.5px, so
+  // ~906bp at 120bp/px — and `forEachDeletion` ends a run at any *reference*
+  // gap, so a run is capped by `refGapEvery` however long `rowGapRun` is. Every
+  // other shape here has a reference gap every ~30 columns and therefore no run
+  // over 30bp: they measure the culled path, where the deletion overlay emits
+  // nothing and the walk is the whole cost. Without this row the bench reports
+  // "0 markers" everywhere while still timing, which is a bench measuring the
+  // empty case and quoting it as the full one.
+  {
+    name: '30-way, 20kb blocks, sparse ref gaps, 180kb visible',
+    rows: 30,
+    cols: 20_000,
+    blocks: 40,
+    refGapEvery: 3_000,
+    rowGapEvery: 4_000,
+    rowGapRun: 1_200,
     invertedEvery: 97,
     visibleBp: 180_000,
   },
@@ -303,6 +347,13 @@ const rounds = Number(
     ?.slice('--rounds='.length) ?? 12,
 )
 
+// Pan positions per sweep, deliberately NOT `rounds`. They were the same number
+// and the frame was picked by round index, which made every round a *different*
+// workload — so the min across rounds was the cheapest pan position rather than
+// the least-contended sample of one, and `--rounds` changed what was measured
+// instead of how well. A round is now a whole sweep across all of these.
+const FRAMES = 12
+
 const current = await loadFrom(root, 'working tree')
 const base = await loadRef(baseRef, baseRef)
 const control = await loadRef(baseRef, `${baseRef} (control)`)
@@ -311,7 +362,8 @@ console.log(
   `working tree vs ${baseRef}, min of ${rounds} interleaved rounds\n` +
     `control is ${baseRef} loaded a second time: its ratio is the noise floor,\n` +
     `and a row whose control is not near 1.00 did not measure anything\n` +
-    `first = a region the caches have not seen; pan = every frame after it\n`,
+    `first = one call on a region the caches have not seen\n` +
+    `pan   = a whole ${FRAMES}-position sweep of a region already in hand\n`,
 )
 
 const GEOMETRY = { rowHeight: 20, rowProportion: 0.8, scrollTop: 0 }
@@ -321,7 +373,7 @@ try {
   for (const shape of SHAPES) {
     const { blocks, regionEnd } = makeBlocks(shape)
     const coverage = {}
-    const frames = makeFrames(shape, regionEnd, rounds)
+    const frames = makeFrames(shape, regionEnd, FRAMES)
     const viewportHeight = shape.rows * GEOMETRY.rowHeight
     // Built from the same blocks each side sees, and by each side's own
     // `consensusStrandByRowChr`, so no arm inherits another's Map.
@@ -358,7 +410,7 @@ try {
         fresh: boolean,
       ) =>
         pick(arm)({
-          view: frames[frame % frames.length],
+          view: frames[frame],
           rpcDataMap: wrap(fresh, held),
           ...GEOMETRY,
           viewportHeight,
@@ -367,14 +419,24 @@ try {
 
       // Warm and identity-check every arm the same way — an arm left cold or
       // unchecked while its neighbours are not is the asymmetric-warmup trap.
-      const out = {
-        baseline: run(base.arm, 'baseline', 0, false),
-        control: run(control.arm, 'control', 0, false),
-        current: run(current, 'current', 0, false),
+      // Every pan position, cold and warm, rather than one frame warm: a cache
+      // that answers the first frame and then goes stale is exactly the failure
+      // this change could introduce, and it is invisible at one position.
+      let diff: string | undefined
+      let markerCount = 0
+      for (let frame = 0; frame < FRAMES; frame++) {
+        for (const fresh of [true, false]) {
+          const out = {
+            baseline: run(base.arm, 'baseline', frame, fresh),
+            control: run(control.arm, 'control', frame, fresh),
+            current: run(current, 'current', frame, fresh),
+          }
+          markerCount = Math.max(markerCount, out.baseline.length)
+          diff ??=
+            firstDifference(out.baseline, out.current) ??
+            firstDifference(out.baseline, out.control)
+        }
       }
-      const diff =
-        firstDifference(out.baseline, out.current) ??
-        firstDifference(out.baseline, out.control)
       if (diff) {
         failed = true
       }
@@ -390,15 +452,19 @@ try {
       }
       for (let round = 0; round < rounds; round++) {
         for (const [side, arm] of sides) {
-          for (const phase of ['first', 'pan'] as const) {
-            globalThis.gc?.()
-            const t0 = performance.now()
-            run(arm, side, round, phase === 'first')
-            best[phase][side] = Math.min(
-              best[phase][side],
-              performance.now() - t0,
-            )
+          globalThis.gc?.()
+          const tFirst = performance.now()
+          run(arm, side, 0, true)
+          best.first[side] = Math.min(
+            best.first[side],
+            performance.now() - tFirst,
+          )
+          globalThis.gc?.()
+          const tPan = performance.now()
+          for (let frame = 0; frame < FRAMES; frame++) {
+            run(arm, side, frame, false)
           }
+          best.pan[side] = Math.min(best.pan[side], performance.now() - tPan)
         }
       }
       const row = (phase: 'first' | 'pan') =>
@@ -407,7 +473,7 @@ try {
         `working tree ${best[phase].current.toFixed(2).padStart(9)} ms  ` +
         `${(best[phase].baseline / best[phase].current).toFixed(3)}x`
       console.log(
-        `  ${kind} — ${out.baseline.length.toLocaleString()} markers, ` +
+        `  ${kind} — up to ${markerCount.toLocaleString()} markers a frame, ` +
           `output ${diff ? `DIFFERS — ${diff}` : 'identical'}\n` +
           `    ${row('first')}\n` +
           `    ${row('pan')}`,
