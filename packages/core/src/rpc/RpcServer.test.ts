@@ -109,6 +109,45 @@ describe('RpcServer.handler()', () => {
     restore()
   })
 
+  // The report is only useful if it survives the trip: it is built in `reply`'s
+  // catch, has to go through serializeError, and is what a display's error
+  // banner ends up showing. jsdom's postMessage does not police transfer lists,
+  // so the throw is staged — what is under test is the enrichment, not the
+  // browser's own check.
+  test('a failed post names the offending transferable in the error it sends', async () => {
+    const original = (globalThis as any).postMessage
+    const sent: unknown[] = []
+    let first = true
+    ;(globalThis as any).postMessage = (data: unknown) => {
+      if (first) {
+        first = false
+        throw new DOMException(
+          'Failed to execute postMessage: ArrayBuffer at index 1 is already detached',
+          'DataCloneError',
+        )
+      }
+      sent.push(data)
+    }
+
+    const dead = new Uint32Array(4).buffer
+    dead.transfer()
+    const server = makeServer({
+      pack: async () =>
+        rpcResult({ starts: new Uint32Array(4), instanceData: { dead } }, [
+          new Uint32Array(4).buffer,
+          dead,
+        ]),
+    })
+    sendMessage(server, { method: 'pack', uid: 'p', data: null, libRpc: true })
+    await flushPromises()
+
+    const { message } = (sent[0] as any).error
+    expect(message).toContain('already detached')
+    expect(message).toContain('instanceData.dead')
+    expect(message).toContain('survives between RPC calls')
+    ;(globalThis as any).postMessage = original
+  })
+
   test('passes data from message to method', async () => {
     const { sent, restore } = mockPostMessage()
     const server = makeServer({

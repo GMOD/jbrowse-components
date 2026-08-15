@@ -76,7 +76,7 @@ before anyone noticed.
 | [The SV inspector rebuilds its chord track per filter](#the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
-| [The synteny RPC transfers a detached buffer](#the-synteny-rpc-transfers-an-already-detached-buffer-on-the-hg002-chain) | synteny, RPC | find which buffer index 19 is; it is not a duplicate within one list |
+| [The synteny RPC transfers a detached buffer](#the-synteny-rpc-transfers-an-already-detached-buffer-on-the-hg002-chain) | synteny, RPC | the banner now names the field; re-run a capture and read it |
 
 ## Ready to build: small and self-contained
 
@@ -1154,11 +1154,33 @@ What is established, so nobody re-derives it:
   survives between calls.
 - **Index 19 is in the instance half of the list**, which is 7 entries long and
   last: with four attribute channels it is `instanceFeatureIdx`, with three
-  `alignmentLengths`. Print the list's length and the identity of each buffer
-  before deciding which.
+  `alignmentLengths`. The list is `3 + N + 7 + 7` where `N` is the channel count
+  — four presets plus the track's `attributeColumns`, which a chain track does
+  not declare — so N=4, length 21, and index 19 is `instanceFeatureIdx`.
 
-First move: log `buffer.byteLength` per entry at the throw — a detached buffer
-reports 0, so which one it is takes one run rather than an argument.
+**The first move is done and no longer needs doing by hand.** `RpcServer.reply`
+now names the field when a post fails, and separates the two causes the browser
+reports with identical words: a duplicate *within* this list (postMessage
+detaches on the first occurrence and rejects the second) versus detached by an
+earlier post. Re-run any failing capture and read the banner — it says
+`instanceData.<field>` and which cause, in one run.
+
+**What reading has already eliminated, so nobody re-reads it:**
+
+- **Nothing in the transfer list is allocated anywhere but this call.**
+  `createAttributeChannels` allocates its Float32Arrays per call and
+  `buildSyntenyGeometry` allocates all seven instance arrays per call
+  (`new Float32Array(capacity)` inside the function body). Every entry is a
+  `subarray` of one of those.
+- **It is not `EMPTY_CIGAR`**, the one module-level array in
+  `executeSyntenyFeaturesAndPositions` and so the one thing that does survive
+  between calls: `parsedCigars` is consumed by the geometry stage and is not in
+  the transfer list.
+- **The adapter cache is still the only place a value can survive**
+  (`PAFAdapter.setup = createSharedSetup(...)`, which `ChainAdapter` inherits),
+  and no path from a cached `PAFRecord` to a transferred buffer was found by
+  reading. That is where the empirical answer should be pointed once the banner
+  names the field.
 
 ### Walk the CIGAR once for a read's whole MM tag, not once per group
 

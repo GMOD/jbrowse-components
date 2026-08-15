@@ -1,5 +1,6 @@
 import { isRpcResult } from '../util/rpc.ts'
 import { markStopTokenStopped } from '../util/stopToken.ts'
+import { describeTransferables } from './describeTransferables.ts'
 import { serializeError } from './serializeError/index.ts'
 
 import type { ErrorObject } from './serializeError/index.ts'
@@ -130,7 +131,21 @@ export default class RpcServer {
     try {
       this.post({ uid, data: value }, transferables)
     } catch (e) {
-      this.throw(uid, serializeError(e))
+      // postMessage names a bad transferable by index alone, into a list the
+      // caller assembled — so say which field it is, and which of the two
+      // causes it is, before the error leaves the worker. See
+      // describeTransferables; it only runs here.
+      const detail = describeTransferables(value, transferables)
+      this.throw(
+        uid,
+        serializeError(
+          detail && e instanceof Error
+            ? Object.assign(new Error(`${e.message} — ${detail}`), {
+                stack: e.stack,
+              })
+            : e,
+        ),
+      )
     }
   }
 
