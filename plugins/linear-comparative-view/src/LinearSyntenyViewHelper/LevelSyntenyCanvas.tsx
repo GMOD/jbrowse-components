@@ -10,6 +10,7 @@ import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
+import { syntenyWidgetFeature } from '../LinearSyntenyDisplay/syntenyWidgetFeature.ts'
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
@@ -64,29 +65,10 @@ function openSyntenyFeatureWidget(
   if (!feat) {
     return
   }
-  openFeatureWidget(
-    display,
-    {
-      // Every numeric channel the fetch carried for it, so the panel shows
-      // mapping quality and a declared column too rather than identity alone.
-      // FIRST, so the fields below always win: a channel name is a column name
-      // out of the track's own config, and one spelled `start` would otherwise
-      // move the feature the panel is describing.
-      ...feat.attributes,
-      uniqueId: feat.id,
-      start: feat.start,
-      end: feat.end,
-      strand: feat.strand,
-      refName: feat.refName,
-      name: feat.name,
-      assemblyName: feat.assemblyName,
-      mate: feat.mate,
-    },
-    {
-      widget: { type: 'SyntenyFeatureWidget', id: 'syntenyFeature' },
-      extra: { level: display.level },
-    },
-  )
+  openFeatureWidget(display, syntenyWidgetFeature(feat), {
+    widget: { type: 'SyntenyFeatureWidget', id: 'syntenyFeature' },
+    extra: { level: display.level },
+  })
 }
 
 const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
