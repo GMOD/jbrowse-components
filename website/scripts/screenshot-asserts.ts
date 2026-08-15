@@ -311,22 +311,32 @@ export async function assertRenderSettled(
   }
 }
 
+// What the page looked like when a wait gave up. Both halves report their own
+// failure rather than swallowing it, because a dump that is merely absent is the
+// single most misleading thing this pipeline can produce: it used to print the
+// path unconditionally, so a run announced a frame that was never written and
+// the reader went looking in the app for a fault that was in the machine. An
+// empty `debug text` plus no file means the renderer was gone — nothing about
+// the figure, and no timeout will fix it.
 export async function debugDump(page: Page, name: string) {
   const bodyText = await page
     .evaluate(() => document.body.innerText.substring(0, 800))
-    .catch(() => '')
+    .catch(() => undefined)
   console.error(
-    `    [${name}] debug text: ${bodyText.replaceAll(/\s+/g, ' ').trim()}`,
+    bodyText === undefined
+      ? `    [${name}] debug text: <page unreachable>`
+      : `    [${name}] debug text: ${bodyText.replaceAll(/\s+/g, ' ').trim()}`,
   )
-  fs.mkdirSync(debugDir, { recursive: true })
   const debugPath = path.join(debugDir, `${name.replaceAll('/', '_')}.png`)
-  await page
-    .screenshot()
-    .then(png => {
-      fs.writeFileSync(debugPath, png)
-    })
-    .catch(() => {})
-  console.error(`    [${name}] debug screenshot: ${debugPath}`)
+  try {
+    fs.mkdirSync(debugDir, { recursive: true })
+    fs.writeFileSync(debugPath, await page.screenshot())
+    console.error(`    [${name}] debug screenshot: ${debugPath}`)
+  } catch (e) {
+    console.error(
+      `    [${name}] no debug screenshot: ${e instanceof Error ? e.message : String(e)}`,
+    )
+  }
 }
 
 // Liveness token for assertSamePageAsReady below. Set once the page is ready,

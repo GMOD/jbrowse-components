@@ -915,55 +915,97 @@ async function main() {
     return `[${String(started).padStart(String(total).length)}/${total}]`
   }
 
+  // How long a page gets to answer "are you still there" after its capture has
+  // already failed. A renderer under memory pressure can be slow rather than
+  // gone, and the difference stops mattering once it has missed its ready wait:
+  // both answers cost one re-render, and only one of them can produce a figure.
+  const LIVENESS_PROBE_MS = 5000
+
   // Fresh browser per call (avoids service-worker caching between navigations),
   // viewport set per spec, then run the body with the prepared page.
+  //
+  // Retried once when the PAGE died rather than the capture failing, which on a
+  // loaded machine is most of what a long run reports. Chrome's renderer going
+  // away surfaces as `frame got detached` if a wait was mid-flight and as an
+  // ordinary selector timeout if it wasn't — that second shape is
+  // indistinguishable from a display that never painted, and it is what sent a
+  // 2026-08-15 sweep's Hi-C block to be investigated as a rendering regression
+  // when the specs passed on an idle box. Whichever specs are in flight when the
+  // machine tips over are the ones named, so the summary was about load.
+  //
+  // The liveness probe is the test, not the message text: the misleading shape
+  // carries no signature to match on. One retry, in a new browser, and a second
+  // death is reported as the failure it then is.
   async function withFreshPage<T>(
     spec: BrowserScreenshotSpec,
     body: (page: Page) => Promise<T>,
-  ) {
-    const browser = await launch(buildLaunchOptions(firefox || !!spec.firefox))
-    try {
-      const page = await browser.newPage()
-      await freezeAnimations(page)
-      await trustCapturePlugins(page)
-      if (spec.viewportHeight || spec.viewportWidth) {
-        await page.setViewport({
-          ...defaultViewport,
-          ...(spec.viewportWidth ? { width: spec.viewportWidth } : {}),
-          ...(spec.viewportHeight ? { height: spec.viewportHeight } : {}),
-        })
-      }
-      const report = (kind: string, text: string) => {
-        const expected = spec.expectedConsole?.some(s => text.includes(s))
-        if (!isBrowserConsoleNoise(text) && !expected) {
-          console.error(
-            `    [${spec.name}] browser[${kind}]: ${text.substring(0, 300)}`,
-          )
-        }
-      }
-      page.on('console', msg => {
-        report(msg.type(), msg.text())
-      })
-      // an uncaught exception in the app never reaches the console listener, so
-      // a render that dies mid-mount used to produce a silently blank figure
-      page.on('pageerror', (err: unknown) => {
-        report('pageerror', err instanceof Error ? err.message : String(err))
-      })
-      const net = trackNetwork(page)
+  ): Promise<T> {
+    for (let attempt = 0; ; attempt++) {
+      const browser = await launch(
+        buildLaunchOptions(firefox || !!spec.firefox),
+      )
       try {
-        return await body(page)
-      } catch (err) {
-        // Attach the diagnosis to the error itself rather than logging it here,
-        // so it travels into `failures` and gets reprinted in the FAILURE
-        // SUMMARY. That summary is the only part of a long concurrent run
-        // anyone reads.
-        const detail = describeNetwork(net)
-        throw detail && err instanceof Error
-          ? new Error(`${err.message}${detail}`, { cause: err })
-          : err
+        const page = await browser.newPage()
+        await freezeAnimations(page)
+        await trustCapturePlugins(page)
+        if (spec.viewportHeight || spec.viewportWidth) {
+          await page.setViewport({
+            ...defaultViewport,
+            ...(spec.viewportWidth ? { width: spec.viewportWidth } : {}),
+            ...(spec.viewportHeight ? { height: spec.viewportHeight } : {}),
+          })
+        }
+        const report = (kind: string, text: string) => {
+          const expected = spec.expectedConsole?.some(s => text.includes(s))
+          if (!isBrowserConsoleNoise(text) && !expected) {
+            console.error(
+              `    [${spec.name}] browser[${kind}]: ${text.substring(0, 300)}`,
+            )
+          }
+        }
+        page.on('console', msg => {
+          report(msg.type(), msg.text())
+        })
+        // an uncaught exception in the app never reaches the console listener, so
+        // a render that dies mid-mount used to produce a silently blank figure
+        page.on('pageerror', (err: unknown) => {
+          report('pageerror', err instanceof Error ? err.message : String(err))
+        })
+        const net = trackNetwork(page)
+        try {
+          return await body(page)
+        } catch (err) {
+          const alive = await Promise.race([
+            page.evaluate(() => true).catch(() => false),
+            // unref'd, or the loser of this race holds the event loop open for
+            // its full delay after the last spec has been written
+            new Promise<boolean>(resolve => {
+              setTimeout(() => {
+                resolve(false)
+              }, LIVENESS_PROBE_MS).unref()
+            }),
+          ])
+          if (!alive && attempt === 0) {
+            console.error(
+              `    [${spec.name}] page died mid-capture, retrying once in a fresh browser`,
+            )
+            continue
+          }
+          // Attach the diagnosis to the error itself rather than logging it here,
+          // so it travels into `failures` and gets reprinted in the FAILURE
+          // SUMMARY. That summary is the only part of a long concurrent run
+          // anyone reads.
+          const detail = describeNetwork(net)
+          const died = alive
+            ? ''
+            : '\n  the page was gone when this was reported'
+          throw err instanceof Error
+            ? new Error(`${err.message}${detail}${died}`, { cause: err })
+            : err
+        }
+      } finally {
+        await browser.close()
       }
-    } finally {
-      await browser.close()
     }
   }
 
