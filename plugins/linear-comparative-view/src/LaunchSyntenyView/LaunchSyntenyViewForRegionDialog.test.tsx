@@ -200,7 +200,9 @@ test('the region size is stated alongside the locstring', async () => {
 // the CIGAR — so it is a preview of the panel rather than the whole block.
 test('each mate row shows the locus its panel will open on', async () => {
   renderDialog(() => Promise.resolve(invertedMate()))
-  expect(await screen.findByText('ctgZ:800,001..810,000 (-)')).toBeTruthy()
+  expect(
+    await screen.findByText('ctgZ:800,001..810,000 (-) (10Kbp)'),
+  ).toBeTruthy()
 })
 
 // The column is read down — a mate's locus says little except against the
@@ -213,7 +215,7 @@ test('each mate row shows the locus its panel will open on', async () => {
 test('the anchor row carries the locus its own panel will open on', async () => {
   renderDialog(() => Promise.resolve(invertedMate()))
   await screen.findByLabelText('volvox_inv')
-  expect(screen.getByText('ctgA:10,001..20,000')).toBeTruthy()
+  expect(screen.getByText('ctgA:10,001..20,000 (10Kbp)')).toBeTruthy()
 })
 
 // Unchecking the last mate leaves no launch to describe, so the anchor row goes
@@ -221,7 +223,9 @@ test('the anchor row carries the locus its own panel will open on', async () => 
 test('the anchor row falls back to the selection with nothing checked', async () => {
   renderDialog(() => Promise.resolve(invertedMate()))
   fireEvent.click(await screen.findByLabelText('volvox_inv'))
-  expect(screen.getByText('ctgA:1..50,000')).toBeTruthy()
+  // two: the title line and the anchor row, which now agree. Submit is off in
+  // this state anyway — there is no launch left for the row to describe.
+  expect(screen.getAllByText('ctgA:1..50,000 (50Kbp)')).toHaveLength(2)
 })
 
 // The launch is anchored on the locus the rubberband was dragged over, so the

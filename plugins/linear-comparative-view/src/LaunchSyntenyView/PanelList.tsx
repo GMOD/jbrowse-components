@@ -1,5 +1,5 @@
 import { LabeledCheckbox } from '@jbrowse/core/ui'
-import { assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AnchorIcon from '@mui/icons-material/Anchor'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
@@ -95,6 +95,14 @@ function resolvedAnchorSpan(rows: PanelRow[], region: Region) {
 // The anchor gets one too, rather than a hole in the column: this is read down,
 // a mate's locus says little except against the anchor's, and the row every
 // other row was resolved against is the wrong place to leave blank.
+//
+// WITH ITS SIZE, in the same words the selection above it is given. A panel
+// spans every block its mate aligns the selection with, and how much sequence
+// that is IS the comparison: 8 kb of K12 reaches 46 kb of Sakai across the
+// prophage island at chr:800,000 (multiway_synteny/ecoli_launch_dialog), which
+// as a locstring alone is four digits nobody subtracts and as a size is the
+// thing the row is worth opening for. It is also what makes an outlier one — a
+// span far past its neighbours' is a paralog, and unchecking it is a click.
 function PanelLocus({
   row,
   anchorSpan,
@@ -120,7 +128,7 @@ function PanelLocus({
         start: span.start,
         end: span.end,
       })}
-      {span.reversed ? ' (-)' : ''}
+      {span.reversed ? ' (-)' : ''} ({getBpDisplayStr(span.end - span.start)})
     </Typography>
   )
 }
