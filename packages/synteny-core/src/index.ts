@@ -58,7 +58,11 @@ export { getCanonicalRefNameFn } from './getCanonicalRefNameFn.ts'
 export { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
 export { releaseTemporaryAssemblies } from './releaseTemporaryAssemblies.ts'
 export type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'
-export { executeDiagonalize } from './executeDiagonalize.ts'
+// Types only. `executeDiagonalize` itself is deliberately NOT exported here:
+// `runDiagonalize` reaches it through a dynamic import, and a static export
+// beside that is how the deferral gets silently undone — a bundler that sees the
+// module imported both ways puts it in the main chunk, which is the same trap
+// packages/tree-sidebar/CLAUDE.md prices at 608KB vs 539KB. Call runDiagonalize.
 export type {
   DiagonalizeAdapterSpec,
   DiagonalizeArgs,

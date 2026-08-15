@@ -411,6 +411,14 @@ author who lands on a behavior change can find the sentence that explains it.
   now do. The general rule this leaves: share an RPC body as a function, never
   as a base generic over the key.
 
+  `executeDiagonalize` went from that barrel in the same change, and it is the
+  half worth reading twice: `runDiagonalize` reaches it through a dynamic import,
+  so a static export beside that is a live way to undo the split — a bundler
+  seeing one module imported both ways puts it in the main chunk, silently, for
+  whichever plugin did the static import. `tree-sidebar/CLAUDE.md` prices that
+  same mistake at 608KB vs 539KB. **Opt-out: `await runDiagonalize(...)`**, which
+  awaits the identical function.
+
 - **`RpcClient.call` no longer takes a transfer list.** Transferables flow only
   worker → main, inside a reply's `rpcResult` wrapper; transferring an *argument*
   would neuter the main thread's own buffer. The option existed for one and
