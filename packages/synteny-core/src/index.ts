@@ -62,8 +62,9 @@ export { executeDiagonalize } from './executeDiagonalize.ts'
 export type {
   DiagonalizeAdapterSpec,
   DiagonalizeArgs,
+  DiagonalizeExecuteArgs,
 } from './executeDiagonalize.ts'
-export { default as DiagonalizeRpcBase } from './DiagonalizeRpcBase.ts'
+export { runDiagonalize } from './runDiagonalize.ts'
 export { prepareDiagonalizeAdapter } from './prepareDiagonalizeAdapter.ts'
 export {
   LEGEND_CHIP_ALPHA_FLOOR,

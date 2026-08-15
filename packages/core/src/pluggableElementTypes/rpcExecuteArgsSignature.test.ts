@@ -28,8 +28,10 @@ function sourceFiles(dir: string): string[] {
   })
 }
 
-// includes a base that passes its own type parameter through, e.g.
-// `class DiagonalizeRpcBase<MethodName extends string> extends RpcMethodType<MethodName, …>`
+// the optional `<…>` matches a base generic over its own name — the three
+// rename-region ones. They declare no `execute`, so they fall out below; the
+// group is here so a generic base that DOES declare one is scanned rather than
+// skipped.
 const PARAMETERIZED_CLASS =
   /\bclass\s+\w+\s*(?:<[^>]*>)?\s+extends\s+RpcMethodType\w*</
 
@@ -45,8 +47,11 @@ test('every parameterized RPC method takes the full RpcExecuteArgs', () => {
       if (!PARAMETERIZED_CLASS.test(source) || !EXECUTE_PARAM.test(source)) {
         return false
       }
-      // `includes`, not `startsWith`: a shared base intersects what its body
-      // needs on, as `DiagonalizeExecuteArgs & RpcExecuteArgs<MethodName>`
+      // `includes`, not `startsWith`: an intersection that ADDS to
+      // RpcExecuteArgs still receives all of it, which is what this checks. The
+      // one class that did (a base generic over its name, which cannot resolve
+      // the conditional and intersected what its body needed) is gone, so
+      // nothing in the tree relies on the looseness today.
       return !EXECUTE_PARAM.exec(source)?.[1]!.includes('RpcExecuteArgs<')
     })
     .map(({ rel }) => rel)
@@ -63,7 +68,9 @@ test('the scan actually reaches the RPC methods', () => {
     })
     .map(full => path.relative(repoRoot, full))
 
+  // one pin per root that holds RPC methods, so a scan that stops crossing
+  // package boundaries fails rather than quietly shrinking
   expect(scanned.length).toBeGreaterThan(30)
-  expect(scanned).toContain('packages/synteny-core/src/DiagonalizeRpcBase.ts')
   expect(scanned).toContain('packages/core/src/rpc/methods/CoreGetRegions.ts')
+  expect(scanned).toContain('plugins/dotplot-view/src/DiagonalizeDotplotRpc.ts')
 })

@@ -1,5 +1,7 @@
-import { DiagonalizeRpcBase } from '@jbrowse/synteny-core'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { runDiagonalize } from '@jbrowse/synteny-core'
 
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'
 import type { DiagonalizeArgs } from '@jbrowse/synteny-core'
 
@@ -19,12 +21,16 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-// Body lives in @jbrowse/synteny-core's executeDiagonalize, shared with
+// Body lives in @jbrowse/synteny-core's runDiagonalize, shared with
 // DiagonalizeSynteny. Registered separately because an RPC method is only
 // callable if the plugin registering it is loaded, and dotplot-view can be
 // installed without linear-comparative-view.
-export default class DiagonalizeDotplotRpc extends DiagonalizeRpcBase<'DiagonalizeDotplot'> {
+export default class DiagonalizeDotplotRpc extends RpcMethodType<'DiagonalizeDotplot'> {
   name = 'DiagonalizeDotplot' as const
+
+  async execute(args: RpcExecuteArgs<'DiagonalizeDotplot'>) {
+    return runDiagonalize(this.pluginManager, args)
+  }
 }
 
 export { type DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'

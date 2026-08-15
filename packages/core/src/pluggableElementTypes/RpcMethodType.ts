@@ -198,27 +198,26 @@ export function convertFileHandleLocations(
  *
  * A method whose worker sends something other than the registry `return` — a
  * result wrapped in `rpcResult` to hand its buffers to postMessage, or one
- * `deserializeReturn` rebuilds — says so in the registry entry's `wire` field,
- * beside the `return` it has to be read against. Not here: as a second type
- * parameter it was a copy of the registry rather than a reference to it, and
- * fifteen classes kept the copy in step by hand.
+ * `deserializeReturn` rebuilds — says so in the registry entry, beside the
+ * `return` it has to be read against. There is deliberately no second type
+ * parameter for it. As one it was a copy of the registry rather than a
+ * reference to it, and fifteen classes kept the copy in step by hand.
  *
- * Which is why the second parameter that remains is for one thing only: a base
- * still GENERIC over its name, where `RpcWireReturn<MethodName>` is a
- * conditional TypeScript cannot resolve, so the shared body has nothing to
- * check against. `DiagonalizeRpcBase` is the only such base in the tree, and it
- * ties its pinned type back by constraining `MethodName` to the keys whose wire
- * actually is that type. The three rename-region bases forwarded the parameter
- * for a while after nothing passed it — a generic base forwarding it and a
- * generic base needing it look identical, so the tell is whether the body reads
- * the type, and theirs never did.
+ * The name is the ONLY parameter, and that is what makes this shape uniform:
+ * a second one survives only where a base is still GENERIC over its name, since
+ * `RpcWireReturn<MethodName>` is then a conditional TypeScript will not resolve
+ * and the shared body has nothing to check against. Such a base has to pin the
+ * wire return by hand and constrain `MethodName` to keep the pin honest — which
+ * is a mechanism, and the last one that needed it was sharing a three-line
+ * delegation two subclasses could each just write (see `runDiagonalize` in
+ * @jbrowse/synteny-core). Share an RPC body as a FUNCTION, not as a base
+ * generic over the key.
  *
  * The way back is {@link deserializeReturn}, checked against the same entry's
  * `return`.
  */
 export default abstract class RpcMethodType<
   MethodName extends string = string,
-  WireReturn = RpcWireReturn<MethodName>,
 > extends PluggableElementBase {
   /**
    * The key this method is registered under, and the same one the class is
@@ -316,7 +315,7 @@ export default abstract class RpcMethodType<
    */
   async invoke(
     serializedArgs: RpcExecuteArgs<MethodName>,
-  ): Promise<WireReturn> {
+  ): Promise<RpcWireReturn<MethodName>> {
     return this.execute(await this.deserializeArguments(serializedArgs))
   }
 
@@ -354,7 +353,7 @@ export default abstract class RpcMethodType<
    */
   abstract execute(
     serializedArgs: RpcExecuteArgs<MethodName>,
-  ): Promise<WireReturn>
+  ): Promise<RpcWireReturn<MethodName>>
 
   /**
    * The wire shape, rebuilt into what the caller of `rpcManager.call` holds —
