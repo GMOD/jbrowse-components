@@ -49,7 +49,7 @@ export function highlightSearchResultFeature({
       const assembly = assemblyManager.get(assemblyName)
       const highlight: FeatureHighlight = {
         refName:
-          assembly?.getCanonicalRefName(parsed.refName) ?? parsed.refName,
+          assembly?.getCanonicalRefName2(parsed.refName) ?? parsed.refName,
         start: parsed.start,
         end: parsed.end,
         name: result.getLabel(),

@@ -115,7 +115,7 @@ function applyInit(self: CircularViewInitSelf, init: CircularViewInit) {
           regions,
           names,
           assemblyName: init.assembly,
-          getCanonicalRefName: n => assembly.getCanonicalRefName(n),
+          getCanonicalRefName: assembly.getCanonicalRefName2,
           allRefNames: assembly.allRefNames,
           notify: message => {
             session.notify(message, 'warning')

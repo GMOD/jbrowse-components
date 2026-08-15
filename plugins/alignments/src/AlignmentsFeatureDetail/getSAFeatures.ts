@@ -29,7 +29,5 @@ export async function getSAFeatures({
     throw new Error('assembly not found')
   }
 
-  return buildReadVsRefFeatures(feature, refName =>
-    assembly.getCanonicalRefName(refName),
-  ).features
+  return buildReadVsRefFeatures(feature, assembly.getCanonicalRefName2).features
 }

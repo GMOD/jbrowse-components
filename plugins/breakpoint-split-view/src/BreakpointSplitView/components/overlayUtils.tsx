@@ -177,6 +177,10 @@ export function getTestId(trackId: string, hasMatches: boolean) {
   return hasMatches ? `${trackId}-loaded` : trackId
 }
 
+// The strict resolver rather than getCanonicalRefName2, because a name the
+// assembly does not know means drop the connection rather than draw it
+// somewhere. Its throw is out of reach here: the refNames come off fetched
+// features, and there are none until the assembly has loaded.
 export function getCanonicalRefPair(
   assembly: Assembly,
   f1RefName: string,

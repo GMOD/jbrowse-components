@@ -115,6 +115,14 @@ function initialize() {
         return canonical[refName.toLowerCase()]
       },
     }))
+    .views(self => ({
+      // and its total counterpart, which the view's own refName resolution
+      // goes through: an unknown name comes back unchanged rather than
+      // undefined
+      getCanonicalRefName2(refName: string) {
+        return self.getCanonicalRefName(refName) ?? refName
+      },
+    }))
     .actions(self => ({
       async load() {},
       setStatus(status?: RpcStatus) {
@@ -1624,6 +1632,11 @@ test('navToLocString with human assembly', async () => {
         return hg38Regions.some(r => r.refName === name) ? name : undefined
       },
     }))
+    .views(self => ({
+      getCanonicalRefName2(refName: string) {
+        return self.getCanonicalRefName(refName) ?? refName
+      },
+    }))
     .actions(() => ({
       async load() {},
     }))
@@ -1984,6 +1997,11 @@ describe('TrackInit with display configuration', () => {
             ctgb: 'ctgB',
           }
           return canonical[refName.toLowerCase()]
+        },
+      }))
+      .views(self => ({
+        getCanonicalRefName2(refName: string) {
+          return self.getCanonicalRefName(refName) ?? refName
         },
       }))
 

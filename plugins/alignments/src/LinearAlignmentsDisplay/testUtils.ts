@@ -484,6 +484,7 @@ export function createRpcTestEnvironment() {
       { refName: 'ctgA', start: 0, end: 10_000_000, assemblyName: 'volvox' },
     ],
     getCanonicalRefName: (refName: string) => refName,
+    getCanonicalRefName2: (refName: string) => refName,
     getGeneticCodeId: () => undefined,
     configuration: { sequence: undefined },
   }

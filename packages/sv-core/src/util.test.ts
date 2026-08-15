@@ -19,7 +19,7 @@ function createMockFeature(data: Record<string, unknown>) {
 
 function createMockAssembly(): Assembly {
   return {
-    getCanonicalRefName: (ref: string) => ref,
+    getCanonicalRefName2: (ref: string) => ref,
   } as Assembly
 }
 

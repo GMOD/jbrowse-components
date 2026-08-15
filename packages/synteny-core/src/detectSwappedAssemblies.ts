@@ -105,7 +105,7 @@ export function detectDisplayAssembliesSwapped(
       }),
     getAssemblyRefNames: name => assemblyManager.get(name)?.refNames,
     getCanonicalRefName: (name, refName) =>
-      assemblyManager.get(name)?.getCanonicalRefName(refName) ?? refName,
+      assemblyManager.get(name)?.getCanonicalRefName2(refName) ?? refName,
   })
 }
 

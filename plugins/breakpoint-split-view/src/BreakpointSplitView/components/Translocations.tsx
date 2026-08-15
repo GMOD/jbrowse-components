@@ -31,7 +31,7 @@ export default function Translocations(props: OverlayProps) {
         // aliased one (VCF 'chr2' vs the view's '2') resolves to no level/px and
         // the connection is silently dropped. Matches getMatchedFeaturesInLayout
         // and getCanonicalRefPair.
-        const canon = (r: string) => assembly.getCanonicalRefName(r) ?? r
+        const canon = (r: string) => assembly.getCanonicalRefName2(r)
         return match.layoutMatches.flatMap(chunk =>
           chunk.flatMap<PathSpec>(
             ({ layout: c1, feature: f1, level: level1 }) => {

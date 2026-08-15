@@ -738,8 +738,8 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // The highlight list with every refName run through the assembly's
-        // getCanonicalRefName — the one normalization layer, which resolves
+        // The highlight list with every refName run through
+        // canonicalizeViewRefName — the one normalization layer, which resolves
         // aliases and casing together.
         //
         // The matchers compare refName text directly, and the regions they

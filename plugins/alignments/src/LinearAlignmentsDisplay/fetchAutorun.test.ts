@@ -52,6 +52,7 @@ function createTestEnvironment(opts?: {
       { refName: 'ctgA', start: 0, end: 500_000, assemblyName: 'volvox' },
     ],
     getCanonicalRefName: (refName: string) => refName,
+    getCanonicalRefName2: (refName: string) => refName,
   }
   const Session = baseSession
     .volatile(() => ({

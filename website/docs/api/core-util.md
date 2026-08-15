@@ -29,14 +29,14 @@ an assembly canonicalized `chr12` and matches nothing on one canonicalized `12`,
 so the same spec key works on one config and quietly does nothing on the next,
 with no error for anyone to act on.
 
-`initialized` gates the call rather than a try/catch, because
-`getCanonicalRefName` THROWS before the alias file has loaded — and the getters
-that read user specs run from the first render.
+Resolves through `getCanonicalRefName2`, whose fallback is what keeps a spec
+read before the alias file has loaded from throwing — and the getters that read
+user specs do run from the first render.
 
-Takes a refName, not a spec that might hold one: `getCanonicalRefName` reads
-`refName.toLowerCase()` and throws on anything else, so a caller reading an
-untyped `frozen` slot has to establish that it names a refName at all before
-this is the right question to ask of it.
+Takes a refName, not a spec that might hold one: the resolver reads
+`refName.toLowerCase()`, so anything else throws once the aliases are there, and
+a caller reading an untyped `frozen` slot has to establish that it names a
+refName at all before this is the right question to ask of it.
 
 ```js
 // type signature

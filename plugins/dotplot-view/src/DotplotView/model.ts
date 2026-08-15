@@ -113,10 +113,11 @@ function axisTicks(view: Dotplot1DViewModel) {
 //   whichever assembly its `{...}` prefix named, else the horizontal axis'.)
 // - The refName alias, resolved against the AXIS assembly rather than the
 //   region's own. Having passed the check above they name the same assembly,
-//   and the axis's is the one the view has already waited on — `initialized`
-//   gates on it, whereas `getCanonicalRefName` throws outright on an assembly
-//   whose aliases haven't loaded, which a bookmark on some unrelated assembly
-//   can be.
+//   and the axis's is the one the view has already waited on, so it is the one
+//   that can actually answer. An assembly whose aliases have not loaded — which
+//   a bookmark on some unrelated one can name — answers with the input rather
+//   than the alias, so asking the axis is the difference between resolving and
+//   not.
 //
 // Takes a plain node (not DotplotViewModel) to avoid a self-referential type
 // cycle when called from the model's own views.
@@ -140,7 +141,7 @@ function axisHighlightRegion(
   return onAxis
     ? {
         ...region,
-        refName: asm?.getCanonicalRefName(region.refName) ?? region.refName,
+        refName: asm?.getCanonicalRefName2(region.refName) ?? region.refName,
       }
     : undefined
 }

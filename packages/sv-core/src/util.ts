@@ -117,7 +117,7 @@ export function parseSvAlt(
  * cannot drift into speaking different names for the same locus.
  */
 export function toCanonicalRefName(assembly: Assembly) {
-  return (ref: string) => assembly.getCanonicalRefName(ref) ?? ref
+  return (ref: string) => assembly.getCanonicalRefName2(ref)
 }
 
 /**

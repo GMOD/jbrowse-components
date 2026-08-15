@@ -9,7 +9,7 @@ import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 // refName)
 const validRefNames = new Set(['ctgA', 'ctgZ'])
 const assemblyManager = {
-  get: () => ({ getCanonicalRefName: (r: string) => r }),
+  get: () => ({ getCanonicalRefName2: (r: string) => r }),
   isValidRefName: (r: string) => validRefNames.has(r),
 } as any
 

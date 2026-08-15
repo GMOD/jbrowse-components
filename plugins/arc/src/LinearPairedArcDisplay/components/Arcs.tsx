@@ -35,8 +35,8 @@ const Arc = observer(function Arc({
 }) {
   const [mouseOvered, setMouseOvered] = useState(false)
   const { feature, alt, color, k1, k2 } = style
-  const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
-  const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
+  const ra1 = assembly.getCanonicalRefName2(k1.refName)
+  const ra2 = assembly.getCanonicalRefName2(k2.refName)
   const r1 = view.bpToPx({ refName: ra1, coord: k1.start })?.offsetPx
   const r2 = view.bpToPx({ refName: ra2, coord: k2.start })?.offsetPx
 

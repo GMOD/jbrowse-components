@@ -27,7 +27,7 @@ function createDisplay({ withRegions = false } = {}) {
     palette: resolvePalette(),
     // the feature-details lookup asks for the region's sequence adapter, and
     // reports a failed lookup through notify — hence no `sequence` here.
-    // `getCanonicalRefName` carries one alias because user-authored refName
+    // `getCanonicalRefName2` carries one alias because user-authored refName
     // text (the `sortedBy` slot) is normalized through it, and a stub that
     // only ever answered identity could not tell a reader that normalizes
     // from one that doesn't. It reads `.toLowerCase()` off its argument for the
@@ -39,7 +39,7 @@ function createDisplay({ withRegions = false } = {}) {
         name === 'volvox'
           ? {
               initialized: true,
-              getCanonicalRefName: (refName: string) =>
+              getCanonicalRefName2: (refName: string) =>
                 refName.toLowerCase() === 'chra' ? 'ctgA' : refName,
               configuration: { sequence: undefined },
             }

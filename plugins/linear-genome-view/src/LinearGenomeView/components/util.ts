@@ -28,8 +28,7 @@ export function getCytobands(assembly: Assembly | undefined, refName: string) {
   return (
     assembly?.cytobands
       ?.map(f => ({
-        refName:
-          assembly.getCanonicalRefName(f.get('refName')) || f.get('refName'),
+        refName: assembly.getCanonicalRefName2(f.get('refName')),
         start: f.get('start'),
         end: f.get('end'),
         type: f.get('gieStain') as string,

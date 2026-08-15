@@ -393,7 +393,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               // via getCanonicalRefPair.
               const level = findFeatureViewLevel(
                 views,
-                self.assembly?.getCanonicalRefName(feature.get('refName')) ??
+                self.assembly?.getCanonicalRefName2(feature.get('refName')) ??
                   feature.get('refName'),
                 start,
               )

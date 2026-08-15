@@ -33,7 +33,7 @@ const OverviewRubberbandHoverTooltip = observer(
       f =>
         px.coord > f.get('start') &&
         px.coord < f.get('end') &&
-        px.refName === assembly.getCanonicalRefName(f.get('refName')),
+        px.refName === assembly.getCanonicalRefName2(f.get('refName')),
     )
 
     return (

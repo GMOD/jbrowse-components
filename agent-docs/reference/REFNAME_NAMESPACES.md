@@ -39,9 +39,20 @@ correct. Only feature-against-view-state straddles.
 
 Everything above is about the boundary. On the main thread the rule is that
 **any reading of user-supplied refName text resolves through
-`getCanonicalRefName`**, which handles aliases *and* casing; testing
+`getCanonicalRefName2`**, which handles aliases *and* casing; testing
 `region.refName` directly gets neither, and the failure is indistinguishable
-from "this assembly has no such contigs". For anything matching refName text:
+from "this assembly has no such contigs".
+
+`getCanonicalRefName2` is the total one and the default: an unknown name comes
+back unchanged, and so does one asked for before the aliases load, where the
+strict `getCanonicalRefName` answers `undefined` for the first and THROWS for
+the second. Reach for the strict one only where the caller genuinely acts on
+"this assembly has no such name" — and only where it cannot run pre-load, which
+in practice means after `waitForAssembly` or off a list the assembly itself
+produced. Hand-rolling `getCanonicalRefName(x) ?? x` is the trap: it looks total
+and does nothing about the throw.
+
+For anything matching refName text:
 
 - **Match over `allRefNames`, not `regions`** — it is a strict superset of the
   canonical names.
@@ -55,9 +66,10 @@ is module-private to keep it that way.
 **A display reading a refName out of its own state calls
 `canonicalizeViewRefName`** (`@jbrowse/core/util`). A menu copy and a search
 result are canonical by construction; a **session spec, config slot or URL** is
-whatever a person typed. It falls back to the input before aliases load, since
-`getCanonicalRefName` throws until then and these getters run from the first
-render. Normalize once where the state is read, not at each comparison.
+whatever a person typed. It resolves through `getCanonicalRefName2`, so a spec
+read before the aliases load falls back to the input rather than throwing —
+these getters run from the first render. Normalize once where the state is
+read, not at each comparison.
 
 It is assembly-dependent: `chr12` matches nothing on an assembly canonicalized
 `12`, so a spec key works in the config it was written against and quietly does
@@ -73,7 +85,7 @@ alignments layout looks worker-side and is not (ADR-053).
 | plugin | the un-requested refName | what it does about it |
 | --- | --- | --- |
 | alignments | mate / `next_ref` | `getCanonicalRefName2` on receipt (`viewMateRegion.ts`) |
-| breakpoint-split | overlay / translocation partners | `getCanonicalRefName` on receipt (`BreakpointSplitView/model.ts`) |
+| breakpoint-split | overlay / translocation partners | `getCanonicalRefName2` on receipt (`BreakpointSplitView/model.ts`) |
 | gwas | `indexSnp` | bundled into `regions` so it rides the inbound pass |
 | hic | `viewBlocks[].refName` | the view's own names carried in a parallel array |
 | `GetConsensusSequence` | — | returns no refName at all |
@@ -85,8 +97,8 @@ that number is now the argument rather than the fix being the argument. Each
 plugin's workaround is correct and none of them is reusable by the next one; the
 seventh will invent a seventh.
 
-Three of the six now reach for the same primitive — alignments'
-`getCanonicalRefName2`, breakpoint-split's `getCanonicalRefName`, synteny's
+Three of the six now reach for the same primitive — alignments and
+breakpoint-split calling `getCanonicalRefName2`, synteny's
 `getCanonicalRefNameFn` wrapping it — which is not six answers converging so
 much as evidence about the shape the layer-level one should take: **resolve on
 receipt through the assembly's alias table**, not invert the outbound map. The

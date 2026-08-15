@@ -112,7 +112,7 @@ function showNamedRegions(
       regions: all,
       names,
       assemblyName,
-      getCanonicalRefName: n => assembly.getCanonicalRefName(n),
+      getCanonicalRefName: assembly.getCanonicalRefName2,
       allRefNames: assembly.allRefNames,
       notify: message => {
         session.notify(message, 'warning')

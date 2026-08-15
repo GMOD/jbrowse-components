@@ -28,7 +28,7 @@ function rowRegions(
   asm: {
     regions?: Region[]
     allRefNames?: string[]
-    getCanonicalRefName: (n: string) => string | undefined
+    getCanonicalRefName2: (n: string) => string
   },
   assemblyName: string,
   names: string[] | undefined,
@@ -47,7 +47,7 @@ function rowRegions(
       regions: all,
       names,
       assemblyName,
-      getCanonicalRefName: n => asm.getCanonicalRefName(n),
+      getCanonicalRefName: asm.getCanonicalRefName2,
       allRefNames: asm.allRefNames,
       notify,
     }) ?? all

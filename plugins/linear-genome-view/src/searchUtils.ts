@@ -346,7 +346,7 @@ function searchRefNames(
     const exact = lower === q
     const isMatch = searchType === 'exact' ? exact : lower.startsWith(q)
     if (isMatch) {
-      const canonical = assembly.getCanonicalRefName(ref) ?? ref
+      const canonical = assembly.getCanonicalRefName2(ref)
       canonicalHits.set(canonical, exact || !!canonicalHits.get(canonical))
       if (canonicalHits.size >= MAX_REFNAME_HITS) {
         break

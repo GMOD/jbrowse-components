@@ -515,11 +515,28 @@ export default function assemblyFactory(
     .views(self => ({
       /**
        * #method
-       * Returns canonical refName, falling back to input if not found.
-       * See getCanonicalRefName() for details.
+       * The total canonical-refName resolver, for any name arriving from
+       * outside — off a feature, out of an RPC result, out of a session spec.
+       * A name the assembly does not know comes back unchanged, and so does one
+       * asked for before the aliases load, where `getCanonicalRefName` answers
+       * `undefined` for the first and THROWS for the second.
+       *
+       * The throw is the reason to call this rather than hand-roll
+       * `getCanonicalRefName(x) ?? x`: that idiom looks total and is not, and
+       * these resolutions sit in getters and render paths that run from the
+       * first frame, before the alias file has landed. Answering with the input
+       * there means the comparison downstream may miss, but it misses for one
+       * frame and re-runs, where a throw out of a getter takes the view down.
+       * `initialized` is the gate for a caller that needs to know which answer
+       * it got.
+       *
+       * See getCanonicalRefName() for what canonical means when
+       * `refNameAliases` carries an `override`.
        */
       getCanonicalRefName2(refName: string) {
-        return self.getCanonicalRefName(refName) || refName
+        return self.initialized
+          ? self.getCanonicalRefName(refName) || refName
+          : refName
       },
       /**
        * #method

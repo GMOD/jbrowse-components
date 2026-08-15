@@ -121,7 +121,7 @@ function resolveCanonicalRefName(
   const asm = region.assemblyName
     ? assemblyManager.get(region.assemblyName)
     : undefined
-  return asm?.getCanonicalRefName(region.refName) ?? region.refName
+  return asm?.getCanonicalRefName2(region.refName) ?? region.refName
 }
 
 // most zoomed-in level: 50px per bp
@@ -165,7 +165,7 @@ function navLocationRefName(
   return (
     assemblyManager
       .get(location.assemblyName || defaultAssemblyName)
-      ?.getCanonicalRefName(location.refName) || location.refName
+      ?.getCanonicalRefName2(location.refName) || location.refName
   )
 }
 

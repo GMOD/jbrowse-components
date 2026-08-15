@@ -41,7 +41,7 @@ export async function launchDotplotReadVsRef({
     trackAssembly,
     plotWidth: Math.max(width - MIN_BORDER, MIN_BORDER),
     plotHeight: Math.max(defaultHeight - MIN_BORDER, MIN_BORDER),
-    getCanonicalRefName: refName => assembly.getCanonicalRefName(refName),
+    getCanonicalRefName: assembly.getCanonicalRefName2,
     now: () => Date.now(),
   })
 

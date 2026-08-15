@@ -53,7 +53,7 @@ const Arc = observer(function Arc({
   const [mouseOvered, setMouseOvered] = useState(false)
   const { feature, color, thickness, label, caption, arcHeight } = style
   const refName = feature.get('refName')
-  const ra = assembly.getCanonicalRefName(refName) || refName
+  const ra = assembly.getCanonicalRefName2(refName)
   const l = view.bpToPx({ refName: ra, coord: feature.get('start') })?.offsetPx
   const r = view.bpToPx({ refName: ra, coord: feature.get('end') })?.offsetPx
 

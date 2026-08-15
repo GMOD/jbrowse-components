@@ -31,7 +31,7 @@ export async function launchLinearReadVsRef({
     primaryFeature,
     windowSize,
     trackAssembly,
-    getCanonicalRefName: refName => assembly.getCanonicalRefName(refName),
+    getCanonicalRefName: assembly.getCanonicalRefName2,
     sequenceTrackConf,
     now: () => Date.now(),
     rand: () => Math.random(),

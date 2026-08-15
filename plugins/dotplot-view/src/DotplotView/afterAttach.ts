@@ -101,7 +101,7 @@ export function navAxisToLoc(
   const parsed = parseLocString(loc, refName =>
     assemblyManager.isValidRefName(refName, assemblyName),
   )
-  const refName = asm?.getCanonicalRefName(parsed.refName) ?? parsed.refName
+  const refName = asm?.getCanonicalRefName2(parsed.refName) ?? parsed.refName
   const index = view.displayedRegions.findIndex(r => r.refName === refName)
   if (index === -1) {
     return false
@@ -254,7 +254,7 @@ function applyInitDisplayedRegions(
         regions: all.regions,
         names,
         assemblyName,
-        getCanonicalRefName: n => all.getCanonicalRefName(n),
+        getCanonicalRefName: all.getCanonicalRefName2,
         allRefNames: all.allRefNames,
         notify: message => {
           session.notify(message, 'warning')
