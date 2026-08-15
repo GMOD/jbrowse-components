@@ -1,6 +1,11 @@
 import { SimpleFeature, assembleLocString } from '@jbrowse/core/util'
 
-import { buildSyntenyViewSpec, resolvePanel } from './buildSyntenyViewSpec.ts'
+import { buildSyntenyViewSpec } from './buildSyntenyViewSpec.ts'
+import { resolveFeaturePanels, resolvePanel } from './resolvePanel.ts'
+
+import type { BuildSyntenyViewSpecArgs } from './buildSyntenyViewSpec.ts'
+import type { RegionOfInterest } from './resolvePanel.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 // A PAF block on ctgA 1000-2000 (interbase) against ctgB 5000-6000 on the mate
 // assembly, with a CIGAR carrying one 10bp deletion 100bp in.
@@ -40,8 +45,26 @@ function makeFeature({
   })
 }
 
-function locs(spec: ReturnType<typeof buildSyntenyViewSpec>) {
-  return spec.init.views.map(v => v.loc)
+// The launch as a caller holding alignments sees it (the pairwise right-click,
+// the feature-detail link): resolve them into panels, then build. Every
+// alignment here is on ctgA, which is what makes that the anchor's contig.
+function buildFrom({
+  features,
+  region,
+  ...rest
+}: Omit<BuildSyntenyViewSpecArgs, 'panels' | 'anchorRefName'> & {
+  features: Feature[]
+  region?: RegionOfInterest
+}) {
+  return buildSyntenyViewSpec({
+    ...rest,
+    anchorRefName: 'ctgA',
+    panels: resolveFeaturePanels(features, region),
+  })
+}
+
+function locs(built: ReturnType<typeof buildSyntenyViewSpec>) {
+  return built.init.views.map(v => v.loc)
 }
 
 test('whole-block launch emits 1-based inclusive locstrings', () => {
@@ -49,7 +72,7 @@ test('whole-block launch emits 1-based inclusive locstrings', () => {
   // would open the view one base to the left of the alignment
   expect(
     locs(
-      buildSyntenyViewSpec({
+      buildFrom({
         features: [makeFeature()],
         windowSize: 0,
         trackId: 't1',
@@ -61,7 +84,7 @@ test('whole-block launch emits 1-based inclusive locstrings', () => {
 })
 
 test('window size pads both sides, clamped at the start of the contig', () => {
-  const spec = buildSyntenyViewSpec({
+  const spec = buildFrom({
     features: [makeFeature()],
     windowSize: 1500,
     trackId: 't1',
@@ -72,7 +95,7 @@ test('window size pads both sides, clamped at the start of the contig', () => {
 })
 
 test('assemblies and the track come through for the two rows', () => {
-  const spec = buildSyntenyViewSpec({
+  const spec = buildFrom({
     features: [makeFeature()],
     windowSize: 0,
     trackId: 't1',
@@ -86,7 +109,7 @@ test('assemblies and the track come through for the two rows', () => {
 test('horizontal flip marks the mate row reversed', () => {
   expect(
     locs(
-      buildSyntenyViewSpec({
+      buildFrom({
         features: [makeFeature({ strand: -1 })],
         windowSize: 0,
         trackId: 't1',
@@ -100,7 +123,7 @@ test('horizontal flip marks the mate row reversed', () => {
 test('a region of interest narrows both axes through the CIGAR', () => {
   // 100 matches, a 10bp deletion (feature axis only), then matches. Asking for
   // feature 1200-1400 walks to mate offsets 190-390 off mate.start.
-  const spec = buildSyntenyViewSpec({
+  const spec = buildFrom({
     features: [makeFeature({ CIGAR: '100=10D890=' })],
     windowSize: 0,
     trackId: 't1',
@@ -114,7 +137,7 @@ test('a region of interest narrows both axes through the CIGAR', () => {
 test('a reverse-strand region of interest walks the mate axis backwards', () => {
   // same offsets, but the mate is entered at mate.end and counted down:
   // 6000-190=5810 down to 6000-390=5610
-  const spec = buildSyntenyViewSpec({
+  const spec = buildFrom({
     features: [makeFeature({ strand: -1, CIGAR: '100=10D890=' })],
     windowSize: 0,
     trackId: 't1',
@@ -128,7 +151,7 @@ test('a reverse-strand region of interest walks the mate axis backwards', () => 
 test('a region wider than the block clips to the block', () => {
   expect(
     locs(
-      buildSyntenyViewSpec({
+      buildFrom({
         features: [makeFeature()],
         windowSize: 0,
         trackId: 't1',
@@ -146,7 +169,7 @@ test('a region wider than the block clips to the block', () => {
 test('a zero-width mapping still spans at least one base', () => {
   expect(
     locs(
-      buildSyntenyViewSpec({
+      buildFrom({
         features: [makeFeature()],
         windowSize: 0,
         trackId: 't1',
@@ -196,7 +219,7 @@ describe('no CIGAR', () => {
     // so it lands 100-200bp into a mate that starts at 5000
     expect(
       locs(
-        buildSyntenyViewSpec({
+        buildFrom({
           ...args,
           features: [noCigarFeature({ mateEnd: 5500 })],
           region: { start: 1200, end: 1400 },
@@ -208,7 +231,7 @@ describe('no CIGAR', () => {
   test('a reverse-strand block interpolates from the mate end backwards', () => {
     expect(
       locs(
-        buildSyntenyViewSpec({
+        buildFrom({
           ...args,
           features: [noCigarFeature({ strand: -1, mateEnd: 5500 })],
           region: { start: 1200, end: 1400 },
@@ -220,7 +243,7 @@ describe('no CIGAR', () => {
   test('a region wider than the block still uses the whole block', () => {
     expect(
       locs(
-        buildSyntenyViewSpec({
+        buildFrom({
           ...args,
           features: [noCigarFeature()],
           region: { start: 0, end: 100000 },
@@ -230,9 +253,10 @@ describe('no CIGAR', () => {
   })
 
   test('no region at all is still the whole block', () => {
-    expect(
-      locs(buildSyntenyViewSpec({ ...args, features: [noCigarFeature()] })),
-    ).toEqual(['ctgA:1,001..2,000', 'ctgB:5,001..6,000'])
+    expect(locs(buildFrom({ ...args, features: [noCigarFeature()] }))).toEqual([
+      'ctgA:1,001..2,000',
+      'ctgB:5,001..6,000',
+    ])
   })
 
   // Interpolation lands on fractional bases, and the dialog previews the span
@@ -243,7 +267,7 @@ describe('no CIGAR', () => {
     const region = { start: 1200, end: 1400 }
     const panel = resolvePanel(features, region)!
     expect([panel.mateStart, panel.mateEnd]).toEqual([5066, 5134])
-    expect(locs(buildSyntenyViewSpec({ ...args, features, region }))[1]).toBe(
+    expect(locs(buildFrom({ ...args, features, region }))[1]).toBe(
       assembleLocString({
         refName: panel.refName,
         start: panel.mateStart,
@@ -258,7 +282,7 @@ describe('no CIGAR', () => {
 // view hands each level's two assemblies to the adapter, which is how an
 // all-vs-all track resolves the pair.
 test('several mates at one locus become one panel each', () => {
-  const spec = buildSyntenyViewSpec({
+  const spec = buildFrom({
     features: [
       makeFeature({ mateAssembly: 'volvox2' }),
       makeFeature({ mateAssembly: 'volvox3', mateRefName: 'ctgC' }),
@@ -283,7 +307,7 @@ test('several mates at one locus become one panel each', () => {
 // only the first is, in the middle the two either side of it are. Same panel
 // count and same level count either way.
 test('the anchor opens where the dialog put it', () => {
-  const spec = buildSyntenyViewSpec({
+  const spec = buildFrom({
     features: [
       makeFeature({ mateAssembly: 'volvox2' }),
       makeFeature({ mateAssembly: 'volvox3', mateRefName: 'ctgC' }),
@@ -303,7 +327,7 @@ test('the anchor opens where the dialog put it', () => {
 })
 
 test('an anchor index past the last mate puts it at the bottom', () => {
-  const spec = buildSyntenyViewSpec({
+  const spec = buildFrom({
     features: [makeFeature({ mateAssembly: 'volvox2' })],
     anchorIndex: 1,
     windowSize: 0,
@@ -317,7 +341,7 @@ test('an anchor index past the last mate puts it at the bottom', () => {
 test('only the mates on the minus strand open reversed', () => {
   expect(
     locs(
-      buildSyntenyViewSpec({
+      buildFrom({
         features: [
           makeFeature({ mateAssembly: 'volvox2' }),
           makeFeature({ mateAssembly: 'volvox3', strand: -1 }),
@@ -338,7 +362,7 @@ test('only the mates on the minus strand open reversed', () => {
 // Each mate is clipped through its own CIGAR, so one can stop short of the
 // region where another covers it; the anchor row has to span both.
 test('the anchor row spans the union of what the mates resolved to', () => {
-  const spec = buildSyntenyViewSpec({
+  const spec = buildFrom({
     features: [
       makeFeature({ CIGAR: '150=850=' }),
       makeFeature({ mateAssembly: 'volvox3', CIGAR: '100=' }),
@@ -384,7 +408,7 @@ describe('several blocks of one mate', () => {
   }
 
   test('are one panel spanning all of them', () => {
-    const spec = buildSyntenyViewSpec({ ...args, features: fragments, region })
+    const spec = buildFrom({ ...args, features: fragments, region })
     expect(locs(spec)).toEqual(['ctgA:1,001..5,000', 'ctgB:5,001..9,000'])
     expect(spec.init.views.map(v => v.assembly)).toEqual(['volvox', 'volvox2'])
     expect(spec.init.tracks).toEqual([['t1']])
@@ -394,7 +418,7 @@ describe('several blocks of one mate', () => {
   // "collapse empty rows" default is about
   test('do not read as a multi-way launch', () => {
     expect(
-      buildSyntenyViewSpec({ ...args, features: fragments, region }).init
+      buildFrom({ ...args, features: fragments, region }).init
         .collapseEmptyRows,
     ).toBe(false)
   })
@@ -402,7 +426,7 @@ describe('several blocks of one mate', () => {
   // a panel opens on one stable sequence, so a minority contig is dropped
   // rather than unioned into a span covering neither
   test('reaching two mate contigs keep the one covering most of the region', () => {
-    const spec = buildSyntenyViewSpec({
+    const spec = buildFrom({
       ...args,
       region,
       features: [
@@ -434,7 +458,7 @@ describe('several blocks of one mate', () => {
       }),
     ]
     expect(
-      buildSyntenyViewSpec({
+      buildFrom({
         ...args,
         region,
         flipReversedMates: true,
@@ -445,7 +469,7 @@ describe('several blocks of one mate', () => {
 })
 
 test('the anchor panel uses the passed assembly, not the feature field', () => {
-  const spec = buildSyntenyViewSpec({
+  const spec = buildFrom({
     features: [makeFeature()],
     windowSize: 0,
     trackId: 't1',
@@ -469,15 +493,13 @@ test('multi-way launch collapses empty rows, pairwise does not', () => {
   }
   const twoMates = [makeFeature(), makeFeature({ mateAssembly: 'volvox3' })]
   expect(
-    buildSyntenyViewSpec({ ...args, features: twoMates }).init
-      .collapseEmptyRows,
+    buildFrom({ ...args, features: twoMates }).init.collapseEmptyRows,
   ).toBe(true)
   expect(
-    buildSyntenyViewSpec({ ...args, features: [makeFeature()] }).init
-      .collapseEmptyRows,
+    buildFrom({ ...args, features: [makeFeature()] }).init.collapseEmptyRows,
   ).toBe(false)
   expect(
-    buildSyntenyViewSpec({
+    buildFrom({
       ...args,
       features: twoMates,
       collapseEmptyRows: false,
@@ -496,7 +518,7 @@ test('anchor tracks go on the anchor panel only, wherever it sits in the stack',
     flipReversedMates: false,
     anchorTracks: [{ trackId: 'genes' }],
   }
-  expect(buildSyntenyViewSpec(args).init.views.map(v => v.tracks)).toEqual([
+  expect(buildFrom(args).init.views.map(v => v.tracks)).toEqual([
     [{ trackId: 'genes' }],
     undefined,
     undefined,
@@ -504,9 +526,7 @@ test('anchor tracks go on the anchor panel only, wherever it sits in the stack',
   // anchorIndex moves the anchor down the stack; the tracks follow it rather
   // than staying on row 0
   expect(
-    buildSyntenyViewSpec({ ...args, anchorIndex: 1 }).init.views.map(
-      v => v.tracks,
-    ),
+    buildFrom({ ...args, anchorIndex: 1 }).init.views.map(v => v.tracks),
   ).toEqual([undefined, [{ trackId: 'genes' }], undefined])
 })
 
@@ -521,8 +541,8 @@ test('no anchor tracks leaves the panel without a tracks key', () => {
     anchorAssembly: 'volvox',
     flipReversedMates: false,
   }
-  expect(buildSyntenyViewSpec(args).init.views[0]).not.toHaveProperty('tracks')
+  expect(buildFrom(args).init.views[0]).not.toHaveProperty('tracks')
   expect(
-    buildSyntenyViewSpec({ ...args, anchorTracks: [] }).init.views[0],
+    buildFrom({ ...args, anchorTracks: [] }).init.views[0],
   ).not.toHaveProperty('tracks')
 })

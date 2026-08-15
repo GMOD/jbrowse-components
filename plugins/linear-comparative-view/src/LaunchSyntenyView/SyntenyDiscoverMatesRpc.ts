@@ -1,11 +1,8 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
-import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface SyntenyDiscoverMatesArgs {
   adapterConfig: Record<string, unknown>
@@ -18,36 +15,21 @@ export interface SyntenyDiscoverMatesArgs {
   anchorAssembly: string
 }
 
-/** What crosses the wire: one panel's alignments per mate assembly, narrowed. */
-export interface SyntenyDiscoverMatesReturn {
-  mates: { assemblyName: string; features: SimpleFeatureSerialized[] }[]
-  unconfigured: string[]
-}
-
+// No `wire:` and no `deserializeReturn`. The return is plain numbers and names
+// both ways — the alignments behind them, and above all their CIGARs, stay in
+// the worker (see executeDiscoverMates) — so there is nothing to rebuild on
+// arrival and the base class's envelope-peel is the whole of it.
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     SyntenyDiscoverMates: {
       args: SyntenyDiscoverMatesArgs
-      // what the caller sees, after deserializeReturn rebuilds the features
       return: MateDiscoveryResult
-      wire: SyntenyDiscoverMatesReturn
     }
   }
 }
 
 export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions<'SyntenyDiscoverMates'> {
   name = 'SyntenyDiscoverMates' as const
-
-  async deserializeReturn(ret: SyntenyDiscoverMatesReturn, _args: unknown) {
-    const { mates, unconfigured } = unwrapRpcResult(ret)
-    return {
-      mates: mates.map(({ assemblyName, features }) => ({
-        assemblyName,
-        features: features.map(feature => new SimpleFeature(feature)),
-      })),
-      unconfigured,
-    }
-  }
 
   async execute(args: RpcExecuteArgs<'SyntenyDiscoverMates'>) {
     const { executeDiscoverMates } = await import('./executeDiscoverMates.ts')

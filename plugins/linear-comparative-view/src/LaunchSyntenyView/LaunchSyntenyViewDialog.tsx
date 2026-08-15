@@ -11,7 +11,7 @@ import {
   WindowSizeField,
 } from './launchOptionFields.tsx'
 
-import type { RegionOfInterest } from './buildSyntenyViewSpec.ts'
+import type { RegionOfInterest } from './resolvePanel.ts'
 import type {
   AbstractSessionModel,
   AbstractViewModel,

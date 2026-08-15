@@ -72,7 +72,14 @@ test('every alignment of one mate assembly lands on its one panel', () => {
     anchorAssembly: 'K12',
   })
   expect(picked.mates.length).toBe(1)
-  expect(picked.mates[0]!.features.map(f => f.id())).toEqual(['narrow', 'wide'])
+  // the union of both blocks' slice of the region, not the wider block's alone
+  expect(picked.mates[0]).toMatchObject({
+    assemblyName: 'Sakai',
+    anchorStart: 1000,
+    anchorEnd: 2000,
+    mateStart: 1000,
+    mateEnd: 2000,
+  })
 })
 
 // A panel opens on one stable sequence, so blocks reaching a second contig of
@@ -96,7 +103,7 @@ test('the mate contig covering most of the region wins, and only it', () => {
     trackAssemblyNames: TRACK_ASSEMBLIES,
     anchorAssembly: 'K12',
   })
-  expect(picked.mates[0]!.features.map(f => f.id())).toEqual(['covering'])
+  expect(picked.mates[0]).toMatchObject({ refName: 'chr2' })
 })
 
 test('the self lane is dropped', () => {

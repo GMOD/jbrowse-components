@@ -1,20 +1,14 @@
 import { getMate } from '../syntenyMate.ts'
 import { canLaunchSyntenyForMate } from './canLaunchSyntenyForMate.ts'
+import { resolvePanel } from './resolvePanel.ts'
 
-import type { RegionOfInterest } from './buildSyntenyViewSpec.ts'
+import type { RegionOfInterest, ResolvedPanel } from './resolvePanel.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-export interface MateCandidate {
-  assemblyName: string
-  // Every alignment the panel will open on, in the order the adapter served
-  // them. Plural because a selection routinely covers several blocks of one
-  // mate — see the note on `pickMatesForRegion` — and the panel spans all of
-  // them.
-  features: Feature[]
-}
-
 export interface MateDiscoveryResult {
-  mates: MateCandidate[]
+  // One per mate assembly, resolved onto both axes — the panels a multi-way
+  // launch would open, and what the dialog lists.
+  mates: ResolvedPanel[]
   // Mate labels present at the locus that the track declares no assembly for,
   // so no panel can open on them. Reported rather than dropped silently: an
   // all-vs-all file routinely holds far more PanSN samples than a config
@@ -24,15 +18,8 @@ export interface MateDiscoveryResult {
   unconfigured: string[]
 }
 
-function overlapBp(feature: Feature, region: RegionOfInterest) {
-  return (
-    Math.min(feature.get('end'), region.end) -
-    Math.max(feature.get('start'), region.start)
-  )
-}
-
 // Reduce a region's alignments to the panels a multi-way synteny view would
-// open: one per mate assembly, carrying every alignment that assembly aligns the
+// open: one per mate assembly, spanning every alignment that assembly aligns the
 // region with. An all-vs-all track draws every sample against the anchor at the
 // same locus, so a region can carry dozens of alignments across a handful of
 // assemblies.
@@ -42,13 +29,8 @@ function overlapBp(feature: Feature, region: RegionOfInterest) {
 // worth selecting is already dozens of blocks, and a minimap2 PAF splits at
 // every structural difference. Keeping only the widest of them framed the panel
 // — and, through the anchor row's union, the whole launched view — on one block,
-// silently dropping the rest of the selection.
-//
-// ONE CONTIG PER PANEL, though: a panel opens on one stable sequence, so where
-// an assembly's blocks land on two of its contigs (a rearrangement, a fragmented
-// assembly) the one covering most of the region wins and the other is dropped,
-// rather than unioning into a span covering neither. `resolvePanel` states the
-// same rule over resolved spans for the callers that don't come through here.
+// silently dropping the rest of the selection. What bounds the resulting span is
+// stated in `resolvePanel`.
 //
 // Panels come back in the track's declared `assemblyNames` order rather than by
 // overlap, so the same region always produces the same panel order (and the
@@ -72,18 +54,11 @@ export function pickMatesForRegion({
   const selfAlignment = trackAssemblyNames.every(
     name => name === anchorAssembly,
   )
-  // keyed by assembly then by the mate's contig, so the majority contig can be
-  // picked without a second pass over the features
-  const byAssembly = new Map<
-    string,
-    Map<string, { features: Feature[]; overlap: number }>
-  >()
+  const byAssembly = new Map<string, Feature[]>()
   const unconfigured = new Set<string>()
   for (const feature of features) {
-    const mate = getMate(feature)
-    const assemblyName = mate?.assemblyName
+    const assemblyName = getMate(feature)?.assemblyName
     if (
-      mate &&
       assemblyName !== undefined &&
       (selfAlignment || assemblyName !== anchorAssembly)
     ) {
@@ -92,30 +67,23 @@ export function pickMatesForRegion({
       // an all-vs-all file can carry far more samples than the config declares,
       // so this also keeps them out of the map instead of building and
       // discarding an entry per sample.
-      if (!canLaunchSyntenyForMate(trackAssemblyNames, assemblyName)) {
-        unconfigured.add(assemblyName)
-      } else {
-        const byRefName = byAssembly.get(assemblyName) ?? new Map()
-        byAssembly.set(assemblyName, byRefName)
-        const entry = byRefName.get(mate.refName) ?? {
-          features: [],
-          overlap: 0,
+      if (canLaunchSyntenyForMate(trackAssemblyNames, assemblyName)) {
+        const group = byAssembly.get(assemblyName)
+        if (group) {
+          group.push(feature)
+        } else {
+          byAssembly.set(assemblyName, [feature])
         }
-        entry.features.push(feature)
-        entry.overlap += Math.max(0, overlapBp(feature, region))
-        byRefName.set(mate.refName, entry)
+      } else {
+        unconfigured.add(assemblyName)
       }
     }
   }
   return {
     mates: [...new Set(trackAssemblyNames)].flatMap(assemblyName => {
-      const byRefName = byAssembly.get(assemblyName)
-      const best = byRefName
-        ? [...byRefName.values()].reduce((a, b) =>
-            b.overlap > a.overlap ? b : a,
-          )
-        : undefined
-      return best ? [{ assemblyName, features: best.features }] : []
+      const group = byAssembly.get(assemblyName)
+      const panel = group && resolvePanel(group, region)
+      return panel ? [panel] : []
     }),
     // sorted so the same locus always words its message the same way; the mates
     // keep the config's own order instead, which is a choice the author made

@@ -67,15 +67,23 @@ function run(
 // carries an alignment per sample and a selection can be a whole chromosome, so
 // reducing here is what keeps the millions of rows behind the fetch from
 // crossing the boundary to be thrown away on arrival. One PANEL per mate
-// assembly, though — not one alignment: the panel spans every block that
-// assembly aligns the region with.
-test('one panel per mate assembly, carrying all of its alignments', async () => {
+// assembly, spanning every block that assembly aligns the region with.
+test('one panel per mate assembly, spanning all of its alignments', async () => {
   const { mates } = await run([
     feature({ mateAssembly: 'volvox_ins', start: 150, end: 200 }),
     feature({ mateAssembly: 'volvox_ins', start: 100, end: 200 }),
   ])
-  expect(mates.length).toBe(1)
-  expect(mates[0]!.features.map(f => f.start)).toEqual([150, 100])
+  expect(mates).toEqual([
+    {
+      assemblyName: 'volvox_ins',
+      refName: 'ctgB',
+      anchorStart: 100,
+      anchorEnd: 200,
+      mateStart: 0,
+      mateEnd: 100,
+      reversed: true,
+    },
+  ])
 })
 
 test('mates the track declares no assembly for are reported, not shipped', async () => {
@@ -87,11 +95,12 @@ test('mates the track declares no assembly for are reported, not shipped', async
   expect(unconfigured).toEqual(['HG002#1'])
 })
 
-// The CIGAR is the whole reason a feature is shipped rather than a pair of
-// numbers — it is what puts a panel on the matching slice of its mate. Its
-// neighbours in a synteny row are not: a `cs` tag carries the real query bases
-// and can outweigh the CIGAR beside it, per mate, for nothing.
-test('a shipped alignment carries the CIGAR and none of the bulk beside it', async () => {
+// The CIGAR is what puts a panel on the matching slice of its mate, and it is
+// walked HERE — so nothing about the alignment crosses the boundary, neither the
+// CIGAR (unbounded: an asm5 block's `cg` tag runs to 100 KB, and a panel now
+// spans every block at the locus) nor the row's other bulk beside it (a `cs` tag
+// carries the real query bases and can outweigh the CIGAR).
+test('an alignment ships as six numbers, not as itself', async () => {
   const { mates } = await run([
     feature({
       mateAssembly: 'volvox_ins',
@@ -104,23 +113,14 @@ test('a shipped alignment carries the CIGAR and none of the bulk beside it', asy
       },
     }),
   ])
-  const shipped = mates[0]!.features[0]!
-  expect(shipped.CIGAR).toBe('100M')
-  expect(shipped.strand).toBe(-1)
-  expect(shipped.mate).toEqual({
-    refName: 'ctgB',
-    start: 0,
-    end: 100,
-    assemblyName: 'volvox_ins',
-  })
-  expect(Object.keys(shipped).sort()).toEqual([
-    'CIGAR',
-    'end',
-    'mate',
+  expect(Object.keys(mates[0]!).sort()).toEqual([
+    'anchorEnd',
+    'anchorStart',
+    'assemblyName',
+    'mateEnd',
+    'mateStart',
     'refName',
-    'start',
-    'strand',
-    'uniqueId',
+    'reversed',
   ])
 })
 

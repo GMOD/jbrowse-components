@@ -26,6 +26,13 @@ const delay = { timeout: 50000 }
 const ALL_VS_ALL_TRACK_NAME = 'volvox all-vs-all (ins/volvox/del pangenome)'
 const opts = [{}, delay]
 
+// Where the anchor row lands for a launch off `ctgA:30,222..33,669` at the
+// dialog's default 1 kb padding. Its ends are the clicked block clipped to the
+// VIEWPORT, whose bounds are fractional (a dynamic block's are), and
+// `resolvePanel` rounds such a span outward so the launched view covers the span
+// the dialog previewed rather than stopping a base inside it.
+const ANCHOR_LOC = 'ctgA:29,222..34,670'
+
 test('nav to synteny from right click', async () => {
   await mockConsoleWarn(async () => {
     const { session, view, findByTestId, findByText } = await createView()
@@ -42,7 +49,7 @@ test('nav to synteny from right click', async () => {
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
-      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
+      expect(v?.views[0]?.coarseVisibleLocStrings).toBe(ANCHOR_LOC)
     }, delay)
     expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
   })
@@ -70,7 +77,7 @@ test('replacing the launching view with the synteny view', async () => {
       expect(session.views.map(v => v.type)).toEqual(['LinearSyntenyView'])
       const v = session.views[0] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
-      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
+      expect(v?.views[0]?.coarseVisibleLocStrings).toBe(ANCHOR_LOC)
     }, delay)
     await findDisplayPainted('synteny_canvas', delay)
   })
@@ -141,8 +148,9 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
-      expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
-      expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,498..29,808')
+      expect(v?.views[0]?.coarseVisibleLocStrings).toBe(ANCHOR_LOC)
+      // the mate row, rounded outward for the same reason as ANCHOR_LOC
+      expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,499..29,810')
     }, delay)
     expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
   })

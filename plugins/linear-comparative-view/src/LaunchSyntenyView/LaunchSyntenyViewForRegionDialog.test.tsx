@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { SimpleFeature } from '@jbrowse/core/util'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'
@@ -23,19 +22,18 @@ const region: Region = {
   end: 50000,
 }
 
+// The worker's answer: one resolved panel per mate assembly (see resolvePanel),
+// not the alignments behind them.
 function mates(...assemblyNames: string[]): MateDiscoveryResult {
   return {
     mates: assemblyNames.map(assemblyName => ({
       assemblyName,
-      features: [
-        new SimpleFeature({
-          uniqueId: assemblyName,
-          refName: 'ctgA',
-          start: 0,
-          end: 100,
-          mate: { refName: 'ctgB', start: 0, end: 100, assemblyName },
-        }),
-      ],
+      refName: 'ctgB',
+      anchorStart: 0,
+      anchorEnd: 100,
+      mateStart: 0,
+      mateEnd: 100,
+      reversed: false,
     })),
     unconfigured: [],
   }
@@ -49,22 +47,12 @@ function invertedMate(): MateDiscoveryResult {
     mates: [
       {
         assemblyName: 'volvox_inv',
-        features: [
-          new SimpleFeature({
-            uniqueId: 'volvox_inv',
-            refName: 'ctgA',
-            start: 10000,
-            end: 20000,
-            strand: -1,
-            CIGAR: '10000=',
-            mate: {
-              refName: 'ctgZ',
-              start: 800000,
-              end: 810000,
-              assemblyName: 'volvox_inv',
-            },
-          }),
-        ],
+        refName: 'ctgZ',
+        anchorStart: 10000,
+        anchorEnd: 20000,
+        mateStart: 800000,
+        mateEnd: 810000,
+        reversed: true,
       },
     ],
   }
@@ -201,10 +189,22 @@ test('each mate row shows the locus its panel will open on', async () => {
 
 // The column is read down — a mate's locus says little except against the
 // anchor's — so the row every other row was resolved against is in it, title
-// line above notwithstanding.
-test('the anchor row carries the selection locus too', async () => {
+// line above notwithstanding. And it is where the anchor panel will actually
+// open, not the selection: every panel is clipped to the region, so a selection
+// whose flanks align to nothing opens narrower than it was dragged, and the two
+// lines are readable against each other. Here the one mate covers 10,000-20,000
+// of a 0-50,000 selection.
+test('the anchor row carries the locus its own panel will open on', async () => {
   renderDialog(() => Promise.resolve(invertedMate()))
   await screen.findByLabelText('volvox_inv')
+  expect(screen.getByText('ctgA:10,001..20,000')).toBeTruthy()
+})
+
+// Unchecking the last mate leaves no launch to describe, so the anchor row goes
+// back to the selection rather than to whatever the panel it just lost resolved.
+test('the anchor row falls back to the selection with nothing checked', async () => {
+  renderDialog(() => Promise.resolve(invertedMate()))
+  fireEvent.click(await screen.findByLabelText('volvox_inv'))
   expect(screen.getByText('ctgA:1..50,000')).toBeTruthy()
 })
 

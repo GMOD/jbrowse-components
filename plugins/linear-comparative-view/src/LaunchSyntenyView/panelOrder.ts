@@ -1,45 +1,34 @@
-import { resolvePanel } from './buildSyntenyViewSpec.ts'
-
-import type { RegionOfInterest } from './buildSyntenyViewSpec.ts'
-import type { MateCandidate } from './pickMatesForRegion.ts'
+import type { ResolvedPanel } from './resolvePanel.ts'
 
 // The anchor is a row like any other so it can be dragged through the stack.
-// It carries no feature and cannot be unchecked: it is the assembly the region
-// was selected on, and every mate's coordinates were resolved against it.
+// It carries no panel of its own and cannot be unchecked: it is the assembly the
+// region was selected on, and every mate's coordinates were resolved against it.
 export interface AnchorPanelRow {
   kind: 'anchor'
   assemblyName: string
 }
 
-export interface MatePanelRow extends MateCandidate {
+// Where this row's panel will open, resolved once in the worker rather than by
+// the component that shows it. Nothing it depends on changes while the list is
+// on screen: the region is fixed, and reordering or unchecking a row moves the
+// panel rather than moving where it opens.
+export interface MatePanelRow extends ResolvedPanel {
   kind: 'mate'
   checked: boolean
-  // Where this row's panel will open, resolved once here rather than by the
-  // component that shows it. The resolution walks each alignment's CIGAR, which
-  // for a megabase asm5 block is tens of thousands of ops, and the dialog
-  // re-renders on every keystroke in its window-size field — so deriving it in
-  // render re-parsed every listed mate's CIGAR per character typed. Nothing it
-  // depends on changes while the list is on screen: the region is fixed, and
-  // reordering or unchecking a row moves the panel rather than moving where it
-  // opens. `undefined` for a mate that resolved to none, which cannot happen
-  // for a discovered candidate but is not worth asserting away.
-  span: ReturnType<typeof resolvePanel>
 }
 
 export type PanelRow = AnchorPanelRow | MatePanelRow
 
 export function toPanelRows(
   anchorAssembly: string,
-  candidates: MateCandidate[],
-  region: RegionOfInterest,
+  panels: ResolvedPanel[],
 ): PanelRow[] {
   return [
     { kind: 'anchor', assemblyName: anchorAssembly },
-    ...candidates.map(candidate => ({
-      ...candidate,
+    ...panels.map(panel => ({
+      ...panel,
       kind: 'mate' as const,
       checked: true,
-      span: resolvePanel(candidate.features, region),
     })),
   ]
 }

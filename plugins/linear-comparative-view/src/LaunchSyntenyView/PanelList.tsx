@@ -62,35 +62,58 @@ const useStyles = makeStyles()(theme => ({
 // them out is otherwise ten clicks.
 const BULK_SELECT_THRESHOLD = 3
 
+/**
+ * Where the anchor panel will open, which is not the selection: every panel is
+ * clipped to the region, so the anchor row spans the union of what the CHECKED
+ * panels resolved to on its axis — the same union `buildSyntenyViewSpec`
+ * computes, so the row and the launched view agree. A selection whose flanks
+ * align to nothing therefore opens narrower than it was dragged, and this is
+ * the line that says so; the dialog's title line still carries the selection
+ * itself, so the two are readable against each other.
+ *
+ * Falls back to the selection with nothing checked, where there is no launch to
+ * describe and the anchor is all the panel list is.
+ */
+function resolvedAnchorSpan(rows: PanelRow[], region: Region) {
+  const panels = rows.filter(row => row.kind === 'mate').filter(r => r.checked)
+  return {
+    refName: region.refName,
+    start: panels.length
+      ? Math.min(...panels.map(p => p.anchorStart))
+      : region.start,
+    end: panels.length ? Math.max(...panels.map(p => p.anchorEnd)) : region.end,
+    reversed: false,
+  }
+}
+
 // The interval a row's panel will open on, unpadded. Unpadded because the
 // window size is a live field further down the dialog and this is meant to say
 // where in each assembly the region lands, not to restate that arithmetic. The
 // strand is spelled out rather than left to the locstring's `[rev]`, which means
 // "this panel opens flipped" and so depends on the checkbox below.
 //
-// The anchor's locus is the selection itself, which the dialog's title line also
-// carries. That repetition is deliberate: this is a column and it is read down,
+// The anchor gets one too, rather than a hole in the column: this is read down,
 // a mate's locus says little except against the anchor's, and the row every
-// other row was resolved against is the wrong place to leave a hole.
+// other row was resolved against is the wrong place to leave blank.
 function PanelLocus({
   row,
-  region,
+  anchorSpan,
   className,
 }: {
   row: PanelRow
-  region: Region
+  anchorSpan: ReturnType<typeof resolvedAnchorSpan>
   className?: string
 }) {
   const span =
     row.kind === 'anchor'
-      ? { ...region, reversed: false }
-      : row.span && {
-          refName: row.span.refName,
-          start: row.span.mateStart,
-          end: row.span.mateEnd,
-          reversed: row.span.reversed,
+      ? anchorSpan
+      : {
+          refName: row.refName,
+          start: row.mateStart,
+          end: row.mateEnd,
+          reversed: row.reversed,
         }
-  return span ? (
+  return (
     <Typography variant="body2" className={className}>
       {assembleLocString({
         refName: span.refName,
@@ -99,7 +122,7 @@ function PanelLocus({
       })}
       {span.reversed ? ' (-)' : ''}
     </Typography>
-  ) : null
+  )
 }
 
 // The anchor is in the stack unconditionally — it is the assembly the region was
@@ -175,6 +198,7 @@ export default function PanelList({
   labelledBy: string
 }) {
   const { classes } = useStyles()
+  const anchorSpan = resolvedAnchorSpan(rows, region)
   return (
     <>
       <div className={classes.panels} role="group" aria-labelledby={labelledBy}>
@@ -207,7 +231,7 @@ export default function PanelList({
              that a mate's alignment stops short of the selection. */}
             <PanelLocus
               row={row}
-              region={region}
+              anchorSpan={anchorSpan}
               className={classes.panelLocus}
             />
             <MoveButton

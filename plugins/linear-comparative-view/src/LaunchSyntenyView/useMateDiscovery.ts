@@ -63,7 +63,7 @@ export function useMateDiscovery({
     discoverMatesFor(trackId)(stopToken, statusCallback)
       .then(result => {
         if (alive) {
-          setRows(toPanelRows(region.assemblyName, result.mates, region))
+          setRows(toPanelRows(region.assemblyName, result.mates))
           setUnconfigured(result.unconfigured)
         }
       })
@@ -79,9 +79,9 @@ export function useMateDiscovery({
       // would otherwise still stand for up to a window past unmount
       throttle.reset()
     }
-    // `region` whole rather than its assemblyName: the rows carry each panel's
-    // resolved locus, which is cut from all four of its fields. Stable for the
-    // dialog's life for the same reason `discoverMatesFor` is
+    // `region` whole rather than its assemblyName: the panels the worker
+    // resolves are cut from all four of its fields. Stable for the dialog's life
+    // for the same reason `discoverMatesFor` is
   }, [discoverMatesFor, trackId, region])
   return { rows, setRows, unconfigured, error, status }
 }

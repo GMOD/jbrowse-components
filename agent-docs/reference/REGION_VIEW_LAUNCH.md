@@ -25,13 +25,24 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
    (selection) on `LinearGenomeView`; override
    `trackMenuItems()`/`contextMenuItems()` on a `DisplayType` when the entry
    point belongs to one track.
-2. **Discover session-wide, not view-wide.** Scan `session.tracks` (via
-   `allSessionTracks`, so connection tracks count) for tracks that can serve the
-   region. The graph plugin's comment is the rationale: *"The graph track need
-   not be in the view, or even turned on… before, the only entry point was the
-   menu of a track they might never have opened."* This is why a
-   display-contributed `regionLaunchItems()` seam was considered and rejected —
-   it cannot serve a track with no display.
+2. **Discover from tracks, not from displays.** Read track *configs* — the graph
+   plugin scans `session.tracks` via `allSessionTracks`, so connection tracks
+   count. This is why a display-contributed `regionLaunchItems()` seam was
+   considered and rejected: it cannot serve a track with no display.
+
+   **How wide to scan is the launcher's call, and the two answer differently.**
+   The graph plugin goes session-wide — *"The graph track need not be in the
+   view, or even turned on… before, the only entry point was the menu of a track
+   they might never have opened."* Synteny is **view-scoped**
+   (`launchableTracks` filters the launching view's own open tracks) because a
+   config is free to declare a dozen synteny tracks with none of them open, and
+   session-wide put all of them in the dialog's selector with the first in
+   *config order* preselected — a choice the user never knowingly made, deciding
+   a panel list they have no way to judge. Sorting the open ones first didn't
+   help the case that needed it, which is the one where none are open. What
+   synteny gives up is a configured-but-closed track, and that is what the import
+   form behind Add → Linear synteny view is for. Read the comment on
+   `launchableTracks` before widening it back.
 3. **Discover by declared capability, not adapter name.** The graph plugin
    checks `pluginManager.getAdapterType(t).adapterCapabilities.includes('getSubgraph')`
    (`RgfaTabixAdapter/index.ts:17` declares it). It hardcoded
@@ -42,21 +53,20 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
 4. **Always name the dataset the launch reads from — where it fits.** 0 capable
    tracks → no menu item at all, always. Which dataset a launch is cut from
    decides what the new view shows, so it is never left unsaid; *where* it is
-   said follows how big the list can get, because rule 2's session-wide
-   discovery has no ceiling:
+   said follows how big the list can get:
 
    - **Bounded list** (consensus: alignments tracks open in *this view*, so one
      or two) → one entry whose submenu names each, a single track included.
      `launchTargetsMenuItem` (`@jbrowse/core/ui`, tested) is that shape.
-   - **Unbounded list** (synteny: every synteny track in the session, and a
-     config can declare dozens with none of them open) → a flat entry, and the
-     dataset is the first field of the dialog it opens
-     (`LaunchSyntenyViewForRegionDialog`), where changing it refetches the
-     panel list. A cascading submenu of every synteny track in a config is
-     worse than the unnamed flat item it replaced. The list is sorted so the
-     view's own tracks come first, so the dialog opens on the one the user is
-     looking at — that is what `openTrackIds` on `syntenyRegionMenuItems` is
-     for.
+   - **Unbounded list** (a session-wide scan has no ceiling) → a flat entry, and
+     the dataset is a field of the dialog it opens. A cascading submenu of every
+     capable track in a config is worse than the unnamed flat item it replaced.
+     Synteny is this shape even though rule 2 narrowed it to the view's own open
+     tracks: `LaunchSyntenyViewForRegionDialog` carries the dataset as its first
+     field, where changing it refetches the panel list, and renders it as a line
+     of text rather than a select when there is only one — a full-width select
+     holding its only value is a control the reader has to try before ruling it
+     out.
 
    A launcher with **no dialog** (the graph plugin) has nowhere to move the
    choice to, so it owes the submenu; it still branches on count inline in
@@ -158,7 +168,7 @@ graph track's own menu; synteny has no track-menu equivalent.
 ## Gotchas
 
 - **A CIGAR-less alignment is still clipped to the selection, by interpolation.**
-  `resolveSpans` (`buildSyntenyViewSpec.ts`) walks the CIGAR when there is one
+  `resolveSpans` (`resolvePanel.ts`) walks the CIGAR when there is one
   and interpolates across the block when there is not — which is not a lesser
   approximation of the walk, it is the geometry the block is already *drawn*
   with (no per-base correspondence is known, so the ribbon is a straight
@@ -170,6 +180,30 @@ graph track's own menu; synteny has no track-menu equivalent.
   discovery RPC states no `lodMode`, and the PIF adapters read fine on no stated
   mode, so the *region* launch always has CIGARs off a tiered PIF; the pairwise
   right-click launch is where a coarse feature can reach this.
+- **A panel is every block its mate aligns the region with, not the widest
+  one.** `pickMatesForRegion` groups rather than reduces, and `resolvePanel`
+  unions the resolved spans. Several blocks per mate is the *normal* case: an
+  HSP table (BLAST tabular) and a gene-anchor table (MCScan) are one row per
+  hit, so any locus worth selecting is already dozens of them, and a minimap2
+  PAF splits at every structural difference. Keeping the widest framed that
+  panel — and, through the anchor row's union of what the panels resolved to,
+  the whole launched view — on one block: `ctgA:1,001..5,000` launched as
+  `ctgA:3,001..5,000`, silently. Two rules keep the union from running away, and
+  both belong to "a panel opens on one stable sequence": the mate **contig**
+  covering most of the region wins and the others are dropped, and the panel
+  opens reversed only when the minus strand carries most of the alignment.
+- **The coordinates are resolved in the worker, and only the coordinates cross
+  the RPC.** `SyntenyDiscoverMates` returns `ResolvedPanel[]` — six numbers and
+  two names per mate assembly — rather than the alignments behind them. The
+  CIGAR is the one field the resolution needs and the one whose size is
+  unbounded (an asm5 PAF block's `cg` tag alone runs to 100 KB), so with a panel
+  now spanning *every* block at the locus, shipping alignments would have made
+  the wire scale with the selection: a whole-chromosome visible-region launch
+  against an HSP table is tens of thousands of blocks. It also puts the dialog's
+  preview and the launched view on literally the same numbers, which is what the
+  two rounded differently before. **Round outward, in `resolvePanel` and nowhere
+  else** — a viewport edge and an interpolated block both land mid-base, and a
+  span rounded in is a view that opens inside the row the user read.
 - **A mate that is not a declared assembly is dropped from the launch, and the
   dialog has to say so.** `assemblyForPanSNName` falls back to the bare PanSN
   sample name when the config declares no assembly for it, so an all-vs-all file
@@ -237,7 +271,7 @@ graph track's own menu; synteny has no track-menu equivalent.
 ## Verifying a launcher
 
 Unit tests cover the pure parts (`launchTargetsMenuItem`, `panelOrder`,
-`pickMatesForRegion`, `buildSyntenyViewSpec`). They are not enough — the jsdom
+`pickMatesForRegion`, `resolvePanel`, `buildSyntenyViewSpec`). They are not enough — the jsdom
 integration test in `products/jbrowse-web/src/tests/LGVSynteny.test.tsx`
 ("launch a multi-panel synteny view from a region selection") drives
 `view.rubberBandMenuItems()` through the real extension point and asserts the

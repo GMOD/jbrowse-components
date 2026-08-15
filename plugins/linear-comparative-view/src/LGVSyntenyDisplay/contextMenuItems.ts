@@ -20,7 +20,7 @@ import {
   moveMatePanels,
 } from './matePanelNavigation.ts'
 
-import type { RegionOfInterest } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
+import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'

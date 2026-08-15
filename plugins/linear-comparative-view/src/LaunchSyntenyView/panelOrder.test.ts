@@ -1,5 +1,3 @@
-import { SimpleFeature } from '@jbrowse/core/util'
-
 import {
   launchOrder,
   movePanel,
@@ -9,26 +7,21 @@ import {
 } from './panelOrder.ts'
 
 import type { PanelRow } from './panelOrder.ts'
-import type { MateCandidate } from './pickMatesForRegion.ts'
+import type { ResolvedPanel } from './resolvePanel.ts'
 
-const region = { start: 0, end: 1 }
-
-function candidates(...assemblyNames: string[]): MateCandidate[] {
+function panels(...assemblyNames: string[]): ResolvedPanel[] {
   return assemblyNames.map(assemblyName => ({
     assemblyName,
-    features: [
-      new SimpleFeature({
-        uniqueId: assemblyName,
-        refName: 'chr',
-        start: 0,
-        end: 1,
-        mate: { refName: 'ctg', start: 10, end: 20, assemblyName },
-      }),
-    ],
+    refName: 'ctg',
+    anchorStart: 0,
+    anchorEnd: 1,
+    mateStart: 10,
+    mateEnd: 20,
+    reversed: false,
   }))
 }
 
-const rows = toPanelRows('K12', candidates('Sakai', 'CFT073', 'IAI39'), region)
+const rows = toPanelRows('K12', panels('Sakai', 'CFT073', 'IAI39'))
 
 function names(list: PanelRow[]) {
   return list.map(r => r.assemblyName)
@@ -36,7 +29,9 @@ function names(list: PanelRow[]) {
 
 function spanOf(list: PanelRow[], assemblyName: string) {
   const row = list.find(r => r.assemblyName === assemblyName)
-  return row?.kind === 'mate' ? row.span : undefined
+  return row?.kind === 'mate'
+    ? { start: row.mateStart, end: row.mateEnd, refName: row.refName }
+    : undefined
 }
 
 test('the anchor leads the list and every discovered mate starts checked', () => {
@@ -44,19 +39,14 @@ test('the anchor leads the list and every discovered mate starts checked', () =>
   expect(rows.filter(r => r.kind === 'mate').every(r => r.checked)).toBe(true)
 })
 
-// The row carries where its panel opens, resolved once at seed time: the dialog
-// re-renders on every keystroke in its window-size field, and deriving this in
-// render re-walked each listed mate's CIGAR per character. Reordering and
-// unchecking move the panel, not the locus, so the value has to survive both.
+// The row IS where its panel opens — the worker resolved it, and reordering or
+// unchecking moves the panel rather than moving the locus, so both have to
+// carry it through.
 test('a row carries its resolved locus through a reorder and an uncheck', () => {
   expect(spanOf(rows, 'Sakai')).toEqual({
-    assemblyName: 'Sakai',
     refName: 'ctg',
-    anchorStart: 0,
-    anchorEnd: 1,
-    mateStart: 10,
-    mateEnd: 20,
-    reversed: false,
+    start: 10,
+    end: 20,
   })
   const moved = movePanel(setPanelChecked(rows, 1, false), 1, 1)
   expect(spanOf(moved, 'Sakai')).toEqual(spanOf(rows, 'Sakai'))

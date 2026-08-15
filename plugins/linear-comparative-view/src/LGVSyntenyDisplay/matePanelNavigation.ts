@@ -2,10 +2,10 @@ import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { isViewModel } from '@jbrowse/core/util/types'
 import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
 
-import { resolvedMateSpan } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
+import { resolvedMateSpan } from '../LaunchSyntenyView/resolvePanel.ts'
 import { getCigar } from '../syntenyMate.ts'
 
-import type { RegionOfInterest } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
+import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

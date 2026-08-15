@@ -17,7 +17,7 @@ import {
 
 import PanelList from './PanelList.tsx'
 import SyntenyLaunchDialog from './SyntenyLaunchDialog.tsx'
-import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
+import { launchSyntenyViewForPanels } from './buildSyntenyViewSpec.ts'
 import {
   AdvancedLaunchOptions,
   CollapsePanelsCheckbox,
@@ -234,11 +234,13 @@ export default function LaunchSyntenyViewForRegionDialog({
       }
       handleClose={handleClose}
       onLaunch={({ windowSize, anchorIndex, mates }, replacing) => {
-        launchSyntenyViewForFeatures({
-          // flattened, in row order: the builder puts every alignment of one
-          // mate assembly on that assembly's single panel
-          features: mates.flatMap(row => row.features),
+        launchSyntenyViewForPanels({
+          // the rows themselves: the worker resolved each panel against this
+          // region, and reordering or unchecking moves a panel rather than
+          // moving where it opens
+          panels: mates,
           anchorAssembly: region.assemblyName,
+          anchorRefName: region.refName,
           anchorIndex,
           anchorTracks: copySourceTracks ? anchorTracks : undefined,
           windowSize,
@@ -246,7 +248,6 @@ export default function LaunchSyntenyViewForRegionDialog({
           collapseEmptyRows,
           trackId,
           session,
-          region,
           replacing,
         })
       }}

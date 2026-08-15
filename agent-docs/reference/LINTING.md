@@ -135,7 +135,7 @@ The other 16, all deliberate:
 | module `let` reassigned by a test harness component | 4 | `let api; function Harness(){ api = useHook() }` — how a hook gets exercised. Test files only. |
 | `MemoDependencies` in `useReview` | 3 | `exhaustive-deps` reports 0 on the same three callbacks. This is react-compiler's own memoization bookkeeping, not a dependency bug. |
 | `Immutability` in `useAlignmentsBase` | 1 | The write is in `handleCanvasMouseMove`, an event handler. Writing a ref from an event handler is what refs are for. |
-| `EffectSetState` in `LaunchSyntenyViewForRegionDialog` | 1 | Same site `@eslint-react/set-state-in-effect` flags; see the rejected list above. |
+| `EffectSetState` in `useMateDiscovery` | 1 | Same site `@eslint-react/set-state-in-effect` flags; see the rejected list above. |
 | `StaticComponents` in `TrackControl` | 1 | `use(TrackControlContext) ?? MuiTrackControl` — a registry lookup, which is exactly why `@eslint-react/static-components` is off too. |
 
 ## Why `@eslint-react` is still installed
