@@ -72,14 +72,53 @@ test('leaves an index past the end of the list alone', () => {
   )
 })
 
-test('reports a buffer the walk cannot reach rather than dropping it', () => {
+// The alignments result is the deepest one in the tree and the reason MAX_DEPTH
+// is 3: at 2 it reported every entry of an 86-buffer list as "not in the
+// payload", which reads as a bug in the transfer list rather than in the walk.
+test('reaches a buffer three containers down, as the alignments result is', () => {
+  const mismatchStarts = new Uint32Array(4)
+  const value = {
+    groups: [
+      { data: { starts: new Uint32Array(4) } },
+      { data: { mismatchStarts } },
+    ],
+  }
+
+  const { message } = explainTransferError(detached(1), value, [
+    value.groups[0]!.data.starts.buffer,
+    mismatchStarts.buffer,
+  ]) as Error
+
+  expect(message).toContain('index 1 is groups.1.data.mismatchStarts')
+})
+
+test('terminates on a cyclic payload', () => {
+  const value: Record<string, unknown> = { starts: new Uint32Array(4) }
+  value.self = value
+
+  const { message } = explainTransferError(detached(0), value, [
+    (value.starts as Uint32Array).buffer,
+  ]) as Error
+
+  expect(message).toContain('index 0 is starts')
+})
+
+// The counts are the whole content of this branch: "2 of 3 are" says the list
+// names one buffer the result does not carry, which is a bug in the list. A low
+// count would instead say the walk does not cover this payload's shape.
+test('reports a buffer the walk cannot reach, with the two counts', () => {
+  const value = { starts: new Uint32Array(4), ends: new Uint32Array(4) }
   const orphan = new ArrayBuffer(8)
 
-  const { message } = explainTransferError(detached(0), { nothing: 1 }, [
+  const { message } = explainTransferError(detached(2), value, [
+    value.starts.buffer,
+    value.ends.buffer,
     orphan,
   ]) as Error
 
-  expect(message).toContain('index 0 is not reachable from the payload')
+  expect(message).toContain(
+    'index 2 is not in the payload (2 of 3 entries are)',
+  )
 })
 
 // The annotation has to survive serializeError, which reads name/message/stack
@@ -99,4 +138,20 @@ test('keeps the browser error name and the original stack', () => {
 
 test('passes a non-Error rejection straight through', () => {
   expect(explainTransferError('nope', {}, [])).toBe('nope')
+})
+
+// Which method built the list is not on the stack — the post runs in a `.then`
+// off the method's promise — and a transfer list is only locatable once you know
+// which one it is.
+test('names the method that built the list', () => {
+  const value = { starts: new Uint32Array(4) }
+
+  const { message } = explainTransferError(
+    detached(0),
+    value,
+    [value.starts.buffer],
+    'SyntenyGetFeaturesAndPositions',
+  ) as Error
+
+  expect(message).toContain('SyntenyGetFeaturesAndPositions: index 0 is starts')
 })

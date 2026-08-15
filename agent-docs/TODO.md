@@ -76,7 +76,6 @@ before anyone noticed.
 | [The SV inspector rebuilds its chord track per filter](#the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
-| [The synteny RPC transfers a detached buffer](#the-synteny-rpc-transfers-an-already-detached-buffer-on-the-hg002-chain) | synteny, RPC | the banner now names the field; re-run a capture and read it |
 | [Nothing checks a hand-built transfer list](#nothing-checks-a-hand-built-rpc-transfer-list-against-its-payload) | RPC | decide whether the synteny list should be derived instead |
 
 ## Ready to build: small and self-contained
@@ -1132,63 +1131,6 @@ Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
 
-### The synteny RPC transfers an already-detached buffer on the HG002 chain
-
-`executeSyntenyFeaturesAndPositions`' `rpcResult` throws
-`DataCloneError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope':
-ArrayBuffer at index 19 is already detached`, and the view renders an error
-banner where the ribbons should be. **Every `hg002_haplotypes_*` figure is
-currently unrenderable** — `location_markers`, `follow_panel` and
-`8p23_inversion` all fail, on every capture, at the same index.
-
-What is established, so nobody re-derives it:
-
-- **It is on main**, not from any figure change. Reproduced with the working
-  tree's only synteny edit reverted to HEAD and the app rebuilt.
-- **The browser has already ruled out a duplicate within the list**, and said so
-  in the message. Chrome words the three transfer-list failures differently, and
-  the wording is now pinned by the `TransferListDiagnostics` browser suite:
-  `is already detached` / `is a duplicate of an earlier ArrayBuffer` /
-  `does not have a transferable type`. This one says "already detached", so the
-  buffer was detached by an EARLIER postMessage — something is handing out an
-  array a previous call already transferred. (The `Set`-wrapping experiment that
-  "confirmed" this was answering a question the message had answered already.)
-- **A zero-length result is not the explanation.** Empty buffers transfer
-  cleanly — same suite — so a `capacity` of 0 in `buildSyntenyGeometry` would
-  not produce this.
-- **It is not universal to synteny.** `pangenome/rgfa_paa_bubble`
-  (AllVsAllPAFAdapter) renders normally. The failing three all read the Q100
-  chain, so start with what that adapter hands back and whether any of it
-  survives between calls.
-- **Index 19 is in the instance half of the list**, which is 7 entries long and
-  last: with four attribute channels it is `instanceFeatureIdx`, with three
-  `alignmentLengths`. The list is `3 + N + 7 + 7` where `N` is the channel count
-  — four presets plus the track's `attributeColumns`, which a chain track does
-  not declare — so N=4, length 21, and index 19 is `instanceFeatureIdx`.
-
-**The counting above no longer needs doing by hand.** `RpcServer.reply` runs
-`explainTransferError`, which takes the index out of the browser's own sentence
-and appends the field at it — `index 19 is instanceData.instanceFeatureIdx`.
-Re-run any failing capture and read the banner; the cause is Chrome's word, the
-field is ours.
-
-**What reading has already eliminated, so nobody re-reads it:**
-
-- **Nothing in the transfer list is allocated anywhere but this call.**
-  `createAttributeChannels` allocates its Float32Arrays per call and
-  `buildSyntenyGeometry` allocates all seven instance arrays per call
-  (`new Float32Array(capacity)` inside the function body). Every entry is a
-  `subarray` of one of those.
-- **It is not `EMPTY_CIGAR`**, the one module-level array in
-  `executeSyntenyFeaturesAndPositions` and so the one thing that does survive
-  between calls: `parsedCigars` is consumed by the geometry stage and is not in
-  the transfer list.
-- **The adapter cache is still the only place a value can survive**
-  (`PAFAdapter.setup = createSharedSetup(...)`, which `ChainAdapter` inherits),
-  and no path from a cached `PAFRecord` to a transferred buffer was found by
-  reading. That is where the empirical answer should be pointed once the banner
-  names the field.
-
 ### Nothing checks a hand-built RPC transfer list against its payload
 
 `rpcResultWithArrayBuffers` derives the list from the payload — every top-level
@@ -1198,24 +1140,27 @@ be named. The synteny result cannot use it: its arrays are two levels down, in
 `executeSyntenyFeaturesAndPositions` spells out eighteen `.buffer` expressions
 by hand.
 
-That hand-built list is what made the detached-buffer bug above expensive —
-`index 19` is only a field name if you can reconstruct the list's layout, and
-this one's moves with the track's attribute-channel count. It is also
-unchecked in both directions: a field added to `instanceData` and forgotten here
-is silently structure-cloned (a copy, per fetch, of the largest arrays the
-worker produces), and an entry naming a buffer the payload does not carry
-detaches something for nobody.
+A hand-built list is unchecked in both directions: a field added to
+`instanceData` and forgotten here is silently structure-cloned (a copy, per
+fetch, of the largest arrays the worker produces), and an entry naming a buffer
+the payload does not carry detaches something for nobody. Neither shows up as a
+test failure.
 
-The obvious move is to make the derivation walk one level into plain-object
-children — `explainTransferError`'s `bufferPaths` already walks exactly that
-shape, for exactly this payload. **Do not just do it.** Deriving the list means
-transferring whatever the walk finds, and transferring is destructive: a view
-onto a buffer the worker still owns (an adapter cache, a module-level array)
-would be handed away, which is the same symptom as the bug above and harder to
-attribute. So the question to answer first is whether any RPC result in the tree
-reaches a buffer it does not exclusively own — and if the answer is yes anywhere,
-the cheaper fix is a test that asserts the hand-built list and the payload name
-the same set, which needs no walk and no policy.
+The obvious move is to make the derivation walk into plain-object children —
+`explainTransferError`'s `bufferPaths` already walks exactly that shape, to the
+depth the deepest result in the tree needs. **Do not just do it.** Deriving means
+transferring whatever the walk finds, and transferring MOVES: a view onto a
+buffer the worker still owns gets handed away permanently, and the symptom lands
+on a later call as a `DataCloneError` naming an index. That is not hypothetical
+— `positionOrder` returned a module-level empty result on a region with no
+mismatches, `collectGroupedTransferables` swept it into the list, and every
+`hg002_haplotypes_*` figure was unrenderable until it was fixed (2026-08-15).
+A wider walk would have found more such buffers, not fewer.
+
+So the question to answer first is whether any RPC result in the tree reaches a
+buffer it does not exclusively own. If yes anywhere, the cheaper fix is a test
+asserting the hand-built list and the payload name the same set — which needs no
+walk and no policy, and catches the forgotten-field direction too.
 
 ### Walk the CIGAR once for a read's whole MM tag, not once per group
 

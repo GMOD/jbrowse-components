@@ -103,7 +103,7 @@ export default class RpcServer {
       // wrap so a synchronous throw inside methodFn still routes to .throw()
       ;(async () => methodFn(data))()
         .then(response => {
-          this.reply(uid, response)
+          this.reply(uid, response, method)
         })
         .catch((error: unknown) => {
           this.throw(uid, serializeError(error))
@@ -122,7 +122,7 @@ export default class RpcServer {
     this.self.postMessage({ ...payload, libRpc: true }, transferables)
   }
 
-  protected reply(uid: string, response: unknown) {
+  protected reply(uid: string, response: unknown, method?: string) {
     // a renderer may return an rpcResult wrapper carrying transferables for
     // zero-copy; a plain return travels as data with nothing to transfer
     const { value, transferables } = isRpcResult(response)
@@ -132,11 +132,13 @@ export default class RpcServer {
       this.post({ uid, data: value }, transferables)
     } catch (e) {
       // postMessage blames a transfer-list entry by index alone, into a list
-      // assembled by hand here in the worker — so name the field before the
-      // error leaves. See explainTransferError; it only runs here.
+      // assembled by hand here in the worker — so name the method and the field
+      // before the error leaves. The method is not otherwise recoverable: the
+      // throw happens in a `.then`, so the stack is `post`/`reply` and nothing
+      // above them. See explainTransferError; it only runs here.
       this.throw(
         uid,
-        serializeError(explainTransferError(e, value, transferables)),
+        serializeError(explainTransferError(e, value, transferables, method)),
       )
     }
   }

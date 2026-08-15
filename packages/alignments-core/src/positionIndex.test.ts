@@ -40,6 +40,29 @@ describe('positionOrder', () => {
     expect(sorted.length).toBe(0)
   })
 
+  // `sorted` is shipped: it becomes `mismatchPositions` in the alignments RPC
+  // result and `mismatchPositions`/`insertionPositions` in MAF's, and those
+  // results are posted with a transfer list derived from the payload. A shared
+  // empty was therefore given away on the first empty region and reported as
+  // "ArrayBuffer at index N is already detached" on every later one — for the
+  // whole fetch, not just the empty lane. Nothing about the values distinguishes
+  // the two versions, so identity is what has to be asserted.
+  it('allocates a fresh empty result per call, because sorted is transferred', () => {
+    const a = positionOrder(new Uint32Array(0))
+    const b = positionOrder(new Uint32Array(0))
+    expect(a.sorted).not.toBe(b.sorted)
+    expect(a.sorted.buffer).not.toBe(b.sorted.buffer)
+    expect(a.order).not.toBe(b.order)
+  })
+
+  // The stride-2 empty takes the same branch, and a caller that got a shared
+  // object back from one stride would hand it to the other.
+  it('allocates a fresh empty result at any stride', () => {
+    expect(positionOrder(new Uint32Array(0), 2).sorted).not.toBe(
+      positionOrder(new Uint32Array(0)).sorted,
+    )
+  })
+
   it('handles a single entry and an all-equal run', () => {
     expect([...positionOrder(new Uint32Array([7])).sorted]).toEqual([7])
     expect([...positionOrder(new Uint32Array([7, 7, 7])).sorted]).toEqual([

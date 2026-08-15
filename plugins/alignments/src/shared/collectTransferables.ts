@@ -18,6 +18,15 @@ function addTransferables(buffers: Set<ArrayBuffer>, result: object) {
 // Grouped result: each group carries its own PileupDataResult whose buffers
 // live one level down (`group.data`), so the flat walk above can't see them.
 // The Set dedupes any buffers shared across groups.
+//
+// **Deriving the list means transferring whatever it finds, and transferring
+// MOVES.** A field that is not this call's to give away is given away anyway,
+// permanently, and the symptom lands on a LATER call as "ArrayBuffer at index N
+// is already detached" — for the whole fetch, with nothing naming the field.
+// `positionOrder` returned a module-level empty result on a region with no
+// mismatches and was detached by the first one (fixed there, in
+// alignments-core); a per-call allocation on every path is what keeps this
+// helper safe to point at anything.
 export function collectGroupedTransferables(groups: { data: object }[]) {
   const buffers = new Set<ArrayBuffer>()
   for (const group of groups) {

@@ -92,13 +92,22 @@ export interface PositionIndex {
   stride: number
 }
 
-// An empty array has no entries at ANY stride, so this singleton is the right
-// answer whatever was asked for — its `stride: 1` only means a stride-2 caller
-// re-derives it, and `buildPositionIndex` returns before allocating anything.
-const EMPTY: PositionIndex = {
-  order: new Uint32Array(0),
-  sorted: new Uint32Array(0),
-  stride: 1,
+// An empty array has no entries at ANY stride, so one shared object would be a
+// correct answer whatever was asked for — and it was a singleton here until it
+// detached itself. **`sorted` is SHIPPED.** `buildMismatchArrays` returns it as
+// `mismatchPositions` and MAF's two producers return it as `mismatchPositions` /
+// `insertionPositions`, all of which land in an RPC result whose transfer list
+// is derived from the payload. postMessage transfers by MOVING, so the first
+// empty region gave the module's own buffer away, and every later call that took
+// this branch put an already-detached buffer in its list and threw
+// `DataCloneError` for the whole fetch.
+//
+// It reproduced on the HG002 chain, where LGVSyntenyDisplay renders CIGAR-string
+// alignments that carry no sequence and therefore no mismatches, so the empty
+// branch is the ordinary path rather than an edge. A zero-length allocation
+// costs nothing; sharing one costs a fetch.
+function emptyIndex(): PositionIndex {
+  return { order: new Uint32Array(0), sorted: new Uint32Array(0), stride: 1 }
 }
 
 /**
@@ -125,7 +134,7 @@ function buildPositionIndex(
 ): PositionIndex {
   const n = Math.floor(positions.length / stride)
   if (n === 0) {
-    return EMPTY
+    return emptyIndex()
   }
   let min = positions[0]!
   let max = min
