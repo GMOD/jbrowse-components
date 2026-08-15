@@ -10,11 +10,11 @@ names. This site is where the no-shared-helpers rule was learned.
 
 ## `check-duplication.mjs` holds the copy-paste rule up from both sides
 
-Run by `pnpm check-links`, and unique to this site. Two questions:
+Run by `pnpm check-links`, unique to this site. Two questions:
 
 **Are the copies identical?** Two top-level blocks with the same name must match
-once comments are stripped, because the cost of the rule is drift — the file
-that gets missed is a page teaching a bug with nothing to say so. A block that
+once comments are stripped — the cost of the rule is drift, and the file that
+gets missed is a page teaching a bug with nothing to say so. A block that
 genuinely differs per page goes in `DIVERGES` **with a reason**.
 
 **Should the copies exist?** A block in `COPY_THRESHOLD` (3) files or more needs
@@ -23,7 +23,7 @@ the two fixes _is_ the check:
 
 - the reader would write it anyway — their box, their track config — so add the
   entry.
-- the reader would have to write it because JBrowse publishes no equivalent.
+- the reader would _have_ to write it because JBrowse publishes no equivalent.
   That is a missing export (`usePanZoom` was eight hand-rolled copies).
 
 Deliberately **not** a redundant-line budget: adding a page adds copies, which
@@ -31,10 +31,10 @@ is the rule working. The line total is printed for the trend and gates nothing.
 
 **It only sees named top-level declarations, so behaviour that repeats has to be
 given a name.** Repeated inline JSX is invisible to both halves — the
-most-repeated thing on this site was a pan/zoom container div written out in 13
-files, one of whose four style properties is `touchAction: 'none'`, whose
-absence makes the demo inert on a phone, silently. When a styled div reaches a
-fifth example, name it there rather than reading a green run as coverage.
+most-repeated thing here was a pan/zoom container div in 13 files, one of whose
+four style properties is `touchAction: 'none'`, whose absence makes the demo
+inert on a phone, silently. When a styled div reaches a fifth example, name it
+there rather than reading a green run as coverage.
 
 Keep both lists short. If either grows, the shared surface has outgrown
 copy-paste and the answer is a different rule argued here, not more entries.
@@ -46,21 +46,19 @@ counts `Mui*`-classed elements and `muiThemedStyling` counts elements whose font
 came from MUI's default theme — the only way to see a `makeStyles` component.
 Every page installing `plainChromeOverlays` + `plainTrackControl` scores
 **zero** on both. When one fails, the fix is almost never the number: a display
-started rendering a Material component that isn't behind either provider, and
-raising the budget quietly makes the prose false.
+started rendering a Material component behind neither provider, and raising the
+budget quietly makes the prose false.
 
 **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
 re-checked by `pnpm smoke`. Going **under** a budget fails as well as over —
 bank the win by re-running and committing, or the next change spends it quietly.
 
 Two things to check before hunting an import, both in
-`agent-docs/reference/EAGER_BUNDLE.md`:
-
-- **Was a page added or removed?** Page budgets are coupled — a new entry
-  re-partitions chunks site-wide, worth ~13 KB gzip a page.
-- **Is it a shared React-free module?** A module imported by both an eager and a
-  lazy module gets grouped with the lazy chunk, so the eager import pays for the
-  whole chunk. This, not a component import, is what both regressions have been.
+`agent-docs/reference/EAGER_BUNDLE.md`: **was a page added or removed** (budgets
+are coupled, ~13 KB gzip a page), and **is it a shared React-free module** (one
+imported by both an eager and a lazy module gets grouped with the lazy chunk, so
+the eager import pays for the whole chunk). That, not a component import, is
+what both regressions have been.
 
 ## `pnpm probe-eager-graph` answers _why_, and is the one to reach for first
 
@@ -75,8 +73,7 @@ intersecting the pre-treeshake source graph with the post-treeshake chunks — s
 Two traps are wired in rather than left as advice: it attributes at module
 level, never by chunk name (a rolldown chunk is named after one of its modules
 and holds unrelated ones); and when nothing first-party names the target
-directly it falls back to the package's barrel importers, since
-`import { Button } from '@mui/material'` records an edge to the barrel.
+directly it falls back to the package's barrel importers.
 
 The probe build overwrites `dist/` — re-run `pnpm build` before trusting a
 measurement taken after it. The chrome bundle figures in the prose come from the
