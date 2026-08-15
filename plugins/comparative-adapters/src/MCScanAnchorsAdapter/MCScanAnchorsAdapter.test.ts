@@ -167,3 +167,26 @@ test('throws when no anchor joins at all', async () => {
     /name genes present in both BED files/,
   )
 })
+
+// An assembly neither side carries has the same answer whatever the rows say,
+// so it must not read the file: this used to download and parse the anchors
+// file and both BEDs to return []. Locations that cannot be opened are how the
+// test sees that no read happened.
+test('an assembly this adapter has no side for is answered without reading', async () => {
+  const missing = {
+    localPath: '/nonexistent/never-read',
+    locationType: 'LocalPathLocation' as const,
+  }
+  const adapter = new Adapter(
+    configSchema.create({
+      bed1Location: missing,
+      bed2Location: missing,
+      mcscanAnchorsLocation: missing,
+      assemblyNames: ['grape', 'peach'],
+    }),
+  )
+  await expect(adapter.getRefNames({})).resolves.toEqual([])
+  await expect(adapter.getRefNames({ assemblyName: 'mouse' })).resolves.toEqual(
+    [],
+  )
+})

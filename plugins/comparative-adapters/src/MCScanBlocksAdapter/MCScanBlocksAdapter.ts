@@ -1,8 +1,8 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createSharedSetup } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import { joinBedPair, makeBlockFeatures } from '../mcscanUtil.ts'
 import { parseBed, readFiles } from '../util.ts'
 
@@ -199,9 +199,7 @@ function columnPairs(
 // LGVSyntenyDisplay, or the region launch asking what a locus aligns to — draws
 // every pair the track declares, which for a legacy 2-entry assemblyNames config
 // is the same single mate it always was.
-export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBlocksAdapterConfig> {
-  public static capabilities = ['getFeatures', 'getRefNames']
-
+export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBlocksAdapterConfig> {
   setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
 
   async setupPre(opts: BaseOptions) {
@@ -251,13 +249,6 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
         )
       : undefined
     return { blockAssemblies, bedMaps, blockLines, rowAttrs, pairRows }
-  }
-
-  async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures so is not
-    // really that important, and has to be true or else getFeatures is never
-    // called (BaseFeatureDataAdapter filters it out)
-    return true
   }
 
   // The two columns of a pair joined into gene-link rows (both sides present),
@@ -336,13 +327,21 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    const setup = await this.setup(opts)
-    const { blockAssemblies, bedMaps, blockLines } = setup
     const { assemblyName, targetAssemblyName } = opts
-    const qcols =
-      assemblyName === undefined
-        ? []
-        : columnsFor(blockAssemblies, assemblyName)
+    // An assembly in none of the file's columns has the same answer whatever
+    // the rows say, and the columns are config. Answered before the setup
+    // rather than after, which was downloading and parsing the blocks table and
+    // every BED to return [].
+    if (assemblyName === undefined) {
+      return []
+    }
+    const blockAssemblies = this.getConf('blockAssemblies')
+    const qcols = columnsFor(blockAssemblies, assemblyName)
+    if (!qcols.length) {
+      return []
+    }
+    const setup = await this.setup(opts)
+    const { bedMaps, blockLines } = setup
     const set = new Set<string>()
     // when a target is given, scope to that pair (rows where both are present),
     // which is nothing when the target is in no column; otherwise (e.g. the
@@ -350,7 +349,7 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
     if (targetAssemblyName !== undefined) {
       for (const [qcol, mcol] of columnPairs(
         blockAssemblies,
-        assemblyName!,
+        assemblyName,
         targetAssemblyName,
       )) {
         for (const { a } of this.pairRows(qcol, mcol, setup)) {

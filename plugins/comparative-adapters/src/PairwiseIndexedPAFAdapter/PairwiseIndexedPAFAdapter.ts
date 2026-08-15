@@ -1,5 +1,4 @@
 import { TabixIndexedFile } from '@gmod/tabix'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
@@ -7,6 +6,7 @@ import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
+import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import {
   getAssemblyNamesFromConf,
   hasCoarseTierPrefix,
@@ -42,9 +42,7 @@ export function pickPifPrefix({
     : fineLetter
 }
 
-export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<PairwiseIndexedPAFAdapterConfig> {
-  public static capabilities = ['getFeatures', 'getRefNames']
-
+export default class PairwiseIndexedPAFAdapter extends ComparativeAdapterBase<PairwiseIndexedPAFAdapterConfig> {
   protected pif: TabixIndexedFile
   private refSeqNamesP?: Promise<string[]>
 
@@ -75,10 +73,6 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
 
   getAssemblyNames(): string[] {
     return getAssemblyNamesFromConf(this)
-  }
-
-  public async hasDataForRefName() {
-    return true
   }
 
   // The tabix contig list, read once. Every seqid is a refName prefixed with its

@@ -1,9 +1,9 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createSharedSetup } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import {
   loadPafRecords,
   makeSyntenyFeature,
@@ -46,16 +46,7 @@ interface IndexedSide extends AlignedSide {
   syntenyId: number
 }
 
-export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllPAFAdapterConfig> {
-  public static capabilities = ['getFeatures', 'getRefNames']
-
-  async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures so is not
-    // really that important, and has to be true or else getFeatures is never
-    // called (BaseAdapter filters it out)
-    return true
-  }
-
+export default class AllVsAllPAFAdapter extends ComparativeAdapterBase<AllVsAllPAFAdapterConfig> {
   // Config-derived and therefore fixed for this adapter: an edit produces a new
   // snapshot, hence a new cache key and a new adapter (see dataAdapterCache).
   // Read once instead of per getFeatures — that is per band, per region, per

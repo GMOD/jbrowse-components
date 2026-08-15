@@ -596,3 +596,26 @@ test('a self-comparison draws the two columns, not one against itself', async ()
     firstValueFrom(selfAdapter.getFeatures(region as never).pipe(toArray())),
   ).resolves.toBeDefined()
 })
+
+// An assembly in none of the file's columns has the same answer whatever the
+// rows say, and the columns are config. This used to download and parse the
+// blocks table and every BED to return []; locations that cannot be opened are
+// how the test sees that no read happened.
+test('an assembly in no column is answered without reading the files', async () => {
+  const missing = {
+    localPath: '/nonexistent/never-read',
+    locationType: 'LocalPathLocation' as const,
+  }
+  const adapter = new Adapter(
+    configSchema.create({
+      mcscanBlocksLocation: missing,
+      blockAssemblies: ['grape', 'peach', 'cacao'],
+      bedLocations: [missing, missing, missing],
+      assemblyNames: ['grape', 'peach'],
+    }),
+  )
+  await expect(adapter.getRefNames({})).resolves.toEqual([])
+  await expect(adapter.getRefNames({ assemblyName: 'mouse' })).resolves.toEqual(
+    [],
+  )
+})

@@ -1,4 +1,3 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   createSharedSetup,
   doesIntersect2,
@@ -7,6 +6,7 @@ import {
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import {
   collectLines,
@@ -229,9 +229,7 @@ function blastIdentity(pident: string | undefined) {
   return Number.isFinite(v) ? v / 100 : undefined
 }
 
-export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTabularAdapterConfig> {
-  public static capabilities = ['getFeatures', 'getRefNames']
-
+export default class BlastTabularAdapter extends ComparativeAdapterBase<BlastTabularAdapterConfig> {
   // Download+parse plus the per-refName index every query walks, for the reason
   // indexRecordsByName documents: a region query used to test every hit in the
   // table, and the callers ask once per visible contig.
@@ -258,14 +256,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTab
     })
   }
 
-  async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures
-    // so is not really that important, and has to be true or else
-    // getFeatures is never called (BaseAdapter filters it out)
-    return true
-  }
-
-  getAssemblyNames() {
+  getAssemblyNames(): string[] {
     return getAssemblyNamesFromConf(this)
   }
 

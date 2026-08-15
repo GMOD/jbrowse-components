@@ -1,9 +1,9 @@
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createSharedSetup } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import { getAssemblyNamesFromConf } from '../util.ts'
 import {
   indexPafRecords,
@@ -18,9 +18,7 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-export default class PAFAdapter extends BaseFeatureDataAdapter {
-  public static capabilities = ['getFeatures', 'getRefNames']
-
+export default class PAFAdapter extends ComparativeAdapterBase {
   // One download+parse shared by every display on this track, reporting to
   // whichever of them is currently waiting, plus the per-refName index every
   // query walks. Subclasses (delta, chain, MashMap) override setupPre alone, so
@@ -39,14 +37,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures so is not
-    // really that important, and has to be true or else getFeatures is never
-    // called (BaseAdapter filters it out)
-    return true
-  }
-
-  getAssemblyNames() {
+  getAssemblyNames(): string[] {
     return getAssemblyNamesFromConf(this)
   }
 

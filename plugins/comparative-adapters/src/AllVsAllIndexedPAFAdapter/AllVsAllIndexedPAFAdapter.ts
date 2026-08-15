@@ -1,5 +1,4 @@
 import { TabixIndexedFile } from '@gmod/tabix'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createStatusFanOut } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
@@ -7,6 +6,7 @@ import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
+import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
@@ -48,9 +48,7 @@ function pifSide(line: PifLine): AlignedSide {
   }
 }
 
-export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<AllVsAllIndexedPAFAdapterConfig> {
-  public static capabilities = ['getFeatures', 'getRefNames']
-
+export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<AllVsAllIndexedPAFAdapterConfig> {
   protected pif: TabixIndexedFile
   private refSeqNamesP?: Promise<string[]>
   private seqIndexP?: Promise<Map<string, Map<string, string[]>>>
@@ -72,10 +70,6 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
       chunkCacheBudget: decompressedBytesBudget,
       bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
-  }
-
-  public async hasDataForRefName() {
-    return true
   }
 
   // Config-derived and therefore fixed for this adapter: an edit produces a new
