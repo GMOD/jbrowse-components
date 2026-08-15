@@ -52,9 +52,10 @@ should mix ploidies.** `readAltDosages` is the fifth and is ploidy-invariant.
 ## The unphased matrix is one column per ALT, not one per site
 
 A dosage class made `0/1/1` and `0/0/1` identical and couldn't say which alt was
-carried. `colOffsets` is summed in a pre-pass so rows stay one pre-sized
-Float32Array; a biallelic site is bit-identical to the old encoding.
-`classifyGenotypeDosage` stays for the anchored haplotype sort.
+carried. Each site contributes `ALT.length` columns, summed into `colOffsets` in
+a pre-pass so rows stay one pre-sized Float32Array; a biallelic site is one
+column and bit-identical to the old encoding. `classifyGenotypeDosage` stays for
+the anchored haplotype sort.
 
 ## Settings
 
