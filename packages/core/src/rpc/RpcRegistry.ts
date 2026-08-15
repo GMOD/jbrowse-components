@@ -1,7 +1,8 @@
 import type { StatusCallback } from '../util/progress.ts'
-import type { Feature } from '../util/simpleFeature.ts'
+import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { NoAssemblyRegion } from '../util/types/index.ts'
+import type { RpcResult } from './RpcServer.ts'
 
 export interface RegionLike {
   refName: string
@@ -42,6 +43,8 @@ export interface RpcRegistry {
       opts?: Record<string, unknown>
     }
     return: Feature[]
+    // deserializeReturn rebuilds each of these into a SimpleFeature
+    wire: SimpleFeatureSerialized[]
   }
   CoreGetRegionByteEstimate: {
     args: {
@@ -209,24 +212,45 @@ export type RpcCallArgs<M extends string> = M extends RpcMethodName
     : NotInRpcRegistry<M>
 
 /**
- * What a registered method's `execute` resolves to: the declared return, and
- * nothing else. An RpcMethodType parameterized with its own name
- * (`RpcMethodType<'CoreGetRegions'>`) gets its executor checked against the
- * registry, so a registry entry can't drift from what the worker actually sends
- * back. `string` (the default) resolves to `unknown`, leaving unparameterized
- * methods unconstrained; a name that is not a key resolves to NotInRpcRegistry,
- * which nothing satisfies.
+ * What a registered method's `execute` resolves to. An RpcMethodType
+ * parameterized with its own name (`RpcMethodType<'CoreGetRegions'>`) gets its
+ * executor checked against this, so a registry entry can't drift from what the
+ * worker actually sends back. `string` (the default) resolves to `unknown`,
+ * leaving unparameterized methods unconstrained; a name that is not a key
+ * resolves to NotInRpcRegistry, which nothing satisfies.
  *
- * No `| RpcResult<…>` here: whether a method wraps its return to carry
- * transferables is fixed when the method is written, so it says so in
- * `RpcMethodType`'s second parameter instead. As a union it described no method
- * and cost two `as unknown as` casts (gwas, hic).
+ * `RpcReturn` is what the CALLER gets, this is what went over, and fifteen
+ * entries differ in one of two ways: the return is wrapped in `rpcResult` so
+ * postMessage can transfer its buffers, or `deserializeReturn` rebuilds it
+ * (features travel serialized and arrive as `SimpleFeature`s). An entry says
+ * which, beside the `return` it has to be read against:
+ *
+ * - **`transferables: true`** — the ordinary wrapped case, ten of the fifteen.
+ *   A fact, not a type, so the wire shape is DERIVED from the `return` rather
+ *   than restated next to it, and the two cannot come apart.
+ * - **`wire: T`** — for the five that derivation cannot express: three the
+ *   `deserializeReturn` rebuilds, and the two canvas gates, which wrap the data
+ *   half of a union and not the region-too-large half, because only one of them
+ *   owns any buffers. These do restate, so each says why in a comment.
+ *
+ * Both were a second type parameter on the class until this, which is a copy of
+ * the registry rather than a reference to it — `RpcResult<WiggleDataResult[]> |
+ * number` on RenderWiggleData type-checked clean while callers went on
+ * receiving `WiggleDataResult[]`.
  */
-export type RpcExecuteReturn<M extends string> = M extends RpcMethodName
-  ? RpcReturn<M & RpcMethodName>
+export type RpcWireReturn<M extends string> = M extends RpcMethodName
+  ? WireOf<RpcRegistry[M & RpcMethodName]>
   : string extends M
     ? unknown
     : NotInRpcRegistry<M>
+
+type WireOf<Entry> = Entry extends { wire: infer W }
+  ? W
+  : Entry extends { transferables: true; return: infer R }
+    ? RpcResult<R>
+    : Entry extends { return: infer R }
+      ? R
+      : never
 
 /**
  * Registry entries that declare a field belonging to the CALL rather than to

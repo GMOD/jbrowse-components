@@ -29,17 +29,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
       args: SyntenyDiscoverMatesArgs
       // what the caller sees, after deserializeReturn rebuilds the features
       return: MateDiscoveryResult
+      wire: SyntenyDiscoverMatesReturn
     }
   }
 }
 
-// Wire return named separately from the registry's, like CoreGetFeatures: the
-// worker returns serialized features and deserializeReturn below is what turns
-// them into the registry's declared return.
-export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions<
-  'SyntenyDiscoverMates',
-  SyntenyDiscoverMatesReturn
-> {
+export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions<'SyntenyDiscoverMates'> {
   name = 'SyntenyDiscoverMates' as const
 
   async deserializeReturn(

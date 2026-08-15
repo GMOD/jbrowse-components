@@ -328,6 +328,37 @@ author who lands on a behavior change can find the sentence that explains it.
   **Opt-out: none** — call `checkStopToken` (the one-shot form) directly at a
   point that must not be thinned.
 
+- **`RpcMethodType.deserializeArguments` is called by the base, so a plugin
+  that also calls it runs it twice** (`invoke`, `pluggableElementTypes/
+  RpcMethodType.ts`). Every `execute` used to open with
+  `await this.deserializeArguments(args, driver)`; the base now does it and
+  hands `execute` the deserialized args. An external plugin written against the
+  older contract still opens with that line, so its override sees the same
+  object a second time. **An override must therefore be idempotent** — the two
+  in-tree ones are, and how they get there is the pattern: the base's
+  `setBlobMap` replaces wholesale, and the filters override tests
+  `args.filters instanceof SerializableFilterChain` before rebuilding, without
+  which a second pass reaches `filters.map` on a chain and throws. A
+  non-idempotent override cannot be fixed from here, and the failure lands
+  inside the plugin's own code with no mention of core in the trace.
+  **Opt-out: drop the call from `execute`** — it is redundant now — or make the
+  override detect its own output. Not detectable in-tree: the double call is
+  correct behavior for every override that tolerates it.
+
+- **Six `RpcMethodType` methods no longer take `rpcDriverClassName`**:
+  `serializeArguments`, `serializeNewAuthArguments`, `deserializeArguments`,
+  `invoke`, `execute`, `deserializeReturn`. It was added in 2021 for a
+  main-thread serialization skip that no longer exists and nothing has read it
+  since. This is the *signature* half of the rule above, running the direction
+  the rule does not cover: removing a parameter breaks a **subclass**, where
+  adding one breaks a **caller**. A derived method with more required
+  parameters than its base is not assignable to it, so an external
+  `async execute(args, driver: string)` now fails to type-check. Runtime is
+  unaffected — the argument is simply absent, and no in-tree or published code
+  ever branched on its value. **Opt-out: delete the parameter.** A plugin that
+  must compile against both this release and an older one can declare it
+  optional (`driver?: string`), which satisfies either base.
+
 - **`@jbrowse/core/data_adapters/dataAdapterCache` is now served**
   (`ReExports/list.ts`). `adapterCache` is module-level state, so a plugin that
   deep-imported `getAdapter` got a *second* cache in the RPC worker while

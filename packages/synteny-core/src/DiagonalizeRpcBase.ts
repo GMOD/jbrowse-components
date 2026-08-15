@@ -1,7 +1,11 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type { DiagonalizeExecuteArgs } from './executeDiagonalize.ts'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type {
+  RpcExecuteArgs,
+  RpcMethodName,
+  RpcWireReturn,
+} from '@jbrowse/core/rpc/RpcRegistry'
 import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'
 
 /**
@@ -39,8 +43,26 @@ import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegion
  * walks the whole args tree, so each `adapters[].adapterConfig` is still
  * augmented at its nested position.
  */
+/**
+ * The registry keys this base can serve: those whose wire return is exactly
+ * what `executeDiagonalize` produces.
+ *
+ * The class has to pin that type as its second parameter — `MethodName` is
+ * still generic here, so `RpcWireReturn<MethodName>` is a conditional
+ * TypeScript will not resolve and the shared body would have nothing to check
+ * against. Pinning it is a claim about the registry, and this constrains
+ * `MethodName` to the keys the claim is true of, so a subclass naming a key
+ * that returns something else is a compile error at the subclass rather than a
+ * body typed against a return no caller receives.
+ */
+type DiagonalizeMethodName = {
+  [K in RpcMethodName]: DiagonalizationResult | null extends RpcWireReturn<K>
+    ? K
+    : never
+}[RpcMethodName]
+
 export default abstract class DiagonalizeRpcBase<
-  MethodName extends string = string,
+  MethodName extends DiagonalizeMethodName,
 > extends RpcMethodType<MethodName, DiagonalizationResult | null> {
   // `DiagonalizeExecuteArgs &`, not `RpcExecuteArgs<MethodName>` alone: this
   // body is written once for a name that is still generic here, and TS defers

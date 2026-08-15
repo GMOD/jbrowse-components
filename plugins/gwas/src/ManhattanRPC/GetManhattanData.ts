@@ -9,13 +9,14 @@ import type {
   RpcExecuteArgs,
 } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
-import type { RpcResult } from '@jbrowse/core/util/librpc'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     GetManhattanData: {
       args: GetManhattanDataArgs
       return: ManhattanRpcResult
+      // wrapped in rpcResult so postMessage transfers its buffers
+      transferables: true
     }
   }
 }
@@ -42,10 +43,7 @@ function indexSnpAsRegion(args: GetManhattanDataArgs): Region | undefined {
     : undefined
 }
 
-export default class GetManhattanData extends RpcMethodType<
-  'GetManhattanData',
-  RpcResult<ManhattanRpcResult>
-> {
+export default class GetManhattanData extends RpcMethodType<'GetManhattanData'> {
   name = 'GetManhattanData' as const
 
   async serializeArguments(args: GetManhattanDataArgs & RpcCallContext) {

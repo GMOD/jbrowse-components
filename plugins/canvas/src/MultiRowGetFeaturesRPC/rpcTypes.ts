@@ -1,4 +1,5 @@
 import type { RegionTooLargeResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { RpcResult } from '@jbrowse/core/util/librpc'
 
 export interface MultiRowGetFeaturesArgs {
   adapterConfig: Record<string, unknown>
@@ -90,6 +91,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     MultiRowGetFeatures: {
       args: MultiRowGetFeaturesArgs
       return: MultiRowGetFeaturesResult | RegionTooLargeResult
+      // only the data half owns buffers to transfer, so only it is wrapped
+      wire: RpcResult<MultiRowGetFeaturesResult> | RegionTooLargeResult
     }
   }
 }

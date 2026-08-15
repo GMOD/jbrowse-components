@@ -19,6 +19,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     BreakpointGetFeatures: {
       args: BreakpointGetFeaturesArgs
       return: Feature[]
+      // deserializeReturn wraps each of these in a SimpleFeature
+      wire: BreakpointSerializedFeature[]
     }
   }
 }
@@ -71,13 +73,7 @@ export interface BreakpointSerializedFeature {
   mate?: BreakpointMate
 }
 
-// Wire return named separately from the registry's: `deserializeReturn` below
-// wraps each of these in a SimpleFeature, so the registry's `Feature[]` is the
-// caller's view and this is the worker's.
-export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegions<
-  'BreakpointGetFeatures',
-  BreakpointSerializedFeature[]
-> {
+export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegions<'BreakpointGetFeatures'> {
   name = 'BreakpointGetFeatures' as const
 
   async deserializeReturn(feats: BreakpointSerializedFeature[], args: unknown) {

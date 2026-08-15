@@ -1,13 +1,8 @@
 import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegion'
 
-import type { FeatureDataResult, RegionTooLargeResult } from './rpcTypes.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { RpcResult } from '@jbrowse/core/util/librpc'
 
-export default class RenderFeatureData extends RpcMethodTypeWithRenameRegion<
-  'RenderFeatureData',
-  RpcResult<FeatureDataResult> | RegionTooLargeResult
-> {
+export default class RenderFeatureData extends RpcMethodTypeWithRenameRegion<'RenderFeatureData'> {
   name = 'RenderFeatureData' as const
 
   async execute(args: RpcExecuteArgs<'RenderFeatureData'>) {

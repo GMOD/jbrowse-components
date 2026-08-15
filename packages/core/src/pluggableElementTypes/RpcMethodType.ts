@@ -20,8 +20,8 @@ import type PluginManager from '../PluginManager.ts'
 import type {
   RpcCallContext,
   RpcExecuteArgs,
-  RpcExecuteReturn,
   RpcSession,
+  RpcWireReturn,
 } from '../rpc/RpcRegistry.ts'
 import type { Region } from '../util/index.ts'
 import type { FileHandleLocation, UriLocation } from '../util/types/index.ts'
@@ -195,22 +195,23 @@ export function convertFileHandleLocations(
  * key this class sets as its {@link name}. Both are compile errors, so the
  * escape hatch is the only way to end up unchecked, and taking it is visible.
  *
- * The second parameter exists so that taking the hatch is not all-or-nothing.
- * A method whose `deserializeReturn` rebuilds the result — CoreGetFeatures
- * serializes features and hands back `SimpleFeature`s — cannot let `execute`
- * be checked against the registry `return`, which describes what the CALLER
- * sees. That used to cost it the args as well, and the cost was paid in the
- * obvious way: `CoreGetFeatures.execute` wrote out all seven of its arg fields
- * by hand, which is the drift `RpcExecuteArgs` was introduced to stop, in the
- * most-called method in the app. So name the wire return instead —
- * `RpcMethodTypeWithRenameRegions<'CoreGetFeatures', SimpleFeatureSerialized[]>`
- * — and keep the args, the name and the registry key checked. It also writes
- * the wire shape down, which is the thing the pair of types otherwise leaves
- * invisible: the registry says what comes back, this says what went over.
+ * A method whose worker sends something other than the registry `return` — a
+ * result wrapped in `rpcResult` to hand its buffers to postMessage, or one
+ * `deserializeReturn` rebuilds — says so in the registry entry's `wire` field,
+ * beside the `return` it has to be read against. Not here: as a second type
+ * parameter it was a copy of the registry rather than a reference to it, and
+ * fifteen classes kept the copy in step by hand.
+ *
+ * Which is why the second parameter that remains is for one thing only: a base
+ * still GENERIC over its name, where `RpcWireReturn<MethodName>` is a
+ * conditional TypeScript cannot resolve, so the shared body has nothing to
+ * check against. `DiagonalizeRpcBase` is the only such base in the tree, and it
+ * ties its pinned type back by constraining `MethodName` to the keys whose wire
+ * actually is that type.
  */
 export default abstract class RpcMethodType<
   MethodName extends string = string,
-  WireReturn = RpcExecuteReturn<MethodName>,
+  WireReturn = RpcWireReturn<MethodName>,
 > extends PluggableElementBase {
   /**
    * The key this method is registered under, and the same one the class is

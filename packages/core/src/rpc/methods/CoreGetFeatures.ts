@@ -8,14 +8,7 @@ import SimpleFeature from '../../util/simpleFeature.ts'
 import type { SimpleFeatureSerialized } from '../../util/simpleFeature.ts'
 import type { RpcExecuteArgs, RpcReturn } from '../RpcRegistry.ts'
 
-// The wire return is named rather than left to the registry, because the two
-// differ here: `deserializeReturn` below rebuilds each serialized feature into a
-// SimpleFeature, so the registry's `Feature[]` is what the caller gets and this
-// is what the worker sent.
-export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions<
-  'CoreGetFeatures',
-  SimpleFeatureSerialized[]
-> {
+export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions<'CoreGetFeatures'> {
   name = 'CoreGetFeatures' as const
 
   async deserializeReturn(

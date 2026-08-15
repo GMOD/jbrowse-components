@@ -4,7 +4,6 @@ import type { DotplotFeaturesAndPositionsResult } from './executeDotplotFeatures
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
-import type { RpcResult } from '@jbrowse/core/util/librpc'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
 export interface DotplotGetFeaturesAndPositionsArgs {
@@ -20,14 +19,13 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     DotplotGetFeaturesAndPositions: {
       args: DotplotGetFeaturesAndPositionsArgs
       return: DotplotFeaturesAndPositionsResult
+      // wrapped in rpcResult so postMessage transfers its buffers
+      transferables: true
     }
   }
 }
 
-export class DotplotGetFeaturesAndPositions extends RpcMethodType<
-  'DotplotGetFeaturesAndPositions',
-  RpcResult<DotplotFeaturesAndPositionsResult>
-> {
+export class DotplotGetFeaturesAndPositions extends RpcMethodType<'DotplotGetFeaturesAndPositions'> {
   name = 'DotplotGetFeaturesAndPositions' as const
 
   async execute(args: RpcExecuteArgs<'DotplotGetFeaturesAndPositions'>) {
