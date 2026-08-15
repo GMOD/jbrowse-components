@@ -6,19 +6,14 @@ import { navToResolvedSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
 import { alreadyShowing } from './alreadyShowing.ts'
 import { followAnchorWindow } from './followAnchorWindow.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
+import { createFollowLevelStates } from './followLevelStates.ts'
 import { followTransform } from './followTransform.ts'
 import { planFollowStep } from './planFollowStep.ts'
 import { positionViewOnSpan } from './positionViewOnSpan.ts'
-import { resolveFollowSpan } from './resolveFollowSpan.ts'
 
-import type {
-  FeatPos,
-  LinearSyntenyDisplayModel,
-} from '../LinearSyntenyDisplay/model.ts'
+import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
-import type { FollowTransform } from './followTransform.ts'
 import type { FollowStep } from './planFollowStep.ts'
-import type { FollowAnswer } from './resolveFollowSpan.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -48,66 +43,16 @@ interface FollowWork {
   pair: FollowPair
   step: FollowStep
   movingWindow: FollowWindow | undefined
-}
-
-// What one settle decided: which block places this level, which axis it was
-// picked on, and the affine shortcut the frame pass may take until the next
-// settle. One object because these are only correct TOGETHER — a transform left
-// behind by a previous `feat` maps the window through the wrong block — and as
-// loose fields on the state that invariant rested on their being assigned next
-// to each other.
-interface LevelPick {
-  feat: FeatPos
-  display: LinearSyntenyDisplayModel
-  toMate: boolean
-  // Absent for an envelope answer. That is a union several blocks contributed
-  // to, so it carries no one strand, and a forward transform built from one
-  // placed the row mirrored inside an inverted alignment until the next settle.
-  transform?: FollowTransform
-}
-
-// Not observable: the autorun writes this every pass, so an observable would
-// make it a dependency of the run that writes it and re-enter forever.
-interface LevelState {
-  pick?: LevelPick
-  // latest-wins: the RPC is not ordered, so a slow earlier resolve can land
-  // after a fast later one and park the row at a window already left
   seq: number
-  // One object for the same reason as LevelPick: a promise matched against the
-  // wrong key is an answer to a different question.
-  answer?: { key: string; pending: Promise<FollowAnswer> }
 }
 
-// undefined for the envelope, which is a union of every loaded block and so can
-// resolve differently for the same window once more of them arrive
-function stepKey(step: FollowStep) {
-  const { display, feat, toMate, window, windowInsideFeat } = step
-  const { refName, start, end } = window
-  return windowInsideFeat
-    ? `${display.id} ${feat.id} ${toMate} ${refName}:${start}-${end}`
-    : undefined
-}
-
-// A settle wakes the exact pass three times with the same question, since
-// applying an answer flushes the moved row's coarse blocks and refetches it.
-// The promise rather than the span so the wakes arriving first share the
-// request; each pass still runs its own alreadyShowing against its own window.
-function answerFor(state: LevelState, step: FollowStep) {
-  const key = stepKey(step)
-  if (key !== undefined && key === state.answer?.key) {
-    return state.answer.pending
-  }
-  const pending = resolveFollowSpan(step)
-  if (key !== undefined) {
-    const entry = { key, pending }
-    state.answer = entry
-    pending.catch(() => {
-      if (state.answer === entry) {
-        state.answer = undefined
-      }
-    })
-  }
-  return pending
+// One level's share of a settled pass: what to resolve, and what the header
+// should say if there is nothing to.
+interface FollowPlan {
+  // absent when nothing loaded covers the anchor's window
+  work?: FollowWork
+  unaligned: boolean
+  approximate: boolean
 }
 
 /**
@@ -122,28 +67,12 @@ function answerFor(state: LevelState, step: FollowStep) {
  * a second later.
  */
 export function installSyntenyFollow(self: SyntenyFollowHost) {
-  // Keyed by the LEVEL NODE, not its index. `reconcileLevels` pops a level when
-  // a genome row is removed, and by index the entry outlived it: re-add the row
-  // and the fresh level inherited the dead one's incumbent feature and cached
-  // transform. A WeakMap is also the whole of the pruning — the destroyed node
-  // is the only key that reached the entry.
-  let levelStates = new WeakMap<FollowLevel, LevelState>()
-  let lastErrorMessage: string | undefined
+  const levelStates = createFollowLevelStates<FollowLevel>()
 
-  function stateFor(level: FollowLevel) {
-    let state = levelStates.get(level)
-    if (!state) {
-      state = { seq: 0 }
-      levelStates.set(level, state)
-    }
-    return state
-  }
-
-  async function execute({ pair, step, movingWindow }: FollowWork) {
+  async function execute({ pair, step, movingWindow, seq }: FollowWork) {
     const { movingView } = pair
-    const state = stateFor(pair.level)
-    const seq = ++state.seq
-    const { span, approximate } = await answerFor(state, step)
+    const state = levelStates.get(pair.level)
+    const { span, approximate } = await state.answer(step)
     // switching the mode off bumps no seq, so it needs its own check
     if (
       seq !== state.seq ||
@@ -153,11 +82,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     ) {
       return
     }
-    lastErrorMessage = undefined
-    // The plan below already raised this for the two cases it can see. The
-    // third is only visible here: `hasCigar` is per-FETCH, so a mixed file
-    // reaches the walk with a block that carries none and comes back empty.
-    // Raised, never lowered — the plan's own pass owns the reset.
+    state.lastErrorMessage = undefined
+    // The plan already raised this for the two cases it can see. The third is
+    // only visible here: `hasCigar` is per-FETCH, so a mixed file reaches the
+    // walk with a block that carries none and comes back empty. Raised, never
+    // lowered — the plan's own pass owns the reset.
     if (approximate) {
       self.setFollowApproximate(true)
     }
@@ -175,18 +104,55 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     await navToResolvedSpan(movingView, span)
   }
 
-  function reportError(e: unknown) {
+  function reportError(level: FollowLevel, e: unknown) {
     // an RPC outliving its view rejects into here, and getSession throws on a
     // node with no parent
     if (!isAlive(self)) {
       return
     }
-    // a follow that cannot resolve cannot resolve repeatedly, and a snackbar
-    // per settle would bury the app
+    // A follow that cannot resolve cannot resolve repeatedly, and a snackbar
+    // per settle would bury the app — `notifyError` always carries a `report`
+    // action, which is what makes it bypass the snackbar's own dedup.
+    const state = levelStates.get(level)
     const message = `${e}`
-    if (message !== lastErrorMessage) {
-      lastErrorMessage = message
+    if (message !== state.lastErrorMessage) {
+      state.lastErrorMessage = message
       getSession(self).notifyError(message, e)
+    }
+  }
+
+  // Every observable one level's placement needs, read off the tree HERE:
+  // `execute` is async and MobX stops tracking at its first `await`, so a field
+  // missing from `FollowStep` can only be read untracked, producing a follow
+  // that works once and never re-fires.
+  function planLevel(pair: FollowPair): FollowPlan | undefined {
+    const { level, stayingView, movingView, toMate, mateAssembly } = pair
+    const state = levelStates.get(level)
+    // EVERY LEVEL THE PASS VISITS, not only the ones it goes on to resolve. A
+    // pass that finds nothing under the window has decided the row holds, and
+    // an answer still in flight for the previous window landed and moved it
+    // anyway — while the header reported it as holding, which is the one thing
+    // that state promises.
+    const seq = ++state.seq
+    const window = followAnchorWindow(stayingView.coarseDynamicBlocks)
+    if (!window) {
+      return undefined
+    }
+    // reading the moving row makes it a dependency, which is what re-asserts
+    // the follow over a row nudged by hand
+    const movingWindow = followAnchorWindow(movingView.coarseDynamicBlocks)
+    const step = planFollowStep({
+      displays: level.linearSyntenyDisplays,
+      window,
+      toMate,
+      mateAssembly,
+      incumbentId: state.pick?.feat.id,
+    })
+    return {
+      work: step && { pair, step, movingWindow, seq },
+      // a level still fetching has no answer YET rather than no answer
+      unaligned: !step && level.linearSyntenyDisplays.some(d => d.featureData),
+      approximate: !!step && (!step.windowInsideFeat || !step.hasCigar),
     }
   }
 
@@ -197,49 +163,21 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         if (!self.followSynteny) {
           self.setFollowUnaligned(false)
           self.setFollowApproximate(false)
-          levelStates = new WeakMap()
-          lastErrorMessage = undefined
+          levelStates.clear()
           return
         }
-        // every observable read happens in this synchronous pass; `execute` is
-        // async and its reads would not be tracked
-        const work: FollowWork[] = []
-        let unaligned = false
-        let approximate = false
-        for (const pair of self.followPairs) {
-          const { level, stayingView, movingView, toMate, mateAssembly } = pair
-          const window = followAnchorWindow(stayingView.coarseDynamicBlocks)
-          if (!window) {
-            continue
-          }
-          // reading the moving row makes it a dependency, which is what
-          // re-asserts the follow over a row nudged by hand
-          const movingWindow = followAnchorWindow(
-            movingView.coarseDynamicBlocks,
-          )
-          const step = planFollowStep({
-            displays: level.linearSyntenyDisplays,
-            window,
-            toMate,
-            mateAssembly,
-            incumbentId: stateFor(level).pick?.feat.id,
-          })
-          if (step) {
-            work.push({ pair, step, movingWindow })
-            if (!step.windowInsideFeat || !step.hasCigar) {
-              approximate = true
-            }
-            // a level still fetching has no answer YET rather than no answer
-          } else if (level.linearSyntenyDisplays.some(d => d.featureData)) {
-            unaligned = true
-          }
-        }
+        const plans = self.followPairs.map(pair => planLevel(pair))
         // written, never read here: reading either would make the autorun a
         // dependency of its own write
-        self.setFollowUnaligned(unaligned)
-        self.setFollowApproximate(approximate)
-        for (const item of work) {
-          execute(item).catch(reportError)
+        self.setFollowUnaligned(plans.some(p => p?.unaligned))
+        self.setFollowApproximate(plans.some(p => p?.approximate))
+        for (const plan of plans) {
+          if (plan?.work) {
+            const { work } = plan
+            execute(work).catch((e: unknown) => {
+              reportError(work.pair.level, e)
+            })
+          }
         }
       },
       { name: 'SyntenyFollow' },
@@ -266,15 +204,17 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           const window = followAnchorWindow(
             stayingView.dynamicBlocks.contentBlocks,
           )
-          if (!window) {
-            continue
-          }
           // the block the last settle chose, rather than re-picking one per
           // frame. Its direction has to match, since it was picked on whichever
           // axis `toMate` was then, and its display has to be alive, since
           // hiding a synteny track destroys it and reading featureData throws.
-          const pick = levelStates.get(level)?.pick
-          if (!pick || pick.toMate !== toMate || !isAlive(pick.display)) {
+          const pick = levelStates.pickFor(level)
+          if (
+            !window ||
+            !pick ||
+            pick.toMate !== toMate ||
+            !isAlive(pick.display)
+          ) {
             continue
           }
           const data = pick.display.featureData

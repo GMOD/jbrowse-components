@@ -26,6 +26,7 @@ interface SyntenyView {
   views: LinearGenomeViewModel[]
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
   followApproximate: boolean
+  followUnaligned: boolean
   setWidth: (n: number) => void
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
   setFollowAnchorIndex: (idx: number) => void
@@ -301,6 +302,47 @@ test('a resolve landing after the mode is switched off does not move the row', a
   expect(windowOf(target!)).toEqual(held)
 })
 
+// The same in-flight resolve, against the other way a pass can decide the rows
+// hold. Only a pass that HAD something to resolve used to bump the sequence, so
+// the pass that lights `followUnaligned` — the one whose whole claim is that
+// the rows are holding — let the previous window's answer through underneath it.
+test('a resolve landing after the anchor has left every alignment does not move the row', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  const { rpcManager } = getSession(query!)
+  const inner = rpcManager.call.bind(rpcManager)
+  let release: (() => void) | undefined
+  jest
+    .spyOn(rpcManager, 'call')
+    .mockImplementation(async (sessionId, functionName, args) => {
+      if (functionName === 'SyntenyResolveMatchingRegion') {
+        await new Promise<void>(resolve => {
+          release = resolve
+        })
+      }
+      return inner(sessionId, functionName, args)
+    })
+
+  view.setRowSyncMode('follow')
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(release).toBeDefined()
+  }, timeout)
+  const held = windowOf(target!)
+
+  // query 15925..16409 is this file's widest unaligned gap, so a window well
+  // inside it has no answer at all and both rows are meant to stay put
+  await query!.navToLocString('ctgA:16100..16250', QUERY_ASM)
+  await waitFor(() => {
+    expect(view.followUnaligned).toBe(true)
+  }, timeout)
+
+  release!()
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  expect(windowOf(target!)).toEqual(held)
+})
+
 test('anchoring the bottom row reverses which row moves', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
@@ -472,6 +514,53 @@ test('anchoring the middle row drives both neighbours outward', async () => {
     expect(bottom.start).toBeGreaterThan(DEL_LOCUS - 500)
     expect(bottom.end).toBeLessThan(DEL_LOCUS + 1500)
   }, timeout)
+}, 60000)
+
+// A follow that cannot resolve cannot resolve repeatedly, so it says so once.
+// The slot holding that was one per VIEW, and with two levels the one that
+// resolves fine cleared it every pass and the one that never will reported
+// itself again behind it. Nothing downstream absorbs the repeats either:
+// `notifyError` always attaches a `report` action, and an actionable snackbar
+// is exactly what bypasses the snackbar model's own message dedup.
+test('a level that can never resolve reports itself once, not once a settle', async () => {
+  const view = await openThreeRowView()
+  const [ins, volvox] = view.views
+  const session = getSession(ins!) as unknown as {
+    snackbarMessages: { message: string }[]
+  }
+  const { rpcManager } = getSession(ins!)
+  const inner = rpcManager.call.bind(rpcManager)
+  jest
+    .spyOn(rpcManager, 'call')
+    .mockImplementation(async (sessionId, functionName, args) => {
+      // the LOWER level's resolve, named by the query axis it walks — the upper
+      // one asks about volvox_ins and goes through untouched
+      const { regions } = args as { regions?: { assemblyName: string }[] }
+      if (
+        functionName === 'SyntenyResolveMatchingRegion' &&
+        regions?.[0]?.assemblyName === 'volvox'
+      ) {
+        throw new Error('this level cannot resolve')
+      }
+      return inner(sessionId, functionName, args)
+    })
+
+  view.setRowSyncMode('follow')
+  for (const locus of [INS_LOCUS, INS_LOCUS + 3000, INS_LOCUS + 6000]) {
+    await ins!.navToLocString(`ctgA:${locus}..${locus + 1000}`, 'volvox_ins')
+    // the working level placing its row is what proves the pass ran at all,
+    // and it is also the success that used to clear the failing level's slot
+    await waitFor(() => {
+      expect(windowOf(volvox!).start).toBeGreaterThan(locus - 5000)
+    }, timeout)
+  }
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  expect(
+    session.snackbarMessages.filter(m =>
+      m.message.includes('this level cannot resolve'),
+    ),
+  ).toHaveLength(1)
 }, 60000)
 
 test('the two row-sync modes are mutually exclusive', async () => {
