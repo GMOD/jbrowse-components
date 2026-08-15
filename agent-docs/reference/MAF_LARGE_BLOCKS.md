@@ -200,14 +200,15 @@ still has no zoom-out path, and force-load remains the only way past the gate.
 
 ## Render cost is no longer the open question
 
-Worth stating so the next person doesn't re-profile it: nine passes have landed
+Worth stating so the next person doesn't re-profile it: ten passes have landed
 (sub-pixel decimation on the base cells, `IdentityColumns` on the identity plot,
 memoized source-chromosome ranks and inversion consensus, the deletion overlay
 gated on what its label can fit, `bpLo`/`bpHi` culling for every marker overlay,
 `blockIndexAtBp` replacing two linear block scans, per-*column* culling in
 `computeVisibleLabels`, the codon spine's per-block indexes built on first use,
-and the source-chromosome ranks re-keyed off `renderBlocks`). `git log --oneline
--- plugins/maf` has them with their numbers.
+the source-chromosome ranks re-keyed off `renderBlocks`, and the per-region event
+index the marker overlays now project). `git log --oneline -- plugins/maf` has
+them with their numbers.
 
 Three lessons generalize, and they are why the list above is not the point:
 
@@ -240,14 +241,52 @@ Three lessons generalize, and they are why the list above is not the point:
   an `autorun` — a bare read won't do, since MobX doesn't cache an unobserved
   computed at all.
 
-**Still on the table, and the next real step:** the insertion and deletion walks
-are *pan-independent*. `(anchorBp, rowIndex, length)` does not change when the
-view moves — only the bp->px mapping does — so the walks could be a per-region
-memoized computed off `rpcDataMap` (block-major, with a per-block offset index
-so the bp cull still works) and the per-frame cost would drop to one pass over
-the events. Order 400k events x 12 bytes ~= 5MB per region held while loaded.
-Not attempted here because the insertion geometry is shared with the hover
-hit-test, so it is the one walk worth being careful with.
+**The pan-independence step is built** (`mafRowEvents.ts`), and it landed for
+insertions and inversions but deliberately *not* for deletions. The premise held:
+`(positionBp, rowIndex, length)` does not change when the view moves, only the
+bp->px mapping over it does, so the overlays project a per-region index instead
+of re-deriving it from the alignment bytes every frame. The care the sketch asked
+for was cheap in the end — the shared `forEachInsertion` is what fills the index
+and the hover hit-test still calls it directly for the row under the cursor, so
+the two cannot disagree.
+
+Three things the sketch got wrong, and they are the transferable part:
+
+- **Build it per block on first touch, not per region up front.** A whole-region
+  build inverts the cost model the walks already had. They are proportional to
+  the *viewport*; eagerly indexing makes the first frame after a fetch
+  proportional to the buffered span instead — 145ms against a 4.5ms frame when
+  zoomed in on a 54k-block region, a jank on every navigation bought with
+  cheaper pans. Filling only the blocks the bp cull admits keeps every frame
+  proportional to what it draws, and a full pan across the region still walks it
+  exactly once.
+- **Deletions want a bound, not an index.** An insertion needs a reference gap to
+  exist, so insertions are sparse; a deletion is any run of alignment gap, a few
+  percent of every row, which is millions of events per region where insertions
+  are hundreds of thousands — the 5MB estimate above was for the wrong walk. They
+  get an exact per-block bound instead: a run can be at most as long as its
+  block's own reference span, so at a fixed zoom a block narrower than one digit
+  cannot label and is answered whole, for all its rows, by one subtraction.
+  Indexing what is cheap to bound is how a per-frame walk becomes a per-region
+  memory leak.
+- **The merge underneath it needed no index either.** Zoomed out the insertion
+  overlay collapses everything in a pixel column of a row to the longest, which
+  was a `Map` of `Map`s. A row's events arrive in ascending bp and bp->px is
+  monotonic, so the ones sharing a column are *adjacent* in that row's stream:
+  two viewport-sized typed arrays holding the last column and marker per visible
+  row replace the whole structure.
+
+`plugins/maf/benches/mafOverlays.bench.ts` A/Bs all three against any git ref and
+fails the run unless the markers match as a multiset. Steady-state pans came back
+several-fold faster on every shape, clearing the control by a wide margin; the
+figures were taken on a contended box, so re-run it on a quiet one before quoting
+a number. Two traps it walked into first are worth knowing, since both reported
+confidently and neither was noise — a shape whose reference gaps every 29 columns
+capped *every* deletion run at 28bp, so the overlay emitted zero markers on every
+shape while the bench went on timing the walk and calling it the full case; and
+rounds that picked their pan position by round index, which made `min` across
+rounds a min across twelve different workloads rather than the least-contended
+sample of one.
 
 What remains un-decimated on the main thread is bounded by block size, not span —
 `drawMafBlocks` (Canvas2D fallback + SVG export) still walks a whole block once

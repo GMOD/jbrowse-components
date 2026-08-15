@@ -129,6 +129,24 @@ entirely. That comparison reported **10x** and was meaningless. If an arm is
 suspiciously fast, check it is still computing the answer — which is what the
 identity check is for.
 
+**A fixture that cannot produce the event under test.** The synthetic MAF in
+`mafOverlays.bench.ts` put a reference gap every 29 columns, and a reference gap
+*ends* a deletion run — so no run could exceed 28bp, none was ever wide enough to
+label, and the deletion overlay emitted **0 markers on every shape** while the
+bench went on timing the walk. The numbers were real; what was false was the
+claim that one of the shapes exercised the drawing path. The identity check
+passes happily here, because zero equals zero. **Print the count of whatever the
+code under test emits, on every row**, and treat a zero as a broken fixture until
+proven otherwise — it is the one thing an identity check structurally cannot see.
+
+**Rounds that vary the workload.** The same bench picked its pan position by
+round index, so `min` across 12 rounds was a min across 12 *different* frames —
+the cheapest position, not the least-contended sample of one — and `--rounds`
+changed what was measured rather than how well. Caught by reading rather than by
+a wrong number, which is the point: it degrades quietly, in the direction of
+whichever arm happens to like the easiest frame. If a bench sweeps positions or
+inputs, a round has to be the whole sweep.
+
 ### Tools that cannot see what you are asking
 
 **A jest probe is not a timing harness for typed-array code — it inflates by
@@ -193,7 +211,7 @@ browser.
 
 ## Worked examples
 
-Three benches in the repo implement the pattern, and each carries the detail
+Four benches in the repo implement the pattern, and each carries the detail
 specific to its own question:
 
 - `plugins/alignments/benches/mismatchWalk.bench.ts` — A/Bs a library against
@@ -203,6 +221,11 @@ specific to its own question:
   with a separately-declared control class.
 - `plugins/maf/benches/mafCoverage.bench.ts` — A/Bs the working tree against
   another git ref, over synthetic input whose shape is swept deliberately.
+- `plugins/maf/benches/mafOverlays.bench.ts` — same, for code that runs on
+  *every frame of a pan* rather than once. It reports two times per row, a cold
+  call and a whole pan sweep, because an implementation that pays up front to
+  make later frames cheap has to be judged on both and quoting only the second
+  would be a story.
 
 Related: [bgzf-worker-pool](BGZF_WORKER_POOL.md) for the pool's real numbers per
 format, and
