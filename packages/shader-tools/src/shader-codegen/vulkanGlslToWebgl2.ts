@@ -129,6 +129,60 @@ function rewriteBraceInitializers(source: string) {
   return out + source.slice(cursor)
 }
 
+// Drop a `struct X { … };` whose name appears nowhere else in the shader.
+//
+// slangc emits the struct backing a `ConstantBuffer<T>` TWICE into GLSL: once as
+// a plain declaration, and again as the `layout(std140) uniform` block that is
+// the actual binding. Only the block is ever referenced — the plain one names no
+// variable, no parameter and no return type — but it is emitted in full, member
+// by member, into every stage that reads a uniform. It is the largest thing in
+// the file for a shader whose block is large: 1.8 KB of the alignments read
+// pass's 18 KB vertex source, 44 KB across that plugin's twenty passes, and all
+// of it is shipped, since a generated module carries its shader as a string
+// literal and both backends' sources are exported side by side.
+//
+// Stated as "unreferenced", not as "the one named like the uniform block",
+// because the shape of slangc's duplicate is not something to pin: what makes it
+// safe to drop is that nothing can read it, which is checkable here and stays
+// true whatever the emitter renames. Anything this gets wrong is caught in the
+// same build — `glslangValidator` compiles the processed output, so a struct
+// that WAS reachable fails the shader rather than the browser.
+//
+// Runs after `rewriteBraceInitializers`, which turns `X v = { … }` into a
+// `X( … )` constructor call: a struct reached only that way must be counted as
+// referenced, and after the rewrite it textually is.
+function dropUnreferencedStructs(source: string) {
+  const declRe = /\bstruct\s+(\w+)\s*\{/g
+  let out = ''
+  let cursor = 0
+  for (let m = declRe.exec(source); m; m = declRe.exec(source)) {
+    const open = m.index + m[0].length - 1
+    let depth = 1
+    let i = open + 1
+    for (; i < source.length && depth > 0; i++) {
+      if (source[i] === '{') {
+        depth++
+      } else if (source[i] === '}') {
+        depth--
+      }
+    }
+    const rest = source.slice(i)
+    const semi = /^\s*;/.exec(rest)
+    if (depth !== 0 || !semi) {
+      continue
+    }
+    const uses = new RegExp(String.raw`\b${m[1]!}\b`, 'g')
+    if ((source.match(uses) ?? []).length > 1) {
+      continue
+    }
+    const end = i + semi[0].length
+    out += source.slice(cursor, m.index)
+    cursor = end
+    declRe.lastIndex = end
+  }
+  return out + source.slice(cursor)
+}
+
 export function vulkanGlslToWebgl2(
   source: string,
   stage: 'vertex' | 'fragment',
@@ -177,6 +231,7 @@ export function vulkanGlslToWebgl2(
       : out.replaceAll(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
 
   out = rewriteBraceInitializers(out)
+  out = dropUnreferencedStructs(out)
 
   if (renames.uniformBlockName) {
     out = renameUniformBlock(out, renames.uniformBlockName)

@@ -74,8 +74,13 @@ describe('vulkanGlslToWebgl2', () => {
     expect(() => vulkanGlslToWebgl2(src, 'vertex')).toThrow(/nested brace/)
   })
 
+  // `{ … };` after a declarator is an initializer; after `struct X` it is the
+  // definition, and the rewriter must tell them apart. Referenced on purpose, or
+  // `dropUnreferencedStructs` removes it for its own reasons and this stops
+  // testing the rewriter.
   test('leaves a struct definition alone', () => {
-    const src = '#version 460\nstruct Foo_0 { float a; };\nvoid main() { }\n'
+    const src =
+      '#version 460\nstruct Foo_0 { float a; };\nvoid main() { Foo_0 f; }\n'
     expect(vulkanGlslToWebgl2(src, 'vertex')).toContain(
       'struct Foo_0 { float a; };',
     )
@@ -171,5 +176,60 @@ describe('mangled-name renames', () => {
     )
     expect(out).toContain('out vec4 v_color;')
     expect(out).toContain('uniform sampler2D u_ramp;')
+  })
+})
+
+// slangc emits the struct behind a `ConstantBuffer<T>` twice — a plain
+// declaration nothing can reach, then the `layout(std140) uniform` block that is
+// the real binding — and the plain one is shipped, member by member, in every
+// generated module. Dropping it is stated as "unreferenced" rather than as a
+// pattern match on slangc's shape, so these cases are about what may and may not
+// be reached rather than about how the duplicate happens to be named.
+describe('unreferenced struct declarations', () => {
+  const UNIFORM_BLOCK =
+    'struct Uniforms_0\n{\n    float a_0;\n    vec4 pal_0[9];\n};\n\n' +
+    'layout(std140) uniform block_Uniforms_0\n{\n    float a_0;\n' +
+    '    vec4 pal_0[9];\n}u_0;\n'
+
+  test('drops the duplicate the uniform block leaves behind', () => {
+    const out = vulkanGlslToWebgl2(`#version 460\n${UNIFORM_BLOCK}`, 'vertex', {
+      uniformBlockName: 'block_Uniforms_0',
+    })
+    expect(out).not.toContain('struct Uniforms_0')
+    // The binding itself survives, renamed — this is the half that matters.
+    expect(out).toContain('layout(std140) uniform Uniforms')
+    expect(out).toContain('}u_0;')
+  })
+
+  test.each([
+    ['a local declaration', 'void main() { VsOut_0 o; }'],
+    ['a return type', 'VsOut_0 make() { }'],
+    ['a parameter', 'void take(VsOut_0 v) { }'],
+    ['a constructor call', 'void main() { x = VsOut_0(1.0); }'],
+  ])('keeps a struct reached by %s', (_what, use) => {
+    const src = `#version 460\nstruct VsOut_0\n{\n    vec4 p_0;\n};\n${use}\n`
+    expect(vulkanGlslToWebgl2(src, 'vertex')).toContain('struct VsOut_0')
+  })
+
+  // The rewrite above turns `X v = { … }` into `X( … )`, so a struct reached
+  // only through a brace initializer is referenced by the time this runs. It
+  // would not be if the two ever swapped order.
+  test('keeps a struct reached only by a brace initializer', () => {
+    const src =
+      '#version 460\nstruct Pair_0\n{\n    float x_0;\n};\n' +
+      'void main() { Pair_0 p = { 1.0 }; }\n'
+    const out = vulkanGlslToWebgl2(src, 'vertex')
+    expect(out).toContain('struct Pair_0')
+    expect(out).toContain('Pair_0 p = Pair_0(1.0);')
+  })
+
+  // A prefix is not a reference. `Uniforms_0` and `Uniforms_01` are two structs.
+  test('does not count a name that merely starts with the same text', () => {
+    const src =
+      '#version 460\nstruct Uniforms_0\n{\n    float a_0;\n};\n' +
+      'void main() { Uniforms_01 v; }\n'
+    expect(vulkanGlslToWebgl2(src, 'vertex')).not.toContain(
+      'struct Uniforms_0\n',
+    )
   })
 })
