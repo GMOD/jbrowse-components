@@ -45,6 +45,10 @@ export async function renameRegionsForAdapter({
  * fetched alignment back to canonical before the diagonalization matches it
  * against the (canonical) query regions. Built on the main thread because the
  * worker has no assemblyManager to resolve aliases.
+ *
+ * FOR A WORKER, in other words — a main-thread caller wants
+ * `getCanonicalRefNameFn`, which reads the alias table directly and does not
+ * inherit this map's one-spelling-per-contig limit. See its header.
  */
 export async function getAdapterToCanonicalRefNameMap({
   assemblyManager,

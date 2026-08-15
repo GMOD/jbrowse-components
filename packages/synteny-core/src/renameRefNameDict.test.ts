@@ -1,40 +1,46 @@
 import { renameRefNameDict } from './renameRefNameDict.ts'
 
-test('renames the entries a map names', () => {
+// stands in for `getCanonicalRefNameFn`'s resolver: the assembly's alias table,
+// which is total and answers identity for a name it does not know
+const canonicalizer = (aliases: Record<string, string>) => (name: string) =>
+  aliases[name] ?? name
+
+test('renames the entries the assembly knows an alias for', () => {
   const { dict, ids } = renameRefNameDict({
     dict: ['1', '2'],
     ids: new Uint32Array([0, 1, 0]),
-    map: { '1': 'chr1', '2': 'chr2' },
+    canonical: canonicalizer({ '1': 'chr1', '2': 'chr2' }),
   })
   expect(dict).toEqual(['chr1', 'chr2'])
   expect([...ids]).toEqual([0, 1, 0])
 })
 
 // The identity case, which is every config we ship: the file and the assembly
-// agree, so `loadRefNameMap` builds an identity map and this has to be a no-op
-// rather than a wrong answer.
-test('leaves a name the map does not hold alone', () => {
+// agree, so this has to be a no-op rather than a wrong answer.
+test('leaves a name with no alias alone', () => {
   const { dict } = renameRefNameDict({
     dict: ['ctgA', 'ctgB'],
     ids: new Uint32Array([0, 1]),
-    map: { ctgA: 'ctgA' },
+    canonical: canonicalizer({}),
   })
   expect(dict).toEqual(['ctgA', 'ctgB'])
 })
 
-// The reason this is not a `.map()` in place. `pickFollowFeature` and
-// `followWindowMapping` both resolve a name to an id ONCE with `dict.indexOf`
-// and then compare integers, so a duplicated entry would silently stop matching
-// every feature carrying the second id.
-test('re-interns when two spellings collapse onto one canonical name', () => {
+// The reason this is not a `.map()` in place, and the shape a collapse actually
+// takes: ONE aliased spelling is enough, because the canonical name it resolves
+// to is a name the same file also uses, which passes through unchanged.
+// `pickFollowFeature` and `followWindowMapping` both resolve a name to an id
+// once with `dict.indexOf` and then compare integers, so a duplicated entry
+// would silently stop matching every feature carrying the second id.
+test('re-interns when an aliased spelling collapses onto one already present', () => {
   const { dict, ids } = renameRefNameDict({
     dict: ['chr1', '1', 'chr2'],
     ids: new Uint32Array([0, 1, 2, 1]),
-    map: { chr1: 'chr1', '1': 'chr1', chr2: 'chr2' },
+    canonical: canonicalizer({ chr1: '1', chr2: '2' }),
   })
-  expect(dict).toEqual(['chr1', 'chr2'])
+  expect(dict).toEqual(['1', '2'])
   expect([...ids]).toEqual([0, 0, 1, 0])
-  expect(dict.indexOf('chr1')).toBe(0)
+  expect(dict.indexOf('1')).toBe(0)
 })
 
 // The ids array is per-feature and this runs once per fetch, so the ordinary
@@ -46,7 +52,7 @@ test('hands back the same ids array when nothing collapsed', () => {
     renameRefNameDict({
       dict: ['1', '2'],
       ids,
-      map: { '1': 'chr1', '2': 'chr2' },
+      canonical: canonicalizer({ '1': 'chr1', '2': 'chr2' }),
     }).ids,
   ).toBe(ids)
 })

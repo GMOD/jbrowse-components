@@ -54,6 +54,7 @@ export {
   renameRegionsForAdapter,
 } from './renameRegionsForAdapter.ts'
 export { renameRefNameDict } from './renameRefNameDict.ts'
+export { getCanonicalRefNameFn } from './getCanonicalRefNameFn.ts'
 export { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
 export { releaseTemporaryAssemblies } from './releaseTemporaryAssemblies.ts'
 export type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'

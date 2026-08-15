@@ -1,6 +1,6 @@
 import { assembleLocStringRaw, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getAdapterToCanonicalRefNameMap } from '@jbrowse/synteny-core'
+import { getCanonicalRefNameFn } from '@jbrowse/synteny-core'
 
 import type {
   ResolvedSpan,
@@ -85,6 +85,19 @@ export async function resolveMatchingSpan({
   const { assemblyManager, rpcManager } = getSession(model)
   const sessionId = getRpcSessionId(model)
   const { adapterConfig } = model
+  // Read BEFORE the call, and as a string: the span comes back canonicalized
+  // against whichever panel it landed on -- `toMate` moves the mate axis (v1),
+  // otherwise the feature axis (v0) -- and by the time it does, that panel may
+  // be gone, where touching its MST regions throws.
+  //
+  // The AXIS's assembly rather than the feature's, because the operand this has
+  // to agree with is view state: `alreadyShowing` compares against where the
+  // moving row is and `positionViewOnSpan` against its `displayedRegions`. An
+  // all-vs-all file can name a mate assembly the session does not have at all,
+  // and resolving in that one would be resolving in the wrong namespace even
+  // where it succeeds.
+  const axis = toMate ? model.connectedViews?.v1 : model.connectedViews?.v0
+  const axisAssemblyName = axis?.assemblyNames[0]
   const span = await rpcManager.call(
     sessionId,
     'SyntenyResolveMatchingRegion',
@@ -120,20 +133,12 @@ export async function resolveMatchingSpan({
   // The second of the two adapter->canonical channels, and the reason this one
   // is not optional: `alreadyShowing` compares this refName against where the
   // moving row actually is, which is canonical, so canonicalizing only the
-  // fetch would leave it never matching and renavigating on every wake. The
-  // axis is whichever one the span landed on -- `toMate` moves the mate axis
-  // (v1), otherwise the feature axis (v0).
-  const axis = toMate ? model.connectedViews?.v1 : model.connectedViews?.v0
-  if (!axis) {
-    return span
-  }
-  const map = await getAdapterToCanonicalRefNameMap({
+  // fetch would leave it never matching and renavigating on every wake.
+  const canonical = await getCanonicalRefNameFn({
     assemblyManager,
-    sessionId,
-    adapterConfig,
-    regions: axis.displayedRegions,
+    assemblyName: axisAssemblyName,
   })
-  return { ...span, refName: map[span.refName] ?? span.refName }
+  return { ...span, refName: canonical(span.refName) }
 }
 
 /**

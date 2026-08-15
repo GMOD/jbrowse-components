@@ -1,6 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import {
-  getAdapterToCanonicalRefNameMap,
+  getCanonicalRefNameFn,
   installAssemblySwapCheck,
   installComparativeFetchAutorun,
   renameRefNameDict,
@@ -52,6 +52,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             drawCIGARMatchesOnly: view.drawCIGARMatchesOnly,
             drawLocationMarkers: view.drawLocationMarkers,
             lodTier: self.lodTier,
+            // Captured as strings HERE, not derived from `displayedRegions`
+            // after the RPC: those are MST nodes and a fetch can outlive the
+            // level it was started from, where reading one throws into an
+            // unawaited promise. `assemblyNames` is the unique set of the
+            // regions' own `assemblyName`s, so this is the same value read
+            // while it is still safe to read.
+            queryAssemblyName: v0.assemblyNames[0],
+            targetAssemblyName: v1.assemblyNames[0],
             rawQuery: {
               bpPerPx: v0.bpPerPx,
               offsetPx: v0.offsetPx,
@@ -73,6 +81,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       {
         rawQuery,
         rawTarget,
+        queryAssemblyName,
+        targetAssemblyName,
         drawCIGAR,
         drawCIGARMatchesOnly,
         drawLocationMarkers,
@@ -124,33 +134,28 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       // channel: `ResolvedSpan.refName` is renamed in `resolveMatchingSpan`,
       // and doing either alone is worse than doing neither.
       //
-      // ONE MAP PER AXIS, not one merged map, so two contigs spelled alike on
-      // the two assemblies cannot collide. Both are memoized per adapter config
-      // by `getRefNameMapForAdapter`, and `rename` above just loaded them, so
-      // this costs no fetch.
-      const [queryMap, targetMap] = await Promise.all([
-        getAdapterToCanonicalRefNameMap({
+      // ONE RESOLVER PER AXIS, not one shared, so two contigs spelled alike on
+      // the two assemblies cannot collide. Both assemblies are loaded by now —
+      // `rename` above needed them — so neither await goes to the network.
+      const [queryCanonical, targetCanonical] = await Promise.all([
+        getCanonicalRefNameFn({
           assemblyManager,
-          sessionId,
-          adapterConfig,
-          regions: rawQuery.displayedRegions,
+          assemblyName: queryAssemblyName,
         }),
-        getAdapterToCanonicalRefNameMap({
+        getCanonicalRefNameFn({
           assemblyManager,
-          sessionId,
-          adapterConfig,
-          regions: rawTarget.displayedRegions,
+          assemblyName: targetAssemblyName,
         }),
       ])
       const query = renameRefNameDict({
         dict: result.refNameDict,
         ids: result.refNameIds,
-        map: queryMap,
+        canonical: queryCanonical,
       })
       const target = renameRefNameDict({
         dict: result.mateRefNameDict,
         ids: result.mateRefNameIds,
-        map: targetMap,
+        canonical: targetCanonical,
       })
       return {
         ...result,
