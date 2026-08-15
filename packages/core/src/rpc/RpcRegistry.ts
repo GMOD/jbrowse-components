@@ -103,8 +103,16 @@ export type RpcReturn<M extends RpcMethodName> = RpcRegistry[M]['return']
  * that omitting them made a method silently uncancellable and silent, with the
  * call site still type-checking (an `...opts` spread suppresses the
  * excess-property check). `CoreGetExportData` shipped that way.
+ *
+ * A `type`, not an `interface`, and that is load-bearing rather than style. An
+ * interface gets no implicit index signature, and an intersection containing one
+ * inherits the lack — so `RpcExecuteArgs<M>` would stop being assignable to the
+ * `Record<string, unknown>` that adapter options are typed as. Handing the whole
+ * args bag to the adapter is how most methods forward these two without naming
+ * them (`getRefNames(deserializedArgs)`), so an interface here breaks exactly
+ * the pattern the type exists to support.
  */
-export interface RpcHandles {
+export type RpcHandles = {
   stopToken?: StopToken
   statusCallback?: StatusCallback
 }

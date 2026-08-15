@@ -3,6 +3,7 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 
 import type { ResolvedSpan, SpanOfInterest } from './resolveAlignmentSpan.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
 export interface SyntenyResolveMatchingRegionArgs {
@@ -53,7 +54,7 @@ export default class SyntenyResolveMatchingRegion extends RpcMethodTypeWithRenam
   name = 'SyntenyResolveMatchingRegion' as const
 
   async execute(
-    args: SyntenyResolveMatchingRegionArgs,
+    args: RpcExecuteArgs<'SyntenyResolveMatchingRegion'>,
     rpcDriverClassName: string,
   ) {
     const {

@@ -2,6 +2,7 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type { DotplotFeaturesAndPositionsResult } from './executeDotplotFeaturesAndPositions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
@@ -27,7 +28,7 @@ export class DotplotGetFeaturesAndPositions extends RpcMethodType<'DotplotGetFea
   name = 'DotplotGetFeaturesAndPositions' as const
 
   async execute(
-    args: DotplotGetFeaturesAndPositionsArgs,
+    args: RpcExecuteArgs<'DotplotGetFeaturesAndPositions'>,
     rpcDriverClassName: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(

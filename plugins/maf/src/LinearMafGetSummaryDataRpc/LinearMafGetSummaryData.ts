@@ -4,6 +4,7 @@ import type {
   LinearMafGetSummaryDataArgs,
   LinearMafGetSummaryDataResult,
 } from './executeMafSummaryData.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -17,7 +18,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class LinearMafGetSummaryData extends RpcMethodTypeWithFiltersAndRenameRegions<'LinearMafGetSummaryData'> {
   name = 'LinearMafGetSummaryData' as const
 
-  async execute(args: LinearMafGetSummaryDataArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'LinearMafGetSummaryData'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

@@ -1,6 +1,8 @@
 import { freeAdapterResources } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
+import type { RpcExecuteArgs } from '../RpcRegistry.ts'
+
 /**
  * Drop cached data adapters associated with the given session.
  *
@@ -17,7 +19,7 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 export default class CoreFreeResources extends RpcMethodType<'CoreFreeResources'> {
   name = 'CoreFreeResources' as const
 
-  async execute(args: { sessionId?: string }) {
+  async execute(args: RpcExecuteArgs<'CoreFreeResources'>) {
     await freeAdapterResources(args)
   }
 

@@ -5,23 +5,12 @@ import {
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
-import type { StatusCallback } from '../../util/progress.ts'
-import type { StopToken } from '../../util/stopToken.ts'
+import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
   name = 'CoreGetRefNames' as const
 
-  async execute(
-    args: {
-      sessionId: string
-      stopToken?: StopToken
-      statusCallback?: StatusCallback
-      adapterConfig: Record<string, unknown>
-      assemblyName?: string
-      sequenceAdapter?: Record<string, unknown>
-    },
-    rpcDriver: string,
-  ) {
+  async execute(args: RpcExecuteArgs<'CoreGetRefNames'>, rpcDriver: string) {
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { sessionId, adapterConfig, sequenceAdapter } = deserializedArgs
     const { dataAdapter } = await getAdapter(

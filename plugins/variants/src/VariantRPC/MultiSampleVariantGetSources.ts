@@ -4,6 +4,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { Source } from '../shared/types.ts'
 import type { MultiSampleVariantGetSourcesArgs } from './types.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -18,7 +19,7 @@ export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRen
   name = 'MultiSampleVariantGetSources' as const
 
   async execute(
-    args: MultiSampleVariantGetSourcesArgs,
+    args: RpcExecuteArgs<'MultiSampleVariantGetSources'>,
     rpcDriverClassName: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(

@@ -2,16 +2,12 @@ import { isRegionsAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
+import type { RpcExecuteArgs } from '../RpcRegistry.ts'
+
 export default class CoreGetRegions extends RpcMethodType<'CoreGetRegions'> {
   name = 'CoreGetRegions' as const
 
-  async execute(
-    args: {
-      sessionId: string
-      adapterConfig: Record<string, unknown>
-    },
-    rpcDriver: string,
-  ) {
+  async execute(args: RpcExecuteArgs<'CoreGetRegions'>, rpcDriver: string) {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     const { sessionId, adapterConfig } = deserializedArgs

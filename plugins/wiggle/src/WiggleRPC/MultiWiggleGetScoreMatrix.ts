@@ -3,6 +3,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import type { GetScoreMatrixArgs } from './types.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -16,7 +17,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiWiggleGetScoreMatrix'> {
   name = 'MultiWiggleGetScoreMatrix' as const
 
-  async execute(args: GetScoreMatrixArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'MultiWiggleGetScoreMatrix'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

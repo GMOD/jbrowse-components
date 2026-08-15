@@ -5,6 +5,7 @@ import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
 import type { BaseMafRpcArgs, Sample } from '../types.ts'
 import type { FastaResult } from '../util/processFeaturesToFasta.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -25,7 +26,7 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
   name = 'MafGetSequences' as const
 
   async execute(
-    args: MafGetSequencesArgs,
+    args: RpcExecuteArgs<'MafGetSequences'>,
     rpcDriverClassName: string,
   ): Promise<FastaResult> {
     const deserializedArgs = await this.deserializeArguments(

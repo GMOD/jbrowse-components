@@ -1,6 +1,7 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import type { GroupedAlignmentsResult, RenderAlignmentDataArgs } from './types'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -16,7 +17,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<'RenderAlignmentData'> {
   name = 'RenderAlignmentData' as const
 
-  async execute(args: RenderAlignmentDataArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'RenderAlignmentData'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

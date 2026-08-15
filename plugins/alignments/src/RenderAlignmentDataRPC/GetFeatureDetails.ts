@@ -2,6 +2,7 @@ import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
@@ -29,7 +30,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRenameRegions<'GetPileupFeatureDetails'> {
   name = 'GetPileupFeatureDetails' as const
 
-  async execute(args: GetFeatureDetailsArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'GetPileupFeatureDetails'>,
+    rpcDriverClassName: string,
+  ) {
     const {
       sessionId,
       adapterConfig,

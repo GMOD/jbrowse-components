@@ -2,6 +2,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import type { GetGenotypeMatrixArgs } from './types.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -17,7 +18,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class MultiSampleVariantGetGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiSampleVariantGetGenotypeMatrix'> {
   name = 'MultiSampleVariantGetGenotypeMatrix' as const
 
-  async execute(args: GetGenotypeMatrixArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'MultiSampleVariantGetGenotypeMatrix'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

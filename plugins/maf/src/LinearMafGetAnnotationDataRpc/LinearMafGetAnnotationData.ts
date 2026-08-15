@@ -4,6 +4,7 @@ import type {
   LinearMafGetAnnotationDataArgs,
   LinearMafGetAnnotationDataResult,
 } from './executeMafAnnotationData.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -18,7 +19,7 @@ export default class LinearMafGetAnnotationData extends RpcMethodTypeWithFilters
   name = 'LinearMafGetAnnotationData' as const
 
   async execute(
-    args: LinearMafGetAnnotationDataArgs,
+    args: RpcExecuteArgs<'LinearMafGetAnnotationData'>,
     rpcDriverClassName: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(

@@ -1,6 +1,7 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
 import type { HicDataResult, RenderHicDataArgs } from './types.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -14,7 +15,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderHicData extends RpcMethodTypeWithRenameRegions<'RenderHicData'> {
   name = 'RenderHicData' as const
 
-  async execute(args: RenderHicDataArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'RenderHicData'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

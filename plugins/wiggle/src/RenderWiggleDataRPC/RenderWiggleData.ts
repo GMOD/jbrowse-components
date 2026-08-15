@@ -1,5 +1,6 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
@@ -27,7 +28,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderWiggleData extends RpcMethodTypeWithRenameRegions<'RenderWiggleData'> {
   name = 'RenderWiggleData' as const
 
-  async execute(args: RenderWiggleDataArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'RenderWiggleData'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

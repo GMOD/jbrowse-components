@@ -1,12 +1,15 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegion'
 
-import type { GetFeatureDetailsArgs } from './rpcTypes.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion<'GetCanvasFeatureDetails'> {
   name = 'GetCanvasFeatureDetails' as const
 
-  async execute(args: GetFeatureDetailsArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'GetCanvasFeatureDetails'>,
+    rpcDriverClassName: string,
+  ) {
     const { sessionId, adapterConfig, featureId, region, ...opts } =
       await this.deserializeArguments(args, rpcDriverClassName)
 

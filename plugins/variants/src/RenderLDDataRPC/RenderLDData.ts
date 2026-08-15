@@ -2,6 +2,7 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { LDDataResult } from './types.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
 export interface RenderLDDataArgs {
@@ -31,7 +32,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderLDData extends RpcMethodTypeWithRenameRegions<'RenderLDData'> {
   name = 'RenderLDData' as const
 
-  async execute(args: RenderLDDataArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'RenderLDData'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

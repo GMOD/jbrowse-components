@@ -2,25 +2,14 @@ import { isSequenceAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
-import type { Region } from '../../util/index.ts'
-import type { StatusCallback } from '../../util/progress.ts'
-import type { StopToken } from '../../util/stopToken.ts'
+import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 // CoreGetSequence takes a single region whose refName fetchSeq() has already
 // resolved to the sequence adapter's name, so no region renaming is needed here
 export default class CoreGetSequence extends RpcMethodType<'CoreGetSequence'> {
   name = 'CoreGetSequence' as const
 
-  async execute(
-    args: {
-      sessionId: string
-      region: Region
-      adapterConfig: Record<string, unknown>
-      stopToken?: StopToken
-      statusCallback?: StatusCallback
-    },
-    rpcDriver: string,
-  ) {
+  async execute(args: RpcExecuteArgs<'CoreGetSequence'>, rpcDriver: string) {
     const { stopToken, statusCallback, sessionId, adapterConfig, region } =
       await this.deserializeArguments(args, rpcDriver)
 

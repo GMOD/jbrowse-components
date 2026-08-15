@@ -1,6 +1,6 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
-import type { MultiRowClusterFeaturesArgs } from './rpcTypes.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 // "Cluster rows by similarity" for LinearMultiRowFeatureDisplay: fetches the
 // visible features, builds a per-row × per-bin color-category matrix, and
@@ -10,7 +10,10 @@ import type { MultiRowClusterFeaturesArgs } from './rpcTypes.ts'
 export default class MultiRowClusterFeatures extends RpcMethodTypeWithRenameRegions<'MultiRowClusterFeatures'> {
   name = 'MultiRowClusterFeatures' as const
 
-  async execute(args: MultiRowClusterFeaturesArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'MultiRowClusterFeatures'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

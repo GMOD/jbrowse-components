@@ -4,6 +4,7 @@ import type {
   LinearMafGetAlignmentDataArgs,
   LinearMafGetAlignmentDataResult,
 } from './executeMafAlignmentData.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -18,7 +19,7 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
   name = 'LinearMafGetAlignmentData' as const
 
   async execute(
-    args: LinearMafGetAlignmentDataArgs,
+    args: RpcExecuteArgs<'LinearMafGetAlignmentData'>,
     rpcDriverClassName: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(

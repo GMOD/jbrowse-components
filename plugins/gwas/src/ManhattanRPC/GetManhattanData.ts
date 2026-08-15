@@ -4,6 +4,7 @@ import { parseChrBp } from './parseChrBp.ts'
 import { ldColoringRequested } from './rpcTypes.ts'
 
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -95,7 +96,10 @@ export default class GetManhattanData extends RpcMethodType<'GetManhattanData'> 
     return regions[0]!.refName
   }
 
-  async execute(args: GetManhattanDataArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'GetManhattanData'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
