@@ -36,12 +36,22 @@ const ALIASED = 'volvox_alias_query.paf'
 // missing CIGAR is the point rather than an omission.
 const ALIASED_TARGET = 'volvox_alias_target.paf'
 
+// A THIRD namespace, not a third refName: this track's every refName is
+// canonical and only its second ASSEMBLY name is an alias (`vvx` for volvox,
+// which `test_data/volvox/config.json` already declared). It is a separate file
+// so the two cannot be confused for each other.
+const ALIASED_ASSEMBLY = 'volvox_asmalias.paf'
+
 // In the first 28498M block the two assemblies run 1:1, so the expected answer
 // needs no arithmetic and a row left where it started fails loudly.
 const LOCUS = 'ctgA:10000..11000'
 
 interface SyntenyDisplay {
-  featureData?: { refNameDict: string[]; mateRefNameDict: string[] }
+  featureData?: {
+    refNameDict: string[]
+    mateRefNameDict: string[]
+    mateAssemblyNameDict: string[]
+  }
 }
 
 interface SyntenyView {
@@ -168,4 +178,43 @@ test('the target axis is canonicalized against its own assembly', async () => {
   const { featureData } = view.levels[0]!.linearSyntenyDisplays[0]!
   expect(featureData!.refNameDict).toEqual(['ctgA'])
   expect(featureData!.mateRefNameDict).toEqual(['ctgA'])
+})
+
+// A DIFFERENT NAMESPACE IN THE SAME PAYLOAD, and the failure is the one this
+// whole file is about: nothing is missing, nothing errors, and the follow
+// reports the window unaligned.
+//
+// `mateAssemblyNameDict` carries the adapter's `assemblyNames[]` verbatim, which
+// is config text; `pickFollowFeature` and `followWindowMapping` look the view's
+// `assemblyNames[0]` up in it, which is canonical because it comes off the
+// assembly's regions. A track naming its second assembly `vvx` is still offered
+// on a level showing `volvox` — `syntenyTrackRows` resolves it through
+// `canonicalAssemblyNames` — so the ribbons draw and only the lookup misses. A
+// miss is not a skipped filter: `indexOf` gives -1, no feature carries -1, and
+// every candidate is dropped.
+//
+// The query lane is deliberately not canonicalized alongside it — `feat
+// .assemblyName` goes back out as `SyntenyResolveMatchingRegion`'s `regions[]`
+// assembly, which the adapter matches against its own `assemblyNames[]`. That is
+// also why a track aliasing its FIRST assembly is not this bug: the adapter
+// matches nothing, and a track that draws no ribbons at all is the loud failure.
+test('an assembly named by alias in the track config still follows', async () => {
+  const view = await openWith(ALIASED_ASSEMBLY, ['volvox_del', 'volvox'])
+  const [del, volvox] = view.views
+  expect(
+    view.levels[0]!.linearSyntenyDisplays[0]!.featureData!.mateAssemblyNameDict,
+  ).toEqual(['volvox'])
+
+  view.setRowSyncMode('follow')
+  await del!.navToLocString(LOCUS, 'volvox_del')
+
+  // no CIGAR on that row, so the window maps proportionally across the block:
+  // 45141 bp of volvox_del against 50001 of volvox
+  await waitFor(() => {
+    const win = windowOf(volvox!)
+    expect(win.refName).toBe('ctgA')
+    expect(win.start).toBeGreaterThan(10500)
+    expect(win.end).toBeLessThan(12500)
+  }, timeout)
+  expect(view.followUnaligned).toBe(false)
 })

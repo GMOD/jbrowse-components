@@ -26,7 +26,7 @@ import { makeStringDict } from './stringDict.ts'
  * first-seen order, so they are unchanged unless a collapse actually happened,
  * and the per-feature pass is paid only by the file that needs it.
  */
-export function renameRefNameDict({
+export function renameDictLane({
   dict,
   ids,
   canonical,

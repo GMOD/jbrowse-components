@@ -3,7 +3,7 @@ import {
   getCanonicalRefNameFn,
   installAssemblySwapCheck,
   installComparativeFetchAutorun,
-  renameRefNameDict,
+  renameDictLane,
 } from '@jbrowse/synteny-core'
 import { untracked } from 'mobx'
 
@@ -147,15 +147,36 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           assemblyName: targetAssemblyName,
         }),
       ])
-      const query = renameRefNameDict({
+      const query = renameDictLane({
         dict: result.refNameDict,
         ids: result.refNameIds,
         canonical: queryCanonical,
       })
-      const target = renameRefNameDict({
+      const target = renameDictLane({
         dict: result.mateRefNameDict,
         ids: result.mateRefNameIds,
         canonical: targetCanonical,
+      })
+      // A THIRD LANE, same class, different namespace: `mateAssemblyNameDict`
+      // holds the adapter's `assemblyNames[]` verbatim, which is config text,
+      // and `pickFollowFeature` / `followWindowMapping` / `centerOnFeature`
+      // compare it against a view's `assemblyNames[0]`, which is canonical
+      // because it comes off the assembly's own regions. A track declaring its
+      // SECOND assembly by an alias is offered on the level anyway —
+      // `syntenyTrackRows` resolves it through `canonicalAssemblyNames` — so the
+      // ribbons draw, the id lookup misses, `mateAssemblyId` is -1, and the
+      // filter drops every candidate rather than skipping. The follow then
+      // reports the whole window unaligned.
+      //
+      // Only the MATE lane. `assemblyNameDict` goes back OUT — `feat.assemblyName`
+      // is the `regions[]` assembly of `SyntenyResolveMatchingRegion`, which the
+      // adapter matches against its own `assemblyNames[]` — so canonicalizing it
+      // would break the lookup that currently works.
+      const mateAssembly = renameDictLane({
+        dict: result.mateAssemblyNameDict,
+        ids: result.mateAssemblyNameIds,
+        canonical: name =>
+          assemblyManager.getCanonicalAssemblyName(name) ?? name,
       })
       return {
         ...result,
@@ -163,6 +184,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         refNameIds: query.ids,
         mateRefNameDict: target.dict,
         mateRefNameIds: target.ids,
+        mateAssemblyNameDict: mateAssembly.dict,
+        mateAssemblyNameIds: mateAssembly.ids,
       }
     },
     commit: ({ instanceData, ...featureData }, { fetchKey }) => {

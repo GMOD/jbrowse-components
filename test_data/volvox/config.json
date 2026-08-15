@@ -2323,6 +2323,20 @@
     {
       "type": "SyntenyTrack",
       "category": ["Synteny"],
+      "trackId": "volvox_asmalias.paf",
+      "name": "volvox_asmalias.paf",
+      "assemblyNames": ["volvox_del", "vvx"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "assemblyNames": ["volvox_del", "vvx"],
+        "pafLocation": {
+          "uri": "volvox_asmalias.paf"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "volvox_ins.paf",
       "name": "volvox_ins.paf",
       "assemblyNames": ["volvox", "volvox_ins"],

@@ -1,6 +1,6 @@
 ---
 name: refname-namespaces
-description: Why `refName` means two different things either side of the RPC boundary, the one-sentence rule that says when that is safe (an answer about a region you asked for) and when it is not (an answer naming a location you did not), and the six plugins that hit it and invented six different workarounds — including synteny's, which is two renames covering thirteen readers and where the per-site audit table now lives. Read before comparing a fetched refName against anything, or before adding an RPC that returns a refName.
+description: Why `refName` means two different things either side of the RPC boundary, the one-sentence rule that says when that is safe (an answer about a region you asked for) and when it is not (an answer naming a location you did not), and the six plugins that hit it and invented six different workarounds — including synteny's, which is two renames covering thirteen readers and where the per-site audit table now lives. Also the same defect in ASSEMBLY names, one field over. Read before comparing a fetched refName against anything, or before adding an RPC that returns a refName.
 ---
 
 # The two refName namespaces
@@ -158,7 +158,7 @@ is empty" guard to keep a per-feature pass off the common path; against a
 dictionary the walk is negligible either way, and the guard was dropped.
 
 **The requirement: RE-INTERN after renaming**, which is what
-`renameRefNameDict` exists to do and why it is not a `.map()` in place. The
+`renameDictLane` exists to do and why it is not a `.map()` in place. The
 dictionary's entries are distinct by construction while they are adapter-space,
 because the worker interned them there. Renaming can collapse two of them onto
 one canonical name, and **one aliased spelling is enough to do it**: a file that
@@ -393,6 +393,45 @@ shape of the code, and this thread's own record is that reasoning about it was
 wrong three times out of four. The probe that settles it: a BAM whose header
 spells a contig as an assembly alias, then read the reference panel's
 `displayedRegions` after building a derivative.
+
+## A third namespace in the same payload: ASSEMBLY names
+
+Found by asking what else in `SyntenyFeatureData` is compared against view
+state, and it is the same defect one field over — **probed, and fixed with the
+refName lanes**, so it is here as the shape to recognize rather than as an open
+item.
+
+`mateAssemblyNameDict` carries the adapter's `assemblyNames[]` verbatim, which is
+**config text**. `pickFollowFeature` and `followWindowMapping` look a view's
+`assemblyNames[0]` up in it, and `centerOnFeature` compares the two directly —
+all canonical, because a view's assembly names come off the assembly's own
+regions.
+
+An assembly config may declare `aliases`, and a synteny track naming its second
+assembly by one is **still offered on the level**: `syntenyTrackRows` resolves
+track assembly names through `canonicalAssemblyNames`. So the track loads, the
+ribbons draw, and only the id lookup misses — and a miss is not a skipped filter.
+`dict.indexOf` gives -1, no feature carries -1, every candidate is dropped, and
+the follow reports the whole window unaligned. Identical symptom to the refName
+bug, from a different namespace, and nothing in the refName audit would have
+found it.
+
+**Only the mate lane is canonicalized.** `assemblyNameDict` goes back OUT —
+`feat.assemblyName` becomes `SyntenyResolveMatchingRegion`'s `regions[]` assembly,
+which the adapter matches against its own `assemblyNames[]` — the same "safe
+because it leaves again" as `feat.refName`, and canonicalizing it would break a
+lookup that works today.
+
+That asymmetry is also why a track aliasing its **first** assembly is not this
+bug: `getFeatures` does `assemblyNames.indexOf(region.assemblyName)`, misses, and
+the track draws nothing at all. A blank track is the loud failure; this is the
+quiet one.
+
+The probe, which is now `volvox_asmalias.paf` in the fixture: a track whose
+second `assemblyNames` entry is `vvx` (volvox's declared assembly alias) with
+every refName canonical, so the two namespaces cannot be confused. Before the
+fix, `mateAssemblyNameDict` read `['vvx']` against a view on `volvox`,
+`followUnaligned` was true, and the row never moved.
 
 ## The repo-wide half nobody notices
 

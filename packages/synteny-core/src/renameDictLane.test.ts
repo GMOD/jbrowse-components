@@ -1,4 +1,4 @@
-import { renameRefNameDict } from './renameRefNameDict.ts'
+import { renameDictLane } from './renameDictLane.ts'
 
 // stands in for `getCanonicalRefNameFn`'s resolver: the assembly's alias table,
 // which is total and answers identity for a name it does not know
@@ -6,7 +6,7 @@ const canonicalizer = (aliases: Record<string, string>) => (name: string) =>
   aliases[name] ?? name
 
 test('renames the entries the assembly knows an alias for', () => {
-  const { dict, ids } = renameRefNameDict({
+  const { dict, ids } = renameDictLane({
     dict: ['1', '2'],
     ids: new Uint32Array([0, 1, 0]),
     canonical: canonicalizer({ '1': 'chr1', '2': 'chr2' }),
@@ -18,7 +18,7 @@ test('renames the entries the assembly knows an alias for', () => {
 // The identity case, which is every config we ship: the file and the assembly
 // agree, so this has to be a no-op rather than a wrong answer.
 test('leaves a name with no alias alone', () => {
-  const { dict } = renameRefNameDict({
+  const { dict } = renameDictLane({
     dict: ['ctgA', 'ctgB'],
     ids: new Uint32Array([0, 1]),
     canonical: canonicalizer({}),
@@ -33,7 +33,7 @@ test('leaves a name with no alias alone', () => {
 // once with `dict.indexOf` and then compare integers, so a duplicated entry
 // would silently stop matching every feature carrying the second id.
 test('re-interns when an aliased spelling collapses onto one already present', () => {
-  const { dict, ids } = renameRefNameDict({
+  const { dict, ids } = renameDictLane({
     dict: ['chr1', '1', 'chr2'],
     ids: new Uint32Array([0, 1, 2, 1]),
     canonical: canonicalizer({ chr1: '1', chr2: '2' }),
@@ -49,7 +49,7 @@ test('re-interns when an aliased spelling collapses onto one already present', (
 test('hands back the same ids array when nothing collapsed', () => {
   const ids = new Uint32Array([0, 1])
   expect(
-    renameRefNameDict({
+    renameDictLane({
       dict: ['1', '2'],
       ids,
       canonical: canonicalizer({ '1': 'chr1', '2': 'chr2' }),

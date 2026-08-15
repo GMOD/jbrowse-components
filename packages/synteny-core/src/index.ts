@@ -53,7 +53,7 @@ export {
   getAdapterToCanonicalRefNameMap,
   renameRegionsForAdapter,
 } from './renameRegionsForAdapter.ts'
-export { renameRefNameDict } from './renameRefNameDict.ts'
+export { renameDictLane } from './renameDictLane.ts'
 export { getCanonicalRefNameFn } from './getCanonicalRefNameFn.ts'
 export { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
 export { releaseTemporaryAssemblies } from './releaseTemporaryAssemblies.ts'
