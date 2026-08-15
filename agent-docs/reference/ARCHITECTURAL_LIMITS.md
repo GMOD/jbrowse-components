@@ -808,11 +808,23 @@ file rather than being attributed wrongly.
 
 **Still silent:**
 
-- **`installGlobalFetchAutorun` must read its triggers above the `shouldFetch`
-  gate.** MobX rebuilds the dep set per run, so a read under the gate drops out
-  of it. Arc shipped a dead `reload()` from exactly this (ARCHITECTURE.md §"The
-  global-fetch trigger list must be read unconditionally"). This one is a *shape*,
-  not a state, so no attach-time read can see it.
+- **A fetch installer's triggers must be read above its gate.** MobX rebuilds
+  the dep set per run, so a read under the gate drops out of it. Arc shipped a
+  dead `reload()` from exactly this (ARCHITECTURE.md §"The global-fetch trigger
+  list must be read unconditionally"). This one is a *shape*, not a state, so no
+  attach-time read can see it.
+
+  **Narrower than it was, and the narrowing is worth knowing before anyone acts
+  on this entry.** `installGlobalFetchAutorun` now reads all four of its
+  triggers itself, unconditionally, and calls `shouldFetch()` on every run that
+  reaches it — so everything the display's gate reads is tracked on the run that
+  declines, and the hazard is unreachable through that installer. HiC is the
+  case that looks like a counterexample and is not: `effectiveResolution` is
+  read *by* the gate expression, so `availableResolutions` arriving does wake
+  the autorun. What is left is `installComparativeFetchAutorun`, whose
+  `prepare()` may `return undefined` before its own reads and so still has the
+  arc-shaped shape — held today by the convention that everything a `prepare`
+  bails on is itself observable.
 - **A display that omits `rpcProps()` gets no settings invalidation, silently.**
   `rpcPropsCacheKey` returns `''` and `SettingsInvalidate` is never installed —
   correct for `LinearReferenceSequenceDisplay`, indistinguishable from an
@@ -882,14 +894,19 @@ the why. `agent-docs/` itself has had no equivalent pass. Rules the compiler
 already owns are still written as warnings, spending the attention the
 unenforceable ones need.
 
-Alongside them sit hand-maintained membership lists (the Display stacks table,
-DisplayChrome's adoption map and testid table, the upload-pattern examples
-column, SVG_EXPORT's per-plugin draw-shape lists) in a doc set that explicitly
+Alongside them sit hand-maintained membership lists in a doc set that explicitly
 warns against enumerations and lists autogenerating them as a follow-up
-(PLUGIN_ABI_STABILITY.md §"The same disease rots the docs"). Spot-checked
-2026-07-24, DisplayChrome's "Direct users (12)" was accurate, so this is
-prevention rather than repair.
+(PLUGIN_ABI_STABILITY.md §"The same disease rots the docs").
 
-**Retire when** the foundation-to-display map is generated from `addDisplayType`
-registrations, and each surviving "Don't" either names the machine that enforces
-it or is deleted because `tsc` already owns it.
+**The membership half is largely done, and what replaced it is worth copying.**
+The Display stacks table, the cross-cutting-mixin table, DisplayChrome's
+adoption map (both chromes), the gated-budget table and the display-hook
+override table are all generated now; the pin-coverage list is a test baseline.
+Each of the last two also *asserts* something a table alone cannot — that a
+promotable slot has a pin somewhere, and that a hook is still declared by the
+file owning its default. That is the shape to reach for: a generated list is
+prevention, a generated list with an assertion under it is repair.
+
+**Retire when** each surviving "Don't" either names the machine that enforces it
+or is deleted because `tsc` already owns it. The list-generation half of this
+entry's original retire condition is met.
