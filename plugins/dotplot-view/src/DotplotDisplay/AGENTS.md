@@ -73,6 +73,25 @@
   The second is the one that gets missed, because a zoom, a `drawCigar` toggle
   and a `minAlignmentLength` change all renumber every segment WITHOUT a
   refetch, which a feature index would have survived.
+- **Two invalidation questions, two answers, and neither is a list of entry
+  points.** The pair above is "does the index still address the right segment".
+  The other is "is the pointer still over it", and it is `DotplotView`'s
+  `setupClearHoverOnPlotMove` — one reaction over `plotTransform`, because the
+  canvas has no element travelling with its alignments and a plot that moves
+  under a stationary cursor fires no pointer event at all. Spelling it per
+  gesture instead is how the wheel got missed while pointerdown and pointerleave
+  were both covered. The LGV side reached the same shape from the same bug:
+  `installClearHoverOnViewportChange`.
+- **`plotTransform` is the cumBp -> px reconstruction, and three readers share
+  it**: `dotplotRenderState`, `pickFeatureAt`'s exact test, and
+  `hoveredFeatureHighlight`. Read it, not `dotplotRenderState`, unless you also
+  want `alpha` and `lineWidth` — the highlight did, and rebuilt its path once a
+  frame under an opacity drag.
+- **The pick's tie-break needs `>`, not `<=`.** Flatbush hands candidates back
+  in Hilbert order past `nodeSize` items, so an equidistant EARLIER segment can
+  arrive last and take a hit that belongs to the one drawn on top. At or under
+  `nodeSize` the sort is skipped and insertion order survives, which is why a
+  two-feature fixture cannot see this — `dotplotPickEngine.test.ts` pads to 24.
 - **A coordinate read back out of a cumBp round trip is `Math.round`ed off
   `pxToBp`'s `offset`, never `coord0`.** `coord0` floors, which is right for
   what it is for (naming the base under a pixel, including pixels past the end
