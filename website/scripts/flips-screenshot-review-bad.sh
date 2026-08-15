@@ -10,6 +10,12 @@
 # `remove` for the retired figure, `answered` where the note is a reply rather
 # than a change, `good` for the rest. Thirteen of fourteen; hg002 stays `bad`
 # and the last block says why.
+#
+# NO BACKTICKS INSIDE A NOTE. They are double-quoted here, so a backtick pair is
+# command substitution and the words between it vanish from the note the
+# reviewer reads — silently, apart from a "command not found" in the run's own
+# output that scrolls past. It happened once, to two words in the in2lt note.
+# Name a symbol bare, or single-quote the whole note.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -131,7 +137,7 @@ so the wedge's narrow end starts at x 12 and its wide end at x 0 -- a
 near-vertical line running off the left edge of the image. Correct geometry with
 nowhere to be.
 
-ComposeSpec has a `sideMargin` now, the mirror of the `gutter` that exists so the
+ComposeSpec has a sideMargin now, the mirror of the gutter that exists so the
 wedge's two HORIZONTAL edges are not the same line. 60 px each side puts it
 inside the frame. It moves each part's box so annotateComposition reads it too;
 the '19 In(2L)t carriers' arrow still lands on the carrier block, which is the
