@@ -114,30 +114,6 @@ export function perRowChromRanks(regions: Iterable<MafRegionData>): {
   return { ranks, maxRank }
 }
 
-/**
- * Collect the distinct visible regions referenced by a set of render/content
- * blocks. A region can be referenced by more than one block (scissor clips at
- * region boundaries), so dedupe by region index to avoid double-counting bp in
- * `perRowChromRanks`. Shared by the on-screen canvas, the SVG export, and the
- * legend getter so they always rank chromosomes over the same region set.
- */
-export function uniqueRegionsFromBlocks(
-  blocks: Iterable<{ displayedRegionIndex?: number }>,
-  regions: ReadonlyMap<number, MafRegionData>,
-): MafRegionData[] {
-  const unique = new Map<number, MafRegionData>()
-  for (const block of blocks) {
-    const idx = block.displayedRegionIndex
-    if (idx !== undefined) {
-      const region = regions.get(idx)
-      if (region) {
-        unique.set(idx, region)
-      }
-    }
-  }
-  return [...unique.values()]
-}
-
 interface DrawSourceChromState {
   rowHeight: number
   rowProportion: number

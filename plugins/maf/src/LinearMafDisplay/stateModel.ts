@@ -65,7 +65,6 @@ import { identityLegendItems } from './components/drawRowIdentity.ts'
 import {
   perRowChromRanks,
   sourceChromLegendItems,
-  uniqueRegionsFromBlocks,
 } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { findRowSpan } from './components/findRowSpan.ts'
@@ -1992,23 +1991,30 @@ export default function stateModelFactory(
          * #getter
          * Each row's source chromosomes ranked by aligned bp (`perRowChromRanks`).
          * A memoized computed for the same reason as `locatedCodons` above: the
-         * rank walk covers every block × row of every visible region, and it had
+         * rank walk covers every block × row of every loaded region, and it had
          * two independent callers — the legend (already a cached computed) and
          * `drawSourceChrom`, which recomputed it inside a draw that re-fires on
          * every pan and zoom.
          *
-         * Also makes the "rank over the same region set" guarantee structural.
-         * The legend walked `dynamicBlocks.contentBlocks` while the painter walked
-         * `renderBlocks`; those agree today (the latter derives from the former,
-         * and only `displayedRegionIndex` is read), but nothing held them to it.
+         * Ranked over the loaded regions, exactly as `inversionConsensus` is, and
+         * for both of its reasons. The colors stay put as the user scrolls within
+         * loaded data — a rank is a claim about the row, and a block ought not
+         * change color because a pan brought a different scaffold into view — and
+         * the walk re-runs on new data rather than on movement.
+         *
+         * It used to be keyed on `renderBlocks`, which is rebuilt on every pan
+         * tick (its `screenStartPx` moves), so the memo missed on every frame of
+         * a pan and re-ranked every (block, row) pair to produce the identical
+         * map: those blocks only selected *which region* to walk, and the region
+         * they selected carries the whole buffered span either way. Pinned by
+         * `sourceChromRanks.test.ts`.
+         *
          * Empty when the mode is off, so a track that never colors by chromosome
          * pays nothing.
          */
         get sourceChromRanks(): ReturnType<typeof perRowChromRanks> {
           return self.activeRowRendering === 'sourceChrom'
-            ? perRowChromRanks(
-                uniqueRegionsFromBlocks(self.renderBlocks, self.rpcDataMap),
-              )
+            ? perRowChromRanks(self.rpcDataMap.values())
             : { ranks: new Map<number, Map<string, number>>(), maxRank: 0 }
         },
       }))
