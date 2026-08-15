@@ -137,6 +137,23 @@ describe('a raw, un-niced domain', () => {
   })
 })
 
+// The renderer draws `plotHeight` tall from `yTop`; the axis labels
+// `yTop`..`yBottom`. The sweeps above already catch a `plotHeight` that
+// disagrees, but only as a tick landing off its data — this names the invariant
+// so the failure points at the box.
+test.each([
+  [200, 5],
+  [200, 0],
+  [40, 0],
+])(
+  'axisPlotBox(%i, %i) spans exactly what its ends label',
+  (height, offset) => {
+    const box = axisPlotBox(height, offset)
+    expect(scoreToAxisY(0, box)).toBe(box.yBottom)
+    expect(scoreToAxisY(1, box)).toBe(box.yTop)
+  },
+)
+
 describe('clampStrokeInsideAxis', () => {
   test('a tick above the bottom edge keeps its own stroke position', () => {
     expect(clampStrokeInsideAxis(20.5, 95)).toBe(20.5)
