@@ -136,6 +136,67 @@ test.each([
   expect(toggleSoloFeature.mock.calls.length > 0).toBe(expected === 'solo')
 })
 
+// A gene carrying a transcript name under it (`subfeatureLabels: 'below'`), and
+// no name or description of its own — so the only thing the layer can emit is
+// the subfeature label, and its presence in the DOM is the whole assertion.
+const SUBFEATURE_LABEL_DATA = makeFeatureData({
+  floatingLabelsData: {
+    f1: {
+      featureId: 'f1',
+      minX: 100,
+      maxX: 200,
+      topY: 0,
+      featureHeight: 10,
+      subfeatureLabel: {
+        text: 'TX1',
+        relativeY: 4,
+        color: 'black',
+        textWidth: 30,
+        isOverlay: false,
+      },
+    },
+  },
+})
+
+function renderLabels(overrides: Partial<typeof MODEL>) {
+  return render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <FloatingLabelsLayer
+        model={{
+          ...MODEL,
+          renderDataMap: new Map([[0, SUBFEATURE_LABEL_DATA]]),
+          ...overrides,
+        }}
+        view={VIEW}
+      />
+    </ThemeProvider>,
+  )
+}
+
+// The overlap this pins is the one 1,200 model-level tests could not see: the
+// model decides WHETHER a label shows, and only the layer decides whether one
+// lands in the DOM. A subfeature label is worker-baked, so the fit ladder's two
+// feature-label flags don't touch it — it survives the `bodies` rung, where the
+// packer reserved its row. What it must not survive is the SQUEEZE, which scales
+// that row while the text keeps its font size, painting a gene's transcript names
+// over each other.
+test('the label layer keeps a subfeature label past the flags that hide names', () => {
+  const { queryByText } = renderLabels({
+    renderedShowLabels: false,
+    renderedShowDescriptions: false,
+  })
+  expect(queryByText('TX1')).not.toBeNull()
+})
+
+test('the label layer drops a subfeature label the fit squeeze has shrunk', () => {
+  const { queryByText } = renderLabels({
+    renderedShowLabels: false,
+    renderedShowDescriptions: false,
+    renderedShowSubfeatureLabels: false,
+  })
+  expect(queryByText('TX1')).toBeNull()
+})
+
 // The slice HighlightLayer reads, with one feature (`f1`) search-highlighted.
 const HIGHLIGHT_MODEL = {
   renderedShowLabels: true,
