@@ -33,22 +33,12 @@ struct Instance {
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
   // Y of the flat line at this insert size — arcFlat.slang's own formula.
-  float availH = arcAvailH(u.arcBandH);
-  float destY = arcBandDestY(inst.yBp, availH, u);
-  float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
-  float cy = destY * yDir;
+  float cy = arcBandY(inst.yBp, u);
+  float screenX = u.blockStartPx + bpToLinear(inst.position, u) * u.blockWidth;
 
-  float norm = bpToLinear(inst.position, u);
-  float screenX = u.blockStartPx + norm * u.blockWidth;
-
-  float2 local = quadLocal(vid);
-  float h = ARC_MARKER_PX * 0.5;
-  float px = screenX + (local.x * 2.0 - 1.0) * h;
-  float py = cy + (local.y * 2.0 - 1.0) * h;
-
-  float clipX = (px / u.canvasW) * 2.0 - 1.0;
-  float clipY = 1.0 - ((py + u.covOffset) / u.canvasH) * 2.0;
-  o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
+  float2 corner = quadLocal(vid) * 2.0 - 1.0;
+  o.position = arcBandClipPos(
+    float2(screenX, cy) + corner * (ARC_MARKER_PX * 0.5), u);
   // The arc palette itself — the squares and the curves paint one meaning in
   // one colour. A second `arcMarkerColor` table existed for a short-insert
   // substitution that no longer exists; see arcColor in alignmentsUniforms.

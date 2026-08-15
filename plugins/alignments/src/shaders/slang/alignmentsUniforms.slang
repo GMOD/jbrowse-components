@@ -229,8 +229,35 @@ public static const float STROKE_AA_PX = 1.0;
 // cannot drift in weight; a geometry pad of STROKE_AA_PX CSS px always covers
 // the ramp, since dpr >= 1.
 public float strokeCoverage(float d, float halfWidthPx, Uniforms u) {
+  return strokeAaRamp(halfWidthPx - d, u);
+}
+
+// The ramp itself, given a signed distance INTO the ink. Split out because the
+// dash pattern below wants the same ramp along the mark that `strokeCoverage`
+// gives across it — the two ends of a dash should be exactly as soft as the two
+// sides of the stroke they interrupt.
+public float strokeAaRamp(float signedInk, Uniforms u) {
   float aa = STROKE_AA_PX / max(u.dpr, 1.0);
-  return clamp((halfWidthPx - d) / aa + 0.5, 0.0, 1.0);
+  return clamp(signedInk / aa + 0.5, 0.0, 1.0);
+}
+
+// Coverage of a `dashPx` on / `gapPx` off pattern at `coord` CSS px along the
+// mark, with the ON run starting at coord 0 — the phase `ctx.setLineDash` and
+// `stroke-dasharray` give, so the three backends dash alike.
+//
+// The rotation is what makes both ends soft, and it is the whole reason this is
+// shared. arcFlat.slang and arcLine.slang each had a dash, and each got a
+// different half of it right. arcLine measured `min(phase, dashPx - phase)`
+// straight off the wrap, so a dash's TRAILING edge ramped and its LEADING edge
+// stepped 0 -> 0.5 in no distance at all; arcFlat rotated the run to the middle
+// of the period (fixing that) but then ramped over a constant 1 CSS px, which on
+// a dpr=2 display is two device px — twice the softness of the sides of the very
+// same line. Centring the run at half a period puts the wrap deep in the gap
+// where nothing is drawn, and `strokeAaRamp` is the sides' own ramp.
+public float dashCoverage(float coord, float dashPx, float gapPx, Uniforms u) {
+  float period = dashPx + gapPx;
+  float phase = frac(coord / period + gapPx / (2.0 * period)) * period;
+  return strokeAaRamp(dashPx * 0.5 - abs(phase - period * 0.5), u);
 }
 
 // A butt-capped stroked segment, as the two halves of one contract: the quad
@@ -416,8 +443,8 @@ public float pileupRowTopPx(float row, Uniforms u) {
 // Returns (yTopClip, yBotClip) for a pileup row index.
 public float2 pileupY(float row, Uniforms u) {
   float yTopPx = pileupRowTopPx(row, u);
-  float px2clip = 2.0 / u.canvasH;
-  return float2(1.0 - yTopPx * px2clip, 1.0 - (yTopPx + u.featHeight) * px2clip);
+  return float2(yPxToClipY(yTopPx, u.canvasH),
+                yPxToClipY(yTopPx + u.featHeight, u.canvasH));
 }
 
 // Screen-pixel Y of a pileup row's vertical center.
@@ -541,6 +568,57 @@ public float arcBandDestY(uint yBp, float availH, Uniforms u) {
   return arcYOffsetPx(yBp, u.arcsYDomainBp, u.arcsYLog > 0.5, availH);
 }
 
+// ---- The arc band's frame ------------------------------------------------
+//
+// Four passes draw into one band and each used to spell its geometry itself.
+// That is four chances to disagree about which way arcs grow, how wide a
+// coalesced mark strokes, and where the band sits on the canvas — and three of
+// those spellings carried a comment saying "same as arc.slang, and for the same
+// reason", which is the shape `arcAvailH` above was already extracted out of.
+
+// Which way the band grows from its anchor. The predicate, not the sign, so
+// arcLine.slang can ask it about the band's TOP EDGE (a different question with
+// no clean sign form) without restating the comparison.
+public bool arcsPointDown(Uniforms u) {
+  return u.pairedArcsDown > 0.5;
+}
+
+public float arcYDir(Uniforms u) {
+  return arcsPointDown(u) ? 1.0 : -1.0;
+}
+
+// Signed band-local Y, in CSS px from the anchor, of the flat mark an insert
+// size plots at. arc.slang does NOT call this: it needs the unsigned `destY`
+// for the dome's ry and the direction separately, so it takes the two pieces.
+public float arcBandY(uint yBp, Uniforms u) {
+  return arcBandDestY(yBp, arcAvailH(u.arcBandH), u) * arcYDir(u);
+}
+
+// Half the width an arc-band mark strokes at. `instWidthPx` is the instance's
+// own, resolved from its read support by `arcLineWidth` at pack time; the
+// uniform is the FLOOR every mark is raised to, which is an antialiasing
+// property of the display (fillArcUniforms raises it to 1.5 device px) and not
+// anything about how many reads a mark stands for. Both halves of that sentence
+// have to be stated together, which is why this is one function and not a
+// `max` at three call sites.
+public float arcStrokeHalfPx(float instWidthPx, Uniforms u) {
+  return max(instWidthPx, u.lineWidthPx) * 0.5;
+}
+
+// A band-local point (CSS px from the anchor) placed on the canvas. The arc
+// passes run in the FULL-canvas viewport — a grouped section's band may scroll
+// partly off-screen, and WebGPU rejects an out-of-bounds one — so every band
+// mark reaches clip space through the anchor rather than through a viewport of
+// its own, and the scissor does the real clip. Forgetting `u.covOffset` or
+// `flipX` here draws a band that is merely somewhere else, which is why the
+// three passes doing it should not each be writing it out.
+public float4 arcBandClipPos(float2 bandPx, Uniforms u) {
+  return float4(
+    flipX(pxToClipX(bandPx.x, u.canvasW), u),
+    yPxToClipY(bandPx.y + u.covOffset, u.canvasH),
+    0.0, 1.0);
+}
+
 
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip
 // 3=hardclip (anything else falls through to insertion). Uses the *Indicator
@@ -617,7 +695,7 @@ public float effHeight(Uniforms u) {
 // interbase histogram) starts. covTop == 0 → clip-top (1.0), the ungrouped
 // sticky-coverage behavior; grouped sections pass their scrolled top.
 public float covAreaTop(Uniforms u) {
-  return 1.0 - (u.covTop / u.canvasH) * 2.0;
+  return yPxToClipY(u.covTop, u.canvasH);
 }
 
 public float covBottom(Uniforms u) {

@@ -240,7 +240,7 @@ struct Curve { float2 c; float2 ends; float2 radii; float kind; float yDir; floa
 // ink question.
 Curve arcCurve(Instance inst, Uniforms u, float strokeHalfPx) {
   float availH = arcAvailH(u.arcBandH);
-  float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
+  float yDir = arcYDir(u);
   // Y the insert size maps to: availH px spans arcsYDomainBp bp, the CPU-chosen
   // domain (zoom-proportional for arcs, autoscaled |tlen| for read cloud).
   // arcBandDestY (alignmentsUniforms) is the shared formula — the same one
@@ -329,15 +329,10 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float side = (vid % 2u == 0u) ? -1.0 : 1.0;
   float t = float(seg) / float(ARC_CURVE_SEGMENTS);
 
-  // u.lineWidthPx is the CONFIGURED width already raised to 1.5 device px
-  // (fillArcUniforms): a near-horizontal arc thinner than that has no vertical
-  // room to anti-alias and stairsteps. That floor is a property of the display,
-  // not of how many reads an arc stands for, so it applies to per-instance
-  // widths too. `arcLineWidth` never returns less than the configured width, so
-  // a support-1 arc still resolves to exactly what this pass drew before
-  // coalescing existed.
   // Resolved before the curve, because the curve's leg sweep is padded by it.
-  o.halfWidthPx = max(inst.lineWidthPx, u.lineWidthPx) * 0.5;
+  // `arcLineWidth` never returns less than the configured width, so a support-1
+  // arc still resolves to exactly what this pass drew before coalescing existed.
+  o.halfWidthPx = arcStrokeHalfPx(inst.lineWidthPx, u);
 
   Curve cv = arcCurve(inst, u, o.halfWidthPx);
   ArcVertex av = evalArcVertex(t, side, o.halfWidthPx, cv);
@@ -345,9 +340,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.legSide = av.legSide;
   o.radii = cv.radii;
   o.kind = cv.kind;
-  float clipX = (av.screen.x / u.canvasW) * 2.0 - 1.0;
-  float clipY = 1.0 - ((av.screen.y + u.covOffset) / u.canvasH) * 2.0;
-  o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
+  o.position = arcBandClipPos(av.screen, u);
   o.color = float4(arcColorByIndex(uint(inst.colorType + 0.5), u), 1.0);
   return o;
 }

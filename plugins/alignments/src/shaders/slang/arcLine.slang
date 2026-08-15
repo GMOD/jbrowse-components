@@ -83,45 +83,35 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float screenX = u.blockStartPx + norm * u.blockWidth;
 
   // covOffset is the arc baseline in absolute canvas px (band bottom in up mode,
-  // band top in down mode); the band spans arcBandH px from it.
-  float bandTopPx = (u.pairedArcsDown > 0.5) ? u.covOffset : (u.covOffset - u.arcBandH);
+  // band top in down mode); the band spans arcBandH px from it. This is the one
+  // band question with no clean signed form, so it asks the predicate rather
+  // than `arcYDir` — the tick spans the whole band either way, so which end the
+  // anchor is at is all it needs.
+  float bandTopPx = arcsPointDown(u) ? u.covOffset : (u.covOffset - u.arcBandH);
 
   float2 local = quadLocal(vid);
-  // Same floor arc.slang and arcFlat.slang apply, and for the same reason:
-  // u.lineWidthPx is the configured width already raised to 1.5 device px
-  // (fillArcUniforms), an antialiasing minimum rather than anything about how
-  // many reads a tick stands for.
-  o.halfWidthPx = max(inst.lineWidthPx, u.lineWidthPx) * 0.5;
+  o.halfWidthPx = arcStrokeHalfPx(inst.lineWidthPx, u);
   float hw = o.halfWidthPx + STROKE_AA_PX;
   o.dx = (local.x * 2.0 - 1.0) * hw;
   o.bandY = local.y * u.arcBandH;
-  float yPx = bandTopPx + o.bandY;
 
-  float sx = ((screenX + o.dx) / u.canvasW) * 2.0 - 1.0;
-  float sy = 1.0 - (yPx / u.canvasH) * 2.0;
-  o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
+  // Absolute canvas px already (bandTopPx came off the anchor), so this does NOT
+  // go through arcBandClipPos, which adds the anchor itself.
+  o.position = float4(
+    flipX(pxToClipX(screenX + o.dx, u.canvasW), u),
+    yPxToClipY(bandTopPx + o.bandY, u.canvasH), 0.0, 1.0);
   o.color = float4(arcColorByIndex(ARC_COLOR_INTERCHROM, u), 1.0);
   return o;
-}
-
-// Coverage of the dash pattern at `bandY`, ramped over the same AA width the
-// stroke's own edges use so the dash ends are as soft as its sides. Written as
-// distance-to-the-nearest-edge of the ON run rather than a `phase < DASH`
-// branch: a hard cut is the one thing that would make a tick stair-step as the
-// band resizes, which is the defect the quad expansion above exists to avoid on
-// the other axis.
-float dashCoverage(float bandY, Uniforms u) {
-  float period = ARC_LINE_DASH_PX + ARC_LINE_GAP_PX;
-  float phase = bandY - floor(bandY / period) * period;
-  // Signed distance into the ON run: positive inside, negative in the gap.
-  float d = min(phase, ARC_LINE_DASH_PX - phase);
-  float aa = STROKE_AA_PX / max(u.dpr, 1.0);
-  return clamp(d / aa + 0.5, 0.0, 1.0);
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float alpha = strokeCoverage(abs(fragIn.dx), fragIn.halfWidthPx, u);
-  alpha *= dashCoverage(fragIn.bandY, u);
+  // `dashCoverage` (alignmentsUniforms) is arcFlat.slang's pattern too. This
+  // pass had its own, which measured the ON run straight off the wrap: a dash's
+  // trailing edge ramped and its leading edge did not, so half of every dash
+  // boundary in the band was the hard cut the quad expansion above exists to
+  // avoid on the other axis.
+  alpha *= dashCoverage(fragIn.bandY, ARC_LINE_DASH_PX, ARC_LINE_GAP_PX, u);
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

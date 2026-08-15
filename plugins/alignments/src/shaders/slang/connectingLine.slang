@@ -30,10 +30,8 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sx2 = bpToClipX(inst.endOff, u);
 
   float yTop = floor(pileupRowCenterPx(inst.y, u) - 0.5);
-  float yBot = yTop + 1.0;
-  float px2clip = 2.0 / u.canvasH;
-  float syTop = 1.0 - yTop * px2clip;
-  float syBot = 1.0 - yBot * px2clip;
+  float syTop = yPxToClipY(yTop, u.canvasH);
+  float syBot = yPxToClipY(yTop + 1.0, u.canvasH);
 
   o.position = flippedQuadPos(sx1, sx2, syBot, syTop, local, u);
   o.color = float4(0.0, 0.0, 0.0, CONNECTING_LINE_ALPHA);

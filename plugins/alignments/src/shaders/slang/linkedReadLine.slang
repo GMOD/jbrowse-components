@@ -99,8 +99,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.halfLen = halfLen;
 
   float2 p = mid + dir * o.local.x + nrm * o.local.y;
-  float clipY = 1.0 - p.y * 2.0 / u.canvasH;
-  o.position = float4(flipX(pxToClipX(p.x, u.canvasW), u), clipY, 0.0, 1.0);
+  o.position = float4(flipX(pxToClipX(p.x, u.canvasW), u),
+                      yPxToClipY(p.y, u.canvasH), 0.0, 1.0);
 
   uint idx = uint(inst.colorType + 0.5);
   o.color = float4(linkedReadColorByIndex(idx, u), LINKED_READ_LINE_ALPHA);

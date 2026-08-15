@@ -44,16 +44,17 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   return o;
 }
 
+// Barycentric -> approximate px distance from each diagonal edge, for the
+// smoothstep fade below. NOT the triangle's altitude despite the round number:
+// for the 7x4.5 triangle that is 7*4.5/hypot(3.5, 4.5) = 5.53px, so this scale
+// spreads the fade over ~1.5px rather than 1px. Left as-is — it is a softness
+// knob, and tightening it visibly sharpens every indicator.
+static const float EDGE_FADE_SCALE_PX = 3.7;
+
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // Barycentric -> approximate px distance from each diagonal edge, for the
-  // smoothstep fade. NOT the triangle's altitude despite the round number: for
-  // the 7x4.5 triangle that is 7*4.5/hypot(3.5, 4.5) = 5.53px, so this scale
-  // spreads the fade over ~1.5px rather than 1px. Left as-is — it is a
-  // softness knob, and tightening it visibly sharpens every indicator.
-  float altPx = 3.7;
-  float dLeft = fragIn.bary.y * altPx;
-  float dRight = fragIn.bary.x * altPx;
+  float dLeft = fragIn.bary.y * EDGE_FADE_SCALE_PX;
+  float dRight = fragIn.bary.x * EDGE_FADE_SCALE_PX;
   float aa = smoothstep(0.0, 1.0, min(dLeft, dRight));
   return float4(fragIn.color.rgb, fragIn.color.a * aa);
 }

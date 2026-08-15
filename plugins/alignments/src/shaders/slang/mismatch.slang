@@ -62,10 +62,15 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
               * qualityFade(inst.qual, u.mismatchAlpha != 0);
   if (alpha <= 0.0) { return discardVertex(); }
 
-  float clip1 = bpToClipX(inst.position, u);
-  float clip2 = bpToClipX(inst.position + 1u, u);
-  float sx1 = snapToPixelX(clip1, u.canvasW);
-  float sx2 = max(sx1 + 2.0 / u.canvasW, snapToPixelX(clip2, u.canvasW));
+  // Both edges snap to a pixel column, then the free edge is pushed out to keep
+  // the cell 1 CSS px wide — `extendToMinWidthX` (hpmath), which is the
+  // anchored form: sx1 is the snapped column this base starts at and must not
+  // move. `expandMinWidthX`, the other one, widens about the midpoint and is
+  // for spans with no anchored edge.
+  float sx1 = snapToPixelX(bpToClipX(inst.position, u), u.canvasW);
+  float sx2 = extendToMinWidthX(
+    sx1, snapToPixelX(bpToClipX(inst.position + 1u, u), u.canvasW),
+    1.0, u.canvasW);
 
   float2 yy = pileupY(float(inst.y), u);
 

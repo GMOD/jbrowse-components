@@ -85,23 +85,16 @@ struct VsOut {
 [shader("vertex")]
 VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
-  float availH = arcAvailH(u.arcBandH);
-  // arcBandDestY (alignmentsUniforms) is the shared |tlen| -> Y formula, the
-  // same one arcMarker.slang uses, so the endpoint squares land on this line.
-  float destY = arcBandDestY(inst.yBp, availH, u);
-  float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
-
   float x1Px = u.blockStartPx + bpToLinear(inst.x1, u) * u.blockWidth;
   float x2Px = u.blockStartPx + bpToLinear(inst.x2, u) * u.blockWidth;
   // Clamp the span to ARC_FLAT_MIN_PX about the midpoint; the line is
   // horizontal, so the span's sign is moot.
   float halfLen = max(abs(x2Px - x1Px), ARC_FLAT_MIN_PX) * 0.5;
-  float2 c = float2((x1Px + x2Px) * 0.5, destY * yDir);
+  // arcBandY (alignmentsUniforms) is the shared |tlen| -> Y formula, the same
+  // one arcMarker.slang uses, so the endpoint squares land on this line.
+  float2 c = float2((x1Px + x2Px) * 0.5, arcBandY(inst.yBp, u));
 
-  // Same floor arc.slang applies, and for the same reason: u.lineWidthPx is the
-  // configured width already raised to 1.5 device px (fillArcUniforms), which is
-  // an antialiasing minimum rather than anything about read support.
-  o.halfWidthPx = max(inst.lineWidthPx, u.lineWidthPx) * 0.5;
+  o.halfWidthPx = arcStrokeHalfPx(inst.lineWidthPx, u);
 
   // Overshoot both ends by a half-width: the flat form's caps are not cut by
   // the band scissor, so the fragment's box distance needs somewhere to ramp
@@ -111,12 +104,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.halfLen = halfLen;
   o.dashed = inst.dashed;
 
-  float px = c.x + o.local.x;
-  float py = c.y + o.local.y;
-  o.screenPx = px;
-  float clipX = (px / u.canvasW) * 2.0 - 1.0;
-  float clipY = 1.0 - ((py + u.covOffset) / u.canvasH) * 2.0;
-  o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
+  float2 p = c + o.local;
+  o.screenPx = p.x;
+  o.position = arcBandClipPos(p, u);
   return o;
 }
 
@@ -131,17 +121,11 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // `stroke-dasharray` and Canvas2D to `setLineDash`, so a period written here
   // in numbers is a period only a comment holds the other two to.
   //
-  // The ON run is centred at half a period, with a 1px ramp either side (the
-  // STROKE_AA_PX ramp the stroke's sides get, in the one axis `sdSegment` does
-  // not measure), so the half-alpha crossings land exactly a dash apart. The
-  // quarter-period rotation puts that centre off the wrap — measuring
-  // `abs(phase - centre)` across it would leave one end of every dash
-  // hard-edged.
+  // `dashCoverage` (alignmentsUniforms) is the pattern arcLine.slang's tick also
+  // cuts, in the one axis `sdSegment` does not measure.
   if (fragIn.dashed > 0.5) {
-    float period = ARC_FLAT_DASH_PX + ARC_FLAT_GAP_PX;
-    float phase = frac(fragIn.screenPx / period + 0.25) * period;
-    float halfOn = ARC_FLAT_DASH_PX * 0.5;
-    alpha *= clamp(halfOn + 0.5 - abs(phase - period * 0.5), 0.0, 1.0);
+    alpha *= dashCoverage(
+      fragIn.screenPx, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX, u);
   }
   // Neutral, not black: `colorFlatConnector` is the theme's foreground, so the
   // line reads against a dark track background the way it does against a light

@@ -62,16 +62,19 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| type 'vec2' is outside the supported scalar subset | 19 | `covSegQuad`, `crispSquareCornerPx`, `diagonalCellToClip`, `discAlpha`, `discCoverage`, `distToWideCircle`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 17 | `aaHalf`, `arcBandDestY`, `covAreaTop`, `covBarScale`, `covBottom`, `dashCoverage`, … |
+| type 'vec2' is outside the supported scalar subset | 20 | `arcBandClipPos`, `covSegQuad`, `crispSquareCornerPx`, `diagonalCellToClip`, `discAlpha`, `discCoverage`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `aaHalf`, `arcBandDestY`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `covAreaTop`, … |
 | type 'ptr' is outside the supported scalar subset | 10 | `aaHalfPx`, `bpToClipX`, `curveGeometry`, `curveParamAtY`, `fillVsEmit`, `flipX`, … |
 | type 'vec3' is outside the supported scalar subset | 9 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `clipKindColor`, `hueRampHalfSat`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | indexing is outside the supported scalar subset | 2 | `getGeno`, `getWord` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
+| //! js-export: 'arcYDir' reaches arcsPointDown(), which is outside the supported scalar subset | 1 | `arcYDir` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | //! js-export: 'bpToLinear' reaches hpLinear(), which is outside the supported scalar subset | 1 | `bpToLinear` |
+| //! js-export: 'dashCoverage' reaches strokeAaRamp(), which is outside the supported scalar subset | 1 | `dashCoverage` |
+| //! js-export: 'strokeCoverage' reaches strokeAaRamp(), which is outside the supported scalar subset | 1 | `strokeCoverage` |
 | call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 1 | `glyphEdgeAlpha` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
