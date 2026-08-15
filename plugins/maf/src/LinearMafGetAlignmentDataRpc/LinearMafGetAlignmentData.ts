@@ -18,19 +18,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<'LinearMafGetAlignmentData'> {
   name = 'LinearMafGetAlignmentData' as const
 
-  async execute(
-    args: RpcExecuteArgs<'LinearMafGetAlignmentData'>,
-    rpcDriverClassName: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
+  async execute(args: RpcExecuteArgs<'LinearMafGetAlignmentData'>) {
     const { executeMafAlignmentData } =
       await import('./executeMafAlignmentData.ts')
     return executeMafAlignmentData({
       pluginManager: this.pluginManager,
-      args: deserializedArgs,
+      args: args,
     })
   }
 }

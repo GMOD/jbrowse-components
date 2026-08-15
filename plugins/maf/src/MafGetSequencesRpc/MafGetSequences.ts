@@ -25,14 +25,7 @@ export interface MafGetSequencesArgs extends BaseMafRpcArgs {
 export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRegions<'MafGetSequences'> {
   name = 'MafGetSequences' as const
 
-  async execute(
-    args: RpcExecuteArgs<'MafGetSequences'>,
-    rpcDriverClassName: string,
-  ): Promise<FastaResult> {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
+  async execute(args: RpcExecuteArgs<'MafGetSequences'>): Promise<FastaResult> {
     const {
       samples,
       regions,
@@ -40,17 +33,14 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
       sessionId,
       showAllLetters,
       includeInsertions,
-    } = deserializedArgs
+    } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
     })
 
-    const features = await dataAdapter.getFeaturesArray(
-      regions[0]!,
-      deserializedArgs,
-    )
+    const features = await dataAdapter.getFeaturesArray(regions[0]!, args)
     return processFeaturesToFasta({
       features,
       samples,

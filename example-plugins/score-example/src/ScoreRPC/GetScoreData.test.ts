@@ -48,7 +48,7 @@ beforeEach(() => {
 test('the status callback and stop token reach the adapter', async () => {
   const statusCallback = jest.fn()
   const rpc = new GetScoreData({} as unknown as PluginManager)
-  await rpc.execute(args(statusCallback), 'MainThreadRpcDriver')
+  await rpc.execute(args(statusCallback))
 
   const opts = getFeaturesArray.mock.calls[0]![1] as BaseOptions
   expect(opts.statusCallback).toBe(statusCallback)
@@ -63,6 +63,6 @@ test('the status callback and stop token reach the adapter', async () => {
 // survive that.
 test('no status callback is not an error', async () => {
   const rpc = new GetScoreData({} as unknown as PluginManager)
-  const result = await rpc.execute(args(), 'MainThreadRpcDriver')
+  const result = await rpc.execute(args())
   expect(result.numFeatures).toBe(1)
 })

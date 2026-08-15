@@ -117,7 +117,10 @@ export async function initializeWorker(
     const rpcConfig = Object.fromEntries(
       pluginManager
         .getRpcElements()
-        .map(e => [e.name, wrapForRpc(e.execute.bind(e))]),
+        // `invoke`, not `execute`: it deserializes the arguments before handing
+        // them on, which is what makes the blob map current and the declared
+        // arg types true. MainThreadRpcDriver binds the same one.
+        .map(e => [e.name, wrapForRpc(e.invoke.bind(e))]),
     )
 
     self.rpcServer = new RpcServer(rpcConfig)

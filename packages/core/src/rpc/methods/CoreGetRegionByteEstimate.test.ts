@@ -14,16 +14,11 @@ function run(dataAdapter: unknown) {
   mockGetAdapter.mockResolvedValue({ dataAdapter } as Awaited<
     ReturnType<typeof getAdapter>
   >)
-  return method.execute(
-    {
-      sessionId: 's',
-      adapterConfig: { type: 'AnyAdapter' },
-      regions: [
-        { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
-      ],
-    },
-    'MainThreadRpcDriver',
-  )
+  return method.execute({
+    sessionId: 's',
+    adapterConfig: { type: 'AnyAdapter' },
+    regions: [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
+  })
 }
 
 describe('CoreGetRegionByteEstimate', () => {

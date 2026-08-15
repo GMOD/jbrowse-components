@@ -52,10 +52,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class SyntenyResolveMatchingRegion extends RpcMethodTypeWithRenameRegions<'SyntenyResolveMatchingRegion'> {
   name = 'SyntenyResolveMatchingRegion' as const
 
-  async execute(
-    args: RpcExecuteArgs<'SyntenyResolveMatchingRegion'>,
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: RpcExecuteArgs<'SyntenyResolveMatchingRegion'>) {
     const {
       sessionId,
       adapterConfig,
@@ -66,7 +63,7 @@ export default class SyntenyResolveMatchingRegion extends RpcMethodTypeWithRenam
       lodMode,
       stopToken,
       statusCallback,
-    } = await this.deserializeArguments(args, rpcDriverClassName)
+    } = args
 
     const region = regions[0]
     if (!region) {

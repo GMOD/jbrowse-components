@@ -7,12 +7,8 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRegions<'CoreGetRegionByteEstimate'> {
   name = 'CoreGetRegionByteEstimate' as const
 
-  async execute(
-    args: RpcExecuteArgs<'CoreGetRegionByteEstimate'>,
-    rpcDriver: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { adapterConfig, sessionId, regions } = deserializedArgs
+  async execute(args: RpcExecuteArgs<'CoreGetRegionByteEstimate'>) {
+    const { adapterConfig, sessionId, regions } = args
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -33,7 +29,7 @@ export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRe
     // was a per-display opt-out of the whole gate — which then also disabled it
     // for that display's measurable adapters. LD carried exactly that opt-out.
     return isFeatureAdapter(dataAdapter)
-      ? dataAdapter.getRegionByteSize(regions, deserializedArgs)
+      ? dataAdapter.getRegionByteSize(regions, args)
       : undefined
   }
 }

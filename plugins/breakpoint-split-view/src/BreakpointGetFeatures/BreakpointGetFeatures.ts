@@ -97,7 +97,6 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
 
   async execute(
     args: RpcExecuteArgs<'BreakpointGetFeatures'>,
-    rpcDriver: string,
   ): Promise<BreakpointSerializedFeature[]> {
     const {
       stopToken,
@@ -106,7 +105,7 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
       adapterConfig,
       regions,
       opts,
-    } = await this.deserializeArguments(args, rpcDriver)
+    } = args
 
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,

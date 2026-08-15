@@ -5,19 +5,12 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 export default class MultiRowGetFeatures extends RpcMethodTypeWithRenameRegion<'MultiRowGetFeatures'> {
   name = 'MultiRowGetFeatures' as const
 
-  async execute(
-    args: RpcExecuteArgs<'MultiRowGetFeatures'>,
-    rpcDriverClassName: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
+  async execute(args: RpcExecuteArgs<'MultiRowGetFeatures'>) {
     const { executeMultiRowGetFeatures } =
       await import('./executeMultiRowGetFeatures.ts')
     return executeMultiRowGetFeatures({
       pluginManager: this.pluginManager,
-      args: deserializedArgs,
+      args: args,
     })
   }
 }

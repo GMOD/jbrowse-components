@@ -31,7 +31,7 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions<
     return superDeserialized.map(feat => new SimpleFeature(feat))
   }
 
-  async execute(args: RpcExecuteArgs<'CoreGetFeatures'>, rpcDriver: string) {
+  async execute(args: RpcExecuteArgs<'CoreGetFeatures'>) {
     const {
       stopToken,
       statusCallback,
@@ -40,7 +40,7 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions<
       sequenceAdapter,
       regions,
       opts,
-    } = await this.deserializeArguments(args, rpcDriver)
+    } = args
 
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,

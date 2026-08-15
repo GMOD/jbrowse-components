@@ -9,9 +9,8 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 export default class CoreGetSequence extends RpcMethodType<'CoreGetSequence'> {
   name = 'CoreGetSequence' as const
 
-  async execute(args: RpcExecuteArgs<'CoreGetSequence'>, rpcDriver: string) {
-    const { stopToken, statusCallback, sessionId, adapterConfig, region } =
-      await this.deserializeArguments(args, rpcDriver)
+  async execute(args: RpcExecuteArgs<'CoreGetSequence'>) {
+    const { stopToken, statusCallback, sessionId, adapterConfig, region } = args
 
     const { dataAdapter } = await getAdapter(
       this.pluginManager,

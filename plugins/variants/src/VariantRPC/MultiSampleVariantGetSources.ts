@@ -18,15 +18,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiSampleVariantGetSources'> {
   name = 'MultiSampleVariantGetSources' as const
 
-  async execute(
-    args: RpcExecuteArgs<'MultiSampleVariantGetSources'>,
-    rpcDriverClassName: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
-    const { regions, adapterConfig, sessionId } = deserializedArgs
+  async execute(args: RpcExecuteArgs<'MultiSampleVariantGetSources'>) {
+    const { regions, adapterConfig, sessionId } = args
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -40,6 +33,6 @@ export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRen
     // every region to collect the source names — and this was calling it with
     // no opts at all, which on a large panel is a full scan that cannot be
     // cancelled and reports nothing.
-    return dataAdapter.getSources(regions ?? [], deserializedArgs)
+    return dataAdapter.getSources(regions ?? [], args)
   }
 }

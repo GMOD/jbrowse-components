@@ -6,7 +6,7 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions<'CoreGetExportData'> {
   name = 'CoreGetExportData' as const
 
-  async execute(args: RpcExecuteArgs<'CoreGetExportData'>, rpcDriver: string) {
+  async execute(args: RpcExecuteArgs<'CoreGetExportData'>) {
     const {
       sessionId,
       adapterConfig,
@@ -15,7 +15,7 @@ export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions<'C
       opts,
       stopToken,
       statusCallback,
-    } = await this.deserializeArguments(args, rpcDriver)
+    } = args
 
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,

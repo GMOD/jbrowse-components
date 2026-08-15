@@ -32,12 +32,22 @@ export default abstract class RpcMethodTypeWithFiltersAndRenameRegions<
       ...l,
       // on the wire filters is the serialized string[] (see serializeArguments),
       // even though T statically types it as the deserialized chain
-      filters: args.filters
-        ? new SerializableFilterChain({
-            filters: args.filters as SerializedFilterChain,
-            jexl: this.pluginManager.jexl,
-          })
-        : undefined,
+      //
+      // The instanceof is what lets this run twice on the same object, which
+      // RpcMethodType.deserializeArguments asks of every override: an external
+      // plugin written against the older contract still opens its `execute`
+      // with a call to this, and by then `invoke` has already rebuilt the
+      // chain. Without the check the second pass would reach `filters.map` on a
+      // SerializableFilterChain and throw.
+      filters:
+        args.filters instanceof SerializableFilterChain
+          ? args.filters
+          : args.filters
+            ? new SerializableFilterChain({
+                filters: args.filters as SerializedFilterChain,
+                jexl: this.pluginManager.jexl,
+              })
+            : undefined,
     }
   }
 

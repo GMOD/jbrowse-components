@@ -62,17 +62,10 @@ export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions<
     }
   }
 
-  async execute(
-    args: RpcExecuteArgs<'SyntenyDiscoverMates'>,
-    rpcDriverClassName: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
+  async execute(args: RpcExecuteArgs<'SyntenyDiscoverMates'>) {
     const { executeDiscoverMates } = await import('./executeDiscoverMates.ts')
     return executeDiscoverMates({
-      ...deserializedArgs,
+      ...args,
       pluginManager: this.pluginManager,
     })
   }

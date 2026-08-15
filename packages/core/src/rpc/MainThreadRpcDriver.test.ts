@@ -1,3 +1,4 @@
+import RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import MainThreadRpcDriver from './MainThreadRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
@@ -15,19 +16,30 @@ describe('MainThreadRpcDriver', () => {
   test('executes in-band, re-attaching statusCallback to the serialized args', async () => {
     const executeArgs: unknown[] = []
     const statusCallback = () => {}
-    const rpcMethod = {
-      name: 'SomeMethod',
-      serializeArguments: async (args: Record<string, unknown>) => ({
-        ...args,
-        serialized: true,
-      }),
-      execute: async (args: unknown) => {
+
+    // a real RpcMethodType rather than an object literal, because the driver
+    // calls `invoke` — the base's entry point, which deserializes the arguments
+    // before `execute` sees them. A duck-typed fake with only an `execute` on it
+    // passes through none of that, which is the half worth testing.
+    class SomeMethod extends RpcMethodType {
+      name = 'SomeMethod'
+
+      async serializeArguments(args: object) {
+        return { ...args, serialized: true }
+      }
+
+      async execute(args: unknown) {
         executeArgs.push(args)
         return 'raw-result'
-      },
-      deserializeReturn: (ret: unknown) => ({ deserialized: ret }),
+      }
+
+      async deserializeReturn(ret: unknown) {
+        return { deserialized: ret }
+      }
     }
-    const { driver, pluginManager } = makeDriver(rpcMethod)
+    const { driver, pluginManager } = makeDriver(
+      new SomeMethod({} as PluginManager),
+    )
 
     const result = await driver.call(pluginManager, 'sid', 'SomeMethod', {
       sessionId: 'sid',

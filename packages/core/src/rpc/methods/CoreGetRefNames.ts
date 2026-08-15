@@ -10,9 +10,8 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
   name = 'CoreGetRefNames' as const
 
-  async execute(args: RpcExecuteArgs<'CoreGetRefNames'>, rpcDriver: string) {
-    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { sessionId, adapterConfig, sequenceAdapter } = deserializedArgs
+  async execute(args: RpcExecuteArgs<'CoreGetRefNames'>) {
+    const { sessionId, adapterConfig, sequenceAdapter } = args
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -31,8 +30,6 @@ export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
     if (isFeatureAdapter(dataAdapter)) {
       dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
     }
-    return isRefNameSource(dataAdapter)
-      ? dataAdapter.getRefNames(deserializedArgs)
-      : []
+    return isRefNameSource(dataAdapter) ? dataAdapter.getRefNames(args) : []
   }
 }

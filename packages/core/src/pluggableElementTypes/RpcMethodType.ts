@@ -310,35 +310,73 @@ export default abstract class RpcMethodType<
   }
 
   /**
-   * The far side of `serializeArguments`, and **every `execute` must call it**
-   * — `rpcDeserializeArguments.test.ts` fails for one that doesn't.
+   * What the drivers call, and the only caller of {@link deserializeArguments}
+   * that has to exist. Both transports go through here —
+   * `product-core/src/rpcWorker.ts` binds it per method and
+   * `MainThreadRpcDriver` calls it in-band — so `execute` receives arguments
+   * that have already crossed back.
    *
-   * Nothing calls it for you: the worker entry point invokes `execute` directly
-   * (`product-core/src/rpcWorker.ts`), so an `execute` that reads `args`
-   * straight through simply skips this step. What it skips is the blob map,
-   * which is how a `BlobLocation` — a file the user opened from their disk —
-   * resolves to a `File` in the worker realm. Subclasses add to it: the
+   * It used to be `execute` they called, with each subclass opening its body
+   * with `await this.deserializeArguments(args, driver)` and a source-scanning
+   * test to catch the ones that didn't. Eleven methods across seven plugins had
+   * drifted off it when that test was written, every primary per-region fetch
+   * RPC among them, and the reason it kept happening is that the step is
+   * invisible in both directions:
+   *
+   * - **What it does is invisible.** It sets the worker's blob map, which is
+   *   how a `BlobLocation` — a file the user opened from their own disk —
+   *   resolves to a `File` in that realm. The map is a module global, so
+   *   whichever RPC deserialized last leaves one behind and the next method to
+   *   skip this reads *that* one: the right answer, by accident. It goes wrong
+   *   when the inherited map is not the current one, and a worker that died and
+   *   was re-booted starts with none at all — so a local-file track renders all
+   *   day and renders nothing after a GPU hiccup takes a worker with it.
+   * - **Skipping it is invisible to the compiler, and worse than invisible.**
+   *   `RpcExecuteArgs<M>` describes the DESERIALIZED shape: a registry entry
+   *   declares `filters?: SerializableFilterChain`, while the wire carries the
+   *   `string[]` that `serializeArguments` wrote. So an `execute` reading
+   *   `args.filters` without this step gets an array where its own signature
+   *   promises a chain, and calling `.passes()` on it is a runtime TypeError
+   *   that type-checks. One call per method was the only thing making the
+   *   declared type true.
+   *
+   * Doing it here makes that type true by construction, and there is nothing
+   * left to skip or to exempt.
+   */
+  async invoke(
+    serializedArgs: RpcExecuteArgs<MethodName>,
+    rpcDriverClassName: string,
+  ): Promise<WireReturn> {
+    return this.execute(
+      await this.deserializeArguments(serializedArgs, rpcDriverClassName),
+      rpcDriverClassName,
+    )
+  }
+
+  /**
+   * The far side of `serializeArguments`. {@link invoke} calls it once, before
+   * `execute`; subclasses override it to add to the step (the
    * filters-and-regions base turns the on-wire `string[]` back into a
-   * `SerializableFilterChain` here.
+   * `SerializableFilterChain`) rather than to call it.
    *
-   * Skipping it *looks* harmless, which is the problem. The blob map is a
-   * module global in the worker, so whichever RPC deserialized last leaves one
-   * behind and the next method to skip this reads that one — right, usually, by
-   * accident. It goes wrong when the map it inherits is not the current one:
-   * `setBlobMap` replaces wholesale, and a worker that died and re-booted (the
-   * pool drops and re-boots the slot) starts with none at all.
-   *
-   * The only methods exempt are the ones with no adapter config and no
-   * locations in their arguments at all — `CoreFreeResources` frees caches by
-   * session id and has nothing to resolve — and that exemption is declared in
-   * the test rather than inferred.
+   * **Overrides must tolerate running twice on the same object.** Nothing
+   * in-tree calls this from an `execute` any more, but an external plugin
+   * written against the older contract still does, and its args have already
+   * been through here. This one is naturally idempotent — `setBlobMap`
+   * replaces wholesale — and the filters override checks what it is handed.
    */
   async deserializeArguments<T>(
-    args: T & { blobMap?: Record<string, File> },
+    args: T,
     _rpcDriverClassName: string,
   ): Promise<T> {
-    if (args.blobMap) {
-      setBlobMap(args.blobMap)
+    // `blobMap` is what serializeArguments added on the way out — it rides the
+    // wire and is in no registry entry, so it is read off here rather than
+    // being intersected into the parameter. Naming it in the type made the
+    // parameter reject everything else for a driver holding an unparameterized
+    // RpcMethodType, where RpcExecuteArgs<string> is `unknown`.
+    const { blobMap } = args as { blobMap?: Record<string, File> }
+    if (blobMap) {
+      setBlobMap(blobMap)
     }
 
     return args

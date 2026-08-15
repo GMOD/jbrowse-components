@@ -142,10 +142,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
   name = 'GetScoreData' as const
 
-  async execute(
-    args: RpcExecuteArgs<'GetScoreData'>,
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: RpcExecuteArgs<'GetScoreData'>) {
     const {
       sessionId,
       adapterConfig,
@@ -153,7 +150,7 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
       scoreColumn,
       stopToken,
       statusCallback,
-    } = await this.deserializeArguments(args, rpcDriverClassName)
+    } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,
       sessionId,

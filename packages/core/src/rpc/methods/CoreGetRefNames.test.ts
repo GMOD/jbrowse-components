@@ -14,10 +14,10 @@ function run(dataAdapter: unknown) {
   mockGetAdapter.mockResolvedValue({ dataAdapter } as Awaited<
     ReturnType<typeof getAdapter>
   >)
-  return method.execute(
-    { sessionId: 's', adapterConfig: { type: 'AnyAdapter' } },
-    'MainThreadRpcDriver',
-  )
+  return method.execute({
+    sessionId: 's',
+    adapterConfig: { type: 'AnyAdapter' },
+  })
 }
 
 describe('CoreGetRefNames', () => {

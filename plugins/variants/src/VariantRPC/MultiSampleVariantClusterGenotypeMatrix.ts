@@ -17,17 +17,12 @@ export class MultiSampleVariantClusterGenotypeMatrix extends RpcMethodTypeWithFi
 
   async execute(
     args: RpcExecuteArgs<'MultiSampleVariantClusterGenotypeMatrix'>,
-    rpcDriverClassName: string,
   ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
     const { executeClusterGenotypeMatrix } =
       await import('./executeClusterGenotypeMatrix.ts')
     return executeClusterGenotypeMatrix({
       pluginManager: this.pluginManager,
-      args: deserializedArgs,
+      args: args,
     })
   }
 }

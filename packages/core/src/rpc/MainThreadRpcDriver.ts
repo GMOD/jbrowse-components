@@ -21,6 +21,9 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
   ) {
     // re-attach the out-of-band statusCallback that BaseRpcDriver.call split off,
     // mirroring how the worker re-wires it on the far side of postMessage
-    return rpcMethod.execute({ ...serializedArgs, statusCallback }, this.name)
+    //
+    // `invoke`, not `execute` — it is the entry point that deserializes the
+    // arguments first, and the worker binds the same one
+    return rpcMethod.invoke({ ...serializedArgs, statusCallback }, this.name)
   }
 }

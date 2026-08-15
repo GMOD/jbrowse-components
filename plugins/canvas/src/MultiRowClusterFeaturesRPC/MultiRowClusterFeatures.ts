@@ -10,19 +10,12 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 export default class MultiRowClusterFeatures extends RpcMethodTypeWithRenameRegions<'MultiRowClusterFeatures'> {
   name = 'MultiRowClusterFeatures' as const
 
-  async execute(
-    args: RpcExecuteArgs<'MultiRowClusterFeatures'>,
-    rpcDriverClassName: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
+  async execute(args: RpcExecuteArgs<'MultiRowClusterFeatures'>) {
     const { executeMultiRowClusterFeatures } =
       await import('./executeMultiRowClusterFeatures.ts')
     return executeMultiRowClusterFeatures({
       pluginManager: this.pluginManager,
-      args: deserializedArgs,
+      args: args,
     })
   }
 }

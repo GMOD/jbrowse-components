@@ -35,18 +35,11 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class SyntenyGetFeaturesAndPositions extends RpcMethodType<'SyntenyGetFeaturesAndPositions'> {
   name = 'SyntenyGetFeaturesAndPositions' as const
 
-  async execute(
-    args: RpcExecuteArgs<'SyntenyGetFeaturesAndPositions'>,
-    rpcDriverClassName: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
+  async execute(args: RpcExecuteArgs<'SyntenyGetFeaturesAndPositions'>) {
     const { executeSyntenyFeaturesAndPositions } =
       await import('./executeSyntenyFeaturesAndPositions.ts')
     return executeSyntenyFeaturesAndPositions({
-      ...deserializedArgs,
+      ...args,
       pluginManager: this.pluginManager,
     })
   }

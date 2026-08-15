@@ -7,13 +7,10 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 export default class CoreGetInfo extends RpcMethodType<'CoreGetInfo'> {
   name = 'CoreGetInfo' as const
 
-  async execute(args: RpcExecuteArgs<'CoreGetInfo'>, rpcDriver: string) {
+  async execute(args: RpcExecuteArgs<'CoreGetInfo'>) {
     const pm = this.pluginManager
-    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
-    const { sessionId, adapterConfig } = deserializedArgs
+    const { sessionId, adapterConfig } = args
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    return isFeatureAdapter(dataAdapter)
-      ? dataAdapter.getHeader(deserializedArgs)
-      : null
+    return isFeatureAdapter(dataAdapter) ? dataAdapter.getHeader(args) : null
   }
 }

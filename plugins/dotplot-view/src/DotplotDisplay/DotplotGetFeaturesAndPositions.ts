@@ -26,18 +26,11 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class DotplotGetFeaturesAndPositions extends RpcMethodType<'DotplotGetFeaturesAndPositions'> {
   name = 'DotplotGetFeaturesAndPositions' as const
 
-  async execute(
-    args: RpcExecuteArgs<'DotplotGetFeaturesAndPositions'>,
-    rpcDriverClassName: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
+  async execute(args: RpcExecuteArgs<'DotplotGetFeaturesAndPositions'>) {
     const { executeDotplotFeaturesAndPositions } =
       await import('./executeDotplotFeaturesAndPositions.ts')
     return executeDotplotFeaturesAndPositions({
-      ...deserializedArgs,
+      ...args,
       pluginManager: this.pluginManager,
     })
   }

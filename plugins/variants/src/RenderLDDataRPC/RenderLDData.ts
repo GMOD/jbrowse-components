@@ -31,18 +31,11 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderLDData extends RpcMethodTypeWithRenameRegions<'RenderLDData'> {
   name = 'RenderLDData' as const
 
-  async execute(
-    args: RpcExecuteArgs<'RenderLDData'>,
-    rpcDriverClassName: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
+  async execute(args: RpcExecuteArgs<'RenderLDData'>) {
     const { executeRenderLDData } = await import('./executeRenderLDData.ts')
     return executeRenderLDData({
       pluginManager: this.pluginManager,
-      args: deserializedArgs,
+      args: args,
     })
   }
 }

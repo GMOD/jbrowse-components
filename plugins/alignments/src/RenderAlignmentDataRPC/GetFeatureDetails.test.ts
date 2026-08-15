@@ -26,15 +26,12 @@ function mockAdapter(features: SimpleFeature[]) {
 }
 
 function run(args: { featureId: string; lodMode?: 'fine' | 'coarse' }) {
-  return new GetFeatureDetails(new PluginManager()).execute(
-    {
-      sessionId: 'sess',
-      adapterConfig: { type: 'PairwiseIndexedPAFAdapter' },
-      regions: [region],
-      ...args,
-    },
-    'MainThreadRpcDriver',
-  )
+  return new GetFeatureDetails(new PluginManager()).execute({
+    sessionId: 'sess',
+    adapterConfig: { type: 'PairwiseIndexedPAFAdapter' },
+    regions: [region],
+    ...args,
+  })
 }
 
 function feature(uniqueId: string) {
