@@ -70,8 +70,11 @@ export function computeVisibleDeletions(
       rpcDataMap,
     )) {
       const { blocks } = regionData
-      const rowFlank = makeRowFlank(blocks)
       const runBounds = regionDeletionRunBounds(regionData)
+      // Built only once a block survives the culls: it is an array as long as
+      // the region's blocks, and with the bounds in place most frames cull
+      // every one of them and want no flank at all.
+      let rowFlank: ReturnType<typeof makeRowFlank> | undefined
       for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i]!
         if (
@@ -99,7 +102,7 @@ export function computeVisibleDeletions(
             block.refSeqBytes,
             row.alignmentBytes,
             block.startBp,
-            rowFlank(i, row.rowIndex),
+            (rowFlank ??= makeRowFlank(blocks))(i, row.rowIndex),
             (start, length) => {
               if (length > longest) {
                 longest = length
