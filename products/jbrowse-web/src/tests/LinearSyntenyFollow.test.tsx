@@ -617,6 +617,52 @@ test('a swapped-assembly track holds the row rather than spinning', async () => 
   expect(view.followUnaligned).toBe(true)
 }, 60000)
 
+// The backstop, against the pathology itself rather than against either cause
+// of it.
+//
+// `navToLocString` replaces the row's `displayedRegions` whether or not it
+// moves the row, and that invalidates `followPairs`, which is the first thing
+// the exact pass reads — so the pass wakes on its own navigation with nothing
+// else about the row having changed. Measured on the swapped track: coarse
+// blocks, featureData and width all stable across fourteen consecutive passes.
+// Nothing damps that, so an `alreadyShowing` that says no while the row has
+// stopped moving is a locked tab rather than a misplacement, and the two
+// arithmetic fixes above close the two ways that is currently reachable rather
+// than the shape of it.
+//
+// A navigation that churns state without moving the row is that shape exactly,
+// and repeating it is the one thing the follow can recognise unaided: the same
+// target asked for from the same place twice.
+//
+// The COUNT is the assertion, not where the row ends up — with navigation
+// blocked the frame pass still places it, which is worth knowing and is why
+// this cannot assert a stalled follow.
+test('a navigation that does not move the row is not asked for twice', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setRowSyncMode('follow')
+
+  let navs = 0
+  jest.spyOn(target!, 'navToLocString').mockImplementation(async () => {
+    navs++
+    // the churn without the movement: enough to invalidate followPairs and
+    // wake the pass, which is what made this unbounded
+    target!.setDisplayedRegions([...target!.displayedRegions])
+    // a runaway spins here forever, and jest's own timeout does not fire
+    // because the loop starves the timer queue — so this has to break itself,
+    // and then FAIL on the count rather than hang
+    if (navs > 20) {
+      view.setRowSyncMode('independent')
+    }
+    return Promise.resolve()
+  })
+
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await new Promise(resolve => setTimeout(resolve, 4000))
+
+  expect(navs).toBeLessThanOrEqual(2)
+}, 60000)
+
 test('the two row-sync modes are mutually exclusive', async () => {
   const view = await openSyntenyView()
   const model = view as unknown as {

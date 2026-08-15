@@ -12,6 +12,7 @@ import { planFollowStep } from './planFollowStep.ts'
 import { positionViewOnSpan } from './positionViewOnSpan.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
+import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 import type { FollowStep } from './planFollowStep.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -56,6 +57,16 @@ interface FollowPlan {
   work?: FollowWork
   unaligned: boolean
   approximate: boolean
+}
+
+// One navigation, as "from where" and "to where". Both halves matter: the same
+// target from a different place is the follow re-asserting itself over a row the
+// user has since dragged, which has to stay allowed.
+function navSignature(from: FollowWindow | undefined, to: ResolvedSpan) {
+  const here = from
+    ? `${from.refName}:${from.start}-${from.end}`
+    : 'nowhere-yet'
+  return `${here}>${to.refName}:${to.start}-${to.end}`
 }
 
 /**
@@ -119,8 +130,28 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         : undefined,
     }
     if (alreadyShowing(movingWindow, span, movingMinWidthBp)) {
+      // arrived, so the next disagreement is a fresh one — a row the user
+      // nudges away from here has to be navigable back to exactly this span
+      state.lastNav = undefined
       return
     }
+    // THE BACKSTOP, and it bounds the loop without claiming to diagnose it.
+    // Nothing else damps this: `navToLocString` replaces the row's
+    // `displayedRegions` whether or not it moves the row, which invalidates
+    // `followPairs` and wakes this pass. Measured on the swapped track — coarse
+    // blocks, featureData and width all stable across fourteen consecutive
+    // passes — so an `alreadyShowing` that says no while the row has stopped
+    // moving is a locked tab, not a misplacement. The two checks above close
+    // the two ways that is reachable today; this closes the shape of it.
+    //
+    // The same target asked for from the same place twice is the one thing that
+    // cannot be a real disagreement: the first attempt already had its chance,
+    // and the row is still reporting where it was.
+    const nav = navSignature(movingWindow, span)
+    if (nav === state.lastNav) {
+      return
+    }
+    state.lastNav = nav
     await navToResolvedSpan(movingView, span)
   }
 

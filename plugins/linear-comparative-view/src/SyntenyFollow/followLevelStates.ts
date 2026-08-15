@@ -37,6 +37,10 @@ export interface FollowLevelState {
   // re-reported every settle, its message having been cleared by a level that
   // resolves fine.
   lastErrorMessage?: string
+  // Where the row was and where the last navigation sent it, so a repeat of the
+  // same pair can be recognised as a navigation that achieved nothing. Cleared
+  // the moment the row arrives — see `navSignature`.
+  lastNav?: string
 }
 
 /**

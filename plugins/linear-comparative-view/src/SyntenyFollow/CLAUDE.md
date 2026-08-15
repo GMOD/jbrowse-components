@@ -81,12 +81,25 @@ against where the row actually is, with a tolerance; and the per-level answer
 promise is shared by key, so all three ride one `SyntenyResolveMatchingRegion`.
 The integration suite asserts that count.
 
-## That convergence is load-bearing, and a narrow answer used to break it
+## That convergence is load-bearing, and nothing else damps it
 
 `alreadyShowing` saying no means navigate, and navigating wakes the pass that
 asked. So **anything it can never say yes to is an infinite loop**, not a
 misplacement — one core at 90%, and jest's own timeout does not fire because the
 loop starves the timer queue.
+
+The wake is **`navToLocString` replacing `displayedRegions`**, which it does
+whether or not the row moves; that invalidates `followPairs`, which is the first
+thing the exact pass reads. Measured across fourteen consecutive passes on the
+swapped track: coarse blocks, `featureData` and width all stable, the pass
+re-entering on nothing but its own navigation. Nothing outside the follow stops
+that, so the follow keeps its own backstop: asking for the same span **from the
+same observed window** twice cannot be a real disagreement — the first attempt
+already had its chance and the row still reports where it was — so `execute`
+refuses the second. Arriving clears the record, which is what keeps a
+hand-nudged row navigable back to exactly the span it was nudged off.
+
+That backstop bounds the shape; the two checks below close the two ways in.
 
 A view cannot show a span below `minBpPerPx * width`; it centres and widens it.
 So the row reports back a window the answer merely sits inside, which on the
