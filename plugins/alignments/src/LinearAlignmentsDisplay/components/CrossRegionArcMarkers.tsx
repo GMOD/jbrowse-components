@@ -21,6 +21,7 @@ export default function CrossRegionArcMarkers({
   return arcs.flatMap(
     arc =>
       arc.markers?.map((marker, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- packArcMarkers emits a fixed positional set per arc, never reordered
         <rect key={`${arc.key}-${i}`} {...marker} />
       )) ?? [],
   )

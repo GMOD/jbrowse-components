@@ -71,6 +71,7 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
       reference/INTERACTION_PERF.md has the measurement. */}
       {scalebarLabels.map(({ x, label }, i) => (
         <div
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- position IS the identity here; keying by label is what the pooling above removes
           key={i}
           className={classes.tick}
           style={{ transform: `translateX(${x}px)` }}

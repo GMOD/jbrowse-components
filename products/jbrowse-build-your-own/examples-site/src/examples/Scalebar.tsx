@@ -258,6 +258,7 @@ const ScalebarLabels = observer(function ScalebarLabels({
       and remount every node instead of relabelling it */}
       {scalebarLabels.map(({ x, label }, i) => (
         <span
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- position IS the identity here; keying by label is what the pooling above removes
           key={i}
           style={{
             position: 'absolute',
