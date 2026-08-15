@@ -307,7 +307,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "index",
-          "type": "BedGraphTabixIndexConfigurationSchema",
+          "type": "TabixIndexConfigurationSchema",
           "subSlots": [
             {
               "name": "indexType",
@@ -457,7 +457,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "index",
-          "type": "GtfTabixIndexConfigurationSchema",
+          "type": "TabixIndexConfigurationSchema",
           "subSlots": [
             {
               "name": "indexType",
@@ -496,7 +496,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "index",
-          "type": "Gff3TabixIndexConfigurationSchema",
+          "type": "TabixIndexConfigurationSchema",
           "subSlots": [
             {
               "name": "indexType",
@@ -833,7 +833,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "index",
-          "type": "VcfIndexConfigurationSchema",
+          "type": "TabixIndexConfigurationSchema",
           "subSlots": [
             {
               "name": "indexType",
@@ -917,7 +917,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "index",
-          "type": "PlinkLDTabixIndexConfigurationSchema",
+          "type": "TabixIndexConfigurationSchema",
           "subSlots": [
             {
               "name": "indexType",
@@ -1122,15 +1122,15 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "index",
-          "type": "IndexConfigurationSchema",
+          "type": "TabixIndexConfigurationSchema",
           "subSlots": [
-            {
-              "name": "location",
-              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
-            },
             {
               "name": "indexType",
               "type": "(JexlString | IndexType)"
+            },
+            {
+              "name": "location",
+              "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
             }
           ]
         },

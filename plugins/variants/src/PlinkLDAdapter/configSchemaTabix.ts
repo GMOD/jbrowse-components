@@ -1,5 +1,7 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  ConfigurationSchema,
+  tabixIndexFields,
+} from '@jbrowse/core/configuration'
 
 /**
  * #config PlinkLDTabixAdapter
@@ -68,30 +70,7 @@ const PlinkLDTabixAdapter = ConfigurationSchema(
       },
     },
 
-    index: ConfigurationSchema('PlinkLDTabixIndex', {
-      /**
-       * #slot index.indexType
-       * `TBI` is the usual `tabix` output. `CSI` is required for a reference
-       * longer than 512 Mb, which TBI cannot address.
-       */
-      indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      },
-      /**
-       * #slot index.location
-       * location of the tabix index. Only needed when it is not named
-       * `<file>.tbi`, which is what the `uri` shorthand assumes.
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/plink.ld.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      },
-    }),
+    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
   },
   {
     explicitlyTyped: true,

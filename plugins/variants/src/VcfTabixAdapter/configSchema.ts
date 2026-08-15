@@ -1,8 +1,8 @@
 import {
   ConfigurationSchema,
   expandTabixShorthand,
+  tabixIndexFields,
 } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -48,31 +48,7 @@ const VcfTabixAdapter = ConfigurationSchema(
       },
     },
 
-    index: ConfigurationSchema('VcfIndex', {
-      /**
-       * #slot index.indexType
-       * `TBI` is the usual `tabix` output. `CSI` is required for a reference
-       * longer than 512 Mb, which TBI cannot address.
-       */
-      indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      },
-      /**
-       * #slot index.location
-       * location of the tabix index. Only needed when it is not named
-       * `<file>.vcf.gz.tbi` (or `.csi`), which is what the `uri` shorthand
-       * assumes.
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.vcf.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      },
-    }),
+    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
     /**
      * #slot
      * location of a tab-separated table of per-sample metadata. It needs a

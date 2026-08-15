@@ -1,8 +1,8 @@
 import {
   ConfigurationSchema,
+  tabixIndexFields,
   tabixIndexSnapshot,
 } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -61,30 +61,7 @@ const configSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: '',
     },
-    index: ConfigurationSchema('Index', {
-      /**
-       * #slot index.location
-       * location of the tabix index. Only needed when it is not named
-       * `<file>.bed.gz.tbi` (or `.csi`), which is what the `uri` shorthand
-       * assumes.
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.bed.gz.tbi',
-        },
-      },
-      /**
-       * #slot index.indexType
-       * `TBI` is the usual `tabix` output. `CSI` is required for a reference
-       * longer than 512 Mb, which TBI cannot address.
-       */
-      indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      },
-    }),
+    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
     /**
      * #slot
      */

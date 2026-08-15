@@ -91,6 +91,14 @@ interface ConfigIndex {
 // were missing from the generated pages entirely. Recovered from the `#config`
 // node's own source: every spread of a name the slot-table index knows (see
 // enumConstants.ts) contributes its properties, in declaration order.
+//
+// **A spread inside a nested sub-schema keeps its parent's key**, so
+// `index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields })` documents
+// `index.indexType` rather than a top-level `indexType`. That is the same
+// dotted name a `#slot index.indexType` JSDoc produces by hand, which is what
+// nine tabix adapters wrote before the table was shared — without the prefix
+// they would each have grown two slots at the wrong level, which reads as a
+// schema change rather than as a docs bug.
 function spreadSlots(configNode: string): Item[] {
   const sf = ts.createSourceFile(
     'config.ts',
@@ -99,16 +107,35 @@ function spreadSlots(configNode: string): Item[] {
     true,
   )
   const slots: Item[] = []
-  const visit = (node: ts.Node) => {
+  const visit = (node: ts.Node, prefix: string) => {
     if (ts.isSpreadAssignment(node) && ts.isIdentifier(node.expression)) {
       const pairs = slotFieldConstantPairs(node.expression.text)
       for (const [name, value] of pairs ?? []) {
-        slots.push({ name, docs: '', examples: [], code: `${name}: ${value}` })
+        slots.push({
+          name: `${prefix}${name}`,
+          docs: '',
+          examples: [],
+          code: `${name}: ${value}`,
+        })
       }
     }
-    ts.forEachChild(node, visit)
+    // A property whose value is a nested `ConfigurationSchema(...)` opens a
+    // level; anything else keeps the prefix it was reached with.
+    const nested =
+      ts.isPropertyAssignment(node) &&
+      ts.isIdentifier(node.name) &&
+      ts.isCallExpression(node.initializer) &&
+      ts.isIdentifier(node.initializer.expression) &&
+      node.initializer.expression.text === 'ConfigurationSchema'
+        ? `${prefix}${node.name.text}.`
+        : prefix
+    ts.forEachChild(node, child => {
+      visit(child, nested)
+    })
   }
-  ts.forEachChild(sf, visit)
+  ts.forEachChild(sf, child => {
+    visit(child, '')
+  })
   return slots
 }
 

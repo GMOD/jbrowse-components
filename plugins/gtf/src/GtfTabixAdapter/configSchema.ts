@@ -1,10 +1,14 @@
 import {
   ConfigurationSchema,
   expandTabixShorthand,
+  tabixIndexFields,
 } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return expandTabixShorthand(snap, 'gtfGzLocation')
+}
 
 /**
  * #config GtfTabixAdapter
@@ -23,11 +27,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return expandTabixShorthand(snap, 'gtfGzLocation')
-}
-
 const GtfTabixAdapter = ConfigurationSchema(
   'GtfTabixAdapter',
   {
@@ -44,31 +43,7 @@ const GtfTabixAdapter = ConfigurationSchema(
       },
     },
 
-    index: ConfigurationSchema('GtfTabixIndex', {
-      /**
-       * #slot index.indexType
-       * `TBI` is the usual `tabix` output. `CSI` is required for a reference
-       * longer than 512 Mb, which TBI cannot address.
-       */
-      indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      },
-      /**
-       * #slot index.location
-       * location of the tabix index. Only needed when it is not named
-       * `<file>.gtf.gz.tbi` (or `.csi`), which is what the `uri` shorthand
-       * assumes.
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.gtf.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      },
-    }),
+    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
     /**
      * #slot
      * the GtfTabixAdapter has to "redispatch" if it fetches a region and
