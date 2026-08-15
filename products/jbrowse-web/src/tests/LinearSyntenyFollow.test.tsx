@@ -654,7 +654,7 @@ test('a navigation that does not move the row is not asked for twice', async () 
     if (navs > 20) {
       view.setRowSyncMode('independent')
     }
-    return Promise.resolve()
+    return
   })
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
