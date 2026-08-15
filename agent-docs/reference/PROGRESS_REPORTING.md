@@ -84,6 +84,14 @@ LGV, dotplot, linear synteny, circular and breakpoint-split. Circular and
 breakpoint-split were the two that didn't, and showed a bare `LoadingEllipses`
 with no label and no bar for the same wait the other three narrated.
 
+**Both getters read `loadingAssembly` behind the `showLoading` ternary, and that
+laziness is load-bearing** — same rule as `displayPhase`'s loading thunk. Resolve
+it eagerly (say, by passing it to a shared helper) and every view asks the
+assembly manager on every read, including the reads where nothing is loading.
+Folding these two into a helper was tried and backed out for it: with a thunk
+the call is no shorter than the ternary, and without one `CircularView.test.tsx`
+fails on an `assemblyManager` stub that never needed the method.
+
 Which names to ask about is the only per-view part, and it is the same shape
 each time: `init` names the assemblies before the view has materialized the
 thing `assemblyNames` derives from, so it is the source until then. LGV spells
