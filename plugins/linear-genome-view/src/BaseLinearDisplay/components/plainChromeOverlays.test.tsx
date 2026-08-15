@@ -142,10 +142,10 @@ test('a status while ready shows the corner chip, not the scrim', async () => {
   expect(queryByTestId('loading-overlay')).toBeNull()
 })
 
-// The chrome, not the overlay set, owns the `-done` suffix and the phase
-// attribute. Re-asserted here so a replacement set can't be blamed for them and
-// so the screenshot harness's two signals hold on this path too.
-test('the base still owns the -done testid and data-display-phase', async () => {
+// The chrome, not the overlay set, owns the testid and the phase attribute.
+// Re-asserted here so a replacement set can't be blamed for them and so the
+// screenshot harness's signals hold on this path too.
+test('the base still owns the testid and data-display-phase', async () => {
   const model = TestChromeModel.create({})
   model.setLoadingCondition(true)
   model.setCanvasDrawn(true)

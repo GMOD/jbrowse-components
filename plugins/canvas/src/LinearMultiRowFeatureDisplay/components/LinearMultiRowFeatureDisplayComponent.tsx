@@ -120,7 +120,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
       {/* Also the display's doneness signal for capture gates: `sources` is
           derived from fetched features (the partition values), so this subtree
           cannot exist before data has loaded and been binned into rows --
-          unlike `canvasDrawn`/`-done`, which flips on an empty first paint. The
+          unlike `canvasDrawn`, which flips on an empty first paint. The
           color legend serves this role for categorical paintings but renders
           nothing when the palette is continuous (MAX_LEGEND_ENTRIES), so the row
           labels are the signal that holds in both modes. See

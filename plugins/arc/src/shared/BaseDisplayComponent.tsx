@@ -5,7 +5,7 @@ import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 
 // Arc renders main-thread SVG, so it can't wrap the GPU `DisplayChrome` — that
 // one owns `useRenderingBackend`. It renders the same chrome minus the backend
-// (`DisplayStatusChrome`): identical container, `-done` testid,
+// (`DisplayStatusChrome`): identical container, testid,
 // `data-display-phase`, banners and background-progress chip, from one
 // implementation rather than two that agree today. Arc supplies only the two
 // facts the harness can't have for a display whose canvas it doesn't own — the

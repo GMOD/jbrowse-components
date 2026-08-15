@@ -49,7 +49,7 @@ export interface PerRegionRenderingBackend<
   /**
    * Paint one frame and report whether real content reached the canvas. The
    * render callback forwards this straight to `RenderLifecycleMixin`, which
-   * flips `canvasDrawn` (the loading scrim, the `-done` testid, every browser
+   * flips `canvasDrawn` (the loading scrim, `data-display-drawn`, every browser
    * test's wait) only on `true` — so a tick that drew nothing must answer
    * `false` rather than let a display assert doneness over an empty canvas.
    *

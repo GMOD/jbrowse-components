@@ -143,28 +143,22 @@ Each family constants out the axis it doesn't have — per-region passes
 `viewportCurrent = () => viewportWithinLoadedData` and `rendersCanvas: true`,
 global passes `viewportCurrent = () => true` and `loadingSuppressed: false` — so
 the only per-family difference is the staleness axis described below. It was two
-hand-written expressions until 2026-08, and they had already drifted three ways
-that were equivalent only by accident: per-region spelled the cancel term out by
-hand (`!isReady || … || fetchCanceled`, over a bare `isLoading`) instead of
-reading `isLoadingOrCanceled`, and each family carried exactly one of the two
-suppression hooks, so a display in the other family could express its case only
-by overriding `displayPhase` — the thing both hooks exist to prevent. Adding a
-term now reaches every display. `viewportCurrent` stays a **thunk** because it is
-the only input that reads the containing view; the other four are flags on the
-display. Exhaustive parity against both replaced expressions is pinned in
-`displayPhase.test.ts`, and the wiring on a real display in
+hand-written expressions that had drifted three ways, equivalent only by
+accident; adding a term now reaches every display. `viewportCurrent` stays a
+**thunk** because it is the only input reading the containing view; the other
+four are flags on the display. Parity against both replaced expressions is
+pinned in `displayPhase.test.ts`, and the wiring on a real display in
 `plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts`.
 
-Every canvas-drawing display renders through the shared `DisplayChrome`, which calls
-`useRenderingBackend(factory, model)` internally — the backend hook lives in
-exactly one place, so a display can't bury it where the chrome can't see it. The
-chrome owns every terminal state via the single `displayPhase` getter (precedence
-single-sourced in `computeDisplayPhase`, `@jbrowse/render-core/displayPhase`):
-`renderError` and `tooLarge` early-`return` their own component; `error` +
-`loading` are overlays drawn over the still-mounted canvas. It takes a render-prop
-child `({ canvasRef, canvas }) => ReactNode`, so it's agnostic to how many
-canvases a display draws; pass a `testid` base and the chrome appends `-done`
-once `canvasDrawn` flips.
+Every canvas-drawing display renders through the shared `DisplayChrome`, which
+calls `useRenderingBackend(factory, model)` internally, so a display can't bury
+the backend hook where the chrome can't see it. The chrome owns every terminal
+state via the single `displayPhase` getter: `renderError` and `tooLarge`
+early-`return` their own component, `error` and `loading` are overlays over the
+still-mounted canvas. It takes a render-prop child
+`({ canvasRef, canvas }) => ReactNode`, so it is agnostic to how many canvases a
+display draws, and a required `testid` base it publishes unchanged
+([DISPLAYCHROME.md](DISPLAYCHROME.md) §"One element per display").
 
 The `loading` phase folds in both fetch- and paint-readiness. The
 `isLoadingOrCanceled` and `rendersCanvas && !canvasDrawn` terms cover track-open
@@ -175,38 +169,31 @@ are already satisfied but stale data is still on screen (separate getter for
 tracking reasons — see BaseLinearDisplay/CLAUDE.md). `stopRenderingBackend`
 resets `canvasDrawn` so the overlay recovers after WebGL context loss.
 
-That `rendersCanvas && !canvasDrawn` clause is what covers the window between
-component mount and `isLoading` flipping true, in both families. On HiC that
-window is real:
-the fetch can't start until `CoreGetInfo` resolves the file's resolution list
-(that RPC is also what makes the resolution/norm overlay panel appear before
-anything else), so `isLoading` is false with nothing painted for the length of
-that round-trip — without `!canvasDrawn` the track reads as blank there. It does
-NOT fold in a `dataCurrent`/`viewportWithinLoadedData` staleness axis the way
-MultiRegion does — global displays keep the last frame up during a refetch
-(StaleViewportRescaleMixin rescales it), so a pan/zoom shows no scrim beyond the
-existing `isLoading` window. `rendersCanvas` (default true) gates the clause so a
-display showing a static non-canvas placeholder (LD with `showLDTriangle` off →
-EmptyState, no canvas) doesn't sit permanently under the scrim.
+That `rendersCanvas && !canvasDrawn` clause covers the window between component
+mount and `isLoading` flipping true, in both families. On HiC that window is
+real: the fetch can't start until `CoreGetInfo` resolves the file's resolution
+list, so `isLoading` is false with nothing painted for that round-trip, and
+without `!canvasDrawn` the track reads as blank. The global family does NOT fold
+in a staleness axis the way MultiRegion does — it keeps the last frame up during
+a refetch (`StaleViewportRescaleMixin` rescales it), so a pan shows no scrim
+beyond the `isLoading` window.
 
-`rendersCanvas` is an overridable hook, not inlined, on purpose: the pre-paint
-scrim needs both "nothing painted yet" (`!canvasDrawn`) and "not a deliberate
-empty placeholder", and only the display knows the second. The one alternative
-that removes the hook — render LD's placeholder *outside* `DisplayChrome`, so
-there is no scrim to gate — was rejected because it disposes/re-inits the GPU
-backend on every triangle toggle and moves a render path out of the shared chrome
-([ADR-026](../architecture-decision-records/adr-026-displaychrome-layering-stays.md)). So LD's `rendersCanvas` override is the single override by design;
-deleting it as "dead single-use code" regresses a stuck spinner over the
-triangle-off placeholder.
+`rendersCanvas` (default true) gates the clause so a display showing a static
+non-canvas placeholder — LD with `showLDTriangle` off — doesn't sit permanently
+under the scrim. It is an overridable hook rather than inlined because the
+pre-paint scrim needs both "nothing painted yet" and "not a deliberate empty
+placeholder", and only the display knows the second. The alternative that removes
+it — rendering LD's placeholder *outside* `DisplayChrome` — was rejected for
+disposing and re-initializing the GPU backend on every triangle toggle
+([ADR-026](../architecture-decision-records/adr-026-displaychrome-layering-stays.md)).
+Deleting LD's override as "dead single-use code" regresses a stuck spinner.
 
 `installGlobalFetchAutorun` schedules **leading-edge**: the first fetch fires
-immediately, and only subsequent (zoom/pan/settings) refetches debounce by
-`delay`. MobX's built-in `{ delay }` is trailing-only — it defers even the
-initial run via `setTimeout`, so on cold open the first data (and `isLoading`)
-would wait a full `delay` for no interaction to coalesce, stacking on top of the
-`CoreGetInfo` RTT. A `primed` flag (flipped once a fetch actually runs) drives a
-custom `scheduler` that runs immediately until then; matters for cold-open
-latency and render benchmarks.
+immediately, and only subsequent refetches debounce by `delay`. MobX's built-in
+`{ delay }` is trailing-only, deferring even the initial run, so on cold open the
+first data would wait a full `delay` for no interaction to coalesce, stacked on
+the `CoreGetInfo` RTT. A `primed` flag drives a custom `scheduler` that runs
+immediately until the first fetch.
 
 All backend-specific plumbing lives in the plugin; all reactivity plumbing lives
 in the mixin.
@@ -233,31 +220,31 @@ calls `model.startRenderingBackend(newBackend)`. The mixin sees
 `currentRenderingBackend`. Both autoruns re-fire against the new backend. No
 special code path.
 
-A **WebGL** loss is more than a rebuild, on two counts. It is silent (calls on a
+A **WebGL** loss is more than a rebuild, on two counts. It is silent — calls on a
 lost context are no-ops that never throw, so nothing routes to `renderError` and
-the canvas holds stale pixels), and it is unfixable in place
-(`getContext('webgl2')` keeps handing back that same lost context). So the hook
+the canvas holds stale pixels — and it is unfixable in place, since
+`getContext('webgl2')` keeps handing back that same lost context. So the hook
 waits a grace window for `webglcontextrestored`, which recovers invisibly, and
 otherwise reports `createGpuContextLostError()` into `renderError` — the phase
-that unmounts the canvas, freeing the context for the page and letting the remount
-get a live one. Bounded auto-recovery then clears it (2 attempts, exponential
-backoff) and stops at the manual Retry.
+that unmounts the canvas, freeing the context for the page and letting the
+remount get a live one. Bounded auto-recovery then clears it and stops at the
+manual Retry.
 
 **The recovery budget is windowed, not lifetime** (`RecoveryBudget`, 2 within
 60 s). The cap exists for a context that recovers and immediately re-loses, and
-that flap happens within seconds; two unrelated losses an hour apart are not one,
-and a lifetime counter cannot tell them apart — it spends the second loss's
-budget on the first and leaves a long-lived tab unable to auto-recover at all. A
-successful re-init deliberately does not reset it (every flap contains one); only
-a genuine `webglcontextrestored` and a manual Retry do.
+that flap happens within seconds. Two unrelated losses an hour apart are not one
+flap, and a lifetime counter cannot tell them apart — it spends the second
+loss's budget on the first and leaves a long-lived tab unable to auto-recover at
+all. A successful re-init does not reset it, since every flap contains one; only
+a genuine `webglcontextrestored` or a manual Retry does.
 
 **A WebGPU device loss is capped by the same budget**, and needs the cap more
-than the WebGL path does. That path re-inits invisibly — `gpuDevice` has already
-dropped the dead device and the next `getGpuDevice()` acquires a fresh one, so
-there is no grace window and no `renderError` — which means nothing reports it.
-Uncapped, a display re-initializes against a dying device silently for as long as
-the tab is open. On give-up it sets `createGpuDeviceLostError()`, which carries
-the same `gpuContextLost` flag (different cause, same remedy on offer).
+than WebGL does. That path re-inits invisibly — `gpuDevice` has already dropped
+the dead device and the next `getGpuDevice()` acquires a fresh one, so there is
+no grace window and no `renderError` — which means nothing reports it. Uncapped,
+a display re-initializes against a dying device silently for as long as the tab
+is open. On give-up it sets `createGpuDeviceLostError()`, carrying the same
+`gpuContextLost` flag: different cause, same remedy on offer.
 
 Navigating away is not one of these: `pagehide` tears the backend down and drops
 any pending report, since a bfcache freeze thaws the timer *after* `pageshow`
@@ -305,23 +292,23 @@ re-init", driving the real `webglcontextrestored` event rather than a mock.
 The drop-to-primitive consumers keep their canvas mounted through an error by
 design (ADR-025's mount-lifetime rule, written for a _live_ context), so theirs
 must be keyed at the mount site. **That is structural too, not a rule to
-remember**, and the same component publishes their `data-display-drawn` (the
-readiness attribute the screenshot waits select on) as a required prop, because
-the list it replaced had quietly omitted dotplot: they render
-`RenderCanvas` (`@jbrowse/render-core/RenderCanvas`), which owns the
-`key={canvasKey}` and forwards everything else — so there is no way to mount
-that canvas without the key. `RenderCanvas.test.tsx` pins both halves (a changed
-key mounts a fresh element; an unrelated prop change does **not**), driven from
-a stable parent rather than RTL's `rerender()`, which remounts the tree in this
-repo's setup and would make the key assertion pass with the key deleted.
+remember**: they render `RenderCanvas`
+(`@jbrowse/render-core/RenderCanvas`), which owns the `key={canvasKey}` and
+forwards everything else, so there is no way to mount that canvas without the
+key. The same component publishes their `data-display-drawn` as a **required**
+prop, because the enumerated list it replaced had quietly omitted dotplot.
+`RenderCanvas.test.tsx` pins both halves — a changed key mounts a fresh element,
+an unrelated prop change does not — driven from a stable parent rather than
+RTL's `rerender()`, which remounts the tree here and would make the key
+assertion pass with the key deleted.
 
-It owns the key and nothing else, and the thing it pointedly does *not* own is
-worth stating: folding `DisplayChrome`'s `-done` testid convention in was tried
-and reverted, because these two views spell the suffix `synteny_canvas_done` /
-`dotplot_webgl_canvas_done` — **underscore** — and those selectors are frozen
-across four test systems. Their readiness flag differs too (`settled`, not
-`canvasDrawn`, since a shared canvas repaints unconditionally — ADR-009's scope
-clause), so the ternary stays at the call site where both facts are visible.
+It owns the key and nothing else. There used to be a readiness convention to
+fold in as well and there is not any more: ADR-065 deleted both spellings
+(`DisplayChrome`'s `-done`, these two views' `_done`) in favour of that
+attribute. Their readiness *flag* still differs — `settled`, not `canvasDrawn`,
+since a shared canvas repaints unconditionally (ADR-009's scope clause) — which
+is a real distinction rather than a naming one, so `drawn` is passed at the call
+site.
 
 **`getContext` returns one undifferentiated `null` for every failure**, which is
 why the ladder used to report the wrong cause. `canvasContext.ts` records the

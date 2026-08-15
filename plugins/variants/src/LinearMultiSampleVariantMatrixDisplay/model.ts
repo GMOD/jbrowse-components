@@ -198,7 +198,7 @@ export default function stateModelFactory(
             // content reach the canvas" answer has to come from here — unlike a
             // per-region `renderBlocks`, which answers it itself (ADR-009). Skip
             // the tick rather than paint an empty frame: painting one flips
-            // `canvasDrawn`, and the loading scrim and every `-done` selector key
+            // `canvasDrawn`, and the loading scrim and every readiness wait key
             // off that, so the first snapshot would catch a blank canvas.
             render: b => {
               const { placedMatrixData } = self
