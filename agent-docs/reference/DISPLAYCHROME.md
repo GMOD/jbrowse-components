@@ -109,11 +109,10 @@ called while `DisplayChromeBaseInner` builds its element tree, so MobX attribute
 everything it touches to that observer. Only reads inside a *component* the
 child returns land where the shape above implies.
 
-This is the trap the rule "a named observer body owns the canvas and overlays"
-is easy to read past, because the render prop looks like it is already the body.
-It isn't; it is one level too high, and the cost is the whole chrome
-re-rendering — `useRenderingBackend` re-run, the status container rebuilt with a
-fresh inline `style`, the overlay portal re-created.
+The render prop looks like it is already the body. It is one level too high, and
+the cost is the whole chrome re-rendering — `useRenderingBackend` re-run, the
+status container rebuilt with a fresh inline `style`, the overlay portal
+re-created.
 
 Two things follow, and each has cost something:
 
@@ -122,14 +121,10 @@ Two things follow, and each has cost something:
   object, which is what `observer`'s memo compares). Wiggle read
   `view.visibleRegions` this way and the variant matrix read `view.offsetPx`;
   both rebuild every pan frame, so a drag re-rendered the chrome for its whole
-  duration. Fixed 2026-08 by moving each read into the observer that wants the
-  number.
-- **Put components in the render prop, nothing else.** Alignments had four
-  inline reads there (`scrollableHeight` twice, `pileupTruncated`, `heightMode`,
-  `view.scrollZoom`) plus `contextMenuAnchor` — none per-frame, so it was never
-  hot, but it is the same shape. They are `AlignmentsCornerControls` and
-  `AlignmentsContextMenu` now. Multi-wiggle's body already carried the comment
-  for the context-menu half; it is a general rule, not a wiggle one.
+  duration.
+- **Put components in the render prop, nothing else.** Alignments had five
+  inline reads there — never per-frame, so never hot, but the same shape. They
+  are `AlignmentsCornerControls` and `AlignmentsContextMenu` now.
 
 The quick check when adding a display: if the render prop contains anything but
 JSX elements and the destructured handle, the chrome is tracking it.
@@ -137,28 +132,24 @@ JSX elements and the destructured handle, the chrome is tracking it.
 ## The pointer position is published, never held
 
 The chrome binds `onMouseMove`/`onMouseLeave` itself and puts `mouseTracker` in
-the handle. Nine displays used to call `useMouseTracking` and wire three props
-each, and **the rule that keeps it cheap — publish the position, never hold it
-above the chrome — survived only as an identical comment copied into eight of
-them**, one of which (alignments) had already dropped `onMouseLeave`. Holding it
-at chrome level costs a whole display's chrome re-rendering because the cursor
-moved a pixel: the chrome (re-running `useRenderingBackend`), the status
-container with a fresh inline `style` object, every overlay, and only then the
-body that wanted the coordinate. Owning the measurement makes the rule
-structural rather than remembered — there is no position at that level to hold.
+the handle. Holding the position at chrome level instead costs a whole display's
+chrome re-rendering because the cursor moved a pixel: `useRenderingBackend`
+re-runs, the status container gets a fresh inline `style`, every overlay
+re-renders, and only then the body that wanted the coordinate. Owning the
+measurement makes the rule structural — there is no position at that level to
+hold. It survived as a copied comment in eight of the nine displays that used to
+call `useMouseTracking`, one of which had already dropped `onMouseLeave`.
 
 - **Read it in the body**, with `useMouseState(mouseTracker)`, in the smallest
   component that draws the cursor-following thing. That is what the per-display
   `CrosshairLayer`/`PointerLayer` components are for; passing the tracker down is
   free, passing the position down is the bug.
-- **No display holds a pointer position in React state**, and that is the whole
-  rule rather than a tidiness preference. The two that did were canvas (a
-  `clientXY` `useState` in the body) and maf (`useDragSelection`'s `mouse`,
-  which lived in the component that renders the chrome — so a hover re-ran
-  `useRenderingBackend`). A drag is the one thing that legitimately needs
-  pointer state, and only its anchors do: maf keeps the rubberband's two
-  corners, written while a button is held, and takes the hover position off the
-  tracker like everything else.
+- **No display holds a pointer position in React state.** The two that did were
+  canvas (a `clientXY` `useState`) and maf (`useDragSelection`'s `mouse`, which
+  lived in the component rendering the chrome, so a hover re-ran
+  `useRenderingBackend`). A drag is the one thing that legitimately needs pointer
+  state, and only its anchors do: maf keeps the rubberband's two corners, written
+  while a button is held, and takes the hover position off the tracker.
 - **A display that hit-tests as the cursor moves passes `onPointerPosition`**,
   so its hit comes off the same single measurement as its guides. Named for the
   measured position, not `onPointerMove`, which collides with React's DOM
@@ -181,16 +172,14 @@ structural rather than remembered — there is no position at that level to hold
   callers pass the true client point.
 - **A terminal phase removes the container, and that is not a `mouseleave`.**
   The event cannot fire on an element unmounted under the cursor, so the chrome
-  drops the measurement itself when `tooLarge`/`renderError` replace the
-  subtree. Without it the tracker kept publishing the pre-banner position —
-  invisible while the banner is up, because nothing reads it there, and then
-  read by the body on its **first** render after Force load / Retry. The pointer
-  layers with no second gate (multi-row features, maf, both multi-sample variant
-  displays) draw a crosshair at it immediately, and `onPointerPosition`
-  consumers stay pinned to the stale hit. Pinned by `DisplayChrome.test.tsx`,
-  "the pointer measurement drops when the container is replaced", whose third
-  case is the negative control: an *overlay* phase keeps the position, since the
-  container is still there and the cursor really is still on it.
+  drops the measurement itself when `tooLarge`/`renderError` replace the subtree.
+  Without it the tracker keeps publishing the pre-banner position — invisible
+  while the banner is up, then read by the body on its **first** render after
+  Force load / Retry, where a pointer layer with no second gate draws a crosshair
+  at it immediately. Pinned by `DisplayChrome.test.tsx`, "the pointer measurement
+  drops when the container is replaced", whose third case is the negative
+  control: an *overlay* phase keeps the position, since the container is still
+  there and the cursor really is on it.
 - **A portaled overlay still bubbles its React events to the container** even
   though its DOM node is not a descendant, so the position would be measured
   against a box the pointer is not in. `useMouseTracking` treats that as a leave
@@ -243,11 +232,11 @@ for them.
 
 **Wherever two rows name one component, the two display types render the same
 element**, so they share a `data-testid` base and are told apart only by
-`data-display-id`. That is three pairs, not one: the two GC content displays,
-the two arc displays, and `LDDisplay`/`LDTrackDisplay` — the same display
-against a VariantTrack's own genotypes and against an LDTrack's precomputed
-file. The hand-written version of this section missed the LD pair entirely,
-which is why the table is generated now.
+`data-display-id`. Three pairs: the two GC content displays, the two arc
+displays, and `LDDisplay`/`LDTrackDisplay` — the same display against a
+VariantTrack's own genotypes and against an LDTrack's precomputed file. The
+hand-written version of this section missed the LD pair, which is why the table
+is generated now.
 
 **The last two columns are the same question asked of the export**, resolved
 from the registration's `stateModel` rather than its `ReactComponent`: the model
@@ -281,12 +270,8 @@ GC content displays likewise. A display splitting its own model across
 `model.ts` and `baseModel.ts` is not a borrow and is not marked as one.
 
 **The export column exists because that side had the same drift axis and no
-guard.** It was audited by hand once, in 2026-08, and came back clean: every LGV
-display on the chrome, and the only `renderSvg` files not reaching it were
-circular-view's, dotplot's and synteny's — the non-LGV exemption this map
-already documents. A hand-audit that has to be repeated is exactly what a
-generator is for, so the result is now recomputed on every `pnpm autogen`
-instead of remembered.
+guard.** A hand audit came back clean once; a hand audit that has to be repeated
+is what a generator is for, so it is recomputed on every `pnpm autogen`.
 
 **On-screen exception: arc / paired-arc.** These paint the *live view* as
 main-thread SVG (no worker, no GPU backend, all features in one array) — nothing
@@ -295,19 +280,17 @@ other row. Having no backend, they can't wrap `DisplayChrome`, which owns the
 backend hook. They render `DisplayStatusChrome` — the *same component* the GPU
 chrome delegates to, not a parallel implementation — and supply the two facts it
 can't derive for a display whose canvas it doesn't own: `phase` (off
-`ArcFetchModel.displayPhase`, computed by `computeDisplayStatusPhase`) and
-`drawn` (`ArcFetchModel.painted`, its `canvasDrawn` analogue). Container, the
-four `data-*` attributes, banners and progress chip all come from the shared
-file. The phase lives on the model, not in the component, for the same reason it
-does for a GPU display: the component then can't disagree with it. See
-`plugins/arc/CLAUDE.md`.
+`ArcFetchModel.displayPhase`) and `drawn` (`ArcFetchModel.painted`, its
+`canvasDrawn` analogue). Container, the four `data-*` attributes, banners and
+progress chip all come from the shared file. The phase lives on the model, not
+in the component, for the same reason it does for a GPU display: the component
+then can't disagree with it. See `plugins/arc/CLAUDE.md`.
 
-**This was a hand-written copy until 2026-08, and it had already drifted** — arc
-rendered no `BackgroundProgress` chip at all, and its loading term read a bare
-`isLoading` (see below). That is the argument against "shares the concept": a
-concept shared by convention decays silently, since nothing renders both
-versions side by side. A display's alignment with the chrome should cost it a
-prop, not a copy.
+**This was a hand-written copy, and it had already drifted** — arc rendered no
+`BackgroundProgress` chip at all, and its loading term read a bare `isLoading`.
+A concept shared by convention decays silently, since nothing renders both
+versions side by side. Alignment with the chrome should cost a display a prop,
+not a copy.
 
 Arc's fetch autorun is `error`-gated, so its `reload()` clears `error` to re-fire
 it. Without that override the shared error bar's retry would be dead.
@@ -330,79 +313,63 @@ button is present, looks live, and does nothing. Two shapes have failed it:
 - **A phase that unmounts the affordance.** The loading overlay carries Retry
   after a user cancel, so a loading term written as bare `isLoading` destroys it:
   `cancelFetchByUser` drops the stop token synchronously, the phase falls to
-  `ready`, and the display sits stopped and empty with nothing to click —
-  nothing restarts it, the canceled state being deliberately durable. Read
-  **`isLoadingOrCanceled`** (FetchMixin), which exists so no family has to
-  remember the second term. Arc had this hole; pinned by
-  `plugins/arc/src/shared/displayPhase.test.ts`. The per-region family had the
-  *shape* of it until 2026-08 — its term was `!isReady` (over a bare `isLoading`)
-  plus a separately-remembered `fetchCanceled`, i.e. the right answer reached the
-  wrong way — which is why the cancel term now lives inside `computeLoadingTerm`
-  rather than in either family's getter. Pinned on a real per-region display by
+  `ready`, and the display sits stopped and empty with nothing to click, the
+  canceled state being deliberately durable. Read **`isLoadingOrCanceled`**
+  (FetchMixin), which exists so no family has to remember the second term. Both
+  families had a version of this hole; the cancel term lives inside
+  `computeLoadingTerm` now rather than in either family's getter. Pinned by
+  `plugins/arc/src/shared/displayPhase.test.ts` and
   `plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts`.
 
 The check when adding a display: raise each error it can produce, press retry,
-and confirm the display can actually leave that state. Cancel is one of them.
+and confirm the display can leave that state. Cancel is one of them.
 
-**The first of those three shapes now reports itself.** `makeRetryContractCheck`
+**The first of those three shapes reports itself.** `makeRetryContractCheck`
 (`assertDisplayContract.ts`) runs inside `installGlobalFetchAutorun`, so every
 global display gets it with no per-display test: a run that follows a
 `reloadCounter` bump and declines to fetch *is* the dead button, and it says so
 through the same `console.error` channel as the rest of the contract checks,
-naming the fix. Dev-only, and everything it reads is `untracked` — a tracked
-read there would put an observable in the fetch autorun's dependency set in
-development and not in production. The one legitimate decline, a display
-deliberately not fetching at all (LD with the triangle off), exempts itself with
-`loadingSuppressed`, the flag the loading scrim already reads.
+naming the fix. Dev-only, and everything it reads is `untracked` — a tracked read
+would put an observable in the fetch autorun's dependency set in development and
+not in production. The one legitimate decline, a display deliberately not
+fetching at all (LD with the triangle off), exempts itself with
+`loadingSuppressed`.
 
-It catches the shape that recurs on its own — a `shouldFetch` that goes false the
-moment data lands. The other two are still manual: **work `reload()` never
-re-runs** (HiC's header read) can't be seen from here, because the autorun does
-reach a fetch; and **a display rendering its own banner** (dotplot, synteny) is
-off this path entirely.
+The other two stay manual: **work `reload()` never re-runs** can't be seen from
+here, because the autorun does reach a fetch; and **a display rendering its own
+banner** (dotplot, synteny) is off this path entirely.
 
-Reports are only useful if something can hear them, and until 2026-08 nothing
-could: nine `testEnv.ts` harnesses set `console.error = jest.fn()` as copied
-boilerplate, which muted every contract check in exactly the suites that build
-real displays. Removed — it was hiding nothing (the seven display plugins run
-3344 tests with no `console.error` at all). Don't reinstate a blanket silencer;
-capture and assert on the channel instead, the way
-`assertDisplayContract.test.ts` and `installGlobalFetchAutorun.test.ts` do.
+A report is only useful if something can hear it. Nine `testEnv.ts` harnesses set
+`console.error = jest.fn()` as copied boilerplate, muting every contract check in
+exactly the suites that build real displays. Don't reinstate a blanket silencer;
+capture and assert on the channel, the way `assertDisplayContract.test.ts` does.
 
 **The non-LGV views owe the same contract by hand, and were not paying it.**
 They render their own banner, and `ErrorBanner`'s `onReset` is optional and
-silently draws no button without it — so until 2026-08 a dotplot GPU error, a
-dotplot fetch error and a synteny fetch error each rendered a banner whose only
-remedy was reloading the tab. Both halves are wired now: `retry()` from
-`useRenderingBackend` for the backend, and `reload()` on `SyntenyFetchStateMixin`
-for the fetch. `reload()` had to be built, and the shape is the same trap the LGV
-family hit — clearing the error is not enough, because after a failure every
-fetch input is unchanged, so `prepare()` recomputes the same key and nothing
-refires the autorun. It bumps a `reloadCounter` that
-`installComparativeFetchAutorun` reads **unconditionally, before its gate**, so
-one read serves both displays and a gated state can't swallow the retry. Pinned
-by `installComparativeFetchAutorun.test.ts`; the refire assertion was confirmed
+silently draws no button without it, so a dotplot GPU error, a dotplot fetch
+error and a synteny fetch error each rendered a banner whose only remedy was
+reloading the tab. Both halves are wired now: `retry()` from
+`useRenderingBackend` for the backend, `reload()` on `SyntenyFetchStateMixin` for
+the fetch. `reload()` hit the same trap the LGV family did — clearing the error
+is not enough, because after a failure every fetch input is unchanged, so
+`prepare()` recomputes the same key and nothing refires. It bumps a
+`reloadCounter` that `installComparativeFetchAutorun` reads **unconditionally,
+before its gate**, so one read serves both displays and a gated state can't
+swallow the retry. Pinned by `installComparativeFetchAutorun.test.ts`, confirmed
 to fail with that read removed.
 
-**No display bypasses the chrome any more.** `AlignmentsDisplayComponent` used
-to early-return its own "Initializing" overlay while `!view.initialized`, and an
-earlier revision of this file called that load-bearing. It wasn't, on either
-count: nothing in that subtree throws before the view is measured
-(`visibleLabels`, `highlightBoxes` and `sashimiArcSections` each open with
-`view.initialized` and return `[]`; `PileupBezierOverlay` gates itself), and
-`displayPhase` resolves to `loading` rather than throwing because
-`viewportWithinLoadedData` is false while `!initialized`. The branch was also
-unreachable — `LinearGenomeView` renders `ViewLoadingScreen` for the whole of
-`showLoading`, which includes `!initialized`, so no display mounts before its
-view is measured, and every host reaches an LGV through that component. Deleted
-2026-08-05; alignments now publishes `data-display-phase` for every frame like
-everything else.
+**No display bypasses the chrome.** `AlignmentsDisplayComponent` used to
+early-return its own "Initializing" overlay while `!view.initialized`, and an
+earlier revision of this file called that load-bearing. It was neither: nothing
+in that subtree throws before the view is measured, and the branch was
+unreachable, since `LinearGenomeView` renders `ViewLoadingScreen` for the whole
+of `showLoading` and every host reaches an LGV through it.
 
-What is worth carrying forward is the bug the audit found. `PileupBezierOverlay`
-had a guard that didn't guard — `const { initialized, width } = view` evaluates
+The bug that audit found is the part to carry forward. `PileupBezierOverlay` had
+a guard that didn't guard — `const { initialized, width } = view` evaluates
 `width` *before* the `!initialized` check, so it threw on exactly the run it was
-written for, latent only because the branch never ran. That is the shape to watch
-for anywhere a throwing getter is destructured next to the flag that gates it.
+written for, latent only because the branch never ran. Watch for that shape
+wherever a throwing getter is destructured next to the flag that gates it.
 
 ## Not on DisplayChrome, by design (non-LGV views)
 
@@ -419,40 +386,33 @@ distinct reasons, not to be conflated:
   drop-to-primitive path, not partial adoption. Don't force them onto
   DisplayChrome. What they owe in exchange: because their canvas stays mounted
   through an error rather than being replaced by a banner, they must key it at
-  the mount site. (Every re-init needs an element that never held a context —
-  a canvas's context kind is permanent — but `DisplayChromeBase` now keys its
+  the mount site. Every re-init needs an element that never held a context — a
+  canvas's context kind is permanent — and `DisplayChromeBase` keys its
   render-prop body on `canvasKey` for the displays *on* the chrome, so this is
-  the only family that still carries the rule itself. See GPU_RENDERING.md
-  "Context-loss recovery" for why the old "DisplayChrome gets it free" reasoning
-  covered only one of the four re-init paths.) Both render
-  **`RenderCanvas`** (`@jbrowse/render-core/RenderCanvas`), which owns that
-  `key={canvasKey}` so it can't be forgotten; it was a hand-written key plus a
-  copied comment in each until 2026-08, with "any new consumer must too" as the
-  only thing enforcing it.
+  the only family carrying the rule itself. Both render **`RenderCanvas`**
+  (`@jbrowse/render-core/RenderCanvas`), which owns that `key={canvasKey}` so it
+  can't be forgotten. See GPU_RENDERING.md "Context-loss recovery" for why the
+  old "DisplayChrome gets it free" reasoning covered only one of the four
+  re-init paths.
 
-  **They owe the retry, too, and dotplot wasn't paying it.** The retry contract
-  above is a `DisplayChrome` guarantee; a consumer rendering its own banner has
-  to wire `useRenderingBackend`'s `retry()` to it by hand. `ErrorBanner`'s
-  `onReset` is optional and silently renders no button without it, which is what
-  dotplot did until 2026-08 — and dotplot is precisely where it matters, since
-  the canvas is never unmounted to force a re-init and auto-recovery quits after
-  two attempts on a context loss, so the display was stranded until a page
-  reload. `retry()` bumps `canvasKey`, which `RenderCanvas` turns into the fresh
-  element. Checked on both: synteny's `LevelSyntenyCanvas` passes it (for the
-  GPU half of its combined banner), dotplot now does.
+  **They owe the retry too, and dotplot wasn't paying it.** A consumer rendering
+  its own banner has to wire `useRenderingBackend`'s `retry()` by hand, and
+  `ErrorBanner`'s `onReset` is optional and silently renders no button without
+  it. Dotplot is where that matters most: its canvas is never unmounted to force
+  a re-init and auto-recovery quits after two attempts on a context loss, so the
+  display was stranded until a page reload. `retry()` bumps `canvasKey`, which
+  `RenderCanvas` turns into the fresh element. Both pay it now.
 - **Main-thread SVG, own radial banners:** `circular-view` (ChordVariant) is not
-  a GPU display at all, having no `useRenderingBackend`, `RenderLifecycleMixin`,
+  a GPU display at all, having no `useRenderingBackend`, `RenderLifecycleMixin`
   or `canvasDrawn`. It renders SVG chords (`Chords`, in
-  `plugins/circular-view/src/chords/`) with a plain ternary over
-  `display.error` → `display.ready` → loading. **`ready`, not `features`**:
-  `blocksForRefs` falls back to untranslated refNames while the refName map is
-  in flight, so drawing as soon as the features land flashes a chordless circle
-  whenever the adapter's names differ from the assembly's (`1` vs `chr1`). It
-  keeps its own
-  `Loading` (radial spinner) and `DisplayError` (chord-circle text) components,
-  because the rectangular LGV banners (`BlockMsg`, "Force load", "Zoom in to see
-  features") don't fit a radial view. Arc, by contrast, is an *LGV* SVG display,
-  so it can reuse the LGV banners; circular's radial medium is why it can't.
+  `plugins/circular-view/src/chords/`) with a plain ternary over `display.error`
+  → `display.ready` → loading. **`ready`, not `features`**: `blocksForRefs` falls
+  back to untranslated refNames while the refName map is in flight, so drawing as
+  soon as the features land flashes a chordless circle whenever the adapter's
+  names differ from the assembly's (`1` vs `chr1`). It keeps its own `Loading`
+  and `DisplayError` components, because the rectangular LGV banners don't fit a
+  radial view. Arc is an *LGV* SVG display and so can reuse them; circular's
+  medium is why it can't.
 
 ## One element per display: testid, id, phase, drawn
 
@@ -528,34 +488,30 @@ simply forgot dotplot, so an unpainted dotplot counted as finished and a capture
 could land on it blank. A list that enumerates views forgets one; a required prop
 cannot.
 
-**Why two id attributes and not one.** `data-testid` is the *base* — shared by
-every instance of a display type, and it mutates on first paint. Neither
-property suits "which track is this", so targeting one track's display had its
-own attribute-shaped hole, previously filled by a second wrapper element
-emitting `display-${displayId}` as *its* testid. `data-display-id` fills it on
-the same element. Likewise `data-display-drawn` exists so paint state can be
-read without decoding a suffix: "has everything painted?" is
-`[data-display-drawn="false"]` — one selector.
+**Why two id attributes and not one.** `data-testid` is the *base*, shared by
+every instance of a display type, so "which track is this" had its own
+attribute-shaped hole — previously filled by a second wrapper element emitting
+`display-${displayId}` as *its* testid. `data-display-id` fills it on the same
+element, and `data-display-drawn` lets paint state be read without decoding a
+suffix.
 
 **This replaced three coexisting testid shapes, and the cost was never just the
-extra `<div>`.** Two things used to vary per display: the `testid` base passed to
-DisplayChrome, and whether a `DisplayContainer` sat above it emitting
-`display-${id}-done` on its own. The knock-on effects were all in the test
-infrastructure, which had to accept every shape:
+extra `<div>`.** Two things used to vary per display: the `testid` base, and
+whether a `DisplayContainer` sat above it emitting `display-${id}-done` of its
+own. The knock-on effects were all in test infrastructure that had to accept
+every shape:
 
-- `PENDING_DISPLAYS` (`products/jbrowse-capture/src/waits.ts`, re-exported from
-  `@jbrowse/browser-test-utils`) was a three-way union — `display-…` not ending
-  in `-done`, plus anything ending in `-display`, plus synteny — because paint
-  state was encoded by a mutating id whose base could take either shape. It is
-  now **one** selector, `[data-display-drawn="false"]`: the synteny special case
-  went with it once `RenderCanvas` made the same attribute required of the two
-  non-LGV views.
+- `PENDING_DISPLAYS` (`products/jbrowse-capture/src/waits.ts`) was a three-way
+  union, because paint state was encoded by a mutating id whose base could take
+  either shape. It is **one** selector now, `[data-display-drawn="false"]`; the
+  synteny special case went with it once `RenderCanvas` made the attribute
+  required of the two non-LGV views.
 - `displayReady()` (`website/scripts/screenshot-spec-helpers.ts`) had to emit
   **two** selectors joined by a comma, because alignments put its `-done` testid
   on an inner div while `data-display-phase` stayed on the chrome, so the two
   could only be related with `:has()`. Each form matched nothing in the other's
-  case and the symptom was a capture that timed out rather than an authoring
-  error. It is now one selector.
+  case, and the symptom was a capture that timed out rather than an authoring
+  error.
 
 **The co-location is pinned in jest, which is the only one of those systems that
 runs outside CI.** `BigWig.test.tsx` and `Manhattan.test.tsx` assert that the
@@ -566,26 +522,24 @@ assertion, and every system that would notice needs a GPU and a headless Chrome
 it runs locally.
 
 **What was deleted with it.** `DisplayContainer` and `BaseLinearDisplayComponent`
-are gone, and with them `BaseDisplayModel`'s `DisplayMessageComponent` getter —
-`BaseLinearDisplay.tsx` was its last reader, so the model no longer has any view
-of its own UI. Four registered components (`LinearBasicDisplayComponent`,
-`LinearWiggleDisplayComponent`, `MultiLinearWiggleDisplayComponent`,
-`ManhattanReactComponent`) existed *only* to wrap a body in that container; each
-became a pass-through and was deleted, with the display type now registering the
-body directly. Wiggle and GC-content consequently register the identical
-component, which is what the container arrangement was working around.
+are gone, and with them `BaseDisplayModel`'s `DisplayMessageComponent` getter, so
+the model no longer has any view of its own UI. Four registered components
+existed *only* to wrap a body in that container; each became a pass-through and
+was deleted, with the display type registering the body directly. Wiggle and
+GC-content consequently register the identical component, which is what the
+container arrangement was working around.
 
-Two follow-through details worth knowing, because neither is visible in a diff:
+Two follow-through details, neither visible in a diff:
 
 - The container contributed `whiteSpace: nowrap` / `textAlign: left` by
-  inheritance to everything under it. Those are re-stated on the chrome of each
-  display the container no longer wraps, deliberately verbatim, so no label
-  overlay changes how it wraps. They were **not** pushed onto `DisplayChrome` for everyone: seven
-  displays never had them, and `white-space: nowrap` on a display root would
-  stop long error-banner text from wrapping.
-- The canvas family's `FloatingLegend` moved inside `DisplayChrome`'s child.
-  The chrome is `position: relative` exactly as the container was, so its
-  geometry is unchanged.
+  inheritance. Those are re-stated verbatim on the chrome of each display it no
+  longer wraps, so no label overlay changes how it wraps. They were **not**
+  pushed onto `DisplayChrome` for everyone: seven displays never had them, and
+  `white-space: nowrap` on a display root would stop long error-banner text from
+  wrapping.
+- The canvas family's `FloatingLegend` moved inside `DisplayChrome`'s child. The
+  chrome is `position: relative` exactly as the container was, so the geometry is
+  unchanged.
 
 **`data-display-phase` is published for three of the five phases.** The two
 subtree-replacing ones (`tooLarge`, `renderError`) render their banner *instead
@@ -643,20 +597,18 @@ They stay separate because `DisplayChromeBase` takes its overlay set as a *prop*
 and never renders a track control; folding the two would put entries in
 `DisplayChromeOverlays` that the chrome ignores.
 
-**An embedder mounts one thing, though.** That split is real at the
-implementation level and not at all real for a host: nobody wants stock Material
-scrims with plain corner buttons, and every consumer mounts the two together
-with the same two plain sets. `DisplayUIProvider` is the pair, with both props
-defaulting to the plain sets, so the common case is
-`<DisplayUIProvider>{tracks}</DisplayUIProvider>` — no arguments, one import.
-Supplying either brings your own.
+**An embedder mounts one thing, though.** The split is real for the
+implementation and not for a host: nobody wants stock Material scrims with plain
+corner buttons, and every consumer mounts the two together with the same two
+plain sets. `DisplayUIProvider` is the pair, both props defaulting to the plain
+sets, so the common case is `<DisplayUIProvider>{tracks}</DisplayUIProvider>` —
+no arguments, one import. Supplying either brings your own.
 
 Defaulting *that component's props* is not the ambient default the contexts
-avoid, and the distinction is the whole reason it is safe: the contexts still
-resolve to `undefined`, so the paths above are untouched, and nothing reaches a
-plain set without someone having mounted the component on purpose.
-`DisplayUIProvider.test.tsx` pins both halves — that mounting it supplies both
-seams, and that *not* mounting it still yields Material — because a
+avoid, which is what makes it safe: the contexts still resolve to `undefined`, so
+nothing reaches a plain set without someone having mounted the component on
+purpose. `DisplayUIProvider.test.tsx` pins both halves — that mounting it
+supplies both seams, and that *not* mounting it still yields Material — because a
 half-wired provider reads as a styling bug rather than a missing one.
 
 **The view's own status states are not a seam either, and a host that only
@@ -675,21 +627,18 @@ however it stopped. `products/jbrowse-build-your-own`'s "Loading and error
 states" page is the worked version, with a radio that breaks the assembly on
 purpose; every other page there carries the short form.
 
-`session.snackbarMessages` is the third channel and the quietest, since it is
-not on the view at all: `showTrack` with an unresolvable id returns `undefined`
-and reports the reason there, and so do `addSessionTrackConf` on an invalid
-config and a failed `init.loc`. Nothing throws, so a surface that does not read
-the array shows a ticked checkbox and a track that never arrives, with the
-reason sitting in memory.
+`session.snackbarMessages` is the third channel and the quietest, not being on
+the view at all: `showTrack` with an unresolvable id returns `undefined` and
+reports the reason there, as do `addSessionTrackConf` on an invalid config and a
+failed `init.loc`. Nothing throws, so a surface that does not read the array
+shows a ticked checkbox and a track that never arrives.
 
-`app-core`'s `App` was the **only** thing in the repo rendering it until
-2026-08, which meant both embedded React products dropped every message. Both
-mount `ui/Snackbar` now (its module scope is two `lazy()` calls, so it costs
-their eager bundles nothing), pinned in each product's own test through a call
-that really fails rather than through a pushed message — the regression is the
-path going quiet, not the array. **A host drawing its own chrome is still on its
-own**, by construction; `products/jbrowse-build-your-own`'s "Loading and error
-states" page is where that is said, and its smoke check drives it.
+`app-core`'s `App` was the only thing in the repo rendering it, so both embedded
+React products dropped every message. Both mount `ui/Snackbar` now — its module
+scope is two `lazy()` calls, so it costs their eager bundles nothing — pinned in
+each product's own test through a call that really fails rather than a pushed
+message, since the regression is the path going quiet, not the array. **A host
+drawing its own chrome is still on its own**, by construction.
 
 **Colors are not a seam and are not in it.** A display reads `usePalette()` for
 its own content colors, which is a palette of strings rather than a toolkit, so
@@ -757,47 +706,42 @@ hook plus JBrowse's own 4px bar, and the build-your-own site's
 
 **A third seam was considered for the tooltip and rejected.** `BaseTooltip` is
 rendered by each display directly, behind neither provider, and it used to style
-itself through `makeStyles(theme => …)` — so in a host that mounts no
-`ThemeProvider` it drew MUI's *default* grey chip in Roboto, and the BYO smoke
-census (which counts `Mui*` classnames) scored it zero. What it actually needed
-was colors, and colors already have a toolkit-free home: it reads `usePalette()`
-and inline styles now, and no provider was added. Reach for the palette before
-reaching for a fourth context — a component that only needs colors doesn't need
-a seam. `BaseTooltip.test.tsx` pins the plain rendering, because the browser
-census can only see a tooltip that a headless hover happened to raise.
+itself through `makeStyles(theme => …)` — so in a host mounting no
+`ThemeProvider` it drew MUI's *default* grey chip in Roboto while the BYO smoke
+census scored it zero. What it needed was colors, and colors already have a
+toolkit-free home: it reads `usePalette()` and inline styles now, with no new
+provider. Reach for the palette before reaching for a fourth context.
+`BaseTooltip.test.tsx` pins the plain rendering, because the browser census can
+only see a tooltip a headless hover happened to raise.
 
-**`FloatingLegend` was the same shape and was found the same way, in 2026-08.**
-Canvas's `FeatureComponent`, alignments' `PileupComponent`, variants and
-multi-wiggle all render it directly — behind neither provider, like the tooltip
-— and it drew two MUI `IconButton`s (with `CloseIcon`) and a
-`Link component="button"`. Its `makeStyles` was already the theme-free one, so
-the *styling* half had been fixed and the components had not, and the BYO
-census scored it zero for a third reason: it only counts what is on screen, and
-a legend appears only once something sets a `colorBy` that produces one, which
-no page there does. Every one of these has now been a component nobody
-remembered was outside both seams; when adding one, the question is not "does
-it look like chrome" but "does a stock display import it directly".
+**`FloatingLegend` was the same shape, found the same way.** Canvas, alignments,
+variants and multi-wiggle all render it directly, behind neither provider, and it
+drew two MUI `IconButton`s and a `Link component="button"`. Its `makeStyles` was
+already the theme-free one, so the *styling* half had been fixed and the
+components had not — and the census scored it zero for a third reason: it counts
+only what is on screen, and a legend appears only once something sets a `colorBy`
+that produces one, which no page there does. When adding a component, the
+question is not "does it look like chrome" but "does a stock display import it
+directly".
 
-Same resolution: plain `<button>`s styled from the existing theme-free
-`makeStyles`, `×` for the glyph — which is what `SvgColorLegend` already draws
-for this control, so the exported legend and the on-screen one now agree — and
-no new seam. `FloatingLegend.test.tsx` pins it with the census itself
-(`[class*="Mui"]` must be empty with all three controls rendered), for the
-reason `BaseTooltip` is pinned in jest: a browser check that never runs is not
-a check. Verified as a regression test — 7 Material elements before, 0 after.
+Same resolution: plain `<button>`s from the existing theme-free `makeStyles`, `×`
+for the glyph — which is what `SvgColorLegend` already draws, so the exported
+legend and the on-screen one now agree — and no new seam.
+`FloatingLegend.test.tsx` pins it with the census itself (`[class*="Mui"]` must
+be empty with all three controls rendered), for the reason `BaseTooltip` is
+pinned in jest: a browser check that never runs is not a check. 7 Material
+elements before, 0 after.
 
 **Reach vs weight.** Both providers are *reach*: they redirect what stock
 displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
-stays in the bundle. What the *host* pays either way — and the pins that were
-making it pay much more than the chrome — is
-[EAGER_BUNDLE.md](EAGER_BUNDLE.md). *Weight* is only available to code writing its own display
-component — `DisplayChromeBase` + a `TrackControlComponent` of its own import no
-toolkit at all. `pnpm measure-chrome-bundle` measures the first half of that and
-CI re-checks it. `makeStyles` no longer stands in the way of the second — it
-hands a component JBrowse's own plain-data theme (`ui/styleTheme.ts`) and
-reaches no Material UI — but that on its own did not get MUI out of a host's
-first paint, and EAGER_BUNDLE.md's "What still holds Material UI in the eager
-set" is the measured list of what does.
+stays in the bundle. *Weight* is only available to code writing its own display
+component — `DisplayChromeBase` plus a `TrackControlComponent` of its own import
+no toolkit at all. `pnpm measure-chrome-bundle` measures that half and CI
+re-checks it. `makeStyles` no longer stands in the way of the second, handing a
+component JBrowse's own plain-data theme (`ui/styleTheme.ts`), but that alone did
+not get MUI out of a host's first paint; [EAGER_BUNDLE.md](EAGER_BUNDLE.md)
+§"What still holds Material UI in the eager set" is the measured list of what
+does.
 
 **Counting `Mui*` classnames does not measure "no Material UI", and this is the
 one thing to know before trusting a census.** `@jbrowse/core/util/tss-react`'s
@@ -846,7 +790,7 @@ elements per page and a direct import shows up there as a regression.
 
 ## Load-bearing gotchas
 
-Four things get cited here. Three are load-bearing, one is not, and conflating
+Four things get cited here; three are load-bearing and one is not, and conflating
 them is why this section exists. All are guarded by `DisplayChrome.test.tsx` and
 restated in the `DisplayChrome.tsx` comment block.
 
