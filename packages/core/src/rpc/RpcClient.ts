@@ -143,19 +143,15 @@ export default class RpcClient {
     this.worker.postMessage({ stopToken: id, libRpc: true })
   }
 
-  call(
-    method: string,
-    data: unknown,
-    { transferables = [] }: { transferables?: Transferable[] } = {},
-  ) {
+  // No transfer list: transferables flow only worker → main, in a reply's
+  // rpcResult wrapper. Transferring an argument would neuter the main thread's
+  // own buffer — this took an option for one and nothing ever passed it.
+  call(method: string, data: unknown) {
     const uid = String(++this.counter)
     return new Promise((resolve, reject) => {
       this.pending.set(uid, { resolve, reject })
       try {
-        this.worker.postMessage(
-          { method, uid, data, libRpc: true },
-          transferables,
-        )
+        this.worker.postMessage({ method, uid, data, libRpc: true }, [])
       } catch (e) {
         // a non-cloneable payload throws here, which rejects this promise; drop
         // the entry that is now waiting on a reply the worker never received
