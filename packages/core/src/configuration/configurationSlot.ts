@@ -173,10 +173,15 @@ interface ConfigSlotDefinitionCommon {
    * promoted `'compact'`.
    *
    * Requires a `maybe*` slot type (whose `undefined` is the inherit sentinel)
-   * and no `defaultValue`; `ConfigSlot` throws otherwise. A subclass turns an
-   * inherited promotable slot back into a plain one by stating
-   * `promotedBase: undefined` — the definition merge is a spread, so a stated
-   * `undefined` really does overwrite the base's value.
+   * and no `defaultValue`; `ConfigSlot` throws otherwise, and both stay runtime
+   * checks. Forbidding it on the plain half of `ConfigSlotDefinition` was tried:
+   * it forces a cast into `mergeSchemaDefinition`, whose spread of two slot
+   * definitions lands in neither member, and buys only an earlier version of a
+   * throw that already fires when the schema is built.
+   *
+   * A subclass turns an inherited promotable slot back into a plain one by
+   * stating `promotedBase: undefined` — the definition merge is a spread, so a
+   * stated `undefined` really does overwrite the base's value.
    */
   promotedBase?: unknown
   /**
