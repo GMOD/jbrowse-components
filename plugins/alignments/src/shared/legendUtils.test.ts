@@ -524,8 +524,12 @@ describe('getArcLegendItems', () => {
         mode,
       ).map(i => i.mark)
     expect(marks('arc')).toEqual(['curve'])
-    // read cloud draws flat lines at Y=|tlen|, not curves
-    expect(marks('cloud')).toEqual(['line'])
+    // A read cloud's category color is on its endpoint squares; its connector
+    // line is the theme foreground and belongs to no bucket (drawCanvas'
+    // `flatConnectorColor`, arcFlat.slang's `u.colorFlatConnector`), so a line
+    // swatch would be the one mark of that overlay never drawn in the color
+    // beside it.
+    expect(marks('cloud')).toEqual(['fill'])
   })
 
   test('takes no per-scheme rewording — an arc never produces a strand bucket', () => {
