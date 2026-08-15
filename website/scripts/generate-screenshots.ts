@@ -281,6 +281,7 @@ async function captureStages(
   port: number,
 ) {
   const cols = spec.stageColumns ?? 0
+  const gutter = spec.stageGutter ?? GRID_GUTTER_PX
   const stageFiles = stages.map((_, i) =>
     tempPath('jb-shot', spec.name, `-${i}`),
   )
@@ -290,12 +291,24 @@ async function captureStages(
   )
   try {
     await captureEachStage(page, spec, stages, stageFiles, port)
+    // Measured BEFORE padPanels, which is the only moment the frames are their
+    // own size — `stageBoxes` adds the padding back itself, so the boxes and
+    // the append stay one statement of the layout rather than two.
+    const sizes = spec.gridAnnotations?.length
+      ? await Promise.all(
+          stageFiles.map(async f => ({
+            ...(await imageSize(f)),
+            left: 0,
+            top: 0,
+          })),
+        )
+      : undefined
     if (cols > 1) {
       // rows of `cols` frames, then the rows stacked. A trailing partial row is
       // padded on the right to the full row width rather than centered, so the
       // frames stay on a grid a reader can scan down a column of.
       //
-      padPanels(stageFiles)
+      padPanels(stageFiles, gutter)
       for (const [r, row] of rowFiles.entries()) {
         const frames = stageFiles.slice(r * cols, r * cols + cols)
         execFileSync(IM, [...frames, ...IM_REPRODUCIBLE, '+append', row])
@@ -317,6 +330,13 @@ async function captureStages(
         '-append',
         renderPath,
       ])
+    }
+    if (sizes && spec.gridAnnotations) {
+      await overlayOnComposition(
+        renderPath,
+        spec.gridAnnotations,
+        stageBoxes(sizes, cols, gutter),
+      )
     }
   } finally {
     for (const f of rowFiles) {
@@ -578,31 +598,25 @@ function mirrorFile(src: string, dest: string) {
   }
 }
 
+// One part's rect in a finished composition, in the composition's own pixels.
+interface PartBox {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
 // Draw a compose spec's callouts over the finished composition.
-//
-// The composition is a flat PNG with no app in it, so this opens a page that is
-// nothing but that image and one absolutely-positioned element per part, and
-// runs the SAME overlay every other figure's callouts go through — the parts
-// are then anchorable by `[data-part="N"]` and the pill/arrow/badge vocabulary
-// is one implementation rather than an ImageMagick lookalike beside it. It is
-// also the only way a jb2export part can carry a callout at all: those render
-// through React SSR with no browser involved.
 //
 // Each part's box is computed from that part's own dimensions and the gutter,
 // never measured off the composed image: `+append` top-aligns and `-append`
 // left-aligns, and `padPanels` puts half a gutter on every side of a
 // side-by-side panel.
-//
-// deviceScaleFactor 1 with the viewport and the img sized to the PNG's own
-// pixels, so the capture is the composition unresampled with the overlay on
-// top. A CLI part is 1x and an app part is 2x; this pass does not know which,
-// and does not have to.
 async function annotateComposition(spec: ComposeSpec, renderPath: string) {
   const annotations = spec.annotations
   if (!annotations?.length) {
     return
   }
-  const { width, height } = await imageSize(renderPath)
   const gutter = composeGutter(spec)
   const sideMargin = composeSideMargin(spec)
   const sizes = await Promise.all(
@@ -622,6 +636,68 @@ async function annotateComposition(spec: ComposeSpec, renderPath: string) {
       spec.direction === 'horizontal' ? size.width + gutter : size.height
     return box
   })
+  await overlayOnComposition(renderPath, annotations, boxes)
+}
+
+// Where each stage frame lands in the composition `captureStages` just built,
+// so the same overlay a `compose` spec gets can be run over a `stages` one.
+//
+// Derived from the append itself rather than measured off the result, the same
+// way `annotateComposition`'s is. A single column is a bare `-append` of
+// unpadded frames, so each box is the frame at the running height. A grid is
+// `padPanels` (half a gutter on all four sides, so a panel occupies its own
+// size plus a whole gutter) then `+append` per row then `-append` of the rows,
+// which is left-aligned — hence the row offset accumulating a row's own
+// padded height rather than a shared one, since `viewportHeight` is per stage
+// and only has to agree WITHIN a row.
+function stageBoxes(sizes: PartBox[], cols: number, gutter: number): PartBox[] {
+  if (cols <= 1) {
+    let top = 0
+    return sizes.map(size => {
+      const box = { ...size, left: 0, top }
+      top += size.height
+      return box
+    })
+  }
+  const boxes: PartBox[] = []
+  let top = 0
+  for (let start = 0; start < sizes.length; start += cols) {
+    const row = sizes.slice(start, start + cols)
+    let left = 0
+    for (const size of row) {
+      boxes.push({
+        ...size,
+        left: left + gutter / 2,
+        top: top + gutter / 2,
+      })
+      left += size.width + gutter
+    }
+    top += Math.max(...row.map(s => s.height)) + gutter
+  }
+  return boxes
+}
+
+// Draw callouts over a finished composition, with one anchorable element per
+// part.
+//
+// The composition is a flat PNG with no app in it, so this opens a page that is
+// nothing but that image and one absolutely-positioned element per part, and
+// runs the SAME overlay every other figure's callouts go through — the parts
+// are then anchorable by `[data-part="N"]` and the pill/arrow/badge vocabulary
+// is one implementation rather than an ImageMagick lookalike beside it. It is
+// also the only way a jb2export part can carry a callout at all: those render
+// through React SSR with no browser involved.
+//
+// deviceScaleFactor 1 with the viewport and the img sized to the PNG's own
+// pixels, so the capture is the composition unresampled with the overlay on
+// top. A CLI part is 1x and an app part is 2x; this pass does not know which,
+// and does not have to.
+async function overlayOnComposition(
+  renderPath: string,
+  annotations: Annotation[],
+  boxes: PartBox[],
+) {
+  const { width, height } = await imageSize(renderPath)
   // The page is written beside the image and opened as a file:// URL rather
   // than pushed in with setContent: an about:blank page cannot load a file://
   // subresource, so the img would come back empty and the capture would be the

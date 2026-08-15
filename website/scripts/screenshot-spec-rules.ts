@@ -94,6 +94,28 @@ export function validateSpecs(list: ScreenshotSpec[]) {
     if ('stageColumns' in spec && spec.stageColumns && !spec.stages?.length) {
       problems.push(`${spec.name}: stageColumns without stages`)
     }
+    // Same family as the two below it: a field the shape the spec chose then
+    // discards. `gridAnnotations` is drawn by `captureStages` and by nothing
+    // else, so on a single-frame spec it is callouts that silently never
+    // appear — and it is easy to reach for, since it is spelled like the
+    // `annotations` beside it.
+    if (
+      'gridAnnotations' in spec &&
+      spec.gridAnnotations?.length &&
+      !spec.stages?.length
+    ) {
+      problems.push(`${spec.name}: gridAnnotations without stages`)
+    }
+    // `padPanels` is the grid arm alone, so a gutter set on a single-column
+    // stack is a number that does nothing — the frames abut, which is what
+    // every stacked figure in the set already looks like.
+    if (
+      'stageGutter' in spec &&
+      spec.stageGutter !== undefined &&
+      !((spec.stageColumns ?? 0) > 1)
+    ) {
+      problems.push(`${spec.name}: stageGutter without a stageColumns grid`)
+    }
     if ('expectTooltip' in spec && spec.expectTooltip && spec.hideTooltip) {
       problems.push(
         `${spec.name}: expectTooltip and hideTooltip contradict each other`,

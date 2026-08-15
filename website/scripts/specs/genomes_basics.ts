@@ -650,15 +650,61 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 940,
     stageColumns: 2,
+    // Room between the frames for the arrow below, which at the 24 px default
+    // has a hairline to be drawn in. 240 captured px is ~6% of a panel's width.
+    stageGutter: 240,
     diffThreshold: 0.02,
     hideTooltip: true,
+    // THE PAIR IS A SEQUENCE (reviewer: "there should be an arrow from panel 1
+    // to panel 2 showing it is this two stage thing"). Side by side, a before
+    // and an after read as two pictures of the same locus until something says
+    // which way round they go — and this pair is the case where that is least
+    // obvious, since the setting between them changes only how the same six
+    // tracks are drawn.
+    //
+    // Anchored to the two frames' own boxes, so the arrow spans the gutter
+    // whatever the panels measure. `alignY: 'top'` with a dy puts it on the
+    // frames' app bars, which is the one band of a JBrowse window that carries
+    // nothing a reader is being shown.
+    gridAnnotations: [
+      {
+        type: 'arrow',
+        strokeWidth: 10,
+        fromAnchor: {
+          selector: '[data-part="0"]',
+          alignX: 'right',
+          alignY: 'top',
+          dy: 60,
+        },
+        anchor: {
+          selector: '[data-part="1"]',
+          alignX: 'left',
+          alignY: 'top',
+          dy: 60,
+        },
+      },
+    ],
     stages: [
       {
         actions: [
           trackMenuIcon(H3K4ME3_ROWS.trackId),
           ...menuCascade(PLOT_TYPE_PATH),
         ],
-        annotations: cascadeBoxes(PLOT_TYPE_PATH),
+        // The MENU'S OWN TRIGGER, ringed, on top of the path boxes (reviewer:
+        // "generally when highlighting a track menu, should circle the little
+        // track menu morevert icon too"). A cascade's boxes say which items
+        // were picked and nothing says where the cascade came from — and here
+        // the menu opens over a DIFFERENT track's rows than the one it belongs
+        // to, so the ⋮ that was clicked is four lanes above the first box.
+        annotations: [
+          ...cascadeBoxes(PLOT_TYPE_PATH),
+          {
+            type: 'circle',
+            anchor: {
+              selector: `[data-testid="track_menu_icon"][data-trackid="${H3K4ME3_ROWS.trackId}"]`,
+            },
+          },
+        ],
       },
       {
         url: sessionSpec(UCSC_HG38_CONFIG, {
