@@ -1,6 +1,5 @@
 import type { DisplayConfig } from './renderConfig.ts'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
-import type { RpcResult } from '@jbrowse/core/util/librpc'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface LabelItem {
@@ -83,8 +82,9 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     RenderFeatureData: {
       args: RenderFeatureDataArgs
       return: RenderFeatureDataResult
-      // only the data half owns buffers to transfer, so only it is wrapped
-      wire: RpcResult<FeatureDataResult> | RegionTooLargeResult
+      // only the data half owns buffers to transfer, so only it is wrapped —
+      // the other arm of the return crosses as itself
+      transferables: FeatureDataResult
     }
     GetCanvasFeatureDetails: {
       args: GetFeatureDetailsArgs

@@ -227,18 +227,26 @@ export type RpcCallArgs<M extends string> = M extends RpcMethodName
  * (features travel serialized and arrive as `SimpleFeature`s). An entry says
  * which, beside the `return` it has to be read against:
  *
- * - **`transferables: true`** — the ordinary wrapped case, ten of the fifteen.
- *   A fact, not a type, so the wire shape is DERIVED from the `return` rather
- *   than restated next to it, and the two cannot come apart.
- * - **`wire: T`** — for the five that derivation cannot express: three the
- *   `deserializeReturn` rebuilds, and the two canvas gates, which wrap the data
- *   half of a union and not the region-too-large half, because only one of them
- *   owns any buffers. These do restate, so each says why in a comment.
+ * - **`transferables: true`** — the whole return is wrapped. Ten entries.
+ * - **`transferables: T`** — only the `T` arm of a union return is, because only
+ *   that arm owns any buffers; the canvas gates wrap their data half and not
+ *   their region-too-large half. Two entries.
+ * - **`wire: T`** — the return is not what went over at all, and
+ *   `deserializeReturn` is what closes the gap. Three entries.
  *
- * Both were a second type parameter on the class until this, which is a copy of
- * the registry rather than a reference to it — `RpcResult<WiggleDataResult[]> |
- * number` on RenderWiggleData type-checked clean while callers went on
- * receiving `WiggleDataResult[]`.
+ * The first two are FACTS, not types, so the wire shape is derived from the
+ * `return` and the two cannot come apart. The gates restated theirs until the
+ * fact got an argument — and a restatement of a union some other file owns is
+ * the kind that drifts, since editing `RenderFeatureDataResult` was not visibly
+ * editing this. Only `wire:` restates now, which is why
+ * {@link _NoRedundantWireInRegistry} fails compilation on one the derivation
+ * could have produced: two spellings of "the wire differs" is how the field got
+ * two meanings the first time.
+ *
+ * All of it was a second type parameter on the class until recently, which is a
+ * copy of the registry rather than a reference to it — `RpcResult<
+ * WiggleDataResult[]> | number` on RenderWiggleData type-checked clean while
+ * callers went on receiving `WiggleDataResult[]`.
  */
 export type RpcWireReturn<M extends string> = M extends RpcMethodName
   ? WireOf<RpcRegistry[M & RpcMethodName]>
@@ -246,13 +254,17 @@ export type RpcWireReturn<M extends string> = M extends RpcMethodName
     ? unknown
     : NotInRpcRegistry<M>
 
+// `transferables: true` is matched ahead of the arm case, or `true` lands in
+// the `infer Wrapped` branch and wraps the literal instead of the return.
 type WireOf<Entry> = Entry extends { wire: infer W }
   ? W
   : Entry extends { transferables: true; return: infer R }
     ? RpcResult<R>
-    : Entry extends { return: infer R }
-      ? R
-      : never
+    : Entry extends { transferables: infer Wrapped; return: infer R }
+      ? RpcResult<Wrapped> | Exclude<R, Wrapped>
+      : Entry extends { return: infer R }
+        ? R
+        : never
 
 /**
  * {@link RpcWireReturn} with the `rpcResult` envelope off: what
@@ -308,3 +320,28 @@ export type EntriesDeclaringCallLevelFields = {
 type AssertNoCallLevelFields<T extends never> = T
 export type _NoCallLevelFieldsInRegistry =
   AssertNoCallLevelFields<EntriesDeclaringCallLevelFields>
+
+/**
+ * Entries whose `wire` says nothing `transferables` could not have derived —
+ * the wire unwraps to the declared `return`, so no `deserializeReturn` is
+ * closing any gap and the restatement is only waiting to drift from the type it
+ * copies. Should always be `never`.
+ *
+ * The rule this keeps: `wire:` means "the caller does not receive what the
+ * worker sent, and a `deserializeReturn` rebuilds it". It meant that AND "only
+ * part of the return is wrapped" until the latter became `transferables: T`,
+ * and a field with two meanings is one nobody can read off a single entry.
+ */
+export type EntriesWithRedundantWire = {
+  [K in RpcMethodName]: RpcRegistry[K] extends { wire: unknown }
+    ? RpcUnwrappedWireReturn<K> extends RpcReturn<K>
+      ? K
+      : never
+    : never
+}[RpcMethodName]
+
+// Fails as "Type 'X' does not satisfy the constraint 'never'", naming the entry
+// whose `wire` line should be a `transferables` one (or nothing at all).
+type AssertNoRedundantWire<T extends never> = T
+export type _NoRedundantWireInRegistry =
+  AssertNoRedundantWire<EntriesWithRedundantWire>
