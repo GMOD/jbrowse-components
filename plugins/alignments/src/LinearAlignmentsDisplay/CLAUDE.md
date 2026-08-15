@@ -173,133 +173,22 @@ Screen-x is not start/end-ordered — keep new sashimi geometry on the normalize
 fields. In shaders use `bpToClipX`/`bpToLinear`, never
 `hpClipX(hpSplitUint(…))`.
 
-## The arc band draws two families, and answers for both
+## The arc band
 
 Curved/flat arcs and interchromosomal connector ticks (`arcLine`) share one
-rect, one Y scale and one palette. `hitTestArcBand` is the single entry point,
-because which one a hover resolves to is a question about **paint order**: both
-renderers run the line pass first, so an arc is always the later ink. The rule
-is two-tier — on-ink beats near-ink, the arc wins among on-ink — because "arc
-always" would make a tick unhoverable wherever an arc crosses it.
+rect, one Y scale and one palette, so paint order, hit-test priority, what may
+hide a mark, and the breakend feet are one subsystem —
+[reference/ARC_BAND.md](../../../../agent-docs/reference/ARC_BAND.md). Read it
+before adding a mark to the band or changing what hides an arc. What a call site
+here reaches for:
 
-**Which family an interchromosomal connection joins is decided per connection,
-by whether both feet are in displayed regions.** A tick claims "there is a
-connection to somewhere you cannot see", which is false when the far end is on
-screen. Three things ride on it:
-
-- **Arc mode only.** The read cloud's Y axis IS insert size; an interchromosomal
-  pair carries TLEN 0, so the endpoint gap becomes a real `maxFlatArcSpanBp` and
-  `insertSizeTickSections` prints it — one connection rescales the cloud to a
-  107 Mb "insert size".
-- **`drawInter` and `minInterchromSupport` gate both marks**, from one hoisted
-  condition, or the arc branch inherits neither.
-- **The hover needs two refNames** (`endRefName`); `formatArcTooltip`'s
-  `min`/`max` range is a locstring naming one chromosome with a coordinate from
-  the other.
-
-**Paint order is an interest ranking, not a data order**, stated in `ARC_PASSES`
-(ticks under arcs — mismapped pairs otherwise put a full-height opaque vertical
-through the arcs carrying insert size) and in `resolveArcs`' sort
-(`arcPaintRank` first, `support` second, dedup key last — support-ascending
-alone let grey punch through). `hitTestArcBand` reads that order rather than
-re-deriving it: the on-ink winner is the **last candidate considered**.
-
-**"Concordant" has one definition and two settings spend it.**
-`isConcordantPairRead` is the aligner's verdict, called by both the worker's
-read filter and the arc filter (`concordantPairParity.test.ts` holds them
-together). The arc filter adds one condition: the arc must also paint the
-**baseline colour slot**, because nothing coloured may be hidden as routine. Not
-to be confused with the read cloud's `isConcordantFRPair`, which asks about the
-modal |TLEN| band.
-
-**A support FLOOR is offered for the interchromosomal family and deliberately
-not for same-chromosome arcs**, where it is a density filter rather than an
-evidence filter (`agent-docs/reference/DEEP_COVERAGE.md`).
-`minInterchromSupport` counts over a window of one fragment length on _both_
-sides, never at a coordinate: mates straddle a breakpoint, so an exact count is
-1 for essentially every connection.
-
-**A tick is DASHED, and that is what separates it from an arc's foot** — the two
-land on the same x whenever a breakpoint reaches one visible acceptor and one
-invisible, in the same colour at the same height. Support cannot do this job:
-`arcLineWidth` caps at 4x around 44 reads. The pattern is declared in
-`arcLine.slang` and imported CPU-side (adr-051), deliberately not arcFlat's
-`[3, 3]`, since read-cloud mode shows both at once.
-
-`partnerOffView` prints "Outside the displayed regions", which is safe
-unconditionally in arc mode and **false in read cloud** — so the caller reads
-`readConnections` rather than assuming.
-
-**Ask `hasArcBandInk`, not `numArcs`** — a lane with only off-region partners
-carries ticks and no arcs. **A question asked ACROSS lanes is answered by
-`computeArcsByGroup`**, not a walk of `arcsByGroup`, and after regionization: an
-arc reaching no displayed region is dropped, so a swatch keyed off the earlier
-set names a colour nothing draws.
-
-The endpoint squares have no hit test of their own, covered by the bar's
-tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX` — arithmetic, so
-`hitTest.test.ts` pins it.
-
-## Breakend feet
-
-**An interchromosomal arc draws breakend feet, and no other arc does** — a tick
-at each foot lying over the ARM that foot's junction keeps (outward =
-deletion-type, inward = duplication-type, parallel = inversion).
-
-- **It is the family whose colour channel is spent** on `ARC_COLOR_INTERCHROM`,
-  so orientation has nowhere else to go. Same-chromosome splits keep it via
-  `unpairedOrientationColor`. Widening feet to the pair arcs was measured down:
-  orientation there IS the colour, and every foot lands on the baseline (~556
-  marks five pixels apart — a rule under the band, not directions).
-- **Interchromosomal is the one family that is ALWAYS cross-region**, so drawing
-  the feet in `CrossRegionArcsOverlay` covers all of it. Feet on same-chromosome
-  cross-region arcs would flicker as a reader panned across a seam.
-- **The direction is a property of the JUNCTION, not the read**, which makes it
-  safe on a coalesced arc (`readTrailingBodyDir`). A `ComputedLine` carries
-  none, since a tick coalesces on one coordinate.
-- **THE ARM, not "this foot's own aligned body", and the two producers differ on
-  exactly that.** A split junction's endpoint IS the junction, so
-  `connectionEndpointBps` hands `dir1`/`dir2` through. A mate link's endpoint is
-  the FRAGMENT's outer edge with the body pointing back at it, so `pairOuterDir`
-  NEGATES the read's direction. Mirroring the ternaries instead made an FR pair
-  spell "duplication" while a split read over the same junction spelled
-  deletion. `arcBreakendFeet.test.ts` holds the two families against each other.
-
-The feet live in the **mark** (`ArcFeet`), not the overlay's path string, so the
-hover highlight draws them too. Their sign is deliberately opposite to
-`tangentSign` (`core/util/bezierConnector.ts`), which is the direction a
-per-read connector LEAVES the same endpoint in. Don't "fix" either to match the
-other.
-
-Two feet closer than `ARC_FOOT_PX` merge into one bar — the mark working, since
-they overlap because both ends keep the same stretch. Unfinished, in
-`agent-docs/TODO.md`: bounding a foot by its displayed region, and feet on the
-ticks.
-
-## An arc outranks the band it is painted over, as a RESULT VARIANT
-
-`runHitTest` returns `arc ?? result`, so `ArcMarkHit` is a member of
-`MarkHitResult` — one place where the ranking is stated. As an `if` in each
-gesture one of them forgot, and in up mode the arc band's `top: 0` IS the
-coverage band, so a right-click built the interbase menu for the column
-underneath.
-
-As a variant each gesture is right by default: `hoverStateForResult` **does not
-compile** without `case 'arc'` (TS2366, the only enforcement — the rest are
-structural), `handleClick`'s switch matches no pileup case, and
-`contextMenuFieldsForHit` answers `show: false` from its `default` so an arc
-falls through to the browser's menu with no `preventDefault`.
-
-`arcGestureGuard.test.ts` works the one pixel where an arc's ink lies over an
-interbase bar, finding it by asking the hover rather than projecting the dome,
-and states every case against the SAME pixel with `readConnections` off.
-`mouseGestures.test.ts` covers the two pure-guard handlers; its
-`cancelAnimationFrame` stub is load-bearing, since stubbing only
-`requestAnimationFrame` lets the held callback run anyway.
-`createTestAlignmentsDisplay` (`testUtils.ts`) is the harness both use.
-
-**`isFlatArcShape` answers "does this draw as a bar", never "does this have an
-insert size".** Only `ARC_SHAPE_FLAT` — the mate link — has a TLEN;
-`ARC_SHAPE_FLAT_SPLIT`'s `spanBp` is the arc's own span, so gating the tooltip's
-insert-size row on the drawing predicate reprints Distance under a name a split
-read cannot carry.
+- **`hitTestArcBand` is the single entry point.** Which mark a hover resolves to
+  is a question about paint order, answered beside the scan.
+- **Ask `hasArcBandInk`, not `numArcs`** — a lane with only off-region partners
+  carries ticks and no arcs.
+- **A question asked ACROSS lanes is answered by `computeArcsByGroup`**, not a
+  walk of `arcsByGroup`, and after regionization.
+- **`runHitTest` returns `arc ?? result`** — one place where "an arc outranks
+  the band under it" is stated, so each gesture is right without remembering.
+- **`isFlatArcShape` answers "does this draw as a bar", never "does this have an
+  insert size"** — only `ARC_SHAPE_FLAT` has a TLEN.
