@@ -121,18 +121,13 @@ static const float PAIR_MIN_SPAN_PX = 10.0;
 // restore it by tuning this number.
 static const float READ_OUTLINE_PX = 1.0;
 static const float READ_OUTLINE_SHADE = 0.85;
-// Two gates, not one on two axes, because the axes are not the same question
-// and were never answered the same way. `READ_OUTLINE_MIN_PX` was one number
-// used for both and a THIRD rule lived in GpuAlignmentsRenderer, so the height
-// gate had two values on the GPU (4 on the host, 2 here) and a third on
-// Canvas2D (2). Only the host's ever bound, since `featSize.y` IS `u.featHeight`
-// — see the vertex stage — which made the y test below dead code, and dead code
-// is how the canvas twin came to believe 2.
+// Two gates on two axes, and they are asked in two different PLACES because
+// they are two different questions.
 //
 // WIDTH is per-read and mechanical: the inset the outline is drawn at has to
 // fit. Below 2 px there is no interior left to inset into and the Canvas2D
 // rect inverts. `>` because a read's width is continuous — 2.5 px is a real
-// width and it passes.
+// width and it passes. Per read, so the fragment stage asks it.
 static const float READ_OUTLINE_MIN_WIDTH_PX = 2.0;
 // HEIGHT is frame-level and about legibility: it is 4 = 4 * READ_OUTLINE_PX,
 // the point where the interior (h - 2) stops being thinner than the two bands
@@ -144,6 +139,13 @@ static const float READ_OUTLINE_MIN_WIDTH_PX = 2.0;
 // `>=` on purpose: fit mode divides pixels by rows, so this is a real number,
 // and 4 itself must pass. Do not "simplify" it to `> 3` — that silently admits
 // every fitted height in (3, 4), which is the band this gate exists to exclude.
+//
+// Asked ONCE, on the host, by `shouldOutlineReads` — which is what `u.showStroke`
+// carries, and is shared with the Canvas2D painter. The fragment stage asked it
+// again for a while, off a `featSize.y` that is `u.featHeight` for every read in
+// the frame, so the second test could never bind; three copies of the number
+// then drifted to 4/2/2 behind it, because a test that cannot fail is not a
+// test. One asker, and the varying it needed is a scalar again.
 static const float READ_OUTLINE_MIN_HEIGHT_PX = 4.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -166,7 +168,10 @@ struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   float2 localPos : COLOR1;
-  float2 featSize : COLOR2;
+  // On-screen width of this read in CSS px, for the outline's inset and its
+  // width gate. The height half of this used to ride along and was `u.featHeight`
+  // every time — see READ_OUTLINE_MIN_HEIGHT_PX.
+  float  featWPx  : COLOR2;
   float  edgeFlag : COLOR3;
 };
 
@@ -245,7 +250,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // 8px-wide chevron when featHeight>=3 and zoom supports it.
   float chevronClip = CHEVRON_PX / u.canvasW * 2.0;
   float featWPx = (sx2 - sx1) * u.canvasW * 0.5;
-  o.featSize = float2(featWPx, u.featHeight);
+  o.featWPx = featWPx;
 
   bool showChev = showChevron(
     u.chainMode == 1, u.pxPerBp, u.featHeight, u.colorScheme,
@@ -304,17 +309,17 @@ float4 fs_main(VsOut fragIn) : SV_Target {
       // chevron tip — distance to the two diagonal edges
       edgeDist = min(fragIn.localPos.x, fragIn.localPos.y);
     } else {
-      float dxL = fragIn.localPos.x * fragIn.featSize.x;
-      float dxR = (1.0 - fragIn.localPos.x) * fragIn.featSize.x;
+      float dxL = fragIn.localPos.x * fragIn.featWPx;
+      float dxR = (1.0 - fragIn.localPos.x) * fragIn.featWPx;
       if (fragIn.edgeFlag > 0.5)  { dxR = 999.0; }  // hide outline on chevron side
       float dxLL = dxL;
       if (fragIn.edgeFlag < -0.5) { dxLL = 999.0; }
-      float dy = min(fragIn.localPos.y, 1.0 - fragIn.localPos.y) * fragIn.featSize.y;
+      float dy = min(fragIn.localPos.y, 1.0 - fragIn.localPos.y) * u.featHeight;
       edgeDist = min(min(dxLL, dxR), dy);
     }
+    // No height gate: `u.showStroke` already carries it, frame-level.
     if (edgeDist < READ_OUTLINE_PX
-        && fragIn.featSize.x > READ_OUTLINE_MIN_WIDTH_PX
-        && fragIn.featSize.y >= READ_OUTLINE_MIN_HEIGHT_PX) {
+        && fragIn.featWPx > READ_OUTLINE_MIN_WIDTH_PX) {
       return float4(fragIn.color.rgb * READ_OUTLINE_SHADE, fragIn.color.a);
     }
   }
