@@ -155,23 +155,14 @@ export interface CommonSpecFields extends BaseSpecFields {
   // `viewportHeight` is fine between rows, and is how a grid trims the blank
   // under its shorter half).
   stageColumns?: number
-  // callouts drawn over the FINISHED stage composition, after the frames are
-  // appended — the same layer a `compose` spec's `annotations` get, with each
-  // stage anchorable as `[data-part="N"]` in stage order. `annotations` on a
-  // stage is drawn inside that one frame and cannot reach out of it, so this is
-  // what a mark spanning two frames needs: the arrow from a walkthrough's step
-  // 1 to its step 2, saying the pair is a sequence rather than two pictures.
-  //
-  // Anchoring INSIDE a frame is not available here, for the same reason it is
-  // not on a `compose`: the composition is a flat image with no view model and
-  // no track elements in it. A callout pointing at a locus, a control or a menu
-  // item belongs on that stage's own `annotations`.
+  // callouts drawn over the finished stage composition, each stage anchorable
+  // as `[data-part="N"]` — for a mark spanning two frames, which a stage's own
+  // `annotations` cannot reach out of. Anchoring INSIDE a frame is not
+  // available (the composition is a flat image); that belongs on the stage.
   gridAnnotations?: Annotation[]
-  // width of the white gutter between the frames of a `stageColumns` grid, in
-  // CAPTURED px (an app frame is 2x, so 24 is the ~12 CSS px default). Raise it
-  // when a `gridAnnotations` mark has to sit BETWEEN the frames rather than
-  // over one: at the default the seam is a hairline and an arrow drawn across
-  // it has no run to be seen in.
+  // gutter between the frames of a `stageColumns` grid, in CAPTURED px (2x, so
+  // the default 24 is ~12 CSS px). Raise it for a `gridAnnotations` mark that
+  // sits between the frames rather than over one.
   stageGutter?: number
   // suppress the hover/right-click tooltip (which lingers while a context menu
   // is open) so it doesn't clutter the capture

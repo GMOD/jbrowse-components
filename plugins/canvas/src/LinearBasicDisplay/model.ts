@@ -65,9 +65,6 @@ function isGeneLikeType(type: string | undefined) {
 }
 
 // How long a track height has to hold still before the isoform cap follows it.
-// The resize handle writes the height on every drag frame (TrackContainer ->
-// resizeHeight -> setConf), and the cap is an RPC cache key, so an undelayed
-// read of it re-runs the worker at every row boundary the drag crosses.
 const HEIGHT_SETTLE_MS = 300
 
 /**
@@ -128,18 +125,10 @@ export default function stateModelFactory(
       // Same reset boundary for the declared color key's "×".
       colorLegendDismissed: false,
 
-      // The track height the isoform cap is computed against, updated on a
-      // delay (see the autorun in afterAttach). The live height cannot be read
-      // for this: it is what `maxIsoforms` is derived from, `maxIsoforms` is an
-      // RPC cache key, and the resize handle writes the height on every drag
-      // frame — so a read of the live value re-runs the whole worker pipeline
-      // a few dozen times over one drag. That is the exact failure
-      // `pickDisplayConfig` exists to have stopped happening for `height`
-      // itself; this is the one derived value that has to bring it back, so it
-      // brings back the debounce with it, the way `coarseBpPerPx` does for
-      // zoom.
-      //
-      // 0 means "not measured yet", which reads as no cap.
+      // The track height the isoform cap is computed against, debounced (see
+      // afterAttach). `maxIsoforms` is an RPC cache key and the resize handle
+      // writes the height every drag frame, so reading it live re-runs the
+      // worker pipeline dozens of times per drag. 0 = not measured, no cap.
       coarseTrackHeight: 0,
     }))
     .views(self => ({
@@ -182,34 +171,19 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * How many isoforms a gene may draw, or undefined for no cap.
+       * How many isoforms a gene may draw, or undefined for no cap — `auto`'s
+       * second reason to hide transcripts, after zoom: a gene with 28 of them
+       * in a 100px lane draws all 28 inside the lane's own scrollbar.
        *
-       * **`auto` has two reasons to hide transcripts, and this is the second
-       * one.** The first is zoom (above): past 100 bp/px a transcript is a few
-       * pixels wide and there is nothing to compare. The second is ROOM — a
-       * gene with 28 transcripts in a 100 px lane draws them all inside the
-       * lane's own scrollbar, so the last rows and the gene's name are off the
-       * bottom of a track that gives no sign of it. That is the state
-       * `genomes_basics/search_tp53` was denied for: "it should truncate the
-       * number of isoforms so that it fits in the display height".
+       * Rows, so it is the packer's own arithmetic: body height at this display
+       * mode plus `layoutSubfeatures`' inter-transcript gap, less one row for
+       * the gene's label. A jexl `featureHeight` only resolves in the worker,
+       * so a callback height falls back to the worker's own 10px.
        *
-       * The cap counts rows, so it is the same arithmetic the packer does: a
-       * transcript row is the body height at this display mode plus the
-       * inter-transcript gap `layoutSubfeatures` spends (its
-       * TRANSCRIPT_PADDING_RATIO), and one row is kept back for the gene's own
-       * label. It is deliberately not exact — a jexl `featureHeight` resolves
-       * per feature and the worker is the only place that can evaluate it, so a
-       * callback height falls back to the same 10 px the worker's own fallback
-       * uses. Being a row out costs a row of whitespace or a row of scroll,
-       * where being absent costs the 21 rows this is about.
-       *
-       * OFF IN `grow`, and that is the one gate that is load-bearing rather
-       * than a nicety: grow's height IS its content's height, so a cap read off
-       * it would be a fetch-derived value in `rpcProps()` — the loop trap
-       * `makeSettingsLoopGuard` exists to name. `fitTargetHeight` is the raw
-       * slot in every other mode, which is why it is read instead of `height`.
-       * `fit` keeps the cap and wants it: squeezing 28 transcripts into 100 px
-       * is what its 2 px floor does, and 2 px of transcript is not a reading.
+       * OFF in `grow`, and that gate is load-bearing: grow's height IS its
+       * content's, so a cap read off it would be a fetch-derived value in
+       * `rpcProps()` (the loop trap `makeSettingsLoopGuard` names). Hence
+       * `fitTargetHeight`, the raw slot, rather than `height`.
        */
       get effectiveMaxIsoforms(): number | undefined {
         if (this.geneGlyphMode !== 'auto' || self.heightMode === 'grow') {
@@ -242,15 +216,9 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The height cap, when the cap is what is actually hiding transcripts —
-       * so `undefined` covers both "no cap" and "a cap every gene in view fits
-       * inside", which the control must not announce.
-       *
-       * `effectiveMaxIsoforms` alone cannot answer that: it is defined for the
-       * whole of `auto`, including at a zoom where the mode has already
-       * resolved to `longestCoding` and the cap is doing nothing. The worker's
-       * `isoformsHidden` says a gene really lost isoforms; the mode test says
-       * which of the two rules took them.
+       * The height cap, only when the cap is what is hiding transcripts — so
+       * `undefined` also covers a cap every gene in view fits inside, which the
+       * control must not announce.
        */
       get geneGlyphIsoformCap(): number | undefined {
         const cap = this.effectiveMaxIsoforms
@@ -263,13 +231,6 @@ export default function stateModelFactory(
 
       // Transcripts are being left out, so the control shows its loud chip
       // rather than the quiet icon button.
-      //
-      // Two ways that happens and they are answered from different places. The
-      // `longestCoding` mode is the display's own resolved decision, so it is
-      // read off the mode and not off the data — which is what keeps it from
-      // lagging a region behind while a refetch lands. The height cap is a
-      // property of the genes in view (a gene with two isoforms in a 100 px
-      // lane loses nothing), so the worker has to say whether it fired.
       get geneGlyphCollapsed() {
         return (
           this.effectiveGeneGlyphMode === 'longestCoding' ||
@@ -295,10 +256,7 @@ export default function stateModelFactory(
               // slots (chevrons, subfeatureLabels) are already resolved by the
               // base rpcProps via getConfigSnapshotWithPromotables.
               geneGlyphMode: self.effectiveGeneGlyphMode,
-              // …and the height-derived cap, for the same reason: it is not a
-              // slot at all, so `pickDisplayConfig` reads `undefined` for it and
-              // the resolved value is written over that here. Its own debounce
-              // is `coarseTrackHeight`, since this payload is the RPC cache key.
+              // same reason — not a slot, so pickDisplayConfig reads undefined
               maxIsoforms: self.effectiveMaxIsoforms,
             },
             showOnlyGenes: self.showOnlyGenes,
@@ -336,13 +294,10 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      // No superAfterAttach() call: the fork auto-chains hooks, so the canvas
-      // base's own afterAttach still runs (afterAttachAutoChain.test.ts).
+      // No superAfterAttach(): the fork auto-chains hooks.
       afterAttach() {
-        // Seeded SYNCHRONOUSLY, because a delayed autorun's first run is
-        // delayed too — that would spend an uncapped round trip on every track
-        // load and throw it away a moment later. `fitTargetHeight` is the raw
-        // height slot, so it is readable before the view is measured.
+        // Seeded synchronously: a delayed autorun's first run is delayed too,
+        // which would spend an uncapped round trip on every track load.
         self.setCoarseTrackHeight(
           self.heightMode === 'grow' ? 0 : self.fitTargetHeight,
         )
@@ -350,9 +305,7 @@ export default function stateModelFactory(
           self,
           autorun(
             () => {
-              // The reads are here rather than inside the action: an MST action
-              // runs untracked, so an autorun whose whole body was a call would
-              // have no dependencies and fire exactly once.
+              // read here, not in the action — an MST action runs untracked
               const height =
                 self.heightMode === 'grow' ? 0 : self.fitTargetHeight
               self.setCoarseTrackHeight(height)

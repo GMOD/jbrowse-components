@@ -74,12 +74,8 @@ export function labelFontSize(displayMode: DisplayMode) {
 
 // Fallback when `featureHeight` resolves to something that isn't a drawable
 // number. Matches the config slot's own default, so a broken expression degrades
-// to the standard row rather than to nothing.
-//
-// Exported because the main thread has the same problem from the other side:
-// `effectiveMaxIsoforms` turns a track height into a row count and cannot
-// evaluate a per-feature callback at all, so it assumes the same number this
-// does rather than a second one of its own.
+// to the standard row rather than to nothing. Exported for
+// `effectiveMaxIsoforms`, which cannot evaluate a per-feature callback either.
 export const FALLBACK_FEATURE_HEIGHT = 10
 
 // The body height (px) one feature is laid out at.

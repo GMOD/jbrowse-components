@@ -525,24 +525,12 @@ export function getOverlapLegendItem(
   }
 }
 
-// …and the mark those colors are drawn AS, which is the other half of the same
-// point. Once the overlay's colors are folded into the read key (the usual case
-// — see `getAlignmentsLegendSections`), the mark is what says which vocabulary a
-// row came from, and for 'arc' that is a curve rather than a square.
+// The mark those colors are drawn AS, once they fold into the read key.
 //
-// **A read cloud is a square, and the line was a misreading of its own shape.**
-// `isFlatArcShape`'s marks are "a horizontal line with endpoint-square markers",
-// and the two halves are not painted alike: the connector takes
-// `flatConnectorColor` — the theme's foreground, deliberately no palette slot,
-// "because the line carries no category (its endpoint squares do)" — while the
-// arc palette is indexed by the endpoint squares. So a line swatch names the one
-// mark in that overlay that is never drawn in the color beside it.
-//
-// The reviewer saw it as an inconsistency rather than as a claim, which is the
-// same finding from the other side: in a merged key every bucket the reads also
-// paint keeps the fill it leads with, so the split-alignment rows were two thin
-// lines under six squares (`alignments/read_cloud`, "they can just be normal
-// color swatch rects not lines").
+// A read cloud is a fill: its connector takes `flatConnectorColor` (the theme
+// foreground, no palette slot) and the category color is on the endpoint
+// squares, so a line swatch would name the one mark there that is never drawn
+// in the color beside it.
 function arcMark(mode: ReadConnectionsMode): LegendMark {
   return mode === 'cloud' ? 'fill' : 'curve'
 }

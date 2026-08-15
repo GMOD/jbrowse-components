@@ -524,11 +524,8 @@ describe('getArcLegendItems', () => {
         mode,
       ).map(i => i.mark)
     expect(marks('arc')).toEqual(['curve'])
-    // A read cloud's category color is on its endpoint squares; its connector
-    // line is the theme foreground and belongs to no bucket (drawCanvas'
-    // `flatConnectorColor`, arcFlat.slang's `u.colorFlatConnector`), so a line
-    // swatch would be the one mark of that overlay never drawn in the color
-    // beside it.
+    // the cloud's color is on its endpoint squares; its connector is the theme
+    // foreground and belongs to no bucket
     expect(marks('cloud')).toEqual(['fill'])
   })
 

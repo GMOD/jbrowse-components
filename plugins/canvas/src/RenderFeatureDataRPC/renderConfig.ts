@@ -89,10 +89,8 @@ export interface DisplayConfig {
   // is applied on the main thread so switching modes skips an RPC round-trip.
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
   // At most this many isoforms per gene, or undefined for no cap. Not a config
-  // slot: the display derives it from its own track height in `auto` glyph mode
-  // (see `effectiveMaxIsoforms`) and substitutes it into the payload the way
-  // `geneGlyphMode` is substituted, so `pickDisplayConfig` reads `undefined`
-  // here and the model writes the real value over it.
+  // slot — the display derives it from its track height (`effectiveMaxIsoforms`)
+  // and substitutes it into the payload the way `geneGlyphMode` is substituted.
   maxIsoforms: number | undefined
   subfeatureLabels: (typeof SUBFEATURE_LABELS)[number]
   transcriptTypes: string[]

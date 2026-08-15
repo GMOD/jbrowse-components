@@ -269,26 +269,17 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   //
   // So the frames are now type -> Enter -> collapse.
   //
-  // THE MIDDLE FRAME USED TO BE THE OVERFLOW, and it is not any more -- the app
-  // changed under it, on this figure's own review. `auto` resolves to `all` at
-  // this zoom, and 28 RefSeq transcripts in a 100px band drew all 28 inside the
-  // track's own scrollbar, with the last rows and the gene name below the fold.
-  // The frame was denied three times for it, the third time as a product bug
-  // rather than a framing one ("it basically is highlighting a weakness of our
-  // browser ... it should truncate the number of isoforms so that it fits in
-  // the display height"). `auto` now caps a gene at the rows its lane has, so
-  // the default state is seven legible transcripts, the gene's name back in
-  // frame, and a chip that says `Top 7 isoforms`.
+  // THE MIDDLE FRAME USED TO BE THE OVERFLOW -- 28 RefSeq transcripts inside a
+  // 100px band's own scrollbar, denied three times, the third time as a product
+  // bug ("it should truncate the number of isoforms so that it fits in the
+  // display height"). `auto` now caps a gene at the rows its lane has, so the
+  // default is seven legible transcripts and a `Top 7 isoforms` chip.
   //
-  // Which makes the middle frame a RESULT rather than a problem, and the third
-  // frame is still worth its rows: the cap is the browser's answer to the
-  // height, and one canonical transcript is the reader's answer to the
-  // question. The chip is what carries you between them.
-  //
-  // The ring is on the control either way, and the control is now the LOUD CHIP
-  // in that frame rather than the quiet icon -- the cap is a collapse, so it
-  // draws the chip form. `track-control-isoform` is the testid on both looks,
-  // so the annotation and the click below are unchanged by that.
+  // That makes the middle frame a result, and the third frame still earns its
+  // rows: the cap is the browser's answer to the height, one canonical
+  // transcript is the reader's answer to the question. The control is the loud
+  // chip now rather than the quiet icon; `track-control-isoform` is the testid
+  // on both, so the ring and the click below are unchanged.
   //
   // The second frame DECLARES the destination rather than pressing Enter on the
   // first. Pressing it is honest and was tried: the hit that answers `TP53`
@@ -658,22 +649,14 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 940,
     stageColumns: 2,
-    // Room between the frames for the arrow below, which at the 24 px default
-    // has a hairline to be drawn in. 240 captured px is ~6% of a panel's width.
+    // room for the arrow below; at the 24px default it has a hairline to sit in
     stageGutter: 240,
     diffThreshold: 0.02,
     hideTooltip: true,
-    // THE PAIR IS A SEQUENCE (reviewer: "there should be an arrow from panel 1
-    // to panel 2 showing it is this two stage thing"). Side by side, a before
-    // and an after read as two pictures of the same locus until something says
-    // which way round they go — and this pair is the case where that is least
-    // obvious, since the setting between them changes only how the same six
-    // tracks are drawn.
-    //
-    // Anchored to the two frames' own boxes, so the arrow spans the gutter
-    // whatever the panels measure. `alignY: 'top'` with a dy puts it on the
-    // frames' app bars, which is the one band of a JBrowse window that carries
-    // nothing a reader is being shown.
+    // Side by side, a before and an after read as two pictures of the same
+    // locus (reviewer: "there should be an arrow from panel 1 to panel 2
+    // showing it is this two stage thing"). Anchored to the frames' own boxes;
+    // `alignY: 'top'` puts it on the app bars, the one band carrying nothing.
     gridAnnotations: [
       {
         type: 'arrow',
@@ -698,12 +681,10 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           trackMenuIcon(H3K4ME3_ROWS.trackId),
           ...menuCascade(PLOT_TYPE_PATH),
         ],
-        // The MENU'S OWN TRIGGER, ringed, on top of the path boxes (reviewer:
-        // "generally when highlighting a track menu, should circle the little
-        // track menu morevert icon too"). A cascade's boxes say which items
-        // were picked and nothing says where the cascade came from — and here
-        // the menu opens over a DIFFERENT track's rows than the one it belongs
-        // to, so the ⋮ that was clicked is four lanes above the first box.
+        // The cascade's boxes say which items were picked and nothing says
+        // where it came from — and the menu opens over a different track's rows
+        // than the ⋮ it belongs to (reviewer: "should circle the little track
+        // menu morevert icon too").
         annotations: [
           ...cascadeBoxes(PLOT_TYPE_PATH),
           {

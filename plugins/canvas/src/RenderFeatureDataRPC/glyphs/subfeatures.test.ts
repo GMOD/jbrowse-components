@@ -188,10 +188,9 @@ describe('layoutSubfeatures layout', () => {
     })
   })
 
-  // The height cap `auto` derives from the track's own height
-  // (effectiveMaxIsoforms). Its whole point is that a gene with 28 transcripts
-  // in a 100px lane draws them inside the lane's own scrollbar, so the last
-  // rows and the gene's own name are off the bottom with nothing saying so.
+  // The row budget `auto` derives from the track height
+  // (effectiveMaxIsoforms), so a gene with 28 transcripts does not draw all 28
+  // inside a 100px lane's own scrollbar.
   describe('maxIsoforms cap', () => {
     const capped = (names: string[], maxIsoforms: number | undefined) =>
       layoutSubfeatures({
@@ -208,16 +207,13 @@ describe('layoutSubfeatures layout', () => {
     it('keeps only the cap when it does not, and says isoforms are hidden', () => {
       const layout = capped(['a', 'b', 'c', 'd', 'e'], 2)
       expect(layout.children).toHaveLength(2)
-      // the same flag longestCoding sets, because it means the same thing
-      // downstream: the gene's label and hit box anchor to what was drawn
+      // the flag longestCoding sets: the label and hit box anchor to what drew
       expect(layout.isoformsCollapsed).toBe(true)
-      // …and the gene still HAS a choice to offer, so the control stays
       expect(layout.hasMultipleIsoforms).toBe(true)
     })
 
-    // `makeGeneWithTranscripts` gives every isoform the same 100bp CDS, so the
-    // ranking falls through to its later-wins tiebreak — which is the same one
-    // `longestCoding` uses, and the reason the two agree at n = 1.
+    // every isoform here has the same 100bp CDS, so this exercises the
+    // later-wins tiebreak the two share
     it('agrees with the longestCoding collapse at a cap of one', () => {
       const names = ['a', 'b', 'c']
       const one = capped(names, 1).children.map(c => c.feature.id())
@@ -261,9 +257,6 @@ describe('layoutSubfeatures layout', () => {
       expect(layout.children.map(c => c.feature.get('name'))).toEqual(['long'])
     })
 
-    // The cap decides WHICH isoforms are dropped and nothing about the ones
-    // that stay, so a gene that fits lays out identically with the cap on and
-    // off — which is what keeps every gene-track figure in the repo still.
     it('leaves the survivors in the order they would have had', () => {
       const uncapped = capped(['a', 'b', 'c'], undefined).children.map(c =>
         c.feature.get('name'),
@@ -273,8 +266,6 @@ describe('layoutSubfeatures layout', () => {
       ).toEqual(uncapped)
     })
 
-    // An explicit `longestCoding` is a mode the user pinned; the cap is `auto`'s
-    // and must not second-guess it in either direction.
     it('does not apply on top of longestCoding', () => {
       const layout = layoutSubfeatures({
         feature: makeGeneWithTranscripts(['a', 'b', 'c']),

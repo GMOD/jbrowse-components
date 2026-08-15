@@ -38,9 +38,8 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
   // icon. Whether the control belongs on screen at all is the caller's call (it
   // mounts this only when the display offers a `geneGlyphNotice`).
   const noticeShowing = collapsed && !dismissed
-  // Which of the two collapses it is, named on the chip rather than only in the
-  // tooltip: the height cap is the one a reader has no other cue for, since a
-  // gene drawn with 7 of its 28 transcripts looks exactly like a gene with 7.
+  // a gene drawn with 7 of its 28 transcripts looks exactly like a gene with 7,
+  // so the chip names which collapse it is rather than leaving it to the tooltip
   const label =
     maxIsoforms === undefined
       ? 'Longest isoform'

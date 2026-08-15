@@ -291,9 +291,7 @@ async function captureStages(
   )
   try {
     await captureEachStage(page, spec, stages, stageFiles, port)
-    // Measured BEFORE padPanels, which is the only moment the frames are their
-    // own size — `stageBoxes` adds the padding back itself, so the boxes and
-    // the append stay one statement of the layout rather than two.
+    // before padPanels, the only moment the frames are their own size
     const sizes = spec.gridAnnotations?.length
       ? await Promise.all(
           stageFiles.map(async f => ({
@@ -639,17 +637,11 @@ async function annotateComposition(spec: ComposeSpec, renderPath: string) {
   await overlayOnComposition(renderPath, annotations, boxes)
 }
 
-// Where each stage frame lands in the composition `captureStages` just built,
-// so the same overlay a `compose` spec gets can be run over a `stages` one.
-//
-// Derived from the append itself rather than measured off the result, the same
-// way `annotateComposition`'s is. A single column is a bare `-append` of
-// unpadded frames, so each box is the frame at the running height. A grid is
-// `padPanels` (half a gutter on all four sides, so a panel occupies its own
-// size plus a whole gutter) then `+append` per row then `-append` of the rows,
-// which is left-aligned — hence the row offset accumulating a row's own
-// padded height rather than a shared one, since `viewportHeight` is per stage
-// and only has to agree WITHIN a row.
+// Where each stage frame lands in the composition `captureStages` built, so a
+// `stages` spec can carry the same overlay a `compose` one does. Derived from
+// the append rather than measured off the result: a single column is a bare
+// `-append` of unpadded frames; a grid is `padPanels` (half a gutter every
+// side) then `+append` per row then `-append` of the rows.
 function stageBoxes(sizes: PartBox[], cols: number, gutter: number): PartBox[] {
   if (cols <= 1) {
     let top = 0

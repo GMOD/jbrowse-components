@@ -1442,21 +1442,13 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     expect(display.loadedRegions.size).toBe(1)
   })
 
-  // ── The isoform row budget, which is the one thing about the track's height
-  // the worker has to know ────────────────────────────────────────────────────
+  // ── The isoform row budget ──────────────────────────────────────────────────
   //
-  // `auto` caps a gene's isoforms at what the lane has rows for
-  // (`effectiveMaxIsoforms`), so `height`, `heightMode` and `displayMode` reach
-  // the payload after all — through one small integer rather than as
-  // themselves. That is a deliberate narrowing of the claim above, not an
-  // oversight, and the property worth keeping is the one the original war story
-  // was actually about: the resize handle writes `height` on EVERY DRAG FRAME
-  // (TrackContainer -> resizeHeight -> setConf), and re-running the worker
-  // pipeline per frame is what putting `height` itself in the payload cost.
-  //
-  // Two things stop that here and both are tested: the value is a row COUNT, so
-  // a height change inside one row is not a change at all, and it is read off
-  // `coarseTrackHeight`, which follows the slot on a delay.
+  // `auto` caps a gene's isoforms at what the lane has rows for, so `height`,
+  // `heightMode` and `displayMode` reach the payload through one small integer.
+  // A deliberate narrowing of the claim above: what still holds is the property
+  // the original war story was about — the resize handle writes `height` every
+  // drag frame, and a row COUNT does not move within a row.
   it('a height change within the same row budget does not refetch', async () => {
     const { display, mockRpcCall } = await loadedDisplay()
     const budgetBefore = display.effectiveMaxIsoforms
@@ -1487,10 +1479,8 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     })
   })
 
-  // Grow shows every feature by definition, so it carries no cap — and it MUST
-  // not, since grow's height is its own content's height and a cap read off it
-  // would be a fetch-derived value in `rpcProps()` (the loop trap
-  // `makeSettingsLoopGuard` names).
+  // Grow MUST carry no cap: its height is its own content's, so a cap read off
+  // it would be a fetch-derived value in `rpcProps()` (the loop trap).
   it('grow drops the cap entirely', async () => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length
@@ -1506,10 +1496,8 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     })
   })
 
-  // A compact row is 0.6 of a normal one, so the same lane holds more of them.
-  // `displayMode` was previously main-thread-only for the round trip it saves;
-  // it already refetches when it is `collapsed` (see below), and this is the
-  // second case.
+  // A compact row is 0.6 of a normal one, so the lane holds more. displayMode
+  // already refetches when it is `collapsed` (below); this is the second case.
   it('a compact displayMode buys rows, and so refetches', async () => {
     const { display, mockRpcCall } = await loadedDisplay()
     const budgetBefore = display.effectiveMaxIsoforms!
@@ -1523,8 +1511,6 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
   })
 
-  // …and a mode the user pinned is a mode the user pinned: only `auto` derives
-  // a cap, so neither `all` nor `longestCoding` has one to move.
   it('an explicit glyph mode takes no cap, so the height stops mattering', async () => {
     const { display, mockRpcCall } = await loadedDisplay()
     display.setGeneGlyphMode('all')

@@ -94,11 +94,8 @@ export function validateSpecs(list: ScreenshotSpec[]) {
     if ('stageColumns' in spec && spec.stageColumns && !spec.stages?.length) {
       problems.push(`${spec.name}: stageColumns without stages`)
     }
-    // Same family as the two below it: a field the shape the spec chose then
-    // discards. `gridAnnotations` is drawn by `captureStages` and by nothing
-    // else, so on a single-frame spec it is callouts that silently never
-    // appear — and it is easy to reach for, since it is spelled like the
-    // `annotations` beside it.
+    // drawn by `captureStages` and nothing else, so on a single-frame spec it
+    // is callouts that silently never appear
     if (
       'gridAnnotations' in spec &&
       spec.gridAnnotations?.length &&
@@ -106,9 +103,7 @@ export function validateSpecs(list: ScreenshotSpec[]) {
     ) {
       problems.push(`${spec.name}: gridAnnotations without stages`)
     }
-    // `padPanels` is the grid arm alone, so a gutter set on a single-column
-    // stack is a number that does nothing — the frames abut, which is what
-    // every stacked figure in the set already looks like.
+    // padPanels is the grid arm alone, so a stack's gutter does nothing
     if (
       'stageGutter' in spec &&
       spec.stageGutter !== undefined &&

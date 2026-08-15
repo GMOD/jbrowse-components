@@ -20,15 +20,10 @@ export function geneGlyphTooltip({
 }: {
   mode: GeneGlyphMode
   collapsed: boolean
-  // the height cap in force, or undefined when there is none. Only meaningful
-  // in `auto`, which is the one mode that derives it.
+  // the height cap hiding transcripts, or undefined when none is
   maxIsoforms?: number
   noticeShowing: boolean
 }) {
-  // Three states, not two, and the cap is the middle one: `auto` keeps as many
-  // transcripts per gene as the track's height has rows for, so a gene that
-  // fits shows every isoform and one that does not shows the highest-ranked
-  // few rather than all of them behind the track's own scrollbar.
   const showing = !collapsed
     ? 'Showing all transcripts per gene'
     : maxIsoforms === undefined
