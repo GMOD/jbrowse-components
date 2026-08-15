@@ -11,8 +11,10 @@ import {
   isoformRowBudget,
 } from './isoformBudget.ts'
 
-import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
-import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type {
+  DisplayMode,
+  DisplayConfig,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function mockFeature(opts: {
