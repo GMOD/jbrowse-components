@@ -97,6 +97,13 @@ interface ExecuteParams {
   }
 }
 
+// A shared constant only because processFeaturesFromArrays never returns its
+// input arrays — with count 0 it hands back arrays it allocated itself, so
+// nothing here reaches collectWiggleTransferables. That is the property the
+// aliasing refactor `transferables.ts` describes would remove, and these
+// buffers would then be transferred (and so detached) on the first region that
+// lacks a source and be dead on the second. `emptySide` is fresh-per-call for
+// exactly that reason; make this a function at the same time.
 const EMPTY_RAW: RawFeatureArrays = {
   starts: new Int32Array(0),
   ends: new Int32Array(0),
