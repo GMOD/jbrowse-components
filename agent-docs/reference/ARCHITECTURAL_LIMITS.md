@@ -846,17 +846,28 @@ build-time gate today, and gives the `@public` audit a factual starting point.
 
 **Status:** Open.
 
-`agent-docs/` plus the in-tree `CLAUDE.md` files carry on the order of 20k lines
-of contract. The `CLAUDE.md` half was cut from 3.7k lines to 840 in 2026-08 —
-rationale, measurements, and rejected alternatives were dropped in favor of the
-imperative rule alone, on the theory that git history and the ADRs already hold
-the why. `agent-docs/` itself has had no equivalent pass. Rules the compiler
-already owns are still written as warnings, spending the attention the
+`agent-docs/` is 40k lines against the 28 in-tree `CLAUDE.md` files' 2k. The
+`CLAUDE.md` half was cut from 3.7k lines to 840 in 2026-08 — rationale,
+measurements, and rejected alternatives dropped in favor of the imperative rule
+alone, on the theory that git history and the ADRs already hold the why.
+`agent-docs/` itself has had no equivalent pass, and the ratio is the entry:
+almost all of the contract now sits in the half nothing trimmed. Rules the
+compiler already owns are still written as warnings, spending the attention the
 unenforceable ones need.
 
 Alongside them sit hand-maintained membership lists in a doc set that explicitly
 warns against enumerations and lists autogenerating them as a follow-up
 (PLUGIN_ABI_STABILITY.md §"The same disease rots the docs").
+
+**What a pass actually finds is drift, not verbosity**, which is the thing to
+know before budgeting one. The 2026-08-15 sweep of `reference/` turned up almost
+no prose worth cutting for its own sake; what it turned up was references that
+had quietly stopped resolving — fourteen stale paths, two stale section
+citations, a "key functions" table naming a helper that no longer exists, and
+two docs describing a config payload the code had since inverted. Every one of
+them was invisible to a reader and to CI. So the lever is coverage rather than
+editing: each was found by widening `check-doc-imports.ts`, and each class it
+now checks cannot come back.
 
 **The membership half is largely done.** Display stacks, cross-cutting mixins,
 DisplayChrome's adoption map, gated budgets and the display-hook overrides are
