@@ -57,7 +57,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       // dimensions (required) plus whatever the draw path reads
       get renderState(): ScoreRenderState {
         return {
-          canvasWidth: this.view.trackWidthPx,
+          canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
           color: getConf(self, 'color'),
         }
