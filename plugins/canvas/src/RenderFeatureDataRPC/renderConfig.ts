@@ -94,6 +94,12 @@ export interface DisplayConfig {
   maxIsoforms: number | undefined
   subfeatureLabels: (typeof SUBFEATURE_LABELS)[number]
   transcriptTypes: string[]
+  // the attribute an isoform's curated "represents the gene" tag rides in, and
+  // the values of it that count — `rankIsoforms` puts a tagged isoform ahead of
+  // every other one, so it is what `longestCoding` shows and what the height
+  // cap keeps first
+  canonicalTranscriptField: string
+  canonicalTranscriptTags: string[]
   containerTypes: string[]
   subParts: string
   impliedUTRs: boolean
@@ -141,6 +147,8 @@ const WORKER_READS: Record<keyof DisplayConfig, true> = {
   maxIsoforms: true,
   subfeatureLabels: true,
   transcriptTypes: true,
+  canonicalTranscriptField: true,
+  canonicalTranscriptTags: true,
   containerTypes: true,
   subParts: true,
   impliedUTRs: true,

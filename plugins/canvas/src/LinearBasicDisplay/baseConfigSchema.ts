@@ -260,6 +260,39 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * feature attribute carrying an isoform's curated "this one represents
+       * the gene" tag. NCBI's GFF3 puts `RefSeq Select` / `MANE Select` in
+       * `tag`, and so do Ensembl and GENCODE (`Ensembl_canonical`,
+       * `MANE_Select`) — an annotation that names it somewhere else says so
+       * here. GFF3 attribute names reach a feature lowercased.
+       */
+      canonicalTranscriptField: {
+        type: 'string',
+        defaultValue: 'tag',
+      },
+      /**
+       * #slot
+       * values of that attribute that mark an isoform as the gene's
+       * representative one, which is then ranked ahead of every other isoform:
+       * it is the transcript shown by `longestCoding`, and the first kept when
+       * `auto` caps a gene at the rows the track has. Matched
+       * case-insensitively, against a multi-valued attribute member-wise
+       * (`tag=MANE Select,RefSeq Select`). A set, not a priority order —
+       * between two isoforms both tagged, the coding-length ranking below still
+       * decides. Empty turns the whole rule off.
+       */
+      canonicalTranscriptTags: {
+        type: 'stringArray',
+        defaultValue: [
+          'MANE Select',
+          'MANE_Select',
+          'MANE Plus Clinical',
+          'RefSeq Select',
+          'Ensembl_canonical',
+        ],
+      },
+      /**
+       * #slot
        * top-level feature types that always stack their children on separate
        * rows. Container detection is otherwise structural — a feature whose
        * children have children of their own stacks anyway — so this is only

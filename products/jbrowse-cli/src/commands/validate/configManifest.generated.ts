@@ -2855,6 +2855,14 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string[])"
         },
         {
+          "name": "canonicalTranscriptField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "canonicalTranscriptTags",
+          "type": "(JexlString | string[])"
+        },
+        {
           "name": "containerTypes",
           "type": "(JexlString | string[])"
         },
@@ -3692,6 +3700,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "transcriptTypes",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "canonicalTranscriptField",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "canonicalTranscriptTags",
           "type": "(JexlString | string[])"
         },
         {

@@ -10,8 +10,18 @@ function mockFeature(opts: {
   end: number
   strand?: number
   subfeatures?: ReturnType<typeof mockFeature>[]
+  // extra attributes, e.g. the `tag` an NCBI GFF3 carries RefSeq Select in
+  attributes?: Record<string, unknown>
 }): Feature {
-  const { type, name, start, end, strand = 1, subfeatures = [] } = opts
+  const {
+    type,
+    name,
+    start,
+    end,
+    strand = 1,
+    subfeatures = [],
+    attributes = {},
+  } = opts
   const f = {
     get: (key: string) => {
       const map: Record<string, unknown> = {
@@ -21,6 +31,7 @@ function mockFeature(opts: {
         end,
         strand,
         subfeatures,
+        ...attributes,
       }
       return map[key]
     },
@@ -275,6 +286,97 @@ describe('layoutSubfeatures layout', () => {
         }),
       })
       expect(layout.children).toHaveLength(1)
+    })
+  })
+
+  // NCBI's GFF3 marks the gene's representative isoform with `tag=RefSeq
+  // Select` (Ensembl/GENCODE with MANE_Select / Ensembl_canonical), which is a
+  // curator's answer to the question both collapses are asking. It outranks
+  // protein length, so the same tag decides what `longestCoding` shows and what
+  // the height cap keeps first.
+  describe('canonical transcript tag', () => {
+    // 'short' is tagged and 'long' has three times the CDS, so every assertion
+    // below is the tag beating the measurement
+    function geneWithTag(attributes: Record<string, unknown>) {
+      const short = mockFeature({
+        type: 'mRNA',
+        name: 'short',
+        start: 100,
+        end: 500,
+        attributes,
+        subfeatures: [
+          mockFeature({ type: 'CDS', name: 's', start: 100, end: 200 }),
+        ],
+      })
+      const long = mockFeature({
+        type: 'mRNA',
+        name: 'long',
+        start: 100,
+        end: 500,
+        subfeatures: [
+          mockFeature({ type: 'CDS', name: 'l', start: 100, end: 400 }),
+        ],
+      })
+      return mockFeature({
+        type: 'gene',
+        name: 'TestGene',
+        start: 100,
+        end: 500,
+        subfeatures: [short, long],
+      })
+    }
+
+    const names = (
+      attributes: Record<string, unknown>,
+      overrides: Parameters<typeof mockDisplayConfig>[0] = {},
+    ) =>
+      layoutSubfeatures({
+        feature: geneWithTag(attributes),
+        config: mockDisplayConfig({
+          geneGlyphMode: 'longestCoding',
+          ...overrides,
+        }),
+      }).children.map(c => c.feature.get('name'))
+
+    it('outranks a longer protein', () => {
+      expect(names({ tag: 'RefSeq Select' })).toEqual(['short'])
+    })
+
+    it('matches one member of a multi-valued attribute', () => {
+      // gff-nostream hands a comma list back as an array
+      expect(names({ tag: ['MANE Select', 'RefSeq Select'] })).toEqual([
+        'short',
+      ])
+    })
+
+    it('matches case-insensitively', () => {
+      expect(names({ tag: 'refseq select' })).toEqual(['short'])
+    })
+
+    it('ignores a tag the config does not name', () => {
+      expect(names({ tag: 'RefSeq Select' }, { canonicalTranscriptTags: [] })) //
+        .toEqual(['long'])
+      expect(names({ tag: 'basic' })).toEqual(['long'])
+    })
+
+    it('reads whichever attribute the config names', () => {
+      expect(
+        names(
+          { transcript_support: 'RefSeq Select' },
+          { canonicalTranscriptField: 'transcript_support' },
+        ),
+      ).toEqual(['short'])
+      // and not the default one, so the field is a real gate
+      expect(names({ transcript_support: 'RefSeq Select' })).toEqual(['long'])
+    })
+
+    it('is the first isoform the height cap keeps', () => {
+      expect(
+        names(
+          { tag: 'RefSeq Select' },
+          { geneGlyphMode: 'all', maxIsoforms: 1 },
+        ),
+      ).toEqual(['short'])
     })
   })
 

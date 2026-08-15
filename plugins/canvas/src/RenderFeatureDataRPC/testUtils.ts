@@ -16,6 +16,8 @@ export function mockDisplayConfig(
     featureHeight: 10,
     subfeatureLabels: 'none',
     transcriptTypes: ['mRNA'],
+    canonicalTranscriptField: 'tag',
+    canonicalTranscriptTags: ['MANE Select', 'RefSeq Select'],
     containerTypes: [],
     geneGlyphMode: 'all',
     maxIsoforms: undefined,

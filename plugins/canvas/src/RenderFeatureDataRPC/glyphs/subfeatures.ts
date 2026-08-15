@@ -3,6 +3,7 @@ import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import { findGlyph } from './findGlyph.ts'
 import { featureHeightPx, hasCodingSubfeature } from './glyphUtils.ts'
 
+import type { DisplayConfig } from '../renderConfig.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -55,25 +56,50 @@ function codingLength(feature: Feature): number {
   return sum
 }
 
+// Whether an isoform carries the annotation's own "this one represents the
+// gene" tag (`tag=RefSeq Select` in NCBI's GFF3, `MANE_Select` /
+// `Ensembl_canonical` in Ensembl's), read out of whichever attribute and values
+// the config names. A GFF3 attribute holding a comma list arrives as an array,
+// so both shapes are matched; `wanted` is lowercased by the caller.
+function isCanonicalIsoform(
+  feature: Feature,
+  field: string,
+  wanted: Set<string>,
+) {
+  const value = feature.get(field)
+  return Array.isArray(value)
+    ? value.some(v => wanted.has(String(v).toLowerCase()))
+    : typeof value === 'string' && wanted.has(value.toLowerCase())
+}
+
 // The gene's isoforms, best first: `longestCoding` takes the head, the height
 // cap takes the first n, so the two agree at n = 1 by construction.
 //
-// Coding isoforms rank above non-coding ones, and by protein length; a
-// non-coding one is ranked by span, which it is only ever compared on against
-// other non-coding ones — so that is also the whole ranking for a gene with no
-// coding isoform at all (a lncRNA).
+// A tagged isoform outranks everything, because a curated tag is a better
+// answer to "which isoform speaks for this gene" than any measurement of one —
+// it is the choice a human made, and for a gene whose longest protein is a
+// minor variant it is the only thing that gets that gene right. Then coding
+// isoforms above non-coding ones and by protein length; a non-coding one is
+// ranked by span, which it is only ever compared on against other non-coding
+// ones — so that is also the whole ranking for a gene with no coding isoform at
+// all (a lncRNA), and for the annotations (most of them) that tag nothing.
 //
 // A coding-length tie resolves to the LATER isoform (DPP6 and other fixtures
 // depend on it), which a stable sort would break the other way — hence the
 // explicit index tiebreak. Sized once per isoform, not inside the comparator,
 // which would re-walk each subtree O(n log n) times.
-function rankIsoforms(isoforms: Feature[]): Feature[] {
+function rankIsoforms(isoforms: Feature[], config: DisplayConfig): Feature[] {
+  const { canonicalTranscriptField, canonicalTranscriptTags } = config
+  const wanted = new Set(canonicalTranscriptTags.map(t => t.toLowerCase()))
   return isoforms
     .map((feature, index) => {
       const coding = hasCodingSubfeature(feature)
       return {
         feature,
         index,
+        canonical:
+          wanted.size > 0 &&
+          isCanonicalIsoform(feature, canonicalTranscriptField, wanted),
         coding,
         size: coding
           ? codingLength(feature)
@@ -82,6 +108,7 @@ function rankIsoforms(isoforms: Feature[]): Feature[] {
     })
     .sort(
       (a, b) =>
+        Number(b.canonical) - Number(a.canonical) ||
         Number(b.coding) - Number(a.coding) ||
         b.size - a.size ||
         b.index - a.index,
@@ -92,13 +119,11 @@ function rankIsoforms(isoforms: Feature[]): Feature[] {
 // The isoforms to keep under a height cap, or undefined when the gene fits.
 // The survivors keep the caller's order, so a gene under the cap lays out
 // identically with it on and off.
-function isoformsWithinCap(
-  isoforms: Feature[],
-  maxIsoforms: number | undefined,
-) {
+function isoformsWithinCap(isoforms: Feature[], config: DisplayConfig) {
+  const { maxIsoforms } = config
   return maxIsoforms !== undefined && isoforms.length > maxIsoforms
     ? new Set(
-        rankIsoforms(isoforms)
+        rankIsoforms(isoforms, config)
           .slice(0, Math.max(1, maxIsoforms))
           .map(f => f.id()),
       )
@@ -107,7 +132,7 @@ function isoformsWithinCap(
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
-  const { geneGlyphMode, maxIsoforms, transcriptTypes } = config
+  const { geneGlyphMode, transcriptTypes } = config
 
   // the gene's own resolved height, used only for the inter-transcript gap below
   // — each stacked child carries whatever height its own glyph resolved
@@ -127,7 +152,9 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   let isoformsCollapsed = false
   if (geneGlyphMode === 'longestCoding') {
     isoformsCollapsed = hasMultipleIsoforms
-    subfeatures = isoformsCollapsed ? [rankIsoforms(isoforms)[0]!] : isoforms
+    subfeatures = isoformsCollapsed
+      ? [rankIsoforms(isoforms, config)[0]!]
+      : isoforms
   } else {
     // Drop the isoforms past the cap, leaving non-transcript children (an NCBI
     // source record, a `biological_region`) alone.
@@ -137,7 +164,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     // transcript children. Ranking after it would rank a reordered list, and
     // rankIsoforms breaks a tie by index, so the cap at n = 1 would have kept a
     // different isoform than the longestCoding collapse does.
-    const keep = isoformsWithinCap(isoforms, maxIsoforms)
+    const keep = isoformsWithinCap(isoforms, config)
     if (keep) {
       const isoformIds = new Set(isoforms.map(f => f.id()))
       subfeatures = subfeatures.filter(

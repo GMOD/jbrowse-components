@@ -1360,6 +1360,8 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   expect(Object.keys(display.rpcProps().displayConfig).sort()).toEqual([
+    'canonicalTranscriptField',
+    'canonicalTranscriptTags',
     'color',
     'connectorColor',
     'containerTypes',
