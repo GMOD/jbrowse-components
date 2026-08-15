@@ -33,9 +33,11 @@ structurally identical to an ordinary LGV display — and the mate refName stops
 being information at all.
 
 Not a reason to do this, and it was never the strongest one: the two renames
-synteny needs now exist and are a few dozen dictionary entries per fetch. What
-this would buy is deleting them, and the other five plugins would still have
-their own. Justify this change by the alignments it recovers, below.
+synteny needs now exist and are a few dozen dictionary entries per fetch — and
+since they stopped inverting the adapter map and started reading the assembly's
+alias table, they cost no adapter round-trip either. What this would buy is
+deleting two cheap calls, and the other five plugins would still have their own.
+Justify this change by the alignments it recovers, below.
 
 **It recovers alignments the current fetch drops.** The same code comment admits
 the class: "an alignment whose query coords sit outside this window but whose

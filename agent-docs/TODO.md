@@ -527,6 +527,13 @@ model, and the synteny site that deliberately passes a name back OUT
 (`resolveMatchingSpan`'s `regions[]`) is the worked example of a return that
 would break under a blanket pass.
 
+**The mechanism is settled even though the design is not.** Three of the six
+workarounds now resolve on receipt through the assembly's alias table
+(`getCanonicalRefName2`, or synteny's `getCanonicalRefNameFn` around it) rather
+than inverting the outbound map, which is the shape to build: the outbound map is
+keyed by canonical name, so inverting it keeps only one file spelling per contig
+and is not total. Start from the alias table.
+
 **Wants a design pass rather than a patch**, and it is not urgent, because every
 plugin that needs it now has a working answer. That is also the hazard worth
 naming: the class now looks handled, so the case for doing this rests on the

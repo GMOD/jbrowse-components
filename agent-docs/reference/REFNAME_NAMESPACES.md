@@ -77,13 +77,21 @@ alignments layout looks worker-side and is not (ADR-053).
 | gwas | `indexSnp` | bundled into `regions` so it rides the inbound pass |
 | hic | `viewBlocks[].refName` | the view's own names carried in a parallel array |
 | `GetConsensusSequence` | — | returns no refName at all |
-| synteny | the entire mate axis | `getAdapterToCanonicalRefNameMap` on receipt, on both channels (below) |
+| synteny | the entire mate axis | `getCanonicalRefNameFn` on receipt, on both channels (below) |
 
 **Six ad-hoc solutions to one missing primitive** is the cost already paid for
 not having a return-direction rename, and synteny joining the list is the reason
 that number is now the argument rather than the fix being the argument. Each
 plugin's workaround is correct and none of them is reusable by the next one; the
 seventh will invent a seventh.
+
+Three of the six now reach for the same primitive — alignments'
+`getCanonicalRefName2`, breakpoint-split's `getCanonicalRefName`, synteny's
+`getCanonicalRefNameFn` wrapping it — which is not six answers converging so
+much as evidence about the shape the layer-level one should take: **resolve on
+receipt through the assembly's alias table**, not invert the outbound map. The
+remaining three differ because they avoid the return direction rather than
+implement it.
 
 ## Why synteny is the worst case rather than a special case
 
@@ -122,11 +130,25 @@ the one-RPC-per-settle invariant `LinearSyntenyFollow.test.tsx` pins. That
 failure is louder than the one the fix is for, which is the useful property
 here: the guard against a half-revert is a test that already exists.
 
-`getAdapterToCanonicalRefNameMap` (`@jbrowse/synteny-core`) is the inverse map
-for both, built **per axis** — the query assembly for the `refName` lane, the
-target for the `mate` one — rather than one merged map, so two contigs spelled
-alike on the two assemblies cannot collide. It predates this fix; the
-diagonalize RPCs needed exactly the same thing.
+`getCanonicalRefNameFn` (`@jbrowse/synteny-core`) is the resolver for both, built
+**per axis** — the query assembly for the `refName` lane, the target for the
+`mate` one — rather than one shared, so two contigs spelled alike on the two
+assemblies cannot collide. It reads the assembly's alias table
+(`getCanonicalRefName2`), which is what alignments and breakpoint-split do too.
+
+It replaced `getAdapterToCanonicalRefNameMap`, which these channels reused
+because the diagonalize RPCs already had it. **That one is for a worker** — it
+exists so a worker with no assemblyManager can be handed the answers — and
+against a live assembly it is both more work and less total: it inverts
+`loadRefNameMap`'s `result[canonical(fileName)] = fileName`, which is keyed by
+canonical name and therefore keeps ONE file spelling per contig. Its header says
+so; use it only where there is no assembly to ask.
+
+**The axes are named by `assemblyNames[0]`, captured before the RPC, not derived
+from `displayedRegions` after it.** Those are MST nodes and a comparative fetch
+can outlive the level that started it, where reading one throws into an
+unawaited promise — the same hazard `renameRegionsIfNeeded` captures its names
+early to avoid.
 
 ### The first channel is a dictionary, which makes the rename cheap and adds one requirement
 
@@ -139,9 +161,10 @@ dictionary the walk is negligible either way, and the guard was dropped.
 `renameRefNameDict` exists to do and why it is not a `.map()` in place. The
 dictionary's entries are distinct by construction while they are adapter-space,
 because the worker interned them there. Renaming can collapse two of them onto
-one canonical name — a file that spells the same contig `chr1` on some rows and
-`1` on others, against an assembly aliasing both, which is precisely the
-mixed-provenance case this whole class is about. Duplicates break the readers
+one canonical name, and **one aliased spelling is enough to do it**: a file that
+spells a contig `chr1` on some rows and `1` on others, against an assembly
+canonicalizing `1`, arrives as two entries and leaves as one — the renamed
+`chr1` lands on the `1` that passed through unchanged. Duplicates break the readers
 that resolve a name to an id ONCE and then compare integers
 (`pickFollowFeature`, `followWindowMapping`, both via `dict.indexOf`): `indexOf`
 finds the first of the duplicates, and every feature carrying the second id
@@ -151,6 +174,14 @@ The per-feature id array comes back **untouched** unless a collapse actually
 happened, because the interner hands out ids in first-seen order — so the
 ordinary file pays the dictionary walk and nothing else, and only the file that
 needs the remap pays for it.
+
+**That file is half-broken going OUT, too, and no rename here fixes it.** The
+region the worker is asked for is renamed through the same one-spelling-per-contig
+map, so it goes out as whichever spelling `loadRefNameMap` kept and the rows under
+the other one are never fetched at all. Canonicalizing the return direction makes
+the features that *do* arrive readable; the missing half is a core-level defect in
+`loadRefNameMap` and is not on this page's list because nothing in synteny can
+close it.
 
 ### One straddle whose symptom is a wrong palette, not a missed match
 
@@ -210,13 +241,23 @@ Channel 2, `ResolvedSpan.refName`:
 | site | the other operand | class |
 | --- | --- | --- |
 | `alreadyShowing.ts` | the moving view's current region | **straddle** — the one that makes a channel-1-only fix worse than none |
-| `moveMatchingPanel.ts` `navToResolvedSpan` | `navToLocString`'s parser | **straddle** |
+| `moveMatchingPanel.ts` `navToResolvedSpan` | `navToLocString`'s parser | safe — the parser canonicalizes (below) |
 | `positionViewOnSpan.ts` | `bpToOffset`, core, plain `string` | **straddle, and the site branding cannot catch** |
 | `followTransform.ts` | its own `refName` is the window's | carrier — `targetRefName` is the span's and flows out through `applyFollowTransform` |
 
-Thirteen sites; nine straddle. The count differs from the "eleven" this thread
+Thirteen sites; eight straddle. The count differs from the "eleven" this thread
 first reported because carriers and producers can be counted either way — which is
 the reason to keep the table rather than the number.
+
+**`navToResolvedSpan` was a straddle in the first draft of this table and is
+not.** `navToLocString` → `parseLocStrings` → `generateLocations` resolves every
+refName through `asm.getCanonicalRefName` before it builds a location, so an
+adapter spelling that is an alias already navigated correctly (probed, not
+reasoned: `navToLocString('A:10000..11000', 'volvox')` lands on `ctgA`). It is
+listed rather than deleted because the mistake is instructive — a channel-2
+consumer can be safe *because a core function normalizes for it*, and that is
+also why fixing channel 2 shows up in `alreadyShowing` and `positionViewOnSpan`
+and nowhere a navigation would reveal it.
 
 ### The one that goes back OUT is safe, and was safe before the fix too
 
@@ -281,6 +322,19 @@ contig is spelled `ctgA` or `A`, which `test_data/volvox/config.json` already
 declared as an alias. Both load, both draw, and both follow; the file's first
 test is that an aliased file is not a broken file, which is the premise the other
 two rest on.
+
+A third, `volvox_alias_target.paf`, exists to **tell the two axes' resolvers
+apart**, and the reason it is needed is worth knowing before trusting a
+green run of the other two: volvox_del declares no aliases, so on the query-axis
+fixtures the target resolver is identity, and using one resolver for both
+dictionaries — or deleting the mate rename outright — passes every assertion
+they make. It is the same alignment transposed, so volvox is the axis that is
+*not* queried and its `A` reaches `mateRefNameDict`, and it carries **no CIGAR**
+on purpose: with one, channel 2 canonicalizes the answer whatever the dictionary
+holds, and only the interpolating path reads `feat.mate.refName` as the sole
+source of the name. It asserts on the dictionaries rather than on where a row
+lands, because `navToLocString` resolves aliases itself (above) and would hide
+the difference.
 
 ## Nothing catches it, by construction
 

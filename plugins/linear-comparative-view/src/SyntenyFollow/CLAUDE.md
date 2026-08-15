@@ -83,6 +83,10 @@ canonicalizes neither** — `alreadyShowing` would compare canonical against
 adapter-space, never match, and renavigate on every wake.
 `LinearSyntenyRefNameAlias.test.tsx` fails if either half goes. Both directions
 are live, so neither rename is redundant.
+
+Each channel resolves **per axis**, and the two resolvers are only
+distinguishable by that file's third fixture — the query-axis ones cannot see a
+swap, because the assembly they would swap in declares no aliases.
 `agent-docs/reference/REFNAME_NAMESPACES.md` has the per-site table.
 
 ## Approximate is a state the UI reports, not a failure
