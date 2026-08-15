@@ -14,12 +14,12 @@ import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
-  checkPanSNPrefixes,
   getOrCreate,
   isSelfDiagonal,
   markReciprocalDuplicates,
   noSuchPairError,
   panSNInventory,
+  resolveAllVsAllQuery,
   resolvePanSNPrefix,
   sideDraws,
 } from '../util.ts'
@@ -151,17 +151,14 @@ export default class AllVsAllPAFAdapter extends ComparativeAdapterBase<AllVsAllP
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
       const { targetAssemblyName } = opts
       const asmByPrefix = assemblyByPanSNPrefix(this)
-      const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
-      const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
 
       // Tested against the inventory rather than the index, because a prefix
       // whose every alignment was a self-diagonal IS in the file and legitimately
       // draws nothing.
-      await checkPanSNPrefixes({
-        ends: [
-          [assemblyName, anchorPrefix],
-          [targetAssemblyName, targetPrefix],
-        ],
+      const { anchorPrefix, targetPrefix } = await resolveAllVsAllQuery({
+        adapter: this,
+        assemblyName,
+        targetAssemblyName,
         has: prefix => panSN.prefixes.has(prefix),
         inventory: () => panSN,
       })

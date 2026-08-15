@@ -1,9 +1,29 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import PAFConfigSchema from './PAFAdapter/configSchema.ts'
 import { PairwiseAdapterBase } from './PairwiseAdapterBase.ts'
 
 import type { Feature } from '@jbrowse/core/util'
+
+// The three slots getAssemblyNamesFromConf reads, and nothing else. Declared
+// here rather than borrowed from one of the four real adapters: what is under
+// test is the contract every pairwise config satisfies, so a schema change in
+// PAF or BLAST should not be able to fail this file, and a slot renamed out from
+// under the base should.
+const TestConfigSchema = ConfigurationSchema('TestPairwiseAdapter', {
+  assemblyNames: {
+    type: 'stringArray',
+    defaultValue: [],
+  },
+  queryAssembly: {
+    type: 'string',
+    defaultValue: '',
+  },
+  targetAssembly: {
+    type: 'string',
+    defaultValue: '',
+  },
+})
 
 // The base's two answers are protected, since an adapter reaches for them from
 // inside getFeatures rather than a caller reaching in. Exposed here rather than
@@ -31,15 +51,7 @@ class TestAdapter extends PairwiseAdapterBase {
 }
 
 function makeAdapter(conf: Record<string, unknown>) {
-  return new TestAdapter(
-    PAFConfigSchema.create({
-      pafLocation: {
-        localPath: 'unused.paf',
-        locationType: 'LocalPathLocation',
-      },
-      ...conf,
-    }),
-  )
+  return new TestAdapter(TestConfigSchema.create(conf))
 }
 
 describe('PairwiseAdapterBase', () => {

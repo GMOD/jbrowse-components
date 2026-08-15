@@ -449,6 +449,19 @@ describe('an assembly the file has never heard of', () => {
     ).rejects.toThrow(/carry no PanSN sample prefix/)
   })
 
+  // Same guard as the indexed adapter, and for the same reason: emptiness from
+  // getFeatures has to mean "no alignments here" and nothing else, or every
+  // error above degrades back into the silent blank band they exist to replace.
+  test('a query naming no assembly at all is an error, not an empty band', async () => {
+    await expect(
+      feats(makeAdapter(['grape', 'peach']), {
+        refName: 'chr1',
+        start: 0,
+        end: 2000,
+      }),
+    ).rejects.toThrow(/must name the assembly it is anchored on/)
+  })
+
   // A correctly configured track over a reference-anchored alignment being read
   // as all-vs-all — the shape HPRC publishes. Distinct from the errors above,
   // since nothing is misconfigured, so it names what to do instead.

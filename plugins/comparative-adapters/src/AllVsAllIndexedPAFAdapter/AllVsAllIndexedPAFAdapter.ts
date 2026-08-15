@@ -8,11 +8,11 @@ import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
-  checkPanSNPrefixes,
   getOrCreate,
   makeIndexedSyntenyFeature,
   markReciprocalDuplicates,
   panSNInventory,
+  resolveAllVsAllQuery,
   resolveCoarseTier,
   resolvePanSNPrefix,
   sideDraws,
@@ -102,8 +102,6 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName: qref, assemblyName } = query
       const asmByPrefix = assemblyByPanSNPrefix(this)
-      const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
-      const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
 
       const coarse = resolveCoarseTier({
         hasCoarseTier: await this.pif.hasCoarseTier(opts),
@@ -116,25 +114,23 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
 
       // Resolve the anchor (assembly, refName) to its PanSN seqid(s); one contig
       // can map to several when the sample is multi-haplotype.
-      const seqIndex = await this.seqIndex(opts)
-      const byContig = seqIndex.get(anchorPrefix)
-      // A prefix present but holding no such contig is ordinary — a contig with
-      // no alignments. A prefix the file has never heard of is not; see
-      // checkPanSNPrefixes.
       //
       // Unlike the in-memory adapter this cannot go on to say "both ends are
       // present but nothing aligns them" (see noSuchPairError): that is a fact
       // about the rows, and the seqid list is all this has without a scan. The
       // make-pif warning covers the same ground at build time.
-      await checkPanSNPrefixes({
-        ends: [
-          [assemblyName, anchorPrefix],
-          [opts.targetAssemblyName, targetPrefix],
-        ],
+      const seqIndex = await this.seqIndex(opts)
+      const { anchorPrefix, targetPrefix } = await resolveAllVsAllQuery({
+        adapter: this,
+        assemblyName,
+        targetAssemblyName: opts.targetAssemblyName,
         has: prefix => seqIndex.has(prefix),
         inventory: () => this.inventory(opts),
       })
-      const seqs = byContig?.get(qref) ?? []
+      // The prefix is in the index, since that is what `has` just asked. A
+      // prefix present but holding no such contig is ordinary — a contig with no
+      // alignments — and is the only emptiness left that means nothing is wrong.
+      const seqs = seqIndex.get(anchorPrefix)?.get(qref) ?? []
 
       // One slot per concurrent getLines: they run under one Promise.all and
       // would otherwise take turns overwriting the single status field, so the

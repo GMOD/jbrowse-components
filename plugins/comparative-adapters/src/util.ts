@@ -80,14 +80,16 @@ const asmByPrefixCache = new WeakMap<
 // The prefix is whatever the config named, so this map can hold sample-level
 // (`grape`) and haplotype-level (`grape#1`) keys at once.
 export function assemblyByPanSNPrefix(adapter: BaseFeatureDataAdapter) {
-  return getOrCreate(asmByPrefixCache, adapter, () => {
+  let out = asmByPrefixCache.get(adapter)
+  if (out === undefined) {
     const map = assemblyNameToPanSN(adapter)
-    const out: Record<string, string> = {}
+    out = {}
     for (const asm of adapter.getConf('assemblyNames') as string[]) {
       out[map[asm] ?? asm] = asm
     }
-    return out
-  })
+    asmByPrefixCache.set(adapter, out)
+  }
+  return out
 }
 
 // Give a mate a friendly assembly label. Resolves at the most specific depth the
@@ -181,32 +183,63 @@ export function noPanSNMatchError({
 }
 
 /**
- * Throw {@link noPanSNMatchError} for the first end of a query whose prefix the
- * file does not hold. Both ends are checked, so a band naming a mistyped
- * assembly says which end is wrong instead of drawing empty.
+ * Both ends of an all-vs-all `getFeatures` resolved to the PanSN prefixes the
+ * file is keyed on, having established that the file holds them.
+ *
+ * Resolution and validation together, because separating them is what let a
+ * getFeatures walk on with an unresolved anchor. Everything downstream indexes
+ * on `anchorPrefix`, so it is returned definite: past this call an empty result
+ * means the file states no alignment there, which is the one thing a caller is
+ * allowed to read as silence.
+ *
+ * **An anchorless query is an error, not an empty band.** `getRefNames` answers
+ * `[]` for a query with no assembly name — the caller has not resolved one yet,
+ * and every pairwise adapter says the same. `getFeatures` cannot: it is drawing,
+ * `hasDataForRefName` is unconditionally true so nothing upstream filtered the
+ * track out, and a band that draws nothing and says nothing is indistinguishable
+ * from a locus with no homology. That is the failure mode
+ * {@link noPanSNMatchError} exists to prevent, and it was reachable here through
+ * a Region whose `assemblyName` is typed `string` but arrives over RPC.
  *
  * `has` and `inventory` differ per adapter — the in-memory one has both in hand
  * from its setup, the indexed one probes a seqid index and pays a fetch for the
  * inventory, which is why that one is a thunk taken only on the failing path.
  */
-export async function checkPanSNPrefixes({
-  ends,
+export async function resolveAllVsAllQuery({
+  adapter,
+  assemblyName,
+  targetAssemblyName,
   has,
   inventory,
 }: {
-  ends: readonly (readonly [string | undefined, string | undefined])[]
+  adapter: BaseFeatureDataAdapter
+  assemblyName: string | undefined
+  targetAssemblyName: string | undefined
   has: (prefix: string) => boolean
   inventory: () => PanSNInventory | Promise<PanSNInventory>
 }) {
-  for (const [assemblyName, prefix] of ends) {
-    if (assemblyName !== undefined && prefix !== undefined && !has(prefix)) {
+  if (assemblyName === undefined) {
+    throw new Error(
+      'a synteny query must name the assembly it is anchored on; this one named none, so there is no PanSN sample prefix to look its alignments up under',
+    )
+  }
+  const anchorPrefix = resolvePanSNPrefix(adapter, assemblyName)
+  const targetPrefix = resolvePanSNPrefix(adapter, targetAssemblyName)
+  // Both ends, so a band naming a mistyped assembly says which end is wrong
+  // instead of drawing empty.
+  for (const [name, prefix] of [
+    [assemblyName, anchorPrefix],
+    [targetAssemblyName, targetPrefix],
+  ] as const) {
+    if (name !== undefined && prefix !== undefined && !has(prefix)) {
       throw noPanSNMatchError({
-        assemblyName,
+        assemblyName: name,
         prefix,
         inventory: await inventory(),
       })
     }
   }
+  return { anchorPrefix, targetPrefix }
 }
 
 /**
@@ -246,14 +279,8 @@ export function noSuchPairError({
  * record under (prefix, contig) or (refName, mateRefName), and a Map rather
  * than a joined string key because a contig name can contain any character one
  * would reach for as a separator.
- *
- * Structural in the map so a WeakMap memo passes too.
  */
-export function getOrCreate<K, V>(
-  map: { get: (key: K) => V | undefined; set: (key: K, value: V) => unknown },
-  key: K,
-  make: () => V,
-) {
+export function getOrCreate<K, V>(map: Map<K, V>, key: K, make: () => V) {
   let value = map.get(key)
   if (value === undefined) {
     value = make()

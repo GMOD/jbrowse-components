@@ -422,4 +422,19 @@ describe('an assembly the file has never heard of', () => {
       }),
     ).toEqual([])
   })
+
+  // The pair above is the whole point of the guard: emptiness has to mean "no
+  // alignments here" and nothing else. A region reaches this adapter over RPC,
+  // where `assemblyName` being typed `string` is a claim about the sender rather
+  // than a fact, and an anchorless query resolved to no prefix and drew an empty
+  // band that looked exactly like the contig case above.
+  test('a query naming no assembly at all is an error, not an empty band', async () => {
+    await expect(
+      feats(makeAdapter(['grape', 'peach']), {
+        refName: 'chr1',
+        start: 0,
+        end: 2000,
+      }),
+    ).rejects.toThrow(/must name the assembly it is anchored on/)
+  })
 })
