@@ -18,6 +18,13 @@ generators share a single TypeScript program load (the dominant cost — see
 
 This is not part of the build — run it manually and commit the result.
 
+**A `#config` block goes directly above the schema it documents**, not above a
+neighbouring `normalizeSnapshot`. The block is extracted with the declaration it
+precedes, and anything read off that declaration's source — spread-in slot
+tables — is empty otherwise, while the page still renders because slots come
+from their own `#slot` tags. Twenty-four schemas were in that state; the
+generator throws on it now.
+
 It looks for comments named
 
 ```js

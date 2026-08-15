@@ -2,6 +2,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        gtfLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 /**
  * #config GtfAdapter
  * #category adapter
@@ -19,19 +31,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        gtfLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
-
 const GtfAdapter = ConfigurationSchema(
   'GtfAdapter',
   {

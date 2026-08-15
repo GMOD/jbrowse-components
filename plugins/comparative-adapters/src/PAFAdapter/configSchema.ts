@@ -1,5 +1,19 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
+
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        pafLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 /**
  * #config PAFAdapter
  * #trackType SyntenyTrack
@@ -22,47 +36,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * }
  * ```
  */
-
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        pafLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
-
 const PAFAdapter = ConfigurationSchema(
   'PAFAdapter',
   {
-    /**
-     * #slot
-     */
-    assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
-    },
-    /**
-     * #slot
-     */
-    targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the target assembly name',
-    },
-    /**
-     * #slot
-     */
-    queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the query assembly name',
-    },
+    ...pairwiseAssemblyFields,
     /**
      * #slot
      * location of the PAF file (minimap2, wfmash, and similar). May be gzipped.

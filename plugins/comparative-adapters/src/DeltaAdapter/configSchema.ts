@@ -1,5 +1,19 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
+
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        deltaLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 /**
  * #config DeltaAdapter
  * #category adapter
@@ -18,49 +32,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * }
  * ```
  */
-
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        deltaLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
-
 const DeltaAdapter = ConfigurationSchema(
   'DeltaAdapter',
   {
-    /**
-     * #slot
-     */
-    assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
-    },
-    /**
-     * #slot
-     * alternative to assembly names
-     */
-    targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the target assembly name',
-    },
-    /**
-     * #slot
-     * alternative to assembly names
-     */
-    queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the query assembly name',
-    },
+    ...pairwiseAssemblyFields,
     /**
      * #slot
      * location of the MUMmer `.delta` file written by `nucmer`/`promer` (also

@@ -1,25 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-/**
- * #config TrixTextSearchAdapter
- * #trackType TextSearchAdapter
- * #fileFormat textsearch | Trix index (.ix/.ixx) | Built by `jbrowse text-index`
- *
- * #example
- * `jbrowse text-index` writes this entry into `aggregateTextSearchAdapters` for
- * you. The `uri` shorthand points at the `.ix`; the sibling `.ixx` and
- * `_meta.json` are derived from it, so all three only need spelling out when
- * they are named against convention.
- * ```js
- * {
- *   type: 'TrixTextSearchAdapter',
- *   textSearchAdapterId: 'hg38-index',
- *   uri: 'trix/hg38.ix',
- *   assemblyNames: ['hg38'],
- * }
- * ```
- */
-
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return typeof snap.uri === 'string'
     ? {
@@ -42,6 +22,25 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
     : snap
 }
 
+/**
+ * #config TrixTextSearchAdapter
+ * #trackType TextSearchAdapter
+ * #fileFormat textsearch | Trix index (.ix/.ixx) | Built by `jbrowse text-index`
+ *
+ * #example
+ * `jbrowse text-index` writes this entry into `aggregateTextSearchAdapters` for
+ * you. The `uri` shorthand points at the `.ix`; the sibling `.ixx` and
+ * `_meta.json` are derived from it, so all three only need spelling out when
+ * they are named against convention.
+ * ```js
+ * {
+ *   type: 'TrixTextSearchAdapter',
+ *   textSearchAdapterId: 'hg38-index',
+ *   uri: 'trix/hg38.ix',
+ *   assemblyNames: ['hg38'],
+ * }
+ * ```
+ */
 const TrixTextSearchAdapter = ConfigurationSchema(
   'TrixTextSearchAdapter',
   {

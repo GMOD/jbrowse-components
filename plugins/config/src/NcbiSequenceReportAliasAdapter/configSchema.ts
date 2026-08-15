@@ -4,6 +4,8 @@ import { normalizeUriSnapshot } from '../normalizeUriSnapshot.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+export const normalizeSnapshot = normalizeUriSnapshot
+
 /**
  * #config NcbiSequenceReportAliasAdapter
  * can read "sequence_report.tsv" type files from NCBI
@@ -59,9 +61,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-
-export const normalizeSnapshot = normalizeUriSnapshot
-
 const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
   'NcbiSequenceReportAliasAdapter',
   {

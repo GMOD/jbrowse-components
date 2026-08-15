@@ -171,6 +171,26 @@ export function accumulateConfig(
       existing: file.header?.name,
       incoming: item.name,
     })
+    // A `#config` block documents a schema, so it has to SIT on one — the
+    // declaration it precedes is what gets extracted with it, and the source of
+    // that declaration is what slot recovery reads. A block parked above a
+    // neighbouring `normalizeSnapshot` still produced a page, because slots are
+    // collected from their own `#slot` tags file-wide; it silently produced an
+    // EMPTY node, so anything read off the schema's source found nothing. Nine
+    // adapters were in that state and five lost both their `index.*` rows the
+    // day a shared slot table arrived.
+    // `types.model(` as well as `ConfigurationSchema(`: the root config is a
+    // factory returning the former, and it is documenting the thing it returns
+    // either way. A `normalizeSnapshot` body has neither, which is the whole
+    // set of offenders.
+    if (
+      !obj.node.includes('ConfigurationSchema(') &&
+      !obj.node.includes('types.model(')
+    ) {
+      throw new Error(
+        `${file.filename}: the \`#config ${item.name}\` block sits on a declaration that is not a schema — move it directly above the schema it documents. Everything read off the schema's own source (spread-in slot tables) is silently empty where it is.`,
+      )
+    }
     file.header = {
       name: item.name,
       docs: item.docs,

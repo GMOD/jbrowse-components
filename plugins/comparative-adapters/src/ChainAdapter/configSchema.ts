@@ -1,5 +1,19 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
+
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        chainLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 /**
  * #config ChainAdapter
  * #category adapter
@@ -17,49 +31,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * }
  * ```
  */
-
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        chainLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
-
 const ChainAdapter = ConfigurationSchema(
   'ChainAdapter',
   {
-    /**
-     * #slot
-     */
-    assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
-    },
-    /**
-     * #slot
-     * can be specified as alternative to assemblyNames
-     */
-    targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the target assembly',
-    },
-    /**
-     * #slot
-     * can be specified as alternative to assemblyNames
-     */
-    queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the query assembly',
-    },
+    ...pairwiseAssemblyFields,
     /**
      * #slot
      * location of the UCSC chain file, as used by `liftOver` and produced by

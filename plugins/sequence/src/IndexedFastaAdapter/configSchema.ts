@@ -4,6 +4,10 @@ import { deriveFastaLocations } from '../chromSizesUtils.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri ? { ...snap, ...deriveFastaLocations(snap) } : snap
+}
+
 /**
  * #config IndexedFastaAdapter
  * #trackType ReferenceSequenceTrack
@@ -18,11 +22,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri ? { ...snap, ...deriveFastaLocations(snap) } : snap
-}
-
 const IndexedFastaAdapter = ConfigurationSchema(
   'IndexedFastaAdapter',
   {

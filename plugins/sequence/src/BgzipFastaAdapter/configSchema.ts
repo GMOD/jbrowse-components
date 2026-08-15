@@ -4,6 +4,19 @@ import { deriveFastaLocations } from '../chromSizesUtils.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        ...deriveFastaLocations(snap),
+        gziLocation: {
+          uri: `${snap.uri}.gzi`,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 /**
  * #config BgzipFastaAdapter
  * #trackType ReferenceSequenceTrack
@@ -18,19 +31,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        ...deriveFastaLocations(snap),
-        gziLocation: {
-          uri: `${snap.uri}.gzi`,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
-
 const BgzipFastaAdapter = ConfigurationSchema(
   'BgzipFastaAdapter',
   {

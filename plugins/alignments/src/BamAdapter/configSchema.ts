@@ -3,27 +3,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-/**
- * #config BamAdapter
- * #trackType AlignmentsTrack
- * #fileFormat alignments | BAM
- * used to configure BAM adapter
- *
- * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
- * automatically supplies it from the enclosing assembly's sequence track.
- *
- * #example
- * The `uri` shorthand auto-resolves the `.bai` index (pass `csi: true` for a
- * `.csi` index). For a differently-named index, set `index` explicitly with
- * the full slot form:
- * ```js
- * {
- *   type: 'BamAdapter',
- *   uri: 'https://example.com/sample.bam',
- * }
- * ```
- */
-
 // #region preProcess
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -45,6 +24,26 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 }
 // #endregion
 
+/**
+ * #config BamAdapter
+ * #trackType AlignmentsTrack
+ * #fileFormat alignments | BAM
+ * used to configure BAM adapter
+ *
+ * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
+ * automatically supplies it from the enclosing assembly's sequence track.
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.bai` index (pass `csi: true` for a
+ * `.csi` index). For a differently-named index, set `index` explicitly with
+ * the full slot form:
+ * ```js
+ * {
+ *   type: 'BamAdapter',
+ *   uri: 'https://example.com/sample.bam',
+ * }
+ * ```
+ */
 const configSchema = ConfigurationSchema(
   'BamAdapter',
   {

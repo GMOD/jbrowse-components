@@ -45,4 +45,4 @@ export const tabixIndexFields = {
     description:
       'location of the tabix index. Only needed when it is not named `<file>.tbi` (or `.csi`), which is what the `uri` shorthand assumes.',
   },
-}
+} as const

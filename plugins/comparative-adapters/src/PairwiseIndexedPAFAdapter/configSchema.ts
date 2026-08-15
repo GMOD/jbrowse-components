@@ -4,6 +4,8 @@ import {
   tabixIndexFields,
 } from '@jbrowse/core/configuration'
 
+import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
@@ -30,31 +32,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 const PairwiseIndexedPAFAdapter = ConfigurationSchema(
   'PairwiseIndexedPAFAdapter',
   {
-    /**
-     * #slot
-     */
-    assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second',
-    },
-    /**
-     * #slot
-     */
-    targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the target assembly name',
-    },
-    /**
-     * #slot
-     */
-    queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames: the query assembly name',
-    },
+    ...pairwiseAssemblyFields,
     /**
      * #slot
      */

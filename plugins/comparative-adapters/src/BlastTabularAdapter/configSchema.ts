@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -38,32 +40,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 const BlastTabularAdapter = ConfigurationSchema(
   'BlastTabularAdapter',
   {
-    /**
-     * #slot
-     */
-    assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'Query assembly is the first value in the array, target assembly is the second',
-    },
+    ...pairwiseAssemblyFields,
 
-    /**
-     * #slot
-     */
-    targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the target assembly',
-    },
-    /**
-     * #slot
-     */
-    queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the query assembly',
-    },
     /**
      * #slot
      * location of the BLAST tabular output (`-outfmt 6` or `7`). Set `columns`

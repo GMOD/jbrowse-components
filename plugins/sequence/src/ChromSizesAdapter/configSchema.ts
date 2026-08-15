@@ -1,5 +1,17 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        chromSizesLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 /**
  * #config ChromSizesAdapter
  * #trackType ReferenceSequenceTrack
@@ -17,19 +29,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * }
  * ```
  */
-
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        chromSizesLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
-
 const ChromSizesAdapter = ConfigurationSchema(
   'ChromSizesAdapter',
   {

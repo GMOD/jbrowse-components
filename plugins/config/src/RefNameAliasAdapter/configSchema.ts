@@ -4,6 +4,8 @@ import { normalizeUriSnapshot } from '../normalizeUriSnapshot.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+export const normalizeSnapshot = normalizeUriSnapshot
+
 /**
  * #config RefNameAliasAdapter
  * can read "chromAliases" type files from UCSC or any tab separated file of
@@ -57,9 +59,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-
-export const normalizeSnapshot = normalizeUriSnapshot
-
 const RefNameAliasAdapter = ConfigurationSchema(
   'RefNameAliasAdapter',
   {

@@ -2,6 +2,22 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        cramLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+        craiLocation: {
+          uri: `${snap.uri}.crai`,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 /**
  * #config CramAdapter
  * #trackType AlignmentsTrack
@@ -23,23 +39,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  */
-
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        cramLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-        craiLocation: {
-          uri: `${snap.uri}.crai`,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
-
 const configSchema = ConfigurationSchema(
   'CramAdapter',
   {

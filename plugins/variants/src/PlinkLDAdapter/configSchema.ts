@@ -1,5 +1,17 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return snap.uri
+    ? {
+        ...snap,
+        ldLocation: {
+          uri: snap.uri,
+          baseUri: snap.baseUri,
+        },
+      }
+    : snap
+}
+
 /**
  * #config PlinkLDAdapter
  * #trackType LDTrack
@@ -40,19 +52,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * }
  * ```
  */
-
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        ldLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
-
 const PlinkLDAdapter = ConfigurationSchema(
   'PlinkLDAdapter',
   {
