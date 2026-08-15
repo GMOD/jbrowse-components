@@ -23,7 +23,9 @@ elsewhere.
 - **PS reads through `processFormatFields`, not `samples`.**
 - Maps crossing RPC key by `sampleName`, never `name` (HP-suffixed when phased).
 - **`featureGenotypeMap` records every genotype, not what got painted** — both
-  cell loops ship the interned per-feature array by reference.
+  cell loops ship the interned per-feature array by reference. Under the default
+  `referenceDrawingMode: 'skip'` a painted-cells copy makes every hom-ref row
+  decode as MISSING to the anchored sort.
 - **`NaN` is the only missing marker.** A value-scale sentinel made samples
   cluster by missingness.
 - The `"<sampleName> HP<n>"` convention lives only in

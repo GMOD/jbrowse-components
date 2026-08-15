@@ -83,7 +83,8 @@ missing reader costs correctness, not milliseconds.
 `extractFeatureArrays` calls `feature.get(...)` per read, so keep work out of
 it: `seq` (CRAM decodes the whole read) and `convertTagsToPlainArrays` belong
 only in `toJSON()`, and the `mismatches` getter allocates — the render path
-drives `forEachMismatch`.
+drives `forEachMismatch`. The memos that were here measured as pure state, so a
+new one wants an interleaved A/B behind it.
 
 **`get('tags')` is never the way to read a tag on this path**, however many you
 want: it decodes every tag and BAM memoizes it onto a record in a shared chunk

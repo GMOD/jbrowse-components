@@ -74,7 +74,9 @@ MobX cycle, so don't collapse it.
 so a layer switched off keeps its marks hoverable over blank pixels unless
 `performHitTest` gates too. `HIT_GATES` (`hitTestGateParity.test.ts`) is
 exhaustive over `PileupLayerId`, so a new layer is a compile error until it
-states one of four stories.
+states one of four stories: gated on a named `HitTestOptions` flag, empty of
+data when its setting is off, unconditionally drawn, or a decoration
+`hitTestFeature` already answers for.
 
 The converse gap is a layer with no hit test: `readPositions` carries the read's
 TRUE aligned extent, so `hitTestFeature` misses what `drawSoftclipBases` paints
