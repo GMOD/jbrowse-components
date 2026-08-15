@@ -17,54 +17,49 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 ## Rendering and displays
 
 - **A clustering tolerance inside `arcKey`** — measured 2026-08-14 and declined,
-  after being proposed twice: once so the arc band would agree with the counted
-  sashimi overlay's 10 bp window, and once on the worry that a real fusion's
-  support splits across the microhomology jitter the aligner leaves. Run against
-  the hosted K562 Iso-Seq BAM (579 records over the figure's chr22 window, each
-  read's chain resolved the way `unpairedReadChain` + `connectionEndpointBps`
-  resolve it), the split is **26/1/1/1** — one dominant arc at the canonical
-  e14a2 acceptor with three singletons within 20 bp, i.e. inside two screen
-  pixels and under its stroke. **What was given up:** two reads of support, for
-  a change to `arcKey`'s exact-coordinate rule, which is the invariant the whole
-  coalescing story rests on. A split read knows its breakpoint to the base;
-  what it does not know is which base the aligner picked inside the
-  microhomology, and that ambiguity is smaller than the ink. The mate-pair
-  family is the opposite case and is already handled elsewhere: mates straddle a
-  breakpoint rather than landing on it, so their count is taken over a window by
-  `clusteredInterchromSupport` — a support FLOOR, not a merge, and it never
-  invents a position. Numbers in [DEMO_DATASETS.md](DEMO_DATASETS.md).
+  after being proposed twice: once so the arc band would agree with the sashimi
+  overlay's 10 bp window, once on the worry that a real fusion's support splits
+  across the aligner's microhomology jitter. On the hosted K562 Iso-Seq BAM (579
+  records over the figure's chr22 window) the split is **26/1/1/1** — one
+  dominant arc at the canonical e14a2 acceptor with three singletons within
+  20 bp, inside two screen pixels and under its own stroke. **What was given
+  up:** two reads of support, for a change to `arcKey`'s exact-coordinate rule,
+  which the whole coalescing story rests on. A split read knows its breakpoint to
+  the base; what it doesn't know is which base the aligner picked inside the
+  microhomology, and that ambiguity is smaller than the ink. Mate pairs are the
+  opposite case and already handled: they straddle a breakpoint rather than
+  landing on it, so `clusteredInterchromSupport` counts over a window — a support
+  FLOOR, not a merge, and it never invents a position. Numbers in
+  [DEMO_DATASETS.md](DEMO_DATASETS.md).
 - **A clustered read-support floor for SAME-CHROMOSOME discordant arcs** —
   measured 2026-08-13 and declined, having been proposed as the obvious twin of
-  the interchromosomal one that shipped. Windowed support genuinely gathers
-  there — 257 clusters at W=0 become 109 at W=600, with apparent support of 24,
-  14, 10, 9, 9 — and every one of those clusters is an artifact. Their |TLEN|s
-  are a smooth continuum starting at the band's cut (1145, 1152, 1154, 1160,
-  1162, 1171, …), which is a distribution tail being sliced; a real 4 kb
-  deletion would put twenty pairs at ~4600 ± 100. The clusters are **density**:
-  at 300x a 600 bp window holds ~1200 pairs, so a fraction of a percent of tail
-  yields several flagged pairs per window and single-linkage chains them.
-  **What was given up:** nothing — the filter would have been a density filter
-  presented as an evidence filter, growing more aggressive exactly where
-  coverage is deepest, and it would have counted the same tail the insert-size
-  band floor already handles. The interchromosomal family is different and does
-  get the floor, because there the reads do not cluster at all (852 of 868
-  dropped) and a window is needed only so a real translocation is not deleted
-  with them. Full working in [DEEP_COVERAGE.md](DEEP_COVERAGE.md).
+  the interchromosomal one that shipped. Windowed support genuinely gathers there
+  — 257 clusters at W=0 become 109 at W=600, apparent support 24, 14, 10, 9, 9 —
+  and every one is an artifact. Their |TLEN|s are a smooth continuum starting at
+  the band's cut, which is a distribution tail being sliced; a real 4 kb deletion
+  would put twenty pairs at ~4600 ± 100. The clusters are **density**: at 300x a
+  600 bp window holds ~1200 pairs, so a fraction of a percent of tail yields
+  several flagged pairs per window and single-linkage chains them. **What was
+  given up:** nothing — it would have been a density filter presented as an
+  evidence filter, growing more aggressive exactly where coverage is deepest,
+  counting the tail the insert-size band floor already handles. The
+  interchromosomal family does get the floor, because there the reads don't
+  cluster at all (852 of 868 dropped) and the window exists only so a real
+  translocation isn't deleted with them. Working in
+  [DEEP_COVERAGE.md](DEEP_COVERAGE.md).
 - **Colouring an arc long-insert from the pair's drawn SPAN** — shipped, then
-  removed 2026-08. `getArcColorType` overrode the TLEN class whenever the mates
-  sat more than `LARGE_INSERT_THRESHOLD` apart, on the sound ground that a
-  discordant pair often carries an unreliable or 0 TLEN and the distance is the
-  better signal. The read fills never had the rule, so the two disagreed on
-  exactly the pairs it existed to catch — `classifyInsertSize` sorts TLEN 0 into
-  `normal`, so those arcs went red over reads that stayed grey, and a figure
-  shipped that way. Half the test was also `absrad >= longRangeThreshold`, a
-  median+MAD cut over the arcs IN VIEW, so an arc's colour depended on what else
-  was on screen and changed as you panned.
-  **What was given up:** pairs whose TLEN is 0 or wrong are now `normal` on both
-  sides rather than long-insert on one. The consistency was bought with that
-  signal, deliberately. Restoring it means giving the READ path the same
-  span rule (it has no mate span today — a worker-data change), not
-  reintroducing it on the arc side alone. See
+  removed. `getArcColorType` overrode the TLEN class whenever the mates sat more
+  than `LARGE_INSERT_THRESHOLD` apart, on the sound ground that a discordant pair
+  often carries an unreliable or 0 TLEN. The read fills never had the rule, so
+  the two disagreed on exactly the pairs it existed to catch:
+  `classifyInsertSize` sorts TLEN 0 into `normal`, so those arcs went red over
+  grey reads, and a figure shipped that way. Half the test was also
+  `absrad >= longRangeThreshold`, a median+MAD cut over the arcs IN VIEW, so an
+  arc's colour depended on what else was on screen and changed as you panned.
+  **What was given up:** pairs whose TLEN is 0 or wrong are `normal` on both
+  sides rather than long-insert on one. Restoring it means giving the READ path
+  the same span rule — a worker-data change, since it has no mate span today —
+  not reintroducing it on the arc side alone. See
   [ALIGNMENTS_COLOR_PARITY.md](ALIGNMENTS_COLOR_PARITY.md).
 - **Unified GPU/Canvas2D "layer manifest" draw dispatch** — declined 2026-06.
   Layers aren't 1:1 across backends: `PASS_CLIP` is one GPU pass but two
@@ -72,38 +67,32 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   mismatch is one gate over three passes. Uniform rows need shims that add back
   what the table removes. ~17 gated lines, guarded by `coverageParity.test.ts`.
 - **Collapsing `features/*/uploadGpu.ts` into one table-driven upload** —
-  declined twice in 2026-08, then **overturned on 2026-08-13**, and the way the
-  decline went wrong is the useful part.
-  The standing argument was: what the 16 wrappers hold is the per-pass instance
-  count, and it is *not derivable from the buffer* — `gapPositions.length / 2`
-  (start/end pairs), `mismatchPositions.length`, `numInsertions`,
-  `coverageGpuBinCount` (bin-capped, so decoupled from `coverageDepths.length`).
-  A wrong count is a silent GPU mis-render: no throw, no test failure, just
-  geometry read off the end or short.
-  **That premise was false, and the entry contains its own refutation.** The
-  counts are not derivable from any *other array* — `coverageGpuBinCount` really
-  is decoupled from `coverageDepths.length` — but they are exactly derivable
-  from the *buffer*, because every packer, main-thread and worker alike,
-  allocates `n * INSTANCE_STRIDE_BYTES` from the same `n`. So
-  `buf.byteLength / pass.instanceStride` is the count, for all 17 passes,
-  checked. The entry even cited `curvedArcCount` as proof the wrappers were
-  needed — "a second subtraction that agreed with the packer was not good
-  enough" — which is the argument for **zero** statements of the count, not for
-  two with a comment between them. Read a "not derivable" claim as naming what
-  it was derived *from*: swapping the source silently swaps the claim.
-  **What landed instead** (`InstancePass`, `@jbrowse/render-core/instancePass`):
-  the pass descriptor carries its own packer, `uploadPass` takes the count off
-  the bytes,
-  and the wrappers, the counts and the `if (n > 0)` guards are gone — 776 lines
-  deleted, 17 files. The one objection that survived every round is co-location,
-  and it is satisfied rather than traded away: the packer never leaves its
-  feature directory, and there is no count beside it to keep in agreement. The
-  renderer's registry names a pass; it holds no per-pass knowledge.
-  The genuinely separate lesson from the declines still holds and predates this:
-  a table over layer *ids* closes a wiring gap (a layer that draws with no
-  buffer), and that is why `GPU_PILEUP_PASS` is keyed on `PileupLayerId` rather
-  than being a flat list. See GPU_RENDERING.md § "Keeping the two backends in
-  parity".
+  declined twice, then **overturned**, and how the decline went wrong is the
+  useful part. The standing argument was that the 16 wrappers hold the per-pass
+  instance count and it is *not derivable from the buffer*: `gapPositions.length
+  / 2`, `mismatchPositions.length`, `numInsertions`, `coverageGpuBinCount`
+  (bin-capped, so decoupled from `coverageDepths.length`). A wrong count is a
+  silent GPU mis-render — no throw, no test failure, geometry read off the end.
+
+  **That premise was false, and the entry contained its own refutation.** The
+  counts are not derivable from any *other array*, but they are exactly derivable
+  from the *buffer*, because every packer allocates `n * INSTANCE_STRIDE_BYTES`
+  from the same `n`. So `buf.byteLength / pass.instanceStride` is the count, for
+  all 17 passes. The entry even cited `curvedArcCount` as proof the wrappers were
+  needed — "a second subtraction that agreed with the packer was not good enough"
+  — which argues for **zero** statements of the count, not two with a comment
+  between them. Read a "not derivable" claim as naming what it was derived
+  *from*: swapping the source silently swaps the claim.
+
+  **What landed instead** (`InstancePass`): the pass descriptor carries its own
+  packer, `uploadPass` takes the count off the bytes, and the wrappers, counts
+  and `if (n > 0)` guards are gone — 776 lines, 17 files. The one objection that
+  survived every round was co-location, and it is satisfied rather than traded:
+  the packer never leaves its feature directory, and there is no count beside it
+  to keep in agreement. The separate lesson from the declines predates this and
+  still holds — a table over layer *ids* closes a wiring gap, which is why
+  `GPU_PILEUP_PASS` is keyed on `PileupLayerId` rather than a flat list. See
+  GPU_RENDERING.md § "Keeping the two backends in parity".
 - **Mirrored-band strand-split coverage** — rejected across three passes.
   Group-by-strand already splits SNPs: `buildGroupResult` runs the coverage
   pipeline per group, verified in-app 2026-08-05 (volvox_bam,
@@ -225,13 +214,12 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
     primitives only — **0.98-1.01x**, indistinguishable from the control.
 
   Taken: the scalar pair (`DotplotDisplay/dotplotProject.ts`). It dedups the
-  formula and, more to the point, makes the v-axis flip an axis-typed name that
-  a caller cannot forget — which is the failure that matters, since draw and
-  pick must agree pixel for pixel or the cursor picks the wrong alignment. What
-  it does NOT dedup is the per-axis argument pair at each call site; that was
-  the price. The prior version of this reasoning was "extracting it would put a
-  polymorphic call in a hot loop", which was right about the object form,
-  wrong about the scalar one, and would never have caught the closure.
+  formula and makes the v-axis flip an axis-typed name a caller cannot forget,
+  which is the failure that matters — draw and pick must agree pixel for pixel or
+  the cursor picks the wrong alignment. The price is that the per-axis argument
+  pair stays at each call site. The prior reasoning here, "extracting it would
+  put a polymorphic call in a hot loop", was right about the object form, wrong
+  about the scalar one, and would never have caught the closure.
 
 - **Aliasing the adapter's arrays through `processFeaturesFromArrays` instead of
   copying** — costed 2026-08-15 and declined. It was recommended in the code
@@ -243,29 +231,27 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
   - **Main-thread retention 12 → 20 bytes a feature, in the common case.**
     Measured on `cDC.bw`, one region, 14,602 features: bbi returns `starts`,
-    `ends` and `scores` as views into ONE `4 + count*12` buffer (175,228 bytes,
-    `starts.buffer === scores.buffer`). `collectWiggleTransferables` transfers
-    **buffers, not views**, so aliasing `scores` retains all `count*12` where
-    `count*4` is needed — on top of the `count*8` interleaved positions, which
-    cannot be aliased either way (the GPU record wants `Uint32` start/end pairs,
-    bbi has separate `Int32Array`s). Today's two fresh arrays are `count*12`
-    total. It is the **one-region** shape that regresses, which is the ordinary
-    single-contig view and the one bbi added its fused parse for; two or more
-    regions pack a buffer per field, exactly sized, so aliasing there is free.
+    `ends` and `scores` as views into ONE `4 + count*12` buffer.
+    `collectWiggleTransferables` transfers **buffers, not views**, so aliasing
+    `scores` retains all `count*12` where `count*4` is needed — on top of the
+    `count*8` interleaved positions, which cannot be aliased either way. Today's
+    two fresh arrays are `count*12` total. It is the **one-region** shape that
+    regresses, which is the ordinary single-contig view and the one bbi added its
+    fused parse for; two or more regions pack a buffer per field, exactly sized,
+    so aliasing there is free.
   - **`EMPTY_RAW` becomes a detach landmine.** The module constant in
     `executeRenderMultiWiggleData.ts` is safe only because `count === 0` makes
-    `processFeaturesFromArrays` allocate its own arrays, so nothing of it ever
-    reaches the transfer list. Aliased, its buffers transfer on the first region
-    missing a source and are detached for the second — a `DataCloneError` at the
+    `processFeaturesFromArrays` allocate its own arrays, so none of it reaches
+    the transfer list. Aliased, its buffers transfer on the first region missing
+    a source and are detached for the second — a `DataCloneError` at the
     `postMessage`, nowhere near the cause. `emptySide` beside it is already
-    fresh-per-call for exactly this reason.
+    fresh-per-call for this reason.
 
   **What was given up:** one `count*4` memcpy per source per region, against 67%
   more main-thread memory held for the life of the region, at the 1000-source
   scale the surrounding code is written for. The dedupe in
   `collectWiggleTransferables` stays regardless — it is what makes the aliasing
-  that *is* done (min/max onto scores, a one-sided window's pos/neg onto the
-  full arrays) safe across regions.
+  that *is* done safe across regions.
 
 - **A main-thread `WeakMap` index for the coverage-band hover readers** — shipped,
   then removed in favour of sorting at the producer, and the measurements are worth
@@ -273,39 +259,39 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   entries sit at this position" in log time, keyed on the positions array itself,
   and it cost:
 
-  - **8.00 bytes an entry**, measured exactly against the allocator (theory: two
-    `Uint32Array(n)`). That is **2.00x** the positions array it indexed and 0.57x
-    the whole 14-byte parallel mismatch set it made usable — but the figure that
-    decides is the absolute: **7.6 MB per 1M-entry array**, retained per region per
-    stacked track, invisibly.
-  - **An invalidation invariant nothing enforced.** Correct only because a refetch
-    replaces the array wholesale; anything mutating one in place got a silently
-    stale index.
+  - **8.00 bytes an entry**, measured against the allocator. That is **2.00x**
+    the positions array it indexed, but the figure that decides is the absolute:
+    **7.6 MB per 1M-entry array**, retained per region per stacked track,
+    invisibly.
+  - **An invalidation invariant nothing enforced.** Correct only because a
+    refetch replaces the array wholesale; anything mutating one in place got a
+    silently stale index.
   - **A silent wrong answer per unkeyed parameter.** `stride` was not in the key,
-    so one array read at two strides got whichever index was built first. That is a
+    so one array read at two strides got whichever index was built first — a
     property of identity-keyed caches, not of that one bug.
   - It was also **slower than not having it**: 1.2-1.4x per hover, from the
-    `order[k]` indirection to reach the parallel arrays.
+    `order[k]` indirection.
 
   What replaced it: producers emit ascending positions, so readers binary-search
-  what they were given and retain nothing. `mismatchPositions` is sorted outright;
-  `interbasePositions` is sorted **within** each of its (insertions, softclips,
-  hardclips) blocks, because those boundaries are sliced by three GPU passes.
-  Sorting inside the blocks cost nothing extra and shipped nothing extra, which is
-  why it beat the shipped-order-array design that was parked in TODO.md.
+  what they were given and retain nothing. `mismatchPositions` is sorted
+  outright; `interbasePositions` within each of its (insertions, softclips,
+  hardclips) blocks, since three GPU passes slice on those boundaries. Sorting
+  inside the blocks shipped nothing extra, which is why it beat the
+  shipped-order-array design parked in TODO.md.
 
-  The one-off moved rather than vanishing: the worker now pays 20-21ms on a 1M-event
-  fixture where the main thread paid 10ms on the first hover after each fetch. It is
-  larger because it permutes four parallel arrays as well as sorting — priced in
+  The one-off moved rather than vanishing: the worker pays 20-21ms on a 1M-event
+  fixture where the main thread paid 10ms on the first hover after each fetch,
+  larger because it permutes four parallel arrays as well as sorting. Priced in
   `benches/hoverIndex.bench.ts`, which keeps the memo as a transcribed arm so a
   proposal to bring one back has to beat the sorted column rather than the scan.
 
   **The generalisable rule: ask whether a PRODUCER exists before caching a
-  derivation.** Three of these were on paths whose arrays are built by code we own,
-  one fetch earlier, off the interaction path. A fourth had no producer and was
-  simply wrong — `deletionSpanIndex` was keyed on `gapPositions` while holding an
-  index over an array it allocated itself, so it could never be hit again once that
-  temporary was collected, and only looked live because the key outlived the call.
+  derivation.** Three of these were on paths whose arrays we build ourselves, one
+  fetch earlier, off the interaction path. A fourth had no producer and was
+  simply wrong — `deletionSpanIndex` was keyed on `gapPositions` while indexing
+  an array it allocated itself, so it could never be hit again once that
+  temporary was collected, and only looked live because the key outlived the
+  call.
 - **One reused scratch array for `stackBar`'s per-position sort** — measured
   2026-08-14 and declined as **not resolvable**: 1.17x / 1.01x / 1.09x on 50k
   positions with 2 entries each, and 1.00x / 1.12x / 1.25x on 10k positions with
@@ -313,36 +299,35 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   middle sample is the one to read — scratch 1.12x, control 1.11x, i.e. the whole
   apparent win was the harness.
 
-  The idea is the obvious next step from a comment that invites it:
-  `stackBar` heads its loop with `[...colorMap.values()].sort(...)`, one array per
-  position, and `computeBisulfiteCoverage` says beside it that spreading the map
-  twice "made two lists per position where one is needed" — so the remaining one
-  reads like a known cost. It isn't one. `scratch.length = 0` plus push, sorted in
-  place, emits byte-identical packed output (checked over all five fields, both
-  coverage models) and buys nothing.
+  The idea is the obvious next step from a comment that invites it: `stackBar`
+  heads its loop with `[...colorMap.values()].sort(...)`, one array per position,
+  and `computeBisulfiteCoverage` says beside it that spreading the map twice
+  "made two lists per position where one is needed" — so the remaining one reads
+  like a known cost. It isn't. `scratch.length = 0` plus push, sorted in place,
+  emits byte-identical packed output over all five fields and both coverage
+  models, and buys nothing.
 
-  Why, and this is the transferable part: a position's colorMap holds 2-8 entries,
-  so the array is tiny and V8's young-generation allocation for it is about as
-  cheap as the `length = 0` refill. The costs that scale on this path are the ones
-  proportional to CALLS, not to positions — `groupByPosition`'s two Map lookups
-  and probability accumulation per call, which is 30-40x more work per position
-  than the stack. Same generalisation as the `Float32Array` entry below, from the
-  other side: price what the loop count is, not what looks allocation-heavy.
+  The transferable part: a position's colorMap holds 2-8 entries, so the array is
+  tiny and V8's young-generation allocation is about as cheap as the refill. What
+  scales on this path is proportional to CALLS, not positions —
+  `groupByPosition`'s two Map lookups and probability accumulation per call,
+  30-40x more work per position than the stack. Same generalisation as the
+  `Float32Array` entry below, from the other side: price what the loop count is,
+  not what looks allocation-heavy.
 
   Note that the per-position **object and closure** `heightForPosition` returns
   were NOT tested here and are a different question — that abstraction is what
   keeps the two coverage models from drifting, so it is not a like-for-like swap.
 - **A `Float32Array` for the ML probabilities in the modification path** —
-  measured 2026-08-14 and declined at **1.008x**, which is inside its own
-  control (0.994). It was the first hypothesis on that path and the obvious one:
-  `getModProbabilities` returns `Array.from(ml, v => (+v + 0.5) / 256)`, a boxed
-  `number[]` allocated per read, thousands of entries on a nanopore read. It is
-  not the cost. What was the cost, on the same fixture and in the same run, was
-  the object per **position** in the running-best array — 4.01x when that became
-  a packed `Uint16Array` (`plugins/alignments/benches/modExtract.bench.ts`, both
-  arms still in it). The generalisation worth keeping: on this path the box per
-  value is noise and the object per position is not, so price the container that
-  scales with called positions rather than the one that scales with values.
+  measured 2026-08-14 and declined at **1.008x**, inside its own control (0.994).
+  It was the obvious first hypothesis: `getModProbabilities` returns
+  `Array.from(ml, v => (+v + 0.5) / 256)`, a boxed `number[]` per read, thousands
+  of entries on a nanopore read. Not the cost. The cost, on the same fixture and
+  run, was the object per **position** in the running-best array — 4.01x when
+  that became a packed `Uint16Array`
+  (`plugins/alignments/benches/modExtract.bench.ts`, both arms still in it). So
+  price the container that scales with called positions, not the one that scales
+  with values.
 - **Columnar typed-array output in place of `ModificationEntry[]`** — measured
   2026-08-14 and declined at **3.38x against the 4.01x of leaving it alone**,
   i.e. a regression of about 15% for a substantially larger change. The premise
@@ -354,15 +339,14 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   an arm. Don't re-propose it without a fixture where the marks outlive the
   fetch.
 - **Scanning the MM delta list instead of `split(',')`** — measured 2026-08-14 at
-  **1.056x / 1.085x** against controls of 0.995 / 1.006, output identical, and
-  declined on the size of the number rather than on the risk. The premise is
-  sound and the allocation is real: a nanopore read declares ~950 calls, so the
-  split builds ~950 substrings per read — 0.84M over the full extent of
-  `200x.longread.mod.bam` — purely to run `+` over each and throw them away. It is
-  worth about a twentieth of the pipeline, against a hand-rolled integer parser
-  that reads a malformed tag differently from `+` (digits only, vs `+`'s
-  whitespace/sign/float/NaN). `plugins/alignments/benches/mmParseShape.bench.ts`,
-  both arms kept.
+  **1.056x / 1.085x** against controls of 0.995 / 1.006, output identical,
+  declined on the size of the number rather than the risk. The allocation is
+  real: a nanopore read declares ~950 calls, so the split builds ~950 substrings
+  per read — 0.84M over `200x.longread.mod.bam` — purely to run `+` over each and
+  throw them away. That is about a twentieth of the pipeline, against a
+  hand-rolled integer parser that reads a malformed tag differently from `+`
+  (digits only, vs `+`'s whitespace/sign/float/NaN).
+  `plugins/alignments/benches/mmParseShape.bench.ts`, both arms kept.
 
   **The negative is what located the real cost**, which is the generalisation
   worth keeping: `modPhases.bench.ts` puts the whole parse phase at 46% of the
@@ -371,13 +355,12 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `charCodeAt` at a time. `seqscan.probe.ts` prices `indexOf` jumps over that at
   1.42x — the candidate this measurement redirected to, and it is in TODO.md.
 - **Collecting a read's base occurrences to make the reverse MM walk use the
-  forward `indexOf`** — the fastest thing measured on that walk, and declined
-  2026-08-14 for a regression its own fixtures could not show. Reverse reads step
-  one base at a time because V8 has no fast backward byte search; scanning
-  FORWARD into an occurrence list and then indexing that list from its end gets
-  the fast builtin, and with the list in a reused buffer rather than a fresh
-  array it measured **1.366x / 1.758x** on the reverse parse, positions identical
-  (`benches/revCompScan.bench.ts`).
+  forward `indexOf`** — the fastest thing measured on that walk, declined for a
+  regression its own fixtures could not show. Reverse reads step one base at a
+  time because V8 has no fast backward byte search; scanning FORWARD into an
+  occurrence list and indexing that from its end gets the fast builtin, and with
+  the list in a reused buffer it measured **1.366x / 1.758x** on the reverse
+  parse, positions identical (`benches/revCompScan.bench.ts`).
 
   **It is conditional on something no fixture varies.** The forward arms cross
   the entire read whatever the tag looks like, since the occurrences they need
