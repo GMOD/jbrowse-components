@@ -133,7 +133,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           },
           {
             helpText:
-              'reads whose mate — or split-read segment — maps to a different chromosome, drawn as a connector tick at each breakpoint. Independent of the setting above: a single-chromosome view never loads the far end of a translocation, so this one has to be able to draw it on its own.',
+              'reads whose mate — or split-read segment — maps to a different chromosome. Drawn as an arc when both chromosomes are displayed and as a connector tick at each breakpoint otherwise. Independent of the setting above: a single-chromosome view never loads the far end of a translocation, so this one has to be able to draw it on its own.',
           },
         ),
         makeSizeMenu({

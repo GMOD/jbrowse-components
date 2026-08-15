@@ -1769,8 +1769,10 @@ function resolveArcs(
   // The same ordering, for the same reason, over the ticks. They are opaque
   // full-band verticals, so two within a stroke width of each other resolve by
   // paint order, and `hitTestArcBand` reads the feed's order as its
-  // last-drawn-wins tie-break. Total on the breakpoint's own bp, which is
-  // unique per tick after the coalescing above.
+  // last-drawn-wins tie-break. Tie-broken on the breakpoint's own bp, which the
+  // coalescing above makes unique WITHIN a refName — the only scope that has to
+  // be ordered, since `groupArcsByRef` buckets these before anything draws them
+  // and two refNames never share a region's feed.
   lines.sort((a, b) => a.support - b.support || a.x.bp - b.x.bp)
   // Sorted, so a tooltip listing two partners lists them the same way twice.
   // First-seen order is the reads' arrival order, which is not stable across
