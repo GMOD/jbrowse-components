@@ -1026,7 +1026,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          * Point the whole plot's hover state at one pick hit: the track whose
-         * geometry was hit takes the feature index, every other track clears, so
+         * geometry was hit takes the segment index, every other track clears, so
          * `undefined` (a miss) clears the plot. An action rather than a loop in
          * the pointer handler so the N writes land in one MobX batch — and so
          * nothing outside the model has to resolve a `displayKey` to a display.

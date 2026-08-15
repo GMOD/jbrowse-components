@@ -67,6 +67,12 @@ function openSyntenyFeatureWidget(
   openFeatureWidget(
     display,
     {
+      // Every numeric channel the fetch carried for it, so the panel shows
+      // mapping quality and a declared column too rather than identity alone.
+      // FIRST, so the fields below always win: a channel name is a column name
+      // out of the track's own config, and one spelled `start` would otherwise
+      // move the feature the panel is describing.
+      ...feat.attributes,
       uniqueId: feat.id,
       start: feat.start,
       end: feat.end,
@@ -75,9 +81,6 @@ function openSyntenyFeatureWidget(
       name: feat.name,
       assemblyName: feat.assemblyName,
       mate: feat.mate,
-      // every numeric channel the fetch carried for it, so the panel shows
-      // mapping quality and a declared column too rather than identity alone
-      ...feat.attributes,
     },
     {
       widget: { type: 'SyntenyFeatureWidget', id: 'syntenyFeature' },
