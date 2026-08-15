@@ -96,7 +96,6 @@ export const wiggleConfigSchemaFields = {
   // promotableDefaults.ts.
   scatterPointSize: {
     type: 'maybeNumber',
-    defaultValue: undefined,
     promotedBase: 2,
     description:
       'Point height in px for scatterplot ("scatter"/"multiscatter") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 2',
@@ -104,7 +103,6 @@ export const wiggleConfigSchemaFields = {
   },
   lineWidth: {
     type: 'maybeNumber',
-    defaultValue: undefined,
     promotedBase: 1,
     description:
       'Line thickness in px for line ("line"/"multiline") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 1',

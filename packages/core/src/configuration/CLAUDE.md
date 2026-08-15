@@ -28,9 +28,16 @@ node not the snapshot, forwarding a callback slot raw, reference resolution) and
 ## Schema composition
 
 - A subclass redeclaring a slot gets a **field-by-field merge**, so state only
-  what differs — but keep `type` and `defaultValue`, which distinguish a slot
-  from a sub-schema. It is a spread, so turning a base field off means stating
-  it (`promotedBase: undefined`).
+  what differs — but keep `type`, which is what distinguishes a slot from a
+  sub-schema. It is a spread, so turning a base field off means stating it
+  (`promotedBase: undefined`).
+- **`defaultValue` is required only on a non-`maybe*` slot**, which is what the
+  `ConfigSlotDefinition` union says. A `maybe*` slot's default is unset, so omit
+  the field rather than writing `defaultValue: undefined` — **except when the
+  slot overrides a base slot that has a concrete default.** The merge is a
+  spread, so omitting inherits that value and the slot is never unset;
+  `LinearMafDisplay`'s `height` over `BaseLinearDisplay`'s `number`/100 is the
+  one case in the repo, and nothing catches it but that display's own tests.
 - `actions` / `views` / `extend` / `preProcessSnapshot` **compose** rather than
   replace; override one by redeclaring its name.
   `ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy for a different

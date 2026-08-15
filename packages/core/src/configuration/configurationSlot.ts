@@ -129,17 +129,26 @@ const MAYBE_TYPES = new Set([
   'maybeStringEnum',
 ])
 
+/**
+ * The same set as `MAYBE_TYPES`, at the type level, and derived from the same
+ * property of the same table so the two cannot disagree: an entry with no
+ * `fallbackDefault` is one whose fixed form is "unset".
+ */
+type MaybeBuiltinSlotTypeName = {
+  [
+    K in keyof typeof slotTypes
+  ]: 'fallbackDefault' extends keyof (typeof slotTypes)[K] ? never : K
+}[keyof typeof slotTypes]
+
+export type MaybeSlotTypeName = MaybeBuiltinSlotTypeName | 'maybeStringEnum'
+
 const JexlStringType = types.refinement('JexlString', types.string, isJexl)
 
-export interface ConfigSlotDefinition {
+interface ConfigSlotDefinitionCommon {
   /** human-readable description of the slot's meaning */
   description?: string
   /** custom base MST model for the slot's value */
   model?: IAnyType
-  /** name of the type of slot, e.g. "string", "number", "stringArray" */
-  type: ConfigSlotType
-  /** default value of the slot */
-  defaultValue: unknown
   /** parameter names of the function callback */
   contextVariable?: string[]
   /**
@@ -190,6 +199,33 @@ export interface ConfigSlotDefinition {
    */
   validate?: (value: unknown) => boolean
 }
+
+/**
+ * A slot definition, split on whether the slot's type spends `undefined` on
+ * "unset". The type-level twin of `ConfigSlot`'s
+ * `defaultValue === undefined && !MAYBE_TYPES.has(type)` throw, which used to be
+ * the only statement of the rule: a `maybe*` slot has exactly one legal
+ * `defaultValue`, so requiring the field of every slot alike made 81 slots
+ * across the repo carry a `defaultValue: undefined` line that said nothing.
+ *
+ * A `maybe*` slot may still *state* a concrete default — the union permits it,
+ * as the runtime does — but no longer has to state the sentinel to satisfy the
+ * type. Stating it stays meaningful in a subclass override, where the definition
+ * merge is a spread and an omitted key inherits the base's value.
+ */
+export type ConfigSlotDefinition =
+  | (ConfigSlotDefinitionCommon & {
+      /** a `maybe*` slot type, whose unset state is `undefined` */
+      type: MaybeSlotTypeName
+      /** optional: unset is the default, and the only value a promotable slot may take */
+      defaultValue?: unknown
+    })
+  | (ConfigSlotDefinitionCommon & {
+      /** name of the type of slot, e.g. "string", "number", "stringArray" */
+      type: Exclude<ConfigSlotType, MaybeSlotTypeName>
+      /** default value of the slot; required, since no other value means "unset" */
+      defaultValue: unknown
+    })
 
 /**
  * A configuration slot is a plain value-union MST property: the slot's value

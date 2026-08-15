@@ -76,7 +76,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // resolves to when nothing is promoted — so every real mode, `fixed`
         // included, is customizable back over a session default. Read through the
         // resolved `heightMode` getter (resolveConf), never raw.
-        defaultValue: undefined,
         promotedBase: 'fixed',
       },
       /**
@@ -120,7 +119,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       // applies. See maybeColor in configurationSlot.ts.
       color: {
         type: 'maybeColor',
-        defaultValue: undefined,
         description:
           "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod",
         contextVariable: ['feature'],
@@ -137,7 +135,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         type: 'maybeColor',
         description:
           'color of the connecting/intron lines between feature segments (defaults to the theme text color)',
-        defaultValue: undefined,
         contextVariable: ['feature'],
       },
       /**
@@ -147,7 +144,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       // `maybeColor` for the same reason as `color` above.
       utrColor: {
         type: 'maybeColor',
-        defaultValue: undefined,
         description:
           "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue",
         contextVariable: ['feature'],
@@ -184,7 +180,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // included, is customizable. Legacy stored normal/compact/superCompact are
         // still valid members (customized values), so no snapshot migration is needed. Read
         // through the resolved `displayMode` getter (resolveConf), never raw.
-        defaultValue: undefined,
         promotedBase: 'normal',
       },
       /**
@@ -211,7 +206,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // are still valid members (customized values), so no snapshot migration is needed.
         // Read through the resolved `subfeatureLabels` getter (resolveConf),
         // never raw.
-        defaultValue: undefined,
         promotedBase: 'none',
       },
       /**
@@ -227,7 +221,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         // customized value, so no snapshot migration is needed. Read through the
         // resolved `displayDirectionalChevrons` getter (resolveConf), never
         // raw. See promotableDefaults.ts.
-        defaultValue: undefined,
         promotedBase: true,
       },
       /**

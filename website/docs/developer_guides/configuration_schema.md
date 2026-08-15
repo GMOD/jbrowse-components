@@ -156,6 +156,15 @@ distinguishable from every real value the user might write. Pair it with
 `promotedBase` for what inheriting resolves to, and read it with `resolveConf`.
 `lineWidth` in the example below is one.
 
+Because unset _is_ their default, **`maybe*` slots omit `defaultValue`** — every
+other type must declare one, and leaving it off is a type error. Writing
+`defaultValue: undefined` on a `maybe*` slot is legal but usually says nothing.
+
+The exception is a `maybe*` slot **overriding a base slot that has a concrete
+default**: the override merges field-by-field, so omitting `defaultValue`
+inherits the base's value and the slot is never unset. State
+`defaultValue: undefined` there to overwrite it.
+
 `frozen` and `maybeFrozen` hold arbitrary JSON. The value is not deeply
 reactive, and reads are typed `any` — the shape is the caller's to assert.
 
@@ -210,7 +219,6 @@ export function configSchemaFactory() {
         description:
           'the stroke width of the arcs, in pixels. Unset (the default) follows the session-wide default for this display type',
         // sentinel promotable slot: see promotableDefaults.ts
-        defaultValue: undefined,
         promotedBase: defaultArcLineWidth,
       },
     },
@@ -234,8 +242,8 @@ depends on the kind of entry:
 - **A slot the child redeclares merges field-by-field over the base slot**, so
   the override states only what differs and inherits the rest: `description`,
   `advanced`, `contextVariable`, `validate`, `model`, and the promotable fields.
-  Keep `type` and `defaultValue` in the override either way: those are what mark
-  an entry as a slot rather than a nested sub-schema.
+  Keep `type` in the override either way: that is what marks an entry as a slot
+  rather than a nested sub-schema.
 - **A nested sub-schema or a constant replaces the base entry wholesale.** They
   have no fields to fold.
 

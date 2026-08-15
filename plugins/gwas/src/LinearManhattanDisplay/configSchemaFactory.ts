@@ -117,7 +117,6 @@ export function configSchemaFactory() {
        */
       significanceLine: {
         type: 'maybeNumber',
-        defaultValue: undefined,
         description:
           'Score to draw a horizontal threshold line at, on the same scale as the plotted points. Unset draws none',
       },
@@ -137,7 +136,6 @@ export function configSchemaFactory() {
        */
       scatterPointSize: {
         type: 'maybeNumber',
-        defaultValue: undefined,
         promotedBase: DEFAULT_POINT_DIAMETER_PX,
         description:
           'Diameter in px of Manhattan points. Unset (the default) follows the session-wide default for this display type',
@@ -163,7 +161,6 @@ export function configSchemaFactory() {
       // (resolveConf), never raw.
       showLdLegend: {
         type: 'maybeBoolean',
-        defaultValue: undefined,
         promotedBase: true,
         description:
           'Draw the LD color key while LD coloring is active. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',

@@ -145,7 +145,6 @@ export default function configSchemaF(pluginManager: PluginManager) {
       // color. See maybeColor in configurationSlot.ts.
       color: {
         type: 'maybeColor',
-        defaultValue: undefined,
         description:
           "fill color of each block (CSS color or jexl expression for per-feature coloring). Unset, a feature's own itemRgb paints it if it has one, else each row gets a distinct color from a categorical palette",
         contextVariable: ['feature'],
@@ -249,7 +248,6 @@ export default function configSchemaF(pluginManager: PluginManager) {
         // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
         // (true) is what it resolves to when nothing is promoted. Read through
         // the resolved `showLegend` getter (resolveConf), never raw.
-        defaultValue: undefined,
         promotedBase: true,
       },
       /**

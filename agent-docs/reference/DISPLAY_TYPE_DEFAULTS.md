@@ -810,8 +810,11 @@ before starting.
    subclass schema that redeclares one merges field-by-field over the base's, so
    `LGVSyntenyDisplay`'s `colorBy` writes just its `promotedBase`
    (`{type:'strand'}` rather than `normal`) and inherits `validate` and
-   `advanced`. Keep `type` and `defaultValue` — they're what marks
-   the entry as a slot rather than a nested sub-schema. A subclass that wants a
+   `advanced`. Keep `type` — it is what marks the entry as a slot rather than a
+   nested sub-schema. (`defaultValue` is not required on a `maybe*` slot, so a
+   promotable override omits it — unless the base slot has a *concrete* default,
+   which the merge would otherwise inherit, leaving the slot never unset.) A
+   subclass that wants a
    genuinely plain slot writes `promotedBase: undefined` — the merge is a
    spread, so a stated `undefined` overwrites the inherited base.
 2. Read it on the display with **`resolveConf(self, slot)`**, not `getConf` —

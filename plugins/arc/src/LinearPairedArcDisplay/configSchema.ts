@@ -57,7 +57,6 @@ export function configSchemaFactory() {
         description:
           'the stroke width of the arcs, in pixels. Unset (the default) follows the session-wide default for this display type',
         // sentinel promotable slot: see promotableDefaults.ts
-        defaultValue: undefined,
         promotedBase: defaultArcLineWidth,
       },
     },

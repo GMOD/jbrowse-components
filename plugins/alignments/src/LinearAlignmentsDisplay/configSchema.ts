@@ -93,7 +93,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // Normal) as the inherit signal, so a track could not pin Normal back
         // over a session-wide Compact default — clicking Normal would strip to
         // default and re-inherit Compact. See promotableDefaults.ts.
-        defaultValue: undefined,
         promotedBase: 7,
       },
       /**
@@ -108,7 +107,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // ('fixed') is what it resolves to when nothing is promoted. Being a
         // sentinel lets a track customize `fixed` back over a session-wide
         // `fit`/`grow` default. See promotableDefaults.ts.
-        defaultValue: undefined,
         promotedBase: 'fixed',
       },
       /**
@@ -130,7 +128,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // plain boolean would spend its `false` default on the inherit signal
         // and silently re-inherit ON. Read through the resolved
         // `showSashimiLabels` getter (resolveConf), never raw.
-        defaultValue: undefined,
         promotedBase: false,
       },
       /**
@@ -183,7 +180,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // a real candidate and every read goes through the resolved `colorBy`
         // getter (resolveConf). Legacy stored schemes stay valid values (customized),
         // so no snapshot migration is needed.
-        defaultValue: undefined,
         promotedBase: { type: 'normal' },
         // Reject a `.type` that isn't (or no longer is) a registered scheme —
         // whether customized on this track or promoted session-wide — so a
@@ -290,7 +286,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // nothing is promoted. A legacy stored boolean is already a valid
         // customized value, so no snapshot migration is needed. Read through the resolved
         // `mismatchAlpha` getter (resolveConf), never raw.
-        defaultValue: undefined,
         promotedBase: false,
       },
       /**
@@ -315,7 +310,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // nothing is promoted. A legacy stored boolean is already a valid
         // customized value, so no snapshot migration is needed. Read through the
         // resolved `showLegend` getter (resolveConf), never raw.
-        defaultValue: undefined,
         promotedBase: false,
       },
       /**
@@ -362,7 +356,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // falling back to `promotedBase` ('off'). Being a sentinel lets a track
         // customize `off` back over a session-wide `normal` (view-as-pairs) default.
         // See promotableDefaults.ts.
-        defaultValue: undefined,
         promotedBase: 'off',
         // Chains by QNAME — mates plus supplementary (split) segments onto one
         // row. NOT a linked-read barcode (BX/MI) grouping, which this has never
@@ -542,7 +535,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // Promotable sentinel slot: unset follows the session-wide default
         // (else `promotedBase` 'off'), and a track can pin `off` back over a
         // session-wide `arc` default. See promotableDefaults.ts.
-        defaultValue: undefined,
         promotedBase: 'off',
         description:
           'Read-connection rendering mode (mate pairs + split reads)',
@@ -560,7 +552,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // never promote `false` (draw above coverage) because `defaultValue`
         // doubled as the inherit signal. Read through the resolved
         // `readConnectionsDown` getter (resolveConf), never raw.
-        defaultValue: undefined,
         promotedBase: true,
       },
       /**
@@ -574,7 +565,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // in its own submenu with no pin — "show sashimi arcs by default for
         // every track" was the single thing the menu couldn't express. Read
         // through the resolved `showSashimiArcs` getter (resolveConf), never raw.
-        defaultValue: undefined,
         promotedBase: true,
         description: 'Draw sashimi (splice-junction) arcs',
       },
@@ -587,7 +577,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // Promotable sentinel slot (like linkedReads/readConnections): unset
         // follows the session-wide default (else `promotedBase` 'up'), and a
         // track can pin 'up' back over a session-wide 'down'/'auto' default.
-        defaultValue: undefined,
         promotedBase: 'up',
         description: 'Sashimi junction-arc placement',
       },
@@ -640,7 +629,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // nothing is promoted. A legacy stored boolean is already a valid
         // customized value, so no snapshot migration is needed. Read through the resolved
         // `showSoftClipping` getter (resolveConf), never raw.
-        defaultValue: undefined,
         promotedBase: false,
       },
     },

@@ -192,7 +192,6 @@ const configSchema = ConfigurationSchema(
       // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
       // (true) is what it resolves to when nothing is promoted. Read through the
       // resolved `showLegend` getter (resolveConf), never raw.
-      defaultValue: undefined,
       promotedBase: true,
     },
   },

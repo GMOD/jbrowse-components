@@ -127,9 +127,9 @@ function chainHooks(
  * Fold a subclass's schema definition over its `baseConfiguration`'s. New slots
  * are added and sub-schema entries replaced wholesale, but a slot the subclass
  * **redeclares merges field-by-field over the base's** — so an override states
- * only what actually differs and inherits the rest. (`type` and `defaultValue`
- * come along regardless: they're what marks an entry as a slot rather than a
- * nested sub-schema, per `isSlotDefinitionEntry`.)
+ * only what actually differs and inherits the rest. (`type` comes along
+ * regardless: it is what marks an entry as a slot rather than a nested
+ * sub-schema, per `isSlotDefinitionEntry`.)
  *
  * A subclass that really wants a plain slot states `promotedBase: undefined`,
  * which works *because* this is a spread: a stated `undefined` overwrites the

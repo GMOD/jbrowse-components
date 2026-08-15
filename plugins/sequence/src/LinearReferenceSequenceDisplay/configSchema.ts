@@ -39,7 +39,6 @@ export const configSchema = ConfigurationSchema(
     height: {
       type: 'maybeNumber',
       description: 'display height in pixels; unset auto-fits to the sequence',
-      defaultValue: undefined,
     },
     /**
      * #slot

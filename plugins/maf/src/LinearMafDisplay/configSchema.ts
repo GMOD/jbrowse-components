@@ -93,9 +93,14 @@ export default function configSchemaF(pluginManager: PluginManager) {
        */
       height: {
         type: 'maybeNumber',
+        // stated, not omitted: the base declares `height` as a plain `number`
+        // defaulting to 100, and the definition merge is a spread, so dropping
+        // this key inherits that 100 and the slot is never unset — fit-to-content
+        // then never runs. The one case where a `maybe*` slot needs the sentinel
+        // written out.
+        defaultValue: undefined,
         description:
           'display height in pixels; unset fits rows to content, bounded so a deep alignment shrinks its rows rather than growing the track off-screen',
-        defaultValue: undefined,
       },
       /**
        * #slot
