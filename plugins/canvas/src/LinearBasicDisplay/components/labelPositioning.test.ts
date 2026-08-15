@@ -61,14 +61,18 @@ const LABEL_FONT = 11
 function collect(
   data: FeatureDataResult,
   vr: BpRegionBounds,
-  visibility: { showLabels: boolean; showDescriptions: boolean },
+  visibility: {
+    showLabels: boolean
+    showDescriptions: boolean
+    showSubfeatureLabels?: boolean
+  },
   cullBand?: LabelCullBand,
 ) {
   const out: { featureId: string; labels: ResolvedLabel[] }[] = []
   forEachRenderedLabel(
     data,
     vr,
-    { ...visibility, fontSize: LABEL_FONT },
+    { showSubfeatureLabels: true, ...visibility, fontSize: LABEL_FONT },
     (featureId, labels) => {
       out.push({ featureId, labels })
     },
@@ -160,6 +164,28 @@ describe('forEachRenderedLabel', () => {
     })
     expect(emitted!.labels[0]!.kind).toBe('sub')
     expect(emitted!.labels[0]!.label.isOverlay).toBe(true)
+  })
+
+  // A subfeature label outlives both feature-label flags — it is a worker-baked
+  // config choice, not a fit rung — but not the fit squeeze, which scales the row
+  // it was reserved in while the text keeps its font size.
+  test('drops the subfeature label when the fit squeeze has hidden it', () => {
+    const data = makeData({
+      f1: makeLabelData('f1', { subfeatureLabel: makeLabel({ text: 'sub' }) }),
+    })
+    expect(
+      collect(data, FULL_REGION, {
+        showLabels: false,
+        showDescriptions: false,
+      }),
+    ).toHaveLength(1)
+    expect(
+      collect(data, FULL_REGION, {
+        showLabels: false,
+        showDescriptions: false,
+        showSubfeatureLabels: false,
+      }),
+    ).toEqual([])
   })
 
   test('left-aligns labels wider than the feature', () => {
@@ -301,7 +327,12 @@ describe('forEachDisplayLabel', () => {
     forEachDisplayLabel(
       [regionWithData(0), regionWithData(1)],
       laidOutDataMap,
-      { showLabels: true, showDescriptions: true, fontSize: LABEL_FONT },
+      {
+        showLabels: true,
+        showDescriptions: true,
+        showSubfeatureLabels: true,
+        fontSize: LABEL_FONT,
+      },
       featureId => {
         emitted.push(featureId)
       },
@@ -318,7 +349,12 @@ describe('forEachDisplayLabel', () => {
     forEachDisplayLabel(
       [regionWithData(0), regionWithData(1)],
       laidOutDataMap,
-      { showLabels: true, showDescriptions: true, fontSize: LABEL_FONT },
+      {
+        showLabels: true,
+        showDescriptions: true,
+        showSubfeatureLabels: true,
+        fontSize: LABEL_FONT,
+      },
       featureId => {
         emitted.push(featureId)
       },
@@ -339,7 +375,12 @@ describe('forEachDisplayLabel', () => {
     forEachDisplayLabel(
       [regionWithData(0)],
       new Map([[0, data]]),
-      { showLabels: false, showDescriptions: false, fontSize: LABEL_FONT },
+      {
+        showLabels: false,
+        showDescriptions: false,
+        showSubfeatureLabels: false,
+        fontSize: LABEL_FONT,
+      },
       featureId => {
         emitted.push(featureId)
       },

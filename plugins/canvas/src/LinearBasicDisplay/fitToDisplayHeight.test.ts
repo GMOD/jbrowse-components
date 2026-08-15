@@ -782,6 +782,25 @@ describe('canvas display fit escalation ladder', () => {
     // ...and the overflow scrolls rather than clipping unreachably.
     expect(display.hasOverflow).toBe(true)
     expect(display.scrollableHeight).toBeGreaterThan(0)
+    // A subfeature label survives the `bodies` rung (it is worker-baked, not a
+    // rung) but not the squeeze: its reserved row scaled with everything else
+    // while the text would still draw at the mode's full font size.
+    expect(display.renderedShowSubfeatureLabels).toBe(false)
+  })
+
+  // The other side of that flag: every rung that isn't squeezing keeps the
+  // subfeature labels, so turning "Subfeature labels" on is not silently undone
+  // by entering fit mode.
+  it('keeps subfeature labels wherever the fit is not squeezing', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(4, 10), view.bpPerPx, ctgA)
+    expect(display.renderedShowSubfeatureLabels).toBe(true)
+
+    display.setHeightMode('fit')
+    display.setHeight(400)
+    expect(display.fitScale).toBe(1)
+    expect(display.renderedShowSubfeatureLabels).toBe(true)
   })
 
   // The floor's promise is that NO body squeezes below MIN_FIT_BOX_PX, so it has
@@ -1157,12 +1176,20 @@ describe('canvas display fit escalation ladder', () => {
 
 // Overlapping labeled genes spanning [start, end), each 1kb narrower than the
 // last so they stack into their own rows. Placed by bp so a set can be put
-// inside the viewport or out in the fetch buffer.
-function genesOver(prefix: string, start: number, end: number, n: number) {
+// inside the viewport or out in the fetch buffer; `height` so the two sets can
+// carry different body heights (the squeeze floor's basis).
+function genesOver(
+  prefix: string,
+  start: number,
+  end: number,
+  n: number,
+  height = 10,
+) {
   const feats = Array.from({ length: n }, (_, i) => ({
     featureId: `${prefix}${i}`,
     startBp: start + i * 500,
     endBp: end - i * 500,
+    height,
   }))
   const floatingLabelsData: Record<string, FeatureLabelData> = {}
   for (const f of feats) {
@@ -1171,7 +1198,7 @@ function genesOver(prefix: string, start: number, end: number, n: number) {
       minX: f.startBp,
       maxX: f.endBp,
       topY: 0,
-      featureHeight: 10,
+      featureHeight: height,
       nameLabel: {
         text: f.featureId,
         relativeY: 0,
@@ -1194,13 +1221,13 @@ function geneRegionData(
         type: 'mRNA',
         startBp: f.startBp,
         endBp: f.endBp,
-        bottomPx: 10,
-        featureHeightPx: 10,
+        bottomPx: f.height,
+        featureHeightPx: f.height,
       }),
     ),
     rectPositions: new Uint32Array(feats.flatMap(f => [f.startBp, f.endBp])),
     rectYs: new Float32Array(feats.length),
-    rectHeights: new Float32Array(feats.map(() => 10)),
+    rectHeights: new Float32Array(feats.map(f => f.height)),
     rectColors: new Uint32Array(feats.length),
     rectStrands: new Float32Array(feats.length),
     rectDensityFade: new Uint32Array(feats.length),
@@ -1304,6 +1331,42 @@ describe('canvas display fit measures the visible window', () => {
     view.scrollTo(182_000 / 100)
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
     expect(display.fitStage.contentHeight).toBeGreaterThan(before)
+  })
+
+  // The squeeze floor is the other half of the measurement, and it binds on the
+  // SHORTEST body — so leaving the fetch buffer in could only ever raise it. A
+  // 2px mark sitting half a viewport away (a sub-pixel repeat, a variant tick)
+  // is already at MIN_FIT_BOX_PX, which pins the floor at 1 and stops the visible
+  // stack squeezing at all: the track then scrolls rather than fitting, in the
+  // mode whose whole promise is that it doesn't.
+  it('floors the squeeze on the visible stack, not the fetch buffer', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 400_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(100)
+    view.scrollTo(1000)
+    display.setRpcData(
+      0,
+      geneRegionData([
+        genesOver('vis', 120_000, 160_000, 12, 20),
+        genesOver('left', 62_000, 98_000, 4, 2),
+      ]),
+      view.bpPerPx,
+      { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
+    )
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    display.setHeightMode('fit')
+    display.setHeight(40)
+
+    // The off-screen 2px marks are laid out, but the floor is built on the 20px
+    // bodies the user is looking at...
+    expect(display.fitBodyPx).toBe(20)
+    expect(display.fitMinScale).toBeCloseTo(0.1)
+    // ...so the visible stack squeezes into the track instead of scrolling.
+    expect(display.fitScale).toBeLessThan(1)
+    expect(display.hasOverflow).toBe(false)
   })
 
   // Outside fit mode nothing is narrowed: grow sizes the track to every feature

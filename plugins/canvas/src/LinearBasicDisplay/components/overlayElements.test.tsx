@@ -38,6 +38,7 @@ const DATA = makeFeatureData({
 
 const MODEL = {
   renderedShowLabels: true,
+  renderedShowSubfeatureLabels: true,
   renderedShowDescriptions: false,
   // matches the view slice's `trackWidthPx` below, since the real getter is
   // `lgv.trackWidthPx` — the two are one number, read from the model
@@ -138,6 +139,7 @@ test.each([
 // The slice HighlightLayer reads, with one feature (`f1`) search-highlighted.
 const HIGHLIGHT_MODEL = {
   renderedShowLabels: true,
+  renderedShowSubfeatureLabels: true,
   renderedShowDescriptions: false,
   canvasWidthPx: 1000,
   labelFontSize: 11,

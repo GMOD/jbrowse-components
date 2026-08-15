@@ -1264,9 +1264,19 @@ export default function baseStateModelFactory(
          * always materializes; body heights don't vary across rungs (only the
          * label reservation does), so any rung would give the same answer and
          * this one costs nothing extra.
+         *
+         * Narrowed to `fitMeasureFeatureIds`, the same on-screen set every rung
+         * is measured over: the floor bounds a squeeze chosen against the visible
+         * stack, so it has to be built on the shortest body IN that stack. The
+         * shortest body binds, so including the fetch buffer could only raise the
+         * floor — one buffered sub-pixel mark half a viewport away pinned it at 1
+         * and stopped the visible stack squeezing at all.
          */
         get fitBodyPx() {
-          return minBodyHeight(this.baseLaidOutDataMap)
+          return minBodyHeight(
+            this.baseLaidOutDataMap,
+            self.fitMeasureFeatureIds,
+          )
         },
         /**
          * #getter
@@ -1399,6 +1409,24 @@ export default function baseStateModelFactory(
          */
         get renderedShowLabels() {
           return self.showLabels && self.fitStage.level !== 'bodies'
+        },
+        /**
+         * #getter
+         * A subfeature label (a transcript name under its gene) is a worker-baked
+         * config choice rather than a fit rung — `showLabels`/`showDescriptions`
+         * govern only the feature's OWN two lines, and the packer reserves this
+         * label's row and overhang unconditionally to match. So it survives every
+         * rung the two flags above drop, including `bodies`.
+         *
+         * What it does NOT survive is the squeeze. The rows it was reserved in are
+         * spent in `bodyHeightPx` and scaled with everything else, while the text
+         * draws at the mode's own font size — so at scale 0.3 a gene's transcript
+         * names are painted over rows a third as tall as the text, on top of each
+         * other and of the boxes. Below 1 they are hidden instead; at 1 (every
+         * non-squeezed rung, and all of fixed/grow) nothing changed.
+         */
+        get renderedShowSubfeatureLabels() {
+          return self.fitStage.scale >= 1
         },
       }))
       .views(self => ({

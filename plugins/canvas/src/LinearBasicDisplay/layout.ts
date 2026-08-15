@@ -61,15 +61,29 @@ export function maxBottom(
 // to squeeze. 0 when there is no placed body, which callers read as "no body to
 // size" and turn into a no-op bound.
 //
+// `measureIds` narrows it exactly as it narrows `maxBottom`, and fit mode passes
+// the same on-screen set to both: the squeeze the floor bounds is chosen against
+// the visible stack, so a body in the off-screen fetch buffer must not decide how
+// far that stack may shrink. It is the shortest body that binds, so an unnarrowed
+// read can only ever raise the floor — one buffered 2px mark half a viewport away
+// pinned the floor at 1 and stopped the visible stack squeezing at all.
+//
 // Deliberately measured off the layout rather than read off the `featureHeight`
 // config slot: that slot is a per-feature jexl callback slot, so it has no single
 // value to read here, and even as a plain number it describes the plain-rect
 // glyph rather than whatever height the worker actually gave each feature.
-export function minBodyHeight(map: ReadonlyMap<number, FeatureDataResult>) {
+export function minBodyHeight(
+  map: ReadonlyMap<number, FeatureDataResult>,
+  measureIds?: ReadonlySet<string>,
+) {
   let min = Number.POSITIVE_INFINITY
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
-      if (isPlacedRow(item.topPx) && item.featureHeightPx < min) {
+      if (
+        isPlacedRow(item.topPx) &&
+        item.featureHeightPx < min &&
+        (!measureIds || measureIds.has(item.featureId))
+      ) {
         min = item.featureHeightPx
       }
     }

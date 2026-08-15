@@ -61,9 +61,10 @@ export function labelCullBand(
 // "descriptions without names" is a real state (the fit ladder's `labels` rung
 // reaches it, and so does a session carrying the retired
 // `showLabels: 'off'` + `showDescriptions: true` pair). A subfeature label is
-// worker-baked and so cannot be gated main-thread at all; it renders whenever it
-// is present, which is why `collapsed` mode suppresses it back in `rpcProps`
-// instead.
+// worker-baked, so neither of those two flags touches it — `collapsed` mode
+// suppresses it back in `rpcProps`, and the only main-thread state that hides it
+// is the fit squeeze scaling its reserved row out from under the text
+// (`showSubfeatureLabels`, i.e. `model.renderedShowSubfeatureLabels`).
 //
 // Three callers, and they have to agree or the space reserved for a label
 // disagrees with the label drawn in it: `maxLabelTextWidth` reserves horizontal
@@ -77,11 +78,14 @@ function renderedLabelSet(
   labelData: FeatureLabelData,
   showLabels: boolean,
   showDescriptions: boolean,
+  showSubfeatureLabels: boolean,
 ) {
   return {
     nameLabel: showLabels ? labelData.nameLabel : undefined,
     descriptionLabel: showDescriptions ? labelData.descriptionLabel : undefined,
-    subfeatureLabel: labelData.subfeatureLabel,
+    subfeatureLabel: showSubfeatureLabels
+      ? labelData.subfeatureLabel
+      : undefined,
   }
 }
 
@@ -92,6 +96,10 @@ function renderedLabelSet(
 // Lives here rather than beside `FeatureLabelData` in rpcTypes.ts, where it was:
 // nothing in the worker calls it, and it is one of the three readings of
 // `renderedLabelSet` above.
+// The subfeature label counts unconditionally here, and only here: the packer
+// reserves its overhang whether or not it draws (see decideLabelReservations),
+// and every consumer of this width is mirroring that reservation. Hiding it under
+// a fit squeeze narrows the text, never the row it was packed into.
 function maxLabelTextWidth(
   labelData: FeatureLabelData,
   showLabels: boolean,
@@ -101,6 +109,7 @@ function maxLabelTextWidth(
     labelData,
     showLabels,
     showDescriptions,
+    true,
   )
   return Math.max(
     nameLabel?.textWidth ?? 0,
@@ -208,6 +217,9 @@ export interface ResolvedLabel {
 interface LabelRenderContext {
   showLabels: boolean
   showDescriptions: boolean
+  // `model.renderedShowSubfeatureLabels` — off only while a fit squeeze is
+  // scaling the rows these labels were reserved in
+  showSubfeatureLabels: boolean
   fontSize: number
 }
 
@@ -217,7 +229,8 @@ function resolveFeatureLabels(
   vr: BpRegionBounds,
   context: LabelRenderContext,
 ): ResolvedLabel[] {
-  const { showLabels, showDescriptions, fontSize } = context
+  const { showLabels, showDescriptions, showSubfeatureLabels, fontSize } =
+    context
   const px1 = toScreen(labelData.minX)
   const px2 = toScreen(labelData.maxX)
   const featureLeftPx = Math.min(px1, px2)
@@ -232,6 +245,7 @@ function resolveFeatureLabels(
     labelData,
     showLabels,
     showDescriptions,
+    showSubfeatureLabels,
   )
   const out: ResolvedLabel[] = []
   const add = (
@@ -277,7 +291,7 @@ export function forEachRenderedLabel(
   skip?: Set<string>,
   cullBand?: LabelCullBand,
 ) {
-  const { showLabels, showDescriptions } = context
+  const { showLabels, showDescriptions, showSubfeatureLabels } = context
   let toScreen: ((bp: number) => number) | undefined
 
   for (const featureId in data.floatingLabelsData) {
@@ -304,7 +318,12 @@ export function forEachRenderedLabel(
     }
     // The same decision `resolveFeatureLabels` makes below, asked early only so
     // the bp→px mapper stays lazy — not restated: both read `renderedLabelSet`.
-    const want = renderedLabelSet(labelData, showLabels, showDescriptions)
+    const want = renderedLabelSet(
+      labelData,
+      showLabels,
+      showDescriptions,
+      showSubfeatureLabels,
+    )
     if (!want.nameLabel && !want.descriptionLabel && !want.subfeatureLabel) {
       continue
     }
@@ -328,10 +347,12 @@ export type RegionWithData = BpRegionBounds & { displayedRegionIndex: number }
 // reserved row height and label-width overhang for exactly the labels these flags
 // leave on, so emitted labels never overlap a feature or each other. At the fit
 // `bodies` level both flags are off, so no name or description is emitted — but a
-// worker-baked SUBFEATURE label still is (resolveFeatureLabels doesn't gate it on
-// either flag; `subfeatureLabels` is a config choice the worker bakes, and
-// collapsed mode is the only thing that turns it off, in rpcProps). The packer
-// reserves its overhang unconditionally to match — see decideLabelReservations.
+// worker-baked SUBFEATURE label still is, because `subfeatureLabels` is a config
+// choice rather than a rung and the packer reserves its overhang unconditionally
+// to match (see decideLabelReservations). Its own flag
+// (model.renderedShowSubfeatureLabels) drops it in the one case the packer's
+// reservation stops holding: a fit squeeze, which scales the row it was reserved
+// in while the text keeps the mode's font size.
 export function forEachDisplayLabel(
   regions: RegionWithData[],
   dataMap: Map<number, FeatureDataResult>,

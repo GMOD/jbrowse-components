@@ -95,6 +95,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     laidOutDataMap: new Map([[0, makeData([{ startBp: 1100, endBp: 1200 }])]]),
     highlightedFeatureIdSet: new Set<string>(),
     renderedShowLabels: true,
+    renderedShowSubfeatureLabels: true,
     renderedShowDescriptions: true,
     // a real normal-mode size (labelFontSize('normal')), not an arbitrary number:
     // label widths are baked at LABEL_FONT_SIZE and scaled to the drawn size, so

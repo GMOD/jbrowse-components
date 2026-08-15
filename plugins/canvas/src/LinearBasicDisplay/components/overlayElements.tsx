@@ -43,6 +43,9 @@ type AssignableTo<A extends B, B> = A
 interface FloatingLabelsModel {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
+  // off only while a fit squeeze is scaling the rows these labels were reserved
+  // in — see the model getter
+  renderedShowSubfeatureLabels: boolean
   // the canvas' CSS width, off the model rather than a second
   // `view.trackWidthPx` read — see `MultiRegionDisplayMixin.canvasWidthPx`
   canvasWidthPx: number
@@ -285,6 +288,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   const context = {
     showLabels: renderedShowLabels,
     showDescriptions: renderedShowDescriptions,
+    showSubfeatureLabels: model.renderedShowSubfeatureLabels,
     fontSize: labelFontSize,
   }
   const cullBand = labelCullBand(labelScrollBucket, height)

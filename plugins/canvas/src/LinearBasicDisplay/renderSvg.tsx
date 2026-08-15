@@ -45,6 +45,9 @@ export interface RenderSvgModel extends SvgExportable {
   highlightedFeatureIdSet: ReadonlySet<string>
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
+  // off only while a fit squeeze is scaling the rows these labels were reserved
+  // in — see the model getter
+  renderedShowSubfeatureLabels: boolean
   labelFontSize: number
   colorLegend: CanvasColorLegend | undefined
 }
@@ -124,6 +127,7 @@ function CanvasFeaturesSvgBody({
   const labelContext = {
     showLabels: model.renderedShowLabels,
     showDescriptions: model.renderedShowDescriptions,
+    showSubfeatureLabels: model.renderedShowSubfeatureLabels,
     fontSize,
   }
   // The export clips to the scrolled viewport (SvgClipRect below, `scrollY`
