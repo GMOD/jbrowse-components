@@ -76,15 +76,10 @@ public struct Uniforms {
   public float depthDomainMax;
   public float depthDomainMin;
 
-  // Insert-size thresholds
-  public float insertUpper;
-  public float insertLower;
-
   // Arc pass
   public float blockStartPx;
   public float blockWidth;
   public float lineWidthPx;
-  public float gradientHue;
   public float pairedArcsDown;
   // Domain in bp that maps to the arcs band's vertical extent (availH).
   // Arc/bezier mode sets this to availH/pxPerBp so the apex tracks genomic
@@ -110,17 +105,24 @@ public struct Uniforms {
 
   // Color palette — each uint is a packed ABGR value (1 byte per channel,
   // alpha in the high byte). Unpack with `unpackRGBA(u.colorX).xyz`.
-  public uint colorFwd;
-  public uint colorRev;
-  public uint colorNeutralRead;
-  public uint colorPairLR;
-  public uint colorPairRL;
-  public uint colorPairRR;
-  public uint colorPairLL;
+  //
+  // A NAMED SLOT IS A MARK'S COLOUR; a read fill's comes from
+  // `readCategoryColor` below. That split is the whole point of the RC_*
+  // refactor, and until this block was trimmed it was only half true: the
+  // sixteen slots the vanished `cat == RC_X` chain used to read (colorFwd,
+  // colorPairRR, colorSupplementary, …) stayed declared and stayed written once
+  // per region per track per frame, with nothing left to read them. A slot no
+  // shader names cannot be caught by a parity test either — `paletteUboParity`
+  // walks this table, so it only ever proved the dead slots held the right dead
+  // colour. Add a slot here only for a mark that paints it by name.
   public uint colorBaseA;
   public uint colorBaseC;
   public uint colorBaseG;
   public uint colorBaseT;
+  // Also the muted grey the showModifications palette collapse writes, and what
+  // a non-A/C/G/T base (e.g. N) takes. `effectiveBaseColors` resolves that on
+  // the CPU into these five slots, so the shader has one base lookup and no
+  // mode to branch on.
   public uint colorBaseN;
   public uint colorInsertion;
   public uint colorDeletion;
@@ -132,16 +134,6 @@ public struct Uniforms {
   public uint colorSoftclipIndicator;
   public uint colorHardclipIndicator;
   public uint colorCoverage;
-  public uint colorModFwd;
-  public uint colorModRev;
-  public uint colorLongInsert;
-  public uint colorShortInsert;
-  public uint colorSupplementary;
-  public uint colorUnmappedMate;
-  public uint colorInterchrom;
-  // Muted grey for non-A/C/G/T mismatch/softclip bases (e.g. N) and the
-  // showModifications palette collapse. Matches the Canvas2D path and MAF.
-  public uint colorMutedSnpBase;
   // The read cloud's flat connector line (arcFlat.slang). The theme's
   // `text.primary`: the line carries no category — its two endpoint squares do —
   // so it wants the foreground colour, and both renderers hard-coded that as
@@ -190,15 +182,11 @@ public struct Uniforms {
   //
   // Now the CPU writes one color per category from the same table the legend
   // swatches, and the shader indexes it. The mapping cannot disagree with the
-  // legend because there is only one of it. Costs 352 bytes of duplicated color
-  // — the values also live in the named slots above — which is the price of
-  // deleting the branch chain AND the test that guessed at it.
+  // legend because there is only one of it, and since the named read-fill slots
+  // went it is also the only copy — the duplicated 352 bytes this cost while
+  // both existed are back.
   public float4 readCategoryColor[READ_CATEGORY_SLOTS];
   public float pxPerBp;
-  // Dedicated paired-split-inversion fill color (only the read pass reads it).
-  // Kept at the tail for offset stability — appending here leaves the other
-  // shaders' generated offsets alone.
-  public uint colorSplitInversion;
   // Arc band height (CSS px) — the vertical extent the dome / flat-line Y-scale
   // (`availH`) maps into. Distinct from `canvasH` (the full canvas height, the
   // clip-space divisor) because the arc passes now run in the full-canvas
@@ -583,9 +571,9 @@ public float2 expandMinWidthX(float x1, float x2, float canvasWidth) {
   return float2(x1, x2);
 }
 
-// Fixed-saturation HSL hue sweep (chroma 0.5, lightness offset 0.25). Drives
-// MAPQ / base-quality coloring and the arc gradient fallback off a hue in
-// degrees [0,360).
+// Fixed-saturation HSL hue sweep (chroma 0.5, lightness offset 0.25), off a hue
+// in degrees [0,360). Drives the MAPQ read fill (read.slang's RC_MAPQ), the one
+// read category that is a per-read ramp rather than a palette slot.
 public float3 hueRampHalfSat(float hueDeg) {
   float hp = (hueDeg / 360.0) * 6.0;
   float c = 0.5;

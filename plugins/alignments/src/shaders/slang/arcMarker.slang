@@ -1,10 +1,12 @@
-// Read-cloud endpoint markers: a small colored square at each flat
-// arc endpoint. The flat connector line itself draws black (see arc.slang); the
-// squares carry the insert-size / orientation color, mirroring samplot.py's
-// per-read colored markers joined by a neutral line. Runs in the arc-band
-// viewport (drawArcsPass) right after the arc pass, so it shares the same
-// Y-scale uniforms (arcsYLog / arcsYDomainBp / covOffset / pairedArcsDown) and
-// the |tlen| → destY formula must stay byte-identical to arc.slang's flat path.
+// Read-cloud endpoint markers: a small colored square at each flat arc
+// endpoint. The connector line between them is arcFlat.slang, which draws a
+// theme neutral; the squares carry the insert-size / orientation color,
+// mirroring samplot.py's per-read colored markers joined by a neutral line.
+//
+// Runs in the arc-band viewport (drawArcsPass) alongside the other band passes,
+// so it shares their Y-scale uniforms (arcsYLog / arcsYDomainBp / covOffset /
+// pairedArcsDown) and reaches its Y through the same `arcBandDestY` arcFlat.slang
+// does — a square that resolved its own would land off the line it marks.
 //! targets: wgsl, glsl
 //! export-consts: ARC_MARKER_PX
 
@@ -30,8 +32,7 @@ struct Instance {
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
-  // Y of the flat line at this insert size — shared arcBandDestY formula, so it
-  // stays byte-identical to arc.slang's flat path and the square lands on the line.
+  // Y of the flat line at this insert size — arcFlat.slang's own formula.
   float availH = arcAvailH(u.arcBandH);
   float destY = arcBandDestY(inst.yBp, availH, u);
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;

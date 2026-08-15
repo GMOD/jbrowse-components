@@ -212,13 +212,19 @@ bool showChevron(bool chainMode, float pxPerBp, float featHeight,
 
 float3 getReadColor(Instance inst, Uniforms u) {
   uint cat = inst.colorCategory;
-  // The three categories that are a per-read ramp or packed value rather than a
+  // The two categories that are a per-read ramp or packed value rather than a
   // flat swatch, so they cannot come from the palette table.
   if (cat == RC_MAPQ) { return hueRampHalfSat(float(inst.mapq)); }
   if (cat == RC_TAG) {
+    // An unset tag color falls back to RC_TAG's OWN palette slot, which is what
+    // `readCategoryPaletteKeys.tag` resolves. This used to name `u.colorPairLR`
+    // — the slot that table happens to point at — which is the same colour by
+    // coincidence and the last place the shader named a palette slot for a read
+    // fill. Re-point the table and a named copy would silently disagree with it,
+    // which is the whole failure the RC_* categories replaced.
     return inst.tagColor != 0u
       ? unpackRGBA(inst.tagColor).xyz
-      : unpackRGBA(u.colorPairLR).xyz;
+      : categoryPaletteColor(cat, u);
   }
   return categoryPaletteColor(cat, u);
 }

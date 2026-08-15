@@ -114,9 +114,10 @@ export function packArcs(data: ArcsUploadData, baseWidth: number): ArrayBuffer {
   return arcShader.packInstances({ x1, x2, colorType, yBp, lineWidthPx }, count)
 }
 
-// The flat read-cloud connectors. No color — the line is black and the category
-// color lives in the endpoint squares (packArcMarkers) — but `dashed` is a real
-// per-instance bit, since the solid and split variants coexist in one draw.
+// The flat read-cloud connectors. No color — the line is a theme neutral and the
+// category color lives in the endpoint squares (packArcMarkers) — but `dashed`
+// is a real per-instance bit, since the solid and split variants coexist in one
+// draw.
 //
 // Widths are per instance here for the same reason as the curved pass: flat
 // arcs coalesce on the same key, and `drawArcsToCtx` sets `ctx.lineWidth` from

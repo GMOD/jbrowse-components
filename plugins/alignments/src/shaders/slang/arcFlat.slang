@@ -45,11 +45,11 @@ static const float ARC_FLAT_GAP_PX = 3.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
-// No colorType: the line is neutral black, and the insert-size / orientation
-// color lives in the endpoint squares (mirrors samplot.py's colored markers
-// joined by a plain line). `dashed` is the split-read variant — the two flat
-// forms coexist in one draw, so this is a real per-instance bit, unlike the
-// connector tick's color.
+// No colorType: the line is neutral, and the insert-size / orientation color
+// lives in the endpoint squares (mirrors samplot.py's colored markers joined by
+// a plain line). `dashed` is the split-read variant — the two flat forms coexist
+// in one draw, so this is a real per-instance bit, unlike the connector tick's
+// color.
 struct Instance {
   uint  x1     : ATTR0;
   uint  x2     : ATTR1;

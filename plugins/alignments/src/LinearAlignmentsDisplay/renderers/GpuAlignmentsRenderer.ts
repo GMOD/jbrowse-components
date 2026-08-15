@@ -59,7 +59,6 @@ import {
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
-import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
@@ -155,8 +154,6 @@ function fillFrameUniforms(
     region.interbaseMaxCount,
     domainMax,
   )
-  f[U.insertUpper] = region.insertSizeStats?.upper ?? NO_INSERT_UPPER
-  f[U.insertLower] = region.insertSizeStats?.lower ?? 0
   i[UI.colorScheme] = state.colorScheme
   // Chevron gating only — chain mode's effect on read COLOR is now resolved on
   // the CPU into `readColorCategories`, so the shader no longer branches on it
@@ -190,7 +187,6 @@ function fillFrameUniforms(
 // partly off-screen without an out-of-bounds viewport (WebGPU rejects those
 // pre-Chrome-135); the devBand scissor does the real band clip.
 interface ArcFrame {
-  region: LocalRegion
   block: RenderBlock
   state: RenderState
   scissorX: number
@@ -245,18 +241,13 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
 // pass reads by name (`u.colorBaseA` in snpCoverage, `u.colorInsertion` in
 // insertion). The indexed palettes are separate and written below.
 //
-// A table rather than 30 assignments because it used to be introspected:
-// colorCategory.test.ts composed it with `swatchPaletteKeys` to check
-// read.slang's category→uniform chain. That chain is gone — the categories are
-// an indexed array the CPU fills — so nothing reads this but the loop under it.
+// EVERY ENTRY IS A MARK, none a read fill: a read's colour is its RC_* category
+// and reaches the GPU through `readCategoryColor` (see alignmentsUniforms.slang).
+// This table carried the sixteen read-fill slots for as long as read.slang's
+// `cat == RC_X` chain read them, and then for a while after it did not — the
+// walk below runs once per region, per track, per frame, so they were packed and
+// stored every one of those with nothing left to read them.
 export const PALETTE_UNIFORM_FIELDS = {
-  colorFwd: 'colorFwdStrand',
-  colorRev: 'colorRevStrand',
-  colorNeutralRead: 'colorNeutralRead',
-  colorPairLR: 'colorPairLR',
-  colorPairRL: 'colorPairRL',
-  colorPairRR: 'colorPairRR',
-  colorPairLL: 'colorPairLL',
   colorBaseA: 'colorBaseA',
   colorBaseC: 'colorBaseC',
   colorBaseG: 'colorBaseG',
@@ -271,15 +262,6 @@ export const PALETTE_UNIFORM_FIELDS = {
   colorSoftclipIndicator: 'colorSoftclipIndicator',
   colorHardclipIndicator: 'colorHardclipIndicator',
   colorCoverage: 'colorCoverage',
-  colorModFwd: 'colorModificationFwd',
-  colorModRev: 'colorModificationRev',
-  colorLongInsert: 'colorLongInsert',
-  colorShortInsert: 'colorShortInsert',
-  colorSupplementary: 'colorSupplementary',
-  colorSplitInversion: 'colorSplitInversion',
-  colorUnmappedMate: 'colorUnmappedMate',
-  colorInterchrom: 'colorInterchrom',
-  colorMutedSnpBase: 'colorMutedSnpBase',
   colorFlatConnector: 'colorFlatConnector',
   colorOverlap: 'colorOverlap',
 } satisfies Record<string, keyof ColorPalette>
@@ -422,7 +404,6 @@ function regionMeta(data: ReadUploadData & CoverageUploadData): LocalRegion {
     readIdToIndex: lazyReadIdToIndex(data),
     readPositions: data.readPositions,
     readYs: data.readYs,
-    insertSizeStats: data.insertSizeStats,
     maxDepth: hasCoverage ? data.coverageMaxDepth : 0,
     binSize: hasCoverage ? data.coverageBinSize : 1,
     // No conditional twin of the two above: `computeInterbaseCoverage` already
@@ -471,25 +452,12 @@ interface BlockFrame {
 // Per-region data not tracked by the HAL. Extends ChainBoundsRegion so
 // `getChainBounds` accepts it directly.
 interface LocalRegion extends ChainBoundsRegion {
-  insertSizeStats?: InsertSizeBand
   maxDepth: number
   binSize: number
   interbaseMaxCount: number
 }
 
 const OVERLAY_REGION = 999999
-
-// Upper bound (bp) for the insert-size color cutoff when no paired stats are
-// available. The shader has no "band is undefined" state — it always compares
-// against insertUpper/insertLower — so this has to be a value nothing can
-// exceed, matching classifyInsertSize's `band === undefined` → always 'normal'.
-// 2^31 is exactly that: TLEN is a BAM int32, so |TLEN| <= 2^31 and the shader's
-// strict `is > u.insertUpper` is false even for INT32_MIN. It is also exact in
-// the f32 uniform. The old 999999 was NOT unreachable — a mate ~1 Mb away in a
-// fetch with no primary proper pairs (SV-heavy or all-discordant region) painted
-// long-insert on the GPU while the Canvas2D/SVG path and the legend said normal.
-// insertLower = 0 needs no such treatment: `is > 0.0 &&` already blocks 'short'.
-const NO_INSERT_UPPER = 2 ** 31
 
 // A device-px vertical span: scissor/viewport top + height in backing-store px.
 interface DevBand {
@@ -632,8 +600,8 @@ export const COVERAGE_LAYERS: {
 // The arc band's passes, in paint order — the interchromosomal ticks FIRST,
 // then curves and flat connectors (one of the two is always empty, since read
 // cloud draws only flats and arc mode only curves), then the endpoint squares
-// that paint on top of the black flat connector lines. The line pass runs first
-// in both renderers, which is the paint order `hitTestArcBand` resolves ties by.
+// that paint on top of the flat connector lines. The line pass runs first in
+// both renderers, which is the paint order `hitTestArcBand` resolves ties by.
 //
 // The ticks used to run last, on the reading that a full-band vertical is the
 // strongest statement in the band. On deep short-read data it is the opposite:
@@ -1010,7 +978,6 @@ export class GpuAlignmentsRenderer
     if (sec.arcBand) {
       this.drawArcsPass(
         block,
-        region,
         sectionState,
         regionKey,
         geom,
@@ -1025,7 +992,6 @@ export class GpuAlignmentsRenderer
 
   private drawArcsPass(
     block: RenderBlock,
-    region: LocalRegion,
     state: RenderState,
     regionKey: number,
     geom: BlockGeom,
@@ -1048,7 +1014,6 @@ export class GpuAlignmentsRenderer
       // needs a guard that can bail, wrap the save/restore in try/finally.
       this.saveUBO()
       fillArcUniforms(this.uF32, {
-        region,
         block,
         state,
         scissorX: geom.scissorX,
