@@ -13,18 +13,17 @@ const ROOTS = ['packages', 'plugins', 'products', 'example-plugins']
 
 const repoRoot = path.join(__dirname, '..', '..', '..', '..')
 
-function sourceFiles(dir: string): string[] {
+function sourceFiles(dir: string, includeTests = false): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
     const full = path.join(dir, entry.name)
     if (entry.isDirectory()) {
       // esm/dist hold built copies of the same sources, node_modules is not ours
       return /^(node_modules|esm|dist|build|coverage)$/.test(entry.name)
         ? []
-        : sourceFiles(full)
+        : sourceFiles(full, includeTests)
     }
-    return entry.name.endsWith('.ts') && !entry.name.endsWith('.test.ts')
-      ? [full]
-      : []
+    const isTest = entry.name.endsWith('.test.ts')
+    return entry.name.endsWith('.ts') && (includeTests || !isTest) ? [full] : []
   })
 }
 
@@ -73,4 +72,42 @@ test('the scan actually reaches the RPC methods', () => {
   expect(scanned.length).toBeGreaterThan(30)
   expect(scanned).toContain('packages/core/src/rpc/methods/CoreGetRegions.ts')
   expect(scanned).toContain('plugins/dotplot-view/src/DiagonalizeDotplotRpc.ts')
+})
+
+// a subclass with NO type argument at all
+const UNPARAMETERIZED_CLASS = /\bclass\s+\w+\s+extends\s+RpcMethodType\w*\s*\{/
+
+// Leaving the name off is the documented escape hatch, and the problem with it
+// is that it is silent: both ends resolve to `unknown` and everything compiles,
+// so a method can be entirely unchecked against the registry without anything
+// saying so. That is fine for a test double standing in for a method and wrong
+// for a real one, and the two are indistinguishable at the type level — which is
+// why this is a source scan rather than a type.
+test('no shipped RPC method takes the unparameterized escape hatch', () => {
+  const offenders = ROOTS.flatMap(root =>
+    sourceFiles(path.join(repoRoot, root)),
+  )
+    .filter(full => UNPARAMETERIZED_CLASS.test(readFileSync(full, 'utf8')))
+    .map(full => path.relative(repoRoot, full))
+
+  expect(offenders).toEqual([])
+})
+
+// The scan above asserts an ABSENCE, so a regex that matches nothing at all
+// passes it forever. The test doubles are the positive control: they take the
+// hatch deliberately, so the same pattern must find them once tests are in
+// scope.
+test('the escape-hatch scan matches the shape it is looking for', () => {
+  const doubles = ROOTS.flatMap(root =>
+    sourceFiles(path.join(repoRoot, root), true),
+  )
+    .filter(full => UNPARAMETERIZED_CLASS.test(readFileSync(full, 'utf8')))
+    .map(full => path.relative(repoRoot, full))
+
+  expect(doubles).toContain(
+    'packages/core/src/pluggableElementTypes/RpcMethodType.test.ts',
+  )
+  expect(doubles).toContain(
+    'packages/core/src/rpc/statusCallbackDuringSerialize.test.ts',
+  )
 })
