@@ -26,7 +26,7 @@ export default class RenderAlignmentData extends RpcMethodTypeWithFiltersAndRena
       await import('./executeRenderAlignmentData.ts')
     return executeRenderAlignmentData({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

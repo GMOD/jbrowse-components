@@ -20,7 +20,7 @@ export class MultiWiggleClusterScoreMatrix extends RpcMethodTypeWithFiltersAndRe
       await import('./executeClusterScoreMatrix.ts')
     return executeClusterScoreMatrix({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

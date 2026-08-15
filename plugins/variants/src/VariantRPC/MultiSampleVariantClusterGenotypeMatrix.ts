@@ -22,7 +22,7 @@ export class MultiSampleVariantClusterGenotypeMatrix extends RpcMethodTypeWithFi
       await import('./executeClusterGenotypeMatrix.ts')
     return executeClusterGenotypeMatrix({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

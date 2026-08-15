@@ -36,7 +36,7 @@ export default class RenderWiggleData extends RpcMethodTypeWithRenameRegions<
       await import('./executeRenderWiggleData.ts')
     return executeRenderWiggleData({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

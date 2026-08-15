@@ -16,7 +16,7 @@ export default class MultiRowGetFeatures extends RpcMethodTypeWithRenameRegion<
       await import('./executeMultiRowGetFeatures.ts')
     return executeMultiRowGetFeatures({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

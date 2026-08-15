@@ -15,7 +15,7 @@ export default class RenderFeatureData extends RpcMethodTypeWithRenameRegion<
       await import('./executeRenderFeatureData.ts')
     return executeRenderFeatureData({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

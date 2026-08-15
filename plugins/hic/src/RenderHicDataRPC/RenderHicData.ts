@@ -23,7 +23,7 @@ export default class RenderHicData extends RpcMethodTypeWithRenameRegions<
     const { executeRenderHicData } = await import('./executeRenderHicData.ts')
     return executeRenderHicData({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

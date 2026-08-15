@@ -15,7 +15,7 @@ export default class MultiRowClusterFeatures extends RpcMethodTypeWithRenameRegi
       await import('./executeMultiRowClusterFeatures.ts')
     return executeMultiRowClusterFeatures({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

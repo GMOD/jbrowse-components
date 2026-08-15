@@ -27,7 +27,7 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       await import('./executeMafAlignmentData.ts')
     return executeMafAlignmentData({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

@@ -35,7 +35,7 @@ export default class RenderLDData extends RpcMethodTypeWithRenameRegions<'Render
     const { executeRenderLDData } = await import('./executeRenderLDData.ts')
     return executeRenderLDData({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

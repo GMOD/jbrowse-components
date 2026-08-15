@@ -23,7 +23,7 @@ export default class LinearMafGetAnnotationData extends RpcMethodTypeWithFilters
       await import('./executeMafAnnotationData.ts')
     return executeMafAnnotationData({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

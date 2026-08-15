@@ -22,7 +22,7 @@ export default class LinearMafGetSummaryData extends RpcMethodTypeWithFiltersAnd
     const { executeMafSummaryData } = await import('./executeMafSummaryData.ts')
     return executeMafSummaryData({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }

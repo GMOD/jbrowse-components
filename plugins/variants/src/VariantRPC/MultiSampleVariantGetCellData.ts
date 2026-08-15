@@ -25,7 +25,7 @@ export class MultiSampleVariantGetCellData extends RpcMethodTypeWithFiltersAndRe
       await import('./executeVariantCellData.ts')
     return executeVariantCellData({
       pluginManager: this.pluginManager,
-      args: args,
+      args,
     })
   }
 }
