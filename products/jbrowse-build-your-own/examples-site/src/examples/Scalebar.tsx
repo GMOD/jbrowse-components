@@ -253,9 +253,12 @@ const ScalebarLabels = observer(function ScalebarLabels({
         transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
       }}
     >
-      {scalebarLabels.map(({ x, label, key }) => (
+      {/* keyed by position rather than by each label's `key`, which makes this
+      a pool: a zoom moves the whole tick set, so identity keys would unmount
+      and remount every node instead of relabelling it */}
+      {scalebarLabels.map(({ x, label }, i) => (
         <span
-          key={key}
+          key={i}
           style={{
             position: 'absolute',
             top: 0,

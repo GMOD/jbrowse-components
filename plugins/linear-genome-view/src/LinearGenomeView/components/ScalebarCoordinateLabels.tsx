@@ -59,11 +59,19 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
         transform: `translateX(${offsetLeft - 1}px)`,
       }}
     >
-      {/* key by base within each run (in scalebarLabels): getTickDisplayStr text
-      depends only on base, so reusing nodes keeps their text stable during zoom */}
-      {scalebarLabels.map(({ x, label, key }) => (
+      {/* Keyed by POSITION, not by `key` (the run/base identity), which makes
+      this list a pool: the nodes are repositioned and relabelled rather than
+      unmounted and remounted. Keying by base looks better and is the wrong way
+      round — it reuses nodes across a pan, where `scalebarLabels` is already
+      unchanged and nothing churns anyway, and changes every key on a *zoom*,
+      where the whole tick set moves. That tore down and rebuilt ~144 nodes a
+      frame, each paying the emotion `tickLabel` styling on the way in, and it
+      was the largest single source of DOM churn during interaction. These are
+      stateless text nodes, so position is a safe identity.
+      reference/INTERACTION_PERF.md has the measurement. */}
+      {scalebarLabels.map(({ x, label }, i) => (
         <div
-          key={key}
+          key={i}
           className={classes.tick}
           style={{ transform: `translateX(${x}px)` }}
         >
