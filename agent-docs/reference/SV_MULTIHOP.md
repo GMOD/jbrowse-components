@@ -371,6 +371,24 @@ worse. `extendsOffScreen` is the remaining one that is read-derived, and it can
 flip for the same reason; it is informational and shown only when the candidates
 disagree about it, so it has not been worth a field.
 
+**And the junctions are read-derived too, one level down — `pathId` is not a
+stable id, only a better one.** It carries CLUSTERED coordinates, and a cluster
+is labelled by the lowest endpoint any read placed it at (`buildClusterOf`), so
+a read landing a few bp to the left of the route the user already picked
+relabels that cluster and rewrites its id, with the allele unchanged. Measured
+on a two-segment route: two reads at `chr1:5000>chr2:20000`, then a third 5 bp
+to the left, and `pathId` goes from `chr1:5000:1>chr2:20000:1` to
+`chr1:4995:1>chr2:19995:1`. That is the same silent drop back to row 0, one
+layer further down, and no pure function of the reads escapes it — the label is
+data, and the data grows.
+
+So the picker does not trust the id alone. `selectedCandidateIndex`
+(`buildDerivativeVsRefSpec.ts`) matches on `pathId` first and falls back to the
+route's SHAPE — `derivativePathTestId`, refNames and orientations, which no
+coordinate moves — taking it only when it names exactly one row, since two
+routes of one shape at nearby loci is precisely what a fold-back locus offers
+and guessing between them draws the wrong allele under the right caption.
+
 ## The batch study, and what it settled
 
 `scripts/derivative_path_study.ts` runs the real `computeReadChains` +
