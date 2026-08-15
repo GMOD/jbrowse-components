@@ -115,6 +115,17 @@ const GENERATORS: Generator[] = [
     name: 'DisplayChrome adoption map',
     argv: web('generate-display-chrome-adoption.ts'),
   },
+  {
+    // ARCHITECTURE.md's display-hook table. The foundations and cross-cutting
+    // tables answer "what did this display compose"; this one answers which
+    // displays override which hook, i.e. which are sitting on a default — and
+    // every one of those defaults keeps working while doing less, which is the
+    // failure class the whole doc is organized around. It also asserts each
+    // hook is still declared by the file owning its default, so a rename that
+    // leaves consumers reading a name nothing declares fails here.
+    name: 'display hook override table',
+    argv: web('generate-display-hook-overrides.ts'),
+  },
   // Before the README is mirrored into the docs site, since this rewrites it.
   {
     name: 'jbrowse-img README commands',

@@ -368,6 +368,53 @@ mixin's `height` and `resizeHeight`, and `types.compose` resolves a collision to
 the later argument. Same hazard as the canvas gate mixin; see [ordering is the
 contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract).
 
+### The hooks, and who is sitting on a default
+
+The two tables above answer *what a display composed*. This one answers the
+question that costs more debugging time: **which displays override which hook**.
+Composition is the cheaper mistake — get a foundation wrong and the display
+breaks — while every hook below has a default that keeps working and does less,
+which is the class of failure this whole doc is organized around.
+
+Read a `—` row as "nobody needed it yet" and a short row as a question, the way
+the cross-cutting table asks it. The rows attribute a declaration to the
+directory it sits in, so a shared model (`variants/shared`, `wiggle/shared`,
+`canvas/shared`) names itself rather than each display composing it.
+
+The generator also asserts that every hook is still declared by the file that
+owns its default, which is the static half of the rename hazard
+`RegionTooLargeMixin`'s `RENAMED_HOOKS` catches at runtime for out-of-tree
+displays: rename the owner's declaration, miss a consumer, and the consumer
+reads a name nothing declares — `undefined`, read as a boolean, in silence.
+
+<!-- BEGIN GENERATED DISPLAY_HOOK_OVERRIDES -->
+
+
+18 overridable hooks, and the units that override each. The **Sitting on the default** column is what a display that does not override it gets — every one of them keeps working and does less, which is why this table exists and the two above it are not enough.
+
+<!-- prettier-ignore -->
+| Hook | Sitting on the default | Declared by |
+| --- | --- | --- |
+| `isCacheValid` | loaded regions never go stale — correct unless the worker output is zoom-dependent, and **inherited**, so a display composing a wiggle mixin gets wiggle’s strict-`bpPerPx` version whether or not it wants it | `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gwas/LinearManhattanDisplay`, `maf/LinearMafDisplay`, `variants/shared`, `wiggle/shared` |
+| `rpcProps` | no `SettingsInvalidate` autorun at all, so no user setting ever refetches (correct for `LinearReferenceSequenceDisplay`, indistinguishable from an omission for anyone else) | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gccontent/LinearGCContentDisplay`, `gwas/LinearManhattanDisplay`, `hic/LinearHicDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/LinearMultiSampleVariantDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
+| `fetchNeeded` | nothing is ever fetched | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gwas/LinearManhattanDisplay`, `maf/LinearMafDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
+| `dataCurrent` | false forever, so `svgReady` never settles and one track hangs the whole view’s export (fail-hung over fail-stale, deliberately) | `arc/shared`, `dotplot-view/DotplotDisplay`, `hic/LinearHicDisplay`, `linear-comparative-view/LinearSyntenyDisplay`, `variants/LDDisplay` |
+| `layoutReady` | overlays are dropped rather than pinned to a stale layout | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
+| `svgReadyExtraTerminal` | a resting state that never fetches hangs the export — see §SVG export | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
+| `loadingSuppressed` | the loading scrim covers a deliberate static placeholder, and a user cancel parks "Loading canceled / Retry" over it permanently | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
+| `rendersCanvas` | `painted` waits on a canvas that is never mounted, so `data-display-drawn` stays false for the display’s whole life and every `waitForDisplaysDone` on the page burns its timeout | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
+| `paintInert` | same, for a fetch that failed before first paint — both fetch families fill it with `!!error`, so a display outside them owes its own | `linear-genome-view/BaseLinearDisplay` |
+| `measuresBytesPreFlight` | no byte gate: the track downloads whatever it is pointed at, with no banner and no error | `alignments/LinearAlignmentsDisplay`, `arc/shared`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/shared` |
+| `measuresBytesInFetch` | the same, for the in-RPC half canvas uses | `canvas/shared` |
+| `densityTooLarge` | byte-only gating, no feature-density axis | `canvas/shared` |
+| `densityGateEnabled` | the density axis stays on — override to false for a display painting into fixed lanes | `canvas/LinearMultiRowFeatureDisplay` |
+| `byteGateAdapterConfig` | the estimate measures the display’s own adapter — wrong for a display that reads a different file at different zooms | `maf/LinearMafDisplay` |
+| `onRegionTooLarge` | nothing happens on the false→true transition | `alignments/LinearAlignmentsDisplay` |
+| `scrollableHeight` | `Infinity` — the display does not scroll internally | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `maf/LinearMafDisplay`, `variants/shared` |
+| `growTargetHeight` | grow mode targets the raw `height` slot | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
+| `fetchInert` | false, the strict answer — a comparative display that grows an inert state and does not declare it hangs `displaysSettled` (diagnosable) rather than reporting done with nothing drawn | `linear-comparative-view/LinearSyntenyDisplay` |
+<!-- END GENERATED DISPLAY_HOOK_OVERRIDES -->
+
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
 `LinearBasicDisplay` + `LinearVariantDisplay` extend it. Everything else —
@@ -1198,7 +1245,9 @@ and 12 lines — and both have since been given the sections they wanted.
 - Don't leave `isCacheValid` alone without checking what you inherit. A display
   composing a wiggle mixin gets wiggle's strict-`bpPerPx` version whether or not
   its data is zoom-dependent. See
-  [per-region zoom-staleness](#per-region-zoom-staleness).
+  [per-region zoom-staleness](#per-region-zoom-staleness), and [the hook
+  table](#the-hooks-and-who-is-sitting-on-a-default) for what every other
+  unoverridden hook leaves you with.
 
 ### Upload and render
 
