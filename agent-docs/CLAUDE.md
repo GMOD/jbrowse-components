@@ -1,112 +1,73 @@
 # Agent documentation
 
-The top level is exactly three files — `ARCHITECTURE.md` (canonical), `TODO.md`
-(the backlog), and this file. Everything else is filed:
+The top level is exactly three files — `ARCHITECTURE.md`, `TODO.md` and this one.
+Everything else is filed:
 
 - `reference/` — everything settled: how a subsystem works, how to operate it,
-  and the datasets behind the figures. A subsystem writeup belongs here, not at
-  the top level.
-- `ideas/` — not-committed concepts, one proposal per file. Its README index is
-  **generated** by `website/scripts/generate-doc-indexes.ts` from each doc's
-  `description:`, same as `reference/`.
-- `architecture-decision-records/` — *why*, one decision per file. Its README
-  index is **generated** by `website/scripts/generate-adr-index.ts`; don't hand-
-  edit the block between the marker comments.
-- `handoffs/` — the live state of a thread that is not finished: what landed,
-  what is verified, what the next person has to decide. **Pointers, not content.**
+  and the datasets behind the figures.
+- `ideas/` — not-committed concepts, one proposal per file.
+- `architecture-decision-records/` — *why*, one decision per file.
+- `handoffs/` — the live state of an unfinished thread. **Pointers, not
+  content.** Delete the file when the thread lands.
 
-**File first, then write the handoff against what you filed.** A handoff that
-would still be useful with its links removed is holding something that belongs
-in one of the homes below — which is what killed the first `handoffs/`: it
-accumulated measured results, refuted hypotheses and whole subsystem profiles,
-because parking is easier than filing. Delete the file when the thread lands.
+The `reference/`, `ideas/` and ADR README indexes are **generated**; don't
+hand-edit between the marker comments.
+
+**File first, then write the handoff against what you filed.** A handoff still
+useful with its links removed is holding something that belongs elsewhere — which
+is what killed the first `handoffs/`.
 
 - **A measurement, a profile, or how a subsystem behaves** → `reference/`.
 - **Something tried and declined** → `reference/REJECTED_IDEAS.md`, with the
   number that declined it.
 - **Work someone intends to do** → `TODO.md`, in the order to take it.
 - **A proposal parked** → `ideas/`, as its own file.
-- **What a session did, which commits, what is now green** → the commit messages
-  and `git log`, which already hold it. A handoff may cite commits; it should not
-  narrate them.
+- **What a session did, which commits, what is now green** → git already holds
+  it. A handoff may cite commits; it should not narrate them.
 
-That last one applies to `CLAUDE.md` files too, and is the rule they break most
-often. A file that explains what a subsystem replaced, dated, is holding
-something git already has.
+That last one applies to `CLAUDE.md` files too and is the rule they break most.
+"State as of \<date\>" in a new **top-level** file is the signal to split it into
+the homes above; in `handoffs/` it is the point of the file.
 
-If you are about to write "state as of \<date\>" into a new **top-level** file,
-that is the signal: split it into the homes above instead. In `handoffs/` that
-sentence is the point of the file — but it is the only thing there that should
-survive a read of the links.
-
-The split between `TODO.md` and `ideas/` is commitment, not size: `TODO.md` is
-work someone intends to do, an `ideas/` doc is a proposal thought through and
-parked. A parked proposal often already contains the reasoning that kills the
-obvious version of the idea, which is why re-proposing without reading it wastes
-a session. Don't add a fifth folder — a `guides/` split alongside `reference/`
-was tried and collapsed, because nothing landed cleanly on the line. If
-`reference/` gets hard to scan, the fix is better `description:` lines.
+`TODO.md` vs `ideas/` is commitment, not size. A parked proposal often already
+contains the reasoning that kills the obvious version of the idea, so
+re-proposing without reading it wastes a session. Don't add a fifth folder — a
+`guides/` split was tried and collapsed. If `reference/` gets hard to scan, the
+fix is better `description:` lines.
 
 ## Third parties: say what we chose, not how they rank
 
-**A note here can record a choice between two upstreams without characterizing
-either one.** These files are committed to a public repo and are mostly about
-projects that give their data away, so a judgement on someone's reliability,
-quality or maintenance reads as this project's position on them — and it is
-almost never something the note measured. `DEMO_DATASETS.md` carried "the less
-reliable of the two" about a genome database, which came from a passing remark
-rather than any check.
-
-The fix is not hedging, it is picking the reason that is ours: a default is
-justified by what it does for us (one accession pins one assembly, one call
-brings both files) rather than by a claim about the alternative. A real
-limitation stays — "NCBI carries gene models for no oat assembly" is a fact
-about coverage that a reader needs and can verify — and so does an outage we
-actually hit, with the date and what broke. What goes is the unmeasured
-comparative.
+**A note can record a choice between two upstreams without characterizing either
+one.** These files are public and mostly about projects that give their data
+away, so a judgement on someone's reliability reads as this project's position —
+and is almost never something the note measured. Justify a default by what it
+does for us (one accession pins one assembly), not by a claim about the
+alternative. A real limitation stays, as does an outage we hit, with the date.
 
 ## Generated tables
 
-`pnpm autogen` sweeps this tree for `<!-- NAME START -->` / `<!-- NAME END -->`
-pairs the same way it sweeps `website/docs`, and overwrites whatever is between
-them. If a table here restates something a reader could check against the code,
-write the generator instead of the table.
-
-That rule is not a preference; it is what six drifted tables cost — a foundation
-list naming a mixin its displays didn't compose, an autorun table clearing on a
-prop that had become derived, a palette table missing a third of its keys, and a
-re-export table five paths short *while the sentence above it called the source
-file the source of truth*.
-
-**The pattern worth copying: if a doc sentence tells the reader to go look at a
-file, the table under it should be generated from that file.** Every one of those
-was a list some author transcribed once and no one re-derived — the sentence goes
-on being true as the table rots.
+`pnpm autogen` sweeps this tree for `<!-- NAME START/END -->` pairs and
+overwrites between them. **If a doc sentence tells the reader to go look at a
+file, the table under it should be generated from that file** — six drifted
+tables cost this rule, including a re-export table five paths short *while the
+sentence above it called the source file the source of truth*.
 
 **Every doc outside `architecture-decision-records/` carries `name:` /
-`description:` frontmatter, and that is load-bearing.** It is how you find the
-right doc without opening all of them, so a new doc without one is invisible.
-ADRs are the exception because the generated README index serves the same
-purpose. `pnpm autogen --check` fails on a doc in `reference/` or `ideas/` that
-carries none, so writing a good `description:` is the whole job of making a new
-doc findable.
+`description:` frontmatter, and that is load-bearing** — it is how you find the
+right doc without opening all of them, so `pnpm autogen --check` fails without
+it. Don't `ls` and guess; read [reference/README.md](reference/README.md) or
+[ideas/README.md](ideas/README.md).
 
-For those two directories, don't `ls` and guess — read
-[reference/README.md](reference/README.md) or [ideas/README.md](ideas/README.md),
-whose tables are generated from those same `description:` lines.
-
-`TODO.md` is long enough to need its own index and opens with one. **Other docs
-and a few source comments cite its sections by title**, so a heading there is a
-reference someone may hold — rename one only after grepping for it. For `ideas/`
-the same is true of *filenames*.
+**Other docs and source comments cite `TODO.md` sections by title**, so rename a
+heading only after grepping for it. Same for `ideas/` *filenames*.
 
 ## Invariants — violations cause silent bugs, not crashes
 
 - **MST owns the upload + render autoruns** (`attachRenderingBackend` on
   `RenderLifecycleMixin`), never a React `useEffect`.
 - **The render callback returns `true` only when real content was drawn**, or the
-  loading scrim stays up. Shared-canvas views (dotplot, synteny level) are the
-  exception and always return `true`.
+  loading scrim stays up. Shared-canvas views (dotplot, synteny level) always
+  return `true`.
 - **Per-region upload values must be freshly constructed, never mutated** —
   backends diff by reference identity.
 - **Only write MST observables via actions.** A direct write inside an autorun
@@ -121,41 +82,32 @@ the same is true of *filenames*.
 
 Typecheck the touched packages, `pnpm test <path>`, a browser test when UI
 behavior changed, `pnpm lint --fix`. Regenerate snapshots only after a visually
-verified change. **Then commit it** — done means committed, not left in the
-working tree. Don't push or open a PR unless asked.
+verified change. **Then commit it.** Don't push or open a PR unless asked.
 
-**Three CI jobs are gated by nothing in that list** — `pnpm check-format`,
-`pnpm check-docs`, and the spell check (crate-ci/typos, run bare as `typos`).
-None runs under `pnpm test` and none is a lint rule, so a change can be green by
-every measure above and still land red; all three were red on `main` at once in
-August 2026, on three *different* commits. The first two take seconds;
-`check-docs` takes a couple of minutes and earns it only when you touched a doc
-or moved a symbol a doc might name.
+**Three CI jobs are gated by nothing in that list** — `pnpm check-format`, `pnpm
+check-docs`, and the spell check (`typos`). None runs under `pnpm test` and none
+is a lint rule, so a change can be green by every measure above and still land
+red. The first two take seconds; `check-docs` earns its couple of minutes only
+when you touched a doc or moved a symbol a doc might name.
 
-**Prefer the cheap decisive check over the browser probe** when the question is
-"does release X have symbol Y". `git ls-remote --tags origin` for the newest tag,
-then `git cat-file -e <tag>:<path>` — `ls-remote`, not local tags, or a checkout
-that has not fetched in a while answers "no release yet" forever.
+**Prefer the cheap decisive check over the browser probe** for "does release X
+have symbol Y": `git ls-remote --tags origin`, then `git cat-file -e <tag>:<path>`
+— `ls-remote`, not local tags, or a stale checkout answers "no release yet"
+forever.
 
-**Check what your worktree branched from before trusting a gate in it.** The
-worktree tool's default base ref is **origin**'s default branch, which differs
-from local `main` by however much has landed locally and not been pushed — which,
-with agents landing all day, can be everything done that day. A gate can then
-fail on a fix your branch predates, and the natural reading of that is "my edit
-broke it".
+**Check what your worktree branched from before trusting a gate in it.** The base
+ref is **origin**'s default branch, which with agents landing all day can be a
+whole day behind local `main` — so a gate fails on a fix your branch predates and
+reads as "my edit broke it".
 
     git merge-base --is-ancestor main HEAD && echo ok || git reset --hard main
 
-**`reset --hard` is only right before you have commits of your own** — once you
-do, it throws them away. `git rebase main` is the same check's answer from then
-on, and it is also what makes the landing fast-forward. Run it again before
-landing whatever it said at the start: main moves under a long session, and the
-tell is a `git diff main` that names files you never opened. Those are main's
-commits missing from your branch, not yours leaking — `git log main..HEAD -- <path>`
-distinguishes them, and it is worth the ten seconds, because the alternative
-reading is that your change altered a golden.
+**`reset --hard` is only right before you have commits of your own**; from then
+on `git rebase main` is the same check's answer and is also what makes the
+landing fast-forward. Run it again before landing. The tell is a `git diff main`
+naming files you never opened — that is main's commits missing from your branch,
+which `git log main..HEAD -- <path>` distinguishes.
 
-**A validator that cannot import is not a validator that passed.** A worktree
-that arrives with an incomplete install gives `check-docs` validators
-ERR_MODULE_NOT_FOUND rather than any finding, and the run's summary counts that
-as a failure with no detail. Read the body, not the tally.
+**A validator that cannot import is not a validator that passed.** An incomplete
+install gives `check-docs` ERR_MODULE_NOT_FOUND rather than a finding, counted as
+a failure with no detail. Read the body, not the tally.
