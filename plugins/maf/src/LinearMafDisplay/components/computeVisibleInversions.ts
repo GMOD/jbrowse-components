@@ -1,3 +1,4 @@
+import { regionInversionEvents } from './mafRowEvents.ts'
 import {
   bpSpanPx,
   eachVisibleRegion,
@@ -94,6 +95,13 @@ export function consensusStrandByRowChr(
  * scaffold's consensus orientation — the strand-flip SV indicator. Drawn as an
  * overlay on top of whatever the rows show (bases/codon/identity), so an
  * inversion is visible without switching rendering mode.
+ *
+ * A projection over `regionInversionEvents`, which decides *which* (block, row)
+ * pairs are inverted once per (region, consensus) rather than on every frame.
+ * The test it replaces was two map hits per block × row of every visible region
+ * — over a million per frame on the ce11 26-way shape — to reach a verdict that
+ * only two map hits per *pan* could ever change, and by construction almost all
+ * of them say "not inverted".
  */
 export function computeVisibleInversions(
   params: ComputeVisibleInversionsParams,
@@ -112,29 +120,26 @@ export function computeVisibleInversions(
     view,
     rpcDataMap,
   )) {
-    for (const block of regionData.blocks) {
+    const events = regionInversionEvents(regionData, consensus)
+    const { blocks } = regionData
+    for (let b = 0; b < blocks.length; b++) {
+      const block = blocks[b]!
       if (block.endBp <= bpLo || block.startBp >= bpHi) {
         continue
       }
+      const { from, to } = events.ensure(b)
+      const { positionBp, rowIndex, length } = events
       // Resolved once per block, not per inverted row: every row of a block
       // spans the same reference extent.
       let span: PxSpan | undefined
-      for (const row of block.rows) {
-        // The row test comes first: it is two comparisons, while the inversion
-        // test is two map hits, and with a pinned row height most rows of a
-        // deep alignment are scrolled off screen.
-        if (
-          row.rowIndex >= firstRow &&
-          row.rowIndex < endRow &&
-          row.strand !== undefined &&
-          row.chr !== undefined &&
-          row.strand !== consensus.get(row.rowIndex)?.get(row.chr)
-        ) {
-          span ??= bpSpanPx(bpToPx, block.startBp, block.endBp)
+      for (let e = from; e < to; e++) {
+        const row = rowIndex[e]!
+        if (row >= firstRow && row < endRow) {
+          span ??= bpSpanPx(bpToPx, positionBp[e]!, positionBp[e]! + length[e]!)
           markers.push({
             xLeft: span.xLeft,
             width: span.width,
-            rowTop: offset + rowHeight * row.rowIndex,
+            rowTop: offset + rowHeight * row,
             h,
           })
         }

@@ -37,10 +37,10 @@
 // sweeps those directly. The last two rows drive rows SHORTER than their block
 // reference, which is the defensive path — it must stay correct, and it is the
 // one shape the per-block hoist cannot help.
-import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { rmSync } from 'node:fs'
 import { join } from 'node:path'
+
+import { checkoutPackageAtRef } from './refCheckout.ts'
 
 const root = join(import.meta.dirname, '..', '..', '..')
 
@@ -73,16 +73,10 @@ function toCoverage(mod: object, label: string): CoverageFn {
   throw new Error(`${label} has no computeMafCoverage export`)
 }
 
-// Whole-package checkout, not a single file: a baseline that imported the
-// working tree's `asciiBytes` would be a chimera of both revisions.
+// Whole-package checkout, importable — see `checkoutPackageAtRef` for both
+// halves of why.
 async function loadRef(baseRef: string, label: string) {
-  const dir = mkdtempSync(join(tmpdir(), 'jb-mafcov-'))
-  const tar = execFileSync('git', ['archive', baseRef, '--', 'plugins/maf'], {
-    cwd: root,
-    maxBuffer: 1 << 28,
-    encoding: 'buffer',
-  })
-  execFileSync('tar', ['-x', '-C', dir], { input: tar })
+  const dir = checkoutPackageAtRef(root, baseRef)
   return { fn: toCoverage(await import(join(dir, MODULE_PATH)), label), dir }
 }
 

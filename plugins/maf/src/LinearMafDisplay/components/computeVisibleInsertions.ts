@@ -1,7 +1,4 @@
-import {
-  blockHasRefGap,
-  forEachInsertion,
-} from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
+import { regionInsertionEvents } from './mafRowEvents.ts'
 import {
   eachVisibleRegion,
   rowBandGeometry,
@@ -19,54 +16,33 @@ export interface InsertionMarker {
 }
 
 /**
- * Reduce markers that land in the same pixel column of the same row to the
- * longest one there. The drawn bar's width grows with `length`, so the longest
- * is the one that covered the others — dropping the rest changes no pixel.
- *
- * Worth doing only once a base is sub-pixel, which is why this is a separate
- * pass over the finished array rather than a check inside the walk. Zoomed out,
- * a wide region across many species piles hundreds of thousands of markers into
- * a few hundred pixel columns, each otherwise costing a full
- * `drawMafInsertionMarker` (fill + measure + text) every frame to paint over
- * the last; on the measured shape this cuts ~400k markers to ~21k. At <=1 bp/px
- * it would merge nothing — insertion anchors sit at distinct base boundaries,
- * so they already occupy distinct pixel columns — while still paying a map
- * entry per marker, measured several times the cost of the plain push. So the
- * caller skips it there. (That is also the only regime where the count label
- * draws, so no label is ever lost to the merge.)
- *
- * `rowTop` keys the row: it is `offset + rowHeight * rowIndex`, identical for
- * every marker of a row within one pass.
- */
-function mergeByPixelColumn(markers: InsertionMarker[]): InsertionMarker[] {
-  const byRow = new Map<number, Map<number, InsertionMarker>>()
-  for (const marker of markers) {
-    let byPixel = byRow.get(marker.rowTop)
-    if (!byPixel) {
-      byPixel = new Map()
-      byRow.set(marker.rowTop, byPixel)
-    }
-    const px = Math.round(marker.xCenter)
-    const existing = byPixel.get(px)
-    if (!existing || marker.length > existing.length) {
-      byPixel.set(px, marker)
-    }
-  }
-  const out: InsertionMarker[] = []
-  for (const byPixel of byRow.values()) {
-    out.push(...byPixel.values())
-  }
-  return out
-}
-
-/**
  * Positioned insertion markers for every aligned row in the visible blocks.
  * Insertions are interbase, so each marker centers on the genomic boundary
- * (`anchorBp`) of the reference base following the inserted run. Geometry comes
- * from the shared `forEachInsertion` walk; drawing is shared with plugin-
- * alignments via `drawInsertionMarker`. Once a base goes sub-pixel the markers
- * sharing a pixel column collapse to the visible one — see
- * `mergeByPixelColumn`.
+ * (`anchorBp`) of the reference base following the inserted run. Drawing is
+ * shared with plugin-alignments via `drawInsertionMarker`.
+ *
+ * Two things keep this affordable, and they cover the two halves of the cost.
+ *
+ * **Where the insertions are** comes from `regionInsertionEvents`, which reads
+ * the alignment bytes once per block rather than once per frame — so panning
+ * costs one `bpToPx` per event in view instead of a per-column scan of every
+ * visible block × row.
+ *
+ * **How many markers survive** is the other half, and it dominates once the
+ * first is fixed: zoomed out, a wide region across many species piles hundreds
+ * of thousands of insertions into a few hundred pixel columns of each row. The
+ * drawn bar's width grows with `length`, so within one pixel column the longest
+ * is the one that covered the others and dropping the rest changes no pixel —
+ * the merge below is lossless. It runs *during* the projection rather than over
+ * a finished array, which is what keeps the allocation proportional to what is
+ * drawn (~21k markers on the measured shape) rather than to what is found
+ * (~300k): a marker object exists only for a pixel column that wins one, and a
+ * later, longer insertion in the same column mutates it in place.
+ *
+ * At <=1 bp/px the merge is skipped rather than run: insertion anchors sit at
+ * distinct base boundaries, so they already occupy distinct pixel columns and it
+ * would merge nothing while still paying a map entry per marker. That is also
+ * the only regime where the count label draws, so no label is ever lost to it.
  */
 export function computeVisibleInsertions(
   params: MafOverlayParams,
@@ -79,33 +55,74 @@ export function computeVisibleInsertions(
     scrollTop,
     params.viewportHeight,
   )
+  // Nested rather than one map under a joined key: both halves are per marker,
+  // and a joined key would build a string (or a hand-rolled integer key that has
+  // to not overflow on a deep alignment) hundreds of thousands of times a frame.
+  // Rows are collected in first-seen order and pixel columns within them the
+  // same way, which is the order the merge produced when it ran over a finished
+  // array — so the marker list is unchanged, not merely equivalent.
+  const byRow =
+    view.bpPerPx > 1 ? new Map<number, Map<number, InsertionMarker>>() : null
 
   for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
     view,
     rpcDataMap,
   )) {
-    for (const block of regionData.blocks) {
-      if (
-        block.endBp <= bpLo ||
-        block.startBp >= bpHi ||
-        !blockHasRefGap(block)
-      ) {
+    const events = regionInsertionEvents(regionData)
+    const { blocks } = regionData
+    for (let b = 0; b < blocks.length; b++) {
+      const block = blocks[b]!
+      if (block.endBp <= bpLo || block.startBp >= bpHi) {
         continue
       }
-      for (const row of block.rows) {
-        if (row.rowIndex >= firstRow && row.rowIndex < endRow) {
-          const rowTop = offset + rowHeight * row.rowIndex
-          forEachInsertion(
-            block.refSeqBytes,
-            row.alignmentBytes,
-            block.startBp,
-            (anchorBp, length) => {
-              markers.push({ xCenter: bpToPx(anchorBp), rowTop, h, length })
-            },
-          )
+      const { from, to } = events.ensure(b)
+      const { positionBp, rowIndex, length } = events
+      for (let e = from; e < to; e++) {
+        const row = rowIndex[e]!
+        if (row < firstRow || row >= endRow) {
+          continue
+        }
+        const xCenter = bpToPx(positionBp[e]!)
+        const len = length[e]!
+        if (byRow === null) {
+          markers.push({
+            xCenter,
+            rowTop: offset + rowHeight * row,
+            h,
+            length: len,
+          })
+          continue
+        }
+        let byPixel = byRow.get(row)
+        if (byPixel === undefined) {
+          byPixel = new Map()
+          byRow.set(row, byPixel)
+        }
+        const px = Math.round(xCenter)
+        const existing = byPixel.get(px)
+        if (existing === undefined) {
+          byPixel.set(px, {
+            xCenter,
+            rowTop: offset + rowHeight * row,
+            h,
+            length: len,
+          })
+        } else if (len > existing.length) {
+          // In place, so a pixel column costs one object however many
+          // insertions land in it — and `>` rather than `>=` keeps the first of
+          // equal lengths, as collecting then merging did.
+          existing.xCenter = xCenter
+          existing.length = len
         }
       }
     }
   }
-  return view.bpPerPx > 1 ? mergeByPixelColumn(markers) : markers
+  if (byRow !== null) {
+    for (const byPixel of byRow.values()) {
+      for (const marker of byPixel.values()) {
+        markers.push(marker)
+      }
+    }
+  }
+  return markers
 }

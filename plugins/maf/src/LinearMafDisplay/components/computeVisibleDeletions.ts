@@ -59,6 +59,20 @@ export function computeVisibleDeletions(
     scrollTop,
     params.viewportHeight,
   )
+  // The shortest deletion that could carry a digit at this zoom. A run's screen
+  // width is its bp length over `bpPerPx`, so at a fixed zoom the label test is
+  // a test on LENGTH — and a run can be at most as long as its block's own
+  // reference span, which the block already reports as `endBp - startBp`. So a
+  // narrow block is answered for whole, for every one of its rows at once, by
+  // one subtraction and no walk.
+  //
+  // That is the case the walk keeps losing on: real MAF is many small blocks
+  // (UCSC ce11 26-way's median is 7bp) and the zooms where the most blocks are
+  // in view are exactly the zooms where none of them is wide enough to label.
+  // An exact bound rather than a heuristic — nothing longer than the block's
+  // reference can be deleted from it — so this can never drop a marker the
+  // per-run test below would have kept.
+  const minLabelBp = MIN_LABEL_WIDTH * view.bpPerPx
 
   if (h >= MIN_HEIGHT_FOR_TEXT) {
     for (const { data: regionData, bpToPx, bpLo, bpHi } of eachVisibleRegion(
@@ -68,7 +82,11 @@ export function computeVisibleDeletions(
       const rowFlank = makeRowFlank(regionData.blocks)
       for (let i = 0; i < regionData.blocks.length; i++) {
         const block = regionData.blocks[i]!
-        if (block.endBp <= bpLo || block.startBp >= bpHi) {
+        if (
+          block.endBp <= bpLo ||
+          block.startBp >= bpHi ||
+          block.endBp - block.startBp < minLabelBp
+        ) {
           continue
         }
         for (const row of block.rows) {
