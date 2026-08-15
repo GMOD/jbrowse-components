@@ -32,16 +32,35 @@ time and an interior row is both an output and an input. `followPairs` sorts by
 `followDirection`'s `distance`, not `level.level`; the two coincide only when
 the anchor is the top row.
 
-## The autorun's synchronous prefix is the only place observables are read
+## `planLevel` is the only place observables are read
 
 `execute` is `async` and MobX stops tracking at the first `await`.
 **`FollowStep` is that boundary, not a convenience struct** — a field missing
 from it can only be read untracked, producing a follow that works once and never
 re-fires.
 
-Same rule: `LevelState` is a plain object, not MST or a MobX box, since the
-exact pass writes it every pass. And `followUnaligned` / `followApproximate` are
-**written here and read only by the header**; a third such flag must keep that.
+It cuts the other way too, which is why the resolves are kicked off inside
+`untracked`. `execute` still runs synchronously up to its own first `await`, and
+down that path `resolveMatchingSpan` reads the display's `lodTier` — derived
+from both connected views' **raw `bpPerPx`**, which the frame pass writes every
+frame. Tracked, one settled resolve made the moving row's zoom a dependency of
+the debounced pass.
+
+Same rule: `FollowLevelState` is a plain object, not MST or a MobX box, since
+the exact pass writes it every pass. And `followUnaligned` / `followApproximate`
+are **written here and read only by the header**; a third such flag must keep
+that.
+
+## `seq` is bumped per PASS, not per resolve
+
+Latest-wins over an unordered RPC, and the level that bumps it is every level
+the pass _visits_ — including one that found nothing. That pass has decided the
+row holds and lit `followUnaligned`; bumping only for levels with something to
+resolve let the previous window's answer land underneath that and move the row
+anyway.
+
+Switching the mode off issues no pass at all, so it still needs its own check in
+`execute`.
 
 ## What each pass may touch
 
@@ -112,8 +131,29 @@ no zero-clamp; `applyFollowTransform` **extrapolates** and clamps — before the
 `hi > lo` test, so a wholly-negative answer becomes no answer (hold the row)
 rather than an inverted span.
 
+Which axis of a block is which is `followAxes`, in one place because
+`planFollowStep` picks a block with `pickFollowFeature` and then maps the same
+window with `followWindowMapping`: a block in scope for one and not the other is
+a plan whose two halves are about different data.
+
+A frame-pass span carries **fractional** bp, where every other `ResolvedSpan`
+here is whole. Rounding the cached transform quantizes the row's motion to whole
+bases, visible below 1 bp/px — so it feeds `positionViewOnSpan`, which is pixel
+arithmetic, and never `navToResolvedSpan`.
+
 ## `levelStates` is keyed by the level node
 
 Keyed by index, an entry outlived a removed level and a re-added row inherited a
 dead level's incumbent feature id and cached transform. A `WeakMap` on the node
 is also the entire pruning story.
+
+The store hands out two things on purpose: `get` mints state, `pickFor` does
+not. Only the exact pass decides anything, so the frame pass reading through
+`get` would mint an entry for a level that pass has never reached.
+
+`lastErrorMessage` lives there too, per level rather than per view — a follow
+that cannot resolve cannot resolve repeatedly, so it says so once, and a single
+view-wide slot let a level that resolves fine clear it every pass while the
+broken one reported itself again behind it. `notifyError` always attaches a
+`report` action, which is exactly what makes it bypass the snackbar model's own
+message dedup, so nothing downstream absorbs the repeats.

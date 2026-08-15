@@ -18,6 +18,12 @@ import type { FollowTransform } from './followTransform.ts'
  * `undefined` means hold the row where it is, and only the mapping can say it —
  * the interpolators clamp the window to their block, so one panned clean off
  * collapses to a span ONE BASE WIDE and flings the row to maximum zoom.
+ *
+ * FRACTIONAL bp, unlike every other `ResolvedSpan` here, and deliberately: the
+ * cached transform is the smooth path and rounding it quantizes the row's
+ * motion to whole bases, which below 1 bp/px is a visible stutter. So this feeds
+ * `positionViewOnSpan`, which is pixel arithmetic, and never `navToResolvedSpan`,
+ * which would assemble a locstring out of it.
  */
 export function followFrameSpan({
   feat,
