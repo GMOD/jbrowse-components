@@ -659,14 +659,16 @@ describe('bezierConnectionLegendItems', () => {
     expect(mark(LINKED_READ_COLOR_INTERCHROM)).toBe('curve')
   })
 
-  // Slot 7 was the fallback and worded 'Read pair'. It carries a meaning now, and
-  // the wording comes from the read key's own table, so a reader meets one word
-  // for the colour whether on a swatch, a read fill or a curve.
-  it('names the inter-chromosomal slot rather than calling it a read pair', () => {
+  // Slot 7 was the fallback and worded 'Read pair'. It carries a meaning now,
+  // and on a CURVE that meaning is the overlay's own: SPLIT_JUNCTION_LABELS
+  // overrides CATEGORY_LEGEND's bare 'Inter-chromosomal', which is a property of
+  // the pair rather than of the mark. The two rows beside it are split
+  // alignments, so this one is too, and the parenthetical carries the finding.
+  it('names the inter-chromosomal slot as the split alignment it draws', () => {
     expect(
       bezierConnectionLegendItems([LINKED_READ_COLOR_INTERCHROM], PALETTE)[0]!
         .label,
-    ).toBe('Inter-chromosomal')
+    ).toBe('Split alignment (interchromosomal)')
   })
 
   it('keys the connection colors in view, sorted, in the arcs own words', () => {
