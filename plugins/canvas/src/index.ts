@@ -122,7 +122,9 @@ export type {
 export type { FitStage } from './LinearBasicDisplay/fitLadder.ts'
 export type {
   IncrementalLayout,
+  LabelRoomFactorFreeInputs,
   LayoutInputs,
+  LayoutRegionData,
 } from './LinearBasicDisplay/layout.ts'
 export type { ShowLabelsMode } from './LinearBasicDisplay/showLabelsMode.ts'
 export type {

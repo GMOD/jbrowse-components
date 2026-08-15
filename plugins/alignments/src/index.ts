@@ -70,6 +70,11 @@ export type { GroupByType } from './shared/types.ts'
 // consumers' .d.ts — see scripts/check-declaration-leaks.ts.
 export type { ArcsUploadData } from './features/arcs/types.ts'
 export type {
+  ArcsByGroupResult,
+  CrossRegionArc,
+} from './features/arcs/compute.ts'
+export type { CrossRegionArcShape } from './features/arcs/crossRegionOverlay.ts'
+export type {
   DerivativeCandidate,
   DerivativeSegment,
 } from './features/derivativePaths/computePaths.ts'
