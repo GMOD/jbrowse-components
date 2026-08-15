@@ -100,8 +100,10 @@ the painter filling it read that one function**.
 
 The lane is deliberately **not** a hosted `LinearVariantDisplay` — a track
 renders one display and a combo would buy a second parse of the same VCF. It
-shares `forEachFeatureSpan`, `drawVariantShape`, `featureColor` and the rest
-instead.
+shares `forEachFeatureSpan` (one per-record walk, so a lane mark cannot sit a
+pixel off its column), `drawVariantShape`, `featureColor`,
+`featureDefaultColor`, `createFeatureFloatingLabels` and
+`breakendSplitViewMenuItem` instead.
 
 ## How wide a record draws: `variantCellSpanPx`
 

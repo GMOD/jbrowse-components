@@ -32,7 +32,9 @@ check by fixing the manifest, not by removing a skip.
 ## Avoiding drift in hand-written docs
 
 - **Don't restate a config slot's default** — link
-  `/docs/config/<type>/#slot-<name>`. Same for a value a build script owns.
+  `/docs/config/<type>/#slot-<name>`. Same for a value a build script owns: it
+  comes from a marker block, not from typing (`ORTHOFINDER_SETS` is the worked
+  example).
 - **Don't hand-list a directory's pages** — use `<!-- doclist:<dir> -->`.
 - **Prefer an `include:` marker over a copied code fence**, pointed at compiled
   tested source. `sync-doc-snippets --check` ratchets un-included fences, so

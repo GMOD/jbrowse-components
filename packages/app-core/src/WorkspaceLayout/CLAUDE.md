@@ -14,9 +14,9 @@ branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked vertically)
 - **Both middle levels are legal empty.** Nothing prunes as a rule;
   `pruneEmptyPanel` / `pruneEmptyTabIn` are called by the gesture that emptied
   the thing. A tabless panel renders nothing at all.
-- Ids are nanoid `types.identifier`s, unique within the tree _including a
-  restored snapshot_. `integrity.test.ts` catches a counter; the obvious test
-  doesn't.
+- Ids come from `createElementId()` (nanoid) and are `types.identifier`s, unique
+  within the tree _including a restored snapshot_. `integrity.test.ts` catches a
+  counter; the obvious test doesn't.
 - **Every pure function in `tree.ts` is total** — unknown id, tree unchanged.
   Test tree and model separately; the model guard hides tree bugs. `splitPanel`
   / `addTab` return `undefined` rather than claim an id that was never inserted,
@@ -43,8 +43,9 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
 - `dropZoneAt` / `stripDropAt` are pure over rects; midpoint answers make them
   total. **Test the strip before the panel.**
 - **What the indicator says is what the drop does; a drop that says nothing does
-  nothing.** That rule belongs to the gesture, not `moveTabToPanel`, where no
-  index means append.
+  nothing.** `dropTabInPanel` declines on the cell a tab is already in and
+  `useLayoutDrag` paints no wash. That belongs to the gesture, not
+  `moveTabToPanel`, where no index means append.
 - Pointer events, so own the three rules the browser was applying: **primary
   button of the primary pointer**, **one `pointerId` per gesture**,
   **`pointercancel` ends it**.
@@ -74,8 +75,8 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
 - **A `tabs` node outruns the tree in exactly two places** — a `size` on its
   child, and a container child with no split. Both are reported by
   `loadSessionSpec`; nothing else is approximated.
-- **A spec states an arrangement, not a selection** — say which view to reveal
-  (`setPendingMove`).
+- **A spec states an arrangement, not a selection** — `treeFromSpec` shows each
+  cell's first tab, so say which view to reveal afterwards (`setPendingMove`).
 
 ## Three surfaces that will not fail to compile
 
@@ -88,4 +89,6 @@ as public as the name** — add arguments optional, never required.
 ## Closing a tab or panel closes its views
 
 `session.removeView`, then drop the tab or cell. `closeTab` is one function with
-two callers; spelled twice, one leaks its views.
+two callers (the ⋮ menu and middle-click); spelled twice, one leaks its views.
+`WorkspaceTab` and `TabStrip` take `PanelChrome.onTabClose` rather than building
+one — neither knows what a view is.

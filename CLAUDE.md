@@ -18,7 +18,8 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 
 - `@jbrowse/mobx-state-tree` is our ESM fork; treat it like upstream.
 - Keep the main model chain in one file.
-- Write config with `setConf`. Promotable slots resolve only via `resolveConf`.
+- Write config with `setConf`, not `configuration.setSlot`. Promotable slots
+  resolve only via `resolveConf`.
 - A bare getter returns a resolved value, never `undefined` — a sentinel prop
   gets a distinct resolved getter (`effectiveRowHeight`).
 - In React, `autorun` inside `useEffect`, not `reaction`.

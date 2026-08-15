@@ -12,6 +12,8 @@ rebakes read colors, `arcsByGroup` rebuilds arcs, `renderState` repaints. Tiers
 2-5 are auto-wired by MobX; **tier 1 is manual**, the worker boundary defeating
 tracking.
 
+- **Never put a fetch-result derivative in `rpcProps()`** — infinite loop.
+  `colorTagMap` is the canonical trap.
 - **A color input in `groupLayoutContext` costs a full relayout** and loses the
   recolor fast path, since layout allocates a fresh `readYs` the upload memo
   keys on. A value the layout only _sometimes_ spends goes in as a thunk.
@@ -41,10 +43,10 @@ statement of when framing is live.
 ## Three different "is it grouped?" questions
 
 `isGrouped` (>1 section) is the scroll model. `showsGroupLabels` is the chips,
-and is what anything dodging them must ask. `rpcDataMap.size === 0` is whether
-data arrived — **never gate first paint on a laid-out map**, since a grouped
-fetch over an empty region partitions to zero groups and the overlay never
-clears.
+and is what anything dodging them must ask — one section still draws a chip
+while `scalebarOverlapLeft` is 0. `rpcDataMap.size === 0` is whether data
+arrived — **never gate first paint on a laid-out map**, since a grouped fetch
+over an empty region partitions to zero groups and the overlay never clears.
 
 `hiddenGroupKeys` must be filtered out of the **cross-group** derivations too
 (coverage stats, legend, sashimi, arcs) — for arcs, before `poolArcScale`.

@@ -78,6 +78,9 @@ The shared rule: **ask what the consumer actually is before making the shape
 cheaper**, and **enumerate the consumers before deciding not to BUILD one** — a
 missing reader costs correctness, not milliseconds.
 
+`readTagValues` / `sortTagValues` are filled only under a tag color scheme or
+tag sort, so neither is on the default path.
+
 ## Adapter hot path (BAM/CRAM)
 
 `extractFeatureArrays` calls `feature.get(...)` per read, so keep work out of

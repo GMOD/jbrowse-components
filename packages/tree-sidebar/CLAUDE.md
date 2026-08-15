@@ -21,9 +21,11 @@ dependency is pure ESM and breaks Jest.
 A plain object hoists integer-like keys, so rows built as `10, 2, 1` reach
 hclust as `1, 2, 10` and the returned indices name the wrong sources — reachable
 from numbered bigWig filenames or numeric sample IDs. Build in row order and
-keep it a `Map` the whole way, through the RPC return type.
-`Object.keys`/`values`/ `entries` on a `Map` compiles and silently returns
-nothing.
+keep it a `Map` the whole way, through the RPC return type —
+`generateClusterRScript` writes the same order into `rownames` and the user
+pastes `resultClusters$order` back against it. `Object.keys`/`values`/`entries`
+on a `Map` compiles and silently returns nothing, so that is what to grep for if
+rows come back scrambled.
 
 ## "Does the tree describe these rows" is derived, not remembered
 
@@ -50,8 +52,12 @@ equality would flag constantly.
 
 The invariant is not that provenance is present but that it is never **wrong**,
 so `clusterTree` has exactly one writer: the mixin's private
-`writeTree(tree, provenance)`. A tree with no provenance is therefore also the
-signal it was supplied rather than computed.
+`writeTree(tree, provenance)`. The four public actions differ only in what they
+pass — `setLayout`/`clearLayout` pass nothing, and `setClusterTree` (maf's
+supplied `.nh`) passes nothing because a phylogeny has no locus — so a tree with
+no provenance is also the signal it was supplied rather than computed.
+`SvgTreeSidebar` captions the export and `clusterProvenanceMenuItems` puts the
+locus in the menu.
 
 ## `subtreeFilter` goes with the row _names_, not with the tree
 

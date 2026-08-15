@@ -6,6 +6,8 @@ node not the snapshot, forwarding a callback slot raw, reference resolution) and
 
 ## Readers
 
+- `readConfObject`'s map overload takes only `IMSTMap`; widened to admit
+  `AnyConfigurationModel` it let a typo compile as `any`.
 - `getConf` is exactly `readConfObject(model.configuration, path)` and equally
   strict about slot names — **switching readers cannot make a slot-name error go
   away.**
@@ -31,6 +33,8 @@ node not the snapshot, forwarding a callback slot raw, reference resolution) and
   it (`promotedBase: undefined`).
 - `actions` / `views` / `extend` / `preProcessSnapshot` **compose** rather than
   replace; override one by redeclaring its name.
+  `ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy for a different
+  reason — it wants a subset, and `baseConfiguration` only adds.
 - **The base must be the type `ConfigurationSchema()` returned.** A `types.late`
   wrapper or a union passes `isBareConfigurationSchemaType` and used to drop
   every inherited slot silently; it now throws at construction.

@@ -21,6 +21,10 @@ rules those two state; don't restate them. What follows is this package's own.
 - **`GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` own
   `setErrorHandler`**, which turns a HAL over-limit allocation into the "too
   much data, zoom in" banner rather than a blank canvas.
+- **HAL parity**: a behavior change to one HAL lands in the other and in
+  `MockHal`. The gates are `browser-tests/compare-backends.ts` and
+  `hal/regionRegistry.test.ts` — not the attribute layout, which
+  `assertVertexInputsMatch` settles at `pnpm gen:shaders` time.
 - A shared `.slang` **shape** module needs two real consumers and non-obvious
   math (ADR-040).
 
