@@ -43,8 +43,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'GetConsensusSequence'
+export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRenameRegions<'GetConsensusSequence'> {
+  name = 'GetConsensusSequence' as const
 
   async execute(
     args: RpcExecuteArgs<'GetConsensusSequence'>,

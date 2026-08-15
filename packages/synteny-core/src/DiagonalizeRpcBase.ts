@@ -1,6 +1,8 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type { DiagonalizeArgs } from './executeDiagonalize.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'
 
 /**
  * Worker-side diagonalize RPC, minus its name. The linear-synteny and dotplot
@@ -10,13 +12,17 @@ import type { DiagonalizeArgs } from './executeDiagonalize.ts'
  * rather than copying the implementation:
  *
  * ```ts
- * export default class DiagonalizeDotplotRpc extends DiagonalizeRpcBase {
- *   name = 'DiagonalizeDotplot'
+ * export default class DiagonalizeDotplotRpc extends DiagonalizeRpcBase<'DiagonalizeDotplot'> {
+ *   name = 'DiagonalizeDotplot' as const
  * }
  * ```
  *
  * Declare the method's args/return in the RpcRegistry from the plugin, so the
- * registry entry lives next to the registration.
+ * registry entry lives next to the registration — and pass the key here too, so
+ * the class is checked against it. The parameter is forwarded rather than pinned
+ * to `'DiagonalizeSynteny' | 'DiagonalizeDotplot'` because those two keys are
+ * declared by the plugins, and this package must not need either of them loaded
+ * to compile.
  *
  * Extends the plain RpcMethodType rather than
  * RpcMethodTypeWithFiltersAndRenameRegions, which is what a comparative RPC
@@ -33,8 +39,18 @@ import type { DiagonalizeArgs } from './executeDiagonalize.ts'
  * walks the whole args tree, so each `adapters[].adapterConfig` is still
  * augmented at its nested position.
  */
-export default abstract class DiagonalizeRpcBase extends RpcMethodType {
-  async execute(args: DiagonalizeArgs, rpcDriverClassName: string) {
+export default abstract class DiagonalizeRpcBase<
+  MethodName extends string = string,
+> extends RpcMethodType<MethodName, DiagonalizationResult | null> {
+  // `DiagonalizeArgs &`, not `RpcExecuteArgs<MethodName>` alone: this body is
+  // written once for a name that is still generic here, and TS defers the
+  // conditional inside RpcExecuteArgs until the name is known, so on its own it
+  // is `unknown` to this method. The intersection keeps what the registry says
+  // for whichever key a subclass names AND states what the body needs.
+  async execute(
+    args: DiagonalizeArgs & RpcExecuteArgs<MethodName>,
+    rpcDriverClassName: string,
+  ) {
     const { executeDiagonalize } = await import('./executeDiagonalize.ts')
     return executeDiagonalize(
       this.pluginManager,

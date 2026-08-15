@@ -28,8 +28,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class RenderLDData extends RpcMethodTypeWithRenameRegions {
-  name = 'RenderLDData'
+export default class RenderLDData extends RpcMethodTypeWithRenameRegions<'RenderLDData'> {
+  name = 'RenderLDData' as const
 
   async execute(args: RenderLDDataArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

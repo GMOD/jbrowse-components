@@ -21,8 +21,8 @@ export interface MafGetSequencesArgs extends BaseMafRpcArgs {
   includeInsertions?: boolean
 }
 
-export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'MafGetSequences'
+export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRegions<'MafGetSequences'> {
+  name = 'MafGetSequences' as const
 
   async execute(
     args: MafGetSequencesArgs,

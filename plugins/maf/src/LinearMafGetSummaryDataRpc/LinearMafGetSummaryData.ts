@@ -14,8 +14,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class LinearMafGetSummaryData extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'LinearMafGetSummaryData'
+export default class LinearMafGetSummaryData extends RpcMethodTypeWithFiltersAndRenameRegions<'LinearMafGetSummaryData'> {
+  name = 'LinearMafGetSummaryData' as const
 
   async execute(args: LinearMafGetSummaryDataArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

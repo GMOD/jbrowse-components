@@ -11,8 +11,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class RenderHicData extends RpcMethodTypeWithRenameRegions {
-  name = 'RenderHicData'
+export default class RenderHicData extends RpcMethodTypeWithRenameRegions<'RenderHicData'> {
+  name = 'RenderHicData' as const
 
   async execute(args: RenderHicDataArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

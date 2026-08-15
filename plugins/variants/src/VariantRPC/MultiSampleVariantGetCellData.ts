@@ -12,8 +12,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export class MultiSampleVariantGetCellData extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'MultiSampleVariantGetCellData'
+export class MultiSampleVariantGetCellData extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiSampleVariantGetCellData'> {
+  name = 'MultiSampleVariantGetCellData' as const
 
   async execute(args: GetCellDataArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

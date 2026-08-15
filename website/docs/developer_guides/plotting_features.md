@@ -138,8 +138,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class GetScoreData extends RpcMethodType {
-  name = 'GetScoreData'
+export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
+  name = 'GetScoreData' as const
 
   async execute(args: GetScoreDataArgs, rpcDriverClassName: string) {
     const {

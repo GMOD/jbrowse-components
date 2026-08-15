@@ -14,8 +14,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'MultiSampleVariantGetSources'
+export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiSampleVariantGetSources'> {
+  name = 'MultiSampleVariantGetSources' as const
 
   async execute(
     args: MultiSampleVariantGetSourcesArgs,

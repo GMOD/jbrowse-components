@@ -1,5 +1,6 @@
 import RpcMethodType from './RpcMethodType.ts'
 
+import type { RpcExecuteReturn } from '../rpc/RpcRegistry.ts'
 import type { RenameRegionArgs } from './RpcMethodType.ts'
 
 // Singular-region counterpart of RpcMethodTypeWithRenameRegions, for RPC methods
@@ -7,7 +8,8 @@ import type { RenameRegionArgs } from './RpcMethodType.ts'
 // rendering). Subclasses get region renaming for free.
 export default abstract class RpcMethodTypeWithRenameRegion<
   MethodName extends string = string,
-> extends RpcMethodType<MethodName> {
+  WireReturn = RpcExecuteReturn<MethodName>,
+> extends RpcMethodType<MethodName, WireReturn> {
   async serializeArguments<T extends RenameRegionArgs>(
     args: T,
     rpcDriverClassName: string,

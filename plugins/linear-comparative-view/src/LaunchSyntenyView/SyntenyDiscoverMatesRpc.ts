@@ -2,6 +2,7 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
@@ -33,11 +34,14 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-// Unparameterized, like CoreGetFeatures: the worker returns serialized features
-// and deserializeReturn below is what turns them into the registry's declared
-// return.
-export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions {
-  name = 'SyntenyDiscoverMates'
+// Wire return named separately from the registry's, like CoreGetFeatures: the
+// worker returns serialized features and deserializeReturn below is what turns
+// them into the registry's declared return.
+export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions<
+  'SyntenyDiscoverMates',
+  SyntenyDiscoverMatesReturn
+> {
+  name = 'SyntenyDiscoverMates' as const
 
   async deserializeReturn(
     ret: SyntenyDiscoverMatesReturn,
@@ -59,7 +63,10 @@ export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions {
     }
   }
 
-  async execute(args: SyntenyDiscoverMatesArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'SyntenyDiscoverMates'>,
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

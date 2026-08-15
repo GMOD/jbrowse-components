@@ -22,6 +22,6 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 
 // Body lives in @jbrowse/synteny-core's executeDiagonalize, shared with
 // DiagonalizeDotplot — a dotplot is the single-adapter case of a level.
-export default class DiagonalizeSyntenyRpc extends DiagonalizeRpcBase {
-  name = 'DiagonalizeSynteny'
+export default class DiagonalizeSyntenyRpc extends DiagonalizeRpcBase<'DiagonalizeSynteny'> {
+  name = 'DiagonalizeSynteny' as const
 }

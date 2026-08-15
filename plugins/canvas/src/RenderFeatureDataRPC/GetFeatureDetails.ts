@@ -3,8 +3,8 @@ import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/R
 
 import type { GetFeatureDetailsArgs } from './rpcTypes.ts'
 
-export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion {
-  name = 'GetCanvasFeatureDetails'
+export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion<'GetCanvasFeatureDetails'> {
+  name = 'GetCanvasFeatureDetails' as const
 
   async execute(args: GetFeatureDetailsArgs, rpcDriverClassName: string) {
     const { sessionId, adapterConfig, featureId, region, ...opts } =

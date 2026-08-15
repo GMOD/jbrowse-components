@@ -5,14 +5,18 @@ import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.
 import RpcMethodTypeWithRenameRegions from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
 
-import type { Region } from '../../util/index.ts'
-import type { StatusCallback } from '../../util/progress.ts'
 import type { SimpleFeatureSerialized } from '../../util/simpleFeature.ts'
-import type { StopToken } from '../../util/stopToken.ts'
-import type { RpcReturn } from '../RpcRegistry.ts'
+import type { RpcExecuteArgs, RpcReturn } from '../RpcRegistry.ts'
 
-export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions {
-  name = 'CoreGetFeatures'
+// The wire return is named rather than left to the registry, because the two
+// differ here: `deserializeReturn` below rebuilds each serialized feature into a
+// SimpleFeature, so the registry's `Feature[]` is what the caller gets and this
+// is what the worker sent.
+export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions<
+  'CoreGetFeatures',
+  SimpleFeatureSerialized[]
+> {
+  name = 'CoreGetFeatures' as const
 
   async deserializeReturn(
     feats: SimpleFeatureSerialized[],
@@ -27,18 +31,7 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions {
     return superDeserialized.map(feat => new SimpleFeature(feat))
   }
 
-  async execute(
-    args: {
-      sessionId: string
-      regions: Region[]
-      adapterConfig: Record<string, unknown>
-      sequenceAdapter?: Record<string, unknown>
-      statusCallback?: StatusCallback
-      stopToken?: StopToken
-      opts?: Record<string, unknown>
-    },
-    rpcDriver: string,
-  ) {
+  async execute(args: RpcExecuteArgs<'CoreGetFeatures'>, rpcDriver: string) {
     const {
       stopToken,
       statusCallback,

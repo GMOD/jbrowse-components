@@ -2,8 +2,8 @@ import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/R
 
 import type { MultiRowGetFeaturesArgs } from './rpcTypes.ts'
 
-export default class MultiRowGetFeatures extends RpcMethodTypeWithRenameRegion {
-  name = 'MultiRowGetFeatures'
+export default class MultiRowGetFeatures extends RpcMethodTypeWithRenameRegion<'MultiRowGetFeatures'> {
+  name = 'MultiRowGetFeatures' as const
 
   async execute(args: MultiRowGetFeaturesArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

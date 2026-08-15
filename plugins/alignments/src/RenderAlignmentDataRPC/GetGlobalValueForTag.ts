@@ -23,8 +23,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'PileupGetGlobalValueForTag'
+export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFiltersAndRenameRegions<'PileupGetGlobalValueForTag'> {
+  name = 'PileupGetGlobalValueForTag' as const
 
   async execute(
     args: RpcExecuteArgs<'PileupGetGlobalValueForTag'>,

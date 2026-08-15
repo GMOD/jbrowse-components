@@ -1,6 +1,7 @@
 import RpcMethodTypeWithRenameRegions from './RpcMethodTypeWithRenameRegions.ts'
 import SerializableFilterChain from './renderers/util/serializableFilterChain.ts'
 
+import type { RpcExecuteReturn } from '../rpc/RpcRegistry.ts'
 import type { Region } from '../util/index.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { StopToken } from '../util/stopToken.ts'
@@ -17,7 +18,8 @@ interface FilterRenameArgs {
 
 export default abstract class RpcMethodTypeWithFiltersAndRenameRegions<
   MethodName extends string = string,
-> extends RpcMethodTypeWithRenameRegions<MethodName> {
+  WireReturn = RpcExecuteReturn<MethodName>,
+> extends RpcMethodTypeWithRenameRegions<MethodName, WireReturn> {
   async deserializeArguments<T>(
     // filters is `unknown` rather than SerializedFilterChain: callers' T types
     // it as the deserialized SerializableFilterChain, so a string[] intersection

@@ -13,8 +13,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 
 // Single RPC for both pileup and chain (linked-reads) modes; the worker
 // branches on `args.linkedReads`.
-export default class RenderAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'RenderAlignmentData'
+export default class RenderAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<'RenderAlignmentData'> {
+  name = 'RenderAlignmentData' as const
 
   async execute(args: RenderAlignmentDataArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

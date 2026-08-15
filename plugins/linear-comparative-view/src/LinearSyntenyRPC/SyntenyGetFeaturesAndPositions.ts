@@ -32,8 +32,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export class SyntenyGetFeaturesAndPositions extends RpcMethodType {
-  name = 'SyntenyGetFeaturesAndPositions'
+export class SyntenyGetFeaturesAndPositions extends RpcMethodType<'SyntenyGetFeaturesAndPositions'> {
+  name = 'SyntenyGetFeaturesAndPositions' as const
 
   async execute(
     args: SyntenyGetFeaturesAndPositionsArgs,

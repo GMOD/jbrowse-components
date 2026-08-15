@@ -23,8 +23,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export class DotplotGetFeaturesAndPositions extends RpcMethodType {
-  name = 'DotplotGetFeaturesAndPositions'
+export class DotplotGetFeaturesAndPositions extends RpcMethodType<'DotplotGetFeaturesAndPositions'> {
+  name = 'DotplotGetFeaturesAndPositions' as const
 
   async execute(
     args: DotplotGetFeaturesAndPositionsArgs,

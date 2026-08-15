@@ -72,8 +72,14 @@ export interface BreakpointSerializedFeature {
   mate?: BreakpointMate
 }
 
-export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegions {
-  name = 'BreakpointGetFeatures'
+// Wire return named separately from the registry's: `deserializeReturn` below
+// wraps each of these in a SimpleFeature, so the registry's `Feature[]` is the
+// caller's view and this is the worker's.
+export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegions<
+  'BreakpointGetFeatures',
+  BreakpointSerializedFeature[]
+> {
+  name = 'BreakpointGetFeatures' as const
 
   async deserializeReturn(
     feats: BreakpointSerializedFeature[],

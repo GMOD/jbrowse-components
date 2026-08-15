@@ -11,8 +11,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export class MultiSampleVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'MultiSampleVariantClusterGenotypeMatrix'
+export class MultiSampleVariantClusterGenotypeMatrix extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiSampleVariantClusterGenotypeMatrix'> {
+  name = 'MultiSampleVariantClusterGenotypeMatrix' as const
 
   async execute(args: ClusterGenotypeMatrixArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

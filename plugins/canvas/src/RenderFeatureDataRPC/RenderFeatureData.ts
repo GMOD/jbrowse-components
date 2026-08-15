@@ -2,8 +2,8 @@ import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/R
 
 import type { RenderFeatureDataArgs } from './rpcTypes.ts'
 
-export default class RenderFeatureData extends RpcMethodTypeWithRenameRegion {
-  name = 'RenderFeatureData'
+export default class RenderFeatureData extends RpcMethodTypeWithRenameRegion<'RenderFeatureData'> {
+  name = 'RenderFeatureData' as const
 
   async execute(args: RenderFeatureDataArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

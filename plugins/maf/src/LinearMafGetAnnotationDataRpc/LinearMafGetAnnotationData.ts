@@ -14,8 +14,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class LinearMafGetAnnotationData extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'LinearMafGetAnnotationData'
+export default class LinearMafGetAnnotationData extends RpcMethodTypeWithFiltersAndRenameRegions<'LinearMafGetAnnotationData'> {
+  name = 'LinearMafGetAnnotationData' as const
 
   async execute(
     args: LinearMafGetAnnotationDataArgs,

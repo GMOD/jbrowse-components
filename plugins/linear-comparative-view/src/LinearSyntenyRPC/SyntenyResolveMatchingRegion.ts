@@ -49,8 +49,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
  * ships typed arrays in the first place. The walk happens beside the data and
  * three numbers come back.
  */
-export default class SyntenyResolveMatchingRegion extends RpcMethodTypeWithRenameRegions {
-  name = 'SyntenyResolveMatchingRegion'
+export default class SyntenyResolveMatchingRegion extends RpcMethodTypeWithRenameRegions<'SyntenyResolveMatchingRegion'> {
+  name = 'SyntenyResolveMatchingRegion' as const
 
   async execute(
     args: SyntenyResolveMatchingRegionArgs,

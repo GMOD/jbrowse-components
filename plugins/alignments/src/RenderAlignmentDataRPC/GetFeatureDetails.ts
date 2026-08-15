@@ -26,8 +26,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRenameRegions {
-  name = 'GetPileupFeatureDetails'
+export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRenameRegions<'GetPileupFeatureDetails'> {
+  name = 'GetPileupFeatureDetails' as const
 
   async execute(args: GetFeatureDetailsArgs, rpcDriverClassName: string) {
     const {

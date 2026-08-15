@@ -186,18 +186,30 @@ export function convertFileHandleLocations(
  * is then checked against that entry's declared `return` (bare or wrapped in
  * rpcResult), so the registry stays an assertion about the worker rather than a
  * hand-maintained guess. Left unparameterized, `execute` resolves to `unknown`
- * as before; that's the escape hatch for a method whose worker-side shape
- * intentionally differs from what the client sees because `deserializeReturn`
- * transforms it (CoreGetFeatures, BreakpointGetFeatures).
+ * as before; that's the escape hatch, and it should be rare.
  *
  * The name is checked twice over, because parameterizing used to be a claim
  * rather than a fact: it must be a key of the registry (a miss lands on
  * {@link NotInRpcRegistry} instead of quietly on `unknown`), and it must be the
  * key this class sets as its {@link name}. Both are compile errors, so the
  * escape hatch is the only way to end up unchecked, and taking it is visible.
+ *
+ * The second parameter exists so that taking the hatch is not all-or-nothing.
+ * A method whose `deserializeReturn` rebuilds the result — CoreGetFeatures
+ * serializes features and hands back `SimpleFeature`s — cannot let `execute`
+ * be checked against the registry `return`, which describes what the CALLER
+ * sees. That used to cost it the args as well, and the cost was paid in the
+ * obvious way: `CoreGetFeatures.execute` wrote out all seven of its arg fields
+ * by hand, which is the drift `RpcExecuteArgs` was introduced to stop, in the
+ * most-called method in the app. So name the wire return instead —
+ * `RpcMethodTypeWithRenameRegions<'CoreGetFeatures', SimpleFeatureSerialized[]>`
+ * — and keep the args, the name and the registry key checked. It also writes
+ * the wire shape down, which is the thing the pair of types otherwise leaves
+ * invisible: the registry says what comes back, this says what went over.
  */
 export default abstract class RpcMethodType<
   MethodName extends string = string,
+  WireReturn = RpcExecuteReturn<MethodName>,
 > extends PluggableElementBase {
   /**
    * The key this method is registered under, and the same one the class is
@@ -342,7 +354,7 @@ export default abstract class RpcMethodType<
   abstract execute(
     serializedArgs: RpcExecuteArgs<MethodName>,
     rpcDriverClassName: string,
-  ): Promise<RpcExecuteReturn<MethodName>>
+  ): Promise<WireReturn>
 
   async deserializeReturn(
     serializedReturn: unknown,

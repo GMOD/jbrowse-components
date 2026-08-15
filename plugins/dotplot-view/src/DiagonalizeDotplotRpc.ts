@@ -23,8 +23,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 // DiagonalizeSynteny. Registered separately because an RPC method is only
 // callable if the plugin registering it is loaded, and dotplot-view can be
 // installed without linear-comparative-view.
-export default class DiagonalizeDotplotRpc extends DiagonalizeRpcBase {
-  name = 'DiagonalizeDotplot'
+export default class DiagonalizeDotplotRpc extends DiagonalizeRpcBase<'DiagonalizeDotplot'> {
+  name = 'DiagonalizeDotplot' as const
 }
 
 export { type DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'

@@ -7,8 +7,8 @@ import type { MultiRowClusterFeaturesArgs } from './rpcTypes.ts'
 // hierarchically clusters it into a leaf `order` + newick `tree`. The multi-row
 // analogue of MultiWiggleClusterScoreMatrix; both feed the shared
 // buildClusteredLayout / setLayoutAndClusterTree path.
-export default class MultiRowClusterFeatures extends RpcMethodTypeWithRenameRegions {
-  name = 'MultiRowClusterFeatures'
+export default class MultiRowClusterFeatures extends RpcMethodTypeWithRenameRegions<'MultiRowClusterFeatures'> {
+  name = 'MultiRowClusterFeatures' as const
 
   async execute(args: MultiRowClusterFeaturesArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

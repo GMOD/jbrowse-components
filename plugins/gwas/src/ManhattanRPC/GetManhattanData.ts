@@ -37,8 +37,8 @@ function indexSnpAsRegion(args: GetManhattanDataArgs): Region | undefined {
     : undefined
 }
 
-export default class GetManhattanData extends RpcMethodType {
-  name = 'GetManhattanData'
+export default class GetManhattanData extends RpcMethodType<'GetManhattanData'> {
+  name = 'GetManhattanData' as const
 
   async serializeArguments(args: GetManhattanDataArgs, rpcDriver: string) {
     // bundle the query region and (when parseable) the index-SNP position into
