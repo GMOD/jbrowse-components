@@ -67,6 +67,21 @@ function makeGeneWithTranscripts(transcriptNames: string[]) {
   })
 }
 
+// One isoform of a gene: a transcript-shaped child with a single subpart, so it
+// resolves the same glyph and draws the same label a real one does. `child`
+// picks coding (CDS) or non-coding (exon).
+function isoform(type: string, name: string, i: number, child: string) {
+  return mockFeature({
+    type,
+    name,
+    start: 100 + i * 10,
+    end: 500 + i * 10,
+    subfeatures: [
+      mockFeature({ type: child, name: `${name}-c`, start: 100, end: 200 }),
+    ],
+  })
+}
+
 const TRANSCRIPT_PADDING = 2
 
 describe('layoutSubfeatures layout', () => {
@@ -114,6 +129,35 @@ describe('layoutSubfeatures layout', () => {
 
       expect(layout.height).toBe(10)
       expect(layout.labelRows).toBe(1)
+    })
+
+    // The emitter labels every child it registers and never consults
+    // `transcriptTypes`, so reserving by type left a `lnc_RNA` isoform's label
+    // drawn over the row beneath it — the same overlap the reservation exists
+    // to prevent, reached through the type gate rather than the multiplier.
+    it('counts a row for every child that draws its own label', () => {
+      const gene = mockFeature({
+        type: 'gene',
+        name: 'TestGene',
+        start: 100,
+        end: 2500,
+        subfeatures: ['mRNA', 'lnc_RNA', 'misc_RNA'].map((type, i) =>
+          isoform(type, `iso-${i}`, i, 'exon'),
+        ),
+      })
+
+      const layout = layoutSubfeatures({
+        feature: gene,
+        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
+      })
+
+      expect(layout.children).toHaveLength(3)
+      expect(layout.labelRows).toBe(3)
+      expect(layout.children.map(c => c.ownsLabelRow)).toEqual([
+        true,
+        true,
+        true,
+      ])
     })
   })
 
@@ -196,6 +240,29 @@ describe('layoutSubfeatures layout', () => {
       expect(
         layoutSubfeatures({ feature: gene, config }).isoformsCollapsed,
       ).toBe(false)
+    })
+
+    // A gene with one mRNA and one lnc_RNA used to collapse to the mRNA while
+    // reporting nothing collapsed and no isoform choice to make — so the
+    // lnc_RNA vanished with no control offering it back, and the gene's label
+    // still anchored to the span of what was no longer drawn.
+    it('reports collapsed when the second isoform is a non-coding one', () => {
+      const gene = mockFeature({
+        type: 'gene',
+        name: 'TestGene',
+        start: 100,
+        end: 500,
+        subfeatures: [
+          isoform('mRNA', 'mRNA-1', 0, 'CDS'),
+          isoform('lnc_RNA', 'XR-1', 1, 'exon'),
+        ],
+      })
+      const layout = layoutSubfeatures({ feature: gene, config })
+      expect(layout.isoformsCollapsed).toBe(true)
+      expect(layout.hasMultipleIsoforms).toBe(true)
+      expect(layout.children.map(c => c.feature.get('name'))).toEqual([
+        'mRNA-1',
+      ])
     })
   })
 
@@ -287,6 +354,35 @@ describe('layoutSubfeatures layout', () => {
       })
       expect(layout.children).toHaveLength(1)
     })
+
+    // `transcriptTypes` names seven types and none of the non-coding ones NCBI
+    // hangs off a gene beside its mRNAs, so a cap that counted only its members
+    // left every `lnc_RNA`/`misc_RNA` isoform exempt: a gene capped at 2 drew
+    // 7, which is the overflow the cap exists to end reached a different way.
+    it('counts isoforms transcriptTypes does not name', () => {
+      const gene = mockFeature({
+        type: 'gene',
+        name: 'TestGene',
+        start: 100,
+        end: 2500,
+        subfeatures: [
+          ...['m0', 'm1'].map((name, i) => isoform('mRNA', name, i, 'CDS')),
+          ...['x0', 'x1', 'x2'].map((name, i) =>
+            isoform('lnc_RNA', name, i, 'exon'),
+          ),
+        ],
+      })
+      const layout = layoutSubfeatures({
+        feature: gene,
+        config: mockDisplayConfig({ geneGlyphMode: 'all', maxIsoforms: 2 }),
+      })
+      expect(layout.children).toHaveLength(2)
+      // coding still ranks above non-coding, so the two mRNAs are the survivors
+      expect(layout.children.map(c => c.feature.get('type'))).toEqual([
+        'mRNA',
+        'mRNA',
+      ])
+    })
   })
 
   // NCBI's GFF3 marks the gene's representative isoform with `tag=RefSeq
@@ -369,6 +465,46 @@ describe('layoutSubfeatures layout', () => {
       ).toEqual(['short'])
       // and not the default one, so the field is a real gate
       expect(names({ transcript_support: 'RefSeq Select' })).toEqual(['long'])
+    })
+
+    // The default list holds two tags one gene carries at once: MANE Plus
+    // Clinical marks an ADDITIONAL transcript beside the MANE Select one, and
+    // it is often the longer. Flattened to a boolean "tagged", the
+    // coding-length tiebreak then picked between them by a coin flip; the list
+    // is read as a priority order, so the earlier tag wins outright.
+    it('prefers the earlier tag in the list over a longer protein', () => {
+      const tagged = (name: string, cdsEnd: number, tag: string) =>
+        mockFeature({
+          type: 'mRNA',
+          name,
+          start: 100,
+          end: 500,
+          attributes: { tag },
+          subfeatures: [
+            mockFeature({
+              type: 'CDS',
+              name: `${name}-c`,
+              start: 100,
+              end: cdsEnd,
+            }),
+          ],
+        })
+      const gene = mockFeature({
+        type: 'gene',
+        name: 'TestGene',
+        start: 100,
+        end: 500,
+        subfeatures: [
+          tagged('short', 200, 'MANE Select'),
+          tagged('long', 400, 'MANE Plus Clinical'),
+        ],
+      })
+      expect(
+        layoutSubfeatures({
+          feature: gene,
+          config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+        }).children.map(c => c.feature.get('name')),
+      ).toEqual(['short'])
     })
 
     it('is the first isoform the height cap keeps', () => {

@@ -2,6 +2,7 @@ import { readConfigValueSafe } from './renderConfig.ts'
 import { hasVisibleText, truncateLabel } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
+import type { GlyphType } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -66,9 +67,25 @@ export function readFeatureLabels(
   }
 }
 
-// Whether a transcript child inside a gene needs a `below` label row reserved
-// under it — i.e. `below` mode is on and this transcript has a name to draw.
-// Only the transcript-child path reserves height (top-level and overlay labels
+// Glyph types whose emitter registers the feature ITSELF as a labeled
+// subfeature (processTranscriptLayout's `!isRoot` branch, and emitBox's). The
+// rest label their CHILDREN instead — a polyprotein's cleavage products, a
+// transposon's subparts — and those rows are counted by the child layout's own
+// `labelRows`, not here.
+//
+// Keyed off the glyph the child actually resolved to, because the emitter is:
+// it was keyed off `transcriptTypes` instead, a seven-entry type list that does
+// not name `lnc_RNA` or `misc_RNA`, so such an isoform drew a `below` label
+// with no row reserved for it and the text lay across the transcript beneath.
+const SELF_LABELING_GLYPHS: ReadonlySet<GlyphType> = new Set([
+  'ProcessedTranscript',
+  'Segments',
+  'Box',
+])
+
+// Whether a child inside a gene needs a `below` label row reserved under it —
+// i.e. `below` mode is on, the child draws its own label, and it has a name to
+// draw. Only the subfeature path reserves height (top-level and overlay labels
 // float without reserving); the name is the feature's own name/id, never a
 // config-jexl slot, so this pass stays jexl-free.
 //
@@ -96,11 +113,11 @@ export function readFeatureLabels(
 export function reservesBelowLabelRow(args: {
   feature: Feature
   config: DisplayConfig
-  isTranscriptChild: boolean
+  glyphType: GlyphType
 }) {
-  const { feature, config, isTranscriptChild } = args
+  const { feature, config, glyphType } = args
   return (
-    isTranscriptChild &&
+    SELF_LABELING_GLYPHS.has(glyphType) &&
     config.subfeatureLabels === 'below' &&
     hasVisibleText(truncateLabel(getFeatureName(feature) ?? ''))
   )

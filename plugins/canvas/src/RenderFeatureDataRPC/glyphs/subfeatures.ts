@@ -12,19 +12,35 @@ import type { Feature } from '@jbrowse/core/util'
 // Exported for `effectiveMaxIsoforms`, which spends the same gap.
 export const TRANSCRIPT_PADDING_RATIO = 0.2
 
-// The isoforms a gene is choosing among: its real transcript children when
+// Is this child of a gene one of the isoforms it is choosing among — i.e. a
+// transcript-shaped thing that takes a row of its own — rather than a
+// decoration alongside them (an NCBI source record, a `biological_region`)?
+//
+// Structural first, like findGlyph's own dispatch: a child with subfeatures is
+// what makes the gene a Subfeatures container to begin with, and the emitter
+// draws it exactly like an `mRNA`. `transcriptTypes` is a seven-entry list that
+// does NOT name `lnc_RNA`, `misc_RNA`, `ncRNA` or `pseudogenic_transcript`, all
+// of which NCBI hangs off a gene next to its mRNAs, so keying only off it let
+// those isoforms escape the height cap entirely — a gene capped at 2 drew 7 —
+// and vanish under `longestCoding` while the layout reported nothing collapsed.
+// The type test stays as the fallback for a childless transcript. Matched
+// case-insensitively, like isCDS/isExon and the featureAdmission gate.
+function isIsoform(sub: Feature, transcriptTypes: ReadonlySet<string>) {
+  return (
+    getSubfeatures(sub).length > 0 ||
+    transcriptTypes.has(featureType(sub).toLowerCase())
+  )
+}
+
+// The isoforms a gene is choosing among: its isoform-shaped children when
 // present, else the raw subfeatures. Single source so the "Isoforms collapsed"
-// notice and the gene-glyph control's visibility can't drift apart. Matched
-// case-insensitively, like isCDS/isExon and the featureAdmission gate — real
-// GFFs vary in casing and every type test must agree.
+// notice and the gene-glyph control's visibility can't drift apart.
 function getIsoforms(
   subfeatures: Feature[],
   transcriptTypes: ReadonlySet<string>,
 ) {
-  const transcripts = subfeatures.filter(sub =>
-    transcriptTypes.has(featureType(sub).toLowerCase()),
-  )
-  return transcripts.length > 0 ? transcripts : subfeatures
+  const isoforms = subfeatures.filter(sub => isIsoform(sub, transcriptTypes))
+  return isoforms.length > 0 ? isoforms : subfeatures
 }
 
 // Total coding bp across a feature's subtree (0 when non-coding). "Longest
@@ -56,29 +72,69 @@ function codingLength(feature: Feature): number {
   return sum
 }
 
-// Does this feature carry the annotation's own "this one represents the gene"
-// tag (`tag=RefSeq Select` in NCBI's GFF3, `MANE_Select` / `Ensembl_canonical`
-// in Ensembl's)? Read out of whichever attribute and values the config names. A
-// GFF3 attribute holding a comma list arrives as an array, so both shapes match.
+// How highly the annotation itself rates this feature as the gene's
+// representative — its position in `canonicalTranscriptTags`, or Infinity for
+// one that carries no listed tag. Read out of whichever attribute the config
+// names (`tag=RefSeq Select` in NCBI's GFF3, `MANE_Select` / `Ensembl_canonical`
+// in Ensembl's); a GFF3 attribute holding a comma list arrives as an array, so
+// both shapes match, case-insensitively.
 //
-// Returned as a closure over the tag set rather than taking it per call: the
-// ranking and the stack sort both ask it per subfeature, and the set they ask
-// against is one gene's worth of config either way.
-function canonicalIsoformTest(config: DisplayConfig) {
-  const { canonicalTranscriptField: field, canonicalTranscriptTags } = config
-  const wanted = new Set(canonicalTranscriptTags.map(t => t.toLowerCase()))
-  return (feature: Feature) => {
-    if (wanted.size === 0) {
-      return false
+// A position rather than a boolean because the default list holds two tags a
+// single gene can carry at once: `MANE Plus Clinical` marks an ADDITIONAL
+// transcript kept for clinical variants outside the MANE Select one, and it is
+// often the longer of the two — so with both flattened to "tagged", the
+// coding-length tiebreak below picked between them by a coin flip, and got the
+// gene wrong exactly when the curators had said which one was right.
+function canonicalRank(feature: Feature, field: string, wanted: string[]) {
+  const value = feature.get(field)
+  const values = Array.isArray(value)
+    ? value.map(v => String(v).toLowerCase())
+    : typeof value === 'string'
+      ? [value.toLowerCase()]
+      : []
+  let best = Infinity
+  for (const v of values) {
+    const rank = wanted.indexOf(v)
+    if (rank !== -1 && rank < best) {
+      best = rank
     }
-    const value = feature.get(field)
-    return Array.isArray(value)
-      ? value.some(v => wanted.has(String(v).toLowerCase()))
-      : typeof value === 'string' && wanted.has(value.toLowerCase())
   }
+  return best
 }
 
-type CanonicalTest = ReturnType<typeof canonicalIsoformTest>
+interface IsoformScore {
+  canonical: number
+  coding: boolean
+  size: number
+}
+
+// Everything the two orderings below ask about a gene's children, measured
+// once. `hasCodingSubfeature` and `codingLength` each walk the whole subtree,
+// and the ranking (which the cap and `longestCoding` share) and the stack sort
+// would otherwise each measure the same gene again.
+function scoreIsoforms(features: Feature[], config: DisplayConfig) {
+  const { canonicalTranscriptField: field, canonicalTranscriptTags } = config
+  const wanted = canonicalTranscriptTags.map(t => t.toLowerCase())
+  return new Map<string, IsoformScore>(
+    features.map(feature => {
+      const coding = hasCodingSubfeature(feature)
+      return [
+        feature.id(),
+        {
+          canonical: wanted.length
+            ? canonicalRank(feature, field, wanted)
+            : Infinity,
+          coding,
+          size: coding
+            ? codingLength(feature)
+            : feature.get('end') - feature.get('start'),
+        },
+      ]
+    }),
+  )
+}
+
+type Scores = ReturnType<typeof scoreIsoforms>
 
 // The gene's isoforms, best first: `longestCoding` takes the head, the height
 // cap takes the first n, so the two agree at n = 1 by construction.
@@ -94,28 +150,13 @@ type CanonicalTest = ReturnType<typeof canonicalIsoformTest>
 //
 // A coding-length tie resolves to the LATER isoform (DPP6 and other fixtures
 // depend on it), which a stable sort would break the other way — hence the
-// explicit index tiebreak. Sized once per isoform, not inside the comparator,
-// which would re-walk each subtree O(n log n) times.
-function rankIsoforms(
-  isoforms: Feature[],
-  isCanonical: CanonicalTest,
-): Feature[] {
+// explicit index tiebreak.
+function rankIsoforms(isoforms: Feature[], scores: Scores): Feature[] {
   return isoforms
-    .map((feature, index) => {
-      const coding = hasCodingSubfeature(feature)
-      return {
-        feature,
-        index,
-        canonical: isCanonical(feature),
-        coding,
-        size: coding
-          ? codingLength(feature)
-          : feature.get('end') - feature.get('start'),
-      }
-    })
+    .map((feature, index) => ({ feature, index, ...scores.get(feature.id())! }))
     .sort(
       (a, b) =>
-        Number(b.canonical) - Number(a.canonical) ||
+        a.canonical - b.canonical ||
         Number(b.coding) - Number(a.coding) ||
         b.size - a.size ||
         b.index - a.index,
@@ -129,11 +170,11 @@ function rankIsoforms(
 function isoformsWithinCap(
   isoforms: Feature[],
   maxIsoforms: number | undefined,
-  isCanonical: CanonicalTest,
+  scores: Scores,
 ) {
   return maxIsoforms !== undefined && isoforms.length > maxIsoforms
     ? new Set(
-        rankIsoforms(isoforms, isCanonical)
+        rankIsoforms(isoforms, scores)
           .slice(0, Math.max(1, maxIsoforms))
           .map(f => f.id()),
       )
@@ -143,7 +184,6 @@ function isoformsWithinCap(
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   const { geneGlyphMode, maxIsoforms, transcriptTypes } = config
-  const isCanonical = canonicalIsoformTest(config)
 
   // the gene's own resolved height, used only for the inter-transcript gap below
   // — each stacked child carries whatever height its own glyph resolved
@@ -152,6 +192,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   let subfeatures = [...getSubfeatures(feature)]
 
   const transcriptTypeSet = new Set(transcriptTypes.map(t => t.toLowerCase()))
+  const scores = scoreIsoforms(subfeatures, config)
 
   // Resolve the isoform list once and reuse it for both the gene-glyph control's
   // visibility (does this gene actually have multiple isoforms to choose among?)
@@ -164,18 +205,18 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   if (geneGlyphMode === 'longestCoding') {
     isoformsCollapsed = hasMultipleIsoforms
     subfeatures = isoformsCollapsed
-      ? [rankIsoforms(isoforms, isCanonical)[0]!]
+      ? [rankIsoforms(isoforms, scores)[0]!]
       : isoforms
   } else {
-    // Drop the isoforms past the cap, leaving non-transcript children (an NCBI
-    // source record, a `biological_region`) alone.
+    // Drop the isoforms past the cap, leaving the decorations alongside them (an
+    // NCBI source record, a `biological_region`) alone.
     //
     // Before the sort below, which is in place and over an array `isoforms` can
     // BE — getIsoforms falls back to the raw subfeatures for a gene with no
-    // transcript children. Ranking after it would rank a reordered list, and
+    // isoform-shaped children. Ranking after it would rank a reordered list, and
     // rankIsoforms breaks a tie by index, so the cap at n = 1 would have kept a
     // different isoform than the longestCoding collapse does.
-    const keep = isoformsWithinCap(isoforms, maxIsoforms, isCanonical)
+    const keep = isoformsWithinCap(isoforms, maxIsoforms, scores)
     if (keep) {
       const isoformIds = new Set(isoforms.map(f => f.id()))
       subfeatures = subfeatures.filter(
@@ -190,13 +231,11 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     // survivors of the cap keep the order they would have had — and an
     // annotation that tags nothing, which is most of them, sorts exactly as
     // before.
-    const stackRank = new Map(
-      subfeatures.map(f => [
-        f.id(),
-        (isCanonical(f) ? 2 : 0) + (hasCodingSubfeature(f) ? 1 : 0),
-      ]),
-    )
-    subfeatures.sort((a, b) => stackRank.get(b.id())! - stackRank.get(a.id())!)
+    subfeatures.sort((a, b) => {
+      const x = scores.get(a.id())!
+      const y = scores.get(b.id())!
+      return x.canonical - y.canonical || Number(y.coding) - Number(x.coding)
+    })
   }
 
   const children: FeatureLayout[] = []
@@ -211,8 +250,6 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   let labelRows = 0
 
   for (const [i, child] of subfeatures.entries()) {
-    const childType = featureType(child)
-    const isChildTranscript = transcriptTypeSet.has(childType.toLowerCase())
     const childLayout = findGlyph(
       child,
       config,
@@ -237,7 +274,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
       reservesBelowLabelRow({
         feature: child,
         config,
-        isTranscriptChild: isChildTranscript,
+        glyphType: childLayout.glyphType,
       })
     ) {
       childLayout.ownsLabelRow = true

@@ -7,6 +7,8 @@ import {
 } from './labelUtils.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
+import type { GlyphType } from './types.ts'
+
 function createMockFeature(name: string, id = 'feat-1') {
   return {
     get: (key: string) => {
@@ -101,16 +103,25 @@ describe('reservesBelowLabelRow', () => {
   const ask = (
     feature: unknown,
     subfeatureLabels: string,
-    isTranscriptChild = true,
+    glyphType: GlyphType = 'ProcessedTranscript',
   ) =>
     reservesBelowLabelRow({
       feature: feature as any,
       config: mockDisplayConfig({ subfeatureLabels } as any),
-      isTranscriptChild,
+      glyphType,
     })
 
   it('reserves for a named transcript child in "below" mode', () => {
     expect(ask(createMockFeature('NM_001234'), 'below')).toBe(true)
+  })
+
+  // The gate is the glyph, not the feature's type: a `lnc_RNA` isoform lands on
+  // Segments and its emitter labels it exactly like an mRNA, so it costs a row
+  // exactly like one. Keyed off `transcriptTypes` (which lists neither) the
+  // label drew with nothing reserved and lay across the transcript beneath.
+  it('reserves for a non-coding isoform, which draws the same label', () => {
+    expect(ask(createMockFeature('XR_001234'), 'below', 'Segments')).toBe(true)
+    expect(ask(createMockFeature('some-region'), 'below', 'Box')).toBe(true)
   })
 
   it('falls back to the feature id when the name is empty', () => {
@@ -128,7 +139,13 @@ describe('reservesBelowLabelRow', () => {
     expect(ask(createMockFeature('NM_001234'), 'none')).toBe(false)
   })
 
-  it('reserves nothing for a nested non-transcript child', () => {
-    expect(ask(createMockFeature('exon-1'), 'below', false)).toBe(false)
+  // These label their CHILDREN, never themselves (a polyprotein's cleavage
+  // products, a transposon's subparts), so the rows belong to the child layout
+  // and counting one here too would double-spend them.
+  it('reserves nothing for a glyph that labels its children instead', () => {
+    expect(
+      ask(createMockFeature('polyprotein'), 'below', 'MatureProteinRegion'),
+    ).toBe(false)
+    expect(ask(createMockFeature('LTR-1'), 'below', 'RepeatRegion')).toBe(false)
   })
 })
