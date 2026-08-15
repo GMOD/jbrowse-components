@@ -8,10 +8,10 @@ import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
+  checkPanSNPrefixes,
   getOrCreate,
   makeIndexedSyntenyFeature,
   markReciprocalDuplicates,
-  noPanSNMatchError,
   panSNInventory,
   resolveCoarseTier,
   resolvePanSNPrefix,
@@ -44,17 +44,6 @@ function pifSide(line: PifLine): AlignedSide {
 export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<AllVsAllIndexedPAFAdapterConfig> {
   private pif = new PifFile(this)
   private seqIndexP?: Promise<Map<string, Map<string, string[]>>>
-
-  // Config-derived and therefore fixed for this adapter: an edit produces a new
-  // snapshot, hence a new cache key and a new adapter (see dataAdapterCache).
-  // Read once instead of per getFeatures — that is per band, per region, per
-  // pan/zoom, and assemblyByPanSNPrefix builds a fresh map each time.
-  private asmByPrefixCache?: Record<string, string>
-
-  private asmByPrefix() {
-    this.asmByPrefixCache ??= assemblyByPanSNPrefix(this)
-    return this.asmByPrefixCache
-  }
 
   // The distinct PanSN seqids (tier letter t/q/T/Q stripped, deduped across
   // tiers) grouped prefix -> contig -> seqids. Every seqid is filed under each
@@ -112,7 +101,7 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
     const { statusCallback = () => {}, stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName: qref, assemblyName } = query
-      const asmByPrefix = this.asmByPrefix()
+      const asmByPrefix = assemblyByPanSNPrefix(this)
       const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
       const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
 
@@ -130,39 +119,22 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
       const seqIndex = await this.seqIndex(opts)
       const byContig = seqIndex.get(anchorPrefix)
       // A prefix present but holding no such contig is ordinary — a contig with
-      // no alignments. A prefix the file has never heard of is a misconfigured
-      // track that would otherwise draw nothing and say nothing; see
-      // noPanSNMatchError. The target is checked too, so a band naming a
-      // mistyped assembly says which end is wrong instead of drawing empty.
+      // no alignments. A prefix the file has never heard of is not; see
+      // checkPanSNPrefixes.
       //
       // Unlike the in-memory adapter this cannot go on to say "both ends are
       // present but nothing aligns them" (see noSuchPairError): that is a fact
       // about the rows, and the seqid list is all this has without a scan. The
       // make-pif warning covers the same ground at build time.
-      for (const [name, prefix] of [
-        [assemblyName, anchorPrefix],
-        [opts.targetAssemblyName, targetPrefix],
-      ] as const) {
-        if (
-          name !== undefined &&
-          prefix !== undefined &&
-          !seqIndex.has(prefix)
-        ) {
-          throw noPanSNMatchError({
-            assemblyName: name,
-            prefix,
-            inventory: await this.inventory(opts),
-          })
-        }
-      }
-      if (byContig === undefined) {
-        throw noPanSNMatchError({
-          assemblyName,
-          prefix: anchorPrefix,
-          inventory: await this.inventory(opts),
-        })
-      }
-      const seqs = byContig.get(qref) ?? []
+      await checkPanSNPrefixes({
+        ends: [
+          [assemblyName, anchorPrefix],
+          [opts.targetAssemblyName, targetPrefix],
+        ],
+        has: prefix => seqIndex.has(prefix),
+        inventory: () => this.inventory(opts),
+      })
+      const seqs = byContig?.get(qref) ?? []
 
       // One slot per concurrent getLines: they run under one Promise.all and
       // would otherwise take turns overwriting the single status field, so the

@@ -14,10 +14,10 @@ import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
+  checkPanSNPrefixes,
   getOrCreate,
   isSelfDiagonal,
   markReciprocalDuplicates,
-  noPanSNMatchError,
   noSuchPairError,
   panSNInventory,
   resolvePanSNPrefix,
@@ -47,17 +47,6 @@ interface IndexedSide extends AlignedSide {
 }
 
 export default class AllVsAllPAFAdapter extends ComparativeAdapterBase<AllVsAllPAFAdapterConfig> {
-  // Config-derived and therefore fixed for this adapter: an edit produces a new
-  // snapshot, hence a new cache key and a new adapter (see dataAdapterCache).
-  // Read once instead of per getFeatures — that is per band, per region, per
-  // pan/zoom, and assemblyByPanSNPrefix builds a fresh map each time.
-  private asmByPrefixCache?: Record<string, string>
-
-  private asmByPrefix() {
-    this.asmByPrefixCache ??= assemblyByPanSNPrefix(this)
-    return this.asmByPrefixCache
-  }
-
   setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
 
   /**
@@ -161,31 +150,21 @@ export default class AllVsAllPAFAdapter extends ComparativeAdapterBase<AllVsAllP
         await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
       const { targetAssemblyName } = opts
-      const asmByPrefix = this.asmByPrefix()
+      const asmByPrefix = assemblyByPanSNPrefix(this)
       const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
       const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
 
-      // An assembly the file has never heard of is a misconfigured track that
-      // would otherwise draw nothing and say nothing; see noPanSNMatchError.
       // Tested against the inventory rather than the index, because a prefix
       // whose every alignment was a self-diagonal IS in the file and legitimately
       // draws nothing.
-      for (const [name, prefix] of [
-        [assemblyName, anchorPrefix],
-        [targetAssemblyName, targetPrefix],
-      ] as const) {
-        if (
-          name !== undefined &&
-          prefix !== undefined &&
-          !panSN.prefixes.has(prefix)
-        ) {
-          throw noPanSNMatchError({
-            assemblyName: name,
-            prefix,
-            inventory: panSN,
-          })
-        }
-      }
+      await checkPanSNPrefixes({
+        ends: [
+          [assemblyName, anchorPrefix],
+          [targetAssemblyName, targetPrefix],
+        ],
+        has: prefix => panSN.prefixes.has(prefix),
+        inventory: () => panSN,
+      })
       // Both ends are in the file but nothing aligns them: an incomplete
       // all-vs-all rather than a misconfigured track, so it names its own remedy.
       // Answered off the whole file, not this window — a window with no

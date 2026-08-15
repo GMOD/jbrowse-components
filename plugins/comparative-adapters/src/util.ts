@@ -67,16 +67,27 @@ export function resolvePanSNPrefix(
     : (assemblyNameToPanSN(adapter)[name] ?? name)
 }
 
+// Memoized per adapter, and safe to be: the map is config-derived, and an edit
+// produces a new snapshot, hence a new cache key and a new adapter (see
+// dataAdapterCache). Both all-vs-all adapters call this per getFeatures — per
+// band, per region, per pan/zoom. Weak so the map dies with the adapter.
+const asmByPrefixCache = new WeakMap<
+  BaseFeatureDataAdapter,
+  Record<string, string>
+>()
+
 // PanSN prefix (in the PAF) -> JBrowse assembly name, for the listed assemblies.
 // The prefix is whatever the config named, so this map can hold sample-level
 // (`grape`) and haplotype-level (`grape#1`) keys at once.
 export function assemblyByPanSNPrefix(adapter: BaseFeatureDataAdapter) {
-  const map = assemblyNameToPanSN(adapter)
-  const out: Record<string, string> = {}
-  for (const asm of adapter.getConf('assemblyNames') as string[]) {
-    out[map[asm] ?? asm] = asm
-  }
-  return out
+  return getOrCreate(asmByPrefixCache, adapter, () => {
+    const map = assemblyNameToPanSN(adapter)
+    const out: Record<string, string> = {}
+    for (const asm of adapter.getConf('assemblyNames') as string[]) {
+      out[map[asm] ?? asm] = asm
+    }
+    return out
+  })
 }
 
 // Give a mate a friendly assembly label. Resolves at the most specific depth the
@@ -170,6 +181,35 @@ export function noPanSNMatchError({
 }
 
 /**
+ * Throw {@link noPanSNMatchError} for the first end of a query whose prefix the
+ * file does not hold. Both ends are checked, so a band naming a mistyped
+ * assembly says which end is wrong instead of drawing empty.
+ *
+ * `has` and `inventory` differ per adapter — the in-memory one has both in hand
+ * from its setup, the indexed one probes a seqid index and pays a fetch for the
+ * inventory, which is why that one is a thunk taken only on the failing path.
+ */
+export async function checkPanSNPrefixes({
+  ends,
+  has,
+  inventory,
+}: {
+  ends: readonly (readonly [string | undefined, string | undefined])[]
+  has: (prefix: string) => boolean
+  inventory: () => PanSNInventory | Promise<PanSNInventory>
+}) {
+  for (const [assemblyName, prefix] of ends) {
+    if (assemblyName !== undefined && prefix !== undefined && !has(prefix)) {
+      throw noPanSNMatchError({
+        assemblyName,
+        prefix,
+        inventory: await inventory(),
+      })
+    }
+  }
+}
+
+/**
  * What an all-vs-all adapter raises when both assemblies of a synteny band are
  * in the file but the file states no alignment between them.
  *
@@ -206,8 +246,14 @@ export function noSuchPairError({
  * record under (prefix, contig) or (refName, mateRefName), and a Map rather
  * than a joined string key because a contig name can contain any character one
  * would reach for as a separator.
+ *
+ * Structural in the map so a WeakMap memo passes too.
  */
-export function getOrCreate<K, V>(map: Map<K, V>, key: K, make: () => V) {
+export function getOrCreate<K, V>(
+  map: { get: (key: K) => V | undefined; set: (key: K, value: V) => unknown },
+  key: K,
+  make: () => V,
+) {
   let value = map.get(key)
   if (value === undefined) {
     value = make()
