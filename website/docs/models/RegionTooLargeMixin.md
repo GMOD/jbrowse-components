@@ -94,13 +94,13 @@ and the middle one is shared:
   floor; the byte axis adds nothing, which is why it has no getter of its own
   and reads `gateActive` directly.
 
-Until 2026-08 the middle question was called `gateActive` and the exemption
-`gateExempt`, while `densityGateActive` was literally `gateActive && …` and
-`gateExempt`'s own first sentence said "on either axis". Two names claiming an
-axis they had no term from is how a reader comes to believe force-load only
-lifts the byte gate — which is a thing this mixin's _predecessor_ actually did,
-and one of the four bugs the boolean replaced (see REGION_TOO_LARGE.md §
-Force-load).
+Until 2026-08 the middle question was called `byteGateActive` and the exemption
+`byteGateExempt`, while `densityGateActive` was literally `byteGateActive && …`
+and `byteGateExempt`'s own first sentence said "on either axis". Two names
+claiming an axis they had no term from is how a reader comes to believe
+force-load only lifts the byte gate — which is a thing this mixin's
+_predecessor_ actually did, and one of the four bugs the boolean replaced (see
+REGION_TOO_LARGE.md § Force-load).
 
 ## Volatiles
 
