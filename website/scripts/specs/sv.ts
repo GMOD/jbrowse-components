@@ -1054,11 +1054,19 @@ export const svSpecs: ScreenshotSpec[] = [
     // reader retypes rather than a paraphrase of it — and it belongs on the
     // track, not on one of the two sections, since the setting made both. The
     // label row is empty from the end of the track name to the right edge.
+    //
+    // ONE SIZE FOR ALL THREE (reviewer: "text annotations should all be same
+    // size"). The track-level pill was 16 against the two section pills' 18, on
+    // the reasoning that it names a setting rather than a finding — but nothing
+    // in the frame says that is what the two point sizes mean, so it reads as
+    // three labels one of which came out wrong. Rank belongs to WHERE a pill
+    // sits, which this figure already has: the setting is on the track header
+    // and the findings are on their own sections.
     annotations: [
       {
         type: 'text',
         text: 'Group by → Split read (SA tag)',
-        fontSize: 16,
+        fontSize: 18,
         anchor: { text: 'HG00151 Nanopore', alignX: 'right', dx: 16 },
       },
       {

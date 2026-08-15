@@ -267,20 +267,28 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // reaches by pressing Enter. The collapse is a click on a control, and the
   // figure was showing its result as though it were the result of the search.
   //
-  // So the frames are now type -> Enter -> collapse. The middle one is the
-  // default and it does not fit: at this zoom `auto` resolves to `all` (below
-  // 100 bp/px), so RefSeq All lays 28 transcripts inside a 100px band and both
-  // the last rows and the gene name drawn under the stack are behind the
-  // track's own scrollbar. That frame has been denied twice as an END state
-  // ("looks chaotic having so many isoforms") and it is not one here: it is why
-  // the reader clicks, and the ring says what to click.
+  // So the frames are now type -> Enter -> collapse.
   //
-  // The control is the QUIET ICON in that frame, not the chip. The chip is the
-  // collapsed-only look, so at the default there is no chip to point at --
-  // which is also the reason `auto` cannot be the third frame's mode either.
-  // Frame three clicks the icon and picks from its menu, so the collapse is
-  // performed rather than declared, and the chip it leaves is what the later
-  // isoform_control figure calls "the same one the search figure used".
+  // THE MIDDLE FRAME USED TO BE THE OVERFLOW, and it is not any more -- the app
+  // changed under it, on this figure's own review. `auto` resolves to `all` at
+  // this zoom, and 28 RefSeq transcripts in a 100px band drew all 28 inside the
+  // track's own scrollbar, with the last rows and the gene name below the fold.
+  // The frame was denied three times for it, the third time as a product bug
+  // rather than a framing one ("it basically is highlighting a weakness of our
+  // browser ... it should truncate the number of isoforms so that it fits in
+  // the display height"). `auto` now caps a gene at the rows its lane has, so
+  // the default state is seven legible transcripts, the gene's name back in
+  // frame, and a chip that says `Top 7 isoforms`.
+  //
+  // Which makes the middle frame a RESULT rather than a problem, and the third
+  // frame is still worth its rows: the cap is the browser's answer to the
+  // height, and one canonical transcript is the reader's answer to the
+  // question. The chip is what carries you between them.
+  //
+  // The ring is on the control either way, and the control is now the LOUD CHIP
+  // in that frame rather than the quiet icon -- the cap is a collapse, so it
+  // draws the chip form. `track-control-isoform` is the testid on both looks,
+  // so the annotation and the click below are unchanged by that.
   //
   // The second frame DECLARES the destination rather than pressing Enter on the
   // first. Pressing it is honest and was tried: the hit that answers `TP53`
