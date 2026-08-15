@@ -1,4 +1,4 @@
-import { resolvedMateSpan } from './buildSyntenyViewSpec.ts'
+import { resolvePanel } from './buildSyntenyViewSpec.ts'
 
 import type { RegionOfInterest } from './buildSyntenyViewSpec.ts'
 import type { MateCandidate } from './pickMatesForRegion.ts'
@@ -15,7 +15,7 @@ export interface MatePanelRow extends MateCandidate {
   kind: 'mate'
   checked: boolean
   // Where this row's panel will open, resolved once here rather than by the
-  // component that shows it. The resolution walks the alignment's CIGAR, which
+  // component that shows it. The resolution walks each alignment's CIGAR, which
   // for a megabase asm5 block is tens of thousands of ops, and the dialog
   // re-renders on every keystroke in its window-size field — so deriving it in
   // render re-parsed every listed mate's CIGAR per character typed. Nothing it
@@ -23,7 +23,7 @@ export interface MatePanelRow extends MateCandidate {
   // reordering or unchecking a row moves the panel rather than moving where it
   // opens. `undefined` for a mate that resolved to none, which cannot happen
   // for a discovered candidate but is not worth asserting away.
-  span: ReturnType<typeof resolvedMateSpan>
+  span: ReturnType<typeof resolvePanel>
 }
 
 export type PanelRow = AnchorPanelRow | MatePanelRow
@@ -39,7 +39,7 @@ export function toPanelRows(
       ...candidate,
       kind: 'mate' as const,
       checked: true,
-      span: resolvedMateSpan(candidate.feature, region),
+      span: resolvePanel(candidate.features, region),
     })),
   ]
 }

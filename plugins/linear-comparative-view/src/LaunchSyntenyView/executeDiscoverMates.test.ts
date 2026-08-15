@@ -66,14 +66,16 @@ function run(
 // The reason this runs in the worker at all: a locus on an all-vs-all file
 // carries an alignment per sample and a selection can be a whole chromosome, so
 // reducing here is what keeps the millions of rows behind the fetch from
-// crossing the boundary to be thrown away on arrival.
-test('only the widest alignment per mate assembly comes back', async () => {
+// crossing the boundary to be thrown away on arrival. One PANEL per mate
+// assembly, though — not one alignment: the panel spans every block that
+// assembly aligns the region with.
+test('one panel per mate assembly, carrying all of its alignments', async () => {
   const { mates } = await run([
     feature({ mateAssembly: 'volvox_ins', start: 150, end: 200 }),
     feature({ mateAssembly: 'volvox_ins', start: 100, end: 200 }),
   ])
   expect(mates.length).toBe(1)
-  expect(mates[0]!.feature.start).toBe(100)
+  expect(mates[0]!.features.map(f => f.start)).toEqual([150, 100])
 })
 
 test('mates the track declares no assembly for are reported, not shipped', async () => {
@@ -102,7 +104,7 @@ test('a shipped alignment carries the CIGAR and none of the bulk beside it', asy
       },
     }),
   ])
-  const { feature: shipped } = mates[0]!
+  const shipped = mates[0]!.features[0]!
   expect(shipped.CIGAR).toBe('100M')
   expect(shipped.strand).toBe(-1)
   expect(shipped.mate).toEqual({

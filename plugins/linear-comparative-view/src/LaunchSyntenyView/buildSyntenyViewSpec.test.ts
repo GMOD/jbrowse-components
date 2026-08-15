@@ -1,12 +1,14 @@
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, assembleLocString } from '@jbrowse/core/util'
 
-import { buildSyntenyViewSpec } from './buildSyntenyViewSpec.ts'
+import { buildSyntenyViewSpec, resolvePanel } from './buildSyntenyViewSpec.ts'
 
 // A PAF block on ctgA 1000-2000 (interbase) against ctgB 5000-6000 on the mate
 // assembly, with a CIGAR carrying one 10bp deletion 100bp in.
 function makeFeature({
   strand = 1,
   CIGAR = '1000=',
+  start = 1000,
+  end = 2000,
   mateAssembly = 'volvox2',
   mateRefName = 'ctgB',
   mateStart = 5000,
@@ -14,17 +16,19 @@ function makeFeature({
 }: {
   strand?: number
   CIGAR?: string
+  start?: number
+  end?: number
   mateAssembly?: string
   mateRefName?: string
   mateStart?: number
   mateEnd?: number
 } = {}) {
   return new SimpleFeature({
-    uniqueId: `f1-${mateAssembly}`,
+    uniqueId: `f1-${mateAssembly}-${start}`,
     assemblyName: 'volvox',
     refName: 'ctgA',
-    start: 1000,
-    end: 2000,
+    start,
+    end,
     strand,
     CIGAR,
     mate: {
@@ -230,6 +234,23 @@ describe('no CIGAR', () => {
       locs(buildSyntenyViewSpec({ ...args, features: [noCigarFeature()] })),
     ).toEqual(['ctgA:1,001..2,000', 'ctgB:5,001..6,000'])
   })
+
+  // Interpolation lands on fractional bases, and the dialog previews the span
+  // `resolvePanel` reports while the launch pads it — so the two round the same
+  // way, outward, or the view opens a base short of the row it was read off.
+  test('the launched panel is the span the dialog previewed', () => {
+    const features = [noCigarFeature({ mateEnd: 5333 })]
+    const region = { start: 1200, end: 1400 }
+    const panel = resolvePanel(features, region)!
+    expect([panel.mateStart, panel.mateEnd]).toEqual([5066, 5134])
+    expect(locs(buildSyntenyViewSpec({ ...args, features, region }))[1]).toBe(
+      assembleLocString({
+        refName: panel.refName,
+        start: panel.mateStart,
+        end: panel.mateEnd,
+      }),
+    )
+  })
 })
 
 // The multi-way launch: one anchor panel plus one panel per mate at the locus,
@@ -335,6 +356,92 @@ test('the anchor row spans the union of what the mates resolved to', () => {
     'ctgB:5,001..5,400',
     'ctgB:5,001..5,100',
   ])
+})
+
+// A selection routinely covers several blocks of one mate: an HSP table (BLAST
+// tabular) and a gene-anchor table (MCScan) are one row per hit, and a minimap2
+// PAF splits at every structural difference. Framing on the widest of them
+// opened a fraction of the selection on BOTH axes — the mate panel on one
+// block, and the anchor row on that block's slice of the region — and dropped
+// the rest with nothing on screen to say so.
+describe('several blocks of one mate', () => {
+  const region = { start: 1000, end: 5000 }
+  const fragments = [
+    makeFeature({ start: 1000, end: 2000, mateStart: 5000, mateEnd: 6000 }),
+    makeFeature({
+      start: 3000,
+      end: 5000,
+      CIGAR: '2000=',
+      mateStart: 7000,
+      mateEnd: 9000,
+    }),
+  ]
+  const args = {
+    windowSize: 0,
+    trackId: 't1',
+    anchorAssembly: 'volvox',
+    flipReversedMates: false,
+  }
+
+  test('are one panel spanning all of them', () => {
+    const spec = buildSyntenyViewSpec({ ...args, features: fragments, region })
+    expect(locs(spec)).toEqual(['ctgA:1,001..5,000', 'ctgB:5,001..9,000'])
+    expect(spec.init.views.map(v => v.assembly)).toEqual(['volvox', 'volvox2'])
+    expect(spec.init.tracks).toEqual([['t1']])
+  })
+
+  // one panel, so a fragmented pairwise launch is still the two-row case the
+  // "collapse empty rows" default is about
+  test('do not read as a multi-way launch', () => {
+    expect(
+      buildSyntenyViewSpec({ ...args, features: fragments, region }).init
+        .collapseEmptyRows,
+    ).toBe(false)
+  })
+
+  // a panel opens on one stable sequence, so a minority contig is dropped
+  // rather than unioned into a span covering neither
+  test('reaching two mate contigs keep the one covering most of the region', () => {
+    const spec = buildSyntenyViewSpec({
+      ...args,
+      region,
+      features: [
+        ...fragments,
+        makeFeature({
+          start: 4900,
+          end: 5000,
+          mateRefName: 'ctgQ',
+          mateStart: 100,
+          mateEnd: 200,
+        }),
+      ],
+    })
+    expect(locs(spec)).toEqual(['ctgA:1,001..5,000', 'ctgB:5,001..9,000'])
+  })
+
+  // the flip is a property of the panel, so it follows the strand carrying most
+  // of the alignment rather than whichever block was served first
+  test('open reversed when the minus strand carries most of the alignment', () => {
+    const minusMost = [
+      makeFeature({ start: 1000, end: 1100, mateStart: 5000, mateEnd: 5100 }),
+      makeFeature({
+        start: 2000,
+        end: 5000,
+        strand: -1,
+        CIGAR: '3000=',
+        mateStart: 6000,
+        mateEnd: 9000,
+      }),
+    ]
+    expect(
+      buildSyntenyViewSpec({
+        ...args,
+        region,
+        flipReversedMates: true,
+        features: minusMost,
+      }).init.views[1]!.loc,
+    ).toBe('ctgB:5,001..9,000[rev]')
+  })
 })
 
 test('the anchor panel uses the passed assembly, not the feature field', () => {

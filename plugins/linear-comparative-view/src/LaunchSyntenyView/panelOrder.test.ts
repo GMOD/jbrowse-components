@@ -16,13 +16,15 @@ const region = { start: 0, end: 1 }
 function candidates(...assemblyNames: string[]): MateCandidate[] {
   return assemblyNames.map(assemblyName => ({
     assemblyName,
-    feature: new SimpleFeature({
-      uniqueId: assemblyName,
-      refName: 'chr',
-      start: 0,
-      end: 1,
-      mate: { refName: 'ctg', start: 10, end: 20, assemblyName },
-    }),
+    features: [
+      new SimpleFeature({
+        uniqueId: assemblyName,
+        refName: 'chr',
+        start: 0,
+        end: 1,
+        mate: { refName: 'ctg', start: 10, end: 20, assemblyName },
+      }),
+    ],
   }))
 }
 
@@ -48,9 +50,12 @@ test('the anchor leads the list and every discovered mate starts checked', () =>
 // unchecking move the panel, not the locus, so the value has to survive both.
 test('a row carries its resolved locus through a reorder and an uncheck', () => {
   expect(spanOf(rows, 'Sakai')).toEqual({
+    assemblyName: 'Sakai',
     refName: 'ctg',
-    start: 10,
-    end: 20,
+    anchorStart: 0,
+    anchorEnd: 1,
+    mateStart: 10,
+    mateEnd: 20,
     reversed: false,
   })
   const moved = movePanel(setPanelChecked(rows, 1, false), 1, 1)

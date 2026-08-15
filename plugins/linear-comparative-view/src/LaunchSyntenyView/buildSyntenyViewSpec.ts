@@ -108,37 +108,110 @@ function resolveSpans({
   }
 }
 
+// One panel's worth of alignments, resolved onto both axes and unioned.
+export interface ResolvedPanel {
+  assemblyName: string
+  refName: string
+  // the slice of the anchor axis this panel's alignments cover
+  anchorStart: number
+  anchorEnd: number
+  mateStart: number
+  mateEnd: number
+  // the strand the panel opens on, which is the one carrying most of the
+  // alignment rather than whichever block happened to come first
+  reversed: boolean
+}
+
 /**
- * Where one alignment's panel will open, before window padding — the same
- * resolution the launch itself runs, so the region dialog's panel list can
- * preview the view it is about to build instead of restating the whole block.
- * `undefined` for a feature with no mate, which is not a panel.
+ * Where one panel will open, before window padding — the same resolution the
+ * launch itself runs, so the region dialog's panel list can preview the view it
+ * is about to build instead of restating the whole block.
+ *
+ * ALL of the panel's alignments, unioned, not just the widest of them. A
+ * selection routinely covers several blocks of one mate: an HSP table (BLAST
+ * tabular) and a gene-anchor table (MCScan) are one row per *hit*, so a
+ * kilobase-scale locus is already dozens of them, and even a minimap2 PAF splits
+ * at every structural difference. Framing the panel on one of those blocks
+ * opened a fraction of what the user selected, on both axes, and dropped the
+ * rest with nothing on screen to say so.
+ *
+ * `undefined` when nothing in `features` has a mate, which is not a panel.
+ */
+export function resolvePanel(
+  features: Feature[],
+  region: RegionOfInterest | undefined,
+): ResolvedPanel | undefined {
+  const resolved = features.flatMap(feature => {
+    const mate = getMate(feature)
+    return mate
+      ? [{ feature, mate, spans: resolveSpans({ feature, mate, region }) }]
+      : []
+  })
+  // The mate refName carrying the most of the anchor axis. A selection can
+  // reach two contigs of one mate assembly — a rearrangement, or simply a
+  // fragmented assembly — and a panel opens on one stable sequence, so the
+  // minority contig is dropped rather than unioned into a span covering
+  // neither.
+  const bpByRefName = new Map<string, number>()
+  for (const { mate, spans } of resolved) {
+    const bp = spans.featEnd - spans.featStart
+    bpByRefName.set(mate.refName, (bpByRefName.get(mate.refName) ?? 0) + bp)
+  }
+  const refName = [...bpByRefName].sort((a, b) => b[1] - a[1])[0]?.[0]
+  const kept = resolved.filter(r => r.mate.refName === refName)
+  const first = kept[0]
+  if (refName === undefined || !first) {
+    return undefined
+  }
+  const minusBp = kept
+    .filter(r => r.feature.get('strand') === -1)
+    .reduce((a, r) => a + r.spans.featEnd - r.spans.featStart, 0)
+  const totalBp = kept.reduce(
+    (a, r) => a + r.spans.featEnd - r.spans.featStart,
+    0,
+  )
+  // a reverse-strand walk counts down, so one block's two ends arrive swapped
+  const mateEnds = kept.flatMap(r => [r.spans.mateStart, r.spans.mateEnd])
+  return {
+    assemblyName: first.mate.assemblyName,
+    refName,
+    anchorStart: Math.min(...kept.map(r => r.spans.featStart)),
+    anchorEnd: Math.max(...kept.map(r => r.spans.featEnd)),
+    mateStart: Math.floor(Math.min(...mateEnds)),
+    mateEnd: Math.ceil(Math.max(...mateEnds)),
+    // ties (a single zero-length block, an even split) read as forward, which
+    // is what an unflipped panel already was
+    reversed: minusBp * 2 > totalBp,
+  }
+}
+
+/**
+ * The mate side of a single alignment, for the callers that follow one block
+ * rather than build a panel out of several — see `matePanelLocString`.
  */
 export function resolvedMateSpan(
   feature: Feature,
   region: RegionOfInterest | undefined,
 ) {
-  const mate = getMate(feature)
-  if (!mate) {
-    return undefined
-  }
-  const { mateStart, mateEnd } = resolveSpans({ feature, mate, region })
-  return {
-    refName: mate.refName,
-    // a reverse-strand walk counts down, so the two ends arrive swapped
-    start: Math.floor(Math.min(mateStart, mateEnd)),
-    end: Math.ceil(Math.max(mateStart, mateEnd)),
-    reversed: feature.get('strand') === -1,
-  }
+  const panel = resolvePanel([feature], region)
+  return panel
+    ? {
+        refName: panel.refName,
+        start: panel.mateStart,
+        end: panel.mateEnd,
+        reversed: panel.reversed,
+      }
+    : undefined
 }
 
 // Pad a span by windowSize and render it as a locstring. assembleLocString is
 // what makes this 1-based: navToLocString parses the result back as 1-based
 // inclusive, so emitting the raw interbase start would open the view one base
-// left of the alignment. min/max because a reverse-strand mate walk produces
-// end < start; the `end` floor is raised to keep at least one base, since a
-// zero-width span (windowSize 0 over a single-base CIGAR mapping) would
-// assemble into an inverted locstring.
+// left of the alignment. The ends round OUTWARD — an interpolated mate span is
+// fractional, and flooring its far end opened the view one base short of the
+// span the dialog had just previewed. The `end` floor is raised to keep at
+// least one base, since a zero-width span (windowSize 0 over a single-base
+// CIGAR mapping) would assemble into an inverted locstring.
 function paddedLocString({
   refName,
   start,
@@ -152,20 +225,22 @@ function paddedLocString({
   windowSize: number
   reversed?: boolean
 }) {
-  const lo = Math.max(0, Math.floor(Math.min(start, end) - windowSize))
+  const lo = Math.max(0, Math.floor(start - windowSize))
   return assembleLocString({
     refName,
     start: lo,
-    end: Math.max(lo + 1, Math.floor(Math.max(start, end) + windowSize)),
+    end: Math.max(lo + 1, Math.ceil(end + windowSize)),
     reversed,
   })
 }
 
 export interface BuildSyntenyViewSpecArgs {
-  // One alignment per launched mate panel, all anchored on the same assembly and
-  // refName. A single feature is the pairwise launch; N features (the mates at
-  // one locus of an all-vs-all track) is the multi-way launch, and the panels
-  // are drawn in the order given.
+  // The alignments the launch is built from, all anchored on the same assembly
+  // and refName. **One panel per mate assembly**, in the order each first
+  // appears: a single feature is the pairwise launch, and the mates at one locus
+  // of an all-vs-all track are the multi-way launch. Several alignments to the
+  // same mate assembly are one panel spanning all of them, which is what a
+  // selection over a fragmented alignment produces — see `resolvePanel`.
   features: Feature[]
   // The assembly the anchor panel opens on. Passed rather than read off the
   // feature: the launching view already knows it, and a feature whose
@@ -197,6 +272,25 @@ export interface BuildSyntenyViewSpecArgs {
   region?: RegionOfInterest
 }
 
+// One entry per launched panel, keyed by mate assembly and ordered by where
+// each first appears — so the region dialog's row order survives the flatten it
+// hands over, and the pairwise launch's single feature is a single panel.
+function groupByMateAssembly(features: Feature[]) {
+  const groups = new Map<string, Feature[]>()
+  for (const feature of features) {
+    const assemblyName = getMate(feature)?.assemblyName
+    if (assemblyName !== undefined) {
+      const group = groups.get(assemblyName)
+      if (group) {
+        group.push(feature)
+      } else {
+        groups.set(assemblyName, [feature])
+      }
+    }
+  }
+  return groups
+}
+
 // Pure snapshot builder for the launched synteny view, mirroring
 // buildReadVsRefSpec — session mutation is the caller's
 // (launchSyntenyViewForFeatures below), so the coordinate math is testable
@@ -216,19 +310,22 @@ export function buildSyntenyViewSpec({
   if (!anchor) {
     throw new Error('No alignments to launch a synteny view on')
   }
-  const resolved = features.map(feature => {
-    const mate = getMate(feature)
-    if (!mate) {
+  if (features.some(feature => !getMate(feature))) {
+    throw new Error('Alignment has no mate to launch a synteny view against')
+  }
+  const panels = [...groupByMateAssembly(features).values()].map(group => {
+    const panel = resolvePanel(group, region)
+    if (!panel) {
       throw new Error('Alignment has no mate to launch a synteny view against')
     }
-    return { feature, mate, spans: resolveSpans({ feature, mate, region }) }
+    return panel
   })
 
   // Every panel is clipped to the same region of interest, so the anchor row
   // spans the union of what the individual alignments resolved to — one mate's
   // CIGAR can stop short of the region where another's covers it.
-  const anchorStart = Math.min(...resolved.map(r => r.spans.featStart))
-  const anchorEnd = Math.max(...resolved.map(r => r.spans.featEnd))
+  const anchorStart = Math.min(...panels.map(p => p.anchorStart))
+  const anchorEnd = Math.max(...panels.map(p => p.anchorEnd))
 
   const anchorView = {
     assembly: anchorAssembly,
@@ -242,20 +339,20 @@ export function buildSyntenyViewSpec({
     // launched view's snapshot says "no tracks" the same way it always did
     ...(anchorTracks?.length ? { tracks: anchorTracks } : {}),
   }
-  const mateViews = resolved.map(({ feature, mate, spans }) => ({
-    assembly: mate.assemblyName,
+  const mateViews = panels.map(panel => ({
+    assembly: panel.assemblyName,
     loc: paddedLocString({
-      refName: mate.refName,
-      start: spans.mateStart,
-      end: spans.mateEnd,
+      refName: panel.refName,
+      start: panel.mateStart,
+      end: panel.mateEnd,
       windowSize,
-      reversed: flipReversedMates && feature.get('strand') === -1,
+      reversed: flipReversedMates && panel.reversed,
     }),
   }))
 
   return {
     init: {
-      collapseEmptyRows: collapseEmptyRows ?? features.length > 1,
+      collapseEmptyRows: collapseEmptyRows ?? panels.length > 1,
       views: [
         ...mateViews.slice(0, anchorIndex),
         anchorView,
@@ -264,7 +361,7 @@ export function buildSyntenyViewSpec({
       // One synteny strip per gap between panels. The same track serves every
       // level: the view passes each level's two assemblies down to the adapter,
       // and an all-vs-all adapter resolves the pair from them.
-      tracks: resolved.map(() => [trackId]),
+      tracks: panels.map(() => [trackId]),
     },
   }
 }

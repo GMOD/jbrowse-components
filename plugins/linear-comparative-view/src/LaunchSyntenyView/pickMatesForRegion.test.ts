@@ -9,11 +9,13 @@ function feat({
   start,
   end,
   mateAssembly,
+  mateRefName = 'chr',
 }: {
   id: string
   start: number
   end: number
   mateAssembly: string
+  mateRefName?: string
 }) {
   return new SimpleFeature({
     uniqueId: id,
@@ -24,7 +26,7 @@ function feat({
     strand: 1,
     mate: {
       assemblyName: mateAssembly,
-      refName: 'chr',
+      refName: mateRefName,
       start,
       end,
     },
@@ -55,7 +57,11 @@ test('one panel per mate assembly, in the track declaration order', () => {
   ).toEqual(['Sakai', 'CFT073', 'IAI39'])
 })
 
-test('the widest alignment wins when an assembly has several at the locus', () => {
+// Several blocks of one mate over the same selection is the normal case, not a
+// curiosity — an HSP table or a gene-anchor table is one row per hit — and the
+// panel is framed on all of them. Keeping only the widest opened a fraction of
+// what was selected and dropped the rest in silence.
+test('every alignment of one mate assembly lands on its one panel', () => {
   const picked = pickMatesForRegion({
     features: [
       feat({ id: 'narrow', start: 1900, end: 2000, mateAssembly: 'Sakai' }),
@@ -65,23 +71,32 @@ test('the widest alignment wins when an assembly has several at the locus', () =
     trackAssemblyNames: TRACK_ASSEMBLIES,
     anchorAssembly: 'K12',
   })
-  expect(picked.mates.map(m => m.feature.id())).toEqual(['wide'])
+  expect(picked.mates.length).toBe(1)
+  expect(picked.mates[0]!.features.map(f => f.id())).toEqual(['narrow', 'wide'])
 })
 
-// overlap is measured against the region, not against the alignment's own
-// length: a whole-chromosome block that barely clips the region should lose to
-// one that covers it
-test('overlap is measured against the region, not the alignment length', () => {
+// A panel opens on one stable sequence, so blocks reaching a second contig of
+// the same assembly (a rearrangement, a fragmented assembly) can't be unioned
+// in — the span would cover neither. Overlap is measured against the region,
+// not against the alignments' own length: a whole-chromosome block that barely
+// clips the region should lose to a contig that covers it.
+test('the mate contig covering most of the region wins, and only it', () => {
   const picked = pickMatesForRegion({
     features: [
       feat({ id: 'huge', start: 0, end: 1100, mateAssembly: 'Sakai' }),
-      feat({ id: 'covering', start: 1000, end: 2000, mateAssembly: 'Sakai' }),
+      feat({
+        id: 'covering',
+        start: 1000,
+        end: 2000,
+        mateAssembly: 'Sakai',
+        mateRefName: 'chr2',
+      }),
     ],
     region,
     trackAssemblyNames: TRACK_ASSEMBLIES,
     anchorAssembly: 'K12',
   })
-  expect(picked.mates.map(m => m.feature.id())).toEqual(['covering'])
+  expect(picked.mates[0]!.features.map(f => f.id())).toEqual(['covering'])
 })
 
 test('the self lane is dropped', () => {

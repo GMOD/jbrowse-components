@@ -27,13 +27,15 @@ function mates(...assemblyNames: string[]): MateDiscoveryResult {
   return {
     mates: assemblyNames.map(assemblyName => ({
       assemblyName,
-      feature: new SimpleFeature({
-        uniqueId: assemblyName,
-        refName: 'ctgA',
-        start: 0,
-        end: 100,
-        mate: { refName: 'ctgB', start: 0, end: 100, assemblyName },
-      }),
+      features: [
+        new SimpleFeature({
+          uniqueId: assemblyName,
+          refName: 'ctgA',
+          start: 0,
+          end: 100,
+          mate: { refName: 'ctgB', start: 0, end: 100, assemblyName },
+        }),
+      ],
     })),
     unconfigured: [],
   }
@@ -47,20 +49,22 @@ function invertedMate(): MateDiscoveryResult {
     mates: [
       {
         assemblyName: 'volvox_inv',
-        feature: new SimpleFeature({
-          uniqueId: 'volvox_inv',
-          refName: 'ctgA',
-          start: 10000,
-          end: 20000,
-          strand: -1,
-          CIGAR: '10000=',
-          mate: {
-            refName: 'ctgZ',
-            start: 800000,
-            end: 810000,
-            assemblyName: 'volvox_inv',
-          },
-        }),
+        features: [
+          new SimpleFeature({
+            uniqueId: 'volvox_inv',
+            refName: 'ctgA',
+            start: 10000,
+            end: 20000,
+            strand: -1,
+            CIGAR: '10000=',
+            mate: {
+              refName: 'ctgZ',
+              start: 800000,
+              end: 810000,
+              assemblyName: 'volvox_inv',
+            },
+          }),
+        ],
       },
     ],
   }

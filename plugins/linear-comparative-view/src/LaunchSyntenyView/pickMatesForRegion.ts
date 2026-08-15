@@ -6,7 +6,11 @@ import type { Feature } from '@jbrowse/core/util'
 
 export interface MateCandidate {
   assemblyName: string
-  feature: Feature
+  // Every alignment the panel will open on, in the order the adapter served
+  // them. Plural because a selection routinely covers several blocks of one
+  // mate — see the note on `pickMatesForRegion` — and the panel spans all of
+  // them.
+  features: Feature[]
 }
 
 export interface MateDiscoveryResult {
@@ -28,12 +32,23 @@ function overlapBp(feature: Feature, region: RegionOfInterest) {
 }
 
 // Reduce a region's alignments to the panels a multi-way synteny view would
-// open: one per mate assembly, keeping whichever alignment covers the most of
-// the region. An all-vs-all track draws every sample against the anchor at the
+// open: one per mate assembly, carrying every alignment that assembly aligns the
+// region with. An all-vs-all track draws every sample against the anchor at the
 // same locus, so a region can carry dozens of alignments across a handful of
-// assemblies — and several per assembly once a segmental duplication or a
-// fragmented assembly puts more than one block over the same bases. The widest
-// one is the one worth anchoring a panel on.
+// assemblies.
+//
+// SEVERAL PER ASSEMBLY IS THE NORMAL CASE, not a curiosity. An HSP table (BLAST
+// tabular) and a gene-anchor table (MCScan) are one row per hit, so any locus
+// worth selecting is already dozens of blocks, and a minimap2 PAF splits at
+// every structural difference. Keeping only the widest of them framed the panel
+// — and, through the anchor row's union, the whole launched view — on one block,
+// silently dropping the rest of the selection.
+//
+// ONE CONTIG PER PANEL, though: a panel opens on one stable sequence, so where
+// an assembly's blocks land on two of its contigs (a rearrangement, a fragmented
+// assembly) the one covering most of the region wins and the other is dropped,
+// rather than unioning into a span covering neither. `resolvePanel` states the
+// same rule over resolved spans for the callers that don't come through here.
 //
 // Panels come back in the track's declared `assemblyNames` order rather than by
 // overlap, so the same region always produces the same panel order (and the
@@ -57,11 +72,18 @@ export function pickMatesForRegion({
   const selfAlignment = trackAssemblyNames.every(
     name => name === anchorAssembly,
   )
-  const best = new Map<string, { feature: Feature; overlap: number }>()
+  // keyed by assembly then by the mate's contig, so the majority contig can be
+  // picked without a second pass over the features
+  const byAssembly = new Map<
+    string,
+    Map<string, { features: Feature[]; overlap: number }>
+  >()
   const unconfigured = new Set<string>()
   for (const feature of features) {
-    const assemblyName = getMate(feature)?.assemblyName
+    const mate = getMate(feature)
+    const assemblyName = mate?.assemblyName
     if (
+      mate &&
       assemblyName !== undefined &&
       (selfAlignment || assemblyName !== anchorAssembly)
     ) {
@@ -73,21 +95,28 @@ export function pickMatesForRegion({
       if (!canLaunchSyntenyForMate(trackAssemblyNames, assemblyName)) {
         unconfigured.add(assemblyName)
       } else {
-        const overlap = overlapBp(feature, region)
-        const prev = best.get(assemblyName)
-        if (!prev || overlap > prev.overlap) {
-          best.set(assemblyName, { feature, overlap })
+        const byRefName = byAssembly.get(assemblyName) ?? new Map()
+        byAssembly.set(assemblyName, byRefName)
+        const entry = byRefName.get(mate.refName) ?? {
+          features: [],
+          overlap: 0,
         }
+        entry.features.push(feature)
+        entry.overlap += Math.max(0, overlapBp(feature, region))
+        byRefName.set(mate.refName, entry)
       }
     }
   }
   return {
-    mates: [...new Set(trackAssemblyNames)]
-      .filter(assemblyName => best.has(assemblyName))
-      .map(assemblyName => ({
-        assemblyName,
-        feature: best.get(assemblyName)!.feature,
-      })),
+    mates: [...new Set(trackAssemblyNames)].flatMap(assemblyName => {
+      const byRefName = byAssembly.get(assemblyName)
+      const best = byRefName
+        ? [...byRefName.values()].reduce((a, b) =>
+            b.overlap > a.overlap ? b : a,
+          )
+        : undefined
+      return best ? [{ assemblyName, features: best.features }] : []
+    }),
     // sorted so the same locus always words its message the same way; the mates
     // keep the config's own order instead, which is a choice the author made
     unconfigured: [...unconfigured].sort(),

@@ -18,9 +18,9 @@ export interface SyntenyDiscoverMatesArgs {
   anchorAssembly: string
 }
 
-/** What crosses the wire: one alignment per mate assembly, narrowed. */
+/** What crosses the wire: one panel's alignments per mate assembly, narrowed. */
 export interface SyntenyDiscoverMatesReturn {
-  mates: { assemblyName: string; feature: SimpleFeatureSerialized }[]
+  mates: { assemblyName: string; features: SimpleFeatureSerialized[] }[]
   unconfigured: string[]
 }
 
@@ -41,9 +41,9 @@ export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions<'Synten
   async deserializeReturn(ret: SyntenyDiscoverMatesReturn, _args: unknown) {
     const { mates, unconfigured } = unwrapRpcResult(ret)
     return {
-      mates: mates.map(({ assemblyName, feature }) => ({
+      mates: mates.map(({ assemblyName, features }) => ({
         assemblyName,
-        feature: new SimpleFeature(feature),
+        features: features.map(feature => new SimpleFeature(feature)),
       })),
       unconfigured,
     }

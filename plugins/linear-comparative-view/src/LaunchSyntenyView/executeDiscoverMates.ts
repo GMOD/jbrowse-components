@@ -98,12 +98,13 @@ export async function executeDiscoverMates({
     // guarded rather than asserted: pickMatesForRegion only keeps features whose
     // mate resolved, so the empty case is unreachable, and a mate-less feature is
     // still not a panel if that ever stops being true
-    mates: mates.flatMap(({ assemblyName, feature }) => {
-      const mate = getMate(feature)
-      return mate
-        ? [{ assemblyName, feature: launchFields(feature, mate) }]
-        : []
-    }),
+    mates: mates.map(({ assemblyName, features }) => ({
+      assemblyName,
+      features: features.flatMap(feature => {
+        const mate = getMate(feature)
+        return mate ? [launchFields(feature, mate)] : []
+      }),
+    })),
     unconfigured,
   }
 }

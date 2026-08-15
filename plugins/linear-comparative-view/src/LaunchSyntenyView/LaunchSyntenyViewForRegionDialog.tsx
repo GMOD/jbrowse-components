@@ -130,7 +130,15 @@ function PanelLocus({
   region: Region
   className?: string
 }) {
-  const span = row.kind === 'anchor' ? { ...region, reversed: false } : row.span
+  const span =
+    row.kind === 'anchor'
+      ? { ...region, reversed: false }
+      : row.span && {
+          refName: row.span.refName,
+          start: row.span.mateStart,
+          end: row.span.mateEnd,
+          reversed: row.span.reversed,
+        }
   return span ? (
     <Typography variant="body2" className={className}>
       {assembleLocString({
@@ -244,7 +252,9 @@ export default function LaunchSyntenyViewForRegionDialog({
   const launch = (replacing?: AbstractViewModel) => {
     if (windowSize !== undefined && mates.length) {
       launchSyntenyViewForFeatures({
-        features: mates.map(row => row.feature),
+        // flattened, in row order: the builder puts every alignment of one mate
+        // assembly on that assembly's single panel
+        features: mates.flatMap(row => row.features),
         anchorAssembly: region.assemblyName,
         anchorIndex,
         anchorTracks: copySourceTracks ? anchorTracks : undefined,
