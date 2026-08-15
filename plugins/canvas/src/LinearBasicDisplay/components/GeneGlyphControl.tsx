@@ -20,32 +20,41 @@ import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 // the track menu's "Gene glyph" radio.
 const GeneGlyphControl = observer(function GeneGlyphControl({
   collapsed,
+  maxIsoforms,
   dismissed,
   geneGlyphMode,
   onSetGeneGlyphMode,
   onDismiss,
 }: {
   collapsed: boolean
+  maxIsoforms?: number
   dismissed: boolean
   geneGlyphMode: GeneGlyphMode
   onSetGeneGlyphMode: (value: GeneGlyphMode) => void
   onDismiss: () => void
 }) {
-  // The loud "Longest isoform" chip only makes sense while transcripts are
-  // actually collapsed; in any other mode (or once dismissed) the control
-  // stays reachable as the quiet icon. Whether the control belongs on screen at
-  // all is the caller's call (it mounts this only when the display offers a
-  // `geneGlyphNotice`).
+  // The loud chip only makes sense while transcripts are actually collapsed; in
+  // any other mode (or once dismissed) the control stays reachable as the quiet
+  // icon. Whether the control belongs on screen at all is the caller's call (it
+  // mounts this only when the display offers a `geneGlyphNotice`).
   const noticeShowing = collapsed && !dismissed
+  // Which of the two collapses it is, named on the chip rather than only in the
+  // tooltip: the height cap is the one a reader has no other cue for, since a
+  // gene drawn with 7 of its 28 transcripts looks exactly like a gene with 7.
+  const label =
+    maxIsoforms === undefined
+      ? 'Longest isoform'
+      : `Top ${maxIsoforms} isoforms`
   return (
     <TrackControl
       icon="isoform"
       tooltip={geneGlyphTooltip({
         mode: geneGlyphMode,
         collapsed,
+        maxIsoforms,
         noticeShowing,
       })}
-      label={noticeShowing ? 'Longest isoform' : undefined}
+      label={noticeShowing ? label : undefined}
       onDelete={noticeShowing ? onDismiss : undefined}
       options={GENE_GLYPH_MODE_OPTIONS.map(option => ({
         label: option.label,

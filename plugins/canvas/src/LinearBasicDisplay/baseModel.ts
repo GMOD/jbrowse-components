@@ -179,6 +179,9 @@ export function getView(self: IAnyStateTreeNode): LGV {
 // model field the display it's rendering might not have.
 export interface GeneGlyphNotice {
   collapsed: boolean
+  // the per-gene isoform cap, when a cap is what `collapsed` is about. Absent
+  // for the `longestCoding` collapse, which is a mode rather than a number.
+  maxIsoforms?: number
   dismissed: boolean
   mode: GeneGlyphMode
   setMode: (mode: GeneGlyphMode) => void

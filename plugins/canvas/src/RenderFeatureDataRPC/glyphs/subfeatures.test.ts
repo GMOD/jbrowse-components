@@ -188,6 +188,105 @@ describe('layoutSubfeatures layout', () => {
     })
   })
 
+  // The height cap `auto` derives from the track's own height
+  // (effectiveMaxIsoforms). Its whole point is that a gene with 28 transcripts
+  // in a 100px lane draws them inside the lane's own scrollbar, so the last
+  // rows and the gene's own name are off the bottom with nothing saying so.
+  describe('maxIsoforms cap', () => {
+    const capped = (names: string[], maxIsoforms: number | undefined) =>
+      layoutSubfeatures({
+        feature: makeGeneWithTranscripts(names),
+        config: mockDisplayConfig({ geneGlyphMode: 'all', maxIsoforms }),
+      })
+
+    it('keeps every isoform when the gene already fits', () => {
+      const layout = capped(['a', 'b', 'c'], 5)
+      expect(layout.children).toHaveLength(3)
+      expect(layout.isoformsCollapsed).toBe(false)
+    })
+
+    it('keeps only the cap when it does not, and says isoforms are hidden', () => {
+      const layout = capped(['a', 'b', 'c', 'd', 'e'], 2)
+      expect(layout.children).toHaveLength(2)
+      // the same flag longestCoding sets, because it means the same thing
+      // downstream: the gene's label and hit box anchor to what was drawn
+      expect(layout.isoformsCollapsed).toBe(true)
+      // …and the gene still HAS a choice to offer, so the control stays
+      expect(layout.hasMultipleIsoforms).toBe(true)
+    })
+
+    // `makeGeneWithTranscripts` gives every isoform the same 100bp CDS, so the
+    // ranking falls through to its later-wins tiebreak — which is the same one
+    // `longestCoding` uses, and the reason the two agree at n = 1.
+    it('agrees with the longestCoding collapse at a cap of one', () => {
+      const names = ['a', 'b', 'c']
+      const one = capped(names, 1).children.map(c => c.feature.id())
+      const longest = layoutSubfeatures({
+        feature: makeGeneWithTranscripts(names),
+        config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+      }).children.map(c => c.feature.id())
+      expect(one).toEqual(longest)
+    })
+
+    it('ranks a longer protein above a shorter one', () => {
+      const short = mockFeature({
+        type: 'mRNA',
+        name: 'short',
+        start: 100,
+        end: 500,
+        subfeatures: [
+          mockFeature({ type: 'CDS', name: 's', start: 100, end: 150 }),
+        ],
+      })
+      const long = mockFeature({
+        type: 'mRNA',
+        name: 'long',
+        start: 100,
+        end: 500,
+        subfeatures: [
+          mockFeature({ type: 'CDS', name: 'l', start: 100, end: 400 }),
+        ],
+      })
+      const gene = mockFeature({
+        type: 'gene',
+        name: 'TestGene',
+        start: 100,
+        end: 500,
+        subfeatures: [short, long],
+      })
+      const layout = layoutSubfeatures({
+        feature: gene,
+        config: mockDisplayConfig({ geneGlyphMode: 'all', maxIsoforms: 1 }),
+      })
+      expect(layout.children.map(c => c.feature.get('name'))).toEqual(['long'])
+    })
+
+    // The cap decides WHICH isoforms are dropped and nothing about the ones
+    // that stay, so a gene that fits lays out identically with the cap on and
+    // off — which is what keeps every gene-track figure in the repo still.
+    it('leaves the survivors in the order they would have had', () => {
+      const uncapped = capped(['a', 'b', 'c'], undefined).children.map(c =>
+        c.feature.get('name'),
+      )
+      expect(
+        capped(['a', 'b', 'c'], 3).children.map(c => c.feature.get('name')),
+      ).toEqual(uncapped)
+    })
+
+    // An explicit `longestCoding` is a mode the user pinned; the cap is `auto`'s
+    // and must not second-guess it in either direction.
+    it('does not apply on top of longestCoding', () => {
+      const layout = layoutSubfeatures({
+        feature: makeGeneWithTranscripts(['a', 'b', 'c']),
+        config: mockDisplayConfig({
+          geneGlyphMode: 'longestCoding',
+          maxIsoforms: 2,
+        }),
+      })
+      expect(layout.children).toHaveLength(1)
+    })
+  })
+
   describe('hasMultipleIsoforms flag (drives the gene-glyph control)', () => {
     it('is true for a multi-isoform gene even when nothing is collapsed', () => {
       // 'all' mode renders every isoform, so isoformsCollapsed is false, but the

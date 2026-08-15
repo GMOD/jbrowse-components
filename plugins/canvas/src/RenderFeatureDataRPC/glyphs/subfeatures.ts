@@ -8,7 +8,10 @@ import type { Feature } from '@jbrowse/core/util'
 
 // Expressed as a fraction of heightPx so the entire within-gene layout scales
 // linearly — main-thread compact scaling (multiplier × all y values) is exact.
-const TRANSCRIPT_PADDING_RATIO = 0.2
+//
+// Exported for `effectiveMaxIsoforms`, which converts a track height into a
+// transcript count and so has to spend the same gap this loop does.
+export const TRANSCRIPT_PADDING_RATIO = 0.2
 
 // The isoforms a gene is choosing among: its real transcript children when
 // present, else the raw subfeatures. Single source so the "Isoforms collapsed"
@@ -54,6 +57,51 @@ function codingLength(feature: Feature): number {
   return sum
 }
 
+// The gene's isoforms, best first — which is the one ranking this file has, used
+// by `longestCoding` (its head) and by the height cap (its first n). Sharing it
+// is what makes the cap an extension of the collapse rather than a second,
+// differently-argued opinion about which isoform speaks for the gene: taken at
+// n = 1 the two agree by construction.
+//
+// Coding isoforms outrank non-coding ones and are ranked by protein length, not
+// by genomic footprint — an isoform with a large intron could win the latter
+// despite a shorter protein. With no coding isoform at all the whole list falls
+// back to the widest span, which is the branch a lncRNA gene takes.
+//
+// `>` not `>=`: an exact coding-length tie resolves to the LATER isoform, which
+// several fixtures (DPP6) depend on. A stable sort keeps the earlier one on a
+// tie, so the comparator has to break it the other way explicitly.
+//
+// Sized once per isoform rather than inside the comparator, which would re-walk
+// each isoform's whole subtree O(n log n) times.
+function rankIsoforms(isoforms: Feature[]): Feature[] {
+  const codingCandidates = isoforms.filter(hasCodingSubfeature)
+  const anyCoding = codingCandidates.length > 0
+  const size = anyCoding
+    ? codingLength
+    : (f: Feature) => f.get('end') - f.get('start')
+  const sized = isoforms.map((feature, index) => ({
+    feature,
+    index,
+    coding: anyCoding && hasCodingSubfeature(feature),
+    // a non-coding isoform in a gene that has coding ones is ranked last, and
+    // among themselves by span rather than by a coding length that is 0 for all
+    // of them
+    size:
+      anyCoding && !hasCodingSubfeature(feature)
+        ? feature.get('end') - feature.get('start')
+        : size(feature),
+  }))
+  return sized
+    .sort(
+      (a, b) =>
+        Number(b.coding) - Number(a.coding) ||
+        b.size - a.size ||
+        b.index - a.index,
+    )
+    .map(s => s.feature)
+}
+
 // Returns the single longest coding transcript, plus whether an actual choice
 // among multiple isoforms was collapsed (drives the "Isoforms collapsed" notice).
 // Takes the pre-resolved isoform list so getIsoforms runs once per gene.
@@ -64,26 +112,34 @@ function longestCodingTranscript(isoforms: Feature[]): {
   if (isoforms.length <= 1) {
     return { result: isoforms, collapsed: false }
   }
+  return { result: [rankIsoforms(isoforms)[0]!], collapsed: true }
+}
 
-  const codingCandidates = isoforms.filter(hasCodingSubfeature)
-  // Rank coding isoforms by protein length; with no coding isoform at all, fall
-  // back to the widest genomic span. Sized once per candidate rather than inside
-  // the reduce, which would re-walk each isoform's whole subtree ~2n times.
-  const [candidates, size] =
-    codingCandidates.length > 0
-      ? ([codingCandidates, codingLength] as const)
-      : ([isoforms, (f: Feature) => f.get('end') - f.get('start')] as const)
-
-  // `>` not `>=`: an exact coding-length tie resolves to the later isoform, which
-  // several fixtures (DPP6) depend on.
-  const sized = candidates.map(f => ({ feature: f, size: size(f) }))
-  const longest = sized.reduce((a, b) => (a.size > b.size ? a : b))
-  return { result: [longest.feature], collapsed: true }
+// The isoforms to KEEP under a height cap, as a set of ids, or undefined when
+// the gene already fits.
+//
+// It keeps the top `maxIsoforms` of the ranking above and then draws them in
+// whatever order the caller had them in — the cap decides WHICH isoforms are
+// dropped and changes nothing about the ones that stay, so a gene that fits is
+// laid out identically with the cap on and off. (Reordering the survivors by
+// rank was the obvious alternative and would have moved every gene track figure
+// in the repo for genes that were never capped.)
+function isoformsWithinCap(
+  isoforms: Feature[],
+  maxIsoforms: number | undefined,
+) {
+  return maxIsoforms !== undefined && isoforms.length > maxIsoforms
+    ? new Set(
+        rankIsoforms(isoforms)
+          .slice(0, Math.max(1, maxIsoforms))
+          .map(f => f.id()),
+      )
+    : undefined
 }
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
-  const { geneGlyphMode, transcriptTypes } = config
+  const { geneGlyphMode, maxIsoforms, transcriptTypes } = config
 
   // the gene's own resolved height, used only for the inter-transcript gap below
   // — each stacked child carries whatever height its own glyph resolved
@@ -116,6 +172,24 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
       const bHasCDS = codingStatus.get(b.id()) ? 1 : 0
       return bHasCDS - aHasCDS
     })
+    // …then drop the isoforms past the caller's cap. Applied AFTER the sort so
+    // the survivors keep the order they would have had, and only to features
+    // `getIsoforms` counted as isoforms — a gene's non-transcript children
+    // (an NCBI source record, a `biological_region`) are not what the cap is
+    // about and are left alone.
+    const keep = isoformsWithinCap(isoforms, maxIsoforms)
+    if (keep) {
+      const isoformIds = new Set(isoforms.map(f => f.id()))
+      subfeatures = subfeatures.filter(
+        f => !isoformIds.has(f.id()) || keep.has(f.id()),
+      )
+      // The same flag `longestCoding` sets, because it means the same thing to
+      // every consumer: isoforms are hidden, so the gene's own label and hit box
+      // anchor to the rendered extent rather than to the full gene span
+      // (processFeatureRecord), and the display shows its "some isoforms are
+      // hidden" control.
+      isoformsCollapsed = true
+    }
   }
 
   const children: FeatureLayout[] = []

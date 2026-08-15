@@ -49,4 +49,46 @@ describe('gene-glyph control tooltip', () => {
       }),
     ).not.toContain('chosen automatically')
   })
+
+  // `auto` has two reasons to hide transcripts and they are different answers to
+  // "why can't I see them": the zoom one is temporary and undone by zooming in,
+  // the height one is undone by making the track taller. A tooltip that said
+  // "at this zoom" for both would send a reader to the wrong control.
+  describe('the height cap', () => {
+    it('names the number kept and what decided it', () => {
+      const tooltip = geneGlyphTooltip({
+        mode: 'auto',
+        collapsed: true,
+        maxIsoforms: 7,
+        noticeShowing: true,
+      })
+      expect(tooltip).toContain('up to 7 transcripts per gene')
+      expect(tooltip).toContain("as many as fit this track's height")
+      expect(tooltip).not.toContain('at this zoom')
+    })
+
+    it('singularizes a cap of one', () => {
+      expect(
+        geneGlyphTooltip({
+          mode: 'auto',
+          collapsed: true,
+          maxIsoforms: 1,
+          noticeShowing: false,
+        }),
+      ).toContain('up to 1 transcript per gene')
+    })
+
+    // A cap that is in force but hiding nothing is not announced at all — the
+    // model passes `maxIsoforms` only when a gene actually lost isoforms — so
+    // an uncollapsed tooltip stays the plain one whatever the cap says.
+    it('says nothing about a cap while every gene fits', () => {
+      expect(
+        geneGlyphTooltip({
+          mode: 'auto',
+          collapsed: false,
+          noticeShowing: false,
+        }),
+      ).toBe('Showing all transcripts per gene. Click to change.')
+    })
+  })
 })

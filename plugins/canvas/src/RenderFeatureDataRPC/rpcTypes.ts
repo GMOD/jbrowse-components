@@ -176,6 +176,14 @@ export interface FeatureDataResult {
   // that mode is zoom-dependent and would otherwise lag a region behind.
   hasMultiIsoformGenes?: boolean
 
+  // True when some gene in this region was drawn with isoforms missing — the
+  // `longestCoding` collapse, or the `maxIsoforms` height cap. Unlike the flag
+  // above this one is NOT mode-independent, and it is the half the main thread
+  // cannot work out for itself: the cap fires on the gene's own isoform count,
+  // which only the worker has seen. Drives the loud form of the gene-glyph
+  // control, so a reader is told when transcripts are being left out.
+  isoformsHidden?: boolean
+
   // Index-estimated compressed bytes for this region (when the adapter offers a
   // cheap estimate), so the display's byte gate reflects what was actually
   // fetched. Undefined for adapters with no index estimate.

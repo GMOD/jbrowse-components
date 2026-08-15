@@ -231,6 +231,11 @@ export async function executeRenderFeatureData({
     ...packed,
     featureCount: features.size,
     hasMultiIsoformGenes: layouts.some(layout => layout.hasMultipleIsoforms),
+    // …and whether any of them actually LOST isoforms, which under the height
+    // cap the main thread cannot derive: `longestCoding` is a mode it resolved
+    // itself, but "this gene had more transcripts than fit" is a property of
+    // the data in view.
+    isoformsHidden: layouts.some(layout => layout.isoformsCollapsed),
     bytes,
   }
 

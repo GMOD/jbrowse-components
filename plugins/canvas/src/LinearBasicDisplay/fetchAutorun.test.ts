@@ -1370,6 +1370,7 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'impliedUTRs',
     'jexlFilters',
     'labels',
+    'maxIsoforms',
     'mouseover',
     'outlineColor',
     'subParts',
@@ -1415,14 +1416,8 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
 
   it.each([
     ['showLabels', 'none'],
-    ['heightMode', 'grow'],
-    ['displayMode', 'compact'],
-    // The track-height slots and their bounds. `height` is the expensive one:
-    // the resize handle writes it on every drag frame (TrackContainer ->
-    // resizeHeight -> setConf), so before it was excluded from the payload,
-    // dragging a track taller re-ran the entire worker pipeline once the drag
-    // settled.
-    ['height', 456],
+    // The bounds, but NOT `height`/`heightMode`/`displayMode` themselves —
+    // those three move the isoform row budget, and have their own block below.
     ['maxHeight', 2400],
     ['growMaxHeight', 900],
     // the main-thread `showLabels` auto gate — layout reserves label rows from
@@ -1445,6 +1440,104 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
 
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
     expect(display.loadedRegions.size).toBe(1)
+  })
+
+  // ── The isoform row budget, which is the one thing about the track's height
+  // the worker has to know ────────────────────────────────────────────────────
+  //
+  // `auto` caps a gene's isoforms at what the lane has rows for
+  // (`effectiveMaxIsoforms`), so `height`, `heightMode` and `displayMode` reach
+  // the payload after all — through one small integer rather than as
+  // themselves. That is a deliberate narrowing of the claim above, not an
+  // oversight, and the property worth keeping is the one the original war story
+  // was actually about: the resize handle writes `height` on EVERY DRAG FRAME
+  // (TrackContainer -> resizeHeight -> setConf), and re-running the worker
+  // pipeline per frame is what putting `height` itself in the payload cost.
+  //
+  // Two things stop that here and both are tested: the value is a row COUNT, so
+  // a height change inside one row is not a change at all, and it is read off
+  // `coarseTrackHeight`, which follows the slot on a delay.
+  it('a height change within the same row budget does not refetch', async () => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    const budgetBefore = display.effectiveMaxIsoforms
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    // a few px, which at a 10px feature height cannot buy a whole row
+    display.configuration.setSlot('height', display.height + 3)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(display.effectiveMaxIsoforms).toBe(budgetBefore)
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('a height change that buys rows refetches, and sends the new budget', async () => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    const budgetBefore = display.effectiveMaxIsoforms!
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.configuration.setSlot('height', 600)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(display.effectiveMaxIsoforms).toBeGreaterThan(budgetBefore)
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
+      displayConfig: { maxIsoforms: display.effectiveMaxIsoforms },
+    })
+  })
+
+  // Grow shows every feature by definition, so it carries no cap — and it MUST
+  // not, since grow's height is its own content's height and a cap read off it
+  // would be a fetch-derived value in `rpcProps()` (the loop trap
+  // `makeSettingsLoopGuard` names).
+  it('grow drops the cap entirely', async () => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.configuration.setSlot('heightMode', 'grow')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(display.effectiveMaxIsoforms).toBeUndefined()
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
+      displayConfig: { maxIsoforms: undefined },
+    })
+  })
+
+  // A compact row is 0.6 of a normal one, so the same lane holds more of them.
+  // `displayMode` was previously main-thread-only for the round trip it saves;
+  // it already refetches when it is `collapsed` (see below), and this is the
+  // second case.
+  it('a compact displayMode buys rows, and so refetches', async () => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    const budgetBefore = display.effectiveMaxIsoforms!
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.configuration.setSlot('displayMode', 'compact')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(display.effectiveMaxIsoforms).toBeGreaterThan(budgetBefore)
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+  })
+
+  // …and a mode the user pinned is a mode the user pinned: only `auto` derives
+  // a cap, so neither `all` nor `longestCoding` has one to move.
+  it('an explicit glyph mode takes no cap, so the height stops mattering', async () => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    display.setGeneGlyphMode('all')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    expect(display.effectiveMaxIsoforms).toBeUndefined()
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.configuration.setSlot('height', 600)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
   // The resolved `maxFeatureDensity` rides at the call site, not in the payload

@@ -18,6 +18,7 @@ export function mockDisplayConfig(
     transcriptTypes: ['mRNA'],
     containerTypes: [],
     geneGlyphMode: 'all',
+    maxIsoforms: undefined,
     subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
     impliedUTRs: true,
     displayDirectionalChevrons: true,

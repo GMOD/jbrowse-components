@@ -81,6 +81,7 @@ const GeneGlyphIndicator = observer(function GeneGlyphIndicator({
   return notice ? (
     <GeneGlyphControl
       collapsed={notice.collapsed}
+      maxIsoforms={notice.maxIsoforms}
       dismissed={notice.dismissed}
       geneGlyphMode={notice.mode}
       onSetGeneGlyphMode={value => {

@@ -15,16 +15,29 @@ import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 export function geneGlyphTooltip({
   mode,
   collapsed,
+  maxIsoforms,
   noticeShowing,
 }: {
   mode: GeneGlyphMode
   collapsed: boolean
+  // the height cap in force, or undefined when there is none. Only meaningful
+  // in `auto`, which is the one mode that derives it.
+  maxIsoforms?: number
   noticeShowing: boolean
 }) {
-  const showing = collapsed
-    ? 'Showing the longest coding transcript per gene'
-    : 'Showing all transcripts per gene'
-  const auto = mode === 'auto' ? ' — chosen automatically at this zoom' : ''
+  // Three states, not two, and the cap is the middle one: `auto` keeps as many
+  // transcripts per gene as the track's height has rows for, so a gene that
+  // fits shows every isoform and one that does not shows the highest-ranked
+  // few rather than all of them behind the track's own scrollbar.
+  const showing = !collapsed
+    ? 'Showing all transcripts per gene'
+    : maxIsoforms === undefined
+      ? 'Showing the longest coding transcript per gene'
+      : `Showing up to ${maxIsoforms} transcript${maxIsoforms === 1 ? '' : 's'} per gene — as many as fit this track's height`
+  const auto =
+    mode === 'auto' && collapsed && maxIsoforms === undefined
+      ? ' — chosen automatically at this zoom'
+      : ''
   const minimize = noticeShowing ? '; × to minimize this notice to an icon' : ''
   return `${showing}${auto}. Click to change${minimize}.`
 }
