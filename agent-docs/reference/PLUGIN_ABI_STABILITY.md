@@ -386,9 +386,30 @@ author who lands on a behavior change can find the sentence that explains it.
   (`@jbrowse/core/util/librpc`) instead: `super` now promises the rebuilt value
   the override is the one rebuilding. **Opt-out: leave the class
   unparameterized** — `RpcMethodType` with no name argument resolves both ends to
-  `unknown`, exactly as before. Unrelated but shipped alongside: the three
-  rename-region bases lost their unused second type parameter, so
-  `RpcMethodTypeWithRenameRegions<'X', Y>` is now an arity error; drop the `Y`.
+  `unknown`, exactly as before.
+
+- **`RpcMethodType` takes one type parameter now, not two**, and so do the three
+  rename-region bases: `RpcMethodType<'X', Y>` is an arity error, drop the `Y`.
+  The wire return moved into the registry entry (`transferables` / `wire`), where
+  it is a reference to the registry rather than a copy of it — fifteen classes
+  had been keeping the copy in step by hand, and one had already drifted. A base
+  still generic over its key was the last thing that needed the parameter, since
+  `RpcWireReturn<MethodName>` will not resolve while the name is a parameter;
+  that base is gone too (see below). **Opt-out: none, and none is needed** — the
+  argument a plugin was passing is what its own registry entry already says. If
+  it has no entry, the class is unparameterized and never had a second argument
+  to pass.
+
+- **`DiagonalizeRpcBase` is no longer exported from `@jbrowse/synteny-core`.**
+  It was an abstract base generic over its registry key, subclassed only to set
+  `name`, and being generic is the whole reason it needed machinery (a pinned
+  wire return, a `DiagonalizeMethodName` constraint to keep the pin honest, an
+  intersection on `execute`'s args) — to share three lines. The shared part is
+  `runDiagonalize(pluginManager, args)`, exported from the same barrel and
+  keeping the dynamic import. **Opt-out: extend `RpcMethodType<'YourKey'>` and
+  call `runDiagonalize` from `execute`**, which is what the two in-tree methods
+  now do. The general rule this leaves: share an RPC body as a function, never
+  as a base generic over the key.
 
 - **`RpcClient.call` no longer takes a transfer list.** Transferables flow only
   worker → main, inside a reply's `rpcResult` wrapper; transferring an *argument*
