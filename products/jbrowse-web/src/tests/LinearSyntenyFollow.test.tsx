@@ -276,13 +276,13 @@ test('a resolve landing after the mode is switched off does not move the row', a
   let release: (() => void) | undefined
   jest
     .spyOn(rpcManager, 'call')
-    .mockImplementation(async (sessionId, functionName, args, opts) => {
+    .mockImplementation(async (sessionId, functionName, args) => {
       if (functionName === 'SyntenyResolveMatchingRegion') {
         await new Promise<void>(resolve => {
           release = resolve
         })
       }
-      return inner(sessionId, functionName, args, opts)
+      return inner(sessionId, functionName, args)
     })
 
   view.setRowSyncMode('follow')

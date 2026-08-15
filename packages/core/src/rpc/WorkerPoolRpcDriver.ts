@@ -179,7 +179,6 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
     statusCallback: StatusCallback | undefined,
-    options: Record<string, unknown>,
   ) {
     const unextendedWorker = await this.getWorker(sessionId)
     const worker = pluginManager.evaluateExtensionPoint(
@@ -187,9 +186,6 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
       'Core-extendWorker',
       unextendedWorker,
     )
-    return worker.call(rpcMethod.name, serializedArgs, {
-      statusCallback,
-      ...options,
-    })
+    return worker.call(rpcMethod.name, serializedArgs, { statusCallback })
   }
 }

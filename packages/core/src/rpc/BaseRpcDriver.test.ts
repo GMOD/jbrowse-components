@@ -15,7 +15,6 @@ class CapturingDriver extends BaseRpcDriver {
     rpcMethod: RpcMethodType
     serializedArgs: Record<string, unknown>
     statusCallback: StatusCallback | undefined
-    options: Record<string, unknown>
   }[] = []
 
   constructor() {
@@ -30,14 +29,8 @@ class CapturingDriver extends BaseRpcDriver {
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
     statusCallback: StatusCallback | undefined,
-    options: Record<string, unknown>,
   ) {
-    this.transportCalls.push({
-      rpcMethod,
-      serializedArgs,
-      statusCallback,
-      options,
-    })
+    this.transportCalls.push({ rpcMethod, serializedArgs, statusCallback })
     return { raw: serializedArgs }
   }
 }

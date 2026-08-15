@@ -30,7 +30,6 @@ export default abstract class BaseRpcDriver {
     sessionId: string,
     functionName: string,
     args: Record<string, unknown> & RpcHandles,
-    options: Record<string, unknown> = {},
   ) {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
@@ -81,7 +80,6 @@ export default abstract class BaseRpcDriver {
       rpcMethod,
       serializedArgs,
       statusCallback,
-      options,
     )
 
     return rpcMethod.deserializeReturn(result, args)
@@ -96,6 +94,5 @@ export default abstract class BaseRpcDriver {
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
     statusCallback: StatusCallback | undefined,
-    options: Record<string, unknown>,
   ): Promise<unknown>
 }

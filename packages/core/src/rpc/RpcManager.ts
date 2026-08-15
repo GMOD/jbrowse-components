@@ -8,22 +8,12 @@ import rpcConfigSchema from './configSchema.ts'
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type BaseRpcDriver from './BaseRpcDriver.ts'
-import type { RpcCallArgs, RpcMethodName, RpcReturn } from './RpcRegistry.ts'
+import type { RpcCallArgs, RpcCallReturn } from './RpcRegistry.ts'
 
 export type RpcDriverFactory = (
   config: AnyConfigurationModel,
   pluginManager: PluginManager,
 ) => BaseRpcDriver
-
-// `call` accepts any string method name: a registered one resolves to its typed
-// args/return (the `& RpcMethodName` re-narrows M inside the conditional, which
-// TS won't do on its own), and an unknown one (e.g. a plugin-defined method not
-// in the registry) falls back to the loose shapes. `RpcCallArgs` is in the
-// registry rather than here, because it is not only this class that types a
-// `call`.
-type RpcCallReturn<M extends string> = M extends RpcMethodName
-  ? RpcReturn<M & RpcMethodName>
-  : unknown
 
 export interface RpcManagerOptions {
   // factory that creates a web worker; required to use the WebWorkerRpcDriver
@@ -103,13 +93,9 @@ export default class RpcManager {
     return newDriver
   }
 
-  private getDriverForCall(
-    args: { rpcDriverName?: string },
-    opts?: { rpcDriverName?: string },
-  ) {
+  private getDriverForCall(args: { rpcDriverName?: string }) {
     const backendName =
       args.rpcDriverName ||
-      opts?.rpcDriverName ||
       readConfObject(this.mainConfiguration, 'defaultDriver') ||
       this.defaultDriverName
 
@@ -117,22 +103,32 @@ export default class RpcManager {
   }
 
   /**
-   * `args` carries the method's data and the caller's handles on the operation
-   * — the stop token and the status callback. Both are always accepted, for
-   * every method, because {@link RpcHandles} is part of `RpcCallArgs` rather
+   * `args` carries the method's data, the caller's handles on the operation —
+   * the stop token and the status callback — and the `rpcDriverName` that picks
+   * where it runs. All of them are always accepted, for every method, because
+   * {@link RpcHandles} and {@link RpcRouting} are part of `RpcCallArgs` rather
    * than of any registry entry.
    *
-   * There is deliberately no second position for them. They were accepted in
-   * `opts` as well, and the two disagreed: `WorkerPoolRpcDriver` honored a
-   * `statusCallback` there and `MainThreadRpcDriver` ignored `opts` entirely,
-   * so the same call had a working progress bar under a worker and a silent one
-   * under the driver every embedded component defaults to. One position.
+   * There is deliberately no second position for any of them. The handles were
+   * accepted in an `opts` parameter as well, and the two disagreed:
+   * `WorkerPoolRpcDriver` honored a `statusCallback` there and
+   * `MainThreadRpcDriver` ignored `opts` entirely, so the same call had a
+   * working progress bar under a worker and a silent one under the driver every
+   * embedded component defaults to. `rpcDriverName` was the last field left with
+   * two spellings, read from `opts` only as a fallback and passed there by
+   * nobody, while the bag it also rode in went on to the driver and the worker.
+   * One position.
+   *
+   * The cast on the way out is at the driver boundary, where the method is an
+   * unparameterized {@link RpcMethodType} and `deserializeReturn` is therefore
+   * `unknown`. It is not the only thing holding the return type up: the same
+   * type is what that hook is declared to produce, checked against the registry
+   * at each method that overrides it.
    */
   async call<M extends string>(
     sessionId: string,
     functionName: M,
     args: RpcCallArgs<M>,
-    opts?: { rpcDriverName?: string } & Record<string, unknown>,
   ): Promise<RpcCallReturn<M>> {
     if (!sessionId) {
       throw new Error('sessionId is required')
@@ -141,16 +137,10 @@ export default class RpcManager {
       sessionId: string
       rpcDriverName?: string
     }
-    const driverForCall = this.getDriverForCall(a, opts)
+    const driverForCall = this.getDriverForCall(a)
     try {
       return (await this.withAuthRetry(() =>
-        driverForCall.call(
-          this.pluginManager,
-          sessionId,
-          functionName,
-          a,
-          opts,
-        ),
+        driverForCall.call(this.pluginManager, sessionId, functionName, a),
       )) as RpcCallReturn<M>
     } finally {
       if (functionName === 'CoreFreeResources') {

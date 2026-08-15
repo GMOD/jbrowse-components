@@ -687,19 +687,19 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           const { norms, resolutions } = (await rpcManager.call(
             rpcSessionId,
             'CoreGetInfo',
-            { adapterConfig: self.adapterConfig },
-            // This call happens inside the pre-first-paint window, where the
-            // scrim is up because `canvasDrawn` is still false rather than
-            // because `isLoading` is — so `statusMessage` is the only thing that
-            // can say what is happening. Without it, opening a v8 `.hic` whose
-            // norm-vector index has to be discovered by walking the file sits on
-            // a bare "Loading..." for the whole chain of range reads.
-            //
-            // `setStatusMessage` directly rather than `makeStatusCallback`: this
-            // emits a handful of phase labels, not a progress stream, so the
-            // throttle sized for ~40 events/s would swallow most of them — the
-            // final clearing write included, leaving the last label stuck.
             {
+              adapterConfig: self.adapterConfig,
+              // This call happens inside the pre-first-paint window, where the
+              // scrim is up because `canvasDrawn` is still false rather than
+              // because `isLoading` is — so `statusMessage` is the only thing
+              // that can say what is happening. Without it, opening a v8 `.hic`
+              // whose norm-vector index has to be discovered by walking the file
+              // sits on a bare "Loading..." for the whole chain of range reads.
+              //
+              // `setStatusMessage` directly rather than `makeStatusCallback`:
+              // this emits a handful of phase labels, not a progress stream, so
+              // the throttle sized for ~40 events/s would swallow most of them —
+              // the final clearing write included, leaving the last label stuck.
               statusCallback: (status: RpcStatus) => {
                 if (isAlive(self)) {
                   self.setStatusMessage(status)

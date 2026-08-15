@@ -26,7 +26,6 @@ class StubDriver extends BaseRpcDriver {
     sessionId: string
     functionName: string
     args?: Record<string, unknown>
-    options?: Record<string, unknown>
   }[] = []
   destroyed = false
 
@@ -51,9 +50,8 @@ class StubDriver extends BaseRpcDriver {
     sessionId: string,
     functionName: string,
     args?: Record<string, unknown>,
-    options?: Record<string, unknown>,
   ): Promise<unknown> {
-    this.callLog.push({ sessionId, functionName, args, options })
+    this.callLog.push({ sessionId, functionName, args })
     return undefined
   }
 }
@@ -191,12 +189,12 @@ describe('RpcManager.destroy', () => {
   })
 })
 
-// The handles ride `args`, for every method, and there is only the one position.
-// They used to be accepted in `opts` as well and the two disagreed —
-// WorkerPoolRpcDriver spreads options over its own arguments and honored it
-// there, MainThreadRpcDriver ignores `opts` entirely — so the same call had a
-// working progress bar under a worker and a silent one under the driver every
-// embedded component defaults to.
+// The handles and the driver name ride `args`, for every method, and there is
+// only the one position. They used to be accepted in an `opts` parameter as
+// well and the two disagreed — WorkerPoolRpcDriver spread options over its own
+// arguments and honored a statusCallback there, MainThreadRpcDriver ignored
+// `opts` entirely — so the same call had a working progress bar under a worker
+// and a silent one under the driver every embedded component defaults to.
 describe('RpcManager: the handles are args, and every method takes them', () => {
   test('forwards both handles to the driver, for a method whose registry entry declares neither', async () => {
     const { manager, driver } = makeManager()
@@ -215,14 +213,21 @@ describe('RpcManager: the handles are args, and every method takes them', () => 
     expect(entry?.args?.stopToken).toBe(stopToken)
   })
 
-  test('opts carries no handles, so the two positions cannot disagree', async () => {
+  // `rpcDriverName` was the last field with two spellings: read off `opts` as a
+  // fallback, and read off `args` by everything downstream. Nothing ever passed
+  // the opts one, and a hic status callback passed alongside it went to a
+  // position MainThreadRpcDriver drops on the floor.
+  test('routes on the rpcDriverName in args, and forwards it as payload', async () => {
     const { manager, driver } = makeManager()
-    await manager.call(
-      's',
-      'CoreGetRegions',
-      { adapterConfig: {}, statusCallback: () => {} },
-      { rpcDriverName: 'StubDriver' },
-    )
-    expect(driver.callLog[0]?.options).toEqual({ rpcDriverName: 'StubDriver' })
+    const other = new StubDriver({ config: manager.mainConfiguration })
+    manager.registerDriverFactory('OtherDriver', () => other)
+
+    await manager.call('s', 'CoreGetRegions', {
+      adapterConfig: {},
+      rpcDriverName: 'OtherDriver',
+    })
+
+    expect(driver.callLog).toEqual([])
+    expect(other.callLog[0]?.args?.rpcDriverName).toBe('OtherDriver')
   })
 })
