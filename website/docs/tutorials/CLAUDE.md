@@ -44,7 +44,7 @@ prose**, in a form a reader runs on their own equivalent data. Everything around
 it stays in `scripts/build_*.sh` under `## Reproduce it end to end`. Link to
 `quickstart_web.md` for bgzip/tabix/`text-index` prep.
 
-**Mark the fence `<!-- from: scripts/build_x.sh -->`** and
+**Mark the fence `<!-- from: scripts/build_<topic>.sh -->`** and
 `check-script-commands` asserts every tool and flag in it still runs in that
 script — tools and flags rather than text, since the page carries the general
 form and the script the pinned one. Leave the marker off a fence showing a route

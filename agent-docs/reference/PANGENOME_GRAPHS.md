@@ -701,8 +701,8 @@ what `segs.bed.gz` does with tabix.
   nodes `s10274` (6 bytes, fine) and the tier names them
   `bb_GRCh38#0#chr1_0` (18 bytes, throws), so it was 100% failure on one index
   and 0% on the other with everything else identical. Patched in
-  `scripts/build-wasm.sh`, because that script overwrites the generated file
-  wholesale.
+  `jbrowse-plugin-graphgenomeview/scripts/build-wasm.sh` — that plugin's repo,
+  not this one — because that script overwrites the generated file wholesale.
 
   The general lesson is the cheaper one: **bisecting on inputs cannot find a bug
   whose error names a type.** Nine rounds eliminated window size, file size,

@@ -449,9 +449,9 @@ Nothing in a worker renders React, yet **2.2 MB of the 6.35 MB of module bytes
 in the chunks a worker parses is UI code** (`@mui/material` 983 KB, `react-dom`
 533 KB, `@floating-ui/react` 183 KB, `@mui/system` 125 KB, `@popperjs/core`
 67 KB) — measured by bucketing `build/bundle-stats.json` (from
-`node scripts/build.ts --stats`) over the chunks `probe-startup.ts` reports the
-worker importing. Three workers boot for a three-track load, so that is paid
-three times.
+`node products/jbrowse-web/scripts/build.ts --stats`) over the chunks
+`website/scripts/probe-startup.ts` reports the worker importing. Three workers
+boot for a three-track load, so that is paid three times.
 
 `node scripts/check-worker-imports.ts [--causes]` reports why: **258 static
 import sites** across 23 packages, all reached through `corePlugins.ts` — every

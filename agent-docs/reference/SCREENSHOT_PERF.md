@@ -61,7 +61,8 @@ right tool was used:
   96% of the wall clock, with only ~3s between calls
 
 **When wall clock >> JS CPU on every thread, stop forming JS hypotheses.** Go to
-`scripts/trace-tasks.ts`; a renderer task mirrored by a GPU task is blocked-on-GPU.
+`website/scripts/trace-tasks.ts`; a renderer task mirrored by a GPU task is
+blocked-on-GPU.
 
 ## Tools (all added 2026-07-25, `website/scripts/`)
 

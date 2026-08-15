@@ -25,14 +25,19 @@ If the max block is a few kb, **stop** — blocks are not the problem and
 everything below is wasted effort. Look instead at the worker-side allocation
 noted in "Still open" at the bottom.
 
-For calibration, run the same line against the files already in this repo
-(measured 2026-07-29):
+For calibration, run the same line against the two MAF-tabix files this repo
+carries, plus the synthesized bench fixture (measured 2026-07-29):
 
 | file | blocks | median | max |
 | --- | --- | --- | --- |
 | `test_data/ce11.26way.chrI_subset.bed.gz` | 160 | 7bp | 1228bp |
 | `test_data/volvox/volvox.maf.bed.gz` | 501 | 100bp | 100bp |
-| `test_data/mafperf/synth.maf.bed.gz` | 433 | 1075bp | 1995bp |
+| synthesized, 250 columns | 433 | 1075bp | 1995bp |
+
+The third is generated rather than committed, by the four-line recipe in
+[MAF_WORKER_PIPELINE.md](MAF_WORKER_PIPELINE.md) § "Reproducing it" — worth
+knowing before going looking for it, since it is the only one of the three whose
+blocks are wide enough to be interesting and it is not on disk.
 
 The widest single line across all three is 20kb, so **nothing in-tree
 reproduces this** — a reproducing file has to come from the reporter. Long

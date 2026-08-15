@@ -69,7 +69,7 @@ and papers. There is deliberately no `gc`.
   param routes through text search; `navToLocString` rejects a non-locstring.
   Symbol → URL params, coordinates → either.
 - **Cross-group genome search**: `genomes.jbrowse.org/searchIndex.json` (7.5MB,
-  ~50k rows), built by jb2hubs' `website/generateSearchIndex.ts`. Per-group files
+  ~50k rows), built by jb2hubs' own `generateSearchIndex.ts`. Per-group files
   can't be merged client side (`bacteria.json` 34MB, `all.json` 76MB).
 - **On-the-fly mate assemblies**: `Core-handleUnrecognizedAssembly` →
   `@cmdcolin/jbrowse-plugin-hubs` HEAD-probes a guessed URL and adds a
@@ -119,7 +119,7 @@ where a wrong delete costs a re-derivation.
   unversioned URL would push a future bundle into every config already out
   there. v1 takes compatible updates; a change demanding more of the host gets a
   v2. Build `pnpm --filter @jbrowse/plugin-blat build:umd`, publish
-  `scripts/publish-umd.sh`. First in-monorepo UMD build — copy it.
+  `plugins/blat/scripts/publish-umd.sh`. First in-monorepo UMD build — copy it.
 - **zarr** — `demos/zarr/jbrowse-plugin-zarr.umd.production.min.js`, republished
   by `pnpm betabuild`, which re-downloads the entry point after invalidating and
   fails on md5 mismatch. An upload the edge shadows looks exactly like a

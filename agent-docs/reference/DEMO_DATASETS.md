@@ -173,8 +173,10 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   `samtools view --input-fmt-option required_fields=0x87F -F 1540 <url> <region>`.
 - **Read-pair Hi-C heatmap** (Cue-style): bin ordinary paired-end WGS into a
   `.hic` contact matrix and each SV is an off-diagonal spot. Built from HG008-T
-  Illumina 161x via `scripts/build_readpair_heatmap_cgiab.sh`, using
-  `samtools view -q20 -f65 -F2316` for one primary record per pair.
+  Illumina 161x, using `samtools view -q20 -f65 -F2316` for one primary record
+  per pair. The tutorial and its two build scripts were removed in
+  `16250c4b58`, which is where the pipeline is if it is wanted again;
+  `agent-docs/ideas/tutorial-ideas-audit.md` records why it went.
 
 ## Cohort and population
 

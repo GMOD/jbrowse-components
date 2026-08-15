@@ -256,8 +256,9 @@ loading. Only `pnpm package:linux:no-installer && pnpm test:e2e:headless` caught
 it. Suspected mechanism, unconfirmed: `src/util.tsx` (`fetchCJS`) is imported by
 `rpcWorker.ts`, a **separate webpack entry**; a second async renderer consumer
 appears to tip `splitChunks` into extracting a shared chunk the worker must then
-load at runtime, which is what `scripts/config.ts` already warns about for
-`publicPath: './'` under `file://`. Confirm that before retrying.
+load at runtime, which is what `products/jbrowse-desktop/scripts/config.ts`
+already warns about for `publicPath: './'` under `file://`. Confirm that before
+retrying.
 
 **The general form, for the next host that opens on something other than a
 session:** the registry is eager relative to *reading a session snapshot*, not

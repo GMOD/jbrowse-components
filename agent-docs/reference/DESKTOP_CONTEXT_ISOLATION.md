@@ -61,7 +61,8 @@ Electron 43, minimal probe apps. Re-run these if you doubt any of it.
 written to `build/preload.js` parses as ESM and throws on its own `require()`
 before exposing anything — silently, because a throwing preload does not stop
 the page. The renderer just quietly has no bridge, which looks exactly like
-`contextBridge` being broken. See `scripts/buildElectronMain.ts`.
+`contextBridge` being broken. See
+`products/jbrowse-desktop/scripts/buildElectronMain.ts`.
 
 ## What actually blocks the flip
 

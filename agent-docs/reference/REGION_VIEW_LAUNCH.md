@@ -287,7 +287,8 @@ md5sum ~/src/jb2plugins/jbrowse-plugin-graphgenomeview/dist/*.esm.js   # vs the 
 
 As of 2026-07-26 the hosted bundle carries all four launch labels, both halves of
 the hover sync, and the convention-6 fix (plugin `3146de4`, published by
-`scripts/betabuild.sh`, entry md5 `0ce050e42b363d281fbc217f6afbab54`). The script
+`jbrowse-plugin-graphgenomeview/scripts/betabuild.sh`, entry md5
+`0ce050e42b363d281fbc217f6afbab54`). The script
 ends by downloading what the CDN actually serves and diffing it against what it
 built, which is the check worth trusting — an S3 write alone left the edge
 serving the old entry point for 8+ hours once.

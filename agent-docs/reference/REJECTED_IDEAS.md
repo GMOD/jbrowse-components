@@ -815,7 +815,7 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   "Known gap: nothing bounds kernel duration"** — treat that as a standing
   invitation to rebuild the argument from a plausible mechanism, and decline it.
   Don't chunk without a *reproduced* TDR on a named device. Repro
-  `scripts/ldlimits.ts`, perf `scripts/ldbench.ts`, both in `~/src/jb2bench`.
+  `jb2bench/scripts/ldlimits.ts`, perf `jb2bench/scripts/ldbench.ts`.
 - **The "obvious" wiggle/GPU-fetch simplifications** — bicolor on main thread,
   batched RPC, `inputKey` gate: each already ADR-settled.
 - **Network abort as an `AbortSignal` protocol** — cancellation already reaches

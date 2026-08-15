@@ -8,8 +8,9 @@
 //      snippet importing `@jbrowse/core/gpu/renderBlock` when the module lives
 //      at `@jbrowse/render-core/renderBlock`.
 //   2. Every repo file-path reference in prose (`packages/...`, `plugins/...`,
-//      `products/...`, `agent-docs/...`), checked to exist on disk. Catches a
-//      path left behind when code moves (e.g. `packages/core/src/gpu`).
+//      `products/...`, `agent-docs/...`, `website/...`, `scripts/...`,
+//      `test_data/...`), checked to exist on disk. Catches a path left behind
+//      when code moves (e.g. `packages/core/src/gpu`).
 //   3. Every GitHub `blob/<ref>/<path>#<anchor>` link into this repo, checked so
 //      the file exists and — when it's a markdown target — a heading slugifies
 //      to the anchor. Catches a cross-doc deep link (e.g. the developer guides
@@ -41,6 +42,7 @@
 // out-of-workspace scopes are skipped, as are relative imports. Path references
 // are only held to account when their package anchor is real, so illustrative
 // placeholder paths pass. Run: `pnpm check-doc-imports`.
+import { spawnSync } from 'node:child_process'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
@@ -199,8 +201,23 @@ function scanImports(path: string, lines: string[]): Problem[] {
 // so the check above can't see it. A path is only validated when its package
 // "anchor" is a real directory; that lets illustrative placeholder paths like
 // `plugins/myplugin/src/...` through while still flagging a moved real path.
+//
+// The three single-segment roots — `website/`, `scripts/`, `test_data/` — were
+// added after every stale path a hand audit of agent-docs/reference turned up
+// landed in one of them, and this check reported clean over all of them:
+// `scripts/check-specs.ts` and `scripts/trace-tasks.ts` for tools that live in
+// `website/scripts/`, `scripts/publish-umd.sh` for one in `plugins/blat/`, a
+// `scripts/config.ts` and a `scripts/buildElectronMain.ts` that are a product's,
+// and a `test_data/` fixture that was never committed. They are where the repo's
+// own tooling lives, so they are exactly the paths a doc cites when it tells you
+// how to run something.
+//
+// The leading lookbehind is what makes a single-segment root safe. Without it
+// `scripts/…` matches inside `~/src/jb2bench/scripts/render/multibam.ts`, and
+// these docs cite a sibling benchmark repo often enough that the check would
+// have reported more foreign paths than local ones.
 const REPO_PATH =
-  /(?:packages|plugins|products|example-plugins|component_tests|agent-docs)\/[A-Za-z0-9_./-]+/g
+  /(?<![A-Za-z0-9_./~-])(?:packages|plugins|products|example-plugins|component_tests|agent-docs|website|scripts|test_data)\/[A-Za-z0-9_./-]+/g
 const ANCHORED = new Set([
   'packages',
   'plugins',
@@ -221,6 +238,36 @@ function repoPathExists(rel: string) {
   }
 }
 
+// A path git is told to ignore is absent by definition on a fresh checkout, so
+// holding it to account asks the machine-dependent question — and a doc naming
+// one is usually naming it precisely to say the tree does not carry it
+// (`website/static/img` is the figure store's local cache,
+// `test_data/jb2bench_link/` is a regenerable fixture link, and each is
+// described in that voice where it appears). This replaced a hardcoded
+// `BUILD_DIRS` segment scan, which knew about `dist`/`esm`/`build` and so
+// covered the compiled half of the same idea and none of the rest.
+//
+// Only ever reached for a path that is already missing, which is normally none
+// of them, so the per-path spawn costs nothing in the passing case.
+const ignoreCache = new Map<string, boolean>()
+
+function isGitIgnored(rel: string) {
+  let hit = ignoreCache.get(rel)
+  if (hit === undefined) {
+    // Both spellings, because a directory rule is written with a trailing
+    // slash (`**/esm/`) and git will not apply one to a path it cannot stat as
+    // a directory — which every path reaching here is, by construction.
+    hit = [rel, `${rel}/`].some(
+      p =>
+        spawnSync('git', ['check-ignore', '-q', '--no-index', p], {
+          cwd: repoRoot,
+        }).status === 0,
+    )
+    ignoreCache.set(rel, hit)
+  }
+  return hit
+}
+
 function anchorOf(p: string) {
   const segs = p.split('/')
   return ANCHORED.has(segs[0]!) ? segs.slice(0, 2).join('/') : segs[0]!
@@ -232,6 +279,23 @@ function scanFilePaths(path: string, lines: string[]): Problem[] {
     for (const match of line.matchAll(REPO_PATH)) {
       // `.../` is an explicit abbreviation marker, not a literal path segment.
       if (match[0].includes('...')) {
+        continue
+      }
+      // A glob, a brace expansion or an angle-bracket placeholder stands for a
+      // set of files rather than one, and none of those metacharacters is in
+      // the path class above — so the match stops at it and what is left is a
+      // prefix that was never meant to resolve (`scripts/build_` out of
+      // `scripts/build_*.sh`). Look at what the match ran into rather than
+      // widening the class, which would have to admit the comma inside
+      // `specs/graph-{fixtures,ecoli,hprc}.ts` and would then swallow the next
+      // word of any sentence listing two paths.
+      //
+      // This is the path-side counterpart of PLACEHOLDER on the symbol side,
+      // and it is what a single-segment root needs: a two-segment placeholder
+      // (`plugins/myplugin/…`) already passes on its anchor not existing, but
+      // `scripts/…` is anchored on a directory that always exists, so a
+      // placeholder under one has to announce itself.
+      if ('*{<'.includes(line[match.index + match[0].length] ?? '')) {
         continue
       }
       // A path embedded in a GitHub blob URL is owned by scanBlobAnchors (which
@@ -249,19 +313,13 @@ function scanFilePaths(path: string, lines: string[]): Problem[] {
         continue
       }
       const ref = match[0].replace(/[./]+$/, '')
-      // A path INTO build output is absent by definition on a fresh checkout —
-      // these directories are gitignored, so CI has none of them and a developer
-      // has whichever ones they last built. Holding such a path to account asks
-      // the machine-dependent question, and the docs that name one are naming it
-      // precisely to say a fresh worktree has not built it. Same reasoning as
-      // BUILD_DIRS on the symbol side, where a stale local `esm/` made the
-      // checker disagree with CI about whether a reference resolved.
-      if (ref.split('/').some(seg => BUILD_DIRS.has(seg))) {
-        continue
-      }
       // Only hold a path to account when its package anchor really exists —
       // otherwise it's a placeholder/example path, not a live repo reference.
-      if (repoPathExists(anchorOf(ref)) && !repoPathExists(ref)) {
+      if (
+        repoPathExists(anchorOf(ref)) &&
+        !repoPathExists(ref) &&
+        !isGitIgnored(ref)
+      ) {
         problems.push({
           file: path,
           line: i + 1,

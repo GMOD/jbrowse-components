@@ -18,7 +18,7 @@ the writeup of what a stale coordinate cost — `alignments_sort_by_base` kept a
 108bp-era right-click after its spec narrowed to 31bp and read as 17% render
 flakiness for months.
 
-`scripts/check-specs.ts` ratchets the count of what is left. The residue is
+`website/scripts/check-specs.ts` ratchets the count of what is left. The residue is
 deliberate; its comment says which kinds and why.
 
 ## What the types don't say
@@ -118,7 +118,7 @@ Two cases, and converting them to satisfy a count makes the figure worse:
 
 ## Verifying
 
-`node --experimental-strip-types scripts/generate-screenshots.ts --check
+`node --experimental-strip-types website/scripts/generate-screenshots.ts --check
 --filter <spec> --exact --localport 3355`, which renders twice and touches no
 committed file. `drawAnnotations` throws on any anchor that resolves to nothing
 and an action anchor fails the spec by name, so a clean run *is* the proof every
