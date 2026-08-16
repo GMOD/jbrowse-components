@@ -29,6 +29,17 @@ Check these before opening anything, in roughly descending volume:
    `makeWorkerInstance`, `decodeSession`, `RootModel`, `sessionModelFactory`,
    `factoryReset`, `version`, `Loader`, and the whole `examples-site` set. Four
    products deliberately ship four of these.
+
+   "Not accidental" is not the same as "cannot be shared", and a 2026-08-15
+   pass through `products/` moved four of them: `loadPlugins`' body, the
+   `sessionModelFactory` argument type, `useQueryParam`, and the two embedded
+   sessions' mixin set. What each kept is the part that is genuinely
+   per-product — the published doc comment, the one flag that differs, the
+   members reading a concrete view type. **The constraint that decides how far
+   you get is typing, not taste**: passing a model type as a generic to
+   `types.compose` degrades the result to `any`, silently. See the
+   `createEmbeddedSessionModel` entry in
+   [REJECTED_IDEAS.md](REJECTED_IDEAS.md#config-and-mst).
 3. **`export default`.** The name is local to the module, so it never collides
    at an import site. `SetRowArrangementDialog`, `ReorderChromosomesDialog`,
    `GetFeatureDetails`, `f`. For RPC classes the identity that matters is the
