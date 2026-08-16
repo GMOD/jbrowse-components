@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { checkboxItem, makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -32,22 +32,6 @@ const SetRowArrangementDialog = lazy(
 // negation to the setter explicitly, so no event argument can reach it.
 // A checkbox row keeps the menu open by its type — users flip several of these
 // in one visit, and the menu is an observer, so the ticks move live.
-function toggle(
-  label: string,
-  checked: boolean,
-  set: (v: boolean) => void,
-  opts?: { subLabel?: string },
-) {
-  return checkboxItem(
-    label,
-    checked,
-    () => {
-      set(!checked)
-    },
-    opts,
-  )
-}
-
 // Both bands are computed from the per-base alignment, which the zoom-out
 // summary tier does not read — so past the floor they collapse and the tick
 // keeps reporting what the user chose. Said out loud, because otherwise the
@@ -135,7 +119,7 @@ interface MafMenuSelf extends IStateTreeNode {
 function frameMenuItems(self: MafMenuSelf): MenuItem[] {
   return self.annotationAdapterConfig
     ? [
-        toggle(
+        toggleItem(
           'Show CDS frames',
           self.showAnnotations,
           self.setShowAnnotations,
@@ -196,12 +180,10 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
       // said neither which two things swap nor which way round — so the only
       // thing the label had to carry (that zooming in gives you the letters
       // back) was the part it left out.
-      checkboxItem(
+      toggleItem(
         'Show bases when zoomed in',
         self.rowIdentityAutoZoom,
-        () => {
-          self.setRowIdentityAutoZoom(!self.rowIdentityAutoZoom)
-        },
+        self.setRowIdentityAutoZoom,
         // The dependency stated rather than gated on: it qualifies the two
         // identity options above and is inert under the others.
         { subLabel: 'for the identity plots above' },
@@ -212,22 +194,22 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
 
 function showMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
-    toggle(
+    toggleItem(
       'Show letters at all positions',
       self.showAllLetters,
       self.setShowAllLetters,
     ),
-    toggle(
+    toggleItem(
       'Show mismatches colored by base',
       self.mismatchRendering,
       self.setMismatchRendering,
     ),
-    toggle(
+    toggleItem(
       'Show letters as uppercase',
       self.showAsUpperCase,
       self.setShowAsUpperCase,
     ),
-    toggle(
+    toggleItem(
       'Show sidebar with tree and labels',
       self.showTree,
       self.setShowTree,
@@ -236,11 +218,11 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     // with the tree off the toggle would change nothing
     showRowLabelsMenuItem(self, { requiresTree: true }),
     treeBranchLengthMenuItem(self),
-    toggle('Show coverage', self.showCoverage, self.setShowCoverage, {
+    toggleItem('Show coverage', self.showCoverage, self.setShowCoverage, {
       subLabel: self.showSummary ? ZOOM_IN_FOR_BAND : undefined,
     }),
-    toggle('Show alignments', self.showAlignments, self.setShowAlignments),
-    toggle(
+    toggleItem('Show alignments', self.showAlignments, self.setShowAlignments),
+    toggleItem(
       'Show conservation (% identity)',
       self.showConservation,
       self.setShowConservation,
@@ -262,7 +244,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       : []),
     // An overlay drawn on top of whatever the rows are colored by, not one of
     // the alternatives in "Row coloring" — so it stays a plain toggle here.
-    toggle(
+    toggleItem(
       'Show inversions (strand flips)',
       self.showInversions,
       self.setShowInversions,

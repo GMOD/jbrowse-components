@@ -1,9 +1,9 @@
 import { lazy } from 'react'
 
 import {
-  checkboxItem,
   promotableRadioItem,
   radioItems,
+  toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
@@ -244,23 +244,19 @@ function supplementaryItem(
     disabledHelpText:
       'Enable "Read connections ▸ View as pairs / link supplementary alignments" first',
     subMenu: [
-      checkboxItem(
+      toggleItem(
         'Color supplementary alignments by consensus strand',
         supp.flipStrandLongReadChains,
-        () => {
-          supp.setFlipStrandLongReadChains(!supp.flipStrandLongReadChains)
-        },
+        supp.setFlipStrandLongReadChains,
         {
           subLabel:
             'long (unpaired) reads: segments agreeing with the orientation most reads on screen share stay red and the ones inverted at a junction go blue, so an inversion reads as a color flip',
         },
       ),
-      checkboxItem(
+      toggleItem(
         'Color supplementary chains orange',
         supp.colorSupplementaryChains,
-        () => {
-          supp.setColorSupplementaryChains(!supp.colorSupplementaryChains)
-        },
+        supp.setColorSupplementaryChains,
         {
           subLabel:
             'one flat color for the whole chain, paired and long reads alike — marks the split without classifying it, so it replaces both the strand flip and the inversion/deletion hues',

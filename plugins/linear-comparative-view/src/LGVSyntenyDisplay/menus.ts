@@ -1,7 +1,4 @@
-import {
-  checkboxItem,
-  showLegendCheckboxItem,
-} from '@jbrowse/core/ui/menuItems'
+import { showLegendCheckboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   collapseGroupRowsItems,
@@ -50,12 +47,10 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
     subMenu: [
       ...item.subMenu,
       { type: 'divider' as const },
-      checkboxItem(
+      toggleItem(
         'Hide self-alignment lane',
         model.hideSelfAlignments,
-        () => {
-          model.setHideSelfAlignments(!model.hideSelfAlignments)
-        },
+        model.setHideSelfAlignments,
         {
           helpText:
             "Drop the mate-assembly lane for the view's own assembly. An " +
@@ -99,39 +94,23 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
       },
       { pin: model.showLegendDisplayTypeDefault },
     ),
-    checkboxItem(
-      'Show coverage',
-      model.showCoverage,
-      () => {
-        model.setShowCoverage(!model.showCoverage)
-      },
-      {
-        helpText:
-          'Draw a histogram of how deeply each reference base is covered by ' +
-          'the aligned blocks — the depth of syntenic coverage.',
-      },
-    ),
-    checkboxItem(
-      'Show alignments',
-      model.showPileup,
-      () => {
-        model.setShowPileup(!model.showPileup)
-      },
-      {
-        helpText:
-          'Uncheck to collapse the stacked alignment blocks, leaving just ' +
-          'the coverage histogram.',
-      },
-    ),
+    toggleItem('Show coverage', model.showCoverage, model.setShowCoverage, {
+      helpText:
+        'Draw a histogram of how deeply each reference base is covered by ' +
+        'the aligned blocks — the depth of syntenic coverage.',
+    }),
+    toggleItem('Show alignments', model.showPileup, model.setShowPileup, {
+      helpText:
+        'Uncheck to collapse the stacked alignment blocks, leaving just ' +
+        'the coverage histogram.',
+    }),
     // Only while grouping is in effect — for an all-vs-all track grouped by
     // mate assembly this is the default, one band per mate genome.
     ...collapseGroupRowsItems(model),
-    checkboxItem(
+    toggleItem(
       'Show mismatches',
       model.showMismatches,
-      () => {
-        model.setShowMismatches(!model.showMismatches)
-      },
+      model.setShowMismatches,
       {
         helpText:
           'Draw per-base differences between the two assemblies, read from ' +
@@ -148,12 +127,10 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     // why it does nothing should not be offered.
     ...(model.showCoverage
       ? [
-          checkboxItem(
+          toggleItem(
             'Show interbase indicators',
             model.showInterbaseIndicators,
-            () => {
-              model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
-            },
+            model.setShowInterbaseIndicators,
             {
               helpText:
                 'Mark insertions in the other assembly, which occupy no ' +

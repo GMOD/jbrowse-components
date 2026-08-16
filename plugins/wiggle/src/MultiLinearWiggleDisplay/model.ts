@@ -9,10 +9,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
-import {
-  checkboxItem,
-  showLegendCheckboxItem,
-} from '@jbrowse/core/ui/menuItems'
+import { showLegendCheckboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -696,12 +693,10 @@ export default function stateModelFactory(
           ...(self.isOverlay
             ? []
             : [
-                checkboxItem(
+                toggleItem(
                   'Show row separators',
                   self.showRowSeparators,
-                  () => {
-                    self.setShowRowSeparators(!self.showRowSeparators)
-                  },
+                  self.setShowRowSeparators,
                 ),
                 showRowLabelsMenuItem(self),
               ]),

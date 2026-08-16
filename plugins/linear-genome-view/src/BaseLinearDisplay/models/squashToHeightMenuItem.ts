@@ -1,4 +1,4 @@
-import { checkboxItem } from '@jbrowse/core/ui/menuItems'
+import { toggleItem } from '@jbrowse/core/ui/menuItems'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -18,12 +18,10 @@ export function squashToHeightCheckboxItem(self: {
   squashToHeight: boolean
   setSquashToHeight: (arg: boolean) => void
 }): MenuItem {
-  return checkboxItem(
+  return toggleItem(
     'Fit to display height',
     self.squashToHeight,
-    () => {
-      self.setSquashToHeight(!self.squashToHeight)
-    },
+    self.setSquashToHeight,
     {
       helpText:
         'Squash the triangle vertically to fill the display height instead of drawing square bins at its natural half-width height.',

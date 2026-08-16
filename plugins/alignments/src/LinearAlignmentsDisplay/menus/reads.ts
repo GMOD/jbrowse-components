@@ -1,7 +1,7 @@
 import {
-  checkboxItem,
   promotableToggleItem,
   showLegendCheckboxItem,
+  toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 
@@ -57,18 +57,16 @@ export function getReadsMenuItems(model: ReadsModel) {
       },
       { pin: model.showLegendDisplayTypeDefault },
     ),
-    checkboxItem('Show coverage', model.showCoverage, () => {
-      model.setShowCoverage(!model.showCoverage)
-    }),
-    checkboxItem('Show pileup', model.showPileup, () => {
-      model.setShowPileup(!model.showPileup)
-    }),
+    toggleItem('Show coverage', model.showCoverage, model.setShowCoverage),
+    toggleItem('Show pileup', model.showPileup, model.setShowPileup),
     // Only while grouping is in effect, so it sits next to the pileup toggle
     // it modifies rather than in the Group-by dimension list.
     ...collapseGroupRowsItems(model),
-    checkboxItem('Show mismatches', model.showMismatches, () => {
-      model.setShowMismatches(!model.showMismatches)
-    }),
+    toggleItem(
+      'Show mismatches',
+      model.showMismatches,
+      model.setShowMismatches,
+    ),
     promotableToggleItem({
       label: 'Fade low quality mismatches',
       checked: model.mismatchAlpha,
@@ -91,12 +89,10 @@ export function getReadsMenuItems(model: ReadsModel) {
     // dependency is stated here rather than gated on: with coverage off this
     // toggle is inert, and the same sentence is on LGVSyntenyDisplay's
     // corresponding row.
-    checkboxItem(
+    toggleItem(
       'Show interbase indicators',
       model.showInterbaseIndicators,
-      () => {
-        model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
-      },
+      model.setShowInterbaseIndicators,
       {
         helpText:
           'Mark insertions and clipping, which occupy no reference base, ' +
@@ -107,12 +103,10 @@ export function getReadsMenuItems(model: ReadsModel) {
     // Which reads populate the pileup. These change what's fetched (they also
     // thin the coverage histogram), but they read as visibility toggles, so
     // they live in "Show..." rather than a filter submenu.
-    checkboxItem(
+    toggleItem(
       'Show proper pairs',
       model.drawProperPairs,
-      () => {
-        model.setDrawProperPairs(!model.drawProperPairs)
-      },
+      model.setDrawProperPairs,
       {
         helpText:
           'Uncheck to hide concordant pairs — those the aligner flagged ' +
@@ -122,12 +116,10 @@ export function getReadsMenuItems(model: ReadsModel) {
           'proper, so structural-variant signal is not lost.',
       },
     ),
-    checkboxItem(
+    toggleItem(
       'Show reads without a mate',
       model.drawSingletons,
-      () => {
-        model.setDrawSingletons(!model.drawSingletons)
-      },
+      model.setDrawSingletons,
       {
         helpText:
           'Uncheck to hide reads whose mate or split/supplementary ' +
@@ -140,12 +132,10 @@ export function getReadsMenuItems(model: ReadsModel) {
           'in both.',
       },
     ),
-    checkboxItem(
+    toggleItem(
       'Show only split alignments',
       model.showOnlySplitAlignments,
-      () => {
-        model.setShowOnlySplitAlignments(!model.showOnlySplitAlignments)
-      },
+      model.setShowOnlySplitAlignments,
       {
         helpText:
           'Only show reads that are part of a chimeric/split alignment ' +

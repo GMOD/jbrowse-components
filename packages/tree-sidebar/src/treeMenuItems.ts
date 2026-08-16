@@ -1,4 +1,4 @@
-import { checkboxItem } from '@jbrowse/core/ui/menuItems'
+import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 
@@ -21,12 +21,10 @@ interface BranchLengthMenuModel {
 export function treeBranchLengthMenuItem(
   self: BranchLengthMenuModel,
 ): MenuItem {
-  return checkboxItem(
+  return toggleItem(
     'Tree branch lengths',
     self.showBranchLength,
-    () => {
-      self.setShowBranchLength(!self.showBranchLength)
-    },
+    self.setShowBranchLength,
     {
       disabled: !self.showTree || !self.treeHasBranchLengths,
       disabledHelpText: self.showTree
@@ -61,12 +59,10 @@ export function showRowLabelsMenuItem(
   self: RowLabelsMenuModel,
   { requiresTree = false }: { requiresTree?: boolean } = {},
 ): MenuItem {
-  return checkboxItem(
+  return toggleItem(
     'Show row labels',
     self.showRowLabels,
-    () => {
-      self.setShowRowLabels(!self.showRowLabels)
-    },
+    self.setShowRowLabels,
     {
       disabled: requiresTree && !self.showTree,
       disabledHelpText: 'Show the tree first',
@@ -225,17 +221,10 @@ export function clusteringMenuItem(
       ...clusterProvenanceMenuItems(self),
       ...(showTreeToggle && treeApplies
         ? [
-            checkboxItem(
-              'Show tree',
-              self.showTree,
-              () => {
-                self.setShowTree(!self.showTree)
-              },
-              {
-                disabled: !self.clusterTree,
-                disabledHelpText: 'Run clustering first',
-              },
-            ),
+            toggleItem('Show tree', self.showTree, self.setShowTree, {
+              disabled: !self.clusterTree,
+              disabledHelpText: 'Run clustering first',
+            }),
           ]
         : []),
       ...(treeApplies ? [treeBranchLengthMenuItem(self)] : []),

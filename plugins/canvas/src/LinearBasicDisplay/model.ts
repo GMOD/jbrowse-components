@@ -6,10 +6,10 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import {
-  checkboxItem,
   promotableRadioItems,
   promotableToggleItem,
   radioItems,
+  toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import SegmentIcon from '@mui/icons-material/Segment'
@@ -389,9 +389,11 @@ export default function stateModelFactory(
         showSubmenuCheckboxItems() {
           return [
             ...superShowSubmenuCheckboxItems(),
-            checkboxItem('Show only genes', self.showOnlyGenes, () => {
-              self.setShowOnlyGenes(!self.showOnlyGenes)
-            }),
+            toggleItem(
+              'Show only genes',
+              self.showOnlyGenes,
+              self.setShowOnlyGenes,
+            ),
             promotableToggleItem({
               label: 'Show chevrons',
               checked: self.displayDirectionalChevrons,

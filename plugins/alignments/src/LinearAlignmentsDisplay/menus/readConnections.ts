@@ -1,5 +1,5 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import { checkboxItem, promotableToggleItem } from '@jbrowse/core/ui/menuItems'
+import { promotableToggleItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
 import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
@@ -79,12 +79,10 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
     }),
     // Orthogonal to layout — the connection curves draw over an ordinary pileup
     // or a chain layout, so this is always offered.
-    checkboxItem(
+    toggleItem(
       'Use curved connectors',
       model.showBezierConnections,
-      () => {
-        model.setShowBezierConnections(!model.showBezierConnections)
-      },
+      model.setShowBezierConnections,
       {
         helpText:
           'draw a curve between a read and its mate or split-read segment; curve color marks the connection type (e.g. inversion, deletion, pair orientation — see the legend). Hover a curve to identify it. A connection between two different displayed regions is drawn this way whatever this is set to, since the per-region pass cannot reach across one.',
@@ -103,34 +101,28 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           },
           pin: model.readConnectionsDownDisplayTypeDefault,
         }),
-        checkboxItem(
+        toggleItem(
           'Show concordant-pair arcs',
           model.drawProperPairArcs,
-          () => {
-            model.setDrawProperPairArcs(!model.drawProperPairArcs)
-          },
+          model.setDrawProperPairArcs,
           {
             helpText:
               'Uncheck to draw only the arcs that carry a category — abnormal insert size or orientation, and split junctions — leaving out the ordinary pairs. "Concordant" means exactly what it means for "Show proper pairs" under Show...: the aligner flagged the pair proper (SAM 0x2), it is not a chimeric segment, and its mates face each other. That setting hides the reads; this one hides their arcs, so you can keep the pileup whole and still read the band. On deep coverage it is the difference between a readable band and a solid mass — at 300x roughly 99 arcs in 100 are the ordinary case.',
           },
         ),
-        checkboxItem(
+        toggleItem(
           'Show off-screen mate connections',
           model.drawLongRange,
-          () => {
-            model.setDrawLongRange(!model.drawLongRange)
-          },
+          model.setDrawLongRange,
           {
             helpText:
               'draw an arc to a read whose mate is elsewhere on this chromosome and not loaded in the current view; the arc renders as vertical lines at this zoom. Inter-chromosomal partners have their own setting below and do not need this one.',
           },
         ),
-        checkboxItem(
+        toggleItem(
           'Show inter-chromosomal pairs',
           model.drawInter,
-          () => {
-            model.setDrawInter(!model.drawInter)
-          },
+          model.setDrawInter,
           {
             helpText:
               'reads whose mate — or split-read segment — maps to a different chromosome. Drawn as an arc when both chromosomes are displayed and as a connector tick at each breakpoint otherwise. Independent of the setting above: a single-chromosome view never loads the far end of a translocation, so this one has to be able to draw it on its own.',
@@ -165,12 +157,10 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
             model.setMinInterchromSupport(DEFAULT_MIN_INTERCHROM_SUPPORT)
           },
         }),
-        checkboxItem(
+        toggleItem(
           'Debug: show arc geometry',
           model.debugArcGeometry,
-          () => {
-            model.setDebugArcGeometry(!model.debugArcGeometry)
-          },
+          model.setDebugArcGeometry,
           {
             helpText:
               'diagnostic overlay: outlines the band, the pre-unclamp apex ceiling, and every arc traced from the same radii the renderer uses, with rx/ry/aspect printed for the widest few. An outline that does not sit on its painted arc is a real disagreement between the model and the paint.',

@@ -1,8 +1,5 @@
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import {
-  checkboxItem,
-  showLegendCheckboxItem,
-} from '@jbrowse/core/ui/menuItems'
+import { showLegendCheckboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
@@ -104,12 +101,10 @@ function metricMenuItems(self: LDMenuSelf): MenuItem[] {
     ...(self.isPrecomputedLD
       ? []
       : [
-          checkboxItem(
+          toggleItem(
             'Show signed LD values (-1 to 1)',
             self.signedLD,
-            () => {
-              self.setSignedLD(!self.signedLD)
-            },
+            self.setSignedLD,
             {
               helpText:
                 "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
@@ -121,9 +116,7 @@ function metricMenuItems(self: LDMenuSelf): MenuItem[] {
 
 function showMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
-    checkboxItem('Show LD triangle', self.showLDTriangle, () => {
-      self.setShowLDTriangle(!self.showLDTriangle)
-    }),
+    toggleItem('Show LD triangle', self.showLDTriangle, self.setShowLDTriangle),
     showLegendCheckboxItem(
       self.showLegend,
       () => {
@@ -131,27 +124,21 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
       },
       { pin: self.showLegendDisplayTypeDefault },
     ),
-    checkboxItem('Show variant labels', self.showLabels, () => {
-      self.setShowLabels(!self.showLabels)
-    }),
-    checkboxItem(
+    toggleItem('Show variant labels', self.showLabels, self.setShowLabels),
+    toggleItem(
       'Show vertical guides on hover',
       self.showVerticalGuides,
-      () => {
-        self.setShowVerticalGuides(!self.showVerticalGuides)
-      },
+      self.setShowVerticalGuides,
     ),
     // Layout toggles live alongside the visibility toggles in this submenu,
     // matching the Hi-C triangular display's "Show..." grouping (plugins/hic
     // trackMenuItems.ts) so the two contact-map displays stay consistent — the
     // fit-to-height row is literally the same builder they share.
     squashToHeightCheckboxItem(self),
-    checkboxItem(
+    toggleItem(
       'Show cells with genome proportions',
       self.useGenomicPositions,
-      () => {
-        self.setUseGenomicPositions(!self.useGenomicPositions)
-      },
+      self.setUseGenomicPositions,
       {
         helpText:
           'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',

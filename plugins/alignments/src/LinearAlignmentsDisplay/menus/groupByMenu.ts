@@ -1,4 +1,4 @@
-import { checkboxItem } from '@jbrowse/core/ui/menuItems'
+import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import type { GroupByType } from '../../shared/types.ts'
@@ -114,12 +114,10 @@ export function collapseGroupRowsItems(model: CollapseGroupRowsModel) {
   return (
     model.canCollapseGroupRows
       ? [
-          checkboxItem(
+          toggleItem(
             'Collapse groups to one row',
             model.collapseGroupRows,
-            () => {
-              model.setCollapseGroupRows(!model.collapseGroupRows)
-            },
+            model.setCollapseGroupRows,
             {
               helpText:
                 'Draw each group as a single row instead of a stack, with ' +

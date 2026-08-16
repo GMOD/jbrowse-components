@@ -18,7 +18,12 @@
  * described here and built by the renderer, because an element in a descriptor
  * pulls its whole component graph back in.
  */
-export { checkboxItem, radioItem, radioItems } from './toggleMenuItems.ts'
+export {
+  checkboxItem,
+  radioItem,
+  radioItems,
+  toggleItem,
+} from './toggleMenuItems.ts'
 export { makeRadioSubMenu } from './radioSubMenu.ts'
 export { showLegendCheckboxItem } from './legendMenuItem.ts'
 export {

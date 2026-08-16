@@ -1,8 +1,8 @@
 import {
-  checkboxItem,
   makeRadioSubMenu,
   radioItems,
   showLegendCheckboxItem,
+  toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getBpDisplayStr } from '@jbrowse/core/util'
@@ -100,12 +100,10 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
     ),
     ...(self.hasResolutions
       ? [
-          checkboxItem(
+          toggleItem(
             'Show resolution controls',
             self.showResolutionControls,
-            () => {
-              self.setShowResolutionControls(!self.showResolutionControls)
-            },
+            self.setShowResolutionControls,
             {
               helpText:
                 'Show an on-figure binsize dropdown in the track overlay, e.g. to bake a chosen resolution into a screenshot.',
@@ -114,15 +112,11 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
         ]
       : []),
     squashToHeightCheckboxItem(self),
-    checkboxItem('Log scale', self.useLogScale, () => {
-      self.setUseLogScale(!self.useLogScale)
-    }),
-    checkboxItem(
+    toggleItem('Log scale', self.useLogScale, self.setUseLogScale),
+    toggleItem(
       'Show faint contacts (95th percentile)',
       self.useColorPercentile,
-      () => {
-        self.setUseColorPercentile(!self.useColorPercentile)
-      },
+      self.setUseColorPercentile,
       {
         helpText:
           'Saturate the color scale at the 95th percentile of counts instead of the max, so faint off-diagonal contacts read more strongly.',

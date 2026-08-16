@@ -44,6 +44,38 @@ export function checkboxItem(
   }
 }
 
+/**
+ * #menuBuilder toggleItem | a checkbox row whose setter takes the new value
+ *
+ * `checkboxItem` where the callback is handed the value rather than left to
+ * derive it. Prefer this: the derivation is `!` applied to the same expression
+ * the row is `checked` by, and writing it out per row is 38 chances to negate
+ * the wrong thing — which fails as a checkbox that ticks and does nothing, with
+ * nothing thrown.
+ *
+ * It is also the shape `radioItems` already takes (`setMode: (m: T) => void`),
+ * so the two group builders now agree about who computes the new value.
+ *
+ * MAF had this as a local wrapper, and it had already lost three of
+ * `SettingRowOptions`' five fields to a hand-narrowed `{ subLabel? }` — the
+ * exact drift the comment on that interface warns about.
+ */
+export function toggleItem(
+  label: string,
+  value: boolean,
+  setValue: (value: boolean) => void,
+  opts?: SettingRowOptions,
+): CheckboxMenuItem {
+  return checkboxItem(
+    label,
+    value,
+    () => {
+      setValue(!value)
+    },
+    opts,
+  )
+}
+
 // One radio row. The singular of `radioItems`, and what
 // `promotableRadioItem` builds through, so a lone radio row and a member of a
 // group are the same object plus or minus its pin.

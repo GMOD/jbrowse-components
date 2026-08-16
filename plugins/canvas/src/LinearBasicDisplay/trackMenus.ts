@@ -1,10 +1,10 @@
 import { makePin } from '@jbrowse/core/configuration'
 import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
-  checkboxItem,
   promotableRadioItems,
   radioItems,
   showLegendCheckboxItem,
+  toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
@@ -119,9 +119,7 @@ function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   const legend = self.colorLegend
   return [
-    checkboxItem('Show outline', self.showOutline, () => {
-      self.setShowOutline(!self.showOutline)
-    }),
+    toggleItem('Show outline', self.showOutline, self.setShowOutline),
     // Only where there is a key to show — a plain feature track declaring no
     // `legend` slot, and a variant track colored by anything but its two preset
     // schemes, have nothing to toggle. Offered at all because the key's own "×"
