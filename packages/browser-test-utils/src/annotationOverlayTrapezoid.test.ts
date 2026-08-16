@@ -23,7 +23,10 @@ function rect(left: number, top: number, width: number, height: number) {
 
 function draw(items: PayloadAnnotation[]) {
   document.body.replaceChildren()
-  const misses = drawAnnotationOverlay(items, ANNOTATION_OVERLAY_ID)
+  const { unresolved: misses } = drawAnnotationOverlay(
+    items,
+    ANNOTATION_OVERLAY_ID,
+  )
   const poly = document.querySelector('polygon')
   const sides = [...document.querySelectorAll('line')].map(l =>
     ['x1', 'y1', 'x2', 'y2'].map(a => Number(l.getAttribute(a))),

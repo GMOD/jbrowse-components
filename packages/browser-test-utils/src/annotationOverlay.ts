@@ -216,18 +216,29 @@ export function parseAnnotationLocus(
   return { refName, start, end }
 }
 
+// The two ways a callout fails to say what its spec asked it to, each entry a
+// JSON blob naming the item. Both are empty on a good run, and either one is an
+// error at the caller — kept apart because they need different fixes: an
+// unresolved anchor is a stale selector or a renamed label, while an off-frame
+// draw is a correct anchor the capture cannot see.
+export interface AnnotationOverlayProblems {
+  unresolved: string[]
+  offFrame: string[]
+}
+
 // Draw the annotations as a fixed SVG overlay covering the viewport so the
 // callouts composite into the screenshot, reproducing the red arrows / boxes /
 // text labels of hand-made teaching figures without an external image editor.
 //
 // Runs in PAGE CONTEXT (serialized to source by both harnesses), so it takes no
-// imports and returns plain data: the anchors that resolved to nothing, which
-// the caller turns into a thrown error rather than leaving their callouts
-// parked at the origin.
+// imports and returns plain data: the anchors that resolved to nothing, and the
+// items that resolved but drew outside the capture. The caller turns either into
+// a thrown error rather than leaving a callout parked at the origin or shipping
+// a figure the callout is missing from.
 export function drawAnnotationOverlay(
   items: PayloadAnnotation[],
   overlayId: string,
-): string[] {
+): AnnotationOverlayProblems {
   const NS = 'http://www.w3.org/2000/svg'
   const svg = document.createElementNS(NS, 'svg')
   svg.id = overlayId
@@ -509,7 +520,57 @@ export function drawAnnotationOverlay(
     ...resolved.filter(a => !isPill(a.type)),
     ...resolved.filter(a => isPill(a.type)),
   ]
+
+  // An anchor that resolves and THEN draws outside the capture is the other
+  // half of the miss above, and the half nothing caught: the callout is correct,
+  // the spec is correct, and the figure ships without it. Measured from what was
+  // actually drawn rather than from the intended geometry, because a pill's own
+  // size is only known once its text is measured in the page.
+  //
+  // Reported only when the item lands ENTIRELY outside. A partial clip is left
+  // alone deliberately — a box already clamps its pad inward at the frame edge,
+  // so the shapes that reach the edge do so on purpose, and a threshold on
+  // "mostly visible" would fire on those without a measurement to set it from.
+  const offFrame: string[] = []
+  // jsdom, where this file's unit tests run, measures every element as a zero
+  // rect; taken at face value that calls every callout off-frame. A zero-sized
+  // overlay root is how "no layout here" reads from inside page context.
+  const canMeasure = svg.getBoundingClientRect().width > 0
+  function reportIfOffFrame(a: (typeof drawOrder)[number], from: number) {
+    const drawn = [...svg.children].slice(from)
+    if (!canMeasure || drawn.length === 0) {
+      return
+    }
+    let left = Infinity
+    let top = Infinity
+    let right = -Infinity
+    let bottom = -Infinity
+    for (const el of drawn) {
+      const r = el.getBoundingClientRect()
+      left = Math.min(left, r.left)
+      top = Math.min(top, r.top)
+      right = Math.max(right, r.right)
+      bottom = Math.max(bottom, r.bottom)
+    }
+    const visibleWidth = Math.min(right, window.innerWidth) - Math.max(left, 0)
+    const visibleHeight =
+      Math.min(bottom, window.innerHeight) - Math.max(top, 0)
+    if (visibleWidth > 0 && visibleHeight > 0) {
+      return
+    }
+    offFrame.push(
+      JSON.stringify({
+        type: a.type,
+        text: a.text,
+        anchor: a.anchor,
+        drawn: { left, top, right, bottom },
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+      }),
+    )
+  }
+
   for (const a of drawOrder) {
+    const drawnFrom = svg.childElementCount
     const color = a.color ?? '#e3242b'
     const cx = a.x
     const cy = a.y
@@ -786,6 +847,7 @@ export function drawAnnotationOverlay(
       rect.setAttribute('stroke-width', '3')
       text.before(rect)
     }
+    reportIfOffFrame(a, drawnFrom)
   }
-  return misses
+  return { unresolved: misses, offFrame }
 }

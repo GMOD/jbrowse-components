@@ -44,7 +44,9 @@ export async function clearAnnotations(driver: WebDriver): Promise<void> {
 
 // Draws the callouts, then throws on any anchor that resolved to nothing —
 // which is a stale selector or a label that has been renamed, not a styling
-// mistake, and would otherwise park its callout in the corner of the figure.
+// mistake, and would otherwise park its callout in the corner of the figure —
+// and on any that resolved but drew outside the capture, which ships a figure
+// with the callout simply absent.
 export async function drawAnnotations(
   driver: WebDriver,
   annotations: Annotation[],
@@ -55,14 +57,17 @@ export async function drawAnnotations(
     anchor: resolveAnchor(a.anchor),
     fromAnchor: resolveAnchor(a.fromAnchor),
   }))
-  const unresolved = await driver.executeScript<string[]>(
-    drawAnnotationOverlay,
-    items,
-    ANNOTATION_OVERLAY_ID,
-  )
+  const { unresolved, offFrame } = await driver.executeScript<
+    ReturnType<typeof drawAnnotationOverlay>
+  >(drawAnnotationOverlay, items, ANNOTATION_OVERLAY_ID)
   if (unresolved.length > 0) {
     throw new Error(
       `annotation anchors resolved to nothing: ${unresolved.join(', ')}`,
+    )
+  }
+  if (offFrame.length > 0) {
+    throw new Error(
+      `annotations drew outside the capture: ${offFrame.join(', ')}`,
     )
   }
 }

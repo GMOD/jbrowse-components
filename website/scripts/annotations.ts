@@ -83,7 +83,7 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
       fromAnchor: await withRegion(page, a.fromAnchor, false),
     })),
   )
-  const unresolved = await page.evaluate(
+  const { unresolved, offFrame } = await page.evaluate(
     drawAnnotationOverlay,
     items,
     ANNOTATION_OVERLAY_ID,
@@ -95,6 +95,13 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
   if (unresolved.length > 0) {
     throw new Error(
       `annotation anchors resolved to nothing: ${unresolved.join(', ')}`,
+    )
+  }
+  // The same failure one step later: the anchor resolved, the callout drew, and
+  // it drew where the capture cannot see it. Nothing about the PNG says so.
+  if (offFrame.length > 0) {
+    throw new Error(
+      `annotations drew outside the capture: ${offFrame.join(', ')}`,
     )
   }
 }
