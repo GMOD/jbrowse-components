@@ -144,7 +144,28 @@ export interface Annotation {
   // is what a label placed to the LEFT of what it names needs — the pill has to
   // end at the control's edge, and its own width is only known once the text is
   // measured in the page.
+  //
+  // A `leader` pill ignores this for placement — `dx`'s sign already says which
+  // side the label hangs on — and reads it only as the justification of a
+  // multi-line label.
   textAlign?: 'start' | 'end'
+  // for 'text': draw the pill's own arrow back to what it names, and make ONE
+  // annotation of the label and the arrow.
+  //
+  // A label and a separate arrow cannot be kept together by hand. The tail has
+  // to sit at the pill's edge, the pill's width is only known once its text is
+  // measured in the page, and a spec can only guess it: the same pair of
+  // hand-written offsets left "IGF1" floating 50px clear of its arrow and
+  // swallowed "IGF2BP2"'s tail inside the pill, because the two labels are
+  // different lengths. With `leader` the tail is the measured pill's own
+  // boundary in the target's direction, so neither can happen at any label
+  // length, font size or placement.
+  //
+  // The anchor is then what the callout NAMES, and `dx`/`dy` place the label off
+  // it: `dx`'s sign picks the side, its magnitude is the gap between the target
+  // and the pill's facing edge (so a column of callouts lines up whatever each
+  // one says), and `dy` centres the pill on that line.
+  leader?: boolean
   fontSize?: number // text/circle label, default 22 for text (min 18)
   strokeWidth?: number // box/circle stroke width (default 5); arrow line+head (default 4)
   fillOpacity?: number // box: tint the interior with a translucent wash of color
@@ -417,6 +438,7 @@ export function drawAnnotationOverlay(
         from: tail,
         x: (a.x ?? 0) + dx,
         y: (a.y ?? 0) + dy,
+        target: undefined as { x: number; y: number } | undefined,
         fromRect: from,
         toRect: undefined as Rect | undefined,
       }
@@ -461,6 +483,10 @@ export function drawAnnotationOverlay(
       from: tail,
       x: a.type === 'box' ? boxLeft : px + dx,
       y: a.type === 'box' ? boxTop : py + dy,
+      // the anchored point BEFORE the annotation's own dx/dy, which for a
+      // `leader` pill is the difference between where the label sits and what it
+      // names — the arrow needs both
+      target: { x: px, y: py },
       width: a.width ?? boxRight - boxLeft,
       height: a.height ?? boxBottom - boxTop,
       radius: a.radius ?? (a.text ? 16 : ringRadius),
@@ -505,6 +531,78 @@ export function drawAnnotationOverlay(
     markerIds.set(color, id)
     return id
   }
+  // One line with a head on it, shared by the `arrow` annotation and by the
+  // arrow a `leader` pill draws for itself, so the two cannot end up different
+  // marks in the same figure.
+  function drawArrowLine(
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    color: string,
+    strokeWidth: number,
+  ) {
+    // pull the line endpoint back to the arrowhead's base so the triangle
+    // (placed base-first at the endpoint) extends forward to the true target;
+    // the line end is then hidden under the filled head
+    const ddx = to.x - from.x
+    const ddy = to.y - from.y
+    const dist = Math.hypot(ddx, ddy) || 1
+    const headLen = ARROW_LEN * strokeWidth
+    const line = document.createElementNS(NS, 'line')
+    line.setAttribute('x1', String(from.x))
+    line.setAttribute('y1', String(from.y))
+    line.setAttribute('x2', String(to.x - (ddx / dist) * headLen))
+    line.setAttribute('y2', String(to.y - (ddy / dist) * headLen))
+    line.setAttribute('stroke', color)
+    // the arrowhead marker uses markerUnits=strokeWidth, so a thinner line also
+    // shrinks the head proportionally
+    line.setAttribute('stroke-width', String(strokeWidth))
+    line.setAttribute('marker-end', `url(#${arrowMarker(color)})`)
+    return line
+  }
+
+  // How much air a leader leaves at each end: clear of the pill's border so the
+  // tail is not drawn on it, and short of the target so the head names a point
+  // without covering it.
+  const LEADER_TAIL_GAP = 5
+  const LEADER_HEAD_GAP = 14
+
+  // The arrow a `leader` pill draws back to what it names. The tail is the point
+  // where the target's direction leaves the MEASURED pill, so it is the pill's
+  // own edge at any label length and at any angle; nothing here is a written
+  // offset. Undefined when the pill covers the target, which the caller reports
+  // rather than drawing a backwards arrow.
+  function leaderArrow(
+    pill: Rect,
+    target: { x: number; y: number },
+    color: string,
+    strokeWidth: number,
+  ) {
+    const midX = pill.left + pill.width / 2
+    const midY = pill.top + pill.height / 2
+    const dx = target.x - midX
+    const dy = target.y - midY
+    const dist = Math.hypot(dx, dy)
+    if (dist === 0) {
+      return undefined
+    }
+    // the pill boundary along that direction: whichever of the two half-extents
+    // the ray reaches first
+    const edge = Math.min(
+      Math.abs(dx) > 0 ? pill.width / 2 / Math.abs(dx) : Infinity,
+      Math.abs(dy) > 0 ? pill.height / 2 / Math.abs(dy) : Infinity,
+    )
+    const start = edge * dist + LEADER_TAIL_GAP
+    const end = dist - LEADER_HEAD_GAP
+    if (!(end > start)) {
+      return undefined
+    }
+    const at = (d: number) => ({
+      x: midX + (dx / dist) * d,
+      y: midY + (dy / dist) * d,
+    })
+    return drawArrowLine(at(start), at(end), color, strokeWidth)
+  }
+
   // append the overlay now (before drawing) so text getBBox() resolves for
   // the optional background pill below
   document.body.append(svg)
@@ -576,29 +674,17 @@ export function drawAnnotationOverlay(
     const cy = a.y
     if (a.type === 'arrow' && a.from) {
       // anchored arrow: head points at the resolved element center
-      const headX = a.anchor ? cx : (a.to?.x ?? 0)
-      const headY = a.anchor ? cy : (a.to?.y ?? 0)
-      const strokeWidth = a.strokeWidth ?? 4
-      // pull the line endpoint back to the arrowhead's base so the triangle
-      // (placed base-first at the endpoint) extends forward to the true
-      // target; the line end is then hidden under the filled head
-      const ddx = headX - a.from.x
-      const ddy = headY - a.from.y
-      const dist = Math.hypot(ddx, ddy) || 1
-      const headLen = ARROW_LEN * strokeWidth
-      const endX = headX - (ddx / dist) * headLen
-      const endY = headY - (ddy / dist) * headLen
-      const line = document.createElementNS(NS, 'line')
-      line.setAttribute('x1', String(a.from.x))
-      line.setAttribute('y1', String(a.from.y))
-      line.setAttribute('x2', String(endX))
-      line.setAttribute('y2', String(endY))
-      line.setAttribute('stroke', color)
-      // the arrowhead marker uses markerUnits=strokeWidth, so a thinner
-      // line also shrinks the head proportionally
-      line.setAttribute('stroke-width', String(strokeWidth))
-      line.setAttribute('marker-end', `url(#${arrowMarker(color)})`)
-      svg.append(line)
+      svg.append(
+        drawArrowLine(
+          a.from,
+          {
+            x: a.anchor ? cx : (a.to?.x ?? 0),
+            y: a.anchor ? cy : (a.to?.y ?? 0),
+          },
+          color,
+          a.strokeWidth ?? 4,
+        ),
+      )
     } else if (a.type === 'trapezoid' && a.fromRect && a.toRect) {
       // The lineage wedge: `fromAnchor` is the span the zoom came FROM,
       // `anchor` the panel it opened into, and the two horizontal edges are
@@ -836,16 +922,66 @@ export function drawAnnotationOverlay(
       const bbox = text.getBBox()
       const padX = 10
       const padY = 7
+      const width = bbox.width + padX * 2
+      const height = bbox.height + padY * 2
+      let left = bbox.x - padX
+      let top = bbox.y - padY
+      // A leader pill is placed by its PILL rather than by its text baseline:
+      // the facing edge lands on (cx, cy) and the other side of it follows from
+      // whatever the label measured. That is what lets `dx` mean the same gap
+      // for every callout in a figure, and it is the same measurement the arrow
+      // below leaves from — so the two cannot part company.
+      //
+      // Moved by a transform rather than by rewriting every tspan's x: getBBox
+      // reports the element's own user space, so the numbers above stay the ones
+      // that were measured.
+      if (a.leader && a.target) {
+        const wantLeft = a.target.x > cx ? cx - width : cx
+        const wantTop = cy - height / 2
+        text.setAttribute(
+          'transform',
+          `translate(${wantLeft - left},${wantTop - top})`,
+        )
+        left = wantLeft
+        top = wantTop
+      }
       const rect = document.createElementNS(NS, 'rect')
-      rect.setAttribute('x', String(bbox.x - padX))
-      rect.setAttribute('y', String(bbox.y - padY))
-      rect.setAttribute('width', String(bbox.width + padX * 2))
-      rect.setAttribute('height', String(bbox.height + padY * 2))
+      rect.setAttribute('x', String(left))
+      rect.setAttribute('y', String(top))
+      rect.setAttribute('width', String(width))
+      rect.setAttribute('height', String(height))
       rect.setAttribute('rx', '6')
       rect.setAttribute('fill', '#fff')
       rect.setAttribute('stroke', a.color ?? '#e3242b')
       rect.setAttribute('stroke-width', '3')
       text.before(rect)
+      if (a.leader) {
+        // Both failures are silent otherwise — the pill draws, the arrow does
+        // not, and only a committed PNG says so.
+        const line = a.target
+          ? leaderArrow(
+              { left, top, width, height },
+              a.target,
+              color,
+              a.strokeWidth ?? 4,
+            )
+          : undefined
+        if (line) {
+          // under its own pill, so a label that ends up closer than planned
+          // reads as a short arrow rather than as a line drawn over white
+          rect.before(line)
+        } else {
+          misses.push(
+            JSON.stringify({
+              leader: a.target
+                ? 'the label sits on what it names — raise dx'
+                : 'a leader needs an anchor to point back at',
+              text: a.text,
+              anchor: a.anchor,
+            }),
+          )
+        }
+      }
     }
     reportIfOffFrame(a, drawnFrom)
   }

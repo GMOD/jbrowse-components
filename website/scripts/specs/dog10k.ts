@@ -291,28 +291,28 @@ const fstY = (fst: number, h = FST_LANE_H) =>
 // the axis maximum -- so a pill placed above it is clipped by the shrink that
 // leaves every other one alone. At the peak's own y the three callouts also
 // stack in score order, which is the reading.
+//
+// ONE ANNOTATION, not a pill plus an arrow. The pair was three hand-written
+// offsets whose spacing only worked at one label length: IGF1 is short and its
+// arrow ended 50px shy of the pill, IGF2BP2 is long and its pill swallowed the
+// tail. `leader` takes the tail off the measured pill instead, so 150 is the gap
+// every callout in the lane keeps whatever it says.
 const fstCallout = (
   trackId: string,
   locus: string,
   text: string,
   fst: number,
   side: 1 | -1 = 1,
-) => {
-  const dy = fstY(fst)
-  return [
-    {
-      type: 'text' as const,
-      text,
-      fontSize: 20,
-      anchor: { track: trackId, locus, fracY: 0, dx: side * 150, dy },
-    },
-    {
-      type: 'arrow' as const,
-      anchor: { track: trackId, locus, fracY: 0, dx: side * 14, dy },
-      fromAnchor: { track: trackId, locus, fracY: 0, dx: side * 88, dy },
-    },
-  ]
-}
+) => [
+  {
+    type: 'text' as const,
+    text,
+    fontSize: 20,
+    leader: true,
+    anchor: { track: trackId, locus, fracY: 0, dy: fstY(fst) },
+    dx: side * 150,
+  },
+]
 
 // The scan carries no p-value, so what counts as a peak is empirical: this is
 // the 99.9th percentile of the scan's own 11,158 scored windows, which

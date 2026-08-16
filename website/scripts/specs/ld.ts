@@ -788,35 +788,23 @@ export const ldSpecs: ScreenshotSpec[] = [
     // YSCALEBAR_LABEL_OFFSET at each end, and the track element starts 6px above
     // the display, so a score s is 6 + (h-5) - ((s-min)/(max-min))*(h-10) below
     // the track's top edge. Same derivation as dog10k-size-fst-scan's fstY.
+    //
+    // `leader`, so the pill and its arrow are one annotation: a three-letter
+    // label is the case a hand-written tail offset gets wrong, and this one left
+    // the arrow ending 50px short of the pill.
     annotations: [
       {
         type: 'text',
         text: 'LCT',
         fontSize: 20,
+        leader: true,
         anchor: {
           track: 'kgp_lct_fst_scan',
           locus: 'chr2:135,851,076',
           fracY: 0,
-          dx: 150,
           dy: 25,
         },
-      },
-      {
-        type: 'arrow',
-        anchor: {
-          track: 'kgp_lct_fst_scan',
-          locus: 'chr2:135,851,076',
-          fracY: 0,
-          dx: 14,
-          dy: 25,
-        },
-        fromAnchor: {
-          track: 'kgp_lct_fst_scan',
-          locus: 'chr2:135,851,076',
-          fracY: 0,
-          dx: 88,
-          dy: 25,
-        },
+        dx: 150,
       },
     ],
   },
