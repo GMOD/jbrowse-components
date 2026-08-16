@@ -61,7 +61,7 @@ the whole surface.
 | <span id="getter-minorallelefrequencyfilter">**minorAlleleFrequencyFilter**</span><br><code>number</code> |  | SharedLDModel |
 | <span id="getter-lengthcutofffilter">**lengthCutoffFilter**</span><br><code>number</code> |  | SharedLDModel |
 | <span id="getter-linezoneheight">**lineZoneHeight**</span><br><code>number</code> |  | SharedLDModel |
-| <span id="getter-ldmetric">**ldMetric**</span><br><code>"r2" &#124; "dprime"</code> |  | SharedLDModel |
+| <span id="getter-ldmetric">**ldMetric**</span><br><code>"dprime" &#124; "r2"</code> |  | SharedLDModel |
 | <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-showlegenddisplaytypedefault">**showLegendDisplayTypeDefault**</span><br><code>Pin</code> |  | SharedLDModel |
 | <span id="getter-showldtriangle">**showLDTriangle**</span><br><code>boolean</code> |  | SharedLDModel |

@@ -11,6 +11,7 @@ import {
   replaceMarkerRegions,
   repoRelative,
   section,
+  sortUnionMembers,
   stripComposedBlock,
   stripPropertyName,
 } from './util.ts'
@@ -356,6 +357,55 @@ describe('repoRelative', () => {
     expect(repoRelative(`${process.cwd()}/plugins/foo/src/x.ts`)).toBe(
       'plugins/foo/src/x.ts',
     )
+  })
+})
+
+// The checker orders a union its own way, and that order moves with the
+// composition of the program, so a doc nobody touched fails `autogen --check`.
+describe('sortUnionMembers', () => {
+  test('sorts a bare literal union', () => {
+    expect(sortUnionMembers('"none" | "overlay" | "below"')).toBe(
+      '"below" | "none" | "overlay"',
+    )
+  })
+
+  // the case 161d06e858 measured and left: the union is a parameter's type, so
+  // `setting: ` prefixes the first member and must stay attached to it
+  test('sorts a union nested in a parameter list, keeping the parameter name', () => {
+    expect(
+      sortUnionMembers(
+        '(setting: "overlapping" | "offset" | "hidden") => void',
+      ),
+    ).toBe('(setting: "hidden" | "offset" | "overlapping") => void')
+  })
+
+  test('sorts a union nested in an object type', () => {
+    expect(
+      sortUnionMembers(
+        '{ readConnections: "off" | "arc" | "cloud"; n: number }',
+      ),
+    ).toBe('{ readConnections: "arc" | "cloud" | "off"; n: number }')
+  })
+
+  // leaving a non-literal alternative where it is keeps the shape in front of
+  // the elided preview, which is the readable half of `{ … } | undefined`
+  test('leaves a union of non-literals alone', () => {
+    const sig = '{ type?: string; effectiveRpcDriverName?: string } | undefined'
+    expect(sortUnionMembers(sig)).toBe(sig)
+  })
+
+  test('sorts only the literal run inside a mixed union', () => {
+    expect(sortUnionMembers('"b" | "a" | undefined')).toBe(
+      '"a" | "b" | undefined',
+    )
+  })
+
+  test('leaves a lone literal alone', () => {
+    expect(sortUnionMembers('"only"')).toBe('"only"')
+  })
+
+  test('does not split on a pipe inside a literal', () => {
+    expect(sortUnionMembers('"a|b"')).toBe('"a|b"')
   })
 })
 

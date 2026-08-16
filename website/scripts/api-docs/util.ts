@@ -542,9 +542,45 @@ function typeSignature(
   const type = checker.getTypeOfSymbolAtLocation(symbol, decl)
   const printed = checker.typeToString(type)
   return elideSignature(
-    printed.endsWith('...')
-      ? checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation)
-      : printed,
+    sortUnionMembers(
+      printed.endsWith('...')
+        ? checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation)
+        : printed,
+    ),
+  )
+}
+
+// The checker prints a union in its own order, not ours, and that order moves
+// with the composition of the program — which `getAllFiles` builds from
+// `git ls-files --cached --others`, untracked files included. `pnpm autogen
+// --check` is a CI gate, so a doc nobody touched goes red for it; 161d06e858
+// fixed the display-link half of this and measured the half left over, a union
+// on `LinearGenomeView.setTrackLabels`. Sorting on the printed text makes the
+// row a function of the sources.
+//
+// Only RUNS OF STRING LITERALS are sorted, wherever they appear. That is the
+// churn that has been seen — a stringEnum's choices — and confining the rewrite
+// to literals is what makes it safe to apply at any depth without tracking
+// brackets: `setTrackLabels`'s union sits inside a parameter list, where the
+// prefix `setting: ` binds to the first member and a naive split reorders it
+// into nonsense.
+//
+// Sorting whole top-level unions instead was tried and reverted: it also turned
+// `{ type?: string; … } | undefined` into `undefined | { type?: string; … }`,
+// which is stable and worse — the elided preview a reader sees first became the
+// word `undefined` rather than the shape.
+//
+// Applied BEFORE eliding, so which alternatives elision drops off the end is
+// decided by the same stable order.
+const STRING_LITERAL_UNION = /"(?:[^"\\]|\\.)*"(?:\s*\|\s*"(?:[^"\\]|\\.)*")+/g
+
+export function sortUnionMembers(sig: string) {
+  return sig.replaceAll(STRING_LITERAL_UNION, run =>
+    run
+      .split('|')
+      .map(m => m.trim())
+      .sort()
+      .join(' | '),
   )
 }
 

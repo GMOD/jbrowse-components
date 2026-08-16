@@ -43,7 +43,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | --- | --- |
 | <span id="action-setlabel">**setLabel**</span><br><code>(label: string) =&gt; void</code> |  |
 | <span id="action-sethighlight">**setHighlight**</span><br><code>(color: string) =&gt; void</code> |  |
-| <span id="action-setgridview">**setGridView**</span><br><code>(arg: "bookmarks" &#124; "highlights" &#124; "both") =&gt; void</code> |  |
+| <span id="action-setgridview">**setGridView**</span><br><code>(arg: "bookmarks" &#124; "both" &#124; "highlights") =&gt; void</code> |  |
 | <span id="action-importbookmarks">**importBookmarks**</span><br><code>(regions: Region[]) =&gt; void</code> |  |
 | <span id="action-addbookmark">**addBookmark**</span><br><code>(region: Region) =&gt; void</code> |  |
 | <span id="action-updatebookmarklabel">**updateBookmarkLabel**</span><br><code>(bookmark: IExtendedLabeledRegionModel, label: string) =&gt; void</code> |  |
