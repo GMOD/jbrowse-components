@@ -1,5 +1,5 @@
 export {
-  DEFAULT_CIGAR_OP_DRAW_COLORS,
+  DEFAULT_SNP_BASE_COLORS,
   INDICATOR_TRIANGLE_H,
   INDICATOR_TRIANGLE_HW,
   INSERTION_COLOR,
@@ -31,7 +31,7 @@ export {
   textWidthForNumber,
 } from './labelConstants.ts'
 export type {
-  CigarOpDrawColors,
+  SnpBaseColors,
   IndelEntry,
   InsertionType,
 } from './labelConstants.ts'

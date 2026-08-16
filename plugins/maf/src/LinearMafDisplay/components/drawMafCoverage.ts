@@ -1,6 +1,5 @@
 import {
   COVERAGE_BAR_SEAM_FUDGE_PX,
-  DEFAULT_CIGAR_OP_DRAW_COLORS,
   drawCoverageBins,
   drawIndicators,
   drawInterbaseSegments,
@@ -43,7 +42,6 @@ export function drawMafCoverage(
   const normalize = makeScoreNormalizer(0, domainMax, false)
   const coverageColor = theme.palette.coverage
   const snpColors = {
-    ...DEFAULT_CIGAR_OP_DRAW_COLORS,
     baseA: theme.palette.bases.A.main,
     baseC: theme.palette.bases.C.main,
     baseG: theme.palette.bases.G.main,

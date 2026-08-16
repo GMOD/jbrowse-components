@@ -2,7 +2,7 @@ import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
-import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
+import type { SnpBaseColors } from '@jbrowse/alignments-core'
 
 /**
  * The five per-base colors after the modifications-mode mute: when
@@ -11,7 +11,7 @@ import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
  *
  * **The one place that rule is written**, for either backend. It used to be
  * four: a ternary in `buildBaseColorTupleMap`, another in `baseColorFallback`,
- * a `??` chain in `buildCigarOpDrawColors`, and five uniform writes in
+ * a `??` chain in `buildSnpBaseColors`, and five uniform writes in
  * `GpuAlignmentsRenderer.writeUniforms` — the GPU one tied to the rest by a
  * comment saying to keep them in step. It had already gone missing from three
  * canvas call sites once (see the fallback below), and a miss is a base painted
@@ -100,8 +100,8 @@ export function buildBaseCssMap(state: RenderState): string[] {
   return baseCssMemo.table
 }
 
-// CigarOpDrawColors palette for Canvas2D SNP-coverage segment draws.
-export function buildCigarOpDrawColors(state: RenderState): CigarOpDrawColors {
+// The palette for Canvas2D SNP-coverage segment draws.
+export function buildSnpBaseColors(state: RenderState): SnpBaseColors {
   const c = effectiveBaseColors(state)
   return {
     baseA: rgb255(c.A),
@@ -109,8 +109,5 @@ export function buildCigarOpDrawColors(state: RenderState): CigarOpDrawColors {
     baseG: rgb255(c.G),
     baseT: rgb255(c.T),
     baseN: rgb255(c.N),
-    mismatch: '',
-    deletion: rgb255(state.colors.colorDeletion),
-    insertion: '',
   }
 }

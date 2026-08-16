@@ -37,7 +37,6 @@ export {
 export const MIN_PX_PER_BP_FOR_TEXT = 6.5
 
 export const MISMATCH_COLOR = '#f00'
-const DELETION_COLOR = '#888'
 export const INSERTION_COLOR = '#c000c0'
 const BASE_A_COLOR = '#00bf00'
 const BASE_C_COLOR = '#4747ff'
@@ -48,10 +47,14 @@ const BASE_T_COLOR = '#f00'
 // segments stay visible. This is the theme-agnostic fallback for worker code.
 const BASE_N_COLOR = '#795548'
 
-export interface CigarOpDrawColors {
-  mismatch: string
-  deletion: string
-  insertion: string
+// The palette a SNP-coverage segment draw reads, and the whole of it: the
+// segments are per-base, so `colorType` resolves to one of these five and to
+// nothing else. This was a `CigarOpDrawColors` carrying `mismatch`, `deletion`
+// and `insertion` as well — a shape neither consumer could fill honestly, so
+// `buildCigarOpDrawColors` wrote `''` into two of them and computed a deletion
+// colour for a draw that has no deletions, and MAF spread the defaults in
+// purely to satisfy the type.
+export interface SnpBaseColors {
   baseA: string
   baseC: string
   baseG: string
@@ -59,10 +62,7 @@ export interface CigarOpDrawColors {
   baseN: string
 }
 
-export const DEFAULT_CIGAR_OP_DRAW_COLORS: CigarOpDrawColors = {
-  mismatch: MISMATCH_COLOR,
-  deletion: DELETION_COLOR,
-  insertion: INSERTION_COLOR,
+export const DEFAULT_SNP_BASE_COLORS: SnpBaseColors = {
   baseA: BASE_A_COLOR,
   baseC: BASE_C_COLOR,
   baseG: BASE_G_COLOR,

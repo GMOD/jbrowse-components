@@ -1,6 +1,6 @@
 import { drawSnpSegments } from '@jbrowse/alignments-core'
 
-import { buildCigarOpDrawColors } from '../mismatch/baseColors.ts'
+import { buildSnpBaseColors } from '../mismatch/baseColors.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { CoverageRegionFields } from '../coverage/buildRegion.ts'
@@ -21,7 +21,7 @@ export function drawSnpSegmentsCanvas(
     normalizeDepth,
     region.coverageMaxDepth,
     state.coverageHeight,
-    buildCigarOpDrawColors(state),
+    buildSnpBaseColors(state),
     bpToX,
     viewWidth,
   )

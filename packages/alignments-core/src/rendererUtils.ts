@@ -29,7 +29,7 @@ import {
   INSTANCE_STRIDE_WORDS as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
 
-import type { CigarOpDrawColors } from './labelConstants.ts'
+import type { SnpBaseColors } from './labelConstants.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 interface InterbaseDrawColors {
@@ -107,7 +107,7 @@ export function fillSpanRect(
 
 // colorType: 1=A 2=C 3=G 4=T 5=N. N and any unknown type fall back to the muted
 // grey. Mirrors snpColor() in snpCoverage.slang so Canvas2D and GPU match.
-export function snpColorForType(colorType: number, colors: CigarOpDrawColors) {
+export function snpColorForType(colorType: number, colors: SnpBaseColors) {
   switch (colorType) {
     case 1:
       return colors.baseA
@@ -262,7 +262,7 @@ export function drawSnpSegments(
   normalizeDepth: (rawDepth: number) => number,
   regionMaxDepth: number,
   coverageHeight: number,
-  colors: CigarOpDrawColors,
+  colors: SnpBaseColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
