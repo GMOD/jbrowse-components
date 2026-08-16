@@ -6,7 +6,7 @@
  * a macOS Quit that only closes the window and leaves the app running, or a
  * close waiting on a renderer that can no longer answer.
  */
-import { createCloseGuard } from './closeGuard.ts'
+import { createCloseGuard, subscribeQuitSignals } from './closeGuard.ts'
 import { captureHandlers } from './ipc/testUtil.ts'
 
 import type { CloseGuard } from './closeGuard.ts'
@@ -64,15 +64,33 @@ function makeWindow() {
   }
 }
 
+// Stands in for app / Electron's autoUpdater, wired through the real
+// subscribeQuitSignals so the tests below fire the events those two emit rather
+// than a listener the setup invented.
+function makeQuitSource<E extends string>() {
+  const listeners: (() => void)[] = []
+  return {
+    source: {
+      on: (_event: E, listener: () => void) => {
+        listeners.push(listener)
+      },
+    },
+    emit: () => {
+      for (const fn of listeners) {
+        fn()
+      }
+    },
+  }
+}
+
 function setup() {
   const quitApp = jest.fn()
-  let onBeforeQuit: () => void = () => {}
+  const app = makeQuitSource<'before-quit'>()
+  const updater = makeQuitSource<'before-quit-for-update'>()
   let guard!: CloseGuard
   const invoke = captureHandlers(() => {
     guard = createCloseGuard({
-      onQuitting: listener => {
-        onBeforeQuit = listener
-      },
+      onQuitting: subscribeQuitSignals(app.source, updater.source),
       quitApp,
     })
   })
@@ -83,9 +101,8 @@ function setup() {
     quitApp,
     win,
     guard,
-    beforeQuit: () => {
-      onBeforeQuit()
-    },
+    beforeQuit: app.emit,
+    beforeQuitForUpdate: updater.emit,
   }
 }
 
@@ -128,6 +145,24 @@ test('a quit that was held is re-issued once the flush lands', async () => {
   // no window
   beforeQuit()
   win.close()
+
+  await invoke('sessionFlushed')
+
+  expect(win.isDestroyed()).toBe(true)
+  expect(quitApp).toHaveBeenCalledTimes(1)
+})
+
+// quitAndInstall closes the windows and only then quits, and Electron documents
+// that it does NOT emit before-quit on the way. So the guard has to learn about
+// the quit from the updater's own event; without it the hold cancels the quit,
+// the window goes away, the app stays up, and the update never installs — with
+// nothing on screen to say so.
+test('an update install that was held is re-issued once the flush lands', async () => {
+  const { invoke, win, quitApp, beforeQuitForUpdate } = setup()
+  await invoke('setSessionOpen', true)
+
+  beforeQuitForUpdate()
+  expect(win.close()).toBe(true)
 
   await invoke('sessionFlushed')
 

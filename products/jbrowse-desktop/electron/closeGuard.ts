@@ -24,7 +24,9 @@ import { ipcHandle, ipcSend } from './ipc/channels.ts'
  *   we had before this existed.
  * - **Quit stays quit.** `app.quit()` closes the window, so a naive hold turns
  *   macOS's Quit into "close the window and keep running". Tracking that a quit
- *   is in progress and re-issuing it after the flush is what prevents that.
+ *   is in progress and re-issuing it after the flush is what prevents that —
+ *   for an update install as much as for a Quit, which is why the tracking
+ *   watches two events; see subscribeQuitSignals.
  */
 export interface CloseGuard {
   /**
@@ -44,12 +46,46 @@ export interface CloseGuard {
   readonly sessionOpen: boolean
 }
 
+// An emitter this module only ever attaches one kind of listener to. Structural
+// so subscribeQuitSignals can be driven by a test without an Electron runtime.
+interface QuitSignalSource<E extends string> {
+  on: (event: E, listener: () => void) => unknown
+}
+
+/**
+ * Every signal that means a quit is under way, for the guard's `onQuitting`.
+ *
+ * Two of them, not one. `app.quit()` emits `before-quit` and *then* closes the
+ * windows, which is the ordinary Quit. `autoUpdater.quitAndInstall()` closes
+ * them without emitting it — Electron documents exactly that on the event
+ * below — so a guard watching only `before-quit` holds that close, flushes,
+ * destroys the window and never re-issues the quit. On macOS the install is
+ * what that quit was going to do, so the update then silently does not install:
+ * a failure nobody would report as a bug.
+ *
+ * Electron's own `autoUpdater` is the emitter on every platform. electron-
+ * updater drives Squirrel through it on macOS, and emits the event on it itself
+ * (BaseUpdater.quitAndInstall) on Windows and Linux — where the installer is
+ * already spawned by then and waits for the app either way, so the extra flush
+ * costs the update nothing.
+ */
+export function subscribeQuitSignals(
+  app: QuitSignalSource<'before-quit'>,
+  nativeAutoUpdater: QuitSignalSource<'before-quit-for-update'>,
+) {
+  return (listener: () => void) => {
+    app.on('before-quit', listener)
+    nativeAutoUpdater.on('before-quit-for-update', listener)
+  }
+}
+
 export function createCloseGuard({
   onQuitting,
   quitApp,
 }: {
   /**
-   * subscribe to app 'before-quit'; called with the unsubscribe-free listener
+   * subscribe to the quit signals (see subscribeQuitSignals); called with the
+   * unsubscribe-free listener
    */
   onQuitting: (listener: () => void) => void
   /**

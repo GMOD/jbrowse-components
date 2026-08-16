@@ -1,10 +1,10 @@
-import { app, dialog } from 'electron'
+import { autoUpdater as nativeAutoUpdater, app, dialog } from 'electron'
 import contextMenu from 'electron-context-menu'
 import debug from 'electron-debug'
 import pkg from 'electron-updater'
 
 import { setupAutoUpdater } from './autoUpdater.ts'
-import { createCloseGuard } from './closeGuard.ts'
+import { createCloseGuard, subscribeQuitSignals } from './closeGuard.ts'
 import { registerDownloadHandler } from './downloads.ts'
 import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerAuthHandlers } from './ipc/authHandlers.ts'
@@ -258,9 +258,7 @@ function runApp() {
   // registers its ipc handlers here, before 'ready', for the same reason the
   // app-level listeners below are registered before any await
   const closeGuard = createCloseGuard({
-    onQuitting: listener => {
-      app.on('before-quit', listener)
-    },
+    onQuitting: subscribeQuitSignals(app, nativeAutoUpdater),
     quitApp: () => {
       app.quit()
     },
