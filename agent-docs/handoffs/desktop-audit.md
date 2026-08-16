@@ -32,26 +32,46 @@ file is what keeps the rest from being re-derived.
 `reference/DESKTOP_CONTEXT_ISOLATION.md` holds the plan; read that, not this.
 What belongs here is what the spike changed and what is still unprobed.
 
-**Step 1 is an import change, not a resolution change.** Deleting the
-`generic-filehandle2` alias does clear `fs` from the renderer — and from the RPC
-worker, which then holds the stub `LocalFile` that rejects every read. One
-`resolve` config serves both graphs. So: `await import()` the `LocalFile` behind
-the capability check, and let the renderer's graph contain a node build it never
-evaluates.
+**Do the probe before any of the rest.** Whether page-thread JS can construct
+its own Web Worker and inherit `nodeIntegrationInWorker` decides whether this
+workstream is worth its cost: if Electron grants node integration to any worker
+the renderer creates rather than only to same-origin script urls, then after the
+flip injected content still reaches `child_process` through
+`new Worker(blobUrl)` — and injected content is the threat the flip is for. Same
+minimal probe-app shape as the three rows in that doc's table, an afternoon at
+most. If it comes back badly the fallback is `nodeIntegrationInWorker: false`
+plus the IPC-backed filehandle serving the worker too, which is a larger version
+of already-planned work rather than a new design.
 
-**Start with the barrel leak — it is the cheapest win in the whole workstream.**
+**Then the barrel leak — the cheapest win in the workstream.**
 `src/indexJobsModel.ts` imports two pure config helpers from
 `@jbrowse/text-indexing`, whose barrel also re-exports the indexer, which
 imports `ixixx`, which spawns `sort`. Eight of the renderer's twelve node
-builtins are that one import. An `exports` map on that package removes them
-without touching desktop's behavior at all. Measured inventory in the reference
+builtins are that one import. An `exports` map on that package (it has none, only
+`main`) removes them with no behavior change. Measured inventory in the reference
 doc's "What the renderer actually requires from Node".
 
-**Unprobed, and worth knowing before step 6:** whether page-thread JS can
-construct its own Web Worker and inherit `nodeIntegrationInWorker`. If Electron
-grants node integration to any worker the renderer creates rather than only to
-same-origin script urls, the flip is worth much less than it looks. Same minimal
-probe-app shape as the three rows already in that doc's table.
+**Then `generic-filehandle2`, and it is not just a dynamic import.** Deleting
+the alias clears `fs` from the renderer *and* from the worker, which then holds
+the stub `LocalFile` that rejects every read — one `resolve` config serves both
+graphs. And deferring only `LocalFile` does not help either, because
+`util/io/index.ts` takes `BlobFile` off the same package index that statically
+pulls `localFile.js`. The barrel import has to go: deep paths for `BlobFile`/
+`RemoteFile`, or the browser build aliased with the worker deep-importing the
+node `localFile.js`.
+
+**It boots.** Every node builtin is referenced from a lazily-loaded chunk, not
+from `main.*.js`'s own module bodies, so the flip does not blank the window — the
+app starts and fails when the first chunk needing one evaluates. That is the
+opposite of what blocker 2 says, and it is good news for sequencing: each source
+above can be fixed and measured on its own instead of all-or-nothing.
+
+**Re-measure by sweeping, not grepping.** A grep for the builtin you are chasing
+returns a confident wrong answer: `require("fs")` found one, sweeping every
+builtin found twelve. Build, then scan every emitted chunk for
+`e.exports=require("<builtin>")` stubs and resolve which chunk *references* each
+stub id — presence in a bundle is not evaluation, and the two questions have
+different answers here.
 
 ## 2. Give plugins a sanctioned way to reach the main process
 
@@ -86,7 +106,14 @@ with casts:
 
 A fifth lives outside this repo: Apollo's
 `ApolloInternetAccount/model.ts:209` does `globalThis.require('electron')` and
-hand-builds desktop's `AuthWindowParams` with no types at all.
+hand-builds desktop's `AuthWindowParams` with no types at all — not even a cast,
+since `globalThis.require` is `any`. Apollo is the plugin to design against: it
+is the one external consumer we coordinate releases with, its build externalizes
+`@jbrowse/core/ReExports/list` wholesale (`rollup/rollup.config.mjs`), and the
+store can serve it per host version — `SourceVersion.jbrowseRange` in
+GMOD/jbrowse-plugin-list, which "drives semver range selection by the consumer".
+So an ABI floor is manageable for store installs; what has no range resolution
+is a jb2hubs config naming `latest/` directly.
 
 **ReExports is the surface — the ABI objection to it does not hold up.** The
 earlier reading of `PLUGIN_ABI_STABILITY.md` overstated the risk of *adding* a
@@ -112,6 +139,19 @@ actually takes off `JBrowseExports`; run it before and after.
 
 **Do not start with `webUtils`.** Decide the shape on `blatFetch`, which has one
 consumer and a test, then move the other three.
+
+## Loose ends left deliberately
+
+- **`reset` does not clear the BLAT partition.** Factory reset prunes the
+  userData directories but not `Partitions/jbrowse-blat`, so a solved CAPTCHA's
+  `cf_clearance` survives it. Two lines, judged out of scope with the partition
+  itself; take it if reset should mean reset.
+- **`requireShim.ts`'s header still says every crossing is an
+  `ipcRenderer.invoke`.** It isn't — `webUtils.getPathForFile` is the
+  counterexample — and the shim's own error message tells the reader to use an
+  RPC worker for filesystem access, which is right. Fix the sentence when the
+  bridge lands rather than separately, since the wrapper shape makes it true
+  again.
 
 ## Colin's calls, not the implementer's
 
