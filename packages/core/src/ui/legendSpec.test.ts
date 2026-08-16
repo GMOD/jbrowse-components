@@ -67,3 +67,29 @@ test('nonEmptyLegendSections wraps the items shorthand', () => {
   ])
   expect(nonEmptyLegendSections({})).toEqual([])
 })
+
+// A display with two vocabularies usually has only one that toggles. Carrying
+// `hidden` per item is what keeps the strike-through off the other section's
+// rows and off the section titles when a label appears in both.
+test('hidden travels with the item, not with the label', () => {
+  const entries = legendEntries({
+    sections: [
+      {
+        id: 'features',
+        title: 'Feature colors',
+        items: [{ label: 'Wolf', color: 'red', hidden: true }],
+      },
+      {
+        id: 'rowGroups',
+        title: 'Row groups',
+        items: [{ label: 'Wolf', color: 'blue' }],
+      },
+    ],
+  })
+  expect(entries.map(e => [e.label, e.hidden])).toEqual([
+    ['Feature colors', undefined],
+    ['Wolf', true],
+    ['Row groups', undefined],
+    ['Wolf', undefined],
+  ])
+})

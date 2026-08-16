@@ -48,11 +48,18 @@ export default function MultiRowColorLegend({
             items: entries.map(e => ({
               label: e.label,
               color: abgrToCssRgba(e.color),
+              // Dimmed here rather than over the finished list, because
+              // `hiddenLabels` is the FEATURE categories and `legendEntries`
+              // also emits the row-group rows and both section titles. Struck
+              // through those, a row group sharing a name with a hidden
+              // category read as toggled off with nothing able to toggle it
+              // back — row groups name rows and are not toggleable at all.
+              hidden: hiddenLabels.has(e.label),
             })),
           },
           { id: 'rowGroups', title: 'Row groups', items: rowGroupItems },
         ],
-      }).map(e => ({ ...e, hidden: hiddenLabels.has(e.label) }))}
+      })}
     />
   )
 }

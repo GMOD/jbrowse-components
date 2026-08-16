@@ -29,6 +29,13 @@ export interface LegendItem {
   mark?: LegendMark
   swatches?: LegendSwatch[]
   label: string
+  // Toggled off — the row draws dimmed and struck through. Per ITEM rather than
+  // applied by the caller over the flattened result, because a display with
+  // several sections usually has only one toggleable vocabulary: mapping a
+  // hidden-label set over everything `legendEntries` emits also strikes through
+  // the other sections' rows and the section titles, on a label collision the
+  // reader has no way to undo.
+  hidden?: boolean
 }
 
 // The marks a row draws: its explicit list, else its single color/mark pair,
@@ -90,6 +97,7 @@ export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
         label: item.label,
         color: item.color,
         swatches: exportSwatches(item),
+        hidden: item.hidden,
       })),
     ]),
   ]
