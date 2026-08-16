@@ -222,7 +222,7 @@ Eight commits, all output-identical except where noted:
 | `bc9e6a1d24` | short arena rows by `charCodeAt`, and the sizing pass fused into the discovery walk | 1.30x packer, 1.38-1.64x sizing |
 | `4177979cca` | coverage's `col >= len` test hoisted to a per-block scan | 1.13-1.24x |
 | `4a8d7d8f7f` | the same arm for coverage's insertion loop | ~1.05x at a 33% gap rate, 1.00x below that |
-| _this one_ | the packer fed from the subscription, and the buffered sizing pass dropped | 1.18x and 491 → 263 MB on narrow blocks |
+| `562393d0d7` | the packer fed from the subscription, and the buffered sizing pass dropped | 1.18x and 491 → 263 MB on narrow blocks |
 
 `57e26565a4` is in `packages/alignments-core`, so the alignments coverage
 pipeline gets it too. It is the one behavioral difference in the set: SNP
