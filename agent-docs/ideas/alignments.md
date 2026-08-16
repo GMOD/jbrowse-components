@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Read-pair curved links, coverage decomposition by MAPQ / discordancy / HP, large-region viewing for dense BAM, SBX duplex `yc` coloring, and why CRAM decode parallelism is not the lever the profile points at.
+description: Read-pair curved links, coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), large-region viewing for dense BAM, SBX duplex `yc` coloring, and why CRAM decode parallelism is not the lever the profile points at.
 ---
 
 # Alignments
@@ -26,6 +26,36 @@ library is stranded first-of-pair, and how wrong the guess can be before it is
 worse than the current explicit setting.
 
 **Legend.** Visual guide: strand colors, paired/unpaired styles, SNP colors.
+
+**Strand-split allele bars in the coverage band.** `mismatchStrands` already
+ships and `countSnpsAtPosition` already reads it — the tooltip's Strands column
+is built from it — so splitting each coloured segment fwd/rev, or flagging an
+allele whose strand ratio is extreme, is a compute-side change with no new
+payload. Strand bias is one of the two things a reviewer checks a candidate SNV
+for, and the band is where they are looking when they check it. What is
+undecided is the encoding: two half-width segments per allele doubles the
+instance count and gets sub-pixel fast, whereas a bias FLAG (a mark on the
+position, the allele still drawn whole) costs one bit and says the same thing at
+every zoom. Decide that before writing either. Note the segments are already
+stacked bottom-to-top by lane, so a split has to pick a second axis.
+
+**Jump to the next significant variant.** `findSignificantInBin` (alignments-core)
+already answers "is there a real SNP in this bp range" against the local depth —
+it exists for the hover tooltip at wide bpPerPx — so wiring it to a menu item and
+a keyboard shortcut gives variant-to-variant navigation off data already on the
+main thread. Its threshold is the caller's, so this should read the same
+`coverageSnpMinFrequency` the band's colours now do rather than inventing a
+second notion of significant. Bounded by the fetched region, which is the honest
+limit and worth saying in the UI: "next in view", not "next in the genome".
+
+**Export the coverage band's data.** `coverageDepths` is per-bp on the main
+thread at every zoom, and the packed SNP buffer beside it decodes through
+`readSnpSegments`. A bedGraph/wig (depth) or VCF-ish (allele counts) download
+from the Coverage submenu is a small addition and a frequent ask. The precedent
+for the plumbing is `SaveTrackData.tsx` and the bookmark widget's
+`downloadBookmarkFile`. The open question is scope: the visible region is what
+the user is looking at and what the display actually holds, but "export this
+track" reads as the whole file — say which one the menu item means in its label.
 
 **Typed-array refactor.** Worker return is flat parallel arrays — could regroup into
 sub-objects (mods, sashimi, coverage). Flat is simple but long; just an idea.

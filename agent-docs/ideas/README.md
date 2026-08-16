@@ -33,7 +33,7 @@ section title. Renaming one is still a grep.
 | --- | --- |
 | [add-track-core](add-track-core.md) | One source of truth for adapter guessing, across the add-track paths that each carry their own. |
 | [admin-tier-display-defaults](admin-tier-display-defaults.md) | An admin tier above the session default in the promotable-slot cascade, and the three frictions to read before starting. |
-| [alignments](alignments.md) | Read-pair curved links, coverage decomposition by MAPQ / discordancy / HP, large-region viewing for dense BAM, SBX duplex `yc` coloring, and why CRAM decode parallelism is not the lever the profile points at. |
+| [alignments](alignments.md) | Read-pair curved links, coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), large-region viewing for dense BAM, SBX duplex `yc` coloring, and why CRAM decode parallelism is not the lever the profile points at. |
 | [arc-cluster-one-mark](arc-cluster-one-mark.md) | A windowed interchromosomal cluster draws one mark per supporting pair, each stamped with the whole cluster's weight — so the picture says N junctions where the data says one. What a single mark would cost, and why making the clustering zoom-dependent is the wrong shape for it. |
 | [build-and-dependencies](build-and-dependencies.md) | The MUI v10 cleanup, lazy display behavior via `extendInstance`, and host-chosen plugin sets for embedded products. |
 | [cancer-sv-datasets-unshot](cancer-sv-datasets-unshot.md) | Cancer SV datasets for figures, including the dead ends, recorded so nobody re-checks them. |

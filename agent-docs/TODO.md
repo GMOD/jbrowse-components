@@ -32,6 +32,7 @@ before anyone noticed.
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
+| [Finish the coverage tooltip's allele rows](#finish-the-coverage-band-tooltips-allele-rows) | alignments | three gaps, no new data; check the ref base is in hand first |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
@@ -69,6 +70,7 @@ before anyone noticed.
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
 | [Byte-native MAF adapter path](#a-byte-native-maf-adapter-path-once-tabix-js-publishes-linebytescallback) | MAF | blocked on a tabix-js publish; measure the pack stage, not the decode |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
+| [Does a quality floor still buy anything on the band](#does-a-base-quality-floor-still-buy-anything-on-the-coverage-band) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
 | [Walk the CIGAR once per MM tag](#walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
@@ -267,6 +269,30 @@ labels will overflow the boxes laid out for them.
   already in hand at hit time: the flatbush search returns every match before
   `topmostMatch` picks one. A tooltip line ("+3 more here") is probably the
   whole job; a click-to-list is the larger version.
+
+### Finish the coverage band tooltip's allele rows
+
+Three gaps in `AlignmentsTooltip.tsx`'s SNP rows, all visible in the same
+screenshot and none of them needing new data.
+
+- **No reference-base row.** The table lists Total and each ALT, so the reader
+  infers the reference count as depth minus the sum of the alts — which is the
+  number they actually want at a het site. Adding `Ref (G)` needs the reference
+  base at that position, which the display already has where the pileup draws
+  its mismatch letters; check whether it is in hand at tooltip time before
+  promising the row.
+- **No colour swatch**, even though every row describes a coloured bar segment
+  directly above the cursor. `CoverageRow` already takes `swatch` — the
+  modification rows pass it — so this is passing the base's colour from
+  `effectiveBaseColors` and nothing else.
+- **Row order is first appearance in the mismatch array.** `snpEntries` is
+  `Object.entries(snps)` and `countSnpsAtPosition` inserts in array order, so
+  within one position the order is whatever the position sort's tiebreak left —
+  the same locus can list its alleles differently after a pan. Sort by count
+  descending, tie-broken by base — descending alone still flips two alleles at
+  equal depth, which is the case a reader is most likely to be staring at.
+  The modification rows next to them already sort (by name), which is the
+  precedent and also the reason the inconsistency shows.
 
 ### Verify the overlay palettes in dark mode
 
@@ -1744,6 +1770,39 @@ byte-native path skips the decode *and* the `encodeInto` inside the 31 ms pack
 stage. That is the number to measure when the publish lands.
 [reference/MAF_WORKER_PIPELINE.md](reference/MAF_WORKER_PIPELINE.md) is the
 profile it has to be measured against.
+
+### Does a base-quality floor still buy anything on the coverage band
+
+`mismatchQuals` ships per mismatch and drives the pileup's per-base fade
+(`qualityFade`, `features/mismatch/drawCanvas.ts`); `computeSNPCoverage` ignores
+it entirely, so a Q10 base and a Q40 base contribute equally to the band's
+allele counts. Excluding, or down-weighting, sub-Q20 bases is the obvious other
+half of the noise story and needs no new payload.
+
+**What is unconfirmed is whether it is still worth anything.**
+`coverageSnpMinFrequency` now hides an allele below a fraction of the position's
+depth, and low-quality bases are most of what that already removes — the two
+filters may be reading the same reads. So measure before building: on the
+HG002 300x windows in
+[reference/DEEP_COVERAGE.md](reference/DEEP_COVERAGE.md), what share of the
+band's allele counts comes from sub-Q20 bases, and how much of THAT share
+survives a 1% allele-fraction floor? If the answer is "almost none", the entry
+closes.
+
+If it survives, the design decision is exclude vs down-weight, and they are not
+the same statement: excluding changes the denominator's meaning (the bar's depth
+still counts the read, so the fractions stop summing to the mismatch rate),
+while down-weighting keeps a fractional count the tooltip then has to render.
+
+**Either way this is a worker-side setting, and that is the part to decide
+first.** `segHeight` is baked in `computeSNPCoverage`, so a quality threshold
+changes the packed buffer and every change of it costs a refetch — where
+`coverageSnpMinFrequency` is free to move because the fraction it tests IS
+`segHeight`, already in the instance. A quality floor gets the same freedom only
+by shipping a second per-segment field (the high-quality count beside the total),
+which is 4 bytes a segment for a setting most users will never touch. A config
+slot with no menu entry is the honest middle, and it is what to reach for unless
+the measurement says people will move it.
 
 ### Measure the dense-lane SNP change on a deep pileup
 
