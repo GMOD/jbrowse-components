@@ -242,7 +242,20 @@ buys back: at this scale a row is a few pixels tall and carries no text. The
 takes one `{ match, group, color }` per Roadmap tissue group and tints each
 matching row's sidebar swatch. The build script writes those entries from the
 `GROUP` and `COLOR` columns of `EID_metadata.tab`, and the tissue is an axis the
-clustering never saw.
+clustering never saw. The key beside the painting lists the groups in the order
+the stripe runs, so an entry can be found by where its colour sits rather than
+by reading the list.
+
+**ENCODE2012 is a group in that list and is not a tissue**, which is worth
+knowing before reading the stripe. Roadmap folded the ENCODE 2012 reference
+epigenomes into the compendium under a group of their own — GM12878, K562,
+HeLa-S3, HepG2, A549, HUVEC, NHEK and the rest — so it is the one entry naming
+where the data came from rather than what it is. It is also the largest group,
+and its members span ten anatomies, from blood to skin to lung, which is why the
+stripe reads as mixed where that colour appears. Roadmap's own vocabulary is
+kept rather than replaced with one of ours: the alternative columns in the same
+file are worse for this, since `ANATOMY` splits 127 epigenomes across 30 values
+with eight singletons, and `TYPE` sorts them by how the sample was collected.
 
 ## Reproduce it end to end
 
