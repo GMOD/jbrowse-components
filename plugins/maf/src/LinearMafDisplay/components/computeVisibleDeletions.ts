@@ -17,6 +17,17 @@ import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 // single digits, plus its 2px padding. A run below this can't draw at any digit
 // count — a longer run is proportionally wider, so width outruns the label long
 // before the digit count does.
+//
+// This is a hard cut, where plugin-alignments ramps the same label's opacity
+// across the band above its own threshold (`labelFadeOpacity`). The two displays
+// share the zoom a label appears AT — MIN_HEIGHT_FOR_TEXT and
+// MIN_PX_PER_BP_FOR_TEXT are imported for exactly that — and differ on how it
+// arrives. Taking the ramp here is a live proposal rather than an oversight: one
+// MAF deletion is a single event at one length across many species rows, so
+// these labels genuinely do cross the threshold together, which is the flicker a
+// ramp is for. Undecided because nobody has watched a MAF track zoom to say
+// whether a fading number in a short row beats a clean cut, and adopting it
+// moves every MAF figure carrying a count.
 const MIN_LABEL_WIDTH =
   Math.min(...'0123456789'.split('').map(d => measureText(d))) + 2
 
