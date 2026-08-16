@@ -1094,9 +1094,9 @@
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
     "status": "good",
-    "note": "might not need fullWidth on the synteny track selector  FIXED, and QuickStartPanel already had the answer written down: its own track Select carries a makeStyles maxWidth of 500 with the comment \"let the Select stop at a readable width instead of stretching across a wide window away from everything it controls\". The Manual panel's picker (PreConfiguredSyntenyTrackSelect, shared by the dotplot and linear synteny forms) was the one missed -- FormControl fullWidth with an inline marginBottom -- so it spanned the whole ~1050px card while the two assembly selectors beside it were ~170px each. Same class, same width, so the two panels of one form now agree.",
-    "reviewedAt": "2026-08-13T17:49:15.929Z",
-    "hash": "0051b2f7deae67e01e3487dc672512916938a5c2"
+    "note": "",
+    "reviewedAt": "2026-08-16T05:23:34.899Z",
+    "hash": "d3036f434fdf5f78220ad97dca07f7fdd2504adf"
   },
   "feature_detail_protein": {
     "name": "feature_detail_protein",
@@ -1114,9 +1114,9 @@
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "bad",
-    "note": "labelColors are kind of chaotic. what is encode2012. \n\nprevious notes:\nis it possible to use labelColor to categorize the cell types in the treesidebar to see the pattern of the cell types that are open and close. previous notes: this screenshot 'looks cool' but does it mean anything? is there anything we should interpret from it? previous notes: Three things it was missing, all now in the figure. (1) THE BOXES WERE UNLABELED: the anterior/posterior names lived on the nine-cell-type twin, and when that was deleted this figure inherited its coordinates but not its key — two colored rectangles a reader had to leave the picture to identify. Each box now carries its name in its own colour, placed in the quiescent flank beside it rather than over the painting (127 rows at 480px is 3.7px a row, so anything drawn inside covers a dozen epigenomes). (2) THE GENE LANE was five pseudogenes and their descriptions (RPL7AP38, HMGB3P20, NHP2P2, TPM3P4, RPL35P4) competing with HOXA for the reader's eye — the flanks are a pseudogene desert, which is why the window reaches into them, but nothing needed them drawn. A type filter drops them; NOT showOnlyGenes, whose gene-like set admits 'pseudogene' by name and changes nothing here, which is worth knowing before reaching for it. (3) The caption said 'the same two boxes', pointing at the deleted figure. What I did NOT change: the legend stays where it is (it overlays the right flank, which is uniform quiescent in all 127 rows) and the 500 kb window stays — inside the cluster there is no background to read the domain against.  FIXED: it does mean something and now the picture says so. The result was in the caption and nowhere on the drawing, which is backwards for a figure whose entire content is a shape. Two pills in the left flank (uniform quiescent in all 127 rows, so they cover no state call), anchored by fracY so they follow the clustering if a rebuild moves it: 'these epigenomes open HOXA' beside the upper block, where both boxes carry active-TSS red and transcription green, and 'these keep it repressed' beside the lower one, where the same sequence is Polycomb orange and quiescent grey. That is HOX regulation -- held repressed in most tissues, opened in the ones that use it -- and it is why the figure exists rather than a pattern that happens to look good. Captions lead with it now too.  FIXED, and yes: `rowGroups` is the slot and `labelColor` is where its colour lands. The track now declares one entry per Roadmap tissue group in Roadmap's own group colour, so the sidebar draws a swatch stripe between the dendrogram and the painting and the key names all 19 under a Row groups section. Generated, not hand-assigned: build_chromhmm_roadmap.sh writes the entries from the GROUP and COLOR columns of the same EID_metadata.tab the labels come from, and asserts that every one of the 127 rows matches exactly one entry. TWO THINGS HAD TO CHANGE FOR IT TO WORK. (1) `rowGroups` also PARTITIONED the rows into contiguous blocks, which reordered them out from under the cluster tree, so configuring both silently traded the dendrogram for the stripe (computeClusterHierarchy declines a tree that no longer names the rows, and StaleTreeHint replaces it). It now declines to partition while a tree describes the rows, which is the case where the stripe is worth most: the tissue is an axis the clustering never saw. (2) THE KEY WAS HIDING THREE GROUPS. SvgColorLegend collapses anything past floor(height/14) rows into '+N more', and 15 states plus 19 groups plus two section titles is 36 rows against the 34 that fit in 480px. Display 480 -> 520, spec viewportHeight 840 -> 880, and nothing on screen is now unnamed. The slot's 'mark the small group, not the big one' rule is about the whole-pixel FLOOR on the swatch, so it stops applying here: 127 rows in 520px is 4.1px a row, the floor never bites, and the stripe is proportional. Its own doc now says so. What I did NOT do is reduce the 19 to a coarser grouping of my own, since Roadmap's is the published vocabulary and that literature's own figures use this stripe.",
-    "reviewedAt": "2026-08-16T03:36:33.853Z",
+    "status": "answered",
+    "note": "ENCODE2012 IS ROADMAP'S GROUP FOR THE ENCODE 2012 REFERENCE EPIGENOMES they\nre-processed and folded in -- GM12878, K562, HeLa-S3, HepG2, A549, HUVEC, NHEK\nand the rest. It is the one entry naming where the data came from rather than\nwhat it is, and off EID_metadata.tab it is also the LARGEST of the 19 groups,\nwith members spanning ten anatomies. So wherever that colour appears the stripe\nis mixed by construction, which is most of why the key reads as chaotic.\n\nThe vocabulary stays Roadmap's. The alternatives in the same file are worse for a\nkey: ANATOMY splits 127 epigenomes over 30 values with eight singletons, and TYPE\nsorts by how the sample was collected rather than by what it is.\n\nThe tutorial says both now, plus the thing nothing told the reader: the key is in\nSTRIPE order (rowGroupLegend walks the drawn rows), so an entry is found by where\nits colour sits rather than by reading the list.",
+    "reviewedAt": "2026-08-16T06:10:23.116Z",
     "hash": "793bcd9b12c46fdd5c7deb2d2a8e056d6308fd04"
   },
   "jbrowse-img/hic": {
@@ -1784,10 +1784,10 @@
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
-    "status": "bad",
-    "note": "might want to make two-part figure showing result",
-    "reviewedAt": "2026-08-16T03:41:24.389Z",
-    "hash": "bad544422d0c998e3b2a5348e1d66c81ce1eca6a"
+    "status": "good",
+    "note": "TWO FRAMES NOW, and the second half needed an app change first. Picking the\ndisplay type leaves partitionField at its 'name' default, which on RepeatMasker\nis one row per repeat -- thousands of hairlines -- and there was NO MENU ITEM\nanywhere to get out of it. So a result frame showing rows by class would have\nclaimed an effect the click does not have.\n\n'Partition by...' is that item now. Its options are discovered off the loaded\nfeatures' own attribute names rather than declared, so a file gains a column and\nthe menu offers it with no config change, and an unloaded track offers nothing\nrather than a stale list. Repartitioning drops the row order, the cluster tree\nand the hidden categories, all three of which name rows by value.\n\nThe figure is the menu, then the same window as rows by repeat class.",
+    "reviewedAt": "2026-08-16T06:09:09.515Z",
+    "hash": "3b7e07ae25619ad6c1b7de7c214bfb45753e284b"
   },
   "pangenome_cactus/boxed_locus_synteny": {
     "name": "pangenome_cactus/boxed_locus_synteny",
@@ -2068,10 +2068,10 @@
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
-    "status": "bad",
-    "note": "this is confusing because it says 'k12 has 2.1kb here' like that is important but it seems the important part is the cft073 sequence. please restructure the 'call outs' to make it clearer. often a synteny view enhances the point better. also the MAF track says nothing about a 65kb insert so this is a mystery to user where this came from\n\nprevious notes:\nDONE, and it is a NEW figure beside this one rather than a change to it: pangenome/rgfa_insertion_synteny, K12 above CFT073 below over the same event, in the graph_genome_view guide right under this figure. Worth having because it is a different KIND of evidence, not a second drawing of the same one -- this figure's claim comes out of the graph's own segment and link indexes (s2037 is 65,410 bp of CFT073, its two links land 2,062 bp apart on K12) and the synteny one comes out of wfmash's all-vs-all alignment, which the graph had no part in. Two files agreeing. The panels are deliberately at different scales, 13 kb of K12 against 77 kb of CFT073, because that IS the finding: the flanks align ribbon to ribbon and the 65 kb between them lands on nothing. The CFT073 gene lane names what is in the gap, a siderophore and fimbrial cluster. Every coordinate is printed by probe-graph-nodes.ts rather than measured off a picture.",
-    "reviewedAt": "2026-08-16T03:43:31.902Z",
-    "hash": "0a55d0a70a86932ed25084944fd8d5ef63720b64"
+    "status": "good",
+    "note": "RESTRUCTURED, and you were right about which half was leading. The two pills\nstated a length each and left the reader to work out the subject -- and the\nreference's 2.1 kb read as the claim because it is in the panel you meet first.\n\nEach pill says what its own panel cannot now: the upper one names the CFT073\ninsert and what the band is (where it attaches), the lower one what the ringed\nnode is. Named rather than 'it', since a pill in the upper panel about a node in\nthe lower one cannot use a pronoun. Both lengths moved to the caption, and the\napp's own hover tooltip carries them in frame beside the ring.\n\nTHE MAF QUESTION IS ANSWERED ON THE PAGE, where the lane is introduced: it is a\nprojection onto K12's coordinates, so it has a column for every base K12 has and\nnone for a base it does not. 65 kb that exists only in CFT073 has nowhere in it\nto be drawn -- the absence across the band is the most it can say, and the graph\nis the representation that holds both.\n\nThe synteny view you asked for is the figure below it, from the previous round.",
+    "reviewedAt": "2026-08-16T06:09:48.303Z",
+    "hash": "bd2cf164480011d44ef49ae6fb959d6e1c743b5f"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
@@ -2180,9 +2180,9 @@
   },
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
-    "status": "bad",
-    "note": "it might be worth zooming out even more to see that fst is peaking here, or making it a dual figure with the zoom out (no ld track) and zoom in (with ld track) i also still think it could be worth combining with the multisamplevariantdisplay figure\n\nprevious notes:\nYES -- with one reservation, which is the figure's subject rather than its\nexecution.\n\nWhat the last round fixed is holding: all three lanes name their samples, so no\nrow is about a set the frame never identifies, and the tutorial says why the\npanel is the one that matters.\n\nThe reservation: this figure argues by ABSENCE. Its point is that pooling\npopulations the haplotype never reached averages the correlations down, and what\na reader sees is one lane bright and one lane not. That is a fair reading and it\nis also the shape you have denied elsewhere as 'no story' -- it works here only\nbecause the Fst lane underneath says independently which samples the sweep is\nin. If it ever reads thin again, the fix is that third lane, not the two the\nfigure is named for.",
-    "reviewedAt": "2026-08-16T03:40:59.996Z",
+    "status": "answered",
+    "note": "THE ZOOM-OUT IS NOT AVAILABLE, and would not show what it is for.\n\nThe Fst scores are a 3.40 Mb slice -- bigWigInfo puts every interval in\nchr2:133,800,005-137,199,999 -- and this frame is 3.15 Mb of it. A wider window\ndraws blank lane either side, not more scan. A real one means recomputing Fst\nover a wider span from the callset and hosting a second file, which is a\npipeline decision rather than a spec edit; say the word if it is worth it.\n\nAnd there is no sharp peak to zoom out to. rs4988235 IS the single highest scored\nsite in the file, but 134 sites clear 0.30 and they are spread across the block,\nonly three of them inside LCT/MCM6. That is what a sweep looks like from Fst: the\nwhole haplotype is differentiated rather than the causal base, and the lane\nalready draws that.\n\nOn combining it with the haplotype matrix figure: they are 2,390 and 2,476 px, so\nthe pair is a 4,900 px column, and they make different claims -- pooling averages\nLD away, and the clade travels as one piece. Happy to do it if you want the\ncolumn.",
+    "reviewedAt": "2026-08-16T06:10:06.908Z",
     "hash": "1c1f382345ad0be5d090e77e2cd0535ba1676998"
   },
   "mcscan_synteny/anchors_vs_simple": {
@@ -2347,10 +2347,10 @@
   },
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
-    "status": "answered",
-    "note": "NOT CHANGED, because the note asks for a concept and picking one unilaterally\nis how the display got to four strand vocabularies in the first place. What is\nworth deciding is smaller than it looks, so here it is laid out.\n\nWHAT IS ACTUALLY ON SCREEN. There are two strand-ish colourings and they are\ndisjoint by construction, never mixed in one lane:\n\n  - split-read framing (chain mode, unpaired): a segment agreeing with its\n    chain's consensus frame is red, one flipped at the junction is blue.\n    'Split segment (same strand)' / '(inverted)' in the key.\n  - paired split markers (chain mode, paired, orientation scheme): magenta for\n    an inverted junction, orange for a co-linear one.\n\nThe first is what the top figure shows and what the derivative lane shows.\n\nYOUR SECOND QUESTION ANSWERS ITSELF, and it is the one I would act on: the\nderivative lane does NOT benefit from it. Those reads are realigned to the\nreconstructed allele, where the fold-back has been straightened out -- so every\nsegment agrees with its frame and the whole lane is one colour. It is spending a\ncolour channel to say nothing. Say the word and it goes to the neutral scheme,\nleaving red/blue meaning 'flipped at a junction' on the reference lane alone,\nwhich is the only place it is ever true.\n\nON A DIFFERENT PALETTE: available and cheap (colorSplitReadInversion and the\nstrand pair are theme slots), but it moves every alignments figure in the repo,\nso it wants its own review round rather than riding this one.\n\nON THE LEGEND SITTING ON THE DATA: real, and I started a placement setting for\nit and backed it out -- it is a product decision, not a figure fix. The lever\nthat exists today is the window: FloatingLegend is pinned top-right with an\nopaque background and no placement slot, so the only way to clear the corner is\nto carry the data a few kb short of the right edge. Worth a proper decision\nseparately.",
-    "reviewedAt": "2026-08-15T13:40:54.632Z",
-    "hash": "43fc8e3ccfe46489f0dcaedd4bc45d9a98aeb3c9"
+    "status": "good",
+    "note": "BOTH LANES ARE GREY NOW, and the setting was not the one it looked like.\n\ncolorBy is not what paints them: under CHAIN layout an unpaired read whose chain\ncarries a supplementary segment is framed against the orientation the chains on\nscreen agree on, whatever scheme is set. I dropped colorBy first and rendered it,\nand the picture was identical.\n\nflipStrandLongReadChains is the switch that classifier is gated on. Off, the\nreads fall through to the scheme's own fill, and the legend drops its two\nsplit-segment rows by itself -- no second setting to keep in step. The\nconnectors keep same-strand vs inverted, which is where that distinction is\nload-bearing: the top lane's story is where a row STOPS and where the same\nmolecule picks up again.\n\nYou were right about the derivative lane specifically. Those reads are realigned\nto the reconstructed allele, where the fold-back is straightened out, so every\nsegment agreed with its frame and the lane painted one colour whatever the\nscheme said.",
+    "reviewedAt": "2026-08-16T06:46:36.240Z",
+    "hash": "71045510b74e0f4d95444dc13b3224653ce16498"
   },
   "cancer_sv/multihop_tumour_vs_normal": {
     "name": "cancer_sv/multihop_tumour_vs_normal",
@@ -2368,17 +2368,17 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "bad",
-    "note": "why would the coverage be uneven in the 'derived' allele? continue working to make it the ideal demo\n\nprevious notes:\nFOUR OF THE FIVE DONE; the strand-colouring one is answered on\ncancer_sv/derivative_inserts, where it was raised.\n\nArc band 45 -> 110. At 45 the three domes clamped to the ceiling and drew as one\nflat mass, so the count each carries -- the reason the band is there -- was\nunreadable.\n\nSuper-compact off, both read lanes, back to the Compact pitch. At 1px a row is a\nhairline and the strand colour it carries has nowhere to draw, so the lane cost\nits 45px to say only that reads were present.\n\nThe der3 row's highlight is gone. You were right about why: it shaded\n32,000-33,700 while the fold-back's inverted return runs from there to the end of\nthe contig, so it pointed at one part of a breakpoint region the row draws all\nof.\n\nSAME SCALE, by zooming the bottom as you suggested. A synteny panel gives every\nregion one bp/px, so matching the rows' TOTAL spans matches them everywhere: the\nreference row lays out 13,000 + 2,000 + 2,500 bp and der3 is now 17,549 rather\nthan 39,549. Every ribbon runs near-vertical instead of fanning 2.3x on the way\ndown. It costs the first 22 kb of the 32.7 kb arm, which is the half carrying\nnothing; the segments lane's labels at the junctions are all still in frame.\n\nThe notes below are compressed to the two items still worth carrying.",
-    "reviewedAt": "2026-08-16T03:34:53.339Z",
-    "hash": "50307b238844089e3b83ad1b27acedea2bd63622"
+    "status": "good",
+    "note": "MEASURED, AND IT IS A RESULT RATHER THAN A BLEMISH. The tumour has two\nchromosome 3s and the allele opens on sequence they share, so reads off the\nintact homolog align down it and stop where the derivative leaves chr3, while\nreads off the rearranged copy carry on.\n\nOff the BAM: of 29 primary alignments 13 end at 32,275 and the rest run to the\ncontig end, and mean depth goes from about 43x just left of there to about 19x\nacross the rest -- half, which is one allele of two. 32,275 is 457 bp short of\nthe junction, and 457 bp is the gap between this triangle's two chr3 breakends,\nthe same pair walkBreakendChain stops on. So it is not an artifact of read\nselection.\n\nThe row shades what lies past that line, and the tutorial says why the lane\nthins. The span is the whole rearranged part rather than the old\n32,000-33,700 band, which is the earlier objection about pointing at one part of\na region the row draws all of.",
+    "reviewedAt": "2026-08-16T06:09:34.273Z",
+    "hash": "8862711392bcd0b07b00d630a1e62e519b734c7e"
   },
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T23:17:42.364Z",
-    "hash": "5fd8e43d4f1b0bec1f34607913746ba49272c1ec"
+    "note": "BOTH BADGES GONE. A number is a sequence marker, and with one zoom panel there\nis nothing to be second -- which is what made it read as spare.\n\nWhat the two panels share is a NAME, so the zoom panel says IGF1 on its\nhighlighted band and the scan panel already says it at the point. Same word in\nboth frames, no numbering, and the link still reads.",
+    "reviewedAt": "2026-08-16T06:46:36.463Z",
+    "hash": "c025e2d25c8e48e39d942dd36003383b2b3f92af"
   },
   "ld/anopheles_2la_karyotype": {
     "name": "ld/anopheles_2la_karyotype",
@@ -2508,9 +2508,9 @@
   },
   "cancer_sv/split_view_from_breakend": {
     "name": "cancer_sv/split_view_from_breakend",
-    "status": "answered",
-    "note": "NEITHER, and the overlap is one drawing rather than one figure. What the two\nshare is the three-panel split view of chr3/chr10/chr12. What they claim is\ndisjoint:\n\n  - this figure claims the three panels come out of the CALLSET, from one BND\n    record plus the walk that leaves each end by a co-located junction. Its\n    subject is the route, and the result frame is what the route produced.\n  - realigned_reads claims the same molecules are torn in four against hg38 and\n    whole against the derivative. Its subject is the reads, and its left half is\n    the reference alignment those reads are being compared FROM.\n\nDelete either and the page loses a claim the other never makes. They also sit\n200 lines apart, under sections that are about different things.\n\nThe nearest real simplification is the step frames, and it was considered and\ndeclined: the menu frame and the dialog frame are the only place the route is\nshown, and the last round asked for exactly those to be numbered so the flow\nreads. Say the word and the menu frame goes -- right-clicking a record and\npicking a named row is close to what the sentence beside it already says.",
-    "reviewedAt": "2026-08-16T04:58:14.110Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-16T05:34:35.688Z",
     "hash": "dd08cd349cb637681f72cedc4c223cede78973e0"
   },
   "hic/whole_genome": {
@@ -2564,9 +2564,9 @@
   },
   "hic/loops_and_domains": {
     "name": "hic/loops_and_domains",
-    "status": "bad",
-    "note": "are there any further improvements you'd suggest?\n\nprevious notes:\nwe apparently switched to some 10x single cell but i dont get it still. this one single bigwig does not help me to see pattern. seeing a bunch of accessibility biwigs as a multiwig might help, and generate the 'frssion' that i like to see. previous notes: the naive and memory tracks look almost exactly the same. i cant see difference. previous notes; are there other tracks like \"known gene enhancers\" that would corroborate what is shown here? do we need to create a method to compare .hic files? can .hic files store the 'difference' between two conditions? we could make a tutorial for this or cross referenced ~/src/vendor juicebox.js.   FIXED, and the answer is that there IS no difference -- so the figure stopped drawing two rows that invite one. Measured all twelve PBMC pseudobulks over this window with bigWigToBedGraph (mean signal inside the 600 kb domain against the rest of the 2.5 Mb frame): Naive B 0.0385 and Memory B 0.0342 against flanks of 0.0094 and 0.0084. The lane is one row now. The same table also settles what the lane may CLAIM, which is less than a cell-type-matched lane looks like it claims: every lineage is enriched inside the domain, 3.6x (NK) to 5.2x (CD4 Naive), with B mid-table at 4.1x. So this is not a B-specific domain and is no longer captioned as one. What is true of B is the absolute level -- Naive B carries the most signal inside the domain of the twelve, which is why it is the row kept, GM12878 being a B-lymphoblastoid line. 2026-08-09: all twelve pseudobulks are drawn now, one labelled coloured row each, and the pattern the single bigwig could not show is there -- peaks pile up across the domain and thin out to its right, in every lineage. This does not contradict last round's cut to one row; the two notes are about different claims. TWO rows is a comparison and the comparison is not there (Naive B 0.0385 against Memory B 0.0342). TWELVE rows is a distribution, and that one the measurement supports outright: every lineage is 3.6x (NK) to 5.2x (CD4 Naive) more accessible inside the domain than outside it. So twelve rows draw the honest reading -- the contacted sequence is accessible regulatory DNA across blood lineages -- while one row looked like a cell-type-matched claim it was never entitled to make. subtreeFilter gone, lane 75 -> 300 px, viewport +225. Caption and the paragraph under it rewritten to match.",
-    "reviewedAt": "2026-08-16T03:40:11.687Z",
+    "status": "answered",
+    "note": "ONE SUGGESTION, RENDERED RATHER THAN OFFERED.\n\nBalancing is the obvious remaining lever -- it is the standard way to crispen\ndomain edges and the compartments figure below uses it -- so SCALE was rendered\nand compared. It is worse. Counting drawn pixels at the top of the colour ramp by\ndepth from the apex: NONE spends it 48% at 10% depth and 14% at 15%, SCALE 71%\nand 4%. SCALE concentrates the ramp harder on the near-diagonal and leaves the\ndomain interiors paler. The figure is unchanged, byte for byte, and the spec now\nrecords that so it is not re-tried.\n\nWhat the measurement does say is where the ceiling goes: the top of the ramp is\nspent on a band 10-15% deep from the apex, which is distance-decay rather than\nstructure. No setting here fixes that -- the transform that removes it is\nobserved/expected, which JBrowse does not compute. That is the same gap the\ncompartments figure exists to explain, so if this page is worth one more thing it\nis that transform, not another lane.",
+    "reviewedAt": "2026-08-16T06:10:22.884Z",
     "hash": "45f7117e9ca5fec83076bb18311baab368ec90e1"
   },
   "jbrowse-img/gene_name_search": {
@@ -2878,9 +2878,9 @@
   },
   "qc/smn_block_and_reads": {
     "name": "qc/smn_block_and_reads",
-    "status": "bad",
-    "note": "why not just make this one single screenshot? can we not load a bam file across 2.5mb? is there a shorter stretch of poor mappability to help make our point\n\nprevious notes:\nNEW, and it is the 'just make it a two part figure' ask: the 2.5 Mb block over the 650 kb window inside it, vertically composed from qc/smn_problematic_regions and qc/smn_read_placement. The tutorial section that used to introduce the second one separately is folded into the one above it, and the T2T argument now comes after both rather than between them.",
-    "reviewedAt": "2026-08-16T03:44:39.615Z",
+    "status": "answered",
+    "note": "MEASURED THREE WAYS, and the frames stay two.\n\nA SHORTER STRETCH: there is not one that says this. Off GIAB's own\nalllowmapandsegdupregions over chr5:68-73 Mb, the block is a single 1,475,696 bp\ninterval with a second 435,173 bp one 5.6 kb past it, and the next largest\nanywhere in those five megabases is 4,222 bp. The size IS the subject -- short\nreads fail across a whole gene neighbourhood here rather than at scattered\nsites -- and a window narrow enough to make a read visible cannot show the\nfailure has edges.\n\nA BAM ACROSS 2.5 Mb: it would load under force (the read frame already\nforce-loads its own 650 kb; the CRAM carries about 11k reads per 50 kb here). The\nreason for two frames is geometry: 2.5 Mb over a 1400 px frame is ~1,800 bp a\npixel, so a 150 bp read is a twelfth of one. A lane up there reports how much\ndata is present and nothing about where any of it landed, which is the whole\nclaim of the lower frame.\n\nBoth are now in the page's prose rather than only in the spec.",
+    "reviewedAt": "2026-08-16T06:10:06.682Z",
     "hash": "7e05c5a2fcbfc0c971d732b28f7433d2f991984d"
   },
   "pangenome/pggb_bubble_tier": {
@@ -3012,9 +3012,9 @@
   "hg002_haplotypes_import_form": {
     "name": "hg002_haplotypes_import_form",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-12T11:45:59.363Z",
-    "hash": "8f918d11f577c6d2e50af0b563df0a5579d09330"
+    "note": "HELP TOOLTIPS ON BOTH BOXES. The glob is the whole reason a typed box beat a\npicker here, and a reader who does not already know it reads the placeholder's\n*_MATERNAL as an example NAME rather than as a pattern.\n\nThe tooltip says what the box takes: comma-separated names, a name may be a\nglob, *_MATERNAL takes every sequence ending that way and chr1* every one\nstarting with it, empty means the whole assembly. On ChromosomeFilter itself, so\nthe linear-synteny form's per-row boxes get it too.",
+    "reviewedAt": "2026-08-16T06:46:36.693Z",
+    "hash": "f94554df0780d467dfd7d88de013ea4a37498428"
   },
   "genomes_basics/about_track": {
     "name": "genomes_basics/about_track",
@@ -3165,10 +3165,10 @@
   },
   "hg002_haplotypes_location_markers": {
     "name": "hg002_haplotypes_location_markers",
-    "status": "bad",
-    "note": "might consider zooming out considerably more because the interesting thing is that the show location markers mostly shines when there are lots of indels interrupting it, so then you can see, the matches amongst the indels. \nalso, please double check previous agents notes about the almost horizontal line. i dont like it\n\npreviousnotes:\nDIAGNOSED, NOT CHANGED, because what it asks for is the reverse of a rule the code took on purpose. Your call on the proposal at the end; the figure is untouched.\n\nWHAT THE MARK IS, off the data rather than the picture: the chain file has exactly ONE chain over that window, chr8_MATERNAL:7,618,894-7,822,846 against chr8_PATERNAL:7,475,532-7,681,207, 204 kb forward. The frame is 70 kb, so both of that chain's corners are off screen -- 81 kb left and 53 kb right. The mark is one of emitGridMarkers' location ticks, a line from a point in the top view to the point it maps to in the bottom one, and at that geometry it enters the band on one side and leaves on the other, which draws flat instead of steep. Not a ribbon edge, and not a second statement of one homology, which were the two cheaper guesses.\n\nWHY IT SURVIVES: ticks are culled by the HULL of their two ends, and buildSyntenyGeometry says what that protects -- the per-end rule deleted exactly the ticks the two renderers were fixed to keep, since on an inversion the ends are pulled apart by up to the ribbon's whole horizontal travel and a tick well inside the frame can have both endpoints outside the band. Restoring the per-end rule brings that back.\n\nTHE PROPOSAL, also written into scripts/screenshot-review-plan.md: cull a tick whose two ends are farther apart HORIZONTALLY than the view is wide. That separates the cases instead of trading them -- an on-screen inversion travels about a view width, this chain travels three. It changes every synteny figure's marker set, so it wants its own review and its own before/afters rather than riding a figure pass. Re-mark this bad and I will do it.",
-    "reviewedAt": "2026-08-14T23:21:16.821Z",
-    "hash": "66b6f9a6f213288521f6f82565f771bd9a828395"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-16T06:26:01.269Z",
+    "hash": "dc352cb476dd4c90dd00fff6ba8d0412f49f8320"
   },
   "inversion_pair_orientation": {
     "name": "inversion_pair_orientation",
