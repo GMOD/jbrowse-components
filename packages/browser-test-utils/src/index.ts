@@ -34,6 +34,10 @@ export {
   checkTextContrast,
 } from './examplesChecks.ts'
 export {
+  checkExamplesSiteDocLinks,
+  writeExamplesSiteDemoHeights,
+} from './examplesSiteCli.ts'
+export {
   buildDocIndex,
   findBrokenCrossLinks,
   findBrokenDocLinks,

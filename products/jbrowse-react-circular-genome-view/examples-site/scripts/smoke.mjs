@@ -18,17 +18,21 @@ import { examples } from '../src/examples.ts'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
+const checks = {
+  'session-in-url': checkSessionUrlRoundTrip,
+}
+
 const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
-  slugs: examples.map(e => e.slug),
+  slugs: examples.filter(e => !e.skipSmoke).map(e => e.slug),
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
     ...(await checkDemoAboveFold(page)),
-    // before the round trip below, which reloads the page
+    // before the per-slug checks below, which click and reload
     ...(await checkTextContrast(page)),
-    ...(slug === 'session-in-url' ? await checkSessionUrlRoundTrip(page) : []),
+    ...(await (checks[slug]?.(page) ?? [])),
   ],
   log: m => {
     console.log(m)

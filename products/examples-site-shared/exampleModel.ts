@@ -54,7 +54,8 @@ export function section(page: ExamplePage, slug: string): ExampleSection {
 
 // flat, one-entry-per-page list for the shared Shell sidebar + Gallery grid and
 // the build smoke test, which need {slug, title, description, group} (plus
-// skipSmoke, honored by the linear-genome-view smoke script).
+// skipSmoke, honored by every site's smoke script and by the shared
+// demo-heights generator).
 //
 // `sections` rides along for the sidebar, which nests them under the page you
 // are currently on — see Shell.astro. It carries only what a nav link needs, so
