@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { TextField } from '@mui/material'
+import HelpIcon from '@mui/icons-material/Help'
+import { InputAdornment, TextField, Tooltip } from '@mui/material'
 
 const useStyles = makeStyles()({
   // Wide enough for `*_MATERNAL` plus room to see a two-name list, and narrow
@@ -8,6 +9,16 @@ const useStyles = makeStyles()({
     minWidth: 180,
   },
 })
+
+// What the box accepts, which the placeholder can only hint at (review: "add
+// 'help' boxes for the chromosome lists, so that users can see, there are tricks
+// like this wildcard"). The glob is the whole reason a typed box beat a picker
+// here, and a reader who does not already know it reads the placeholder's
+// `*_MATERNAL` as an example NAME.
+const CHROMOSOME_FILTER_HELP =
+  'Sequence names to keep, comma separated. A name may be a glob: *_MATERNAL ' +
+  'takes every sequence whose name ends that way, and chr1* every one that ' +
+  'starts with it. Leave it empty for the whole assembly.'
 
 /**
  * The subset of an assembly one axis (dotplot) or one row (linear synteny)
@@ -42,7 +53,21 @@ export default function ChromosomeFilter({
   return (
     <TextField
       className={classes.chromosomeFilter}
-      slotProps={{ htmlInput: { 'data-testid': testId } }}
+      slotProps={{
+        htmlInput: { 'data-testid': testId },
+        input: {
+          endAdornment: (
+            <InputAdornment position="end">
+              <Tooltip title={CHROMOSOME_FILTER_HELP} arrow>
+                <HelpIcon
+                  sx={{ fontSize: '1rem', color: 'text.secondary' }}
+                  data-testid={testId ? `${testId}-help` : undefined}
+                />
+              </Tooltip>
+            </InputAdornment>
+          ),
+        },
+      }}
       label={label}
       value={value}
       placeholder="all (e.g. *_MATERNAL)"

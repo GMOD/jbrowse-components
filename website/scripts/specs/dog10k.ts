@@ -1000,26 +1000,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           dy: 152,
         },
       },
-      // The badge that says which of the three labelled peaks the panel below
-      // is (review: "can make it clear in panel two that we zoomed in on the
-      // igf1, and why"). Its twin sits on that panel's highlighted window, so
-      // the pair carries the link without a line across the gutter — the same
-      // idiom as pangenome/hprc_chm13_allele. Both ends are locus-anchored
-      // inside their own part, which a trapezoid across the seam could not be:
-      // a composition is a flat image with no view model to resolve a locus in.
-      {
-        type: 'circle',
-        text: '1',
-        radius: 15,
-        fontSize: 17,
-        anchor: {
-          track: 'dog10k_size_fst',
-          locus: IGF1_PEAK_WINDOW,
-          fracY: 0,
-          dx: 88,
-          dy: 152,
-        },
-      },
       {
         type: 'arrow',
         anchor: {
@@ -1138,20 +1118,24 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // the gene lane, all 380 px of the score lane, and its bottom border: at 700
     // the lowest windows sat on the frame edge
     viewportHeight: 716,
-    // The other half of the badge pair on the whole-genome part: this window is
-    // that panel's IGF1 point. On the highlighted band rather than beside it, so
-    // it names the peak and not the frame.
+    // THE NAME, NOT A NUMBER (review: "the '1' is unneeded"). The pair used to
+    // carry a numbered badge each, and a number is a sequence marker on a figure
+    // with one zoom in it — there is nothing to be second. What the panels
+    // actually share is a name, so this one says it on the band and the panel
+    // above already says it at the point.
+    //
+    // On the highlighted window rather than beside it, so it names the peak and
+    // not the frame.
     annotations: [
       {
-        type: 'circle',
-        text: '1',
-        radius: 15,
-        fontSize: 17,
+        type: 'text',
+        text: 'IGF1',
+        fontSize: 20,
         anchor: {
           track: 'dog10k_size_fst_igf1_20kb',
           locus: IGF1_PEAK_WINDOW,
           fracY: 0,
-          dy: 30,
+          dy: 34,
         },
       },
     ],

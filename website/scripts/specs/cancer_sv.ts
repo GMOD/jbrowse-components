@@ -1564,7 +1564,25 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   heightMode: 'grow',
                   height: 170,
                   featureHeight: 5,
-                  colorBy: { type: 'strand' },
+                  // NEUTRAL READS, both lanes (review: "consider turning off
+                  // colorby:strand settings. the reads could all be grey and i
+                  // think story would be the same. both top and bottom views").
+                  //
+                  // It is not `colorBy` that paints them, which is worth knowing
+                  // before reaching for the obvious key: under CHAIN layout an
+                  // unpaired read whose chain carries a supplementary segment is
+                  // framed against the orientation the chains on screen agree on
+                  // (readColorCategory's unpaired classifier), whatever scheme is
+                  // set. Dropping `colorBy` was rendered and changes nothing.
+                  //
+                  // `flipStrandLongReadChains` is the switch that classifier is
+                  // gated on, so turning it off lets the reads fall through to
+                  // the scheme's own fill. What the figure loses is a colour
+                  // saying "this segment flipped at the junction", and what it
+                  // keeps is where each row STOPS and where the same molecule
+                  // picks up again -- which the row ends and the connectors
+                  // carry, and which is the whole claim.
+                  flipStrandLongReadChains: false,
                   // A KEY FOR THE CURVES, which nothing else in the frame
                   // supplies: `showLegend` is opt-in for every color scheme, so
                   // a reader met two families of connector -- an orange
@@ -1704,16 +1722,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   heightMode: 'grow',
                   height: 175,
                   featureHeight: 5,
-                  // THE SAME COLOR RULE AS THE LANE ABOVE, stated rather than
-                  // inherited, because there is now one legend for the two of
-                  // them. Both lanes are in chain mode, where
-                  // `flipStrandLongReadChains` (default true) colors a chain's
-                  // segments against the orientation the chains on screen agree
-                  // on rather than absolutely -- so left unset, this lane's
-                  // blues and salmons need not mean what the key over the hg38
-                  // lane says they mean. (The key says `Split segment (same
-                  // strand)` / `(inverted)` for that reason, not fwd/rev.)
-                  colorBy: { type: 'strand' },
+                  // Neutral here too, and this is the lane the strand channel
+                  // served worst: these reads are realigned to the reconstructed
+                  // allele, where the fold-back has been straightened out, so
+                  // every segment agrees with its frame and the lane painted one
+                  // colour whatever the scheme said. It was spending a colour
+                  // channel to say nothing.
+                  flipStrandLongReadChains: false,
                   // THE DEPTH CLAIM, which the tutorial makes in prose ("depth
                   // does not dip at them") and no lane had drawn since this
                   // one's band was dropped. It belongs here rather than on the
