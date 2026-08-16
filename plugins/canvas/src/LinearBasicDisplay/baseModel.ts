@@ -346,8 +346,10 @@ export default function baseStateModelFactory(
         subfeatureIdUnderMouse: null as string | null,
         /**
          * #volatile
+         * the hover tooltip's rows, each rendered as its own element — see
+         * hoverTooltipRows for why this is a list and not one HTML string
          */
-        mouseoverExtraInformation: undefined as string | undefined,
+        mouseoverExtraInformation: undefined as string[] | undefined,
         /**
          * #volatile
          * genomic base currently hovered in a feature sequence dialog opened
@@ -1954,7 +1956,7 @@ export default function baseStateModelFactory(
         setHover(
           featureId: string | null,
           subfeatureId: string | null,
-          tooltip: string | undefined,
+          tooltip: string[] | undefined,
         ) {
           if (!self.contextMenuInfo) {
             self.featureIdUnderMouse = featureId

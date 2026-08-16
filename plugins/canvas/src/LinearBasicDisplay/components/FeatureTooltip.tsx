@@ -4,16 +4,24 @@ import { observer } from 'mobx-react'
 
 import type { MouseState } from '@jbrowse/core/ui'
 
+// One element per row rather than one `<br/>`-joined string, so each row's
+// markup-or-text call is made about that row's own text — see hoverTooltipRows.
+// Rows are positional (the feature's name, then its exon/HGVS/residue readout),
+// so the index is their identity.
 const FeatureTooltip = observer(function FeatureTooltip({
-  info,
+  rows,
   mouseState,
 }: {
-  info: string | undefined
+  rows: string[] | undefined
   mouseState: MouseState | undefined
 }) {
   return (
-    <HoverTooltip hit={info} mouseState={mouseState}>
-      <div>{info ? <SanitizedHTML html={info} /> : null}</div>
+    <HoverTooltip hit={rows?.length} mouseState={mouseState}>
+      {rows?.map((row, i) => (
+        <div key={i}>
+          <SanitizedHTML html={row} />
+        </div>
+      ))}
     </HoverTooltip>
   )
 })

@@ -60,7 +60,7 @@ describe('context menu hover pin', () => {
     const { display, menuTarget, other } = setup()
     rightClick(display, menuTarget)
 
-    display.setHover(other.featureId, null, other.tooltip)
+    display.setHover(other.featureId, null, [other.tooltip])
 
     expect(display.featureIdUnderMouse).toBe(menuTarget.featureId)
     expect(display.subfeatureIdUnderMouse).toBeNull()
@@ -84,14 +84,14 @@ describe('context menu hover pin', () => {
     display.closeContextMenu()
     expect(display.featureIdUnderMouse).toBeNull()
 
-    display.setHover(other.featureId, null, other.tooltip)
+    display.setHover(other.featureId, null, [other.tooltip])
     expect(display.featureIdUnderMouse).toBe(other.featureId)
-    expect(display.mouseoverExtraInformation).toBe(other.tooltip)
+    expect(display.mouseoverExtraInformation).toEqual([other.tooltip])
   })
 
   it('hovers normally when no menu is open', () => {
     const { display, other } = setup()
-    display.setHover(other.featureId, null, other.tooltip)
+    display.setHover(other.featureId, null, [other.tooltip])
     expect(display.featureIdUnderMouse).toBe(other.featureId)
   })
 })

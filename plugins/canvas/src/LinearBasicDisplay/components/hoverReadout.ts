@@ -1,3 +1,5 @@
+import { looksLikeHTML } from '@jbrowse/core/util/htmlText'
+
 import { isBaseResolved } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 import { transcriptPosition } from '../transcriptPosition.ts'
 import { residueLabel } from './peptidePositioning.ts'
@@ -88,7 +90,16 @@ function tooltipRow(...parts: (string | undefined)[]) {
 // by eye. A hovered amino-acid letter adds its residue (e.g. `K124`) to that
 // second row, so the isoform stays on its own. Empty rows (e.g. an unnamed
 // feature with no transcript readout) are dropped.
-function tooltipRows(result: HitFeatureResult) {
+//
+// A LIST, and never joined into one HTML string with `<br/>`: `SanitizedHTML`
+// decides whether a string is markup or text by looking for a known tag in it
+// (looksLikeHTML), so a generated `<br/>` answered that question on the
+// mouseover slot's behalf. A feature whose mouseover reads `ALT <DEL>` showed
+// exactly that on its own — the brackets aren't a tag, so they get escaped —
+// and lost the allele to the sanitizer the moment a second row appeared beside
+// it. FeatureTooltip renders one element per row instead, so each row is judged
+// on its own text, which is also the judgement hoverTooltipText makes.
+export function hoverTooltipRows(result: HitFeatureResult) {
   const isoform = result.subfeature?.displayLabel
   const { peptide } = result
   const { exon, hgvs } = transcriptReadouts(result)
@@ -105,27 +116,27 @@ function tooltipRows(result: HitFeatureResult) {
   return [tooltipRow(title), tooltipRow(exon, hgvs, residue)].filter(Boolean)
 }
 
-// The full tooltip, as HTML — see FeatureTooltip, which passes this through
-// SanitizedHTML — so a literal `<br/>` is a line break rather than
-// sanitized-away text.
-export function hoverTooltip(result: HitFeatureResult) {
-  return tooltipRows(result).join('<br/>')
-}
-
-// The reader's words out of whatever HTML a `mouseover` config expression
-// returned (harmless as markup — FeatureTooltip only ever renders it, never
-// executes it). `<br/>` becomes a newline before the tags go: joining fields
-// with `<br/>` is the standard mouseover idiom, and textContent alone would run
+// The reader's words out of whatever a `mouseover` config expression returned
+// (harmless as markup — FeatureTooltip only ever renders it, never executes
+// it). `<br/>` becomes a newline before the tags go: joining fields with
+// `<br/>` is the standard mouseover idiom, and textContent alone would run
 // those fields together into one line.
+//
+// Text that merely CONTAINS angle brackets is returned whole, on
+// `looksLikeHTML`'s say-so, which is the same call SanitizedHTML makes about
+// the same string. Parsing it regardless is what dropped a VCF symbolic allele
+// (`ALT <DEL>` copied as `ALT `) off a tooltip that displayed it in full.
 export function htmlToPlainText(html: string) {
-  return new DOMParser().parseFromString(
-    html.replaceAll(/<br\s*\/?>/gi, '\n'),
-    'text/html',
-  ).body.textContent
+  return looksLikeHTML(html)
+    ? new DOMParser().parseFromString(
+        html.replaceAll(/<br\s*\/?>/gi, '\n'),
+        'text/html',
+      ).body.textContent
+    : html
 }
 
 // The same content as the hover tooltip, as plain text for the clipboard: rows
-// join on a real newline instead of `<br/>`.
+// join on a real newline.
 export function hoverTooltipText(result: HitFeatureResult) {
-  return tooltipRows(result).map(htmlToPlainText).join('\n')
+  return hoverTooltipRows(result).map(htmlToPlainText).join('\n')
 }

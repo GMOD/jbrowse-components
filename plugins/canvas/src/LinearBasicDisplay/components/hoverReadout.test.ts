@@ -3,7 +3,11 @@ import {
   makeFlatbushItem,
   makeSubfeatureInfo,
 } from '../../RenderFeatureDataRPC/testUtils.ts'
-import { hgvsHitLabel, hoverTooltip, hoverTooltipText } from './hoverReadout.ts'
+import {
+  hgvsHitLabel,
+  hoverTooltipRows,
+  hoverTooltipText,
+} from './hoverReadout.ts'
 
 import type { TranscriptCoords } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
@@ -65,63 +69,63 @@ function makeHit(over: Partial<HitFeatureResult>): HitFeatureResult {
   }
 }
 
-test('hoverTooltip falls back to the feature mouseover slot', () => {
-  expect(hoverTooltip(makeHit({}))).toBe('gene mouseover')
+test('hoverTooltipRows falls back to the feature mouseover slot', () => {
+  expect(hoverTooltipRows(makeHit({}))).toEqual(['gene mouseover'])
 })
 
-test('hoverTooltip prefers the subfeature label over the feature mouseover', () => {
+test('hoverTooltipRows prefers the subfeature label over the feature mouseover', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
   expect(
-    hoverTooltip(
+    hoverTooltipRows(
       makeHit({ subfeature: { ...sub, displayLabel: 'BRCA1-201' } }),
     ),
-  ).toBe('BRCA1-201')
+  ).toEqual(['BRCA1-201'])
 })
 
-test('hoverTooltip puts the residue on its own line under the isoform', () => {
+test('hoverTooltipRows puts the residue on its own line under the isoform', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
   expect(
-    hoverTooltip(
+    hoverTooltipRows(
       makeHit({
         subfeature: { ...sub, displayLabel: 'BRCA1-201' },
         peptide: makeAa('K', 0, 3, 123),
       }),
     ),
-  ).toBe('BRCA1-201<br/>K124')
+  ).toEqual(['BRCA1-201', 'K124'])
 })
 
 // A hovered letter narrows what the second row says; it doesn't change what
 // names the thing under the cursor. With no isoform to name, the feature's own
 // mouseover still heads the tooltip — dropping it would leave a bare residue
 // with no clue which feature it belongs to.
-test('hoverTooltip keeps the feature mouseover above a residue when there is no isoform', () => {
-  expect(hoverTooltip(makeHit({ peptide: makeAa('K', 0, 3, 123) }))).toBe(
-    'gene mouseover<br/>K124',
-  )
+test('hoverTooltipRows keeps the feature mouseover above a residue when there is no isoform', () => {
+  expect(
+    hoverTooltipRows(makeHit({ peptide: makeAa('K', 0, 3, 123) })),
+  ).toEqual(['gene mouseover', 'K124'])
 })
 
 // The rect is already painted in TRANSL_EXCEPT_HIGHLIGHT, but a color says
 // nothing about what it means: `U840` on SELENOP has to read as a deliberate
 // selenocysteine rather than as a mistranslated stop.
-test('hoverTooltip marks a residue that came from a transl_except override', () => {
+test('hoverTooltipRows marks a residue that came from a transl_except override', () => {
   expect(
-    hoverTooltip(
+    hoverTooltipRows(
       makeHit({
         peptide: { ...makeAa('U', 0, 3, 839), isTranslExcept: true },
       }),
     ),
-  ).toBe('gene mouseover<br/>U840 (transl_except)')
+  ).toEqual(['gene mouseover', 'U840 (transl_except)'])
 })
 
-test('hoverTooltip leaves only the residue for a feature with no tooltip text', () => {
+test('hoverTooltipRows leaves only the residue for a feature with no tooltip text', () => {
   expect(
-    hoverTooltip(
+    hoverTooltipRows(
       makeHit({
         feature: { ...makeItem('gene1', 0, 100, 0, 20), tooltip: '' },
         peptide: makeAa('K', 0, 3, 123),
       }),
     ),
-  ).toBe('K124')
+  ).toEqual(['K124'])
 })
 
 // Three exons at 0-10, 20-30, 40-50, coding 5-45, on the + strand: c.1 is
@@ -142,22 +146,22 @@ const isoformHit = (over: Partial<HitFeatureResult>) =>
     ...over,
   })
 
-test('hoverTooltip names the exon under the cursor, on a line under the isoform', () => {
-  const at = (bpPos: number) => hoverTooltip(isoformHit({ bpPos }))
-  expect(at(5)).toBe('BRCA1-201<br/>exon 1/3 c.1')
-  expect(at(25)).toBe('BRCA1-201<br/>exon 2/3 c.11')
-  expect(at(45)).toBe('BRCA1-201<br/>exon 3/3 c.*1')
+test('hoverTooltipRows names the exon under the cursor, on a line under the isoform', () => {
+  const at = (bpPos: number) => hoverTooltipRows(isoformHit({ bpPos }))
+  expect(at(5)).toEqual(['BRCA1-201', 'exon 1/3 c.1'])
+  expect(at(25)).toEqual(['BRCA1-201', 'exon 2/3 c.11'])
+  expect(at(45)).toEqual(['BRCA1-201', 'exon 3/3 c.*1'])
   // an intron names no exon -- the c. offset already says which boundary it is
   // past, and "exon 2" would read as though the cursor were inside one. The
   // offset is measured from whichever exon is nearer, so the 10bp intron at
   // 10..19 reads +n in its first half and -n in its second.
-  expect(at(11)).toBe('BRCA1-201<br/>c.5+2')
-  expect(at(18)).toBe('BRCA1-201<br/>c.6-2')
+  expect(at(11)).toEqual(['BRCA1-201', 'c.5+2'])
+  expect(at(18)).toEqual(['BRCA1-201', 'c.6-2'])
 })
 
-test('hoverTooltip reads the transcript off the feature when it stands alone', () => {
+test('hoverTooltipRows reads the transcript off the feature when it stands alone', () => {
   expect(
-    hoverTooltip(
+    hoverTooltipRows(
       makeHit({
         feature: {
           ...makeItem('mRNA1', 0, 100, 0, 20),
@@ -167,24 +171,27 @@ test('hoverTooltip reads the transcript off the feature when it stands alone', (
         bpPos: 25,
       }),
     ),
-  ).toBe('mRNA mouseover<br/>exon 2/3 c.11')
+  ).toEqual(['mRNA mouseover', 'exon 2/3 c.11'])
 })
 
-test('hoverTooltip keeps exon and HGVS alongside a hovered residue, on the second line', () => {
+test('hoverTooltipRows keeps exon and HGVS alongside a hovered residue, on the second line', () => {
   expect(
-    hoverTooltip(isoformHit({ peptide: makeAa('K', 0, 3, 123), bpPos: 25 })),
-  ).toBe('BRCA1-201<br/>exon 2/3 c.11 K124')
+    hoverTooltipRows(
+      isoformHit({ peptide: makeAa('K', 0, 3, 123), bpPos: 25 }),
+    ),
+  ).toEqual(['BRCA1-201', 'exon 2/3 c.11 K124'])
 })
 
 // Zoomed out, the cursor covers many bases at once, so a position reported to
 // the base would be silently wrong. The exon is still safe to name.
-test('hoverTooltip drops the HGVS position below base zoom', () => {
-  expect(hoverTooltip(isoformHit({ bpPos: 25, bpPerPx: 10 }))).toBe(
-    'BRCA1-201<br/>exon 2/3',
-  )
+test('hoverTooltipRows drops the HGVS position below base zoom', () => {
+  expect(hoverTooltipRows(isoformHit({ bpPos: 25, bpPerPx: 10 }))).toEqual([
+    'BRCA1-201',
+    'exon 2/3',
+  ])
 })
 
-test('hoverTooltipText joins rows on a real newline instead of <br/>', () => {
+test('hoverTooltipText joins the rows on a real newline', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
   expect(
     hoverTooltipText(
@@ -212,6 +219,22 @@ test('hoverTooltipText strips markup from the feature mouseover slot', () => {
   ).toBe('gene mouseover')
 })
 
+// `<DEL>`, `<INS>` and friends are VCF alleles, not markup — SanitizedHTML
+// escapes them and shows them whole, so the clipboard has to carry them whole
+// too. Parsing every row as HTML copied this one as `ALT `.
+test('hoverTooltipText keeps angle-bracket text that is not markup', () => {
+  expect(
+    hoverTooltipText(
+      makeHit({
+        feature: {
+          ...makeItem('var1', 0, 100, 0, 20),
+          tooltip: 'ALT <DEL>',
+        },
+      }),
+    ),
+  ).toBe('ALT <DEL>')
+})
+
 // Joining fields with <br/> is the standard mouseover idiom; textContent alone
 // would collapse them into one run-on line on the clipboard.
 test('hoverTooltipText turns <br/> inside the mouseover slot into newlines', () => {
@@ -227,9 +250,9 @@ test('hoverTooltipText turns <br/> inside the mouseover slot into newlines', () 
   ).toBe('Name: BRCA1\nType: gene\nScore: 12')
 })
 
-test('hoverTooltip says nothing extra for a single-exon transcript', () => {
+test('hoverTooltipRows says nothing extra for a single-exon transcript', () => {
   expect(
-    hoverTooltip(
+    hoverTooltipRows(
       isoformHit({
         subfeature: {
           ...makeSub('mRNA1', 'gene1', 0, 100, 0, 20),
@@ -240,7 +263,7 @@ test('hoverTooltip says nothing extra for a single-exon transcript', () => {
       }),
     ),
     // "exon 1/1" is noise; the coordinate still carries
-  ).toBe('SOX2-201<br/>c.21')
+  ).toEqual(['SOX2-201', 'c.21'])
 })
 
 describe('hgvsHitLabel', () => {

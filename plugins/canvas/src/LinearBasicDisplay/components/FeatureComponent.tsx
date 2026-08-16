@@ -27,7 +27,11 @@ import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
 import { isHitFeature, performMultiRegionHitDetection } from './hitTesting.ts'
-import { hgvsHitLabel, hoverTooltip, hoverTooltipText } from './hoverReadout.ts'
+import {
+  hgvsHitLabel,
+  hoverTooltipRows,
+  hoverTooltipText,
+} from './hoverReadout.ts'
 import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
 import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -175,7 +179,7 @@ const FeatureTooltipLayer = observer(function FeatureTooltipLayer({
   const mouseState = useMouseState(mouseTracker)
   return (
     <FeatureTooltip
-      info={model.mouseoverExtraInformation}
+      rows={model.mouseoverExtraInformation}
       mouseState={mouseState}
     />
   )
@@ -290,7 +294,7 @@ const FeatureBody = observer(function FeatureBody({
       model.setHover(
         result.feature.featureId,
         result.subfeature?.featureId ?? null,
-        hoverTooltip(result),
+        hoverTooltipRows(result),
       )
     } else {
       model.clearHover()
@@ -359,7 +363,7 @@ const FeatureBody = observer(function FeatureBody({
   // handleMouseMove, whose early return also skips the hit test.
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem) => {
-      model.setHover(item.featureId, null, item.tooltip)
+      model.setHover(item.featureId, null, [item.tooltip])
     },
     [model],
   )

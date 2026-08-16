@@ -156,6 +156,7 @@
     "./util/getRelativeX": "./src/util/getRelativeX.ts",
     "./util/highlights": "./src/util/highlights.ts",
     "./util/hooks": "./src/util/hooks.ts",
+    "./util/htmlText": "./src/util/htmlText.ts",
     "./util/installInitAutorun": "./src/util/installInitAutorun.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
@@ -793,6 +794,10 @@
         "types": "./esm/util/hooks.d.ts",
         "import": "./esm/util/hooks.js"
       },
+      "./util/htmlText": {
+        "types": "./esm/util/htmlText.d.ts",
+        "import": "./esm/util/htmlText.js"
+      },
       "./util/installInitAutorun": {
         "types": "./esm/util/installInitAutorun.d.ts",
         "import": "./esm/util/installInitAutorun.js"
@@ -1371,6 +1376,9 @@
         ],
         "util/hooks": [
           "esm/util/hooks.d.ts"
+        ],
+        "util/htmlText": [
+          "esm/util/htmlText.d.ts"
         ],
         "util/installInitAutorun": [
           "esm/util/installInitAutorun.d.ts"
