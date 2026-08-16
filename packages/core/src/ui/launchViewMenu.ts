@@ -24,8 +24,9 @@ export function pushIntoSubMenu(
 // contribute one "open another view for this feature" context-menu item. Call
 // this instead of pushing a top-level item so the contributions land in a
 // single "Launch view" submenu regardless of which plugin's extension runs
-// first. `addMenuItems`' `group` option does the same thing for a contributor
-// registered that way, and is the shorter road to it.
+// first. The `group` option on `addViewMenuItems`/`addDisplayMenuItems` does the
+// same thing for a contributor registered that way, and is the shorter road to
+// it.
 //
 // The rubberband menu has its own seam for the same job —
 // `rubberBandLaunchMenuItems()` on the linear genome view — because there the
