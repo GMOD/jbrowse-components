@@ -84,7 +84,16 @@ export function buildLineSegments(
   baseH: number,
   baseV: number,
 ): DotplotInstanceData {
-  const { p11, p12, p21, p22, alignmentLengths, cigarData, cigarOffsets } = data
+  const {
+    p11,
+    p12,
+    p21,
+    p22,
+    strands,
+    alignmentLengths,
+    cigarData,
+    cigarOffsets,
+  } = data
   const count = p11.length
   const bpPerPxHInv = 1 / bpPerPxH
   const bpPerPxVInv = 1 / bpPerPxV
@@ -110,13 +119,26 @@ export function buildLineSegments(
       Math.abs(x2 - x1) * bpPerPxHInv,
       Math.abs(y2 - y1) * bpPerPxVInv,
     )
-    // Strand is already baked into the endpoints upstream (the worker swaps the
-    // H-axis start/end for reverse-strand features), so the walk direction is
-    // fully determined by endpoint order — no separate strand factor needed. This
-    // also tracks reversed regions (e.g. auto-diagonalize flips a query region,
-    // giving y1 > y2) that a hardcoded direction would walk the wrong way.
-    const rev1 = x1 < x2 ? 1 : -1
-    const rev2 = y1 < y2 ? 1 : -1
+    // Where the CIGAR's FIRST op sits, which for a reverse-strand alignment is
+    // not the (x1,y1) corner. PAF writes a '-' strand `cg` in anchor-forward
+    // order with the mate walking backward, so op 0 is at (anchor start, mate
+    // end) — and the worker has already swapped the h endpoints so that x1 IS
+    // the anchor's end. Starting the walk at x1 and stepping backward traverses
+    // the same line, but lays the ops down in reverse order: every indel landed
+    // mirrored through the block's centre, so a 5kb deletion 100bp into an
+    // inverted block drew 100bp from its far end instead.
+    //
+    // Reversed displayed regions (auto-diagonalize flips query regions) are
+    // still read off the endpoints rather than assumed, which is what `k1 < k2`
+    // and the `x21 < x22` term do. Same expression as
+    // `buildSyntenyGeometry`, off the same p11..p22 lanes — the two views
+    // disagreeing about where a CIGAR starts is exactly the drift that keeps
+    // happening here.
+    const strand = strands[i]!
+    const k1 = strand === -1 ? x2 : x1
+    const k2 = strand === -1 ? x1 : x2
+    const rev1 = k1 < k2 ? 1 : -1
+    const rev2 = (y1 < y2 ? 1 : -1) * strand
 
     if (
       cigarEnd > cigarStart &&
@@ -126,8 +148,8 @@ export function buildLineSegments(
       visitCigarRenderedSegments(
         // a view, not a copy — visitCigarRenderedSegments takes ArrayLike
         cigarData.subarray(cigarStart, cigarEnd),
-        x1,
-        y1,
+        k1,
+        strand === -1 ? y2 : y1,
         bpPerPxH,
         bpPerPxV,
         rev1,
