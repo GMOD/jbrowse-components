@@ -152,10 +152,16 @@ let totalDisposed = 0
 // ceiling: the loss evicts a sibling, whose recovery evicts another, and
 // GPU_CONTEXT_BUDGET.md is that cascade.
 //
-// 256 MiB is WebGPU's own default `maxBufferSize`, so the two backends refuse
-// the same region rather than one bannering while the other dies. Deliberately
-// a ceiling and not a budget: it catches the single upload nothing else bounds,
-// and says nothing about the total, which is
+// 256 MiB is WebGPU's *spec default* `maxBufferSize`. It is not parity with
+// what the WebGPU backend actually refuses at: `gpuDevice.acquire` raises the
+// limit to `adapter.limits.maxBufferSize`, which is 1 GiB on the Firefox
+// Nightly / Intel UHD 630 this was checked on, so WebGL2 is the stricter of
+// the two and a region can banner here while rendering there. That asymmetry
+// is accepted — a quarter-gigabyte single vertex buffer is not something to
+// hand an API that answers a failed allocation by dropping the context.
+//
+// Deliberately a ceiling and not a budget: it catches the single upload
+// nothing else bounds, and says nothing about the total, which is
 // ARCHITECTURAL_LIMITS.md §"No session-level GPU memory budget".
 const MAX_VERTEX_BUFFER_BYTES = 256 * 1024 * 1024
 

@@ -176,6 +176,27 @@ Chrome 151 here reports no compatible adapter — so the WebGPU-skips-the-probe
 path is still pinned only by unit tests, and a dev box on this hardware is in the
 population that keeps probing.
 
+## Chrome is not the only browser on the box
+
+**That last paragraph is about Chrome, and it has already been misread as "this
+machine cannot run WebGPU at all."** It can. `runner.ts` routes every
+`--backend=webgpu` run through Firefox Nightly precisely because Chrome +
+puppeteer does not render WebGPU canvases, and Firefox Nightly on this same
+Intel UHD 630 acquires a device and renders:
+
+```
+[GPU] WebGPU device ready — maxTextureDimension2D=8192 maxBufferSize=1073741824
+```
+
+So a claim of the form "we have no way to check the WebGPU path here" is wrong,
+and it has been written into this doc set once. `node
+browser-tests/runner.ts --backend=webgpu --filter=<suite>` is the check; it runs
+headed, and `--backend=all --gate-only` adds the canvas2d-vs-webgpu drift
+comparison, which needs no golden. Note `maxBufferSize` is the **adapter's**
+maximum rather than the 256 MiB spec default, because `gpuDevice.acquire` asks
+for `adapter.limits.maxBufferSize` — so the number a guard trips on is
+machine-specific, and reading one off this table is not reading the spec.
+
 ## The probe's own context
 
 `getGraphicsCapabilities` is memoized per page and holds its probe context until

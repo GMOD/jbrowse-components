@@ -102,12 +102,16 @@ bounds pixels, not GPU instance count). So OOM is reportable, not preventable,
 which is acceptable while the per-object guards keep catching the pathological
 single upload.
 
-Both HALs now hold that per-object floor on the vertex-buffer axis. WebGPU
-refuses past `device.limits.maxBufferSize`; WebGL2, which can query no such
-limit, refuses past the fixed `MAX_VERTEX_BUFFER_BYTES` set to WebGPU's own
-256 MiB default, so the two backends banner on the same region instead of one
-bannering while the other loses its context into the eviction cascade in
-[GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md).
+Both HALs now hold that per-object floor on the vertex-buffer axis, at
+different heights. WebGPU refuses past `device.limits.maxBufferSize` — which
+`gpuDevice.acquire` raises to the adapter's own maximum, 1 GiB on the Firefox
+Nightly / Intel UHD 630 measured here. WebGL2 can query no such limit, so it
+refuses past a fixed `MAX_VERTEX_BUFFER_BYTES` of 256 MiB, WebGPU's spec
+default. **WebGL2 is therefore the stricter of the two**, and a region can
+banner there while rendering on WebGPU. That is the accepted direction: the
+unguarded alternative on WebGL2 is not a failed allocation but a dropped
+context, which on a page at the context ceiling evicts a sibling and starts the
+cascade in [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md).
 
 **Retire when** a HAL byte counter with cross-display LRU prune exists, or an OOM
 report arrives that the per-object guards missed. The counter's first customer
@@ -116,9 +120,13 @@ anywhere today.
 
 ### The MSAA target is the largest per-display allocation, and a resize rebuilds it
 
-**Status:** Open, and the arithmetic below is arithmetic — nothing here has a
-WebGPU machine to measure it on (Chrome 151 on this hardware reports no
-compatible adapter, per GPU_CONTEXT_BUDGET.md).
+**Status:** Open, and the arithmetic below is arithmetic — the *allocation* has
+not been timed, though the backend it happens on is reachable: `--backend=webgpu`
+runs Firefox Nightly, which has a working device here where Chrome has none
+(GPU_CONTEXT_BUDGET.md § "Chrome is not the only browser on the box"). The
+device this was read on reports `maxTextureDimension2D=8192`, which is the other
+half of the entry — a canvas past 8192 physical px on an axis takes the MSAA
+target out entirely and `beginFrame` then skips the whole frame.
 
 `WebGPUHal` holds one 4x MSAA color attachment sized to its own canvas
 (`recreateMsaaTexture`). Two things follow that nothing else in this register
@@ -170,9 +178,10 @@ selected.
 
 That is the shape GPU_CONTEXT_BUDGET.md already measured on the other backend,
 where **the load-time pipeline build**, not the per-pass rebuild, turned out to
-be what costs. Whether it costs the same here is unknown: `createRenderPipelineAsync`
-is meant to keep the work off the main thread, and nothing in tree has WebGPU
-hardware to check on.
+be what costs. Whether it costs the same here is unmeasured but not
+unmeasurable: `createRenderPipelineAsync` is meant to keep the work off the main
+thread, and `--backend=webgpu` gives a real device through Firefox Nightly to
+time it on.
 
 What bounds it today is `hal/deviceGpuCache.ts`: pipelines and the two bind
 group layouts are memoized per device, keyed on the `PipelineDescriptor` object
