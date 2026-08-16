@@ -9,6 +9,7 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   forEachClippedBlock,
   makeBpMapper,
+  pxPerBpOf,
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import { drawnFeatureContext, forEachDrawnFeature } from './featurePainting.ts'
@@ -123,9 +124,7 @@ export function drawMultiRowIndelGlyphs(
       const { featureStarts, featureEnds, featureDeltas } = regionData
       // Exact for this block rather than the view's global bpPerPx, which is what
       // the bar-width and label-fit thresholds are calibrated against.
-      const pxPerBp =
-        (renderBlock.screenEndPx - renderBlock.screenStartPx) /
-        (renderBlock.end - renderBlock.start)
+      const pxPerBp = pxPerBpOf(renderBlock)
       const labelFits = h >= MIN_HEIGHT_FOR_TEXT
 
       forEachDrawnFeature(

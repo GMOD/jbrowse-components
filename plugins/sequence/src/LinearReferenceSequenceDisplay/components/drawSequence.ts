@@ -3,6 +3,7 @@ import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import {
   forEachClippedBlock,
   makeBpMapper,
+  pxPerBpOf,
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
@@ -50,8 +51,7 @@ function blockScale(block: RenderBlock): BlockScale {
   const toX = makeBpMapper(block)
   const { reversed } = block
   return {
-    pxPerBp:
-      (block.screenEndPx - block.screenStartPx) / (block.end - block.start),
+    pxPerBp: pxPerBpOf(block),
     left: (startBp, bpWidth) => toX(reversed ? startBp + bpWidth : startBp),
   }
 }
