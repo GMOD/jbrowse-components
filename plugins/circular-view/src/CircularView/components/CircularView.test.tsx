@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material/styles'
-import { fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 
 import stateModelFactory from '../model.ts'
 import CircularView from './CircularView.tsx'
@@ -185,6 +185,31 @@ test('a burst of wheel events collapses into one zoom', () => {
 
   expect(frames).toBe(1)
   expect(burst.bpPerPx).toBeCloseTo(single.bpPerPx)
+})
+
+// The 0.5s transition smooths the rotate buttons' discrete pi/6 steps, and a
+// continuous gesture must drop it: a fresh ease starting every frame gets a few
+// percent of the way before the next replaces it, so the figure crawls behind
+// the fingers and coasts on after they stop. The drag already dropped it; the
+// wheel rotation, the same input off a different device, did not.
+test('a wheel gesture drops the transition that smooths the buttons', () => {
+  jest.useFakeTimers()
+  try {
+    const { view, root, svg } = setup()
+    const settled = svg.getAttribute('class')
+
+    wheelAt(view, root, [{ deltaX: 100, deltaY: 0 }])
+    expect(svg.getAttribute('class')).not.toBe(settled)
+
+    // and comes back once the gesture goes quiet, since the buttons still want
+    // it. A wheel has no up event, so this is the only thing that ends it.
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    expect(svg.getAttribute('class')).toBe(settled)
+  } finally {
+    jest.useRealTimers()
+  }
 })
 
 // The move handler waves through anything with a button held, so a press it

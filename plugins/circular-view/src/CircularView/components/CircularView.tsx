@@ -3,7 +3,10 @@ import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { ErrorBanner, ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
 import { createFrameCoalescer } from '@jbrowse/core/util/frameCoalescer'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
+import {
+  ZOOM_ACTIVE_WINDOW_MS,
+  normalizeWheelDelta,
+} from '@jbrowse/core/util/wheelZoom'
 import { observer } from 'mobx-react'
 
 import Controls from './Controls.tsx'
@@ -54,13 +57,22 @@ const useStyles = makeStyles()(theme => ({
     top: 0,
     userSelect: 'none',
   },
-  idle: {
+  grab: {
     cursor: 'grab',
-    transition: 'transform 0.5s',
   },
-  dragging: {
+  grabbing: {
     cursor: 'grabbing',
-    transition: 'none',
+  },
+  // Opt-IN, so that a gesture merely leaves it off. The 0.5s smooths the two
+  // discrete rotations — the rotate buttons' pi/6 steps and resetView's snap
+  // back to the default angle. Continuous input must not have it: a fresh 0.5s
+  // ease starting every frame gets ~3% of the way before the next one replaces
+  // it, so the figure crawls far behind the fingers and then coasts on after
+  // they stop. The drag turned it off for exactly that reason; the wheel
+  // rotation, which is the same continuous input off a different device, was
+  // left dragging the ease behind it.
+  settled: {
+    transition: 'transform 0.5s',
   },
   resizeHandle: {
     position: 'absolute',
@@ -149,6 +161,9 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   // rotation (see handlePointerMove) or ends as the click it looked like
   const pressRef = useRef<{ x: number; y: number } | undefined>(undefined)
   const [isDragging, setIsDragging] = useState(false)
+  // a wheel gesture has no up event to end it, so it ends by going quiet — the
+  // same window `wheelZoom` treats a view as actively zooming for
+  const [isWheeling, setIsWheeling] = useState(false)
 
   // Non-passive wheel listener so we can call preventDefault(). The handler only
   // accumulates: one model write per animation frame, not per event. A trackpad
@@ -164,6 +179,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     const frame = createFrameCoalescer()
     let rotateDelta = 0
     let zoomDelta = 0
+    let settle: ReturnType<typeof setTimeout> | undefined
     let anchor: readonly [number, number] = [0, 0]
     const onWheel = (event: WheelEvent) => {
       if (!frame.pending) {
@@ -178,6 +194,11 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
         return
       }
       event.preventDefault()
+      setIsWheeling(true)
+      clearTimeout(settle)
+      settle = setTimeout(() => {
+        setIsWheeling(false)
+      }, ZOOM_ACTIVE_WINDOW_MS)
       // `deltaX`/`deltaY` are only pixels when `deltaMode` says so. Firefox
       // reports whole lines for a mouse wheel — `deltaMode: 1`, `deltaY: ±3` —
       // where Chrome reports `deltaMode: 0`, `deltaY: ±100`, so the raw number
@@ -210,6 +231,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     return () => {
       el.removeEventListener('wheel', onWheel)
       frame.cancel()
+      clearTimeout(settle)
     }
   }, [model])
 
@@ -300,7 +322,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
         <svg
           className={cx(
             classes.circularSvg,
-            isDragging ? classes.dragging : classes.idle,
+            isDragging ? classes.grabbing : classes.grab,
+            isDragging || isWheeling ? undefined : classes.settled,
           )}
           style={{
             transform: `rotate(${offsetRadians}rad)`,
