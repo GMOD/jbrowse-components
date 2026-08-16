@@ -1,44 +1,17 @@
 import { fetchSeq } from '../../../util/fetchSeq.ts'
 import { max, min } from '../../../util/index.ts'
+import { coreFeatureFields, formatAttributeValue } from './util.ts'
 
 import type { AbstractSessionModel, Feature } from '../../../util/index.ts'
 
-const coreFields = new Set([
-  'uniqueId',
-  'id',
-  'name',
-  'refName',
-  'source',
-  'type',
-  'start',
-  'end',
-  'strand',
-  'parent',
-  'parentId',
-  'score',
-  'subfeatures',
-  'phase',
-])
+// name becomes the /label qualifier rather than one of its own
+const coreFields = new Set([...coreFeatureFields, 'name'])
 
 // GenBank fixed-column layout: feature keys occupy cols 6-20, locations and
 // qualifiers start at col 22. See https://www.insdc.org/submitting-standards/feature-table/
 const TYPE_COLUMN_WIDTH = 15
 const QUALIFIER_INDENT = ' '.repeat(21)
 const DATE = '10-JAN-1970'
-
-function fmt(obj: unknown): string | undefined {
-  if (obj === null || obj === undefined) {
-    return undefined
-  }
-  if (Array.isArray(obj)) {
-    const items = obj.map(o => fmt(o)).filter(o => o !== undefined)
-    return items.length > 0 ? items.join(',') : undefined
-  }
-  if (typeof obj === 'object') {
-    return JSON.stringify(obj)
-  }
-  return `${obj}`
-}
 
 // Free-text qualifiers are wrapped in double quotes; literal quotes inside the
 // value are escaped by doubling them, per the GenBank spec.
@@ -79,7 +52,7 @@ function formatTags({ feature, gene }: { feature: Feature; gene?: string }) {
   }
   for (const key of Object.keys(feature.toJSON())) {
     if (!coreFields.has(key)) {
-      const value = fmt(feature.get(key))
+      const value = formatAttributeValue(feature.get(key))
       if (value) {
         tags.push(qualifier(key, value))
       }
