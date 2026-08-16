@@ -698,4 +698,46 @@ export async function assertVirtualScrollStructure(
       'found a native overflow scroll container — display regressed to native scroll (tearing risk)',
     )
   }
+  await assertScrollbarOnRightEdge(page)
+}
+
+// The other half of "the display owns its scroll": the affordance is only an
+// affordance if it is on screen. `VerticalScrollbar` anchors by `right: 0`, so
+// it lands wherever its nearest positioned ancestor happens to be — and a
+// display that mounts it inside a container holding nothing but absolutely
+// positioned children mounts it inside a 0x0 box, putting the thumb one track
+// width LEFT of the display and the edge fade at zero width. Both variant
+// displays shipped exactly that, invisible to a test asserting the element
+// exists, and invisible on screen because `contain: strict` clips it away.
+//
+// Measured rather than structural: which ancestor is positioned is a layout
+// detail each display may change, where "the thumb is inside the track box, at
+// its right edge" is the property that has to hold for all of them.
+async function assertScrollbarOnRightEdge(page: Page) {
+  const box = await page.evaluate(() => {
+    const outer = document
+      .querySelector('[data-testid^="trackRenderingContainer"]')
+      ?.getBoundingClientRect()
+    const bar = document
+      .querySelector('[data-testid="vertical-scrollbar"]')
+      ?.getBoundingClientRect()
+    return outer && bar
+      ? {
+          gap: outer.right - bar.right,
+          left: bar.left - outer.left,
+          w: bar.width,
+        }
+      : undefined
+  })
+  if (!box) {
+    return
+  }
+  // A few px of slack: a display may inset the track past a sidebar or a
+  // border. Being outside the box at all, or hard against its left edge, is the
+  // failure — the broken variant displays measured a gap of the full track width.
+  if (box.gap < -1 || box.gap > 4 || box.left < 0 || box.w < 1) {
+    throw new Error(
+      `vertical scrollbar is not on the display's right edge: ${box.w}px wide, ${box.gap}px from the right edge and ${box.left}px from the left. A 0x0 positioned ancestor is the usual cause — see assertScrollbarOnRightEdge.`,
+    )
+  }
 }

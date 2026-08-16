@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { useMouseState } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
@@ -5,6 +7,7 @@ import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
+import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
 import VariantBody from './VariantComponent.tsx'
 import VariantLaneOverlay from './VariantLaneOverlay.tsx'
 import { VariantRenderer } from './VariantRenderer.ts'
@@ -43,6 +46,7 @@ const VariantDisplayComponent = observer(
   }) {
     const { model } = props
     const { rowsTopOffset } = model
+    const canvasId = useId()
     return (
       <DisplayChrome
         model={model}
@@ -63,8 +67,18 @@ const VariantDisplayComponent = observer(
                 model={model}
                 canvasRef={canvasRef}
                 canvas={canvas}
+                canvasId={canvasId}
               />
             </div>
+            {/* Outside that container, and it has to be: everything in there is
+                absolutely positioned, so the container shrink-to-fits to 0x0 —
+                fine for a child placed by `left`/`top`, fatal for one placed by
+                `right`. The scrollbar's `right: 0` resolved against a zero-width
+                box put the thumb 12px LEFT of the display (clipped away by
+                `contain: strict`), and the edge fade's `left: 0; right: 0` made
+                it zero-wide. Out here the box is the display's own, and
+                `rowsTopOffset` is applied once rather than twice. */}
+            <VariantScrollbar model={model} controlsId={canvasId} />
             <VariantOverlay model={model} top={rowsTopOffset} />
             <TreeSidebar model={model} />
             <CrosshairLayer

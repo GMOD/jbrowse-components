@@ -6,10 +6,10 @@ import {
   VerticalScrollbar,
   useMouseState,
 } from '@jbrowse/core/ui'
-import { VERTICAL_SCROLLBAR_WIDTH } from '@jbrowse/core/ui/VerticalScrollbar'
+import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
+import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   BottomRightIndicators,
@@ -36,11 +36,6 @@ import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-// Right-edge width the VerticalScrollbar overlay claims while the content
-// overflows, so the bottom-right indicators don't render underneath it. A shade
-// wider than the scrollbar's own track, which keeps a hairline between them.
-const SCROLLBAR_WIDTH = VERTICAL_SCROLLBAR_WIDTH + 2
 
 // The model type is the real MST instance (`LinearCanvasBaseDisplayModel`): the
 // display registers this component from index.ts, so nothing imports it back into
@@ -214,28 +209,14 @@ const FeatureBody = observer(function FeatureBody({
   // The model owns the upload/render autorun and the GPU backend lifecycle —
   // see startRenderingBackend / stopRenderingBackend / renderNow on the base
   // canvas display model. scrollTop lives on the model (TrackHeightMixin) and
-  // feeds `renderState.scrollY`. Virtual scroll: this wheel handler writes
+  // feeds `renderState.scrollY`. Virtual scroll: the wheel gesture writes
   // model.scrollTop directly (no native overflow container), so the GPU canvas
-  // and the DOM overlays both key off it. Mirrors the alignments pileup gesture:
-  // under scrollZoom a plain wheel zooms the view (return, let it bubble) while
-  // shift+wheel still scrolls the rows; the latch (inside applyScroll) owns
-  // preventDefault but never stopPropagation, so a diagonal wheel still bubbles
-  // its horizontal component to the LGV for panning.
-  useVirtualScrollWheel(canvas, (e, applyScroll) => {
-    if ((view.scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
-      return
-    }
-    applyScroll(
-      e,
-      {
-        scrollTop: model.scrollTop,
-        viewportHeight: model.height,
-        scrollableHeight: model.scrollableHeight,
-      },
-      n => {
-        model.setScrollTop(n)
-      },
-    )
+  // and the DOM overlays both key off it. The rule is the pileup's, shared as
+  // `usePanelVirtualScroll`; the whole track height is the viewport, this
+  // display having no sticky band above its features.
+  usePanelVirtualScroll(canvas, model, {
+    viewportHeight: model.height,
+    scrollZoom: view.scrollZoom,
   })
 
   // rAF clock for the feature-Y transition. The model decides when to morph
@@ -437,7 +418,7 @@ const FeatureBody = observer(function FeatureBody({
       />
 
       <BottomRightIndicators
-        scrollbarWidth={model.hasOverflow ? SCROLLBAR_WIDTH : 0}
+        scrollbarWidth={model.hasOverflow ? VERTICAL_SCROLLBAR_CLEARANCE : 0}
       >
         <SoloSelectionChip
           count={model.soloFeatureCount}

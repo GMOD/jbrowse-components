@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useState } from 'react'
 
 import { hoverBoxStyle } from '@jbrowse/core/ui'
 import { makeBpMapper, pxPerBpOf } from '@jbrowse/render-core/canvas2dUtils'
@@ -8,7 +8,6 @@ import {
   buildVariantHit,
   variantTooltipKey,
 } from '../../shared/buildVariantHit.ts'
-import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
@@ -207,20 +206,26 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   )
 })
 
-// The per-sample variant canvas + scrollbar + hit-test wiring. DisplayChrome
-// (owned by the outer VariantDisplayComponent) owns the GPU backend and the
-// terminal states, handing the live canvas down here. Scroll is virtual (fixed
-// canvas + VerticalScrollbar overlay, everything positioned from
-// model.scrollTop) — no native overflow container, so the GPU cells and the DOM
-// hover highlight share one scroll source and can never tear apart.
+// The per-sample variant canvas + hit-test wiring. DisplayChrome (owned by the
+// outer VariantDisplayComponent) owns the GPU backend and the terminal states,
+// handing the live canvas down here. Scroll is virtual (fixed canvas +
+// VerticalScrollbar overlay, everything positioned from model.scrollTop) — no
+// native overflow container, so the GPU cells and the DOM hover highlight share
+// one scroll source and can never tear apart.
+//
+// The scroll affordances themselves are NOT here: they hang off the display's
+// own box, one level up. `canvasId` is therefore made up there too and passed
+// in, so the scrollbar's `aria-controls` still names this canvas.
 const VariantBody = observer(function VariantBody({
   model,
   canvasRef,
   canvas,
+  canvasId,
 }: {
   model: LinearMultiSampleVariantDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
+  canvasId: string
 }) {
   const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
 
@@ -230,7 +235,6 @@ const VariantBody = observer(function VariantBody({
   // exists to be the one answer — reading the view directly is how MAF drifted
   // onto `view.width` (see MultiRegionDisplayMixin.canvasWidthPx).
   const width = model.canvasWidthPx
-  const canvasId = useId()
 
   useVariantVirtualScroll(canvas, model)
 
@@ -276,7 +280,6 @@ const VariantBody = observer(function VariantBody({
       {hoveredCell ? (
         <HoveredCellHighlight cell={hoveredCell} model={model} />
       ) : null}
-      <VariantScrollbar model={model} controlsId={canvasId} />
       {contextMenuNode}
     </>
   )

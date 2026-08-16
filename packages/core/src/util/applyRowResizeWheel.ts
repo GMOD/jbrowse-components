@@ -40,10 +40,18 @@ export function applyRowResizeWheel(
     -normalizeWheelDelta(e.deltaY, e.deltaMode) * RESIZE_PX_PER_WHEEL_PX
   // guard nrow=0 (no samples) so the auto-fit floor stays finite
   const minRowHeight = model.viewportHeight / Math.max(1, model.nrow)
-  // With few samples the auto-fit floor can exceed MAX_ROW_HEIGHT; the floor
-  // wins so the cap can't snap rows below the fit height (which would collapse
-  // rows on a *grow* gesture, since min(MAX, max(floor, x)) === MAX < floor).
-  const maxRowHeight = Math.max(MAX_ROW_HEIGHT, minRowHeight)
+  // The cap may stop the gesture going further; it may never move the rows on
+  // its own. So both heights that can already sit above MAX_ROW_HEIGHT raise
+  // it: the auto-fit floor (few samples), and the current height (a pinned
+  // `rowHeight` — the config slot and the "Custom..." dialog are both
+  // unbounded, and MAF's own docs example is 12 while a bases-mode row wants
+  // more). Without the second, a 40px pinned row met `min(20, 40.4)` on the
+  // first notch of a *grow* gesture and halved.
+  const maxRowHeight = Math.max(
+    MAX_ROW_HEIGHT,
+    minRowHeight,
+    model.effectiveRowHeight,
+  )
   const newRowHeight = Math.max(
     minRowHeight,
     Math.min(maxRowHeight, model.effectiveRowHeight + delta),

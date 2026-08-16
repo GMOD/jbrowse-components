@@ -36,32 +36,38 @@ gesture.
 | Handler | Concern | Wheel rule |
 | --- | --- | --- |
 | `useWheelScroll.ts` (LGV) | zoom + horizontal genome pan | `shift && scrollZoom` → bail (page-scroll escape). `ctrl/meta` or (`scrollZoom && |dy|≥|dx|`) → zoom. else → horizontal pan via `deltaX`. |
-| `PileupComponent.tsx` | pileup vertical scroll | skip if `(scrollZoom && !shift) || ctrl || meta`. else scroll inner (latched). → plain wheel scrolls when zoom OFF; needs `shift` when zoom ON. |
-| `useScrollSync.ts` (canvas basic) | overflow vertical scroll | skip if `!hasOverflow || ctrl || meta`. `shift` → scroll inner (latched). else `scrollZoom` → preventDefault. → **only `shift` scrolls inner.** |
-| `useVariantVirtualScroll.ts` | matrix vertical scroll + row height | `shift` → **change row height**. else if `!scrollZoom && !ctrl && !meta && overflow` → scroll inner (latched). |
-| `useMafVirtualScroll.ts` | MAF rows vertical scroll + row height | same rule as the variant displays, and deliberately so: same sample-row shape, same coupled row-height axis. Added when MAF moved off grow-to-fit onto virtual scroll. |
+| `usePanelVirtualScroll.ts` (pileup, canvas basic) | panel vertical scroll | skip if `(scrollZoom && !shift) || ctrl || meta`. else scroll inner (latched). → plain wheel scrolls when zoom OFF; needs `shift` when zoom ON. |
+| `useRowVirtualScroll.ts` (both variant displays, MAF) | rows vertical scroll + row height | skip if `ctrl || meta`. `shift` → **change row height**. else if `!scrollZoom` → scroll inner (latched). |
 
-The last two rows are **one rule in two call sites**, not two rules. Since the
-agreement is deliberate it is now written once, as
-`useRowVirtualScroll` (`packages/core/src/util/`), and each hook supplies only
-its own rows-area height (`availableHeight` vs `rowsHeight`, which differ
-because MAF's excludes the bands above its rows) plus `scrollZoom`. That is the
+Each of those last two is **one rule across several call sites**, not one rule
+per display, so each is written once in `packages/core/src/util/` and every
+consumer supplies only its own viewport height plus `scrollZoom`. That is the
 decision below applied, not an exception to it: unify where there is one true
-rule. The pileup and canvas-basic rules stay where they are.
+rule.
+
+The canvas basic display used to be a third rule of its own (`useScrollSync.ts`:
+a native overflow container, `shift` the only thing that scrolled it). It moved
+to virtual scroll and adopted the pileup's rule exactly, which is what left two
+rules rather than three — and left this table describing a file that no longer
+exists, until an audit of the scroll system found the drift.
 
 ## The real inconsistency (not resolved here — it's a product call)
 
-`shift`+wheel means three different things:
+`shift`+wheel means two different things:
 
-- pileup → scroll the inner panel (while in zoom mode)
-- canvas basic display → scroll the inner panel (always)
-- variants matrix and MAF → **change row height**
+- pileup and canvas basic display → scroll the inner panel (while in zoom mode)
+- both variant displays and MAF → **change row height**
 
-and plain wheel scrolls the pileup/variants panels but **not** the canvas basic
-display (which needs `shift`). A user who learns the gesture on one track is
-surprised on another. Converging these is a UX decision with possible intentional
-history (variants' `shift`=row-height is a deliberate zoom-like gesture), so it is
-**not** changed unilaterally. It is recorded here as known, decidable debt.
+A user who learns the gesture on one track is surprised on another. Converging
+them is a UX decision with intentional history (the row-stack `shift`=row-height
+is a deliberate zoom-like gesture on a coupled axis), so it is **not** changed
+unilaterally. It is recorded here as known, decidable debt.
+
+What is no longer part of it: plain wheel now scrolls every one of these panels
+when `scrollZoom` is off, and `ctrl`/`meta` falls through to the browser and the
+view on every one of them. The row-stack rule tested `shift` first and so
+swallowed `ctrl+shift`+wheel — page zoom, dead over a MAF or variants track —
+which was a bug rather than a per-display choice, and is fixed.
 
 ## Decision
 
@@ -72,7 +78,7 @@ The unify-the-dispatch instinct fails the codebase's own test (cognitive-load
 reduction, not LOC; combining things that look similar is a trap). A resolver
 genuinely simplifies only if all displays agree on one rule. They don't (table
 above). A behavior-preserving resolver must therefore carry per-display branches —
-it **relocates** three rules into one file with a `switch` and *adds* a layer
+it **relocates** the rules into one file with a `switch` and *adds* a layer
 (now you read the generic resolver *and* still need to know which display you're
 in). The resolver's payoff is **contingent on first making the product decision**
 to unify the semantics; without that decision it is net-negative.

@@ -41,12 +41,20 @@ export function useRowVirtualScroll(
     scrollZoom,
   }: { viewportHeight: number; scrollZoom: boolean },
 ) {
-  useVirtualScrollWheel(el, (e, applyScroll) => {
+  useVirtualScrollWheel(el, (e, applyScroll, rowsEl) => {
+    // ctrl/meta is the browser's own zoom (and the view's pinch-zoom) and is
+    // never ours, whatever else is held. Tested first rather than only in the
+    // scroll branch: ctrl+shift+wheel used to reach the resize below, which
+    // `preventDefault`s — so a row-stack display swallowed page zoom where
+    // every other display passes it through.
+    if (e.ctrlKey || e.metaKey) {
+      return
+    }
     if (e.shiftKey) {
       // Resizing exits fit-to-height into a pinned height, which is what makes
       // the gesture meaningful: the fit height is exactly the floor it shrinks
       // to, so there is nothing to zoom while the sentinel is set.
-      applyRowResizeWheel(e, el!, {
+      applyRowResizeWheel(e, rowsEl, {
         effectiveRowHeight: model.effectiveRowHeight,
         scrollTop: model.scrollTop,
         nrow: model.nrow,
@@ -58,7 +66,7 @@ export function useRowVirtualScroll(
           model.setScrollTop(n)
         },
       })
-    } else if (!scrollZoom && !e.ctrlKey && !e.metaKey) {
+    } else if (!scrollZoom) {
       // A gesture the panel can't consume is left alone: with the rows fitting
       // the track (`scrollableHeight === 0`, always true in fit-to-height mode)
       // the wheel reaches the view and zooms or scrolls the page exactly as it

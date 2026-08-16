@@ -89,6 +89,23 @@ test('few samples: auto-fit floor above MAX_ROW_HEIGHT is not collapsed to the c
   expect(shrink.state.rowHeight).toBeCloseTo(100 / 3)
 })
 
+// The other way to already sit above the cap: a pinned `rowHeight`. Both the
+// config slot and the "Custom..." dialog are unbounded, and this is the case
+// where the rows overflow — i.e. the only case where the gesture is reachable
+// at all. The cap has to stop the gesture, never move the rows on its own.
+test('a pinned row height above MAX_ROW_HEIGHT is not collapsed to the cap', () => {
+  // viewport 100, 50 samples -> auto-fit floor 2, well under the 20px cap, so
+  // the floor cannot be what rescues this one.
+  const grow = harness({ rowHeight: 40, scrollTop: 0, nrow: 50 })
+  applyRowResizeWheel(wheel(-PX_PER_ROW_PX, 0).event, el(0), grow.target)
+  expect(grow.state.rowHeight).toBe(40)
+
+  // and it still shrinks from there, one px per PX_PER_ROW_PX as everywhere else
+  const shrink = harness({ rowHeight: 40, scrollTop: 0, nrow: 50 })
+  applyRowResizeWheel(wheel(PX_PER_ROW_PX, 0).event, el(0), shrink.target)
+  expect(shrink.state.rowHeight).toBe(39)
+})
+
 test('keeps the row under the cursor pinned in place as the height changes', () => {
   // cursor 50px below the element top, scrolled 100px, rows 10px tall -> the
   // row under the cursor is (50+100)/10 = row 15. After growing to 11px that

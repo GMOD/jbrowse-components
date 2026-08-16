@@ -14,6 +14,14 @@ import type { MultiSampleVariantBaseModel } from '../MultiSampleVariantBaseModel
 // a band's worth too high: invisible while it was the only thing there, and the
 // matrix display's `lineZoneHeight` defaults to 20, so this was the default
 // state rather than an edge case.
+//
+// **Mount this on the display's own box, never inside the container the rows
+// are offset into.** Applying `rowsTopOffset` is this component's job, so a
+// positioned ancestor that already applies it doubles it — and, worse, that
+// container holds nothing but absolutely-positioned children, so it is 0x0 and
+// the `right: 0` both affordances anchor by resolves against nothing. Which is
+// how the thumb spent a release drawn 12px off the left edge of the display,
+// with the edge fade zero pixels wide.
 const VariantScrollbar = observer(function VariantScrollbar({
   model,
   controlsId,

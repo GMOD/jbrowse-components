@@ -190,10 +190,10 @@
     "./util/useFetchPlugins": "./src/util/useFetchPlugins.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/usePanZoom": "./src/util/usePanZoom.ts",
+    "./util/usePanelVirtualScroll": "./src/util/usePanelVirtualScroll.ts",
     "./util/usePointerDrag": "./src/util/usePointerDrag.ts",
     "./util/useResizeDrag": "./src/util/useResizeDrag.ts",
     "./util/useRowVirtualScroll": "./src/util/useRowVirtualScroll.ts",
-    "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts",
     "./util/virtualRange": "./src/util/virtualRange.ts",
     "./util/wheelZoom": "./src/util/wheelZoom.ts",
     "./util/whenViewSettled": "./src/util/whenViewSettled.ts"
@@ -929,6 +929,10 @@
         "types": "./esm/util/usePanZoom.d.ts",
         "import": "./esm/util/usePanZoom.js"
       },
+      "./util/usePanelVirtualScroll": {
+        "types": "./esm/util/usePanelVirtualScroll.d.ts",
+        "import": "./esm/util/usePanelVirtualScroll.js"
+      },
       "./util/usePointerDrag": {
         "types": "./esm/util/usePointerDrag.d.ts",
         "import": "./esm/util/usePointerDrag.js"
@@ -940,10 +944,6 @@
       "./util/useRowVirtualScroll": {
         "types": "./esm/util/useRowVirtualScroll.d.ts",
         "import": "./esm/util/useRowVirtualScroll.js"
-      },
-      "./util/useVirtualScrollWheel": {
-        "types": "./esm/util/useVirtualScrollWheel.d.ts",
-        "import": "./esm/util/useVirtualScrollWheel.js"
       },
       "./util/virtualRange": {
         "types": "./esm/util/virtualRange.d.ts",
@@ -1470,6 +1470,9 @@
         "util/usePanZoom": [
           "esm/util/usePanZoom.d.ts"
         ],
+        "util/usePanelVirtualScroll": [
+          "esm/util/usePanelVirtualScroll.d.ts"
+        ],
         "util/usePointerDrag": [
           "esm/util/usePointerDrag.d.ts"
         ],
@@ -1478,9 +1481,6 @@
         ],
         "util/useRowVirtualScroll": [
           "esm/util/useRowVirtualScroll.d.ts"
-        ],
-        "util/useVirtualScrollWheel": [
-          "esm/util/useVirtualScrollWheel.d.ts"
         ],
         "util/virtualRange": [
           "esm/util/virtualRange.d.ts"

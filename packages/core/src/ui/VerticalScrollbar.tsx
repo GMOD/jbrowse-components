@@ -19,6 +19,18 @@ import type React from 'react'
  */
 export const VERTICAL_SCROLLBAR_WIDTH = 12
 
+/**
+ * Where the right edge of anything that has to sit *beside* the thumb goes: the
+ * track's width plus a hair of air, so a chip or an axis label doesn't touch it.
+ *
+ * The four call sites all spelled `VERTICAL_SCROLLBAR_WIDTH + 2` inline, which
+ * is the same copy the width constant was exported to stop — one addition
+ * further along. The `+ 2` is a gap and belongs to the thing being cleared, not
+ * to the scrollbar's own geometry, so it is named rather than folded into the
+ * width (`right: 2` on the thumb is a different 2 and must not move with it).
+ */
+export const VERTICAL_SCROLLBAR_CLEARANCE = VERTICAL_SCROLLBAR_WIDTH + 2
+
 const MIN_THUMB_HEIGHT = 20
 
 const useStyles = makeStyles()(theme => ({

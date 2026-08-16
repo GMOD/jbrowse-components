@@ -109,6 +109,15 @@ the painter filling it read that one function**.
   slider — takes the bounds alone, while a resize additionally leaves a band a
   config declared below the floor where it is.
 
+**The container the rows are offset into is 0x0**, everything in it being
+absolutely positioned. So it is the right parent for a child placed by
+`left`/`top` (the canvas, the hover box, the glyph overlay) and the wrong one
+for a child placed by `right` — `VariantScrollbar` mounted in there put the
+thumb a track width off the display's LEFT edge, where `contain: strict` clipped
+it, and gave the edge fade zero width. Anything anchored to the right edge, or
+that applies `rowsTopOffset` itself, goes on the display's own box beside
+`VariantOverlay`.
+
 The lane is deliberately **not** a hosted `LinearVariantDisplay` — a track
 renders one display and a combo would buy a second parse of the same VCF. It
 shares `forEachFeatureSpan` (one per-record walk, so a lane mark cannot sit a

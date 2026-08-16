@@ -5,10 +5,10 @@ import {
   ScrollEdgeShadow,
   VerticalScrollbar,
 } from '@jbrowse/core/ui'
-import { VERTICAL_SCROLLBAR_WIDTH } from '@jbrowse/core/ui/VerticalScrollbar'
+import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
+import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
@@ -56,7 +56,7 @@ const useStyles = makeStyles()(theme => ({
   },
   compactAxisLabel: {
     position: 'absolute' as const,
-    right: VERTICAL_SCROLLBAR_WIDTH + 2,
+    right: VERTICAL_SCROLLBAR_CLEARANCE,
     fontSize: 9,
     lineHeight: '11px',
     fontFamily: 'sans-serif',
@@ -93,21 +93,11 @@ const PileupBody = observer(function PileupBody({
   const { scrollZoom } = view
   const canvasId = useId()
 
-  useVirtualScrollWheel(canvas, (e, applyScroll) => {
-    if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
-      return
-    }
-    applyScroll(
-      e,
-      {
-        scrollTop: model.scrollTop,
-        viewportHeight: model.pileupViewportHeight,
-        scrollableHeight: model.scrollableHeight,
-      },
-      n => {
-        model.setScrollTop(n)
-      },
-    )
+  // The pileup's viewport is its own, not the track's: ungrouped, the coverage
+  // band above it is sticky and doesn't scroll.
+  usePanelVirtualScroll(canvas, model, {
+    viewportHeight: model.pileupViewportHeight,
+    scrollZoom: !!scrollZoom,
   })
 
   if (!width) {
@@ -461,7 +451,7 @@ function GroupCoverageAxisBar({
       style={{
         position: 'absolute',
         top,
-        right: VERTICAL_SCROLLBAR_WIDTH + 2,
+        right: VERTICAL_SCROLLBAR_CLEARANCE,
         pointerEvents: 'none',
         height: coverageHeight,
         width: AXIS_SVG_WIDTH,

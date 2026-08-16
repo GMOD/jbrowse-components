@@ -1,5 +1,3 @@
-import { useId } from 'react'
-
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -7,7 +5,6 @@ import {
   buildVariantHit,
   variantTooltipKey,
 } from '../../shared/buildVariantHit.ts'
-import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
@@ -26,22 +23,27 @@ interface MatrixHit {
   featureData: VariantFeatureInfo & { featureId: string }
 }
 
-// The matrix canvas + scrollbar + hit-test wiring. DisplayChrome (owned by the
-// outer VariantMatrixDisplayComponent) owns the GPU backend and the terminal
-// states, handing the live canvas down here.
+// The matrix canvas + hit-test wiring. DisplayChrome (owned by the outer
+// VariantMatrixDisplayComponent) owns the GPU backend and the terminal states,
+// handing the live canvas down here.
+//
+// The scroll affordances are not here — they hang off the display's own box, one
+// level up, outside `MatrixBodyOffset`. `canvasId` is made up there and passed
+// in so the scrollbar's `aria-controls` still names this canvas.
 const VariantMatrixBody = observer(function VariantMatrixBody({
   model,
   canvasRef,
   canvas,
+  canvasId,
 }: {
   model: LinearMultiSampleVariantMatrixDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
+  canvasId: string
 }) {
   const view = getContainingView(model) as LGV
   const width = view.totalWidthPxWithoutBorders
   const height = model.availableHeight
-  const canvasId = useId()
 
   useVariantVirtualScroll(canvas, model)
 
@@ -131,7 +133,6 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
         }}
         {...canvasHandlers}
       />
-      <VariantScrollbar model={model} controlsId={canvasId} />
       {contextMenuNode}
     </>
   )

@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
@@ -6,6 +8,7 @@ import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
+import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantMatrixBody from './VariantMatrixComponent.tsx'
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
@@ -102,6 +105,7 @@ const VariantMatrixDisplayComponent = observer(
   }) {
     const { model } = props
     const { rowsTopOffset, height } = model
+    const canvasId = useId()
     return (
       <DisplayChrome
         model={model}
@@ -121,8 +125,19 @@ const VariantMatrixDisplayComponent = observer(
                 model={model}
                 canvasRef={canvasRef}
                 canvas={canvas}
+                canvasId={canvasId}
               />
             </MatrixBodyOffset>
+            {/* Outside `MatrixBodyOffset`, and it has to be: every child in
+                there is absolutely positioned, so the box shrink-to-fits to 0x0
+                — fine for a child placed by `left`/`top`, fatal for one placed
+                by `right`. The scrollbar's `right: 0` resolved against a
+                zero-width box put the thumb 12px LEFT of it (clipped away by
+                `contain: strict`), and the edge fade's `left: 0; right: 0` made
+                it zero-wide. It would also have panned horizontally with the
+                matrix, which a scrollbar must not do. Out here the box is the
+                display's own, and `rowsTopOffset` is applied once. */}
+            <VariantScrollbar model={model} controlsId={canvasId} />
             <VariantOverlay model={model} top={rowsTopOffset} />
             <TreeSidebar model={model} />
             <MatrixCrosshairLayer

@@ -46,7 +46,15 @@ interface ScrollFrame {
 // alignments pileup, the variant matrix, and the canvas display.
 export function useVirtualScrollWheel(
   canvas: HTMLElement | null,
-  onWheel: (e: WheelEvent, applyScroll: ApplyVirtualScroll) => void,
+  // `el` is the element the listener is bound to, handed back non-null: a
+  // gesture measuring against its own box (the row-resize pin) would otherwise
+  // re-assert the nullable it was passed, at the one call site that cannot be
+  // reached with a null.
+  onWheel: (
+    e: WheelEvent,
+    applyScroll: ApplyVirtualScroll,
+    el: HTMLElement,
+  ) => void,
 ) {
   const latch = useMemo(() => createScrollLatch(), [])
   const frameRef = useRef<ScrollFrame>({ rafId: null, running: 0 })
@@ -76,8 +84,8 @@ export function useVirtualScrollWheel(
     },
     [latch],
   )
-  const handleWheel = useEventCallback((e: WheelEvent) => {
-    onWheel(e, applyScroll)
+  const handleWheel = useEventCallback((e: WheelEvent, el: HTMLElement) => {
+    onWheel(e, applyScroll, el)
   })
   useEffect(() => {
     if (!canvas) {
@@ -96,7 +104,7 @@ export function useVirtualScrollWheel(
     })
     const onWheelNative = (e: WheelEvent) => {
       if (presence.isOver) {
-        handleWheel(e)
+        handleWheel(e, canvas)
       }
     }
     canvas.addEventListener('wheel', onWheelNative, { passive: false })

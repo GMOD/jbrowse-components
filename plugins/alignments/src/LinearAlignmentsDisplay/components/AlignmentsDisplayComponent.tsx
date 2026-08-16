@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
-import { VERTICAL_SCROLLBAR_WIDTH } from '@jbrowse/core/ui/VerticalScrollbar'
+import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -91,7 +91,7 @@ const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
     // scrollbar's track plus a hairline. Passing nothing here drew these chips
     // over the thumb.
     <BottomRightIndicators
-      scrollbarWidth={hasOverflow ? VERTICAL_SCROLLBAR_WIDTH + 2 : 0}
+      scrollbarWidth={hasOverflow ? VERTICAL_SCROLLBAR_CLEARANCE : 0}
     >
       <TrackHeightIndicator
         heightMode={model.heightMode}
