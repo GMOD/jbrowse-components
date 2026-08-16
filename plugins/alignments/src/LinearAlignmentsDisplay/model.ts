@@ -1326,6 +1326,39 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The modification types actually drawn in the rendered reads. The twin
+         * of `presentTagValues`, against the same failure: `detectedModifications`
+         * takes each region's types as that region's fetch lands and is never
+         * cleared, so keying it whole named every type the track had ever seen —
+         * pan off the one locus carrying 6mA and the box still listed 6mA.
+         *
+         * Off `modificationTypes`, which the worker builds from the MARKS rather
+         * than from the MM/ML parse, so it is what a reader is looking at. The
+         * two sets diverge on bisulfite — no tags to parse, every mark carrying
+         * 'm' — and the legend's bisulfite branch answers before this filter for
+         * that reason.
+         *
+         * `undefined` outside the modification schemes, which is what tells the
+         * legend not to filter; the empty set means the scheme is on and no
+         * marks are drawn. Same showLegend gate as the other two scans.
+         */
+        get presentModifications(): ReadonlySet<string> | undefined {
+          if (!this.showLegend || !isModificationScheme(this.colorBy.type)) {
+            return undefined
+          }
+          const present = new Set<string>()
+          for (const map of this.laidOutByGroup.values()) {
+            for (const { modificationTypes } of map.values()) {
+              for (const type of modificationTypes ?? []) {
+                present.add(type)
+              }
+            }
+          }
+          return present
+        },
+
+        /**
+         * #getter
          */
         // Derived from the session theme so it's always available — including
         // headless SVG export and RPC, where no component mounts to seed it.
@@ -1459,6 +1492,7 @@ export default function stateModelFactory(
             detectedModifications: self.detectedModifications,
             colorTagMap: self.colorTagMap,
             presentTagValues: this.presentTagValues,
+            presentModifications: this.presentModifications,
             chainFramed: framesUnpairedChainStrand(
               colorSchemeIndexFor(this.colorBy.type),
               this.readColorOpts,

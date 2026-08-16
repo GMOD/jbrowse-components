@@ -92,18 +92,33 @@ export type BezierArcScope = 'all' | 'crossRegion' | 'none'
 // that a row can be drawn as the connector it names rather than as a square.
 // `colorTypes` is the set of LINKED_READ_COLOR_* present in view; sorted so the
 // legend order is stable as reads stream in.
+//
+// One row per COLOR, because two color types can resolve to one swatch and the
+// pair that does is drawn together: slots 0 and 1 are both `pairLR` in
+// LINKED_READ_SLOT_CATEGORY, so a view holding an LR mate link and one whose
+// orientation the worker never computed listed the identical grey twice, under
+// two names. The lower slot's wording wins, which is the neutral one — slot 0
+// is `connectionLabel`'s "Read pair" precisely because calling that grey LR
+// would assert an orientation nothing measured, and once the two share a row
+// the grey really does cover both. The read/arc key resolves the same collision
+// in `oneRowPerMeaning`; this list never passes through it.
 export function bezierConnectionLegendItems(
   colorTypes: Iterable<number>,
   colors: ColorPalette,
 ): LegendItem[] {
   const palette = buildLinkedReadColorPalette(colors)
-  return [...colorTypes]
-    .sort((a, b) => a - b)
-    .map(colorType => ({
-      color: rgb255(palette[linkedReadColorSlot(colorType)]!),
-      label: connectionLabel(colorType),
-      mark: connectionMark(colorType),
-    }))
+  const byColor = new Map<string, LegendItem>()
+  for (const colorType of [...colorTypes].sort((a, b) => a - b)) {
+    const color = rgb255(palette[linkedReadColorSlot(colorType)]!)
+    if (!byColor.has(color)) {
+      byColor.set(color, {
+        color,
+        label: connectionLabel(colorType),
+        mark: connectionMark(colorType),
+      })
+    }
+  }
+  return [...byColor.values()]
 }
 
 // Enumerate the linked pairs of a laid-out region map: the scroll- and

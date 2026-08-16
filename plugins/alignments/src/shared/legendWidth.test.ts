@@ -1,7 +1,13 @@
 import { measureText } from '@jbrowse/core/util'
 
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
-import { LEGEND_MAX_WIDTH, getReadDisplayLegendItems } from './legendUtils.ts'
+import { bezierConnectionLegendItems } from '../features/linkedReads/computeOverlay.ts'
+import { LINKED_READ_SLOT_CATEGORY } from '../shaders/palettes.ts'
+import {
+  LEGEND_MAX_WIDTH,
+  getArcLegendItems,
+  getReadDisplayLegendItems,
+} from './legendUtils.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorSchemeType } from './types.ts'
@@ -87,6 +93,28 @@ function everyLabel() {
         out.add(item.label)
       }
     }
+  }
+  // The overlay's own wording, which lands in the SAME box — merged into the
+  // read section or under its own heading, either way against this width.
+  // Sweeping only the read builder left the second-widest label in the
+  // vocabulary ("Split alignment (interchromosomal)") unmeasured, which is not
+  // a width `LEGEND_MAX_WIDTH` can claim to be derived from.
+  for (const mode of ['arc', 'cloud'] as const) {
+    for (const item of getArcLegendItems(
+      new Set(ALL),
+      makeTestPalette(),
+      mode,
+    )) {
+      out.add(item.label)
+    }
+  }
+  // …and the connection curves', which is a third table again
+  // (`connectionLabel`, whose neutral fallback no other builder produces).
+  for (const item of bezierConnectionLegendItems(
+    LINKED_READ_SLOT_CATEGORY.keys(),
+    makeTestPalette(),
+  )) {
+    out.add(item.label)
   }
   return [...out]
 }

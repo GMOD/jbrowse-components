@@ -17,6 +17,7 @@ function legendFor(
     detectedModifications?: Map<string, string>
     colorTagMap?: Record<string, string>
     presentTagValues?: ReadonlySet<string>
+    presentModifications?: ReadonlySet<string>
     chainFramed?: boolean
   },
 ) {
@@ -266,6 +267,40 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
+  // A strand tag paints a THIRD colour: `buildReadTagColors` resolves anything
+  // that is neither '+' nor '-' — a read the tag is absent from arrives as ''
+  // — to colorNeutralRead. It is the one grey `noTagValue` cannot rescue, since
+  // the resolver packs it as a colour rather than as 0, so those reads classify
+  // as `tag` and the cross-cutting tail never keys them.
+  test('a strand tag keys the neutral it paints untagged reads', () => {
+    const items = getReadDisplayLegendItems({
+      colorBy: { type: 'tag', tag: 'XS' },
+      presentCategories: new Set<ReadColorCategory>(['tag']),
+      palette: makeTestPalette({ colorNeutralRead: [0.5, 0.5, 0.5] }),
+      presentTagValues: new Set(['+', '-', '']),
+    })
+    expect(items.map(i => i.label)).toEqual([
+      'Forward strand',
+      'Reverse strand',
+      'No XS value',
+    ])
+    // the swatch is the palette's own neutral, the colour buildReadTagColors
+    // packs for those reads — not a fourth grey invented here
+    expect(items.at(-1)!.color).toBe('rgb(128,128,128)')
+  })
+
+  test('…and omits it when every read on screen carries a strand', () => {
+    expect(
+      tagLabels({ type: 'tag', tag: 'XS' }, {}, new Set(['+', '-'])),
+    ).toEqual(['Forward strand', 'Reverse strand'])
+    // undefined is "the caller can't tell", which stays silent rather than
+    // guessing a row on
+    expect(tagLabels({ type: 'tag', tag: 'XS' })).toEqual([
+      'Forward strand',
+      'Reverse strand',
+    ])
+  })
+
   test('a strand tag still keys the cross-cutting buckets it paints', () => {
     // The strand pair is the tag's own key, so it must not be repeated as a
     // split-read swatch — but supplementary reads still get theirs.
@@ -446,6 +481,65 @@ describe('getReadDisplayLegendItems', () => {
         { detectedModifications: mods },
       ).map(i => i.label),
     ).toEqual(['6mA', 'Unmodified'])
+  })
+
+  // `detectedModifications` takes each region's types as that region's fetch
+  // lands and is never cleared, so on its own it keyed every type the track had
+  // ever seen — pan off the one locus carrying 6mA calls and the box still
+  // named 6mA over reads drawing none. The twin of the tag-value narrowing.
+  test('modification swatches are narrowed to the types drawn on screen', () => {
+    const mods = new Map([
+      ['m', 'red'],
+      ['a', 'purple'],
+    ])
+    expect(
+      legendFor({ type: 'modifications' }, [], {
+        detectedModifications: mods,
+        presentModifications: new Set(['m']),
+      }).map(i => i.label),
+    ).toEqual(['5mC'])
+    // the empty set is a real state: the scheme is on and no marks are drawn
+    expect(
+      legendFor({ type: 'modifications' }, [], {
+        detectedModifications: mods,
+        presentModifications: new Set(),
+      }),
+    ).toEqual([])
+    // undefined is "the caller can't tell" and leaves the detected list alone
+    expect(labels('modifications', [], mods)).toEqual(['5mC', '6mA'])
+  })
+
+  // Bisulfite parses no tags, so it is keyed before the presence filter can see
+  // it — the marks all carry 'm' while `detectedModifications` stays empty, and
+  // narrowing on a set built from one of those would drop the only swatch.
+  test('bisulfite keys its state whatever the presence filter says', () => {
+    expect(
+      legendFor({ type: 'bisulfite' }, [], {
+        detectedModifications: new Map(),
+        presentModifications: new Set(),
+      }).map(i => i.label),
+    ).toEqual(['5mC methylated'])
+  })
+
+  // The map is filled in RPC-resolution order, so listing it as-is let two
+  // renders of one view disagree about which row came first.
+  test('mod-type rows are ordered by the table, not by discovery', () => {
+    const order = (entries: [string, string][]) =>
+      labels('modifications', [], new Map(entries))
+    expect(
+      order([
+        ['a', 'purple'],
+        ['h', 'blue'],
+        ['m', 'red'],
+      ]),
+    ).toEqual(['5mC', '5hmC', '6mA'])
+    expect(
+      order([
+        ['m', 'red'],
+        ['a', 'purple'],
+        ['h', 'blue'],
+      ]),
+    ).toEqual(['5mC', '5hmC', '6mA'])
   })
 
   test('fill-unmarked view omits the 5hmC swatch when only 5mC was detected', () => {

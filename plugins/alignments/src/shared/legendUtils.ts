@@ -15,7 +15,7 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { isModificationScheme } from './colorSchemes.ts'
-import { getModificationName } from './modificationData.ts'
+import { getModificationName, modificationData } from './modificationData.ts'
 import {
   isModificationTypeVisible,
   paintsUnmodifiedState,
@@ -84,7 +84,9 @@ function oneRowPerMeaning(items: LegendItem[]): LegendItem[] {
       if (item.color !== undefined) {
         byColor.set(item.color, rows.length)
       }
-      rows.push({ item, swatches: legendSwatches(item) })
+      // Copied, because `legendSwatches` hands back the item's OWN array for a
+      // row that already carries one — and the merge below pushes onto this.
+      rows.push({ item, swatches: [...legendSwatches(item)] })
     } else if (item.color !== undefined) {
       const row = rows[at]!
       if (!row.swatches.some(s => s.color === item.color)) {
@@ -123,7 +125,7 @@ function mergedTitle(arcTitle: string) {
 // prose as an import and warn about a module that does not exist.)
 const KEY_SEP = '\u0000'
 
-function legendKey(i: { color?: string; label?: string }) {
+function legendKey(i: Pick<LegendItem, 'color' | 'label'>) {
   return `${i.color}${KEY_SEP}${i.label}`
 }
 
@@ -422,35 +424,81 @@ const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
 // The methylation views key exactly what extractMethylation/extractBisulfite
 // paint: 5mC red and 5hmC pink (the blue unmodified swatch is appended by the
 // shared path below). The by-type MM palette — a magenta 5hmC — would mismatch
-// the reads.
-//
+// the reads. Listed in this order rather than in the keyed map's, which is why
+// the map is only asked which types survived.
+const METHYLATION_STATES = [
+  { type: 'm', color: methylated5mC, label: '5mC methylated' },
+  { type: 'h', color: methylated5hmC, label: '5hmC methylated' },
+]
+
 // `detectedModifications` is populated only from parsed MM/ML tags, so it is
 // ALWAYS empty for bisulfite, which is reference-based (read C->T vs. the
 // reference) and reads no tags at all. Gating bisulfite on it therefore dropped
 // the red 5mC swatch on every bisulfite track. Bisulfite paints exactly one
-// modified state, so key it unconditionally instead.
+// modified state, so key it unconditionally instead — before `keyed`, which for
+// the same reason has nothing to say about it.
 function methylationLegend(
-  colorBy: ColorBy | undefined,
-  detectedModifications: ReadonlyMap<string, string>,
+  colorBy: ColorBy,
+  keyed: ReadonlyMap<string, string>,
 ): LegendItem[] {
-  if (colorBy?.type === 'bisulfite') {
+  if (colorBy.type === 'bisulfite') {
     return [{ color: methylated5mC, label: '5mC methylated' }]
   }
-  const modifications = colorBy?.modifications
-  const items: LegendItem[] = []
-  if (
-    detectedModifications.has('m') &&
-    isModificationTypeVisible(modifications, 'm')
-  ) {
-    items.push({ color: methylated5mC, label: '5mC methylated' })
-  }
-  if (
-    detectedModifications.has('h') &&
-    isModificationTypeVisible(modifications, 'h')
-  ) {
-    items.push({ color: methylated5hmC, label: '5hmC methylated' })
-  }
-  return items
+  return METHYLATION_STATES.filter(({ type }) => keyed.has(type)).map(
+    ({ color, label }) => ({ color, label }),
+  )
+}
+
+// Rank of one modification code in `modificationData`. Numeric-looking ChEBI
+// codes hoist to the front of an object's key order, so they are ranked after
+// the single-letter codes explicitly — otherwise a track carrying pseU and 5mC
+// would lead with the rare one.
+const MODIFICATION_RANK = new Map(
+  Object.keys(modificationData)
+    .sort((a, b) => Number(/^\d+$/.test(a)) - Number(/^\d+$/.test(b)))
+    .map((type, i) => [type, i]),
+)
+
+function modificationRank(type: string) {
+  return MODIFICATION_RANK.get(type) ?? MODIFICATION_RANK.size
+}
+
+// The modification types this box may key: detected by the MM/ML parse, not
+// hidden by the modifications menu, and actually drawn in the reads on screen.
+//
+// `present` is the same narrowing `bakedValueLegend` applies to tag values, for
+// the same reason. The display's `detectedModifications` only ever GROWS — it
+// takes each region's types as that region's fetch lands and is never cleared —
+// so keying it whole named every type the track had ever seen: pan off the one
+// locus carrying 6mA calls and the box still listed 6mA, over reads drawing
+// none. Undefined means the caller can't tell (tests, and any consumer without
+// a laid-out map), which leaves the detected list alone.
+//
+// Ordered, so the list is a property of the vocabulary rather than of which
+// region's RPC resolved first — the same instability `bakedValueLegend` sorts
+// against, and it swapped two rows between renders of one view.
+//
+// The order is `modificationData`'s own, which is where the name and the colour
+// beside it already come from, so a 5mC/5hmC track keeps the reading order it
+// has today rather than gaining an alphabetical one. A code absent from that
+// table sorts last, by code, since there is nothing else to rank it by.
+function keyedModifications(
+  colorBy: ColorBy,
+  detectedModifications: ReadonlyMap<string, string>,
+  present: ReadonlySet<string> | undefined,
+) {
+  return new Map(
+    [...detectedModifications]
+      .filter(
+        ([type]) =>
+          isModificationTypeVisible(colorBy.modifications, type) &&
+          (present === undefined || present.has(type)),
+      )
+      .sort(
+        ([a], [b]) =>
+          modificationRank(a) - modificationRank(b) || a.localeCompare(b),
+      ),
+  )
 }
 
 // The fixed-swatch buckets actually present in the reads, in CATEGORY_LEGEND
@@ -464,11 +512,13 @@ function bucketItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
   overrides: Partial<Record<SwatchCategory, string>>,
+  mark?: LegendMark,
 ): LegendItem[] {
   return CATEGORY_ORDER.filter(category => presentCategories.has(category)).map(
     category => ({
       color: categorySwatchColor(category, palette),
       label: overrides[category] ?? CATEGORY_LEGEND[category],
+      mark,
     }),
   )
 }
@@ -575,12 +625,11 @@ export function getArcLegendItems(
   palette: ColorPalette,
   mode: ReadConnectionsMode,
 ): LegendItem[] {
-  const mark = arcMark(mode)
-  return bucketItems(presentCategories, palette, SPLIT_JUNCTION_LABELS).map(
-    item => ({
-      ...item,
-      mark,
-    }),
+  return bucketItems(
+    presentCategories,
+    palette,
+    SPLIT_JUNCTION_LABELS,
+    arcMark(mode),
   )
 }
 
@@ -594,15 +643,20 @@ export function getArcLegendItems(
 function modificationLegend(
   colorBy: ColorBy,
   detectedModifications: ReadonlyMap<string, string>,
+  presentModifications: ReadonlySet<string> | undefined,
 ): LegendItem[] {
+  const keyed = keyedModifications(
+    colorBy,
+    detectedModifications,
+    presentModifications,
+  )
   const isMethylation = usesMethylationLegend(colorBy)
   const items = isMethylation
-    ? methylationLegend(colorBy, detectedModifications)
-    : [...detectedModifications]
-        .filter(([type]) =>
-          isModificationTypeVisible(colorBy.modifications, type),
-        )
-        .map(([type, color]) => ({ color, label: getModificationName(type) }))
+    ? methylationLegend(colorBy, keyed)
+    : [...keyed].map(([type, color]) => ({
+        color,
+        label: getModificationName(type),
+      }))
   return [
     ...items,
     ...(paintsUnmodifiedState(colorBy)
@@ -650,6 +704,22 @@ function isStrandTag(colorBy: ColorBy | undefined) {
   )
 }
 
+// A strand tag paints a THIRD color, and the box has to name it: any read whose
+// value is neither '+' nor '-' takes colorNeutralRead (buildReadTagColors), and
+// a read the tag is absent from arrives here as the empty string
+// (extractFeatureTagValue). Two rows was the claim that such a read needs no
+// entry — but that neutral is a real fill, drawn over however much of the
+// pileup lacks the tag, and it is the one grey `noTagValue` cannot rescue: the
+// resolver packs it as a color rather than as 0, so `readColorCategory` files
+// those reads under `tag` and the cross-cutting tail never keys them.
+//
+// Asked of the values on screen, like every other present-gated row, so a track
+// whose reads all carry XS gets no row for a fill nothing draws. `undefined`
+// means the caller cannot tell, and stays silent rather than guessing a row on.
+function hasUnstrandedValue(present: ReadonlySet<string> | undefined) {
+  return present !== undefined && [...present].some(v => v !== '+' && v !== '-')
+}
+
 // The scheme's own key, before the cross-cutting buckets are appended. Every
 // branch returns just its own swatches; nothing here reads presentCategories.
 function schemeLegend(
@@ -658,6 +728,7 @@ function schemeLegend(
   detectedModifications: ReadonlyMap<string, string> | undefined,
   colorTagMap: Record<string, string>,
   presentTagValues: ReadonlySet<string> | undefined,
+  presentModifications: ReadonlySet<string> | undefined,
 ): LegendItem[] {
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
@@ -667,12 +738,17 @@ function schemeLegend(
   }
   const colorType = colorBy.type
   if (isStrandTag(colorBy)) {
-    // Just the two strand keys; reads with no resolvable XS/TS/ts value fall
-    // back to the neutral color (see buildReadTagColors), which needs no legend
-    // entry of its own.
     return [
       { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
       { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
+      ...(hasUnstrandedValue(presentTagValues)
+        ? [
+            {
+              color: rgb255(palette.colorNeutralRead),
+              label: `No ${colorBy.tag} value`,
+            },
+          ]
+        : []),
     ]
   }
   if (colorType === 'tag' || colorType === 'mateRefName') {
@@ -707,8 +783,12 @@ function schemeLegend(
       label,
     }))
   }
-  if (isModificationScheme(colorType) && detectedModifications) {
-    return modificationLegend(colorBy, detectedModifications)
+  if (isModificationScheme(colorType)) {
+    return modificationLegend(
+      colorBy,
+      detectedModifications ?? new Map(),
+      presentModifications,
+    )
   }
   // The strand / insert-size / orientation schemes are described entirely by
   // which fixed-swatch buckets occurred.
@@ -723,9 +803,11 @@ function schemeLegend(
  * only relevant swatches are listed, and `palette` is the live render palette so
  * swatch colors match the painted reads exactly. Modification swatches come from
  * `detectedModifications` (type code -> painted color); tag / chromosome-painting
- * swatches from `colorTagMap` (value -> painted color), narrowed to
- * `presentTagValues` the way the fixed swatches are narrowed by
- * `presentCategories`; mapping/per-base quality are fixed hue ramps.
+ * swatches from `colorTagMap` (value -> painted color). Both of those maps only
+ * ever grow, so both are narrowed to what the rendered reads carry —
+ * `presentTagValues` and `presentModifications` — the way the fixed swatches
+ * are narrowed by `presentCategories`; mapping/per-base quality are fixed hue
+ * ramps.
  */
 export function getReadDisplayLegendItems({
   colorBy,
@@ -734,6 +816,7 @@ export function getReadDisplayLegendItems({
   detectedModifications,
   colorTagMap = {},
   presentTagValues,
+  presentModifications,
   chainFramed = false,
   overlaps,
 }: {
@@ -756,6 +839,9 @@ export function getReadDisplayLegendItems({
   // "not known here" and leaves colorTagMap unfiltered; the empty set means the
   // scheme has values and none are on screen.
   presentTagValues?: ReadonlySet<string>
+  // The same, for the modification types drawn on screen — the display's
+  // `presentModifications`, off the marks rather than off the MM/ML parse.
+  presentModifications?: ReadonlySet<string>
 }): LegendItem[] {
   // A strand tag keys fwd/rev itself, in those exact colors, so drop them from
   // the cross-cutting tail rather than listing the same two swatches again
@@ -774,6 +860,7 @@ export function getReadDisplayLegendItems({
       detectedModifications,
       colorTagMap,
       presentTagValues,
+      presentModifications,
     ),
     ...bucketItems(
       categories,

@@ -26,6 +26,7 @@ import {
   LINKED_READ_COLOR_INTERCHROM,
   LINKED_READ_COLOR_PAIR_LR,
   LINKED_READ_COLOR_PAIR_RR,
+  LINKED_READ_COLOR_PAIR_UNKNOWN,
   LINKED_READ_COLOR_SPLIT_INV,
   LINKED_READ_COLOR_SPLIT_NORMAL,
 } from './compute.ts'
@@ -678,5 +679,25 @@ describe('bezierConnectionLegendItems', () => {
         PALETTE,
       ).map(i => i.label),
     ).toEqual(['RR - Both mates reverse strand', 'Split alignment (inverted)'])
+  })
+
+  // Slots 0 and 1 are both `pairLR` in LINKED_READ_SLOT_CATEGORY, so a view
+  // holding an LR mate link and one whose orientation the worker never computed
+  // drew ONE grey and listed it twice, under two names. The lower slot's
+  // wording survives, which is the neutral one: `connectionLabel` refuses to
+  // call slot 0 an LR because nothing measured that orientation, and a row
+  // covering both pair kinds must not claim it either.
+  it('keys one row per color, not one per slot', () => {
+    expect(
+      bezierConnectionLegendItems(
+        [LINKED_READ_COLOR_PAIR_LR, LINKED_READ_COLOR_PAIR_UNKNOWN],
+        PALETTE,
+      ),
+    ).toEqual([{ color: expect.any(String), label: 'Read pair', mark: 'line' }])
+    // …and the LR wording still stands on its own when slot 0 is absent
+    expect(
+      bezierConnectionLegendItems([LINKED_READ_COLOR_PAIR_LR], PALETTE)[0]!
+        .label,
+    ).toBe('LR - Normal pair orientation')
   })
 })
