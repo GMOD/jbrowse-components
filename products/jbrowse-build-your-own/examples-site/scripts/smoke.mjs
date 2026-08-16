@@ -286,6 +286,100 @@ async function highlightSurvivesAOneBaseRegion(page, slug) {
   }
 }
 
+// `SCALEBAR_HEIGHT` in src/examples/Scalebar.tsx. Restated rather than imported
+// — that file is a React island, and this is a node script. It only has to pick
+// the row out of the other gesture owners on the page, so a drift here reports
+// as "no scalebar row", which names itself.
+const SCALEBAR_HEIGHT = 20
+
+// Drag-to-zoom on the scalebar, which is the one thing on this site that is
+// only a gesture. Every other check censuses a page or clicks one control, and
+// a rubberband that stopped working would leave a page that loads, paints and
+// reads exactly right — the failure is that nothing happens, which is what a
+// census of a page at rest reports on a healthy page too.
+//
+// The gesture is core's `usePointerDrag` since 2026-08, so this is also the
+// only place in the repo that drives that hook through a real browser: its unit
+// test covers the handler contract, and this covers the half a stubbed pointer
+// cannot — that a press, a stream of moves and a release across a real element
+// reach the model and reframe the view.
+//
+// `page.mouse` is viewport coordinates, so the row is scrolled into view and
+// re-measured first, `behavior: 'instant'` pinned rather than left to the page
+// (see `clicksReachTheTrack` for what a smooth scroll does to a coordinate).
+async function dragToZoomFramesTheSpan(page, slug) {
+  if (slug !== 'scalebar-and-labels') {
+    return []
+  }
+  // the scalebar row is the gesture owner carrying the coordinate labels; the
+  // display overlay slots carry the same attribute, so it is picked by height
+  const row = await page.evaluateHandle(
+    h =>
+      [...document.querySelectorAll('[data-gesture-owner="true"]')].find(
+        el => Math.round(el.getBoundingClientRect().height) === h,
+      ),
+    SCALEBAR_HEIGHT,
+  )
+  const el = row.asElement()
+  if (!el) {
+    return [
+      `no ${SCALEBAR_HEIGHT}px scalebar row on the page — the row is not being ` +
+        'drawn, or it lost the data-gesture-owner that keeps usePanZoom off it',
+    ]
+  }
+  await el.evaluate(e => {
+    e.scrollIntoView({ block: 'center', behavior: 'instant' })
+  })
+  await new Promise(r => setTimeout(r, 500))
+  const box = await el.boundingBox()
+  if (!box) {
+    return ['the scalebar row has no box (not visible?)']
+  }
+  const before = await el.evaluate(e => e.innerText)
+
+  const y = box.y + box.height / 2
+  await page.mouse.move(box.x + box.width * 0.35, y)
+  await page.mouse.down()
+  for (const f of [0.45, 0.55, 0.65]) {
+    await page.mouse.move(box.x + box.width * f, y)
+    await new Promise(r => setTimeout(r, 40))
+  }
+  // measured mid-drag, because the band is gone by pointerup: this is the half
+  // that says the press and the moves arrived, separately from whether the
+  // release reframed anything
+  const bandWidth = await page.evaluate(
+    () =>
+      document
+        .querySelector('[data-testid="rubberband"]')
+        ?.getBoundingClientRect().width ?? -1,
+  )
+  await page.mouse.up()
+
+  const out = []
+  if (!(bandWidth > 50)) {
+    out.push(
+      `dragging a third of the way across the scalebar drew a band ${bandWidth}px ` +
+        'wide — the pointer stream is not reaching useRubberband. A press that ' +
+        'never captures is the usual cause, and it looks identical to a page ' +
+        'that simply ignored the drag.',
+    )
+  }
+  try {
+    await page.waitForFunction(
+      (e, text) => e.innerText !== text,
+      { timeout: 15000 },
+      el,
+      before,
+    )
+  } catch {
+    out.push(
+      'the drag ended and the coordinate labels did not change — pxToBp/moveTo ' +
+        `never ran, so the release is being dropped. Labels read: ${JSON.stringify(before)}`,
+    )
+  }
+  return out
+}
+
 // The floating colour legend, which is the one piece of display chrome behind
 // NEITHER bring-your-own seam: a display renders `FloatingLegend` directly, so
 // no provider redirects it and this site's whole claim rests on what that file
@@ -677,6 +771,7 @@ const failures = await smokeExamplesSite({
     ...(await checkTextContrast(page)),
     ...(await clicksReachTheTrack(page)),
     ...(await highlightSurvivesAOneBaseRegion(page, slug)),
+    ...(await dragToZoomFramesTheSpan(page, slug)),
     ...(await searchByNameResolvesNames(page, slug)),
     ...(await legendIsPlainAndAboveTheSeams(page, slug)),
     // last: this one replaces the engine on the page it runs on

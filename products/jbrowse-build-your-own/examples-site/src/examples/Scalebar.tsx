@@ -415,6 +415,11 @@ function RangeSelection({ range }: { range: { left: number; right: number } }) {
   return (
     <div
       aria-hidden
+      // this site's smoke test drags across the scalebar and measures this
+      // band, because a gesture is invisible to a census of a page at rest.
+      // Keep or drop it in your own app -- the demo needs it, the technique
+      // does not
+      data-testid="rubberband"
       style={{
         position: 'absolute',
         top: 0,

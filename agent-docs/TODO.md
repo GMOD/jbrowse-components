@@ -77,6 +77,7 @@ before anyone noticed.
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 | [Nothing checks a hand-built transfer list](#nothing-checks-a-hand-built-rpc-transfer-list-against-its-payload) | RPC | decide whether the synteny list should be derived instead |
+| [A comparative display's first load is Material](#a-comparative-displays-first-load-is-material-behind-both-bring-your-own-seams) | synteny, dotplot, embedded | measured; the work is choosing where the seam lives |
 
 ## Ready to build: small and self-contained
 
@@ -494,6 +495,43 @@ first attempt, each by landing in one method's `args` and thereby being
 unpassable to the other forty. `EntriesDeclaringCallLevelFields` in
 `RpcRegistry.ts` now fails compilation naming the entry that tries it, so the
 wrong version of this is a build error rather than a fourth repetition.
+
+### A comparative display's first load is Material, behind both bring-your-own seams
+
+`ComparativeFetchStatus` (`packages/synteny-core`) renders `LoadingOverlay` and
+`ProgressChip` straight from `@jbrowse/core/ui`, so the first load of any
+synteny or dotplot display paints a `MuiLinearProgress` no matter what the host
+mounted. `DisplayUIProvider` does not reach it — that provider swaps
+`DisplayChromeOverlays`, and this component is not behind that contract.
+
+**Measured, not inferred.** A throwaway probe sampled the BYO examples site's
+own MUI census every 40ms from before the first script ran, rather than once
+after settle: `synteny` reports 0 Material elements at rest and 1 during load,
+`<span class="MuiLinearProgress-root …">`. Every other page that mounts the
+provider is 0 in both. So the site's central claim — a page mounting both plain
+sets renders no Material at all — is false for about a second on one page, and
+`smoke.mjs` cannot see it, because a census of a page at rest never observes a
+component that exists only while something is fetching. It is the same shape as
+the `FloatingLegend` hole that file already describes, and it was found the same
+way: by driving the state rather than loading the page.
+
+**The work is choosing where the seam lives, not the edit.** Three options, and
+the layering is what rules the obvious one out — `synteny-core` depends on
+`@jbrowse/core` alone, while `DisplayChromeOverlays` and its provider live in
+`plugins/linear-genome-view`, so the component cannot simply read that context:
+
+- move the overlay contract down into `@jbrowse/core/ui`. Principled, and the
+  widest blast radius: the contract's prop types name LGV display models.
+- give the comparative path its own narrow seam (the two components as props,
+  defaulted to the Material pair), threaded from the two render areas that
+  mount it. Smallest, and a second seam an embedder has to know about.
+- have the *plugins* read the LGV context and pass the components down —
+  `plugin-linear-comparative-view` and `plugin-dotplot-view` may both depend on
+  `plugin-linear-genome-view`, so no inversion. Keeps one contract and puts the
+  wiring where the layering already permits it.
+
+Whichever wins, add a loading-time census to the BYO site's `smoke.mjs` in the
+same commit, or the next component to do this is invisible again.
 
 ## Ready to build: the design is settled
 
