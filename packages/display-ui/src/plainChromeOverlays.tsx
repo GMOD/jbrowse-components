@@ -348,6 +348,21 @@ const PlainBackgroundProgress = observer(function PlainBackgroundProgress({
   ) : null
 })
 
+/**
+ * #api
+ * The five `displayPhase` states drawn with no UI toolkit: no theme provider to
+ * mount, no emotion in the host page, and nothing that reads as a stray Material
+ * widget inside someone else's design system.
+ *
+ * `DisplayUIProvider` installs this by default, so mount that rather than
+ * naming this — reach for it directly only to wrap a state or to build a
+ * context value by hand. Colours come from `currentColor` and the CSS system
+ * colours, so the host's own cascade drives them in both light and dark.
+ *
+ * The `data-testid` values it renders are a contract four of JBrowse's test
+ * systems key on, so a replacement set that keeps them can be driven by those
+ * suites too.
+ */
 const plainChromeOverlays: DisplayChromeOverlays = {
   RenderError: PlainRenderError,
   TooLarge: PlainTooLarge,

@@ -45,6 +45,20 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
 // escape (e.g. FloatingLegend). Pass `fallbackInline={false}` for chrome that
 // only makes sense above the masks and has its own non-masked path elsewhere
 // (e.g. the multi-wiggle overlay legend, whose SVG-export path draws its own).
+/**
+ * #api
+ * Lift floating track chrome out of the display's `contain: strict` sandbox and
+ * into the host's overlay node, so the LGV's inter-region masks cannot bury it
+ * at multi-region scale. `TrackOverlaySlot` is the other end.
+ *
+ * The overlay node takes no pointer events, so anything of yours the user
+ * hovers or clicks sets `pointer-events: auto` on its own positioned box.
+ *
+ * With no slot above it this renders the children in place (`fallbackInline`,
+ * the default), which preserves chrome that is still meaningful unescaped. Pass
+ * `fallbackInline={false}` for chrome that only makes sense above the masks and
+ * draws itself some other way elsewhere.
+ */
 export const TrackOverlayPortal = observer(function TrackOverlayPortal({
   children,
   fallbackInline = true,

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { TrackOverlayContext } from './TrackOverlayContext.ts'
 
 /**
+ * #api
  * The box a display is mounted in, plus the overlay node its floating chrome
  * escapes into. Pair to `TrackOverlayPortal`, which is the other end.
  *

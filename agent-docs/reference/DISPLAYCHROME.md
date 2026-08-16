@@ -793,9 +793,12 @@ component — `DisplayChromeBase` plus a `TrackControlComponent` of its own impo
 no toolkit at all. `pnpm measure-chrome-bundle` measures three entry points and
 CI re-checks them: the Material chrome, the base-plus-plain pairing, and the
 whole of `@jbrowse/display-ui`. **Quote the third when describing what mounting
-the seam costs.** The build-your-own landing page quoted the second for a year
-while every page on it took the first, which reads as a saving where the page in
-fact pays 18 KB gzip on top. `makeStyles` no longer stands in the way of the
+the seam costs**, and quote it from `scripts/chromeBundleSizes.json` rather than
+from prose — that file is what CI gates, so a number written anywhere else is
+one the next commit can falsify. The build-your-own landing page quoted the
+second for a year while every page on it took the first, which reads as a saving
+where the page in fact pays the seam on top of the Material chrome it is not
+removing. `makeStyles` no longer stands in the way of the
 second, handing a component JBrowse's own plain-data theme
 (`ui/styleTheme.ts`), but that alone did not get MUI out of a host's first
 paint; [EAGER_BUNDLE.md](EAGER_BUNDLE.md)

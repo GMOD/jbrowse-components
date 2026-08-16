@@ -1,6 +1,7 @@
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
+ * #api
  * Whether an overlay's model can still be called into.
  *
  * The terminal states unmount the canvas, so a click landing after the track was

@@ -40,6 +40,7 @@ export function resolveOverlays(overlays?: Partial<DisplayChromeOverlays>) {
 }
 
 /**
+ * #api
  * Both bring-your-own seams at once: what a display draws that is not data.
  *
  * There are two contexts underneath because two different things render them —

@@ -9,6 +9,7 @@
 // review and the screenshot harness keys off the literal.
 
 /**
+ * #api
  * Which axis tripped (empty when the display gates without a reason), then the
  * way out.
  *

@@ -66,6 +66,19 @@ export interface TrackControlMenu {
   }
 }
 
+/**
+ * #api
+ * The behaviour behind a bottom-right track control's menu, as prop getters to
+ * spread — dismissal (Escape, an outside press, an ancestor scrolling), the
+ * keyboard (arrows, Home/End), focus, and the anchoring that clears both the
+ * display's `contain: strict` box and the window edge.
+ *
+ * For writing your own control rather than restyling `plainTrackControl`: each
+ * of those rules is a bug when missed and none of them shows up in a
+ * screenshot. Render `menuProps` only while `open`, and portal it to
+ * `document.body` — `createPortal` is the caller's to aim, the maths is here.
+ * `menuProps.style` carries position only.
+ */
 export function useTrackControlMenu(): TrackControlMenu {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const ref = useRef<HTMLDivElement>(null)

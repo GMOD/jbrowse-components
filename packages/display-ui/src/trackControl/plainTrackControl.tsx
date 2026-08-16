@@ -80,6 +80,21 @@ function triggerStyle(warning: boolean): React.CSSProperties {
   }
 }
 
+/**
+ * #api
+ * A display's ambient bottom-right control — track sizing, the isoform notice,
+ * the show-only badge — drawn with no UI toolkit, the corner-control
+ * counterpart of `plainChromeOverlays`.
+ *
+ * `DisplayUIProvider` installs this by default. The behaviour is not in here:
+ * dismissal, the keyboard, focus, the top layer and the anchoring are
+ * `useTrackControlMenu`, so writing your own control means writing markup
+ * rather than re-deriving why the menu opens upward.
+ *
+ * The package exports it as `plainTrackControl`, lower-cased to match
+ * `plainChromeOverlays` — the two are a pair, and both are things you hand to a
+ * provider rather than render yourself.
+ */
 export default function PlainTrackControl({
   icon,
   tooltip,

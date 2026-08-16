@@ -521,8 +521,18 @@ function describeSymbol(checker: ts.TypeChecker, node: ts.Node) {
   const nameNode = getNameNode(node)
   const symbol = nameNode ? checker.getSymbolAtLocation(nameNode) : undefined
   const decl = symbol?.valueDeclaration
+  const symbolName = symbol?.getName() ?? ''
   return {
-    name: symbol?.getName() ?? '',
+    // `export default function Foo()` gives the symbol the name "default",
+    // which is what the module exports it as and not what anyone calls it. The
+    // declaration still carries `Foo`, so prefer that. Two such exports in one
+    // package otherwise render as two `## default` sections on one page —
+    // duplicate anchors, and nothing to tell them apart. (A default-exported
+    // *const* already reads correctly; that aliasing is handled above.)
+    name:
+      symbolName === 'default' && nameNode && ts.isIdentifier(nameNode)
+        ? nameNode.text
+        : symbolName,
     signature: symbol && decl ? typeSignature(checker, symbol, decl) : '',
     declId: symbolDeclId(checker, symbol),
   }
