@@ -359,6 +359,21 @@ export const hicSpecs: ScreenshotSpec[] = [
           height: 110,
           color: "jexl:get(feature,'observed')>200?'#8b1a1a':'rgba(0,0,0,0)'",
         },
+        // NORMALIZATION STAYS 'NONE', and SCALE was rendered rather than
+        // reasoned about (review: "are there any further improvements you'd
+        // suggest?"). It is the obvious remaining lever -- balancing is the
+        // standard way to crispen domain edges, and the compartments spec below
+        // uses it -- and on this view it is worse. Counting drawn pixels at the
+        // top of the colour ramp by depth from the apex: NONE spends it 48% at
+        // 10% depth and 14% at 15%, SCALE 71% and 4%. That is the ramp
+        // concentrating harder on the near-diagonal and leaving the domain
+        // interiors paler, which is the opposite of what this figure needs.
+        //
+        // The near-diagonal band is where the top of the ramp goes either way,
+        // and no setting here fixes that: it is distance-decay rather than
+        // structure, and the transform that removes it is observed/expected,
+        // which JBrowse does not compute (see the compartments spec below, which
+        // exists for the same reason).
         {
           trackId: 'hic_gm12878_insitu',
           height: 430,
