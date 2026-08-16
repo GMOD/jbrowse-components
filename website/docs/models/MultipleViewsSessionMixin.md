@@ -65,7 +65,7 @@ the whole surface.
 | <span id="getter-canshowscrollzoomhint">**canShowScrollZoomHint**</span><br><code>boolean</code> | <span data-pagefind-ignore>whether the scroll-to-zoom prompt may still be raised. It is shown for a wheel that did nothing at all, which in a view that has run out of page to scroll is *every* wheel — so without a budget the prompt is not a hint, it is a recurring interruption for anyone who has decided they don't want the preference.<br><br>A few is the whole design: enough that missing the first one doesn't mean never being told, few enough that ignoring them ends it.</span> | [BaseSessionModel](../basesessionmodel#getter-canshowscrollzoomhint) |
 | <span id="getter-numbergrouping">**numberGrouping**</span><br><code>boolean</code> | <span data-pagefind-ignore>resolved thousand-separator preference. Read for display in the Preferences dialog; the formatter itself reads a plain module variable set at startup in each realm (see `setNumberGrouping`), because worker- built strings can't see a main-thread observable.</span> | [BaseSessionModel](../basesessionmodel#getter-numbergrouping) |
 | <span id="getter-snackbarmessageset">**snackbarMessageSet**</span><br><code>Map&lt;string, SnackbarMessage&gt;</code> |  | [SnackbarModel](../snackbarmodel#getter-snackbarmessageset) |
-| <span id="getter-visiblewidget">**visibleWidget**</span><br><code>any</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#getter-visiblewidget) |
+| <span id="getter-visiblewidget">**visibleWidget**</span><br><code>Widget &#124; undefined</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#getter-visiblewidget) |
 
 ## Methods
 

@@ -1,4 +1,4 @@
-export type { AssertExtends } from './assertExtends.ts'
+export type { AssertExtends, AssertNotAny } from './assertExtends.ts'
 export { asRoot, asSession } from './siblingCast.ts'
 export { scheduleDetachedDestroy } from './scheduleDetachedDestroy.ts'
 

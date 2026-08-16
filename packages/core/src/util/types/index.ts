@@ -36,6 +36,7 @@ export type {
   InstanceTypeRestrictive,
   TypeTestedByPredicate,
 } from './util.ts'
+export type { IsAny } from './isAny.ts'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer extends IStateTreeNode {

@@ -22,6 +22,7 @@ import {
 } from './schemaTypes.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { IsAny } from '../util/types/isAny.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
   AnyConfigurationModel,
@@ -645,10 +646,6 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
 
   return idOrSnapshotUnion(displayRef, schemaType)
 }
-
-// true only for `any` (`1 & T` collapses to `any` when T is `any`, and
-// `0 extends any` holds; for any concrete T it's `0 extends 1 & T` → false).
-type IsAny<T> = 0 extends 1 & T ? true : false
 
 // Instance (`Type`) a config reference reads as. A reference to a **concrete**
 // schema reads as that schema's single-branded instance (`SCHEMA['Type']`, which

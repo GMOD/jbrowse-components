@@ -6,8 +6,9 @@ import corePlugins from '../corePlugins.ts'
 import { version } from '../version.ts'
 import createSessionModel from './createSessionModel.ts'
 
+import type { IsAny } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { PluginInput } from '@jbrowse/product-core'
+import type { AssertNotAny, PluginInput } from '@jbrowse/product-core'
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewRootModel
@@ -47,3 +48,13 @@ type ViewStateModel = ReturnType<typeof createModel>['model']
 // more plugin and it would have, as a failure looking like it came from
 // somewhere else. Annotate anything returning it with `ViewModel` explicitly.
 export interface ViewModel extends Instance<ViewStateModel> {}
+
+// The engine reaches an embedder through two generic MST boundaries — the root
+// model's session type and the session's view prop — and either one failing to
+// infer resolves to `any` rather than to an error. That costs nothing at build
+// time and everything at every call site: `viewState.session.view` is what a
+// host drives, and as `any` it accepts a misspelled method silently. An earlier
+// attempt at a parameterized session factory did exactly this and was green on
+// tsc, jest and lint. See AssertNotAny.
+export type _SessionIsTyped = AssertNotAny<IsAny<ViewModel['session']>>
+export type _ViewIsTyped = AssertNotAny<IsAny<ViewModel['session']['view']>>

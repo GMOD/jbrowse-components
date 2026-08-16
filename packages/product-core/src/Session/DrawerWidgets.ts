@@ -13,6 +13,7 @@ import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Widget } from '@jbrowse/core/util/types'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const minDrawerWidth = 128
@@ -80,7 +81,13 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get visibleWidget() {
+      // annotated rather than inferred: a widget's state model comes from a
+      // plugin, so `pluggableMstType` is `IAnyType` and its Instance is `any` —
+      // which silently made this getter, and every read of it off a concrete
+      // session, unchecked. `Widget` is the contract `SessionWithWidgets`
+      // already declares, so this only brings the concrete model into line with
+      // what plugins narrowing to that interface have always seen.
+      get visibleWidget(): Widget | undefined {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
           return [...self.activeWidgets.values()].at(-1)

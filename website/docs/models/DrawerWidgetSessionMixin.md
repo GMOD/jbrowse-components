@@ -32,7 +32,7 @@ JBrowse core.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-visiblewidget">**visibleWidget**</span><br><code>any</code> |  |
+| <span id="getter-visiblewidget">**visibleWidget**</span><br><code>Widget &#124; undefined</code> |  |
 
 ## Actions
 

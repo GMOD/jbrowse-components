@@ -94,7 +94,7 @@ models below, and everything here is theirs.
 | <span id="getter-tabs">**tabs**</span><br><code>TabNode[]</code> |  | [WorkspaceLayoutMixin](../workspacelayoutmixin#getter-tabs) |
 | <span id="getter-effectiveuseworkspaces">**effectiveUseWorkspaces**</span><br><code>boolean</code> | <span data-pagefind-ignore>resolved workspaces flag (never undefined): this session's value, else the user preference over the `configuration.preferences.useWorkspaces` admin default. Every consumer reads this, not the raw property — only sessions built from a snapshot or a spec `layout` set that, so the admin default is what reaches the arrivals that bypass defaultSession.</span> | [MultipleViewsSessionMixin](../multipleviewssessionmixin#getter-effectiveuseworkspaces) |
 | <span id="getter-defaultuseworkspaces">**defaultUseWorkspaces**</span><br><code>boolean</code> | <span data-pagefind-ignore>what `effectiveUseWorkspaces` becomes after `resetUseWorkspaces` — the admin default, with both this session's own value and the user's override out of the way. The Preferences reset diff needs this rather than the override map, which can't see a session-scoped value (a spec `layout`, a "move view to a tab") and so reported nothing to reset.</span> | [MultipleViewsSessionMixin](../multipleviewssessionmixin#getter-defaultuseworkspaces) |
-| <span id="getter-visiblewidget">**visibleWidget**</span><br><code>any</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#getter-visiblewidget) |
+| <span id="getter-visiblewidget">**visibleWidget**</span><br><code>Widget &#124; undefined</code> |  | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin#getter-visiblewidget) |
 
 ## Methods
 
