@@ -115,52 +115,55 @@ cascade in [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md).
 
 **Retire when** a HAL byte counter with cross-display LRU prune exists, or an OOM
 report arrives that the per-object guards missed. The counter's first customer
-is the MSAA target below, which is larger than the buffers and is not counted
-anywhere today.
+is the MSAA target below, measured at 79 MiB for a single tall track — larger
+than every instance buffer under it, and counted nowhere.
 
-### The MSAA target is the largest per-display allocation, and a resize rebuilds it
+### The MSAA target is the largest per-display allocation, and nothing counts it
 
-**Status:** Open, and the arithmetic below is arithmetic — the *allocation* has
-not been timed, though the backend it happens on is reachable: `--backend=webgpu`
-runs Firefox Nightly, which has a working device here where Chrome has none
-(GPU_CONTEXT_BUDGET.md § "Chrome is not the only browser on the box"). The
-device this was read on reports `maxTextureDimension2D=8192`, which is the other
-half of the entry — a canvas past 8192 physical px on an axis takes the MSAA
-target out entirely and `beginFrame` then skips the whole frame.
+**Status:** Open on size. **The per-frame reallocation it used to also claim is
+measured and free** — `browser-tests/probe-msaa-resize-cost.ts`, Firefox
+Nightly on an Intel UHD 630, 2026-08-16.
 
 `WebGPUHal` holds one 4x MSAA color attachment sized to its own canvas
-(`recreateMsaaTexture`). Two things follow that nothing else in this register
-covers.
+(`recreateMsaaTexture`). **It is per display, and its size has nothing to do
+with the data** — canvas area x dpr² x 4 samples, so an empty 600px-tall track
+costs exactly what a full one does. Measured, not derived: a 1266x600 canvas is
+11.7 MiB, and dragging that track to 4100px takes it to **79.2 MiB for one
+track**. That is an order of magnitude past the instance buffers the OOM guards
+do check, and `recreateMsaaTexture` compares against `maxTextureDimension2D`
+and nothing else, so a ten-track view is hundreds of MB nothing in the session
+has counted. WebGL2 has no counterpart in our accounting, because
+`antialias: true` puts the multisample backbuffer inside the browser's budget.
 
-**It is per display, and its size has nothing to do with the data.** Cost is
-canvas area x dpr² x 4 samples, so an empty 600px-tall track costs exactly what
-a full one does. A 1600x600 CSS track at dpr 2 is 3200x1200x4 B ≈ 15 MB of
-single-sample color, so **~61 MB at 4x** — an order of magnitude past the
-instance buffers the OOM guards do check, and a ten-track view is hundreds of MB
-before a feature is uploaded. `recreateMsaaTexture` compares against
-`maxTextureDimension2D` and nothing else. WebGL2 has no counterpart in our
-accounting because `antialias: true` puts the multisample backbuffer inside the
-browser's own budget.
+**Rebuilding it every frame is what turned out not to matter, and the number is
+worth keeping so nobody re-derives the worry.** The mechanism is real and
+confirmed exactly: `GpuPerRegionRenderingBackend.renderBlocks` calls
+`hal.resize` each frame, `syncCanvasSize` reports the change, `useResizeDrag`
+commits one height per animation frame — 250 drag frames produced **250** MSAA
+rebuilds, against **0** for a pan of the same length, which is the control that
+makes the number mean anything (same renderer, same per-frame repaint, constant
+canvas). The cost of those 250 rebuilds of a texture growing to 79 MiB was
+**1.9 ms of JS in total**, ~8 µs a call and flat in texture size, with the
+median frame interval identical to the pan arm's (20.84 ms against 20.74 ms).
+The driver is plainly not committing the memory at create time.
 
-**`resize` rebuilds it on every backing-store change, and a height drag is one
-per frame.** `GpuPerRegionRenderingBackend.renderBlocks` calls
-`hal.resize(canvasWidth, canvasHeight)` each frame; `syncCanvasSize` reports the
-change; `useResizeDrag` commits one height per animation frame. So dragging a
-track taller destroys and creates a tens-of-MB multisample texture for the
-length of the gesture.
+Two limits on that result, both in the probe's header. `createTexture`
+returning fast is not proof the work did not happen, which is why the frame
+interval is measured too — but rAF is vsync-bound here, so the frame column can
+only say the cost fits in the frame's slack. And this is one driver; a stack
+that does commit on create would read differently.
 
-**The obvious fix is not available, which is the part worth recording.** A
+**The fix that looks obvious is illegal, which is the other thing to keep.** A
 render pass validates that its `resolveTarget` is the same size as its
 multisampled `view`, so an MSAA texture kept deliberately oversized and reused
-across sizes cannot be attached — growing in steps and shrinking on settle, the
-hysteresis this looks like it wants, is not a legal shape. What is left is to
-quantize the *canvas* (backing store and CSS together, clipped by the track
-container to the true height), or to accept it.
+across sizes cannot be attached. Growing in steps and shrinking on settle — the
+hysteresis this appears to want — is not a legal shape. Quantizing the *canvas*
+is, and now has nothing to buy.
 
-**Retire when** the reallocation is measured on WebGPU hardware and found not to
-matter, or the canvas is quantized so a drag reallocates once per step. Measure
-before building: the drag is the whole case, and `probe-dotplot-pad-cost.ts` is
-the pattern for a probe that changes one thing about a real shipped path.
+**Retire when** a HAL byte counter sums live GPU bytes across displays and this
+becomes a line in it, since the size is the whole entry now. Don't reopen the
+reallocation without re-running the probe on a driver that behaves differently;
+the numbers above are what a change has to beat.
 
 ### Every WebGPU display resolves its whole pass list before it can paint
 
