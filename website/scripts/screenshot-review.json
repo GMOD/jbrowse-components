@@ -190,8 +190,8 @@
     "name": "sv_cgiab/translocation_sv_inspector_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-14T02:37:44.066Z",
-    "hash": "ea1ccc497cf6d31607fddea5fd715e3de7a0a24c"
+    "reviewedAt": "2026-08-16T18:35:11.813Z",
+    "hash": "60a850299e201d0fbf0697253aba73a61c1161ac"
   },
   "sv_cgiab/cnv_show_all_regions": {
     "name": "sv_cgiab/cnv_show_all_regions",
@@ -883,8 +883,8 @@
     "name": "sv_cgiab/deletion_sv_inspector_search",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-14T14:49:52.523Z",
-    "hash": "a83773c3b2c4baaaf5ad090cd8503af4134dd54d"
+    "reviewedAt": "2026-08-16T18:35:06.409Z",
+    "hash": "2ca5318dd13d7f282c6b07286aab72ce4a4578c3"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -2250,9 +2250,9 @@
   "dog10k-size-fst-scan": {
     "name": "dog10k-size-fst-scan",
     "status": "good",
-    "note": "BOTH, and the badge turns out to have been a rendering problem rather than a\nspec one. It was already gone from the spec last round; what kept it in the\npicture is the content-stable gate -- removing a 30 px circle from a 3000 px\ncapture is under the 0.5% a re-render has to differ by, so the part was skipped\nand the composition restacked the old PNG. --force is the answer, and the same\ntrap is worth knowing for any small annotation edit.\n\nTHE WEDGE. Its apex is under three pixels wide, since the lower panel is 2 Mb of\nchr15 against 2,229 Mb of row, so where it lands is the whole of its accuracy --\nhalf a percent off and it points at a different chromosome. It is fitted rather\nthan eyeballed: least squares over the row's own region dividers, thirty-three\nof them, every one predicted to within 2.4 px, and the data area it solves for\nis the one popgen/in2lt_inversion independently solved for against different\nlandmarks. Measured back off the finished render, the apex sits within 2 px of\nthe IGF1 point.\n\nSHORTER: both score lanes 380 to 240, so the figure is 2632 px to 2192 even\nafter paying 120 for the gutter the wedge lives in. What a Manhattan lane is\nread for is a ratio, and the ratio survives a third off the height.\n\nThat broke every hand-fitted dy on the scan half, which is the part worth\nkeeping: those are gone, and a score's y now comes from wiggle-core's own\naxisPlotBox. The three peak labels also moved to the SIDE of their points rather\nthan above them, because the tallest peak sits within 40 px of the axis top at\nany lane height, so a pill above it is clipped by exactly the shrink that leaves\nthe other two alone.",
-    "reviewedAt": "2026-08-16T13:39:23.997Z",
-    "hash": "3e6465eefc1d6373a2279bbb73521c0b1ee37c74"
+    "note": "",
+    "reviewedAt": "2026-08-16T19:03:35.903Z",
+    "hash": "981c7f417ed8204044472bb8d5c467ac40e1f9ee"
   },
   "dog10k-fgf4-retrogene-synteny": {
     "name": "dog10k-fgf4-retrogene-synteny",
@@ -2319,10 +2319,10 @@
   },
   "desktop-open-genome-steps": {
     "name": "desktop-open-genome-steps",
-    "status": "good",
-    "note": "the red boxes are slightly overlapping which looks messy. could also just be a two part screenshot left+right instead of top+bottom using screenshots 1 and 2. 3 can be omitted. reduce app width and height in both screenshots potentially. DONE 2026-08-08: two frames side by side instead of three stacked (reviewer: 'could also just be a two part screenshot left+right ... 3 can be omitted'). The third frame was the volvox view the flow lands on, which every other quickstart figure already shows; the flow still opens the genome, since the add-track procedure needs something to add a track to, it just no longer captures a frame there. The overlapping boxes were step 3's label: 'Open from a URL' sits directly under the drop zone, so a label to its right started level with the drop zone's own red box and the two rectangles met. It goes below the link now, where there is nothing but dialog padding. composeProcedure grew a direction, so this is available to any procedure figure: two frames is the case where side by side wins, and the figure went 1454x1949 to 2882x667.",
-    "reviewedAt": "2026-08-08T23:55:10.742Z",
-    "hash": "baa54407bf016435966c96b68c19b5d0711f03d0"
+    "status": "bad",
+    "note": "too many red boxes in second figure\n\nprevious notes:\nthe red boxes are slightly overlapping which looks messy. could also just be a two part screenshot left+right instead of top+bottom using screenshots 1 and 2. 3 can be omitted. reduce app width and height in both screenshots potentially. DONE 2026-08-08: two frames side by side instead of three stacked (reviewer: 'could also just be a two part screenshot left+right ... 3 can be omitted'). The third frame was the volvox view the flow lands on, which every other quickstart figure already shows; the flow still opens the genome, since the add-track procedure needs something to add a track to, it just no longer captures a frame there. The overlapping boxes were step 3's label: 'Open from a URL' sits directly under the drop zone, so a label to its right started level with the drop zone's own red box and the two rectangles met. It goes below the link now, where there is nothing but dialog padding. composeProcedure grew a direction, so this is available to any procedure figure: two frames is the case where side by side wins, and the figure went 1454x1949 to 2882x667.",
+    "reviewedAt": "2026-08-16T18:34:12.560Z",
+    "hash": "f3644144dbd0095ba8a274c4aca96fed704f8f03"
   },
   "pangenome/hprc_inversion": {
     "name": "pangenome/hprc_inversion",
@@ -2376,9 +2376,9 @@
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
     "status": "good",
-    "note": "BOTH BADGES GONE. A number is a sequence marker, and with one zoom panel there\nis nothing to be second -- which is what made it read as spare.\n\nWhat the two panels share is a NAME, so the zoom panel says IGF1 on its\nhighlighted band and the scan panel already says it at the point. Same word in\nboth frames, no numbering, and the link still reads.",
-    "reviewedAt": "2026-08-16T06:46:36.463Z",
-    "hash": "c025e2d25c8e48e39d942dd36003383b2b3f92af"
+    "note": "The pill and the arrow are ONE annotation now, so this cannot recur at any label length. They were two, with the gap between them written down: text at dx=150, tail at dx=88. A tail belongs at the pill's edge and a pill's width is only known once the page measures its text, so one pair of offsets fits one label. Here it fit none of the three -- IGF1 is short and its arrow stopped 50px shy, IGF2BP2 is long and its own pill covered the tail, and only HMGA2 looked deliberate.\n\n`leader: true` on the text draws the arrow from the measured pill's boundary. The anchor is the peak, dx places the label off it: the sign picks the side, the magnitude is the gap to the pill's facing edge. So all three edges now sit 150px from their points and all three arrows span exactly that, whatever the gene is called. A leader whose pill covers its own target reports a miss rather than drawing nothing.\n\nRule in website/CLAUDE.md, mechanism in reference/SCREENSHOT_CALLOUT_ANCHORS.md, geometry under test in annotationOverlayLeader.test.ts.",
+    "reviewedAt": "2026-08-16T18:35:02.656Z",
+    "hash": "d423d0b6f79c2a255444ebad88b06af2b53fa26e"
   },
   "ld/anopheles_2la_karyotype": {
     "name": "ld/anopheles_2la_karyotype",
@@ -2698,9 +2698,9 @@
   "homoeolog_synteny/wheat_vs_oat": {
     "name": "homoeolog_synteny/wheat_vs_oat",
     "status": "good",
-    "note": "SELF-ALIGNMENT throughout: both overlay titles, both DotplotView displayNames,\nthe caption and the sentence introducing the figure. The page's own TL;DR\nalready said it, so this is the frame catching up with the prose.",
-    "reviewedAt": "2026-08-15T01:04:12.452Z",
-    "hash": "c761a7423e06de96eb10447622f385e1d6cf96f6"
+    "note": "",
+    "reviewedAt": "2026-08-16T19:03:27.749Z",
+    "hash": "7db3cb34cb61e8b8f8da522144e04f7803264dd8"
   },
   "maf_hprc_pangenome": {
     "name": "maf_hprc_pangenome",
@@ -3218,5 +3218,12 @@
     "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
     "reviewedAt": "2026-08-15T22:56:25.567Z",
     "hash": "04721836c634a617c5f784425121821d995cdf9d"
+  },
+  "ld/lct_sweep_two_scales": {
+    "name": "ld/lct_sweep_two_scales",
+    "status": "bad",
+    "note": "did you look to see if more fine-grained fst can be added in the zoomed out view? we can recalculate data\n\nprevious notes:\nSame fix as dog10k-size-fst-scan-genome, and LCT is the case that shows it worst: three letters is the shortest label in any figure, so the hand-written tail offset left the most air. The pill and its arrow are one `leader` annotation now, with the tail taken off the measured pill, so the gap is the dx and nothing else.\n\nOnly the upper frame moved; the trapezoid and the lower frame are untouched.",
+    "reviewedAt": "2026-08-16T18:34:59.060Z",
+    "hash": "461fd457e13b2d8e0967e5d052db40cd06f8ad6d"
   }
 }
