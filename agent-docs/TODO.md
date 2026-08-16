@@ -77,7 +77,7 @@ before anyone noticed.
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 | [Nothing checks a hand-built transfer list](#nothing-checks-a-hand-built-rpc-transfer-list-against-its-payload) | RPC | decide whether the synteny list should be derived instead |
-| [A comparative display's first load is Material](#a-comparative-displays-first-load-is-material-behind-both-bring-your-own-seams) | synteny, dotplot, embedded | measured; the work is choosing where the seam lives |
+| [The comparative displays sit behind neither bring-your-own seam](#the-comparative-displays-sit-behind-neither-bring-your-own-seam) | synteny, dotplot, embedded | the bar is fixed; take this WITH the comparative cancel/retry entry |
 
 ## Ready to build: small and self-contained
 
@@ -496,42 +496,53 @@ unpassable to the other forty. `EntriesDeclaringCallLevelFields` in
 `RpcRegistry.ts` now fails compilation naming the entry that tries it, so the
 wrong version of this is a build error rather than a fourth repetition.
 
-### A comparative display's first load is Material, behind both bring-your-own seams
+### The comparative displays sit behind neither bring-your-own seam
 
-`ComparativeFetchStatus` (`packages/synteny-core`) renders `LoadingOverlay` and
-`ProgressChip` straight from `@jbrowse/core/ui`, so the first load of any
-synteny or dotplot display paints a `MuiLinearProgress` no matter what the host
-mounted. `DisplayUIProvider` does not reach it — that provider swaps
-`DisplayChromeOverlays`, and this component is not behind that contract.
+`ComparativeFetchStatus` (`packages/synteny-core`), `ComparativeTooltip` and
+`SyntenyContextMenu` are mounted by the two comparative render areas and reach
+`@jbrowse/core/ui` directly. `DisplayUIProvider` does not redirect any of them —
+that provider swaps `DisplayChromeOverlays`, and none of these is behind that
+contract — so an embedder who mounted it to keep Material off the page gets it
+anyway from a synteny or dotplot display.
 
-**Measured, not inferred.** A throwaway probe sampled the BYO examples site's
-own MUI census every 40ms from before the first script ran, rather than once
-after settle: `synteny` reports 0 Material elements at rest and 1 during load,
-`<span class="MuiLinearProgress-root …">`. Every other page that mounts the
-provider is 0 in both. So the site's central claim — a page mounting both plain
-sets renders no Material at all — is false for about a second on one page, and
-`smoke.mjs` cannot see it, because a census of a page at rest never observes a
-component that exists only while something is fetching. It is the same shape as
-the `FloatingLegend` hole that file already describes, and it was found the same
-way: by driving the state rather than loading the page.
+**One piece of this is fixed and the rest is latent, which is the trap.** The
+loading bar was the only one that rendered without the user doing anything, and
+`StatusProgressBar` is now toolkit-free, so the measured hole is closed: the BYO
+site's `synteny` page reports 0 Material elements at rest **and** 0 during its
+first load. Everything else on that path is Material and simply has not been
+reached yet — the tooltip wants a hover, the context menu a right-click, and
+`LoadingOverlay`'s cancel and retry are `IconButton`s that only appear when a
+caller passes the handlers.
 
-**The work is choosing where the seam lives, not the edit.** Three options, and
-the layering is what rules the obvious one out — `synteny-core` depends on
-`@jbrowse/core` alone, while `DisplayChromeOverlays` and its provider live in
-`plugins/linear-genome-view`, so the component cannot simply read that context:
+**So take this together with
+[Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry).**
+That entry adds exactly those handlers, which is the commit that would put a
+Material `IconButton` back on the page — and it would land green, because
+nothing measures it.
+
+Three options, and the layering rules the obvious one out: `synteny-core`
+depends on `@jbrowse/core` alone, while `DisplayChromeOverlays` and its provider
+live in `plugins/linear-genome-view`, so the component cannot simply read that
+context.
 
 - move the overlay contract down into `@jbrowse/core/ui`. Principled, and the
   widest blast radius: the contract's prop types name LGV display models.
-- give the comparative path its own narrow seam (the two components as props,
-  defaulted to the Material pair), threaded from the two render areas that
-  mount it. Smallest, and a second seam an embedder has to know about.
+- give the comparative path its own narrow seam (the components as props,
+  defaulted to the Material set), threaded from the two render areas that mount
+  it. Smallest, and a second seam an embedder has to know about.
 - have the *plugins* read the LGV context and pass the components down —
   `plugin-linear-comparative-view` and `plugin-dotplot-view` may both depend on
   `plugin-linear-genome-view`, so no inversion. Keeps one contract and puts the
   wiring where the layering already permits it.
 
-Whichever wins, add a loading-time census to the BYO site's `smoke.mjs` in the
-same commit, or the next component to do this is invisible again.
+**Add a loading-time census to the BYO site's `smoke.mjs` in the same commit.**
+That census is how this was found and it is not in the repo: a throwaway probe
+sampled the site's own MUI count every 40ms from before the first script ran,
+rather than once after settle, and `synteny` came back 0 at rest and 1 while
+fetching. A census of a page at rest cannot see a component that only exists
+while something is loading — the same shape as the `FloatingLegend` hole
+`smoke.mjs` already describes. Until it is wired in, every state on this list is
+invisible to CI.
 
 ## Ready to build: the design is settled
 
