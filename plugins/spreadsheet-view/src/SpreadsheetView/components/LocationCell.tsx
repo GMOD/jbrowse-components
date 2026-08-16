@@ -10,12 +10,16 @@ import FeatureMenu from './FeatureMenu.tsx'
 import LocationLink from './LocationLink.tsx'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { FindJunctionsNear } from '@jbrowse/sv-core'
 
 export default observer(function LocationCell({
   model,
   feature,
 }: {
-  model: { assemblyName?: string }
+  model: {
+    assemblyName?: string
+    findJunctionsNear: () => FindJunctionsNear
+  }
   feature: SimpleFeatureSerialized
 }) {
   const session = getSession(model)
@@ -30,6 +34,7 @@ export default observer(function LocationCell({
         assemblyName={assemblyName}
         feature={feature}
         trackId={view.importedTrackId}
+        findJunctionsNear={model.findJunctionsNear()}
       />
       <LocationLink model={model} locString={assembleLocStringRaw(feature)}>
         {locString}

@@ -13,6 +13,7 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util'
+import type { FindJunctionsNear } from '@jbrowse/sv-core'
 
 export default function FeatureMenu({
   assemblyName,
@@ -20,6 +21,7 @@ export default function FeatureMenu({
   spreadsheetViewId,
   feature,
   trackId,
+  findJunctionsNear,
 }: {
   spreadsheetViewId: string
   assemblyName: string
@@ -27,6 +29,8 @@ export default function FeatureMenu({
   feature: SimpleFeatureSerialized
   /** the session track for the loaded file; both launches open it */
   trackId?: string
+  /** the sheet's own read of the callset, which is what offers chain walking */
+  findJunctionsNear?: FindJunctionsNear
 }) {
   return (
     <CascadingMenuButton
@@ -65,6 +69,11 @@ export default function FeatureMenu({
                       assemblyName,
                     ),
                     ...(trackId ? { defaultTrackIds: [trackId] } : {}),
+                    // the row menu used to be the one launch site that could
+                    // not offer "follow further breakends at each end", for
+                    // want of a way to query the callset — while the chord
+                    // click, over the same records, could
+                    findJunctionsNear,
                   })
                 },
               },

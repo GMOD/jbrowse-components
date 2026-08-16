@@ -7,7 +7,7 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { svMateLocus } from '@jbrowse/sv-core'
+import { junctionFromFeature, svMateLocus } from '@jbrowse/sv-core'
 
 import LocationCell from './components/LocationCell.tsx'
 import MateCell from './components/MateCell.tsx'
@@ -185,6 +185,61 @@ export default function stateModelFactory() {
        */
       get svTypeColumnField() {
         return self.columns.find(c => c.name === 'INFO.SVTYPE')?.name
+      },
+      /**
+       * #getter
+       * Every junction in the sheet, canonical refNames and all, for walking a
+       * rearrangement from one of its records to the rest.
+       *
+       * The whole sheet rather than the visible rows: a chain hops to wherever
+       * the rearrangement goes, and a filter narrowing what is on screen is not
+       * a statement about which junctions exist.
+       *
+       * Lazily computed and then memoized, which is what makes walking a chain
+       * off the sheet cheaper than asking an adapter — the alternative queries
+       * the callset back through RPC one 2 kb window at a time, and here the
+       * whole thing is already parsed and sitting in memory.
+       */
+      get svJunctions() {
+        const { assemblyName } = self
+        const assembly = assemblyName
+          ? getSession(self).assemblyManager.get(assemblyName)
+          : undefined
+        return assembly?.initialized
+          ? (this.rows ?? []).flatMap(r => {
+              const j = r.feature
+                ? junctionFromFeature(new SimpleFeature(r.feature), assembly)
+                : undefined
+              return j ? [j] : []
+            })
+          : []
+      },
+      /**
+       * #method
+       * The sheet's own answer to "what else is near this breakend", which is
+       * what lets the breakpoint split view offer to follow a whole chain.
+       *
+       * A `FindJunctionsNear`, so both launch sites take it: the row menu had
+       * no way to query the callset at all and simply did not offer the option,
+       * while the chord click asked the chord track's adapter and so shipped
+       * the callset back through RPC to re-read what the sheet already holds.
+       */
+      findJunctionsNear(): (region: {
+        refName: string
+        start: number
+        end: number
+      }) => Promise<
+        { refName: string; pos: number; mateRefName: string; matePos: number }[]
+      > {
+        return region =>
+          Promise.resolve(
+            this.svJunctions.filter(
+              j =>
+                j.refName === region.refName &&
+                j.pos >= region.start &&
+                j.pos < region.end,
+            ),
+          )
       },
     }))
     .views(self => ({

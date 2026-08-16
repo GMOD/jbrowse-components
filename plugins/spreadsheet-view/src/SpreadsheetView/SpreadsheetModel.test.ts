@@ -1,3 +1,4 @@
+import { types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import stateModelFactory from './SpreadsheetModel.tsx'
@@ -257,4 +258,86 @@ test('setSvTypeFilter stores the selected value', () => {
   expect(model.svTypeFilter).toBe('DEL')
   model.setSvTypeFilter(undefined)
   expect(model.svTypeFilter).toBeUndefined()
+})
+
+// Walking a rearrangement from one of its records to the rest. The row menu had
+// no way to query the callset at all and so did not offer the option, while the
+// chord click over the same records asked an adapter through RPC.
+describe('the junctions the sheet can walk', () => {
+  const assembly = { initialized: true, getCanonicalRefName2: (r: string) => r }
+
+  function sheetWith(rows: unknown[]) {
+    const Model = stateModelFactory()
+    const Session = types
+      .model({
+        rpcManager: types.frozen(),
+        configuration: types.frozen(),
+        sheet: types.maybe(Model),
+      })
+      .volatile(() => ({ assemblyManager: { get: () => assembly } }))
+    return Session.create({
+      rpcManager: {},
+      configuration: {},
+      sheet: {
+        assemblyName: 'hg38',
+        columns: [{ name: 'INFO.SVTYPE' }],
+        rowSet: { rows },
+      },
+    }).sheet!
+  }
+
+  const bnd = (id: string, refName: string, start: number, alt: string) => ({
+    feature: { uniqueId: id, refName, start, end: start + 1, ALT: [alt] },
+    cellData: { 'INFO.SVTYPE': 'BND' },
+  })
+
+  test('a breakend row becomes a junction, a plain interval does not', () => {
+    const sheet = sheetWith([
+      bnd('a', 'chr1', 100, 'C]chr5:900]'),
+      { feature: { uniqueId: 'b', refName: 'chr1', start: 5, end: 9 } },
+    ])
+    expect(sheet.svJunctions).toEqual([
+      {
+        id: undefined,
+        mateId: undefined,
+        refName: 'chr1',
+        pos: 100,
+        mateRefName: 'chr5',
+        matePos: 899,
+      },
+    ])
+  })
+
+  test('a query returns only the junctions in its window', async () => {
+    const sheet = sheetWith([
+      bnd('a', 'chr1', 100, 'C]chr5:900]'),
+      bnd('b', 'chr1', 5000, 'C]chr7:20]'),
+      bnd('c', 'chr2', 100, 'C]chr9:30]'),
+    ])
+    const near = sheet.findJunctionsNear()
+    expect(
+      (await near({ refName: 'chr1', start: 0, end: 1000 })).map(
+        j => j.mateRefName,
+      ),
+    ).toEqual(['chr5'])
+    expect(await near({ refName: 'chr3', start: 0, end: 1e6 })).toEqual([])
+  })
+
+  // the filter narrows what is on screen; it is not a statement about which
+  // junctions the rearrangement has
+  test('a filtered-out row still continues a chain', async () => {
+    const sheet = sheetWith([
+      bnd('a', 'chr1', 100, 'C]chr5:900]'),
+      bnd('b', 'chr5', 899, 'C]chr1:101]'),
+    ])
+    sheet.setVisibleRows({ 0: true, 1: false })
+    expect(sheet.visibleRows).toHaveLength(1)
+    expect(
+      await sheet.findJunctionsNear()({
+        refName: 'chr5',
+        start: 800,
+        end: 1000,
+      }),
+    ).toHaveLength(1)
+  })
 })
