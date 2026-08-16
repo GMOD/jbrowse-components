@@ -121,16 +121,39 @@ So under contextIsolation that `require` throws *while the module is loading*,
 the chunk fails, and the renderer never starts — a blank window, not a
 file-read error.
 
-Fix direction: keep `fs` out of the renderer's module graph entirely rather than
-trying to make it fail nicely. `generic-filehandle2` ships a `browser.js` entry
-that omits `LocalFile`; letting the browser field resolve (or importing
-`LocalFile` lazily behind the capability check) is what makes the IPC-backed
-filehandle in step 1 actually reachable. Expect `config.target` to need
-revisiting too — `'electron-renderer'` is the wrong target for a renderer with
-no Node.
-
 This is also why grep alone underestimates the work: the dependency is in a
 transitive `node_modules` module, not in JBrowse source.
+
+**The alias is load-bearing for the worker — measured.** Built the desktop
+renderer twice, once as-is and once with the `generic-filehandle2` alias
+deleted, and grepped the output:
+
+| | `main.*.js` (renderer) | worker bundle | who has `LocalFile` |
+| --- | --- | --- | --- |
+| as-is | 1 × `require("fs/promises")` | 1 × `require("fs/promises")` | the real class, both |
+| alias deleted | none | none | the browser **stub**, both |
+
+So dropping the alias does clear `fs` out of the renderer — and takes the
+worker's real `LocalFile` with it, replacing it with the stub that rejects every
+read. Every local file in desktop is opened in the worker, so that build boots
+and then cannot read anything.
+
+The cause is not `config.target`, and revisiting the target does not help. It is
+that `generic-filehandle2` declares `"browser"` **first** in its `exports` map,
+and webpack's condition set for `electron-renderer` contains both `node` and
+`browser` (`conditions.push` in webpack's `config/defaults.js` adds `browser`
+for `tp.web`), so the browser entry wins on sight. The alias is what overrides
+that. One `resolve` config serves both graphs — the worker is a sub-compilation
+of the same config — so the condition cannot be turned on for the renderer
+alone.
+
+Fix direction, therefore: not a resolution change but an **import** change.
+Leave the alias, and stop `packages/core/src/util/io/index.ts` from importing
+`LocalFile` at module scope — behind the capability check, `await import()` it.
+The renderer's chunk graph still *contains* the node build; what matters is that
+the renderer never evaluates it, which is what makes the flip a working app
+rather than a blank window. That is the same move the IPC-backed filehandle in
+step 1 needs anyway.
 
 There is a second one that grep *does* find, and it is not behind `openLocation`:
 `src/indexJobsModel.ts` imports `node:fs` and calls `mkdirSync` on the main
@@ -181,32 +204,31 @@ unbounded paths and URLs:
 - `saveSession(sessionPath, snap)` — arbitrary file **write**
 - `loadSession(sessionPath)` — arbitrary file **read**, returned to the renderer
 - `indexFasta(location)` — fetches any URL or reads any local path
-- `blatFetch(url, body)` — POSTs anywhere with the default session's cookies,
-  and returns the body. `openBlatChallenge(url)` opens any url in a window on
-  that same jar. Bounding these to known hosts does not work — the dialog's
-  server field is how someone runs their own proxy or gfServer — so the move is
-  to take them off the default session entirely; see
-  [handoffs/desktop-audit.md](../handoffs/desktop-audit.md)
 
 Today this is moot: the renderer already has Node. After the flip these **are**
 the boundary, and locking the renderer while leaving `saveSession(anyPath)`
 reachable just changes the payload from `require('fs')` to an `invoke`. Constrain
 session paths to `userData`/the JBrowse documents dir plus what the user actually
 chose through `promptOpenFile` (the main process can remember what it handed
-out — that is the only path the user consented to), and bound `blatFetch` to
-known hosts.
+out — that is the only path the user consented to).
+
+The BLAT pair is done. `blatFetch` and `openBlatChallenge` used to POST and
+navigate anywhere on the app's **default** session, cookies included. Bounding
+them by host does not work — the dialog's server field is how someone runs their
+own proxy or gfServer — so they run on their own partition instead
+(`electron/blatSession.ts`), which keeps a solved challenge visible to the
+request that needed it and takes the app's other cookies out of reach. Scheme,
+embedded credentials, response size and a timeout are checked there too.
 
 ## Suggested order
 
 Do the bundling first. It is the one that decides whether this is feasible at
 all, and every later step is unverifiable while the renderer won't boot.
 
-1. **Get `fs` out of the renderer's module graph** (blocker 2). Concretely: does
-   the renderer bundle still contain `require("fs")` after letting the browser
-   field resolve for `generic-filehandle2` and revisiting `config.target`? Answer
-   that before writing any of the rest — a spike, not a refactor. If it turns out
-   `electron-renderer` is load-bearing for something else (workers share the
-   config), the whole plan needs rethinking and it is cheap to learn that now.
+1. **Get `fs` out of the renderer's module graph** (blocker 2). The spike is
+   done and its answer is in that section: resolution cannot decide this,
+   because one `resolve` config serves the renderer and the worker and the
+   worker needs the node build. Make the `LocalFile` import dynamic instead.
 2. Type the renderer's IPC. Landed for callers *inside* the product
    (`src/ipc.ts`), and `channelNames.ts` now has an exhaustiveness guard that
    works — the original `const _: UnlistedChannel[] = []` never checked
