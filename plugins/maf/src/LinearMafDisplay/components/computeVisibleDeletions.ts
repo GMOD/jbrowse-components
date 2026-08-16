@@ -2,7 +2,7 @@ import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
-import { measureLabelText } from '../../LinearMafRenderer/rendering/types.ts'
+import { LABEL_FONT } from '../../LinearMafRenderer/rendering/types.ts'
 import { regionDeletionRunBounds } from './mafRowEvents.ts'
 import {
   bpSpanPx,
@@ -30,7 +30,7 @@ import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 // ramp is for. Undecided because nobody has watched a MAF track zoom to say
 // whether a fading number in a short row beats a clean cut, and adopting it
 // moves every MAF figure carrying a count.
-const MIN_LABEL_WIDTH = measureLabelText('0') + 2
+const MIN_LABEL_WIDTH = LABEL_FONT.measure('0') + 2
 
 export interface DeletionMarker {
   /** screen px of the left edge of the deleted run */

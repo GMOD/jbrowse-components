@@ -62,7 +62,7 @@ test('draws nothing where the run is too short or too narrow for the text', () =
   expect(texts).toEqual([])
 })
 
-// The fit test has to measure the font the label is DRAWN in. FONT_CONFIG is
+// The fit test has to measure the font the label is DRAWN in. LABEL_FONT is
 // monospace at 6.1px a digit; `measureText`'s default table is Helvetica at
 // 5.55px, and the 2px padding hid the 0.55px-a-digit shortfall up to three
 // digits. A four-digit count is the first that overflows: 26px of run holds

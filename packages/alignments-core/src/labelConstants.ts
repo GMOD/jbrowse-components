@@ -1,3 +1,5 @@
+import { measuredFont } from '@jbrowse/core/util'
+
 import {
   TRIANGLE_H as INDICATOR_TRIANGLE_H,
   TRIANGLE_HW as INDICATOR_TRIANGLE_HW,
@@ -68,8 +70,15 @@ export const DEFAULT_CIGAR_OP_DRAW_COLORS: CigarOpDrawColors = {
   baseN: BASE_N_COLOR,
 }
 
-export function computeLabelFontSize(h: number) {
-  return Math.max(8, Math.min(h, 10))
+// The font a pileup's size labels draw in, for a row `h` px tall: 10px down to
+// a floor of 8, below which the digits stop being digits. It carries its own
+// measurement (`measuredFont`) because the size is decided here, where labels
+// are placed, and the family was spelled only in `drawAlignmentLabels` — so the
+// fit tests were measuring Helvetica on the strength of a `sans-serif` they
+// could not see. That is the arrangement that put plugin-maf's count outside its
+// own run.
+export function labelFont(h: number) {
+  return measuredFont(Math.max(8, Math.min(h, 10)), 'sans-serif', 'bold')
 }
 
 // A deletion's length label rides the fade below: it appears once the grey rect

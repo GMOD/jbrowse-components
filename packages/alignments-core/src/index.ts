@@ -15,7 +15,6 @@ export {
   MISMATCH_COLOR,
   SERIF_H_PX,
   SERIF_HALF_W_PX,
-  computeLabelFontSize,
   drawIndicatorTriangle,
   drawInsertionMarker,
   extractIndelsFromCs,
@@ -27,6 +26,7 @@ export {
   isCsOpChar,
   isDigit,
   labelFadeOpacity,
+  labelFont,
   minAvailPxForLabel,
   textWidthForNumber,
 } from './labelConstants.ts'

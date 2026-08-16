@@ -1,5 +1,3 @@
-import { measureText } from '@jbrowse/core/util'
-
 import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
 import {
   INTERBASE_HARDCLIP,
@@ -12,10 +10,10 @@ import {
   MIN_HEIGHT_FOR_TEXT,
   MIN_PX_PER_BP_FOR_TEXT,
   MIN_QUALITY_LETTER_OPACITY,
-  computeLabelFontSize,
   getInsertionType,
   insertionBarWidth,
   labelFadeOpacity,
+  labelFont,
   minAvailPxForLabel,
 } from '../constants.ts'
 import {
@@ -32,7 +30,10 @@ export interface VisibleLabel {
   x: number
   y: number
   text: string
-  fontSize: number
+  // The CSS font this label was MEASURED in, for `ctx.font`. Shared by every
+  // label in a pass, and carried rather than rebuilt from a size so the fit
+  // tests above and the draw cannot describe different fonts.
+  font: string
   // 0-1 draw opacity. A deletion's length ramps down as its grey rect narrows,
   // so back-to-back deletions dissolve instead of popping when zoomed out, and a
   // SNP letter carries the same per-base quality fade its box does. The rest —
@@ -144,7 +145,10 @@ export function computeVisibleLabels(
   }
 
   const rowHeight = featureHeight + featureSpacing
-  const fontSize = computeLabelFontSize(featureHeight)
+  // One font for the pass, measured and drawn through the same object. Every
+  // label carries `font.css` rather than a size the draw would have to rebuild a
+  // font string from — one shared string reference, so it costs a pointer.
+  const font = labelFont(featureHeight)
   const { bpPerPx } = view
   const pxPerBp = 1 / bpPerPx
   const tallEnoughForText = featureHeight >= MIN_HEIGHT_FOR_TEXT
@@ -155,7 +159,7 @@ export function computeVisibleLabels(
   }
 
   // Deletion length labels are measured per gap, and a pileup repeats the same
-  // few lengths thousands of times, so memoize the measure (fontSize is fixed
+  // few lengths thousands of times, so memoize the measure (the font is fixed
   // for the whole pass). Keyed by the number to skip building the string too.
   const textWidthCache = new Map<number, number>()
   const gapTextWidth = (len: number) => {
@@ -163,7 +167,7 @@ export function computeVisibleLabels(
     if (hit !== undefined) {
       return hit
     }
-    const w = measureText(String(len), fontSize)
+    const w = font.measure(String(len))
     textWidthCache.set(len, w)
     return w
   }
@@ -175,7 +179,7 @@ export function computeVisibleLabels(
   // to be placed. Necessary rather than sufficient: a deletion that passes
   // still runs the exact per-feature test below, against its visible span and
   // its own digit count.
-  const minDeletionBp = minAvailPxForLabel(measureText('0', fontSize)) * bpPerPx
+  const minDeletionBp = minAvailPxForLabel(font.measure('0')) * bpPerPx
   // Same bound for the count on a 'large' insertion, which is exactly
   // `getInsertionType`'s two gates: LONG_INSERTION_MIN_LENGTH, and
   // LONG_INSERTION_TEXT_THRESHOLD_PX of span on screen.
@@ -272,7 +276,7 @@ export function computeVisibleLabels(
             x: bpToPx((visStart + visEnd) / 2),
             y: yPx,
             text: String(length),
-            fontSize,
+            font: font.css,
             opacity,
           })
         }
@@ -342,7 +346,7 @@ export function computeVisibleLabels(
                 x: xPx,
                 y: yPx,
                 text: String(length),
-                fontSize,
+                font: font.css,
                 opacity: 1,
               })
             }
@@ -352,7 +356,7 @@ export function computeVisibleLabels(
               x: xPx + 3,
               y: yPx,
               text: `(${length})`,
-              fontSize,
+              font: font.css,
               opacity: 1,
             })
           }
@@ -366,7 +370,7 @@ export function computeVisibleLabels(
               x: xPx + 3,
               y: yPx,
               text: `(${prefix}${length})`,
-              fontSize,
+              font: font.css,
               opacity: 1,
             })
           }
@@ -426,7 +430,7 @@ export function computeVisibleLabels(
             x: centerPx,
             y: yPx,
             text: String.fromCharCode(mismatchBases[i]!),
-            fontSize,
+            font: font.css,
             opacity,
           })
         }
@@ -458,7 +462,7 @@ export function computeVisibleLabels(
             x: centerPx,
             y: yPx,
             text: String.fromCharCode(softclipBaseBases[i]!),
-            fontSize,
+            font: font.css,
             opacity: 1,
           })
         }

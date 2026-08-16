@@ -1,4 +1,4 @@
-import { FONT_CONFIG } from './types.ts'
+import { LABEL_FONT } from './types.ts'
 
 import type { VisibleLabel } from '../../LinearMafDisplay/components/computeVisibleLabels.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -9,7 +9,7 @@ export function drawMafLabels(
   contrastForBase: Record<string, string>,
   mismatchRendering: boolean,
 ) {
-  ctx.font = FONT_CONFIG
+  ctx.font = LABEL_FONT.css
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'center'
   for (const label of labels) {

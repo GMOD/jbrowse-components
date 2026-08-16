@@ -168,7 +168,8 @@ export {
   toUrlSafeB64,
 } from './sessionSharing.ts'
 export { coarseStripHTML } from './coarseStripHTML.ts'
-export { measureText } from './measureText.ts'
+export { measureText, measuredFont } from './measureText.ts'
+export type { MeasuredFont } from './measureText.ts'
 export { createScrollLatch } from './scrollLatch.ts'
 export {
   MAX_ZOOM_RATE_PER_MS,

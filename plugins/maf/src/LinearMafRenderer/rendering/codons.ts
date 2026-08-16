@@ -1,6 +1,6 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 
-import { CHAR_SIZE_WIDTH, FONT_CONFIG } from './types.ts'
+import { CHAR_SIZE_WIDTH, LABEL_FONT } from './types.ts'
 
 import type {
   CodonChange,
@@ -36,7 +36,7 @@ export function drawMafCodons(
       ctx.fillRect(m.xLeft, m.rowTop, m.width, m.h)
     }
   }
-  ctx.font = FONT_CONFIG
+  ctx.font = LABEL_FONT.css
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'center'
   ctx.fillStyle = colors.text

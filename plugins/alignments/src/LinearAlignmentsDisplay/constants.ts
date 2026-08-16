@@ -20,10 +20,10 @@ export {
   MIN_HEIGHT_FOR_TEXT,
   MIN_PX_PER_BP_FOR_TEXT,
   MIN_QUALITY_LETTER_OPACITY,
-  computeLabelFontSize,
   getInsertionType,
   insertionBarWidth,
   labelFadeOpacity,
+  labelFont,
   minAvailPxForLabel,
   textWidthForNumber,
 } from '@jbrowse/alignments-core'

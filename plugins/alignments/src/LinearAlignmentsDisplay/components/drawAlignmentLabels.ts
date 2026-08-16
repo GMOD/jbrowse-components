@@ -27,7 +27,9 @@ export function drawAlignmentLabels(
   const white = palette.common.white
   ctx.textBaseline = 'middle'
   // Canvas2D re-parses the font shorthand on every assignment, and in practice
-  // every label shares one font size, so only write the state that changed.
+  // every label shares one font, so only write the state that changed. The
+  // shorthand comes from the label rather than being built here: it is the font
+  // `computeVisibleLabels` measured against to decide the label fits at all.
   let curFont = ''
   let curAlign: CanvasTextAlign | '' = ''
   let curFill = ''
@@ -55,10 +57,9 @@ export function drawAlignmentLabels(
       fillColor = white
     }
 
-    const font = `bold ${label.fontSize}px sans-serif`
-    if (font !== curFont) {
-      ctx.font = font
-      curFont = font
+    if (label.font !== curFont) {
+      ctx.font = label.font
+      curFont = label.font
     }
     const align: CanvasTextAlign = isSmallInterbase ? 'left' : 'center'
     if (align !== curAlign) {

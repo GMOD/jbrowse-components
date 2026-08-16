@@ -1,12 +1,10 @@
-import { measureText } from '@jbrowse/core/util'
-
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
 import {
   LABEL_FADE_FLOOR,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
-  computeLabelFontSize,
   insertionBarWidth,
   labelFadeOpacity,
+  labelFont,
   textWidthForNumber,
 } from '../constants.ts'
 import { computeVisibleLabels } from './computeVisibleLabels.ts'
@@ -385,7 +383,7 @@ test('the (S<len>) summary still renders when no per-base clip data', () => {
 // A gate that is slightly too eager is invisible in a screenshot and deletes
 // labels at exactly the zooms they matter most.
 describe('the zoom gate agrees with the per-feature fade', () => {
-  const fontSize = computeLabelFontSize(10)
+  const font = labelFont(10)
 
   // Its own runner, with the region sized to hold the feature: the sweep
   // compares against the unclamped span, and a deletion overhanging the region
@@ -426,7 +424,7 @@ describe('the zoom gate agrees with the per-feature fade', () => {
   // a conservative under-estimate of it, and an off-by-one would show here
   // before anywhere else.
   test.each([9, 10, 100, 5000])('deletion of %i bp, swept across zoom', len => {
-    const needed = measureText(String(len), fontSize)
+    const needed = font.measure(String(len))
     for (let bpPerPx = 0.05; bpPerPx < len; bpPerPx *= 1.15) {
       const expected = labelFadeOpacity(len / bpPerPx, needed) > 0
       const labelled = inRegion(deletion(len), bpPerPx, len + 1000).some(

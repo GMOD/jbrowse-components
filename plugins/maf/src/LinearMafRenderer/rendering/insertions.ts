@@ -5,7 +5,7 @@ import {
   getInsertionType,
 } from '@jbrowse/alignments-core'
 
-import { CHAR_SIZE_WIDTH, FONT_CONFIG } from './types.ts'
+import { CHAR_SIZE_WIDTH, LABEL_FONT } from './types.ts'
 
 import type { InsertionMarker } from '../../LinearMafDisplay/components/computeVisibleInsertions.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -66,7 +66,7 @@ export function drawMafInsertions(
   insertionColor: string,
   pxPerBp: number,
 ) {
-  ctx.font = FONT_CONFIG
+  ctx.font = LABEL_FONT.css
   ctx.textBaseline = 'middle'
   for (const m of markers) {
     drawMafInsertionMarker(

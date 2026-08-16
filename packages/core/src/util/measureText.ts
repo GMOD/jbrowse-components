@@ -29,3 +29,37 @@ export function measureText(str: unknown, fontSize = 10, fontFamily?: string) {
   }
   return total * fontSize
 }
+
+export interface MeasuredFont {
+  /** assign to `ctx.font` */
+  css: string
+  /** width of `text` in that same font, in px */
+  measure: (text: string) => number
+}
+
+/**
+ * A CSS font string and its own measurement, built from one set of inputs so a
+ * caller cannot paint in one font and reserve room in another.
+ *
+ * Two files describing one font is the normal shape — something measures to
+ * decide whether a label fits, something else sets `ctx.font` and draws it — and
+ * the two drift silently, because a label that overflows its box by a pixel
+ * looks like a label. plugin-maf drew its deletion count in `bold 10px Courier
+ * New,monospace` and measured it here without naming the family, so a monospace
+ * label was answered from the Helvetica table above: 0.55px short per digit,
+ * which its 2px of padding covered for exactly three digits and no more.
+ *
+ * `weight` reaches the CSS and not the measurement, which is right for the
+ * digits these callers measure — monospace bold and regular share an advance,
+ * and Helvetica's ten digits are one width in either.
+ */
+export function measuredFont(
+  fontSize: number,
+  fontFamily: string,
+  weight?: string,
+): MeasuredFont {
+  return {
+    css: `${weight ? `${weight} ` : ''}${fontSize}px ${fontFamily}`,
+    measure: text => measureText(text, fontSize, fontFamily),
+  }
+}

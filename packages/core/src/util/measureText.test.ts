@@ -1,4 +1,4 @@
-import { measureText } from './measureText.ts'
+import { measureText, measuredFont } from './measureText.ts'
 
 test('proportional metrics vary per character', () => {
   // Helvetica: `i` is narrow, `m` is wide. This is the whole reason the table
@@ -35,6 +35,23 @@ test('the default-font sentinel and the proportional families keep the table', (
   expect(measureText('illi', 13, '')).toBe(table)
   expect(measureText('illi', 13, undefined)).toBe(table)
   expect(measureText('illi', 13, 'serif')).toBe(table)
+})
+
+// The whole point of the pairing: the family reaches the measurement, so a
+// caller cannot set `ctx.font` to a monospace stack and then reserve room for it
+// off the Helvetica table. plugin-maf did exactly that and drew its deletion
+// count outside the run it was centered in.
+test('a measured font measures the family it says it draws', () => {
+  const mono = measuredFont(10, 'Courier New,monospace', 'bold')
+  expect(mono.css).toBe('bold 10px Courier New,monospace')
+  expect(mono.measure('1000')).toBe(measureText('1000', 10, 'monospace'))
+  expect(mono.measure('1000')).toBeGreaterThan(measureText('1000', 10))
+})
+
+test('a measured font without a weight is still a valid shorthand', () => {
+  const sans = measuredFont(9, 'sans-serif')
+  expect(sans.css).toBe('9px sans-serif')
+  expect(sans.measure('42')).toBe(measureText('42', 9, 'sans-serif'))
 })
 
 test('width scales linearly with font size', () => {

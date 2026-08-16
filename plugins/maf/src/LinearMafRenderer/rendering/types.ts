@@ -1,22 +1,16 @@
-import { measureText } from '@jbrowse/core/util'
+import { measuredFont } from '@jbrowse/core/util'
 
 import type { MafCellColorConfig } from '../resolveCellColor.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-const LABEL_FONT_SIZE = 10
-export const FONT_CONFIG = `bold ${LABEL_FONT_SIZE}px Courier New,monospace`
+// The one font every MAF label draws in — base cells, codons, and the insertion
+// and deletion counts — carrying its own measurement so a caller reserving room
+// for a count cannot measure a different font than it paints. It measured a
+// monospace label against the proportional table until 2026-08-16, which the
+// deletion count's padding hid for three digits; `measuredFont` is where that is
+// written down.
+export const LABEL_FONT = measuredFont(10, 'Courier New,monospace', 'bold')
 export const CHAR_SIZE_WIDTH = 10
-
-// FONT_CONFIG's own width, for the callers that reserve room before drawing in
-// it. `measureText` measures against a Helvetica table unless told the family is
-// monospace, and this font IS monospace — so measuring it plain under-read every
-// digit by 0.55px, which the deletion count's 2px of padding covered up to three
-// digits and not beyond: a 1000bp+ run cleared a fit test its label then
-// overflowed. Bold costs nothing here, monospace being the one face whose bold
-// advance equals its regular.
-export function measureLabelText(text: string) {
-  return measureText(text, LABEL_FONT_SIZE, 'monospace')
-}
 // Used to overlap adjacent cells by a sub-pixel so hairlines don't appear at
 // scale ~1px/bp; mirrors the +0.5/+0.4 fudge used in plugin-alignments.
 export const GAP_STROKE_OFFSET = 0.4
