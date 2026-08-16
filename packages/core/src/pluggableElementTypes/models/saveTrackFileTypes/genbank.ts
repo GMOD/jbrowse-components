@@ -1,5 +1,5 @@
 import { fetchSeq } from '../../../util/fetchSeq.ts'
-import { max, min } from '../../../util/index.ts'
+import { groupBy, max, min } from '../../../util/index.ts'
 import { coreFeatureFields, formatAttributeValue } from './util.ts'
 
 import type { AbstractSessionModel, Feature } from '../../../util/index.ts'
@@ -190,22 +190,23 @@ function formatHeader({
   ]
 }
 
-export async function stringifyGBK({
+// One LOCUS..ORIGIN..// record, spanning the features on a single reference
+// sequence. GenBank has no way to express a span that crosses one, which is why
+// this takes a refName rather than deriving it.
+async function formatRecord({
+  refName,
   features,
   assemblyName,
   session,
 }: {
+  refName: string
+  features: Feature[]
   assemblyName: string
   session: AbstractSessionModel
-  features: Feature[]
 }) {
-  if (!features.length) {
-    return ''
-  }
   const minPos = min(features.map(f => f.get('start')))
   const maxPos = max(features.map(f => f.get('end')))
   const length = maxPos - minPos
-  const refName = features[0]!.get('refName')
   const region = `${refName}:${minPos + 1}..${maxPos}`
 
   const contig = await fetchSeq({
@@ -221,4 +222,27 @@ export async function stringifyGBK({
     formatFeatWithSubfeatures({ feature: feat, minPos }),
   )
   return [...header, ...body, ...formatOrigin(contig)].join('\n')
+}
+
+export async function stringifyGBK({
+  features,
+  assemblyName,
+  session,
+}: {
+  assemblyName: string
+  session: AbstractSessionModel
+  features: Feature[]
+}) {
+  // A record per reference sequence, which is what GenBank is: a multi-region
+  // view used to take min(start)/max(end) across every feature and label the
+  // result with the first one's refName, so two contigs on screen produced one
+  // record spanning a stretch of sequence that does not exist, with an ORIGIN
+  // fetched over it.
+  const byRefName = groupBy(features, f => f.get('refName'))
+  const records = await Promise.all(
+    Object.entries(byRefName).map(([refName, feats]) =>
+      formatRecord({ refName, features: feats, assemblyName, session }),
+    ),
+  )
+  return records.join('\n')
 }

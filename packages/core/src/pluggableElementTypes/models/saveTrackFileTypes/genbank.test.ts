@@ -360,6 +360,57 @@ describe('GenBank export', () => {
     expect(result).not.toContain('"null"')
     expect(result).not.toContain('"undefined"')
   })
+
+  // GenBank cannot express a span crossing a reference sequence. Taking
+  // min(start)/max(end) over every feature and labelling it with the first
+  // one's refName described a stretch of sequence that does not exist, and
+  // fetched an ORIGIN over it.
+  it('writes one record per reference sequence', async () => {
+    const result = await stringifyGBK({
+      features: [
+        createFeature({
+          id: 'geneA',
+          refName: 'ctgA',
+          start: 100,
+          end: 200,
+          type: 'gene',
+        }),
+        createFeature({
+          id: 'geneB',
+          refName: 'ctgB',
+          start: 500,
+          end: 600,
+          type: 'gene',
+        }),
+      ],
+      assemblyName: 'volvox',
+      session: mockSession,
+    })
+
+    expect(result.split('\n').filter(l => l.startsWith('LOCUS'))).toHaveLength(
+      2,
+    )
+    expect(result).toContain('ACCESSION   ctgA')
+    expect(result).toContain('ACCESSION   ctgB')
+    expect(
+      jest
+        .mocked(fetchSeq)
+        .mock.calls.map(([{ refName, start, end }]) => [refName, start, end]),
+    ).toEqual([
+      ['ctgA', 100, 200],
+      ['ctgB', 500, 600],
+    ])
+  })
+
+  it('exports nothing for no features', async () => {
+    expect(
+      await stringifyGBK({
+        features: [],
+        assemblyName: 'volvox',
+        session: mockSession,
+      }),
+    ).toBe('')
+  })
 })
 
 describe('formatFeatWithSubfeatures', () => {
