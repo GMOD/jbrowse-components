@@ -13,14 +13,17 @@ const JSDOMEnvironment = require('jest-environment-jsdom').default
 // They must be installed as ONE consistent set. Mixing jsdom's Headers with
 // another realm's Response/Request is exactly the mismatch that made the old
 // jest-fetch-mock setup delete jsdom's copies before calling enableMocks().
+// AbortController/AbortSignal are deliberately NOT in this set. They are the
+// one pair jsdom already implements and that jsdom's own EventTarget
+// brand-checks: `document.addEventListener(t, fn, { signal })` throws
+// "member 'signal' that is not of type 'AbortSignal'" for a node-realm signal.
+// Every drag gesture in the app aborts its listeners that way.
 const FETCH_GLOBALS = [
   'fetch',
   'Headers',
   'Request',
   'Response',
   'FormData',
-  'AbortController',
-  'AbortSignal',
   'ReadableStream',
   'Blob',
 ]
