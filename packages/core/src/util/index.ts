@@ -20,7 +20,6 @@ export {
   truncateMiddle,
 } from './stringUtils.ts'
 export { getFillProps, getStrokeProps, stripAlpha } from './svgColorProps.ts'
-export { sameOptionalStrings, sameStrings } from './sameStrings.ts'
 export {
   fetchAndMaybeUnzip,
   fetchAndMaybeUnzipText,

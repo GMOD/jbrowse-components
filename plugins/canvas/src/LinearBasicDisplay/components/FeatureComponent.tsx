@@ -9,6 +9,7 @@ import {
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
@@ -284,8 +285,8 @@ const FeatureBody = observer(function FeatureBody({
     )
 
   const hitTestAtEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    return hitTestAt(e.clientX - rect.left, e.clientY - rect.top)
+    const { x, y } = eventPoint(e)
+    return hitTestAt(x, y)
   }
 
   // Hover, resolved at most once per frame. `mousemove` outruns the frame, and
@@ -318,9 +319,9 @@ const FeatureBody = observer(function FeatureBody({
     if (model.contextMenuInfo) {
       return
     }
-    // read the coordinates now; the event's own fields are gone by the frame
-    const rect = e.currentTarget.getBoundingClientRect()
-    hover.queue([e.clientX - rect.left, e.clientY - rect.top])
+    // read the coordinates now; `currentTarget` is gone by the frame
+    const { x, y } = eventPoint(e)
+    hover.queue([x, y])
   }
 
   // Both handlers hit-test at the event coordinates rather than reading

@@ -24,9 +24,9 @@ import {
   isFeature,
   measureText,
   openFeatureWidget,
-  sameStrings,
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   HeightModeMixin,

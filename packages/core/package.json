@@ -153,6 +153,7 @@
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
     "./util/copyText": "./src/util/copyText.ts",
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
+    "./util/eventPoint": "./src/util/eventPoint.ts",
     "./util/fetchHub": "./src/util/fetchHub.ts",
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
@@ -185,6 +186,7 @@
     "./util/range": "./src/util/range.ts",
     "./util/resolveRowHeight": "./src/util/resolveRowHeight.ts",
     "./util/rxjs": "./src/util/rxjs.ts",
+    "./util/sameStrings": "./src/util/sameStrings.ts",
     "./util/setStackTraceLimit": "./src/util/setStackTraceLimit.ts",
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
     "./util/stats": "./src/util/stats.ts",
@@ -792,6 +794,10 @@
         "types": "./esm/util/diagonalizeRegions.d.ts",
         "import": "./esm/util/diagonalizeRegions.js"
       },
+      "./util/eventPoint": {
+        "types": "./esm/util/eventPoint.d.ts",
+        "import": "./esm/util/eventPoint.js"
+      },
       "./util/fetchHub": {
         "types": "./esm/util/fetchHub.d.ts",
         "import": "./esm/util/fetchHub.js"
@@ -919,6 +925,10 @@
       "./util/rxjs": {
         "types": "./esm/util/rxjs.d.ts",
         "import": "./esm/util/rxjs.js"
+      },
+      "./util/sameStrings": {
+        "types": "./esm/util/sameStrings.d.ts",
+        "import": "./esm/util/sameStrings.js"
       },
       "./util/setStackTraceLimit": {
         "types": "./esm/util/setStackTraceLimit.d.ts",
@@ -1418,6 +1428,9 @@
         "util/diagonalizeRegions": [
           "esm/util/diagonalizeRegions.d.ts"
         ],
+        "util/eventPoint": [
+          "esm/util/eventPoint.d.ts"
+        ],
         "util/fetchHub": [
           "esm/util/fetchHub.d.ts"
         ],
@@ -1513,6 +1526,9 @@
         ],
         "util/rxjs": [
           "esm/util/rxjs.d.ts"
+        ],
+        "util/sameStrings": [
+          "esm/util/sameStrings.d.ts"
         ],
         "util/setStackTraceLimit": [
           "esm/util/setStackTraceLimit.d.ts"

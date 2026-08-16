@@ -21,7 +21,6 @@ import {
   isFeature,
   openFeatureWidget,
   pluralize,
-  sameOptionalStrings,
 } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
@@ -29,6 +28,7 @@ import {
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { sameOptionalStrings } from '@jbrowse/core/util/sameStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {

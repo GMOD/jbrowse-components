@@ -1,4 +1,5 @@
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import {
   DisplayChrome,
   FloatingSvgOverlay,
@@ -165,22 +166,19 @@ const LinearMultiRowFeatureDisplayComponent = observer(
     model: LinearMultiRowFeatureDisplayModel
   }) {
     function onClick(e: React.MouseEvent<HTMLDivElement>) {
-      const rect = e.currentTarget.getBoundingClientRect()
-      const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
+      const { x, y } = eventPoint(e)
+      const hit = model.featureAt(x, y)
       if (hit) {
         model.selectFeatureById(hit.id, hit.regionIndex)
       }
     }
     function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
-      const rect = e.currentTarget.getBoundingClientRect()
+      const { x, y } = eventPoint(e)
       // preventDefault only when a menu actually opens, so a right-click in the
       // inter-region gutter, or on the tree sidebar that overlays this container
       // and owns its own menu, falls through instead of being a dead zone. What
       // counts as either is `contextTargetAt`'s to say.
-      const target = model.contextTargetAt(
-        e.clientX - rect.left,
-        e.clientY - rect.top,
-      )
+      const target = model.contextTargetAt(x, y)
       if (target) {
         e.preventDefault()
         model.setHoveredFeature(undefined)

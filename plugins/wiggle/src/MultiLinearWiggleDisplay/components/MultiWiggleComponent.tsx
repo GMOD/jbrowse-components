@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import {
   DisplayChrome,
   FloatingLegend,
@@ -63,11 +64,10 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   // Resolved from the click, like `onClick` above, rather than from the hover a
   // previous frame recorded — the viewport moves under a stationary cursor.
   function onContextMenu(event: React.MouseEvent) {
-    const rect = event.currentTarget.getBoundingClientRect()
     const hit = findMultiWiggleContextHit(
       model,
       view.visibleRegions,
-      event.clientX - rect.left,
+      eventPoint(event).x,
     )
     if (!hit) {
       return

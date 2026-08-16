@@ -189,6 +189,69 @@ call `useMouseTracking`, one of which had already dropped `onMouseLeave`.
   resolution dropdown; it is a hazard for every display with a portaled overlay,
   so the guard is universal.
 
+### Coalescing, and the two cancels
+
+`onPointerPosition` is already one call per frame — `useMouseTracking` coalesces
+before it publishes. A display binding its **own** handlers instead owes the same
+discipline itself, and `useCoalescedPointer` is it: a hit test on a raw
+`mousemove` runs several times per frame on positions nobody sees, which on the
+pileup measured 3.3ms of listener time an event.
+
+Two displays bind their own, for reasons that are not going away. The pileup
+reads `offsetX`/`offsetY` off a borderless leaf canvas; the canvas feature
+display shares one hit test between hover, click and right-click and has label
+overlays with hover semantics of their own. Both route the hover half through
+the hook.
+
+- **Coalescing is safe only because nothing decides anything from a hover.**
+  Click and right-click re-hit-test from their own event. A gesture that read the
+  stored hover instead would see a coalesced frame as a lost one.
+- **`cancel` on `mouseleave`, before the clear.** A frame queued just before the
+  pointer leaves lands after it has gone and re-lights what the leave cleared.
+- **`cancel` on unmount** — a display is detached from the MST tree before React
+  unmounts it, so a frame in between writes onto a dead node. The hook does this
+  one; the leave is the caller's.
+- **Guard the write as well as the frame.** A frame is still a write, and an
+  observable array is a fresh identity every time however little changed, so the
+  setter compares (`sameStrings`). Primitives need nothing — MobX drops those.
+
+### Where a handler's coordinates come from
+
+`eventPoint(event)` — the point in the coordinate space of the element the
+handler is bound to, off `currentTarget`, so there is no ref to thread and the
+measured box cannot drift from the element that received the event. Read it
+during the handler; React clears `currentTarget` on return, so a deferred read
+measures `null`.
+
+Two neighbours are deliberately not this. `getRelativeX` measures against an
+element passed in, because a rubberband drag tracks the pointer across the
+document and projects through the box it started in. And a canvas that is a
+borderless leaf element takes `offsetX`/`offsetY` off the native event, which is
+already this and costs no layout read — a fact about that canvas, not a style to
+copy, since it stops holding the moment anything is drawn inside the element.
+
+### Right-click: `preventDefault` only when a menu opens
+
+Every display's contextmenu handler resolves a target from the event first and
+suppresses the browser menu only if one came back, so a right-click on a gutter,
+on an overlay that owns its own menu, or on nothing falls through instead of
+being a dead zone. On a canvas, suppressing it and showing nothing costs the
+reader "Save image as…".
+
+`ContextMenu` renders nothing for an empty item list, so an anchor with no items
+is invisible either way — but that is one layer too late to decide the
+`preventDefault`, which is why the decision is the hit's and not the menu's.
+
+**What stays highlighted while the menu is up is a per-display answer**, and the
+four displays give three different ones — the canvas base makes its hover setters
+inert while `contextMenuInfo` is set, multi-row derives the box from
+`contextMenuInfo.hit`, the pileup clears then re-pins `featureIdUnderMouse`.
+A mixin over that is the obvious factoring and is blocked:
+[ADR-041](../architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
+— these are the deepest model chains in the repo, and a compose layer on them
+drops later mixins' members out of the inferred type, far from the edit. So the
+rule lives here and each display states its own answer beside its state.
+
 ## Adoption map
 
 <!-- BEGIN GENERATED DISPLAY_CHROME_ADOPTION -->

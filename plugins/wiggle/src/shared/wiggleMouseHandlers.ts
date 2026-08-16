@@ -1,3 +1,5 @@
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
+
 import type { MouseState } from '@jbrowse/core/ui'
 
 interface MouseTrackingModel<T> {
@@ -27,11 +29,8 @@ export function wiggleMouseHandlers<T>(
     // cursor. `currentTarget` is the chrome container, the same box the tracker
     // measures against.
     onClick: (event: React.MouseEvent) => {
-      const rect = event.currentTarget.getBoundingClientRect()
-      const feat = computeHit(
-        event.clientX - rect.left,
-        event.clientY - rect.top,
-      )
+      const { x, y } = eventPoint(event)
+      const feat = computeHit(x, y)
       if (feat) {
         model.selectFeature(feat)
       }
