@@ -6,6 +6,7 @@ import {
   disableGpuRendering,
   shouldOfferGpuFallback,
 } from '@jbrowse/core/ui/gpuFallback'
+import { progressLabel } from '@jbrowse/core/util/progress'
 import { observer } from 'mobx-react'
 
 import { isLiveModel } from './isLiveModel.ts'
@@ -99,6 +100,53 @@ function banner(height?: number): React.CSSProperties {
 
 function errorText(error: unknown) {
   return error instanceof Error ? error.message : String(error)
+}
+
+// Announcement, split across two elements on purpose.
+//
+// The chip carrying a status is a `role="status"` polite live region, so a
+// screen reader reads the phase once when it changes ("Loading", "Clustering
+// samples"). The percentage is deliberately NOT in that region: a determinate
+// status ticks about ten times a second, and a live region carrying the number
+// talks over everything else on the page until the fetch ends.
+//
+// The bar below is where the number goes. Screen readers do not announce
+// `aria-valuenow` changes on a `progressbar`, so the value is reachable on
+// demand and silent otherwise — which is the behaviour a progress indicator
+// should have. `StatusProgressBar` in core does the same thing and is
+// toolkit-free, but it paints `theme.palette.primary.main`; every rule in this
+// file reads the host's own cascade instead, so the bar is drawn here rather
+// than imported.
+function ProgressBar({ fraction }: { fraction: number }) {
+  const filled = Math.min(1, Math.max(0, fraction))
+  return (
+    <div
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(filled * 100)}
+      style={{
+        overflow: 'hidden',
+        width: 60,
+        height: 3,
+        marginLeft: 6,
+        borderRadius: 2,
+        background: 'color-mix(in srgb, currentColor 26%, transparent)',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'currentColor',
+          // scaled rather than sized, so an update is a compositor transform
+          transformOrigin: 'left center',
+          transform: `scaleX(${filled})`,
+          transition: 'transform 200ms linear',
+        }}
+      />
+    </div>
+  )
 }
 
 const PlainRenderError = observer(function PlainRenderError({
@@ -222,7 +270,10 @@ const PlainLoading = observer(function PlainLoading({
   const { statusMessage, statusProgress, fetchCanceled } = model
   return (
     <div style={overlayBox} data-testid="loading-overlay">
-      <div style={chip}>
+      <div
+        style={{ ...chip, display: 'flex', alignItems: 'center' }}
+        role="status"
+      >
         {fetchCanceled ? (
           <>
             <span>Loading canceled</span>
@@ -241,12 +292,18 @@ const PlainLoading = observer(function PlainLoading({
           </>
         ) : (
           <>
+            {/* `progressLabel` owns the `X%` suffix for the whole repo, so the
+                two sets cannot round it differently. The ellipsis is this set's
+                own indeterminate cue — the Material one animates LoadingDots
+                there, and a static string is the plain equivalent. */}
             <span>
-              {statusMessage || 'Loading'}
               {statusProgress === undefined
-                ? '...'
-                : ` ${Math.round(statusProgress * 100)}%`}
+                ? `${statusMessage || 'Loading'}...`
+                : progressLabel(statusMessage || 'Loading', statusProgress)}
             </span>
+            {statusProgress === undefined ? null : (
+              <ProgressBar fraction={statusProgress} />
+            )}
             {model.cancelFetchByUser ? (
               <button
                 type="button"
@@ -278,11 +335,15 @@ const PlainBackgroundProgress = observer(function PlainBackgroundProgress({
   // row, so this is laid out there. Claiming `inset: 0` here would collapse
   // against that box, and pinning to the corner would sit under the row.
   return visible && model.statusMessage ? (
-    <div style={chip} data-testid="progress-chip">
-      {model.statusMessage}
-      {model.statusProgress === undefined
-        ? null
-        : ` ${Math.round(model.statusProgress * 100)}%`}
+    <div
+      style={{ ...chip, display: 'flex', alignItems: 'center' }}
+      role="status"
+      data-testid="progress-chip"
+    >
+      <span>{progressLabel(model.statusMessage, model.statusProgress)}</span>
+      {model.statusProgress === undefined ? null : (
+        <ProgressBar fraction={model.statusProgress} />
+      )}
     </div>
   ) : null
 })
