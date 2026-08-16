@@ -754,6 +754,48 @@ test('a navigation that does not move the row is not asked for twice', async () 
   expect(navs).toBeLessThanOrEqual(2)
 }, 60000)
 
+// Every other test here parks the moving row on ONE contig, which never reaches
+// `positionViewOnSpan`'s arithmetic: it works in the row's CONCATENATED offset
+// space, where a coordinate on the second region sits past the whole of the
+// first, and on a single-region row those two are the same number. ctgB goes
+// first so a ctgA answer only lands if its 6079 bases are counted ahead.
+//
+// The FRAME pass, because blocking the navigation is what keeps the two regions
+// in place — `navToLocString` replaces `displayedRegions` wholesale, so the
+// exact pass collapses the row to one contig on the first settle and the
+// arithmetic is never reached.
+test('the frame pass places a two-contig row in its concatenated space', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  target!.setDisplayedRegions([
+    { refName: 'ctgB', start: 0, end: 6079, assemblyName: TARGET_ASM },
+    { refName: 'ctgA', start: 0, end: 50001, assemblyName: TARGET_ASM },
+  ])
+  view.setRowSyncMode('follow')
+
+  let navs = 0
+  jest.spyOn(target!, 'navToLocString').mockImplementation(async () => {
+    navs++
+  })
+
+  // the settle whose answer the frame pass then steers by — the pick is written
+  // before the navigation this blocks
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(navs).toBeGreaterThan(0)
+  }, timeout)
+
+  await query!.navToLocString('ctgA:31000..32000', QUERY_ASM)
+  await waitFor(() => {
+    const win = windowOf(target!)
+    expect(win.refName).toBe('ctgA')
+    // the alignment offsets this stretch by ~600bp, and a placement that
+    // ignored ctgB's 6079 bases lands that much to the left
+    expect(win.start).toBeGreaterThan(31000)
+    expect(win.end).toBeLessThan(33000)
+  }, timeout)
+}, 60000)
+
 test('the two row-sync modes are mutually exclusive', async () => {
   const view = await openSyntenyView()
   const model = view as unknown as {
