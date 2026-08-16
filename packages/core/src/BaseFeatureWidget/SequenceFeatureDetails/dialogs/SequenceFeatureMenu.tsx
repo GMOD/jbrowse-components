@@ -137,19 +137,17 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
                   model.setShowCoordinates('relative')
                 },
               },
-              ...(showGenomicCoordsOption(mode)
-                ? [
-                    {
-                      label:
-                        'Coordinates relative to genome (only available for continuous genome based sequence types)',
-                      type: 'radio' as const,
-                      checked: coordinatesMode === 'genomic',
-                      onClick: () => {
-                        model.setShowCoordinates('genomic')
-                      },
-                    },
-                  ]
-                : []),
+              {
+                label: 'Coordinates relative to genome',
+                type: 'radio',
+                checked: coordinatesMode === 'genomic',
+                disabled: !showGenomicCoordsOption(mode),
+                disabledHelpText:
+                  'Only available for continuous genome based sequence types',
+                onClick: () => {
+                  model.setShowCoordinates('genomic')
+                },
+              },
             ],
           },
           {
