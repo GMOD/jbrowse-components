@@ -30,8 +30,7 @@ before anyone noticed.
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
-| [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
-| [Finish the coverage tooltip's allele rows](#finish-the-coverage-band-tooltips-allele-rows) | alignments | three gaps, no new data; check the ref base is in hand first |
+| [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
@@ -76,12 +75,10 @@ before anyone noticed.
 | [The SV inspector rebuilds its chord track per filter](#the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
-| [Nothing checks a hand-built transfer list](#nothing-checks-a-hand-built-rpc-transfer-list-against-its-payload) | RPC | decide whether the synteny list should be derived instead |
 | [The comparative displays sit behind neither bring-your-own seam](#the-comparative-displays-sit-behind-neither-bring-your-own-seam) | synteny, dotplot, embedded | fetch status done; tooltip and context menu left, and they need shapes of their own |
 | [Sweep the unused exports, or close the question](#sweep-the-unused-exports-with-a-real-tool-or-close-the-question) | tooling, CI | configure knip per package; a grep returns 623 names and almost none are dead |
 | [charactersPerRow is a constant on a model](#charactersperrow-is-a-constant-living-on-a-model) | feature details | decide setting vs const; a setter with no UI is the worst option |
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
-| [Do a transcript's exons ever fall short of its bounds](#does-any-real-annotation-leave-a-transcripts-exons-short-of-its-bounds) | feature details | find an annotation that does it, or write the comment instead |
 
 ## Ready to build: small and self-contained
 
@@ -239,30 +236,13 @@ labels will overflow the boxes laid out for them.
   already in hand at hit time: the flatbush search returns every match before
   `topmostMatch` picks one. A tooltip line ("+3 more here") is probably the
   whole job; a click-to-list is the larger version.
-
-### Finish the coverage band tooltip's allele rows
-
-Three gaps in `AlignmentsTooltip.tsx`'s SNP rows, all visible in the same
-screenshot and none of them needing new data.
-
-- **No reference-base row.** The table lists Total and each ALT, so the reader
-  infers the reference count as depth minus the sum of the alts — which is the
-  number they actually want at a het site. Adding `Ref (G)` needs the reference
-  base at that position, which the display already has where the pileup draws
-  its mismatch letters; check whether it is in hand at tooltip time before
-  promising the row.
-- **No colour swatch**, even though every row describes a coloured bar segment
-  directly above the cursor. `CoverageRow` already takes `swatch` — the
-  modification rows pass it — so this is passing the base's colour from
-  `effectiveBaseColors` and nothing else.
-- **Row order is first appearance in the mismatch array.** `snpEntries` is
-  `Object.entries(snps)` and `countSnpsAtPosition` inserts in array order, so
-  within one position the order is whatever the position sort's tiebreak left —
-  the same locus can list its alleles differently after a pan. Sort by count
-  descending, tie-broken by base — descending alone still flips two alleles at
-  equal depth, which is the case a reader is most likely to be staring at.
-  The modification rows next to them already sort (by name), which is the
-  precedent and also the reason the inconsistency shows.
+- Name the base in the coverage tooltip's `Ref` row. That row reports the count
+  (depth minus the alts) and cannot say `Ref (G)`, because the reference base is
+  not on the main thread: `executeRenderAlignmentData` fetches `regionSequence`
+  only under bisulfite colouring and ships it to nobody. Shipping it per fetch
+  to letter one tooltip row is the wrong trade, so the version worth costing is
+  a one-base fetch on hover, next to the widget round trip the click already
+  makes.
 
 ### Verify the overlay palettes in dark mode
 
@@ -1297,63 +1277,6 @@ implementer's call, hence here rather than in the small-items section.
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
-
-### Does any real annotation leave a transcript's exons short of its bounds
-
-`transcriptRegions` treats its two inputs asymmetrically, and only one of them
-is deliberate. With no exons it stretches the CDS fallback to the feature
-bounds — `idx === 0` takes start 0, the last takes `featureLength` — so a
-CDS-only annotation still renders its UTRs. With exons it returns them verbatim.
-The `gene*` modes then lay those regions out contiguously and label them
-counting from the feature start, so exons that do not reach the feature's bounds
-drop the untiled stretches while the labels keep counting past them: the panel
-shows fewer bases than it claims and every position after the gap is wrong.
-
-**Confirm the input exists before touching the layout.** A well-formed GFF3 has
-exons tiling their mRNA exactly, which is why nothing in the repo's test data
-hits this and why the asymmetry has never been reported. The case worth hunting
-is an annotation whose exon children cover only the CDS while the mRNA's own
-bounds come from somewhere wider. If no such file turns up, the honest change is
-a comment on `transcriptRegions` saying the exon path assumes tiling, not code.
-
-If one does turn up, the fix is not simply mirroring the CDS branch. Stretching
-the first and last exon to the feature bounds fabricates exonic sequence out of
-whatever sits there, which for a real transcript is intron. Extending the
-*labels* to skip the gap, or rendering the untiled stretch as its own uncolored
-region the way `splitRegionByCds` degrades an out-of-exon CDS, both keep the
-coordinates honest — and which one is right depends on what the file meant,
-which is the other reason to find one first.
-
-### Nothing checks a hand-built RPC transfer list against its payload
-
-`rpcResultWithArrayBuffers` derives the list from the payload — every top-level
-typed-array field, through a `Set` so two views onto one allocation cannot both
-be named. The synteny result cannot use it: its arrays are two levels down, in
-`instanceData` and in the `attributes` record, so
-`executeSyntenyFeaturesAndPositions` spells out eighteen `.buffer` expressions
-by hand.
-
-A hand-built list is unchecked in both directions: a field added to
-`instanceData` and forgotten here is silently structure-cloned (a copy, per
-fetch, of the largest arrays the worker produces), and an entry naming a buffer
-the payload does not carry detaches something for nobody. Neither shows up as a
-test failure.
-
-The obvious move is to make the derivation walk into plain-object children —
-`explainTransferError`'s `bufferPaths` already walks exactly that shape, to the
-depth the deepest result in the tree needs. **Do not just do it.** Deriving means
-transferring whatever the walk finds, and transferring MOVES: a view onto a
-buffer the worker still owns gets handed away permanently, and the symptom lands
-on a later call as a `DataCloneError` naming an index. That is not hypothetical
-— `positionOrder` returned a module-level empty result on a region with no
-mismatches, `collectGroupedTransferables` swept it into the list, and every
-`hg002_haplotypes_*` figure was unrenderable until it was fixed (2026-08-15).
-A wider walk would have found more such buffers, not fewer.
-
-So the question to answer first is whether any RPC result in the tree reaches a
-buffer it does not exclusively own. If yes anywhere, the cheaper fix is a test
-asserting the hand-built list and the payload name the same set — which needs no
-walk and no policy, and catches the forgotten-field direction too.
 
 ### Walk the CIGAR once for a read's whole MM tag, not once per group
 
