@@ -162,6 +162,11 @@ jobs:
       # stops mid-run having printed something that looks like it finished.
       - name: Check no `| head` under `set -o pipefail`
         run: pnpm check-shell-pipefail
+      # Also source-only, and a static read rather than an import on purpose:
+      # these lists are eager-bundle roots, so a shared array would put every
+      # product's plugins in every product's graph.
+      - name: Check the three app products' core plugin sets agree
+        run: pnpm check-core-plugin-sets
 
   # Every artifact that is generated and committed, behind one driver. Adding a
   # generator to scripts/autogen.ts is all it takes to gate it here.
