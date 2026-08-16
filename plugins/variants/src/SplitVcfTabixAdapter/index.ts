@@ -13,6 +13,7 @@ export default function VcfTabixAdapterF(pluginManager: PluginManager) {
         name: 'SplitVcfTabixAdapter',
         displayName: 'VCF tabix adapter (split across multiple files)',
         configSchema,
+        adapterCapabilities: ['exportData'],
         getAdapterClass: () =>
           import('./SplitVcfTabixAdapter.ts').then(r => r.default),
       }),
