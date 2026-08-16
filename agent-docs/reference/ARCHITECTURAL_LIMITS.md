@@ -167,8 +167,9 @@ the numbers above are what a change has to beat.
 
 ### Every WebGPU display resolves its whole pass list before it can paint
 
-**Status:** Mitigated (the set is shared across displays), root cause is that
-the resolution is eager.
+**Status:** Accepted, measured — `browser-tests/probe-webgpu-pipeline-cost.ts`,
+Firefox Nightly on an Intel UHD 630, 2026-08-16. The eagerness is real and
+costs about 22 ms of off-thread work once per page.
 
 The two HALs sit on opposite sides of a decision WebGL2 made deliberately.
 `WebGL2Hal.getPass` links a program on its first *draw*, with a one-descriptor
@@ -179,44 +180,77 @@ does it before acquiring the canvas context, so a track's first paint waits on
 every pass it could ever draw, including the ones behind a `colorBy` nobody
 selected.
 
-That is the shape GPU_CONTEXT_BUDGET.md already measured on the other backend,
-where **the load-time pipeline build**, not the per-pass rebuild, turned out to
-be what costs. Whether it costs the same here is unmeasured but not
-unmeasurable: `createRenderPipelineAsync` is meant to keep the work off the main
-thread, and `--backend=webgpu` gives a real device through Firefox Nightly to
-time it on.
+That is the shape GPU_CONTEXT_BUDGET.md measured on the other backend, where
+**the load-time pipeline build**, not the per-pass rebuild, turned out to be
+what costs. It does not repeat here, and the reason is that
+`createRenderPipelineAsync` keeps its word. The 23 resolve **concurrently**:
+390 ms summed across them but 21.6 ms for the slowest, so the batch is about
+22 ms of wall time and none of it is main-thread. Against a cold load's 4.0 s
+to first paint, and 1.9-2.6 s warm, that is not where a track's startup goes.
 
-What bounds it today is `hal/deviceGpuCache.ts`: pipelines and the two bind
-group layouts are memoized per device, keyed on the `PipelineDescriptor` object
-itself, so displays 2..N of a track type build nothing. Before it, ten
-alignments tracks compiled 230 pipelines for 23 distinct programs. The cache is
-correct rather than approximate because a plugin's `*_PASSES` is a module const
-and `slangPass` reads `wgslSource` off a generated const, so descriptor identity
-already means "same shader, same layout, same blend, same topology"; two passes
-sharing a `.slang` shape module get separate entries because `slangPass` built
-them separate objects. It holds the in-flight promise rather than the resolved
-pipeline, which is the half that matters — many tracks mount in one tick, so a
-memo of finished compiles would miss on all of them.
+**Going lazy would cost more than it saves**, which is the other half of
+accepting it. `drawPass` is synchronous and `createRenderPipelineAsync` is not,
+so first-draw compilation means either the synchronous `createRenderPipeline`
+— the main-thread block this avoids — or skipping the draw until the pipeline
+lands, which is a visibly missing layer on the frame that first needs it. WebGL2
+has neither problem: linking is synchronous there anyway.
 
-**Retire when** WebGPU builds a pass on first draw the way WebGL2 does, or a
-measurement on WebGPU hardware says the eager set is free and this becomes an
-Accepted entry with a number in it.
+**The set is also shared across displays**, which is what keeps the 22 ms from
+multiplying. `hal/deviceGpuCache.ts` memoizes pipelines and the two bind group
+layouts per device, keyed on the `PipelineDescriptor` object itself. Measured on
+one page load per row, cycling real alignments tracks:
+
+<!-- prettier-ignore -->
+| alignments tracks | pipelines built | bind group layouts | to all-displays-drawn |
+| --- | --- | --- | --- |
+| 1 | 23 | 2 | 4064 ms (cold) |
+| 2 | 23 | 2 | 1940 ms |
+| 3 | 23 | 2 | 1951 ms |
+| 4 | 23 | 2 | 2587 ms |
+
+Flat, where before the cache it was 23 per display — 92 at the bottom row, and
+230 for the ten-track case. It stays flat because those tracks share a display
+type and therefore the same module-const pass array; a session of four
+*different* display types builds four sets, correctly. The cache is exact
+rather than approximate because `slangPass` reads `wgslSource` off a generated
+const, so descriptor identity already means "same shader, same layout, same
+blend, same topology" — and two passes sharing a `.slang` shape module get
+separate entries, because `slangPass` built them separate objects. It holds the
+in-flight promise rather than the resolved pipeline, which is the half that
+matters: many tracks mount in one tick, so a memo of finished compiles would
+miss on all of them.
+
+**Retire when** never, unless a machine turns up where the batch is not
+concurrent. Re-run the probe there before building anything; the numbers above
+are what a change has to beat, and the lazy path has a visible cost the eager
+one does not.
 
 ### A uniform write binds to its draws by adjacency, and the HALs mean different things by it
 
-**Status:** Accepted, latent — no renderer in tree violates it.
+**Status:** Accepted, latent — no renderer in tree violates it, and it is
+checkable now where it was silent.
 
 `WebGL2Hal.writeUniforms` does an immediate `bufferSubData` into one UBO.
 `WebGPUHal.writeUniforms` stages into a ring slot, and `drawPass` binds slot
 `uniformSlot - 1` — "whatever was written most recently". The two agree only
 while every renderer writes-then-draws adjacently, which every renderer does.
 
-There is no way to say otherwise: `writeUniforms` returns nothing, so a renderer
-cannot name the slot it wants a draw to read. One that batched its writes and
-then issued its draws would be correct on Canvas2D and WebGL2 and silently wrong
-on WebGPU — the failure class `packages/render-core/CLAUDE.md` says this package
-exists to refuse, and one no test in tree would catch, since the parity gate
-compares backends on renderers that all obey the convention.
+The API still cannot say otherwise: `writeUniforms` returns nothing, so a
+renderer cannot name the slot it wants a draw to read. One that batched its
+writes and then issued its draws would be correct on Canvas2D and WebGL2 and
+silently wrong on WebGPU — the failure class `packages/render-core/CLAUDE.md`
+says this package exists to refuse, and the cross-backend gate cannot see it,
+since every renderer it compares obeys the convention.
+
+**What changed is that a unit test can now ask.** `MockDraw.uniformWrite`
+records which write each draw reads and `MockHal.uniformsOf(draw)` returns its
+bytes, exactly as the clip log already records the scissor in force — and for
+the same reason, that this is *state* rather than an argument, so a test asking
+off `calls` has to re-implement the pairing. A backend suite that pins its
+renderer's writes to its draws catches the batched shape at the point it is
+introduced, rather than on a WebGPU browser nobody ran. `mockHal.test.ts`
+§"MockHal uniforms per draw" carries the shapes, including the legal one (two
+draws sharing one write).
 
 The ring's cost is fixed and paid whether a renderer writes 4 slots or 1900:
 `MAX_UNIFORM_SLOTS` x the device-aligned uniform size, as a GPU buffer **and** a

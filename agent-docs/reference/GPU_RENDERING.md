@@ -908,11 +908,12 @@ builds a pass on its first *draw* (`getPass`), keeping one canary link in the
 constructor so a GL stack that cannot compile our shaders at all still falls to
 Canvas2D; a three-track LGV declares 29 programs and links 14. WebGPU resolves
 the whole declared list before `WebGPUHal.create` returns, so a track's first
-paint waits on every pass it could ever draw. What takes the sting out of that
-is that pipelines are **shared across displays** — `hal/deviceGpuCache.ts`
-memoizes them per device on the descriptor's own identity, so the second
-alignments track builds none of its 23 — but the first still pays for all of
-them. See
+paint waits on every pass it could ever draw. Measured, that costs less than it
+reads: the 23 resolve concurrently, so the batch is ~22 ms of wall time and none
+of it on the main thread. And pipelines are **shared across displays** —
+`hal/deviceGpuCache.ts` memoizes them per device on the descriptor's own
+identity, so a four-track session builds 23 of them, not 92. Both numbers, and
+why going lazy here would cost more than it saves, are in
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#every-webgpu-display-resolves-its-whole-pass-list-before-it-can-paint).
 
 A descriptor's identity is what makes that cache correct rather than clever: a

@@ -21,9 +21,25 @@ export interface MockRect {
 }
 
 /**
- * One draw, with the clip that was in force when it was issued. `null` means
- * unclipped — the full canvas — which is what both HALs owe after a
- * `clearScissor` / `clearViewport`.
+ * One draw, with the state that was in force when it was issued — the clip, and
+ * which `writeUniforms` it reads. `null` scissor/viewport means unclipped, the
+ * full canvas, which is what both HALs owe after a `clearScissor` /
+ * `clearViewport`.
+ *
+ * `uniformWrite` indexes {@link MockHal.getUniformWritesF32}, or is `-1` when
+ * nothing has been written yet. It is here for the same reason the clip is:
+ * uniforms are *state*, so "which values did this draw actually use" is a
+ * question about the order of two methods, and a test asking it off `calls` has
+ * to re-implement the pairing to find out.
+ *
+ * **The pairing is by adjacency, and the two HALs mean different things by
+ * it.** `WebGPUHal` stages each write into a ring slot and binds slot
+ * `uniformSlot - 1` — "whatever was written most recently" — while `WebGL2Hal`
+ * does an immediate `bufferSubData` into one UBO. They agree only while a
+ * renderer writes then draws, which is the convention every renderer in tree
+ * follows and nothing enforces: batching the writes and then issuing the draws
+ * is right on WebGL2 and Canvas2D and silently wrong on WebGPU. This field is
+ * what lets a backend test pin its renderer's pairing.
  */
 export interface MockDraw {
   passId: string
@@ -31,6 +47,7 @@ export interface MockDraw {
   bufferPassId: string | undefined
   scissor: MockRect | null
   viewport: MockRect | null
+  uniformWrite: number
 }
 
 export class MockHal implements GpuHal {
@@ -201,6 +218,7 @@ export class MockHal implements GpuHal {
       bufferPassId,
       scissor: this.scissor && { ...this.scissor },
       viewport: this.viewport && { ...this.viewport },
+      uniformWrite: this.uniformWrites.length - 1,
     })
   }
 
@@ -281,14 +299,28 @@ export class MockHal implements GpuHal {
   }
 
   /**
-   * Every draw of the frame with the clip it went out under, in order — the
-   * answer to "which columns did this pass actually paint into", which
-   * `callsOf('drawPass')` cannot give because scissor and viewport are state
-   * rather than arguments. `scissor: null` is unclipped. See the field above for
-   * the bug this exists for.
+   * Every draw of the frame with the state it went out under, in order — the
+   * answer to "which columns did this pass paint into" and "which uniforms did
+   * it read", neither of which `callsOf('drawPass')` can give, because clip and
+   * uniforms are state rather than arguments. `scissor: null` is unclipped;
+   * `uniformWrite` indexes `getUniformWrites*`. See {@link MockDraw} for what
+   * each is guarding.
    */
   draws() {
     return this.drawLog
+  }
+
+  /**
+   * The uniform bytes a recorded draw reads, as f32 — `draws()` joined to
+   * `getUniformWritesF32()` for you, since doing it by hand at every call site
+   * is how the index and the list drift apart. `null` when the draw preceded
+   * any write, which is the case no renderer should rely on: WebGPU clamps it
+   * to ring slot 0 and WebGL2 leaves the previous frame's UBO bound, so the two
+   * backends disagree about what it even means.
+   */
+  uniformsOf(draw: MockDraw) {
+    const buf = this.uniformWrites[draw.uniformWrite]
+    return buf ? new Float32Array(buf) : null
   }
 
   reset() {

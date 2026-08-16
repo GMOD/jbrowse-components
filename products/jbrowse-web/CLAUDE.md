@@ -53,6 +53,17 @@ compares, so a fresh clone needs no command.
   protocol and repaint properties with the website's screenshot review via
   `@jbrowse/browser-test-utils/reviewApp` — fix a protocol bug in the shared
   client and run `reviewAppProbe.ts` after.
+- **Two traps when writing a probe against the built app**, both of which
+  produce a confident wrong answer rather than an error. **`constructor.name` is
+  minified** — the bundle a probe loads is the production build, so every
+  backend, model and renderer answers to a two-letter name and a check like
+  `backend.constructor.name.startsWith('Gpu')` reports the GPU path as absent.
+  Key off behavior or off the app's own console lines instead. And **Firefox
+  clamps `performance.now()`** for fingerprinting resistance, coarser than
+  anything sub-millisecond, so every duration column reads `0.000` whatever the
+  truth is; a probe that needs real durations sets
+  `privacy.reduceTimerPrecision: false` in `extraPrefsFirefox`, which the runner
+  deliberately does not (a test should see what a user's browser does).
 - **A verdict paints; it does not resize.** Anything that moves a button between
   a mousedown and its mouseup makes the browser dispatch no click at all,
   reported as "I had to press Deny twice". So in header and card: nothing a

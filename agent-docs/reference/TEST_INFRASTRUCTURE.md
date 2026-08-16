@@ -74,6 +74,27 @@ whether your change can even reach the pixels in question.
   --backend=webgpu`. Chrome flags already set in `runner.ts`.
 - **macOS** — real GPU, ~10× cost.
 
+**A webgpu run fails ~17 tests that have nothing to do with rendering, because
+it is the Firefox run.** Read the names before chasing any of them:
+
+- **SVG Export (11)**, all with an empty error. The export saves through a
+  download behavior only CDP sets, so the file never lands and the assertion has
+  nothing to say.
+- **FetchCancellation (3)**, same empty error — `fetch-cancellation.ts` calls
+  `page.createCDPSession()` directly, which is Chrome-only.
+- **TransferListDiagnostics (1)**, which reads the *wording* of Chrome's
+  `DataCloneError` back out of a postMessage failure. Firefox words it
+  differently and the regex says so in the failure message.
+- **Two DOM/text assertions** — a canvas label-squeeze check and a dotplot
+  tooltip — that are genuinely unexplained rather than known-benign. Neither
+  touches the GPU path.
+
+None of these are goldens: a failed test writes none, so `--update-snapshots`
+leaves them alone. **The first run after a cold start also fails a test or two
+to Firefox profile creation** (`Alignments Read Identity` was the case seen);
+they pass on the second. Judge a webgpu run by whether the failures are on that
+list, not by the tally.
+
 ## Unit tests
 
 Jest, co-located (`*.test.ts`), run with `pnpm test-ci`. Node-based and fast —

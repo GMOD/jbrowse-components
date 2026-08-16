@@ -121,3 +121,67 @@ describe('MockHal draw validation', () => {
     }).not.toThrow()
   })
 })
+
+// The uniform half of the same problem the clip log solves: a draw's values are
+// state, so nothing in `calls` says which write a given draw read. It matters
+// more here than for the clip, because the two real HALs implement the pairing
+// differently — WebGPU binds the most recent ring slot, WebGL2 has one UBO — so
+// a renderer that batches its writes is right on one backend and wrong on the
+// other, with no error either way.
+describe('MockHal uniforms per draw', () => {
+  const u = (v: number) => Float32Array.from([v]).buffer
+
+  it('pairs each draw with the write in force when it was issued', () => {
+    const hal = new MockHal([pass('a'), pass('b')])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.writeUniforms(u(10))
+    hal.drawPass('a', 0)
+    hal.writeUniforms(u(20))
+    hal.drawPass('b', 0)
+    hal.endFrame()
+
+    expect(hal.draws().map(d => hal.uniformsOf(d)?.[0])).toEqual([10, 20])
+  })
+
+  it('two draws after one write share it, which is the legal batching', () => {
+    // A renderer writing once per block and drawing several passes into it is
+    // the common shape, and it is fine on both HALs.
+    const hal = new MockHal([pass('a'), pass('b')])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.writeUniforms(u(7))
+    hal.drawPass('a', 0)
+    hal.drawPass('b', 0)
+    hal.endFrame()
+
+    expect(hal.draws().map(d => d.uniformWrite)).toEqual([0, 0])
+    expect(hal.draws().map(d => hal.uniformsOf(d)?.[0])).toEqual([7, 7])
+  })
+
+  it('catches the batched-writes shape that only breaks on WebGPU', () => {
+    // Both writes land, then both draws. On WebGL2 this is still wrong, but on
+    // WebGPU it is wrong *silently and differently*: every draw binds the last
+    // slot, so the pass that meant to read 10 reads 20. The log is what makes
+    // the mispairing visible in a unit test.
+    const hal = new MockHal([pass('a'), pass('b')])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.writeUniforms(u(10))
+    hal.writeUniforms(u(20))
+    hal.drawPass('a', 0)
+    hal.drawPass('b', 0)
+    hal.endFrame()
+
+    expect(hal.draws().map(d => hal.uniformsOf(d)?.[0])).toEqual([20, 20])
+  })
+
+  it('reports a draw that precedes every write rather than inventing one', () => {
+    // WebGPU clamps this to ring slot 0 and WebGL2 leaves the last frame's UBO
+    // bound, so there is no shared answer to report — null says so.
+    const hal = new MockHal([pass('a')])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.drawPass('a', 0)
+    hal.endFrame()
+
+    expect(hal.draws()[0]!.uniformWrite).toBe(-1)
+    expect(hal.uniformsOf(hal.draws()[0]!)).toBeNull()
+  })
+})
