@@ -281,6 +281,20 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // Reads each level's staying row, never its moving row, which this pass
   // writes — and `followPairs` is ordered outward from the anchor so that an
   // interior row, which is both, is written before the level beyond it reads it.
+  //
+  // TRACKED ONLY WHERE IT IS AN INPUT. The ordering gets the interior row the
+  // right VALUE, but reading it still registers a dependency on a row this same
+  // run just wrote, so MobX re-ran the whole pass once per pan — measured at
+  // exactly 2.00 runs per step on a three-row stack anchored at the top against
+  // 1.00 for two rows and 1.00 for three anchored in the middle, which is the
+  // interior row and nothing else. The second run recomputes the same spans and
+  // writes the same numbers, so it is waste rather than convergence.
+  //
+  // A row this pass did not write stays tracked, because then its window is an
+  // independent input: a level that held places nothing, and the level beyond it
+  // has to keep waking on the row's own motion. The hand-nudge case is not lost
+  // either — re-asserting the follow over a row the user dragged belongs to the
+  // exact pass, which reads `coarseDynamicBlocks` for exactly that reason.
   addDisposer(
     self,
     autorun(
@@ -288,11 +302,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         if (!self.followSynteny) {
           return
         }
+        const written = new Set<LinearGenomeViewModel>()
         for (const pair of self.followPairs) {
           const { level, stayingView, movingView, toMate, mateAssembly } = pair
-          const window = followAnchorWindow(
-            stayingView.dynamicBlocks.contentBlocks,
-          )
+          const blocks = written.has(stayingView)
+            ? untracked(() => stayingView.dynamicBlocks.contentBlocks)
+            : stayingView.dynamicBlocks.contentBlocks
+          const window = followAnchorWindow(blocks)
           // the block the last settle chose, rather than re-picking one per
           // frame. Its direction has to match, since it was picked on whichever
           // axis `toMate` was then, and its display has to be alive, since
@@ -318,8 +334,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             mateAssembly,
             transform: pick.transform,
           })
-          if (span) {
-            positionViewOnSpan(movingView, span)
+          if (span && positionViewOnSpan(movingView, span)) {
+            written.add(movingView)
           }
         }
       },

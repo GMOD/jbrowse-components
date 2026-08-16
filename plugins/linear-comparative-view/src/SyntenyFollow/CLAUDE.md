@@ -75,7 +75,13 @@ against no longer exists.
   a second a navigation flushes the row's coarse blocks, i.e. an RPC per frame.
 - The frame pass reads each level's **staying** row and never its moving row.
   With the outward ordering, an interior row is written before the level beyond
-  it reads it.
+  it reads it — but it is read **untracked** once this run has written it.
+  Ordering settles the value; the dependency is separate, and registering one on
+  a row the same run just wrote re-ran the whole pass. Measured at exactly 2.00
+  runs per pan step on three rows anchored at the top, against 1.00 for two rows
+  and 1.00 for three anchored in the middle, where the pass writes outward both
+  ways and reads neither. A row this pass did **not** write stays tracked, since
+  then its window is a real input.
 
 The exact pass reads the moving row on purpose (`alreadyShowing`), inverting
 that rule: the dependency is what re-asserts the follow over a row the user

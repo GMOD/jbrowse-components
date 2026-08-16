@@ -1,5 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
+import { spy } from 'mobx'
 
 import { doBeforeEach, getTestSession, setup } from './util.tsx'
 
@@ -605,6 +606,43 @@ test('anchoring the middle row drives both neighbours outward', async () => {
     expect(bottom.start).toBeGreaterThan(DEL_LOCUS - 500)
     expect(bottom.end).toBeLessThan(DEL_LOCUS + 1500)
   }, timeout)
+}, 60000)
+
+// The frame pass writes each level's moving row and reads each level's staying
+// row, and on a stack deeper than two those are the same row: the outward
+// ordering gets it the right VALUE, but reading it still made this run depend on
+// a row it had just written, and MobX re-ran the whole pass. The second run
+// recomputes the same spans and writes the same numbers, so it was waste.
+//
+// Anchored at the TOP, which is what puts a row in both positions — the same
+// three rows anchored in the middle have the pass writing outward in both
+// directions and reading neither, and never showed this.
+test('the frame pass does not re-run itself over an interior row', async () => {
+  const view = await openThreeRowView()
+  view.setRowSyncMode('follow')
+  view.setFollowAnchorIndex(0)
+  await view.views[0]!.navToLocString(
+    `ctgA:${INS_LOCUS}..${INS_LOCUS + 1000}`,
+    'volvox_ins',
+  )
+  await new Promise(resolve => setTimeout(resolve, 2500))
+
+  let runs = 0
+  const dispose = spy(ev => {
+    if (ev.type === 'reaction' && ev.name === 'SyntenyFollowFrame') {
+      runs++
+    }
+  })
+  const steps = 30
+  // oscillating, so the anchor stays over the alignments it is following
+  for (let i = 0; i < steps; i++) {
+    view.views[0]!.horizontalScroll(i % 2 === 0 ? 2 : -2)
+  }
+  dispose()
+
+  // one per pan, not two: it was exactly 2.00 before, and stays 1.00 for two
+  // rows and for three anchored in the middle
+  expect(runs).toBe(steps)
 }, 60000)
 
 // A follow that cannot resolve cannot resolve repeatedly, so it says so once.
