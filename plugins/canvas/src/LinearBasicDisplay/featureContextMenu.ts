@@ -106,8 +106,14 @@ export interface FeatureMenuSelf extends IStateTreeNode {
 // track menu's filter submenu offer it, and building it twice is how a label and
 // a gate drift; picking the one entry out of the record is what the record shape
 // is for.
+//
+// Guarded rather than asserted: `featureNarrowings` is the documented subclass
+// seam, and a subclass rebuilding the record without this key would hand
+// `undoItems` an `[undefined]` to read `.count` off. No row is the honest answer
+// for a display that declares no hidden set.
 function showHiddenFeaturesMenuItems(self: FeatureMenuSelf): MenuItem[] {
-  return undoItems({ hiddenFeatures: self.featureNarrowings().hiddenFeatures! })
+  const { hiddenFeatures } = self.featureNarrowings()
+  return hiddenFeatures ? undoItems({ hiddenFeatures }) : []
 }
 
 // What every group below is built from: the model to act on, the right-click
@@ -218,7 +224,13 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
             FeatureSequenceDialog,
             {
               model: self,
-              parentFeatureId: subfeature?.parentFeatureId ?? featureId,
+              // `item.featureId`, never `subfeature.parentFeatureId`: the
+              // panel fetches this id and GetCanvasFeatureDetails resolves
+              // top-level features only, while a subfeature names whichever
+              // feature it hangs off. The two agree today, but only `item`
+              // carries that as a guarantee; the panel descends recursively to
+              // `featureId` from whatever it gets, so the root always works.
+              parentFeatureId: featureId,
               featureId: subfeature?.featureId ?? featureId,
               displayedRegionIndex,
               assemblyName: region.assemblyName,

@@ -79,6 +79,25 @@ describe('feature "Get sequence" context menu', () => {
     })
   })
 
+  it('fetches the drawn feature, not whatever the subfeature calls its parent', () => {
+    // A subfeature nested below the top level names the container it hangs off,
+    // which need not be the drawn record. Only the record is addressable by the
+    // RPC, and the panel descends recursively from whatever it fetches, so the
+    // id has to come from the FlatbushItem.
+    const { createDisplay } = createTestEnvironment()
+    const { display, session } = createDisplay()
+    const nested: SubfeatureInfo = { ...eden1, parentFeatureId: 'EDEN.1' }
+    loadGene(display, [nested])
+
+    rightClick(display, gene, nested)
+    clickContextMenuItem(display, 'Get sequence')
+
+    expect(session.queuedDialogs[0]![1]).toMatchObject({
+      parentFeatureId: 'EDEN',
+      featureId: 'EDEN.1',
+    })
+  })
+
   it('publishes sequence panel hovers for the LGV crosshair', () => {
     // the dialog holds its own settings model, but the hovered base has to
     // reach a node the view can find, so it lands on the display

@@ -2513,10 +2513,18 @@ export default function baseStateModelFactory(
          * #action
          */
         // Re-fetch the full feature by id and open it in the details widget (the
-        // painting ships only slim render arrays). With a subfeatureInfo we fetch
-        // its parent and descend to the clicked subfeature; otherwise the feature
-        // itself. Serves both the click path and the context menu's "Open feature
+        // painting ships only slim render arrays). With a subfeatureInfo we
+        // descend to the clicked subfeature; otherwise the feature itself.
+        // Serves both the click path and the context menu's "Open feature
         // details" (which passes no subfeature).
+        //
+        // Always fetches `featureId` — the top-level id every caller passes
+        // from a FlatbushItem — rather than `subfeatureInfo.parentFeatureId`,
+        // which names whichever feature the subfeature hangs off.
+        // GetCanvasFeatureDetails searches top-level features only, so anything
+        // else answers undefined and this silently opens nothing;
+        // findSubfeatureById below recurses, so the root always reaches the
+        // target.
         selectFeatureById(
           featureId: string,
           subfeatureInfo: SubfeatureInfo | undefined,
@@ -2524,7 +2532,7 @@ export default function baseStateModelFactory(
         ) {
           void (async () => {
             const parentFeature = await self.fetchFullFeature(
-              subfeatureInfo ? subfeatureInfo.parentFeatureId : featureId,
+              featureId,
               displayedRegionIndex,
             )
             if (parentFeature && isAlive(self)) {
