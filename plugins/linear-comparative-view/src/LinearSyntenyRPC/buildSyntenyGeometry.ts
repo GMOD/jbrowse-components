@@ -3,6 +3,10 @@ import {
   CIGAR_I,
   CIGAR_INDEL_MASK,
   CIGAR_N,
+  cigarWalkBp1,
+  cigarWalkBp2,
+  cigarWalkRev1,
+  cigarWalkRev2,
   visitCigarRenderedSegments,
 } from '@jbrowse/cigar-utils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
@@ -616,23 +620,22 @@ export function buildSyntenyGeometry({
     const x12 = p12_cumBp[i]!
     const x21 = p21_cumBp[i]!
     const x22 = p22_cumBp[i]!
+    // The walk's start corner and per-axis direction, shared with the dotplot's
+    // `buildLineSegments` off the same p11..p22 lanes — a reverse-strand CIGAR
+    // does not begin at the (x11, x21) corner. This loop already skips every
+    // feature that draws no CIGAR (`willDrawCigarArr`), which is the gate these
+    // want to sit behind.
     const strand = strands[i]!
-
-    const k1 = strand === -1 ? x12 : x11
-    const k2 = strand === -1 ? x11 : x12
-    const rev1 = k1 < k2 ? 1 : -1
-    const rev2 = (x21 < x22 ? 1 : -1) * strand
-
     const wantMarkers = !!wantMarkersArr[i]
 
     visitCigarRenderedSegments(
       cigar,
-      k1,
-      strand === -1 ? x22 : x21,
+      cigarWalkBp1(x11, x12, strand),
+      cigarWalkBp2(x21, x22, strand),
       bpPerPx0,
       bpPerPx1,
-      rev1,
-      rev2,
+      cigarWalkRev1(x11, x12, strand),
+      cigarWalkRev2(x21, x22, strand),
       (resolvedOp, segBp1Start, segBp1End, segBp2Start, segBp2End) => {
         if (!segmentOffScreen(segBp1Start, segBp1End, segBp2Start, segBp2End)) {
           const kind = cigarSegmentKind(resolvedOp)

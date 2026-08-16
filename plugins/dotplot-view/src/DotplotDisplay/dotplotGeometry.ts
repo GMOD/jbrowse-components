@@ -1,4 +1,11 @@
-import { CIGAR_M, visitCigarRenderedSegments } from '@jbrowse/cigar-utils'
+import {
+  CIGAR_M,
+  cigarWalkBp1,
+  cigarWalkBp2,
+  cigarWalkRev1,
+  cigarWalkRev2,
+  visitCigarRenderedSegments,
+} from '@jbrowse/cigar-utils'
 
 import { MIN_CIGAR_PX_WIDTH } from './dotplotCigarDetail.ts'
 
@@ -119,42 +126,27 @@ export function buildLineSegments(
       Math.abs(x2 - x1) * bpPerPxHInv,
       Math.abs(y2 - y1) * bpPerPxVInv,
     )
-    // Where the CIGAR's FIRST op sits, which for a reverse-strand alignment is
-    // not the (x1,y1) corner. PAF writes a '-' strand `cg` in anchor-forward
-    // order with the mate walking backward, so op 0 is at (anchor start, mate
-    // end) — and the worker has already swapped the h endpoints so that x1 IS
-    // the anchor's end. Starting the walk at x1 and stepping backward traverses
-    // the same line, but lays the ops down in reverse order: every indel landed
-    // mirrored through the block's centre, so a 5kb deletion 100bp into an
-    // inverted block drew 100bp from its far end instead.
-    //
-    // Reversed displayed regions (auto-diagonalize flips query regions, so the
-    // vertical axis routinely has them) are still read off the endpoints rather
-    // than assumed, which is what the `k1 < k2` and `y1 < y2` comparisons do —
-    // strand only says which END the walk starts from. Same expression as
-    // `buildSyntenyGeometry`, off the same p11..p22 lanes: the two views
-    // disagreeing about where a CIGAR starts is exactly the drift this keeps
-    // out.
-    const strand = strands[i]!
-    const k1 = strand === -1 ? x2 : x1
-    const k2 = strand === -1 ? x1 : x2
-    const rev1 = k1 < k2 ? 1 : -1
-    const rev2 = (y1 < y2 ? 1 : -1) * strand
-
     if (
       cigarEnd > cigarStart &&
       drawCigar &&
       featureWidthPx >= MIN_CIGAR_PX_WIDTH
     ) {
+      // The walk's start corner and per-axis direction, shared with
+      // `buildSyntenyGeometry` off the same p11..p22 lanes — a reverse-strand
+      // CIGAR does not begin at the (x1,y1) corner, and the two views
+      // disagreeing about that is what these exist to prevent. Inside the gate,
+      // not above it: at whole-genome zoom nearly every feature takes the flat
+      // branch below and has no CIGAR to start.
+      const strand = strands[i]!
       visitCigarRenderedSegments(
         // a view, not a copy — visitCigarRenderedSegments takes ArrayLike
         cigarData.subarray(cigarStart, cigarEnd),
-        k1,
-        strand === -1 ? y2 : y1,
+        cigarWalkBp1(x1, x2, strand),
+        cigarWalkBp2(y1, y2, strand),
         bpPerPxH,
         bpPerPxV,
-        rev1,
-        rev2,
+        cigarWalkRev1(x1, x2, strand),
+        cigarWalkRev2(y1, y2, strand),
         (op, seg1Start, seg1End, seg2Start, seg2End) => {
           writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, i, op)
           n++

@@ -36,6 +36,12 @@ export {
 } from './mismatchCallback.ts'
 export type { MismatchCallback, MismatchWindow } from './mismatchCallback.ts'
 export { visitCigarRenderedSegments } from './cigarRenderedSegments.ts'
+export {
+  cigarWalkBp1,
+  cigarWalkBp2,
+  cigarWalkRev1,
+  cigarWalkRev2,
+} from './cigarWalkStart.ts'
 export { cigarToMismatches2 } from './cigarToMismatches2.ts'
 export { mdToMismatches2 } from './mdToMismatches2.ts'
 export { getNextRefPos } from './getNextRefPos.ts'
