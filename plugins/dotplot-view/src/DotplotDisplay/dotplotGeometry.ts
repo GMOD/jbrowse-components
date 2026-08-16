@@ -128,12 +128,13 @@ export function buildLineSegments(
     // mirrored through the block's centre, so a 5kb deletion 100bp into an
     // inverted block drew 100bp from its far end instead.
     //
-    // Reversed displayed regions (auto-diagonalize flips query regions) are
-    // still read off the endpoints rather than assumed, which is what `k1 < k2`
-    // and the `x21 < x22` term do. Same expression as
-    // `buildSyntenyGeometry`, off the same p11..p22 lanes — the two views
-    // disagreeing about where a CIGAR starts is exactly the drift that keeps
-    // happening here.
+    // Reversed displayed regions (auto-diagonalize flips query regions, so the
+    // vertical axis routinely has them) are still read off the endpoints rather
+    // than assumed, which is what the `k1 < k2` and `y1 < y2` comparisons do —
+    // strand only says which END the walk starts from. Same expression as
+    // `buildSyntenyGeometry`, off the same p11..p22 lanes: the two views
+    // disagreeing about where a CIGAR starts is exactly the drift this keeps
+    // out.
     const strand = strands[i]!
     const k1 = strand === -1 ? x2 : x1
     const k2 = strand === -1 ? x1 : x2

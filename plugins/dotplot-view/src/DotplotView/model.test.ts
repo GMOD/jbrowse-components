@@ -298,6 +298,95 @@ test('locking the aspect ratio squares the axes on its own', () => {
   expect(model.hview.bpPerPx).toBe(model.vview.bpPerPx)
 })
 
+// A locked plot runs both axes at ONE bpPerPx, and it has to be the larger of
+// the two fits for the longer genome to fit at all — which is legitimately past
+// the shorter axis' own. Clamping each axis to its own instead pulled the
+// shorter one back in while the longer one held, and the lock autorun then
+// squared the pair to the average of the two.
+function setupUnequalAxes() {
+  const session = createTestSession({
+    sessionSnapshot: {
+      views: [
+        {
+          type: 'DotplotView',
+          height: 600,
+          assemblyNames: ['volvox', 'volvox'],
+          hview: {
+            bpPerPx: 1,
+            offsetPx: 0,
+            displayedRegions: [
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgA',
+                start: 0,
+                end: 100000,
+              },
+            ],
+          },
+          vview: {
+            bpPerPx: 1,
+            offsetPx: 0,
+            displayedRegions: [
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgA',
+                start: 0,
+                end: 400000,
+              },
+            ],
+          },
+        },
+      ],
+    },
+  }) as any
+  const view = session.views[0]
+  view.setWidth(800)
+  view.setLockAspectRatio(true)
+  view.showAllRegions()
+  return view
+}
+
+test('zooming out on a locked plot at full extent does nothing', () => {
+  const model = setupUnequalAxes()
+  const full = model.hview.bpPerPx
+  // the shared fit is the longer genome's, past the h axis' own
+  expect(full).toBe(model.vview.fitBpPerPx)
+  expect(full).toBeGreaterThan(model.hview.fitBpPerPx)
+
+  model.zoomOut()
+
+  // it used to clamp the h axis to its own fit and land the pair on the average
+  // of the two — so a click meaning "show me more" showed less
+  expect(model.hview.bpPerPx).toBe(full)
+  expect(model.vview.bpPerPx).toBe(full)
+})
+
+test('a locked plot zooms back out to the full extent it started at', () => {
+  const model = setupUnequalAxes()
+  const full = model.hview.bpPerPx
+  for (let i = 0; i < 3; i++) {
+    model.zoomIn()
+  }
+  expect(model.hview.bpPerPx).toBeLessThan(full)
+  for (let i = 0; i < 8; i++) {
+    model.zoomOut()
+  }
+  // showAllRegions was the only way back: the pair converged on the average of
+  // the two fits and no number of clicks moved it
+  expect(model.hview.bpPerPx).toBe(full)
+  expect(model.vview.bpPerPx).toBe(full)
+})
+
+test('an unlocked plot still stops each axis at its own fit', () => {
+  const model = setupUnequalAxes()
+  model.setLockAspectRatio(false)
+  for (let i = 0; i < 8; i++) {
+    model.zoomOut()
+  }
+  expect(model.hview.bpPerPx).toBe(model.hview.fitBpPerPx)
+  expect(model.vview.bpPerPx).toBe(model.vview.fitBpPerPx)
+})
+
 test('a drag under the 3px threshold adds no highlight', () => {
   const model = setup()
   model.addHighlightFromMouseCoords([100, 100], [102, 102])

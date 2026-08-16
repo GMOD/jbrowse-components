@@ -701,6 +701,18 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * The zoom-out limit both axes share under `lockAspectRatio`: one
+         * bpPerPx has to fit the LONGER genome, so it is the larger of the two
+         * axes' own fits. Read back by each axis as its `maxBpPerPx` (see
+         * `axisMaxBpPerPx`), which is what keeps every route to a zoom — the
+         * buttons, the wheel, box-zoom, `showAllRegions` — clamping against the
+         * same ceiling.
+         */
+        get sharedFitBpPerPx() {
+          return Math.max(self.hview.fitBpPerPx, self.vview.fitBpPerPx)
+        },
+        /**
+         * #getter
          * Signature of the horizontal axis' displayed-region order and
          * orientation, which a diagonalize reorder/flip changes and a zoom or
          * pan does not. Computed here, once for the view, because every
@@ -1276,22 +1288,13 @@ export default function stateModelFactory(pm: PluginManager) {
           // border getters read, which shifts viewWidth/viewHeight and hence
           // maxBpPerPx; the second re-fits against the settled border. No
           // border state to set — borderX/borderY follow bpPerPx reactively.
+          //
+          // No aspect-lock branch: under the lock each axis' `maxBpPerPx` is
+          // already the shared ceiling, so both land on it and the lock autorun
+          // has nothing to correct.
           for (let pass = 0; pass < 2; pass++) {
-            if (self.lockAspectRatio) {
-              // One shared bpPerPx, and it has to be the larger of the two
-              // maxima for the longer genome to fit. That legitimately exceeds
-              // the shorter axis's own maxBpPerPx, so set it directly instead of
-              // through zoomTo's per-axis clamp — clamping here left the axes
-              // unequal and made the aspect-lock autorun immediately re-square
-              // them. center() below re-derives offsetPx, so nothing is lost by
-              // skipping zoomTo's anchor arithmetic.
-              const shared = Math.max(hview.maxBpPerPx, vview.maxBpPerPx)
-              hview.setBpPerPx(shared)
-              vview.setBpPerPx(shared)
-            } else {
-              hview.zoomTo(hview.maxBpPerPx)
-              vview.zoomTo(vview.maxBpPerPx)
-            }
+            hview.zoomTo(hview.maxBpPerPx)
+            vview.zoomTo(vview.maxBpPerPx)
           }
           vview.center()
           hview.center()
