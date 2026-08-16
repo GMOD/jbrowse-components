@@ -6,11 +6,11 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
+import { DisplayUIProvider } from '@jbrowse/display-ui'
 import {
   LevelSyntenyCanvas,
   type LinearSyntenyViewModel,
 } from '@jbrowse/plugin-linear-comparative-view'
-import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-app2'
 import { observer } from 'mobx-react'
 

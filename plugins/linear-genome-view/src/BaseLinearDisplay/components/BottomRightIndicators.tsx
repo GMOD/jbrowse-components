@@ -1,8 +1,8 @@
 import { use } from 'react'
 
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { createPortal } from 'react-dom'
 
-import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
 import {
   BOTTOM_RIGHT_CONTROLS_ORDER,
   BottomRightCornerContext,

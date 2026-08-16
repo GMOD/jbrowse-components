@@ -1,10 +1,10 @@
 import { ErrorBanner, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { TrackOverlaySlot } from '@jbrowse/display-ui'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { TrackOverlaySlot } from '../TrackOverlaySlot.tsx'
 import Gridlines from './Gridlines.tsx'
 import PaddingBlocks from './PaddingBlocks.tsx'
 import TrackLabel from './TrackLabel.tsx'

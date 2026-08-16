@@ -7,10 +7,10 @@
 import ProgressChip from '@jbrowse/core/ui/ProgressChip'
 import { observer } from 'mobx-react'
 
-export interface DisplayBackgroundProgressModel {
-  statusMessage?: string
-  statusProgress?: number
-}
+import type { DisplayBackgroundProgressModel } from '@jbrowse/display-ui'
+
+// Shape with the contract, re-exported here — see DisplayErrorBar.tsx.
+export type { DisplayBackgroundProgressModel }
 
 /**
  * The status channel again, for work that runs while the display is `ready`:

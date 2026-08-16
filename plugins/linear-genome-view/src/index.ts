@@ -82,6 +82,7 @@ export type {
   RenderTransformInputs,
   TrackControlComponent,
   TrackControlIcon,
+  TrackControlMenu,
   TrackControlOption,
   TrackControlProps,
 } from './BaseLinearDisplay/index.ts'
@@ -129,6 +130,7 @@ export {
   installGrowExitBake,
   onDisplayedRegionsChange,
   plainTrackControl,
+  useTrackControlMenu,
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {
@@ -143,9 +145,12 @@ export type {
   StatusChromeModel,
   TooLargeMessageModel,
 } from './BaseLinearDisplay/index.ts'
-// plain, toolkit-free overlays: pair with DisplayChromeOverlayProvider to make
-// JBrowse's own displays render without MUI, or with DisplayChromeBase to also
-// keep MUI out of the bundle. See components/chromeOverlays.ts.
+// plain, toolkit-free overlays. All of this comes from `@jbrowse/display-ui`,
+// which has no UI-toolkit dependency; importing it from here is a convenience
+// for code already reaching this plugin, not a second home. Mounting
+// `DisplayUIProvider` makes JBrowse's own displays render without Material UI;
+// keeping Material out of the *bundle* is `DisplayChromeBase` and a display
+// component of your own.
 export { plainChromeOverlays } from './BaseLinearDisplay/index.ts'
 // The terminal-state precedence used by chrome that hosts its own (non-GPU)
 // rendering lives in `@jbrowse/render-core/displayPhase` and is imported from
@@ -221,13 +226,21 @@ export { default as ExportSvgDialog } from './LinearGenomeView/components/Export
 export { GetSequenceDialog } from './LinearGenomeView/lazyDialogs.ts'
 export { default as ConnectedHoverHighlight } from './LinearGenomeView/components/ConnectedHoverHighlight.tsx'
 export { default as HoverPositionHighlight } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
-export { TrackOverlayContext } from './LinearGenomeView/TrackOverlayContext.ts'
-export { TrackOverlayPortal } from './LinearGenomeView/TrackOverlayPortal.tsx'
-// The host-side half of the portal: the display's box, the overlay node beside
-// it and the paint order between them. `TrackContainer` mounts it, and so does
-// an embedder mounting `RenderingComponent` directly — who otherwise supplies no
-// node at all and gets display chrome buried under their own region masks.
-export { TrackOverlaySlot } from './LinearGenomeView/TrackOverlaySlot.tsx'
+// The overlay layer lives in `@jbrowse/display-ui` — a package rather than this
+// plugin, because `packages/tree-sidebar` needed it and had to depend on a
+// *plugin* to get it. Re-exported here, since every display already names it
+// from this one.
+//
+// The host-side half of the portal is `TrackOverlaySlot`: the display's box, the
+// overlay node beside it and the paint order between them. `TrackContainer`
+// mounts it, and so does an embedder mounting `RenderingComponent` directly —
+// who otherwise supplies no node at all and gets display chrome buried under
+// their own region masks.
+export {
+  TrackOverlayContext,
+  TrackOverlayPortal,
+  TrackOverlaySlot,
+} from '@jbrowse/display-ui'
 export { FloatingSvgOverlay } from './LinearGenomeView/FloatingSvgOverlay.tsx'
 export type { HoverHighlightPosition } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 export { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'

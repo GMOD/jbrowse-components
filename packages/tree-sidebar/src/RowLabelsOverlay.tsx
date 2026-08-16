@@ -1,4 +1,4 @@
-import { TrackOverlayPortal } from '@jbrowse/plugin-linear-genome-view'
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
 
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 

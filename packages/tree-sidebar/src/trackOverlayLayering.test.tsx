@@ -1,4 +1,4 @@
-import { TrackOverlayContext } from '@jbrowse/plugin-linear-genome-view'
+import { TrackOverlayContext } from '@jbrowse/display-ui'
 import { render } from '@testing-library/react'
 
 import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'

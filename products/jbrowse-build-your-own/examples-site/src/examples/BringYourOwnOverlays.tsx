@@ -6,10 +6,7 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import {
-  DisplayUIProvider,
-  plainChromeOverlays,
-} from '@jbrowse/plugin-linear-genome-view'
+import { DisplayUIProvider, plainChromeOverlays } from '@jbrowse/display-ui'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -17,7 +14,7 @@ import type {
   DisplayChromeOverlays,
   DisplayErrorBarModel,
   DisplayLoadingOverlayModel,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-ui'
 
 // A display draws two kinds of UI that are not data. Its *status states* --
 // loading scrim, error bar, too-large banner, render error -- go through five

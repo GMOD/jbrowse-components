@@ -1,8 +1,46 @@
-import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
-import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
-import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
-import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
 import type { ComponentType } from 'react'
+
+// The model each overlay is handed, and the reason they are declared here
+// rather than beside the components that read them: a *set* is written against
+// these, so a host writing one needs them exported — and a component wrapped in
+// `observer()` gets no contextual type for its props, so naming the shape
+// structurally in `DisplayChromeOverlays` is not enough. They lived in
+// JBrowse's own Material overlays until this package existed, which made the
+// contract un-nameable without importing an implementation of it.
+//
+// Structural, not MST types. A display satisfies one by having the fields; no
+// mixin has to be composed and no model type is named across a lazy boundary.
+
+/** What `ErrorBar` reads: a failed fetch, and the way to run it again. */
+export interface DisplayErrorBarModel {
+  error: unknown
+  reload: () => void
+}
+
+/** What `Loading` reads. Everything is optional — a display that reports no
+ * progress and offers no cancel still gets a scrim. */
+export interface DisplayLoadingOverlayModel {
+  statusMessage?: string
+  statusProgress?: number
+  fetchCanceled?: boolean
+  cancelFetchByUser?: () => void
+  reload?: () => void
+}
+
+/** What `BackgroundProgress` reads: the status channel for work with no fetch
+ * behind it, while the phase is `ready`. */
+export interface DisplayBackgroundProgressModel {
+  statusMessage?: string
+  statusProgress?: number
+}
+
+/** What `TooLarge` reads. `forceLoad` is the whole point of the state — see the
+ * entry below. */
+export interface TooLargeMessageModel {
+  regionTooLargeReason: string
+  zoomCanReleaseGate: boolean
+  forceLoad: () => void
+}
 
 // The five components that draw `displayPhase`'s terminal and overlay states.
 // DisplayChromeBase decides WHICH of them renders; this interface is how it

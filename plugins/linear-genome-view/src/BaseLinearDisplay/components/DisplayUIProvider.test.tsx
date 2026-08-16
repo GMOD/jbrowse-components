@@ -1,12 +1,11 @@
+import { DisplayUIProvider, plainChromeOverlays } from '@jbrowse/display-ui'
 import { render } from '@testing-library/react'
 
 import DisplayChrome from './DisplayChrome.tsx'
-import DisplayUIProvider from './DisplayUIProvider.tsx'
 import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
-import plainChromeOverlays from './plainChromeOverlays.tsx'
 import TrackControl from './trackControl/TrackControl.tsx'
 
-import type { DisplayChromeOverlays } from './chromeOverlays.ts'
+import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 import type { ReactNode } from 'react'
 
 // One provider over the two seams, driven off the shared chrome fixture.

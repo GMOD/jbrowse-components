@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
+import { DisplayUIProvider } from '@jbrowse/display-ui'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 // Vite's `?worker` suffix: it bundles the module as a worker entry point and
 // hands back a constructor. Astro is a Vite app, so this is the form that works

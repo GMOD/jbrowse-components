@@ -1,13 +1,10 @@
 import { LoadingOverlay } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
-export interface DisplayLoadingOverlayModel {
-  statusMessage?: string
-  statusProgress?: number
-  fetchCanceled?: boolean
-  cancelFetchByUser?: () => void
-  reload?: () => void
-}
+import type { DisplayLoadingOverlayModel } from '@jbrowse/display-ui'
+
+// Shape with the contract, re-exported here — see DisplayErrorBar.tsx.
+export type { DisplayLoadingOverlayModel }
 
 const DisplayLoadingOverlay = observer(function DisplayLoadingOverlay({
   model,

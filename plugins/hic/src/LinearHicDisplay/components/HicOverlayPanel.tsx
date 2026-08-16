@@ -1,6 +1,6 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { TrackOverlayPortal } from '@jbrowse/plugin-linear-genome-view'
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import CloseIcon from '@mui/icons-material/Close'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import IconButton from '@mui/material/IconButton'

@@ -188,34 +188,11 @@ export function bytesTooLargeReason(bytes: number) {
   return `Requested too much data (${getDisplayStr(bytes)})`
 }
 
-// What the banner actually says: which axis tripped (empty when the display
-// gates without a reason), then the way out. Both chrome sets — the MUI
-// `TooLargeMessage` and the dependency-free `PlainTooLarge` — render this, so
-// the wording can't drift between them, and the screenshot harness that keys
-// off the literal keeps matching whichever set is mounted.
-//
-// `zoomCanRelease` decides whether "zoom in" is offered, and it has to be asked
-// because the advice is not always true. It was, once: the `AUTO_FORCE_LOAD_BP`
-// floor turned the byte gate off below 20kb, so zooming far enough always
-// worked. The byte gate no longer stops at any floor, and an index quotes whole
-// blocks — so for a file whose blocks are large the same bytes come down however
-// far the user goes, and telling them to keep zooming into a fetch whose cost
-// cannot fall is the one thing the banner must not do. `zoomCanReleaseGate`
-// answers it from two consecutive measurements rather than from a threshold; see
-// `ByteEstimate.zoomIneffective`.
-export function tooLargeBannerText(
-  regionTooLargeReason: string,
-  { zoomCanRelease = true }: { zoomCanRelease?: boolean } = {},
-) {
-  return [
-    regionTooLargeReason,
-    zoomCanRelease
-      ? 'Zoom in to see features, or force load this track for the rest of the session (may be slow)'
-      : 'Force load this track for the rest of the session (may be slow)',
-  ]
-    .filter(f => !!f)
-    .join('. ')
-}
+// What the banner says lives with the overlay contract instead — every set that
+// renders the too-large state has to say the same thing, and only one of those
+// sets is in this repo. Re-exported so a display still gets the reason text and
+// the byte math from one import.
+export { tooLargeBannerText } from '@jbrowse/display-ui'
 
 /**
  * Resolve the effective byte budget: the adapter's self-reported limit, else the

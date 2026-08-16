@@ -1,4 +1,8 @@
 import {
+  DisplayChromeOverlayProvider,
+  plainChromeOverlays,
+} from '@jbrowse/display-ui'
+import {
   isGpuRenderingDisabled,
   setGpuOverride,
 } from '@jbrowse/render-core/gpuDevice'
@@ -7,9 +11,7 @@ import { act, render } from '@testing-library/react'
 
 import DisplayChrome from './DisplayChrome.tsx'
 import DisplayChromeBase from './DisplayChromeBase.tsx'
-import { DisplayChromeOverlayProvider } from './chromeOverlayContext.ts'
 import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
-import plainChromeOverlays from './plainChromeOverlays.tsx'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

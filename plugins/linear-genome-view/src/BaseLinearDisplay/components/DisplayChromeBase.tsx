@@ -9,11 +9,11 @@ import { observer } from 'mobx-react'
 import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 
 import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
-import type { DisplayChromeOverlays } from './chromeOverlays.ts'
 import type {
   MouseState,
   MouseTracker,
 } from '@jbrowse/core/ui/useMouseTracking'
+import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'

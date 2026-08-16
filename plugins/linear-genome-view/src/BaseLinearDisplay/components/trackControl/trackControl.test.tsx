@@ -1,12 +1,11 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { TrackControlProvider, plainTrackControl } from '@jbrowse/display-ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import TrackControl from './TrackControl.tsx'
-import plainTrackControl from './plainTrackControl.tsx'
-import { TrackControlProvider } from './trackControlContext.ts'
 
-import type { TrackControlProps } from './types.ts'
+import type { TrackControlProps } from '@jbrowse/display-ui'
 
 // The two implementations are held to the same behavioral bar here on purpose:
 // an embedder who swaps in `plainTrackControl` is trusting that the control

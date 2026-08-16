@@ -468,6 +468,24 @@ importers:
         specifier: ^6.3.0
         version: 6.3.0(mobx@7.0.0)
 
+  packages/display-ui:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^6.3.0
+        version: 6.3.0(mobx@7.0.0)
+      mobx-react:
+        specifier: ^10.0.0
+        version: 10.0.0(mobx@7.0.0)(react@19.2.8)
+      react:
+        specifier: '>=19.0.0'
+        version: 19.2.8
+      react-dom:
+        specifier: '>=19.0.0'
+        version: 19.2.8(react@19.2.8)
+
   packages/embedded-core:
     dependencies:
       '@jbrowse/core':
@@ -629,6 +647,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.3.0
         version: 6.3.0(mobx@7.0.0)
@@ -1331,6 +1352,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.3.0
         version: 6.3.0(mobx@7.0.0)
@@ -1465,6 +1489,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.3.0
         version: 6.3.0(mobx@7.0.0)
@@ -1862,6 +1889,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:*
         version: link:../../../packages/core
+      '@jbrowse/display-ui':
+        specifier: workspace:*
+        version: link:../../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.3.0
         version: 6.3.0(mobx@7.0.0)

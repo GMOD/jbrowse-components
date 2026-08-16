@@ -1,13 +1,14 @@
 import { useState } from 'react'
 
-import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
+
 import { BottomRightCornerContext } from './bottomRightCorner.ts'
 
 import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
 import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
 import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
-import type { DisplayChromeOverlays } from './chromeOverlays.ts'
+import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
 

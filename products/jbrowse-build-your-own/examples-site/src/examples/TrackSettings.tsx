@@ -6,11 +6,8 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
+import { DisplayUIProvider, TrackOverlaySlot } from '@jbrowse/display-ui'
 import { pickColorOptions } from '@jbrowse/plugin-alignments'
-import {
-  DisplayUIProvider,
-  TrackOverlaySlot,
-} from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 

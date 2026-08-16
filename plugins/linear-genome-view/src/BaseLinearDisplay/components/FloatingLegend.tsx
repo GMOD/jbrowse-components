@@ -10,9 +10,8 @@ import {
   nonEmptyLegendSections,
 } from '@jbrowse/core/ui/legendSpec'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
-
-import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
 
 import type { LegendItem, LegendSection } from '@jbrowse/core/ui/legendSpec'
 

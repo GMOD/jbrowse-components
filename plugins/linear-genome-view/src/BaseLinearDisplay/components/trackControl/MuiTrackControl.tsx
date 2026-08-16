@@ -8,7 +8,7 @@ import HeightIcon from '@mui/icons-material/Height'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import { Chip, IconButton, Tooltip } from '@mui/material'
 
-import type { TrackControlIcon, TrackControlProps } from './types.ts'
+import type { TrackControlIcon, TrackControlProps } from '@jbrowse/display-ui'
 
 // JBrowse's own look for an ambient track control, and the only reason a stock
 // display's corner pulls Material UI. `plainTrackControl` is the same contract

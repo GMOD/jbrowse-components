@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { TrackOverlayPortal } from '@jbrowse/plugin-linear-genome-view'
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { Menu, MenuItem, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 

@@ -1,7 +1,8 @@
-import MuiTrackControl from './MuiTrackControl.tsx'
-import { useTrackControlOverride } from './trackControlContext.ts'
+import { useTrackControlOverride } from '@jbrowse/display-ui'
 
-import type { TrackControlProps } from './types.ts'
+import MuiTrackControl from './MuiTrackControl.tsx'
+
+import type { TrackControlProps } from '@jbrowse/display-ui'
 
 /**
  * What every display renders for a bottom-right control: JBrowse's own Material

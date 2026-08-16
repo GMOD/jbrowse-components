@@ -10,21 +10,20 @@ export type { ChromeModel } from './components/DisplayChrome.tsx'
 export { DisplayStatusChrome } from './components/DisplayChrome.tsx'
 export { default as DisplayStatusChromeBase } from './components/DisplayStatusChromeBase.tsx'
 export type { StatusChromeModel } from './components/DisplayChrome.tsx'
-// The toolkit-free half of the chrome, for embedders supplying their own
-// overlays. Importing DisplayChromeBase + plainChromeOverlays instead of
-// DisplayChrome keeps MUI out of the graph entirely; see chromeOverlays.ts.
+// The seam itself lives in `@jbrowse/display-ui`, which has no UI-toolkit
+// dependency at all — that is the guarantee, and npm enforces it where a test
+// of rendered elements could not. This plugin holds the Material bindings and
+// depends on that package; nothing runs the other way.
 //
-// The provider comes from the context module and NOT from DisplayChrome.tsx,
-// which binds the Material set — see chromeOverlayContext.ts for what that one
-// edge cost when it ran the other way.
-export { DisplayChromeOverlayProvider } from './components/chromeOverlayContext.ts'
+// Re-exported here because every display and every embedder already names these
+// from this plugin. `DisplayChromeBase` stays, being this plugin's own chrome.
+export {
+  DisplayChromeOverlayProvider,
+  DisplayUIProvider,
+  plainChromeOverlays,
+} from '@jbrowse/display-ui'
+export type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 export { default as DisplayChromeBase } from './components/DisplayChromeBase.tsx'
-export { default as plainChromeOverlays } from './components/plainChromeOverlays.tsx'
-// Both seams at once, defaulting to the plain sets — what an embedder who does
-// not want Material UI mounts, instead of the two providers by hand. The
-// contexts themselves still default to undefined; see the component's comment.
-export { default as DisplayUIProvider } from './components/DisplayUIProvider.tsx'
-export type { DisplayChromeOverlays } from './components/chromeOverlays.ts'
 export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
 export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOverlay.tsx'
 // The model each overlay is handed. `DisplayChromeOverlays` names these types
@@ -93,13 +92,17 @@ export { default as FloatingLegend } from './components/FloatingLegend.tsx'
 export { default as TrackHeightIndicator } from './components/TrackHeightIndicator.tsx'
 export { default as BottomRightIndicators } from './components/BottomRightIndicators.tsx'
 export { default as TrackControl } from './components/trackControl/TrackControl.tsx'
-// From the context module, not from the binder above it, for the reason on
-// DisplayChromeOverlayProvider.
-export { TrackControlProvider } from './components/trackControl/trackControlContext.ts'
-export { default as plainTrackControl } from './components/trackControl/plainTrackControl.tsx'
+// The contract, its toolkit-free implementation and the menu behaviour behind
+// it all live in `@jbrowse/display-ui` — see the chrome block above.
+export {
+  TrackControlProvider,
+  plainTrackControl,
+  useTrackControlMenu,
+} from '@jbrowse/display-ui'
 export type {
   TrackControlComponent,
   TrackControlIcon,
+  TrackControlMenu,
   TrackControlOption,
   TrackControlProps,
-} from './components/trackControl/types.ts'
+} from '@jbrowse/display-ui'

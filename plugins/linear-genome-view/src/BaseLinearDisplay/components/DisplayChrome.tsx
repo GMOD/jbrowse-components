@@ -1,3 +1,5 @@
+import { useChromeOverlayOverride } from '@jbrowse/display-ui'
+
 import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 import DisplayBackgroundProgress from './DisplayBackgroundProgress.tsx'
 import DisplayChromeBase from './DisplayChromeBase.tsx'
@@ -5,11 +7,10 @@ import DisplayErrorBar from './DisplayErrorBar.tsx'
 import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
-import { useChromeOverlayOverride } from './chromeOverlayContext.ts'
 
 import type { DisplayChromeBaseProps } from './DisplayChromeBase.tsx'
 import type { DisplayStatusChromeBaseProps } from './DisplayStatusChromeBase.tsx'
-import type { DisplayChromeOverlays } from './chromeOverlays.ts'
+import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 
 export type { ChromeModel } from './DisplayChromeBase.tsx'

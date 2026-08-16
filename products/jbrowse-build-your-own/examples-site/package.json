@@ -17,6 +17,7 @@
   "dependencies": {
     "@astrojs/react": "^6.0.2",
     "@jbrowse/core": "workspace:*",
+    "@jbrowse/display-ui": "workspace:*",
     "@jbrowse/mobx-state-tree": "^6.3.0",
     "@jbrowse/plugin-alignments": "workspace:*",
     "@jbrowse/plugin-linear-comparative-view": "workspace:*",

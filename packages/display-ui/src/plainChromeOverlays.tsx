@@ -9,13 +9,15 @@ import {
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
-import { tooLargeBannerText } from '../../shared/regionTooLargeUtils.ts'
+import { tooLargeBannerText } from './tooLargeBannerText.ts'
 
-import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
-import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
-import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
-import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
-import type { DisplayChromeOverlays } from './chromeOverlays.ts'
+import type {
+  DisplayBackgroundProgressModel,
+  DisplayChromeOverlays,
+  DisplayErrorBarModel,
+  DisplayLoadingOverlayModel,
+  TooLargeMessageModel,
+} from './chromeOverlays.ts'
 
 // A dependency-free `DisplayChromeOverlays` for embedders who don't want MUI:
 // no theme provider to mount, no emotion injected into the host page, and

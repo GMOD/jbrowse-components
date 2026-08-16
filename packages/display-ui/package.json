@@ -1,14 +1,12 @@
 {
-  "name": "@jbrowse/tree-sidebar",
-  "version": "4.1.14",
+  "name": "@jbrowse/display-ui",
+  "version": "4.3.0",
   "type": "module",
-  "description": "Shared tree sidebar component for multi-sample displays",
+  "description": "The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer",
   "keywords": [
     "jbrowse",
     "jbrowse2",
-    "tree",
-    "sidebar",
-    "clustering"
+    "embedding"
   ],
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
@@ -16,7 +14,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "packages/tree-sidebar"
+    "directory": "packages/display-ui"
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
@@ -26,23 +24,14 @@
   "scripts": {
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "build": "pnpm build:esm",
-    "test": "cd ../..; jest --passWithNoTests packages/tree-sidebar",
+    "test": "cd ../..; jest --passWithNoTests packages/display-ui",
     "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@gmod/hclust": "4.0.4",
-    "@gmod/newick": "^1.0.1",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.3.0",
-    "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@jbrowse/render-core": "workspace:^",
-    "@mui/icons-material": "^9.3.1",
-    "@mui/material": "^9.3.1",
-    "@mui/x-data-grid": "^9.11.0",
-    "mobx": "^7.0.0",
     "mobx-react": "^10.0.0"
   },
   "peerDependencies": {
