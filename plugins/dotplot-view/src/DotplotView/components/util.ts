@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/util'
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
+import { dropLoneTickLabels } from '@jbrowse/core/util/tickLabels'
 
 import type { Dotplot1DViewModel } from '../1dview.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -55,7 +56,15 @@ export interface VisibleTick extends PositionedTick {
 // Identity of a tick within an axis: the region it belongs to plus its base.
 // Shared by the seam dedupe and both axes' React keys so they agree.
 export function tickKey(tick: Tick) {
-  return `${tick.displayedRegionIndex}-${tick.refName}-${tick.base}`
+  return `${tickRegion(tick)}-${tick.base}`
+}
+
+// Which region a tick numbers, for the label quorum. Same pair of fields the
+// key above leads with, and for the same reason: one axis can carry a refName
+// twice, and those two regions each need their own ruler rather than a shared
+// quorum.
+function tickRegion(tick: Tick) {
+  return `${tick.displayedRegionIndex}-${tick.refName}`
 }
 
 // `pxToBp`, not a hand-rolled `start + offset`: `offset` is bp from the
@@ -220,6 +229,13 @@ const MIN_TICK_LABEL_PX = AXIS_LABEL_FONT + 2
 // region lays out right-to-left — its ticks descend in `alongPx`, so a single
 // forward pass over the unsorted list would measure spacing across that
 // discontinuity and thin the wrong ones.
+//
+// The spacing pass is per AXIS and the quorum below is per REGION, which is why
+// they are two passes. Spacing is a question about neighbours, and a tick's
+// nearest neighbour is routinely in the next chromosome; a quorum is a question
+// about one chromosome's own ruler, and pitch comes from the whole axis, so at
+// whole-genome zoom every chromosome catches one lone number and the axis reads
+// as "500M" repeated across it.
 export function thinTickPositions(positioned: PositionedTick[]): VisibleTick[] {
   const out: VisibleTick[] = []
   let lastMark = Number.NEGATIVE_INFINITY
@@ -236,7 +252,18 @@ export function thinTickPositions(positioned: PositionedTick[]): VisibleTick[] {
       out.push({ tick, alongPx, labeled })
     }
   }
-  return out
+  // Only the LABELS go. The tick marks stay, so a chromosome too narrow to be
+  // numbered keeps the grid that says where it starts and ends — the same
+  // reason the block-count cutoff this replaced was wrong to take the lines.
+  const numbered = new Set(
+    dropLoneTickLabels(
+      out.filter(t => t.labeled),
+      t => tickRegion(t.tick),
+    ),
+  )
+  return out.map(t =>
+    t.labeled && !numbered.has(t) ? { ...t, labeled: false } : t,
+  )
 }
 
 interface Interval {

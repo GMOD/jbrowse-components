@@ -29,6 +29,7 @@ import {
 } from '@jbrowse/core/util/Base1DUtils'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
+import { tickLabelsWorthDrawing } from '@jbrowse/core/util/tickLabels'
 import {
   hideTrackGeneric,
   showTrackGeneric,
@@ -64,7 +65,6 @@ import {
   buildRubberbandClickMenuItems,
 } from './menuItems.ts'
 import {
-  MIN_TICK_LABELS_PER_BLOCK,
   calculateVisibleLocStrings,
   cytobandLabelGutterWidth,
   expandRegion,
@@ -2111,11 +2111,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * back per region so a label on an internal chunk boundary isn't clipped
          * away by both neighbors — only genuine region edges clip a label.
          *
-         * A run that can hold fewer than MIN_TICK_LABELS_PER_BLOCK labels goes
-         * unnumbered, the same rule the overview scalebar applies: with a whole
-         * genome displayed each chromosome catches one lone coordinate, which
-         * conveys no scale by itself and reads as the same number repeated
-         * across the row.
+         * A run that can hold too few labels to make a ruler goes unnumbered
+         * (`tickLabelsWorthDrawing`), the same rule the overview scalebar and
+         * the dotplot axes apply: with a whole genome displayed each chromosome
+         * catches one lone coordinate, which conveys no scale by itself and
+         * reads as the same number repeated across the row.
          */
         get scalebarLabels() {
           const { bpPerPx } = self
@@ -2147,7 +2147,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 })
               }
             }
-            if (runLabels.length >= MIN_TICK_LABELS_PER_BLOCK) {
+            if (tickLabelsWorthDrawing(runLabels.length)) {
               labels.push(...runLabels)
             }
           }

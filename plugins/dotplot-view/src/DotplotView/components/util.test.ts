@@ -404,6 +404,56 @@ describe('thinTickPositions', () => {
     const out = thinTickPositions([at('minor', 0), at('minor', 40)])
     expect(out.some(t => t.labeled)).toBe(false)
   })
+
+  // The whole-genome case. Pitch comes from the whole axis, so a chromosome
+  // narrower than that pitch catches one major and no more — a number that gives
+  // a reader no spacing to measure with, and that sitting alone in a
+  // chromosome's span reads as marking the span rather than a position in it.
+  // homoeolog_synteny/oat_homoeologs shipped a nine-chromosome axis of them.
+  const inRegion = (
+    region: number,
+    refName: string,
+    type: 'major' | 'minor',
+    alongPx: number,
+  ) => ({
+    tick: { type, base: alongPx, refName, displayedRegionIndex: region },
+    alongPx,
+  })
+
+  test('a chromosome with one lone number loses it, and keeps its marks', () => {
+    const out = thinTickPositions([
+      inRegion(0, 'chr1', 'minor', 0),
+      inRegion(0, 'chr1', 'major', 40),
+      inRegion(0, 'chr1', 'minor', 80),
+    ])
+    expect(out.map(t => t.alongPx)).toEqual([0, 40, 80])
+    expect(out.some(t => t.labeled)).toBe(false)
+  })
+
+  test('the quorum is per chromosome, not per axis', () => {
+    const out = thinTickPositions([
+      inRegion(0, 'chr1', 'major', 40),
+      inRegion(1, 'chr2', 'major', 200),
+      inRegion(1, 'chr2', 'major', 300),
+      inRegion(1, 'chr2', 'major', 400),
+    ])
+    // chr1's single number goes; chr2 has a ruler and keeps all of its own
+    expect(out.filter(t => t.labeled).map(t => t.alongPx)).toEqual([
+      200, 300, 400,
+    ])
+  })
+
+  // An axis can hold one refName twice — a read-vs-ref dotplot builds its h axis
+  // from gatherOverlaps, so a read aligned twice to a chromosome yields two
+  // regions on it. Keyed on refName alone these two would pool into a quorum of
+  // 2 and both keep a lone number.
+  test('two regions on one refName do not lend each other a quorum', () => {
+    const out = thinTickPositions([
+      inRegion(0, 'chr1', 'major', 40),
+      inRegion(1, 'chr1', 'major', 400),
+    ])
+    expect(out.some(t => t.labeled)).toBe(false)
+  })
 })
 
 describe('getBlockLabelKeysToHide', () => {

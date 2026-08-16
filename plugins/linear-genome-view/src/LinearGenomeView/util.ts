@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
+import { tickLabelsWorthDrawing } from '@jbrowse/core/util/tickLabels'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -451,24 +452,11 @@ export function cytobandLabelGutterWidth(refName: string) {
 }
 
 /**
- * A block needs at least this many coordinate labels to be worth numbering, in
- * the main scalebar as well as the overview. Tick pitch comes from the bpPerPx
- * of the whole displayed-region set, so a region much narrower than that pitch
- * still catches a tick or two: with every chromosome displayed at once, each one
- * ends up with a single lone number jammed against the next chromosome's
- * refName, and a row of five-genome synteny reads as scattered repeats of the
- * same "200M". One coordinate conveys no scale on its own — needing two means
- * narrow regions show just their refName, and only regions with room for a real
- * ruler get numbers.
- */
-export const MIN_TICK_LABELS_PER_BLOCK = 2
-
-/**
  * Coordinate labels drawn inside one overview-scalebar block: tick text plus its
  * x within the block. Labels that can't be drawn whole between the block's bold
  * refName label and its right edge are dropped by the same
  * tickLabelWidth/labelFitsInBlock test the main scalebar and SVG export use; if
- * fewer than MIN_TICK_LABELS_PER_BLOCK survive, the block goes unnumbered.
+ * too few survive to make a ruler, the block goes unnumbered.
  */
 export function makeOverviewTickLabels({
   block,
@@ -489,7 +477,7 @@ export function makeOverviewTickLabels({
       return fits ? [{ genomicCoord, offsetPx, label }] : []
     },
   )
-  return labels.length < MIN_TICK_LABELS_PER_BLOCK ? [] : labels
+  return tickLabelsWorthDrawing(labels.length) ? labels : []
 }
 
 /**

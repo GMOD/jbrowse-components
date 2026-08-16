@@ -189,6 +189,7 @@
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
     "./util/tabix": "./src/util/tabix.ts",
+    "./util/tickLabels": "./src/util/tickLabels.ts",
     "./util/tracks": "./src/util/tracks.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
@@ -934,6 +935,10 @@
         "types": "./esm/util/tabix.d.ts",
         "import": "./esm/util/tabix.js"
       },
+      "./util/tickLabels": {
+        "types": "./esm/util/tickLabels.d.ts",
+        "import": "./esm/util/tickLabels.js"
+      },
       "./util/tracks": {
         "types": "./esm/util/tracks.d.ts",
         "import": "./esm/util/tracks.js"
@@ -1515,6 +1520,9 @@
         ],
         "util/tabix": [
           "esm/util/tabix.d.ts"
+        ],
+        "util/tickLabels": [
+          "esm/util/tickLabels.d.ts"
         ],
         "util/tracks": [
           "esm/util/tracks.d.ts"
