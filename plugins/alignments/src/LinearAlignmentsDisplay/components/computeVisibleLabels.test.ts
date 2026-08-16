@@ -140,12 +140,14 @@ describe('SNP letters carry the per-base quality fade', () => {
           laidOutPileupMap: {
             get: () =>
               makeRpcData({
-                mismatchPositions: new Uint32Array([10, 20, 30, 40]),
-                mismatchYs: new Uint16Array([0, 0, 0, 0]),
-                mismatchBases: new Uint8Array([65, 67, 71, 84]),
+                mismatchPositions: new Uint32Array([10, 20, 30, 40, 50]),
+                mismatchYs: new Uint16Array([0, 0, 0, 0, 0]),
+                mismatchBases: new Uint8Array([65, 67, 71, 84, 65]),
                 // Phred 60 (opaque), 25 (half), 0 (no quality => opaque), 1
-                // (0.02, under MIN_LABEL_OPACITY)
-                mismatchQuals: new Uint8Array([60, 25, 0, 1]),
+                // (0.02, under MIN_QUALITY_LETTER_OPACITY), 10 (0.2 — a faint
+                // letter that survives, which is the case a floor raised toward
+                // the size labels' would silently delete)
+                mismatchQuals: new Uint8Array([60, 25, 0, 1, 10]),
               }),
           },
           topOffset: 0,
@@ -166,16 +168,21 @@ describe('SNP letters carry the per-base quality fade', () => {
       ['C', 1],
       ['G', 1],
       ['T', 1],
+      ['A', 1],
     ])
   })
 
   test('on: the letter takes the same qual/50 ramp its box does', () => {
-    // The Phred-1 letter is under MIN_LABEL_OPACITY and drops out entirely
-    // rather than costing a fillText for an invisible glyph.
+    // Only the Phred-1 letter drops, at 0.02: it is under
+    // MIN_QUALITY_LETTER_OPACITY and would cost a fillText for an invisible
+    // glyph. The Phred-10 letter at 0.2 stays, and is the one this pins — it
+    // sits below LABEL_FADE_FLOOR, so raising the wrong constant to make faint
+    // size labels legible would delete it and every base like it.
     expect(qualLabels(true).map(l => [l.text, l.opacity])).toEqual([
       ['A', 1],
       ['C', 0.5],
       ['G', 1],
+      ['A', 0.2],
     ])
   })
 })

@@ -10,8 +10,8 @@ import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
-  MIN_LABEL_OPACITY,
   MIN_PX_PER_BP_FOR_TEXT,
+  MIN_QUALITY_LETTER_OPACITY,
   computeLabelFontSize,
   getInsertionType,
   insertionBarWidth,
@@ -417,7 +417,7 @@ export function computeVisibleLabels(
           // absent: its gate is `pxPerBp < 1` and letters need pxPerBp >= 6.5,
           // so it resolves to 1 wherever this loop runs.
           const opacity = qualityFade(mismatchQuals[i]!, mismatchAlpha)
-          if (opacity < MIN_LABEL_OPACITY) {
+          if (opacity < MIN_QUALITY_LETTER_OPACITY) {
             continue
           }
 

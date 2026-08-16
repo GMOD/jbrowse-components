@@ -91,10 +91,13 @@ export const LABEL_FADE_HI_RATIO = 2
 // there are not a fading label, they are broken text.
 export const LABEL_FADE_FLOOR = 0.5
 
-// Below this opacity a label isn't worth a fillText. Its one caller is the SNP
-// letter's per-base quality fade, which is a property of the base rather than of
-// the zoom and so ramps to 0 with no floor.
-export const MIN_LABEL_OPACITY = 0.05
+// Below this a SNP letter isn't worth a fillText. This is the quality fade's
+// floor alone — not the size labels', which is LABEL_FADE_FLOOR above. The
+// quality ramp is a property of the base rather than of the zoom, so it rightly
+// goes all the way to nothing, and raising this to make a faint label legible
+// deletes letters instead: `qualityFade` is qual/50, so a floor of 0.5 drops
+// every base under Phred 25.
+export const MIN_QUALITY_LETTER_OPACITY = 0.05
 
 // GLSL/WGSL smoothstep, matching the Canvas2D fades elsewhere in the plugin.
 function smoothstep(edge0: number, edge1: number, x: number) {
