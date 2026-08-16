@@ -839,6 +839,28 @@ test('buildWebExportUrl adds the password param for a short share link', () => {
   expect(parsed.searchParams.get('password')).toBe('sekret')
 })
 
+// The link points at `latest` and diffs a hosted base config that is fetched
+// fresh on both ends, so nothing else in it is pinned. What produced it is the
+// one thing the producer can record.
+test('buildWebExportUrl stamps what produced the link, in whichever half carries the session', () => {
+  const plan = {
+    strategy: 'selfContained' as const,
+    session: {},
+    webBaseUrl: 'https://jbrowse.org/code/jb2/latest/',
+    droppedTracks: [],
+    blockingFiles: [],
+  }
+  const stamp = { exportedFrom: 'jbrowse-desktop@3.6.4' }
+  const inline = new URL(buildWebExportUrl(plan, 'encoded-ABC', stamp))
+  expect(new URLSearchParams(inline.hash.slice(1)).get('exportedFrom')).toBe(
+    'jbrowse-desktop@3.6.4',
+  )
+  const short = new URL(buildWebExportUrl(plan, 'share-abc123', stamp))
+  expect(short.searchParams.get('exportedFrom')).toBe('jbrowse-desktop@3.6.4')
+  // and an unstamped link stays exactly as it was
+  expect(buildWebExportUrl(plan, 'encoded-ABC')).not.toContain('exportedFrom')
+})
+
 test('analyzeWebPortability flags blob and file-handle locations by name', () => {
   const snap = {
     tracks: [

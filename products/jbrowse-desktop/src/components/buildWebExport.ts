@@ -8,6 +8,8 @@ import {
   planWebExport,
 } from '@jbrowse/product-core'
 
+import packageJSON from '../../package.json' with { type: 'json' }
+
 import type { AbstractSessionModel, SessionShareMode } from '@jbrowse/core/util'
 import type {
   HostedBaseConfig,
@@ -91,7 +93,12 @@ export async function buildLink(
     { shareURL, referer: DEFAULT_WEB_BASE_URL },
   )
   return {
-    url: buildWebExportUrl(plan, sessionParam, { password }),
+    url: buildWebExportUrl(plan, sessionParam, {
+      password,
+      // what made this link, since nothing else in it is pinned — see
+      // buildWebExportUrl
+      exportedFrom: `jbrowse-desktop@${packageJSON.version}`,
+    }),
     plaintext,
   }
 }

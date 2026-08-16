@@ -647,6 +647,17 @@ function resolveWebBaseUrl(webExportUrl: string | undefined) {
 // `password`) or `encoded-<b64>`/`json-<json>` for an inline long link.
 // `config` points at the hosted base, or `none` for a self-contained session.
 //
+// `exportedFrom` stamps what produced the link. These links are artifacts —
+// papers, supplements, emails — and every other thing they name moves under
+// them: DEFAULT_WEB_BASE_URL is `.../latest/`, so the deployment that opens the
+// session is an unknown future build, and the hosted base config the plan
+// diffed against is fetched fresh on both ends and can be in a third state by
+// then. Pinning either is a deployment decision; recording the producer is not,
+// and it is the difference between a recipient who can say which JBrowse made
+// this and one guessing. jbrowse-web reads a fixed list of params
+// (createSessionLoader) and ignores the rest, so the stamp is inert there and
+// stays in the address bar where a reader can see it.
+//
 // The large inline modes (`encoded-`/`json-`) go in the hash fragment, which is
 // never sent to the server and so can't trip the request-line limit (HTTP 414)
 // the query string can — a self-contained export carries its own assemblies and
@@ -656,7 +667,7 @@ function resolveWebBaseUrl(webExportUrl: string | undefined) {
 export function buildWebExportUrl(
   plan: WebExportPlan,
   sessionParam: string,
-  options: { password?: string } = {},
+  options: { password?: string; exportedFrom?: string } = {},
 ): string {
   const url = new URL(plan.webBaseUrl)
   const params = new URLSearchParams()
@@ -664,6 +675,9 @@ export function buildWebExportUrl(
   params.set('session', sessionParam)
   if (options.password) {
     params.set('password', options.password)
+  }
+  if (options.exportedFrom) {
+    params.set('exportedFrom', options.exportedFrom)
   }
   const str = params.toString()
   if (sessionParam.startsWith(SHARE_PREFIX)) {
