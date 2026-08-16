@@ -1,59 +1,71 @@
 import { visit } from 'unist-util-visit'
 
-import { escapeHtml, parseAttrs } from './inline-html.ts'
+import { videoLiveUrls } from '../../scripts/video-specs.ts'
+import { escapeAttr, escapeHtml, parseAttrs } from './inline-html.ts'
 
 import type { Root } from 'mdast'
 import type { Plugin } from 'unified'
 
-// DRAFT — not yet registered in src/lib/markdown.ts. Parallels remark-figure.ts:
-// rewrites a literal `<Video .../>` string in markdown into a raw HTML5 <video>
-// inside a <figure>, at build time. Wire it in with
-// `.use(remarkVideo, { base: baseUrl })` when the videos go live. See
-// website/scripts/VIDEO_GO_LIVE_HANDOFF.md.
+// Rewrites a literal `<Video .../>` string in markdown into an HTML5 <video>
+// inside a <figure>, at build time. The motion counterpart of remark-figure.ts,
+// and deliberately its shape: a caption under the frame, and a link to the live
+// session the tour was filmed in.
 //
-//   <Video src="/video/volvox_tour.mp4" caption="Zooming a volvox view." />
+//   <Video src="/video/pangenome/pggb_subgraph_launch.mp4"
+//     caption="Cutting a subgraph out of the locus on screen." />
 //
 // Attributes:
-//   src      required; the mp4 URL (local `/video/...` or absolute https://…)
-//   webm     optional; defaults to the mp4 sibling with a .webm extension
-//   poster   optional; a still-frame image URL shown before play
+//   src      required; the mp4 url (local `/video/...` or absolute https://…)
+//   poster   optional; defaults to the `.jpg` generate-video.ts writes beside it
 //   caption  optional; figcaption text
-//   loop     "true" to loop; autoplay "true" implies muted (browsers block
-//            sound-on autoplay) and is best paired with loop + no controls
-
+//   loop     "true" to loop
+//   autoplay "true" implies muted and drops the controls, for a silent looping
+//            preview. Use it for a clip that is a few seconds of one motion; a
+//            tour with steps in it needs the controls, since a reader who missed
+//            a step has no other way back to it.
+//
+// The poster is what makes an unplayed embed a picture rather than a black
+// rectangle, so it is derived rather than left to each call site to remember.
 const videoRe = /<Video\s+([\s\S]*?)\s*\/>/
+
+// `/video/pangenome/x.mp4` -> the spec named `pangenome/x`.
+const specNameOf = (src: string) =>
+  /^\/video\/(.+)\.mp4$/.exec(src)?.[1] ?? undefined
 
 const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
   const base = options.base?.replace(/\/$/, '') ?? ''
-  const withBase = (u: string) =>
-    base && u.startsWith('/') ? `${base}${u}` : u
+  const withBase = (u: string) => (base && u.startsWith('/') ? `${base}${u}` : u)
   return tree => {
     visit(tree, 'html', node => {
       const match = videoRe.exec(node.value)
-      if (match) {
-        const attrs = parseAttrs(match[1]!)
-        const mp4 = withBase(attrs.src ?? '')
-        const webm = attrs.webm
-          ? withBase(attrs.webm)
-          : mp4.replace(/\.mp4$/, '.webm')
-        const poster = attrs.poster
-          ? ` poster="${withBase(attrs.poster)}"`
-          : ''
-        const loop = attrs.loop === 'true' ? ' loop' : ''
-        // autoplay only works muted; pair it with loop and drop controls for a
-        // silent looping preview (a docs GIF replacement)
-        const autoplay = attrs.autoplay === 'true' ? ' autoplay muted' : ''
-        const controls = attrs.autoplay === 'true' ? '' : ' controls'
-        const caption = escapeHtml(attrs.caption ?? '')
-        const sources =
-          `<source src="${webm}" type="video/webm"/>` +
-          `<source src="${mp4}" type="video/mp4"/>`
-        const video =
-          `<video${controls} preload="metadata" playsinline${autoplay}${loop}${poster} style="max-width:100%;height:auto">${sources}</video>`
-        node.value = caption
-          ? `<figure>${video}<figcaption>${caption}</figcaption></figure>`
-          : `<figure>${video}</figure>`
+      if (!match) {
+        return
       }
+      const attrs = parseAttrs(match[1]!)
+      const rawSrc = attrs.src ?? ''
+      const mp4 = withBase(rawSrc)
+      const poster = withBase(attrs.poster ?? rawSrc.replace(/\.mp4$/, '.jpg'))
+      const caption = escapeHtml(attrs.caption ?? '')
+      const autoplay = attrs.autoplay === 'true'
+      // autoplay only works muted, and a clip that starts by itself has no use
+      // for a play button
+      const flags =
+        (autoplay ? ' autoplay muted playsinline' : ' controls playsinline') +
+        (attrs.loop === 'true' || autoplay ? ' loop' : '')
+      // One source, because the generator writes one: h264 in mp4 plays in every
+      // browser that plays anything, and the VP9 alternative measured larger for
+      // this content rather than smaller.
+      const sources = `<source src="${mp4}" type="video/mp4"/>`
+      const video =
+        `<video${flags} preload="metadata" poster="${poster}" ` +
+        `aria-label="${escapeAttr(attrs.caption ?? '')}" ` +
+        `style="max-width:100%;height:auto">${sources}</video>`
+      const live = videoLiveUrls[specNameOf(rawSrc) ?? '']
+      const label = 'Open this session in JBrowse ↗'
+      const link = live
+        ? ` <a href="${live}" target="_blank" rel="noopener noreferrer">${label}</a>`
+        : ''
+      node.value = `<figure>${video}<figcaption>${caption}${link}</figcaption></figure>`
     })
   }
 }

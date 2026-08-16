@@ -43,6 +43,26 @@ the full sha256 and `pull` verifies against it, so a collision fails loudly.
 **Never delete from the store, including orphans** — URLs get pasted into issues
 and papers. There is deliberately no `gc`.
 
+## Video store
+
+Same store, third corpus: `s3://jbrowse.org/jb2-video/`, git tracks
+`website/video.lock`, CLI `website/scripts/videos.ts` (`pnpm videos`,
+`video:pull`, `video:push`). `website/static/video/` is gitignored, and a clip is
+two files, the mp4 and its poster frame.
+
+**It exists because the docs deploy would otherwise delete the videos.**
+`update-docs.yml` runs `rclone sync … s3:jbrowse.org/jb2`, and sync removes
+whatever the freshly-built `dist/` does not carry; a CI checkout has no
+`static/video`. `pnpm build` runs `video:pull`, so astro copies the files in and
+the sync finds them. Regenerating them in CI instead would mean a jbrowse-web
+build plus a headless capture on every "update docs" commit, for output that is
+non-deterministic and re-uploads in full each time.
+
+The browser-test goldens are the other corpus (`jb2-snapshots`,
+`products/jbrowse-web/browser-tests/snapshots.lock`). All three share their
+addressing, manifest grammar and hash through
+`@jbrowse/browser-test-utils/blobStore`.
+
 ## Hosted genomes and the launch surface
 
 - **hg38/GRCh38 FASTA**: `https://jbrowse.org/genomes/GRCh38/fasta/`, with

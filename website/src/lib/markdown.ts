@@ -23,6 +23,7 @@ import remarkDocList from './remark-doc-list.ts'
 import remarkFigure from './remark-figure.ts'
 import remarkRelatedGuides from './remark-related-guides.ts'
 import remarkSpecExample from './remark-spec-example.ts'
+import remarkVideo from './remark-video.ts'
 import remarkWikiTitle from './remark-wiki-title.ts'
 
 const processor = unified()
@@ -31,6 +32,7 @@ const processor = unified()
   .use(remarkCustomHeadingId)
   .use(remarkConfigCliTabs)
   .use(remarkFigure, { base: baseUrl })
+  .use(remarkVideo, { base: baseUrl })
   .use(remarkDocList)
   .use(remarkSpecExample)
   .use(remarkCodeBase)
