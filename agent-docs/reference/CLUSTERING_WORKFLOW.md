@@ -184,4 +184,3 @@ Clicking a tree node calls `setSubtreeFilter` to collapse/expand that clade.
 | `plugins/variants/src/shared/applyClusterOrder.ts` | Turns an order into the next `layout`; expands haplotypes in phased mode |
 | `packages/tree-sidebar/src/TreeSidebarMixin.ts` | Shared MST state |
 | `packages/tree-sidebar/src/clusterUtils.ts` | `buildClusteredLayout`, `buildTree`, `applySubtreeFilter` |
-| `packages/tree-sidebar/src/newick.ts` | Newick parser |
