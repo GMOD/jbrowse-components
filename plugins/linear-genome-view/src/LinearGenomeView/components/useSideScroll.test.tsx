@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import { TrackOverlayContext, TrackOverlayPortal } from '@jbrowse/display-ui'
+import { FloatingLegend } from '@jbrowse/display-ui'
 import { act, fireEvent, render } from '@testing-library/react'
 
-import FloatingLegend from '../../BaseLinearDisplay/components/FloatingLegend.tsx'
 import { useSideScroll } from './useSideScroll.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'

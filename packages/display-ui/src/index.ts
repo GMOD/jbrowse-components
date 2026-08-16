@@ -44,6 +44,14 @@ export type {
   TrackControlProps,
 } from './trackControl/types.ts'
 
+// The one floating legend every display that has colors to explain renders.
+// Here rather than in the LGV plugin because six plugins render it, it reaches
+// no UI toolkit, and it is chrome by the definition this package uses — a thing
+// a display draws that is not its data. `@jbrowse/plugin-linear-genome-view`
+// re-exports it, so its published name is unchanged.
+export { default as FloatingLegend } from './FloatingLegend.tsx'
+export type { LegendItem, LegendSection } from './FloatingLegend.tsx'
+
 // The per-track overlay layer: the node floating chrome escapes into, and the
 // host's half of that portal.
 export { TrackOverlayContext } from './trackOverlay/TrackOverlayContext.ts'

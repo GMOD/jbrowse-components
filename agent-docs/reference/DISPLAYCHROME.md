@@ -788,6 +788,15 @@ be empty with all three controls rendered), for the reason `BaseTooltip` is
 pinned in jest: a browser check that never runs is not a check. 7 Material
 elements before, 0 after.
 
+**It lives in `@jbrowse/display-ui` now**, which is what "does a stock display
+import it directly" implies once you follow it: six plugins render this legend,
+it reaches no toolkit, and it is chrome by this package's own definition — a
+thing a display draws that is not its data. The whole-package import test walks
+it as a result, rather than `muiFree.test.ts` naming it by a relative path into
+another package. `@jbrowse/plugin-linear-genome-view` re-exports it under the
+same name, since that is what all six import and a removal from a plugin barrel
+fails quietly.
+
 **Reach vs weight.** Both providers are *reach*: they redirect what stock
 displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
 stays in the bundle. *Weight* is only available to code writing its own display

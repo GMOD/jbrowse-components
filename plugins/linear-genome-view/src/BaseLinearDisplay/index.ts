@@ -2,7 +2,7 @@ export { default as baseLinearDisplayConfigSchema } from './models/configSchema.
 export type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
 
 export { default as BlockMsg } from '../shared/BlockMsg.tsx'
-export type { LegendItem, LegendSection } from './components/FloatingLegend.tsx'
+export type { LegendItem, LegendSection } from '@jbrowse/display-ui'
 export { default as DisplayChrome } from './components/DisplayChrome.tsx'
 export type { ChromeModel } from './components/DisplayChrome.tsx'
 // Same chrome for a display with no rendering backend (arc's main-thread SVG):
@@ -88,7 +88,10 @@ export type {
   RenderTransformInputs,
 } from './models/renderTransform.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
-export { default as FloatingLegend } from './components/FloatingLegend.tsx'
+// Lives in `@jbrowse/display-ui` — six plugins render it and it reaches no UI
+// toolkit. Re-exported here because that is the name they all import, and a
+// removal from a plugin barrel fails quietly (PLUGIN_ABI_STABILITY.md).
+export { FloatingLegend } from '@jbrowse/display-ui'
 export { default as TrackHeightIndicator } from './components/TrackHeightIndicator.tsx'
 export { default as BottomRightIndicators } from './components/BottomRightIndicators.tsx'
 export { default as TrackControl } from './components/trackControl/TrackControl.tsx'

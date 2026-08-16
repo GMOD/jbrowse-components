@@ -3,15 +3,16 @@ import { useState } from 'react'
 // deep subpaths, never the `@jbrowse/core/ui` barrel: a display renders this
 // legend directly, so it sits behind neither bring-your-own seam, and one named
 // import of that barrel lands FileSelector, FatalErrorDialog and the
-// cascading-menu stack in the chunk. `muiFreeSeam.test.ts` fails on it.
+// cascading-menu stack in the chunk. `muiFree.test.ts` fails on it.
 import { LegendSwatchGlyph } from '@jbrowse/core/ui/LegendSwatchGlyph'
 import {
   legendSwatches,
   nonEmptyLegendSections,
 } from '@jbrowse/core/ui/legendSpec'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
+
+import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
 
 import type { LegendItem, LegendSection } from '@jbrowse/core/ui/legendSpec'
 
