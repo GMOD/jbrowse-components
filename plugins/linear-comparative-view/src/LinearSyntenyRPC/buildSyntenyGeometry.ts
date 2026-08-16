@@ -8,6 +8,7 @@ import {
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { syntenyPanBufferPx } from '@jbrowse/synteny-core'
 
+import { spanOutsideBand } from '../LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
 import {
   KIND_BASE,
   KIND_CIGAR_D,
@@ -69,14 +70,15 @@ export const MIN_CIGAR_PX_WIDTH = 2
 // pairs it with on the target axis — so a tick's top end sits on a labelled
 // scalebar gridline and its bottom end says where that position went.
 //
-// (120, 15) is LinearGenomeView's own scalebar contract (makeTicks), so the
-// grid IS the ruler's rather than merely resembling it, at whatever pitch the
-// current zoom put the ruler on. Its pitch is not the whole contract: the ruler
-// has a PHASE too, and taking only the pitch left every tick one base off the
-// gridline it continues — see RULER_GRID_ORIGIN.
+// 120 is LinearGenomeView's own scalebar contract (`makeTicks` asks
+// `chooseGridPitch(bpPerPx, 120, 15)`), so the grid IS the ruler's rather than
+// merely resembling it, at whatever pitch the current zoom put the ruler on. Its
+// pitch is not the whole contract: the ruler has a PHASE too, and taking only
+// the pitch left every tick one base off the gridline it continues — see
+// RULER_GRID_ORIGIN.
 //
 // SUBDIVIDED, so a tick sits on every labelled gridline and several more
-// between each adjacent pair — see MARKER_PITCH_DIVISORS.
+// between each adjacent pair — see MARKER_MIN_TICK_PX.
 //
 // What this replaced, and why the replacement is not a tuning change: markers
 // used to be spaced by PIXELS along each drawn shape, one every 20px, with a
@@ -88,10 +90,9 @@ export const MIN_CIGAR_PX_WIDTH = 2
 // also per-shape, so ticks restarted at every block boundary and slid under
 // zoom: regularly spaced within one ribbon and unrelated between two.
 const MARKER_GRID_MIN_MAJOR_PX = 120
-const MARKER_GRID_MIN_MINOR_PX = 15
 
-// How far the ruler's major pitch is subdivided for the marker grid, and the
-// tick spacing that decides which subdivision it takes.
+// The tick spacing the subdivision has to keep, which is the ONLY thing
+// separating the marker grid from the ruler's own minor gridlines.
 //
 // The ruler's own major pitch is >=120px, and on chooseGridPitch's 1/2/5 ladder
 // it lands at 120-300px — so a 1400px frame has room for only 6-10 ticks, and
@@ -102,33 +103,39 @@ const MARKER_GRID_MIN_MINOR_PX = 15
 // offered — nothing was being dropped, there was simply nothing more to draw.
 // The way to get more correspondence lines is a finer grid, not a looser gate.
 //
-// A DIVISOR of the ruler's pitch rather than a second, independent
-// chooseGridPitch call at a smaller minimum. Asking the ladder for >=30px
-// answers with a pitch that need not divide the ruler's: ruler at 5000 and
-// markers at 2000 puts ticks on 2000/4000/6000 and leaves the LABELLED 5000
-// gridline without one, which gives up the whole point of using the ruler's
-// grid.
+// The subdivision is `chooseGridPitch`'s MINOR pitch — the finest whole-bp
+// divisor of the major that keeps the ticks at least `minMinorPitchPx` apart —
+// so the marker grid asks the ruler's own function for the ruler's own major
+// pitch and moves only the minor floor, 15px to 30px. A divisor by
+// construction: every labelled gridline keeps its tick. Swept from base-level
+// zoom to whole-chromosome the answer is a FIFTH of the ruler's pitch at every
+// zoom but the boundary ones — 30-50px, or 28-46 ticks across a 1400px frame.
 //
-// The list and the floor are chooseGridPitch's OWN minor-gridline rule, applied
-// to the ruler's major pitch rather than to the raw scale: take the finest
-// subdivision that stays whole bp and keeps the ticks apart. Every labelled
-// gridline keeps its tick, and swept from base-level zoom to whole-chromosome
-// the answer is a FIFTH of the ruler's pitch at every zoom but the boundary
-// ones — 30-50px, or 28-46 ticks across a 1400px frame. (10 is in the list
-// because this is chooseGridPitch's rule rather than a copy of its shape; it
-// needs a 300px ruler pitch, the exact top of that 120-300px range.)
+// The MAJOR minimum stays the ruler's 120px, and moving it instead would not
+// work: asking the ladder for a major of >=30px answers with a pitch that need
+// not divide the ruler's, and ruler at 5000 against markers at 2000 puts ticks
+// on 2000/4000/6000 while leaving the LABELLED 5000 gridline without one —
+// giving up the whole point of using the ruler's grid.
 //
-// Halving, which this replaced, put them 60-150px apart. Counted along one
-// scanline of the tutorial's 300kb pericentromere frame, that was about one tick
-// per indel in the ribbon — enough to put a line on one side of an indel and
-// nothing on the other, which is the arrangement in which a tick states a
-// position and no pair of them states a shear. A fifth carries about two, so a
-// reader can watch one line enter an indel and the next leave it.
+// A HALF of the ruler's pitch, which the fifth replaced, put the ticks 60-150px
+// apart. Counted along one scanline of the tutorial's 300kb pericentromere
+// frame, that was about one tick per indel in the ribbon — enough to put a line
+// on one side of an indel and nothing on the other, which is the arrangement in
+// which a tick states a position and no pair of them states a shear. A fifth
+// carries about two, so a reader can watch one line enter an indel and the next
+// leave it.
 //
 // 30px is the floor because a tick is drawn at a fixed 0.25 alpha, and closer
 // than that a run of them over one ribbon reads as hatching rather than as a set
 // of positions.
-const MARKER_PITCH_DIVISORS = [10, 5, 2]
+//
+// A hand-rolled `[10, 5, 2]` divisor search over the ruler's major pitch is what
+// this floor used to feed, and that search was `chooseGridPitch`'s minor rule
+// transliterated — same ladder, same whole-bp test, same pixel floor. Don't
+// reintroduce it to express a different subdivision: whatever the marker grid
+// wants, the ruler's minor gridlines want the same thing at a different floor,
+// and one call says so. `markerRulerParity.test.ts` pins the property both
+// spellings are for.
 const MARKER_MIN_TICK_PX = 30
 
 // A feature narrower than this on the QUERY AXIS draws no markers.
@@ -180,28 +187,26 @@ export const RULER_GRID_ORIGIN = -1
 // The marker grid's pitch in query-axis bp at this zoom: the query view's own
 // scalebar pitch, subdivided.
 //
-// A divisor applies only when it leaves a whole number of bp. chooseGridPitch
-// floors its major pitch at 5bp, the one odd value the 1/2/5 ladder can hand
-// back, and that floor is reached at base-level zoom — where a tick every 2.5bp
-// would sit between bases and mark a coordinate that does not exist. 5 divides
-// it, so the floor subdivides to whole single bases rather than falling back to
-// the undivided ruler.
+// `minorPitch` is 0 when no divisor leaves both whole bp and 30px of room, which
+// is the undivided ruler — so the ticks thin out to the labelled gridlines rather
+// than crowding, and every zoom has an answer.
+//
+// The 5bp end is worth following through, because it is where whole-bp binds:
+// chooseGridPitch floors its major at 5bp — the one odd value the 1/2/5 ladder
+// can hand back — and base-level zoom reaches that floor, where a tick every
+// 2.5bp would sit between bases and mark a coordinate that does not exist. 5
+// divides, so the floor subdivides to whole single bases.
 //
 // Exported so the tests read the pitch from here rather than re-spelling the
 // derivation: a test that computes its own expected grid cannot notice this one
 // moving.
 export function markerGridPitch(bpPerPx: number) {
-  const rulerPitch = chooseGridPitch(
+  const { majorPitch, minorPitch } = chooseGridPitch(
     bpPerPx,
     MARKER_GRID_MIN_MAJOR_PX,
-    MARKER_GRID_MIN_MINOR_PX,
-  ).majorPitch
-  const rulerPitchPx = rulerPitch / Math.abs(bpPerPx)
-  const divisor =
-    MARKER_PITCH_DIVISORS.find(
-      d => rulerPitch % d === 0 && rulerPitchPx / d >= MARKER_MIN_TICK_PX,
-    ) ?? 1
-  return rulerPitch / divisor
+    MARKER_MIN_TICK_PX,
+  )
+  return minorPitch || majorPitch
 }
 
 // Colored-indel instance kind for an I/D/N op; undefined for any match op.
@@ -267,9 +272,12 @@ export function buildSyntenyGeometry({
   // buffer-sized grid, a pan of up to syntenyPanBufferPx doesn't refetch — so
   // detail culled inside that distance left plain base ribbons at the leading
   // edge of the pan until the snapped window rolled over.
+  //
+  // The comparison itself is `spanOutsideBand`, the shader's own — the same
+  // function the two draw-time culls (isCulled, isRibbonCulled) ask, differing
+  // only in the pad they hand it. This used to be an open-coded pair of
+  // comparisons against precomputed edges at each of the two emit sites below.
   const emitBufferPx = syntenyPanBufferPx(viewWidth)
-  const emitLeft = -emitBufferPx
-  const emitRight = viewWidth + emitBufferPx
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
 
@@ -376,7 +384,14 @@ export function buildSyntenyGeometry({
     // writes past the end are no-ops while `idx` keeps counting, so
     // `subarray(0, instanceCount)` would hand the renderer a short array and
     // every corner read past the end would project as NaN.
-    if (idx >= capacity) {
+    //
+    // Against the array's own length rather than `capacity`, which is the same
+    // number except when it is NaN — `idx >= NaN` is false, so the guard would
+    // wave through every write into the zero-length arrays a NaN length
+    // allocates, which is precisely the silent failure above. A degenerate axis
+    // (bpPerPx 0) is what produces one: the pitch goes infinite and the budget
+    // `Math.ceil(Infinity / Infinity)`.
+    if (idx >= bp1Arr.length) {
       return
     }
     bp1Arr[idx] = cumBp1 - base0
@@ -409,7 +424,6 @@ export function buildSyntenyGeometry({
   // a query-coordinate grid to land on.
   function emitGridMarkers(
     featureIdx: number,
-    alignmentLength: number,
     bp1Start: number,
     bp1End: number,
     bp2Start: number,
@@ -444,46 +458,24 @@ export function buildSyntenyGeometry({
       // to keep: on an inversion the two ends are pulled apart by up to the
       // ribbon's whole horizontal travel, so a tick well inside the frame at
       // mid-height can have both endpoints outside the band.
+      //
+      // The OTHER marker rule — the cap on how far a tick may travel between its
+      // two ends — is not here, and deliberately: see the marker arm of
+      // `isRibbonCulled`. That distance is a function of how far the two views
+      // have panned APART, which changes without a refetch, so a fetch-time
+      // answer to it goes stale on the pan that makes it wrong. The hull is safe
+      // to answer here because the emit window IS the pan buffer: anything a pan
+      // can bring on screen before the fetch key rolls over was emitted.
       const screenTopX = markerBp1 * bpPerPxInv0 - viewOff0
       const screenBottomX = markerBp2 * bpPerPxInv1 - viewOff1
       if (
-        Math.max(screenTopX, screenBottomX) < emitLeft ||
-        Math.min(screenTopX, screenBottomX) > emitRight
+        spanOutsideBand(
+          Math.min(screenTopX, screenBottomX),
+          Math.max(screenTopX, screenBottomX),
+          viewWidth,
+          emitBufferPx,
+        )
       ) {
-        continue
-      }
-
-      // AND CAPPED ON HOW FAR IT TRAVELS. A tick is a line from a point in the
-      // top view to the point it maps to in the bottom one, and the hull test
-      // above keeps it whenever that LINE touches the frame — which is the
-      // right geometry and, past a certain shear, a useless mark: the line
-      // enters the band at one edge and leaves at the other, drawing a few
-      // degrees off horizontal with neither of its ends anywhere a reader can
-      // look. `hg002_haplotypes_location_markers` shipped with one of these
-      // across the top of its ribbon and was denied for it twice ("please
-      // double check previous agents notes about the almost horizontal line. i
-      // dont like it"); rendering the same window with markers off is what
-      // identified it, since it looks like a border rather than a mark.
-      //
-      // THIS OVERRIDES THE HULL RULE'S DISTINCTIVE CASE, and saying so is the
-      // point of the comment. A tick with its two ends outside the emit window
-      // in OPPOSITE directions — the case the hull test was written for, where
-      // testing the ends separately dropped ticks the renderers were fixed to
-      // keep — has a shear of at least the emit window's whole width, which is
-      // several times this cap. So that branch is now unreachable, and the hull
-      // test above is left doing the ordinary same-direction off-screen cull.
-      // The two rules cannot both hold: the shape the hull rule protects and
-      // the shape the review rejected are the same shape.
-      //
-      // What survives is what a marker is for. An inversion or an indel INSIDE
-      // the frame shears a tick by at most about what is on screen, so the cap
-      // is above every correspondence a reader could follow with their eyes and
-      // below every one they could not.
-      //
-      // viewWidth, not the emit window: the buffer exists so a pan of up to a
-      // buffer does not refetch, and a rule keyed to it would keep or drop a
-      // tick differently depending on how far the last fetch had panned.
-      if (Math.abs(screenTopX - screenBottomX) > viewWidth) {
         continue
       }
 
@@ -494,7 +486,7 @@ export function buildSyntenyGeometry({
         markerBp2,
         KIND_MARKER,
         featureIdx,
-        alignmentLength,
+        alignmentLengths[featureIdx]!,
       )
     }
   }
@@ -537,8 +529,8 @@ export function buildSyntenyGeometry({
     const botMin = Math.min(bp2Start, bp2End) * bpPerPxInv1 - viewOff1
     const botMax = Math.max(bp2Start, bp2End) * bpPerPxInv1 - viewOff1
     return (
-      (topMax < emitLeft || topMin > emitRight) &&
-      (botMax < emitLeft || botMin > emitRight)
+      spanOutsideBand(topMin, topMax, viewWidth, emitBufferPx) &&
+      spanOutsideBand(botMin, botMax, viewWidth, emitBufferPx)
     )
   }
 
@@ -557,7 +549,7 @@ export function buildSyntenyGeometry({
     // Only the no-CIGAR features ladder here; pass 2 ladders the rest along
     // their rendered segments, where the alignment is actually known.
     if (!willDrawCigarArr[i] && wantMarkersArr[i]) {
-      emitGridMarkers(i, alignmentLength, x11, x12, x21, x22)
+      emitGridMarkers(i, x11, x12, x21, x22)
     }
   }
 
@@ -609,14 +601,7 @@ export function buildSyntenyGeometry({
         // segment's — on a crossed ribbon a tick can leave the frame where its
         // segment stays, and vice versa.
         if (wantMarkers) {
-          emitGridMarkers(
-            i,
-            alignmentLength,
-            segBp1Start,
-            segBp1End,
-            segBp2Start,
-            segBp2End,
-          )
+          emitGridMarkers(i, segBp1Start, segBp1End, segBp2Start, segBp2End)
         }
       },
     )

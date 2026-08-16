@@ -34,6 +34,10 @@ export function spanOutsideBand(lo: number, hi: number, w: number, pad: number):
   return _t0
 }
 
+export function markerTravelsTooFar(topX: number, bottomX: number, w: number): boolean {
+  return (Math.abs((topX - bottomX)) > w)
+}
+
 export function fillShade(colorAlpha: number, displayAlpha: number, isHovered: boolean): number {
   let a = (colorAlpha * displayAlpha)
   let _t0: number

@@ -1,3 +1,4 @@
+import { KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -416,6 +417,52 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
     expect(pathOps).toContain('moveTo(101.0,0.0)')
     expect(pathOps).toContain('lineTo(501.0,100.0)')
+  })
+
+  // A location-marker tick: one point per view, drawn as a 1px centerline. The
+  // travel cap that decides whether it is worth drawing has to be answered
+  // against the LIVE pan, because how far the tick travels is how far the two
+  // views sit apart — and the worker that emits it cannot know that. It used to
+  // be answered at fetch time, and the two views drift by up to a pan buffer
+  // (wider than a view) before the fetch key rolls over, so panning one row
+  // alone left every near-horizontal tick on screen: the shape
+  // `hg002_haplotypes_location_markers` was denied for. Both frames below draw
+  // the same uploaded geometry.
+  function renderMarkerAtPan(offsetPx1: number) {
+    const { canvas, pathOps } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    // top end at 100, bottom end at 500 before any pan: 400px of travel, half
+    // the 800px view
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, {
+        bp1: bpArr([100]),
+        bp2: bpArr([100]),
+        bp3: bpArr([500]),
+        bp4: bpArr([500]),
+        kinds: new Uint8Array([KIND_MARKER]),
+      }),
+    )
+    renderer.render(makeState([[0, makeParams({ offsetPx1 })]]))
+    return pathOps
+  }
+
+  test('a marker tick within a view width of travel is drawn', () => {
+    expect(renderMarkerAtPan(0)).toStrictEqual([
+      'beginPath',
+      'moveTo(100.0,0.0)',
+      'lineTo(500.0,100.0)',
+    ])
+  })
+
+  test('panning one view alone past the travel cap drops the tick', () => {
+    // The bottom view alone moves 500px left, taking the tick's bottom end to
+    // 1000 and its travel to 900 — past the 800px view width. The hull is
+    // untouched (the top end is still mid-canvas), so this is the cap talking.
+    expect(renderMarkerAtPan(-500)).toStrictEqual([])
   })
 
   test('an empty render repaints the background over a previous frame', () => {

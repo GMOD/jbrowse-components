@@ -19,7 +19,7 @@
 // The two kind predicates are pure scalar decisions the Canvas2D renderer and
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
-//! js-export: isCigarKind, isMarkerKind, spanOutsideBand, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
+//! js-export: isCigarKind, isMarkerKind, spanOutsideBand, markerTravelsTooFar, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
 //! export-consts: KIND_CIGAR_MIN, KIND_MARKER
 //! js-skip: sBlendDeriv — the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative
 //! js-skip: yCurveDeriv — same as sBlendDeriv, the other half of the tangent
@@ -172,6 +172,48 @@ public bool spanOutsideBand(float lo, float hi, float w, float pad) {
   return hi < -pad || lo > w + pad;
 }
 
+// The second marker rule, beside the hull one in `isCulled`: how far a tick may
+// travel horizontally between its two ends before it stops being a mark.
+//
+// A tick is a line from a point in the top view to the point it maps to in the
+// bottom one, and the hull test keeps it whenever that LINE touches the frame —
+// right geometry, and past a certain shear a useless mark: the line enters the
+// band at one edge and leaves at the other, drawing a few degrees off horizontal
+// with neither end anywhere a reader can look.
+// `hg002_haplotypes_location_markers` shipped with one across the top of its
+// ribbon and was denied for it twice ("please double check previous agents notes
+// about the almost horizontal line. i dont like it"); rendering the same window
+// with markers off is what identified it, since it looks like a border rather
+// than a mark.
+//
+// THIS OVERRIDES THE HULL RULE'S DISTINCTIVE CASE, and saying so is the point of
+// the comment. A tick with its two ends outside the band in OPPOSITE directions —
+// the case the hull test is written for, where testing the ends separately would
+// drop a tick that crosses the frame at mid-height — spans the band, so it
+// travels further than the view is wide by construction and this cap always
+// takes it. The two rules cannot both hold there: the shape the hull rule
+// protects and the shape the review rejected are the same shape. What the hull
+// rule keeps that this still allows is the ordinary case — one end off-screen,
+// the other on it.
+//
+// What survives is what a marker is for. An inversion or an indel INSIDE the
+// frame shears a tick by at most about what is on screen, so the cap sits above
+// every correspondence a reader could follow with their eyes and below every one
+// they could not.
+//
+// THE VIEW'S WIDTH, and asked HERE rather than where the worker emits the tick.
+// The travel is a function of how far the two views have panned APART, and they
+// drift by up to a pan buffer without refetching (`fetchRegionsKey` snaps to a
+// buffer-sized grid), which is wider than the cap. Answered at fetch time the
+// rule therefore went stale on exactly the pan that makes it wrong: pan one row
+// alone and every tick on screen now travels further than the cap allows while
+// all of them keep drawing, which is the near-horizontal line back again — and
+// ticks dropped at fetch time stayed dropped once a pan brought their ends
+// together. Both backends ask it per frame instead, against the live pan.
+public bool markerTravelsTooFar(float topX, float bottomX, float w) {
+  return abs(topX - bottomX) > w;
+}
+
 public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
   // No `minAlignmentLength > 0` guard needed: lengths are non-negative, so an
   // unset (0) filter never matches.
@@ -194,8 +236,12 @@ public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
   // crossed ribbon pulls apart, so on an inversion spanning the frame, panning
   // past the overdraw band deleted the leading half of the tick fan while the
   // ribbon under it stayed.
+  //
+  // What replaces the per-edge test for a marker is the travel cap, which is the
+  // rule that shape actually needs — see markerTravelsTooFar. A marker's two
+  // corners per view coincide, so c.x and c.z are its two ends.
   if (isMarkerKind(kind)) {
-    return false;
+    return markerTravelsTooFar(c.x, c.z, rW);
   }
   // Per-edge for ribbons, and deliberately harsher than the hull: an edge
   // entirely outside the band contributes only a sliver, and keeping the

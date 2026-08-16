@@ -1,6 +1,9 @@
 import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 
-import { spanOutsideBand } from './shaders/syntenyTypes.js.generated.ts'
+import {
+  markerTravelsTooFar,
+  spanOutsideBand,
+} from './shaders/syntenyTypes.js.generated.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { SyntenyTrackRenderParams } from './syntenyRenderingBackendTypes.ts'
@@ -254,6 +257,11 @@ const HULL_CULL_PAD_PX = 1
 // isCulled() makes in syntenyTypes.slang, so the two sides differ only in what
 // they pass it: the hull here runs at a tighter pad, and the minAlignmentLength
 // cull the shader folds in is applied per instance by the draw/pick callers.
+//
+// Travel (markers only): drop a tick that runs further horizontally between its
+// two ends than the view is wide. Also the shader's own, and asked per frame on
+// both sides because the distance moves with the two views' relative pan — see
+// markerTravelsTooFar.
 export function isRibbonCulled(
   c: ProjectedCorners,
   viewWidth: number,
@@ -286,10 +294,14 @@ export function isRibbonCulled(
   ) {
     return true
   }
+  // A marker's two corners per view coincide, so sx1 and sx3 are its two ends —
+  // the same pair the shader reads as c.x and c.z.
+  if (isMarker) {
+    return markerTravelsTooFar(c.sx1, c.sx3, viewWidth)
+  }
   return (
-    !isMarker &&
-    (spanOutsideBand(topMin, topMax, viewWidth, overdrawPx) ||
-      spanOutsideBand(botMin, botMax, viewWidth, overdrawPx))
+    spanOutsideBand(topMin, topMax, viewWidth, overdrawPx) ||
+    spanOutsideBand(botMin, botMax, viewWidth, overdrawPx)
   )
 }
 
