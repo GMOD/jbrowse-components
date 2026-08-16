@@ -33,6 +33,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  loadedRegionIndexAt,
   reconcileLayout,
   resetRowOrderMenuItems,
   rowLabelsCarryText,
@@ -1025,22 +1026,27 @@ export default function stateModelFactory(
        * `sortRowsBy`, the declarative twin, meets the same condition by waiting
        * for the region instead (see setupRowSortAutorun); a click has nothing to
        * wait for, so it declines.
+       *
+       * Declines again when no loaded region covers the column, which is the
+       * gate `setupRowSortAutorun` and multi-wiggle's twin already applied and
+       * this did not: it filtered the regions by refName alone, so a position
+       * past the end of the loaded window gave every row "no value" and wrote
+       * back the order it already had. `loadedRegionIndexAt` is the one
+       * predicate all three now ask, and resolving to a single region is also
+       * what stops two loaded windows on one contig from both answering.
        */
       sortRowsByValueAt(refName: string, pos: number) {
-        if (self.editableSources.length < 2) {
+        const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
+        const region =
+          index === undefined ? undefined : self.rpcDataMap.get(index)
+        if (!region || self.editableSources.length < 2) {
           return
         }
-        const regions = [...self.rpcDataMap.entries()].map(([index, data]) => ({
-          ...data,
-          refName: self.loadedRegions.get(index)?.refName ?? '',
-        }))
         // editableSources, not `sources`: layout-merged (so a user's colors
         // survive the reorder) and unfiltered by the subtree, so a focused
         // clade doesn't persist itself as the whole row order and drop
         // everything it was hiding.
-        self.setLayout(
-          rowOrderByValueAt(self.editableSources, regions, refName, pos),
-        )
+        self.setLayout(rowOrderByValueAt(self.editableSources, region, pos))
       },
       /**
        * #action

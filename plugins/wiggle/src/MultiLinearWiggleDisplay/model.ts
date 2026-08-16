@@ -24,6 +24,7 @@ import {
   buildSpatialIndex,
   clusteringMenuItem,
   computeClusterHierarchy,
+  loadedRegionIndexAt,
   reconcileLayout,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
@@ -547,22 +548,17 @@ export default function stateModelFactory(
          * the sort having silently done nothing).
          */
         sortRowsByScoreAt(refName: string, pos: number) {
-          for (const [index, data] of self.rpcDataMap.entries()) {
-            const region = self.loadedRegions.get(index)
-            if (
-              region?.refName === refName &&
-              region.start <= pos &&
-              pos < region.end
-            ) {
-              // editableSources, not `sources`: layout-merged (so a user's
-              // colors survive the reorder) and unfiltered by the subtree, so a
-              // focused clade doesn't persist itself as the whole row order and
-              // drop everything it was hiding.
-              self.setLayout(
-                sortSourcesByScoreAt(self.editableSources, data, pos),
-              )
-              return
-            }
+          const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
+          const data =
+            index === undefined ? undefined : self.rpcDataMap.get(index)
+          if (data) {
+            // editableSources, not `sources`: layout-merged (so a user's
+            // colors survive the reorder) and unfiltered by the subtree, so a
+            // focused clade doesn't persist itself as the whole row order and
+            // drop everything it was hiding.
+            self.setLayout(
+              sortSourcesByScoreAt(self.editableSources, data, pos),
+            )
           }
         },
 

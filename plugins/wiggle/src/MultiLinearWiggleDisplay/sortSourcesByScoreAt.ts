@@ -1,3 +1,5 @@
+import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
+
 import { findFeatureAtBp } from '../shared/wiggleHitTest.ts'
 
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
@@ -15,16 +17,15 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 // isn't on screen.
 //
 // One region's data, not every loaded region: the columns are pixel bins, so a
-// bp only has a score in the region it was fetched for, and the click already
-// names which one. Sources with no feature covering `bp` (a gap, or a subtrack
-// whose file doesn't cover this contig) sort last in their existing relative
-// order; the sort is otherwise stable. NaN is treated as no score for the same
-// reason — a wig file may carry one, and comparing it scrambles the order
-// instead of sinking that row.
+// bp only has a score in the region it was fetched for, and the caller has
+// already resolved which one (`loadedRegionIndexAt`).
 //
-// Returns the sources themselves rather than their names, so the caller writes
-// the result straight to `layout` — the rows it hands in are already
-// layout-merged, and a name round-trip would only re-look-up what it had.
+// Reading the score is the whole of what is wiggle-specific here. Sinking the
+// rows with no score at `bp` — a gap, or a subtrack whose file doesn't cover
+// this contig — and staying stable otherwise is `orderRowsByValueAt`'s, shared
+// with the multi-row feature display's twin. NaN is dropped rather than ranked
+// for the same reason a gap is: a wig file may carry one, and comparing it
+// scrambles the order instead of sinking that row.
 export function sortSourcesByScoreAt<T extends { name: string }>(
   sources: T[],
   data: WiggleDataResult,
@@ -40,12 +41,5 @@ export function sortSourcesByScoreAt<T extends { name: string }>(
       }
     }
   }
-  return sources
-    .map((source, idx) => ({ source, idx, v: scoreByName.get(source.name) }))
-    .sort((a, b) => {
-      const av = a.v ?? Number.NEGATIVE_INFINITY
-      const bv = b.v ?? Number.NEGATIVE_INFINITY
-      return av !== bv ? bv - av : a.idx - b.idx
-    })
-    .map(x => x.source)
+  return orderRowsByValueAt(sources, scoreByName, (a, b) => b - a)
 }

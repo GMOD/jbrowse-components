@@ -15,15 +15,21 @@ const SORT = 'Sort rows by color here'
 // The rows this display draws are DISCOVERED from the loaded features
 // (`sourcesWithoutLayout` is the distinct partitionField values across
 // rpcDataMap), so they vanish whenever the display has no data loaded.
-function regionData(partitionValues: string[]): MultiRowRegionData {
+//
+// `feats` are `[rowIndexIntoPartitionValues, color]` spanning the whole loaded
+// window — enough for the sort to have something to rank by, and nothing more.
+function regionData(
+  partitionValues: string[],
+  feats: [row: number, color: number][] = [],
+): MultiRowRegionData {
   return {
     partitionValues,
-    featureStarts: new Uint32Array(0),
-    featureEnds: new Uint32Array(0),
-    featureColors: new Uint32Array(0),
-    featurePartitionIndex: new Uint32Array(0),
-    featureNames: [],
-    featureIds: [],
+    featureStarts: new Uint32Array(feats.length),
+    featureEnds: Uint32Array.from(feats, () => 10_000),
+    featureColors: Uint32Array.from(feats, f => f[1]),
+    featurePartitionIndex: Uint32Array.from(feats, f => f[0]),
+    featureNames: feats.map(() => ''),
+    featureIds: feats.map((_, i) => `f${i}`),
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
     partitionCandidates: [],
@@ -41,9 +47,19 @@ function row(items: MenuItem[], label: string) {
   return item
 }
 
+const LOADED = {
+  refName: 'ctgA',
+  start: 0,
+  end: 10_000,
+  assemblyName: 'volvox',
+}
+
 function clustered() {
   const { display } = createTestEnvironment().createDisplay()
   display.setRpcData(0, regionData(['a', 'b', 'c']))
+  // the span the sort resolves its column against — a click always lands in
+  // one, so a test that omits it is testing the declining path by accident
+  display.setLoadedRegion(0, LOADED)
   display.setLayoutAndClusterTree(
     [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
     '((c,a),b);',
@@ -93,11 +109,28 @@ describe('"Sort rows by color here"', () => {
     const display = clustered()
     display.clearAllRpcData()
     display.setRpcData(0, regionData(['b']))
+    display.setLoadedRegion(0, LOADED)
 
     expect(display.editableSources.map(s => s.name)).toEqual(['b'])
     display.sortRowsByValueAt('ctgA', 100)
 
     expect(display.clusterTree).toBe('((c,a),b);')
+    expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
+  })
+
+  // The other half of the same rule, and the one this display used to be
+  // missing: rows aplenty, but the column is off the end of what was fetched,
+  // so there is nothing to rank by. It filtered the regions on refName alone,
+  // so every row came back valueless and the unchanged order was written back
+  // as an explicit `layout`. Same gate `setupRowSortAutorun` and multi-wiggle
+  // already applied.
+  it('declines a column no loaded region covers', () => {
+    const display = clustered()
+
+    display.sortRowsByValueAt('ctgA', 50_000)
+    expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
+
+    display.sortRowsByValueAt('ctgB', 100)
     expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
   })
 
@@ -110,5 +143,31 @@ describe('"Sort rows by color here"', () => {
     // the order is unchanged, which is why the tree still describes it
     expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
     expect(display.clusterTree).toBe('((c,a),b);')
+  })
+
+  // The path every case above reaches only as a no-op: rows that actually move.
+  // The clustered order is c,a,b; `a` and `b` share a color at the column and
+  // `c` is alone, so the two-row block leads — in ITS incoming order, which is
+  // what keeps a previous sort meaningful inside each block — and the tree
+  // stops describing the rows.
+  it('pulls the commonest block to the top, and drops the stale tree', () => {
+    const display = clustered()
+    display.setRpcData(
+      0,
+      regionData(
+        ['a', 'b', 'c'],
+        [
+          [0, 0xff0000ff],
+          [1, 0xff0000ff],
+          [2, 0xff00ff00],
+        ],
+      ),
+    )
+    expect(display.editableSources.map(s => s.name)).toEqual(['c', 'a', 'b'])
+
+    display.sortRowsByValueAt('ctgA', 100)
+
+    expect(display.layout.map(s => s.name)).toEqual(['a', 'b', 'c'])
+    expect(display.clusterTree).toBeUndefined()
   })
 })

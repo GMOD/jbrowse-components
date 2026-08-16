@@ -59,6 +59,25 @@ no provenance is also the signal it was supplied rather than computed.
 `SvgTreeSidebar` captions the export and `clusterProvenanceMenuItems` puts the
 locus in the menu.
 
+## "Sort rows by … here" is three shared pieces and one per-display read
+
+Only _which value a row carries at the column_ is the display's (multi-wiggle
+the score, multi-row the painted color). `rowSortColumn.ts` owns the rest:
+
+- **`regionCoversColumn` is asked by the gate and by the sort.**
+  `setupRowSortAutorun` waits for a region satisfying it and then clears
+  `sortRowsBy`, so a sort answering the question differently gets dispatched
+  into, declines, and has its trigger cleared anyway.
+- **No covering region means leave the rows alone.** Every row reads "no value",
+  which ranks them equally and writes back the order they already had — a sort
+  that silently did nothing, and a `layout` write that can still clear the tree.
+  Filtering the regions on refName alone is the near-miss (multi-row shipped
+  it): coordinates repeat across regions by refName, so two loaded windows on
+  one contig both answer and the map's iteration order picks.
+- **`orderRowsByValueAt` owns missing-last and stability**, and hands `compare`
+  only values that exist. A neutral fill-in instead (`0`) ranks a valueless row
+  above every negative score and into the middle of every color block.
+
 ## `subtreeFilter` goes with the row _names_, not with the tree
 
 Matched without a tree, so a reorder or re-cluster leaves it valid and

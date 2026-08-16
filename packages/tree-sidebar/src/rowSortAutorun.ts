@@ -2,6 +2,8 @@ import { canonicalizeViewRefName } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { regionCoversColumn } from './rowSortColumn.ts'
+
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -67,8 +69,12 @@ export function setupRowSortAutorun(
         // never runs AND the flag never clears: it sits in the snapshot
         // forever, doing nothing, saying nothing.
         const refName = canonicalizeViewRefName(self, spec.refName)
-        const loaded = [...self.loadedRegions.values()].some(
-          r => r.refName === refName && r.start <= spec.pos && spec.pos < r.end,
+        // The same predicate the sort itself resolves its region with, so the
+        // gate cannot open on a column the action will decline to sort — which
+        // would clear the trigger and leave the rows unsorted with nothing left
+        // to re-fire it.
+        const loaded = [...self.loadedRegions.values()].some(r =>
+          regionCoversColumn(r, refName, spec.pos),
         )
         if (!loaded) {
           return

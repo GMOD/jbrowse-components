@@ -40,6 +40,12 @@ export { setupRunClusteringAutorun } from './runClusteringAutorun.ts'
 export { setupRowSortAutorun } from './rowSortAutorun.ts'
 export type { RowSortSpec } from './rowSortAutorun.ts'
 export {
+  loadedRegionIndexAt,
+  orderRowsByValueAt,
+  regionCoversColumn,
+} from './rowSortColumn.ts'
+export type { LoadedRegionSpan } from './rowSortColumn.ts'
+export {
   applySubtreeFilter,
   buildClusteredLayout,
   buildTree,

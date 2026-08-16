@@ -1,41 +1,41 @@
-// A loaded region's slim feature arrays plus its refName (rpcDataMap value +
-// the refName from loadedRegions). Just what the sort reads.
-export interface RowValueRegion {
-  refName: string
-  featureStarts: Uint32Array
-  featureEnds: Uint32Array
-  featureColors: Uint32Array
-  partitionValues: string[]
-  featurePartitionIndex: Uint32Array
-}
+import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
+
+import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
+
+// Just the arrays the sort reads, off the region the caller already resolved as
+// the one covering the column (`loadedRegionIndexAt`). A `Pick` rather than a
+// re-declaration, so a rename on the wire shape reaches this instead of leaving
+// a structurally-compatible copy behind.
+export type RowValueRegion = Pick<
+  MultiRowRegionData,
+  | 'featureStarts'
+  | 'featureEnds'
+  | 'featureColors'
+  | 'partitionValues'
+  | 'featurePartitionIndex'
+>
 
 // The ABGR color painted at `pos` on each row, for the rows that have one. The
 // last covering feature wins, matching paint order — the same rule the hit test
 // follows for overlapping features.
-function colorsPaintedAt(
-  regions: RowValueRegion[],
-  refName: string,
-  pos: number,
-) {
+function colorsPaintedAt(region: RowValueRegion, pos: number) {
   const byRow = new Map<string, number>()
-  for (const r of regions.filter(r => r.refName === refName)) {
-    for (let i = 0; i < r.featureStarts.length; i++) {
-      if (r.featureStarts[i]! <= pos && pos < r.featureEnds[i]!) {
-        byRow.set(
-          r.partitionValues[r.featurePartitionIndex[i]!]!,
-          r.featureColors[i]!,
-        )
-      }
+  for (let i = 0; i < region.featureStarts.length; i++) {
+    if (region.featureStarts[i]! <= pos && pos < region.featureEnds[i]!) {
+      byRow.set(
+        region.partitionValues[region.featurePartitionIndex[i]!]!,
+        region.featureColors[i]!,
+      )
     }
   }
   return byRow
 }
 
-// Order rows by the value each carries at genomic (refName, pos) — the analogue
-// of alignments "sort by base/tag at position". The value is the ABGR color of
-// the feature covering pos on that row (the same categorical signal the row
-// paints, e.g. B vs D ancestry), so equal-value rows group contiguously: a
-// coat-color QTL painting sorted at its peak resolves into one block per allele.
+// Order rows by the value each carries at one genomic column — the analogue of
+// alignments "sort by base/tag at position". The value is the ABGR color of the
+// feature covering pos on that row (the same categorical signal the row paints,
+// e.g. B vs D ancestry), so equal-value rows group contiguously: a coat-color
+// QTL painting sorted at its peak resolves into one block per allele.
 //
 // **Blocks are ordered largest first**, not by their color's numeric value.
 // Grouping is what the sort is for and either ordering delivers it, but the
@@ -45,43 +45,27 @@ function colorsPaintedAt(
 // reader can check. Equal-sized blocks fall back to the color value purely so
 // the result is deterministic.
 //
-// Rows with no feature at pos sort last, keeping their original relative order;
-// the sort is otherwise stable within a block, so an earlier sort still orders
-// each block by what it sorted on.
-//
-// Returns the rows themselves rather than their names, so the caller writes the
-// result straight to `layout` — the rows it hands in are already layout-merged,
-// and a name round-trip would only re-look-up what it had. Same shape as
-// multi-wiggle's `sortSourcesByScoreAt`.
+// Sinking the rows with no feature at pos, and staying stable otherwise, is
+// `orderRowsByValueAt`'s — shared with multi-wiggle's `sortSourcesByScoreAt`,
+// which asks the same question of a score.
 export function rowOrderByValueAt<T extends { name: string }>(
   sources: T[],
-  regions: RowValueRegion[],
-  refName: string,
+  region: RowValueRegion,
   pos: number,
 ): T[] {
-  const colorByRow = colorsPaintedAt(regions, refName, pos)
-  const keyed = sources.map((source, idx) => ({
-    source,
-    idx,
-    color: colorByRow.get(source.name),
-  }))
+  const colorByRow = colorsPaintedAt(region, pos)
   // counted over the rows being ordered, not over the data, so a subtree filter
   // sizes the blocks by what is actually on screen
   const blockSize = new Map<number, number>()
-  for (const { color } of keyed) {
+  for (const { name } of sources) {
+    const color = colorByRow.get(name)
     if (color !== undefined) {
       blockSize.set(color, (blockSize.get(color) ?? 0) + 1)
     }
   }
-  // -1 for a row with no feature here, so descending size puts them last
-  const sizeOf = (color?: number) =>
-    color === undefined ? -1 : blockSize.get(color)!
-  return keyed
-    .sort(
-      (a, b) =>
-        sizeOf(b.color) - sizeOf(a.color) ||
-        (a.color ?? 0) - (b.color ?? 0) ||
-        a.idx - b.idx,
-    )
-    .map(x => x.source)
+  return orderRowsByValueAt(
+    sources,
+    colorByRow,
+    (a, b) => blockSize.get(b)! - blockSize.get(a)! || a - b,
+  )
 }

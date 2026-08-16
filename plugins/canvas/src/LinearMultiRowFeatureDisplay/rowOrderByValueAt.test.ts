@@ -8,19 +8,18 @@ function rows(...names: string[]) {
   return names.map(name => ({ name }))
 }
 
-function order(names: string[], regions: RowValueRegion[], pos: number) {
-  return rowOrderByValueAt(rows(...names), regions, 'chr4', pos).map(
-    s => s.name,
-  )
+function order(names: string[], region: RowValueRegion, pos: number) {
+  return rowOrderByValueAt(rows(...names), region, pos).map(s => s.name)
 }
 
+// One region's wire arrays — the region the caller resolved as covering the
+// column. Which region that is, is `loadedRegionIndexAt`'s question and is
+// pinned in sortRowsMenu.test.ts against the real model.
 function region(
-  refName: string,
   feats: { start: number; end: number; color: number; row: number }[],
   partitionValues: string[],
 ): RowValueRegion {
   return {
-    refName,
     featureStarts: new Uint32Array(feats.map(f => f.start)),
     featureEnds: new Uint32Array(feats.map(f => f.end)),
     featureColors: new Uint32Array(feats.map(f => f.color)),
@@ -31,19 +30,16 @@ function region(
 
 test('groups rows by the value at pos; absent rows sort last (stable)', () => {
   // a,c are "red" (color 1) at pos 50; b is "blue" (color 2); d has no feature
-  const regions = [
-    region(
-      'chr4',
-      [
-        { start: 0, end: 100, color: 1, row: 0 }, // a
-        { start: 0, end: 100, color: 2, row: 1 }, // b
-        { start: 0, end: 100, color: 1, row: 2 }, // c
-      ],
-      ['a', 'b', 'c'],
-    ),
-  ]
+  const r = region(
+    [
+      { start: 0, end: 100, color: 1, row: 0 }, // a
+      { start: 0, end: 100, color: 2, row: 1 }, // b
+      { start: 0, end: 100, color: 1, row: 2 }, // c
+    ],
+    ['a', 'b', 'c'],
+  )
   // reds (a,c) first in original order, then blue (b), then valueless (d)
-  expect(order(['a', 'b', 'c', 'd'], regions, 50)).toEqual(['a', 'c', 'b', 'd'])
+  expect(order(['a', 'b', 'c', 'd'], r, 50)).toEqual(['a', 'c', 'b', 'd'])
 })
 
 test('puts the commonest block first, whatever its color packs to', () => {
@@ -51,57 +47,38 @@ test('puts the commonest block first, whatever its color packs to', () => {
   // would lead with the singleton purely because 1 < 9 — an artifact of how the
   // color is stored, which also means a recolor would rearrange the same rows
   // over the same locus.
-  const regions = [
-    region(
-      'chr4',
-      [
-        { start: 0, end: 100, color: 9, row: 0 }, // a
-        { start: 0, end: 100, color: 1, row: 1 }, // b
-        { start: 0, end: 100, color: 9, row: 2 }, // c
-        { start: 0, end: 100, color: 9, row: 3 }, // d
-      ],
-      ['a', 'b', 'c', 'd'],
-    ),
-  ]
-  expect(order(['a', 'b', 'c', 'd'], regions, 50)).toEqual(['a', 'c', 'd', 'b'])
+  const r = region(
+    [
+      { start: 0, end: 100, color: 9, row: 0 }, // a
+      { start: 0, end: 100, color: 1, row: 1 }, // b
+      { start: 0, end: 100, color: 9, row: 2 }, // c
+      { start: 0, end: 100, color: 9, row: 3 }, // d
+    ],
+    ['a', 'b', 'c', 'd'],
+  )
+  expect(order(['a', 'b', 'c', 'd'], r, 50)).toEqual(['a', 'c', 'd', 'b'])
 })
 
 test('equal-sized blocks stay deterministic', () => {
-  const regions = [
-    region(
-      'chr4',
-      [
-        { start: 0, end: 100, color: 7, row: 0 }, // a
-        { start: 0, end: 100, color: 3, row: 1 }, // b
-      ],
-      ['a', 'b'],
-    ),
-  ]
+  const r = region(
+    [
+      { start: 0, end: 100, color: 7, row: 0 }, // a
+      { start: 0, end: 100, color: 3, row: 1 }, // b
+    ],
+    ['a', 'b'],
+  )
   // nothing distinguishes a one-row block from another one-row block, so the
   // color value breaks the tie rather than leaving it to sort implementation
-  expect(order(['a', 'b'], regions, 50)).toEqual(['b', 'a'])
-})
-
-test('ignores regions on other refNames (numeric pos overlap)', () => {
-  const regions = [
-    region('chr4', [{ start: 0, end: 100, color: 1, row: 0 }], ['a']),
-    // chr5 also spans pos 50 numerically, but must not affect a chr4 sort
-    region('chr5', [{ start: 0, end: 100, color: 9, row: 0 }], ['b']),
-  ]
-  // a has a chr4 value, b does not (its match is on chr5) → b sorts last
-  expect(order(['a', 'b'], regions, 50)).toEqual(['a', 'b'])
+  expect(order(['a', 'b'], r, 50)).toEqual(['b', 'a'])
 })
 
 test('pos outside every feature leaves the original order', () => {
-  const regions = [
-    region(
-      'chr4',
-      [
-        { start: 0, end: 10, color: 1, row: 0 },
-        { start: 0, end: 10, color: 2, row: 1 },
-      ],
-      ['a', 'b'],
-    ),
-  ]
-  expect(order(['a', 'b'], regions, 500)).toEqual(['a', 'b'])
+  const r = region(
+    [
+      { start: 0, end: 10, color: 1, row: 0 },
+      { start: 0, end: 10, color: 2, row: 1 },
+    ],
+    ['a', 'b'],
+  )
+  expect(order(['a', 'b'], r, 500)).toEqual(['a', 'b'])
 })
