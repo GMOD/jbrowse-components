@@ -105,7 +105,7 @@ describe('createProgress', () => {
 
   it('prints a failure on its own line so a rewritten bar cannot eat it', () => {
     const { out, progress } = capture(true)
-    progress.fail('FAILED b.png: boom')
+    progress.step('b.png', 'FAILED b.png: boom')
     const failLine = out.find(s => s.includes('FAILED'))
     expect(failLine).toBeDefined()
     expect(failLine!.endsWith('\n')).toBe(true)
@@ -113,10 +113,30 @@ describe('createProgress', () => {
     expect(out.at(-1)).toContain('1 failed')
   })
 
+  it('does not log a failed record as if it rendered', () => {
+    // The regression: a failure printed its own FAILED line and then an
+    // ordinary `[n/total] name` line under it, which in a piped log — which is
+    // what CI captures — is indistinguishable from a record that worked.
+    const { out, progress } = capture(false)
+    progress.step('a.png')
+    progress.step('b.png', 'FAILED b.png: boom')
+    expect(out).toEqual(['[1/3] a.png\n', '[2/3] FAILED b.png: boom\n'])
+  })
+
+  it('advances the queue on a failure, and counts it once', () => {
+    const { out, progress } = capture(true)
+    progress.step('a.png', 'FAILED a.png: boom')
+    progress.step('b.png')
+    // 2 of 3 attempted, 1 of them failed — the two counts used to come from two
+    // separate calls and could disagree
+    expect(out.at(-1)).toContain('2/3')
+    expect(out.at(-1)).toContain('1 failed')
+  })
+
   it('leaves the terminal on a fresh row when it finishes', () => {
     const { out, progress } = capture(true)
     progress.step('a.png')
     progress.finish('wrote 1/3')
-    expect(out.at(-1)).toBe('\r[2Kwrote 1/3\n')
+    expect(out.at(-1)).toBe('\r\u001B[2Kwrote 1/3\n')
   })
 })

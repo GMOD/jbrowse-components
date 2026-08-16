@@ -68,13 +68,21 @@ export function progressLine({
 }
 
 export interface ProgressReporter {
-  /** Called after each record, whether it rendered or failed. */
-  step: (label: string) => void
-  /** A failure, printed so it survives a rewritten bar. */
-  fail: (message: string) => void
+  /**
+   * Called once per record, whether it rendered or failed; `error` is the
+   * failure message. One call rather than a separate `fail`, because the queue
+   * advances either way and two calls let the two counts disagree.
+   */
+  step: (label: string, error?: string) => void
   /** Final line; leaves the terminal on a fresh row. */
   finish: (summary: string) => void
 }
+
+// \r and a clear-to-end-of-line, so a shorter line does not leave the tail of
+// the previous one behind. Written as an escape rather than carried as a raw
+// control byte in the source, which is invisible in a diff and one stray
+// reformat from disappearing.
+const CLEAR_LINE = '\r\u001B[2K'
 
 export function createProgress({
   total,
@@ -90,37 +98,35 @@ export function createProgress({
   const started = now()
   let done = 0
   let failed = 0
-  const redraw = () => {
-    if (isTty) {
-      // \r and a clear-to-end-of-line, so a shorter line does not leave the tail
-      // of the previous one behind
-      write(
-        `\r[2K${progressLine({
-          done,
-          total,
-          failed,
-          elapsedMs: now() - started,
-        })}`,
-      )
-    }
-  }
   return {
-    step(label) {
+    step(label, error) {
       done++
+      if (error) {
+        failed++
+      }
       if (isTty) {
-        redraw()
+        // the failure lands above the bar, on its own line, so the rewriting
+        // cannot eat it
+        if (error) {
+          write(`${CLEAR_LINE}${error}\n`)
+        }
+        write(
+          `${CLEAR_LINE}${progressLine({
+            done,
+            total,
+            failed,
+            elapsedMs: now() - started,
+          })}`,
+        )
       } else {
-        write(`[${done}/${total}] ${label}\n`)
+        // The counter leads whichever it was. A failure used to print its own
+        // line and then an ordinary `[n/total] name` line under it, which in a
+        // piped log reads exactly like a record that rendered.
+        write(`[${done}/${total}] ${error ?? label}\n`)
       }
     },
-    fail(message) {
-      failed++
-      // clear the bar first, or the failure lands on top of it
-      write(isTty ? `\r[2K${message}\n` : `${message}\n`)
-      redraw()
-    },
     finish(summary) {
-      write(isTty ? `\r[2K${summary}\n` : `${summary}\n`)
+      write(isTty ? `${CLEAR_LINE}${summary}\n` : `${summary}\n`)
     },
   }
 }
