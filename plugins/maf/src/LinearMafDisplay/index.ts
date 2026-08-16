@@ -13,7 +13,7 @@ const ReactComponent = lazy(
 
 export default function LinearMafDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaF(pluginManager)
+    const configSchema = configSchemaF()
     const stateModel = stateModelFactory(configSchema)
     return new DisplayType({
       name: 'LinearMafDisplay',

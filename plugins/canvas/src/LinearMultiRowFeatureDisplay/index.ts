@@ -13,7 +13,7 @@ const LinearMultiRowFeatureDisplayComponent = lazy(
 
 export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaFactory(pluginManager)
+    const configSchema = configSchemaFactory()
     return new DisplayType({
       name: 'LinearMultiRowFeatureDisplay',
       displayName: 'Multi-row feature display (painting)',

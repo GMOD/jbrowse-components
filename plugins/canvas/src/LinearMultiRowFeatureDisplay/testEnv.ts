@@ -42,7 +42,7 @@ export function createTestEnvironment(opts?: {
       },
     },
     displayName: 'LinearMultiRowFeatureDisplay',
-    configSchema: pm => configSchemaF(pm),
+    configSchema: () => configSchemaF(),
     stateModel: (_pm, schema) => stateModelFactory(schema),
     viewModel: linearGenomeViewStateModelFactory,
     regions: REGIONS.slice(0, 1),

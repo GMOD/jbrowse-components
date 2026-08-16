@@ -1,9 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #config LinearMultiRowFeatureDisplay
@@ -57,11 +56,7 @@ import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
  * the per-feature color with no configuration at all. To color per feature off
  * some other attribute, set the `color` slot to a `jexl:` expression reading it.
  */
-export default function configSchemaF(pluginManager: PluginManager) {
-  const LinearGenomePlugin = pluginManager.getPlugin(
-    'LinearGenomeViewPlugin',
-  ) as LinearGenomeViewPlugin
-  const { baseLinearDisplayConfigSchema } = LinearGenomePlugin.exports
+export default function configSchemaF() {
   return ConfigurationSchema(
     'LinearMultiRowFeatureDisplay',
     {
@@ -345,6 +340,9 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
     },
     {
+      /**
+       * #baseConfiguration
+       */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
     },

@@ -34,8 +34,6 @@ export function createMafTestEnvironment({
   viewRegionEnd?: number
 } = {}) {
   const env = createDisplayTestEnvironment<LinearMafDisplayModel>({
-    // MAF's configSchema reads baseLinearDisplayConfigSchema off the installed
-    // LinearGenomeViewPlugin's exports, so the real plugin must be registered.
     plugins: [new LinearGenomeViewPlugin()],
     trackType: 'MafTrack',
     adapter: {
@@ -48,7 +46,7 @@ export function createMafTestEnvironment({
       config: { type: 'MafTabixAdapter', summaryAdapter, annotationAdapter },
     },
     displayName: 'LinearMafDisplay',
-    configSchema: pm => configSchemaF(pm),
+    configSchema: () => configSchemaF(),
     stateModel: (_pm, schema) => stateModelFactory(schema),
     viewModel: linearGenomeViewStateModelFactory,
     assemblyEnd,

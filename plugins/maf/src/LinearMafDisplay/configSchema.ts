@@ -1,14 +1,13 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
 
 import { CONSERVATION_MODE_VALUES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { ROW_IDENTITY_MODE_VALUES } from './rowIdentityModes.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #config LinearMafDisplay
@@ -45,11 +44,7 @@ import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
  * }
  * ```
  */
-export default function configSchemaF(pluginManager: PluginManager) {
-  const LinearGenomePlugin = pluginManager.getPlugin(
-    'LinearGenomeViewPlugin',
-  ) as LinearGenomeViewPlugin
-  const { baseLinearDisplayConfigSchema } = LinearGenomePlugin.exports
+export default function configSchemaF() {
   // The CDS-frame annotation source is a sub-adapter on the MAF *adapter*
   // (`annotationAdapter`, alongside `summaryAdapter`), not the display. The
   // display slots below are all show/hide toggles + band sizes.
@@ -289,6 +284,9 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
     },
     {
+      /**
+       * #baseConfiguration
+       */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
     },

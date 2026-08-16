@@ -27,7 +27,10 @@ that identifies it (not one of the config slots below).
 - **Extended by:** [LinearArcDisplay](../lineararcdisplay)
 - **Extended by:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 - **Extended by:** [LinearHicDisplay](../linearhicdisplay)
+- **Extended by:** [LinearMafDisplay](../linearmafdisplay)
 - **Extended by:** [LinearManhattanDisplay](../linearmanhattandisplay)
+- **Extended by:**
+  [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Extended by:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Extended by:** [SharedLDDisplay](../sharedlddisplay)
 - **Extended by:** [SharedVariantDisplay](../sharedvariantdisplay)
