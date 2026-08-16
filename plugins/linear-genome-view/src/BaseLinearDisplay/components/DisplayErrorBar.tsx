@@ -1,4 +1,4 @@
-import { ErrorBar } from '@jbrowse/core/ui'
+import ErrorBar from '@jbrowse/core/ui/ErrorBar'
 import { observer } from 'mobx-react'
 
 import type { DisplayErrorBarModel } from '@jbrowse/display-ui'

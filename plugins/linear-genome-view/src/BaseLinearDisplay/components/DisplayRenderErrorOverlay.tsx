@@ -1,4 +1,5 @@
-import { ErrorOverlay, GpuFallbackButton } from '@jbrowse/core/ui'
+import ErrorOverlay from '@jbrowse/core/ui/ErrorOverlay'
+import GpuFallbackButton from '@jbrowse/core/ui/GpuFallbackButton'
 import { observer } from 'mobx-react'
 
 // Full-area overlay for a render-backend (GPU) error, used as a display's

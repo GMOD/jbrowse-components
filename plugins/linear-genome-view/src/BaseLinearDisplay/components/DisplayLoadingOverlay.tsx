@@ -1,4 +1,4 @@
-import { LoadingOverlay } from '@jbrowse/core/ui'
+import LoadingOverlay from '@jbrowse/core/ui/LoadingOverlay'
 import { observer } from 'mobx-react'
 
 import type { DisplayLoadingOverlayModel } from '@jbrowse/display-ui'

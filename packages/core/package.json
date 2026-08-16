@@ -87,14 +87,18 @@
     "./ui/DraggableDialog": "./src/ui/DraggableDialog.tsx",
     "./ui/DropDownMenu": "./src/ui/DropDownMenu.tsx",
     "./ui/EditableTypography": "./src/ui/EditableTypography.tsx",
+    "./ui/ErrorBar": "./src/ui/ErrorBar.tsx",
     "./ui/ErrorBoundary": "./src/ui/ErrorBoundary.tsx",
     "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
+    "./ui/ErrorOverlay": "./src/ui/ErrorOverlay.tsx",
+    "./ui/GpuFallbackButton": "./src/ui/GpuFallbackButton.tsx",
     "./ui/HoverTooltip": "./src/ui/HoverTooltip.tsx",
     "./ui/Icons": "./src/ui/Icons.tsx",
     "./ui/InfoDialog": "./src/ui/InfoDialog.tsx",
     "./ui/JexlFilterDialog": "./src/ui/JexlFilterDialog.tsx",
     "./ui/LegendSwatchGlyph": "./src/ui/LegendSwatchGlyph.tsx",
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
+    "./ui/LoadingOverlay": "./src/ui/LoadingOverlay.tsx",
     "./ui/Logo": "./src/ui/Logo.tsx",
     "./ui/Menu": "./src/ui/Menu.tsx",
     "./ui/PaletteContext": "./src/ui/PaletteContext.tsx",
@@ -520,6 +524,10 @@
         "types": "./esm/ui/EditableTypography.d.ts",
         "import": "./esm/ui/EditableTypography.js"
       },
+      "./ui/ErrorBar": {
+        "types": "./esm/ui/ErrorBar.d.ts",
+        "import": "./esm/ui/ErrorBar.js"
+      },
       "./ui/ErrorBoundary": {
         "types": "./esm/ui/ErrorBoundary.d.ts",
         "import": "./esm/ui/ErrorBoundary.js"
@@ -527,6 +535,14 @@
       "./ui/ErrorMessageStackTraceDialog": {
         "types": "./esm/ui/ErrorMessageStackTraceDialog.d.ts",
         "import": "./esm/ui/ErrorMessageStackTraceDialog.js"
+      },
+      "./ui/ErrorOverlay": {
+        "types": "./esm/ui/ErrorOverlay.d.ts",
+        "import": "./esm/ui/ErrorOverlay.js"
+      },
+      "./ui/GpuFallbackButton": {
+        "types": "./esm/ui/GpuFallbackButton.d.ts",
+        "import": "./esm/ui/GpuFallbackButton.js"
       },
       "./ui/HoverTooltip": {
         "types": "./esm/ui/HoverTooltip.d.ts",
@@ -551,6 +567,10 @@
       "./ui/LoadingEllipses": {
         "types": "./esm/ui/LoadingEllipses.d.ts",
         "import": "./esm/ui/LoadingEllipses.js"
+      },
+      "./ui/LoadingOverlay": {
+        "types": "./esm/ui/LoadingOverlay.d.ts",
+        "import": "./esm/ui/LoadingOverlay.js"
       },
       "./ui/Logo": {
         "types": "./esm/ui/Logo.d.ts",
@@ -1180,11 +1200,20 @@
         "ui/EditableTypography": [
           "esm/ui/EditableTypography.d.ts"
         ],
+        "ui/ErrorBar": [
+          "esm/ui/ErrorBar.d.ts"
+        ],
         "ui/ErrorBoundary": [
           "esm/ui/ErrorBoundary.d.ts"
         ],
         "ui/ErrorMessageStackTraceDialog": [
           "esm/ui/ErrorMessageStackTraceDialog.d.ts"
+        ],
+        "ui/ErrorOverlay": [
+          "esm/ui/ErrorOverlay.d.ts"
+        ],
+        "ui/GpuFallbackButton": [
+          "esm/ui/GpuFallbackButton.d.ts"
         ],
         "ui/HoverTooltip": [
           "esm/ui/HoverTooltip.d.ts"
@@ -1203,6 +1232,9 @@
         ],
         "ui/LoadingEllipses": [
           "esm/ui/LoadingEllipses.d.ts"
+        ],
+        "ui/LoadingOverlay": [
+          "esm/ui/LoadingOverlay.d.ts"
         ],
         "ui/Logo": [
           "esm/ui/Logo.d.ts"
