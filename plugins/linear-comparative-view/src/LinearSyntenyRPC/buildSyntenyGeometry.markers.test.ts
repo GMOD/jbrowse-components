@@ -47,7 +47,6 @@ function buildWithMarkers(widthBp: number, cigar: number[] = []) {
     ends: new Uint32Array([widthBp]),
     drawCIGAR: cigar.length > 0,
     drawCIGARMatchesOnly: false,
-    drawLocationMarkers: true,
     bpPerPx0: 1,
     bpPerPx1: 1,
     viewOff0: 0,
@@ -96,7 +95,6 @@ test('the grid is absolute, so panning does not slide the markers', () => {
     ends: new Uint32Array([430]),
     drawCIGAR: false,
     drawCIGARMatchesOnly: false,
-    drawLocationMarkers: true,
     bpPerPx0: 1,
     bpPerPx1: 1,
     viewOff0: 0,
@@ -115,6 +113,51 @@ test('feature narrower than the 30px gate emits no markers', () => {
   expect(markerIndices(g.kinds)).toEqual([])
   // The base block is still present.
   expect([...g.kinds]).toEqual([KIND_BASE])
+})
+
+// INSTANCE ORDER IS DRAW ORDER — the Canvas2D loop walks it and
+// `interleaveInstances` packs the GPU buffer in it — so the ticks have to be last
+// or a feature drawn later paints over them. They used to be emitted beside their
+// own feature, which put a CIGAR feature's ticks above every base ribbon (pass 2
+// runs after pass 1) and a plain feature's under the bigger ribbons, since
+// features sort small→large. A grid that is over the ribbons for some features and
+// under them for others is not a ruler.
+test('every marker sorts after every ribbon, whichever pass emitted it', () => {
+  // Two features on the same span: one plain (pass 1 markers) and one carrying a
+  // CIGAR (pass 2 markers), so both emit paths are in one build.
+  const cigar = Array.from({ length: 20 }, () => op(20, CIGAR_M))
+  const g = buildSyntenyGeometry({
+    p11_cumBp: new Float64Array([0, 0]),
+    p12_cumBp: new Float64Array([400, 400]),
+    p21_cumBp: new Float64Array([0, 0]),
+    p22_cumBp: new Float64Array([400, 400]),
+    queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN, RULER_GRID_ORIGIN]),
+    strands: new Int8Array([1, 1]),
+    parsedCigars: [[], cigar],
+    starts: new Uint32Array([0, 0]),
+    ends: new Uint32Array([400, 400]),
+    drawCIGAR: true,
+    // Transparent indels, so pass 2 emits RIBBON quads too (one per match
+    // segment) rather than only markers — the ordering claim is about ribbons
+    // from both passes against ticks from both passes. It also leaves the tiled
+    // feature's reserved full-span base slot unused, which is the slack the gap
+    // between the two regions is made of.
+    drawCIGARMatchesOnly: true,
+    bpPerPx0: 1,
+    bpPerPx1: 1,
+    viewOff0: 0,
+    viewOff1: 0,
+    viewWidth: 400,
+  })
+  const markers = markerIndices(g.kinds)
+  const ribbons = [...g.kinds].flatMap((k, i) => (k === KIND_MARKER ? [] : [i]))
+  // both features laddered, and both drew ribbons
+  expect(new Set(markers.map(i => g.instanceFeatureIdx[i])).size).toBe(2)
+  expect(ribbons.length).toBeGreaterThan(2)
+  expect(Math.min(...markers)).toBeGreaterThan(Math.max(...ribbons))
+  // and the two regions abut — the gap the ribbon region's unused slack leaves is
+  // closed, so `instanceCount` covers exactly the instances written
+  expect(markers.length + ribbons.length).toBe(g.instanceCount)
 })
 
 // The regression this file exists for. Rendered CIGAR segments are ~1px wide by
@@ -154,7 +197,6 @@ test('markers follow the CIGAR through a deletion', () => {
     ends: new Uint32Array([400]),
     drawCIGAR: true,
     drawCIGARMatchesOnly: false,
-    drawLocationMarkers: true,
     bpPerPx0: 1,
     bpPerPx1: 1,
     viewOff0: 0,

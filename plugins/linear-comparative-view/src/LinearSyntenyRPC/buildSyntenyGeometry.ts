@@ -232,7 +232,6 @@ export function buildSyntenyGeometry({
   ends,
   drawCIGAR,
   drawCIGARMatchesOnly,
-  drawLocationMarkers,
   bpPerPx0,
   bpPerPx1,
   viewOff0,
@@ -255,7 +254,6 @@ export function buildSyntenyGeometry({
   ends: Uint32Array
   drawCIGAR: boolean
   drawCIGARMatchesOnly: boolean
-  drawLocationMarkers: boolean
   bpPerPx0: number
   bpPerPx1: number
   viewOff0: number
@@ -289,8 +287,15 @@ export function buildSyntenyGeometry({
 
   // One pitch for the whole build: it is the query view's ruler, and the ruler
   // does not change per feature.
+  //
+  // A degenerate query axis has no grid, and saying so once here is what keeps
+  // every budget below an integer: bpPerPx0 of 0 sends the pitch to Infinity and
+  // the width to Infinity with it, so the per-feature `Math.ceil(width / pitch)`
+  // comes out NaN — and a NaN capacity allocates zero-length arrays that a
+  // `>=` guard cannot catch, since every comparison against NaN is false.
   const markerPitchBp = markerGridPitch(bpPerPx0)
   const markerPitchPx = markerPitchBp * bpPerPxInv0
+  const markerGridExists = markerPitchPx > 0 && Number.isFinite(markerPitchPx)
 
   const alignmentLengths = new Float32Array(featureCount)
   // Per-feature: did we decide to draw CIGAR detail? Pass 1 always emits
@@ -308,10 +313,15 @@ export function buildSyntenyGeometry({
   // regardless of CIGAR length. Markers are bounded by how many grid steps fit
   // in the feature's QUERY span — a bound that holds whether the grid is asked
   // over one whole-feature span or over every rendered CIGAR segment, since the
-  // segments partition that same span (see the markerBudget below). These
+  // segments partition that same span (see `markerCapacity` below). These
   // bounds are strict, so a single allocation matches actual usage — no
   // growable buffers.
-  let capacity = 0
+  //
+  // TWO capacities, because the instances land in two regions of one allocation:
+  // ribbons from the front, markers from `ribbonCapacity`. See the marker cursor
+  // below for why markers have to be last.
+  let ribbonCapacity = 0
+  let markerCapacity = 0
   for (let i = 0; i < featureCount; i++) {
     // Per-feature alignment length, used solely for the minAlignmentLength
     // cull (shader isCulled + pick engine). Each block is filtered by its own
@@ -341,23 +351,30 @@ export function buildSyntenyGeometry({
     // feature. The arrays are handed out as `subarray` views, so unused capacity
     // is not just allocated but transferred across the RPC boundary intact.
     //
+    // NOT gated on whether the view is currently drawing markers. The toggle is a
+    // color-lane decision on the main thread (`computeSyntenyColors` paints a
+    // tick transparent when it is off), which is what keeps it off the RPC — see
+    // the display model's `computedColors`. What that costs is the ticks of a
+    // view that has them switched off, and MIN_MARKER_FEATURE_PX bounds it
+    // tightly: a whole-genome hairball emits none at all, since nothing in it
+    // clears 30px.
+    //
     // Grid ticks inside a query-axis span of widthPx0 number at most
     // widthPx0/markerPitchPx + 1, whether the span arrives whole or as the CIGAR
     // segments that partition it — the +2 is slack for the segments' floating
     // point not summing to exactly the corner span, and matters because
-    // addInstance drops silently past capacity.
-    const wantMarkers = drawLocationMarkers && widthPx0 >= MIN_MARKER_FEATURE_PX
+    // addMarker drops silently past capacity.
+    const wantMarkers = markerGridExists && widthPx0 >= MIN_MARKER_FEATURE_PX
     wantMarkersArr[i] = wantMarkers ? 1 : 0
-    const markerBudget = wantMarkers
-      ? Math.ceil(widthPx0 / markerPitchPx) + 2
-      : 0
-    capacity += 1 + cigarBudget + markerBudget
+    markerCapacity += wantMarkers ? Math.ceil(widthPx0 / markerPitchPx) + 2 : 0
+    ribbonCapacity += 1 + cigarBudget
   }
 
   // Write window-relative bp (cumBp - base) directly at emit time. The shader
   // reconstructs screen pixel via `bp*bpPerPxInv + panPx`, so the worker never
   // materializes Float64 pixel staging arrays and no hi/lo split is needed —
-  // the base subtraction (Float64, exact) happens inline in `addInstance`.
+  // the base subtraction (Float64, exact) happens inline in `writeInstance`.
+  const capacity = ribbonCapacity + markerCapacity
   const bp1Arr = new Float32Array(capacity)
   const bp2Arr = new Float32Array(capacity)
   const bp3Arr = new Float32Array(capacity)
@@ -365,43 +382,87 @@ export function buildSyntenyGeometry({
   const kindsArr = new Uint8Array(capacity)
   const featIdxArr = new Uint32Array(capacity)
   const instanceAlignmentLengths = new Float32Array(capacity)
+  // Every lane, for the one operation that has to touch all of them uniformly —
+  // closing the gap between the two regions once both are written.
+  const lanes = [
+    bp1Arr,
+    bp2Arr,
+    bp3Arr,
+    bp4Arr,
+    kindsArr,
+    featIdxArr,
+    instanceAlignmentLengths,
+  ]
 
+  // Two cursors into one allocation. INSTANCE ORDER IS DRAW ORDER — the Canvas2D
+  // loop walks it, and `interleaveInstances` packs the GPU buffer in it — so a
+  // tick emitted beside its own feature is painted under every feature that comes
+  // after it. Pass 2 hid that for a CIGAR feature (its ticks are emitted after
+  // every pass-1 base, so they land on top) while pass 1 left a plain feature's
+  // ticks under the bigger ribbons, which sort last. A grid that is under the
+  // ribbons for some features and over them for others is not a ruler, so the
+  // ticks go at the END of the arrays, where both backends draw them last for
+  // free — no extra pass, no second draw call, and no re-walking the CIGARs a
+  // third pass would have cost.
   let idx = 0
+  let markerIdx = ribbonCapacity
 
   // All four corner values are cumBp (bpBefore + bpOffset). Stored window-
   // relative: corners 1/2 use base0 (top view), 3/4 use base1 (bottom view).
-  function addInstance(
+  //
+  // The alignment length is the parent feature's, so it is read here rather than
+  // threaded through every caller: an instance's length lane is a copy of its
+  // feature's, and there is no instance whose length is anything else.
+  function writeInstance(
+    slot: number,
     cumBp1: number,
     cumBp2: number,
     cumBp3: number,
     cumBp4: number,
     kind: number,
     featureIdx: number,
-    alignmentLength: number,
   ) {
-    // The capacity bounds above are strict, so this never trips. It is here
-    // because the failure mode otherwise is silent and far away: typed-array
-    // writes past the end are no-ops while `idx` keeps counting, so
-    // `subarray(0, instanceCount)` would hand the renderer a short array and
-    // every corner read past the end would project as NaN.
-    //
-    // Against the array's own length rather than `capacity`, which is the same
-    // number except when it is NaN — `idx >= NaN` is false, so the guard would
-    // wave through every write into the zero-length arrays a NaN length
-    // allocates, which is precisely the silent failure above. A degenerate axis
-    // (bpPerPx 0) is what produces one: the pitch goes infinite and the budget
-    // `Math.ceil(Infinity / Infinity)`.
-    if (idx >= bp1Arr.length) {
-      return
+    bp1Arr[slot] = cumBp1 - base0
+    bp2Arr[slot] = cumBp2 - base0
+    bp3Arr[slot] = cumBp3 - base1
+    bp4Arr[slot] = cumBp4 - base1
+    kindsArr[slot] = kind
+    featIdxArr[slot] = featureIdx
+    instanceAlignmentLengths[slot] = alignmentLengths[featureIdx]!
+  }
+
+  // The two capacity bounds above are strict, so neither guard here ever trips.
+  // They are here because the failure mode otherwise is silent and far away:
+  // typed-array writes past the end are no-ops while the cursor keeps counting,
+  // so `subarray` would hand the renderer a short array and every corner read
+  // past the end would project as NaN. The ribbon guard also has to hold for a
+  // second reason — a ribbon past `ribbonCapacity` would land inside the marker
+  // region and be overwritten by a tick.
+  function addRibbon(
+    cumBp1: number,
+    cumBp2: number,
+    cumBp3: number,
+    cumBp4: number,
+    kind: number,
+    featureIdx: number,
+  ) {
+    if (idx < ribbonCapacity) {
+      writeInstance(idx++, cumBp1, cumBp2, cumBp3, cumBp4, kind, featureIdx)
     }
-    bp1Arr[idx] = cumBp1 - base0
-    bp2Arr[idx] = cumBp2 - base0
-    bp3Arr[idx] = cumBp3 - base1
-    bp4Arr[idx] = cumBp4 - base1
-    kindsArr[idx] = kind
-    featIdxArr[idx] = featureIdx
-    instanceAlignmentLengths[idx] = alignmentLength
-    idx++
+  }
+
+  function addMarker(markerBp1: number, markerBp2: number, featureIdx: number) {
+    if (markerIdx < capacity) {
+      writeInstance(
+        markerIdx++,
+        markerBp1,
+        markerBp1,
+        markerBp2,
+        markerBp2,
+        KIND_MARKER,
+        featureIdx,
+      )
+    }
   }
 
   // Emit one feature's grid ticks over one span of it — the whole feature for a
@@ -479,15 +540,7 @@ export function buildSyntenyGeometry({
         continue
       }
 
-      addInstance(
-        markerBp1,
-        markerBp1,
-        markerBp2,
-        markerBp2,
-        KIND_MARKER,
-        featureIdx,
-        alignmentLengths[featureIdx]!,
-      )
+      addMarker(markerBp1, markerBp2, featureIdx)
     }
   }
 
@@ -542,9 +595,8 @@ export function buildSyntenyGeometry({
     const x12 = p12_cumBp[i]!
     const x21 = p21_cumBp[i]!
     const x22 = p22_cumBp[i]!
-    const alignmentLength = alignmentLengths[i]!
     if (!isTiled(i)) {
-      addInstance(x11, x12, x22, x21, KIND_BASE, i, alignmentLength)
+      addRibbon(x11, x12, x22, x21, KIND_BASE, i)
     }
     // Only the no-CIGAR features ladder here; pass 2 ladders the rest along
     // their rendered segments, where the alignment is actually known.
@@ -565,7 +617,6 @@ export function buildSyntenyGeometry({
     const x21 = p21_cumBp[i]!
     const x22 = p22_cumBp[i]!
     const strand = strands[i]!
-    const alignmentLength = alignmentLengths[i]!
 
     const k1 = strand === -1 ? x12 : x11
     const k2 = strand === -1 ? x11 : x12
@@ -586,15 +637,7 @@ export function buildSyntenyGeometry({
         if (!segmentOffScreen(segBp1Start, segBp1End, segBp2Start, segBp2End)) {
           const kind = cigarSegmentKind(resolvedOp)
           if (kind !== undefined) {
-            addInstance(
-              segBp1Start,
-              segBp1End,
-              segBp2End,
-              segBp2Start,
-              kind,
-              i,
-              alignmentLength,
-            )
+            addRibbon(segBp1Start, segBp1End, segBp2End, segBp2Start, kind, i)
           }
         }
         // Outside the cull: a marker is culled by its own hull, not by the
@@ -607,7 +650,20 @@ export function buildSyntenyGeometry({
     )
   }
 
-  const instanceCount = idx
+  // Close the gap the two regions leave. Both bounds are upper bounds, so the
+  // ribbon region is usually short of `ribbonCapacity` — a tiled feature emits no
+  // full-span base, an off-screen segment no quad — and the markers have to slide
+  // down onto the end of it. One memmove per lane, over the MARKER block only,
+  // which is the small one: a 1400px frame offers tens of ticks per feature
+  // against up to thousands of CIGAR quads.
+  const ribbonCount = idx
+  const markerCount = markerIdx - ribbonCapacity
+  if (markerCount > 0 && ribbonCount < ribbonCapacity) {
+    for (const lane of lanes) {
+      lane.copyWithin(ribbonCount, ribbonCapacity, markerIdx)
+    }
+  }
+  const instanceCount = ribbonCount + markerCount
 
   return {
     bp1: bp1Arr.subarray(0, instanceCount),

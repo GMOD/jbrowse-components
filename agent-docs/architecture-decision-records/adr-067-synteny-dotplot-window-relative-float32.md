@@ -82,6 +82,20 @@ anyway, since a corner is cumBp rather than chromosome-local bp.
   and `hpmath.slang`'s `hpCornerScreenX` are all gone. The LGV
   `hpSplitUint`/`hpToClipX` path is untouched.
 - Pan and zoom within a fetch window stay uniform-only updates.
+- **So a rule that reads the pan cannot be answered where the geometry is
+  built.** The geometry outlives the pan by design, and `panPx` is the only thing
+  that moves, so anything derived from it has to be re-derived per frame. The
+  trap is a rule keyed to the two axes' pan *difference*: each axis's own window
+  is safe to cull against at build time, because the emit window is the pan
+  buffer and the fetch key snaps to it, but nothing bounds how far the two views
+  drift APART inside one fetch — the buffer is per axis, and 2000px of it is
+  wider than a viewport. Synteny's location-marker travel cap was answered at
+  build time and went stale exactly on the pan that made it wrong (ticks that had
+  become near-horizontal kept drawing; ticks whose ends a pan had brought
+  together stayed dropped). It is `markerTravelsTooFar` in syntenyTypes.slang
+  now, asked by `isCulled` and `isRibbonCulled` per frame. The rest of the
+  worker's culls were audited at the time and are all per-axis, so this was the
+  only one.
 - `panPx` and `bpPerPxInv` have **one** implementation, `computeTransform` in
   `syntenyRibbonPath.ts`, which the GPU renderer imports rather than re-spells.
   The only hand-written twin is the final `bpRel * inv + panPx`: once in

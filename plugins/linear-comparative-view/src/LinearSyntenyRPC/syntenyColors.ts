@@ -38,6 +38,15 @@ export const KIND_CIGAR_N = KIND_CIGAR_MIN + 3
 // lines using this packed alpha directly (no colorBy/global-alpha scaling).
 const MARKER_COLOR = packAbgr(0, 0, 0, 64)
 
+// And what "markers off" is: the same instance, painted to nothing. A zero alpha
+// is below the `isInstanceInvisible` floor the Canvas2D draw loop and the pick
+// engine share, so the tick is skipped outright there; on the GPU it rasterizes
+// and blends nothing. That is the whole cost of keeping the toggle off the RPC —
+// see `currentFetchKey` for what it buys, and MIN_MARKER_FEATURE_PX for why the
+// count is small enough not to care (a whole-genome hairball emits no ticks at
+// all).
+const MARKER_COLOR_HIDDEN = packAbgr(0, 0, 0, 0)
+
 // I/D/N indel colors for the active scheme (strand recolors N/D purple). Both
 // schemes always define I/D/N, so these are unconditional.
 function buildIndelColors(colorBy: SyntenyColorBy) {
@@ -66,6 +75,7 @@ export function computeSyntenyColors({
   colorBy,
   trackColor,
   opacityByIdentity,
+  drawLocationMarkers,
   nameOrder,
 }: {
   instanceData: InstanceInputs
@@ -74,6 +84,11 @@ export function computeSyntenyColors({
   // the display's slot in the view's track palette; only read by colorBy:'track'
   trackColor: string
   opacityByIdentity?: boolean
+  // The location-marker toggle, which is a color decision rather than a fetch
+  // one — the geometry always carries the ticks. Independent of colorBy: markers
+  // are the ruler continued through the ribbons, not data, so no scheme paints
+  // them and none of them can hide them either.
+  drawLocationMarkers?: boolean
   // Chromosome order of the assembly the chromosome-painting modes key on, so a
   // ribbon's color can be that chromosome's position rather than a hash bucket.
   // Only the display knows it — the assembly's refName list is a session fact,
@@ -90,6 +105,7 @@ export function computeSyntenyColors({
     defaultColor: MISSING_VALUE_COLOR,
   })
   const { I: colorI, D: colorD, N: colorN } = buildIndelColors(colorBy)
+  const markerColor = drawLocationMarkers ? MARKER_COLOR : MARKER_COLOR_HIDDEN
   // identity fade is a separate channel from the color mode: a track can paint
   // by strand and still fade by identity, so this is read directly rather than
   // through the resolved mode
@@ -99,7 +115,7 @@ export function computeSyntenyColors({
   for (let i = 0; i < instanceCount; i++) {
     const kind = kinds[i]!
     if (kind === KIND_MARKER) {
-      out[i] = MARKER_COLOR
+      out[i] = markerColor
     } else if (kind === KIND_CIGAR_I) {
       out[i] = colorI
     } else if (kind === KIND_CIGAR_D) {

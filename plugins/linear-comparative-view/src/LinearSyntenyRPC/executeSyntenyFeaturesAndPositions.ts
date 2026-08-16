@@ -101,7 +101,6 @@ export async function executeSyntenyFeaturesAndPositions({
   stopToken,
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
-  drawLocationMarkers = false,
   lodMode,
   statusCallback,
 }: {
@@ -117,7 +116,6 @@ export async function executeSyntenyFeaturesAndPositions({
   stopToken?: StopToken
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
-  drawLocationMarkers?: boolean
   lodMode?: BaseOptions['lodMode']
   statusCallback?: StatusCallback
 }) {
@@ -511,9 +509,9 @@ export async function executeSyntenyFeaturesAndPositions({
     // parsed Uint32Array, so tens of MB per feature). Gate matches the
     // willDrawCigar predicate in buildSyntenyGeometry via the shared
     // MIN_CIGAR_PX_WIDTH — drawCIGAR off or alignment narrower than that means
-    // the visitor never fires, and addLocationMarkers operates on bp coords
-    // without needing the CIGAR. A clipped block already carries its (short)
-    // visible-slice CIGAR from the re-anchor above.
+    // the visitor never fires, and the location markers walk the corners instead
+    // (`emitGridMarkers` from pass 1), which needs no CIGAR. A clipped block
+    // already carries its (short) visible-slice CIGAR from the re-anchor above.
     const widthPx0 = topMaxX - topMinX
     const widthPx1 = botMaxX - botMinX
     const willNeedCigar =
@@ -578,7 +576,6 @@ export async function executeSyntenyFeaturesAndPositions({
         ends: featureData.ends,
         drawCIGAR,
         drawCIGARMatchesOnly,
-        drawLocationMarkers,
         bpPerPx0: v1.bpPerPx,
         bpPerPx1: v2.bpPerPx,
         viewOff0: v1.offsetPx,

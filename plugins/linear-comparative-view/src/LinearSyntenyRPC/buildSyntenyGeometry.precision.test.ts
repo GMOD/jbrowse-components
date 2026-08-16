@@ -1,4 +1,5 @@
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
+import { KIND_BASE, KIND_MARKER } from './syntenyColors.ts'
 
 // Corners are stored WINDOW-RELATIVE (cumBp minus a per-axis fetch base) as a
 // single Float32 — no hi/lo split. The base keeps on-screen corners small so a
@@ -31,7 +32,6 @@ function buildAt(locusCumBp: number, bpPerPx: number, viewWidth: number) {
     ends: new Uint32Array([100]),
     drawCIGAR: false,
     drawCIGARMatchesOnly: false,
-    drawLocationMarkers: false,
     bpPerPx0: bpPerPx,
     bpPerPx1: bpPerPx,
     viewOff0: offsetPx,
@@ -80,12 +80,26 @@ test('alignmentLength is each feature own block span, not aggregated', () => {
     ends: new Uint32Array([100, 15_000]),
     drawCIGAR: false,
     drawCIGARMatchesOnly: false,
-    drawLocationMarkers: false,
     bpPerPx0: 1,
     bpPerPx1: 1,
     viewOff0: 0,
     viewOff1: 0,
     viewWidth: 20_000,
   })
-  expect([...g.alignmentLengths]).toEqual([100, 5000])
+  // The two base ribbons come first, one per feature — both features are wide
+  // enough to carry location markers, which the worker emits unconditionally
+  // (the toggle is a color-lane decision) into the tail of the arrays. Each tick
+  // copies its own feature's length, so reading the head is what isolates the
+  // per-feature answer this test is about.
+  expect([...g.alignmentLengths.subarray(0, 2)]).toEqual([100, 5000])
+  const kinds = [...g.kinds]
+  expect(kinds.slice(0, 2)).toEqual([KIND_BASE, KIND_BASE])
+  expect(kinds.slice(2).every(k => k === KIND_MARKER)).toBe(true)
+  // And every instance, tick or ribbon, carries its OWN feature's length.
+  const perFeature = [100, 5000]
+  expect(
+    [...g.alignmentLengths].every(
+      (len, i) => len === perFeature[g.instanceFeatureIdx[i]!],
+    ),
+  ).toBe(true)
 })

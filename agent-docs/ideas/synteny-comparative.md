@@ -55,8 +55,19 @@ browser verification. Sources: Sugiyama-Tagawa-Toda 1981; Eades & Wormald 1994 (
 below (that orders *rows* by relatedness; this orders *chromosomes within a row*).
 
 **CIGAR draw toggles via gpuProps.** Shader uniform bit flags to gate
-`drawCIGAR`/`drawCIGARMatchesOnly`/`drawLocationMarkers`; worker always emits full
-geometry, flags control visibility. Only worth it if users toggle frequently.
+`drawCIGAR`/`drawCIGARMatchesOnly`; worker always emits full geometry, flags control
+visibility. Only worth it if users toggle frequently.
+
+`drawLocationMarkers` was the third name here and is **done** — by a different
+mechanism, and the difference is the whole reason it went first. Markers need nothing
+from the adapter, so "always emit" cost only the tick instances (`MIN_MARKER_FEATURE_PX`
+bounds those: a whole-genome hairball emits none) and the toggle became a zero alpha on
+the color lane in `computeSyntenyColors` — no new uniform, and it reuses the
+`patchInstanceColors` path colorBy already had. The two CIGAR flags cannot follow that
+route: they gate the CIGAR *parse* in `executeSyntenyFeaturesAndPositions`, so the fetch
+genuinely brings back different bytes, and "always emit" means always parsing
+multi-megabyte CIGARs. A uniform flag is the right shape for them; a color-lane trick is
+not.
 
 **Dotplot short-segment rendering (point sprites).** Short alignments (sub-pixel
 `len < lineWidth`) render as thin slivers because the degenerate fallback expands the
@@ -64,6 +75,16 @@ quad only vertically. A square-cap displacement along the tangent was tried and
 reverted (odd polygons on normal segments). Better: (a) emit `gl_PointSize` sprites for
 sub-threshold segments in a separate draw call; (b) round caps via SDF in the fragment
 shader (pass along-tangent distance as a varying, discard outside `lineWidth/2`).
+
+**A location-marker tick can't be read, only seen.** A tick states "this query
+coordinate maps to that target coordinate" and there is no way to get the two numbers:
+markers are excluded from the pick index by construction — both their edges are single
+points, so the `max(|sx2-sx1|, |sx4-sx3|) >= 1` filter that makes `buildPickIndex` cheap
+drops them (`reference/SYNTENY_PICKING.md`). A tooltip would need proximity-to-a-line
+picking, i.e. a second index shape, for a job that is partly done already: the scalebar
+labels the query end, and an exact correspondence takes the
+`SyntenyResolveMatchingRegion` round trip. Worth it only if reading shear off the ticks
+turns out to be something people try to do and can't.
 
 **Connect to gene glyphs for MCScan-type results?** And add "synteny rects" to show
 e.g. non-ribbon-based synteny (non-displayed-region translocations).

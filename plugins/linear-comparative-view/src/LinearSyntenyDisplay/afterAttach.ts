@@ -29,7 +29,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         const { v0, v1 } = connected
         // The only other tracked dep. `currentFetchKey` folds every input this
         // fetch depends on — both views' region sets, the snapped fetch window,
-        // the log2 zoom bucket, the CIGAR/marker draw options and the resolved
+        // the log2 zoom bucket, the CIGAR draw options and the resolved
         // LOD tier — into one computed, so the autorun refires exactly when a
         // refetch is needed. Tracking the underlying observables individually
         // (as this once did) is strictly noisier: a setDisplayedRegions that
@@ -50,7 +50,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             fetchKey,
             drawCIGAR: view.drawCIGAR,
             drawCIGARMatchesOnly: view.drawCIGARMatchesOnly,
-            drawLocationMarkers: view.drawLocationMarkers,
             lodTier: self.lodTier,
             // Captured as strings HERE, not derived from `displayedRegions`
             // after the RPC: those are MST nodes and a fetch can outlive the
@@ -85,7 +84,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         targetAssemblyName,
         drawCIGAR,
         drawCIGARMatchesOnly,
-        drawLocationMarkers,
         lodTier,
       },
       {
@@ -119,7 +117,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           stopToken,
           drawCIGAR,
           drawCIGARMatchesOnly,
-          drawLocationMarkers,
           lodMode: lodTier,
           statusCallback,
         },

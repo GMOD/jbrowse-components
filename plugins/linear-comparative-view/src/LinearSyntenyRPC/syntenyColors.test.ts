@@ -1,12 +1,15 @@
 import { category10 } from '@jbrowse/core/ui/colors'
+import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 import { colorSchemes } from '@jbrowse/synteny-core'
 
+import { isInstanceInvisible } from '../LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import {
   KIND_BASE,
   KIND_CIGAR_D,
   KIND_CIGAR_I,
   KIND_CIGAR_N,
+  KIND_MARKER,
   computeSyntenyColors,
 } from './syntenyColors.ts'
 
@@ -100,6 +103,53 @@ describe("computeSyntenyColors colorBy:'track'", () => {
       trackColor: '#f28e2c',
     })
     expect(other[0]).not.toBe(colors[0])
+  })
+})
+
+// The location-marker toggle is a COLOR decision, which is what keeps it out of
+// `currentFetchKey`: the worker emits every tick unconditionally, and "off" is a
+// zero alpha written here. Ticking the checkbox used to re-download and re-parse
+// the whole track to arrive at the identical features.
+describe('the location-marker toggle', () => {
+  const markerData = {
+    kinds: new Uint8Array([KIND_BASE, KIND_MARKER]),
+    instanceFeatureIdx: new Uint32Array([0, 0]),
+    instanceCount: 2,
+  }
+  const paint = (drawLocationMarkers?: boolean) =>
+    computeSyntenyColors({
+      instanceData: markerData,
+      featureData,
+      colorBy: 'track',
+      trackColor: TRACK_COLOR,
+      drawLocationMarkers,
+    })
+
+  test('on: a tick is the fixed semi-transparent black, whatever colorBy says', () => {
+    const on = paint(true)
+    expect(abgrAlpha(on[1]!)).toBe(64)
+    expect(
+      computeSyntenyColors({
+        instanceData: markerData,
+        featureData,
+        colorBy: 'strand',
+        trackColor: TRACK_COLOR,
+        drawLocationMarkers: true,
+      })[1],
+    ).toBe(on[1])
+  })
+
+  test('off: a tick is transparent, and nothing else moves', () => {
+    const off = paint(false)
+    expect(abgrAlpha(off[1]!)).toBe(0)
+    // below the floor the draw loop and the pick engine share, so the instance
+    // is skipped outright rather than blended
+    expect(isInstanceInvisible(off[1]!)).toBe(true)
+    expect(off[0]).toBe(paint(true)[0]!)
+  })
+
+  test('omitted reads as off, so a caller that forgets cannot paint a grid', () => {
+    expect(paint(undefined)[1]).toBe(paint(false)[1])
   })
 })
 

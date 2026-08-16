@@ -35,7 +35,6 @@ function buildIndelGeometry() {
     ends: new Uint32Array([refSpan]),
     drawCIGAR: true,
     drawCIGARMatchesOnly: false,
-    drawLocationMarkers: false,
     bpPerPx0: 1,
     bpPerPx1: 1,
     viewOff0: 0,

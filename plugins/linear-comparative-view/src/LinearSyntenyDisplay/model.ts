@@ -498,7 +498,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * Fetch-input signature (region set/order, snapped fetch window, zoom
-       * bucket, CIGAR/marker draw options, LOD tier) for the view's current
+       * bucket, CIGAR draw options, LOD tier) for the view's current
        * state — the same tracked deps the fetch autorun refetches on. Reactive:
        * flips the instant any of them changes. Before both connected views are
        * ready it collapses to a degenerate signature (empty region sig, no
@@ -512,24 +512,18 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           this.fetchRegionsKey,
           this.bpPerPxBucketKey,
           this.regionSignature,
+          // The CIGAR options and nothing else about how a ribbon is DRAWN:
+          // these two gate the CIGAR parse, so they genuinely change what the
+          // fetch brings back. `drawLocationMarkers` was here too, and it was
+          // the odd one — markers need nothing from the adapter a plain fetch has
+          // not already got, so ticking a checkbox for a purely visual grid
+          // re-downloaded and re-parsed the whole track to arrive at the
+          // identical features. The worker emits the ticks unconditionally now
+          // and `computedColors` paints them transparent when the toggle is off,
+          // which makes the toggle a `patchInstanceColors` write on the color
+          // lane — the same path colorBy takes to avoid an RPC.
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
-          // In the key because geometry is built worker-side, NOT because the
-          // data differs: unlike the two CIGAR options above (which gate the
-          // parse, and so genuinely change what is fetched), markers need
-          // nothing from the adapter that a plain fetch has not already got. So
-          // ticking the checkbox re-downloads and re-parses the whole track to
-          // arrive at the same features.
-          //
-          // Liftable, and the machinery is already here: emit the markers
-          // unconditionally and let `computedColors` paint them transparent when
-          // the toggle is off, which makes it a `patchInstanceColors` write on
-          // the color lane — the same path colorBy takes to avoid an RPC. The
-          // cost is carrying marker instances nobody asked for, which
-          // MIN_MARKER_FEATURE_PX bounds tightly (a whole-genome hairball emits
-          // none at all, since nothing in it clears 30px). Not done here because
-          // it widens the RPC contract for everyone to speed up one toggle.
-          view.drawLocationMarkers,
           // the resolved tier, not view.lodMode: in 'auto' the mode is constant
           // while the tier flips, and the tier is what the fetch differs by
           this.lodTier,
@@ -614,10 +608,15 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * colorBy, featureData, or instanceData descriptors change — this is
        * the gpuProps half of the rpcProps/gpuProps split. colorBy changes
        * flow through here without touching the RPC.
+       *
+       * `drawLocationMarkers` rides the same lane, which is what keeps it out of
+       * `currentFetchKey`: the worker always emits the ticks, and a zero alpha
+       * here is what "off" means. So the toggle costs one `patchInstanceColors`
+       * write rather than a refetch of the whole track.
        */
       get computedColors() {
         const { instanceData, featureData } = self
-        const { opacityByIdentity } = this.view
+        const { opacityByIdentity, drawLocationMarkers } = this.view
         if (!instanceData || !featureData) {
           return undefined
         }
@@ -627,6 +626,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           colorBy: this.effectiveColorBy,
           trackColor: this.trackColor,
           opacityByIdentity,
+          drawLocationMarkers,
           nameOrder: this.paintedChromosomeOrder,
         })
       },

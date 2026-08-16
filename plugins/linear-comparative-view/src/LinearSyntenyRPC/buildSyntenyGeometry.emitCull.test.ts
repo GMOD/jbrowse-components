@@ -28,7 +28,6 @@ function markersAt({
     ends: new Uint32Array([screenX + 800]),
     drawCIGAR: false,
     drawCIGARMatchesOnly: false,
-    drawLocationMarkers: true,
     bpPerPx0: 1,
     bpPerPx1: 1,
     viewOff0: 0,
@@ -97,7 +96,6 @@ test('the emit cull keeps a marker the travel cap will drop, and leaves that to 
     ends: new Uint32Array([800]),
     drawCIGAR: false,
     drawCIGARMatchesOnly: false,
-    drawLocationMarkers: true,
     bpPerPx0: 1,
     bpPerPx1: 1,
     // shifts the query ends to -3000..-2200, past the left edge of the band

@@ -16,10 +16,16 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   targetView: SyntenyTargetViewSnap
   // no colorBy: the worker emits per-instance kind/featureIdx descriptors and
   // the display recomputes colors on the main thread, so a color-scheme change
-  // never reaches this RPC (see computeSyntenyColors)
+  // never reaches this RPC (see computeSyntenyColors).
+  //
+  // No `drawLocationMarkers` either, and for the same reason: the ticks are
+  // always emitted and the toggle paints them transparent on the color lane. It
+  // used to be here, which meant switching a purely visual grid on re-downloaded
+  // and re-parsed the whole track to arrive at the identical features. The two
+  // CIGAR flags below stay, because those genuinely change what is fetched —
+  // they gate the CIGAR parse.
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
-  drawLocationMarkers?: boolean
   lodMode?: BaseOptions['lodMode']
 }
 
