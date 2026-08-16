@@ -1,11 +1,11 @@
-import { Suspense, useState, useSyncExternalStore } from 'react'
+import { Suspense, useSyncExternalStore } from 'react'
 
 import {
   PaletteProvider,
   usePalette,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
@@ -68,16 +68,15 @@ function makeView() {
   const state = createViewState({
     assembly: hg38,
     tracks: [conservationTrack],
+    init: {
+      // A locstring takes as many regions as you give it, and `init.loc` hands
+      // whatever you write here straight to `navToLocString`. `init` also accepts
+      // `displayedRegionNames: CHROMOSOMES` for the same result without the join.
+      loc: CHROMOSOMES.join(' '),
+      tracks: ['hg38_phylop'],
+    },
   })
   const { view } = state.session
-  view.setInit({
-    assembly: hg38.name,
-    // A locstring takes as many regions as you give it, and `init.loc` hands
-    // whatever you write here straight to `navToLocString`. `init` also accepts
-    // `displayedRegionNames: CHROMOSOMES` for the same result without the join.
-    loc: CHROMOSOMES.join(' '),
-    tracks: ['hg38_phylop'],
-  })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
@@ -315,7 +314,7 @@ const viewport: React.CSSProperties = {
 }
 
 const EveryChromosome = observer(function EveryChromosome() {
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
   const palette = useSessionPalette(session, useSiteMode())

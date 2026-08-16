@@ -4,7 +4,7 @@ import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import {
   DisplayUIProvider,
@@ -105,16 +105,15 @@ function makeView() {
     assembly: volvox,
     tracks: [featureTrack],
     aggregateTextSearchAdapters: [trixIndex],
+    init: {
+      // `init.loc` is parsed as a locstring and does NOT route through the
+      // index -- only `navToLocString` does. A browser that should open on a
+      // gene name has to navigate after mount rather than declare it here.
+      loc: 'ctgA',
+      tracks: [featureTrack.trackId],
+    },
   })
   const { view } = state.session
-  // `init.loc` is parsed as a locstring and does NOT route through the index --
-  // only `navToLocString` does. A browser that should open on a gene name has to
-  // navigate after mount rather than declare it here.
-  view.setInit({
-    assembly: volvox.name,
-    loc: 'ctgA',
-    tracks: [featureTrack.trackId],
-  })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
@@ -214,8 +213,12 @@ const TrackRow = observer(function TrackRow({
  * `pending` is here because the search is a network round trip against a remote
  * index, unlike the pure locstring parse the Drive it from your app page's box
  * does. Two of the four buttons take long enough to notice.
+ *
+ * Not an `observer`: everything it renders is its own React state, and the view
+ * and session are only touched from handlers. `QueuedDialogNotice` below reads
+ * the session while rendering, so that one is.
  */
-const NameSearchBox = observer(function NameSearchBox({
+function NameSearchBox({
   view,
   session,
 }: {
@@ -296,7 +299,7 @@ const NameSearchBox = observer(function NameSearchBox({
       <QueuedDialogNotice session={session} />
     </div>
   )
-})
+}
 
 /**
  * The case with nowhere to go.
@@ -426,7 +429,7 @@ function useSiteMode() {
 }
 
 const SearchByName = observer(function SearchByName() {
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
   const palette = useSessionPalette(session, useSiteMode())

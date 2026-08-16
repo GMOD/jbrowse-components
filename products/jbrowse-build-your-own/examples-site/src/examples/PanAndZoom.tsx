@@ -1,10 +1,10 @@
-import { Suspense, useState, useSyncExternalStore } from 'react'
+import { Suspense, useSyncExternalStore } from 'react'
 
 import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -61,13 +61,12 @@ function makeView(scrollZoom: boolean) {
   const state = createViewState({
     assembly: volvox,
     tracks: [wiggleTrack],
+    init: {
+      loc: 'ctgA:1..50,000',
+      tracks: ['volvox_microarray'],
+    },
   })
   const { view } = state.session
-  view.setInit({
-    assembly: volvox.name,
-    loc: 'ctgA:1..50,000',
-    tracks: ['volvox_microarray'],
-  })
   // Which gesture a bare wheel is:
   //
   //   on   -- wheel zooms, the way a map does. Direct, and the right default
@@ -268,7 +267,7 @@ const PanAndZoom = observer(function PanAndZoom({
   // See `makeView`.
   scrollZoom?: boolean
 }) {
-  const [{ view, session }] = useState(() => makeView(scrollZoom))
+  const { view, session } = useCreateOnce(() => makeView(scrollZoom))
   const ref = useWidthSetter(view)
   const { containerProps, showZoomHint } = usePanZoom(ref, view)
   const palette = useSessionPalette(session, useSiteMode())

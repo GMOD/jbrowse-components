@@ -4,7 +4,7 @@ import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import {
   DisplayUIProvider,
@@ -101,13 +101,12 @@ function makeView() {
   const state = createViewState({
     assembly: volvox,
     tracks: [wiggleTrack, featureTrack, brokenTrack],
+    init: {
+      loc: 'ctgA:1..20,000',
+      tracks: trackIds,
+    },
   })
   const { view } = state.session
-  view.setInit({
-    assembly: volvox.name,
-    loc: 'ctgA:1..20,000',
-    tracks: trackIds,
-  })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
@@ -439,7 +438,7 @@ type SetName = keyof typeof OVERLAY_SETS
 
 const BringYourOwnOverlays = observer(function BringYourOwnOverlays() {
   const [setName, setSetName] = useState<SetName>('mine')
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const palette = useSessionPalette(session, useSiteMode())
   const { overlays } = OVERLAY_SETS[setName]
 

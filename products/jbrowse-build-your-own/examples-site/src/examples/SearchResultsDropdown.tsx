@@ -4,7 +4,11 @@ import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useDebounce, useWidthSetter } from '@jbrowse/core/util/hooks'
+import {
+  useCreateOnce,
+  useDebounce,
+  useWidthSetter,
+} from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import {
   DisplayUIProvider,
@@ -67,13 +71,12 @@ function makeView() {
     assembly: volvox,
     tracks: [featureTrack],
     aggregateTextSearchAdapters: [trixIndex],
+    init: {
+      loc: 'ctgA',
+      tracks: [featureTrack.trackId],
+    },
   })
   const { view } = state.session
-  view.setInit({
-    assembly: volvox.name,
-    loc: 'ctgA',
-    tracks: [featureTrack.trackId],
-  })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
@@ -231,8 +234,12 @@ function useSearchResults(session: BrowserSession, query: string) {
  * reader `role="listbox"`, arrow-key navigation and `aria-activedescendant`,
  * which is a component you have or a library you already use, and none of it
  * changes the two calls at the bottom of the handler.
+ *
+ * Not an `observer`: a `BaseResult` is a plain object, and the view is only
+ * touched from the click handler. Nothing here is read off a model at render
+ * time, so a subscription would change nothing.
  */
-const ResultList = observer(function ResultList({
+function ResultList({
   view,
   results,
   onChosen,
@@ -306,9 +313,12 @@ const ResultList = observer(function ResultList({
       })}
     </ul>
   )
-})
+}
 
-const SearchPanel = observer(function SearchPanel({
+// Not an `observer` either: the session is read inside `useSearchResults`'
+// effect rather than during render, so there is no observable subscription to
+// buy.
+function SearchPanel({
   view,
   session,
 }: {
@@ -361,7 +371,7 @@ const SearchPanel = observer(function SearchPanel({
       )}
     </div>
   )
-})
+}
 
 // The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
 // each property is doing and which half of it the hook cannot do for you.
@@ -427,7 +437,7 @@ function useSiteMode() {
 }
 
 const SearchResultsDropdown = observer(function SearchResultsDropdown() {
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
   const palette = useSessionPalette(session, useSiteMode())

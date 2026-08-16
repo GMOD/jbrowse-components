@@ -1,10 +1,10 @@
-import { Suspense, useState, useSyncExternalStore } from 'react'
+import { Suspense, useSyncExternalStore } from 'react'
 
 import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -61,32 +61,37 @@ const wiggleTrack = {
  * `offsetPx`, `displayedRegions` and how to `zoomTo`/`horizontalScroll`, but it
  * draws nothing. Rendering it is the part you own.
  *
- * `setInit` rather than poking `displayedRegions`/`tracks` directly: it is the
+ * `init` rather than poking `displayedRegions`/`tracks` directly: it is the
  * same declarative path a URL launch or a saved session takes, so the assembly
  * load, the navigation and the track show-ing all happen in the right order.
+ * The view's own `setInit` takes the same blob if you need to re-launch one
+ * later; passing it here fills in `assembly` from the option above, so the
+ * genome is named once and the two cannot drift apart.
  *
  * No `makeWorkerInstance`, so RPC runs on the main thread. That is one fewer
  * moving piece for a demo; a real app passes a worker.
  *
- * Call it from `useState`'s lazy initializer rather than `useMemo`. React
- * guarantees a `useState` initializer runs once per mounted component, and
- * documents `useMemo` as a performance hint it is allowed to discard -- and
- * discarding this one would build a second engine and lose wherever the user
- * had panned to. Neither hook makes construction happen *only* once (StrictMode
- * runs both twice in dev, by design), so keep it to construction: a view that
- * has not been given a width yet has nothing to draw and nothing to undo.
+ * **Call it from `useCreateOnce`, not from `useState`'s lazy initializer.**
+ * React double-invokes a state initializer under StrictMode -- which is on in
+ * most app templates -- and throws the SECOND result away. For an ordinary
+ * value that is the intended lint; for an engine it stands up a second MST
+ * tree, a second set of autoruns and a second worker pool, drops the only
+ * reference to it, and leaves it fetching with nothing left that could destroy
+ * it. Nothing errors, because the one React kept behaves perfectly.
+ * `useCreateOnce` is a ref written once, which survives the double render.
+ * (`useMemo` is worse again: React documents it as a hint it may discard, and
+ * discarding this one would lose wherever the user had panned to.)
  */
 function makeView() {
   const state = createViewState({
     assembly: volvox,
     tracks: [wiggleTrack],
+    init: {
+      loc: 'ctgA:1..50,000',
+      tracks: ['volvox_microarray'],
+    },
   })
   const { view } = state.session
-  view.setInit({
-    assembly: volvox.name,
-    loc: 'ctgA:1..50,000',
-    tracks: ['volvox_microarray'],
-  })
   return { view, session: state.session }
 }
 
@@ -193,7 +198,7 @@ function useSiteMode() {
 }
 
 const OneTrack = observer(function OneTrack() {
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const palette = useSessionPalette(session, useSiteMode())
   // A view renders nothing until it knows its width in pixels, and it has to be
   // told again whenever that changes. This is the one piece of wiring with no

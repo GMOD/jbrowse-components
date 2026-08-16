@@ -4,7 +4,7 @@ import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -138,13 +138,12 @@ function makeView(name: ScenarioName) {
   const state = createViewState({
     assembly,
     tracks: [track],
+    init: {
+      loc,
+      tracks: [track.trackId],
+    },
   })
   const { view } = state.session
-  view.setInit({
-    assembly: assembly.name,
-    loc,
-    tracks: [track.trackId],
-  })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
@@ -448,23 +447,32 @@ const Browser = observer(function Browser({ engine }: { engine: Engine }) {
  *
  * `destroyViewState(state)` terminates the workers and destroys the tree, and it
  * is idempotent. Note it is called in the **handler that discards the engine**,
- * not in an effect cleanup. The cleanup is the shape that looks right and is a
- * trap: StrictMode mounts, cleans up and re-mounts in development, so an
- * unmount-time teardown destroys the engine the demo is still using -- and it
- * would be wrong here anyway, because a discard is something your app does, not
- * something a render does.
+ * not in an effect cleanup. Written the obvious way -- `useEffect(() => () =>
+ * destroyViewState(state), [])` -- the cleanup is a trap: StrictMode mounts,
+ * cleans up and re-mounts in development, so an unmount-time teardown destroys
+ * the engine the demo is still using. (`useFinalUnmount` in
+ * `@jbrowse/core/util/hooks` is that spelling done right, for a host whose
+ * engine really does die with its component.) Here a discard is something your
+ * app does rather than something a render does, so the handler is the place.
  *
  * `name` and `engine` live in one state object so they cannot disagree about
- * which scenario is on screen.
+ * which scenario is on screen. The **first** engine is built by
+ * `useCreateOnce`, not in that state initializer, because the build side has
+ * the mirror-image StrictMode trap: an initializer runs twice and the second
+ * result is thrown away, so an engine built in one is an orphan per mount with
+ * nothing left holding it to destroy. Every other page here builds its engine
+ * with the same call and never discards one.
  *
- * Most hosts never call this: a page that builds one engine and keeps it until
- * the tab closes has nothing to clean up. It is for the ones that churn -- an
- * SPA route change, a re-run notebook cell, a dashboard swapping datasets.
+ * Most hosts never call `destroyViewState`: a page that builds one engine and
+ * keeps it until the tab closes has nothing to clean up. It is for the ones
+ * that churn -- an SPA route change, a re-run notebook cell, a dashboard
+ * swapping datasets.
  */
 const LoadingAndErrors = observer(function LoadingAndErrors() {
+  const firstEngine = useCreateOnce(() => makeView('ready'))
   const [current, setCurrent] = useState(() => ({
     name: 'ready' as ScenarioName,
-    engine: makeView('ready'),
+    engine: firstEngine,
   }))
 
   return (

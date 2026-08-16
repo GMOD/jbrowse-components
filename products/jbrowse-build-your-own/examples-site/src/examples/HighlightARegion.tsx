@@ -1,10 +1,10 @@
-import { Suspense, useState, useSyncExternalStore } from 'react'
+import { Suspense, useSyncExternalStore } from 'react'
 
 import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
@@ -91,14 +91,16 @@ function makeView() {
     assembly: volvox,
     tracks: [featureTrack],
     // `location` and `highlight` are top-level options, so a browser can arrive
-    // already marked rather than being navigated after it mounts. Both route
-    // through the same declarative `init` the buttons below drive imperatively,
-    // which is what makes the two paths agree.
+    // already marked rather than being navigated after it mounts. Both are
+    // sugar for fields of the same declarative `init` the buttons below drive
+    // imperatively, which is what makes the two paths agree -- and mixing them
+    // with an `init` of your own is fine, since the sugar only fills in the two
+    // fields it names.
     location: HITS[0]!.loc,
     highlight: [HITS[0]!.highlight],
+    init: { tracks: [featureTrack.trackId] },
   })
   const { view } = state.session
-  view.showTrack(featureTrack.trackId)
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
@@ -315,8 +317,12 @@ function useSiteMode() {
  * leave the band absent for the whole of the fetch. Neither call waits on the
  * other: a highlight for a region that is not on screen simply has no
  * coordinates yet, and `getHighlightCoords` returns `undefined` until it does.
+ *
+ * Not an `observer`, unlike most components here: `observer` subscribes to the
+ * observables a component reads *while rendering*, and this one touches the
+ * view only from a click handler, which always sees the current value anyway.
  */
-const HitList = observer(function HitList({ view }: { view: BrowserView }) {
+function HitList({ view }: { view: BrowserView }) {
   return (
     <div style={{ display: 'flex', gap: 6, fontSize: '0.85rem' }}>
       {HITS.map(({ label, loc, highlight }) => (
@@ -338,7 +344,7 @@ const HitList = observer(function HitList({ view }: { view: BrowserView }) {
       ))}
     </div>
   )
-})
+}
 
 // The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
 // each property is doing and which half of it the hook cannot do for you.
@@ -350,7 +356,7 @@ const viewport: React.CSSProperties = {
 }
 
 const HighlightARegion = observer(function HighlightARegion() {
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
   const palette = useSessionPalette(session, useSiteMode())

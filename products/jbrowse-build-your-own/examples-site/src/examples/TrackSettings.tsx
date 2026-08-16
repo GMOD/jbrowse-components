@@ -1,10 +1,10 @@
-import { Suspense, useState, useSyncExternalStore } from 'react'
+import { Suspense, useSyncExternalStore } from 'react'
 
 import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { pickColorOptions } from '@jbrowse/plugin-alignments'
 import {
@@ -91,17 +91,16 @@ function makeView() {
   const state = createViewState({
     assembly: volvox,
     tracks: [alignmentsTrack],
+    init: {
+      // Close enough in that reads are individually visible -- a colour scheme
+      // you cannot see one read of is not a demo of a colour scheme -- and two
+      // regions rather than one, so there is a seam for the legend to have to
+      // paint above. Both on ctgA, which is where this BAM's reads are.
+      loc: 'ctgA:1..8,000 ctgA:12,000..20,000',
+      tracks: [alignmentsTrack.trackId],
+    },
   })
   const { view } = state.session
-  view.setInit({
-    assembly: volvox.name,
-    // Close enough in that reads are individually visible -- a colour scheme
-    // you cannot see one read of is not a demo of a colour scheme -- and two
-    // regions rather than one, so there is a seam for the legend to have to
-    // paint above. Both on ctgA, which is where this BAM's reads are.
-    loc: 'ctgA:1..8,000 ctgA:12,000..20,000',
-    tracks: [alignmentsTrack.trackId],
-  })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, and the
   // pileup below reads the same one to know the plain wheel is spoken for
   view.setScrollZoom(true)
@@ -467,7 +466,7 @@ const viewport: React.CSSProperties = {
 }
 
 const TrackSettings = observer(function TrackSettings() {
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
   const palette = useSessionPalette(session, useSiteMode())

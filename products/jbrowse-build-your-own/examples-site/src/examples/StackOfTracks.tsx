@@ -1,10 +1,10 @@
-import { Suspense, useState, useSyncExternalStore } from 'react'
+import { Suspense, useSyncExternalStore } from 'react'
 
 import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -73,13 +73,12 @@ function makeView() {
   const state = createViewState({
     assembly: volvox,
     tracks: [wiggleTrack, featureTrack, alignmentsTrack],
+    init: {
+      loc: 'ctgA:1..20,000',
+      tracks: trackIds,
+    },
   })
   const { view } = state.session
-  view.setInit({
-    assembly: volvox.name,
-    loc: 'ctgA:1..20,000',
-    tracks: trackIds,
-  })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, and the
   // pileup below reads the same one to know the plain wheel is spoken for
   view.setScrollZoom(true)
@@ -243,7 +242,7 @@ function useSiteMode() {
 // through `PaletteProvider` and Material UI is not involved.
 
 const StackOfTracks = observer(function StackOfTracks() {
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const palette = useSessionPalette(session, useSiteMode())
   return (
     <PaletteProvider palette={palette}>

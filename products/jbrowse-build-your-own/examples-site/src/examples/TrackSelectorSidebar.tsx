@@ -5,7 +5,7 @@ import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
@@ -150,13 +150,12 @@ function makeView() {
   const state = createViewState({
     assembly: volvox,
     tracks: catalogueTracks,
+    init: {
+      loc: 'ctgA:1..20,000',
+      tracks: ['volvox_microarray', 'volvox_genes'],
+    },
   })
   const { view } = state.session
-  view.setInit({
-    assembly: volvox.name,
-    loc: 'ctgA:1..20,000',
-    tracks: ['volvox_microarray', 'volvox_genes'],
-  })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
@@ -533,7 +532,7 @@ function useSiteMode() {
 }
 
 const TrackSelectorSidebar = observer(function TrackSelectorSidebar() {
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const palette = useSessionPalette(session, useSiteMode())
 
   return (

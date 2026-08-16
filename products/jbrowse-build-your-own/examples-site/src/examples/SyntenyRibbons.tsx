@@ -1,10 +1,10 @@
-import { Suspense, useRef, useState, useSyncExternalStore } from 'react'
+import { Suspense, useRef, useSyncExternalStore } from 'react'
 
 import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import {
   LevelSyntenyCanvas,
@@ -416,7 +416,7 @@ function useSiteMode() {
 // sharing this session -- not separately themed browsers.
 
 const SyntenyRibbons = observer(function SyntenyRibbons() {
-  const [{ view, session }] = useState(makeView)
+  const { view, session } = useCreateOnce(makeView)
   const palette = useSessionPalette(session, useSiteMode())
   // One measurement for the whole stack: `setWidth` on the synteny view assigns
   // it to every row, so the rows cannot disagree about how wide they are.
