@@ -155,18 +155,39 @@ the renderer never evaluates it, which is what makes the flip a working app
 rather than a blank window. That is the same move the IPC-backed filehandle in
 step 1 needs anyway.
 
-There is a second one that grep *does* find, and it is not behind `openLocation`:
-`src/indexJobsModel.ts` imports `node:fs` and calls `mkdirSync` on the page
-thread to create the text-indexing output directory before the RPC runs. It is a
-renderer Node dependency the `openLocation` funnel does not cover, so fixing the
-funnel does not fix it.
+### 2b. What the renderer actually requires from Node — measured
 
-It wants the **worker**, not a channel. Creating an output directory is
-processing, and a channel would push a processing capability across a bridge
-that exists for UI (see the division in
-[handoffs/desktop-audit.md](../handoffs/desktop-audit.md)). The RPC method that
-follows this line already runs where Node lives, and `NAME_INDICES_DIR` is
-already shared through `ipc/channelTypes.ts`.
+Grep the *source* and you find two files. Sweep the built bundle for every node
+builtin, not just `fs`, and it is **twelve**, from three sources. Every one of
+them is referenced from a lazily-loaded chunk rather than from `main.*.js`'s own
+module bodies, so the flip defers the failure rather than blanking the window at
+boot.
+
+| source | chunk | pulls in |
+| --- | --- | --- |
+| `generic-filehandle2`, via `util/io/index.ts` | 1487 | `fs/promises` |
+| `ixixx`, via `src/indexJobsModel.ts` | 6404 | `child_process`, `stream`, `stream/promises`, `string_decoder`, `events`, `os`, `path`, `fs` |
+| `src/indexJobsModel.ts` itself | 2973 | `fs`, `path` |
+| `src/util.tsx` (`fetchCJS`, blocker 4) | via `pluginManagers.tsx` | `fs/promises`, `os`, `path` |
+
+**`indexJobsModel.ts` is a barrel leak, not a channel and not a worker move.**
+It imports exactly two *values* from `@jbrowse/text-indexing` —
+`createTextSearchConf` and `findTrackConfigsToIndex`, both pure config helpers
+from that package's `util.ts`. But its barrel also re-exports `indexTracks` from
+`TextIndexing.ts`, which imports `ixixx` at module scope, which spawns `sort` as
+a subprocess. So the page thread drags a subprocess library in to call two
+config functions. Give that package an `exports` map (ADR-030; it has none
+today, only `main`) so the helpers have a path that does not reach
+`TextIndexing.ts`, and the whole `child_process` graph leaves the renderer for
+free. Its own `mkdirSync` is separate and genuinely small.
+
+**The `LocalFile` fix is not "make the import dynamic".**
+`generic-filehandle2`'s index — `dist/index.js` and `esm/index.js` alike —
+statically pulls `localFile.js`, and `util/io/index.ts` imports `BlobFile` from
+that same index. So deferring only `LocalFile` leaves the package index, and
+therefore `fs/promises`, exactly where it was. It needs the `BlobFile`/
+`RemoteFile` imports off the barrel too (deep paths), or the browser build
+aliased in with the worker deep-importing the node `localFile.js`.
 
 ### 3. `isElectron` is a userAgent sniff, and it is a landmine
 

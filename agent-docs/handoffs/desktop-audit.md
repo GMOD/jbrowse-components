@@ -39,10 +39,13 @@ worker, which then holds the stub `LocalFile` that rejects every read. One
 the capability check, and let the renderer's graph contain a node build it never
 evaluates.
 
-**`indexJobsModel.ts` wants the worker, not a channel.** The reference doc still
-says its `mkdirSync` "wants a channel". That crosses the wrong boundary — see
-the division below. Creating the text-indexing output directory is processing,
-and the RPC method that follows it already runs where Node lives.
+**Start with the barrel leak — it is the cheapest win in the whole workstream.**
+`src/indexJobsModel.ts` imports two pure config helpers from
+`@jbrowse/text-indexing`, whose barrel also re-exports the indexer, which
+imports `ixixx`, which spawns `sort`. Eight of the renderer's twelve node
+builtins are that one import. An `exports` map on that package removes them
+without touching desktop's behavior at all. Measured inventory in the reference
+doc's "What the renderer actually requires from Node".
 
 **Unprobed, and worth knowing before step 6:** whether page-thread JS can
 construct its own Web Worker and inherit `nodeIntegrationInWorker`. If Electron
