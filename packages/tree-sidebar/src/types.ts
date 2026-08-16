@@ -19,10 +19,12 @@ export interface HoveredTreeNode {
  *
  * The bound is what keeps the sidebar honest. It used to be `{ name: string }`
  * — the weakest possible — and the four displays that compose the mixin each
- * declared their own row type against it; `MafSource` came out without
- * `labelColor`, so every MAF row below `MIN_TEXT_ROW_HEIGHT` drew no swatch at
- * all, and nothing said so. A field the sidebar draws belongs here, where
- * omitting it is a compile error rather than a blank stripe.
+ * declared their own row type against it. `MafSource` came out carrying its tint
+ * under `color`, which the sidebar does not read, so handing `sources` straight
+ * over type-checked and painted nothing; MAF caught that and bridged it with a
+ * `labelSources` computed, which is the shape this replaces. A field the sidebar
+ * draws belongs here, where carrying it under the wrong name is a compile error
+ * rather than a blank stripe someone has to notice.
  *
  * Every member but `name` is optional, so widening this does not break a
  * display that has nothing to put in it — what it breaks is a display that
