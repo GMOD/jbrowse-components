@@ -32,6 +32,12 @@ interface HoverHost extends IStateTreeNode {
  * A display that never opts the gate in reads `regionTooLarge` as a literal
  * `false`, so the fourth term costs it nothing.
  *
+ * **There is a fifth way the content moves, deliberately not watched:** a track
+ * above this one changing height slides this display's whole box down the page
+ * under a stationary cursor. `view.trackHeights` would catch it and over-clear —
+ * see `agent-docs/ideas/hover-clear-on-track-reflow.md` for why that trade went
+ * the other way, and read it before adding the term.
+ *
  * **The fetch foundations install this, so a display does not.** It clears
  * through `BaseDisplay.clearHoveredFeature`, whose default is a no-op, so a
  * display that derives its hover pays one string interpolation per viewport
