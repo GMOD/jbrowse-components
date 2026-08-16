@@ -19,7 +19,7 @@ test('loading before the first paint', () => {
 
 test('ready once painted with the viewport covered', () => {
   const { display, view } = createDisplay()
-  display.setLoadedRegion(0, view.displayedRegions[0]!)
+  display.setLoadedRegion(0, view.displayedRegions[0])
   display.markCanvasDrawn()
   expect(display.displayPhase).toBe('ready')
 })
@@ -44,7 +44,7 @@ test('loading again when the viewport leaves loaded data', () => {
 // agent-docs/reference/DISPLAYCHROME.md §"The retry contract".
 test('a user cancel keeps the overlay up even though isLoading is false', () => {
   const { display, view } = createDisplay()
-  display.setLoadedRegion(0, view.displayedRegions[0]!)
+  display.setLoadedRegion(0, view.displayedRegions[0])
   display.markCanvasDrawn()
   expect(display.displayPhase).toBe('ready')
 

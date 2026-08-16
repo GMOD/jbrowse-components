@@ -1,20 +1,6 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  displayTestSessionModel,
-  testAssembly,
-  testAssemblyManager,
-} from '@jbrowse/display-test-utils'
-import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
+import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
-import FeatureComponent from './components/FeatureComponent.tsx'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
@@ -22,137 +8,50 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LinearBasicDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Shared display-instantiation harness: builds a PluginManager with a
-// FeatureTrack + LinearBasicDisplay and a minimal session/assemblyManager so a
-// real display model can be created and driven in unit tests. createDisplay
-// accepts extra display-snapshot props so tests can seed persistent state (e.g.
-// soloFeatureIds) declaratively, exactly as the app does via addView.
+// The shared display harness wired for `LinearBasicDisplay`. `createDisplay`
+// takes extra display-snapshot props so tests can seed persistent state (e.g.
+// pinned or hidden features) that a display would otherwise have to be clicked
+// into.
 export function createTestEnvironment(opts?: {
-  // when set, the track gets a TestAdapter whose fetchSizeLimit slot carries
-  // this value, exercising the adapter-limit path in the byte gate
   adapterFetchSizeLimit?: number
 }) {
-  // `console.warn` only — `console.error` is the display-contract channel
-  // (TEST_INFRASTRUCTURE.md).
-  console.warn = jest.fn()
-  const pluginManager = new PluginManager()
-
-  const configSchema = configSchemaFactory(pluginManager)
-
-  // Config-only adapter with a fetchSizeLimit slot; the RPC is mocked so the
-  // adapter class is never instantiated — the display only reads its config.
-  pluginManager.addAdapterType(
-    () =>
-      new AdapterType({
-        name: 'TestAdapter',
-        configSchema: ConfigurationSchema('TestAdapter', {
-          fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
-        }),
-        getAdapterClass: () => {
-          throw new Error('TestAdapter is config-only in tests')
-        },
-      }),
-  )
-
-  pluginManager.addTrackType(() => {
-    const trackConfigSchema = ConfigurationSchema(
-      'FeatureTrack',
-      {},
-      {
-        baseConfiguration: createBaseTrackConfig(pluginManager),
-        explicitIdentifier: 'trackId',
-      },
-    )
-    return new TrackType({
-      name: 'FeatureTrack',
-      configSchema: trackConfigSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'FeatureTrack',
-        trackConfigSchema,
-      ),
-    })
-  })
-
-  pluginManager.addDisplayType(() => {
-    return new DisplayType({
-      name: 'LinearBasicDisplay',
-      configSchema,
-      stateModel: stateModelFactory(configSchema),
-      trackType: 'FeatureTrack',
-      viewType: 'LinearGenomeView',
-      ReactComponent: FeatureComponent,
-    })
-  })
-
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  const mockRpcCall = jest.fn()
-
-  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-
-  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-  const trackConfig = trackConfigSchema.create(
-    {
-      type: 'FeatureTrack',
-      trackId: 'test_track',
-      assemblyNames: ['volvox'],
-      ...(opts?.adapterFetchSizeLimit === undefined
-        ? {}
-        : {
-            adapter: {
-              type: 'TestAdapter',
-              fetchSizeLimit: opts.adapterFetchSizeLimit,
-            },
-          }),
+  const env = createDisplayTestEnvironment<LinearBasicDisplayModel>({
+    trackType: 'FeatureTrack',
+    // Config-only: the RPC is mocked, so this display only ever reads the
+    // adapter's config. Throwing on resolve is what says so.
+    adapter: {
+      name: 'TestAdapter',
+      configOnly: true,
+      slots: { fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 } },
+      config:
+        opts?.adapterFetchSizeLimit === undefined
+          ? undefined
+          : { type: 'TestAdapter', fetchSizeLimit: opts.adapterFetchSizeLimit },
     },
-    { pluginManager },
-  )
-
-  const Session = displayTestSessionModel({
-    viewModel: LinearGenomeModel,
-    rpcManager: { call: mockRpcCall },
-    assemblyManager: testAssemblyManager(testAssembly()),
-    getTrackById: (id: string) =>
-      id === 'test_track' ? trackConfig : undefined,
+    displayName: 'LinearBasicDisplay',
+    configSchema: pm => configSchemaFactory(pm),
+    stateModel: (_pm, schema) => stateModelFactory(schema),
+    viewModel: linearGenomeViewStateModelFactory,
+    viewRegionEnd: 10_000,
   })
 
-  function createDisplay(
-    displaySnapshot?: Record<string, unknown>,
-    // `unmeasuredView` leaves the view without a width, i.e. before
-    // `view.initialized` — the window where every view-derived getter throws by
-    // design. Only a test driving that window wants it.
-    opts?: { unmeasuredView?: boolean },
-  ) {
-    const session = Session.create({ configuration: {} }, { pluginManager })
-    const view = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        tracks: [
-          {
-            type: 'FeatureTrack',
-            configuration: 'test_track',
-            displays: [{ type: 'LinearBasicDisplay', ...displaySnapshot }],
-          },
-        ],
+  return {
+    ...env,
+    createDisplay: (
+      displaySnapshot?: Record<string, unknown>,
+      // `unmeasuredView` leaves the view without a width, i.e. before
+      // `view.initialized` — the window where every view-derived getter throws
+      // by design. Only a test driving that window wants it.
+      createOpts?: { unmeasuredView?: boolean },
+    ) =>
+      env.createDisplay({
+        displaySnapshot,
+        skipWidth: createOpts?.unmeasuredView,
       }),
-    )
-    if (!opts?.unmeasuredView) {
-      view.setWidth(800)
-      view.setDisplayedRegions([
-        { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
-      ])
-    }
-
-    const track = view.tracks[0]!
-    const display = track.displays[0]!
-    return { session, view, track, display, mockRpcCall }
   }
-
-  return { createDisplay, mockRpcCall }
 }
 
 export type TestDisplay = ReturnType<

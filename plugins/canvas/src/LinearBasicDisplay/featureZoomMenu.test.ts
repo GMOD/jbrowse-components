@@ -67,7 +67,11 @@ describe('feature "Zoom to feature" context menu', () => {
 
     // zoomed to the part of the gene the clicked block shows (1050..2000, grown
     // and clamped back to the block), rather than nowhere at all
-    expect(view.visibleRegions.map(vr => vr.displayedRegionIndex)).toEqual([0])
+    expect(
+      view.visibleRegions.map(
+        (vr: { displayedRegionIndex: number }) => vr.displayedRegionIndex,
+      ),
+    ).toEqual([0])
     const [vr] = view.visibleRegions
     expect(Math.round(vr!.start)).toBe(1000)
     expect(Math.round(vr!.end)).toBe(2000)
@@ -91,7 +95,9 @@ describe('feature "Zoom to feature" context menu', () => {
     // the second block, filling the viewport (region 0 trails behind as a
     // zero-width edge block). Clamping to region 0 instead would have zoomed
     // 6kb away from where the click landed.
-    const vr = view.visibleRegions.find(r => r.displayedRegionIndex === 1)
+    const vr = view.visibleRegions.find(
+      (r: { displayedRegionIndex: number }) => r.displayedRegionIndex === 1,
+    )
     expect(Math.round(vr!.start)).toBe(8000)
     expect(Math.round(vr!.end)).toBe(9100)
   })

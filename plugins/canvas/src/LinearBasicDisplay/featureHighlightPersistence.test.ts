@@ -8,7 +8,6 @@ import { resetUnresolvedHighlightWarnings } from './featureHighlight.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { FeatureHighlight } from './featureHighlight.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
 
 const brca1: FeatureHighlight = {
   refName: 'ctgA',
@@ -112,16 +111,14 @@ describe('feature highlight declarative persistence', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const labels = () =>
-      (display.trackMenuItems() as MenuItem[]).map(m =>
-        'label' in m ? String(m.label) : '',
-      )
+      display.trackMenuItems().map(m => ('label' in m ? String(m.label) : ''))
 
     expect(labels()).not.toContain('Clear 1 highlight')
 
     display.setFeatureHighlights([brca1])
-    const clear = (display.trackMenuItems() as MenuItem[]).find(
-      m => 'label' in m && m.label === 'Clear 1 highlight',
-    )
+    const clear = display
+      .trackMenuItems()
+      .find(m => 'label' in m && m.label === 'Clear 1 highlight')
     expect(clear).toBeDefined()
 
     if (clear && 'onClick' in clear) {

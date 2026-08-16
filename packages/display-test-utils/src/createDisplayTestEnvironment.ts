@@ -20,15 +20,36 @@ import type {
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
+// `'config' in adapter`, not `??`: the two states a caller needs are "give me
+// the obvious one" and "give me none", and only key presence tells them apart.
+function adapterTrackConfig(adapter: TestAdapterSpec | undefined) {
+  if (!adapter) {
+    return {}
+  }
+  const config = 'config' in adapter ? adapter.config : { type: adapter.name }
+  return config ? { adapter: config } : {}
+}
+
 /** A stand-in adapter the display's config can point at. */
 export interface TestAdapterSpec {
   name: string
   /** Config slots the test needs to set. Nothing is read; the class is empty. */
   slots?: ConfigurationSchemaDefinition
-  /** What the track config's `adapter` becomes. Defaults to `{ type: name }`. */
+  /**
+   * What the track config's `adapter` becomes. Omitted, it is `{ type: name }`.
+   * Present-but-`undefined` puts **no** adapter on the track while still
+   * registering the type — which is how a test asserts what a display falls back
+   * to when the adapter declares nothing (canvas's `adapterFetchSizeLimit`).
+   */
   config?: Record<string, unknown>
   /** e.g. `['hasResolution']`, which wiggle's resolution menu gates on. */
   capabilities?: string[]
+  /**
+   * Refuse to resolve an adapter class. For a display whose RPC is mocked and
+   * which only ever reads the adapter's *config*, this turns "something
+   * instantiated it after all" from a silent success into a thrown error.
+   */
+  configOnly?: boolean
 }
 
 export interface DisplayTestEnvironmentOptions {
@@ -136,7 +157,11 @@ export function createDisplayTestEnvironment<T>({
             explicitlyTyped: true,
           }),
           adapterCapabilities: adapter.capabilities,
-          getAdapterClass: () => Promise.resolve(class extends BaseAdapter {}),
+          getAdapterClass: adapter.configOnly
+            ? () => {
+                throw new Error(`${adapter.name} is config-only in tests`)
+              }
+            : () => Promise.resolve(class extends BaseAdapter {}),
         }),
     )
   }
@@ -189,7 +214,7 @@ export function createDisplayTestEnvironment<T>({
       type: trackType,
       trackId: 'test_track',
       assemblyNames: ['volvox'],
-      ...(adapter ? { adapter: adapter.config ?? { type: adapter.name } } : {}),
+      ...adapterTrackConfig(adapter),
       ...(displayConfig
         ? {
             displays: [

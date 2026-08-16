@@ -59,7 +59,11 @@ function setUp(regions: [number, FeatureDataResult][]) {
   // every assertion here would pass vacuously against a one-region map
   view.zoomTo(50)
   expect(
-    new Set(view.visibleRegions.map(r => r.displayedRegionIndex)).size,
+    new Set(
+      view.visibleRegions.map(
+        (r: { displayedRegionIndex: number }) => r.displayedRegionIndex,
+      ),
+    ).size,
   ).toBe(2)
   for (const [index, data] of regions) {
     display.setRpcData(index, data, 1, {

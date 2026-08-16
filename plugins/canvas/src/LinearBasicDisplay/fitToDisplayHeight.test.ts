@@ -1103,7 +1103,7 @@ describe('canvas display fit escalation ladder', () => {
 
     const factor = display.solveLabelRoomFactor(display.fitTargetHeight)
     expect(factor).toBeDefined()
-    const inputs = display.decimatedLayoutInputs(factor)
+    const inputs = display.decimatedLayoutInputs(factor!)
     expect(packedContentHeight(display.rpcDataMap, inputs)).toBe(
       maxBottom(computeLaidOutData(display.rpcDataMap, inputs)),
     )
@@ -1202,7 +1202,7 @@ describe('canvas display fit escalation ladder', () => {
 
     const factor = display.solveLabelRoomFactor(display.fitTargetHeight)
     expect(factor).toBeDefined()
-    const inputs = display.decimatedLayoutInputs(factor)
+    const inputs = display.decimatedLayoutInputs(factor!)
     // probe and commit still agree once the sort key itself moves with the factor
     expect(packedContentHeight(display.rpcDataMap, inputs)).toBe(
       maxBottom(computeLaidOutData(display.rpcDataMap, inputs)),
