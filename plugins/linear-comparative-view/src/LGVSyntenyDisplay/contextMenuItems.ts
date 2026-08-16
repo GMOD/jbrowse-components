@@ -39,8 +39,11 @@ interface SyntenyContextMenuModel extends IStateTreeNode {
   // which arrives an RPC later — see `featureMenuItems`.
   contextMenuFeatureId: string | undefined
   contextMenuFeature: Feature | undefined
-  // The visible block the right-click landed in.
-  contextMenuBlock: { bpRange: [number, number] } | undefined
+  // What the right-click landed on, of which only the visible block is read
+  // here. Duck-typed to that one field rather than importing the alignments
+  // display's `ContextMenuHit`: this menu asks nothing about which mark
+  // answered.
+  contextMenuHit: { block: { bpRange: [number, number] } } | undefined
   lgv: LinearGenomeViewModel
   selectFeature: (feature: Feature) => void
   withFeatureById: (
@@ -229,7 +232,7 @@ export function featureMenuItems(self: SyntenyContextMenuModel): MenuItem[] {
   // taken from the click rather than searched for by refName: a feature abutting
   // a region boundary overlaps two visible blocks, and only the cursor says
   // which one it was drawn in.
-  const block = self.contextMenuBlock
+  const block = self.contextMenuHit?.block
   const region = block
     ? { start: block.bpRange[0], end: block.bpRange[1] }
     : undefined

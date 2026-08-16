@@ -8,6 +8,21 @@ import { namesToBlock } from '../shared/readNameBlock.ts'
 import { bootAlignmentsDisplay, makeEmptyPileupData } from './testUtils.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { ResolvedBlock } from '../shared/hitTestTypes.ts'
+
+// The block a right-click resolves. Only refName is read by the menu items
+// under test, but the hit carries a whole block or none at all, so the cases
+// build a whole one.
+function makeContextMenuBlock(): ResolvedBlock {
+  return {
+    refName: 'ctgA',
+    rpcData: {} as ResolvedBlock['rpcData'],
+    bpRange: [0, 100],
+    blockStartPx: 0,
+    blockWidth: 100,
+    reversed: false,
+  }
+}
 
 // Builds a real LinearAlignmentsDisplay so the cross-feature coupling that
 // lives in the model actions (not the menu handlers) is tested against the
@@ -453,9 +468,8 @@ describe('ordering controls in chain mode', () => {
   test('the context menu drops its position-anchored sorts too', () => {
     const display = createDisplay()
     display.openContextMenu({
-      anchor: { left: 0, top: 0 },
-      block: { refName: 'ctgA', start: 0, end: 100, rpcData: undefined },
-      genomicPos: 50,
+      anchor: { clientX: 0, clientY: 0 },
+      hit: { block: makeContextMenuBlock(), genomicPos: 50 },
       featureId: 'read1',
     })
     expect(hasMenuLabel(display.contextMenuItems(), 'Sort by')).toBe(true)
@@ -570,14 +584,19 @@ describe('read-category toggles + filter submenu', () => {
 // without its hit going missing, and stop a repositioned menu from showing the
 // previous read — behavior otherwise guarded only by a comment.
 describe('openContextMenu atomic state and stale-read reset', () => {
-  test('sets coord and hit fields together', () => {
+  test('sets the anchor and the whole hit together', () => {
     const display = createDisplay()
     display.openContextMenu({
       anchor: { clientX: 10, clientY: 20 },
-      cigarHit: { type: 'mismatch', index: 0, position: 42, length: 1 },
+      hit: {
+        block: makeContextMenuBlock(),
+        genomicPos: 42,
+        cigarHit: { type: 'mismatch', index: 0, position: 42, length: 1 },
+      },
     })
     expect(display.contextMenuAnchor).toEqual({ clientX: 10, clientY: 20 })
-    expect(display.contextMenuCigarHit).toEqual({
+    expect(display.contextMenuHit?.genomicPos).toBe(42)
+    expect(display.contextMenuHit?.cigarHit).toEqual({
       type: 'mismatch',
       index: 0,
       position: 42,
@@ -601,14 +620,18 @@ describe('openContextMenu atomic state and stale-read reset', () => {
 
     display.openContextMenu({
       anchor: { clientX: 1, clientY: 2 },
-      indicatorHit: {
-        type: 'indicator',
-        position: 5,
-        indicatorType: 'insertion',
+      hit: {
+        block: makeContextMenuBlock(),
+        genomicPos: 5,
+        indicatorHit: {
+          type: 'indicator',
+          position: 5,
+          indicatorType: 'insertion',
+        },
       },
     })
     expect(display.contextMenuFeature).toBeUndefined()
-    expect(display.contextMenuIndicatorHit).toEqual({
+    expect(display.contextMenuHit?.indicatorHit).toEqual({
       type: 'indicator',
       position: 5,
       indicatorType: 'insertion',
@@ -633,16 +656,18 @@ describe('openContextMenu atomic state and stale-read reset', () => {
     const display = createDisplay()
     display.openContextMenu({
       anchor: { clientX: 3, clientY: 4 },
-      cigarHit: { type: 'mismatch', index: 1, position: 9, length: 1 },
+      hit: {
+        block: makeContextMenuBlock(),
+        genomicPos: 9,
+        cigarHit: { type: 'mismatch', index: 1, position: 9, length: 1 },
+      },
       featureId: 'read1',
     })
     display.closeContextMenu()
     expect(display.contextMenuAnchor).toBeUndefined()
-    expect(display.contextMenuCigarHit).toBeUndefined()
-    expect(display.contextMenuIndicatorHit).toBeUndefined()
+    expect(display.contextMenuHit).toBeUndefined()
     expect(display.contextMenuFeature).toBeUndefined()
     expect(display.contextMenuFeatureId).toBeUndefined()
-    expect(display.contextMenuBlock).toBeUndefined()
   })
 
   // The pin the menu takes on the hovered read has to come off with the menu.

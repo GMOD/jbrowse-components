@@ -181,7 +181,7 @@ test('an arc over an interbase bar: the hover names the arc, and so do the other
   expect(t.openedWidgets).toHaveLength(1)
   expect(t.contextMenu(x, y).preventDefault).toHaveBeenCalled()
   expect(t.display.contextMenuAnchor).toBeDefined()
-  expect(t.display.contextMenuIndicatorHit).toBeDefined()
+  expect(t.display.contextMenuHit?.indicatorHit).toBeDefined()
 
   t.display.closeContextMenu()
   t.openedWidgets.length = 0

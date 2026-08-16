@@ -22,11 +22,7 @@ import {
   openModificationWidget,
 } from './detailWidgets.ts'
 import { findSectionAtY } from './findSectionAtY.ts'
-import {
-  canvasXToBasePos,
-  contextMenuFieldsForHit,
-  performHitTest,
-} from './hitTestPipeline.ts'
+import { contextMenuTargetForHit, performHitTest } from './hitTestPipeline.ts'
 import {
   formatArcLineTooltip,
   formatArcTooltip,
@@ -295,38 +291,24 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function handleContextMenu(e: React.MouseEvent) {
-    const { resolved, result } = hitTestEvent(e)
+    const { result } = hitTestEvent(e)
 
-    // An arc arrives here as `show: false`, the same answer coverage gets, so
-    // it falls through to the BROWSER's menu rather than calling
-    // `preventDefault` — which is what a mark with nothing to offer should do.
-    // Before that was true, right-clicking an arc that crossed an indicator
-    // column opened the interbase menu for that column while the tooltip said
-    // "Read connection": in up mode the arc band IS the coverage band
-    // (`computeArcBand` gives it top 0), and `hitTestInterbase` answers over
-    // the indicator strip and the bar stack inside it.
-    const { show, cigarHit, indicatorHit, modHit, featureId } =
-      contextMenuFieldsForHit(result)
-    if (show) {
+    // An arc resolves to no target, so it falls through to the BROWSER's menu
+    // rather than calling `preventDefault` — which is what a mark with nothing
+    // to offer should do. Before that was true, right-clicking an arc that
+    // crossed an indicator column opened the interbase menu for that column
+    // while the tooltip said "Read connection": in up mode the arc band IS the
+    // coverage band (`computeArcBand` gives it top 0), and `hitTestInterbase`
+    // answers over the indicator strip and the bar stack inside it.
+    const target = contextMenuTargetForHit(result, e.nativeEvent.offsetX)
+    if (target) {
       e.preventDefault()
-      // The genomic column under the cursor, anchoring the "sort at the clicked
-      // position" items — the read menu's, and the cigar submenu's base-pair
-      // sort. Independent of whether a cigar feature was hit, and the same
-      // transform the hit-test pipeline uses.
-      const genomicPos = resolved
-        ? canvasXToBasePos(e.nativeEvent.offsetX, resolved)
-        : undefined
-      // One atomic call: coord + block + hits, the hover handoff, plus the async
-      // read fetch when the hit carries one. A repositioned menu can't inherit
-      // the prior read.
+      // One atomic call: anchor + the whole resolved hit, the hover handoff,
+      // plus the async read fetch when the hit carries one. A repositioned menu
+      // can't inherit the prior read.
       model.openContextMenu({
         anchor: { clientX: e.clientX, clientY: e.clientY },
-        block: resolved,
-        genomicPos,
-        cigarHit,
-        indicatorHit,
-        modHit,
-        featureId,
+        ...target,
       })
     }
   }

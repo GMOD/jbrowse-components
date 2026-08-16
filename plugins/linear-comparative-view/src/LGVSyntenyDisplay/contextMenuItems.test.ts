@@ -27,9 +27,9 @@ function rightClick(
   feature?: SimpleFeature,
 ) {
   display.openContextMenu({
-    coord: [1, 2],
+    anchor: { clientX: 1, clientY: 2 },
     featureId: 'f1',
-    block: { bpRange: [0, 1000], refName: 'ctgA' },
+    hit: { block: { bpRange: [0, 1000], refName: 'ctgA' }, genomicPos: 500 },
   })
   if (feature) {
     display.setContextMenuFeature(feature)
@@ -43,7 +43,10 @@ function rightClick(
 // nothing in it.
 test('the block items are there before the feature fetch lands', () => {
   const display = createDisplay()
-  display.openContextMenu({ coord: [1, 2], featureId: 'f1' })
+  display.openContextMenu({
+    anchor: { clientX: 1, clientY: 2 },
+    featureId: 'f1',
+  })
   expect(display.contextMenuFeature).toBeUndefined()
   expect(labels(display)).toEqual([
     'Open feature details',
@@ -57,7 +60,10 @@ test('the block items are there before the feature fetch lands', () => {
 // already over.
 test('a launchable mate appends the synteny item when the feature lands', () => {
   const display = createDisplay()
-  display.openContextMenu({ coord: [1, 2], featureId: 'f1' })
+  display.openContextMenu({
+    anchor: { clientX: 1, clientY: 2 },
+    featureId: 'f1',
+  })
   display.setContextMenuFeature(makeFeature('volvox_random'))
   expect(labels(display)).toEqual([
     'Open feature details',
@@ -70,7 +76,10 @@ test('a launchable mate appends the synteny item when the feature lands', () => 
 // track; offering a view that fails to open would be worse than not offering it.
 test('a mate outside the track assemblies gets no synteny item', () => {
   const display = createDisplay()
-  display.openContextMenu({ coord: [1, 2], featureId: 'f1' })
+  display.openContextMenu({
+    anchor: { clientX: 1, clientY: 2 },
+    featureId: 'f1',
+  })
   display.setContextMenuFeature(makeFeature('HG002#1'))
   expect(labels(display)).toEqual([
     'Open feature details',
@@ -80,7 +89,7 @@ test('a mate outside the track assemblies gets no synteny item', () => {
 
 test('a right-click on no feature offers no feature items', () => {
   const display = createDisplay()
-  display.openContextMenu({ coord: [1, 2] })
+  display.openContextMenu({ anchor: { clientX: 1, clientY: 2 } })
   expect(labels(display)).toEqual([])
 })
 

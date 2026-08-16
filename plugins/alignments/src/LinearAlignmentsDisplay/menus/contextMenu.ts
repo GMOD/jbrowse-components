@@ -30,13 +30,9 @@ import {
 } from '../components/detailWidgets.ts'
 import { viewMateRegionInCurrentView } from '../viewMateRegion.ts'
 
-import type { IndicatorHitResult } from '../../features/indicator/types.ts'
-import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
-import type {
-  CigarHitResult,
-  ResolvedBlock,
-} from '../../shared/hitTestTypes.ts'
+import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
+import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -51,18 +47,10 @@ type LGV = LinearGenomeViewModel
 // PAF block has no mate, tags, name or sequence, so making it satisfy the read
 // half to reach `getHitMenuItems` was a type it had to fake rather than have.
 interface HitMenuModel extends IStateTreeNode {
-  contextMenuCigarHit: CigarHitResult | undefined
-  contextMenuIndicatorHit: IndicatorHitResult | undefined
-  contextMenuModHit: ModificationHitResult | undefined
-  // The block under the right-click (refName + worker result + bp range), the
-  // single source of the position sort's refName and the indicator widget's
-  // rpcData. Captured once when the menu is built so its onClicks operate on a
-  // snapshot — closeContextMenu runs before the click callback, so reading it
-  // live would see undefined.
-  contextMenuBlock: ResolvedBlock | undefined
-  // Genomic column under the right-click. The cigar submenu's base-pair sort
-  // anchors here, not on the op's own start — see getHitMenuItems.
-  contextMenuGenomicPos: number | undefined
+  // What the right-click landed on, as one value. Captured once when the menu
+  // is built so its onClicks operate on a snapshot — closeContextMenu runs
+  // before the click callback, so reading it live would see undefined.
+  contextMenuHit: ContextMenuHit | undefined
   setSortedByAtPosition: (arg: {
     type: string
     pos: number
@@ -316,18 +304,16 @@ export function getHitMenuItems(
   self: HitMenuModel,
   { sort = true }: { sort?: boolean } = {},
 ): MenuItem[] {
-  const cigarHit = self.contextMenuCigarHit
-  const indicatorHit = self.contextMenuIndicatorHit
-  const modHit = self.contextMenuModHit
-  // Every item below names the block's refName (the indicator widget also its
-  // rpcData), and the hit test only reports a hit inside a resolved block, so
-  // one gate covers all three — rather than some items vanishing without a block
-  // and others rendering with a dead onClick. Snapshotted here, with the hits,
-  // because closeContextMenu clears them before any onClick fires.
-  const block = self.contextMenuBlock
+  // Snapshotted here, whole, because closeContextMenu clears it before any
+  // onClick fires. Every item below names the block's refName (the aggregate
+  // widgets also its rpcData), and the hit arrives with its block or not at all,
+  // so one gate covers them — rather than some items vanishing and others
+  // rendering with a dead onClick.
+  const menuHit = self.contextMenuHit
   const items: MenuItem[] = []
 
-  if (block) {
+  if (menuHit) {
+    const { block, genomicPos, cigarHit, indicatorHit, modHit } = menuHit
     if (cigarHit) {
       const typeLabel = getCigarTypeLabel(cigarHit.type)
       const isInterbase = isInterbaseType(cigarHit.type)
@@ -347,10 +333,7 @@ export function getHitMenuItems(
           // it silently disagreed with the read menu's own "Sort by ▸ Base
           // pair" in the same menu, which has always meant the clicked column.
           // A mismatch is 1bp, so the two are the same base there.
-          position:
-            isInterbase || self.contextMenuGenomicPos === undefined
-              ? cigarHit.position
-              : self.contextMenuGenomicPos,
+          position: isInterbase ? cigarHit.position : genomicPos,
           // Named with its span, so "Open deletion details" beside a
           // feature-level "Open feature details" reads as the CIGAR op the
           // cursor is on rather than as an unexplained second kind of detail. A
@@ -425,7 +408,7 @@ export function getContextMenuItems(
 ): MenuItem[] {
   const feat = self.contextMenuFeature
   const featureId = self.contextMenuFeatureId
-  const block = self.contextMenuBlock
+  const menuHit = self.contextMenuHit
   const items = getHitMenuItems(self, { sort })
 
   // Split on what each item actually needs. The id says "the cursor is over a
@@ -449,8 +432,8 @@ export function getContextMenuItems(
     // them before the onClick fires). Only the position-anchored criteria
     // appear here; "start location" / "longest reads first" are whole-pileup
     // orderings with no clicked position to anchor on.
-    if (sort && block && self.contextMenuGenomicPos !== undefined) {
-      const pos = self.contextMenuGenomicPos
+    if (sort && menuHit) {
+      const { genomicPos: pos, block } = menuHit
       const { refName } = block
       items.push({
         label: 'Sort by',

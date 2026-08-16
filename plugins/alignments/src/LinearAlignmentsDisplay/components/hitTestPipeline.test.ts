@@ -8,7 +8,7 @@ import {
 } from '../../shared/types.ts'
 import {
   SNP_HIT_MAX_BP_PER_PX,
-  contextMenuFieldsForHit,
+  contextMenuTargetForHit,
   performHitTest,
 } from './hitTestPipeline.ts'
 
@@ -212,7 +212,7 @@ describe('gap hit — zoomed-out pileup', () => {
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.featureHit).toEqual({ id: 'read1', index: 0 })
-      expect(contextMenuFieldsForHit(result).featureId).toBe('read1')
+      expect(contextMenuTargetForHit(result, 1)?.featureId).toBe('read1')
     }
   })
 
@@ -362,28 +362,28 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
   })
 })
 
-describe('contextMenuFieldsForHit', () => {
+describe('contextMenuTargetForHit', () => {
   const resolved = makeResolved()
+  // 200px across 20000bp, so canvas x=1 is the column at bp 100
+  const CANVAS_X = 1
+  const CLICKED_COLUMN = 100
 
-  it('coverage and none hits show no menu', () => {
-    expect(
-      contextMenuFieldsForHit({
-        type: 'coverage',
-        hit: { type: 'coverage', position: 1 },
-        resolved,
-      }).show,
-    ).toBe(false)
-    expect(contextMenuFieldsForHit({ type: 'none' }).show).toBe(false)
+  it('a miss resolves no target, so the browser keeps the menu', () => {
+    expect(contextMenuTargetForHit({ type: 'none' }, CANVAS_X)).toBeUndefined()
   })
 
-  it('a feature hit carries the feature id', () => {
+  // Every target carries the block it was resolved in and the column the cursor
+  // was on, whatever mark answered — the position sorts anchor on that column.
+  it('every hit carries its block and the clicked column', () => {
     expect(
-      contextMenuFieldsForHit({
-        type: 'feature',
-        hit: { id: 'r1', index: 3 },
-        resolved,
-      }),
-    ).toEqual({ show: true, featureId: 'r1' })
+      contextMenuTargetForHit(
+        { type: 'feature', hit: { id: 'r1', index: 3 }, resolved },
+        CANVAS_X,
+      ),
+    ).toEqual({
+      hit: { block: resolved, genomicPos: CLICKED_COLUMN },
+      featureId: 'r1',
+    })
   })
 
   it('a cigar hit carries both the cigar hit and its read feature id', () => {
@@ -394,13 +394,19 @@ describe('contextMenuFieldsForHit', () => {
       length: 1,
     } as const
     expect(
-      contextMenuFieldsForHit({
-        type: 'cigar',
-        hit: cigar,
-        featureHit: { id: 'r2', index: 1 },
-        resolved,
-      }),
-    ).toEqual({ show: true, cigarHit: cigar, featureId: 'r2' })
+      contextMenuTargetForHit(
+        {
+          type: 'cigar',
+          hit: cigar,
+          featureHit: { id: 'r2', index: 1 },
+          resolved,
+        },
+        CANVAS_X,
+      ),
+    ).toEqual({
+      hit: { block: resolved, genomicPos: CLICKED_COLUMN, cigarHit: cigar },
+      featureId: 'r2',
+    })
   })
 
   // regression: a modification hit used to fall through to the native browser
@@ -421,17 +427,23 @@ describe('contextMenuFieldsForHit', () => {
       probability: 0.9,
       color: '#f00',
     }
-    const fields = contextMenuFieldsForHit({
-      type: 'modification',
-      hit: mod,
-      featureHit: { id: 'r3', index: 2 },
-      cigarHit: cigar,
-      resolved,
-    })
-    expect(fields).toEqual({
-      show: true,
-      cigarHit: cigar,
-      modHit: mod,
+    const target = contextMenuTargetForHit(
+      {
+        type: 'modification',
+        hit: mod,
+        featureHit: { id: 'r3', index: 2 },
+        cigarHit: cigar,
+        resolved,
+      },
+      CANVAS_X,
+    )
+    expect(target).toEqual({
+      hit: {
+        block: resolved,
+        genomicPos: CLICKED_COLUMN,
+        cigarHit: cigar,
+        modHit: mod,
+      },
       featureId: 'r3',
     })
   })
@@ -442,14 +454,12 @@ describe('contextMenuFieldsForHit', () => {
       position: 100,
       indicatorType: 'insertion' as const,
     }
-    const fields = contextMenuFieldsForHit({
-      type: 'indicator',
-      hit: ind,
-      resolved,
-    })
-    expect(fields.show).toBe(true)
-    expect(fields.indicatorHit).toBe(ind)
-    expect(fields.featureId).toBeUndefined()
+    const target = contextMenuTargetForHit(
+      { type: 'indicator', hit: ind, resolved },
+      CANVAS_X,
+    )
+    expect(target?.hit.indicatorHit).toBe(ind)
+    expect(target?.featureId).toBeUndefined()
   })
 })
 

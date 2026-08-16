@@ -140,10 +140,7 @@ import type {
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
-import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
-import type { ModificationHitResult } from '../features/modification/hitTest.ts'
-import type { CigarHitResult, ResolvedBlock } from '../shared/hitTestTypes.ts'
 import type {
   ArcColorByType,
   ColorBy,
@@ -154,6 +151,7 @@ import type {
 } from '../shared/types'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
+import type { ContextMenuHit } from './components/hitTestPipeline.ts'
 import type { SashimiArcSection } from './components/sashimiArcs.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
@@ -632,33 +630,12 @@ export default function stateModelFactory(
           contextMenuAnchor: undefined as ContextMenuAnchor | undefined,
           /**
            * #volatile
+           * Everything the right-click's hit test resolved — the block, the
+           * clicked column, and whichever mark answered — as one value, so a
+           * consumer can't read a block without its hit and closing the menu
+           * can't forget a field. See `ContextMenuHit`.
            */
-          contextMenuCigarHit: undefined as CigarHitResult | undefined,
-          /**
-           * #volatile
-           */
-          contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
-          /**
-           * #volatile
-           * Per-read base modification under a right-click, so "Open modification
-           * details" is reachable from the menu (not just left-click). Set with
-           * the block/hits as a unit.
-           */
-          contextMenuModHit: undefined as ModificationHitResult | undefined,
-          /**
-           * #volatile
-           * Genomic column under a right-click, anchoring the read menu's "sort
-           * at the clicked position" items. Set with the block/hits as a unit.
-           */
-          contextMenuGenomicPos: undefined as number | undefined,
-          /**
-           * #volatile
-           * The block under a right-click (refName + block-level worker result +
-           * bp range). The position sort reads its refName and the
-           * indicator/coverage detail items read its rpcData to open the
-           * aggregate widget (mirrors the left-click path in useAlignmentsBase).
-           */
-          contextMenuBlock: undefined as ResolvedBlock | undefined,
+          contextMenuHit: undefined as ContextMenuHit | undefined,
           /**
            * #volatile
            */
@@ -3903,11 +3880,7 @@ export default function stateModelFactory(
             self.contextMenuAnchor = undefined
             self.contextMenuFeature = undefined
             self.contextMenuFeatureId = undefined
-            self.contextMenuCigarHit = undefined
-            self.contextMenuIndicatorHit = undefined
-            self.contextMenuModHit = undefined
-            self.contextMenuBlock = undefined
-            self.contextMenuGenomicPos = undefined
+            self.contextMenuHit = undefined
             clearMouseoverState()
           },
 
@@ -4016,13 +3989,14 @@ export default function stateModelFactory(
           },
           /**
            * #action
-           * Open the right-click menu over a hit. Anchor, block, and the two hit
-           * kinds always travel as a unit — set atomically so a consumer can
-           * never read a block without its hit (the split-state class of bug
-           * that silently no-op'd position sorts). The read feature is reset now
-           * and, when the hit carries one, populated by an async RPC fetch — so
-           * "open the menu for this hit and its read" stays a single call and a
-           * repositioned menu can't inherit the prior read's items.
+           * Open the right-click menu over a hit. The block, the clicked column
+           * and whichever mark answered arrive as one `ContextMenuHit`, which is
+           * how a consumer is stopped from reading a block without its hit (the
+           * split-state class of bug that silently no-op'd position sorts). The
+           * read feature is reset now and, when the hit carries one, populated by
+           * an async RPC fetch — so "open the menu for this hit and its read"
+           * stays a single call and a repositioned menu can't inherit the prior
+           * read's items.
            *
            * Dropping the hover is part of opening, not a step the caller does
            * first: the tooltip must go, but the highlight box has to survive as
@@ -4031,20 +4005,12 @@ export default function stateModelFactory(
            */
           openContextMenu(args: {
             anchor: ContextMenuAnchor
-            block?: ResolvedBlock
-            genomicPos?: number
-            cigarHit?: CigarHitResult
-            indicatorHit?: IndicatorHitResult
-            modHit?: ModificationHitResult
+            hit?: ContextMenuHit
             featureId?: string
           }) {
             self.clearMouseoverState()
             self.contextMenuAnchor = args.anchor
-            self.contextMenuBlock = args.block
-            self.contextMenuGenomicPos = args.genomicPos
-            self.contextMenuCigarHit = args.cigarHit
-            self.contextMenuIndicatorHit = args.indicatorHit
-            self.contextMenuModHit = args.modHit
+            self.contextMenuHit = args.hit
             self.contextMenuFeature = undefined
             self.contextMenuFeatureId = args.featureId
             // Pin the hover to the menu's target read so its highlight box

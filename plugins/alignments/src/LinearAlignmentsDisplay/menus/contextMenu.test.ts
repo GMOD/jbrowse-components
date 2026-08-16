@@ -1,5 +1,6 @@
 import { getContextMenuItems, getHitMenuItems } from './contextMenu.ts'
 
+import type { CoverageHitResult } from '../../features/coverage/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type {
@@ -7,6 +8,7 @@ import type {
   ResolvedBlock,
 } from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
+import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 type SortCall = [type: string, pos: number, refName: string]
@@ -38,11 +40,18 @@ function makeFeature(fields: Record<string, unknown>): Feature {
 
 function makeModel(
   over: {
-    contextMenuCigarHit?: CigarHitResult
-    contextMenuIndicatorHit?: IndicatorHitResult
-    contextMenuModHit?: ModificationHitResult
-    contextMenuBlock?: ResolvedBlock
-    contextMenuGenomicPos?: number
+    cigarHit?: CigarHitResult
+    indicatorHit?: IndicatorHitResult
+    modHit?: ModificationHitResult
+    coverageHit?: CoverageHitResult
+    // The clicked column. Defaults to the mark's own position — a right-click
+    // normally lands ON what it hits — so only a test that deliberately clicks
+    // away from the mark (inside a long deletion, beside an insertion) has to
+    // say so.
+    genomicPos?: number
+    // A right-click the pipeline resolved nothing for, which is the only way
+    // there is no block: the hit and its block arrive together or not at all.
+    noHit?: boolean
     contextMenuFeature?: Feature
     contextMenuFeatureId?: string
     filterBy?: FilterBy
@@ -51,6 +60,15 @@ function makeModel(
   const sortCalls: SortCall[] = []
   const filterCalls: FilterBy[] = []
   const selected: Feature[] = []
+  const {
+    cigarHit,
+    indicatorHit,
+    modHit,
+    coverageHit,
+    genomicPos,
+    noHit,
+    ...rest
+  } = over
   const model = {
     sortCalls,
     filterCalls,
@@ -65,11 +83,21 @@ function makeModel(
     contextMenuFeatureId: (over.contextMenuFeature ? 'read1' : undefined) as
       | string
       | undefined,
-    contextMenuCigarHit: undefined,
-    contextMenuIndicatorHit: undefined,
-    contextMenuModHit: undefined as ModificationHitResult | undefined,
-    contextMenuBlock: makeBlock('ctgA') as ResolvedBlock | undefined,
-    contextMenuGenomicPos: undefined as number | undefined,
+    contextMenuHit: noHit
+      ? undefined
+      : ({
+          block: makeBlock('ctgA'),
+          genomicPos:
+            genomicPos ??
+            cigarHit?.position ??
+            indicatorHit?.position ??
+            coverageHit?.position ??
+            0,
+          cigarHit,
+          indicatorHit,
+          modHit,
+          coverageHit,
+        } as ContextMenuHit | undefined),
     filterBy: defaultFilterBy,
     // Record every call and apply it, so successive quick-filter clicks read the
     // accumulated filterBy (the coexistence path this suite guards).
@@ -89,7 +117,7 @@ function makeModel(
       onFeat(makeFeature({ name: 'fetched' }))
       return Promise.resolve()
     },
-    ...over,
+    ...rest,
   }
   return model
 }
@@ -134,7 +162,7 @@ test('no hits yields an empty menu', () => {
 
 test('a base-pair cigar hit sorts by base at that position', () => {
   const model = makeModel({
-    contextMenuCigarHit: {
+    cigarHit: {
       type: 'mismatch',
       index: 0,
       position: 42,
@@ -146,11 +174,11 @@ test('a base-pair cigar hit sorts by base at that position', () => {
 })
 
 // The menu closes (closeContextMenu) before the clicked item's callback runs,
-// so an onClick that read model.contextMenuBlock live would see undefined and
-// silently skip the sort. The item must capture the block when it's built.
-test('sort still fires when the block is cleared before the click', () => {
+// so an onClick that read model.contextMenuHit live would see undefined and
+// silently skip the sort. The item must capture the hit when it's built.
+test('sort still fires when the hit is cleared before the click', () => {
   const model = makeModel({
-    contextMenuCigarHit: {
+    cigarHit: {
       type: 'mismatch',
       index: 0,
       position: 42,
@@ -158,7 +186,7 @@ test('sort still fires when the block is cleared before the click', () => {
     },
   })
   const item = firstSubMenuItem(run(model)[0])
-  model.contextMenuBlock = undefined
+  model.contextMenuHit = undefined
   item.onClick()
   expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
 })
@@ -170,13 +198,13 @@ test('sort still fires when the block is cleared before the click', () => {
 describe('a gap cigar hit sorts at the clicked column, not the gap start', () => {
   test('deletion', () => {
     const model = makeModel({
-      contextMenuCigarHit: {
+      cigarHit: {
         type: 'deletion',
         index: 0,
         position: 28498,
         length: 4860,
       },
-      contextMenuGenomicPos: 30000,
+      genomicPos: 30000,
     })
     firstSubMenuItem(run(model)[0]).onClick()
     expect(model.sortCalls).toEqual([['basePair', 30000, 'ctgA']])
@@ -184,44 +212,29 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
 
   test('skip', () => {
     const model = makeModel({
-      contextMenuCigarHit: {
+      cigarHit: {
         type: 'skip',
         index: 0,
         position: 100,
         length: 900,
       },
-      contextMenuGenomicPos: 550,
+      genomicPos: 550,
     })
     firstSubMenuItem(run(model)[0]).onClick()
     expect(model.sortCalls).toEqual([['basePair', 550, 'ctgA']])
-  })
-
-  // The op's own position is the fallback, for the (unreachable in the display,
-  // but structurally possible) case of a hit with no recorded click column.
-  test('falls back to the op position without a clicked column', () => {
-    const model = makeModel({
-      contextMenuCigarHit: {
-        type: 'deletion',
-        index: 0,
-        position: 28498,
-        length: 4860,
-      },
-    })
-    firstSubMenuItem(run(model)[0]).onClick()
-    expect(model.sortCalls).toEqual([['basePair', 28498, 'ctgA']])
   })
 
   // The two "sort by base pair" rows a gap right-click puts in one menu — the
   // gap submenu's and the read's — must now name the same base.
   test('agrees with the read menu Sort by ▸ Base pair', () => {
     const model = makeModel({
-      contextMenuCigarHit: {
+      cigarHit: {
         type: 'deletion',
         index: 0,
         position: 28498,
         length: 4860,
       },
-      contextMenuGenomicPos: 30000,
+      genomicPos: 30000,
       contextMenuFeature: makeFeature({ name: 'readABC' }),
     })
     const items = run(model)
@@ -240,13 +253,13 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
 // swap above must not move it.
 test('a mismatch still sorts at its own base', () => {
   const model = makeModel({
-    contextMenuCigarHit: {
+    cigarHit: {
       type: 'mismatch',
       index: 0,
       position: 42,
       length: 1,
     },
-    contextMenuGenomicPos: 42,
+    genomicPos: 42,
   })
   firstSubMenuItem(run(model)[0]).onClick()
   expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
@@ -254,7 +267,7 @@ test('a mismatch still sorts at its own base', () => {
 
 test('an interbase (insertion) cigar hit sorts by the interbase type', () => {
   const model = makeModel({
-    contextMenuCigarHit: {
+    cigarHit: {
       type: 'insertion',
       index: 0,
       position: 7,
@@ -270,13 +283,13 @@ test('an interbase (insertion) cigar hit sorts by the interbase type', () => {
 // its hit tolerance the cursor happened to land.
 test('an interbase hit anchors on the mark even with a clicked column', () => {
   const model = makeModel({
-    contextMenuCigarHit: {
+    cigarHit: {
       type: 'insertion',
       index: 0,
       position: 7,
       length: 3,
     },
-    contextMenuGenomicPos: 9,
+    genomicPos: 9,
   })
   firstSubMenuItem(run(model)[0]).onClick()
   expect(model.sortCalls).toEqual([['insertion', 7, 'ctgA']])
@@ -284,7 +297,7 @@ test('an interbase hit anchors on the mark even with a clicked column', () => {
 
 test('an indicator hit sorts by the indicator type', () => {
   const model = makeModel({
-    contextMenuIndicatorHit: {
+    indicatorHit: {
       type: 'indicator',
       position: 100,
       indicatorType: 'insertion',
@@ -296,7 +309,7 @@ test('an indicator hit sorts by the indicator type', () => {
 
 test('a modification hit offers "Open modification details"', () => {
   const model = makeModel({
-    contextMenuModHit: {
+    modHit: {
       position: 100,
       modType: 'm',
       noMod: false,
@@ -308,18 +321,18 @@ test('a modification hit offers "Open modification details"', () => {
   expect(labels).toContain('Open modification details')
 })
 
-// Every hit item names the block's refName, so without one there is nothing to
-// offer — the alternative (a visible row whose click silently does nothing) is
-// what this replaced.
-test('no hit items without a block', () => {
+// Every hit item names the block's refName, so without a hit there is nothing
+// to offer — the alternative (a visible row whose click silently does nothing)
+// is what this replaced.
+test('no hit items without a hit', () => {
   const model = makeModel({
-    contextMenuCigarHit: {
+    cigarHit: {
       type: 'mismatch',
       index: 0,
       position: 42,
       length: 1,
     },
-    contextMenuBlock: undefined,
+    noHit: true,
   })
   expect(run(model)).toEqual([])
 })
@@ -327,7 +340,7 @@ test('no hit items without a block', () => {
 test('a read hit offers a "Sort by" submenu anchored at the clicked column', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
-    contextMenuGenomicPos: 150,
+    genomicPos: 150,
   })
   const sortBy = findSubMenu(run(model), 'Sort by')
   expect(sortBy.map(i => i.label)).toEqual([
@@ -347,19 +360,21 @@ test('a read hit offers a "Sort by" submenu anchored at the clicked column', () 
 test('the read "Sort by" fires after the block is cleared (captured pos/refName)', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
-    contextMenuGenomicPos: 150,
+    genomicPos: 150,
   })
   const sortBy = findSubMenu(run(model), 'Sort by')
   const strand = sortBy.find(i => i.label === 'Read strand')!
-  model.contextMenuBlock = undefined
-  model.contextMenuGenomicPos = undefined
+  model.contextMenuHit = undefined
   strand.onClick()
   expect(model.sortCalls).toEqual([['strand', 150, 'ctgA']])
 })
 
-test('no "Sort by" submenu without a clicked position', () => {
+// A read hit always resolves a block and a column together, so the only way to
+// reach the read menu without them is a hit the pipeline never produced.
+test('no "Sort by" submenu without a resolved hit', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
+    noHit: true,
   })
   expect(run(model).map(i => (i as { label: string }).label)).not.toContain(
     'Sort by',
@@ -372,7 +387,7 @@ test('no "Sort by" submenu without a clicked position', () => {
 test('sort: false drops the read "Sort by" but keeps the rest', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
-    contextMenuGenomicPos: 150,
+    genomicPos: 150,
   })
   const labels = getContextMenuItems(model, { sort: false }).map(
     i => (i as { label?: string }).label,
@@ -390,7 +405,7 @@ describe('what the menu offers before the feature fetch lands', () => {
   test('details and sort are there from the id alone', () => {
     const model = makeModel({
       contextMenuFeatureId: 'read1',
-      contextMenuGenomicPos: 150,
+      genomicPos: 150,
     })
     const labels = run(model).map(i => (i as { label?: string }).label)
     expect(labels).toEqual(['Open feature details', 'Sort by'])
@@ -400,7 +415,7 @@ describe('what the menu offers before the feature fetch lands', () => {
     const withFeat = run(
       makeModel({
         contextMenuFeature: makeFeature({ name: 'readABC' }),
-        contextMenuGenomicPos: 150,
+        genomicPos: 150,
       }),
     ).map(i => (i as { label?: string }).label)
     expect(withFeat).toEqual([
@@ -551,7 +566,7 @@ describe('getHitMenuItems with sort: false', () => {
   test('a cigar hit becomes a flat details item', () => {
     const items = getHitMenuItems(
       makeModel({
-        contextMenuCigarHit: {
+        cigarHit: {
           type: 'mismatch',
           index: 0,
           position: 42,
@@ -571,7 +586,7 @@ describe('getHitMenuItems with sort: false', () => {
   test('a sized cigar hit names its span, a single base does not', () => {
     const sized = getHitMenuItems(
       makeModel({
-        contextMenuCigarHit: {
+        cigarHit: {
           type: 'deletion',
           index: 0,
           position: 28498,
@@ -586,7 +601,7 @@ describe('getHitMenuItems with sort: false', () => {
 
     const oneBase = getHitMenuItems(
       makeModel({
-        contextMenuCigarHit: {
+        cigarHit: {
           type: 'insertion',
           index: 0,
           position: 42,
@@ -603,7 +618,7 @@ describe('getHitMenuItems with sort: false', () => {
   test('an indicator hit still reaches its details, with no sort peer', () => {
     const items = getHitMenuItems(
       makeModel({
-        contextMenuIndicatorHit: {
+        indicatorHit: {
           type: 'indicator',
           position: 100,
           indicatorType: 'insertion',

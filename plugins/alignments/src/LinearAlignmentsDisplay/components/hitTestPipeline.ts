@@ -61,43 +61,80 @@ export type MarkHitResult = HitTestResult | ArcMarkHit
 // too zoomed out to be meaningful.
 export const SNP_HIT_MAX_BP_PER_PX = 25
 
-export interface ContextMenuFields {
-  // false for coverage/none hits, which have no right-click menu
-  show: boolean
+/**
+ * What the cursor was over when the right-click landed, as ONE value.
+ *
+ * These fields always travel together — the hit test resolves them at once, the
+ * model stores them at once, and every menu builder reads them at once — so
+ * they are a single volatile rather than five. That makes two things
+ * structural that used to be comments: a consumer cannot read a block without
+ * its hit (the split-state class of bug that silently no-op'd position sorts),
+ * and closing the menu cannot forget a field.
+ *
+ * `contextMenuFeature`/`contextMenuFeatureId` deliberately stay OUTSIDE it. The
+ * read arrives an RPC after the hit, so those two genuinely change on their own
+ * — and they are the surface `addDisplayMenuItems` extension points read by
+ * name (LinearReadVsRef, DotplotReadVsRef, and core's own doc example), which
+ * is a contract this file does not get to reshape.
+ */
+export interface ContextMenuHit {
+  // The block the right-click landed in (refName + worker result + bp range):
+  // the source of every item's refName, and of the aggregate widgets' rpcData.
+  // Required — the pipeline only reports a hit inside a resolved block, so a
+  // menu built without one was never a real state.
+  block: ResolvedBlock
+  // The genomic COLUMN under the cursor, whatever mark answered. The read
+  // menu's position sorts and the cigar submenu's base-pair sort both anchor
+  // here rather than on a mark's own start — see getHitMenuItems.
+  genomicPos: number
   cigarHit?: CigarHitResult
   indicatorHit?: IndicatorHitResult
   modHit?: ModificationHitResult
+  coverageHit?: CoverageHitResult
+}
+
+export interface ContextMenuTarget {
+  hit: ContextMenuHit
+  // The read under the cursor, when the hit resolved one.
   featureId?: string
 }
 
-// Which context-menu state a right-click hit maps to. A cigar/modification hit
-// carries the read's featureId so the read's own menu items (view mate, feature
-// details) stay reachable over a mismatched/modified base — not just bare body.
-// A modification hit also carries the underlying cigarHit (its mismatch, if the
-// modified base is also a SNP), so the SNP submenu appears next to the mod item.
-export function contextMenuFieldsForHit(
+// What a right-click resolves to, or undefined for a mark with nothing to
+// offer — which falls through to the BROWSER's menu rather than opening an
+// empty one. An arc is the only such mark: its feed is junctions, so there is
+// no read to act on and no bin to open.
+//
+// A cigar/modification hit carries the read's featureId so the read's own items
+// (view mate, feature details) stay reachable over a mismatched or modified
+// base, not just over bare body. A modification hit also carries the underlying
+// cigarHit (its mismatch, when the modified base is also a SNP), so the SNP
+// submenu appears beside the mod item.
+export function contextMenuTargetForHit(
   result: MarkHitResult,
-): ContextMenuFields {
+  canvasX: number,
+): ContextMenuTarget | undefined {
+  if (result.type === 'none' || result.type === 'arc') {
+    return undefined
+  }
+  const block = result.resolved
+  const base = { block, genomicPos: canvasXToBasePos(canvasX, block) }
   switch (result.type) {
     case 'cigar':
       return {
-        show: true,
-        cigarHit: result.hit,
+        hit: { ...base, cigarHit: result.hit },
         featureId: result.featureHit?.id,
       }
     case 'modification':
       return {
-        show: true,
-        cigarHit: result.cigarHit,
-        modHit: result.hit,
+        hit: { ...base, cigarHit: result.cigarHit, modHit: result.hit },
         featureId: result.featureHit?.id,
       }
     case 'indicator':
-      return { show: true, indicatorHit: result.hit }
+      return { hit: { ...base, indicatorHit: result.hit } }
+    case 'coverage':
+      return { hit: { ...base, coverageHit: result.hit } }
     case 'feature':
-      return { show: true, featureId: result.hit.id }
-    default:
-      return { show: false }
+      return { hit: base, featureId: result.hit.id }
   }
 }
 
