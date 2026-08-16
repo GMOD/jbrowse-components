@@ -56,8 +56,15 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
       // e1c2585e4d to match its Canvas2D `Math.max(1, ...)`. maf has no such
       // Canvas2D floor (drawMafBlocks draws cells at natural sub-pixel width),
       // so the two are not interchangeable and neither is obviously wrong.
-      // Unresolved: whether maf should follow. Don't "unify" these without
-      // deciding what MAF's floor is meant to be.
+      //
+      // Device px also means **this floor moves with the monitor** — 0.5 CSS px
+      // at dpr 2 — so MAF renders differently on a retina screen than on a plain
+      // one, and differently from its own Canvas2D fallback at either. That half
+      // is a defect rather than a preference. The other half, what the floor
+      // should be, is an aesthetic call about dense alignments that wants a
+      // capture and not an argument; `agent-docs/ideas/maf-subpixel-cells.md`
+      // has the three candidates, why alignments' `sizeAlpha` is not one of
+      // them, and why fixing the dpr-dependence on its own is the wrong move.
       viewportWidth: clip.pxW,
       zero: 0,
       rowHeight: state.rowHeight,

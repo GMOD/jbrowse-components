@@ -14,7 +14,9 @@
 // What the two callers legitimately differ on is the *unit* they write into
 // `viewportWidth` (CSS px vs device px), which only moves the min-width floor —
 // see GpuMafRenderer's note. That is a uniform-write decision, not a reason for
-// two shaders.
+// two shaders. It is also unsettled, and device px additionally makes MAF's
+// floor depend on the reader's monitor:
+// `agent-docs/ideas/maf-subpixel-cells.md`.
 //! export-consts: MIN_DRAWN_ROW_PX
 //! js-export: drawnRowHeightPx, rowBandOffsetPx
 module rowRect;
