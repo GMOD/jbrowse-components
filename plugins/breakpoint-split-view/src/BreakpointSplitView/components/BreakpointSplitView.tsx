@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { ViewLoadingScreen } from '@jbrowse/core/ui'
+import { ProgressChip, ViewLoadingScreen } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MultiLevelRubberband } from '@jbrowse/plugin-linear-genome-view'
@@ -109,6 +109,15 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
           <BreakpointSplitViewLevels model={model} />
           <BreakpointSplitViewOverlay model={model} />
         </div>
+        {/* The overlay-feature fetch runs with the panels already drawn and
+         usable — the links between them are what is missing — so it gets the
+         corner chip rather than a scrim, the same call `DisplayChrome` and the
+         comparative views make for work over live content. Outside the grid
+         container, whose children are stacked at 1/1: the chip anchors itself
+         against `rubberbandContainer`, the only positioned ancestor here. */}
+        {model.fetchStatus.message ? (
+          <ProgressChip status={model.fetchStatus} />
+        ) : null}
       </div>
     )
   }

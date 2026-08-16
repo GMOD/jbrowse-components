@@ -1,9 +1,17 @@
 import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { avg, getSession, notEmpty } from '@jbrowse/core/util'
+import {
+  avg,
+  createStatusChannel,
+  createStatusFanOut,
+  createStopTokenRotation,
+  getSession,
+  isAbortException,
+  notEmpty,
+} from '@jbrowse/core/util'
 import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
@@ -43,7 +51,7 @@ import type {
 } from './types.ts'
 import type { OverlayTrack } from './util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, StatusChannel } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
@@ -128,6 +136,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .volatile<{
       width: number
       matchedTrackFeatures: Record<string, Feature[][]>
+      fetchStatus: StatusChannel
     }>(() => ({
       /**
        * #volatile
@@ -138,6 +147,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
 
       matchedTrackFeatures: {},
+      /**
+       * #volatile
+       * What the overlay-feature fetch is doing, for the corner chip. A
+       * `StatusChannel` rather than the `statusMessage`/`statusProgress`/
+       * `setStatusMessage` trio a display declares: this is a view with one
+       * operation to narrate, and the trio is a status vocabulary it has no
+       * other use for.
+       */
+      fetchStatus: createStatusChannel(),
     }))
     .views(self => ({
       /**
@@ -621,55 +639,68 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             { name: 'BreakpointSplitViewInit' },
           ),
         )
-        // Staleness epoch for the fetcher below — FetchMixin's `isStale` shape,
-        // reimplemented because a view can't compose that display mixin. RPC
-        // latency varies with viewport size, so two runs can resolve out of
-        // order and the loser would commit features for a viewport already left.
-        // The 1s debounce spaces runs out; it doesn't order their completions.
-        let fetchGeneration = 0
+        // The same latest-wins rotation the comparative displays use. It was a
+        // hand-rolled `fetchGeneration` counter and nothing else, which ordered
+        // the commits and left the losers running: panning away kept both
+        // views' `BreakpointGetFeatures` calls, and their downloads, going to
+        // completion for a viewport nobody was looking at. The rotation is the
+        // token as well as the guard, and it carries the status channel the
+        // fetch had no way to report through.
+        const fetch = createStopTokenRotation(self, self.fetchStatus)
+        addDisposer(self, () => {
+          fetch.dispose()
+        })
         addDisposer(
           self,
           autorun(
             async () => {
-              const generation = ++fetchGeneration
-              // superseded by a later run, or the view closed mid-fetch
-              const isStale = () =>
-                generation !== fetchGeneration || !isAlive(self)
+              if (!self.views.every(view => view.initialized)) {
+                return
+              }
+              const { stopToken, isCurrent, statusCallback, end } =
+                fetch.begin()
               try {
-                if (!self.views.every(view => view.initialized)) {
-                  return
-                }
                 // Skipped per track, not for the whole view: where the banner
                 // has replaced the features there is nothing to match against,
                 // but that says nothing about the other matched tracks, and
                 // dropping the key also clears any features left from before
                 // the track went over its limit.
+                //
+                // One fan-out slot per track, so the N of them aggregate into
+                // one bar rather than the first to finish blanking the label.
+                const tracks = self.matchedTracks.filter(
+                  track => !track.displays[0]!.regionTooLarge,
+                )
+                const slot = createStatusFanOut(statusCallback)
                 const fetched = Object.fromEntries(
                   await Promise.all(
-                    self.matchedTracks
-                      .filter(track => !track.displays[0]!.regionTooLarge)
-                      .map(
-                        async track =>
-                          [
-                            track.configuration.trackId,
-                            await getBlockFeatures(self, track),
-                          ] as const,
-                      ),
+                    tracks.map(
+                      async track =>
+                        [
+                          track.configuration.trackId,
+                          await getBlockFeatures(self, track, {
+                            stopToken,
+                            statusCallback: slot(),
+                          }),
+                        ] as const,
+                    ),
                   ),
                 )
-                if (!isStale()) {
+                if (isCurrent()) {
                   self.setMatchedTrackFeatures(fetched)
                 }
               } catch (e) {
-                console.error(e)
                 // a superseded run's result is discarded either way, so its
                 // failure isn't the user's problem — an aborted RPC for a
                 // viewport already left would otherwise raise a toast for a
                 // fetch nobody is waiting on. getSession also throws on a dead
                 // node, turning a handled error into an unhandled one.
-                if (!isStale()) {
+                if (isCurrent() && !isAbortException(e)) {
+                  console.error(e)
                   getSession(self).notifyError(`${e}`, e)
                 }
+              } finally {
+                end()
               }
             },
             {

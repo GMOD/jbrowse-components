@@ -4,7 +4,8 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LayoutRecord } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, StatusCallback } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The subset of a track/display the overlays actually read. The LGV's `tracks`
@@ -162,6 +163,10 @@ export function layoutUnknown(track: OverlayTrack) {
 export async function getBlockFeatures(
   model: { views: LinearGenomeViewModel[] },
   track: OverlayTrack,
+  // one fetch, both views: they run concurrently and share the caller's slot,
+  // so a second fan-out here would aggregate a pair that is already one
+  // operation from the chip's point of view
+  opts: { stopToken: StopToken; statusCallback: StatusCallback },
 ) {
   const { views } = model
   const { rpcManager } = getSession(model)
@@ -169,15 +174,10 @@ export async function getBlockFeatures(
 
   return Promise.all(
     views.map(async view =>
-      // The caller's autorun rotates a hand-rolled generation counter and no
-      // stop token, and the view has no status field to report into — it is not
-      // a display. Both are one change: put that autorun on
-      // `createStopTokenRotation` and give this the ctx. TODO.md, "Breakpoint
-      // split view fetch joins the rotation".
-      // eslint-disable-next-line no-restricted-syntax
       rpcManager.call(sessionId, 'BreakpointGetFeatures', {
         adapterConfig: getConf(track, ['adapter']),
         regions: view.staticBlocks.contentBlocks,
+        ...opts,
       }),
     ),
   )

@@ -101,13 +101,16 @@ export async function resolveMatchingSpan({
   const span = await rpcManager.call(
     sessionId,
     'SyntenyResolveMatchingRegion',
-    // The two callers want opposite things here and neither can be served by a
-    // constant: the click-driven move below would take both, while the follow
-    // fires this every settle and its latest-wins is `seq`, not a token — an
-    // answer it discards is one it deliberately let finish, since the per-level
-    // promise is shared by key and three re-entrant passes ride one call. So the
-    // handles belong on `resolveMatchingSpan`'s own signature, supplied per
-    // caller. TODO.md, "Matching-region resolve takes its caller's handles".
+    // The two callers want opposite things, so neither handle can be a constant
+    // here. `SyntenyFollow` fires this every settle and its latest-wins is
+    // `seq`, not a token — an answer it discards is one it deliberately let
+    // finish, because the per-level promise is shared by key and three
+    // re-entrant passes ride one call, which its integration suite asserts. The
+    // click-driven move below would take both, and has nowhere to put either: no
+    // lifecycle owns the click, so a token would never be stopped, and the
+    // display's status field belongs to its fetch autorun, whose `fetching` flag
+    // is what raises the chip. Both are answered by giving the click a surface
+    // of its own, not by picking a default here.
     // eslint-disable-next-line no-restricted-syntax
     {
       adapterConfig,
