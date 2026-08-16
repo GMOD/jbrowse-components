@@ -119,6 +119,28 @@ never runs.
 `website/scripts/*.ts` needs `puppeteer`, which is not hoisted to the root —
 resolve it from `packages/browser-test-utils/`.
 
+## `TS2307` on a `@jbrowse/*` subpath is a missing link, never a missing build
+
+A rebase that picks up a **new workspace package** leaves your worktree's install
+behind: that package gets no `node_modules` of its own, so every `@jbrowse/*`
+import *inside* it fails to resolve and so does every importer of it. One new
+package reads as a hundred errors across three you never touched. `pnpm install`
+fixes it in seconds.
+
+Reach for `pnpm build` and you will also "fix" it, because pnpm verifies deps
+before running a script — ten minutes to do what the install did on the way in,
+and it teaches you the wrong cause.
+
+It cannot be a stale `esm/`, and the exports map is how you know: in the
+workspace `@jbrowse/core`'s exports point at `./src/**.ts`, and only
+`publishConfig.exports` point at `esm/`. **tsc reads a sibling package's source**,
+so it never needs one built.
+
+The exception is running jbrowse-img's CLI from source, which genuinely does
+need `pnpm build`: `products/jbrowse-img/src/resolve.ts` redirects workspace
+`src` → `esm` on purpose, because `node --experimental-strip-types` erases types
+but will not transform JSX. Build for `bin.ts`, install for `tsc`.
+
 ## What `pnpm autogen` owns
 
 It rewrites every generated-and-committed artifact and is the answer to almost
