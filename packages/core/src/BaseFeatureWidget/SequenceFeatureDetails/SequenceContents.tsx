@@ -24,8 +24,6 @@ import type {
   SequenceFeatureDetailsModel,
 } from './model.ts'
 
-type SequenceData = NonNullable<ReturnType<typeof getSequenceData>>
-
 function findCdsSubfeature(feature: SimpleFeatureSerialized) {
   return feature.subfeatures?.find(f => f.type?.toLowerCase() === 'cds')
 }
@@ -68,24 +66,31 @@ function featureTranslExcept(feature: SimpleFeatureSerialized): TranslExcept[] {
 // leaves the coarse showCoordinates boolean every other observer here reads
 // untouched, so as a plain component this kept rendering the old coordinates
 // while the menu radio said otherwise.
-const RenderedSequenceComponent = observer(function RenderedSequenceComponent({
+const SequenceContents = observer(function SequenceContents({
   mode,
   feature,
+  sequence,
   model,
   assemblyGeneticCodeId,
-  sequenceData,
   revcomp,
   onHoverBase,
 }: {
   mode: SequenceDisplayMode
   feature: SimpleFeatureSerialized
+  sequence: SeqState
   model: SequenceFeatureDetailsModel
   assemblyGeneticCodeId?: number
-  sequenceData: SequenceData
   revcomp: boolean
   onHoverBase?: (base0: number) => void
 }) {
-  const { seq, upstream, downstream, cds, exons } = sequenceData
+  // revcomp is offered for the genomic types only, so a toggle left on in one
+  // of those can't flip a spliced readout when the user switches type
+  const rc = revcomp && modeSupportsRevcomp(mode)
+  const { seq, upstream, downstream, cds, exons } = getSequenceData({
+    feature,
+    sequence,
+    revcomp: rc,
+  })
   const withUpDown = modeHasUpDownstream(mode)
   const useGenomicCoords =
     resolveShowCoordinates(model.showCoordinatesSetting, mode) === 'genomic'
@@ -101,7 +106,7 @@ const RenderedSequenceComponent = observer(function RenderedSequenceComponent({
           upstream={withUpDown ? upstream : undefined}
           downstream={withUpDown ? downstream : undefined}
           useGenomicCoords={useGenomicCoords}
-          revcomp={revcomp}
+          revcomp={rc}
           onHoverBase={onHoverBase}
         />
       )
@@ -143,7 +148,7 @@ const RenderedSequenceComponent = observer(function RenderedSequenceComponent({
           includeIntrons={mode.startsWith('gene')}
           collapseIntron={mode.includes('collapsed_intron')}
           useGenomicCoords={useGenomicCoords}
-          revcomp={revcomp}
+          revcomp={rc}
           onHoverBase={onHoverBase}
         />
       )
@@ -151,42 +156,6 @@ const RenderedSequenceComponent = observer(function RenderedSequenceComponent({
     default:
       return <div>Unknown type</div>
   }
-})
-
-const SequenceContents = observer(function SequenceContents({
-  mode,
-  feature,
-  sequence,
-  model,
-  assemblyGeneticCodeId,
-  revcomp,
-  onHoverBase,
-}: {
-  mode: SequenceDisplayMode
-  feature: SimpleFeatureSerialized
-  sequence: SeqState
-  model: SequenceFeatureDetailsModel
-  assemblyGeneticCodeId?: number
-  revcomp: boolean
-  onHoverBase?: (base0: number) => void
-}) {
-  const rc = revcomp && modeSupportsRevcomp(mode)
-  const sequenceData = getSequenceData({
-    feature,
-    sequence,
-    revcomp: rc,
-  })
-  return (
-    <RenderedSequenceComponent
-      mode={mode}
-      feature={feature}
-      model={model}
-      assemblyGeneticCodeId={assemblyGeneticCodeId}
-      sequenceData={sequenceData}
-      revcomp={rc}
-      onHoverBase={onHoverBase}
-    />
-  )
 })
 
 export default SequenceContents
