@@ -650,10 +650,17 @@ export function drawAnnotationOverlay(
       right = Math.max(right, r.right)
       bottom = Math.max(bottom, r.bottom)
     }
-    const visibleWidth = Math.min(right, window.innerWidth) - Math.max(left, 0)
-    const visibleHeight =
-      Math.min(bottom, window.innerHeight) - Math.max(top, 0)
-    if (visibleWidth > 0 && visibleHeight > 0) {
+    // Does the drawn box INTERSECT the viewport — not does the intersection
+    // have area. A perfectly vertical arrow (both ends on one x, which two
+    // anchors sharing a locus give you) has a zero-width box, and measured as
+    // an area it has none wherever it sits: an arrow in the middle of the frame
+    // reported as invisible and failed its whole figure.
+    if (
+      right >= 0 &&
+      left <= window.innerWidth &&
+      bottom >= 0 &&
+      top <= window.innerHeight
+    ) {
       return
     }
     offFrame.push(

@@ -114,6 +114,41 @@ test('reports only the callout that left the frame', () => {
   expect(JSON.parse(offFrame.join('')).drawn.right).toBeLessThan(0)
 })
 
+// A perfectly vertical arrow has a zero-WIDTH bounding box, and a zero-width box
+// is not an off-frame one. Read as an area, it has none, so an arrow sitting in
+// the middle of the frame reported as invisible and failed its whole figure —
+// which is what stopped multiway_synteny/wheat_homoeolog_selection from
+// rendering. What is being asked is whether the drawn box INTERSECTS the
+// viewport, and a degenerate box can.
+test('says nothing about a vertical arrow in the middle of the frame', () => {
+  const { unresolved, offFrame } = draw([
+    {
+      type: 'arrow',
+      from: { x: 500, y: 400 },
+      anchor: {
+        graphNode: 'n',
+        rect: { left: 500, top: 200, width: 0, height: 0 },
+      },
+    },
+  ])
+  expect(unresolved).toEqual([])
+  expect(offFrame).toEqual([])
+})
+
+test('a vertical arrow that is genuinely off frame still reports', () => {
+  const { offFrame } = draw([
+    {
+      type: 'arrow',
+      from: { x: 1500, y: 400 },
+      anchor: {
+        graphNode: 'n',
+        rect: { left: 1500, top: 200, width: 0, height: 0 },
+      },
+    },
+  ])
+  expect(offFrame).toHaveLength(1)
+})
+
 // The clamp that keeps a box's stroke inside the frame is what makes a partial
 // clip deliberate rather than a bug, so an element flush against the edge must
 // not report — this is the case a "mostly visible" threshold would fire on.
