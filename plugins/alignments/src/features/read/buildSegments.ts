@@ -18,17 +18,17 @@ export function buildSegmentArrays(
   const { start: regionStart, end: regionEnd } = region
   // read index is the feature's position in `features` (see extractFeatureArrays)
   const skipsByFeature = new Map<number, GapData[]>()
+  let numSkips = 0
   for (const g of gaps) {
     if (g.type === 'skip') {
       getOrCreate(skipsByFeature, g.readIndex, () => []).push(g)
+      numSkips++
     }
   }
 
-  let maxSegments = 0
-  for (let ri = 0; ri < features.length; ri++) {
-    const skips = skipsByFeature.get(ri)
-    maxSegments += skips ? skips.length + 1 : 1
-  }
+  // Every read emits at most one more segment than it has skips, so the bucket
+  // pass has already counted the bound.
+  const maxSegments = features.length + numSkips
 
   const segmentPositions = new Uint32Array(maxSegments * 2)
   const segmentReadIndices = new Uint32Array(maxSegments)
@@ -45,17 +45,14 @@ export function buildSegmentArrays(
     const edgeFlags =
       (f.start >= regionStart ? 0b01 : 0) | (f.end <= regionEnd ? 0b10 : 0)
 
-    if (!skips || skips.length === 0) {
-      segmentPositions[segIdx * 2] = readStart
-      segmentPositions[segIdx * 2 + 1] = readEnd
-      segmentReadIndices[segIdx] = readIdx
-      segmentEdgeFlags[segIdx] = edgeFlags
-      segIdx++
-    } else {
+    const firstSegIdx = segIdx
+    let cur = readStart
+    // An unspliced read enters neither branch below and falls through to the
+    // tail emit, which writes the one whole-read segment a fast path here used
+    // to duplicate — and unlike that path emits nothing for a read ending at or
+    // before regionStart, rather than an inverted segment.
+    if (skips) {
       skips.sort((a, b) => a.start - b.start)
-
-      const firstSegIdx = segIdx
-      let cur = readStart
       for (const skip of skips) {
         const gapStart = Math.min(readEnd, Math.max(readStart, skip.start))
         const gapEnd = Math.min(readEnd, Math.max(readStart, skip.end))
@@ -71,23 +68,23 @@ export function buildSegmentArrays(
           cur = gapEnd
         }
       }
+    }
 
-      // Exon segment after last gap
-      if (cur < readEnd) {
-        segmentPositions[segIdx * 2] = cur
-        segmentPositions[segIdx * 2 + 1] = readEnd
-        segmentReadIndices[segIdx] = readIdx
-        segIdx++
-      }
+    // Exon segment after last gap
+    if (cur < readEnd) {
+      segmentPositions[segIdx * 2] = cur
+      segmentPositions[segIdx * 2 + 1] = readEnd
+      segmentReadIndices[segIdx] = readIdx
+      segIdx++
+    }
 
-      // Reads entirely intronic in this region produce no segments.
-      // Apply edge flags to the outermost segments.
-      if (segIdx > firstSegIdx) {
-        segmentEdgeFlags[firstSegIdx] =
-          segmentEdgeFlags[firstSegIdx]! | (edgeFlags & 0b01)
-        segmentEdgeFlags[segIdx - 1] =
-          segmentEdgeFlags[segIdx - 1]! | (edgeFlags & 0b10)
-      }
+    // Reads entirely intronic in this region produce no segments.
+    // Apply edge flags to the outermost segments.
+    if (segIdx > firstSegIdx) {
+      segmentEdgeFlags[firstSegIdx] =
+        segmentEdgeFlags[firstSegIdx]! | (edgeFlags & 0b01)
+      segmentEdgeFlags[segIdx - 1] =
+        segmentEdgeFlags[segIdx - 1]! | (edgeFlags & 0b10)
     }
   }
 

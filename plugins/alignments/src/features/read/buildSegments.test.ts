@@ -207,6 +207,13 @@ describe('buildSegmentArrays', () => {
     })
   })
 
+  // The clamp puts readStart at or past readEnd, so there is no segment to
+  // emit. A fast path for the no-skip case used to write [regionStart, f.end]
+  // here — a backwards span.
+  test('read ending before the region emits nothing', () => {
+    expect(segments([feat('r1', 100, 900)], [], 1000, 1200)).toEqual([])
+  })
+
   test('unsorted skip gaps are handled correctly', () => {
     const result = segments(
       [feat('r1', 1000, 5000)],
