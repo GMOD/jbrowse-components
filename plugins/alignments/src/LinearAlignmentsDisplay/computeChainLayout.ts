@@ -20,6 +20,7 @@ import type {
   ChainPileupData,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types'
+import type { Span } from './spanOverlaps.ts'
 
 // Total order over chains: packing distance first, then span, then chain name.
 // The tiebreaks matter for the same reason `compareReadsCanonically`
@@ -317,7 +318,13 @@ function buildChainOverlaps(data: PileupDataResult, readYs: Uint16Array) {
   if (!isChainData(data)) {
     return emptyOverlapsUploadData()
   }
-  const { readChainIndices, readPositions, chainNames } = data
+  const {
+    readChainIndices,
+    chainNames,
+    segmentPositions,
+    segmentReadIndices,
+    numSegments,
+  } = data
 
   const positions: number[] = []
   const ys: number[] = []
@@ -325,12 +332,22 @@ function buildChainOverlaps(data: PileupDataResult, readYs: Uint16Array) {
     readChainIndices,
     chainNames.length,
   )
-  for (const reads of multiReadChains.values()) {
-    const spans = reads.map(ri => ({
-      start: readPositions[ri * 2]!,
-      end: readPositions[ri * 2 + 1]!,
-    }))
-    const y = readYs[reads[0]!]!
+  // Exon spans, not read extents: a spliced read does not cover its own
+  // introns, so `readPositions` claimed an overlap across an intron the mate
+  // was alone in. One pass over the segments, bucketed straight to the chain,
+  // since only multi-read chains have anything to find.
+  const spansByChain = new Map<number, Span[]>()
+  for (let i = 0; i < numSegments; i++) {
+    const chainIdx = readChainIndices[segmentReadIndices[i]!]!
+    if (multiReadChains.has(chainIdx)) {
+      getOrCreate(spansByChain, chainIdx, () => []).push({
+        start: segmentPositions[i * 2]!,
+        end: segmentPositions[i * 2 + 1]!,
+      })
+    }
+  }
+  for (const [chainIdx, spans] of spansByChain) {
+    const y = readYs[multiReadChains.get(chainIdx)![0]!]!
     for (const { start, end } of mergeSpans(overlapIntervals(spans))) {
       positions.push(start, end)
       ys.push(y)

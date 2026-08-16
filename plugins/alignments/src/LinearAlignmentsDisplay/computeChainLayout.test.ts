@@ -652,4 +652,65 @@ describe('buildChainConnectingData', () => {
     expect(out.connectingLinePositions[0]).toBe(900) // absolute minStart
     expect(out.connectingLinePositions[1]).toBe(1200) // absolute maxEnd
   })
+
+  // The tint marks where a chain's reads paint over each other on their shared
+  // row, and what a read covers is its exons.
+  describe('intra-chain overlap tint', () => {
+    function withSegments(
+      data: PileupDataResult,
+      segments: [number, number, number][],
+    ): PileupDataResult {
+      const segmentPositions = new Uint32Array(segments.length * 2)
+      const segmentReadIndices = new Uint32Array(segments.length)
+      for (const [i, [start, end, readIdx]] of segments.entries()) {
+        segmentPositions[i * 2] = start
+        segmentPositions[i * 2 + 1] = end
+        segmentReadIndices[i] = readIdx
+      }
+      return {
+        ...data,
+        segmentPositions,
+        segmentReadIndices,
+        numSegments: segments.length,
+      }
+    }
+
+    const twoReadChain = () =>
+      makeChainData({
+        regionStart: 1000,
+        chains: [
+          {
+            name: 'readA',
+            minStart: 1000,
+            maxEnd: 2000,
+            distance: 1000,
+            numReads: 2,
+          },
+        ],
+      })
+
+    test('overlapping mates are tinted on the chain row', () => {
+      const out = buildChainConnectingData(
+        withSegments(twoReadChain(), [
+          [1000, 1600, 0],
+          [1400, 2000, 1],
+        ]),
+        new Uint16Array([4, 4]),
+      )
+      expect([...out.overlapPositions]).toEqual([1400, 1600])
+      expect([...out.overlapYs]).toEqual([4])
+    })
+
+    test('a mate sitting inside the other read intron is not tinted', () => {
+      const out = buildChainConnectingData(
+        withSegments(twoReadChain(), [
+          [1000, 1100, 0],
+          [1900, 2000, 0],
+          [1400, 1600, 1],
+        ]),
+        new Uint16Array([4, 4]),
+      )
+      expect(out.overlapPositions.length).toBe(0)
+    })
+  })
 })

@@ -33,10 +33,19 @@ export function collapsedLayoutMaxY(
   return 0
 }
 
-function readSpans({ readKeys, readPositions }: PileupDataResult): Span[] {
-  return Array.from({ length: readKeys.length }, (_, i) => ({
-    start: readPositions[i * 2]!,
-    end: readPositions[i * 2 + 1]!,
+// Exon spans, not read extents. `readPositions` is the read's full aligned
+// extent, intron included, so a spliced read tinted its own introns as covered
+// — a solid depth bar with the 1px junction line sitting on it, disagreeing
+// with the coverage histogram directly above, which subtracts skips. Segments
+// are the spans `drawReads` paints, and two segments of one read cannot overlap
+// each other, so the depth stays right.
+function readSpans({
+  segmentPositions,
+  numSegments,
+}: PileupDataResult): Span[] {
+  return Array.from({ length: numSegments }, (_, i) => ({
+    start: segmentPositions[i * 2]!,
+    end: segmentPositions[i * 2 + 1]!,
   }))
 }
 
