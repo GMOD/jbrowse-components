@@ -124,8 +124,7 @@ export interface PileupDataResult {
   // Gap data (deletions/skips) - absolute genomic uint32
   gapPositions: Uint32Array // [start, end] pairs
   gapYs: Uint16Array
-  gapLengths: Uint32Array // length of each gap in bp (u32: assembly alignments exceed 65,535)
-  gapTypes: Uint8Array // 0=deletion, 1=skip
+  gapTypes: Uint8Array // GAP_DELETION / GAP_SKIP (gap.slang)
   gapReadIndices: Uint32Array // maps each gap to its parent read index
   gapFrequencies: Uint8Array // 0-255 representing 0-100% frequency at start position
 

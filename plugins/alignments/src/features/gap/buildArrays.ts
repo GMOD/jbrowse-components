@@ -9,10 +9,6 @@ export function buildGapArrays(gaps: GapData[], regionStart: number) {
   const filtered = gaps.filter(g => g.end > regionStart)
   const gapPositions = new Uint32Array(filtered.length * 2)
   const gapYs = new Uint16Array(filtered.length)
-  // 32 bits for the same reason insertions are: a deletion off an assembly
-  // alignment runs well past 65,535 bp, and this length is what the gap label
-  // and the tooltip print
-  const gapLengths = new Uint32Array(filtered.length)
   const gapTypes = new Uint8Array(filtered.length)
   const gapReadIndices = new Uint32Array(filtered.length)
   for (let i = 0; i < filtered.length; i++) {
@@ -22,9 +18,8 @@ export function buildGapArrays(gaps: GapData[], regionStart: number) {
     // position/length for gaps beginning left of the view
     gapPositions[i * 2] = g.start
     gapPositions[i * 2 + 1] = g.end
-    gapLengths[i] = g.end - g.start
     gapTypes[i] = g.type === 'deletion' ? GAP_DELETION : GAP_SKIP
     gapReadIndices[i] = g.readIndex
   }
-  return { gapPositions, gapYs, gapLengths, gapTypes, gapReadIndices }
+  return { gapPositions, gapYs, gapTypes, gapReadIndices }
 }

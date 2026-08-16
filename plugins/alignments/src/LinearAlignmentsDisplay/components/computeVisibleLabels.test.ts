@@ -17,7 +17,6 @@ function makeRpcData(
   return {
     gapPositions: new Uint32Array(),
     gapYs: new Uint16Array(),
-    gapLengths: new Uint32Array(),
     gapTypes: new Uint8Array(),
     interbasePositions: new Uint32Array(),
     interbaseYs: new Uint16Array(),
@@ -197,7 +196,6 @@ test('the large insertion still emits its own length label', () => {
 const deletionLen100 = {
   gapPositions: new Uint32Array([0, 100]),
   gapYs: new Uint16Array([0]),
-  gapLengths: new Uint32Array([100]),
   gapTypes: new Uint8Array([0]),
 }
 
@@ -263,7 +261,6 @@ describe('a deletion wider than the view labels its visible part', () => {
               makeRpcData({
                 gapPositions: new Uint32Array([start, end]),
                 gapYs: new Uint16Array([0]),
-                gapLengths: new Uint32Array([end - start]),
                 gapTypes: new Uint8Array([0]),
               }),
           },
@@ -415,7 +412,6 @@ describe('the zoom gate agrees with the per-feature fade', () => {
     makeRpcData({
       gapPositions: new Uint32Array([100, 100 + len]),
       gapYs: new Uint16Array([0]),
-      gapLengths: new Uint32Array([len]),
       gapTypes: new Uint8Array([0]),
     })
 
@@ -463,7 +459,6 @@ describe('the zoom gate agrees with the per-feature fade', () => {
       makeRpcData({
         gapPositions: new Uint32Array([100, 140, 500, 5500]),
         gapYs: new Uint16Array([0, 1]),
-        gapLengths: new Uint32Array([40, 5000]),
         gapTypes: new Uint8Array([0, 0]),
       }),
       1,
@@ -480,7 +475,6 @@ describe('the zoom gate agrees with the per-feature fade', () => {
         makeRpcData({
           gapPositions: new Uint32Array([100, 102, 500, 50500]),
           gapYs: new Uint16Array([0, 1]),
-          gapLengths: new Uint32Array([2, 50000]),
           gapTypes: new Uint8Array([0, 1]),
         }),
         50,

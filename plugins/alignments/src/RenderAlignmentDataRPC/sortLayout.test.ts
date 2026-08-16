@@ -118,7 +118,6 @@ function makePileupData(opts: {
     numSegments: 0,
     gapPositions: new Uint32Array(0),
     gapYs: new Uint16Array(0),
-    gapLengths: new Uint32Array(0),
     gapTypes: new Uint8Array(0),
     gapReadIndices: new Uint32Array(0),
     gapFrequencies: new Uint8Array(0),

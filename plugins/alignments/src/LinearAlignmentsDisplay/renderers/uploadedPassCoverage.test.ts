@@ -56,7 +56,6 @@ function fullyPopulated() {
 
     gapPositions: new Uint32Array([START + 10, START + 20]),
     gapYs: new Uint16Array([0]),
-    gapLengths: new Uint32Array([10]),
     gapTypes: new Uint8Array([0]),
     gapFrequencies: new Uint8Array([255]),
 

@@ -105,13 +105,17 @@ function getMaxFeatureLengths(rpcData: PileupDataResult) {
   if (hit) {
     return hit
   }
-  const { gapLengths, gapTypes, interbaseLengths } = rpcData
+  const { gapPositions, gapTypes, interbaseLengths } = rpcData
   let deletion = 0
   // Skips are never labelled, so a long intron must not keep the deletion walk
   // alive.
-  for (let i = 0; i < gapLengths.length; i++) {
-    if (gapTypes[i] === GAP_DELETION && gapLengths[i]! > deletion) {
-      deletion = gapLengths[i]!
+  for (let i = 0; i < gapTypes.length; i++) {
+    if (gapTypes[i] !== GAP_DELETION) {
+      continue
+    }
+    const length = gapPositions[i * 2 + 1]! - gapPositions[i * 2]!
+    if (length > deletion) {
+      deletion = length
     }
   }
   let interbase = 0
@@ -223,7 +227,7 @@ export function computeVisibleLabels(
       const insertionShadows: { row: number; x0: number; x1: number }[] = []
 
       // Process deletions (gaps)
-      const { gapPositions, gapYs, gapLengths, gapTypes } = rpcData
+      const { gapPositions, gapYs, gapTypes } = rpcData
       const numGaps = gapPositions.length / 2
       if (tallEnoughForText && maxLen.deletion >= minDeletionBp) {
         for (let i = 0; i < numGaps; i++) {
@@ -233,7 +237,7 @@ export function computeVisibleLabels(
 
           const gapStart = gapPositions[i * 2]!
           const gapEnd = gapPositions[i * 2 + 1]!
-          const length = gapLengths[i]!
+          const length = gapEnd - gapStart
 
           if (gapEnd < blockStart || gapStart > blockEnd) {
             continue
