@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { useCreateOnce } from '@jbrowse/core/util/hooks'
 import {
   JBrowseCircularGenomeView,
   createViewState,
@@ -54,9 +55,18 @@ export default function SessionInUrl() {
   // empty session first and then replaced. With no session to decode there is
   // nothing to wait for, so build the normal starting state right here rather
   // than rendering nothing and setting it from the effect below.
-  const [state, setState] = useState<ViewState | undefined>(() =>
+  //
+  // `useCreateOnce`, not a `useState` initializer, and this is the one page on
+  // the site where the difference has teeth: React double-invokes an
+  // initializer under StrictMode and throws the SECOND result away, so an
+  // engine built in one is orphaned per mount — alive, fetching, and with
+  // nothing left holding it. The sibling examples get this from
+  // `useCreateViewState`; this one cannot, because whether there is an engine
+  // to build at all depends on the URL.
+  const initial = useCreateOnce(() =>
     readSessionParam() ? undefined : createViewState({ assembly, tracks }),
   )
+  const [state, setState] = useState<ViewState | undefined>(initial)
   const [status, setStatus] = useState('')
 
   useEffect(() => {
@@ -64,20 +74,33 @@ export default function SessionInUrl() {
     if (!param) {
       return
     }
+    // The same trap one level out: StrictMode runs this effect twice, so
+    // without the guard both passes decode and both build an engine, and the
+    // first is orphaned the moment the second `setState` lands.
+    let cancelled = false
     decodeSession(param)
       .then(session => {
+        if (cancelled) {
+          return
+        }
         // `session` is the slot for a snapshot whose shape is only known at
         // runtime; `defaultSession` is for one you author and want checked
         setState(createViewState({ assembly, tracks, session }))
         setStatus(`restored "${session.name}" from the URL`)
       })
       .catch((e: unknown) => {
+        if (cancelled) {
+          return
+        }
         // a truncated or hand-edited link shouldn't strand the user on a
         // blank view: fall back to the normal starting state and say so
         console.error(e)
         setState(createViewState({ assembly, tracks }))
         setStatus(`could not restore the session in the URL: ${e}`)
       })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   return state ? (

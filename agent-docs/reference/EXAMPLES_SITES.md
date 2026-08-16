@@ -110,6 +110,23 @@ there would name those and find nothing, which is the "more entries rather than
 a better rule" failure this doctrine warns about two sections up. Re-run the
 experiment only if one of them starts drawing its own chrome.
 
+### An engine is built by a hook, never by a `useState` initializer
+
+`useCreateViewState` on every product, or `useCreateOnce`
+(`@jbrowse/core/util/hooks`) where the example has to do something to the engine
+on the way out and the hook's options blob cannot say it. React double-invokes a
+state initializer under StrictMode — on in most app templates, which is where
+these files get pasted — and discards the second result, so an engine built in
+one is orphaned per mount: an MST tree with live autoruns and a worker pool, and
+nothing left holding it. Nothing errors, because the one React kept is fine.
+
+**The helper existing was not enough, which is why this is a check
+(`examplesEngineHooks.ts`, run by every site's `pnpm check-links`).** The lgv
+site used `useCreateViewState` in all twenty of its examples; react-app used it
+in one file and a `useState` initializer in two others, and circular in none —
+seventeen demos on `jbrowse-build-your-own` had the same shape. A convention
+nobody is reminded of is a convention three files skip.
+
 ## The demo comes first on the page
 
 `ExampleSection` renders **heading → demo → doc → source**, and all four sites

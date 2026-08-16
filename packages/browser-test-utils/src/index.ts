@@ -32,6 +32,7 @@ export {
   checkPluginTookEffect,
   checkSessionUrlRoundTrip,
   checkTextContrast,
+  checkTrackIsShown,
 } from './examplesChecks.ts'
 export {
   checkExamplesSiteDocLinks,

@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 
 import {
   JBrowseCircularGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-circular-genome-view2'
 
 const assembly = {
@@ -41,12 +41,23 @@ const tracks = [
 ]
 
 export default function ShowTrack() {
-  const [state] = useState(() => {
-    const s = createViewState({ assembly, tracks })
-    // open a track imperatively instead of via the init prop
-    // showTrack API: https://jbrowse.org/jb2/docs/models/circularview/#action-showtrack
-    s.session.view.showTrack('volvox_sv_test')
-    return s
-  })
+  // `useCreateViewState`, not `useState(() => createViewState(…))`: React
+  // double-invokes a state initializer under StrictMode and throws the second
+  // result away, which for an engine is a whole orphaned worker pool per mount.
+  // It also destroys this one when the component unmounts.
+  const state = useCreateViewState({ assembly, tracks })
+
+  // open a track imperatively instead of via the init prop
+  // showTrack API: https://jbrowse.org/jb2/docs/models/circularview/#action-showtrack
+  //
+  // In an effect rather than beside the construction above, which is what the
+  // hook costs — and nothing is lost: the assembly is still a network round
+  // trip away, so this lands long before there is anything to draw. `showTrack`
+  // returns the track it already added when it is already shown, so StrictMode
+  // running this twice shows it once.
+  useEffect(() => {
+    state.session.view.showTrack('volvox_sv_test')
+  }, [state])
+
   return <JBrowseCircularGenomeView viewState={state} />
 }

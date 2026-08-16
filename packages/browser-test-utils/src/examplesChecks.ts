@@ -89,6 +89,36 @@ export async function checkDemoHeights(page: Page): Promise<string[]> {
 }
 
 /**
+ * Confirm a demo whose subject is `showTrack` actually shows one.
+ *
+ * The page loads, paints a genome and reads correctly whether or not the call
+ * landed, so nothing else in the run can tell the two apart — the same gap a
+ * gesture leaves. It earns a check because the call is the only thing that page
+ * teaches, and because the imperative form is the fragile one: it cannot live
+ * beside the engine's construction (a `useState` initializer there is the
+ * StrictMode trap `useCreateViewState` exists to close), so it runs from an
+ * effect, one step further from the thing it acts on.
+ */
+export async function checkTrackIsShown(page: Page): Promise<string[]> {
+  try {
+    // by the `chord-` prefix, not a whole testid: the rest of one is the
+    // adapter's generated id and the feature's position, neither of which this
+    // is about
+    await page.waitForFunction(
+      () => document.querySelectorAll('[data-testid^="chord-"]').length > 0,
+      { timeout: 20000 },
+    )
+    return []
+  } catch {
+    return [
+      'the demo showed no track — `showTrack` never reached the view, or its ' +
+        'renderer drew nothing. The page looks healthy either way, which is ' +
+        'why this is asserted rather than eyeballed.',
+    ]
+  }
+}
+
+/**
  * Drive a session-in-url demo's real round trip: save the live session into the
  * URL, reload, and confirm the app came back up from it. Both halves are
  * browser-only — deflate + base64 on the way out, the hash read and restore on

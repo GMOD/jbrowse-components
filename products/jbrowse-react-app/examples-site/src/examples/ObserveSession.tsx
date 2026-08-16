@@ -1,6 +1,4 @@
-import { useState } from 'react'
-
-import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
+import { JBrowseApp, useCreateViewState } from '@jbrowse/react-app2'
 import { observer } from 'mobx-react'
 
 const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
@@ -38,7 +36,7 @@ const config = {
 const SessionSummary = observer(function SessionSummary({
   viewState,
 }: {
-  viewState: ReturnType<typeof createViewState>
+  viewState: ReturnType<typeof useCreateViewState>
 }) {
   const { views } = viewState.session
   return (
@@ -56,7 +54,10 @@ const SessionSummary = observer(function SessionSummary({
 })
 
 export default function ObserveSession() {
-  const [viewState] = useState(() => createViewState({ config }))
+  // `useCreateViewState`, not `useState(() => createViewState(…))`: React
+  // double-invokes a state initializer under StrictMode and throws the second
+  // result away, which for an engine is a whole orphaned worker pool per mount.
+  const viewState = useCreateViewState({ config })
 
   return (
     <div>

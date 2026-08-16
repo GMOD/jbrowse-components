@@ -10,6 +10,7 @@ import {
   checkDemoHeights,
   checkSessionUrlRoundTrip,
   checkTextContrast,
+  checkTrackIsShown,
   smokeExamplesSite,
 } from '@jbrowse/browser-test-utils'
 
@@ -20,6 +21,7 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 
 const checks = {
   'session-in-url': checkSessionUrlRoundTrip,
+  'show-track': checkTrackIsShown,
 }
 
 const failures = await smokeExamplesSite({

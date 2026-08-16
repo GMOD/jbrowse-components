@@ -1,7 +1,5 @@
-import { useState } from 'react'
-
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
-import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
+import { JBrowseApp, useCreateViewState } from '@jbrowse/react-app2'
 
 import config from '../volvox-config.json' with { type: 'json' }
 
@@ -12,6 +10,9 @@ const configUrl =
 addRelativeUris(config, new URL(configUrl))
 
 export default function WithImportConfigJson() {
-  const [state] = useState(() => createViewState({ config }))
+  // `useCreateViewState`, not `useState(() => createViewState(…))`: React
+  // double-invokes a state initializer under StrictMode and throws the second
+  // result away, which for an engine is a whole orphaned worker pool per mount.
+  const state = useCreateViewState({ config })
   return <JBrowseApp viewState={state} />
 }
