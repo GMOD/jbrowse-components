@@ -97,6 +97,33 @@ costume, and it gets *more* aggressive exactly where coverage is deepest. The
 insert-size floor is the control for that family; stacking support on top would
 count the same noise twice. See REJECTED_IDEAS.
 
+## The coverage band's SNP colours: a floor, and a reading
+
+The band paints a coloured slice for every mismatch, at any allele fraction. At
+30x a 1% sequencing error rate is a fraction of a base and rounds away; at 300x
+it is three reads at every position, so each of A, C, G and T carries a
+permanent sliver and the depth bars read as a rainbow rather than as grey. This
+is the same shape as the insert-size band above — a cut calibrated as a fraction
+of the sample flags a fixed fraction of it however deep the pileup gets — except
+that the band had no cut at all. The **pileup** faded these through
+`featureFrequencyThreshold` from the start; the band was ungated, which is why
+the two disagreed about the same mismatch.
+
+`coverageSnpMinFrequency` (Coverage → "Color SNPs above...") is the floor, and
+it is 0 by default — turning it on at 30x would hide real low-frequency variants
+in a somatic or pooled sample, which is the case the un-floored band is right
+for. 0.2 is IGV's default. It is a draw-time test in both backends against each
+segment's `segHeight`, which IS that allele's share of the position's depth, so
+changing it repaints rather than refetches.
+
+**On a log axis the coloured fraction is the allele proportion, not a count off
+the y-axis.** The segments are linear slices of a log-scaled bar
+(`snpCoverage.slang`): a 50% allele is half the bar's height whatever the
+scale, so its top edge does not land on the depth the axis would read there.
+That is deliberate — the alternative bakes the axis into the buffer and needs a
+repack on every autoscale change — but the two readings differ and only one of
+them is the drawing's.
+
 ## Layout and paint order
 
 - Concordant pairs outnumber categorized ones by a wide margin even after the
