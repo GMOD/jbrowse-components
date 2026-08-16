@@ -15,7 +15,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 }: {
   model: LinearSyntenyDisplayModel
 }) {
-  const { tooltipLines, contextMenuAnchor } = model
+  const { tooltipLines, tooltipClientPoint, contextMenuAnchor } = model
 
   return (
     <>
@@ -23,7 +23,12 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
           shared with dotplot so the two views can't show different things for
           the same state. */}
       <ComparativeFetchStatus display={model} />
-      {tooltipLines ? <ComparativeTooltip lines={tooltipLines} /> : null}
+      {tooltipLines ? (
+        <ComparativeTooltip
+          lines={tooltipLines}
+          clientPoint={tooltipClientPoint}
+        />
+      ) : null}
       {contextMenuAnchor ? (
         <SyntenyContextMenu
           model={model}

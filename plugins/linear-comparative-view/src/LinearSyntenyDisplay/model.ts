@@ -731,6 +731,16 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
+       * Where to anchor that tooltip. The pointer belongs to the level — one
+       * canvas serves every display in the band — so this reads through rather
+       * than storing a second copy per display. See `hoverClientPoint` for what
+       * goes wrong when the tooltip has to find the pointer for itself.
+       */
+      get tooltipClientPoint() {
+        return this.parentHelper.hoverClientPoint
+      },
+      /**
+       * #getter
        * The two adjacent genome views this level draws between, or undefined
        * until both are initialized with regions. A level draws between an
        * adjacent pair, so both render and fetch depend only on those two views,

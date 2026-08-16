@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef } from 'react'
 
 import { ErrorBanner, GpuFallbackButton } from '@jbrowse/core/ui'
 import { getSession, openFeatureWidget } from '@jbrowse/core/util'
@@ -14,7 +14,6 @@ import { syntenyWidgetFeature } from '../LinearSyntenyDisplay/syntenyWidgetFeatu
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
-import type { SyntenyPickResult } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type React from 'react'
 
@@ -57,6 +56,14 @@ const CLICK_DRAG_THRESHOLD_PX = 5
 // MouseEvent.button for the left/primary button
 const PRIMARY_BUTTON = 0
 
+// One pointer position in both spaces the band needs it in: canvas-local pixels
+// for the pick, and the client point the tooltip anchors on.
+interface PointerSample {
+  x: number
+  y: number
+  client: { x: number; y: number }
+}
+
 function openSyntenyFeatureWidget(
   display: LinearSyntenyDisplayModel,
   instanceIndex: number,
@@ -83,23 +90,29 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const width = parentView.width
   const height = model.height
 
-  // In-flight drag-pan, or undefined when the pointer is not down. The gesture
-  // lives on `window` rather than on the canvas (see handleMouseDown): a band is
-  // ~100px tall, so a horizontal drag routinely exits through its top or bottom
-  // edge, and while the listeners were on the canvas that abandoned both the pan
-  // and the "was this a click?" test mid-gesture.
-  const dragRef = useRef<{ startX: number; lastX: number } | undefined>(
+  // In-flight drag-pan, or undefined when the pointer is not down. `travel` is
+  // total distance moved, not net displacement from the start: a pan out and
+  // back ends where it began, and measuring the difference made that release
+  // read as a click and open the feature widget.
+  const dragRef = useRef<{ lastX: number; travel: number } | undefined>(
     undefined,
   )
-  const detachDragRef = useRef<(() => void) | undefined>(undefined)
-  // drops the window listeners if the level unmounts mid-drag (a row removed, a
-  // return to the import form), which no mouseup would otherwise arrive for
-  useEffect(
-    () => () => {
-      detachDragRef.current?.()
-    },
-    [],
-  )
+  // Coalesces hover picks to one per frame. A pick is under 0.1ms on collinear
+  // data but ~12.5ms on an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse
+  // reporting faster than the display would otherwise queue a pick per event
+  // and spend the whole frame budget on hovers nothing draws.
+  const hoverRef = useRef<
+    { frame: number; at: PointerSample | undefined } | undefined
+  >(undefined)
+  const cancelHover = useCallback(() => {
+    if (hoverRef.current) {
+      cancelAnimationFrame(hoverRef.current.frame)
+      hoverRef.current = undefined
+    }
+  }, [])
+  // a level can unmount mid-gesture (a row removed, a return to the import
+  // form); pointer capture releases itself, the pending frame does not
+  useEffect(() => cancelHover, [cancelHover])
 
   const {
     canvas,
@@ -143,12 +156,21 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const errors = [gpuError, model.displayError].filter(e => e != null)
   const combinedError = errors.length > 0 ? errors.join('\n') : undefined
 
-  function canvasCoords(evt: { clientX: number; clientY: number }) {
+  // One sample, so the pick and the tooltip anchor can't describe different
+  // moments.
+  function canvasCoords(evt: {
+    clientX: number
+    clientY: number
+  }): PointerSample | undefined {
     const rect = canvas?.getBoundingClientRect()
     if (!rect) {
       return undefined
     }
-    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+    return {
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top,
+      client: { x: evt.clientX, y: evt.clientY },
+    }
   }
 
   function pickAt(coords: { x: number; y: number }) {
@@ -158,14 +180,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       : undefined
   }
 
-  // `displaysByKey` is a computed no reaction observes, so each access rebuilds
-  // the map — resolve the hit to its display exactly once per event.
-  function hitDisplay(hit: SyntenyPickResult | undefined) {
-    return hit ? model.displaysByKey.get(hit.key) : undefined
-  }
-
-  // Drag-pan accumulator. Drag mode flushes synchronously per mousemove
-  // because mouse events fire at ~60Hz, no batching needed.
+  // Drag-pan accumulator. Drag mode flushes synchronously per event because
+  // pointer moves already arrive at about frame rate, no batching needed.
   function dragPan(dx: number) {
     transaction(() => {
       for (const v of parentView.views) {
@@ -174,47 +190,70 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     })
   }
 
-  function handleMouseMove(event: React.MouseEvent<HTMLCanvasElement>) {
-    // the window listener owns the pointer while a drag is in flight, and
-    // hovering during a pan just fights it for the main thread
-    if (dragRef.current || scrollingRef.current) {
+  function handlePointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
+    const drag = dragRef.current
+    if (drag) {
+      const dx = drag.lastX - event.clientX
+      drag.travel += Math.abs(dx)
+      drag.lastX = event.clientX
+      dragPan(dx)
+      return
+    }
+    // hovering under a wheel-zoom fights the gesture for the main thread, and
+    // the viewport-change reaction on the level has already dropped the hover
+    if (scrollingRef.current) {
       return
     }
     const coords = canvasCoords(event)
-    if (coords) {
-      const hit = pickAt(coords)
-      model.setHoveredFeature(hit)
+    if (!coords) {
+      return
+    }
+    if (hoverRef.current) {
+      hoverRef.current.at = coords
+      return
+    }
+    hoverRef.current = {
+      at: coords,
+      frame: requestAnimationFrame(() => {
+        const at = hoverRef.current?.at
+        hoverRef.current = undefined
+        if (at) {
+          model.setHoveredFeature(pickAt(at), at.client)
+        }
+      }),
     }
   }
 
-  // Only the hover: a drag survives leaving the band, and is ended by the window
-  // mouseup below wherever that lands.
-  function handleMouseLeave() {
+  // Only the hover: a drag survives leaving the band (pointer capture follows it
+  // out), and ends at whatever pointerup it gets.
+  function handlePointerLeave() {
+    cancelHover()
     model.setHoveredFeature(undefined)
   }
 
-  function endDrag() {
-    detachDragRef.current?.()
-    detachDragRef.current = undefined
+  function handlePointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
+    // Primary button only. A right-click is pointerdown -> contextmenu ->
+    // pointerup at the same position, so arming the drag on it made the release
+    // read as a click and open the feature widget behind the context menu.
+    if (event.button !== PRIMARY_BUTTON) {
+      return
+    }
+    // A band is ~100px tall, so a horizontal drag routinely leaves through its
+    // top or bottom edge. Capture keeps the rest of the gesture addressed here,
+    // which is what a pair of window listeners used to buy — and unlike them it
+    // needs no unmount cleanup, since the browser releases it with the element.
+    event.currentTarget.setPointerCapture(event.pointerId)
+    dragRef.current = { lastX: event.clientX, travel: 0 }
+    cancelHover()
+  }
+
+  function handlePointerUp(event: React.PointerEvent<HTMLCanvasElement>) {
     const drag = dragRef.current
     dragRef.current = undefined
-    return drag
-  }
-
-  function handleWindowMouseMove(event: MouseEvent) {
-    const drag = dragRef.current
-    if (drag) {
-      dragPan(drag.lastX - event.clientX)
-      drag.lastX = event.clientX
-    }
-  }
-
-  function handleWindowMouseUp(event: MouseEvent) {
-    const drag = endDrag()
     if (!drag || event.button !== PRIMARY_BUTTON) {
       return
     }
-    if (Math.abs(event.clientX - drag.startX) >= CLICK_DRAG_THRESHOLD_PX) {
+    if (drag.travel >= CLICK_DRAG_THRESHOLD_PX) {
       return
     }
     const coords = canvasCoords(event)
@@ -225,27 +264,17 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     // outside the track), which clears the selection — the same thing a click on
     // empty canvas has always done.
     const hit = pickAt(coords)
-    model.setClickedFeature(hit)
-    const display = hitDisplay(hit)
+    const display = model.setClickedFeature(hit)
     if (display && hit) {
       openSyntenyFeatureWidget(display, hit.instanceIndex)
     }
   }
 
-  function handleMouseDown(event: React.MouseEvent) {
-    // Primary button only. A right-click is mousedown -> contextmenu -> mouseup
-    // at the same position, so arming the drag on it made the mouseup read as a
-    // click and open the feature widget behind the context menu.
-    if (event.button !== PRIMARY_BUTTON) {
-      return
-    }
-    dragRef.current = { startX: event.clientX, lastX: event.clientX }
-    window.addEventListener('mousemove', handleWindowMouseMove)
-    window.addEventListener('mouseup', handleWindowMouseUp)
-    detachDragRef.current = () => {
-      window.removeEventListener('mousemove', handleWindowMouseMove)
-      window.removeEventListener('mouseup', handleWindowMouseUp)
-    }
+  // The browser can take the pointer over mid-gesture (a touch that becomes a
+  // page scroll, a system gesture) and then no pointerup arrives, so without
+  // this the drag anchor outlives it and every later move still pans.
+  function handlePointerCancel() {
+    dragRef.current = undefined
   }
 
   function handleContextMenu(event: React.MouseEvent<HTMLCanvasElement>) {
@@ -257,7 +286,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!hit) {
       return
     }
-    const display = hitDisplay(hit)
+    const display = model.displayFor(hit.key)
     const feat = display?.getFeature(hit.instanceIndex)
     if (display && feat) {
       // preventDefault only when a menu actually opens, so a right-click on
@@ -288,12 +317,18 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         handle={{ canvasRef, canvasKey }}
         drawn={model.settled}
         data-testid="synteny_canvas"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onMouseDown={handleMouseDown}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
         onContextMenu={handleContextMenu}
         className={classes.canvas}
-        style={{ width, height }}
+        style={{
+          width,
+          height,
+          cursor: model.hoveringFeature ? 'pointer' : 'default',
+        }}
       />
       {combinedError ? (
         // One banner stacks the GPU error and every display's fetch error, so

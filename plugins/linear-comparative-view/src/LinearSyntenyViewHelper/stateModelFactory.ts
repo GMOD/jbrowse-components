@@ -5,10 +5,11 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 import { displaysSettled } from '@jbrowse/synteny-core'
+import { reaction } from 'mobx'
 
 import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
 
@@ -67,6 +68,21 @@ export function linearSyntenyViewHelperModelFactory(
         level: types.number,
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       * Where the pointer was when this level last resolved a hover, in client
+       * coordinates, or undefined when nothing is hovered.
+       *
+       * `BaseTooltip` has no position of its own until a mousemove reaches the
+       * window listener it registers on mount, so a tooltip opened by the move
+       * that landed on a ribbon stays `visibility: hidden` until the pointer
+       * moves AGAIN — land on a narrow ribbon and stop, and no tooltip appears
+       * at all. Handing it the point the pick was answered at is what the
+       * dotplot does, for the same reason.
+       */
+      hoverClientPoint: undefined as { x: number; y: number } | undefined,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -205,34 +221,55 @@ export function linearSyntenyViewHelperModelFactory(
         )
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       * Point the whole level's hover state at one pick hit: the display whose
-       * geometry was hit takes the instance index, every other display clears.
-       * `undefined` (a miss) therefore clears the level. An action rather than a
-       * loop in the canvas component so the N writes land in one MobX batch, and
-       * so the canvas never has to resolve the pick key to a display model.
-       */
-      setHoveredFeature(hit: SyntenyPickResult | undefined) {
+    .actions(self => {
+      // Point one of the level's per-instance states at a pick hit: the display
+      // whose geometry was hit takes the instance index, every other display
+      // clears, and `undefined` (a miss) therefore clears the level. One walk
+      // rather than a loop in the canvas component, so the N writes land in one
+      // MobX batch — and it hands back the display it resolved to, which is the
+      // only thing the caller wanted the key for.
+      function point(
+        hit: SyntenyPickResult | undefined,
+        write: (display: LinearSyntenyDisplayModel, idx: number) => void,
+      ) {
+        let hitDisplay: LinearSyntenyDisplayModel | undefined
         for (const display of self.linearSyntenyDisplays) {
-          display.setHoveredInstanceIdx(
-            display.displayKey === hit?.key ? hit.instanceIndex : -1,
-          )
+          if (hit && display.displayKey === hit.key) {
+            hitDisplay = display
+            write(display, hit.instanceIndex)
+          } else {
+            write(display, -1)
+          }
         }
-      },
-      /**
-       * #action
-       * Clicked-state twin of `setHoveredFeature`.
-       */
-      setClickedFeature(hit: SyntenyPickResult | undefined) {
-        for (const display of self.linearSyntenyDisplays) {
-          display.setClickedInstanceIdx(
-            display.displayKey === hit?.key ? hit.instanceIndex : -1,
-          )
-        }
-      },
-    }))
+        return hitDisplay
+      }
+      return {
+        /**
+         * #action
+         * `clientPoint` is where the pick was answered — see `hoverClientPoint`.
+         * A caller that has no pointer to name (the viewport-change clear) passes
+         * a miss, and a miss has no point.
+         */
+        setHoveredFeature(
+          hit: SyntenyPickResult | undefined,
+          clientPoint?: { x: number; y: number },
+        ) {
+          self.hoverClientPoint = hit ? clientPoint : undefined
+          return point(hit, (display, idx) => {
+            display.setHoveredInstanceIdx(idx)
+          })
+        },
+        /**
+         * #action
+         * Clicked-state twin of `setHoveredFeature`.
+         */
+        setClickedFeature(hit: SyntenyPickResult | undefined) {
+          return point(hit, (display, idx) => {
+            display.setClickedInstanceIdx(idx)
+          })
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
@@ -277,19 +314,39 @@ export function linearSyntenyViewHelperModelFactory(
           perTrack,
         }
       },
-      /**
-       * #getter
-       * Reverse lookup key → display, used to dispatch pick results.
-       */
-      get displaysByKey() {
-        const m = new Map<number, LinearSyntenyDisplayModel>()
-        for (const display of self.linearSyntenyDisplays) {
-          m.set(display.displayKey, display)
-        }
-        return m
-      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The pointer is over a ribbon somewhere in this band. Drives the canvas
+       * cursor, which is the only thing that says a ribbon can be clicked at
+       * all — the hover shading is subtle at the default 0.2 opacity.
+       */
+      get hoveringFeature() {
+        return self.linearSyntenyDisplays.some(d => d.hoveredInstanceIdx >= 0)
+      },
+      /**
+       * #method
+       * The display a pick hit belongs to. A scan over the level's handful of
+       * displays, not a keyed map: the map this replaces was a computed no
+       * reaction observed, so every access rebuilt it in full anyway.
+       */
+      displayFor(key: number) {
+        return self.linearSyntenyDisplays.find(d => d.displayKey === key)
+      },
+      /**
+       * #getter
+       * Where a cumBp lands on screen in this band: the pan and scale of the two
+       * genome rows it draws between, which is every input `projectCorners` has.
+       * Its only reader is the hover clear below — a change here means the
+       * ribbons moved.
+       */
+      get viewportKey() {
+        const { views } = self.parentView
+        const v0 = views[self.level]
+        const v1 = views[self.level + 1]
+        return `${v0?.offsetPx}_${v0?.bpPerPx}_${v1?.offsetPx}_${v1?.bpPerPx}`
+      },
       /**
        * #getter
        * Render-lifecycle precondition (overrides `RenderLifecycleMixin`'s
@@ -303,6 +360,36 @@ export function linearSyntenyViewHelperModelFactory(
       },
     }))
     .actions(self => ({
+      afterAttach() {
+        // Drop the hover whenever the ribbon it names slides out from under a
+        // stationary cursor. Nothing on the shared canvas travels with a
+        // feature, so no pointer event fires and nothing re-picks — the tooltip
+        // and the darkened ribbon just stay pinned to an alignment that has
+        // moved on.
+        //
+        // One reaction over `viewportKey` covers every way that can happen:
+        // the wheel, a drag-pan of the band (whose own mousemove handler
+        // deliberately doesn't pick while the drag is in flight), either row's
+        // scrollbar or zoom buttons, a locstring navigation, `showAllRegions`.
+        // Listing the entry points instead is how the LGV side and the dotplot
+        // each got this wrong first — see `installClearHoverOnViewportChange`
+        // and `setupClearHoverOnPlotMove`, whose twin this is. A big enough pan
+        // also refetches, and `setRpcData` clears the index then, but that
+        // covers only the pans that cross the fetch buffer.
+        //
+        // A `reaction`, not an `autorun`: the effect writes the hover, and an
+        // autorun body that both read and wrote it would re-fire itself.
+        addDisposer(
+          self,
+          reaction(
+            () => self.viewportKey,
+            () => {
+              self.setHoveredFeature(undefined)
+            },
+            { name: 'SyntenyLevelClearHoverOnViewportChange' },
+          ),
+        )
+      },
       /**
        * #action
        */

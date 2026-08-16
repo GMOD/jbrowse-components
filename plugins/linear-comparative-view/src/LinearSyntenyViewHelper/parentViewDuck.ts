@@ -22,6 +22,9 @@ export interface ParentViewDuck {
 export interface LevelDuck {
   height: number
   level: number
+  // where the pointer was when the band last resolved a hover; the display's
+  // tooltip anchors on it (see hoverClientPoint on the level)
+  hoverClientPoint: { x: number; y: number } | undefined
 }
 
 // Identify a level while walking up from a display, so the display finds it by

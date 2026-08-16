@@ -12,10 +12,12 @@ import { observer } from 'mobx-react'
  * for a `SanitizedHTML` to make that safe again; the dotplot side, written
  * later, did not, and the two then disagreed about what a tooltip even was.
  *
- * `clientPoint` is optional because the two views anchor differently: the
- * dotplot puts its tooltip on the pointer (there is one shared canvas and no
- * per-feature element to attach to), while the synteny display lets
- * `BaseTooltip` follow the pointer itself.
+ * Both views pass `clientPoint`, and a caller with a pointer in hand should:
+ * left to itself `BaseTooltip` registers a window `mousemove` listener on mount
+ * and has no position until the NEXT move, so a tooltip opened by the move that
+ * landed on a feature renders `visibility: hidden` until the pointer moves
+ * again — land on a narrow ribbon and stop, and nothing appears. It stays
+ * optional for a caller that genuinely has no point to name.
  */
 const ComparativeTooltip = observer(function ComparativeTooltip({
   lines,
