@@ -562,6 +562,25 @@ export const ldSpecs: ScreenshotSpec[] = [
             // Taller too (110 -> 170): with the haze gone the lane has to
             // resolve the spread between 0.1 and 0.5 rather than just show that
             // something is there.
+            //
+            // ZOOMING OUT FURTHER IS NOT AVAILABLE, and would not show what it
+            // is asked for (review: "it might be worth zooming out even more to
+            // see that fst is peaking here, or making it a dual figure with the
+            // zoom out (no ld track) and zoom in (with ld track)").
+            //
+            // The scores are a 3.40 Mb slice -- bigWigInfo puts every interval
+            // in chr2:133,800,005-137,199,999 -- and this frame is 3.15 Mb of
+            // it, so a wider window draws blank lane either side rather than
+            // more scan. A genuinely wider one means recomputing Fst over a
+            // wider span from the callset and hosting a second file, which is a
+            // pipeline decision rather than a spec edit.
+            //
+            // And there is no sharp peak to zoom out to. rs4988235 IS the
+            // single highest scored site in the file (0.474 at
+            // chr2:135,851,075), but 134 sites clear 0.30 and they are spread
+            // across the block, only three of them inside LCT/MCM6 -- which is
+            // what a sweep looks like from Fst: the whole haplotype is
+            // differentiated, not the causal base. The lane already draws that.
             {
               trackId: 'kgp_lct_fst',
               type: 'LinearWiggleDisplay',
