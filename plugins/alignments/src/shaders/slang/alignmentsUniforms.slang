@@ -681,7 +681,9 @@ public float3 clipKindColor(float ct, Uniforms u) {
 }
 
 // Widen a [x1,x2] clip-space span to a minimum of 1 CSS pixel, centered, so
-// sub-pixel-narrow features (1bp rects, coverage bins zoomed out) stay visible.
+// sub-pixel-narrow features (coverage bins, gaps, insertion bars zoomed out)
+// stay visible. For a span with an anchored edge — every 1bp pileup cell — the
+// rule is `pileupCellX` below instead.
 public float2 expandMinWidthX(float x1, float x2, float canvasWidth) {
   float minW = 2.0 / canvasWidth;
   if (x2 - x1 < minW) {
@@ -689,6 +691,33 @@ public float2 expandMinWidthX(float x1, float x2, float canvasWidth) {
     return float2(mid - minW * 0.5, mid + minW * 0.5);
   }
   return float2(x1, x2);
+}
+
+// The clip-space x span of ONE 1bp pileup cell: both edges snapped to a pixel
+// column, then the free edge pushed out so the cell stays 1 CSS px wide.
+//
+// ANCHORED, which is the whole content of the function. `x` is the snapped
+// column this base starts at and must not move, so the widening goes through
+// `extendToMinWidthX` (hpmath) rather than `expandMinWidthX` above, which moves
+// both edges about the midpoint. On a reversed block the anchor is still the
+// base's low-coordinate edge — `flipX` mirrors the finished quad, and a
+// reflection carries the anchor with it.
+//
+// Every layer that paints one rect per base measures from here: mismatch,
+// soft-clip bases and per-base letters through mismatch.slang; modifications and
+// per-base quality through packedColorQuad.slang. They have to agree, because
+// they paint over each other and because `makePileupCellMapper` is the one rule
+// all five of their Canvas2D twins share (`cellPainterParity.test.ts` pins that
+// side). packedColorQuad.slang widened about the midpoint instead, which put its
+// two layers up to half a pixel left of the other three — and of their own
+// Canvas2D painters — once the view passed 1bp/px. One spelling, so the five
+// cannot disagree about which column a base owns.
+public float2 pileupCellX(uint bp, Uniforms u) {
+  float x = snapToPixelX(bpToClipX(bp, u), u.canvasW);
+  return float2(
+    x,
+    extendToMinWidthX(
+      x, snapToPixelX(bpToClipX(bp + 1u, u), u.canvasW), 1.0, u.canvasW));
 }
 
 // Fixed-saturation HSL hue sweep (chroma 0.5, lightness offset 0.25), off a hue

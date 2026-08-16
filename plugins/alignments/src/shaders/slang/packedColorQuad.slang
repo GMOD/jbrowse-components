@@ -28,15 +28,14 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
   float2 local = quadLocal(vid);
 
-  float2 xx = expandMinWidthX(
-    bpToClipX(inst.position, u),
-    bpToClipX(inst.position + 1u, u),
-    u.canvasW);
-  float sx1 = xx.x;
-  float sx2 = xx.y;
+  // `pileupCellX` (alignmentsUniforms), the same anchored cell span
+  // mismatch.slang measures — these two passes paint over each other, and a
+  // modification cell that widened about its midpoint sat a column left of the
+  // mismatch cell on the same base.
+  float2 xx = pileupCellX(inst.position, u);
 
   float2 yy = pileupY(float(inst.y), u);
-  o.position = flippedQuadPos(sx1, sx2, yy.y, yy.x, local, u);
+  o.position = flippedQuadPos(xx.x, xx.y, yy.y, yy.x, local, u);
   o.color = unpackRGBA(inst.packedColor);
   return o;
 }
