@@ -239,6 +239,32 @@ Two rules the shape enforces:
   the next phase's label, so charging the clear a full window delays every label
   by up to one and drops outright the label of any phase shorter than one.
 
+## A silent `rpcManager.call` is a lint error, not a judgement call
+
+`RpcHandles` is optional on `RpcCallArgs` and has to stay optional — a
+plugin-facing argument may be added optional and never made required
+([PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md)) — so the compiler cannot
+ask for these. Two `no-restricted-syntax` selectors in `eslint.config.mjs` do
+instead: an `rpcManager.call` whose payload is an object literal declaring no
+`statusCallback`, and the same for `stopToken`.
+
+Plenty of calls should report nothing, and the rule is not an argument that they
+should. It makes that a **stated** decision: disable the line and say why. Grep
+the disables for what the accepted reasons look like; they fall into three kinds
+
+- the work is already narrated by the fetch it shares
+  (`detectSwappedAssemblies`, whose `getRefNames` awaits the same
+  `createSharedSetup` parse the band fetch is reporting),
+- there is nothing to narrate and nothing a cancel could save (the memoized
+  `CoreGetMetadata` header reads behind a feature widget),
+- or the handles belong on an **interface** that does not declare them yet, in
+  which case the disable names a `TODO.md` entry rather than a reason — that is
+  the section below, and it is the kind worth fixing.
+
+A spread payload is accepted as forwarding: the rule cannot see inside one, and
+the call sites that use it are wrappers handing on a `BaseOptions`-shaped bag
+that declares both. Source only — a test builds its RPC args freely.
+
 ## A fetcher that declares no parameters is opted out, silently
 
 `useFetch` hands its fetcher the key elements and then a **stop token and a

@@ -176,7 +176,18 @@ async function framesReadOverBudget(
   const bytes = await getSession(self).rpcManager.call(
     getRpcSessionId(self),
     'CoreGetRegionByteEstimate',
-    { regions: needed.map(n => n.region), adapterConfig },
+    // eslint-disable-next-line no-restricted-syntax
+    {
+      regions: needed.map(n => n.region),
+      adapterConfig,
+      // An estimate off a tabix index is a set of range reads, and this one runs
+      // on the fetch's critical path — the frames read waits on it. Without the
+      // token a cancelled fetch goes on measuring a file it will not download.
+      stopToken: ctx.stopToken,
+      // no statusCallback: it reports nothing on purpose, for the same reason it
+      // does not stamp `byteEstimate` — the phase belongs to an auxiliary
+      // overlay and would be narrating over the alignment's own progress
+    },
   )
   return !ctx.isStale() && bytes !== undefined && bytes > limit
 }

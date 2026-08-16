@@ -39,6 +39,12 @@ export function makeFindJunctionsNear(
     const features = await rpcManager.call(
       getRpcSessionId(self),
       'CoreGetFeatures',
+      // Neither handle, because `FindJunctionsNear` declares neither — this is
+      // the interface-drops-them shape PROGRESS_REPORTING.md names, and closing
+      // it means widening that type and threading a hop's handles down through
+      // `walkBreakendChain` and the choice dialog. TODO.md, "Breakend chain
+      // walk reports and cancels".
+      // eslint-disable-next-line no-restricted-syntax
       {
         adapterConfig: self.adapterConfig,
         regions: [{ ...region, assemblyName }],

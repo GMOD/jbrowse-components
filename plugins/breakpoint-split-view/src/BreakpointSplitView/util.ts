@@ -169,6 +169,12 @@ export async function getBlockFeatures(
 
   return Promise.all(
     views.map(async view =>
+      // The caller's autorun rotates a hand-rolled generation counter and no
+      // stop token, and the view has no status field to report into — it is not
+      // a display. Both are one change: put that autorun on
+      // `createStopTokenRotation` and give this the ctx. TODO.md, "Breakpoint
+      // split view fetch joins the rotation".
+      // eslint-disable-next-line no-restricted-syntax
       rpcManager.call(sessionId, 'BreakpointGetFeatures', {
         adapterConfig: getConf(track, ['adapter']),
         regions: view.staticBlocks.contentBlocks,

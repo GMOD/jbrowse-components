@@ -687,6 +687,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           const { norms, resolutions } = (await rpcManager.call(
             rpcSessionId,
             'CoreGetInfo',
+            // Reports (see below) but takes no stop token, deliberately: every
+            // contact fetch is gated on this one-shot read, so a cancel would
+            // not free the display, it would strand it — `effectiveResolution`
+            // stays undefined, `shouldFetch` stays false with no error set, and
+            // `svgReady` never settles.
+            // eslint-disable-next-line no-restricted-syntax
             {
               adapterConfig: self.adapterConfig,
               // This call happens inside the pre-first-paint window, where the

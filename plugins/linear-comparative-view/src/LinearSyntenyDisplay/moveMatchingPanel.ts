@@ -101,6 +101,14 @@ export async function resolveMatchingSpan({
   const span = await rpcManager.call(
     sessionId,
     'SyntenyResolveMatchingRegion',
+    // The two callers want opposite things here and neither can be served by a
+    // constant: the click-driven move below would take both, while the follow
+    // fires this every settle and its latest-wins is `seq`, not a token — an
+    // answer it discards is one it deliberately let finish, since the per-level
+    // promise is shared by key and three re-entrant passes ride one call. So the
+    // handles belong on `resolveMatchingSpan`'s own signature, supplied per
+    // caller. TODO.md, "Matching-region resolve takes its caller's handles".
+    // eslint-disable-next-line no-restricted-syntax
     {
       adapterConfig,
       // the block's own extent on the QUERY axis, which is the axis the band's

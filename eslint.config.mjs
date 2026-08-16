@@ -67,6 +67,48 @@ const noTrackWidthPx = {
     'Read `model.canvasWidthPx`, not `view.trackWidthPx`. Four view getters answer plausibly and MAF drifted onto the wrong one; the two agree today, so a second spelling is silent until one of them moves. See MultiRegionDisplayMixin.canvasWidthPx.',
 }
 
+// `rpcManager.call` reached two ways — off a binding, and off `getSession(…)` /
+// `session` — and a payload built as an object literal rather than spread from
+// something already carrying the handles.
+const rpcCallArgs = [
+  "CallExpression[callee.property.name='call'][callee.object.name='rpcManager']",
+  "CallExpression[callee.property.name='call'][callee.object.property.name='rpcManager']",
+]
+// A spread is accepted as forwarding: the rule cannot see inside one, and the
+// six call sites that use it are wrappers handing on a `BaseOptions`-shaped bag
+// that declares both handles.
+const missingRpcHandle = handle =>
+  rpcCallArgs
+    .map(
+      call =>
+        `${call} > ObjectExpression:not(:has(> Property[key.name='${handle}'])):not(:has(> SpreadElement))`,
+    )
+    .join(', ')
+
+// `RpcHandles` is optional on `RpcCallArgs` and has to stay optional — a
+// plugin-facing argument may be added optional and never made required
+// (reference/PLUGIN_ABI_STABILITY.md), so the compiler cannot ask for these.
+// Which leaves them exactly as forgettable as `RpcMethodType`'s own docstring
+// describes: "the two handles every method receives are the two an author who
+// did not write them down never forwards". `CoreGetExportData` shipped without
+// either, so the Save-track-data dialog's cancel did nothing and its progress
+// never moved.
+//
+// Silent is the whole problem, not absent — plenty of calls should report
+// nothing (a memoized header read, a refName lookup, CoreFreeResources). This
+// makes that a stated decision instead of an unnoticed one: disable the rule on
+// the line and say why.
+const noUnreportedRpcCall = {
+  selector: missingRpcHandle('statusCallback'),
+  message:
+    "This rpcManager.call passes no `statusCallback`, so whatever it does is invisible — a spinner with no phase label and no bar. Pass `ctx.statusCallback` (FetchContext / createStopTokenRotation), useFetch's, or the display's `makeStatusCallback`. If it should genuinely report nothing, `// eslint-disable-next-line no-restricted-syntax` with the reason. See agent-docs/reference/PROGRESS_REPORTING.md.",
+}
+const noUncancellableRpcCall = {
+  selector: missingRpcHandle('stopToken'),
+  message:
+    'This rpcManager.call passes no `stopToken`, so nothing can stop the worker once the user moves on or closes the dialog — it keeps its in-flight HTTP reads too. Pass `ctx.stopToken`, or the token useFetch hands the fetcher. If the work is genuinely uninterruptible or too short to matter, `// eslint-disable-next-line no-restricted-syntax` with the reason. See agent-docs/reference/PROGRESS_REPORTING.md.',
+}
+
 // The set every file gets. A block below that needs its own extra selectors
 // spreads this rather than re-listing it — flat config overrides the rule
 // instead of merging it, so a hand-copied list is a list that drifts, which is
@@ -526,6 +568,8 @@ export default defineConfig(
         ...restrictedSyntax,
         noSetSlot,
         noTrackWidthPx,
+        noUnreportedRpcCall,
+        noUncancellableRpcCall,
       ],
     },
   },

@@ -723,6 +723,11 @@ export default function MultiSampleVariantBaseModelF(
           fetchMetadataDescriptions() {
             if (!metadataPromise) {
               metadataPromise = getSession(self)
+                // The VCF header, already parsed by the fetch that put the
+                // variant on screen and memoized here so repeated clicks reuse
+                // one round trip. Nothing to narrate, and nothing a cancel
+                // could save — the widget opens on the result.
+                // eslint-disable-next-line no-restricted-syntax
                 .rpcManager.call(getRpcSessionId(self), 'CoreGetMetadata', {
                   adapterConfig: self.adapterConfig,
                 })

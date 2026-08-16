@@ -2178,6 +2178,11 @@ export default function baseStateModelFactory(
           selectFeature(feature: Feature) {
             if (!metadataPromise) {
               metadataPromise = getSession(self)
+                // A header block already parsed by the fetch that put the
+                // feature on screen, memoized here so repeated clicks reuse one
+                // round trip. Nothing to narrate, and nothing a cancel could
+                // save — the widget opens on the result.
+                // eslint-disable-next-line no-restricted-syntax
                 .rpcManager.call(getRpcSessionId(self), 'CoreGetMetadata', {
                   adapterConfig: self.adapterConfig,
                 })

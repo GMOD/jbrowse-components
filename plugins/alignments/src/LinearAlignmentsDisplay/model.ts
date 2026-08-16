@@ -228,6 +228,10 @@ async function fetchFeatureDetails(
   const { feature } = await session.rpcManager.call(
     sessionId,
     'GetPileupFeatureDetails',
+    // Nothing to report and nothing worth stopping: the region is a single base
+    // (see above), the adapter's index is already resident by the time a read is
+    // on screen to right-click, and the widget this feeds opens on the result.
+    // eslint-disable-next-line no-restricted-syntax
     {
       adapterConfig: self.adapterConfig,
       sequenceAdapter,

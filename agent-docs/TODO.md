@@ -81,6 +81,51 @@ before anyone noticed.
 
 ## Ready to build: small and self-contained
 
+### Breakend chain walk reports and cancels
+
+`FindJunctionsNear` is `(region) => Promise<Junction[]>` and declares neither
+handle, so the `CoreGetFeatures` behind each hop is silent and uninterruptible —
+the interface-drops-them shape
+[PROGRESS_REPORTING.md](reference/PROGRESS_REPORTING.md) names. A chain is
+several hops, each a block read, and the choice dialog shows nothing for the
+whole walk.
+
+Widen the type to take `{ stopToken, statusCallback }` the way
+`ClusterDialogProps.fetchMatrix` does, thread it from
+`walkBreakendChain` through both producers (`makeFindJunctionsNear`, the SV
+inspector's) and give `BreakpointSplitViewChoiceDialog` the token its close
+should stop. Marked at the call site with an
+`// eslint-disable-next-line no-restricted-syntax`, which is what to delete when
+this lands.
+
+### Breakpoint split view fetch joins the rotation
+
+`BreakpointSplitView`'s feature autorun rotates a hand-rolled `fetchGeneration`
+counter with **no stop token at all**, so panning away leaves both views'
+`BreakpointGetFeatures` calls running to completion, and the view has no status
+field to report into.
+
+`createStopTokenRotation` is both halves at once, but it wants a
+`setStatusMessage`, and this is a *view* rather than a display — so the first
+question is where the status lands. `ComparativeFetchStatus`'s pair
+(`statusMessage`/`statusProgress` on the model, `LoadingOverlay` +
+`ProgressChip` over the panels) is the shape to copy. Marked at the call site in
+`BreakpointSplitView/util.ts`.
+
+### Matching-region resolve takes its caller's handles
+
+`resolveMatchingSpan` issues `SyntenyResolveMatchingRegion` with neither handle,
+and its two callers want opposite things — which is why the fix is on its own
+signature rather than a constant inside it.
+
+The click-driven `moveMatchingPanel` wants both: it is a user click, and on a
+PAF the resolve waits on `PAFAdapter.getFeatures`, which linear-scans every
+record. `SyntenyFollow` wants the status and **not** the token: it fires this
+every settle and its latest-wins is `seq`, so an answer it discards is one it
+deliberately let finish — the per-level promise is shared by key and three
+re-entrant passes ride one call, which the integration suite asserts. Read
+`SyntenyFollow/CLAUDE.md` before touching that side.
+
 ### Sort the api-docs generator's output so an unrelated file cannot reorder it
 
 `pnpm autogen --check` is a CI gate (`push.yml`), and it goes red for changes that
