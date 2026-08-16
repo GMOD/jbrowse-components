@@ -1,3 +1,4 @@
+import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
 import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
 import {
   INTERBASE_HARDCLIP,
@@ -106,10 +107,10 @@ function getMaxFeatureLengths(rpcData: PileupDataResult) {
   }
   const { gapLengths, gapTypes, interbaseLengths } = rpcData
   let deletion = 0
-  // Skips (`gapTypes` 1) are never labelled, so a long intron must not keep the
-  // deletion walk alive.
+  // Skips are never labelled, so a long intron must not keep the deletion walk
+  // alive.
   for (let i = 0; i < gapLengths.length; i++) {
-    if (gapTypes[i] === 0 && gapLengths[i]! > deletion) {
+    if (gapTypes[i] === GAP_DELETION && gapLengths[i]! > deletion) {
       deletion = gapLengths[i]!
     }
   }
@@ -226,7 +227,7 @@ export function computeVisibleLabels(
       const numGaps = gapPositions.length / 2
       if (tallEnoughForText && maxLen.deletion >= minDeletionBp) {
         for (let i = 0; i < numGaps; i++) {
-          if (gapTypes[i] !== 0) {
+          if (gapTypes[i] !== GAP_DELETION) {
             continue
           }
 

@@ -1,3 +1,4 @@
+import { GAP_SKIP } from '../../shaders/slang/gap.consts.generated.ts'
 import { findTopmostOnRow } from '../../shared/hitTestTypes.ts'
 
 import type {
@@ -32,7 +33,7 @@ export function hitTestGap(
   }
   const startPos = gapPositions[i * 2]!
   return {
-    type: gapTypes[i] === 1 ? 'skip' : 'deletion',
+    type: gapTypes[i] === GAP_SKIP ? 'skip' : 'deletion',
     index: i,
     position: startPos,
     length: gapPositions[i * 2 + 1]! - startPos,

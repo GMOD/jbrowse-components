@@ -9,6 +9,10 @@ import {
   pileupRowY,
   sizeAlpha,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import {
+  GAP_DELETION,
+  GAP_SKIP,
+} from '../../shaders/slang/gap.consts.generated.ts'
 
 import type {
   DrawBlock,
@@ -16,9 +20,6 @@ import type {
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { GapUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-
-const GAP_DELETION = 0
-const GAP_SKIP = 1
 
 export function drawGaps(
   ctx: Ctx2D,

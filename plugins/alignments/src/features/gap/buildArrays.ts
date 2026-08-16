@@ -1,3 +1,8 @@
+import {
+  GAP_DELETION,
+  GAP_SKIP,
+} from '../../shaders/slang/gap.consts.generated.ts'
+
 import type { GapData } from '../../shared/webglRpcTypes.ts'
 
 export function buildGapArrays(gaps: GapData[], regionStart: number) {
@@ -18,7 +23,7 @@ export function buildGapArrays(gaps: GapData[], regionStart: number) {
     gapPositions[i * 2] = g.start
     gapPositions[i * 2 + 1] = g.end
     gapLengths[i] = g.end - g.start
-    gapTypes[i] = g.type === 'deletion' ? 0 : 1
+    gapTypes[i] = g.type === 'deletion' ? GAP_DELETION : GAP_SKIP
     gapReadIndices[i] = g.readIndex
   }
   return { gapPositions, gapYs, gapLengths, gapTypes, gapReadIndices }

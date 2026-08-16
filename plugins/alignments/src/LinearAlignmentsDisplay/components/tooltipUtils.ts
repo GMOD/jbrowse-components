@@ -13,6 +13,7 @@ import {
 import { toLocale } from '@jbrowse/core/util'
 
 import { ARC_SHAPE_FLAT } from '../../features/arcs/shapes.ts'
+import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
 import { modTooltipEntriesAt } from '../../shared/modTooltipIndex.ts'
@@ -454,7 +455,7 @@ function deletionSpanIndex(gapPositions: Uint32Array, gapTypes: Uint8Array) {
   const n = Math.floor(gapPositions.length / 2)
   let deletions = 0
   for (let i = 0; i < n; i++) {
-    if (gapTypes[i] === 0) {
+    if (gapTypes[i] === GAP_DELETION) {
       deletions++
     }
   }
@@ -462,7 +463,7 @@ function deletionSpanIndex(gapPositions: Uint32Array, gapTypes: Uint8Array) {
   const rawEnds = new Uint32Array(deletions)
   let w = 0
   for (let i = 0; i < n; i++) {
-    if (gapTypes[i] === 0) {
+    if (gapTypes[i] === GAP_DELETION) {
       positions[w] = gapPositions[i * 2]!
       rawEnds[w] = gapPositions[i * 2 + 1]!
       w++

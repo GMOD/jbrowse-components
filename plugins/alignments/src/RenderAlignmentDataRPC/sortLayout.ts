@@ -1,6 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
+import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -189,7 +190,7 @@ function buildSortKeyMap(
       }
     }
     for (let i = 0; i < gapPositions.length / 2; i++) {
-      if (gapTypes[i] === 0) {
+      if (gapTypes[i] === GAP_DELETION) {
         const gapStart = gapPositions[i * 2]!
         const gapEnd = gapPositions[i * 2 + 1]!
         if (gapStart <= sortPos && gapEnd > sortPos) {

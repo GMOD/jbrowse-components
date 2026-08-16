@@ -1,6 +1,7 @@
 // Gap pass: deletion (rect) or skip (1px centerline) per CIGAR D/N op.
 //! targets: wgsl, glsl
 //! js-export: intronAlpha
+//! export-consts: GAP_DELETION, GAP_SKIP
 
 import alignmentsUniforms;
 import colorPack;
@@ -8,6 +9,11 @@ import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
+
+// What `gapTypes[i]` means. The worker writes it, the branches below read it,
+// and so do drawGaps, the hit test, the base-pair sort, the label walk and the
+// tooltip — seven sites that each hand-spelled the literal. `export-consts` is
+// the move insertion.slang already made for its own thresholds.
 static const uint GAP_DELETION = 0u;
 static const uint GAP_SKIP     = 1u;
 
