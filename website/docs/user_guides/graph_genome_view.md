@@ -371,7 +371,14 @@ The alignment lane below says the same event from the other side: CFT073 has no
 aligned bases across the band, and neither do IAI39 or Sakai, while NCTC86
 aligns straight through it.
 
-<Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies in the linear view above, across every track there. The node is a non-reference insertion: that interval is the 2 kb of K12 between the segments the allele leaves and rejoins." src="/img/pangenome/rgfa_hover_sync.png" />
+That absence is all a whole-genome alignment lane can say here, and it is worth
+knowing why before reading it as a disagreement. The lane is a projection onto
+K12's coordinates, so it has a column for every base K12 has and none for a base
+it does not; 65 kb that exists only in CFT073 has nowhere in it to be drawn. The
+graph is the representation that can hold both, which is what the node in the
+lower panel is.
+
+<Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies in the linear view above, across every track there. The ringed node is 65.4 kb carried only by CFT073, and it attaches to K12 across a 2.1 kb band — the interval between the segments the allele leaves and rejoins." src="/img/pangenome/rgfa_hover_sync.png" />
 
 The same event drawn as an alignment is separate evidence: the graph's claim
 comes out of its own segment and link indexes, and the alignment below out of a

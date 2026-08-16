@@ -2641,25 +2641,40 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       // been of a bare red ring with no text anywhere near it ("unclear what the
       // red circle is"), and the answer was in the spec the whole time. It goes
       // right of the loop now, into the empty half of the pane.
+      //
+      // THE PILLS LEAD WITH THE INSERT NOW (review: "this is confusing because
+      // it says 'k12 has 2.1kb here' like that is important but it seems the
+      // important part is the cft073 sequence"). Right: the two used to state a
+      // length each and leave the reader to notice which was the subject, and
+      // the reference's length is the one that read as the claim because it is
+      // in the upper panel. Each says what its own panel cannot instead -- what
+      // the ringed node IS, and what the band IS -- and the two lengths move to
+      // the caption, where a number is allowed to be checked rather than
+      // believed.
       {
         type: 'text',
-        text: 'the ringed node is 65.4 kb of CFT073 sequence',
+        text: 'the ringed node is sequence only CFT073 carries',
         anchor: { view: 1, graphNode: HOVERED_ALLELE },
         dx: 300,
         dy: -60,
         maxWidth: 230,
         fontSize: 16,
       },
-      // AND THE BAND SAYS ITS OWN WIDTH, which is the other half of the same
+      // AND THE BAND SAYS WHAT IT IS, which is the other half of the same
       // complaint ("it is not matching the highlight over the lineargenomeview
-      // afaict"). It does match; the two numbers are just 30x apart, and a
-      // figure that shows a 65.4 kb node and a 2.1 kb band without saying so
-      // reads as a mismatch rather than as the comparison it exists to make.
+      // afaict"). It does match: the band is where the ringed node's two links
+      // touch down, so it is the insert's attachment point rather than a second
+      // measurement of it. Saying that is what makes the 30x difference between
+      // the band and the node read as the comparison the figure exists to make.
       // Anchored to the band's own K12 interval, above the gene lane, so it
       // moves with the coordinates rather than with a measured pixel.
       {
         type: 'text',
-        text: 'K12 has 2.1 kb here',
+        // Named, not "it": this pill is in the UPPER panel and the node it is
+        // about is in the lower one, so a pronoun points at a panel the reader
+        // has not reached. Naming CFT073 here is also what puts the insert in
+        // the frame a reader meets first, which is the review's own ask.
+        text: 'the CFT073 insert attaches to K12 inside this band',
         // Right edge against the band's LEFT edge, so the pill sits beside the
         // band rather than starting at its midpoint and running off to the
         // right of it — which is what a bare locus anchor does, since textAlign
