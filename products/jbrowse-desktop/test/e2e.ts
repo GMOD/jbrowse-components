@@ -6,6 +6,7 @@ import { By, Key, WebDriver, until } from 'selenium-webdriver'
 import {
   APP_BINARY,
   REPO_ROOT,
+  assertNoErrorBanners,
   cleanupUI,
   clearInput,
   createDriver,
@@ -117,18 +118,21 @@ async function runTest(
 }
 
 async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
-  // The 2bit, not volvox.fa — the same choice the screenshot flow makes, for the
-  // same reason. A remote .fa the app has to index itself downloads in full
-  // through the indexFasta IPC handler, and that step hangs often enough
-  // (roughly one run in two, unattended, per agent-docs/reference/
-  // DESKTOP_SCREENSHOTS.md) to fail a run. This job is the only Windows coverage
-  // main gets, so a coin flip in it is worse than no assertion at all — and the
-  // hang is in the FASTA-indexing path, not in opening a genome, which is what
-  // this test is about. indexFasta has its own test in electron/ipc.
-  await openVolvoxGenome(
-    driver,
-    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.2bit`,
-  )
+  // The FASTA and its index, which is the pair a real user brings and the one
+  // the dialog has the most to get wrong about: two urls to classify, a sidecar
+  // to place, and a format to infer from neither of them alone. It reaches
+  // IndexedFastaAdapter directly, so it never touches the indexFasta handler
+  // whose hang (roughly one run in two, unattended, per agent-docs/reference/
+  // DESKTOP_SCREENSHOTS.md) is why this used to send a 2bit instead. That is a
+  // property of the pair, not luck: a `.fai` in the set is exactly what stops
+  // classifyAssemblyFiles falling back to the self-indexing FastaAdapter.
+  //
+  // The screenshot flow still sends the 2bit — it wants the shortest path to a
+  // painted view, not coverage of this one.
+  await openVolvoxGenome(driver, [
+    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.fa`,
+    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.fa.fai`,
+  ])
 }
 
 async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
@@ -163,7 +167,9 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   }
 
   // Find URL inputs
-  let urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
+  const urlInputs = await driver.findElements(
+    By.css('[data-testid="urlInput"]'),
+  )
   console.log(`    DEBUG: Found ${urlInputs.length} URL inputs after toggle`)
 
   if (urlInputs.length >= 1) {
@@ -173,25 +179,13 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     await delay(1000)
   }
 
-  // Click second URL toggle for index file if available - use JavaScript click
-  if (urlToggleButtons.length >= 2) {
-    console.log('    DEBUG: Clicking second URL toggle...')
-    await driver.executeScript('arguments[0].click();', urlToggleButtons[1])
-    await delay(1000)
-  }
-
-  // Find URL inputs again
-  urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
-  console.log(
-    `    DEBUG: Found ${urlInputs.length} URL inputs after second toggle`,
-  )
-
-  if (urlInputs.length >= 2) {
-    const indexPath = `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.sort.gff3.gz.tbi`
-    console.log(`    DEBUG: Entering index URL: ${indexPath}`)
-    await urlInputs[1]!.sendKeys(indexPath)
-    await delay(1000)
-  }
+  // The index is NOT typed. The widget probes for the sibling index and fills
+  // the field in itself, and UrlChooser is uncontrolled (`defaultValue`), so
+  // `sendKeys` APPENDS to what it found: the track went in pointing at
+  // `...gff3.gz.tbi` concatenated with itself, 404'd, and this test still passed
+  // because the only thing it asserted was that the search worked. Leaving the
+  // field alone is both the correct input and coverage of the probe.
+  console.log('    DEBUG: Leaving the index field to the widget probe')
 
   console.log('    DEBUG: Pausing before Next to observe dialog state...')
   await delay(3000)
@@ -317,6 +311,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     until.elementLocated(By.css('[data-testid="zoom_in"]')),
     5000,
   )
+  // The track has had a whole search-and-navigate to load by now, so a banner
+  // here is a real failure rather than a mid-load race.
+  await assertNoErrorBanners(driver, 'after adding the GFF3 track')
+
   console.log(
     '    DEBUG: Successfully added GFF3 track and searched for EDEN.1!',
   )

@@ -259,6 +259,41 @@ export async function readSession(
   `)
 }
 
+/**
+ * Fails if anything on screen is showing an error banner.
+ *
+ * A track that cannot load its data says so in the view and nowhere else — the
+ * session still lists it, the view still renders, and a test that only checks
+ * "did the search work" goes green over a track showing a 404. That is not
+ * hypothetical: the add-track step pointed its index at a doubled URL for as
+ * long as it typed into a field the widget had already filled in, and every run
+ * passed.
+ *
+ * Keyed on the retry button, which is the one marker ErrorBanner and ErrorBar
+ * both publish. Call it once the flow is quiet — a banner mid-load is a race,
+ * not a failure.
+ */
+export async function assertNoErrorBanners(
+  driver: WebDriver,
+  context: string,
+): Promise<void> {
+  const banners = await driver.findElements(
+    By.css('[data-testid="reload_button"]'),
+  )
+  if (!banners.length) {
+    return
+  }
+  const texts = await Promise.all(
+    banners.map(async b => {
+      const container = await b.findElement(By.xpath('./ancestor::*[3]'))
+      return container.getText()
+    }),
+  )
+  throw new Error(
+    `${context}: ${banners.length} error banner(s) on screen — ${texts.join(' | ')}`,
+  )
+}
+
 // Blocks until the session satisfies `check`, returning the last probe so a
 // caller can put the real state in its own error message.
 export async function waitForSession(
@@ -624,22 +659,16 @@ export async function startStaticServer(
 // Load the volvox assembly through the "Open new genome" dialog, then navigate
 // to a region so the view fully paints.
 //
-// Pass `volvox.2bit`. A `.fa` with its `.fai` classifies as an indexed FASTA
-// correctly now, but a plain `.fa` on its own routes through `indexFasta`
-// (electron/ipc/fileHandlers.ts, whose output shows up as a `LocalPathLocation`
-// under the profile's `fai/` dir), and that step hangs often enough to fail a
-// run — the assembly sits `initialized: false` with no error and the import form
-// reads "Loading" forever. A 2bit needs no index at all, so it stays clear of
-// the whole path — see agent-docs/reference/DESKTOP_SCREENSHOTS.md.
-//
-// What made a `.fa` + `.fai` pair land as a bare FASTA anyway, and cost the
-// Windows job a run at random: `sendKeys` types one character at a time, and the
-// URL box unmounted the moment its contents classified as a sequence, so the
-// second line was never typed. AddGenomePane keeps that box mounted now and
-// AddGenomePane.test.tsx holds the line.
+// What each caller passes, and why, is the caller's own note. What matters here
+// is the one url a caller must NOT pass alone: a plain `.fa` with no `.fai`
+// routes through `indexFasta` (electron/ipc/fileHandlers.ts, whose output shows
+// up as a `LocalPathLocation` under the profile's `fai/` dir), and that step
+// hangs often enough to fail a run — the assembly sits `initialized: false` with
+// no error and the import form reads "Loading" forever. Send the `.fai` with it
+// or send a 2bit; see agent-docs/reference/DESKTOP_SCREENSHOTS.md.
 export async function openVolvoxGenome(
   driver: WebDriver,
-  sequenceUrl: string,
+  sequenceUrls: string | string[],
 ): Promise<void> {
   await waitForStartScreen(driver)
   await clickButton(driver, 'Open new genome')
@@ -659,7 +688,14 @@ export async function openVolvoxGenome(
     10000,
   )
   await urlInput.click()
-  await urlInput.sendKeys(sequenceUrl)
+  // `sendKeys` types one character at a time, so a second line only survives
+  // because the box stays mounted once its first line classifies as a sequence.
+  // It did not used to: the box was swapped for the recognition card mid-word,
+  // `volvox.fa` + `.fai` silently became a bare FASTA, and the run went into the
+  // indexFasta hang above. AddGenomePane.test.tsx holds that line now.
+  await urlInput.sendKeys(
+    (Array.isArray(sequenceUrls) ? sequenceUrls : [sequenceUrls]).join('\n'),
+  )
   await delay(1000)
 
   const submitBtn = await driver.wait(
