@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
-import { alpha } from '@mui/material/styles'
 
 import { progressLabel } from '../util/progress.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 import LoadingDots from './LoadingDots.tsx'
 import StatusProgressBar from './StatusProgressBar.tsx'
+import { alpha } from './palette.ts'
 
 const cancelDelayMs = 5000
 

@@ -286,7 +286,8 @@ over the whole eager set, which finds the holder you thought of and no others.
 
 Measured 2026-08-06 on the sparsest page, **48 first-party eager modules import
 Material UI**, and they hold overlapping parts of it, so cutting any one group
-banks nothing:
+banks nothing. The count is per page and the sparsest one flatters it — `synteny`
+carries 42 first-party holders of `@mui/material` alone:
 
 | holder | count | what it names |
 | --- | --- | --- |
@@ -295,7 +296,7 @@ banks nothing:
 | `ui/theme.ts` | 1 | `createTheme`, for the session's `theme` getter |
 | `ui/InlineMenuControls.tsx`, `wiggle-core/ResolutionStepper.tsx` | 2 | `Tooltip`, `IconButton`, `Button`, `Typography` |
 | the two auth account icons | 2 | `SvgIcon` |
-| `HoverPositionHighlight`, `OverviewScalebarPolygon` | 2 | `alpha` — **fixed**, `ui/palette` exports it |
+| `HoverPositionHighlight`, `OverviewScalebarPolygon`, `ui/LoadingOverlay.tsx` | 3 | `alpha` — **fixed**, `ui/palette` exports it |
 | `util/color/index.ts` | 1 | `lighten`/`darken`/`getLuminance` — **fixed**, same |
 
 That is ~277 KB uncompressed (`@mui/material` 159, `@mui/system` 78,
@@ -331,6 +332,33 @@ deferring them is an ABI change) and `session.theme` (a synchronous getter, so
 deferring it means moving theme construction to the products — which already
 import Material UI, and where it costs a bring-your-own host nothing). Neither
 is worth starting without deciding both.
+
+## "0 Material elements" and "no Material UI" are different claims
+
+The BYO site measures two things and it is easy to quote one for the other.
+
+`MUI_BUDGET` in `smoke.mjs` counts **rendered elements** — outermost `Mui*`
+classes in the DOM, sampled from before the page's own scripts run. That is the
+right measure for an embedder's *look*, and the one that found the progress bar.
+It cannot see the bundle at all, by construction: `alpha()` and `useTheme()` draw
+no element, and neither does a component that is imported but never mounted.
+
+The gap is not small. Measured 2026-08-16:
+
+| page | `MUI_BUDGET` | eager modules importing `@mui/material` | gzip |
+| --- | --- | --- | --- |
+| `removing-material-ui` | 0 | 94, of them 33 first-party | 573 KB |
+| `synteny` | 0 | 105, of them 42 first-party | 691 KB |
+| `ultraminimal` | 0 | — | 523 KB |
+
+So the page named for removing Material UI ships it, and ships 50 KB *more* than
+`ultraminimal` — page coupling, not Material. Both pages score a legitimate zero
+on the axis the census measures, and neither is close to zero on the other.
+
+**Say which axis when recording a win.** "The hole is closed" about a rendered
+element is true and worth having; the same sentence reads as a bundle claim, and
+the bundle claim is the table two sections up — 48 eager modules, ~277 KB, out
+only if every group goes.
 
 ## A duplicate is how a bundling split looks from the inside
 
