@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
 
 import { Box, FormHelperText, InputLabel } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -29,6 +29,8 @@ const FileSelector = observer(function FileSelector({
   setLocation: (param: FileLocation) => void
 }) {
   const emptySourceType = useEmptySourceType()
+  const labelId = useId()
+  const descriptionId = useId()
   const [sourceType, setSourceType] = useState(() =>
     getInitialSourceType(location, emptySourceType),
   )
@@ -76,9 +78,21 @@ const FileSelector = observer(function FileSelector({
   return (
     <>
       <Box sx={{ display: 'flex' }}>
-        <InputLabel shrink>{name}</InputLabel>
+        <InputLabel id={labelId} shrink>
+          {name}
+        </InputLabel>
       </Box>
+      {/* The name and description belong to the toggle-plus-input pair, not to
+          either half, so the pair is the group they name. The InputLabel here
+          is not `htmlFor` anything and cannot be: what it labels is a URL box
+          in one branch and a Choose File button in another, and on the web that
+          button is itself a <label> around a hidden input. Without this, every
+          selector on a form announces as "Enter URL" and a reader has no way to
+          tell the .fai from the .gzi from the cytobands. */}
       <Box
+        role="group"
+        aria-labelledby={name ? labelId : undefined}
+        aria-describedby={description ? descriptionId : undefined}
         sx={{
           display: 'flex',
           flexDirection: inline ? 'row' : 'column',
@@ -102,7 +116,7 @@ const FileSelector = observer(function FileSelector({
           setLocation={handleLocationChange}
         />
       </Box>
-      <FormHelperText>{description}</FormHelperText>
+      <FormHelperText id={descriptionId}>{description}</FormHelperText>
     </>
   )
 })

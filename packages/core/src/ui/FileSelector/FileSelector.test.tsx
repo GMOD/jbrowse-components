@@ -80,3 +80,35 @@ test('unstamps internetAccountId when the source type goes back to URL', () => {
     locationType: 'UriLocation',
   })
 })
+
+// Every branch of this control names its own input the same way — "Enter URL",
+// or a Choose File button — so with no name on the pair, a form of five
+// selectors reads out as five identical fields.
+test('the toggle and input are one group carrying the field name', () => {
+  const { getByRole } = render(
+    <FileSelector
+      name="FASTA index (.fai) file"
+      description="Sits beside the FASTA."
+      location={{ uri: '', locationType: 'UriLocation' }}
+      setLocation={() => {}}
+    />,
+  )
+
+  const group = getByRole('group', { name: 'FASTA index (.fai) file' })
+  expect(group).toHaveAccessibleDescription('Sits beside the FASTA.')
+  expect(group).toContainElement(getByRole('button', { name: 'url' }))
+})
+
+test('an unnamed selector claims no name rather than an empty one', () => {
+  const { getAllByRole } = render(
+    <FileSelector
+      location={{ uri: '', locationType: 'UriLocation' }}
+      setLocation={() => {}}
+    />,
+  )
+
+  // the outer group is this control's; the inner one is the toggle's own
+  const [group] = getAllByRole('group')
+  expect(group).not.toHaveAttribute('aria-labelledby')
+  expect(group).not.toHaveAttribute('aria-describedby')
+})
