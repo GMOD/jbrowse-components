@@ -23,10 +23,8 @@ export default function sessionModelFactory({
 export type WebSessionModelType = ReturnType<typeof sessionModelFactory>
 export type WebSessionModel = Instance<WebSessionModelType>
 
-// compile-time checks that the session model implements AbstractSessionModel
-// and each capability contract this embedded app relies on. AbstractSessionModel
-// marks these capabilities optional, so it can't catch a member drifting out of
-// sync with the SessionWith* interface plugins narrow to — these do.
+// the capability contracts this embedded app relies on — see AssertSessionModel
+// for why each one is asserted separately
 export type _AssertSessionModel = AssertSessionModel<WebSessionModel>
 export type _AssertFocusedView = AssertExtends<
   WebSessionModel,

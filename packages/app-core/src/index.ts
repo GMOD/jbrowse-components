@@ -43,5 +43,6 @@ export type {
   ParsedSessionSpec,
   ViewSpec,
 } from './SessionSpec/index.ts'
+export type { SessionModelFactory } from './sessionModelFactory.ts'
 export { processMutableMenuActions, resolveMenus } from './menus.ts'
 export type { Menu, MenuAction, MenuDefinition } from './menus.ts'

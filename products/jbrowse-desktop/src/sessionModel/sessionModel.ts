@@ -59,10 +59,8 @@ export default function sessionModelFactory({
 export type DesktopSessionModelType = ReturnType<typeof sessionModelFactory>
 export type SessionStateModel = Instance<DesktopSessionModelType>
 
-// compile-time checks that the session model implements AbstractSessionModel
-// and each capability contract the desktop app relies on. AbstractSessionModel
-// marks these capabilities optional, so it can't catch a member drifting out of
-// sync with the SessionWith* interface plugins narrow to — these do.
+// the capability contracts the desktop app relies on — see AssertSessionModel
+// for why each one is asserted separately
 export type _AssertSessionModel = AssertSessionModel<SessionStateModel>
 export type _AssertFocusedView = AssertExtends<
   SessionStateModel,

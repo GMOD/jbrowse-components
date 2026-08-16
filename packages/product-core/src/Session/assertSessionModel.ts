@@ -10,6 +10,14 @@ import type { AbstractSessionModel } from '@jbrowse/core/util/types'
  * ```ts
  * type _Check = AssertSessionModel<Instance<WebSessionModelType>>
  * ```
+ *
+ * Every product's session model pairs this with one `AssertExtends` per
+ * capability contract it relies on, because this assertion alone is not enough:
+ * `AbstractSessionModel` marks those capabilities **optional**, so it cannot
+ * catch a member drifting out of sync with the `SessionWith*` interface plugins
+ * actually narrow to. Keep them as one assertion per contract rather than
+ * collapsing them into a list — the whole value is the compile error naming the
+ * contract that broke.
  */
 export type AssertSessionModel<T extends AbstractSessionModel> = AssertExtends<
   T,

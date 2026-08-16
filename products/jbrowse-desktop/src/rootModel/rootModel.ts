@@ -36,12 +36,11 @@ import JBrowseDesktop from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
 
 import type { SessionSnap } from '../../electron/ipc/channelTypes.ts'
-import type { AppRootModel } from '@jbrowse/app-core'
+import type { AppRootModel, SessionModelFactory } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { DialogComponentType } from '@jbrowse/core/util/types'
-import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 
 // lazies. A dialog reached through session.queueDialog can always be one:
@@ -106,11 +105,6 @@ function queueSessionDialog(
     session.queueDialog(doneCallback => build(session, doneCallback))
   }
 }
-
-type SessionModelFactory = (args: {
-  pluginManager: PluginManager
-  assemblyConfigSchema: BaseAssemblyConfigSchema
-}) => IAnyType
 
 /**
  * #stateModel JBrowseDesktopRootModel

@@ -46,9 +46,9 @@ import { savedSessionMenuItems } from './sessionMenus.ts'
 
 import type { SessionDBHandle } from '../sessionDbOps.ts'
 import type { Session, SessionMetadata } from '../types.ts'
-import type { MenuDefinition } from '@jbrowse/app-core'
+import type { MenuDefinition, SessionModelFactory } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   AbstractWebRootModel,
   AbstractWebSessionDbRootModel,
@@ -64,12 +64,6 @@ const PreferencesDialog = lazy(
 const TrustedPluginsDialog = lazy(
   () => import('../components/TrustedPluginsDialog.tsx'),
 )
-
-type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
-type SessionModelFactory = (args: {
-  pluginManager: PluginManager
-  assemblyConfigSchema: AssemblyConfig
-}) => IAnyType
 
 interface SessionDbHost {
   sessionDB?: SessionDBHandle

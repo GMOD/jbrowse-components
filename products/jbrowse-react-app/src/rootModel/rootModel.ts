@@ -24,9 +24,10 @@ import { autorun } from 'mobx'
 
 import { version } from '../version.ts'
 
+import type { SessionModelFactory } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
-import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionSnapshot } from '@jbrowse/product-core'
 import type { AbstractWebRootModel } from '@jbrowse/web-core'
 
@@ -44,12 +45,6 @@ export interface PluginsUpdate {
   plugins: PluginDefinition[]
   session: SessionSnapshot | undefined
 }
-
-type AssemblyConfig = ReturnType<typeof assemblyConfigSchemaFactory>
-type SessionModelFactory = (args: {
-  pluginManager: PluginManager
-  assemblyConfigSchema: AssemblyConfig
-}) => IAnyType
 
 /**
  * #stateModel JBrowseReactAppRootModel
