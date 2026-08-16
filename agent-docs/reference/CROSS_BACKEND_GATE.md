@@ -431,6 +431,33 @@ verdict stays clean, which is exactly what the uncompared-is-a-failure rule
 exists to make visible, and the reason to keep the heavy suites out of a blocking
 job.
 
+## The webgl goldens went stale behind those fixes; refreshed 2026-08-16
+
+Every fix above moved the GPU render toward canvas2d and none of them refreshed a
+webgl golden, because the gate needs no golden and the goldens only refresh by
+hand. Twenty of them had drifted, up to **10.77%**, on a tree nobody had touched
+— and a plain run reports "19 passed", since webgl keeps the caller's loose
+threshold and the full-page ones pass at 10%. Only `--update-snapshots` shows it.
+
+**The cheap check is the OTHER backend's golden**, and it separates a stale
+golden from this suite's documented capture race in one read with no second run.
+Every stale webgl golden sat 1.08–10.77% from its canvas2d counterpart while
+every fresh capture landed within 0.25%, most within 0.05% and
+`fullpage_alignments-bam` at 0.00%. Two backends do not race the same way by
+accident, and a swiftshader-vs-real-GPU difference cannot bring a webgl capture
+to 0.00% of a software golden — so it was neither of the two things it looked
+like.
+
+The gate on that scope afterwards: **26 pairs, 0 over threshold, worst 0.71%**
+(`targeted_color-by-insert-size-orientation`), with
+`targeted_alignments-long-reads-sv-linked` — the 1.99% pair this file is largely
+about — no longer in the top five. A second `-u` run rewrote nothing, which is
+what says the new goldens are stable rather than a captured race.
+
+So: **a render fix that improves cross-backend agreement leaves the goldens of
+whichever backend moved reading as a regression.** The gate going green is not
+the end of the change.
+
 ## Alignments under webgpu: 8 of 40 pairs over threshold, and it is the harness
 
 `test:browser:gate` and `:gate:ci` both pass `--skip-webgpu`, so webgpu pairs
