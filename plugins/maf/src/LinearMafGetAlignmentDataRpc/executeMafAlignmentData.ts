@@ -115,35 +115,41 @@ export async function executeMafAlignmentData({
 
   // Rows outside the active subtree are dropped rather than shipped and hidden.
   // The returned `samples` stays the full set so the sidebar tree + "clear
-  // filter" still see every genome. Resolved before the fetch because the sizing
-  // pass below runs inside it.
+  // filter" still see every genome. Resolved before the fetch because the pack
+  // below runs inside it.
   const visible = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
   const isVisible = (sampleId: string) => !visible || visible.has(sampleId)
 
-  // Pass 1: buffer blocks, collect sample order, and size the pack. Nothing is
-  // encoded yet — the subtree filter decides which rows reach the arena.
+  // One MAF feature = one alignment block, packed as it arrives; a single
+  // fetched region can contain many disjoint blocks at unrelated genomic
+  // anchors. for...in avoids the Object.entries+flatMap temp arrays on a
+  // per-block hot path.
   //
-  // Every count in `reserve` is exact, so the packer allocates each column and
-  // the arena once: the arena is the largest thing the worker holds, and letting
-  // it double its way up would memcpy tens of megabytes several times over.
+  // **The packer is given no `reserve`, so its arena and columns grow by
+  // doubling, and that is the deliberate trade.** Sizing them exactly needs
+  // every block counted before any is encoded, which means holding the whole
+  // region's records — and that intermediate, not the memcpy, is what dominates
+  // the shape real files have. Buffering to size the arena measured
+  // **1.18x slower** and **491 MB against 263 MB** of peak RSS on 20000 blocks
+  // of 8 columns; on 1600 blocks of 250 columns the two are within 3% and the
+  // buffered version is nominally ahead. Real MAFs are the first shape — ce11's
+  // 26-way has a 7bp median block — and that stage is 83% of the worker there,
+  // so this is ~13% of the whole fetch. The bench is
+  // `plugins/maf/benches/mafTabixBytes.bench.ts`; agent-docs
+  // reference/MAF_WORKER_PIPELINE.md has the table and the profile behind it.
   //
-  // It is accumulated *here*, in the walk that is already visiting every row to
-  // discover species, rather than in a second walk over `rawBlocks` afterwards.
-  // The two loops read the same `for...in` over the same records and only string
-  // lengths move, so the separate pass was a full re-traversal of the largest
-  // intermediate structure the worker builds — measured at 11% of the RPC's CPU
-  // on the ce11 26-way shape, where `rawBlocks` is ~1.2M records.
-  const rawBlocks: {
-    startBp: number
-    refSeq: string
-    alignments: Record<string, AlignmentRecord>
-    empties: Record<string, EmptyRecord>
-  }[] = []
-  const reserve = { blocks: 0, rows: 0, empties: 0, bytes: 0 }
+  // Growth costs a transient copy at each doubling — the last one holds the old
+  // arena beside the new — which is bounded at ~1.5x the final arena, against
+  // the region's worth of `seq` strings and records the buffer held for its
+  // whole life.
+  const packer = new MafWirePacker()
   // The sample id of the row the block's reference sequence came from, resolved
   // from the first block that names one (all blocks of a track share a
   // reference species). See `referenceSampleId`.
   let refSampleId: string | undefined
+  // Discovery order cannot be read off the packer's own sample dictionary: that
+  // one sees visible rows only, and a filtered subtree still has to return every
+  // genome for the sidebar tree.
   const discoveredOrder = new Map<string, number>()
   const discover = (sampleId: string) => {
     if (!discoveredOrder.has(sampleId)) {
@@ -160,13 +166,20 @@ export async function executeMafAlignmentData({
       const empties = feature.get('empties') as Record<string, EmptyRecord>
       const refSeq = feature.get('seq') as string
       refSampleId ??= referenceSampleId(alignments, refSeq)
-      reserve.blocks++
-      reserve.bytes += refSeq.length
+      packer.startBlock(feature.get('start'), refSeq)
       for (const sampleId in alignments) {
         discover(sampleId)
         if (isVisible(sampleId)) {
-          reserve.rows++
-          reserve.bytes += alignments[sampleId]!.seq.length
+          const a = alignments[sampleId]!
+          packer.addRow({
+            sampleId,
+            seq: a.seq,
+            chr: a.chr,
+            start: a.start,
+            strand: a.strand ?? 1,
+            srcSize: a.srcSize,
+            context: a.context,
+          })
         }
       }
       // A species present only on `e` lines (bridged in every fetched block)
@@ -174,15 +187,9 @@ export async function executeMafAlignmentData({
       for (const sampleId in empties) {
         discover(sampleId)
         if (isVisible(sampleId)) {
-          reserve.empties++
+          packer.addEmpty(sampleId, empties[sampleId]!)
         }
       }
-      rawBlocks.push({
-        startBp: feature.get('start'),
-        refSeq,
-        alignments,
-        empties,
-      })
     },
   )
 
@@ -190,33 +197,6 @@ export async function executeMafAlignmentData({
     ? configSamples
     : [...discoveredOrder.keys()].map(id => ({ id, label: id }))
 
-  // Pass 2: pack. One MAF feature = one alignment block; a single fetched
-  // region can contain many disjoint blocks at unrelated genomic anchors.
-  // for...in + push avoids the Object.entries+flatMap temp array allocations on
-  // a per-block hot path.
-  const packer = new MafWirePacker(reserve)
-  for (const { startBp, refSeq, alignments, empties } of rawBlocks) {
-    packer.startBlock(startBp, refSeq)
-    for (const sampleId in alignments) {
-      if (isVisible(sampleId)) {
-        const a = alignments[sampleId]!
-        packer.addRow({
-          sampleId,
-          seq: a.seq,
-          chr: a.chr,
-          start: a.start,
-          strand: a.strand ?? 1,
-          srcSize: a.srcSize,
-          context: a.context,
-        })
-      }
-    }
-    for (const sampleId in empties) {
-      if (isVisible(sampleId)) {
-        packer.addEmpty(sampleId, empties[sampleId]!)
-      }
-    }
-  }
   const packed = packer.finishBlocks()
 
   // `packed` already contains exactly the visible rows (narrowed by the subtree

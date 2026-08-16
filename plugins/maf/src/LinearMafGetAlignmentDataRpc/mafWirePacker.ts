@@ -12,12 +12,16 @@ import type { AlignmentContext, EmptyRecord } from '../types.ts'
 export type MafWirePacked = Omit<MafWireRegionData, 'coverage' | 'refSampleId'>
 
 /**
- * Up-front sizes for the packer's allocations. Every one is an exact count when
- * the caller has already buffered its blocks (the RPC has), which is the whole
- * point: the arena is the largest thing the worker allocates, and growing it by
- * doubling would copy tens of megabytes several times on the way up. Wrong
- * hints are safe — the writers grow — so a caller that cannot count cheaply may
- * pass nothing.
+ * Up-front sizes for the packer's allocations, for a caller that already knows
+ * them. Wrong hints are safe — every writer grows — and so is passing nothing,
+ * which is what the RPC does.
+ *
+ * **It used to buffer a region's blocks to make these exact, and that was the
+ * more expensive half of the trade.** Growing the arena by doubling copies it,
+ * but sizing it exactly means holding every block's records and `seq` strings
+ * until the last one arrives, and on the block shape real files have that
+ * intermediate costs 1.18x and 228 MB of peak RSS. See the comment in
+ * `executeMafAlignmentData` for the measurement.
  */
 export interface MafWireReserve {
   blocks?: number

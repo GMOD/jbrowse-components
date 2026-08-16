@@ -118,7 +118,8 @@ the exact `reserve` — it grows the arena by doubling, which is the cost the
 buffered pass exists to avoid, and it wins anyway on the shape that has 1.2M
 rows to retain.
 
-So the item worth doing is in "What is left" below, and it needs no tabix change.
+The restructure shipped on its own (`packer fed from the subscription`, below);
+the PR was closed with this measurement as GMOD/tabix-js ADR 0006.
 
 ## Two things that look like wins and are not
 
@@ -192,27 +193,6 @@ look for it. Before declaring a hot loop finished, decompose it: measure the bar
 loop against the loop-plus-output, sweep the working set, and peel the body one
 operation at a time. The rung that costs is rarely the rung that looks expensive.
 
-**Pack each block as it arrives, instead of buffering every block to size the
-arena exactly.** Measured above, as the `string-1pass` arm: **1.18x** on the
-whole read-parse-pack stage and **491 → 263 MB** of peak RSS on the 20000-block
-shape, which is the one real files look like — and that stage is 83% of the
-worker there, so it is ~13% of the whole fetch, not 13% of a corner of it. On the 250-column shape it is a
-wash (0.97x), so this trades a little on wide blocks for a lot on narrow ones.
-
-It gives up the exact `reserve` — the arena grows by doubling — and that is the
-part worth stating plainly, because the buffered pass exists to avoid exactly
-that and its comment says so. The memcpy the doubling costs is real; it is just
-much smaller than what holding 1.2M `seq` strings and their records until the
-end of the fetch costs, and the sizing pass that `bc9e6a1d24` fused into the
-discovery walk is work that then stops existing at all.
-
-`discoveredOrder` is what has to be checked before writing it: pass 1 collects
-it, and the returned `samples` list depends on it, but the packer already builds
-its own `sampleIds` dictionary in row-add order — which is the same order — so
-this is a question of reading the order off the packer rather than a blocker.
-The subtree filter is already resolved before the fetch, so filtering does not
-need the pass either.
-
 **Mismatch decimation is the biggest remaining win and is a compromise.** A
 region that wide emits 783k `(position, base)` pairs which are computed, packed,
 transferred, and then averaged into a coverage bar drawn sub-pixel per position.
@@ -242,6 +222,7 @@ Eight commits, all output-identical except where noted:
 | `bc9e6a1d24` | short arena rows by `charCodeAt`, and the sizing pass fused into the discovery walk | 1.30x packer, 1.38-1.64x sizing |
 | `4177979cca` | coverage's `col >= len` test hoisted to a per-block scan | 1.13-1.24x |
 | `4a8d7d8f7f` | the same arm for coverage's insertion loop | ~1.05x at a 33% gap rate, 1.00x below that |
+| _this one_ | the packer fed from the subscription, and the buffered sizing pass dropped | 1.18x and 491 → 263 MB on narrow blocks |
 
 `57e26565a4` is in `packages/alignments-core`, so the alignments coverage
 pipeline gets it too. It is the one behavioral difference in the set: SNP
