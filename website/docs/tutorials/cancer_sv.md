@@ -339,12 +339,18 @@ A read lane sits under each row. Against hg38 it draws split alignments only, so
 the band over it counts the molecules carrying a junction; on the allele it
 draws every read realigned there.
 
+The allele's lane thins by about half partway along, and where it thins is a
+result rather than a blemish. The tumour has two chromosome 3s: the allele
+begins as sequence they share, so reads off the intact homolog align down it and
+stop where the derivative leaves chr3, while reads off the rearranged copy carry
+on. The shaded band marks what only the rearranged copy reaches.
+
 Between the two, each junction is drawn once as an arc joining its two ends,
 with a short tick at each foot lying over the sequence that end keeps: ticks
 pointing away from each other are a deletion-type join, toward each other a
 duplication-type, and parallel an inversion.
 
-<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from, a read lane under each row, and the junctions drawn once each as arcs over the hg38 lane." src="/img/cancer_sv/derivative_synteny.png" />
+<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from, a read lane under each row, and the junctions drawn once each as arcs over the hg38 lane. Shaded on the allele: the stretch only the rearranged chromosome reaches, where the read lane thins to one allele's worth." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the reconstruction
 

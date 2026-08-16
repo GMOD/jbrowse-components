@@ -261,6 +261,23 @@ const JUNCTION_HL_DER3 = {
   color: 'rgba(60,65,72,0.12)',
 }
 
+// Where the allele stops being sequence both chromosome 3s share — which is what
+// makes the derivative row's coverage drop by about half, and is derivative_
+// synteny's second finding rather than a blemish on its first. The span and the
+// measurement behind it are argued at the use site.
+//
+// It starts at the last base the intact homolog's reads reach rather than at the
+// junction itself: the two are 457 bp apart, and the reads stop at the first of
+// them.
+const ONE_ALLELE_HL_DER3 = {
+  refName: 'der3_RARB_BICC1_TRHDE',
+  assemblyName: 'der3_RARB_BICC1_TRHDE',
+  start: 32275,
+  end: 39549,
+  label: 'only the rearranged copy reaches here',
+  color: 'rgba(60,65,72,0.10)',
+}
+
 function realignedReadsPartSpecs(): ScreenshotSpec[] {
   // One height for both, since `+append` pads the shorter pane, and each pane's
   // tracks are then sized to fill it rather than to a round number: both halves
@@ -1191,6 +1208,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // so goes with it, and the segments lane's remaining labels are
               // the three at the junctions, which is what this frame is about.
               loc: 'der3_RARB_BICC1_TRHDE:22,000-39,549',
+              highlight: [ONE_ALLELE_HL_DER3],
               // NOT overlapping on this row, unlike the one above, and the
               // difference is the segments lane: `trackLabels` is a property of
               // the VIEW, so it is all three tracks or none, and floating the
@@ -1201,13 +1219,32 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // say. The row above has no label under anything in its left
               // margin, so it pays nothing for the same setting.
               trackLabels: 'offset',
-              // NO HIGHLIGHT ON THIS ROW (reviewer: "potentially remove the
-              // highlight it is confusing because that is not the only place
-              // being shown in the breakpoint area on bottom"). Right: the band
-              // shaded 32,000-33,700, and the fold-back's inverted return runs
-              // from there to the end of the contig, so a reader is told to look
-              // at one part of a breakpoint region the row draws all of. The
-              // window is now that region, which is what the shading was for.
+              // ONE HIGHLIGHT, AND IT IS THE ANSWER TO THE COVERAGE (review:
+              // "why would the coverage be uneven in the derived allele").
+              //
+              // It is uneven because the tumour carries two chromosome 3s. The
+              // allele's first segment IS reference chr3, so a read off the
+              // intact homolog aligns straight down it and then stops where the
+              // derivative leaves chr3; a read off the rearranged copy carries
+              // on. Measured off the BAM rather than reasoned about: of 29
+              // primary alignments, 13 end at 32,275 and the rest run to the
+              // contig end, and mean depth drops from ~43x just left of there to
+              // ~19x across the rest -- about half, which is what one allele of
+              // two looks like.
+              //
+              // 32,275 is not an artifact either: it is 457 bp short of the
+              // junction, and 457 bp is the gap between the two chr3 breakends
+              // of this closed triangle (the same pair walkBreakendChain stops
+              // on).
+              //
+              // So the step is the allele fraction, and shading what lies past
+              // it says that. THE EARLIER OBJECTION IS WHY IT IS THIS SPAN
+              // (reviewer: "potentially remove the highlight it is confusing
+              // because that is not the only place being shown in the breakpoint
+              // area on bottom"): the old band shaded 32,000-33,700 while the
+              // fold-back's inverted return runs from there to the END of the
+              // contig, so it pointed at one part of a region the row draws all
+              // of. This one is that whole region.
               // the provenance track says which reference interval each stretch
               // came from; the projected genes say what that stretch is -- the
               // allele carries RARB's first coding exon at 14 kb and comes back

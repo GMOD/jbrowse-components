@@ -2461,7 +2461,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // the rows plus the ruler and track header; sized from the run's own
     // below-the-fold report
-    viewportHeight: 400,
+    viewportHeight: 470,
   },
 
   {
