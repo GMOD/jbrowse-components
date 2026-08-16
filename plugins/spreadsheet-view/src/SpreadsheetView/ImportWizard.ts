@@ -1,7 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { fetchAndMaybeUnzip, getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { allSessionTracks, getTrackName } from '@jbrowse/core/util/tracks'
+import {
+  allSessionTracks,
+  getFileName,
+  getTrackName,
+} from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
@@ -44,6 +48,32 @@ const adapterFileTypes: Record<string, (typeof fileTypes)[number]> = {
   BedTabixAdapter: 'BED',
   BedpeAdapter: 'BEDPE',
   StarFusionAdapter: 'STAR-Fusion',
+}
+
+// The track each file type opens as, for putting an imported file in the
+// session so the views a row drills down into can show it.
+//
+// Deliberately NOT `guessAdapter`, which is what "Add track" uses: that guesses
+// off the filename, so a `.vcf.gz` becomes a `VcfTabixAdapter` and needs an
+// index beside it. The C-GIAB benchmark VCF the SV tutorial is built on has no
+// `.tbi`, so a guessed track there would 404 — turning a drill-down that showed
+// nothing into one that shows an error, which is worse.
+//
+// These plain readers take the whole file, which is exactly what the sheet
+// already did to produce the rows on screen, so the track cannot fail where the
+// import succeeded. A file that already has an indexed track in the session
+// reaches that one instead, through `existingTrackId`.
+const fileTypeTracks: Record<
+  (typeof fileTypes)[number],
+  { trackType: string; adapterType: string }
+> = {
+  VCF: { trackType: 'VariantTrack', adapterType: 'VcfAdapter' },
+  BED: { trackType: 'FeatureTrack', adapterType: 'BedAdapter' },
+  BEDPE: { trackType: 'VariantTrack', adapterType: 'BedpeAdapter' },
+  'STAR-Fusion': {
+    trackType: 'VariantTrack',
+    adapterType: 'StarFusionAdapter',
+  },
 }
 
 // matches a file extension against the supported file types (case-insensitive)
@@ -201,6 +231,61 @@ export default function stateModelFactory() {
         return this.importableTracks.filter(t =>
           t.assemblyNames.includes(selectedAssembly),
         )
+      },
+
+      /**
+       * #getter
+       * the track the session already has for the loaded file, if any.
+       *
+       * Matched by location rather than remembered, which answers for all three
+       * ways a sheet can be holding a file: "open from track" (where it is the
+       * track the reader picked), a session reloaded from
+       * `cachedFileLocation` (where nothing was remembered), and a pasted URL
+       * that happens to name a file some track already points at — which should
+       * reach that track rather than stand up a second copy of it.
+       */
+      get existingTrackId() {
+        const loc = self.fileSource ?? self.cachedFileLocation
+        const name = loc ? getFileSourceName(loc) : undefined
+        return name
+          ? this.importableTracks.find(t => getFileSourceName(t.loc) === name)
+              ?.track.trackId
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * A track config for the loaded file, so the views the sheet drills down
+       * into can show the records the rows came from. Undefined when the
+       * session already has a track for the file — see `existingTrackId` — and
+       * when the adapter declares no location key to put the file in.
+       *
+       * The trackId is derived from the location rather than from the view, so
+       * two views importing one file share a track and a reloaded session
+       * reuses the one it already has.
+       */
+      trackConfForImportedFile(assemblyName: string) {
+        const loc = self.fileSource ?? self.cachedFileLocation
+        const name = loc ? getFileSourceName(loc) : undefined
+        if (!loc || !name || self.existingTrackId) {
+          return undefined
+        }
+        const { trackType, adapterType } = fileTypeTracks[self.fileType]
+        const { pluginManager } = getEnv(self)
+        const { locationKey } = pluginManager.getAdapterType(adapterType)
+        return locationKey
+          ? {
+              type: trackType,
+              // the whole location in the id, so two files with one basename
+              // cannot collide; the basename alone as the label, which is what
+              // "Add track" shows and what fits a track selector row
+              trackId: `spreadsheet-import-${name}`,
+              name: getFileName(loc),
+              assemblyNames: [assemblyName],
+              adapter: { type: adapterType, [locationKey]: loc },
+            }
+          : undefined
       },
     }))
     .actions(self => ({

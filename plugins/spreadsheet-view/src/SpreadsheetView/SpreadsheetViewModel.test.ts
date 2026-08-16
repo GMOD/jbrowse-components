@@ -171,3 +171,84 @@ test('width churn does not re-trigger the load (reaction tracks init, not width)
   model.setWidth(803)
   expect(model.importWizard.fileSource).toBe(applied)
 })
+
+// The imported file becomes a session track so the views a row drills down into
+// hold the records the row came from — before this they opened empty.
+describe('the imported file as a track', () => {
+  // the adapter registry, stubbed: what is under test is which adapter and
+  // track type each format asks for, not what key that adapter declares — so
+  // the stub answers with a distinctive one and the assertions read the
+  // location back out of it
+  const pluginManager = {
+    getAdapterType: (name: string) => ({ locationKey: `${name}Location` }),
+  }
+
+  function sessionWithTracks() {
+    const SpreadsheetView = stateModelFactory()
+    const added: Record<string, unknown>[] = []
+    const Session = types
+      .model({
+        rpcManager: types.frozen(),
+        configuration: types.frozen(),
+        // `existingTrackId` sweeps these looking for a track already showing
+        // the file; nothing here has one
+        tracks: types.frozen<unknown[]>(),
+        view: types.maybe(SpreadsheetView),
+      })
+      .actions(self => ({
+        setView(view: ReturnType<typeof SpreadsheetView.create>) {
+          self.view = view
+          return self.view
+        },
+        addSessionTrackConf(conf: Record<string, unknown>) {
+          added.push(conf)
+          return conf
+        },
+        notifyError() {},
+      }))
+    const session = Session.create(
+      { rpcManager: {}, configuration: {}, tracks: [] },
+      { pluginManager },
+    )
+    const model = session.setView(
+      SpreadsheetView.create({ type: 'SpreadsheetView' }),
+    )
+    return { model, added }
+  }
+
+  function importedTrack(uri: string) {
+    const { model, added } = sessionWithTracks()
+    model.importWizard.setFileSource({ uri, locationType: 'UriLocation' })
+    model.registerImportedTrack('hg38')
+    return added
+  }
+
+  test('a VCF import registers a VariantTrack on the plain adapter', () => {
+    const added = importedTrack('https://example.com/calls.vcf.gz')
+    expect(added).toHaveLength(1)
+    expect(added[0]).toMatchObject({
+      type: 'VariantTrack',
+      // the basename, which is what a track selector row has room for
+      name: 'calls.vcf.gz',
+      assemblyNames: ['hg38'],
+      // NOT VcfTabixAdapter, which is what guessing off the filename gives: it
+      // needs an index the sheet never used, and the C-GIAB benchmark VCF the
+      // SV tutorial is built on has none
+      adapter: {
+        type: 'VcfAdapter',
+        VcfAdapterLocation: { uri: 'https://example.com/calls.vcf.gz' },
+      },
+    })
+  })
+
+  test('each format asks for the adapter and track type it needs', () => {
+    expect(importedTrack('https://example.com/pairs.bedpe')[0]).toMatchObject({
+      type: 'VariantTrack',
+      adapter: { type: 'BedpeAdapter' },
+    })
+    expect(importedTrack('https://example.com/regions.bed')[0]).toMatchObject({
+      type: 'FeatureTrack',
+      adapter: { type: 'BedAdapter' },
+    })
+  })
+})

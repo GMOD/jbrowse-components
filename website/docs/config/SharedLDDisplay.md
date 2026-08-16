@@ -16,8 +16,8 @@ the same slots against different track types, so the slots live here once.
 
 ## Related links
 
-- **Extended by:** [LDTrackDisplay](../ldtrackdisplay)
 - **Extended by:** [LDDisplay](../lddisplay)
+- **Extended by:** [LDTrackDisplay](../ldtrackdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 
 ## Config slots

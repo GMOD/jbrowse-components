@@ -20,7 +20,9 @@ export default observer(function LocationCell({
   feature: SimpleFeatureSerialized
 }) {
   const session = getSession(model)
-  const spreadsheetViewId = getParent<{ id: string }>(model).id
+  const view = getParent<{ id: string; importedTrackId?: string }>(model)
+  const spreadsheetViewId = view.id
+  const trackId = view.importedTrackId
   const { assemblyName } = model
   // two spellings on purpose: the link shows grouped coordinates, but what is
   // handed to locationLinkClick is parsed at the other end, and the raw form is
@@ -35,6 +37,7 @@ export default observer(function LocationCell({
         spreadsheetViewId={spreadsheetViewId}
         assemblyName={assemblyName}
         feature={feature}
+        trackId={trackId}
       />
       <ActionLink
         onClick={async () => {
@@ -44,6 +47,7 @@ export default observer(function LocationCell({
               session,
               locString: rawLocString,
               assemblyName,
+              trackId,
             })
           } catch (e) {
             console.error(e)

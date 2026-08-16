@@ -28,8 +28,8 @@ that identifies it (not one of the config slots below).
 ## Related links
 
 - **Extended by:** [JB2TrackHubConnection](../jb2trackhubconnection)
-- **Extended by:** [UCSCTrackHubConnection](../ucsctrackhubconnection)
 - **Extended by:** [JBrowse1Connection](../jbrowse1connection)
+- **Extended by:** [UCSCTrackHubConnection](../ucsctrackhubconnection)
 
 ## Config slots
 

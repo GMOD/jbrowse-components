@@ -402,6 +402,32 @@ export function isSessionWithSessionTracks(
   return isSessionModel(t) && 'sessionTracks' in t
 }
 
+/**
+ * abstract interface for a session that can be given a track belonging to the
+ * session itself.
+ *
+ * Distinct from `SessionWithAddTracks` on purpose: `addTrackConf` sends an
+ * admin's track into the shared config.json, which is right for the "Add track"
+ * workflow and wrong for a track a feature stands up on the user's behalf — an
+ * admin opening a VCF in the SV inspector does not thereby mean to publish it
+ * to every visitor. Carries the same `disableAddTracks` opt-out, so an embed
+ * that has turned tracks off does not get one added behind its back.
+ */
+export interface SessionWithAddSessionTrack extends AbstractSessionModel {
+  addSessionTrackConf(
+    configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
+  ): AnyConfigurationModel | undefined
+}
+export function isSessionWithAddSessionTrack(
+  t: unknown,
+): t is SessionWithAddSessionTrack {
+  return (
+    isSessionModel(t) &&
+    'addSessionTrackConf' in t &&
+    !('disableAddTracks' in t && t.disableAddTracks)
+  )
+}
+
 /** abstract interface for a session that allows adding session assemblies */
 export interface SessionWithAddAssembly extends AbstractSessionModel {
   addSessionAssembly(conf: Record<string, unknown>): void

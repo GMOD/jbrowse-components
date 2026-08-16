@@ -19,11 +19,14 @@ export default function FeatureMenu({
   session,
   spreadsheetViewId,
   feature,
+  trackId,
 }: {
   spreadsheetViewId: string
   assemblyName: string
   session: AbstractSessionModel
   feature: SimpleFeatureSerialized
+  /** the session track for the loaded file; both launches open it */
+  trackId?: string
 }) {
   return (
     <CascadingMenuButton
@@ -37,6 +40,7 @@ export default function FeatureMenu({
                 assemblyName,
                 session,
                 locString: assembleLocStringRaw(feature),
+                trackId,
               })
             } catch (e) {
               console.error(e)
@@ -60,6 +64,7 @@ export default function FeatureMenu({
                       spreadsheetViewId,
                       assemblyName,
                     ),
+                    ...(trackId ? { defaultTrackIds: [trackId] } : {}),
                   })
                 },
               },

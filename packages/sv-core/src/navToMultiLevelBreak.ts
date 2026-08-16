@@ -1,7 +1,7 @@
 import { stripTrackIds } from '@jbrowse/core/util'
 import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 
-import { openOrReuseSplitView } from './openSplitView.ts'
+import { openDefaultTracks, openOrReuseSplitView } from './openSplitView.ts'
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
@@ -19,6 +19,7 @@ export async function navToMultiLevelBreak({
   session,
   mirror,
   tracks: viewTracks,
+  defaultTrackIds,
   windowSize = 0,
   stops,
 }: {
@@ -34,6 +35,16 @@ export async function navToMultiLevelBreak({
    * opened rather than rebuild it; see `openOrReuseSplitView`.
    */
   tracks?: Track[]
+  /**
+   * Tracks every panel opens when the launcher has no source view — the SV
+   * inspector's own callset, say. Separate from `tracks` because that one
+   * doubles as "the reader expressed an opinion about tracks", which is what
+   * `openOrReuseSplitView` reads to choose between re-navigating a view and
+   * rebuilding it; passing these as `tracks` would rebuild on every chord click
+   * and the reuse path exists to stop that flashing. So they are opened on a
+   * view this call BUILT, and a reused one already has them.
+   */
+  defaultTrackIds?: string[]
   /**
    * The loci to open, one panel each, in the order the chain crosses them. Omit
    * for the record's own two ends, which is what a single BND describes.
@@ -101,6 +112,8 @@ export async function navToMultiLevelBreak({
   })
   if (reused) {
     view.setDisplayName(makeTitle(feature))
+  } else {
+    openDefaultTracks(view.views, defaultTrackIds)
   }
   await Promise.all(
     panels.map((panel, idx) =>

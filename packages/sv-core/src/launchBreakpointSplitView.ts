@@ -15,6 +15,7 @@ export function launchBreakpointSplitView({
   view,
   stableViewId,
   findJunctionsNear,
+  defaultTrackIds,
 }: {
   session: AbstractSessionModel
   feature: Feature
@@ -29,6 +30,17 @@ export function launchBreakpointSplitView({
    * SA mate or from a pasted row.
    */
   findJunctionsNear?: FindJunctionsNear
+  /**
+   * Tracks every panel opens when there is no `view` to copy from. The SV
+   * inspector passes the callset it loaded, so a split view launched from a row
+   * or a chord shows the record that sent it there; without it the panels
+   * arrive at the right loci holding nothing.
+   *
+   * Ids rather than track snapshots, because a snapshot has to carry the track
+   * type and a launcher holding only a trackId would have to go and look it up
+   * — which `showTrack` already does, off the config.
+   */
+  defaultTrackIds?: string[]
 }) {
   session.queueDialog(handleClose => [
     BreakpointSplitViewChoiceDialog,
@@ -40,6 +52,7 @@ export function launchBreakpointSplitView({
       view,
       stableViewId,
       findJunctionsNear,
+      defaultTrackIds,
     },
   ])
 }

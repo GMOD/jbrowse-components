@@ -27,6 +27,28 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
  * reappearing at the bottom of the session below whatever the reader was
  * looking at.
  */
+/**
+ * Open a launcher's default tracks on every panel of a view it just built.
+ *
+ * Only on a built view: a reused one already has them, and re-showing would put
+ * back a track the reader had closed. A trackId the session cannot resolve
+ * throws, and one stale id should not cost the reader the whole launch.
+ */
+export function openDefaultTracks(
+  views: { showTrack: (trackId: string) => unknown }[],
+  trackIds: string[] = [],
+) {
+  for (const view of views) {
+    for (const trackId of trackIds) {
+      try {
+        view.showTrack(trackId)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }
+}
+
 export function openOrReuseSplitView({
   session,
   stableViewId,

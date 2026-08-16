@@ -1,5 +1,6 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
+import { isSessionWithAddSessionTrack } from '@jbrowse/core/util/types'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { reaction } from 'mobx'
@@ -142,6 +143,41 @@ export default function stateModelFactory() {
           setInit(init?: SpreadsheetViewInit) {
             self.init = init
           },
+
+          /**
+           * #action
+           * Put the loaded file in the session as a track, so the linear and
+           * breakpoint views a row opens have the records the row came from.
+           * Without it every drill-down landed on an empty view and the reader
+           * had to add the same file again by hand.
+           *
+           * Idempotent on purpose, and cheaply so: the trackId is derived from
+           * the file's location and `addSessionTrackConf` dedupes against
+           * everything the session can already resolve, so a reloaded session
+           * re-importing its cached URI reuses the track rather than stacking a
+           * second one. `trackConfForImportedFile` declines outright when a
+           * track for the file already exists.
+           *
+           * **Nothing takes the track back out** — not `returnToImportForm`,
+           * not closing this view. The views that opened it are the reason it
+           * exists and they outlive the sheet, so removing it would empty a
+           * linear view the reader is still reading. It is an ordinary session
+           * track from that point on: it shows up in the track selector, it
+           * saves with the session, and the reader closes it there. Importing a
+           * second file adds a second track rather than replacing this one,
+           * which is the same answer — they loaded two files.
+           */
+          registerImportedTrack(assemblyName: string) {
+            const session = getSession(self)
+            const conf =
+              self.importWizard.trackConfForImportedFile(assemblyName)
+            // a host with tracks turned off, or one whose session has no
+            // session-track store, keeps the old behavior: the drill-downs open
+            // without the callset rather than the import failing
+            if (conf && isSessionWithAddSessionTrack(session)) {
+              session.addSessionTrackConf(conf)
+            }
+          },
         }))
         .actions(self => ({
           /**
@@ -160,6 +196,7 @@ export default function stateModelFactory() {
               // read the snackbar
               if (data && isAlive(self)) {
                 self.displaySpreadsheet(data)
+                self.registerImportedTrack(assemblyName)
               }
             } catch (e) {
               console.error(e)
@@ -279,6 +316,17 @@ export default function stateModelFactory() {
            */
           get showLoading() {
             return self.importWizard.loading
+          },
+          /**
+           * #getter
+           * the track showing the loaded file, which the views a row drills
+           * down into open. One derivation, not a recorded id: after
+           * `registerImportedTrack` the session holds a track pointing at the
+           * file, so the same location match that decides whether to build one
+           * is also what finds it afterwards
+           */
+          get importedTrackId() {
+            return self.importWizard.existingTrackId
           },
           /**
            * #method

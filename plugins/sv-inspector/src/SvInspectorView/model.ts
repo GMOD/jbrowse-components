@@ -26,6 +26,18 @@ interface SvInspectorViewInit extends SpreadsheetViewInit {}
 export const circularViewOptionsBarHeight = 52
 
 /**
+ * The trackId a persisted circular-view track names. A track opened from the
+ * session's config carries its trackId as a string; one given an inline config —
+ * which is how the chord track is built — carries the whole object.
+ */
+function trackConfId(configuration: unknown) {
+  return typeof configuration === 'string'
+    ? configuration
+    : ((configuration as { trackId?: string } | undefined)?.trackId ??
+        undefined)
+}
+
+/**
  * #stateModel SvInspectorView
  * #category view
  * does not extend, but is a combination of a
@@ -112,11 +124,16 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         /**
          * #property
          */
+        // The track selector stays available: the circle's own chord track is
+        // built from the sheet, but a reader comparing a tumour callset against
+        // its normal, or one caller against another, needs a second one beside
+        // it, and hiding the selector made that unreachable. The import form is
+        // still off — the regions come from the sheet's assembly, so there is
+        // nothing for a reader to import here.
         circularView: types.optional(CircularModel, () =>
           CircularModel.create({
             type: 'CircularView',
             hideVerticalResizeHandle: true,
-            hideTrackSelectorButton: true,
             disableImportForm: true,
           }),
         ),
@@ -486,17 +503,28 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       // afterAttach, and that view caches the file location just as
       // synchronously, so this node's copy has nothing left to reconstruct.
       //
-      // The circular view's only track is built here from the sheet's rows, and
+      // The chord track is built here from the sheet's rows, and
       // showTrackGeneric puts that config on the track *inline*, so persisting
-      // `tracks` would write every visible feature into the session a second
-      // time. Nothing else about the subview is derived: displayedRegions,
+      // it would write every visible feature into the session a second time —
+      // and the autorun rebuilds it on attach anyway. Only that one is dropped:
+      // the circle keeps its track selector so a reader can lay a second
+      // callset beside this one, and dropping the whole array took theirs with
+      // it. Nothing else about the subview is derived: displayedRegions,
       // bpPerPx, offsetRadians and autoFit are the user's own pan and zoom,
       // which the circular view means to keep across a reload, and dropping the
       // whole node used to reset the circle on every session load.
       // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       const { init, circularView, ...rest } = snap
       const { tracks, ...circular } = circularView
-      return { ...rest, circularView: circular }
+      const generatedId = `sv-inspector-variant-track-${snap.id}`
+      const kept = tracks.filter(
+        (t: { configuration?: unknown }) =>
+          trackConfId(t.configuration) !== generatedId,
+      )
+      return {
+        ...rest,
+        circularView: kept.length ? { ...circular, tracks: kept } : circular,
+      }
     })
 }
 

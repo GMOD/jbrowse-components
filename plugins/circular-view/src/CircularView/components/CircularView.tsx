@@ -158,7 +158,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       const rect = el.getBoundingClientRect()
       const [dx, dy] = offsetFromCenter(model, rect, event)
       const distFromCenter = Math.hypot(dx, dy)
-      if (distFromCenter > model.radiusPx + model.paddingPx) {
+      if (distFromCenter > model.radiusPx + model.effectivePaddingPx) {
         return
       }
       event.preventDefault()

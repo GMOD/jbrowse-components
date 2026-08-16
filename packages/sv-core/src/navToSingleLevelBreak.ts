@@ -2,7 +2,7 @@ import { gatherOverlaps, getSession, stripTrackIds } from '@jbrowse/core/util'
 import { bpToOffset, compareBpOffsets } from '@jbrowse/core/util/Base1DUtils'
 import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 
-import { openOrReuseSplitView } from './openSplitView.ts'
+import { openDefaultTracks, openOrReuseSplitView } from './openSplitView.ts'
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
@@ -174,6 +174,7 @@ export async function navToSingleLevelBreak({
   assemblyName,
   session,
   tracks,
+  defaultTrackIds,
   windowSize = 0,
   focusOnBreakends,
 }: {
@@ -188,6 +189,13 @@ export async function navToSingleLevelBreak({
    * rebuild it; see `openOrReuseSplitView`.
    */
   tracks?: Track[]
+  /**
+   * Tracks the panel opens when the launcher has no source view. Separate from
+   * `tracks` for the reason `navToMultiLevelBreak` spells out: that one doubles
+   * as the reuse-vs-rebuild signal, so these are opened on a view this call
+   * BUILT and a reused one already has them.
+   */
+  defaultTrackIds?: string[]
   focusOnBreakends?: boolean
 }) {
   const { snap, coverage } = await (focusOnBreakends === true
@@ -215,6 +223,8 @@ export async function navToSingleLevelBreak({
   if (reused) {
     view.views[0]?.setDisplayedRegions(snap.views[0]!.displayedRegions)
     view.setDisplayName(snap.displayName)
+  } else {
+    openDefaultTracks(view.views, defaultTrackIds)
   }
   if (!(await whenViewSettled(view))) {
     throw new Error(`Cannot open breakpoint split view: ${view.error}`, {

@@ -61,7 +61,7 @@ export async function renderToSvg(
   // of *this* point, so measuring up front sized and centered the canvas for
   // the pre-wait geometry and drew a figure that was off-center in it, or
   // clipped by it. (Same ordering rule as the dotplot and LGV exports.)
-  const { radiusPx, offsetRadians, paddingPx } = model
+  const { radiusPx, offsetRadians, effectivePaddingPx: paddingPx } = model
 
   // The view's own `paddingPx` is a fixed guess at how much room the ruler
   // labels need, and on screen a label that overruns it is merely clipped by a

@@ -21,17 +21,17 @@ identifies it (not one of the config slots below).
 
 ## Related links
 
-- **Extended by:** [FeatureTrack](../featuretrack)
 - **Extended by:** [AlignmentsTrack](../alignmentstrack)
-- **Extended by:** [MultiQuantitativeTrack](../multiquantitativetrack)
-- **Extended by:** [QuantitativeTrack](../quantitativetrack)
+- **Extended by:** [FeatureTrack](../featuretrack)
 - **Extended by:** [GCContentTrack](../gccontenttrack)
 - **Extended by:** [GWASTrack](../gwastrack)
 - **Extended by:** [HicTrack](../hictrack)
-- **Extended by:** [MafTrack](../maftrack)
 - **Extended by:** [LDTrack](../ldtrack)
-- **Extended by:** [VariantTrack](../varianttrack)
+- **Extended by:** [MafTrack](../maftrack)
+- **Extended by:** [MultiQuantitativeTrack](../multiquantitativetrack)
+- **Extended by:** [QuantitativeTrack](../quantitativetrack)
 - **Extended by:** [SyntenyTrack](../syntenytrack)
+- **Extended by:** [VariantTrack](../varianttrack)
 
 ## Config slots
 

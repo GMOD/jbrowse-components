@@ -158,6 +158,16 @@ function stateModelFactory(pluginManager: PluginManager) {
   const defaultMinimumRadiusPx = 25
   const defaultSpacingPx = 10
   const defaultPaddingPx = 80
+  // Floors and caps for the two above, which are fixed pixel counts sized for a
+  // circle with a window to itself — see effectivePaddingPx/effectiveSpacingPx.
+  //
+  // 0.2 is not a new opinion: 80px is a fifth of the half-box at the 800px size
+  // the constant was tuned against, so holding that fraction below it leaves
+  // every roomy circle exactly where it was and keeps a small one in the same
+  // proportion instead of watching the padding eat it.
+  const minPaddingPx = 20
+  const maxPaddingFraction = 0.2
+  const maxSpacingFraction = 0.25
   const defaultMinVisibleWidth = 6
   return types
     .compose(
@@ -293,10 +303,69 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * `paddingPx`, capped so it cannot eat a small box.
+       *
+       * The declared value is a fixed 80px sized for a circle with a window to
+       * itself, and it comes out of the radius twice. In the SV inspector,
+       * whose circle gets about a third of the width, that left the drawn disc
+       * covering 41% of the area it was given, and in a 316px-tall one — the
+       * height the SV tutorial's figure sets — the radius fell to 78px.
+       *
+       * Capped as a fraction of the half-box rather than at a pixel count, so
+       * the circle holds one shape at every size. The fraction is the one the
+       * declared 80px already is at the size it was tuned for, so a roomy
+       * circle is untouched and a cramped one is merely not made worse. The
+       * floor is what the ruler labels need to sit outside the arc at all.
+       */
+      get effectivePaddingPx() {
+        const halfBox = Math.min(self.width, self.height) / 2
+        return Math.min(
+          self.paddingPx,
+          Math.max(minPaddingPx, halfBox * maxPaddingFraction),
+        )
+      },
+      /**
+       * #getter
+       * `spacingPx`, capped so the inter-chromosome gaps cannot take the ring.
+       *
+       * Also a fixed pixel count, and it is charged once per slice, so what it
+       * costs depends entirely on how big the circle ended up: 27% of the
+       * circumference at the SV inspector's default and 49% of it at that
+       * 316px-tall one, where the chromosomes drew as ticks with holes between
+       * them. Capping the total rather than the gap keeps a roomy circle on the
+       * declared value and only closes up where the ring is genuinely short.
+       *
+       * Measured against the radius the box would fit rather than `radiusPx`,
+       * which is derived from this.
+       */
+      get effectiveSpacingPx() {
+        const slices = this.elidedRegions.length
+        return slices
+          ? Math.min(
+              self.spacingPx,
+              (twoPi * this.fitRadiusPx * maxSpacingFraction) / slices,
+            )
+          : self.spacingPx
+      },
+      /**
+       * #getter
+       * the radius the current box has room for — what `fitToWindow` aims at,
+       * and the scale `effectiveSpacingPx` measures itself against. A pure
+       * function of the box, so neither reads back a value derived from it
+       */
+      get fitRadiusPx() {
+        return Math.max(
+          Math.min(self.width, self.height) / 2 - this.effectivePaddingPx,
+          self.minimumRadiusPx,
+        )
+      },
+      /**
+       * #getter
        */
       get circumferencePx() {
+        const spacing = this.effectiveSpacingPx
         return this.elidedRegions.reduce(
-          (sum, r) => sum + r.widthBp / self.bpPerPx + self.spacingPx,
+          (sum, r) => sum + r.widthBp / self.bpPerPx + spacing,
           0,
         )
       },
@@ -316,7 +385,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get centerXY(): [number, number] {
-        const c = this.radiusPx + self.paddingPx
+        const c = this.radiusPx + this.effectivePaddingPx
         return [c, c]
       },
       /**
@@ -364,7 +433,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * figure is always square, so width === height
        */
       get figureSize() {
-        return this.radiusPx * 2 + 2 * self.paddingPx
+        return this.radiusPx * 2 + 2 * this.effectivePaddingPx
       },
       /**
        * #getter
@@ -572,7 +641,17 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get staticSlices() {
-        return calculateStaticSlices(self)
+        // spelled out rather than handing over `self`, because the gap between
+        // slices has to be the same one `circumferencePx` charged for — passing
+        // the node let the layout read the declared `spacingPx` while the
+        // circumference used the capped one, and the slices then did not close
+        // the ring they were laid out on
+        return calculateStaticSlices({
+          elidedRegions: self.elidedRegions,
+          bpPerRadian: self.bpPerRadian,
+          spacingPx: self.effectiveSpacingPx,
+          radiusPx: self.radiusPx,
+        })
       },
     }))
     .actions(self => ({
@@ -600,10 +679,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (self.volatileWidth === undefined) {
           return
         }
-        const targetRadiusPx = Math.max(
-          Math.min(self.width, self.height) / 2 - self.paddingPx,
-          self.minimumRadiusPx,
-        )
+        const targetRadiusPx = self.fitRadiusPx
         // the circumference is the regions plus one inter-slice gap each, so
         // the gaps come out of the budget before the bp are spread over what is
         // left. Ignoring them overshoots by sliceCount*spacingPx/PI px of
@@ -621,7 +697,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           this.setBpPerPx(
             self.totalBp /
               Math.max(
-                twoPi * targetRadiusPx - sliceCount * self.spacingPx,
+                twoPi * targetRadiusPx - sliceCount * self.effectiveSpacingPx,
                 twoPi * self.minimumRadiusPx,
               ),
           )

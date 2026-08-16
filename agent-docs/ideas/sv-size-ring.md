@@ -40,11 +40,10 @@ inventing: readers of cancer genomes arrive already able to read it.
 - **Mark, not arc.** A 172 bp event has no angular width either, so a "ribbon
   along the rim" degenerates exactly the way the chord did. It wants a dot or a
   tick, sized by class rather than by span.
-- **Where the ring lives.** `radiusPx` in the SV inspector is ~143 px at the
-  default geometry and the chords already own the interior. Taking a band out of
-  it makes the chords worse. This probably wants [the fixed-pixel circle
-  geometry](../TODO.md) fixed first, which is most of a doubling of usable
-  radius for free.
+- **Where the ring lives.** The chords already own the interior, so taking a
+  band out of it makes them worse. `effectivePaddingPx`/`effectiveSpacingPx`
+  have since bought back most of the radius the fixed-pixel constants were
+  spending in a narrow pane, which is the room this would come out of.
 - **Whether it belongs to `ChordVariantDisplay` or beside it.** The display is
   named for the primitive it draws and its config slots are all stroke colours.
   A second mark type on the same features is either a second display on the
@@ -52,6 +51,8 @@ inventing: readers of cancer genomes arrive already able to read it.
 
 ## Why it is not in `TODO.md`
 
-Nobody has committed to it, and the two entries above it in value — the empty
-drill-downs, and a circle that can hold a second callset — are both plain
-missing-wiring rather than a visual design. Read this before re-proposing it.
+Nobody has committed to it. The three things that were worth more — the empty
+drill-downs, the fixed-pixel geometry, and a circle that could only ever hold
+one callset — were all plain missing wiring and have since been done, so this is
+what is left, and it is a visual design rather than a fix. Read it before
+re-proposing it.

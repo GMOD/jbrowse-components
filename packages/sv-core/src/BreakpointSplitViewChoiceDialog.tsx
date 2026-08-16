@@ -51,6 +51,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     stableViewId,
     view,
     findJunctionsNear,
+    defaultTrackIds,
   }: {
     session: AbstractSessionModel
     handleClose: () => void
@@ -59,6 +60,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     assemblyName: string
     stableViewId?: string
     findJunctionsNear?: FindJunctionsNear
+    defaultTrackIds?: string[]
   }) {
     // ONE STEP. This dialog used to ask its two questions on two screens --
     // shape, then options -- so opening a split view took a right-click, a menu
@@ -121,6 +123,7 @@ const BreakpointSplitViewChoiceDialog = observer(
                 stableViewId: suffixedId('multilevel'),
                 session,
                 tracks,
+                defaultTrackIds,
                 mirror,
                 feature,
                 assemblyName,
@@ -134,6 +137,7 @@ const BreakpointSplitViewChoiceDialog = observer(
                 session,
                 stableViewId: suffixedId('singlelevel'),
                 tracks,
+                defaultTrackIds,
                 windowSize: windowSizeNum,
               }))
         } catch (e) {

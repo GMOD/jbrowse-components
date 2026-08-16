@@ -19,10 +19,10 @@ field that identifies it (not one of the config slots below).
 
 ## Related links
 
-- **Extended by:** [OAuthInternetAccount](../oauthinternetaccount)
 - **Extended by:**
   [ExternalTokenInternetAccount](../externaltokeninternetaccount)
 - **Extended by:** [HTTPBasicInternetAccount](../httpbasicinternetaccount)
+- **Extended by:** [OAuthInternetAccount](../oauthinternetaccount)
 
 ## Config slots
 

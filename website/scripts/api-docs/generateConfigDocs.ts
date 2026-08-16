@@ -319,6 +319,11 @@ interface DisplayLinkContext {
 // Every page's "From" column links a slot up to the base that defines it, so a
 // `#slot-` deep link can land on a base schema — a name that is never written
 // in a config. This is the only route back down to something pasteable.
+// Sorted, because `configs` arrives in `Object.values(byFile)` order — the order
+// the TypeScript program visited its sources, which follows the module graph.
+// That is deterministic for a given tree AND install and stable across neither,
+// so the list permuted whenever the package graph moved and the churn landed on
+// whoever next added a dependency, reading as theirs.
 function extendedByMap(configs: ConfigWithHeader[], index: ConfigIndex) {
   const map = new Map<string, string[]>()
   for (const config of configs) {
@@ -327,6 +332,9 @@ function extendedByMap(configs: ConfigWithHeader[], index: ConfigIndex) {
       const name = base.header.name
       map.set(name, [...(map.get(name) ?? []), config.header.name])
     }
+  }
+  for (const names of map.values()) {
+    names.sort((a, b) => a.localeCompare(b))
   }
   return map
 }

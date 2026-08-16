@@ -104,16 +104,20 @@ test('a taller-than-wide box hangs the figure from the top', () => {
   expect(originY).toBe(0)
 })
 
-// and the case the centering is still there for. A box this short cannot hold
-// the figure at all — `minimumRadiusPx` floors the fit — so the figure is
-// bigger than its box, and it overflows top and bottom equally rather than only
-// off the bottom. Same arithmetic a zoom past the box produces.
+// and the case the centering is still there for: a figure bigger than its box
+// overflows top and bottom equally rather than only off the bottom.
+//
+// Reached by zooming rather than by shrinking the box. A short box used to
+// produce an oversized figure on its own, because a fixed 80px of padding took
+// the whole half-box and left the radius on its `minimumRadiusPx` floor — which
+// was the bug `effectivePaddingPx` fixes, not a case worth keeping as a
+// fixture. Zooming past the box is the way a reader actually gets here.
 test('a figure bigger than its box still overflows evenly', () => {
   const view = createView({ regions: [region('chr1', 1_000_000)] })
-  view.setHeight(200)
+  view.setBpPerPx(view.bpPerPx / 4)
   const [, originY] = view.figureOriginXY
-  expect(view.figureSize).toBeGreaterThan(200)
-  expect(originY).toBeCloseTo((200 - view.figureSize) / 2)
+  expect(view.figureSize).toBeGreaterThan(view.height)
+  expect(originY).toBeCloseTo((view.height - view.figureSize) / 2)
   expect(originY).toBeLessThan(0)
 })
 
@@ -221,4 +225,46 @@ test('height before width does not throw, and the fit lands once width arrives',
   // deferred, not skipped: the measurement arriving is what performs the fit
   view.setWidth(800)
   expect(view.figureSize).toBeCloseTo(400)
+})
+
+// `paddingPx` and `spacingPx` are fixed pixel counts sized for a circle with a
+// window to itself, and both come out of the radius. In a narrow pane — the SV
+// inspector's circle gets about a third of the width — they took most of it.
+describe('the fixed-pixel geometry gives way in a small box', () => {
+  const chromosomes = Array.from({ length: 24 }, (_, i) =>
+    region(`chr${i + 1}`, 130_000_000),
+  )
+
+  test('a roomy circle keeps exactly the padding and spacing it declared', () => {
+    const view = createView({ regions: chromosomes, width: 800, height: 800 })
+    expect(view.effectivePaddingPx).toBe(view.paddingPx)
+    expect(view.effectiveSpacingPx).toBe(view.spacingPx)
+  })
+
+  test('a narrow pane draws a bigger circle than the fixed padding allowed', () => {
+    const big = createView({ regions: chromosomes, width: 800, height: 800 })
+    const small = createView({ regions: chromosomes, width: 475, height: 316 })
+    expect(small.effectivePaddingPx).toBeLessThan(big.effectivePaddingPx)
+    // beats what a flat 80px left it, which is the whole complaint
+    expect(small.radiusPx).toBeGreaterThan(316 / 2 - 80)
+    // and holds the same shape the roomy one has, rather than merely a better
+    // one: the disc is the same share of its box at both sizes
+    const share = (v: { radiusPx: number; width: number; height: number }) =>
+      (2 * v.radiusPx) / Math.min(v.width, v.height)
+    expect(share(small)).toBeCloseTo(share(big), 1)
+  })
+
+  test('the inter-chromosome gaps cannot take a quarter of the ring', () => {
+    const small = createView({ regions: chromosomes, width: 475, height: 316 })
+    const gaps = chromosomes.length * small.effectiveSpacingPx
+    expect(gaps / small.circumferencePx).toBeLessThan(0.26)
+  })
+
+  test('the slices are laid out on the gap the circumference charged for', () => {
+    const small = createView({ regions: chromosomes, width: 475, height: 316 })
+    const last = small.staticSlices.at(-1)!
+    // the ring closes: the final slice ends one gap short of a full turn
+    const gapRadians = small.effectiveSpacingPx / small.radiusPx
+    expect(last.endRadians + gapRadians).toBeCloseTo(2 * Math.PI, 5)
+  })
 })

@@ -33,8 +33,12 @@ function defaultOnChordClick(
     // the inspector's, and session.views otherwise
     const parentView = getParent<{
       type?: string
-      spreadsheetView?: { id: string }
+      spreadsheetView?: { id: string; importedTrackId?: string }
     }>(view)
+    const importedTrackId =
+      parentView.type === 'SvInspectorView'
+        ? parentView.spreadsheetView?.importedTrackId
+        : undefined
     launchBreakpointSplitView({
       session,
       feature,
@@ -52,6 +56,9 @@ function defaultOnChordClick(
             ),
           }
         : {}),
+      // the callset the chord was drawn from, so the split view opens holding
+      // the record that was clicked rather than two empty panels
+      ...(importedTrackId ? { defaultTrackIds: [importedTrackId] } : {}),
       // in the SV inspector, reuse the same view the sheet's own row menu opens
       // so a chord click and a row click don't stack two of them. Other
       // circular views get a fresh view per click
