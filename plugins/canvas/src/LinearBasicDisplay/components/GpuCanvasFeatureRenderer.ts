@@ -18,6 +18,7 @@ import {
   packRects,
   rectShader,
 } from '../passes/index.ts'
+import { GLYPH_LAYERS } from './glyphLayers.ts'
 import {
   MAX_VISIBLE_CHEVRONS_PER_LINE,
   canvasEdgeFlags,
@@ -28,6 +29,7 @@ import type {
   FeatureRenderBlock,
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
+import type { GlyphLayerId } from './glyphLayers.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
@@ -106,6 +108,52 @@ export const CANVAS_FEATURE_PASSES: PipelineDescriptor[] = [
   ContinuationPass,
 ]
 
+// Whether each end of this block's clipped span is a true canvas edge, which is
+// the only thing the continuation layer draws off.
+type CanvasEdges = ReturnType<typeof canvasEdgeFlags>
+
+type GpuGlyphDrawFn = (
+  hal: GpuHal,
+  regionKey: number,
+  edges: CanvasEdges,
+) => void
+
+// Each glyph layer's GPU draw. The set and the paint order live in the shared
+// `GLYPH_LAYERS` list (also driving the Canvas2D renderer and, through it, the
+// SVG export); this map resolves each id to the `drawPass` calls that issue it,
+// and is typed `Record<GlyphLayerId, …>` so a glyph added to that list is a
+// compile error here until it is drawn.
+//
+// `drawPass` short-circuits a region with no buffer for the pass, so every layer
+// issues unconditionally rather than off has-rects / has-lines flags.
+const GPU_GLYPH_DRAW: Record<GlyphLayerId, GpuGlyphDrawFn> = {
+  // Two passes, one layer: the chevrons draw from line's own vertex buffer
+  // (`bufferPassId`), which is a GPU buffer-sharing artifact and not a second
+  // place in the order — Canvas2D paints them inside `drawLines`.
+  line: (hal, key) => {
+    hal.drawPass(PASS_LINE, key)
+    hal.drawPass(PASS_CHEVRON, key, PASS_LINE)
+  },
+  rect: (hal, key) => {
+    hal.drawPass(PASS_RECT, key)
+  },
+  arrow: (hal, key) => {
+    hal.drawPass(PASS_ARROW, key)
+  },
+  // Last, so the "feature keeps going" markers sit on top of the glyph they
+  // annotate, and from the rect buffer since its instances ARE the rects. The
+  // pass runs one instance per rect and every instance self-culls to OFFSCREEN
+  // unless it straddles a canvas edge, so an interior block in a multi-region
+  // view, where no instance can qualify, would shade a full pileup's worth of
+  // vertices to draw nothing. Skip it there, as the Canvas2D path already skips
+  // its equivalent per-rect scan.
+  continuation: (hal, key, edges) => {
+    if (edges.leftIsCanvasEdge || edges.rightIsCanvasEdge) {
+      hal.drawPass(PASS_CONTINUATION, key, PASS_RECT)
+    }
+  },
+}
+
 export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
   RegionRenderData,
   RenderState
@@ -124,11 +172,12 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
   ) {
     // Continuation markers only fire where the block edge is the real canvas
     // edge, not a seam between two on-screen displayedRegions.
-    const { leftIsCanvasEdge, rightIsCanvasEdge } = canvasEdgeFlags(
+    const edges = canvasEdgeFlags(
       clip.scissorX,
       clip.scissorW,
       state.canvasWidth,
     )
+    const { leftIsCanvasEdge, rightIsCanvasEdge } = edges
     rectShader.writeUniforms(this.uniformData, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,
@@ -144,26 +193,8 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
 
     this.hal.writeUniforms(this.uniformData)
 
-    // HAL.drawPass short-circuits when the region has no buffer for that pass,
-    // so we can issue every pass unconditionally instead of caching has-rects /
-    // has-lines / has-arrows flags on the renderer.
-    this.hal.drawPass(PASS_LINE, block.displayedRegionIndex)
-    this.hal.drawPass(PASS_CHEVRON, block.displayedRegionIndex, PASS_LINE)
-    this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)
-    this.hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
-    // Drawn last so the "feature keeps going" markers sit on top of the glyph
-    // they annotate, and from the rect buffer (bufferPassId) since its instances
-    // ARE the rects. The pass runs one instance per rect and every instance
-    // self-culls to OFFSCREEN unless it straddles a canvas edge, so an interior
-    // block in a multi-region view, where no instance can qualify, would shade a
-    // full pileup's worth of vertices to draw nothing. Skip it there, as the
-    // Canvas2D path already skips its equivalent per-rect scan.
-    if (leftIsCanvasEdge || rightIsCanvasEdge) {
-      this.hal.drawPass(
-        PASS_CONTINUATION,
-        block.displayedRegionIndex,
-        PASS_RECT,
-      )
+    for (const id of GLYPH_LAYERS) {
+      GPU_GLYPH_DRAW[id](this.hal, block.displayedRegionIndex, edges)
     }
   }
 }

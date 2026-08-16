@@ -27,6 +27,7 @@ import {
   strandMatchesEdge,
 } from '../passes/shaders/continuation.js.generated.ts'
 import { rectSpanPx } from '../passes/shaders/rect.js.generated.ts'
+import { GLYPH_LAYERS } from './glyphLayers.ts'
 import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
 import {
@@ -56,7 +57,9 @@ import type {
   FeatureRenderBlock,
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
+import type { GlyphLayerId } from './glyphLayers.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { BlockClip } from '@jbrowse/render-core/canvas2dUtils'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
@@ -475,6 +478,49 @@ function drawContinuation(
   }
 }
 
+type GlyphDrawFn = (
+  ctx: Ctx2D,
+  region: RegionRenderData,
+  block: BpRegionBounds,
+  toX: BpToScreen,
+  state: RenderState,
+  clip: BlockClip,
+) => void
+
+// Each glyph layer's Canvas2D painter. The set and the paint order live in the
+// shared `GLYPH_LAYERS` list (also driving the GPU renderer); this map resolves
+// each id to the call that paints it, and is typed `Record<GlyphLayerId, …>` so
+// a glyph can't be added to that list without being painted here — or on the SVG
+// export path, which reaches these same painters through `drawFeatureBlocks`.
+//
+// The painters take the arguments each needs rather than one shared signature:
+// the record is what makes the ids uniform, not the calls under them.
+const CANVAS_GLYPH_DRAW: Record<GlyphLayerId, GlyphDrawFn> = {
+  // Chevrons ride along inside `drawLines`, painted per line right after the
+  // line itself, where the GPU draws them as a separate pass off the line
+  // buffer. Same marks, same slot in the order.
+  line: (ctx, region, block, toX, state) => {
+    drawLines(ctx, region, block, toX, state)
+  },
+  rect: (ctx, region, _block, toX, state) => {
+    drawRects(ctx, region, toX, state)
+  },
+  arrow: (ctx, region, block, toX, state) => {
+    drawArrows(ctx, region, block, toX, state)
+  },
+  continuation: (ctx, region, block, toX, state, clip) => {
+    drawContinuation(
+      ctx,
+      region,
+      block,
+      toX,
+      state,
+      clip.scissorX,
+      clip.scissorW,
+    )
+  },
+}
+
 /**
  * Pure draw entry point. Paints lines, rects, and arrows for the laid-out
  * feature data into any 2D-canvas-like context. Per-block scissor clips so
@@ -497,19 +543,9 @@ export function drawFeatureBlocks(
     block => regions.get(block.displayedRegionIndex),
     (region, block, clip) => {
       const toX = makeBpMapper(block)
-      drawLines(ctx, region, block, toX, state)
-      drawRects(ctx, region, toX, state)
-      drawArrows(ctx, region, block, toX, state)
-      // Drawn last so the markers sit on top of the glyphs they annotate.
-      drawContinuation(
-        ctx,
-        region,
-        block,
-        toX,
-        state,
-        clip.scissorX,
-        clip.scissorW,
-      )
+      for (const id of GLYPH_LAYERS) {
+        CANVAS_GLYPH_DRAW[id](ctx, region, block, toX, state, clip)
+      }
     },
   )
 }

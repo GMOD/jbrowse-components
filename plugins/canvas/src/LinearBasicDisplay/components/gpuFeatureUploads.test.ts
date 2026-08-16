@@ -127,6 +127,36 @@ describe('draw passes', () => {
     ])
   })
 
+  it('draws every pass it registers', () => {
+    const { hal, renderer } = setup()
+    // Every glyph family populated and a block on both canvas edges, so nothing
+    // is absent for want of data or of an edge.
+    const data = regionData(2, {
+      linePositions: new Uint32Array([100, 200, 300, 400]),
+      lineYs: new Float32Array(2),
+      lineHeights: new Float32Array(2).fill(10),
+      lineColors: new Uint32Array(2).fill(0xff00_00ff),
+      lineDirections: new Int8Array(2).fill(1),
+      arrowXs: new Uint32Array([150, 350]),
+      arrowYs: new Float32Array(2),
+      arrowHeights: new Float32Array(2).fill(10),
+      arrowWidthsBp: new Uint32Array(2).fill(50),
+      arrowDirections: new Int8Array(2).fill(1),
+      arrowColors: new Uint32Array(2).fill(0xff00_00ff),
+    })
+    renderer.uploadRegion(REGION, data)
+    renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
+
+    // `GLYPH_LAYERS` is what the renderer walks, and each id resolves to one or
+    // two `drawPass` calls — so a pass added to `CANVAS_FEATURE_PASSES` and
+    // missed in `GPU_GLYPH_DRAW` registers, compiles and never draws. The
+    // typed records catch a missing LAYER; nothing but this catches a pass with
+    // no layer to carry it.
+    expect(new Set(callsTo(hal, 'drawPass').map(c => c.args[0]))).toStrictEqual(
+      new Set(CANVAS_FEATURE_PASSES.map(p => p.id)),
+    )
+  })
+
   it('skips the continuation pass on an interior block', () => {
     const { hal, renderer } = setup()
     renderer.uploadRegion(REGION, regionData(2))
