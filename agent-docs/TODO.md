@@ -78,6 +78,7 @@ before anyone noticed.
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 | [Nothing checks a hand-built transfer list](#nothing-checks-a-hand-built-rpc-transfer-list-against-its-payload) | RPC | decide whether the synteny list should be derived instead |
 | [The comparative displays sit behind neither bring-your-own seam](#the-comparative-displays-sit-behind-neither-bring-your-own-seam) | synteny, dotplot, embedded | the bar is fixed; take this WITH the comparative cancel/retry entry |
+| [Sweep the unused exports, or close the question](#sweep-the-unused-exports-with-a-real-tool-or-close-the-question) | tooling, CI | configure knip per package; a grep returns 623 names and almost none are dead |
 
 ## Ready to build: small and self-contained
 
@@ -1858,4 +1859,38 @@ The stock one is a 255 KB reference that fits inside a single 256 KiB chunk, so
 sharing the cache across workers looks free on it whatever the truth is — the
 duplication is real (measured: one reference download per RPC worker) but its
 COST is invisible until a pan can miss that cache.
+
+### Sweep the unused exports with a real tool, or close the question
+
+Nothing in the repo looks for an exported name that no importer wants. The dead
+*files* and dead *dependencies* were swept on 2026-08-16 (`f783f4444c`), and
+that sweep is done — this entry is only the exports half it deliberately left.
+
+**The premise is unconfirmed, and a grep will not confirm it.** A crude pass —
+every `export const|function|class|interface|type|enum` whose identifier appears
+in no other file — returns **623 names**, and spot-checking says almost none of
+them are dead:
+
+- Most are exported *types* of published packages. `@jbrowse/core` and every
+  `@jbrowse/plugin-*` ship to npm, so a type nobody imports in-tree is API, and
+  removing it is an ABI break — see
+  [reference/PLUGIN_ABI_STABILITY.md](reference/PLUGIN_ABI_STABILITY.md).
+- The examples-sites' components are consumed by Astro. A scanner that reads
+  only `.ts`/`.tsx` never sees a `.astro` importer, and under `jsx: react-jsx`
+  it never sees `react/jsx-runtime` either — the same blind spot that made
+  `astro` and `react` read as dead dependencies in `f783f4444c`'s first pass.
+- `_AssertAddTracks`, `AssertEnumListsCoverUpstream` and friends are
+  compile-time assertions. Appearing once is what they are for.
+
+So the first move is **not** to delete anything. Run `knip` (or `ts-prune`)
+configured per package — entry points declared, published `exports` maps treated
+as roots, `products/` separated from `packages/` and `plugins/` because only the
+first is an app rather than a library — and see what survives that. If the
+surviving set is small and boring, take it; if it is still noise, close this
+entry and say so, because the answer is then "there is no exports problem here"
+rather than "nobody has looked".
+
+Whatever the verdict, the tool belongs in `pnpm check-docs`'s neighbourhood only
+if it is quiet on a clean tree. A gate that reports 600 findings teaches everyone
+to skip it.
 
