@@ -607,33 +607,37 @@ shallower angle than any correspondence a reader could follow has nothing
 anchoring it either. It is a change to every synteny figure's marker set, so it
 wants its own review and its own before/after rather than riding a figure pass.
 
-## A synteny window over chr8's pericentromere throws DataCloneError
+## A synteny window over chr8's pericentromere threw DataCloneError — FIXED
 
-Blocks `hg002_haplotypes_location_markers` from moving to the locus its own note
-asks for, so it is written down rather than rediscovered.
+Kept because the diagnosis in it was WRONG in a way worth not repeating.
 
-`chr8_MATERNAL:44,880,000-45,180,000` (and the same locus at 70 kb, so it is the
-locus and not the width) renders the whole synteny band as an error banner:
+`chr8_MATERNAL:44,880,000-45,180,000` rendered the whole synteny band as an
+error banner, on every run:
 
 ```
 DataCloneError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope':
 ArrayBuffer at index 19 is already detached.
 ```
 
-Reproducible on every run; the 8p23.1 windows the other figures use are fine.
+`executeSyntenyFeaturesAndPositions` hand-maintained its transfer list (18+
+`.buffer` entries, no dedup), so the obvious cause was a duplicate. This section
+used to say **that was tried and is NOT it** — that wrapping the list in a `Set`
+changed nothing, so something was holding a typed array across calls.
 
-`executeSyntenyFeaturesAndPositions` hand-maintains its transfer list (18+
-`.buffer` entries, no dedup), so the obvious cause is a duplicate — a buffer
-listed twice is detached by its first entry and throws on the second, which is
-exactly this message. **That was tried and is NOT it**: wrapping the list in a
-`Set` changes nothing, so the buffer is already detached when the post starts.
-Something is holding a typed array across calls and re-posting it. Index 19 is
-`instanceData.alignmentLengths` when `attributes` has three channels, which is
-the place to start.
+That was wrong. Replacing the hand list with `rpcResultWithArrayBuffers`, which
+dedupes through a `Set` and now also walks one level into `instanceData`, fixes
+it outright: the locus renders and `hg002_haplotypes_location_markers` moved
+there. The earlier attempt presumably deduped only the flat half of the list and
+left the nested `instanceData` entries alone, which is exactly where the
+duplicate was.
 
-Why this locus: it is the one scored highest for "indels at least 2 px wide"
-across chr8, i.e. the densest chain in the file — so whatever aliases is
-plausibly a size- or count-dependent path rather than anything about the region.
+**The lesson is the shape of the note, not the bug.** A handoff sentence saying
+an obvious fix was tried and failed writes that fix off for everyone who reads
+it afterwards; it cost this figure two review rounds. Say what was run, so the
+next reader can tell a refuted hypothesis from a mis-run experiment.
+
+The helper now names the field rather than an index, so the next one of these
+reports `instanceData.alignmentLengths` instead of `index 19`.
 
 ## Known blockers (check `screenshot-review.json` for current status first)
 

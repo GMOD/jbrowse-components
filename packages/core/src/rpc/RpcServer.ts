@@ -33,22 +33,68 @@ export function rpcResult<T>(
   return { __rpcResult: true, value, transferables }
 }
 
-// rpcResult with transferables auto-derived from the result's top-level
-// TypedArray fields, so a newly-added typed-array field is transferred (moved,
-// zero-copy) rather than silently structurally cloned just because a
-// hand-maintained buffer list wasn't extended. Use for any worker RPC whose
-// result is a flat object of typed arrays (canvas/synteny/dotplot/wiggle packers).
+// A buffer postMessage will refuse, and which field it arrived on. `detached` is
+// ES2024 and is what a moved buffer reports; the byteLength fallback is for a
+// runtime without it, where a detached buffer measures 0 under a view that does
+// not.
+//
+// Worth naming rather than letting postMessage throw: its own message is
+// "ArrayBuffer at index N is already detached", and N is a position in a list
+// the reader cannot see. One of those cost a figure a release cycle.
+function detachedFieldName(view: ArrayBufferView, path: string) {
+  const { buffer } = view
+  const detached =
+    'detached' in buffer
+      ? (buffer as { detached: boolean }).detached
+      : buffer.byteLength === 0 && view.byteLength > 0
+  return detached ? path : undefined
+}
+
+// rpcResult with transferables auto-derived from the result's TypedArray fields,
+// so a newly-added one is transferred (moved, zero-copy) rather than silently
+// structurally cloned just because a hand-maintained buffer list wasn't
+// extended. Use for any worker RPC whose result is typed arrays (canvas /
+// synteny / dotplot / wiggle packers).
+//
+// Walks one level into plain-object fields, because a packer that groups its
+// arrays (`{ ...featureData, instanceData }`) is otherwise back to maintaining
+// the nested half by hand — which is where the bug this guards against lived.
 export function rpcResultWithArrayBuffers<T extends object>(value: T) {
-  const fields: unknown[] = Object.values(value)
   // A Set because several fields can be views onto one allocation (subarrays of
   // a shared buffer), and postMessage rejects a transfer list with a duplicate
   // entry outright. SharedArrayBuffer-backed views are skipped for the same
   // reason: a SAB can't be transferred, only cloned.
   const transferables = new Set<ArrayBuffer>()
-  for (const field of fields) {
-    if (ArrayBuffer.isView(field) && field.buffer instanceof ArrayBuffer) {
-      transferables.add(field.buffer)
+  const detached: string[] = []
+
+  function collect(obj: object, prefix: string, depth: number) {
+    for (const [key, field] of Object.entries(obj)) {
+      const path = prefix ? `${prefix}.${key}` : key
+      if (ArrayBuffer.isView(field)) {
+        if (field.buffer instanceof ArrayBuffer) {
+          const bad = detachedFieldName(field, path)
+          if (bad) {
+            detached.push(bad)
+          }
+          transferables.add(field.buffer)
+        }
+      } else if (
+        depth > 0 &&
+        field !== null &&
+        typeof field === 'object' &&
+        !Array.isArray(field)
+      ) {
+        collect(field, path, depth - 1)
+      }
     }
+  }
+  collect(value, '', 1)
+
+  if (detached.length > 0) {
+    throw new Error(
+      `RPC result carries already-detached buffer(s): ${detached.join(', ')}. ` +
+        'A typed array is being held across calls and re-posted; allocate it per call.',
+    )
   }
   return rpcResult(value, [...transferables])
 }

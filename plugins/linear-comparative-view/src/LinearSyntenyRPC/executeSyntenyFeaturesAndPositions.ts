@@ -6,7 +6,7 @@ import {
   dedupe,
   updateStatus,
 } from '@jbrowse/core/util'
-import { rpcResult } from '@jbrowse/core/util/librpc'
+import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import {
   PRESET_ATTRIBUTES,
@@ -587,24 +587,9 @@ export async function executeSyntenyFeaturesAndPositions({
       }),
   )
 
-  return rpcResult({ ...featureData, instanceData }, [
-    featureData.strands.buffer,
-    featureData.starts.buffer,
-    featureData.ends.buffer,
-    ...Object.values(featureData.attributes).map(a => a.buffer),
-    featureData.nameIds.buffer,
-    featureData.refNameIds.buffer,
-    featureData.assemblyNameIds.buffer,
-    featureData.mateStarts.buffer,
-    featureData.mateEnds.buffer,
-    featureData.mateRefNameIds.buffer,
-    featureData.mateAssemblyNameIds.buffer,
-    instanceData.bp1.buffer,
-    instanceData.bp2.buffer,
-    instanceData.bp3.buffer,
-    instanceData.bp4.buffer,
-    instanceData.kinds.buffer,
-    instanceData.instanceFeatureIdx.buffer,
-    instanceData.alignmentLengths.buffer,
-  ] as ArrayBuffer[])
+  // Derived rather than hand-listed. The list this replaces named eighteen
+  // buffers in two groups and had no dedup, so `attributes` gaining a channel
+  // that aliases another field, or `instanceData` gaining an array, was a
+  // DataCloneError naming an index in a list nobody could see.
+  return rpcResultWithArrayBuffers({ ...featureData, instanceData })
 }

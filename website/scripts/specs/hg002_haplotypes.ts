@@ -334,23 +334,24 @@ function haplotypeSession(
 const DRIFT_WINDOW_MAT = 'chr8_MATERNAL:7,700,000-7,770,000'
 const DRIFT_WINDOW_PAT_BEFORE = 'chr8_PATERNAL:7,700,000-7,770,000'
 
-// THE MARKERS FIGURE STAYS AT 8p23.1 AND AT 70 kb, and the zoom-out is declined
-// with a measurement rather than tried and reverted (reviewer: 'the show
-// location markers mostly shines when there are lots of indels interrupting it,
-// so then you can see, the matches amongst the indels').
+// THE MARKERS FIGURE MOVED TO THE PERICENTROMERE (reviewer: 'the show location
+// markers mostly shines when there are lots of indels interrupting it, so then
+// you can see, the matches amongst the indels'). Right, and 8p23.1 could not
+// deliver it: that window sits inside one 204 kb chain whose 141 gaps are nearly
+// all under 50 bp, so zooming out only made them sub-pixel.
 //
-// Zooming out makes the indels smaller, which the chain file says before any
-// render: this window is inside one 204 kb chain whose 141 gaps are nearly all
-// under 50 bp, so at 50 bp/px they are already sub-pixel.
+// The locus is scored rather than guessed -- ranking every chr8 chain by indels
+// at least 2 px wide at this window width puts it at the pericentromeric chain
+// chr8_MATERNAL:44,638,867-45,382,648, where 300 kb holds 23 indels of 429 bp or
+// more against 0 at 8p23.1.
 //
-// The locus that WOULD deliver it is scored rather than guessed -- ranking every
-// chr8 chain by indels at least 2 px wide at this window width puts it at the
-// pericentromeric chain chr8_MATERNAL:44,638,867-45,382,648, where 300 kb holds
-// 23 indels of 429 bp or more against 0 here. It is unused because the synteny
-// RPC throws DataCloneError on that locus at any width; see
-// screenshot-review-plan.md.
-const MARKER_WINDOW_MAT = DRIFT_WINDOW_MAT
-const MARKER_WINDOW_PAT_BEFORE = DRIFT_WINDOW_PAT_BEFORE
+// It was blocked for two review rounds by a DataCloneError the synteny RPC threw
+// here at any window width, and the block is gone: that RPC hand-maintained an
+// eighteen-buffer transfer list with no dedup, and this locus is the one dense
+// enough to put one buffer in it twice. It derives the list now
+// (rpcResultWithArrayBuffers), which dedupes by construction.
+const MARKER_WINDOW_MAT = 'chr8_MATERNAL:44,880,000-45,180,000'
+const MARKER_WINDOW_PAT_BEFORE = 'chr8_PATERNAL:44,880,000-45,180,000'
 
 // Both frames wait on the same synteny-canvas signal and pay the same remote
 // fetch (a whole-genome chain read in one go), so the capture settings are

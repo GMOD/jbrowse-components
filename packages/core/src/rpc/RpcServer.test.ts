@@ -247,6 +247,45 @@ describe('rpcResultWithArrayBuffers', () => {
     const { transferables } = rpcResultWithArrayBuffers({ shared, owned })
     expect(transferables).toEqual([owned.buffer])
   })
+
+  // A packer that groups its arrays — `{ ...featureData, instanceData }` — was
+  // the case the caller had to hand-maintain, and hand-maintaining it is what
+  // produced a DataCloneError naming an index nobody could see.
+  test('reaches one level into a grouped field', () => {
+    const starts = new Uint32Array(2)
+    const bp1 = new Float32Array(2)
+    const { transferables } = rpcResultWithArrayBuffers({
+      starts,
+      instanceData: { bp1, instanceCount: 2 },
+    })
+    expect(transferables).toEqual([starts.buffer, bp1.buffer])
+  })
+
+  test('dedupes across the nesting, not only within a level', () => {
+    const backing = new ArrayBuffer(16)
+    const outer = new Uint32Array(backing, 0, 2)
+    const inner = new Uint32Array(backing, 8, 2)
+    const { transferables } = rpcResultWithArrayBuffers({
+      outer,
+      group: { inner },
+    })
+    expect(transferables).toEqual([backing])
+  })
+
+  // postMessage's own report is "ArrayBuffer at index N is already detached",
+  // and N is a position in a list the reader never sees. Naming the field is the
+  // difference between a diagnosis and a bisect.
+  test('names the field holding an already-detached buffer', () => {
+    const stale = new Uint32Array(2)
+    // ArrayBuffer.prototype.transfer rather than a postMessage: it detaches the
+    // same way and needs no worker or MessageChannel, so this asserts the check
+    // rather than the test environment's structured-clone support.
+    stale.buffer.transfer()
+
+    expect(() =>
+      rpcResultWithArrayBuffers({ instanceData: { alignmentLengths: stale } }),
+    ).toThrow(/instanceData\.alignmentLengths/)
+  })
 })
 
 describe('RpcClient + RpcServer round-trip', () => {
