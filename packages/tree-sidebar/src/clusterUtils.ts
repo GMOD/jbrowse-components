@@ -1,10 +1,11 @@
+import { parseNewick } from '@gmod/newick'
+
 import {
   clusterLayout,
   hasIncrementalBranchLengths,
   hierarchy,
   leaves,
 } from './hierarchy.ts'
-import parseNewick from './newick.ts'
 
 import type { HierarchyNode } from './hierarchy.ts'
 import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'

@@ -1,9 +1,9 @@
 import { toNewick } from '@gmod/hclust'
+import { parseNewick } from '@gmod/newick'
 
 import { clusterMatrix } from './clusterMatrix.ts'
-import parseNewick from './newick.ts'
 
-import type { NewickNode } from './newick.ts'
+import type { NewickNode } from '@gmod/newick'
 
 function leafNames(node: NewickNode): string[] {
   return node.children?.length ? node.children.flatMap(leafNames) : [node.name!]

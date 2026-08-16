@@ -252,3 +252,16 @@ test('renderTreeSVG emits orthogonal connector path', () => {
     )
   }
 })
+
+// Single-linkage clustering chains, so a dendrogram can be a caterpillar whose
+// depth is its leaf count. The layout used to recurse and threw
+// "RangeError: Maximum call stack size exceeded" somewhere past 5000 tips.
+test('lays out a caterpillar dendrogram far deeper than the call stack', () => {
+  let deep: Node = { name: 'l0' }
+  for (let i = 1; i < 50_000; i++) {
+    deep = { name: `i${i}`, length: i, children: [deep, { name: `l${i}` }] }
+  }
+  const laid = clusterLayout(hierarchy(deep, childrenOf), 100, 100, true)
+  expect(leaves(laid)).toHaveLength(50_000)
+  expect(descendants(laid)).toHaveLength(99_999)
+})

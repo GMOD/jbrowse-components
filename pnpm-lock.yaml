@@ -644,6 +644,9 @@ importers:
       '@gmod/hclust':
         specifier: 4.0.4
         version: 4.0.4
+      '@gmod/newick':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
@@ -4442,6 +4445,9 @@ packages:
 
   '@gmod/nclist@3.0.13':
     resolution: {integrity: sha512-wUHzsQRHO7LHVXESMnVrr6h5P2qGdoNouL7Atbed2MZHG0mNTzSiq8lsqC9Nt+PGoCnFLLU+qBlD4CmXpTZheQ==}
+
+  '@gmod/newick@1.0.1':
+    resolution: {integrity: sha512-cgcuLbW+Vf1IALwOCqVA+KwKokZtuXaEvY7CJVlwuzLtNl2r2oYKpCNXrnG3ASJOjyrX3lrNr62iLEsZgXCprg==}
 
   '@gmod/range-cache-filehandle@1.0.2':
     resolution: {integrity: sha512-M1dQYtcPXMqHGBoxAUjX+czeVpWgWGfQWd1uI2k51Z8aYIyoBlHBYysbZX34oDCFKnjQUNO+/jR4wWx1vlDBeA==}
@@ -12356,6 +12362,8 @@ snapshots:
     dependencies:
       '@gmod/shared-read-cache': 1.6.0
       '@jridgewell/resolve-uri': 3.1.2
+
+  '@gmod/newick@1.0.1': {}
 
   '@gmod/range-cache-filehandle@1.0.2':
     dependencies:

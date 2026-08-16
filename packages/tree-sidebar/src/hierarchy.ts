@@ -1,4 +1,13 @@
+import {
+  descendants,
+  eachAfter,
+  hierarchy as coreHierarchy,
+  leaves,
+  links,
+} from '@gmod/newick'
 import { alpha } from '@jbrowse/core/ui/palette'
+
+import type { HierarchyNode as CoreHierarchyNode } from '@gmod/newick'
 
 // Stroke for tree branch lines, shared by the canvas and SVG draw paths. The
 // sidebar paints a translucent `background.paper` panel behind the dendrogram,
@@ -53,14 +62,30 @@ export function treeHoverColors(palette: {
 // (reviewer: the tree's top level looked ~1px offscreen at pad 1).
 export const TREE_LEFT_PAD = 2
 
-export interface HierarchyNode<T> {
-  data: T
+// The generic tree machinery lives in @gmod/newick, shared with react-msaview.
+// Its traversals are iterative: a dendrogram out of single-linkage clustering is
+// a caterpillar, whose depth is its leaf count, and the recursive versions these
+// replaced threw RangeError past about 5000 tips. Everything below this point is
+// dendrogram layout, which is ours.
+export { descendants, eachAfter, leaves, links }
+
+// the shared node plus the coordinates clusterLayout writes onto it. The
+// traversals are generic over the node type, so they hand this one back rather
+// than the base, and nothing downstream has to cast.
+export interface HierarchyNode<T> extends CoreHierarchyNode<T> {
   children: HierarchyNode<T>[] | null
   parent: HierarchyNode<T> | null
-  depth: number
-  height: number
   x?: number
   y?: number
+}
+
+// declares the wider return type so the x/y writes below typecheck; every added
+// field is optional, so no cast is needed
+export function hierarchy<T>(
+  data: T,
+  childrenAccessor: (d: T) => T[] | undefined | null,
+): HierarchyNode<T> {
+  return coreHierarchy(data, childrenAccessor)
 }
 
 export interface PositionedHierarchyNode<T> extends HierarchyNode<T> {
@@ -70,100 +95,29 @@ export interface PositionedHierarchyNode<T> extends HierarchyNode<T> {
   parent: PositionedHierarchyNode<T> | null
 }
 
-function wrap<T>(
-  data: T,
-  childrenAccessor: (d: T) => T[] | undefined | null,
-  parent: HierarchyNode<T> | null,
-  depth: number,
-): HierarchyNode<T> {
-  const kids = childrenAccessor(data)
-  const node: HierarchyNode<T> = {
-    data,
-    children: null,
-    parent,
-    depth,
-    height: 0,
-  }
-  if (kids?.length) {
-    node.children = kids.map(d => wrap(d, childrenAccessor, node, depth + 1))
-    let h = 0
-    for (const child of node.children) {
-      h = Math.max(h, child.height + 1)
-    }
-    node.height = h
-  }
-  return node
-}
-
-export function hierarchy<T>(
-  data: T,
-  childrenAccessor: (d: T) => T[] | undefined | null,
-): HierarchyNode<T> {
-  return wrap(data, childrenAccessor, null, 0)
-}
-
-export function leaves<N extends { children: N[] | null }>(node: N): N[] {
-  const result: N[] = []
-  function visit(n: N) {
-    if (n.children) {
-      for (const child of n.children) {
-        visit(child)
-      }
-    } else {
-      result.push(n)
-    }
-  }
-  visit(node)
-  return result
-}
-
-export function descendants<N extends { children: N[] | null }>(node: N): N[] {
-  const result: N[] = []
-  function visit(n: N) {
-    result.push(n)
-    if (n.children) {
-      for (const child of n.children) {
-        visit(child)
-      }
-    }
-  }
-  visit(node)
-  return result
-}
-
-export function links<N extends { children: N[] | null }>(
-  node: N,
-): { source: N; target: N }[] {
-  const result: { source: N; target: N }[] = []
-  function visit(n: N) {
-    if (n.children) {
-      for (const child of n.children) {
-        result.push({ source: n, target: child })
-        visit(child)
-      }
-    }
-  }
-  visit(node)
-  return result
-}
-
 // Structural copy sharing `data` but with fresh node objects, so laying out a
-// clone never mutates the input tree.
-function cloneHierarchy<T>(
-  node: HierarchyNode<T>,
-  parent: HierarchyNode<T> | null,
-): HierarchyNode<T> {
-  const copy: HierarchyNode<T> = {
+// clone never mutates the input tree. Iterative for the same reason the shared
+// traversals are: the copy is as deep as the tree it copies.
+function cloneHierarchy<T>(root: HierarchyNode<T>): HierarchyNode<T> {
+  const copyOf = (node: HierarchyNode<T>, parent: HierarchyNode<T> | null) => ({
     data: node.data,
     children: null,
     parent,
     depth: node.depth,
     height: node.height,
+  })
+  const copiedRoot: HierarchyNode<T> = copyOf(root, null)
+  const stack = [{ source: root, copy: copiedRoot }]
+  while (stack.length > 0) {
+    const { source, copy } = stack.pop()!
+    if (source.children) {
+      copy.children = source.children.map(child => copyOf(child, copy))
+      for (const [i, child] of source.children.entries()) {
+        stack.push({ source: child, copy: copy.children[i]! })
+      }
+    }
   }
-  if (node.children) {
-    copy.children = node.children.map(child => cloneHierarchy(child, copy))
-  }
-  return copy
+  return copiedRoot
 }
 
 export function clusterLayout<T extends { length?: number }>(
@@ -178,7 +132,7 @@ export function clusterLayout<T extends { length?: number }>(
   // — leaves MobX values derived from the layout stale when sizeX/sizeY change
   // (e.g. the hit-test spatial index froze at the row height it was first built
   // with, so hovering the tree missed after a shift+scroll row resize).
-  const laid = cloneHierarchy(root, null)
+  const laid = cloneHierarchy(root)
   const leafNodes = leaves(laid)
   const n = leafNodes.length
   const step = n > 0 ? sizeX / n : 0
@@ -204,19 +158,6 @@ export function clusterLayout<T extends { length?: number }>(
   return laid as unknown as PositionedHierarchyNode<T>
 }
 
-// Post-order traversal (children visited before their parent)
-export function eachAfter<T>(
-  node: HierarchyNode<T>,
-  fn: (n: HierarchyNode<T>) => void,
-) {
-  if (node.children) {
-    for (const child of node.children) {
-      eachAfter(child, fn)
-    }
-  }
-  fn(node)
-}
-
 // Assigns y positions by topological depth-to-leaf — root at 0, every leaf at
 // sizeY. `node.height` is already the distance from a node to its farthest
 // descendant leaf, so positioning by `(rootHeight - height)` aligns all leaves
@@ -225,18 +166,12 @@ export function eachAfter<T>(
 // short of the row labels.
 export function assignDepthY<T>(node: HierarchyNode<T>, sizeY: number) {
   const rootHeight = node.height
-  function visit(n: HierarchyNode<T>) {
+  for (const n of descendants(node)) {
     n.y = insetY(
       rootHeight === 0 ? 1 : (rootHeight - n.height) / rootHeight,
       sizeY,
     )
-    if (n.children) {
-      for (const child of n.children) {
-        visit(child)
-      }
-    }
   }
-  visit(node)
 }
 
 // Maps a 0..1 fraction (0 = root, 1 = leaf) onto the tree's horizontal band,
@@ -252,11 +187,9 @@ function insetY(fraction: number, sizeY: number) {
 export function maxNodeHeight<T extends { length?: number }>(
   node: HierarchyNode<T>,
 ): number {
-  let max = node.data.length ?? 0
-  if (node.children) {
-    for (const child of node.children) {
-      max = Math.max(max, maxNodeHeight(child))
-    }
+  let max = 0
+  for (const n of descendants(node)) {
+    max = Math.max(max, n.data.length ?? 0)
   }
   return max
 }
@@ -297,16 +230,10 @@ function assignMergeHeightY<T extends { length?: number }>(
   sizeY: number,
 ) {
   const max = maxNodeHeight(node)
-  function visit(n: HierarchyNode<T>) {
+  for (const n of descendants(node)) {
     const h = n.data.length ?? 0
     n.y = insetY(max === 0 ? 1 : 1 - h / max, sizeY)
-    if (n.children) {
-      for (const child of n.children) {
-        visit(child)
-      }
-    }
   }
-  visit(node)
 }
 
 // Incremental form (phylo): each node sits at its cumulative root distance, so
@@ -318,15 +245,16 @@ function assignCumulativeLengthY<T extends { length?: number }>(
   sizeY: number,
 ) {
   const dist = new Map<HierarchyNode<T>, number>()
-  function visit(n: HierarchyNode<T>, acc: number) {
+  const stack = [{ node, acc: 0 }]
+  while (stack.length > 0) {
+    const { node: n, acc } = stack.pop()!
     dist.set(n, acc)
     if (n.children) {
       for (const child of n.children) {
-        visit(child, acc + (child.data.length ?? 0))
+        stack.push({ node: child, acc: acc + (child.data.length ?? 0) })
       }
     }
   }
-  visit(node, 0)
   let max = 0
   for (const d of dist.values()) {
     max = Math.max(max, d)

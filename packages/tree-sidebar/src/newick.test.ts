@@ -1,6 +1,11 @@
 import { quoteName } from '@gmod/hclust'
+import { parseNewick } from '@gmod/newick'
 
-import parseNewick from './newick.ts'
+// The parser's own coverage lives in @gmod/newick. What is left here is the
+// pairing this package depends on and that package cannot test: @gmod/hclust
+// writes the newick and @gmod/newick reads it, so the two have to agree exactly,
+// and tree-sidebar relies on the default post-paren reading resolving to
+// hclust's merge height rather than to a bootstrap value.
 
 function leafNames(s: string) {
   const out: (string | undefined)[] = []
@@ -20,100 +25,17 @@ function roundTrip(names: string[]) {
   return leafNames(`(${names.map(quoteName).join(',')})1.2345;`)
 }
 
-test('parses simple newick with branch lengths', () => {
-  expect(parseNewick('(A:0.1,B:0.2,(C:0.3,D:0.4)E:0.5)F;')).toEqual({
-    name: 'F',
-    children: [
-      { name: 'A', length: 0.1 },
-      { name: 'B', length: 0.2 },
-      {
-        name: 'E',
-        length: 0.5,
-        children: [
-          { name: 'C', length: 0.3 },
-          { name: 'D', length: 0.4 },
-        ],
-      },
-    ],
-  })
-})
-
-// Variants' phased haplotype rows are named "<sample> HP<n>"; the label's space
-// is load-bearing, since the hover highlight and subtree filter match leaf
-// names against row names.
-test('keeps spaces inside leaf labels', () => {
-  expect(parseNewick('(NA18536 HP0,NA18748 HP1)1.5;')).toEqual({
-    length: 1.5,
-    children: [{ name: 'NA18536 HP0' }, { name: 'NA18748 HP1' }],
-  })
-})
-
-test('ignores whitespace around delimiters and newlines between tokens', () => {
-  expect(parseNewick('(\n  A:0.1,\n  B:0.2\n)F;')).toEqual({
-    name: 'F',
-    children: [
-      { name: 'A', length: 0.1 },
-      { name: 'B', length: 0.2 },
-    ],
-  })
-})
-
-// A one-row track serializes to a bare root leaf. The name was dropped, so the
-// leaf matched no row and `treeDescribesRows` declined a tree that was correct.
-test('names a tree that is a single bare node', () => {
-  expect(parseNewick('A;')).toEqual({ name: 'A' })
-  expect(parseNewick("'has, a comma';")).toEqual({ name: 'has, a comma' })
-})
-
-test('parses unlabelled tree', () => {
-  expect(parseNewick('((,),,(,));')).toEqual({
-    children: [{ children: [{}, {}] }, {}, { children: [{}, {}] }],
-  })
-})
-
-test('treats numeric post-paren label as length (hclust serialization)', () => {
+test('reads hclust serialization: numeric post-paren is a merge height', () => {
   expect(parseNewick('(A,B)1.5;')).toEqual({
     length: 1.5,
     children: [{ name: 'A' }, { name: 'B' }],
   })
 })
 
-test('treats non-numeric post-paren label as name', () => {
-  expect(parseNewick('(A,B)Internal;')).toEqual({
-    name: 'Internal',
-    children: [{ name: 'A' }, { name: 'B' }],
-  })
-})
-
-test('treats trailing-zero numeric post-paren as length', () => {
-  expect(parseNewick('(A,B)1.50;')).toEqual({
-    length: 1.5,
-    children: [{ name: 'A' }, { name: 'B' }],
-  })
-})
-
-test('treats scientific-notation post-paren as length', () => {
-  expect(parseNewick('(A,B)1e-3;')).toEqual({
-    length: 1e-3,
-    children: [{ name: 'A' }, { name: 'B' }],
-  })
-})
-
-test('parses internal node name plus colon branch length', () => {
-  expect(parseNewick('(A:1,B:2)Root:5;')).toEqual({
-    name: 'Root',
-    length: 5,
-    children: [
-      { name: 'A', length: 1 },
-      { name: 'B', length: 2 },
-    ],
-  })
-})
-
 // A bootstrap/support label sits exactly where hclust puts its merge height. A
-// `:` anywhere in the string means phylo Newick, so the number is support, not
-// a length — reading it as a length made assignCumulativeLengthY sum support
-// values (often 0-100) into the branch distances and flatten the real ones.
+// `:` anywhere means phylo newick, so the number is support, not a length —
+// reading it as a length made assignCumulativeLengthY sum support values (often
+// 0-100) into the branch distances and flatten the real ones.
 test('reads a post-paren numeric as a name when the tree has : lengths', () => {
   expect(parseNewick('((A:0.1,B:0.2)95,(C:0.1,D:0.1)80);')).toEqual({
     children: [
@@ -135,15 +57,23 @@ test('reads a post-paren numeric as a name when the tree has : lengths', () => {
   })
 })
 
+// A quoted colon must not flip the whole tree into the phylo reading.
+test('a colon inside a quoted label leaves the tree in hclust form', () => {
+  expect(parseNewick("('chr1:100-200','chr2:1-50')1.5;")).toEqual({
+    length: 1.5,
+    children: [{ name: 'chr1:100-200' }, { name: 'chr2:1-50' }],
+  })
+})
+
 test('leaves a label with no metacharacter unquoted', () => {
   expect(quoteName('GM12878')).toBe('GM12878')
   expect(quoteName('E003-H1_Cell_Line')).toBe('E003-H1_Cell_Line')
 })
 
 // A bare space is read as part of the label, so quoting it would change the
-// serialized form of nearly every clustered track to fix nothing. `quoteName`
-// is @gmod/hclust's, the writer this parser has to agree with — asserted here
-// rather than restated, so a change on its side fails on ours.
+// serialized form of nearly every clustered track to fix nothing. Variants'
+// phased rows are named `NA18536 HP0`, and the space is load-bearing since hover
+// and subtree filtering match leaf names against row names.
 test('leaves a label whose only special character is a space unquoted', () => {
   expect(quoteName('NA18536 HP0')).toBe('NA18536 HP0')
   expect(quoteName('Brain Angular Gyrus')).toBe('Brain Angular Gyrus')
@@ -187,39 +117,4 @@ test('round-trips a label containing a comma as one leaf', () => {
 
 test('round-trips a label containing a literal quote', () => {
   expect(roundTrip(['A', "o'brien", 'B'])).toEqual(['A', "o'brien", 'B'])
-})
-
-// A quoted colon must not flip the whole tree into the phylo reading, where a
-// post-paren numeric is a bootstrap value rather than hclust's merge height.
-test('a colon inside a quoted label leaves the tree in hclust form', () => {
-  expect(parseNewick("('chr1:100-200','chr2:1-50')1.5;")).toEqual({
-    length: 1.5,
-    children: [{ name: 'chr1:100-200' }, { name: 'chr2:1-50' }],
-  })
-})
-
-// Quoting is the writer saying "this is a label", which is the only way to name
-// a node something that looks like a number.
-test('treats a quoted post-paren numeric as a name, not a length', () => {
-  expect(parseNewick("(A,B)'1.5';")).toEqual({
-    name: '1.5',
-    children: [{ name: 'A' }, { name: 'B' }],
-  })
-})
-
-test('keeps whitespace inside a quoted label verbatim', () => {
-  expect(parseNewick("('  padded  ',B)1.5;")).toEqual({
-    length: 1.5,
-    children: [{ name: '  padded  ' }, { name: 'B' }],
-  })
-})
-
-// A supplied .nh guide tree (maf's `nhLocation`) is a hand-written file and may
-// be pretty-printed. The layout whitespace around a quoted label is not part of
-// the name, and a leaf whose name has a stray leading space matches no row.
-test('drops layout whitespace around a quoted label', () => {
-  expect(parseNewick("(\n  'A B' ,\n  'C D'\n)1.5;")).toEqual({
-    length: 1.5,
-    children: [{ name: 'A B' }, { name: 'C D' }],
-  })
 })

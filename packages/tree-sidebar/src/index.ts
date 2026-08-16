@@ -1,7 +1,9 @@
+// re-exported rather than dropped: the maf and canvas plugins import both from
+// this package, and a plugin's imports are ABI
+export { parseNewick } from '@gmod/newick'
+export type { NewickNode } from '@gmod/newick'
 export { buildSpatialIndex, pickTreeNode } from './spatialIndex.ts'
 export type { TreeSpatialIndex } from './spatialIndex.ts'
-export { default as parseNewick } from './newick.ts'
-export type { NewickNode } from './newick.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { DisplayCrosshairs } from './DisplayCrosshairs.tsx'
 export {

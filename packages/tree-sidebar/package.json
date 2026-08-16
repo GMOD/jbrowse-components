@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@gmod/hclust": "4.0.4",
+    "@gmod/newick": "^1.0.1",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.3.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",

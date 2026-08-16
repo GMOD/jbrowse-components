@@ -12,7 +12,7 @@ import {
 } from './clusterUtils.ts'
 import { clusterLayout, hierarchy, leaves } from './hierarchy.ts'
 
-import type { NewickNode } from './newick.ts'
+import type { NewickNode } from '@gmod/newick'
 
 test('getLeafNames walks the subtree', () => {
   const root = hierarchy<NewickNode>(

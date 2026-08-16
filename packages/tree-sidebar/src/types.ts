@@ -1,7 +1,7 @@
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
-import type { NewickNode } from './newick.ts'
 import type { TreeSpatialIndex } from './spatialIndex.ts'
+import type { NewickNode } from '@gmod/newick'
 
 export type ClusterNodeData = NewickNode
 
