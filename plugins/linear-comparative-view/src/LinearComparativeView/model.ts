@@ -539,7 +539,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         // annotated rather than inferred: a bare `{}` accepts a number, which is
         // what let the dotplot's two-argument twin pass an
         // `applySyntenyTrackSelections` level off as a track snapshot
-        initialSnapshot: Record<string, unknown> = {},
+        initialSnapshot: object = {},
       ) {
         self.levels[level]?.showTrack(trackId, initialSnapshot)
       },

@@ -806,7 +806,15 @@ export function normalizeTrackInit(t: TrackInit) {
 export function showTrackGeneric(
   self: GenericView,
   trackId: string,
-  initialSnapshot = {},
+  // `object`, annotated, rather than inferred from the default. A bare `{}`
+  // accepts every non-nullish value, numbers included, which is how a synteny
+  // level index typechecked its way into a track snapshot — see the dotplot and
+  // comparative views' own `showTrack`, whose second parameter is this one.
+  //
+  // `object` and not `Record<string, unknown>`: the hazard is a primitive, and
+  // an index signature additionally rejects the precise snapshot interfaces
+  // callers legitimately pass (jbrowse-img's `DisplaySnapshot` is one).
+  initialSnapshot: object = {},
   displayInitialSnapshot: DisplayInitialSnapshot = {},
   inlineConf?: Record<string, unknown>,
 ) {

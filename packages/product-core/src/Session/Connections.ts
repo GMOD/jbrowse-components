@@ -70,7 +70,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
          */
         makeConnection(
           configuration: AnyConfigurationModel,
-          initialSnapshot = {},
+          initialSnapshot: object = {},
         ) {
           const { type, connectionId } = configuration
           if (!type) {

@@ -38,7 +38,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
        */
       initializeInternetAccount(
         internetAccountConfig: AnyConfigurationModel,
-        initialSnapshot = {},
+        initialSnapshot: object = {},
       ) {
         self.internetAccounts.push({
           ...initialSnapshot,
