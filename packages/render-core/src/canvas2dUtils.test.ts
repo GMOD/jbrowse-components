@@ -8,6 +8,7 @@ import {
   getPreparedCanvas2D,
   makeBpMapper,
   makeCellLeftMapper,
+  maxCanvasCssPx,
   spanLeft,
   syncCanvasSize,
   withClip,
@@ -364,6 +365,29 @@ describe('getDpr', () => {
     expect(getDpr()).toBe(MAX_DPR)
     setDpr(4)
     expect(getDpr()).toBe(MAX_DPR)
+  })
+
+  // The budget a content-sized display divides among its rows. A constant
+  // captured at module load would keep the 1x value after a window moved to a
+  // hi-DPI screen, and the displays read it from a computed precisely so the
+  // cap follows.
+  test('maxCanvasCssPx is the dpr-scaled CSS budget, and follows the dpr', () => {
+    setDpr(1)
+    expect(maxCanvasCssPx()).toBe(MAX_CANVAS_DIM_PX)
+    setDpr(2)
+    expect(maxCanvasCssPx()).toBe(MAX_CANVAS_DIM_PX / 2)
+    // capped like every other dpr read, so this stops falling at 3x
+    setDpr(4)
+    expect(maxCanvasCssPx()).toBe(MAX_CANVAS_DIM_PX / MAX_DPR)
+  })
+
+  // What the budget is for: a canvas sized to exactly it must not clamp.
+  test('a canvas at the budget is within the backing-store limit', () => {
+    setDpr(2)
+    const canvas = document.createElement('canvas')
+    syncCanvasSize(canvas, 100, maxCanvasCssPx())
+    expect(canvas.height).toBe(MAX_CANVAS_DIM_PX)
+    expect(canvas.style.height).toBe(`${maxCanvasCssPx()}px`)
   })
 })
 

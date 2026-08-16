@@ -19,7 +19,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import {
   installPerRegionLifecycle,
   regionDataMap,
@@ -994,7 +994,7 @@ export default function stateModelFactory(
          * fit-target sizing and the `rowHeight` cap respect.
          */
         get maxRowsHeight() {
-          return MAX_CANVAS_DIM_PX / getDpr()
+          return maxCanvasCssPx()
         },
       }))
       .views(self => ({

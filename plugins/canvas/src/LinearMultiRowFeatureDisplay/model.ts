@@ -23,7 +23,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import {
   installPerRegionLifecycle,
   regionDataMap,
@@ -545,15 +545,10 @@ export default function stateModelFactory(
        * #getter
        * Ceiling on the whole row stack in CSS px, because this display sizes its
        * canvas to its *content* and never scrolls: `height` is the canvas, so
-       * nothing downstream bounds it.
-       *
-       * Past `MAX_CANVAS_DIM_PX` device px the backing store stops tracking the
-       * CSS size — `syncCanvasSize` clamps it — while the scissor/viewport rects
-       * are still derived as `cssPx * dpr`, so WebGPU rejects an out-of-bounds
-       * rect and blanks the frame, WebGL clamps and paints at the wrong scale,
-       * and the Canvas2D fallback stretches its top slice over the whole track.
-       * A pinned 14px row height over a 1,987-row cohort — two clicks in the Row
-       * height menu — is 27,818 CSS px, well past it.
+       * nothing downstream bounds it. What goes wrong past it, and why it is a
+       * function rather than a constant, is `maxCanvasCssPx`'s. A pinned 14px
+       * row height over a 1,987-row cohort — two clicks in the Row height menu
+       * — is 27,818 CSS px, well past it.
        *
        * MAF meets the same limit with `maxRowsHeight`, but its canvas is a
        * viewport it can scroll the overflow into. Here the cap has to land on
@@ -561,7 +556,7 @@ export default function stateModelFactory(
        * them stays on screen — which is what this display is for.
        */
       get maxCanvasHeight(): number {
-        return MAX_CANVAS_DIM_PX / getDpr()
+        return maxCanvasCssPx()
       },
     }))
     .views(self => ({

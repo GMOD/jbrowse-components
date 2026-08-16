@@ -47,6 +47,28 @@ export function getDpr() {
 // hundreds of species) bound their CSS size against `MAX_CANVAS_DIM_PX / dpr`.
 export const MAX_CANVAS_DIM_PX = 8192
 
+/**
+ * The largest CSS-px extent a canvas may take on one axis before its backing
+ * store (`× dpr`) crosses the ceiling above.
+ *
+ * For displays that size a canvas to their **content** rather than to a
+ * viewport — a row stack that grows with the row count, so nothing downstream
+ * bounds it. Past this the backing store stops tracking the CSS size
+ * (`syncCanvasSize` clamps it) while scissor/viewport rects are still derived
+ * as `cssPx * dpr`, so WebGPU rejects an out-of-bounds rect and blanks the
+ * frame, WebGL clamps and paints at the wrong scale, and the Canvas2D fallback
+ * stretches its top slice over the whole track.
+ *
+ * A function, not a constant: `getDpr()` follows the window, so a display
+ * reading this into a computed re-derives it when the window moves to another
+ * screen. Where the cap lands is the caller's — MAF scrolls its overflow into a
+ * viewport, the multi-row painting divides the cap across its rows so they thin
+ * out and all stay on screen.
+ */
+export function maxCanvasCssPx() {
+  return MAX_CANVAS_DIM_PX / getDpr()
+}
+
 let warnedCanvasClamp = false
 
 // CSS px → backing-store px, clamped to the safe ceiling (warning once if the
@@ -59,9 +81,9 @@ let warnedCanvasClamp = false
 // `cssPx * getDpr()` by `clipBlock` and friends, against the true dpr rather
 // than the effective one — can now exceed the backing store (WebGL clamps
 // silently, WebGPU rejects the rect and blanks the frame). So model-level
-// sizing must keep canvases within the limit on its own; MAF's `maxRowsHeight`
-// (`MAX_CANVAS_DIM_PX / getDpr()`) is the pattern to copy for any display that
-// sizes a canvas to its *content* rather than its viewport. Registered in
+// sizing must keep canvases within the limit on its own: any display sizing a
+// canvas to its *content* rather than its viewport bounds itself with
+// `maxCanvasCssPx()` above. Registered in
 // agent-docs/reference/ARCHITECTURAL_LIMITS.md with the effective-dpr fix that
 // retires it.
 function backingPx(cssSize: number, dpr: number, axis: 'width' | 'height') {
