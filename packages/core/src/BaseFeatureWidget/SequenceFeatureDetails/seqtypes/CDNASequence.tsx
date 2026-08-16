@@ -102,9 +102,42 @@ const CDNASequence = observer(function CDNASequence({
     }
   }
 
+  // The stretches of the feature its own exons do not reach. Real annotations
+  // produce them: CAT/liftoff emits a transcript spanning the source alignment
+  // with exons only where the CDS is supported, so KCNT2 in
+  // `hprc_cfhr_HG00099.1.genes.gff3.gz` runs 10,207 bp past its first exon and
+  // 28 of that corpus's 438 transcripts do the same.
+  //
+  // Uncolored, like the inter-exon gaps they are — the annotation does not call
+  // them exonic, so stretching the first and last exon over them (which is what
+  // the no-exon CDS fallback in `transcriptRegions` does, deliberately) would
+  // fabricate exonic sequence out of what is intron. In the spliced modes they
+  // are correctly absent; only the intron-showing modes claim to run the length
+  // of the feature, and they are the ones that label genomic coordinates from
+  // `feature.start` — so dropping these silently shortened the panel AND slid
+  // every label after them.
+  const outside = (key: string, str: string): SeqSegment[] =>
+    includeIntrons && str
+      ? [
+          {
+            key,
+            str: caseNoncoding(
+              getIntronDisplayStr(str, intronBp, collapseIntron ?? false),
+            ),
+          },
+        ]
+      : []
+  const first = regions[0]
+  const last = regions.at(-1)
+
   const segments = [
     ...flankSegment('upstream', upstream, updownstreamColor, caseNoncoding),
+    ...outside(
+      'before-first-exon',
+      first ? sequence.slice(0, first.start) : '',
+    ),
     ...middle,
+    ...outside('after-last-exon', last ? sequence.slice(last.end) : ''),
     ...flankSegment('downstream', downstream, updownstreamColor, caseNoncoding),
   ]
 

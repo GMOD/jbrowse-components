@@ -789,6 +789,68 @@ test('coordinate spacing continues across exon/intron boundaries', () => {
   )
 })
 
+// Exons that stop short of the transcript's own bounds. Real annotations do
+// this: CAT/liftoff spans a transcript over the source alignment and emits exons
+// only where the CDS is supported, and 28 of the 438 transcripts in this repo's
+// HPRC gene fixtures are short at one end or both. The untiled stretches used to
+// be dropped, which shortened the readout AND slid every genomic label after
+// them, since the labels count from the feature start regardless.
+const shortExonFeature = {
+  start: 1000,
+  end: 1060,
+  refName: 'chr1',
+  strand: 1,
+  type: 'mRNA',
+  uniqueId: 'short',
+  name: 'short',
+  subfeatures: [
+    { refName: 'chr1', start: 1010, end: 1020, type: 'exon' },
+    { refName: 'chr1', start: 1030, end: 1050, type: 'exon' },
+  ],
+}
+const shortExonSeq = `${'t'.repeat(10)}${'A'.repeat(10)}${'c'.repeat(10)}${'G'.repeat(20)}${'a'.repeat(10)}`
+
+test('exons short of the feature bounds keep their genomic coordinates', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="gene"
+      sequence={{ seq: shortExonSeq }}
+      feature={shortExonFeature}
+    />,
+  )
+  // the flanks read as the uncolored genomic stretches they are, the same way
+  // the intron between the two exons does
+  expect(
+    getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1],
+  ).toBe(
+    '1001   tttttttttt AAAAAAAAAA cccccccccc GGGGGGGGGG GGGGGGGGGG aaaaaaaaaa',
+  )
+})
+
+// The converse, and why the flanks cannot simply be folded into the first and
+// last exon: they are not exonic, so the spliced readout must not carry them.
+test('the spliced readout keeps the untiled flanks out', () => {
+  const model = SequenceFeatureDetailsF().create()
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="cdna"
+      sequence={{ seq: shortExonSeq }}
+      feature={shortExonFeature}
+    />,
+  )
+  expect(
+    getByTestId('sequence_panel')
+      .textContent.split('\n')
+      .slice(1)
+      .map(s => s.trim())
+      .join(''),
+  ).toBe(`${'A'.repeat(10)}${'G'.repeat(20)}`)
+})
+
 test('single exon cDNA display relative coords', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()

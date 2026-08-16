@@ -118,6 +118,14 @@ export function computeCoordProps({
  * The exonic blocks making up a transcript, feature-relative. Without exon
  * subfeatures the CDS blocks stand in for them, the first and last stretched to
  * the feature bounds so the untranslated flanks are still rendered.
+ *
+ * The exon path returns them verbatim, and that asymmetry is deliberate: exons
+ * that do not reach the feature's bounds are the annotation saying the flanks
+ * are not exonic, which is what CAT/liftoff means when it spans a transcript
+ * over the source alignment and emits exons only where the CDS is supported.
+ * Stretching those to the bounds the way the CDS branch does would fabricate
+ * exonic sequence out of intron. `CDNASequence` renders the untiled stretch
+ * uncolored instead, which is what keeps its genomic labels honest.
  */
 export function transcriptRegions({
   cds,
