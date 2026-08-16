@@ -229,9 +229,11 @@ Use `types.frozen()` for data that is:
 <!-- include: plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts#frozenProp -->
 
 ```ts
-sortRowsBy: types.maybe(
-  types.frozen<{ refName: string; pos: number }>(),
-),
+// `RowSortSpec`, not a second spelling of it: the autorun that consumes
+// this and `setSortRowsBy` are both typed on tree-sidebar's, so an
+// inline shape here is a copy that can only ever drift away from the one
+// doing the checking. Multi-wiggle's twin already reads it from there.
+sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
 ```
 
 `types.frozen<T>()` takes the shape as a type parameter and stores a plain
