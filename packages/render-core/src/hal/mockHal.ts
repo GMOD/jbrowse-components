@@ -1,3 +1,4 @@
+import { assertUniquePassIds } from './passIds.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
 import type { GpuHal, PipelineDescriptor } from './types.ts'
@@ -22,10 +23,15 @@ export class MockHal implements GpuHal {
   private regions = new RegionRegistry<MockBuffer>(() => {})
   private lastUniforms: ArrayBuffer | null = null
 
-  // Parameter kept for parity with WebGL2Hal / WebGPUHal constructors so
-  // tests can swap implementations; pass list isn't needed in the mock.
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
-  constructor(_passes: PipelineDescriptor[]) {}
+  // The pass list is here for parity with the WebGL2Hal / WebGPUHal
+  // constructors, and it validates for the same reason `createRenderingBackend`
+  // does: a duplicate pass id is a silent GPU-only mis-render, so the check
+  // belongs everywhere a display hands its registry over. Checking it in the
+  // mock is what puts it in front of a unit test — every backend test builds a
+  // `MockHal` from its display's real pass list.
+  constructor(passes: PipelineDescriptor[]) {
+    assertUniquePassIds(passes)
+  }
 
   private record(method: string, ...args: unknown[]) {
     this.calls.push({ method, args })

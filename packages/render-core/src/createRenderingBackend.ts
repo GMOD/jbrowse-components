@@ -1,4 +1,4 @@
-import { createGpuHal } from './hal/index.ts'
+import { assertUniquePassIds, createGpuHal } from './hal/index.ts'
 
 import type { GpuHal, PipelineDescriptor } from './hal/types.ts'
 
@@ -24,6 +24,11 @@ export async function createRenderingBackend<TRenderingBackend>(
     createCanvas2DBackend,
   }: RenderingBackendOptions<TRenderingBackend>,
 ): Promise<TRenderingBackend> {
+  // Before the ladder, so a duplicate id is reported on every machine rather
+  // than only the ones that reach a GPU rung — the bug it prevents is silent
+  // and GPU-only, which is precisely why a developer on the Canvas2D fallback
+  // must not be the one who cannot see it.
+  assertUniquePassIds(passes)
   // Each rung's reason is collected rather than dropped in the console: if
   // Canvas2D — the rung that cannot itself be fallen back from — also fails,
   // "Canvas 2D context not available" on its own says nothing about *why* the
