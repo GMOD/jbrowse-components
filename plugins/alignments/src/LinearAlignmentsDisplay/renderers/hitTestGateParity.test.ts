@@ -58,7 +58,14 @@ const HIT_GATES: Record<PileupLayerId, LayerHitGate> = {
     source: 'extractModifications / extractMethylation / extractBisulfite',
   },
   perBaseQual: { kind: 'readBodyDecoration' },
-  gap: { kind: 'option', option: 'showMismatches' },
+  // Its half of `hitTestGap` runs whatever `showMismatches` says, which is what
+  // `alwaysDrawn` obliges — see `hitTestCigarItem`, where the flag becomes the
+  // `includeDeletions` argument rather than a gate on the call.
+  skip: {
+    kind: 'alwaysDrawn',
+    note: 'An intron centerline is the read pass\'s own split made legible: `buildSegmentArrays` cuts a spliced read into per-exon segments, so with no line the read draws as N unrelated blocks. That is a broken picture rather than a quieter one, so it survives "show mismatches" off — unlike the `deletion` half of the same array.',
+  },
+  deletion: { kind: 'option', option: 'showMismatches' },
   mismatch: { kind: 'option', option: 'showMismatches' },
   insertion: { kind: 'option', option: 'showMismatches' },
   clip: { kind: 'alwaysDrawn' },

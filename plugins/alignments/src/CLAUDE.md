@@ -14,7 +14,8 @@ keep shaders display-local and are right to: theirs have one consumer.
 that has one of these spells it that way, so `features/` can be read as the pass
 list. Every `PileupLayerId` maps to exactly one directory; four ids are
 abbreviations of theirs (`connLine`, `linkedReadLine`, `mod`, `perBaseQual`),
-and `GPU_PILEUP_PASS` is where the mapping is written down.
+`skip` and `deletion` are both `features/gap/`, and `GPU_PILEUP_PASS` is where
+the mapping is written down.
 
 Two directories are **not** passes and say so by having no `packGpu.ts` —
 `sashimi/` and `derivativePaths/` compute geometry for React SVG overlays, which
@@ -26,6 +27,15 @@ owns both emitters and there is no `hardclip/`. `features/softclipBases/` is the
 separate letters-past-the-alignment-end pass; it consumes the `sequence` field
 `emitSoftclip` captures, which is why extraction for two passes lives in one
 place.
+
+`features/gap/` is the converse — one directory, one shader, one worker array,
+and TWO layers, because `skip` and `deletion` answer to different settings
+(PILEUP_LAYERS says why). Splitting the layer rather than branching inside it is
+what keeps `HIT_GATES` able to describe each half: a layer is gated or it isn't,
+and one that is half-gated fits none of its four stories. The two packers take
+their own kind out of `gapTypes`, so **a mark added to that array has to pick a
+pass** — a third gap type packed by neither is uploaded by nothing and drawn by
+nothing, silently.
 
 ## Strand comes from `strand`; `flags` answers everything else
 

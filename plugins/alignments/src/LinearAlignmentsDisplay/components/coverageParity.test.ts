@@ -366,21 +366,25 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       showMismatches: false,
       showSoftClipping: false,
       showModifications: false,
-      colors: {
-        colorCoverage: [0.2, 0.4, 0.8] as [number, number, number],
-        colorBaseA: [0, 1, 0] as [number, number, number],
-        colorBaseC: [0, 0, 1] as [number, number, number],
-        colorBaseG: [1, 0.65, 0] as [number, number, number],
-        colorBaseT: [1, 0, 0] as [number, number, number],
-        colorBaseN: [0.47, 0.33, 0.28] as [number, number, number],
-        colorInsertion: [0.75, 0, 0.75] as [number, number, number],
-        colorDeletion: [0, 0, 0] as [number, number, number],
-        colorSoftclip: [0, 0.5, 1] as [number, number, number],
-        colorHardclip: [1, 0.5, 0] as [number, number, number],
-        colorInsertionIndicator: [0.75, 0, 0.75] as [number, number, number],
-        colorSoftclipIndicator: [0, 0.5, 1] as [number, number, number],
-        colorHardclipIndicator: [1, 0.5, 0] as [number, number, number],
-      },
+      // `makeTestPalette` rather than the slots this case happens to read: the
+      // surrounding state is an `as unknown as RenderState` cast, so a hand-cut
+      // palette inside it is unchecked twice over. It was — `colorSkip` was
+      // absent, and went unnoticed only while the intron centerlines were gated
+      // off along with the deletion bars by `showMismatches: false`.
+      colors: makeTestPalette({
+        colorCoverage: [0.2, 0.4, 0.8],
+        colorBaseA: [0, 1, 0],
+        colorBaseC: [0, 0, 1],
+        colorBaseG: [1, 0.65, 0],
+        colorBaseT: [1, 0, 0],
+        colorBaseN: [0.47, 0.33, 0.28],
+        colorInsertion: [0.75, 0, 0.75],
+        colorSoftclip: [0, 0.5, 1],
+        colorHardclip: [1, 0.5, 0],
+        colorInsertionIndicator: [0.75, 0, 0.75],
+        colorSoftclipIndicator: [0, 0.5, 1],
+        colorHardclipIndicator: [1, 0.5, 0],
+      }),
       selectedChainReadIds: [],
       showInterbaseIndicators: false,
       start: REGION_START,

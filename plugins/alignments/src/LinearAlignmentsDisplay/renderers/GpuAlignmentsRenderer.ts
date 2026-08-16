@@ -24,7 +24,7 @@ import {
 import { CLIP_PASS } from '../../features/clip/packGpu.ts'
 import { CONN_LINE_PASS } from '../../features/connectingLines/packGpu.ts'
 import { COVERAGE_PASS } from '../../features/coverage/packGpu.ts'
-import { GAP_PASS } from '../../features/gap/packGpu.ts'
+import { DELETION_PASS, SKIP_PASS } from '../../features/gap/packGpu.ts'
 import { INDICATOR_PASS } from '../../features/indicator/packGpu.ts'
 import { INSERTION_PASS } from '../../features/insertion/packGpu.ts'
 import { INTERBASE_PASS } from '../../features/interbase/packGpu.ts'
@@ -562,7 +562,8 @@ export const GPU_PILEUP_PASS: Record<PileupLayerId, PileupPass> = {
   overlap: OVERLAP_PASS,
   mod: MODIFICATION_PASS,
   perBaseQual: PER_BASE_QUALITY_PASS,
-  gap: GAP_PASS,
+  skip: SKIP_PASS,
+  deletion: DELETION_PASS,
   mismatch: MISMATCH_PASS,
   insertion: INSERTION_PASS,
   clip: CLIP_PASS,

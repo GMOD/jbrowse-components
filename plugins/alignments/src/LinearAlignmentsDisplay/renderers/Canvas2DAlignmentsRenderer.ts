@@ -16,7 +16,7 @@ import {
 } from '../../features/coverage/buildRegion.ts'
 import { makeCoverageScale } from '../../features/coverage/coverageScale.ts'
 import { drawCoverageBars } from '../../features/coverage/drawCanvas.ts'
-import { drawGaps } from '../../features/gap/drawCanvas.ts'
+import { drawDeletions, drawSkips } from '../../features/gap/drawCanvas.ts'
 import { drawIndicatorCanvas } from '../../features/indicator/drawCanvas.ts'
 import { drawInsertions } from '../../features/insertion/drawCanvas.ts'
 import { drawInterbaseCanvas } from '../../features/interbase/drawCanvas.ts'
@@ -317,7 +317,8 @@ const CANVAS_PILEUP_DRAW: Record<PileupLayerId, PileupDrawFn> = {
   overlap: drawOverlaps,
   mod: drawModifications,
   perBaseQual: drawPerBaseQuality,
-  gap: drawGaps,
+  skip: drawSkips,
+  deletion: drawDeletions,
   mismatch: drawMismatches,
   insertion: drawInsertions,
   clip: (ctx, region, block, bpLength, fullBlockWidth, state) => {

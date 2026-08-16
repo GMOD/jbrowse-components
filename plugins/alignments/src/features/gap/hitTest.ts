@@ -7,9 +7,15 @@ import type {
   ResolvedBlock,
 } from '../../shared/hitTestTypes.ts'
 
+// `includeDeletions` mirrors the two draw layers this one array feeds: `skip`
+// draws unconditionally, `deletion` only under `showMismatches`. An undrawn
+// deletion must not be found at all — not merely lose a tie — or it goes on
+// intercepting the whole span of a read that paints solid across it, and it
+// masks any skip beneath it on the same row.
 export function hitTestGap(
   resolved: ResolvedBlock,
   coords: CigarCoords,
+  includeDeletions: boolean,
 ): CigarHitResult | undefined {
   const { genomicPos, row } = coords
   const { gapPositions, gapYs, gapTypes } = resolved.rpcData
@@ -22,6 +28,7 @@ export function hitTestGap(
     const startPos = gapPositions[i * 2]
     const endPos = gapPositions[i * 2 + 1]
     return (
+      (includeDeletions || gapTypes[i] === GAP_SKIP) &&
       startPos !== undefined &&
       endPos !== undefined &&
       genomicPos >= startPos &&

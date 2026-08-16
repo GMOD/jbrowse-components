@@ -1,4 +1,4 @@
-import { drawGaps } from './drawCanvas.ts'
+import { drawDeletions, drawSkips } from './drawCanvas.ts'
 
 import type {
   DrawBlock,
@@ -56,9 +56,13 @@ const BLOCK: DrawBlock = { start: 1000, end: 1400, screenStartPx: 0 }
 const BP_LENGTH = 400
 const BLOCK_WIDTH = 100
 
+// Each kind is its own draw layer now, so the fixture's own `gapTypes` picks
+// which one to call. Handing it to the other draws nothing — pinned by
+// `each layer draws only its own kind` below.
 function rectFor(gap: GapUploadData, block: DrawBlock = BLOCK) {
+  const draw = gap.gapTypes[0] === GAP_SKIP ? drawSkips : drawDeletions
   const { ctx, rects } = recordingCtx()
-  drawGaps(ctx, gap, block, BP_LENGTH, BLOCK_WIDTH, baseState())
+  draw(ctx, gap, block, BP_LENGTH, BLOCK_WIDTH, baseState())
   return rects[0]!
 }
 
@@ -102,4 +106,33 @@ test('a gap wider than a pixel keeps its own edges', () => {
   const { x, w } = rectFor(oneGap(1040, 1060, GAP_DELETION))
   expect(x).toBeCloseTo(10)
   expect(w).toBeCloseTo(5)
+})
+
+// The two kinds share one worker array and one shader, and are split only by
+// which layer draws them — `deletion` gated on showMismatches, `skip` not. So
+// each function has to take its own kind out of the array and leave the other:
+// a skip drawn by the deletion pass would come back with showMismatches off,
+// and a deletion drawn by the skip pass would never leave.
+describe('each layer draws only its own kind', () => {
+  const both: GapUploadData = {
+    gapPositions: new Uint32Array([1040, 1060, 1100, 1200]),
+    gapYs: new Uint16Array([0, 0]),
+    gapTypes: new Uint8Array([GAP_DELETION, GAP_SKIP]),
+    gapFrequencies: new Uint8Array([255, 255]),
+  }
+
+  function drawnWidths(draw: typeof drawSkips) {
+    const { ctx, rects } = recordingCtx()
+    draw(ctx, both, BLOCK, BP_LENGTH, BLOCK_WIDTH, baseState())
+    return rects.map(r => r.w)
+  }
+
+  // bp 1040..1060 is 20bp at 4bp/px => 5px. bp 1100..1200 is 100bp => 25px.
+  test('deletions', () => {
+    expect(drawnWidths(drawDeletions)).toEqual([5])
+  })
+
+  test('skips', () => {
+    expect(drawnWidths(drawSkips)).toEqual([25])
+  })
 })

@@ -2,6 +2,10 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { packedIndicators } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import {
+  GAP_DELETION,
+  GAP_SKIP,
+} from '../../shaders/slang/gap.consts.generated.ts'
+import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
@@ -163,7 +167,7 @@ describe('gap hit — zoomed-out pileup', () => {
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9500, 10500]),
       gapYs: new Uint16Array([0]),
-      gapTypes: new Uint8Array([0]),
+      gapTypes: new Uint8Array([GAP_DELETION]),
     })
     const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('cigar')
@@ -178,7 +182,7 @@ describe('gap hit — zoomed-out pileup', () => {
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9990, 10010]),
       gapYs: new Uint16Array([0]),
-      gapTypes: new Uint8Array([0]),
+      gapTypes: new Uint8Array([GAP_DELETION]),
     })
     const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('none')
@@ -189,7 +193,7 @@ describe('gap hit — zoomed-out pileup', () => {
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9500, 10500]),
       gapYs: new Uint16Array([0]),
-      gapTypes: new Uint8Array([0]),
+      gapTypes: new Uint8Array([GAP_DELETION]),
     })
     const result = performHitTest(100, 61, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('none')
@@ -203,7 +207,7 @@ describe('gap hit — zoomed-out pileup', () => {
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9500, 10500]),
       gapYs: new Uint16Array([0]),
-      gapTypes: new Uint8Array([0]),
+      gapTypes: new Uint8Array([GAP_DELETION]),
       readPositions: new Uint32Array([9000, 11000]),
       readYs: new Uint16Array([0]),
       readKeys: ['read1'],
@@ -220,7 +224,7 @@ describe('gap hit — zoomed-out pileup', () => {
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9000, 11000]),
       gapYs: new Uint16Array([0]),
-      gapTypes: new Uint8Array([1]),
+      gapTypes: new Uint8Array([GAP_SKIP]),
     })
     const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('cigar')
@@ -237,7 +241,7 @@ describe('priority: coverage area beats pileup at any zoom', () => {
       coverageStartPos: 9900,
       gapPositions: new Uint32Array([0, 20000]),
       gapYs: new Uint16Array([0]),
-      gapTypes: new Uint8Array([0]),
+      gapTypes: new Uint8Array([GAP_DELETION]),
     })
     const result = performHitTest(100, 30, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('coverage')
@@ -612,10 +616,10 @@ describe('chain mode resolves the read under the cursor, not the chain first rea
   })
 })
 
-// `gap` / `mismatch` / `insertion` are the three PILEUP_LAYERS entries gated on
-// showMismatches, and the flag is a repaint-tier setting — the arrays are still
-// fetched. So without a matching gate here the marks stayed hoverable, clickable
-// and right-clickable while nothing was drawn for them.
+// `deletion` / `mismatch` / `insertion` are the three PILEUP_LAYERS entries
+// gated on showMismatches, and the flag is a repaint-tier setting — the arrays
+// are still fetched. So without a matching gate here the marks stayed hoverable,
+// clickable and right-clickable while nothing was drawn for them.
 describe('showMismatches off stops hit-testing the layers it stops drawing', () => {
   const NO_MISMATCHES: HitTestOptions = {
     ...ZOOMED_OUT_OPTS,
@@ -665,7 +669,7 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
     const resolved = zoomedIn({
       gapPositions: new Uint32Array([50, 150]),
       gapYs: new Uint16Array([0]),
-      gapTypes: new Uint8Array([0]),
+      gapTypes: new Uint8Array([GAP_DELETION]),
       readPositions: new Uint32Array([0, 200]),
       readYs: new Uint16Array([0]),
       readKeys: ['read1'],
@@ -684,12 +688,52 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
     const resolved = makeResolved({
       gapPositions: new Uint32Array([9500, 10500]),
       gapYs: new Uint16Array([0]),
-      gapTypes: new Uint8Array([0]),
+      gapTypes: new Uint8Array([GAP_DELETION]),
     })
     expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe(
       'cigar',
     )
     expect(performHitTest(100, 60, resolved, NO_MISMATCHES).type).toBe('none')
+  })
+
+  // The `skip` half of the same array is its own layer and draws
+  // unconditionally, so the flag must take the deletion bars out of the gap
+  // test without taking the intron centerlines with them.
+  it('a skip stays hittable', () => {
+    const resolved = zoomedIn({
+      gapPositions: new Uint32Array([50, 150]),
+      gapYs: new Uint16Array([0]),
+      gapTypes: new Uint8Array([GAP_SKIP]),
+      readPositions: new Uint32Array([0, 200]),
+      readYs: new Uint16Array([0]),
+      readKeys: ['read1'],
+    })
+    for (const opts of [ZOOMED_OUT_OPTS, NO_MISMATCHES]) {
+      const hit = performHitTest(100, 60, resolved, opts)
+      expect(hit.type).toBe('cigar')
+      if (hit.type === 'cigar') {
+        expect(hit.hit.type).toBe('skip')
+      }
+    }
+  })
+
+  // `findTopmostOnRow` answers with ONE gap per row, so an undrawn deletion has
+  // to be excluded from the search rather than lose a tie — otherwise a
+  // collapsed group, where every read sits on row 0, hands back the deletion of
+  // a read painted under the spliced one and the junction stops answering.
+  it('a deletion above a skip on one row does not mask it', () => {
+    const resolved = zoomedIn({
+      gapPositions: new Uint32Array([50, 150, 60, 140]),
+      gapYs: new Uint16Array([0, 0]),
+      gapTypes: new Uint8Array([GAP_SKIP, GAP_DELETION]),
+      readPositions: new Uint32Array([0, 200]),
+      readYs: new Uint16Array([0]),
+      readKeys: ['read1'],
+    })
+    const on = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
+    expect(on.type === 'cigar' && on.hit.type).toBe('deletion')
+    const off = performHitTest(100, 60, resolved, NO_MISMATCHES)
+    expect(off.type === 'cigar' && off.hit.type).toBe('skip')
   })
 
   // Clips draw unconditionally (PILEUP_LAYERS gates them on `() => true`), so

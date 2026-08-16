@@ -12,7 +12,8 @@ export type PileupLayerId =
   | 'overlap'
   | 'mod'
   | 'perBaseQual'
-  | 'gap'
+  | 'skip'
+  | 'deletion'
   | 'mismatch'
   | 'insertion'
   | 'clip'
@@ -57,7 +58,17 @@ export const PILEUP_LAYERS: PileupLayer[] = [
   { id: 'overlap', enabled: s => shouldDrawOverlaps(s) },
   { id: 'mod', enabled: s => s.showModifications },
   { id: 'perBaseQual', enabled: s => s.showPerBaseQuality },
-  { id: 'gap', enabled: s => s.showMismatches },
+  // Both are CIGAR gaps out of one worker array and one shader; they are two
+  // layers because they answer to different settings. An intron centerline is
+  // STRUCTURE: `buildSegmentArrays` splits a spliced read into per-exon
+  // segments, so the line is what says those blocks are one read, and without
+  // it a spliced read draws as N unrelated ones. A deletion bar is a
+  // DIFFERENCE from the reference, and the read body paints straight through
+  // the span either way — reads are split at N gaps only — so dropping it
+  // understates the read rather than dismembering it, which is what "show
+  // mismatches" off asks for.
+  { id: 'skip', enabled: () => true },
+  { id: 'deletion', enabled: s => s.showMismatches },
   { id: 'mismatch', enabled: s => s.showMismatches },
   { id: 'insertion', enabled: s => s.showMismatches },
   { id: 'clip', enabled: () => true },

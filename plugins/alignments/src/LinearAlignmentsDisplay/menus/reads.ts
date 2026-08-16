@@ -66,6 +66,13 @@ export function getReadsMenuItems(model: ReadsModel) {
       'Show mismatches',
       model.showMismatches,
       model.setShowMismatches,
+      {
+        helpText:
+          'Uncheck to hide how each read differs from the reference — ' +
+          'mismatched bases, insertion markers and deletion bars. Intron ' +
+          'lines stay: a spliced read is drawn as separate exon blocks, so ' +
+          'the line joining them is what says they are one read.',
+      },
     ),
     promotableToggleItem({
       label: 'Fade low quality mismatches',

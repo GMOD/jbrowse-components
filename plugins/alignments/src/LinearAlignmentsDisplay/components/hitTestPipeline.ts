@@ -209,14 +209,14 @@ export interface HitTestOptions {
   // (and stop being clickable) once zoomed out; when false they draw opaque and
   // stay clickable at every zoom.
   filterMismatchesByFrequency: boolean
-  // Mirrors the `gap` / `mismatch` / `insertion` draw layers, which are the
-  // three PILEUP_LAYERS entries gated on this flag. The arrays are fetched
+  // Mirrors the `deletion` / `mismatch` / `insertion` draw layers, which are
+  // the three PILEUP_LAYERS entries gated on this flag. The arrays are fetched
   // either way (it is a repaint-tier setting, not an `rpcProps` one), so
   // without this the marks stayed hoverable, clickable and right-clickable
   // while nothing was drawn for them — and `hitTestGap` went on intercepting
   // the whole deletion span, making a read that draws as solid body
-  // unselectable across it. Clips are deliberately absent: their layer draws
-  // unconditionally, so their hit test must too.
+  // unselectable across it. Two layers are deliberately absent: `clip` and
+  // `skip` both draw unconditionally, so their hit tests must too.
   showMismatches: boolean
   // False when this section's pileup band is collapsed to zero height
   // (`showPileup` off, or a collapsed group): reads are laid out but not drawn,
@@ -232,8 +232,9 @@ function hitTestSignificantGap(
   resolved: ResolvedBlock,
   coords: CigarCoords,
   minLength: number,
+  includeDeletions: boolean,
 ) {
-  const gap = hitTestGap(resolved, coords)
+  const gap = hitTestGap(resolved, coords, includeDeletions)
   return gap && gap.length >= minLength ? gap : undefined
 }
 
@@ -244,8 +245,12 @@ function hitTestSignificantGap(
 //  4. gaps (deletions/skips spanning the read body)
 //  5. clips (interbase bars at alignment edges; softclip wins over hardclip)
 //
-// Steps 1-4 are the `showMismatches` layers and vanish with them; step 5 draws
-// unconditionally and so stays. Callers have already checked `isWithinReadBand`.
+// Steps 1-3 are `showMismatches` layers and vanish with them; step 5 draws
+// unconditionally and so stays. Step 4 is half of each, because its two marks
+// are now two layers: `showMismatches` off leaves the intron centerlines drawn
+// and hittable while the deletion bars go, so the gap test still runs and
+// `hitTestGap` is told which kinds it may answer with. Callers have already
+// checked `isWithinReadBand`.
 //
 // Above `SNP_HIT_MAX_BP_PER_PX` the per-base steps drop out — a mismatch or a
 // thin insertion is narrower than the cursor by then — leaving the marks that
@@ -270,7 +275,7 @@ function hitTestCigarItem(
   { filterMismatchesByFrequency, showMismatches }: HitTestOptions,
 ): CigarHitResult | undefined {
   const perBase = bpPerPx <= SNP_HIT_MAX_BP_PER_PX
-  const marks = showMismatches
+  const mismatchMarks = showMismatches
     ? (hitTestLargeInsertion(resolved, coords, featureHeight) ??
       (perBase
         ? (hitTestMismatch(resolved, coords, filterMismatchesByFrequency) ??
@@ -280,10 +285,18 @@ function hitTestCigarItem(
             featureHeight,
             filterMismatchesByFrequency,
           ))
-        : undefined) ??
-      hitTestSignificantGap(resolved, coords, perBase ? 0 : bpPerPx))
+        : undefined))
     : undefined
-  return marks ?? hitTestClip(resolved, coords, filterMismatchesByFrequency)
+  return (
+    mismatchMarks ??
+    hitTestSignificantGap(
+      resolved,
+      coords,
+      perBase ? 0 : bpPerPx,
+      showMismatches,
+    ) ??
+    hitTestClip(resolved, coords, filterMismatchesByFrequency)
+  )
 }
 
 // Single site for the canvas-X → genomicPos transform; `reversed` is handled

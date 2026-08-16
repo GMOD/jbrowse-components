@@ -402,7 +402,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       showMismatches: {
         type: 'boolean',
         defaultValue: true,
-        description: 'Draw per-base mismatches on reads',
+        description:
+          'Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_LAYERS)',
       },
       /**
        * #slot
