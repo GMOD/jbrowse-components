@@ -29,12 +29,15 @@ export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions<'C
     // does. They arrived on every call and were dropped here, so both were
     // decorative on this branch — the one taken by any adapter with its own
     // exporter.
-    return (
-      (await dataAdapter.getExportData(regions, formatType, {
-        ...opts,
-        stopToken,
-        statusCallback,
-      })) ?? ''
-    )
+    //
+    // undefined travels: it is the adapter saying it does not write this
+    // format, which is a different answer from an empty region, and the caller
+    // falls back to reading features. Coercing it to '' here handed the user an
+    // empty file instead.
+    return dataAdapter.getExportData(regions, formatType, {
+      ...opts,
+      stopToken,
+      statusCallback,
+    })
   }
 }

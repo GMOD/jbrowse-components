@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
@@ -16,24 +16,32 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { getConf } from '../../../configuration/index.ts'
 import {
   CopyToClipboardButton,
   ErrorBanner,
   InfoDialog,
 } from '../../../ui/index.ts'
 import {
+  assembleLocStrings,
   getContainingView,
   saveAs,
   statusProgressLabel,
 } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import { useFetch } from '../../../util/useFetch.ts'
-import { fetchTrackData } from './fetchTrackData.ts'
+import {
+  fetchTrackData,
+  roundRegions,
+  trackSupportsAdapterExport,
+} from './fetchTrackData.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
-import type { Region } from '../../../util/index.ts'
+import type { Feature, Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+const MAX_PREVIEW_CHARS = 500_000
 
 const useStyles = makeStyles()({
   root: { width: '80em' },
@@ -81,37 +89,60 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   const [type, setType] = useState(Object.keys(options)[0])
   const [helpText, setHelpText] = useState<string>()
 
+  // Captured once rather than read live. The dialog is modal, so the user
+  // cannot navigate under it, but the view's visible regions are derived from
+  // its width — and a window resize behind the dialog would otherwise change
+  // the fetch key and restart a long export from zero. Captured, they are also
+  // what the Region field can name, so the label always describes the bytes.
   const view = getContainingView(model) as unknown as {
-    coarseVisibleLocStrings: string
     visibleRegions?: Region[]
   }
-  const { visibleRegions, coarseVisibleLocStrings: regionStr } = view
+  const [regions] = useState(() => roundRegions(view.visibleRegions ?? []))
+  const regionStr = assembleLocStrings(regions)
 
-  const shouldFetch = !!visibleRegions?.length && !!type
+  // Answerable without the fetch, so the legend says which kind of export this
+  // is while it runs instead of flipping when it lands. `usedAdapterExport`
+  // still overrides it once known: an adapter that exports some formats and not
+  // others declines the rest, and the fetch falls back to features.
+  const supportsExport = trackSupportsAdapterExport(model)
+
+  // Features for one set of regions, kept across a format change: every writer
+  // on that path reads the same features, so switching GFF3 -> BED reruns the
+  // writer rather than the region read, which on a deep track is the same work
+  // the display does.
+  const featureCache = useRef<Feature[] | undefined>(undefined)
+
   const {
     data: result,
     error,
     isLoading: loading,
     status,
   } = useFetch(
-    shouldFetch
+    regions.length && type
       ? ([
           'fetchTrackData',
-          model,
+          getConf(model, 'trackId'),
+          regionStr,
           type,
-          visibleRegions.map(r => `${r.refName}:${r.start}-${r.end}`).join(','),
         ] as const)
       : null,
-    (_name, _model, _type, _locs, stopToken, statusCallback) =>
-      fetchTrackData(model, visibleRegions!, type!, options, {
+    async (_name, _trackId, _regions, fileType, stopToken, statusCallback) => {
+      const res = await fetchTrackData({
+        model,
+        regions,
+        type: fileType,
+        options,
+        features: featureCache.current,
         stopToken,
         statusCallback,
-      }),
+      })
+      featureCache.current = res.features
+      return res
+    },
   )
-  const { str, usedAdapterExport } = result ?? {
-    str: '',
-    usedAdapterExport: false,
-  }
+  const str = result?.str ?? ''
+  const usedAdapterExport = result?.usedAdapterExport ?? supportsExport
+  const format = type ? options[type] : undefined
 
   return (
     <InfoDialog
@@ -131,13 +162,14 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           </CopyToClipboardButton>
           <Button
             variant="contained"
-            disabled={loading || !!error}
+            disabled={loading || !!error || !format}
             onClick={() => {
-              const ext = options[type!]!.extension
-              saveAs(
-                new Blob([str], { type: 'text/plain;charset=utf-8' }),
-                `jbrowse_track_data.${ext}`,
-              )
+              if (format) {
+                saveAs(
+                  new Blob([str], { type: 'text/plain;charset=utf-8' }),
+                  `jbrowse_track_data.${format.extension}`,
+                )
+              }
             }}
             startIcon={<GetAppIcon />}
           >
@@ -196,7 +228,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           value={
             loading
               ? statusProgressLabel(status) || 'Loading...'
-              : str.length > 500_000
+              : str.length > MAX_PREVIEW_CHARS
                 ? 'File greater than 500kb, too large to view here. Click "Download" to save results to file'
                 : str
           }

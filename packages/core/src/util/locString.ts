@@ -177,6 +177,29 @@ export function assembleLocStringRaw(region: ParsedLocString) {
   return assembleLocStringWith(region)
 }
 
+/**
+ * One space-separated string for a set of regions — what the header of a
+ * multi-region view says it is showing, and what an export of those regions
+ * labels itself with.
+ *
+ * The assembly name appears only when the regions disagree about it: naming it
+ * on every one of a dozen same-assembly blocks is noise, and dropping it where
+ * they differ loses the only thing telling them apart.
+ */
+export function assembleLocStrings(regions: ParsedLocString[]) {
+  const sameAssembly = regions.every(
+    r => r.assemblyName === regions[0]!.assemblyName,
+  )
+  return regions
+    .map(r =>
+      assembleLocString({
+        ...r,
+        assemblyName: sameAssembly ? undefined : r.assemblyName,
+      }),
+    )
+    .join(' ')
+}
+
 function assembleLocStringWith(
   region: ParsedLocString,
   cb = (n: number): string | number => n,

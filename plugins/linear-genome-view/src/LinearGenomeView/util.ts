@@ -1,6 +1,6 @@
 import {
   UnknownRefNameError,
-  assembleLocString,
+  assembleLocStrings,
   getTickDisplayStr,
   measureText,
   parseBpString,
@@ -708,21 +708,13 @@ export function parseLocStrings(
 }
 
 export function calculateVisibleLocStrings(contentBlocks: ContentBlock[]) {
-  if (!contentBlocks.length) {
-    return ''
-  }
-  const isSingleAssemblyName = contentBlocks.every(
-    b => b.assemblyName === contentBlocks[0]!.assemblyName,
+  return assembleLocStrings(
+    contentBlocks.map(block => ({
+      refName: block.refName,
+      start: Math.round(block.start),
+      end: Math.round(block.end),
+      assemblyName: block.assemblyName,
+      reversed: block.reversed,
+    })),
   )
-  return contentBlocks
-    .map(block =>
-      assembleLocString({
-        refName: block.refName,
-        start: Math.round(block.start),
-        end: Math.round(block.end),
-        assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
-        reversed: block.reversed,
-      }),
-    )
-    .join(' ')
 }

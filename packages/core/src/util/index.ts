@@ -427,6 +427,7 @@ export {
   UnknownRefNameError,
   assembleLocString,
   assembleLocStringRaw,
+  assembleLocStrings,
   compareLocStrings,
   compareLocs,
   parseLocString,

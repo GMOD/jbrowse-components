@@ -79,7 +79,9 @@ export interface RpcRegistry {
       formatType: string
       opts?: Record<string, unknown>
     }
-    return: string
+    // undefined means "this adapter does not write this format" — distinct from
+    // an empty region, and the signal the caller falls back to features on
+    return: string | undefined
   }
   CoreFreeResources: {
     args: Record<string, unknown>
