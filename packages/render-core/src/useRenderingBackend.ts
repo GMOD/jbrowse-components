@@ -128,6 +128,15 @@ export interface RenderLifecycleModel<RenderingBackendType> {
  *
  * The model argument is duck-typed to the slot mixin's contract — the listed
  * actions/fields are all the hook touches.
+ *
+ * **`factory` must be referentially stable** — a module-level constant, as every
+ * consumer in this repo passes (`AlignmentsRenderer`, `createDotplotRenderer`,
+ * …). It is a dependency of the init effect, so an inline
+ * `canvas => new MyBackend(canvas)` rebuilds the backend on every render:
+ * dispose, async re-create, `startRenderingBackend`, forever. Nothing throws and
+ * nothing logs — the display just paints from a backend a render behind, and the
+ * GPU churn shows up only in a profile. Bind the factory outside the component
+ * (or `useCallback` it with no deps).
  */
 export function useRenderingBackend<
   RenderingBackendType extends {

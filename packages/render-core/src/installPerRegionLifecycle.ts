@@ -99,6 +99,18 @@ export type PerRegionRender<B, Encoded> = (
  * `render` owns the per-frame draw call and returns whether anything was
  * actually drawn (gates the `canvasDrawn` flag — see RenderingBackendCallbacks).
  *
+ * **Only the first call's `encode`/`render` ever run.** Callers wire this from
+ * `startRenderingBackend`, which fires again on every context-loss recovery, and
+ * `attachRenderingBackend` keeps the callbacks it was given first — so a later
+ * call's closures, and the `encodedRegions` map inside them, are dead on
+ * arrival. The recovery still works, and not by luck: the per-key autoruns read
+ * `self.currentRenderingBackend` rather than the `backend` argument, so they
+ * re-fire and re-upload every region into the fresh one. What does not work is
+ * *changing* an `encode` or a `render` by calling again — that silently keeps
+ * the old one. Same constraint the three `create*UploadSync` helpers state, and
+ * the reason they say to build their closure outside the
+ * `attachRenderingBackend` call.
+ *
  * @see installPerRegionLifecycle.test.ts — pins the O(1)-per-new-key /
  * O(N)-per-setting-change autorun semantics this helper exists for.
  */
