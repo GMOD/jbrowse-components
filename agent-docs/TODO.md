@@ -66,7 +66,7 @@ before anyone noticed.
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
-| [Pack MAF blocks as they arrive](#pack-maf-blocks-as-they-arrive-rather-than-buffering-to-size-the-arena) | MAF | measured 1.18x and 491 -> 263 MB on the real block shape; needs no tabix change |
+| [Pack MAF blocks as they arrive](#pack-maf-blocks-as-they-arrive-rather-than-buffering-to-size-the-arena) | MAF | ~13% of the fetch and 491 -> 263 MB on the real block shape; needs no tabix change |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
 | [Does a quality floor still buy anything on the band](#does-a-base-quality-floor-still-buy-anything-on-the-coverage-band) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
 | [Walk the CIGAR once per MM tag](#walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
@@ -1656,7 +1656,9 @@ the second pass can allocate the arena exactly once. Packing inside the
 subscription instead — arena growing by doubling — measures **1.18x** on the
 whole read-parse-pack stage and drops peak RSS from **491 MB to 263 MB** on a
 20000-block x 8-column region, which is the shape real files have
-(MAF_LARGE_BLOCKS.md puts ce11's 26-way at a 7bp median block). On the synthetic
+(MAF_LARGE_BLOCKS.md puts ce11's 26-way at a 7bp median block). That stage is
+83% of the worker at that shape — the profile's coverage-dominated ranking is a
+wide-block ranking — so it is ~13% of the whole fetch. On the synthetic
 250-column shape it is a wash at 0.97x, so it trades a little on wide blocks for
 a lot on narrow ones.
 

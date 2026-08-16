@@ -49,6 +49,27 @@ worth doing. It also caps what a byte-native adapter path can be worth: the line
 walk *and* the decode together are 7.3 ms, not the ~26 ms a pre-columnar profile
 suggested.
 
+### The ranking above is the WIDE-block ranking, and it inverts
+
+Everything above was taken on 1600 blocks of 250 columns. Re-profiled on 20000
+blocks of 8 columns — the shape [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md)
+measures real files at — the two halves swap places (min of 12 rounds, warm
+chunk cache):
+
+| shape | read + parse + pack | coverage + SNP | stage share |
+| --- | --- | --- | --- |
+| 1600 blocks × 250 columns | 50 ms | 184 ms | 21% |
+| 20000 blocks × 8 columns | 345 ms | 72 ms | **83%** |
+
+Same cell count within a factor of 2.5, opposite answer to "where does the time
+go". Coverage walks cells, so it tracks the cell count; everything upstream of
+it pays per *row* — a scan, a record, a dictionary lookup, an arena write — and
+narrow blocks buy 12x the rows for the same cells.
+
+So "`computeMafCoverage` is half the worker" below is true of wide blocks and
+false of the files people actually load, where it is a sixth. Check which shape
+a profile came from before ranking work off it — including this one.
+
 ### Reproducing it
 
 `plugins/maf/benches/mafTabixFixture.ts` writes it: 1600 lines of
@@ -174,7 +195,8 @@ operation at a time. The rung that costs is rarely the rung that looks expensive
 **Pack each block as it arrives, instead of buffering every block to size the
 arena exactly.** Measured above, as the `string-1pass` arm: **1.18x** on the
 whole read-parse-pack stage and **491 → 263 MB** of peak RSS on the 20000-block
-shape, which is the one real files look like. On the 250-column shape it is a
+shape, which is the one real files look like — and that stage is 83% of the
+worker there, so it is ~13% of the whole fetch, not 13% of a corner of it. On the 250-column shape it is a
 wash (0.97x), so this trades a little on wide blocks for a lot on narrow ones.
 
 It gives up the exact `reserve` — the arena grows by doubling — and that is the
