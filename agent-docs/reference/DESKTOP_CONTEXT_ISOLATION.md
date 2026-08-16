@@ -42,10 +42,20 @@ This was the stated reason not to lock the renderer down. It does not hold:
   `nodeIntegrationInWorker` — a setting **independent** of the renderer's.
 
 The real compatibility constraint is not fs, it is the *shape* plugins already
-use: `const { ipcRenderer } = require('electron')`. Every crossing to the main
-process — all 23 in JBrowse, and Apollo's one — is an `ipcRenderer.invoke`, so
-one method is the entire bridge. `electron/requireShim.ts` + `electron/preload.ts`
-keep that shape, so contextIsolation costs third-party plugins no release.
+use: `const { ipcRenderer } = require('electron')`. Nearly every crossing to the
+main process — 23 of the 24 in JBrowse, and Apollo's one — is an
+`ipcRenderer.invoke`, so one method is nearly the entire bridge.
+`electron/requireShim.ts` + `electron/preload.ts` keep that shape, so
+contextIsolation costs third-party plugins no release.
+
+**One crossing is not an invoke**, and the shim does not carry it:
+`packages/core/src/util/index.ts` reaches `webUtils.getPathForFile(file)` in
+`fileToLocation`, which is how a *dropped* file becomes a `LocalPathLocation`.
+`webUtils` is a separate Electron API, so the shim returning only
+`{ipcRenderer: {invoke}}` breaks drag-and-drop — in `@jbrowse/core`, not in
+desktop, and only once the flag moves. Either expose `webUtils.getPathForFile`
+alongside `invoke`, or give it a channel; do not leave the sentence above read as
+"all of them".
 
 ## Verified by probe, not by documentation
 
@@ -122,6 +132,14 @@ no Node.
 This is also why grep alone underestimates the work: the dependency is in a
 transitive `node_modules` module, not in JBrowse source.
 
+There is a second one that grep *does* find, and it is not behind `openLocation`:
+`src/indexJobsModel.ts` imports `node:fs` and calls `mkdirSync` on the main
+thread to create the text-indexing output directory before the RPC runs. It is
+one line and wants a channel (the directory name is already shared as
+`NAME_INDICES_DIR` in `ipc/channelTypes.ts`), but it is a renderer Node
+dependency that the `openLocation` funnel does not cover, so fixing the funnel
+does not fix it.
+
 ### 3. `isElectron` is a userAgent sniff, and it is a landmine
 
 ```ts
@@ -163,7 +181,12 @@ unbounded paths and URLs:
 - `saveSession(sessionPath, snap)` — arbitrary file **write**
 - `loadSession(sessionPath)` — arbitrary file **read**, returned to the renderer
 - `indexFasta(location)` — fetches any URL or reads any local path
-- `blatFetch(url, body)` — POSTs anywhere with the default session's cookies
+- `blatFetch(url, body)` — POSTs anywhere with the default session's cookies,
+  and returns the body. `openBlatChallenge(url)` opens any url in a window on
+  that same jar. Bounding these to known hosts does not work — the dialog's
+  server field is how someone runs their own proxy or gfServer — so the move is
+  to take them off the default session entirely; see
+  [handoffs/desktop-audit.md](../handoffs/desktop-audit.md)
 
 Today this is moot: the renderer already has Node. After the flip these **are**
 the boundary, and locking the renderer while leaving `saveSession(anyPath)`
@@ -184,10 +207,16 @@ all, and every later step is unverifiable while the renderer won't boot.
    that before writing any of the rest — a spike, not a refactor. If it turns out
    `electron-renderer` is load-bearing for something else (workers share the
    config), the whole plan needs rethinking and it is cheap to learn that now.
-2. Type the renderer's IPC. `electron/ipc/channels.ts` types only
-   `ipcMain.handle`, so all 23 `invoke` sites return `any`. The preload has to
-   enumerate the surface anyway (`electron/ipc/channelNames.ts`), so the typed
-   client is nearly free — and it makes step 5's validation type-checked.
+2. Type the renderer's IPC. Landed for callers *inside* the product
+   (`src/ipc.ts`), and `channelNames.ts` now has an exhaustiveness guard that
+   works — the original `const _: UnlistedChannel[] = []` never checked
+   anything, since an empty array literal satisfies every array type, and it hid
+   two unlisted channels for as long as they existed. What is left is the four
+   callers outside the product that still hand-roll `window.require('electron')`
+   and restate the contract with casts; see
+   [handoffs/desktop-audit.md](../handoffs/desktop-audit.md). Doing that is what
+   makes step 5's validation type-checked, and what keeps the allowlist from
+   drifting again.
 3. IPC-backed `GenericFilehandle` behind `openLocation` + the capability check.
 4. Plugin loading off `node:fs`/`require`.
 5. Argument validation on the channels above.
