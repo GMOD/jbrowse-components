@@ -6,9 +6,9 @@ import {
   disableGpuRendering,
   shouldOfferGpuFallback,
 } from '@jbrowse/core/ui/gpuFallback'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
+import { isLiveModel } from './isLiveModel.ts'
 import { tooLargeBannerText } from './tooLargeBannerText.ts'
 
 import type {
@@ -162,10 +162,11 @@ const PlainTooLarge = observer(function PlainTooLarge({
         type="button"
         style={button}
         onClick={() => {
-          // same isAlive guard the MUI set uses: the banner unmounts the canvas,
-          // so a click landing after the track was closed would otherwise call
-          // an action on a dead node
-          if (isAlive(model)) {
+          // the banner unmounts the canvas, so a click landing after the track
+          // was closed would otherwise call an action on a dead node. Not bare
+          // `isAlive` — this model may be the plain object the contract invites,
+          // which that throws on. See isLiveModel.ts.
+          if (isLiveModel(model)) {
             model.forceLoad()
           }
         }}

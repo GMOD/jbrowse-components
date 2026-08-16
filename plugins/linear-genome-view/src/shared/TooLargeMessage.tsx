@@ -1,5 +1,4 @@
-import { tooLargeBannerText } from '@jbrowse/display-ui'
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import { isLiveModel, tooLargeBannerText } from '@jbrowse/display-ui'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -24,7 +23,7 @@ const TooLargeMessage = observer(function TooLargeMessage({
       action={
         <Button
           onClick={() => {
-            if (isAlive(model)) {
+            if (isLiveModel(model)) {
               model.forceLoad()
             }
           }}

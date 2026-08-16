@@ -54,3 +54,8 @@ export { TrackOverlaySlot } from './trackOverlay/TrackOverlaySlot.tsx'
 // the same thing. The measurement behind the gate stays with the mixin that
 // makes it.
 export { tooLargeBannerText } from './tooLargeBannerText.ts'
+
+// The liveness check an overlay's one button needs, for a model that may be an
+// MST node or the plain object the contract invites. Exported because both
+// shipped sets render that button and a bare `isAlive` is wrong in each.
+export { isLiveModel } from './isLiveModel.ts'
