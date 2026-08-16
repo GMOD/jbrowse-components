@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
+import { addViewMenuItems } from '@jbrowse/core/pluggableElementTypes'
 import { launchTargetsMenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import NotesIcon from '@mui/icons-material/Notes'
@@ -47,45 +47,38 @@ function alignmentsDisplays(tracks: TrackLike[]) {
 }
 
 export default function ConsensusSequenceF(pluginManager: PluginManager) {
-  extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
-    stateModel.views(self => {
-      const superLaunchMenuItems = self.rubberBandLaunchMenuItems
-      return {
-        rubberBandLaunchMenuItems() {
-          return [
-            ...superLaunchMenuItems(),
-            ...launchTargetsMenuItem({
-              label: CONSENSUS_LABEL,
-              icon: NotesIcon,
-              entries: alignmentsDisplays(self.tracks),
-              entryLabel: entry => entry.name,
-              onSelect:
-                ({ name, display }) =>
-                () => {
-                  const regions = self.getSelectedRegions(
-                    self.leftOffset,
-                    self.rightOffset,
-                  )
-                  if (regions.length) {
-                    getSession(self).queueDialog(handleClose => [
-                      ConsensusSequenceDialog,
-                      {
-                        model: self,
-                        display,
-                        trackName: name,
-                        regions,
-                        handleClose: () => {
-                          handleClose()
-                          self.setOffsets()
-                        },
-                      },
-                    ])
-                  }
+  // the view nests these under "Launch" itself, so no `group` here
+  addViewMenuItems(pluginManager, 'LinearGenomeView', {
+    menu: 'rubberBandLaunchMenuItems',
+    items: self =>
+      launchTargetsMenuItem({
+        label: CONSENSUS_LABEL,
+        icon: NotesIcon,
+        entries: alignmentsDisplays(self.tracks),
+        entryLabel: entry => entry.name,
+        onSelect:
+          ({ name, display }) =>
+          () => {
+            const regions = self.getSelectedRegions(
+              self.leftOffset,
+              self.rightOffset,
+            )
+            if (regions.length) {
+              getSession(self).queueDialog(handleClose => [
+                ConsensusSequenceDialog,
+                {
+                  model: self,
+                  display,
+                  trackName: name,
+                  regions,
+                  handleClose: () => {
+                    handleClose()
+                    self.setOffsets()
+                  },
                 },
-            }),
-          ]
-        },
-      }
-    }),
-  )
+              ])
+            }
+          },
+      }),
+  })
 }

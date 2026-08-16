@@ -8,7 +8,8 @@ guide_category: Plugins
 **TL;DR:** three surfaces, three mechanisms. The app menu bar takes
 contributions from a plugin's `configure()`, guarded by `isAbstractMenuManager`;
 a track menu and a right-click menu are the display model's `trackMenuItems()`
-and `contextMenuItems()`, extended by capturing the super method. All three
+and `contextMenuItems()`, captured from the super method where the display is
+defined and added to with `addDisplayMenuItems` from anywhere else. All three
 carry the same `MenuItem[]`.
 
 ## Adding a top-level menu
@@ -58,7 +59,9 @@ A track's menu is `self.displays.flatMap(d => d.trackMenuItems())`, so a display
 contributes by redefining `trackMenuItems`. It is a **method**, not a getter, so
 capture the super version first — the same
 [super-capture pattern](/docs/developer_guides/mst_patterns#self-over-this-in-views)
-as any extended MST view:
+as any extended MST view. This is the shape for a display's **own** menu, built
+where the display is defined; to add to one belonging to another plugin, use
+`addDisplayMenuItems` below rather than writing this out.
 
 <!-- include: plugins/maf/src/LinearMafDisplay/stateModel.ts#superMethod -->
 
@@ -83,50 +86,45 @@ whether the click hit a feature and by which one.
 
 <Figure src="/img/linear_align_ctx_menu.png" caption="A screenshot of a context menu available on a linear genome view track. Here, we see the context menu of a feature right-clicked on a LinearAlignmentsDisplay."/>
 
-To extend a display you do not own, use
-[`extendDisplayType`](/docs/developer_guides/extension_points#core-extendpluggableelement),
-which resolves the display by name and hands your callback a typed state model:
+To add items to a menu on a display you do not own, use `addDisplayMenuItems`
+(`addViewMenuItems` for a view). It resolves the type by name, appends what your
+callback returns to what is already there, and — with `group` — collects several
+plugins' entries into one submenu instead of a top-level row each. Return
+`undefined` to add nothing, which is how an item scoped to some state opts out:
 
 <!-- include: plugins/dotplot-view/src/DotplotReadVsRef/index.ts#contextMenu -->
 
 ```ts
 export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
-  extendDisplayType(pluginManager, 'LinearAlignmentsDisplay', stateModel =>
-    stateModel.extend((self: LinearAlignmentsDisplayModel) => {
-      const superContextMenuItems = self.contextMenuItems
-      return {
-        views: {
-          // Offered from the read id, which the hit test carries, so the
-          // item is there when the menu opens rather than a fetch later;
-          // the feature it needs is resolved in the onClick (normally
-          // already in hand, since the fetch rebuilds this menu).
-          contextMenuItems() {
-            const featureId = self.contextMenuFeatureId
-            const feature = self.contextMenuFeature
-            const track = getContainingTrack(self)
-            const items = superContextMenuItems()
-            if (featureId !== undefined) {
-              pushLaunchViewMenuItem(items, {
-                label: 'Dotplot of read vs ref',
-                icon: AddIcon,
-                onClick: () => {
-                  withContextMenuFeature(self, featureId, feature, feat => {
-                    queueReadVsRefDialog({
-                      node: self,
-                      track,
-                      feature: feat,
-                      onSubmit: launchDotplotReadVsRef,
-                    })
-                  })
-                },
+  addDisplayMenuItems(pluginManager, 'LinearAlignmentsDisplay', {
+    menu: 'contextMenuItems',
+    group: LAUNCH_VIEW_LABEL,
+    // Offered from the read id, which the hit test carries, so the item is
+    // there when the menu opens rather than a fetch later; the feature it needs
+    // is resolved in the onClick (normally already in hand, since the fetch
+    // rebuilds this menu).
+    items: self => {
+      const featureId = self.contextMenuFeatureId
+      const feature = self.contextMenuFeature
+      const track = getContainingTrack(self)
+      return featureId === undefined
+        ? undefined
+        : {
+            label: 'Dotplot of read vs ref',
+            icon: AddIcon,
+            onClick: () => {
+              withContextMenuFeature(self, featureId, feature, feat => {
+                queueReadVsRefDialog({
+                  node: self,
+                  track,
+                  feature: feat,
+                  onSubmit: launchDotplotReadVsRef,
+                })
               })
-            }
-            return items
-          },
-        },
-      }
-    }),
-  )
+            },
+          }
+    },
+  })
 }
 ```
 

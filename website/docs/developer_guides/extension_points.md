@@ -369,6 +369,13 @@ with no `as`. The name is checked too: register your view or display in the
 registry beside its state model type, and a typo or a rename becomes a compile
 error instead of an extension that silently stops applying.
 
+For the commonest reason to reach for these — adding an entry to somebody else's
+menu — go one level higher still and use `addViewMenuItems` /
+`addDisplayMenuItems`, which own the super-capture and the concatenation. See
+[Adding track context-menu items](/docs/developer_guides/menus#adding-track-context-menu-items).
+Extend the state model when the contribution needs state or actions of its own,
+so the menu items and what they call stay in one place.
+
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/model.ts#registry -->
 
 ```typescript

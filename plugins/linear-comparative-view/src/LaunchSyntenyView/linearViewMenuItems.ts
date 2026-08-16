@@ -1,5 +1,5 @@
-import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
-import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
+import { addViewMenuItems } from '@jbrowse/core/pluggableElementTypes'
+import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
 import { anchorPanelTracks } from './anchorPanelTracks.ts'
@@ -15,6 +15,28 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const VISIBLE_LABEL = 'Linear synteny view (visible region)'
 const SELECTION_LABEL = 'Linear synteny view'
 
+// The two entries differ only in their label and which region they read;
+// everything else about the offer is the view's current state, resolved at menu
+// time so it is what is open as of the launch rather than as of registration.
+// The open tracks are read twice over, for two different purposes: the synteny
+// ones among them are the datasets the dialog offers to cut panels from (see
+// launchableTracks), and the rest are what the launched view's panel for this
+// assembly opens with.
+function menuItemsFor(
+  self: LinearGenomeViewModel,
+  label: string,
+  region: Region | undefined,
+) {
+  return syntenyRegionMenuItems({
+    label,
+    region,
+    session: getSession(self),
+    openTracks: self.tracks.map(track => track.configuration),
+    anchorTracks: anchorPanelTracks(self.tracks),
+    sourceView: self,
+  })
+}
+
 // "Open a synteny view on this locus" from the linear view itself, alongside the
 // per-alignment "Launch synteny view for this position" in the LGVSyntenyDisplay
 // right-click menu. The two answer different questions: that one follows the
@@ -27,60 +49,28 @@ const SELECTION_LABEL = 'Linear synteny view'
 // clipped to. The visible-region entry is there for the whole-chromosome case,
 // where the "region" is the view and there is nothing to select.
 export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
-  extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
-    stateModel.extend(
-      // Annotated rather than cast: the extension point hands over an
-      // IAnyModelType, and stating the model shape here is what types
-      // getSelectedRegions/dynamicBlocks below without an `as`.
-      (self: LinearGenomeViewModel) => {
-        const superMenuItems = self.menuItems
-        const superLaunchMenuItems = self.rubberBandLaunchMenuItems
-        // The two entries differ only in their label and which region they
-        // read; everything else about the offer is the view's current state,
-        // resolved at menu time so it is what is open as of the launch
-        // rather than as of the extend(). The open tracks are read twice over,
-        // for two different purposes: the synteny ones among them are the
-        // datasets the dialog offers to cut panels from (see launchableTracks),
-        // and the rest are what the launched view's panel for this assembly
-        // opens with.
-        const menuItemsFor = (label: string, region: Region | undefined) =>
-          syntenyRegionMenuItems({
-            label,
-            region,
-            session: getSession(self),
-            openTracks: self.tracks.map(track => track.configuration),
-            anchorTracks: anchorPanelTracks(self.tracks),
-            sourceView: self,
-          })
-        return {
-          views: {
-            menuItems() {
-              const items = superMenuItems()
-              for (const item of menuItemsFor(
-                VISIBLE_LABEL,
-                widestRegion(self.dynamicBlocks.contentBlocks),
-              )) {
-                pushLaunchViewMenuItem(items, item)
-              }
-              return items
-            },
+  addViewMenuItems(pluginManager, 'LinearGenomeView', {
+    menu: 'menuItems',
+    group: LAUNCH_VIEW_LABEL,
+    items: self =>
+      menuItemsFor(
+        self,
+        VISIBLE_LABEL,
+        widestRegion(self.dynamicBlocks.contentBlocks),
+      ),
+  })
 
-            // The view itself nests these under "Launch", so this
-            // contributes the entry and nothing about where it sits.
-            rubberBandLaunchMenuItems() {
-              return [
-                ...superLaunchMenuItems(),
-                ...menuItemsFor(
-                  SELECTION_LABEL,
-                  widestRegion(
-                    self.getSelectedRegions(self.leftOffset, self.rightOffset),
-                  ),
-                ),
-              ]
-            },
-          },
-        }
-      },
-    ),
-  )
+  // The view itself nests these under "Launch", so this contributes the entry
+  // and nothing about where it sits.
+  addViewMenuItems(pluginManager, 'LinearGenomeView', {
+    menu: 'rubberBandLaunchMenuItems',
+    items: self =>
+      menuItemsFor(
+        self,
+        SELECTION_LABEL,
+        widestRegion(
+          self.getSelectedRegions(self.leftOffset, self.rightOffset),
+        ),
+      ),
+  })
 }

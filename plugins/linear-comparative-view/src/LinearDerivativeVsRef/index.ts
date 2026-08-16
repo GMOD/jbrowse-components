@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
-import { extendDisplayType } from '@jbrowse/core/pluggableElementTypes'
-import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
+import { addDisplayMenuItems } from '@jbrowse/core/pluggableElementTypes'
+import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 
@@ -21,35 +21,26 @@ const DerivativeVsRefDialog = lazy(() => import('./LinearDerivativeVsRef.tsx'))
  * set in view, so there is no read to right-click on.
  */
 export default function LinearDerivativeVsRefMenuItemF(pm: PluginManager) {
-  extendDisplayType(pm, 'LinearAlignmentsDisplay', stateModel =>
-    stateModel.extend(self => {
-      const superTrackMenuItems = self.trackMenuItems
-      return {
-        views: {
-          trackMenuItems() {
-            const items = superTrackMenuItems()
-            pushLaunchViewMenuItem(items, {
-              label: 'Reconstruct derivative allele...',
-              icon: AccountTreeIcon,
-              // Always offered, never disabled: whether any path has support
-              // is what the dialog is for, and an item that greys out at a
-              // locus with no split reads reads as broken rather than as an
-              // answer. The empty case explains itself there.
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  DerivativeVsRefDialog,
-                  {
-                    model: self,
-                    track: getContainingTrack(self),
-                    handleClose,
-                  },
-                ])
-              },
-            })
-            return items
+  addDisplayMenuItems(pm, 'LinearAlignmentsDisplay', {
+    menu: 'trackMenuItems',
+    group: LAUNCH_VIEW_LABEL,
+    items: self => ({
+      label: 'Reconstruct derivative allele...',
+      icon: AccountTreeIcon,
+      // Always offered, never disabled: whether any path has support is what
+      // the dialog is for, and an item that greys out at a locus with no split
+      // reads reads as broken rather than as an answer. The empty case explains
+      // itself there.
+      onClick: () => {
+        getSession(self).queueDialog(handleClose => [
+          DerivativeVsRefDialog,
+          {
+            model: self,
+            track: getContainingTrack(self),
+            handleClose,
           },
-        },
-      }
+        ])
+      },
     }),
-  )
+  })
 }

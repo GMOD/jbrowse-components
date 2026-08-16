@@ -47,6 +47,7 @@ export type PluggableElementType =
   | AddTrackWorkflowType
 
 export { extendDisplayType, extendViewType } from './extendElementType.ts'
+export { addDisplayMenuItems, addViewMenuItems } from './addMenuItems.ts'
 export { default as AdapterType } from './AdapterType.ts'
 export { default as ConnectionType } from './ConnectionType.ts'
 export { default as TrackType } from './TrackType.ts'
