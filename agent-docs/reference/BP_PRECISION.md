@@ -335,6 +335,69 @@ not. Positions are built as `u = (contactBin + off) * w` with
 `w = res / (bpPerPx * √2)` (`executeRenderHicData.ts`), so they are
 viewport-pixel-scale. Float32 is fine and no base/pan scheme is wanted.
 
+## The readout direction: a pixel back to a base
+
+Everything above is about getting a position **to** the GPU intact. The inverse
+— a cursor pixel back to the base painted under it — is float64 throughout and
+looks like it cannot go wrong. It can, and it does so exactly where the answer
+is read: at a base boundary, at base-level zoom, in a tooltip.
+
+**Multiply before dividing, and never form the fraction.** `bpAtPx` is
+
+```ts
+const offset = Math.floor(((px - screenStartPx) * (end - start)) / blockWidth)
+return reversed ? end - 1 - offset : start + offset
+```
+
+and the shape is load-bearing. `(px - screenStartPx) * span` is **exact**: both
+operands are dyadic (a cursor px is an integer or a dpr fraction, a block edge
+comes out of the same layout arithmetic), and the product tops out around 3e12
+against a 2⁵³ budget. So the single division is the only rounding in the
+expression, and its true quotient is either an exact integer — in which case the
+division is exact too — or at least `1 / blockWidth` away from one, about 1e-3,
+against a relative error of 2⁻⁵³. The floor cannot land on the wrong base.
+
+Spelling it `frac = (px - s) / blockWidth` and then flooring `frac * span`
+rounds twice, and the second product can land either side of an integer. Two
+functions did, independently, each with a long correct comment about the
+reversed-block pivot and no idea the arithmetic under it was the problem.
+Measured against an exact rational oracle (float64 inputs decomposed to
+BigInt fractions, no rounding anywhere) over 11.6M realistic samples — integer
+through eighth-pixel cursors, chr1-scale starts, 1 bp to 3 Mb spans, both
+orientations, fractional block offsets:
+
+| spelling | wrong |
+|---|---|
+| `floor(frac * span)`, then add `start` (wiggle's old local copy) | 10992 |
+| `floor(start + frac * span)` (`bpAtPx` before 2026-08-16) | 4202 |
+| `floor((px - s) * span / blockWidth)` | **0** |
+
+Concretely: 90 bp over 800 px puts base 63's edge at px 560 exactly
+(560 × 90 / 800 = 63), and the old form reported 62 — 27 rather than 26 flipped.
+
+**A genome-scale `start` hides this in a sweep.** `floor(start + frac * span)`
+adds a chr1-scale addend whose ULP is far coarser than the drift in
+`frac * span`, so the wrong value frequently rounds back to the right one. A
+test that only exercises realistic starts passes against both spellings; the
+sweep in `canvas2dUtils.test.ts` pins `start: 0` for exactly this reason, and it
+is why the old form survived review.
+
+**What this does not transfer to.** `basePaintedAt`
+(`@jbrowse/core/util/Base1DUtils`) answers the same question and cannot use this
+form: it takes an already-divided `offsetBp` from `pxToBp`, which works in
+view-cumulative coordinates off an arbitrary `bpPerPx`, so there is no exact
+integer product to preserve and the dominant error is upstream of the floor.
+Aligning the two would mean pushing one coordinate family's assumptions into the
+other. Its accuracy is **unmeasured**.
+
+The painting side was checked and left alone. `makeCellLeftMapper` uses the same
+divide-then-multiply shape, but over 1.15M cursor positions the base `bpAtPx`
+names always has a painted cell covering it, bar 64 reversed cases off by ~1e-14
+px — below rasterization and below any cursor. Round-tripping a cell's *exact*
+edge through `bpAtPx` does disagree ~17% of the time, and that measurement is
+meaningless: an irrational boundary like 800/3 is not representable, the float
+lands a hair inside the previous base, and no cursor ever takes that value.
+
 ## Genome-size limits
 
 - **A single reference sequence must be `< 2³²` = 4.29 Gbp.** The one hard
