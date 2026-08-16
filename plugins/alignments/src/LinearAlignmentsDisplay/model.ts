@@ -264,17 +264,6 @@ export { ColorScheme } from './constants.ts'
 // a stable identity rather than allocating a set per read.
 const EMPTY_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
 
-// The last cross-region arc drop count reported per lane, so the cap is said
-// out loud ONCE per number rather than once per evaluation.
-//
-// `crossRegionArcSections` re-projects every foot through `view.bpToPx`, so it
-// reads `view.offsetPx` and MobX re-evaluates it on every pan frame. That is
-// correct and necessary — the arcs move — but it means a bare `console.warn` in
-// there fires per frame for as long as a capped lane is on screen, which is a
-// console nobody can read anything else in. Keyed by display id and lane, since
-// two tracks can be capped at once and each has its own number to report.
-const reportedArcCaps = new Map<string, number>()
-
 // colorBy.type → shader colorScheme index, resolved through the shared
 // COLOR_SCHEMES registry (each scheme names a shader path) and ColorScheme (the
 // path → index map). Total over ColorSchemeType via the registry, so no
@@ -2739,6 +2728,36 @@ export default function stateModelFactory(
           return (c: ReadColorCategory) => readColorCategoryLabel(c, overrides)
         },
       }))
+      .views(() => {
+        // Per display instance, and deliberately NOT volatile: the only caller
+        // is `crossRegionArcSections`, a computed getter that re-runs on every
+        // pan frame, and writing to an observable from inside a computed is a
+        // loop. A plain closure Map is invisible to MobX and dies with the
+        // display — which a module-level map keyed by display id did not,
+        // holding an entry for every display that ever hit the cap for as long
+        // as the tab lived.
+        const reportedCaps = new Map<string, number>()
+        return {
+          /**
+           * #method
+           * Warn that a lane's cross-region arcs were capped — once per NUMBER
+           * rather than once per evaluation. `crossRegionArcSections` re-projects
+           * every foot through `view.bpToPx`, so it reads `view.offsetPx` and
+           * MobX re-evaluates it on every pan frame; that is correct and
+           * necessary, but a bare `console.warn` in there fires per frame for as
+           * long as a capped lane is on screen, which is a console nobody can
+           * read anything else in.
+           */
+          reportArcCap(groupKey: string, dropped: number, kept: number) {
+            if (reportedCaps.get(groupKey) !== dropped) {
+              reportedCaps.set(groupKey, dropped)
+              console.warn(
+                `cross-region arcs: drawing the ${kept} best-supported of ${kept + dropped} in lane "${groupKey}"; turn off concordant-pair arcs to thin them`,
+              )
+            }
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter
@@ -3002,15 +3021,9 @@ export default function stateModelFactory(
                   // Said out loud rather than dropped silently, which is this
                   // repo's rule for a cap — but once per NUMBER, not once per
                   // evaluation: this getter re-runs on every pan frame, so see
-                  // `reportedArcCaps`.
+                  // `reportArcCap`.
                   onCapped: (dropped, kept) => {
-                    const capKey = `${self.id}\0${sec.groupKey}`
-                    if (reportedArcCaps.get(capKey) !== dropped) {
-                      reportedArcCaps.set(capKey, dropped)
-                      console.warn(
-                        `cross-region arcs: drawing the ${kept} best-supported of ${kept + dropped} in lane "${sec.groupKey}"; turn off concordant-pair arcs to thin them`,
-                      )
-                    }
+                    self.reportArcCap(sec.groupKey, dropped, kept)
                   },
                 }),
               },
