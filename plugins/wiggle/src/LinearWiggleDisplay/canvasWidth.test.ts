@@ -31,5 +31,5 @@ test('and follows the outline setting rather than pinning the inset', () => {
 test('the width handed to the renderer is that box', () => {
   const { display } = createTestEnvironment().createDisplay()
 
-  expect(display.renderState?.canvasWidth).toBe(display.canvasWidthPx)
+  expect(display.renderState.canvasWidth).toBe(display.canvasWidthPx)
 })

@@ -1,19 +1,5 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  displayTestSessionModel,
-  testAssembly,
-  testAssemblyManager,
-} from '@jbrowse/display-test-utils'
-import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
+import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.ts'
@@ -54,111 +40,22 @@ export function makeMultiWiggleData(...names: string[]): WiggleDataResult[] {
 // unit tests. createDisplay accepts extra display-snapshot props so tests can
 // seed persistent state (e.g. runClustering) declaratively, exactly as the app
 // does via addView.
+// The shared display harness wired for the multi-wiggle display.
+// `createDisplay(snapshot)` takes display-instance keys, which is how the
+// clustering and sort autorun tests seed `runClustering`.
 export function createTestEnvironment() {
-  // `console.warn` only — `console.error` is the display-contract channel
-  // (TEST_INFRASTRUCTURE.md).
-  console.warn = jest.fn()
-  const pluginManager = new PluginManager()
-
-  pluginManager.addAdapterType(
-    () =>
-      new AdapterType({
-        name: 'MultiWiggleAdapter',
-        configSchema: ConfigurationSchema(
-          'MultiWiggleAdapter',
-          {},
-          { explicitlyTyped: true },
-        ),
-        // as the real MultiWiggleAdapter declares — it's what surfaces the
-        // Resolution and Summary score mode track-menu entries
-        adapterCapabilities: ['hasResolution'],
-        getAdapterClass: () => Promise.resolve(class extends BaseAdapter {}),
-      }),
-  )
-
-  pluginManager.addTrackType(() => {
-    const trackConfigSchema = ConfigurationSchema(
-      'MultiQuantitativeTrack',
-      {},
-      {
-        baseConfiguration: createBaseTrackConfig(pluginManager),
-        explicitIdentifier: 'trackId',
-      },
-    )
-    return new TrackType({
-      name: 'MultiQuantitativeTrack',
-      configSchema: trackConfigSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'MultiQuantitativeTrack',
-        trackConfigSchema,
-      ),
-    })
+  const env = createDisplayTestEnvironment<MultiLinearWiggleDisplayModel>({
+    trackType: 'MultiQuantitativeTrack',
+    adapter: { name: 'MultiWiggleAdapter', capabilities: ['hasResolution'] },
+    displayName: 'MultiLinearWiggleDisplay',
+    configSchema: () => configSchema,
+    stateModel: (_pm, schema) => stateModelFactory(schema),
+    viewModel: linearGenomeViewStateModelFactory,
+    viewRegionEnd: 10_000,
   })
-
-  pluginManager.addDisplayType(() => {
-    return new DisplayType({
-      name: 'MultiLinearWiggleDisplay',
-      configSchema,
-      stateModel: stateModelFactory(configSchema),
-      trackType: 'MultiQuantitativeTrack',
-      viewType: 'LinearGenomeView',
-      // never rendered here; this harness exercises the model
-      ReactComponent: () => null,
-    })
-  })
-
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  const mockRpcCall = jest.fn()
-
-  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-
-  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-  const trackConfig = trackConfigSchema.create(
-    {
-      type: 'MultiQuantitativeTrack',
-      trackId: 'test_track',
-      assemblyNames: ['volvox'],
-      adapter: { type: 'MultiWiggleAdapter' },
-    },
-    { pluginManager },
-  )
-
-  const Session = displayTestSessionModel({
-    viewModel: LinearGenomeModel,
-    rpcManager: { call: mockRpcCall },
-    assemblyManager: testAssemblyManager(testAssembly()),
-    getTrackById: (id: string) =>
-      id === 'test_track' ? trackConfig : undefined,
-  })
-
-  function createDisplay(displaySnapshot?: Record<string, unknown>) {
-    const session = Session.create({ configuration: {} }, { pluginManager })
-    const view = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        tracks: [
-          {
-            type: 'MultiQuantitativeTrack',
-            configuration: 'test_track',
-            displays: [
-              { type: 'MultiLinearWiggleDisplay', ...displaySnapshot },
-            ],
-          },
-        ],
-      }),
-    )
-    view.setWidth(800)
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
-    ])
-
-    const track = view.tracks[0]!
-    const display: MultiLinearWiggleDisplayModel = track.displays[0]
-    return { session, view, track, display, mockRpcCall }
+  return {
+    ...env,
+    createDisplay: (displaySnapshot?: Record<string, unknown>) =>
+      env.createDisplay({ displaySnapshot }),
   }
-
-  return { createDisplay, mockRpcCall }
 }
