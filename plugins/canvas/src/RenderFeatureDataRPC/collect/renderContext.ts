@@ -44,6 +44,13 @@ export interface GlyphPlacement {
   labelRowsAbove: number
   flatbushIdx: number
   isRoot: boolean
+  // The record's ROOT feature, at every depth — never the immediate container a
+  // nested glyph happens to sit in. It is the `parentFeatureId` every subfeature
+  // registers itself under, and three consumers read that field as the top-level
+  // id: `resolveSubfeature` pairs a subfeature hit with its feature by it,
+  // `GetCanvasFeatureDetails` resolves only top-level features by id, and the
+  // highlight sweep pins by it. `emitSubfeaturesGlyph` forwards this rather than
+  // its own `layout.feature` to hold the invariant one level down.
   parentFeature: Feature
 }
 

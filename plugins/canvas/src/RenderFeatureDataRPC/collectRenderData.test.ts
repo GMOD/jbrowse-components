@@ -533,6 +533,59 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
       topPx: 15,
     })
   })
+
+  it('parents a container-inside-a-container to the record root, not the container', () => {
+    // Three generic levels — a match with match_parts that themselves have
+    // parts, which nests one Subfeatures glyph inside another. `parentFeatureId`
+    // means "the top-level feature id" to everything that reads it: it gates
+    // `resolveSubfeature`'s pairing, it is the only id GetCanvasFeatureDetails
+    // resolves, and the highlight sweep pins by it. Attributing the grandchild
+    // to the intermediate container instead left it drawn, labelled, and
+    // impossible to hover, select or right-click.
+    const grandchild = mockFeature({
+      type: 'match_part',
+      id: 'part1',
+      start: 100,
+      end: 120,
+    })
+    const child = mockFeature({
+      type: 'match',
+      id: 'inner',
+      start: 100,
+      end: 130,
+      subfeatures: [grandchild],
+    })
+    const root = mockFeature({
+      type: 'match',
+      id: 'outer',
+      start: 100,
+      end: 130,
+      subfeatures: [child],
+    })
+    const layout: FeatureLayout = {
+      feature: root,
+      glyphType: 'Subfeatures',
+      y: 0,
+      height: 20,
+      totalLayoutHeight: 20,
+      children: [
+        {
+          feature: child,
+          glyphType: 'Subfeatures',
+          y: 0,
+          height: 20,
+          totalLayoutHeight: 20,
+          children: [{ ...boxLayout(grandchild), y: 10 }],
+        },
+      ],
+    }
+    const result = collect(layout)
+
+    // only the leaf registers — a container glyph draws no primitives of its
+    // own and so has nothing to be hovered by — and it names the root
+    expect(result.subfeatureInfos.map(s => s.featureId)).toEqual(['part1'])
+    expect(result.subfeatureInfos[0]!.parentFeatureId).toBe('outer')
+  })
 })
 
 describe('collectRenderData collapsed-gene label + hit-box anchor', () => {

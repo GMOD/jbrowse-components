@@ -651,7 +651,16 @@ function emitBox(
 }
 
 // The container glyph: no primitives of its own, just its stacked children, each
-// shifted by its own offset and attributed to this feature as their parent.
+// shifted by its own offset and attributed to the record's ROOT feature.
+//
+// `place.parentFeature`, not `layout.feature` — they are the same object for a
+// top-level container (processFeatureRecord seeds the placement with the record's
+// own feature), and forwarding it is what keeps them the same for a container
+// nested inside another. `layout.feature` handed a grandchild the intermediate
+// container instead, which every consumer of the resulting `parentFeatureId`
+// reads as the top-level id: `resolveSubfeature` gates hits on it (so the
+// grandchild was drawn, labelled, and unhoverable), `GetCanvasFeatureDetails`
+// resolves only top-level ids by it, and the highlight sweep pins by it.
 function emitSubfeaturesGlyph(
   layout: FeatureLayout,
   place: GlyphPlacement,
@@ -666,7 +675,7 @@ function emitSubfeaturesGlyph(
         labelRowsAbove: place.labelRowsAbove + (child.labelRowsAbove ?? 0),
         flatbushIdx: place.flatbushIdx,
         isRoot: false,
-        parentFeature: layout.feature,
+        parentFeature: place.parentFeature,
       },
       ctx,
       collector,
