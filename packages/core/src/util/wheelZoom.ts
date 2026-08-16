@@ -6,6 +6,7 @@
 
 import { transaction } from 'mobx'
 
+import { createFrameCoalescer } from './frameCoalescer.ts'
 import { trackPointerPresence } from './pointerPresence.ts'
 
 // max zoom delta per millisecond — equivalent to 0.2 per frame at 60fps
@@ -172,7 +173,8 @@ interface WheelState {
   zoomAccum: number
   target: WheelZoomTarget | undefined
   lastClientX: number
-  rafId: number | null
+  // the previous frame's stamp, which the zoom rate limit measures elapsed
+  // against. The frame itself belongs to the coalescer, not to this state.
   lastRafTime: number | null
   lastZoomTime: number | null
   lastEventTime: number | null
@@ -202,12 +204,12 @@ export function createWheelZoomController({
   onEvent,
   onUnhandled,
 }: WheelZoomControllerOptions) {
+  const frame = createFrameCoalescer()
   const s: WheelState = {
     scrollDelta: 0,
     zoomAccum: 0,
     target: undefined,
     lastClientX: 0,
-    rafId: null,
     lastRafTime: null,
     lastZoomTime: null,
     lastEventTime: null,
@@ -227,7 +229,6 @@ export function createWheelZoomController({
   function flush(now: number) {
     const elapsed = wheelFrameElapsedMs(now, s.lastRafTime)
     s.lastRafTime = now
-    s.rafId = null
     const { target } = s
     if (target) {
       const origin = target.originElement()
@@ -329,7 +330,7 @@ export function createWheelZoomController({
         s.scrollDelta = accumulateScroll(s.scrollDelta, deltaX)
       }
 
-      s.rafId ??= requestAnimationFrame(flush)
+      frame.schedule(flush)
     }
   }
 
@@ -337,9 +338,7 @@ export function createWheelZoomController({
   return () => {
     element.removeEventListener('wheel', onWheel)
     presence?.dispose()
-    // cancel any pending frame so a flush can't fire against a detached view
-    if (s.rafId !== null) {
-      cancelAnimationFrame(s.rafId)
-    }
+    // so a flush can't fire against a detached view
+    frame.cancel()
   }
 }
