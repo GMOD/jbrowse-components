@@ -404,6 +404,9 @@ importers:
       '@gmod/bgzf-filehandle':
         specifier: ^6.6.0
         version: 6.6.0
+      '@gmod/range-cache-filehandle':
+        specifier: ^1.0.2
+        version: 1.0.2
       '@gmod/shared-read-cache':
         specifier: ^1.6.0
         version: 1.6.0
@@ -4442,6 +4445,9 @@ packages:
 
   '@gmod/nclist@3.0.13':
     resolution: {integrity: sha512-wUHzsQRHO7LHVXESMnVrr6h5P2qGdoNouL7Atbed2MZHG0mNTzSiq8lsqC9Nt+PGoCnFLLU+qBlD4CmXpTZheQ==}
+
+  '@gmod/range-cache-filehandle@1.0.2':
+    resolution: {integrity: sha512-M1dQYtcPXMqHGBoxAUjX+czeVpWgWGfQWd1uI2k51Z8aYIyoBlHBYysbZX34oDCFKnjQUNO+/jR4wWx1vlDBeA==}
 
   '@gmod/shared-read-cache@1.6.0':
     resolution: {integrity: sha512-RrkbPdTFcKgtapYTCt8nwP4B/wzFlSLpPC4f5OfNAciC9o/Hxa1oW5qBVLk/4BEV61gp5x3sLjYHIXvMwklHDQ==}
@@ -12378,6 +12384,10 @@ snapshots:
     dependencies:
       '@gmod/shared-read-cache': 1.6.0
       '@jridgewell/resolve-uri': 3.1.2
+
+  '@gmod/range-cache-filehandle@1.0.2':
+    dependencies:
+      generic-filehandle2: 2.3.1
 
   '@gmod/shared-read-cache@1.6.0': {}
 
