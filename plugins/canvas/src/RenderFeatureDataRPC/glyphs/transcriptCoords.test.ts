@@ -112,6 +112,46 @@ describe('transcriptCoords', () => {
     expect(exonsOf(transcript)).toEqual([0, 100, 200, 300, 400, 500])
   })
 
+  // A GFF3 that annotates one UTR row and not the other used to lose the
+  // untranslated overhang on BOTH sides — the reconstruction was all-or-nothing
+  // on "are there any UTR rows at all". So a transcript whose 3' UTR is only
+  // evidenced by its own bounds ended at the stop codon, and every `c.*n`
+  // position on it read as off the transcript entirely.
+  it('stretches to its own bounds on whichever side no row covers', () => {
+    const transcript = mockFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 500,
+      subfeatures: [
+        mockFeature({ type: 'five_prime_UTR', start: 0, end: 50 }),
+        mockFeature({ type: 'CDS', start: 50, end: 100 }),
+        mockFeature({ type: 'CDS', start: 200, end: 300 }),
+        mockFeature({ type: 'CDS', start: 400, end: 450 }),
+      ],
+    })
+    expect(exonsOf(transcript)).toEqual([0, 100, 200, 300, 400, 500])
+  })
+
+  // The other half of that rule: a UTR row spliced across an intron is the only
+  // evidence of where the untranslated part actually runs, so the bounds must
+  // NOT be used to bridge it.
+  it('leaves a spliced UTR alone rather than bridging it from the bounds', () => {
+    const transcript = mockFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 500,
+      subfeatures: [
+        mockFeature({ type: 'CDS', start: 50, end: 100 }),
+        mockFeature({ type: 'CDS', start: 200, end: 300 }),
+        mockFeature({ type: 'CDS', start: 400, end: 450 }),
+        mockFeature({ type: 'three_prime_UTR', start: 450, end: 500 }),
+        mockFeature({ type: 'five_prime_UTR', start: 0, end: 20 }),
+        mockFeature({ type: 'five_prime_UTR', start: 30, end: 50 }),
+      ],
+    })
+    expect(exonsOf(transcript)).toEqual([0, 20, 30, 100, 200, 300, 400, 500])
+  })
+
   // The exons a coordinate is counted on come from the FEATURE, never from what
   // the glyph drew. `subParts` and `impliedUTRs` decide which rows are rendered;
   // routing coordinates through that list made an HGVS position change when

@@ -23,21 +23,30 @@ function spanOf(feature: Feature): Span {
 // and a `subParts` naming a non-exonic child type (an `intron` row) would count
 // untranscribed bases into the c. numbering.
 //
-// With no UTR rows either, the transcript's own bounds are the only evidence of
-// untranslated overhang, so they cap the outermost pieces — the same
-// reconstruction makeUTRs does for the renderer, and what keeps a CDS-only
-// transcript reporting `c.-24` and `c.*17` rather than nothing.
+// Where no row covers the untranslated overhang, the transcript's own bounds
+// are the only evidence of it, so they cap that side — the same reconstruction
+// makeUTRs does for the renderer, and what keeps a CDS-only transcript
+// reporting `c.-24` and `c.*17` rather than nothing.
+//
+// Per side, because annotations come with one UTR row and not the other. Asking
+// "does this transcript have any UTR rows" instead threw away the overhang on
+// BOTH sides the moment either was annotated, so a transcript with only a
+// five_prime_UTR ended at its stop codon and read every `c.*n` position as off
+// the transcript. A side a row already reaches into is left alone: a spliced
+// UTR's introns are unknowable from the bounds, and bridging them would count
+// untranscribed bases into the numbering.
 function reconstructedSpans(feature: Feature, coding: Span | undefined) {
-  const parts = getSubfeatures(feature).filter(f => isCDS(f) || isUTR(f))
-  const spans = parts.map(spanOf)
-  if (coding && !parts.some(isUTR)) {
+  const spans = getSubfeatures(feature)
+    .filter(f => isCDS(f) || isUTR(f))
+    .map(spanOf)
+  if (coding) {
     const [codeStart, codeEnd] = coding
     const start = feature.get('start')
     const end = feature.get('end')
-    if (start < codeStart) {
+    if (start < codeStart && !spans.some(([s]) => s < codeStart)) {
       spans.push([start, codeStart])
     }
-    if (end > codeEnd) {
+    if (end > codeEnd && !spans.some(([, e]) => e > codeEnd)) {
       spans.push([codeEnd, end])
     }
   }
@@ -64,17 +73,17 @@ function exonSpans(layout: FeatureLayout, coding: Span | undefined) {
         ? reconstructedSpans(feature, coding)
         : undefined
 
-  let ordered: Span[] | undefined
-  if (spans) {
-    const merged = mergeSpans(spans)
-    if (merged.length > 0) {
-      if (feature.get('strand') === -1) {
-        merged.reverse()
-      }
-      ordered = merged
-    }
+  if (!spans) {
+    return undefined
   }
-  return ordered
+  const merged = mergeSpans(spans)
+  if (merged.length === 0) {
+    return undefined
+  }
+  if (feature.get('strand') === -1) {
+    merged.reverse()
+  }
+  return merged
 }
 
 // The coding extent, or undefined for a non-coding transcript (numbered `n.`).
