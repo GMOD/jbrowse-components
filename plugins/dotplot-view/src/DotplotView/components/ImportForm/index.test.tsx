@@ -111,6 +111,15 @@ const axisSelect = (axis: 'X' | 'Y') =>
 const chromosomeBox = (axis: 'x' | 'y') =>
   screen.getByTestId(`chromosome-filter-${axis}`)
 
+// The boxes are off until asked for, so anything about what goes IN them opens
+// them first.
+const chromosomesCheckbox = () =>
+  screen.getByRole('checkbox', { name: 'Plot only certain chromosomes' })
+
+const showChromosomeBoxes = () => {
+  fireEvent.click(chromosomesCheckbox())
+}
+
 const goManual = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Manual' }))
 }
@@ -214,6 +223,7 @@ test('Manual launch sets the axes the user picked, x first', () => {
 
 test('the chromosome box reaches the init as that axis displayedRegionNames', () => {
   const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+  showChromosomeBoxes()
   fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA, ctgB' } })
   fireEvent.click(launchButton())
   expect(model.init).toEqual({
@@ -228,6 +238,7 @@ test('changing an axis assembly drops the chromosomes typed for it', () => {
   // the names were typed about hg38; on rn7 they are at best unrestricting the
   // axis with a warning, at worst plotting the wrong thing quietly
   setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  showChromosomeBoxes()
   fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA' } })
   fireEvent.change(chromosomeBox('y'), { target: { value: 'ctgB' } })
   fireEvent.mouseDown(axisSelect('X'))
@@ -240,12 +251,42 @@ test('changing an axis assembly drops the chromosomes typed for it', () => {
 test('switching to Manual drops chromosomes typed against the axes it replaces', () => {
   setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   goManual()
+  showChromosomeBoxes()
   fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA' } })
   // back to Quick start and in again: the handover re-seats both axes, so what
   // was typed against the previous pair does not survive it
   fireEvent.click(screen.getByRole('button', { name: 'Quick start' }))
   goManual()
   expect(chromosomeBox('x')).toHaveValue('')
+})
+
+// The boxes are the fragmented-assembly case and every other form opens without
+// them, so they are off unless asked for.
+test('the chromosome boxes are hidden until asked for', () => {
+  setup({ assemblyNames: ['hg38', 'mm39'] })
+  expect(screen.queryByTestId('chromosome-filter-x')).not.toBeInTheDocument()
+  expect(screen.queryByTestId('chromosome-filter-y')).not.toBeInTheDocument()
+
+  showChromosomeBoxes()
+  expect(chromosomeBox('x')).toBeInTheDocument()
+  expect(chromosomeBox('y')).toBeInTheDocument()
+})
+
+// Hiding has to CLEAR, or a plot comes back restricted by names typed into a
+// box that is no longer on screen — the one failure a disclosure can introduce
+// that the flat form could not.
+test('hiding the boxes clears what was typed in them', () => {
+  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+  showChromosomeBoxes()
+  fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA' } })
+  fireEvent.change(chromosomeBox('y'), { target: { value: 'ctgB' } })
+
+  fireEvent.click(chromosomesCheckbox())
+  fireEvent.click(launchButton())
+  // no init at all, which is doSubmit's "neither box was used" — an init
+  // carrying two empty lists would be a restriction request that resolves to
+  // nothing
+  expect(model.init).toBeUndefined()
 })
 
 test('the track picker offers a connection-supplied synteny track', () => {

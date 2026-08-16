@@ -12,7 +12,14 @@ import {
   syntenyPairStatuses,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
-import { Button, Container, Paper, Typography } from '@mui/material'
+import {
+  Button,
+  Checkbox,
+  Container,
+  FormControlLabel,
+  Paper,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import TrackSelector from './TrackSelector.tsx'
@@ -28,11 +35,19 @@ const useStyles = makeStyles()(theme => ({
   // left-aligned like the rest of the form and like the synteny import form.
   // Centering only these two fields put them alone in the middle of a wide
   // window, away from the toggle above and the radios below that govern them.
-  axes: {
+  //
+  // ONE ROW PER AXIS, not all four controls on one line (review: "could
+  // consider adding newline after this"). The row is the axis, so X's assembly
+  // sits above Y's and the chromosome box that belongs to each is beside it —
+  // flowed together they wrapped wherever the window width put them, and on a
+  // wide window read as four unrelated fields.
+  axis: {
     display: 'flex',
     flexWrap: 'wrap',
     gap: theme.spacing(1),
     alignItems: 'center',
+  },
+  axes: {
     marginBottom: theme.spacing(2),
   },
   // Launch below the track picker, not beside the axis selectors: picking a
@@ -71,6 +86,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
   // until someone types in one.
   const [regionsX, setRegionsX] = useState('')
   const [regionsY, setRegionsY] = useState('')
+  const [showChromosomes, setShowChromosomes] = useState(false)
 
   // Changing an axis's assembly drops what was typed for that axis. `*_MATERNAL`
   // is typed ABOUT a particular assembly, so carrying it to a different one is
@@ -189,37 +205,68 @@ const DotplotImportForm = observer(function DotplotImportForm({
           <Typography className={classes.header}>
             Select assemblies for dotplot view
           </Typography>
+          {/* The chromosome boxes are off unless asked for (review: "it could
+              be optional to show the search boxes ... most people might not
+              care, and might think they NEED to use them which is not
+              intended"). Two empty text fields sitting between the reader and
+              Launch read as required, and the case they exist for — an assembly
+              fragmented into hundreds of scaffolds — is the rare one. Unticking
+              clears both, so a filter can never be applied from a box nobody
+              can see. */}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showChromosomes}
+                onChange={event => {
+                  setShowChromosomes(event.target.checked)
+                  if (!event.target.checked) {
+                    setRegionsX('')
+                    setRegionsY('')
+                  }
+                }}
+              />
+            }
+            label="Plot only certain chromosomes"
+          />
           <div className={classes.axes}>
-            <AssemblySelector
-              label="X-axis assembly"
-              helperText=""
-              selected={assemblyX}
-              session={session}
-              onChange={asm => {
-                setAxis(asm, assemblyX, setAssemblyX, setRegionsX)
-              }}
-            />
-            <ChromosomeFilter
-              label="X-axis chromosomes"
-              testId="chromosome-filter-x"
-              value={regionsX}
-              onChange={setRegionsX}
-            />
-            <AssemblySelector
-              label="Y-axis assembly"
-              helperText=""
-              selected={assemblyY}
-              session={session}
-              onChange={asm => {
-                setAxis(asm, assemblyY, setAssemblyY, setRegionsY)
-              }}
-            />
-            <ChromosomeFilter
-              label="Y-axis chromosomes"
-              testId="chromosome-filter-y"
-              value={regionsY}
-              onChange={setRegionsY}
-            />
+            <div className={classes.axis}>
+              <AssemblySelector
+                label="X-axis assembly"
+                helperText=""
+                selected={assemblyX}
+                session={session}
+                onChange={asm => {
+                  setAxis(asm, assemblyX, setAssemblyX, setRegionsX)
+                }}
+              />
+              {showChromosomes ? (
+                <ChromosomeFilter
+                  label="X-axis chromosomes"
+                  testId="chromosome-filter-x"
+                  value={regionsX}
+                  onChange={setRegionsX}
+                />
+              ) : null}
+            </div>
+            <div className={classes.axis}>
+              <AssemblySelector
+                label="Y-axis assembly"
+                helperText=""
+                selected={assemblyY}
+                session={session}
+                onChange={asm => {
+                  setAxis(asm, assemblyY, setAssemblyY, setRegionsY)
+                }}
+              />
+              {showChromosomes ? (
+                <ChromosomeFilter
+                  label="Y-axis chromosomes"
+                  testId="chromosome-filter-y"
+                  value={regionsY}
+                  onChange={setRegionsY}
+                />
+              ) : null}
+            </div>
           </div>
           <TrackSelector
             key={`${assemblyX}-${assemblyY}`}

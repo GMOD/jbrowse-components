@@ -47,6 +47,13 @@ export default function ChromosomeFilter({
       value={value}
       placeholder="all (e.g. *_MATERNAL)"
       size="small"
+      // Against the theme's `standard` default (review: "i tend to prefer input
+      // boxes to use outlined style"). It sits beside an assembly dropdown,
+      // which draws its own outline, so an underlined box next to it read as
+      // page text with a rule under it rather than as a field. Set here rather
+      // than on the theme, which would restyle every TextField in the app and
+      // move every figure with a form in it.
+      variant="outlined"
       onChange={event => {
         onChange(event.target.value)
       }}

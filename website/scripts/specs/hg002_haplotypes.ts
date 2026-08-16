@@ -422,6 +422,11 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           // the click is part of the path a reader has to take, not setup this
           // figure is skipping past.
           { type: 'click', text: 'Manual' },
+          // ...and then the boxes themselves are opt-in even in Manual, since
+          // the assemblies that want them are the fragmented ones. Both clicks
+          // are the path, which is why the frame keeps them rather than arriving
+          // at a form already in this state.
+          { type: 'click', text: 'Plot only certain chromosomes' },
           {
             type: 'waitForSelector',
             selector: '[data-testid="chromosome-filter-x"]',
