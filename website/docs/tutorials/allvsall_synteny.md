@@ -202,17 +202,18 @@ declaratively so the view opens on load.
 
 ### From the UI
 
-Open a linear synteny view (**Add → Linear synteny view**) to reach the import
-form. It opens in **Quick start**, which launches straight from a pre-configured
-synteny track: because `ecoli_ava` lists all five assemblies, you don't have to
-build the rows by hand. Choose it and each assembly it lists becomes a row, one
-per strain, with that one track wired up to back every band. Click **Launch**
-and you have the stacked view.
+The import form is one pass, whatever the row count:
 
-**Manual** mode builds the stack by hand (**Add row** per strain, the connector
-button between each pair to pick its track), starting from whatever Quick start
-had selected. For an all-vs-all track that is only worth reaching for when you
-want to adjust the rows Quick start already filled in.
+1. **Add → Linear synteny view** opens it in **Quick start**, which launches
+   straight from a pre-configured synteny track.
+2. Choose `ecoli_ava`. It lists all five assemblies, so each becomes a row, one
+   per strain, and that one track backs every band.
+3. Click **Launch**.
+
+**Manual** mode builds the stack by hand instead (**Add row** per strain, the
+connector button between each pair to pick its track), starting from whatever
+Quick start had selected. For an all-vs-all track it is worth reaching for only
+to adjust the rows Quick start already filled in.
 
 <Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its five assemblies in as rows, and Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
 
@@ -322,31 +323,29 @@ This mode is looser about `assemblyNames` than the stacked view. A mate the
 track does not list still draws, labelled by its bare PanSN prefix, so a plain
 view of K12 shows all four other strains without loading them as assemblies. A
 strain's own paralogy draws as well. Clicking a feature offers to launch a
-synteny view against its mate, but only for mates the track lists, since the
+synteny view against its mate, but only for mates the track lists, since that
 view needs a real assembly to open a row for.
 
-All those alignments land in one pileup, so nothing says which strain each block
-came from. The track menu's **Group by... → Mate assembly** splits them into one
-labelled lane per sample. Each lane is a single row, shading darker where
-several alignments cover the same base rather than growing a row per hit. Untick
-**Show... → Collapse groups to one row** to stack every lane instead, or expand
-one from its label.
+Every alignment lands in one pileup, so nothing says which strain a block came
+from. Three items on the track menu sort that out:
 
-One lane is the assembly you are viewing, and it is this run's built-in control:
-`minimap2 -X` skipped each genome's own diagonal, so a K-12 lane that filled up
-with K-12 would mean the PAF was built wrong. **Group by... → Hide
-self-alignment lane** drops it, and the figures below have it ticked.
+1. **Group by... → Mate assembly** gives one labelled lane per sample. A lane is
+   a single row, shading darker where several alignments cover the same base
+   rather than growing a row per hit. Untick **Show... → Collapse groups to one
+   row** to stack every lane instead, or expand one from its label.
+2. **Group by... → Hide self-alignment lane** drops the lane for the strain you
+   are viewing, which is this run's built-in control: `minimap2 -X` skipped each
+   genome's own diagonal, so a K-12 lane filling up with K-12 would mean the PAF
+   was built wrong. The figures below have it ticked.
+3. **Show... → Show coverage** adds a histogram of how many other strains cover
+   each base. A synteny track in a plain view renders through the same display
+   as a read pileup, so the rest of that menu is the one you already know from
+   alignments.
 
-A synteny track in a plain view renders through the same display as a read
-pileup, so the rest of that menu is the one you already know from alignments:
-**Show... → Show coverage**, for instance, adds a histogram of how many other
-strains cover each base of the strain you are viewing.
-
-A lane says where a strain stops, so the figure below carries a second pane, the
-same window in the pangenome graph of these strains, which
-[the next section](#the-same-gap-drawn-as-a-graph) picks up. The shaded band is
-K-12's phenylacetate (paa) operon: Sakai, CFT073 and IAI39 all stop at its left
-edge where NCTC86 runs through.
+The figure below carries a second pane, the same window in the pangenome graph
+of these strains, which [the next section](#the-same-gap-drawn-as-a-graph) picks
+up. The shaded band is K-12's phenylacetate (paa) operon: Sakai, CFT073 and
+IAI39 all stop at its left edge where NCTC86 runs through.
 
 <Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
