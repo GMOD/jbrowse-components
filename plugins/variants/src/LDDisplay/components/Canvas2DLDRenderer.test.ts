@@ -259,3 +259,42 @@ describe('Canvas2DLDRenderer', () => {
     ])
   })
 })
+
+// `render` answers whether real content reached the canvas, and
+// RenderLifecycleMixin flips `canvasDrawn` — the loading scrim,
+// `data-display-drawn`, every readiness wait — off that answer alone.
+//
+// The display's model used to give it, from whether `rpcData` existed, which
+// this backend cannot honour: it paints nothing until `uploadColorRamp` has run.
+// The frame between the fetch landing and the ramp arriving therefore reported
+// drawn over a blank canvas, and nothing catches that — `waitForDisplaysDone`
+// swallows its own timeout, so a display that lies about being painted reads as
+// a slightly slow one and a capture lands on it blank.
+describe('Canvas2DLDRenderer paint reporting', () => {
+  test('false before the colour ramp arrives, true after', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DLDRenderer(canvas)
+    const data = makeOneCell()
+
+    expect(renderer.render(data, makeRenderState())).toBe(false)
+
+    renderer.uploadColorRamp(makeColorRamp())
+    expect(renderer.render(data, makeRenderState())).toBe(true)
+  })
+
+  test('false with no payload', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DLDRenderer(canvas)
+    renderer.uploadColorRamp(makeColorRamp())
+
+    expect(renderer.render(null, makeRenderState())).toBe(false)
+  })
+
+  test('prepares the canvas either way, so a stale picture cannot survive', () => {
+    const { canvas, ctx } = createMockCanvas()
+    const renderer = new Canvas2DLDRenderer(canvas)
+    renderer.render(null, makeRenderState())
+
+    expect(ctx.clearRect).toHaveBeenCalled()
+  })
+})

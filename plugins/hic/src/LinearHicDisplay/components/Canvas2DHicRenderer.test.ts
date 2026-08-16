@@ -239,3 +239,37 @@ describe('Canvas2DHicRenderer', () => {
     expect(linearColor).not.toBe(logColor)
   })
 })
+
+// The Canvas2D twin of the GPU renderer's paint reporting, and it has a case the
+// GPU one does not: this backend draws nothing until `uploadColorRamp` has run,
+// because it has no palette to fill with. The display's model could not see that
+// — it answered from `rpcData` alone — so the frame between the fetch landing
+// and the ramp arriving reported drawn over a blank canvas.
+describe('Canvas2DHicRenderer paint reporting', () => {
+  test('false before the colour ramp arrives, true after', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DHicRenderer(canvas)
+    const data = makeData()
+
+    expect(renderer.render(data, makeRenderState())).toBe(false)
+
+    renderer.uploadColorRamp(makeColorRamp())
+    expect(renderer.render(data, makeRenderState())).toBe(true)
+  })
+
+  test('false with no payload', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DHicRenderer(canvas)
+    renderer.uploadColorRamp(makeColorRamp())
+
+    expect(renderer.render(null, makeRenderState())).toBe(false)
+  })
+
+  test('prepares the canvas either way, so a stale picture cannot survive', () => {
+    const { canvas, ctx } = createMockCanvas()
+    const renderer = new Canvas2DHicRenderer(canvas)
+    renderer.render(null, makeRenderState())
+
+    expect(ctx.clearRect).toHaveBeenCalled()
+  })
+})

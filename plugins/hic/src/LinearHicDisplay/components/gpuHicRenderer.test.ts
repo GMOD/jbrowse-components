@@ -168,3 +168,62 @@ describe('GpuHicRenderer', () => {
     ])
   })
 })
+
+// `render` answers whether real content reached the canvas, and
+// RenderLifecycleMixin flips `canvasDrawn` — the loading scrim,
+// `data-display-drawn`, every readiness wait — off that answer alone.
+//
+// The display's model used to give the answer instead, from whether `rpcData`
+// existed. That is a weaker claim than this renderer makes: it draws only once a
+// HAL buffer is actually filled, so the frame between "the fetch landed" and
+// "the upload autorun ran" painted nothing and reported drawn. Nothing in tree
+// catches that — `waitForDisplaysDone` swallows its own timeout, so a display
+// that lies about being painted reads as a slightly slow one, and a capture
+// lands on it blank.
+describe('GpuHicRenderer paint reporting', () => {
+  it('true once the data is uploaded and drawn', () => {
+    const hal = new MockHal(HIC_PASSES)
+    const renderer = new GpuHicRenderer(hal)
+    const data = makeData()
+    renderer.uploadData(data)
+
+    expect(renderer.render(data, makeRenderState())).toBe(true)
+  })
+
+  it('false while the payload is here but its buffer is not', () => {
+    // The render autorun can reach the backend before the upload one has pushed
+    // bytes. Nothing was drawn, so nothing should claim otherwise.
+    const hal = new MockHal(HIC_PASSES)
+    const renderer = new GpuHicRenderer(hal)
+
+    expect(renderer.render(makeData(), makeRenderState())).toBe(false)
+  })
+
+  it('false for a region that fetched no contacts', () => {
+    const hal = new MockHal(HIC_PASSES)
+    const renderer = new GpuHicRenderer(hal)
+    const empty = makeData({ numContacts: 0 })
+    renderer.uploadData(empty)
+
+    expect(renderer.render(empty, makeRenderState())).toBe(false)
+  })
+
+  it('false with no payload at all', () => {
+    const hal = new MockHal(HIC_PASSES)
+    const renderer = new GpuHicRenderer(hal)
+
+    expect(renderer.render(null, makeRenderState())).toBe(false)
+  })
+
+  it('clears the canvas on every one of those, drawn or not', () => {
+    // beginFrame is what clears, so the frame that draws nothing still has to
+    // open and close one or the previous picture stays up under a display that
+    // has moved on.
+    const hal = new MockHal(HIC_PASSES)
+    const renderer = new GpuHicRenderer(hal)
+    renderer.render(null, makeRenderState())
+
+    expect(hal.callsOf('beginFrame')).toHaveLength(1)
+    expect(hal.callsOf('endFrame')).toHaveLength(1)
+  })
+})

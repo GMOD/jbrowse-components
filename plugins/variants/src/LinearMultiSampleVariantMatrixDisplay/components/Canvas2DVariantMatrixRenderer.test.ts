@@ -164,3 +164,44 @@ describe('Canvas2DVariantMatrixRenderer', () => {
     expect(ctx.fillStyle).toBe(`rgba(128,64,32,${127 / 255})`)
   })
 })
+
+// `render` answers whether real content reached the canvas, and
+// RenderLifecycleMixin flips `canvasDrawn` — the loading scrim,
+// `data-display-drawn`, every readiness wait — off that answer alone.
+//
+// The display's model used to give it, from whether `placedMatrixData` existed,
+// which is a weaker claim than this backend makes: a payload can be placed and
+// still have no cells to paint, and reporting drawn over that lets the scrim
+// drop on a blank canvas. Nothing catches it — `waitForDisplaysDone` swallows
+// its own timeout, so a display that lies about being painted reads as a
+// slightly slow one.
+describe('Canvas2DVariantMatrixRenderer paint reporting', () => {
+  test('true when there are cells to paint', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+
+    expect(renderer.render(makeData(), STATE)).toBe(true)
+  })
+
+  test('false for a placed payload with no cells', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+
+    expect(renderer.render(makeData({ numCells: 0 }), STATE)).toBe(false)
+  })
+
+  test('false with no payload', () => {
+    const { canvas } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+
+    expect(renderer.render(null, STATE)).toBe(false)
+  })
+
+  test('prepares the canvas either way, so a stale picture cannot survive', () => {
+    const { canvas, ctx } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+    renderer.render(null, STATE)
+
+    expect(ctx.clearRect).toHaveBeenCalled()
+  })
+})
