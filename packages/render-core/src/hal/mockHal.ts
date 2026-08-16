@@ -29,6 +29,11 @@ export class MockHal implements GpuHal {
   // all (the real HALs stage these into a fixed-size ring).
   private uniformWrites: ArrayBuffer[] = []
 
+  // Every id the display registered. Both real HALs key their pipelines by it
+  // and return early from `drawPass` on an id they don't hold; keeping the set
+  // is what lets `drawPass` below say so instead of recording the call.
+  private registered: Set<string>
+
   // The pass list is here for parity with the WebGL2Hal / WebGPUHal
   // constructors, and it validates for the same reason `createRenderingBackend`
   // does: a duplicate pass id is a silent GPU-only mis-render, so the check
@@ -37,6 +42,7 @@ export class MockHal implements GpuHal {
   // `MockHal` from its display's real pass list.
   constructor(passes: PipelineDescriptor[]) {
     assertUniquePassIds(passes)
+    this.registered = new Set(passes.map(p => p.id))
   }
 
   private record(method: string, ...args: unknown[]) {
@@ -126,8 +132,35 @@ export class MockHal implements GpuHal {
     this.record('beginFrame', clearR, clearG, clearB, clearA)
   }
 
+  // Throws on an id the display never registered, where both real HALs return
+  // early instead — the mock is louder than production on purpose. A `drawPass`
+  // naming an unregistered pass draws nothing on either GPU backend, silently,
+  // while Canvas2D keeps painting correctly; and because this mock recorded the
+  // call anyway, the unit test asserting `callsOf('drawPass')` went green over
+  // it. That is the same failure `assertUniquePassIds` above exists for, seen
+  // from the draw side, and a typo'd or renamed id has no legitimate use — so
+  // there is nothing to preserve by matching the silent skip.
+  //
+  // `bufferPassId` is checked too: `drawPass(a, key, b)` runs pass `a`'s
+  // pipeline over pass `b`'s buffer, and every such pair in tree names two
+  // registered passes (canvas's chevron over line, continuation over rect).
   drawPass(passId: string, regionKey: number, bufferPassId?: string) {
+    this.assertRegistered(passId, 'passId')
+    if (bufferPassId !== undefined) {
+      this.assertRegistered(bufferPassId, 'bufferPassId')
+    }
     this.record('drawPass', passId, regionKey, bufferPassId)
+  }
+
+  private assertRegistered(passId: string, role: string) {
+    if (!this.registered.has(passId)) {
+      throw new Error(
+        `drawPass ${role} '${passId}' is not a registered pass — this HAL holds ` +
+          `${[...this.registered].map(id => `'${id}'`).join(', ') || '(none)'}. ` +
+          `Both real HALs drop such a draw without a word, so on the GPU ` +
+          `backends this paints nothing while Canvas2D still looks right.`,
+      )
+    }
   }
 
   endFrame() {
