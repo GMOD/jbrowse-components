@@ -428,13 +428,30 @@ export function drawAnnotationOverlay(
         : alignY === 'bottom'
           ? r.top + r.height
           : r.top + r.height / 2
+    // A box's pad goes outward where there is room and inward where there is
+    // not. An element flush against the window edge — a docked drawer, a panel
+    // pinned to the right — has no outside on that side, so a stroke drawn
+    // there is off frame: the track-settings figure kept exactly one of its four
+    // edges, a red line hovering in the page margin with nothing to read it
+    // against. Clamped to the stroke's own half-width so the whole line lands.
+    const inset = (a.strokeWidth ?? 5) / 2
+    const boxLeft = Math.max(inset, r.left - pad + dx)
+    const boxTop = Math.max(inset, r.top - pad + dy)
+    const boxRight = Math.min(
+      window.innerWidth - inset,
+      r.left + r.width + pad + dx,
+    )
+    const boxBottom = Math.min(
+      window.innerHeight - inset,
+      r.top + r.height + pad + dy,
+    )
     return {
       ...a,
       from: tail,
-      x: a.type === 'box' ? r.left - pad + dx : px + dx,
-      y: a.type === 'box' ? r.top - pad + dy : py + dy,
-      width: a.width ?? r.width + pad * 2,
-      height: a.height ?? r.height + pad * 2,
+      x: a.type === 'box' ? boxLeft : px + dx,
+      y: a.type === 'box' ? boxTop : py + dy,
+      width: a.width ?? boxRight - boxLeft,
+      height: a.height ?? boxBottom - boxTop,
       radius: a.radius ?? (a.text ? 16 : ringRadius),
       // A trapezoid is the one shape that needs both anchors as RECTS rather
       // than as points: its two horizontal edges are the two elements' facing
