@@ -78,6 +78,9 @@ before anyone noticed.
 | [Nothing checks a hand-built transfer list](#nothing-checks-a-hand-built-rpc-transfer-list-against-its-payload) | RPC | decide whether the synteny list should be derived instead |
 | [The comparative displays sit behind neither bring-your-own seam](#the-comparative-displays-sit-behind-neither-bring-your-own-seam) | synteny, dotplot, embedded | the bar is fixed; take this WITH the comparative cancel/retry entry |
 | [Sweep the unused exports, or close the question](#sweep-the-unused-exports-with-a-real-tool-or-close-the-question) | tooling, CI | configure knip per package; a grep returns 623 names and almost none are dead |
+| [charactersPerRow is a constant on a model](#charactersperrow-is-a-constant-living-on-a-model) | feature details | decide setting vs const; a setter with no UI is the worst option |
+| [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
+| [Do a transcript's exons ever fall short of its bounds](#does-any-real-annotation-leave-a-transcripts-exons-short-of-its-bounds) | feature details | find an annotation that does it, or write the comment instead |
 
 ## Ready to build: small and self-contained
 
@@ -543,6 +546,45 @@ bar was found in the first place. It catches an element that *renders*, so it
 covers the cancel and retry buttons the moment a caller passes those handlers —
 but not the tooltip or the context menu, which need a hover and a right-click
 that nothing on that page drives.
+
+### charactersPerRow is a constant living on a model
+
+`SequenceFeatureDetailsF` declares `charactersPerRow: 100` as a `#volatile`
+alongside four settings that each have an action and a localStorage round-trip.
+This one has neither a setter nor any writer in the tree, so it is a constant
+that pays the cost of looking like a setting: every reader goes through the
+model, and the doc tables list it next to preferences a user can actually
+change.
+
+Two ways out, and they are not equivalent. Giving it an action and a localStorage
+key makes it the "wider rows" setting the panel visibly lacks — the row width is
+the one thing a user reading a long CDS wants to change, and the settings dialog
+it would join already exists. Exporting it as a const from `consts.ts` instead is
+the honest description of what it is today, and drops a member from a documented
+model, so it wants `pnpm gendocs` and a check of
+[reference/PLUGIN_ABI_STABILITY.md](reference/PLUGIN_ABI_STABILITY.md) — a
+removal on a model surface is the direction that fails quietly.
+
+Do not do both halfway. A setter with no UI is the worst of the three.
+
+### "Download plaintext" writes a FASTA no tool can read
+
+`getSequencePlaintext` takes the rendered panel's `textContent` after dropping
+`[data-no-plaintext]` nodes, which strips the legend. It does not strip the
+coordinate labels, because those are ordinary text in the sequence rows. With
+"Show coordinates" on — a sticky preference, so it persists across sessions —
+`sequence.txt` comes out as a `>`-prefixed FASTA header followed by rows each
+carrying their own position number. Nothing downstream parses that, and the file
+extension and the header both promise it does.
+
+The mechanism is already there: mark the label spans `data-no-plaintext` and the
+existing strip handles them. What is not decided is whether it should. Someone
+pasting into a text editor to read positions alongside bases may want exactly
+what it writes today, and "Copy plaintext" shares the same helper, so a change
+moves both. The split worth considering is that download implies a file for a
+tool while copy implies a human, which argues for stripping in the download path
+only — but that makes two behaviors out of one helper, so it needs a deliberate
+yes rather than a drive-by.
 
 ## Ready to build: the design is settled
 
@@ -1256,6 +1298,32 @@ implementer's call, hence here rather than in the small-items section.
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
+
+### Does any real annotation leave a transcript's exons short of its bounds
+
+`transcriptRegions` treats its two inputs asymmetrically, and only one of them
+is deliberate. With no exons it stretches the CDS fallback to the feature
+bounds — `idx === 0` takes start 0, the last takes `featureLength` — so a
+CDS-only annotation still renders its UTRs. With exons it returns them verbatim.
+The `gene*` modes then lay those regions out contiguously and label them
+counting from the feature start, so exons that do not reach the feature's bounds
+drop the untiled stretches while the labels keep counting past them: the panel
+shows fewer bases than it claims and every position after the gap is wrong.
+
+**Confirm the input exists before touching the layout.** A well-formed GFF3 has
+exons tiling their mRNA exactly, which is why nothing in the repo's test data
+hits this and why the asymmetry has never been reported. The case worth hunting
+is an annotation whose exon children cover only the CDS while the mRNA's own
+bounds come from somewhere wider. If no such file turns up, the honest change is
+a comment on `transcriptRegions` saying the exon path assumes tiling, not code.
+
+If one does turn up, the fix is not simply mirroring the CDS branch. Stretching
+the first and last exon to the feature bounds fabricates exonic sequence out of
+whatever sits there, which for a real transcript is intron. Extending the
+*labels* to skip the gap, or rendering the untiled stretch as its own uncolored
+region the way `splitRegionByCds` degrades an out-of-exon CDS, both keep the
+coordinates honest — and which one is right depends on what the file meant,
+which is the other reason to find one first.
 
 ### Nothing checks a hand-built RPC transfer list against its payload
 
