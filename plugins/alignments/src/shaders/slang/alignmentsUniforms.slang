@@ -834,10 +834,15 @@ public float frequencyAlpha(float base, float freq) {
 
 // The whole low-frequency fade gate for one instance: honors the
 // "show low frequency mismatches" toggle and skips instances already covering a
-// full pixel. Passes supply `base` from their geometry — pxPerBp (mismatch,
-// clip) or its square (insertion, gap deletion), which fades narrow features
-// faster. Squaring can't change the sub-pixel test, since base < 1.0 ⟺
-// pxPerBp < 1.0 for non-negative values.
+// full pixel. Passes supply `base` from their own geometry — a bare on-screen
+// width for a point event (mismatch and clip pass pxPerBp), its SQUARE for an
+// indel, which fades narrow features faster. Squaring can't change the sub-pixel
+// test, since base < 1.0 ⟺ sqrt(base) < 1.0 for non-negative values.
+//
+// WHICH width an indel squares is the pass's own answer, and the two differ. An
+// insertion consumes no reference span, so it squares pxPerBp; a deletion HAS
+// one, so it squares its own on-screen widthPx — see gap.slang, whose Canvas2D
+// twin squares the same quantity.
 //
 // Every fading pass must go through this rather than reassembling the gate
 // locally — a hand-rolled copy is how the clip pass silently lost its

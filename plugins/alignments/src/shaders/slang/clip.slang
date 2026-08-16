@@ -1,6 +1,10 @@
 // Clip pass (soft + hard combined): draws a thin colored bar at a clip
 // boundary. `kind` = 0 → use u.colorSoftclip, `kind` = 1 → u.colorHardclip.
-// Bar is always 1 CSS pixel wide (enforced by a 1px minimum).
+//
+// The bar is a FIXED 1 CSS px straddling the boundary, at every zoom — not a
+// floor on some wider span, because a clip is a boundary rather than an extent
+// and has no width of its own to widen. `drawClipBars` (features/clip) spells
+// the same mark as `fillRect(x - 0.5, y, 1, fH)`.
 //! targets: wgsl, glsl
 
 import alignmentsUniforms;
