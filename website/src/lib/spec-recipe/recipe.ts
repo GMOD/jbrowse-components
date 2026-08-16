@@ -53,6 +53,46 @@ const PYTHON_VIEW_TYPE = 'LinearGenomeView'
 // to describe their own assembly.
 const HUB_GENOMES = new Set(['hg38', 'hg19', 'mm10', 'mm39'])
 
+// The views a reader opens through a comparative import form. Rows (or axes)
+// and the dataset between each pair are picked in that one form and launched
+// together, so a five-row figure is a form to fill in — not five "open a
+// genome" steps and one "open a track" step per band, all naming the same file,
+// which is what walking the spec's shape produces and no version of the app has
+// ever asked for.
+interface ImportFormView {
+  // what the Add menu calls it
+  menu: string
+  // the figure's own assemblies, in the order the form takes them
+  assemblies: (names: string[]) => string
+  // where a band's dataset is chosen in the manual form
+  band: string
+  // the form's assembly controls, which are also what Quick start fills in
+  rowsControl: string
+  // names one row for the steps that belong to it
+  rowLabel: (index: number) => string
+}
+
+const IMPORT_FORM_VIEWS: Record<string, ImportFormView> = {
+  LinearSyntenyView: {
+    menu: 'Linear synteny view',
+    assemblies: names =>
+      `This figure's rows, top to bottom: ${names.join(', ')}.`,
+    band: 'click the arrow between two rows',
+    rowsControl: 'the rows',
+    rowLabel: index => `Row ${index + 1}`,
+  },
+  DotplotView: {
+    menu: 'Dotplot view',
+    assemblies: names =>
+      names.length > 1
+        ? `This figure has ${names[0]} on X and ${names[1]} on Y.`
+        : `This figure uses ${names[0]}.`,
+    band: 'use the track panel under the two axis selectors',
+    rowsControl: 'both axes',
+    rowLabel: index => (index === 0 ? 'X axis' : 'Y axis'),
+  },
+}
+
 // Labels that name what a track holds read naturally only if the noun matches
 // the track ('Fixed read height' for a pileup, 'Fixed feature height' otherwise).
 function trackNoun(trackType: string | undefined): string {
@@ -92,9 +132,20 @@ function soleDeclaredDisplay(info: TrackInfo | undefined): string | undefined {
     : undefined
 }
 
+// A band's dataset in a comparative import form, rather than a track added to a
+// view that is already open.
+interface BandContext {
+  form: ImportFormView
+  // the bands this one entry covers, when it covers more than one — an
+  // all-vs-all file is the same file in every band, which is the fact worth
+  // saying. One band needs no count at all.
+  bands: number
+}
+
 function trackStep(
   entry: SpecTrackEntry,
   config: string,
+  band?: BandContext,
 ): RecipeStep & { settings: RecipeStep[]; unmapped: string[] } {
   const trackId = specTrackId(entry)
   const info = lookupTrack(config, trackId)
@@ -114,14 +165,82 @@ function trackStep(
     trackFields,
     context,
   )
+  const name = info ? `“${info.name}”` : `the “${trackId}” track`
+  const needs = kind ? ` This one needs ${kind}.` : ''
   return {
-    title: kind
-      ? `Add your own track: **File → Open track...**, then paste a URL or choose a local file. This one needs ${kind}.`
-      : 'Add your own track: **File → Open track...**, then paste a URL or choose a local file.',
-    example: info ? `This figure uses “${info.name}”.` : `This figure uses the “${trackId}” track.`,
+    title: band
+      ? `Point the import form at your own file: ${band.form.band}, choose **New track**, and paste a URL or pick a local file.${needs}`
+      : `Add your own track: **File → Open track...**, then paste a URL or choose a local file.${needs}`,
+    example:
+      band && band.bands > 1
+        ? `This figure uses ${name} for ${band.bands === 2 ? 'both bands' : `all ${band.bands} bands`}.`
+        : `This figure uses ${name}.`,
     settings,
     unmapped,
   }
+}
+
+// Everything the import form does, in the order it does it: the rows come from
+// assemblies the session already has, each band gets a dataset, and one Launch
+// opens the view.
+function importFormSteps(
+  view: SpecView,
+  form: ImportFormView,
+  config: string,
+): { steps: RecipeStep[]; unmapped: string[] } {
+  const steps: RecipeStep[] = []
+  const unmapped: string[] = []
+  const assemblies = (view.views ?? [])
+    .map(row => row.assembly)
+    .filter(name => !!name)
+  if (assemblies.length) {
+    steps.push({
+      title:
+        'Open your genomes: on the JBrowse Desktop start screen click **Open new genome** (or **Show all available genomes** to pick a hosted one), then **File → Open genome...** for each of the rest.',
+      example: form.assemblies(assemblies),
+    })
+  }
+  steps.push({
+    title: assemblies.length
+      ? `Open the view: **Add → ${form.menu}**, and set ${form.rowsControl} to those assemblies in the import form.`
+      : `Open the view: **Add → ${form.menu}**, and choose ${form.rowsControl} in the import form.`,
+  })
+
+  // The bands of an all-vs-all figure carry the same entry, and that is one
+  // file to open, so identical entries collapse to one step. Two bands that
+  // really do differ still get a step each.
+  const entries = specTracks(view)
+  const distinct = [
+    ...new Map(entries.map(entry => [JSON.stringify(entry), entry])).values(),
+  ]
+  for (const [index, entry] of distinct.entries()) {
+    const {
+      settings,
+      unmapped: trackUnmapped,
+      ...step
+    } = trackStep(entry, config, {
+      form,
+      bands: distinct.length === 1 ? entries.length : 0,
+    })
+    steps.push(
+      index === 0
+        ? {
+            ...step,
+            note: `A synteny track the session already has is quicker: pick it under **Quick start**, which fills in ${form.rowsControl} itself.`,
+          }
+        : step,
+      ...settings,
+    )
+    unmapped.push(...trackUnmapped)
+  }
+
+  // A figure OF the empty import form names neither assemblies nor tracks, and
+  // it is the form itself that the picture shows — launching is the step after
+  // the one it illustrates.
+  if (assemblies.length || entries.length) {
+    steps.push({ title: 'Click **Launch**.' })
+  }
+  return { steps, unmapped }
 }
 
 function pythonSnippet(view: SpecView, config: string): string | undefined {
@@ -170,11 +289,16 @@ function pythonSnippet(view: SpecView, config: string): string | undefined {
 function viewSteps(
   view: SpecView,
   config: string,
+  // set when the view is one row of a comparative view: the import form has
+  // already opened its genome, and the steps left are about that row, so each
+  // says which one it belongs to
+  row?: string,
 ): { steps: RecipeStep[]; unmapped: string[] } {
   const steps: RecipeStep[] = []
   const unmapped: string[] = []
+  const form = view.type ? IMPORT_FORM_VIEWS[view.type] : undefined
 
-  if (view.assembly) {
+  if (view.assembly && !row) {
     const assembly = lookupAssembly(config, view.assembly)
     const kind = assembly ? fileKind(assembly.adapterType) : undefined
     steps.push({
@@ -184,15 +308,26 @@ function viewSteps(
     })
   }
 
-  for (const entry of specTracks(view)) {
-    const { settings, unmapped: trackUnmapped, ...step } = trackStep(entry, config)
-    steps.push(step, ...settings)
-    unmapped.push(...trackUnmapped)
+  if (form) {
+    const formSteps = importFormSteps(view, form, config)
+    steps.push(...formSteps.steps)
+    unmapped.push(...formSteps.unmapped)
+  } else {
+    for (const entry of specTracks(view)) {
+      const {
+        settings,
+        unmapped: trackUnmapped,
+        ...step
+      } = trackStep(entry, config)
+      steps.push(step, ...settings)
+      unmapped.push(...trackUnmapped)
+    }
   }
 
   if (view.loc) {
     steps.push({
-      title: 'Type your region of interest into the location box and press Enter.',
+      title:
+        'Type your region of interest into the location box and press Enter.',
       example: `This figure is at ${view.loc}.`,
     })
   }
@@ -204,9 +339,19 @@ function viewSteps(
   steps.push(...viewFieldSteps.steps)
   unmapped.push(...viewFieldSteps.unmapped)
 
-  for (const subView of view.views ?? []) {
-    const sub = viewSteps(subView, config)
-    steps.push(...sub.steps)
+  for (const [index, subView] of (view.views ?? []).entries()) {
+    const label = form
+      ? `${form.rowLabel(index)}${subView.assembly ? ` (${subView.assembly})` : ''}`
+      : undefined
+    const sub = viewSteps(subView, config, label)
+    steps.push(
+      ...(label
+        ? sub.steps.map(step => ({
+            ...step,
+            example: step.example ? `${label} — ${step.example}` : `${label}.`,
+          }))
+        : sub.steps),
+    )
     unmapped.push(...sub.unmapped)
   }
 
