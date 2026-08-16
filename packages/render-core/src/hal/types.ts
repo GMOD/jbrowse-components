@@ -148,7 +148,16 @@ export interface GpuHal {
   drawPass(passId: string, regionKey: number, bufferPassId?: string): void
   endFrame(): void
 
-  // Scissor and viewport control (coordinates in physical pixels, top-left origin)
+  // Scissor and viewport control (coordinates in physical pixels, top-left
+  // origin). Both take effect from the next `drawPass` and hold until changed.
+  //
+  // `clearScissor` / `clearViewport` restore the FULL canvas, and a HAL owes
+  // that to the draws after them, not just to its own bookkeeping. WebGL2 gets
+  // it for free (`disable(SCISSOR_TEST)`); WebGPU has to re-issue a whole-
+  // attachment rect, because `setScissorRect` is render-pass state with no off
+  // switch — see `webgpuHal`'s `applyScissor`. A HAL that merely forgets the
+  // rect keeps clipping to it, which no test in tree would catch: every caller
+  // clears after its last draw of the frame.
   setScissor(x: number, y: number, w: number, h: number): void
   clearScissor(): void
   setViewport(x: number, y: number, w: number, h: number): void

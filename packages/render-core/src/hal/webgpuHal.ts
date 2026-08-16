@@ -256,9 +256,18 @@ export class WebGPUHal implements GpuHal {
   private currentEncoder: GPUCommandEncoder | null = null
   private currentPass: GPURenderPassEncoder | null = null
 
-  // Scissor/viewport state (physical pixels, top-left origin)
+  // Scissor/viewport state (physical pixels, top-left origin). `null` means the
+  // full attachment, which is both the caller's "cleared" state and a render
+  // pass's own initial one.
   private scissorRect: Rect | null = null
   private viewportRect: Rect | null = null
+  // What the open render pass was last told, so `drawPass` re-issues only on a
+  // change. Seeded in `beginFrame` with the full rect the pass already starts
+  // at, which keeps the common path (one scissor per block, no clears) at
+  // exactly the calls it made before. Mutated rather than replaced — these are
+  // touched once per draw call, and a draw call is not a place to allocate.
+  private appliedScissor: Rect = { x: 0, y: 0, w: 0, h: 0 }
+  private appliedViewport: Rect = { x: 0, y: 0, w: 0, h: 0 }
 
   // Guards dispose() against double invocation (pagehide + React cleanup can
   // both fire).
@@ -595,6 +604,8 @@ export class WebGPUHal implements GpuHal {
     this.device.pushErrorScope('out-of-memory')
     this.scissorRect = null
     this.viewportRect = null
+    this.seedApplied(this.appliedScissor)
+    this.seedApplied(this.appliedViewport)
     this.currentTextureView = this.context.getCurrentTexture().createView()
     this.currentEncoder = this.device.createCommandEncoder()
     this.uniformSlot = 0
@@ -660,14 +671,8 @@ export class WebGPUHal implements GpuHal {
     const dynamicOffset =
       Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
 
-    if (this.viewportRect) {
-      const v = this.viewportRect
-      this.currentPass.setViewport(v.x, v.y, v.w, v.h, 0, 1)
-    }
-    if (this.scissorRect) {
-      const s = this.scissorRect
-      this.currentPass.setScissorRect(s.x, s.y, s.w, s.h)
-    }
+    this.applyViewport(this.currentPass)
+    this.applyScissor(this.currentPass)
     this.currentPass.setPipeline(pipeline)
     this.currentPass.setBindGroup(0, bindGroup, [dynamicOffset])
     this.currentPass.setVertexBuffer(0, regionBuf.dataBuffer)
@@ -725,6 +730,70 @@ export class WebGPUHal implements GpuHal {
     })
     this.currentEncoder = null
     this.currentTextureView = null
+  }
+
+  /**
+   * Mark `at` as holding the whole attachment — the state a freshly-begun
+   * render pass is already in, so seeding with it means the first draw of an
+   * unclipped frame issues nothing.
+   */
+  private seedApplied(at: Rect) {
+    at.x = 0
+    at.y = 0
+    at.w = this.canvas.width
+    at.h = this.canvas.height
+  }
+
+  /**
+   * Re-issue the scissor whenever it differs from what this pass was last told,
+   * **including when it has been cleared**.
+   *
+   * WebGL2 clears by turning the state off — `disable(SCISSOR_TEST)`, and a
+   * `viewport` back to the full canvas — and that lands immediately.
+   * `setScissorRect` / `setViewport` have no off switch and no reset: they are
+   * render-pass state that persists to the end of the pass. So dropping the
+   * stored rect on `clearScissor` is not a clear at all — it left the
+   * *previous* rect clipping every later draw of the frame, while WebGL2 drew
+   * those same calls unclipped.
+   *
+   * Nothing in tree clears mid-frame today — the two callers
+   * (`GpuPerRegionRenderingBackend.renderBlocks` and alignments' own) clear
+   * after their last draw — so this is parity kept ahead of the renderer that
+   * needs it rather than a fix for a live bug. The bug it would have been is
+   * the kind this package exists to refuse: right on Canvas2D, right on WebGL2,
+   * wrong on WebGPU alone, and silent everywhere.
+   */
+  private applyScissor(pass: GPURenderPassEncoder) {
+    const r = this.scissorRect
+    const x = r ? r.x : 0
+    const y = r ? r.y : 0
+    const w = r ? r.w : this.canvas.width
+    const h = r ? r.h : this.canvas.height
+    const at = this.appliedScissor
+    if (at.x !== x || at.y !== y || at.w !== w || at.h !== h) {
+      pass.setScissorRect(x, y, w, h)
+      at.x = x
+      at.y = y
+      at.w = w
+      at.h = h
+    }
+  }
+
+  /** The viewport half of {@link applyScissor}; same reasoning throughout. */
+  private applyViewport(pass: GPURenderPassEncoder) {
+    const r = this.viewportRect
+    const x = r ? r.x : 0
+    const y = r ? r.y : 0
+    const w = r ? r.w : this.canvas.width
+    const h = r ? r.h : this.canvas.height
+    const at = this.appliedViewport
+    if (at.x !== x || at.y !== y || at.w !== w || at.h !== h) {
+      pass.setViewport(x, y, w, h, 0, 1)
+      at.x = x
+      at.y = y
+      at.w = w
+      at.h = h
+    }
   }
 
   setScissor(x: number, y: number, w: number, h: number) {
