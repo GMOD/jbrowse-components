@@ -37,17 +37,6 @@ async function openSaveTrackDataDialog(trackId: string) {
   fireEvent.click(await screen.findByText('Save track data', ...opts))
 }
 
-function readBlobAsText(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      resolve(reader.result as string)
-    }
-    reader.onerror = reject
-    reader.readAsText(blob)
-  })
-}
-
 test.each([
   ['VCF', 'volvox_filtered_vcf', 'jbrowse_track_data.vcf', 'vcf'],
   ['BAM', 'volvox_bam', 'jbrowse_track_data.sam', 'sam'],
@@ -100,7 +89,11 @@ test.each([
     const call = (saveAs as unknown as jest.Mock).mock.calls[0]
     const blob = call[0] as Blob
     const filename = call[1] as string
-    const content = await readBlobAsText(blob)
+    // Blob.text() rather than a FileReader: node supplies the global `Blob`
+    // that the dialog constructs, and jsdom's FileReader takes only its own
+    // realm's, so every case in here failed on the read rather than on
+    // anything it was checking
+    const content = await blob.text()
 
     expect(filename).toBe(expectedFilename)
     expect(content).toMatchSnapshot()
