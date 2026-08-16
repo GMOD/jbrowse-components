@@ -3,13 +3,18 @@ import { useEffect, useId, useState } from 'react'
 import {
   ErrorMessage,
   LabeledCheckbox,
+  StatusProgressBar,
   SubmitDialog,
   replaceViewAction,
 } from '@jbrowse/core/ui'
 import {
   assembleLocString,
+  createGuardedStatusSink,
+  createStatusThrottle,
   getBpDisplayStr,
   isAbortException,
+  statusFraction,
+  statusProgressLabel,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -49,6 +54,7 @@ import type {
   AbstractSessionModel,
   AbstractViewModel,
   Region,
+  RpcStatus,
 } from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 
@@ -171,6 +177,9 @@ export default function LaunchSyntenyViewForRegionDialog({
   const [rows, setRows] = useState<PanelRow[] | undefined>()
   const [unconfigured, setUnconfigured] = useState<string[]>([])
   const [error, setError] = useState<unknown>()
+  // the discovery RPC's own phase, which replaces the hardcoded label below
+  // once the worker says something more specific
+  const [status, setStatus] = useState<RpcStatus | undefined>()
   const [flipReversedMates, setFlipReversedMates] = useState(true)
   const [collapseEmptyRows, setCollapseEmptyRows] = useState(true)
   const [copySourceTracks, setCopySourceTracks] = useState(true)
@@ -193,7 +202,18 @@ export default function LaunchSyntenyViewForRegionDialog({
     setRows(undefined)
     setUnconfigured([])
     setError(undefined)
-    discoverMatesFor(trackId)(stopToken)
+    setStatus(undefined)
+    // guarded and throttled like every other owner of a progress stream: the
+    // RPC emits at download granularity and each write re-renders the dialog.
+    // One window per effect run, ended with it, so a trailing write cannot
+    // outlive the discovery it describes
+    const throttle = createStatusThrottle()
+    const statusCallback = createGuardedStatusSink({
+      isCurrent: () => alive,
+      sink: setStatus,
+      throttle,
+    })
+    discoverMatesFor(trackId)(stopToken, statusCallback)
       .then(result => {
         if (alive) {
           // seeded once from the fetch rather than derived every render,
@@ -211,6 +231,9 @@ export default function LaunchSyntenyViewForRegionDialog({
     return () => {
       alive = false
       stopStopToken(stopToken)
+      // the guard already makes a queued write a no-op; the timer behind it
+      // would otherwise still stand for up to a window past unmount
+      throttle.reset()
     }
     // `region` whole rather than its assemblyName: the rows carry each panel's
     // resolved locus, which is cut from all four of its fields. Stable for the
@@ -310,14 +333,21 @@ export default function LaunchSyntenyViewForRegionDialog({
       {error ? <ErrorMessage error={error} /> : null}
       {/* named, not a bare spinner: this is a feature fetch over the whole
        selection, which for a visible-region launch at chromosome zoom is a long
-       enough wait to want to know what is being waited on */}
+       enough wait to want to know what is being waited on. The RPC's own phase
+       takes over as soon as it reports one, so the sentence below is what is
+       shown up to the first status rather than for the whole wait */}
       {!rows && !error ? (
         <div className={classes.progress}>
           <CircularProgress size={20} />
           <Typography variant="body2">
-            Finding assemblies that align to this region...
+            {statusProgressLabel(status) ||
+              'Finding assemblies that align to this region'}
+            ...
           </Typography>
         </div>
+      ) : null}
+      {!rows && !error && statusFraction(status) !== undefined ? (
+        <StatusProgressBar fraction={statusFraction(status)} />
       ) : null}
       {/* Names the dataset rather than saying "this dataset": with the selector
        above, the fix is to try another one — unless the dataset does align here

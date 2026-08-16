@@ -2,11 +2,16 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  Region,
+  StatusCallback,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export type MateDiscovery = (
   stopToken: StopToken,
+  statusCallback: StatusCallback,
 ) => Promise<MateDiscoveryResult>
 
 // Which assemblies a region aligns to, and on which alignment each.
@@ -20,10 +25,17 @@ export type MateDiscovery = (
 // The reduction to one alignment per mate assembly happens in the worker, beside
 // the fetch — see executeDiscoverMates for why that side of the boundary.
 //
-// The caller's `stopToken` travels with the RPC: a selection can be a whole
-// chromosome, and the download+parse behind it is exactly the phase that honors
-// the token, so closing the dialog aborts the work rather than leaving a worker
-// grinding on a view nobody is waiting for.
+// Both of the caller's handles travel with the RPC, and both for the same
+// reason: a selection can be a whole chromosome, so the download+parse behind
+// this is long enough to want stopping and long enough to want narrating. The
+// token is what makes closing the dialog abort the work rather than leave a
+// worker grinding on a view nobody is waiting for; the callback is what turns
+// the dialog's hardcoded "Finding assemblies that align to this region" into
+// the phase actually running, with a bar where the adapter reports bytes.
+//
+// Declared on `MateDiscovery` rather than left for the RPC call to reach for,
+// because the interface is what drops these — see PROGRESS_REPORTING.md, "A
+// fetcher that declares no parameters is opted out, silently".
 export function makeMateDiscovery({
   session,
   track,
@@ -36,7 +48,7 @@ export function makeMateDiscovery({
   track: AnyConfigurationModel
   region: Region
 }): MateDiscovery {
-  return async stopToken => {
+  return async (stopToken, statusCallback) => {
     const { rpcManager } = session
     const trackId = readConfObject(track, 'trackId') as string
     return rpcManager.call(trackId, 'SyntenyDiscoverMates', {
@@ -48,6 +60,7 @@ export function makeMateDiscovery({
       trackAssemblyNames: readConfObject(track, 'assemblyNames') as string[],
       anchorAssembly: region.assemblyName,
       stopToken,
+      statusCallback,
     })
   }
 }
