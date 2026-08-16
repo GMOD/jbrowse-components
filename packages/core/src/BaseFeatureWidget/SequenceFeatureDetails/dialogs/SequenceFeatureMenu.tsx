@@ -5,7 +5,7 @@ import Settings from '@mui/icons-material/Settings'
 import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
-import { copyText } from '../../../util/copyText.ts'
+import { copyTextWithSession } from '../../../util/copyText.ts'
 import { saveAs } from '../../../util/index.ts'
 import {
   modeSupportsRevcomp,
@@ -15,6 +15,7 @@ import {
 import { getSequencePlaintext } from '../util.ts'
 
 import type { MenuItem } from '../../../ui/index.ts'
+import type { AbstractSessionModel } from '../../../util/index.ts'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
@@ -26,6 +27,10 @@ const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog.tsx'))
 
 interface Props {
   model: SequenceFeatureDetailsModel
+  // the settings model is a bare preferences model that a standalone dialog
+  // creates detached, so the menu cannot reach a session by walking up from it.
+  // whoever mounted the panel supplies one.
+  session: Pick<AbstractSessionModel, 'notify' | 'notifyError'>
   ref: RefObject<HTMLDivElement | null>
   mode: SequenceDisplayMode
   revcomp: boolean
@@ -34,6 +39,7 @@ interface Props {
 }
 const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
   model,
+  session,
   ref,
   mode,
   revcomp,
@@ -65,13 +71,17 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
           {
             label: 'Copy plaintext',
             onClick: withPanel(panel =>
-              copyText(model, getSequencePlaintext(panel), 'sequence'),
+              copyTextWithSession(
+                session,
+                getSequencePlaintext(panel),
+                'sequence',
+              ),
             ),
           },
           {
             label: 'Copy HTML',
             onClick: withPanel(panel =>
-              copyText(model, panel.outerHTML, 'sequence HTML', {
+              copyTextWithSession(session, panel.outerHTML, 'sequence HTML', {
                 format: 'text/html',
               }),
             ),

@@ -103,6 +103,7 @@ const SequenceFeatureDetailsPanel = observer(
           <SequenceFeatureMenu
             ref={seqPanelRef}
             model={model}
+            session={session}
             mode={mode}
             revcomp={revcomp}
             setRevcomp={setRevcomp}
@@ -125,6 +126,7 @@ const SequenceFeatureDetailsPanel = observer(
             <SequenceDialog
               {...fetched}
               sequenceFeatureDetails={model}
+              session={session}
               transcriptSelector={transcriptSelector}
               feature={effectiveFeature}
               mode={mode}

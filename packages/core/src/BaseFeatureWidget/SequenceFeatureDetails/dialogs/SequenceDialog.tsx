@@ -8,7 +8,11 @@ import SequenceBody from '../SequenceBody.tsx'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
 
-import type { RpcStatus, SimpleFeatureSerialized } from '../../../util/index.ts'
+import type {
+  AbstractSessionModel,
+  RpcStatus,
+  SimpleFeatureSerialized,
+} from '../../../util/index.ts'
 import type { ErrorState, SeqState } from '../../util.tsx'
 import type {
   SequenceDisplayMode,
@@ -25,6 +29,7 @@ const useStyles = makeStyles()({
 const SequenceDialog = observer(function SequenceDialog({
   handleClose,
   sequenceFeatureDetails,
+  session,
   transcriptSelector,
   feature,
   mode,
@@ -42,6 +47,7 @@ const SequenceDialog = observer(function SequenceDialog({
   handleClose: () => void
   feature: SimpleFeatureSerialized
   sequenceFeatureDetails: SequenceFeatureDetailsModel
+  session: Pick<AbstractSessionModel, 'notify' | 'notifyError'>
   // the owning panel's transcript picker, rendered here rather than rebuilt:
   // the transcript index is its state, not the dialog's
   transcriptSelector?: React.ReactNode
@@ -81,6 +87,7 @@ const SequenceDialog = observer(function SequenceDialog({
           <SequenceFeatureMenu
             ref={seqPanelRef}
             model={sequenceFeatureDetails}
+            session={session}
             mode={mode}
             revcomp={revcomp}
             setRevcomp={setRevcomp}
