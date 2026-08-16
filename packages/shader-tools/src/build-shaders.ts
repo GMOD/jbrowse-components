@@ -87,7 +87,10 @@ import {
   findVaryingFieldNames,
   findVertexAttributeStruct,
 } from './shader-codegen/reflection.ts'
-import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
+import {
+  stripLineDirectives,
+  vulkanGlslToWebgl2,
+} from './shader-codegen/vulkanGlslToWebgl2.ts'
 import {
   emitJsTwins,
   emitRefusal,
@@ -688,6 +691,12 @@ async function compileOne(log: Log, slangPath: string, source: string) {
           run(GLSLANG, ['-S', 'frag', processedFragOut]),
         )
       }
+
+      // After the files the validator reads, and only to the strings that get
+      // shipped — see stripLineDirectives for which half of the mapping that
+      // keeps.
+      glslVertex = stripLineDirectives(glslVertex)
+      glslFragment = stripLineDirectives(glslFragment)
     }
 
     // Both fail the build before anything is written. The first validator to

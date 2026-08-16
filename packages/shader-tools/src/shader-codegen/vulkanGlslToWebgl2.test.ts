@@ -1,4 +1,7 @@
-import { vulkanGlslToWebgl2 } from './vulkanGlslToWebgl2.ts'
+import {
+  stripLineDirectives,
+  vulkanGlslToWebgl2,
+} from './vulkanGlslToWebgl2.ts'
 
 describe('vulkanGlslToWebgl2', () => {
   test('rewrites the Vulkan #version to GLSL ES 3.00 with precision', () => {
@@ -231,5 +234,31 @@ describe('unreferenced struct declarations', () => {
     expect(vulkanGlslToWebgl2(src, 'vertex')).not.toContain(
       'struct Uniforms_0\n',
     )
+  })
+})
+
+describe('stripLineDirectives', () => {
+  test('drops the directive and its newline, in both spellings', () => {
+    const src = '#version 300 es\n#line 40 0\nvoid main() {}\n#line 565\nx;\n'
+    expect(stripLineDirectives(src)).toBe(
+      '#version 300 es\nvoid main() {}\nx;\n',
+    )
+  })
+
+  // `#line` is the only directive slangc emits here that the GPU does not read.
+  // The rest are the shader.
+  test('leaves the other preprocessor directives alone', () => {
+    const src = '#version 300 es\n#define X 1\n#line 12 0\n#extension E : e\n'
+    expect(stripLineDirectives(src)).toBe(
+      '#version 300 es\n#define X 1\n#extension E : e\n',
+    )
+  })
+
+  // The build strips after writing what glslangValidator reads, so folding this
+  // into vulkanGlslToWebgl2 would cost the mapping from a build-time GLSL error
+  // back to a `.slang` line — the half worth keeping.
+  test('is not applied by vulkanGlslToWebgl2', () => {
+    const src = '#version 460\n#line 7 0\nvoid main() {}\n'
+    expect(vulkanGlslToWebgl2(src, 'vertex')).toContain('#line 7 0')
   })
 })

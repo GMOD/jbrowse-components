@@ -183,6 +183,22 @@ function dropUnreferencedStructs(source: string) {
   return out + source.slice(cursor)
 }
 
+// Drop slangc's `#line` directives, which are the second-largest thing it emits
+// that the GPU never reads: 4886 of them across the tree, 53 KB raw and 18 KB
+// gzipped — a tenth of the compressed weight of every generated shader string
+// here, and all of it on the WebGL2 fallback, since the WGSL carries none.
+//
+// NOT called from `vulkanGlslToWebgl2`, and the seam is the whole point. The
+// build writes that function's output for `glslangValidator` and ships it as a
+// string literal, and only the shipped copy should lose the mapping: strip
+// before validating and a GLSL compile error at build time stops naming the
+// `.slang` line it came from, which is when the mapping is actually read. What
+// is left is a driver that rejects what glslang accepted — rare, off the machine
+// that could act on it, and answered by regenerating without this call.
+export function stripLineDirectives(source: string) {
+  return source.replaceAll(/^#line[^\n]*\n/gm, '')
+}
+
 export function vulkanGlslToWebgl2(
   source: string,
   stage: 'vertex' | 'fragment',
