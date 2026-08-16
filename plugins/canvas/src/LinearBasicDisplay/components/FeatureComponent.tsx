@@ -417,10 +417,13 @@ const FeatureBody = observer(function FeatureBody({
       {/* after the overlay layer, so a label clipped at the bottom edge fades
           with the features it names; before the scrollbar, whose z-index keeps
           the thumb crisp over it either way */}
+      {/* both from scrollContentHeight, not contentHeight: they report where a
+          scroll can go, and the drawing height also covers the fetch buffer's
+          rows, which no scroll reaches */}
       <ScrollEdgeShadow
         scrollTop={model.scrollTop}
         viewportHeight={model.height}
-        contentHeight={model.contentHeight}
+        contentHeight={model.scrollContentHeight}
       />
 
       <VerticalScrollbar
@@ -429,7 +432,7 @@ const FeatureBody = observer(function FeatureBody({
           model.setScrollTop(n)
         }}
         viewportHeight={model.height}
-        contentHeight={model.contentHeight}
+        contentHeight={model.scrollContentHeight}
         controlsId={canvasId}
       />
 

@@ -1545,3 +1545,109 @@ describe('canvas display fit measures the visible window', () => {
     )
   })
 })
+
+// The same "measure the window, not the buffer" rule, applied to the scroll
+// extent rather than to the fit ladder. The scrollbar and the edge shadow are
+// two readouts of one number, and both answer "is this track showing me all of
+// its features" — so a stack whose deep rows are all fetch buffer must report
+// no overflow, however tall the pack is. Three figures came back from one review
+// pass with a shadow drawn under empty canvas.
+describe('canvas display scrolls over the visible window', () => {
+  // 800px over 80kb, the fetch region covering the buffered 60kb..220kb: four
+  // genes on screen and `offscreen` more packed beside them in the buffer.
+  function bufferedStack(offscreen: number) {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 400_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(100)
+    view.scrollTo(1000)
+    display.setRpcData(
+      0,
+      geneRegionData([
+        genesOver('vis', 120_000, 160_000, 4),
+        genesOver('right', 182_000, 218_000, offscreen),
+      ]),
+      view.bpPerPx,
+      { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
+    )
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    let onScreenBottom = 0
+    for (const data of display.laidOutDataMap.values()) {
+      for (const item of data.flatbushItems) {
+        if (
+          item.featureId.startsWith('vis') &&
+          item.bottomPx > onScreenBottom
+        ) {
+          onScreenBottom = item.bottomPx
+        }
+      }
+    }
+    // tall enough for every on-screen row, far short of the whole pack
+    display.setHeight(Math.ceil(onScreenBottom) + 10)
+    return { display, view, onScreenBottom }
+  }
+
+  it('reports no overflow when only the buffer is below the fold', () => {
+    const { display } = bufferedStack(12)
+    // the pack really is deeper than the track — this is the case that drew a
+    // scrollbar and a bottom shadow over blank canvas
+    expect(display.maxY).toBeGreaterThan(display.height)
+    expect(display.hasOverflow).toBe(false)
+    expect(display.scrollableHeight).toBe(0)
+    expect(display.scrollContentHeight).toBe(display.height)
+  })
+
+  it('still DRAWS the buffered rows it will not scroll to', () => {
+    const { display } = bufferedStack(12)
+    // the canvas, the overlay layer and the peptide lane are sized from
+    // contentHeight, so a buffered feature keeps its box and its label — it is
+    // unreachable, not clipped
+    expect(display.contentHeight).toBe(display.maxY)
+    expect(display.contentHeight).toBeGreaterThan(display.scrollContentHeight)
+  })
+
+  it('scrolls when the visible window is what overflows', () => {
+    const { display } = bufferedStack(0)
+    display.setHeight(20)
+    expect(display.hasOverflow).toBe(true)
+    expect(display.scrollableHeight).toBeGreaterThan(0)
+  })
+
+  it('re-measures on a pan onto the deeper group', () => {
+    const { display, view } = bufferedStack(12)
+    expect(display.hasOverflow).toBe(false)
+
+    view.scrollTo(182_000 / 100)
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    expect(display.hasOverflow).toBe(true)
+  })
+
+  // The clamp TrackHeightMixin installs is earned by this getter, so a pan back
+  // out of the deep group pulls the offset with it rather than stranding the
+  // viewport over blank canvas.
+  it('clamps a scroll offset the pan left behind', () => {
+    const { display, view } = bufferedStack(12)
+    view.scrollTo(182_000 / 100)
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    display.setScrollTop(display.scrollableHeight)
+    expect(display.scrollTop).toBeGreaterThan(0)
+
+    view.scrollTo(1000)
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    expect(display.scrollTop).toBe(0)
+  })
+
+  // Before the view has coarse blocks there is no window to measure, so the
+  // extent is the whole pack — the behavior every consumer had.
+  it('falls back to the whole pack with no coarse blocks', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    display.setHeight(97)
+    expect(display.onScreenFeatureIds).toBeUndefined()
+    expect(display.scrollExtentMaxY).toBe(display.maxY)
+    expect(display.hasOverflow).toBe(true)
+  })
+})

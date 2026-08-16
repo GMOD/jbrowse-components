@@ -1032,25 +1032,37 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * The features fit mode measures its stack against: those whose bp span
-         * touches the viewport. Why that is not the whole packed stack — and the
-         * matching rules — live with the pure `featureIdsTouchingBlocks` in
-         * layout.ts; this getter is the reactive half, deciding when to ask.
+         * The features whose bp span touches the viewport. Why that is not the
+         * whole packed stack — and the matching rules — live with the pure
+         * `featureIdsTouchingBlocks` in layout.ts; this getter is the reactive
+         * half, deciding when to ask.
          *
          * Read off `coarseDynamicBlocks` (500ms debounced), like the layout's
-         * `coarseBpPerPx`, so a pan re-fits once it settles instead of breathing
-         * the whole stack every frame. Undefined when the fit isn't running or
-         * the view has no coarse blocks yet, which measures the whole stack (the
-         * behavior every non-fit consumer keeps).
+         * `coarseBpPerPx`, so a pan re-measures once it settles instead of
+         * breathing the whole stack every frame. Undefined until the view has
+         * coarse blocks, which every consumer reads as "measure the whole
+         * stack".
+         *
+         * Two things measure over it, for the same reason: the fit ladder
+         * (`fitMeasureFeatureIds`) and the scroll extent (`scrollExtentMaxY`).
          */
-        get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
-          if (!self.fitHeightToDisplay || !self.layoutReady) {
+        get onScreenFeatureIds(): ReadonlySet<string> | undefined {
+          if (!self.layoutReady) {
             return undefined
           }
           const blocks = getView(self).coarseDynamicBlocks
           return blocks.length === 0
             ? undefined
             : featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks)
+        },
+        /**
+         * #getter
+         * The features fit mode measures its stack against: the on-screen set
+         * while the fit is running, undefined otherwise (which measures the
+         * whole stack).
+         */
+        get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
+          return self.fitHeightToDisplay ? this.onScreenFeatureIds : undefined
         },
       }))
       .views(self => ({
@@ -1531,9 +1543,12 @@ export default function baseStateModelFactory(
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph
-          // ends. Constant across the morph, so no per-frame reflow. Only the
-          // scroll-extent side reads this — grow-mode sizing reads settledMaxY so
-          // the track height doesn't bounce mid-morph.
+          // ends. Constant across the morph, so no per-frame reflow. This is the
+          // DRAWING height — the canvas, the overlay layer and the peptide lane
+          // are all sized from it, so it covers every laid-out feature. What can
+          // be scrolled TO is `scrollExtentMaxY`, which is narrower. Grow-mode
+          // sizing reads settledMaxY so the track height doesn't bounce
+          // mid-morph.
           return self.morphFromTops === undefined
             ? this.settledMaxY
             : Math.max(this.settledMaxY, self.morphFromMaxY)
@@ -1542,8 +1557,39 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // How deep the content a scroll can actually REACH goes: the deepest row
+        // occupied by a feature on screen, rather than by one in the fetch
+        // buffer.
+        //
+        // The fetch buffers half a viewport either side and the pack places
+        // every buffered feature, so a viewport holding eight genes can carry a
+        // stack twenty rows deep whose bottom twelve rows draw nothing in view.
+        // Measuring the scroll extent over the whole stack offered a scroll
+        // gesture that revealed blank canvas, and — since the scrollbar and the
+        // edge shadow are both readouts of this one number — told the reader
+        // features were hidden below a track that was showing all of them. The
+        // figure review caught it three times in one pass.
+        //
+        // Same set and same 500ms debounce the fit ladder measures over
+        // (`onScreenFeatureIds`), so a pan re-measures once it settles. Fit mode
+        // is already narrowed at the source — `settledMaxY` measures the kept
+        // rung over `fitMeasureFeatureIds` and epsilon-snaps a scale's float
+        // slack — so it keeps `maxY` rather than re-walking the map unsnapped.
+        //
+        // Not morph-aware, unlike `maxY`: the hold exists so a feature animating
+        // up from a deeper row isn't clipped, which is about what is drawn.
+        get scrollExtentMaxY() {
+          const ids = self.fitHeightToDisplay
+            ? undefined
+            : self.onScreenFeatureIds
+          return ids ? maxBottom(self.laidOutDataMap, ids) : this.maxY
+        },
+
+        /**
+         * #getter
+         */
         get hasOverflow() {
-          return this.maxY > self.height
+          return this.scrollExtentMaxY > self.height
         },
 
         /**
@@ -1571,9 +1617,12 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Coordinate-space height of the virtual-scroll content: the laid-out
-        // content (maxY) but never less than the viewport, so overlays and the
-        // scrollbar share one definition (was `hasOverflow ? maxY : height`).
+        // Coordinate-space height of what is DRAWN: the laid-out content (maxY)
+        // but never less than the viewport, so the canvas, the overlay layer and
+        // the peptide lane share one definition (was `hasOverflow ? maxY :
+        // height`). A buffered feature packed below the viewport still gets its
+        // box and its label drawn at full size here — it is simply not somewhere
+        // a scroll can go, which is `scrollContentHeight`.
         get contentHeight() {
           return Math.max(this.maxY, self.height)
         },
@@ -1581,10 +1630,25 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // How far the content can scroll: 0 when it fits. Single source for the
-        // wheel handler and any scroll clamp.
+        // The same coordinate space as `contentHeight`, measured over the rows a
+        // scroll can reach. This is what the scrollbar and the edge shadow are
+        // sized from: both exist to answer "is this track showing me all of its
+        // features", and a buffered feature off the side of the viewport is not
+        // an answer to that question.
+        get scrollContentHeight() {
+          return Math.max(this.scrollExtentMaxY, self.height)
+        },
+
+        /**
+         * #getter
+         */
+        // How far the content can scroll: 0 when everything on screen fits.
+        // Single source for the wheel handler and any scroll clamp, and the hook
+        // TrackHeightMixin's clamp is earned by overriding — so a pan into a
+        // sparser window pulls the scroll offset back to the new bottom rather
+        // than stranding the viewport over blank canvas.
         get scrollableHeight() {
-          return Math.max(0, this.maxY - self.height)
+          return Math.max(0, this.scrollExtentMaxY - self.height)
         },
 
         /**
