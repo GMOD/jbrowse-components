@@ -19,11 +19,17 @@ import type { RpcStatus } from '@jbrowse/core/util'
  * the same label and bar.
  *
  * The bar holds at 0 rather than going indeterminate for the sub-second
- * startup, before the first counts arrive: MUI animates an indeterminate bar by
- * sweeping it across the full width, which reads as ~100% and then appears to
- * drop backwards when the first real fraction (a few percent) lands. Every
- * clustering phase reports counts, so that sweep is noise. The label leaves the
- * percentage off until there's a real one.
+ * startup, before the first counts arrive. Every clustering phase reports
+ * counts, so a sweep here says only "something is happening" during the one
+ * moment that is never in doubt, and then hands over to a real fraction of a few
+ * percent. The label leaves the percentage off until there's a real one.
+ *
+ * The cost is that a determinate 0 announces "0 percent" for that moment, where
+ * an indeterminate bar would announce nothing — worth revisiting if the startup
+ * ever stops being sub-second. (The original reason was narrower and no longer
+ * holds: MUI swept its indeterminate bar across the full width, which read as
+ * ~100% and then appeared to drop backwards. `StatusProgressBar` sweeps one bar
+ * 40% of the track wide and does not.)
  */
 export default function ClusterProgress({
   status,
