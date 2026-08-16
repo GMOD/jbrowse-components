@@ -163,6 +163,7 @@
     "./util/highlights": "./src/util/highlights.ts",
     "./util/hooks": "./src/util/hooks.ts",
     "./util/htmlText": "./src/util/htmlText.ts",
+    "./util/indexCandidates": "./src/util/indexCandidates.ts",
     "./util/installInitAutorun": "./src/util/installInitAutorun.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
@@ -829,6 +830,10 @@
         "types": "./esm/util/htmlText.d.ts",
         "import": "./esm/util/htmlText.js"
       },
+      "./util/indexCandidates": {
+        "types": "./esm/util/indexCandidates.d.ts",
+        "import": "./esm/util/indexCandidates.js"
+      },
       "./util/installInitAutorun": {
         "types": "./esm/util/installInitAutorun.d.ts",
         "import": "./esm/util/installInitAutorun.js"
@@ -1432,6 +1437,9 @@
         ],
         "util/htmlText": [
           "esm/util/htmlText.d.ts"
+        ],
+        "util/indexCandidates": [
+          "esm/util/indexCandidates.d.ts"
         ],
         "util/installInitAutorun": [
           "esm/util/installInitAutorun.d.ts"

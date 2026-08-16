@@ -1,6 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { indexCandidateNames } from '@jbrowse/core/util/indexCandidates'
+
 import type { Assembly, Track } from './types.ts'
 
 const URL_SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i
@@ -12,64 +14,25 @@ export function makeLocation(file: string) {
 }
 
 /**
- * Every conventional index spelling, in the order they are probed.
+ * The index sitting next to a data file: whichever conventional spelling is
+ * actually on disk, else the first candidate so the error names the file that
+ * was expected.
  *
- * One data file has three names its index might carry, and a user whose file
- * used the wrong one got a missing-file error naming a path they never wrote.
- *
- * **Exported because the docs table is generated from this list** — a spelling
- * added here documents itself, rather than being restated in prose that then
- * goes quietly out of date. `path` returns undefined when the spelling does not
- * apply to the file in hand.
- */
-export const indexSpellings: {
-  name: string
-  writtenBy: string
-  path: (file: string, conventional: 'tbi' | 'bai') => string | undefined
-}[] = [
-  {
-    name: '`<file>.tbi`, `<file>.bai`',
-    writtenBy: 'samtools, tabix',
-    path: (file, conventional) => `${file}.${conventional}`,
-  },
-  {
-    name: '`<file>.csi`',
-    writtenBy: 'htslib, for a reference over 512 Mb and on request at any size',
-    path: file => `${file}.csi`,
-  },
-  {
-    name: '`reads.bai` beside `reads.bam`',
-    writtenBy: 'Picard, GATK',
-    path: (file, conventional) =>
-      // guarded on the extension actually matching: an unguarded replace returns
-      // `file` itself for anything not named `.bam`, and that path exists, so
-      // the data file would be handed over as its own index
-      conventional === 'bai' && /\.bam$/i.test(file)
-        ? file.replace(/\.bam$/i, '.bai')
-        : undefined,
-  },
-]
-
-/**
- * The index sitting next to a data file: whichever {@link indexSpellings} entry
- * is actually on disk, else the conventional name so the error names the file
- * that was expected.
+ * The candidate list is core's, shared with the add-track widget, so the CLI and
+ * the app look for the same things. `conventional` is the fallback for a name
+ * core does not recognize — a track flag knows the file type even when the
+ * extension does not say so.
  *
  * Probed only for a LOCAL path. A URL cannot be checked without a request and
  * this builder is synchronous, so a remote `.csi` still wants `index:`.
  */
-function siblingIndex(file: string, conventional: 'tbi' | 'bai') {
-  const primary = `${file}.${conventional}`
+function siblingIndex(file: string, conventional: 'tbi' | 'bai' | 'crai') {
+  const candidates = indexCandidateNames(file)
+  const primary = candidates[0] ?? `${file}.${conventional}`
   if (URL_SCHEME.test(file)) {
     return primary
   }
-  for (const { path: spelling } of indexSpellings) {
-    const candidate = spelling(file, conventional)
-    if (candidate !== undefined && fs.existsSync(candidate)) {
-      return candidate
-    }
-  }
-  return primary
+  return candidates.find(c => fs.existsSync(c)) ?? primary
 }
 
 // The index type follows the file that was CHOSEN, not the one the user typed,
@@ -117,7 +80,7 @@ const fileTypes: Record<string, FileType> = {
     adapter: (file, index, sequenceAdapter) => ({
       type: 'CramAdapter',
       cramLocation: makeLocation(file),
-      craiLocation: makeLocation(index || `${file}.crai`),
+      craiLocation: makeLocation(index || siblingIndex(file, 'crai')),
       sequenceAdapter,
     }),
   },

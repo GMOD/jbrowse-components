@@ -7,8 +7,8 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 
+import { indexSpellings } from '../../packages/core/src/util/indexCandidates.ts'
 import {
-  indexSpellings,
   syntenyTrackTypes,
   trackTypes,
 } from '../../products/jbrowse-img/src/makeConfigs.ts'
