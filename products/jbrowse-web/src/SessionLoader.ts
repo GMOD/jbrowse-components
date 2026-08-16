@@ -1,5 +1,4 @@
-import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
-import { deleteQueryParams } from '@jbrowse/app-core'
+import { DEFAULT_SHARE_URL, deleteQueryParams } from '@jbrowse/app-core'
 import {
   dropVendoredPlugins,
   pluginsNotIn,

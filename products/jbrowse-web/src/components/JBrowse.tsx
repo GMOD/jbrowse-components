@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { App } from '@jbrowse/app-core'
-import { readQueryParams, setQueryParams } from '@jbrowse/app-core'
+import { App, readQueryParams, setQueryParams } from '@jbrowse/app-core'
 import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'

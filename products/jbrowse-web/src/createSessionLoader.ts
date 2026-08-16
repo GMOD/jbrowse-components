@@ -2,8 +2,9 @@ import {
   readHubUrlParam,
   readNavParam,
   readTracklistParam,
+  deleteQueryParams,
+  readQueryParams,
 } from '@jbrowse/app-core'
-import { deleteQueryParams, readQueryParams } from '@jbrowse/app-core'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import SessionLoader from './SessionLoader.ts'

@@ -45,7 +45,7 @@
     "gen:gallery-thumbs": "node scripts/gen-gallery-thumbs.ts",
     "gen:tutorial-thumbs": "node scripts/gen-tutorial-thumbs.ts",
     "gen:home-images": "node scripts/gen-home-images.ts",
-    "review-screenshots-web": "pnpm figures:pull && node scripts/review-screenshots-web.ts",
+    "review": "pnpm figures:pull && node scripts/review-screenshots-web.ts",
     "audit-figures": "node scripts/audit-figures.ts",
     "figures:pull": "node scripts/figures.ts pull",
     "figures:triage": "node scripts/triage-figure-diffs.ts"

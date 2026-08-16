@@ -102,11 +102,10 @@ if (problems.length) {
   process.exit(1)
 }
 console.log(
-  `core plugin sets agree: ${BASE} has ${web.size}, ` +
-    Object.entries(DIFFS)
-      .map(
-        ([p, { adds, drops }]) =>
-          `${p} ${adds.length ? `+${adds.length}` : ''}${drops.length ? `-${drops.length}` : ''}`,
-      )
-      .join(', '),
+  `core plugin sets agree: ${BASE} has ${web.size}, ${Object.entries(DIFFS)
+    .map(
+      ([p, { adds, drops }]) =>
+        `${p} ${adds.length ? `+${adds.length}` : ''}${drops.length ? `-${drops.length}` : ''}`,
+    )
+    .join(', ')}`,
 )
