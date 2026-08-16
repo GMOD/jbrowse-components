@@ -60,7 +60,11 @@ resolve let the previous window's answer land underneath that and move the row
 anyway.
 
 Switching the mode off issues no pass at all, so it still needs its own check in
-`execute`.
+`execute` — and switching it back on defeats that check, since dropping the
+store leaves an in-flight `execute` holding a state object nobody will bump
+again. `levelStates` therefore counts its own resets and the plan carries the
+count: the one fact `seq` cannot state is that the store an answer was planned
+against no longer exists.
 
 ## What each pass may touch
 
