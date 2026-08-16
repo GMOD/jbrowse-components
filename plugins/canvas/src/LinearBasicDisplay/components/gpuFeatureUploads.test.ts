@@ -1,9 +1,12 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 
+import { CANVAS_GLYPH_DRAW } from './Canvas2DFeatureRenderer.ts'
 import {
   CANVAS_FEATURE_PASSES,
+  GPU_GLYPH_DRAW,
   GpuCanvasFeatureRenderer,
 } from './GpuCanvasFeatureRenderer.ts'
+import { GLYPH_LAYERS } from './glyphLayers.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type {
@@ -111,6 +114,19 @@ describe('per-region uploads', () => {
 })
 
 describe('draw passes', () => {
+  // `Record<GlyphLayerId, …>` makes each backend hold an entry for every id in
+  // the union. It does NOT make `GLYPH_LAYERS` contain every id — that is a
+  // plain array, and an id left out of it is wired in both backends, compiles,
+  // and draws nowhere. Same shape as `hitTestGateParity.test.ts`'s check over
+  // `PILEUP_LAYERS`, and both directions: an id missing from the list is an
+  // unreachable layer, one missing from the record is a stale entry a removal
+  // left behind.
+  it('lists every glyph layer both backends carry an entry for', () => {
+    const ids = [...GLYPH_LAYERS].sort()
+    expect(ids).toStrictEqual(Object.keys(GPU_GLYPH_DRAW).sort())
+    expect(ids).toStrictEqual(Object.keys(CANVAS_GLYPH_DRAW).sort())
+  })
+
   it('draws the borrowing passes from the lender’s buffer', () => {
     const { hal, renderer } = setup()
     renderer.uploadRegion(REGION, regionData(2))

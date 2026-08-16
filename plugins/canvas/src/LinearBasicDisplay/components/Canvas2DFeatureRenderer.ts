@@ -239,6 +239,7 @@ function paintedRectSpan(
 function drawRects(
   ctx: Ctx2D,
   region: RegionRenderData,
+  _block: BpRegionBounds,
   toX: BpToScreen,
   state: RenderState,
 ) {
@@ -400,10 +401,10 @@ function drawContinuation(
   block: BpRegionBounds,
   toX: BpToScreen,
   state: RenderState,
-  scissorX: number,
-  scissorW: number,
+  clip: BlockClip,
 ) {
   const { scrollY, canvasWidth } = state
+  const { scissorX, scissorW } = clip
   const scissorLeft = scissorX
   const scissorRight = scissorX + scissorW
   // Only the true canvas edges get markers, never an internal seam between two
@@ -493,32 +494,18 @@ type GlyphDrawFn = (
 // a glyph can't be added to that list without being painted here — or on the SVG
 // export path, which reaches these same painters through `drawFeatureBlocks`.
 //
-// The painters take the arguments each needs rather than one shared signature:
-// the record is what makes the ids uniform, not the calls under them.
-const CANVAS_GLYPH_DRAW: Record<GlyphLayerId, GlyphDrawFn> = {
-  // Chevrons ride along inside `drawLines`, painted per line right after the
-  // line itself, where the GPU draws them as a separate pass off the line
-  // buffer. Same marks, same slot in the order.
-  line: (ctx, region, block, toX, state) => {
-    drawLines(ctx, region, block, toX, state)
-  },
-  rect: (ctx, region, _block, toX, state) => {
-    drawRects(ctx, region, toX, state)
-  },
-  arrow: (ctx, region, block, toX, state) => {
-    drawArrows(ctx, region, block, toX, state)
-  },
-  continuation: (ctx, region, block, toX, state, clip) => {
-    drawContinuation(
-      ctx,
-      region,
-      block,
-      toX,
-      state,
-      clip.scissorX,
-      clip.scissorW,
-    )
-  },
+// Every painter takes `GlyphDrawFn` whole and ignores what it doesn't need, so
+// the entries are bare references and this reads as the table it is. Wrappers
+// that only reorder arguments would put a second, silent statement of which
+// painter each id means between the id and its painter.
+//
+// Chevrons have no entry: `drawLines` paints them per line, where the GPU draws
+// them as a separate pass off the line buffer. Same marks, same slot.
+export const CANVAS_GLYPH_DRAW: Record<GlyphLayerId, GlyphDrawFn> = {
+  line: drawLines,
+  rect: drawRects,
+  arrow: drawArrows,
+  continuation: drawContinuation,
 }
 
 /**

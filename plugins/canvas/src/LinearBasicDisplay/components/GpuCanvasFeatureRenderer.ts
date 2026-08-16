@@ -126,7 +126,7 @@ type GpuGlyphDrawFn = (
 //
 // `drawPass` short-circuits a region with no buffer for the pass, so every layer
 // issues unconditionally rather than off has-rects / has-lines flags.
-const GPU_GLYPH_DRAW: Record<GlyphLayerId, GpuGlyphDrawFn> = {
+export const GPU_GLYPH_DRAW: Record<GlyphLayerId, GpuGlyphDrawFn> = {
   // Two passes, one layer: the chevrons draw from line's own vertex buffer
   // (`bufferPassId`), which is a GPU buffer-sharing artifact and not a second
   // place in the order — Canvas2D paints them inside `drawLines`.
@@ -177,7 +177,6 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
       clip.scissorW,
       state.canvasWidth,
     )
-    const { leftIsCanvasEdge, rightIsCanvasEdge } = edges
     rectShader.writeUniforms(this.uniformData, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,
@@ -187,8 +186,8 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
       zero: 0,
       reversed: block.reversed ? 1 : 0,
       outlineColor: region.outlineColor,
-      leftIsCanvasEdge: leftIsCanvasEdge ? 1 : 0,
-      rightIsCanvasEdge: rightIsCanvasEdge ? 1 : 0,
+      leftIsCanvasEdge: edges.leftIsCanvasEdge ? 1 : 0,
+      rightIsCanvasEdge: edges.rightIsCanvasEdge ? 1 : 0,
     })
 
     this.hal.writeUniforms(this.uniformData)
