@@ -55,6 +55,7 @@ the whole surface.
 | --- | --- |
 | <span id="volatile-width">**width**</span><br><code>width: 800</code> |  |
 | <span id="volatile-matchedtrackfeatures">**matchedTrackFeatures**</span><br><code>matchedTrackFeatures: {}</code> |  |
+| <span id="volatile-fetchstatus">**fetchStatus**</span><br><code>fetchStatus: createStatusChannel()</code> | What the overlay-feature fetch is doing, for the corner chip. A `StatusChannel` rather than the `statusMessage`/`statusProgress`/ `setStatusMessage` trio a display declares: this is a view with one operation to narrate, and the trio is a status vocabulary it has no other use for. |
 
 ## Getters
 
