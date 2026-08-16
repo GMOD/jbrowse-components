@@ -48,6 +48,7 @@ interface FollowWork {
   // `alreadyShowing` terminate over an answer below it
   movingMinWidthBp: number
   seq: number
+  generation: number
 }
 
 // One level's share of a settled pass: what to resolve, and what the header
@@ -89,13 +90,19 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     movingWindow,
     movingMinWidthBp,
     seq,
+    generation,
   }: FollowWork) {
     const { movingView } = pair
     const state = levelStates.get(pair.level)
     const { span, approximate } = await state.answer(step)
-    // switching the mode off bumps no seq, so it needs its own check
+    // Switching the mode off bumps no seq, so it needs its own check — and
+    // switching it back on again defeats that one, since `state` is then the
+    // object the drop orphaned rather than the one the new pass minted. Its
+    // `seq` is whatever this work left it at, so latest-wins says yes and the
+    // row lands on a window two navigations ago.
     if (
       seq !== state.seq ||
+      generation !== levelStates.generation ||
       !isAlive(self) ||
       !isAlive(movingView) ||
       !self.followSynteny
@@ -206,6 +213,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         movingWindow,
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
         seq,
+        generation: levelStates.generation,
       },
       // a level still fetching has no answer YET rather than no answer
       unaligned: !step && level.linearSyntenyDisplays.some(d => d.featureData),

@@ -343,6 +343,54 @@ test('a resolve landing after the anchor has left every alignment does not move 
   expect(windowOf(target!)).toEqual(held)
 })
 
+// The same in-flight resolve again, against the gap the `followSynteny` check
+// leaves open. Switching the mode off drops the per-level states, but an
+// `execute` already past its await holds the one it read BEFORE the drop —
+// nothing bumps that object's sequence, so switching back on satisfies every
+// guard it has left and the row lands on a window two navigations ago.
+test('a resolve landing after the mode is toggled off and on does not move the row', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  const { rpcManager } = getSession(query!)
+  const inner = rpcManager.call.bind(rpcManager)
+  const releases: (() => void)[] = []
+  jest
+    .spyOn(rpcManager, 'call')
+    .mockImplementation(async (sessionId, functionName, args) => {
+      if (functionName === 'SyntenyResolveMatchingRegion') {
+        await new Promise<void>(resolve => {
+          releases.push(resolve)
+        })
+      }
+      return inner(sessionId, functionName, args)
+    })
+
+  view.setRowSyncMode('follow')
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(releases).toHaveLength(1)
+  }, timeout)
+  const held = windowOf(target!)
+
+  view.setRowSyncMode('independent')
+  // the same unaligned gap the test above uses, so the pass that comes back has
+  // nothing of its own to place the row with — and would otherwise leave the
+  // stale answer standing rather than correcting it
+  await query!.navToLocString('ctgA:16100..16250', QUERY_ASM)
+  // long enough for the anchor's 500ms coarse-block debounce, so the pass below
+  // plans against this window rather than the one it was switched off over
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  view.setRowSyncMode('follow')
+  await waitFor(() => {
+    expect(view.followUnaligned).toBe(true)
+  }, timeout)
+  releases[0]!()
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  expect(windowOf(target!)).toEqual(held)
+}, 60000)
+
 test('anchoring the bottom row reverses which row moves', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views

@@ -56,7 +56,14 @@ export interface FollowLevelState {
  */
 export function createFollowLevelStates<Level extends object>() {
   let states = new WeakMap<Level, FollowLevelState>()
+  let generation = 0
   return {
+    // Which reset of the store an answer was planned under. `seq` cannot say
+    // it: dropping the map leaves an in-flight `execute` holding a state object
+    // nobody will bump again, so its own latest-wins check goes on passing.
+    get generation() {
+      return generation
+    },
     get(level: Level) {
       let state = states.get(level)
       if (!state) {
@@ -75,6 +82,7 @@ export function createFollowLevelStates<Level extends object>() {
     // answer and reported error at once
     clear() {
       states = new WeakMap()
+      generation++
     },
   }
 }
