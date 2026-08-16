@@ -47,8 +47,19 @@ GIAB's interval stops well short of where ENCODE's blacklist continues to.
 can be settled by measurement, and the lane stays low across the span GIAB has
 let go of.
 
+The block is one interval rather than a run of small ones, which is why the
+upper panel is as wide as it is. GIAB's annotation over this arm is a single
+megabase-and-a-half region, a second one a few kilobases past it, and then
+nothing larger than a few kilobases for megabases in either direction. So the
+size is the subject: short reads fail across a whole gene neighbourhood here
+rather than at scattered sites, and a frame narrow enough to make a read visible
+could not show that the failure has edges.
+
 The lower panel is the same block at the scale a read lives at, where reads do
-not recover until well past the end of _SMN1_.
+not recover until well past the end of _SMN1_. It is a separate frame for the
+same reason: a read is a fraction of a pixel across a span this wide, so a lane
+drawn up there could say how much data is present and nothing about where any of
+it landed.
 
 ## Would a finished assembly fix it?
 

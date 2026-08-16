@@ -478,6 +478,28 @@ export const qcSpecs: ScreenshotSpec[] = [
   // Both parts render at the default 1400 px, which is what makes a vertical
   // compose land square. Each stays reachable live on its own, which is why the
   // parts keep their names.
+  //
+  // STILL TWO FRAMES, and the follow-up review is answered by measuring rather
+  // than by re-cropping ("why not just make this one single screenshot? can we
+  // not load a bam file across 2.5mb? is there a shorter stretch of poor
+  // mappability to help make our point").
+  //
+  // A BAM over 2.5 Mb: NA12878's 30x CRAM carries 11,221 reads in 50 kb here, so
+  // the wide frame is around half a million of them -- several times the 5 MB
+  // fetchSizeLimit both alignment adapters declare, which is force-loadable (the
+  // read frame already force-loads its own 650 kb). The reason is geometry
+  // rather than volume: 2.5 Mb over a 1400 px frame is ~1,800 bp a pixel, so a
+  // 150 bp read is a twelfth of one. A lane there reports how much data is
+  // present and nothing about where any of it landed, which is the entire claim
+  // of the lower frame.
+  //
+  // A shorter stretch: there isn't one that says this. Measured off GIAB's own
+  // alllowmapandsegdupregions over chr5:68-73 Mb -- the block is a single
+  // 1,475,696 bp interval (69,533,889-71,009,585) with a second 435,173 bp one
+  // 5.6 kb past it, and the next largest anywhere in those five megabases is
+  // 4,222 bp. So the size IS the subject: the failure covers a whole gene
+  // neighbourhood rather than scattered sites, and a window narrow enough to
+  // make a read visible cannot show that it has edges.
   {
     mode: 'compose',
     name: 'qc/smn_block_and_reads',
