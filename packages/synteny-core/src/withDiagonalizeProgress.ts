@@ -34,6 +34,14 @@ export async function withDiagonalizeProgress(
   model.setAwaitingAutoDiagonalize(true)
   const stopToken = createStopToken()
   model.setDiagonalizeStopToken(stopToken)
+  // `running`, not `isAlive` alone: a trailing status write fires on a timer, so
+  // the run it belongs to can be over by then while the model is very much
+  // alive. Without this term the last percentage lands after the `finally` has
+  // cleared and stays there — invisible now, because `awaitingAutoDiagonalize`
+  // gates the screen, and visible at the START of the next reorder, which mounts
+  // showing the previous run's "Reordering chromosomes 87%".
+  let running = true
+  const throttle = createStatusThrottle()
   try {
     await run({
       stopToken,
@@ -42,12 +50,12 @@ export async function withDiagonalizeProgress(
       // granularity (~40/s) and every write repaints the reordering spinner, so
       // it needs the same throttled window they use.
       statusCallback: createGuardedStatusSink({
-        isCurrent: () => isAlive(model),
+        isCurrent: () => running && isAlive(model),
         sink: status => {
           model.setDiagonalizeStatus(status)
         },
         // this run is the only stream on this model's status field
-        throttle: createStatusThrottle(),
+        throttle,
       }),
     })
   } catch (e) {
@@ -60,10 +68,19 @@ export async function withDiagonalizeProgress(
     // a blob URL plus every AbortController taken against it, retained for the
     // document's life
     stopStopToken(stopToken)
+    running = false
     if (isAlive(model)) {
       model.setAwaitingAutoDiagonalize(false)
-      model.setDiagonalizeStatus(undefined)
+      // `runNow`, the same reason every phase's `''` takes it: the clear has to
+      // land AND to cancel the progress value queued behind it
+      throttle.runNow(() => {
+        model.setDiagonalizeStatus(undefined)
+      })
       model.setDiagonalizeStopToken(undefined)
+    } else {
+      // nothing left to write to, but the timer behind a queued write still
+      // stands for up to a window
+      throttle.reset()
     }
   }
 }

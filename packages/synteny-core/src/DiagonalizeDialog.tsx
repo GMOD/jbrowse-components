@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 import { Dialog, ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
 import {
+  createGuardedStatusSink,
   createStatusThrottle,
   statusFraction,
   statusProgressLabel,
@@ -97,17 +98,22 @@ export default function DiagonalizeDialog({
           runRef.current.applied = applied
         },
         // a status arriving after the run was cancelled or finished must not
-        // resurrect the running phase, or talk over "Stopping"
-        statusCallback: status => {
-          if (runRef.current.stopped) {
-            return
-          }
-          throttle.run(() => {
+        // resurrect the running phase, or talk over "Stopping" — and
+        // `createGuardedStatusSink` rather than a hand-written check ahead of
+        // the throttle because only it re-reads the guard INSIDE the throttled
+        // body. A write queued while the run was live fires on a timer, by which
+        // point Stop may have been pressed: the outer read said "not stopped"
+        // when the write was queued, and the label it restored was the one
+        // "Stopping" had just replaced.
+        statusCallback: createGuardedStatusSink({
+          isCurrent: () => !runRef.current.stopped,
+          sink: status => {
             setState(prev =>
               prev.phase === 'running' ? { ...prev, status } : prev,
             )
-          })
-        },
+          },
+          throttle,
+        }),
       })
       setState({ phase: 'done', summary: summarize(stats) })
     } catch (error) {
