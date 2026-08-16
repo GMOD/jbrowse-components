@@ -1,3 +1,5 @@
+import { getDisplayStr } from '@jbrowse/core/util'
+
 /**
  * The span below which the **density** axis stops gating: at this zoom a canvas
  * display is drawing few enough glyphs that a banner asking permission costs the
@@ -85,25 +87,6 @@ const ZOOM_EVIDENCE_SPAN_RATIO = 0.5
  * still making progress is never called stuck.
  */
 const ZOOM_EVIDENCE_BYTE_RATIO = 0.9
-
-// Round to 3 significant digits, dropping trailing zeros ("1.00" -> "1").
-function round3(n: number) {
-  return Number.parseFloat(n.toPrecision(3))
-}
-
-export function getDisplayStr(totalBytes: number) {
-  // pick the unit from the rounded value so e.g. 999,999 bytes reads "1 Mb"
-  // rather than "1000 Kb"
-  const mb = round3(totalBytes / 1_000_000)
-  const kb = round3(totalBytes / 1000)
-  if (mb >= 1) {
-    return `${mb} Mb`
-  } else if (kb >= 1) {
-    return `${kb} Kb`
-  } else {
-    return `${Math.floor(totalBytes)} bytes`
-  }
-}
 
 /**
  * One measurement of what a fetch would cost, taken at the viewport it

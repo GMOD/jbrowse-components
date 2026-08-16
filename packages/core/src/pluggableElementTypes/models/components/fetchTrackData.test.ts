@@ -53,8 +53,20 @@ const options: Record<string, FileTypeExporter> = {
 
 const call = jest.fn()
 
-function setup({ exportsData }: { exportsData: boolean }) {
-  jest.mocked(getConf).mockReturnValue(adapterConfig)
+function setup({
+  exportsData = false,
+  fetchSizeLimit,
+}: {
+  exportsData?: boolean
+  fetchSizeLimit?: number
+} = {}) {
+  jest
+    .mocked(getConf)
+    .mockImplementation((_model: unknown, path?: unknown) =>
+      Array.isArray(path) && path[1] === 'fetchSizeLimit'
+        ? fetchSizeLimit
+        : adapterConfig,
+    )
   jest.mocked(getRpcSessionId).mockReturnValue('session-1')
   jest.mocked(getEnv).mockReturnValue({
     pluginManager: {
@@ -72,6 +84,14 @@ function callsTo(method: string) {
   return call.mock.calls.filter(c => c[1] === method)
 }
 
+// the shape every test but the size ones wants: an unmeasurable region, so
+// nothing gates and the branch under test is the only thing deciding
+function respond(handlers: Record<string, unknown>) {
+  call.mockImplementation(async (_sessionId, method) =>
+    method === 'CoreGetRegionByteEstimate' ? undefined : handlers[method],
+  )
+}
+
 const model = {} as IAnyStateTreeNode
 
 beforeEach(() => {
@@ -81,7 +101,7 @@ beforeEach(() => {
 
 test('an adapter that exports the format returns its raw lines', async () => {
   setup({ exportsData: true })
-  call.mockResolvedValue('@HD\tVN:1.6\nread1\t0\tctgA')
+  respond({ CoreGetExportData: '@HD\tVN:1.6\nread1\t0\tctgA' })
 
   const res = await fetchTrackData({ model, regions, type: 'sam', options })
 
@@ -101,27 +121,31 @@ test('an adapter that exports the format returns its raw lines', async () => {
 
 test('an adapter declining one format falls through to the features', async () => {
   setup({ exportsData: true })
-  const feats = [feature('read1'), feature('read2')]
-  call.mockImplementation(async (_sessionId, method) =>
-    method === 'CoreGetExportData' ? undefined : feats,
-  )
+  respond({
+    CoreGetExportData: undefined,
+    CoreGetFeatures: [feature('read1'), feature('read2')],
+  })
 
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
-  expect(res).toEqual({
-    str: 'read1,read2',
-    features: feats,
-    usedAdapterExport: false,
-  })
+  expect(res).toEqual({ str: 'read1,read2', usedAdapterExport: false })
   expect(callsTo('CoreGetExportData')).toHaveLength(1)
   expect(callsTo('CoreGetFeatures')).toHaveLength(1)
 })
 
-test('the stop token and status callback reach both RPCs', async () => {
+test('a track with no export capability is never asked to export', async () => {
+  setup()
+  respond({ CoreGetFeatures: [feature('gene1')] })
+
+  const res = await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(res).toEqual({ str: 'gene1', usedAdapterExport: false })
+  expect(callsTo('CoreGetExportData')).toHaveLength(0)
+})
+
+test('the stop token and status callback reach every RPC', async () => {
   setup({ exportsData: true })
-  call.mockImplementation(async (_sessionId, method) =>
-    method === 'CoreGetExportData' ? undefined : [],
-  )
+  respond({ CoreGetExportData: undefined, CoreGetFeatures: [] })
   const stopToken = 'token-1'
   const statusCallback = jest.fn()
 
@@ -134,76 +158,66 @@ test('the stop token and status callback reach both RPCs', async () => {
     statusCallback,
   })
 
-  for (const method of ['CoreGetExportData', 'CoreGetFeatures']) {
+  for (const method of [
+    'CoreGetRegionByteEstimate',
+    'CoreGetExportData',
+    'CoreGetFeatures',
+  ]) {
     expect(callsTo(method)[0]![2]).toMatchObject({ stopToken, statusCallback })
   }
 })
 
-test('handed-back features are reused instead of re-reading the region', async () => {
-  setup({ exportsData: false })
-  const feats = [feature('gene1')]
-  call.mockResolvedValue(feats)
-
-  const first = await fetchTrackData({ model, regions, type: 'bed', options })
-  expect(callsTo('CoreGetFeatures')).toHaveLength(1)
-
-  const second = await fetchTrackData({
-    model,
-    regions,
-    type: 'sam',
-    options,
-    features: first.features,
-  })
-
-  // the point of the cache: a format change reruns the writer, not the read
-  expect(callsTo('CoreGetFeatures')).toHaveLength(1)
-  expect(second.features).toBe(feats)
-  expect(second.str).toBe('gene1')
-  expect(writer).toHaveBeenCalledTimes(2)
-})
-
-test('cached features do not short-circuit the next format’s export attempt', async () => {
-  setup({ exportsData: true })
-  const feats = [feature('read1')]
+test('a region over budget downloads nothing and says what it would cost', async () => {
+  setup({ fetchSizeLimit: 1_000_000 })
   call.mockImplementation(async (_sessionId, method) =>
-    method === 'CoreGetExportData' ? undefined : feats,
+    method === 'CoreGetRegionByteEstimate' ? 4_000_000 : [feature('gene1')],
   )
 
-  const first = await fetchTrackData({ model, regions, type: 'bed', options })
-  call.mockResolvedValue('@HD\tVN:1.6')
+  const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
-  const second = await fetchTrackData({
-    model,
-    regions,
-    type: 'sam',
-    options,
-    features: first.features,
+  expect(res).toEqual({
+    str: '',
+    usedAdapterExport: false,
+    tooLarge: { bytes: 4_000_000, limit: 1_000_000 },
   })
-
-  // an adapter exporting some formats and not others gets asked about each one:
-  // the next format may be one it does write, and the raw lines beat a
-  // reconstruction built from the features the previous format happened to read
-  expect(second).toEqual({ str: '@HD\tVN:1.6', usedAdapterExport: true })
-  expect(callsTo('CoreGetExportData')).toHaveLength(2)
+  expect(callsTo('CoreGetFeatures')).toHaveLength(0)
+  expect(writer).not.toHaveBeenCalled()
 })
 
-test('a second declined format reuses what the first one read', async () => {
-  setup({ exportsData: true })
-  const feats = [feature('read1')]
+test('force skips the pre-flight entirely', async () => {
+  setup({ fetchSizeLimit: 1_000_000 })
   call.mockImplementation(async (_sessionId, method) =>
-    method === 'CoreGetExportData' ? undefined : feats,
+    method === 'CoreGetRegionByteEstimate' ? 4_000_000 : [feature('gene1')],
   )
 
-  const first = await fetchTrackData({ model, regions, type: 'bed', options })
-  const second = await fetchTrackData({
+  const res = await fetchTrackData({
     model,
     regions,
-    type: 'sam',
+    type: 'bed',
     options,
-    features: first.features,
+    force: true,
   })
 
-  expect(callsTo('CoreGetExportData')).toHaveLength(2)
-  expect(callsTo('CoreGetFeatures')).toHaveLength(1)
-  expect(second.str).toBe('read1')
+  expect(res).toEqual({ str: 'gene1', usedAdapterExport: false })
+  expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)
+})
+
+test('an adapter quoting no estimate does not gate', async () => {
+  setup({ fetchSizeLimit: 1 })
+  respond({ CoreGetFeatures: [feature('gene1')] })
+
+  const res = await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(res).toEqual({ str: 'gene1', usedAdapterExport: false })
+})
+
+test('an adapter declaring no limit falls back to the default budget', async () => {
+  setup()
+  call.mockImplementation(async (_sessionId, method) =>
+    method === 'CoreGetRegionByteEstimate' ? 6_000_000 : [feature('gene1')],
+  )
+
+  const res = await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(res.tooLarge).toEqual({ bytes: 6_000_000, limit: 5_000_000 })
 })

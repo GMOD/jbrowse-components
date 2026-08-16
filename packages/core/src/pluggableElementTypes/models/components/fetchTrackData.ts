@@ -2,7 +2,7 @@ import { getConf } from '../../../configuration/index.ts'
 import { getEnv, getSession } from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 
-import type { Feature, Region } from '../../../util/index.ts'
+import type { Region } from '../../../util/index.ts'
 import type { StatusCallback } from '../../../util/progress.ts'
 import type { StopToken } from '../../../util/stopToken.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
@@ -10,16 +10,14 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Whether this track's adapter writes the file format itself, rather than the
- * dialog rebuilding one out of rendered features. Answerable without a fetch,
- * so the dialog can say which of the two the user is getting while the fetch is
- * still running, and can keep the format out of its fetch key on the feature
- * path — where every format reads the same features.
+ * dialog rebuilding one out of rendered features.
  *
  * A capability is a claim about the adapter type, not about a given format:
  * {@link fetchTrackData} still falls back when the adapter declines the one
- * that was asked for.
+ * that was asked for, which is why the answer a caller shows comes from
+ * {@link TrackDataResult.usedAdapterExport} rather than from here.
  */
-export function trackSupportsAdapterExport(model: IAnyStateTreeNode) {
+function trackSupportsAdapterExport(model: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(model)
   const adapterConfig = getConf(model, ['adapter'])
   return pluginManager
@@ -35,15 +33,30 @@ export function roundRegions(regions: Region[]) {
   }))
 }
 
+/**
+ * What a save may pull before it asks. The adapter's own `fetchSizeLimit` where
+ * it declares one, so a save does not quietly disagree with the size its own
+ * display already refuses to render; otherwise this. Deliberately generous —
+ * unlike the display's gate this is not a refusal, it is a confirmation, and
+ * the user asked for these bytes by name.
+ */
+const DEFAULT_SAVE_BYTE_LIMIT = 5_000_000
+
+function saveByteLimit(model: IAnyStateTreeNode) {
+  const declared = getConf(model, ['adapter', 'fetchSizeLimit'])
+  return typeof declared === 'number' && declared > 0
+    ? declared
+    : DEFAULT_SAVE_BYTE_LIMIT
+}
+
 export interface TrackDataResult {
   str: string
-  /**
-   * The features the string was written from, when the dialog rebuilt it. The
-   * caller holds onto them so switching format re-runs the writer instead of
-   * re-reading the region — see the `features` input.
-   */
-  features?: Feature[]
   usedAdapterExport: boolean
+  /**
+   * Set, with an empty `str` and nothing downloaded, when the pre-flight
+   * estimate came back over budget and the caller had not passed `force`.
+   */
+  tooLarge?: { bytes: number; limit: number }
 }
 
 /**
@@ -58,7 +71,7 @@ export async function fetchTrackData({
   regions,
   type,
   options,
-  features,
+  force,
   stopToken,
   statusCallback,
 }: {
@@ -66,8 +79,8 @@ export async function fetchTrackData({
   regions: Region[]
   type: string
   options: Record<string, FileTypeExporter>
-  /** already-read features for these regions, if the caller kept them */
-  features?: Feature[]
+  /** skip the size pre-flight — the user has seen the estimate and said yes */
+  force?: boolean
   stopToken?: StopToken
   statusCallback?: StatusCallback
 }): Promise<TrackDataResult> {
@@ -77,6 +90,28 @@ export async function fetchTrackData({
   const opts = { stopToken, statusCallback }
 
   const supportsExport = trackSupportsAdapterExport(model)
+
+  // The same index lookup the display's gate takes before it fetches, for the
+  // same reason: this menu item pulls the region the display just refused to
+  // render, and did so with no ceiling at all. An adapter quoting no estimate
+  // (BigWig, sequence, HiC) answers `undefined` and nothing gates — see
+  // reference/REGION_TOO_LARGE.md.
+  if (!force) {
+    const bytes = await session.rpcManager.call(
+      sessionId,
+      'CoreGetRegionByteEstimate',
+      { adapterConfig, regions, ...opts },
+    )
+    const limit = saveByteLimit(model)
+    if (bytes !== undefined && bytes > limit) {
+      return {
+        str: '',
+        usedAdapterExport: supportsExport,
+        tooLarge: { bytes, limit },
+      }
+    }
+  }
+
   if (supportsExport) {
     const str = await session.rpcManager.call(sessionId, 'CoreGetExportData', {
       adapterConfig,
@@ -89,22 +124,15 @@ export async function fetchTrackData({
     }
   }
 
-  // Reaching here means no raw lines for this format, whatever the adapter
-  // declares — the attempt above is unconditional, so "the next format may be
-  // one it does write" is already answered and cannot be a reason to re-read.
-  // The features are the same features either way: CoreGetFeatures takes no
-  // format, so what a declined format read is what the next declined one wants.
-  const feats =
-    features ??
-    (await session.rpcManager.call(sessionId, 'CoreGetFeatures', {
-      adapterConfig,
-      regions,
-      ...opts,
-    }))
+  const feats = await session.rpcManager.call(sessionId, 'CoreGetFeatures', {
+    adapterConfig,
+    regions,
+    ...opts,
+  })
   const str = await options[type]!.callback({
     features: feats,
     session,
     assemblyName: regions[0]!.assemblyName,
   })
-  return { str, features: feats, usedAdapterExport: false }
+  return { str, usedAdapterExport: false }
 }

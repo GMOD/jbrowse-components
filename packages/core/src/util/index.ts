@@ -186,6 +186,7 @@ export {
 export {
   avg,
   clamp,
+  getDisplayStr,
   getNumberGrouping,
   max,
   maxFinite,

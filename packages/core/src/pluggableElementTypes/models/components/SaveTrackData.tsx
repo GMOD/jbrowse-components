@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
@@ -25,19 +25,16 @@ import {
 import {
   assembleLocStrings,
   getContainingView,
+  getDisplayStr,
   saveAs,
   statusProgressLabel,
 } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import { useFetch } from '../../../util/useFetch.ts'
-import {
-  fetchTrackData,
-  roundRegions,
-  trackSupportsAdapterExport,
-} from './fetchTrackData.ts'
+import { fetchTrackData, roundRegions } from './fetchTrackData.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
-import type { Feature, Region } from '../../../util/index.ts'
+import type { Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -55,24 +52,6 @@ const useStyles = makeStyles()({
     gap: '4px',
   },
 })
-
-function HelpDialog({
-  text,
-  onClose,
-}: {
-  text: string | undefined
-  onClose: () => void
-}) {
-  return (
-    <InfoDialog
-      open={text !== undefined}
-      onClose={onClose}
-      title="Format Information"
-    >
-      <DialogContentText>{text}</DialogContentText>
-    </InfoDialog>
-  )
-}
 
 const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   model,
@@ -100,17 +79,10 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   const [regions] = useState(() => roundRegions(view.visibleRegions ?? []))
   const regionStr = assembleLocStrings(regions)
 
-  // Answerable without the fetch, so the legend says which kind of export this
-  // is while it runs instead of flipping when it lands. `usedAdapterExport`
-  // still overrides it once known: an adapter that exports some formats and not
-  // others declines the rest, and the fetch falls back to features.
-  const supportsExport = trackSupportsAdapterExport(model)
-
-  // Features for one set of regions, kept across a format change: every writer
-  // on that path reads the same features, so switching GFF3 -> BED reruns the
-  // writer rather than the region read, which on a deep track is the same work
-  // the display does.
-  const featureCache = useRef<Feature[] | undefined>(undefined)
+  // set once the user has seen the estimate and asked for it anyway. In the
+  // fetch key, so saying yes re-runs the fetch and then stays said for the rest
+  // of the dialog, including a later format change.
+  const [force, setForce] = useState(false)
 
   const {
     data: result,
@@ -124,27 +96,33 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           getConf(model, 'trackId'),
           regionStr,
           type,
+          // a string, not the boolean: useFetch reads a `false` anywhere in an
+          // array key as "don't fetch", so the gated state would fetch nothing
+          force ? 'forced' : 'gated',
         ] as const)
       : null,
-    async (_name, _trackId, _regions, fileType, stopToken, statusCallback) => {
-      const res = await fetchTrackData({
+    async (
+      _name,
+      _trackId,
+      _regions,
+      fileType,
+      mode,
+      stopToken,
+      statusCallback,
+    ) =>
+      fetchTrackData({
         model,
         regions,
         type: fileType,
         options,
-        features: featureCache.current,
+        force: mode === 'forced',
         stopToken,
         statusCallback,
-      })
-      // an adapter-exported format hands back no features, and that is not a
-      // reason to drop the ones an earlier format read: `regions` is captured
-      // for the dialog's lifetime, so they still describe this export
-      featureCache.current = res.features ?? featureCache.current
-      return res
-    },
+      }),
   )
+  const tooLarge = result?.tooLarge
   const str = result?.str ?? ''
-  const usedAdapterExport = result?.usedAdapterExport ?? supportsExport
+  const usedAdapterExport = result?.usedAdapterExport ?? false
   const format = type ? options[type] : undefined
 
   return (
@@ -155,8 +133,17 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
       title="Save track data"
       actions={
         <>
+          {tooLarge ? (
+            <Button
+              onClick={() => {
+                setForce(true)
+              }}
+            >
+              Download anyway
+            </Button>
+          ) : null}
           <CopyToClipboardButton
-            disabled={loading || !!error}
+            disabled={loading || !!error || !!tooLarge}
             value={str}
             copiedLabel="Copied!"
             startIcon={<ContentCopyIcon />}
@@ -165,7 +152,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           </CopyToClipboardButton>
           <Button
             variant="contained"
-            disabled={loading || !!error || !format}
+            disabled={loading || !!error || !!tooLarge || !format}
             onClick={() => {
               if (format) {
                 saveAs(
@@ -231,9 +218,11 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           value={
             loading
               ? statusProgressLabel(status) || 'Loading...'
-              : str.length > MAX_PREVIEW_CHARS
-                ? 'File greater than 500kb, too large to view here. Click "Download" to save results to file'
-                : str
+              : tooLarge
+                ? `${regionStr} is an estimated ${getDisplayStr(tooLarge.bytes)} on this track, over the ${getDisplayStr(tooLarge.limit)} this export asks about. Nothing has been downloaded — click "Download anyway" to fetch it.`
+                : str.length > MAX_PREVIEW_CHARS
+                  ? 'File greater than 500kb, too large to view here. Click "Download" to save results to file'
+                  : str
           }
           slotProps={{
             input: {
@@ -243,12 +232,15 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           }}
         />
       </div>
-      <HelpDialog
-        text={helpText}
+      <InfoDialog
+        open={helpText !== undefined}
         onClose={() => {
           setHelpText(undefined)
         }}
-      />
+        title="Format Information"
+      >
+        <DialogContentText>{helpText}</DialogContentText>
+      </InfoDialog>
     </InfoDialog>
   )
 })
