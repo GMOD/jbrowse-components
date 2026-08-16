@@ -2,7 +2,7 @@ import fs from 'node:fs'
 
 import { ENCODING } from './paths.ts'
 
-const { unlink, writeFile, rename } = fs.promises
+const { open, unlink, rename } = fs.promises
 
 // Every JSON file the app owns is rewritten whole — session files and
 // recent_sessions.json once a second for as long as a session is open,
@@ -18,10 +18,22 @@ const { unlink, writeFile, rename } = fs.promises
 // writers (two saves of the same session racing) can't share one.
 let tmpFileCounter = 0
 
+// The rename makes the swap atomic against a *reader*, which is a different
+// guarantee from surviving a crash: the temp file's bytes may still be in the
+// page cache when the rename lands, so a power loss can leave the new name
+// pointing at a zero-length or partial file — the same lost session the rename
+// was added to prevent, just through a narrower window. Flushing the data before
+// the rename is what closes it, and it is cheap next to the write itself.
 export async function writeFileAtomic(filePath: string, data: string) {
   const tmpPath = `${filePath}.${process.pid}.${tmpFileCounter++}.tmp`
   try {
-    await writeFile(tmpPath, data, ENCODING)
+    const handle = await open(tmpPath, 'w')
+    try {
+      await handle.writeFile(data, ENCODING)
+      await handle.sync()
+    } finally {
+      await handle.close()
+    }
     await rename(tmpPath, filePath)
   } catch (e) {
     // the write failed or never landed; don't leave the fragment next to the

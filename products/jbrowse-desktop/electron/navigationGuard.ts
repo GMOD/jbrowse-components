@@ -28,6 +28,28 @@ export function isAppUrl(target: string, appUrl: string) {
   )
 }
 
+/**
+ * Whether a redirect the auth window is following is the one the OAuth flow is
+ * waiting for — the point at which the window is closed and the url (carrying
+ * the authorization code) is handed back to the renderer.
+ *
+ * Compared as origin + path, not `startsWith`. A prefix test also accepts every
+ * url that merely begins with the redirect_uri, so for the `http://localhost/auth`
+ * the desktop flow registers it would have resolved on `http://localhost/authz`
+ * — a different endpoint, and on a redirect chain the provider controls. The
+ * query and fragment are excluded because they are where the code itself
+ * arrives, so they differ by definition.
+ */
+export function isOAuthRedirect(target: string, redirectUri: string) {
+  try {
+    const url = new URL(target)
+    const expected = new URL(redirectUri)
+    return url.origin === expected.origin && url.pathname === expected.pathname
+  } catch {
+    return false
+  }
+}
+
 // shell.openExternal hands the url to the OS, which will happily launch a
 // file:// path in whatever application claims it — so a page must not be able
 // to open one. Only the web protocols a browser would take.

@@ -1,4 +1,8 @@
-import { isAppUrl, isSafeExternalUrl } from './navigationGuard.ts'
+import {
+  isAppUrl,
+  isOAuthRedirect,
+  isSafeExternalUrl,
+} from './navigationGuard.ts'
 
 const packaged = 'file:///opt/JBrowse/resources/app/index.html'
 const dev = 'http://localhost:3000/'
@@ -59,5 +63,45 @@ describe('isSafeExternalUrl', () => {
     expect(isSafeExternalUrl('javascript:alert(1)')).toBe(false)
     expect(isSafeExternalUrl('smb://share/evil.exe')).toBe(false)
     expect(isSafeExternalUrl('garbage')).toBe(false)
+  })
+})
+
+describe('isOAuthRedirect', () => {
+  // what the desktop OAuth flow registers, and what it therefore waits for
+  const redirectUri = 'http://localhost/auth'
+
+  test('the redirect carrying the code is recognized', () => {
+    expect(isOAuthRedirect('http://localhost/auth?code=abc', redirectUri)).toBe(
+      true,
+    )
+    expect(
+      isOAuthRedirect('http://localhost/auth#token=abc', redirectUri),
+    ).toBe(true)
+    expect(isOAuthRedirect(redirectUri, redirectUri)).toBe(true)
+  })
+
+  // the reason this is not `startsWith`: every one of these shares the
+  // redirect_uri as a prefix while naming somewhere else, and the provider
+  // controls the redirect chain
+  test('a url that merely starts with the redirect uri is refused', () => {
+    expect(
+      isOAuthRedirect('http://localhost/authz?code=abc', redirectUri),
+    ).toBe(false)
+    expect(
+      isOAuthRedirect('http://localhost/auth.evil.com/x', redirectUri),
+    ).toBe(false)
+  })
+
+  test('a different origin is refused, scheme included', () => {
+    expect(isOAuthRedirect('http://localhost:8080/auth', redirectUri)).toBe(
+      false,
+    )
+    expect(isOAuthRedirect('https://localhost/auth', redirectUri)).toBe(false)
+    expect(isOAuthRedirect('http://evil.example/auth', redirectUri)).toBe(false)
+  })
+
+  test('unparseable input is refused rather than throwing', () => {
+    expect(isOAuthRedirect('not a url', redirectUri)).toBe(false)
+    expect(isOAuthRedirect('http://localhost/auth', 'not a url')).toBe(false)
   })
 })

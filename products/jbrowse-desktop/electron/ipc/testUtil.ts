@@ -50,6 +50,7 @@ export function makeTestPaths() {
     thumbnailDir: path.join(dir, 'thumbnails'),
     faiDir: path.join(dir, 'fai'),
     autosaveDir: path.join(dir, 'autosaved'),
+    nameIndicesDir: path.join(dir, 'nameIndices'),
     jbrowseDocDir: path.join(dir, 'JBrowse'),
     defaultSavePath: path.join(dir, 'JBrowse', 'untitled.jbrowse'),
   }

@@ -3,8 +3,9 @@ import type {
   IpcPushChannels,
 } from '../electron/ipc/channelTypes.ts'
 
-// `import type` only: channelTypes.ts is erased at build time, so nothing from
-// the main process's tree is bundled into the renderer.
+// `import type` only here. channelTypes.ts is itself import-free, so what the
+// renderer takes from it — these types, and the shared constants elsewhere —
+// never drags the main process's tree along.
 
 // Node's require, available because the window runs with nodeIntegration (see
 // electron/window.ts and src/declare.d.ts). Destructured once here rather than

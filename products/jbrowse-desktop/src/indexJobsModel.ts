@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
 
+import { NAME_INDICES_DIR } from '../electron/ipc/channelTypes.ts'
 import { invokeIpc } from './ipc.ts'
 
 import type { DesktopRootModel } from './rootModel/rootModel.ts'
@@ -295,7 +296,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           const userData = await invokeIpc('userData')
           const outLocation = path.join(
             userData,
-            'nameIndices',
+            NAME_INDICES_DIR,
             `trix-${Date.now()}`,
           )
           fs.mkdirSync(outLocation, { recursive: true })

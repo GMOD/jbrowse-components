@@ -4,7 +4,11 @@ import { pathToFileURL } from 'node:url'
 import { BrowserWindow, Menu, app, shell } from 'electron'
 
 import { checkForUpdatesManually } from './autoUpdater.ts'
-import { isAppUrl, isSafeExternalUrl } from './navigationGuard.ts'
+import {
+  isAppUrl,
+  isOAuthRedirect,
+  isSafeExternalUrl,
+} from './navigationGuard.ts'
 import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
@@ -243,7 +247,7 @@ export function createAuthWindow(
 
   return new Promise(resolve => {
     win.webContents.on('will-redirect', details => {
-      if (details.url.startsWith(params.data.redirect_uri)) {
+      if (isOAuthRedirect(details.url, params.data.redirect_uri)) {
         details.preventDefault()
         resolve(details.url)
         win.close()

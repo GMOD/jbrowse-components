@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import { app } from 'electron'
 
+import { NAME_INDICES_DIR } from './ipc/channelTypes.ts'
 import { SESSION_EXTENSION, hasSessionExtension } from './launchTarget.ts'
 
 /**
@@ -17,6 +18,7 @@ export interface AppPaths {
   thumbnailDir: string
   faiDir: string
   autosaveDir: string
+  nameIndicesDir: string
   jbrowseDocDir: string
   defaultSavePath: string
 }
@@ -33,6 +35,7 @@ export function initializePaths(): AppPaths {
     thumbnailDir: path.join(userData, 'thumbnails'),
     faiDir: path.join(userData, 'fai'),
     autosaveDir: path.join(userData, 'autosaved'),
+    nameIndicesDir: path.join(userData, NAME_INDICES_DIR),
     jbrowseDocDir,
     defaultSavePath: path.join(jbrowseDocDir, 'untitled.jbrowse'),
   }
@@ -162,6 +165,22 @@ export function getFaiPath(paths: AppPaths, name: string) {
 
 export function stringify(obj: unknown) {
   return JSON.stringify(obj, null, 2)
+}
+
+/**
+ * How a session file is serialized, which depends on who the file is for.
+ *
+ * An autosave is written once a second for as long as a session is open, and a
+ * real one here runs to 1.6 MB — the indent is about half of that, spent on a
+ * file nothing but `JSON.parse` ever reads. A file the user named through "Save
+ * session as..." is one they may well open, so it keeps the indent.
+ */
+export function stringifySession(
+  paths: AppPaths,
+  sessionPath: string,
+  snap: unknown,
+) {
+  return isAutosave(paths, sessionPath) ? JSON.stringify(snap) : stringify(snap)
 }
 
 export const ENCODING = 'utf8'

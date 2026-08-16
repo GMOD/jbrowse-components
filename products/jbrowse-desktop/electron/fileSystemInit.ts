@@ -19,6 +19,7 @@ async function ensureDirectoriesExist(paths: AppPaths) {
     paths.faiDir,
     paths.thumbnailDir,
     paths.autosaveDir,
+    paths.nameIndicesDir,
     paths.jbrowseDocDir,
   ]
   await Promise.all(

@@ -7,6 +7,22 @@
 //
 // Keep it that way: an import here would drag the main process's module graph
 // into the web typecheck, or the DOM lib into the electron one.
+//
+// It also holds the few plain constants both processes have to agree on. Those
+// make it a real module in the renderer bundle rather than one erased with its
+// `import type` — which costs nothing precisely because of the rule above: with
+// no imports of its own, the module brings nothing along with it.
+
+/**
+ * The userData subdirectory text-indexing writes its trix output into.
+ *
+ * Here because both processes need it and neither can import the other's copy:
+ * the renderer builds the output path (it holds the job), and the main process
+ * has to know the directory in order to clear it on a factory reset. Two
+ * spellings of one literal is how it came to be written by one and cleaned up by
+ * neither.
+ */
+export const NAME_INDICES_DIR = 'nameIndices'
 
 export interface RecentSession {
   path: string

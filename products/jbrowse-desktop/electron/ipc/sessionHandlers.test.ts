@@ -457,3 +457,85 @@ test('the session is written without waiting for the thumbnail capture', async (
   // and the thumbnail still lands, because the handler awaits it too
   expect(fs.existsSync(getThumbnailPath(paths, sessionPath))).toBe(true)
 })
+
+// The autosave rewrites the whole session once a second for as long as one is
+// open, and a real session file runs to ~1.6 MB. What the tests below pin is the
+// part of that cost the handler can decline to pay without the user noticing.
+
+test('re-saving identical bytes does not rewrite the session file', async () => {
+  const sessionPath = path.join(dir, 'repeat.jbrowse')
+  const snap: SessionSnap = {
+    assemblies: [],
+    defaultSession: { name: 'repeat' },
+  }
+
+  await invoke('saveSession', sessionPath, snap)
+  const first = fs.statSync(sessionPath).mtimeMs
+  // the double write this exists for: quitting flushes, then the close that the
+  // quit triggers is held for a second flush of the very same snapshot
+  await invoke('saveSession', sessionPath, snap)
+
+  expect(fs.statSync(sessionPath).mtimeMs).toBe(first)
+})
+
+test('a changed session is still written', async () => {
+  const sessionPath = path.join(dir, 'changed.jbrowse')
+  await invoke('saveSession', sessionPath, {
+    assemblies: [],
+    defaultSession: { name: 'changed' },
+  })
+  await invoke('saveSession', sessionPath, {
+    assemblies: [],
+    defaultSession: { name: 'changed' },
+    tracks: ['added'],
+  })
+
+  const snap = JSON.parse(fs.readFileSync(sessionPath, 'utf8')) as {
+    tracks?: string[]
+  }
+  expect(snap.tracks).toEqual(['added'])
+})
+
+// A repeat save of one path moves nothing in its row but `updated`, which only
+// sorts the start screen's cards — so the list does not have to be rewritten for
+// it. The row still has to appear on the first save, and still has to follow a
+// rename, which is what the two halves here check.
+test('a repeat autosave leaves recent_sessions.json alone, but a rename lands', async () => {
+  const sessionPath = path.join(dir, 'listed.jbrowse')
+
+  await invoke('saveSession', sessionPath, {
+    assemblies: [],
+    defaultSession: { name: 'listed' },
+  })
+  const listed = fs.statSync(paths.recentSessionsPath).mtimeMs
+  expect(await invoke('listSessions')).toHaveLength(1)
+
+  await invoke('saveSession', sessionPath, {
+    assemblies: [],
+    defaultSession: { name: 'listed' },
+    tracks: ['edited'],
+  })
+  expect(fs.statSync(paths.recentSessionsPath).mtimeMs).toBe(listed)
+
+  await invoke('saveSession', sessionPath, {
+    assemblies: [],
+    defaultSession: { name: 'renamed' },
+  })
+  const rows = (await invoke('listSessions')) as { name?: string }[]
+  expect(rows[0]!.name).toBe('renamed')
+})
+
+// An autosave is machine-written and reread only by JSON.parse, so it carries no
+// indent; a file the user picked a name for is one they may open.
+test('an autosave is compact and a saved-as session is indented', async () => {
+  fs.mkdirSync(paths.autosaveDir, { recursive: true })
+  const snap: SessionSnap = { assemblies: [], defaultSession: { name: 'fmt' } }
+
+  const autosave = path.join(paths.autosaveDir, '1.json')
+  await invoke('saveSession', autosave, snap)
+  expect(fs.readFileSync(autosave, 'utf8')).not.toContain('\n')
+
+  const savedAs = path.join(dir, 'chosen.jbrowse')
+  await invoke('saveSession', savedAs, snap)
+  expect(fs.readFileSync(savedAs, 'utf8')).toContain('\n')
+})

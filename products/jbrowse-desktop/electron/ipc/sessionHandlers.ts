@@ -11,6 +11,7 @@ import {
   isSessionFile,
   newAutosavePath,
   stringify,
+  stringifySession,
 } from '../paths.ts'
 import { logError } from '../util.ts'
 import { writeFileAtomic } from '../writeFileAtomic.ts'
@@ -155,6 +156,50 @@ function updateRecentSessions(
   })
 }
 
+// How stale a recent-sessions row's `updated` may get while its session is being
+// autosaved. Nothing but that timestamp changes on a repeat save of one path, and
+// it only feeds "last used" sorting on the start screen, so rewriting the whole
+// list once a second for it was the second-largest write in the app.
+const RECENT_SESSION_TOUCH_MS = 30_000
+
+// What the last saveSession put on disk, so a save that would rewrite a file
+// with what is already in it can skip the write, and one that would only move a
+// recent row's timestamp can skip that too.
+//
+// One slot rather than a map keyed by path, because `data` is the whole
+// serialized session — 1.6 MB for a real one — and a map would retain that per
+// session path for the life of the process. A slot is also all the throttling
+// needs: only one session is open at a time, so every save it can help with is a
+// save of the same path as the one before it. Same shape as `lastThumbnail`.
+let lastSave:
+  | { path: string; data: string; row: RecentSession | undefined }
+  | undefined
+
+// Whether this save has to reach recent_sessions.json. The first save of a path
+// always does — that is the row that puts the session on the start screen — as
+// does one whose name changed, since the row carries it.
+function needsRecentSessionTouch(entry: RecentSession) {
+  const previous = lastSave?.path === entry.path ? lastSave.row : undefined
+  return (
+    !previous ||
+    previous.name !== entry.name ||
+    entry.updated - previous.updated >= RECENT_SESSION_TOUCH_MS
+  )
+}
+
+// The slot describes what saveSession last put on disk, so anything that changes
+// those files another way has to drop it — otherwise the next save reads its own
+// stale answer and skips a write that was needed.
+function forgetSessionWrites(sessionPaths: string[]) {
+  if (lastSave && sessionPaths.includes(lastSave.path)) {
+    lastSave = undefined
+  }
+}
+
+function forgetAllSessionWrites() {
+  lastSave = undefined
+}
+
 export function registerSessionHandlers(
   paths: AppPaths,
   getMainWindow: () => Electron.BrowserWindow | null,
@@ -211,12 +256,34 @@ export function registerSessionHandlers(
     // last second of edits before the app goes away. Awaiting a cosmetic
     // thumbnail ahead of the session bytes put that at the back of the queue.
     const thumbnail = captureThumbnail(getMainWindow(), sessionPath)
+    const serialized = stringifySession(paths, sessionPath, snap)
+    const samePath = lastSave?.path === sessionPath
+    const unchanged = samePath && lastSave?.data === serialized
+    const touchRecents = needsRecentSessionTouch(entry)
+    // Recorded before the awaits, so two saves racing (the quit flush behind the
+    // autosave) can't both decide they are the one that has to write. A rejected
+    // write clears it below rather than leaving the file described by bytes that
+    // never landed.
+    lastSave = {
+      path: sessionPath,
+      data: serialized,
+      row: touchRecents ? entry : samePath ? lastSave?.row : undefined,
+    }
 
     await Promise.all([
-      updateRecentSessions(paths.recentSessionsPath, rows =>
-        upsertRecentSession(rows, entry),
-      ),
-      writeFileAtomic(sessionPath, stringify(snap)),
+      touchRecents
+        ? updateRecentSessions(paths.recentSessionsPath, rows =>
+            upsertRecentSession(rows, entry),
+          )
+        : undefined,
+      unchanged
+        ? undefined
+        : writeFileAtomic(sessionPath, serialized).catch((e: unknown) => {
+            // the file is not what the slot now claims, so the next save has to
+            // write rather than read this back as already-on-disk
+            forgetSessionWrites([sessionPath])
+            throw e
+          }),
       // Thumbnail is cosmetic like the capturePage that produced it: a failed
       // write (e.g. an over-long path on Windows) must not reject the session
       // save. Still awaited as part of this handler, so a quit that waits for
@@ -230,6 +297,7 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('deleteSessions', async (_, sessionPaths) => {
+    forgetSessionWrites(sessionPaths)
     await Promise.all([
       updateRecentSessions(paths.recentSessionsPath, rows =>
         rows.filter(s => !sessionPaths.includes(s.path)),
@@ -275,9 +343,16 @@ export function registerSessionHandlers(
       rows[idx]!.name = newName
       session.defaultSession.name = newName
 
+      // this writes both files behind saveSession's back, so what it cached
+      // about them no longer describes what is on disk
+      forgetSessionWrites([sessionPath])
+
       await Promise.all([
         writeFileAtomic(paths.recentSessionsPath, stringify(rows)),
-        writeFileAtomic(sessionPath, stringify(session)),
+        writeFileAtomic(
+          sessionPath,
+          stringifySession(paths, sessionPath, session),
+        ),
       ])
     })
   })
@@ -303,14 +378,21 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('reset', async () => {
-    // Every directory of app-generated files. faiDir belongs here and was
-    // missing: indexFasta writes one .fai per FASTA opened — the name carries a
-    // timestamp, so re-opening the same file writes another — and nothing else
-    // ever removes them. They are derived from the user's own FASTA and get
-    // rebuilt on next open, so a factory reset should not be the one thing that
-    // leaves them behind.
-    const generatedDirs = [paths.autosaveDir, paths.thumbnailDir, paths.faiDir]
-    const filesToDelete = (
+    // Every directory of app-generated files, each of them one nothing else ever
+    // prunes. faiDir: indexFasta writes one .fai per FASTA opened, its name
+    // carrying a timestamp, so re-opening the same file writes another.
+    // nameIndicesDir: every text-indexing run writes a whole trix-<timestamp>
+    // directory, re-indexing the same track included, and those run to hundreds
+    // of megabytes for a large GFF — the biggest thing a reset used to leave
+    // behind, and the one nothing in the app could remove. All of it is derived
+    // from the user's own files and rebuilt on demand.
+    const generatedDirs = [
+      paths.autosaveDir,
+      paths.thumbnailDir,
+      paths.faiDir,
+      paths.nameIndicesDir,
+    ]
+    const toDelete = (
       await Promise.all(
         generatedDirs.map(async dir =>
           (await fs.promises.readdir(dir).catch(() => [])).map(f =>
@@ -319,13 +401,20 @@ export function registerSessionHandlers(
         ),
       )
     ).flat()
+    // saveSession's caches describe files that are about to stop existing
+    forgetAllSessionWrites()
     await Promise.all([
       updateRecentSessions(paths.recentSessionsPath, () => []),
       // a global plugin loads into every session, so one that crashes on load
       // makes the app unusable and a reset that left it installed would come
       // back to the same crash having cost the user their sessions
       writeGlobalPlugins(paths),
-      ...filesToDelete.map(f => unlink(f).catch(logError)),
+      // rm, not unlink: a trix output is a directory, and unlink refuses one —
+      // so the entries this handler most needs to remove are the ones a plain
+      // unlink would have logged an EISDIR for and left in place
+      ...toDelete.map(f =>
+        fs.promises.rm(f, { recursive: true, force: true }).catch(logError),
+      ),
     ])
   })
 }
