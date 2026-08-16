@@ -1,7 +1,9 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 
 import { ErrorBanner, ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
+import { createFrameCoalescer } from '@jbrowse/core/util/frameCoalescer'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import { observer } from 'mobx-react'
 
 import Controls from './Controls.tsx'
@@ -148,36 +150,66 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   const pressRef = useRef<{ x: number; y: number } | undefined>(undefined)
   const [isDragging, setIsDragging] = useState(false)
 
-  // non-passive wheel listener so we can call preventDefault()
+  // Non-passive wheel listener so we can call preventDefault(). The handler only
+  // accumulates: one model write per animation frame, not per event. A trackpad
+  // burst is dozens of events between paints, and each write re-lays every slice
+  // and redraws every chord — a whole-genome callset is tens of thousands of
+  // them. `createFrameCoalescer` also owns the cancel, without which a view
+  // closed mid-fling flushes into a destroyed MST node.
   useEffect(() => {
     const el = containerRef.current
     if (!el) {
       return
     }
+    const frame = createFrameCoalescer()
+    let rotateDelta = 0
+    let zoomDelta = 0
+    let anchor: readonly [number, number] = [0, 0]
     const onWheel = (event: WheelEvent) => {
-      const rect = el.getBoundingClientRect()
-      const [dx, dy] = offsetFromCenter(model, rect, event)
-      const distFromCenter = Math.hypot(dx, dy)
-      if (distFromCenter > model.radiusPx + model.effectivePaddingPx) {
+      if (!frame.pending) {
+        // measured once per frame, behind the pending check:
+        // getBoundingClientRect forces a synchronous reflow, and a burst
+        // reaching it per event is what trips "[Violation] 'wheel' handler took
+        // Nms"
+        anchor = offsetFromCenter(model, el.getBoundingClientRect(), event)
+      }
+      const [dx, dy] = anchor
+      if (Math.hypot(dx, dy) > model.radiusPx + model.effectivePaddingPx) {
         return
       }
       event.preventDefault()
+      // `deltaX`/`deltaY` are only pixels when `deltaMode` says so. Firefox
+      // reports whole lines for a mouse wheel — `deltaMode: 1`, `deltaY: ±3` —
+      // where Chrome reports `deltaMode: 0`, `deltaY: ±100`, so the raw number
+      // zoomed 0.3% of a notch there against Chrome's 10%
+      const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
+      const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
       // whichever axis dominates, and only that one. A trackpad's horizontal
       // swipe carries a little vertical noise (and vice versa), so running both
       // arms meant every rotation gesture also crept the zoom
-      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-        model.rotate(event.deltaX * 0.003)
-      } else if (event.deltaY !== 0) {
-        model.zoomToPoint(
-          model.bpPerPx * Math.exp(event.deltaY * 0.001),
-          dx,
-          dy,
-        )
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        rotateDelta += deltaX
+      } else {
+        zoomDelta += deltaY
       }
+      frame.schedule(() => {
+        const [ax, ay] = anchor
+        if (rotateDelta) {
+          model.rotate(rotateDelta * 0.003)
+        }
+        if (zoomDelta) {
+          // exp is multiplicative, so a frame's deltas summed zoom by exactly
+          // what applying each in turn would have
+          model.zoomToPoint(model.bpPerPx * Math.exp(zoomDelta * 0.001), ax, ay)
+        }
+        rotateDelta = 0
+        zoomDelta = 0
+      })
     }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => {
       el.removeEventListener('wheel', onWheel)
+      frame.cancel()
     }
   }, [model])
 
@@ -187,7 +219,13 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     return Math.atan2(dy, dx)
   }
 
+  // primary button only: a right-press latched a press the move handler's
+  // `buttons === 0` check waves through, so a right-drag spun the figure under
+  // the context menu it also opened
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (event.button !== 0) {
+      return
+    }
     pressRef.current = { x: event.clientX, y: event.clientY }
     lastAngleRef.current = angleFromCenter(event.clientX, event.clientY)
   }

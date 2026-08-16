@@ -36,25 +36,32 @@ const twoPi = 2 * Math.PI
 // browser can lay out
 const maximumRadiusPx = 5000
 
-// Where the middle of the circle lands vertically in a box of this height,
-// before the zoom-to-cursor pan.
+// Where the middle of the circle lands vertically in a box of this size, before
+// the zoom-to-cursor pan.
 //
-// The figure hangs from the TOP whenever the box is taller than it, and only
-// centers once the figure is bigger than the box. `autoFit` sizes the figure to
-// `min(width, height)`, so exactly one axis ever has slack — and it is the
-// height precisely when the view is TALLER than it is wide, which is the SV
-// inspector's circular pane beside a full-height spreadsheet. Splitting that
-// slack evenly left the chord plot floating in the middle of its pane with
-// nothing above or below it. The `Math.min(0, …)` keeps the centering where it
-// was load-bearing: a figure zoomed past its box still overflows top and bottom
-// equally rather than only off the bottom.
+// Centered, except in a box TALLER than it is wide, where a figure smaller than
+// the box hangs from the TOP instead. `autoFit` sizes the figure to
+// `min(width, height)`, so exactly one axis ever has slack, and it is the height
+// precisely when the view is taller than it is wide — the SV inspector's
+// circular pane beside a full-height spreadsheet. Splitting that slack evenly
+// left the chord plot floating in the middle of its pane with nothing above or
+// below it.
 //
-// The consequence is that this middle MOVES with the figure's size while the
-// figure is smaller than the box, which the horizontal middle (`width / 2`)
-// never does. `zoomToPoint` has to undo that or the drawing slides down as it
-// grows — hence one function both callers read.
-function figureMiddleY(height: number, figureSize: number) {
-  return Math.min(0, (height - figureSize) / 2) + figureSize / 2
+// The width comparison is what keeps the top-hang out of a WIDE box. There the
+// height has slack only once the user has zoomed out below the fit, and hanging
+// from the top then pinned a shrinking circle to the top edge of an 800x400 view
+// with 200px of nothing under it. The `Math.min(0, …)` keeps the centering where
+// it was load-bearing in the tall box too: a figure zoomed past its box still
+// overflows top and bottom equally rather than only off the bottom.
+//
+// The consequence is that in a tall box this middle MOVES with the figure's
+// size while the figure is smaller than the box, which the horizontal middle
+// (`width / 2`) never does. `zoomToPoint` has to undo that or the drawing slides
+// down as it grows — hence one function both callers read.
+function figureMiddleY(width: number, height: number, figureSize: number) {
+  return height > width
+    ? Math.min(0, (height - figureSize) / 2) + figureSize / 2
+    : height / 2
 }
 
 // lazies
@@ -443,14 +450,16 @@ function stateModelFactory(pluginManager: PluginManager) {
        * Centered horizontally: a view much wider than it is tall would
        * otherwise leave the circle jammed in the corner under the controls.
        *
-       * Vertically it hangs from the top of a box taller than itself — see
+       * Vertically it hangs from the top of a box taller than it is wide — see
        * `figureMiddleY`, which `zoomToPoint` reads for the same reason.
        */
       get figureOriginXY(): [number, number] {
         const { figureSize } = this
         return [
           (this.width - figureSize) / 2 + self.panX,
-          figureMiddleY(self.height, figureSize) - figureSize / 2 + self.panY,
+          figureMiddleY(this.width, self.height, figureSize) -
+            figureSize / 2 +
+            self.panY,
         ]
       },
       /**
@@ -789,7 +798,11 @@ function stateModelFactory(pluginManager: PluginManager) {
       zoomToPoint(newBpPerPx: number, cursorX: number, cursorY: number) {
         self.autoFit = false
         const oldRadiusPx = self.radiusPx
-        const oldMiddleY = figureMiddleY(self.height, self.figureSize)
+        const oldMiddleY = figureMiddleY(
+          self.width,
+          self.height,
+          self.figureSize,
+        )
         this.setBpPerPx(newBpPerPx)
         if (!oldRadiusPx) {
           return
@@ -802,15 +815,15 @@ function stateModelFactory(pluginManager: PluginManager) {
         // radius change.
         const scale = self.radiusPx / oldRadiusPx
         // Horizontally the middle is `width / 2` whatever the figure's size, so
-        // the offset term is the whole story. Vertically it is not: while the
-        // figure is smaller than its box it hangs from the top, so growing it
+        // the offset term is the whole story. Vertically it is not: in a tall
+        // box a figure smaller than the box hangs from the top, so growing it
         // slides the middle down by half the growth and drags the point under
         // the cursor with it. That is the tall-box case the top-hang exists for.
         self.panX += cursorX * (1 - scale)
         self.panY +=
           cursorY * (1 - scale) +
           oldMiddleY -
-          figureMiddleY(self.height, self.figureSize)
+          figureMiddleY(self.width, self.height, self.figureSize)
       },
 
       /**

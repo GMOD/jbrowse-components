@@ -104,6 +104,33 @@ test('a taller-than-wide box hangs the figure from the top', () => {
   expect(originY).toBe(0)
 })
 
+// The top-hang belongs to the tall pane and nowhere else. A WIDE box has
+// vertical slack too as soon as the user zooms out below the fit, and hanging
+// from the top there pinned a shrinking circle to the top edge with half the box
+// blank underneath.
+test('a wider-than-tall box keeps the figure centered when zoomed out', () => {
+  const view = createView({ regions: [region('chr1', 1_000_000)] })
+  view.zoomOutButton()
+  view.zoomOutButton()
+  view.zoomOutButton()
+  const [, originY] = view.figureOriginXY
+  expect(view.figureSize).toBeLessThan(view.height / 1.5)
+  expect(originY).toBeCloseTo((view.height - view.figureSize) / 2)
+})
+
+// and the tall pane still hangs, which is the whole reason the rule exists
+test('a taller-than-wide box still hangs the figure from the top zoomed out', () => {
+  const view = createView({
+    regions: [region('chr1', 1_000_000)],
+    width: 300,
+    height: 900,
+  })
+  view.zoomOutButton()
+  const [, originY] = view.figureOriginXY
+  expect(view.figureSize).toBeLessThan(300)
+  expect(originY).toBe(0)
+})
+
 // and the case the centering is still there for: a figure bigger than its box
 // overflows top and bottom equally rather than only off the bottom.
 //

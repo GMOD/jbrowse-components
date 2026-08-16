@@ -85,7 +85,7 @@ the whole surface.
 | <span id="getter-atmaxbpperpx">**atMaxBpPerPx**</span><br><code>boolean</code> |  |
 | <span id="getter-atminbpperpx">**atMinBpPerPx**</span><br><code>boolean</code> |  |
 | <span id="getter-figuresize">**figureSize**</span><br><code>number</code> | figure is always square, so width === height |
-| <span id="getter-figureoriginxy">**figureOriginXY**</span><br><code>[number, number]</code> | top-left of the figure within the view's box, then shifted by the zoom-to-cursor pan.<br><br>Centered horizontally: a view much wider than it is tall would otherwise leave the circle jammed in the corner under the controls.<br><br>Vertically it hangs from the top of a box taller than itself — see `figureMiddleY`, which `zoomToPoint` reads for the same reason. |
+| <span id="getter-figureoriginxy">**figureOriginXY**</span><br><code>[number, number]</code> | top-left of the figure within the view's box, then shifted by the zoom-to-cursor pan.<br><br>Centered horizontally: a view much wider than it is tall would otherwise leave the circle jammed in the corner under the controls.<br><br>Vertically it hangs from the top of a box taller than it is wide — see `figureMiddleY`, which `zoomToPoint` reads for the same reason. |
 | <span id="getter-elidedregions">**elidedRegions**</span><br><code>SliceRegion[]</code> | this is displayedRegions, post-processed to elide regions that are too small to see reasonably |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
 | <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  |
