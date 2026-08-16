@@ -1,6 +1,6 @@
 import { max, toLocale } from '@jbrowse/core/util'
 
-import type { Slice } from './slices.ts'
+import type { Slice, SliceRegion } from './slices.ts'
 
 // The label geometry `Ruler.tsx` draws with, kept here rather than there so the
 // SVG export can measure a figure without importing a component module (which
@@ -33,11 +33,32 @@ export function labelIsDrawn(text: string, maxWidthPx: number) {
   return !!text && maxWidthPx > 4
 }
 
-// the text a slice labels itself with: its refName, or how many regions the
-// elision swallowed
-export function sliceLabelText(slice: Slice) {
-  const { region } = slice
+// the text a region labels itself with: its refName, or how many regions the
+// elision swallowed. Taken off the region rather than the slice so the padding
+// can reserve room for the labels before there is any geometry to build slices
+// from — see `maxLabelGutterPx`
+export function regionLabelText(region: SliceRegion) {
   return region.elided ? `[${toLocale(region.regions.length)}]` : region.refName
+}
+
+export function sliceLabelText(slice: Slice) {
+  return regionLabelText(slice.region)
+}
+
+/**
+ * The most room this figure's labels could need outside the ruler arc, from the
+ * label TEXT alone.
+ *
+ * An upper bound, and geometry-free on purpose: what a label really needs
+ * depends on whether it fits along its own arc, which depends on the radius,
+ * which depends on the padding this is used to decide. Breaking that cycle
+ * costs a little slack on a figure whose labels all fit tangentially, and buys
+ * an on-screen circle that cannot grow into its own labels — the centre sits at
+ * `radiusPx + padding`, so a label reaching further than the padding is drawn
+ * at a negative x and clipped by the box.
+ */
+export function maxLabelGutterPx(labels: string[]) {
+  return labelOffsetPx + max(labels.map(labelWidthPx), 0)
 }
 
 /**

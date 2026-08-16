@@ -389,15 +389,18 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'CHROM',
     readyTimeout: 60000,
     settleMs: 15000,
+    // the view is its default 550px tall and the run reported 185 css px of
+    // blank under it at the 800px default
+    viewportHeight: 615,
   },
 
   // Same SKBR3 SV inspector as above, but with the spreadsheet quick-filter
   // applied. This SKBR3 sniffles set is all translocations, so the filter
-  // subsets by chromosome: typing "X" narrows the table to the calls involving
-  // chrX (matching the CHROM / INFO CHR2 columns — "X" doesn't appear in the
-  // numeric POS/ID columns), and the circular overview redraws to only those
-  // chords. Replaces a stale hand-curated capture of the old labeled "text
-  // filter" UI (the app now uses the MUI DataGrid quick-filter).
+  // subsets by chromosome: typing "X" narrows the table to the calls that
+  // TOUCH chrX at either end, which is what the Mate column made searchable —
+  // it carries the far end of each breakend, so a record leaving chr1 for chrX
+  // is found by the chromosome it reaches rather than only by the one it is
+  // filed under. The circular overview redraws to those chords.
   {
     mode: 'url',
     name: 'sv_inspector_importform_filtered',
@@ -422,6 +425,7 @@ export const svSpecs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 4000 },
     ],
+    viewportHeight: 615,
   },
 
   // Before/after horizontal flip, as two independent declarative sessions

@@ -3,6 +3,8 @@ import { autorun } from 'mobx'
 
 import stateModelFactory from './SpreadsheetModel.tsx'
 
+import type { Row } from './SpreadsheetModel.tsx'
+
 const SpreadsheetStateModel = stateModelFactory()
 
 function makeModel(overrides = {}) {
@@ -266,7 +268,7 @@ test('setSvTypeFilter stores the selected value', () => {
 describe('the junctions the sheet can walk', () => {
   const assembly = { initialized: true, getCanonicalRefName2: (r: string) => r }
 
-  function sheetWith(rows: unknown[]) {
+  function sheetWith(rows: Row[]) {
     const Model = stateModelFactory()
     const Session = types
       .model({

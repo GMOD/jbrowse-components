@@ -20,6 +20,7 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
+import { maxLabelGutterPx, regionLabelText } from './rulerLabels.ts'
 import { calculateStaticSlices } from './slices.ts'
 
 import type { SliceRegion } from './slices.ts'
@@ -328,7 +329,16 @@ function stateModelFactory(pluginManager: PluginManager) {
         const halfBox = Math.min(self.width, self.height) / 2
         return Math.min(
           self.paddingPx,
-          Math.max(minPaddingPx, halfBox * maxPaddingFraction),
+          Math.max(
+            minPaddingPx,
+            halfBox * maxPaddingFraction,
+            // never below what the ruler labels reach. The centre sits at
+            // `radiusPx + padding`, so a label needing more than the padding is
+            // drawn at a negative x and the box clips it — which is what
+            // shrinking the padding at all did to `chr15`..`chr17` on the SV
+            // tutorial's figure
+            maxLabelGutterPx(this.elidedRegions.map(regionLabelText)),
+          ),
         )
       },
       /**

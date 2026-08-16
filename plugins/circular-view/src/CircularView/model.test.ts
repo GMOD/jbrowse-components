@@ -295,3 +295,25 @@ describe('the fixed-pixel geometry gives way in a small box', () => {
     expect(last.endRadians + gapRadians).toBeCloseTo(2 * Math.PI, 5)
   })
 })
+
+// The centre sits at `radiusPx + padding`, so a label reaching further than the
+// padding is drawn at a negative x and clipped by the box. Shrinking the padding
+// for a small box did exactly that to the SV tutorial's figure.
+test('the padding never shrinks below what the ruler labels reach', () => {
+  const long = Array.from({ length: 24 }, (_, i) =>
+    region(`NC_0000${i + 1}.11_alt_scaffold`, 130_000_000),
+  )
+  const view = createView({ regions: long, width: 475, height: 316 })
+  // room for the longest label, which is far more than a fifth of this half-box
+  expect(view.effectivePaddingPx).toBeGreaterThan((316 / 2) * 0.2)
+  // and still never more than the view declared
+  expect(view.effectivePaddingPx).toBeLessThanOrEqual(view.paddingPx)
+})
+
+test('short labels leave the padding free to shrink', () => {
+  const short = Array.from({ length: 24 }, (_, i) =>
+    region(`chr${i + 1}`, 130_000_000),
+  )
+  const view = createView({ regions: short, width: 475, height: 316 })
+  expect(view.effectivePaddingPx).toBeLessThan(view.paddingPx)
+})
