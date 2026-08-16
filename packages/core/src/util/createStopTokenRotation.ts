@@ -1,13 +1,19 @@
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { observable, runInAction } from 'mobx'
 
-import { createGuardedStatusSink, createStatusThrottle } from './progress.ts'
+import {
+  createGuardedStatusSink,
+  createStatusThrottle,
+  statusFraction,
+  statusMessageText,
+} from './progress.ts'
 import { createStopToken, stopStopToken } from './stopToken.ts'
 
 import type { RpcStatus } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-interface StatusReporter {
+export interface StatusReporter {
   setStatusMessage: (status?: RpcStatus) => void
   /**
    * `FetchMixin`'s model-wide guarded sink, present on any display composing
@@ -23,6 +29,60 @@ interface StatusReporter {
   makeStatusCallback?: (isCurrent: () => boolean) => (status: RpcStatus) => void
   /** `FetchMixin`'s `throttle.runNow`, paired with `makeStatusCallback` */
   flushStatus?: (apply: () => void) => void
+}
+
+/**
+ * A {@link StatusReporter} a model can hold in **one** volatile, for something
+ * that has one operation to narrate and no reason to grow a status vocabulary
+ * of its own.
+ *
+ * The alternative is what every display does: two volatiles and an action that
+ * calls {@link statusMessageText} and {@link statusFraction}. That is the right
+ * shape where the fields are part of the model's own surface — `BaseDisplay`
+ * and `FetchMixin` declare them because half the display API reads them, and
+ * ADR-041 is why those two keep their own copies rather than sharing a mixin.
+ * It is a lot of declaration for a view that wants a corner chip while one
+ * fetch runs.
+ *
+ * A plain function rather than a mixin, for the reason ADR-041 gives: a compose
+ * layer is what the model chains here cannot afford. Holding it costs one
+ * `.volatile` line, and `ProgressChip` takes `message`/`fraction` straight off
+ * it.
+ */
+export interface StatusChannel extends StatusReporter {
+  readonly message: string | undefined
+  readonly fraction: number | undefined
+}
+
+export function createStatusChannel(): StatusChannel {
+  // MobX rather than MST, so this is a value a model can hold rather than a
+  // node it has to parent. A volatile is `observable.ref`, so the fields have
+  // to be observable in their own right for a component to see them move.
+  const state = observable(
+    {
+      message: undefined as string | undefined,
+      fraction: undefined as number | undefined,
+    },
+    {},
+    { deep: false },
+  )
+  return {
+    get message() {
+      return state.message
+    },
+    get fraction() {
+      return state.fraction
+    },
+    setStatusMessage(status?: RpcStatus) {
+      // its own action: the rotation calls this from a status callback, which
+      // fires after an await and so outside whatever MST action started the
+      // fetch
+      runInAction(() => {
+        state.message = statusMessageText(status)
+        state.fraction = statusFraction(status)
+      })
+    },
+  }
 }
 
 export interface ActiveFetch {
@@ -78,11 +138,21 @@ export interface ActiveFetch {
  * loading/error/commit side-effects in its autorun. Used by any bare-autorun
  * fetch: the comparative-view displays (dotplot, synteny, through
  * `installComparativeFetchAutorun`, which wraps this with their shared
- * debounce/flags/commit skeleton) and the multi-sample-variant sources fetch.
- * The latter is on a display that DOES compose `FetchMixin`, which is what
- * `makeStatusCallback` on the host type is for — see there.
+ * debounce/flags/commit skeleton), the multi-sample-variant sources fetch, and
+ * the breakpoint split view's overlay-feature fetch.
+ *
+ * `report` is passed rather than read off `self`, so where the status lands is
+ * the caller's decision and not a shape this imposes. A display passes itself —
+ * its status fields are part of its own API, and one composing `FetchMixin`
+ * passes the model-wide window along with them (see `makeStatusCallback`).
+ * Anything with one operation to narrate and no status vocabulary of its own
+ * passes a {@link createStatusChannel}, which is one volatile instead of two
+ * fields and an action.
  */
-export function createStopTokenRotation(self: IStateTreeNode & StatusReporter) {
+export function createStopTokenRotation(
+  self: IStateTreeNode,
+  report: StatusReporter,
+) {
   let currentStopToken: StopToken | undefined
   // One window for this display, reopened per fetch so each new fetch reports
   // its first status immediately. Without it these displays wrote an observable
@@ -93,8 +163,8 @@ export function createStopTokenRotation(self: IStateTreeNode & StatusReporter) {
   // so that display has one window rather than two writing one field.
   const throttle = createStatusThrottle()
   const flush = (apply: () => void) => {
-    if (self.flushStatus) {
-      self.flushStatus(apply)
+    if (report.flushStatus) {
+      report.flushStatus(apply)
     } else {
       throttle.runNow(apply)
     }
@@ -102,7 +172,7 @@ export function createStopTokenRotation(self: IStateTreeNode & StatusReporter) {
   const clearStatus = () => {
     flush(() => {
       if (isAlive(self)) {
-        self.setStatusMessage(undefined)
+        report.setStatusMessage(undefined)
       }
     })
   }
@@ -132,11 +202,11 @@ export function createStopTokenRotation(self: IStateTreeNode & StatusReporter) {
         stopToken,
         isCurrent,
         statusCallback:
-          self.makeStatusCallback?.(isCurrent) ??
+          report.makeStatusCallback?.(isCurrent) ??
           createGuardedStatusSink({
             isCurrent,
             sink: status => {
-              self.setStatusMessage(status)
+              report.setStatusMessage(status)
             },
             throttle,
           }),

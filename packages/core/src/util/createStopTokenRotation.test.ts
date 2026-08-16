@@ -1,6 +1,9 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { createStopTokenRotation } from './createStopTokenRotation.ts'
+import {
+  createStatusChannel,
+  createStopTokenRotation,
+} from './createStopTokenRotation.ts'
 import { isStopped } from './stopToken.ts'
 
 import type { RpcStatus } from './progress.ts'
@@ -23,8 +26,15 @@ function makeHost() {
   return Model.create({})
 }
 
+// the display case: the node and the reporter are the same object, because a
+// display's status fields are part of its own API
+function hostAndReporter() {
+  const host = makeHost()
+  return [host, host] as const
+}
+
 test('begin() stops the fetch it supersedes and un-currents its guard', () => {
-  const rotation = createStopTokenRotation(makeHost())
+  const rotation = createStopTokenRotation(...hostAndReporter())
   const first = rotation.begin()
   expect(first.isCurrent()).toBe(true)
   const second = rotation.begin()
@@ -39,7 +49,7 @@ test('begin() stops the fetch it supersedes and un-currents its guard', () => {
 // a display's life retains its blob URL and every AbortController taken against
 // it for the life of the document.
 test('dispose() stops the token the last fetch is still holding', () => {
-  const rotation = createStopTokenRotation(makeHost())
+  const rotation = createStopTokenRotation(...hostAndReporter())
   const { stopToken } = rotation.begin()
   expect(isStopped(stopToken)).toBe(false)
   rotation.dispose()
@@ -48,7 +58,7 @@ test('dispose() stops the token the last fetch is still holding', () => {
 
 test('dispose() is safe when no fetch ever began', () => {
   expect(() => {
-    createStopTokenRotation(makeHost()).dispose()
+    createStopTokenRotation(...hostAndReporter()).dispose()
   }).not.toThrow()
 })
 
@@ -65,7 +75,7 @@ describe('the status window', () => {
 
   test('a superseded fetch cannot repaint the status', () => {
     const host = makeHost()
-    const rotation = createStopTokenRotation(host)
+    const rotation = createStopTokenRotation(host, host)
     const first = rotation.begin()
     rotation.begin()
     first.statusCallback('Downloading')
@@ -75,7 +85,7 @@ describe('the status window', () => {
 
   test('each fetch reopens the window, so its first status lands at once', () => {
     const host = makeHost()
-    const rotation = createStopTokenRotation(host)
+    const rotation = createStopTokenRotation(host, host)
     rotation.begin().statusCallback('Downloading')
     expect(host.statusMessage).toBe('Downloading')
     // same tick: without the reset in begin() this would be thinned out
@@ -89,7 +99,7 @@ describe('the status window', () => {
   test('dispose() drops a queued trailing write', () => {
     jest.useFakeTimers()
     const host = makeHost()
-    const rotation = createStopTokenRotation(host)
+    const rotation = createStopTokenRotation(host, host)
     const { statusCallback } = rotation.begin()
     statusCallback('Downloading')
     // same tick, so this one is queued on the trailing timer
@@ -107,7 +117,7 @@ describe('the status window', () => {
   test('end() clears, and drops the write queued behind the clear', () => {
     jest.useFakeTimers()
     const host = makeHost()
-    const rotation = createStopTokenRotation(host)
+    const rotation = createStopTokenRotation(host, host)
     const fetch = rotation.begin()
     fetch.statusCallback('Downloading')
     fetch.statusCallback({ message: 'Downloading', current: 9, total: 10 })
@@ -126,7 +136,7 @@ describe('the status window', () => {
   // fetch that replaced it.
   test('end() on a superseded fetch leaves the live one alone', () => {
     const host = makeHost()
-    const rotation = createStopTokenRotation(host)
+    const rotation = createStopTokenRotation(host, host)
     const first = rotation.begin()
     const second = rotation.begin()
     second.statusCallback('Downloading')
@@ -139,11 +149,31 @@ describe('the status window', () => {
   // drops the label describing the work that was just abandoned.
   test('begin() clears the superseded fetch label', () => {
     const host = makeHost()
-    const rotation = createStopTokenRotation(host)
+    const rotation = createStopTokenRotation(host, host)
     rotation.begin().statusCallback('Downloading')
     expect(host.statusMessage).toBe('Downloading')
     rotation.begin()
     expect(host.statusMessage).toBeUndefined()
+    rotation.dispose()
+  })
+})
+
+// The one-field case: a view with one operation to narrate holds a channel
+// instead of declaring the message/fraction/setter trio a display does.
+describe('createStatusChannel', () => {
+  test('is a reporter a model can hold in a single volatile', () => {
+    const host = makeHost()
+    const channel = createStatusChannel()
+    const rotation = createStopTokenRotation(host, channel)
+    const fetch = rotation.begin()
+    fetch.statusCallback({ message: 'Downloading', current: 1, total: 4 })
+    expect(channel.message).toBe('Downloading')
+    expect(channel.fraction).toBe(0.25)
+    // and the node's own fields are untouched — the point of passing a channel
+    expect(host.statusMessage).toBeUndefined()
+    fetch.end()
+    expect(channel.message).toBeUndefined()
+    expect(channel.fraction).toBeUndefined()
     rotation.dispose()
   })
 })
@@ -170,7 +200,7 @@ describe('a host that owns its own window', () => {
         apply()
       },
     })).create({})
-    const rotation = createStopTokenRotation(host)
+    const rotation = createStopTokenRotation(host, host)
     const fetch = rotation.begin()
     fetch.statusCallback('Downloading')
     fetch.statusCallback('Parsing')

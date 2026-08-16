@@ -77,6 +77,7 @@ export {
   createProgressReporter,
   createScrollLatch,
   createSharedSetup,
+  createStatusChannel,
   createStatusFanOut,
   createStatusThrottle,
   createStopToken,

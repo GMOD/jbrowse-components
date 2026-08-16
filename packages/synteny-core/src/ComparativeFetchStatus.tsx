@@ -58,8 +58,7 @@ const ComparativeFetchStatus = observer(function ComparativeFetchStatus({
       />
       {refetching ? (
         <ProgressChip
-          statusMessage={statusMessage}
-          statusProgress={statusProgress}
+          status={{ message: statusMessage, fraction: statusProgress }}
         />
       ) : null}
     </>

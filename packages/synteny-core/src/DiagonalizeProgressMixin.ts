@@ -1,7 +1,7 @@
+import { createStatusChannel } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 /**
@@ -45,9 +45,15 @@ export function DiagonalizeProgressMixin() {
       /**
        * #volatile
        * Live status from the auto-diagonalize RPC (download %, parse, algorithm
-       * phase) shown on the reordering spinner; undefined outside that wait.
+       * phase) shown on the reordering spinner; blank outside that wait.
+       *
+       * A `StatusChannel` rather than a status field plus a setter: there is one
+       * operation to narrate here, and the channel is that pair with the
+       * message/fraction split already done, so the spinner reads
+       * `{ message, fraction }` instead of calling `statusMessageText` /
+       * `statusFraction` at every render site.
        */
-      diagonalizeStatus: undefined as RpcStatus | undefined,
+      diagonalizeStatus: createStatusChannel(),
       /**
        * #volatile
        * Stop token for the in-flight auto-diagonalize, so the spinner's Cancel
@@ -80,12 +86,6 @@ export function DiagonalizeProgressMixin() {
        */
       finishAutoDiagonalize() {
         self.pendingAutoDiagonalize = false
-      },
-      /**
-       * #action
-       */
-      setDiagonalizeStatus(arg?: RpcStatus) {
-        self.diagonalizeStatus = arg
       },
       /**
        * #action

@@ -89,7 +89,7 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
     commit: (result: TResult, args: TArgs) => void
   },
 ) {
-  const fetch = createStopTokenRotation(self)
+  const fetch = createStopTokenRotation(self, self)
   // Leading edge on the first fetch, debounced after. MobX's own `{ delay }`
   // schedules even the initial run, so opening a view waited a full `delay`
   // before the RPC started with nothing to coalesce. Priming after the fetch

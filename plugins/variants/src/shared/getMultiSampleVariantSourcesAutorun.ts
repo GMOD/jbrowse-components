@@ -33,7 +33,7 @@ export function getMultiSampleVariantSourcesAutorun(
 ) {
   // Owns this fetch's stop-token rotation + latest-wins guard so a superseded
   // run (reloadCount bump, adapterConfig change) can't clobber fresher sources.
-  const rotation = createStopTokenRotation(self)
+  const rotation = createStopTokenRotation(self, self)
   addDisposer(self, () => {
     rotation.dispose()
   })

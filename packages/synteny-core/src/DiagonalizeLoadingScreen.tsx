@@ -1,14 +1,8 @@
 import { LoadingEllipses, StatusProgressBar } from '@jbrowse/core/ui'
-import {
-  progressLabel,
-  statusFraction,
-  statusMessageText,
-} from '@jbrowse/core/util'
+import { progressLabel } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import type { RpcStatus } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   root: {
@@ -36,18 +30,16 @@ const DiagonalizeLoadingScreen = observer(function DiagonalizeLoadingScreen({
   status,
   onCancel,
 }: {
-  status?: RpcStatus
+  /** the view's `diagonalizeStatus` channel, passed whole */
+  status: { message?: string; fraction?: number }
   onCancel?: () => void
 }) {
   const { classes } = useStyles()
-  const fraction = statusFraction(status)
+  const { message, fraction } = status
   // LoadingEllipses supplies its own animated dots, so the source phase labels
   // carry no trailing ellipsis. progressLabel appends the percent when
   // determinate, mirroring ProgressChip.
-  const label = progressLabel(
-    statusMessageText(status) || 'Reordering chromosomes',
-    fraction,
-  )
+  const label = progressLabel(message || 'Reordering chromosomes', fraction)
   return (
     <div className={classes.root}>
       <LoadingEllipses variant="h6" message={label} />

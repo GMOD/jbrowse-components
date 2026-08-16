@@ -63,12 +63,16 @@ const useStyles = makeStyles()(theme => ({
  * pins itself lands *under* that row rather than above it.
  */
 const ProgressChip = observer(function ProgressChip({
-  statusMessage,
-  statusProgress,
+  status,
   anchored = true,
 }: {
-  statusMessage?: string
-  statusProgress?: number
+  /**
+   * What to show. One object rather than a message and a fraction side by side,
+   * so a `createStatusChannel` holder passes `status={model.fetchStatus}` and
+   * nothing has to restate the pair — the field names are the channel's, and
+   * {@link LoadingProgress}'s.
+   */
+  status: { message?: string; fraction?: number }
   /**
    * Pin to the bottom-right of the containing block (the default, and what a
    * caller dropping this into its own positioned box wants). Pass `false` where
@@ -84,8 +88,8 @@ const ProgressChip = observer(function ProgressChip({
       data-testid="progress-chip"
     >
       <LoadingProgress
-        message={statusMessage}
-        fraction={statusProgress}
+        message={status.message}
+        fraction={status.fraction}
         barClassName={classes.bar}
       />
     </div>

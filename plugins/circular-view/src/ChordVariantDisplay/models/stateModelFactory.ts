@@ -225,7 +225,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       // rotation written by hand always misses — every fetch but the final one
       // is released by its successor, and that one is left holding a blob URL
       // and its AbortControllers for the life of the document
-      const rotation = createStopTokenRotation(self)
+      const rotation = createStopTokenRotation(self, self)
 
       return {
         afterAttach() {

@@ -67,6 +67,25 @@ worker adapter → opts.statusCallback(status)
 `fetchAndMaybeUnzip` (bigwig/bigbed/hic/sequence) forward determinate progress
 through these.
 
+## Where a status lands: two fields, or one channel
+
+A display declares `statusMessage` / `statusProgress` / `setStatusMessage`
+itself, because half the display API reads them and ADR-041 is why `BaseDisplay`
+and `FetchMixin` keep their own copies rather than sharing a mixin.
+
+Anything else — a *view* with one operation to narrate — holds a
+`createStatusChannel()` in one volatile instead. It is the same
+`statusMessageText` / `statusFraction` split done once, behind
+`{ message, fraction }`, and it is a plain function rather than a mixin for the
+reason ADR-041 gives. `createStopTokenRotation(self, report)` takes the reporter
+as an argument for exactly this: where the status lands is the caller's
+decision, not a shape the rotation imposes. A display passes itself; the
+breakpoint split view passes `self.fetchStatus`.
+
+`ProgressChip` takes the pair as one `status` object, whose field names are the
+channel's, so a channel holder passes `status={model.fetchStatus}` and nothing
+restates the pair.
+
 ## The assembly load has its own status field
 
 The channel above is per-*display*, and it only opens once tracks are fetching.
@@ -222,8 +241,8 @@ default would silently give you N. The owners, so progress cadence is uniform
 whichever path a status took:
 
 - `FetchMixin` — the LGV displays
-- `createStopTokenRotation` — the bare-autorun fetches (dotplot, synteny) that
-  compose no fetch mixin
+- `createStopTokenRotation` — the bare-autorun fetches (dotplot, synteny,
+  multi-sample-variant sources, breakpoint split view's overlay features)
 - `withDiagonalizeProgress` and `DiagonalizeDialog` — the diagonalize RPC,
   which drives a spinner and a dialog rather than a display's status fields
 - `useFetch` — every dialog and widget fetch, one window per effect run

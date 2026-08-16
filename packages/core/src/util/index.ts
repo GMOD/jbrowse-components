@@ -411,6 +411,9 @@ export {
 } from '../svg/saveSvgAsImage.ts'
 export {
   type ActiveFetch,
+  type StatusChannel,
+  type StatusReporter,
+  createStatusChannel,
   createStopTokenRotation,
 } from './createStopTokenRotation.ts'
 export { createSharedSetup } from './createSharedSetup.ts'
