@@ -1,7 +1,10 @@
 import { sameAssemblySet } from './getSyntenyTracks.ts'
 import { syntenyPairs } from './syntenyPairs.ts'
 
-import type { ImportFormSyntenyTrack } from './SelectorTypes.ts'
+import type {
+  ImportFormSyntenyModel,
+  ImportFormSyntenyTrack,
+} from './SelectorTypes.ts'
 
 /**
  * Which two assemblies a selection is about. Normally the pair it was sitting
@@ -60,4 +63,35 @@ export function remapSelectionsToPairs(
     )
   }
   return remapped
+}
+
+/**
+ * Move a form's selections onto the assembly rows it is about to have, in the
+ * model. **Every edit to the rows goes through here** — add, remove, reorder or
+ * retype a row in the synteny form, change either axis in the dotplot form —
+ * because a selection is indexed by pair position but is about a pair of
+ * assemblies, and an edit moves the positions out from under it. See
+ * `remapSelectionsToPairs` for what each type does when its pair goes away.
+ *
+ * Shared rather than written per form: the dotplot's one pair looks too small to
+ * need it, and going without meant a finished upload stranded on the old axes,
+ * reading back as an *unfinished* one and disabling Launch for something that
+ * could not be finished — the exact failure the synteny form had already fixed.
+ */
+export function remapImportFormSelections(
+  model: ImportFormSyntenyModel,
+  fromAssemblyNames: string[],
+  toAssemblyNames: string[],
+) {
+  const remapped = remapSelectionsToPairs(
+    model.importFormSyntenyTrackSelections,
+    fromAssemblyNames,
+    toAssemblyNames,
+  )
+  model.clearImportFormSyntenyTracks()
+  for (const [pairIdx, selection] of remapped.entries()) {
+    if (selection) {
+      model.setImportFormSyntenyTrack(pairIdx, selection)
+    }
+  }
 }

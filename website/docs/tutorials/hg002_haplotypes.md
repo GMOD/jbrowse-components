@@ -71,10 +71,11 @@ Open **Add → Dotplot view**. Both axis dropdowns already read
 to it carries both haplotypes: left alone, the plot puts every maternal and
 paternal contig on both axes, interleaved.
 
-Switch to **Manual** and use the chromosome box beside each assembly. Each takes
-a comma-separated list of contig names, where `*` matches any characters, so
-`*_MATERNAL` on the X axis and `*_PATERNAL` on the Y axis give one haplotype per
-axis. Leave a box empty and you get the whole assembly.
+Switch to **Manual** and tick **Plot only certain chromosomes**, which puts a
+box beside each assembly. Each takes a comma-separated list of contig names,
+where `*` matches any characters, so `*_MATERNAL` on the X axis and `*_PATERNAL`
+on the Y axis give one haplotype per axis. Leave a box empty and you get the
+whole assembly.
 
 <Figure caption="The dotplot import form in Manual mode. Both axes are the same assembly, and the chromosome boxes cut each one down to a single haplotype. The Q100 chain is already selected as the synteny track." src="/img/hg002_haplotypes_import_form.png" />
 

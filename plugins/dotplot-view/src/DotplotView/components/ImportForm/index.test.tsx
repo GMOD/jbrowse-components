@@ -333,6 +333,37 @@ test('an unfinished new-track upload blocks launch', () => {
   expect(launchButton()).toBeEnabled()
 })
 
+test('changing an axis releases the pending upload for the old pair', () => {
+  // the upload was started for hg38/mm39. Once the y-axis is something else it
+  // can never be finished for this pair, so leaving it in place only disables
+  // Launch and offers "choose a file" for a pair that no longer exists
+  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
+  expect(launchButton()).toBeDisabled()
+
+  fireEvent.mouseDown(axisSelect('Y'))
+  fireEvent.click(screen.getByRole('option', { name: 'rn7' }))
+  expect(launchButton()).toBeEnabled()
+})
+
+test('a None does not carry onto a pair the user never silenced', () => {
+  const { model } = setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [
+      syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
+      syntenyTrack('hg38_rn7', ['hg38', 'rn7']),
+    ],
+  })
+  goManual()
+  fireEvent.click(screen.getByRole('radio', { name: 'None' }))
+
+  // a different pair, which is free to find its own track
+  fireEvent.mouseDown(axisSelect('X'))
+  fireEvent.click(screen.getByRole('option', { name: 'rn7' }))
+  fireEvent.click(launchButton())
+  expect(model.tracks).toHaveLength(1)
+})
+
 test('None leaves the launch without a track', () => {
   const { model } = setup({
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],

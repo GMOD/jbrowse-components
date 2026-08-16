@@ -83,7 +83,7 @@ export function useQuickStartState(
     /** `trackRows` in the order the form should present them */
     rows: swapped ? [...trackRows].reverse() : trackRows,
     swap: () => {
-      setSwapped(!swapped)
+      setSwapped(prev => !prev)
     },
   }
 }

@@ -8,6 +8,7 @@ import {
   allSessionTracks,
   blockedByUnfinishedUpload,
   syntenyPairStatuses,
+  useChromosomeFilters,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
 import { Button, Container, Typography } from '@mui/material'
@@ -80,10 +81,8 @@ const LinearSyntenyViewImportForm = observer(
       const first = assemblyNames[0] ?? ''
       return [first, assemblyNames[1] ?? first]
     })
-    // Parallel to the rows and kept in step by applyRows. Empty is "whole
-    // assembly", which is what every non-fragmented assembly wants, so the form
-    // behaves as it always did until someone types in one.
-    const [regionNames, setRegionNames] = useState<string[]>(() => ['', ''])
+    // parallel to the rows, and kept in step by applyRows
+    const chromosomes = useChromosomeFilters()
 
     // computed once for the whole form: the row icons, the Auto-arrange offer
     // and the Launch button are three views of the same answer, and each entry
@@ -113,7 +112,7 @@ const LinearSyntenyViewImportForm = observer(
     // init supersedes the old banner without a second copy of the state here. A
     // failed `init` also lands the view on this form rather than a spinner (see
     // showImportForm), and the banner is what explains why.
-    const launch = (rows: string[], regions = regionNames) => {
+    const launch = (rows: string[], regions = chromosomes.values) => {
       try {
         doSubmit({
           selectedAssemblyNames: rows,
@@ -141,7 +140,7 @@ const LinearSyntenyViewImportForm = observer(
             setSelectedAssemblyNames(quick.rows)
             // the handover brings a different set of rows, so nothing typed
             // against the old ones still applies
-            setRegionNames(quick.rows.map(() => ''))
+            chromosomes.reset()
             setSelectedRow(0)
             applyQuickSelections()
           }}
@@ -151,10 +150,7 @@ const LinearSyntenyViewImportForm = observer(
             // boxes, so it must not inherit text typed into the Manual ones
             // behind it — these are the track's rows, not the ones those boxes
             // were typed against
-            launch(
-              quick.rows,
-              quick.rows.map(() => ''),
-            )
+            launch(quick.rows, [])
           }}
           swapTitle="Reverse the row order (flips the stack top to bottom)"
           quickSummary={
@@ -182,8 +178,7 @@ const LinearSyntenyViewImportForm = observer(
                 statusByPair={statusByPair}
                 selectedAssemblyNames={selectedAssemblyNames}
                 setSelectedAssemblyNames={setSelectedAssemblyNames}
-                regionNames={regionNames}
-                setRegionNames={setRegionNames}
+                chromosomes={chromosomes}
                 selectedRow={selectedRow}
                 setSelectedRow={setSelectedRow}
               />

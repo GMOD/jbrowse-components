@@ -135,6 +135,20 @@ const goManual = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Manual' }))
 }
 
+// by testid, not by label: every row's box shares a placeholder, and the testid
+// is what ChromosomeFilter puts on the input for exactly this
+const chromosomeBox = (row: number) =>
+  screen.getByTestId(`chromosome-filter-row-${row}`)
+
+// The boxes are off until asked for, so anything about what goes IN them opens
+// them first.
+const chromosomesCheckbox = () =>
+  screen.getByRole('checkbox', { name: 'Show only certain chromosomes' })
+
+const showChromosomeBoxes = () => {
+  fireEvent.click(chromosomesCheckbox())
+}
+
 // A Tooltip wrapping a button directly becomes that button's accessible name, so
 // this one is queried by tooltip text rather than by its label
 const autoArrangeButton = () =>
@@ -587,4 +601,60 @@ test('a same-assembly pair with no self-alignment track says so', () => {
   ).toBeInTheDocument()
   // legal, just blank
   expect(launchButton()).toBeEnabled()
+})
+
+// One box per row, so the flat form put a field the reader has to decide about
+// beside every assembly they picked. The fragmented-assembly case they exist for
+// is the rare one, so they are opt-in — the same disclosure the dotplot carries.
+test('the chromosome boxes are hidden until asked for', () => {
+  setup({ assemblyNames: ['hg38', 'mm39'] })
+  expect(
+    screen.queryByTestId('chromosome-filter-row-0'),
+  ).not.toBeInTheDocument()
+
+  showChromosomeBoxes()
+  expect(chromosomeBox(0)).toBeInTheDocument()
+  expect(chromosomeBox(1)).toBeInTheDocument()
+})
+
+test('a chromosome box reaches that row as its init displayedRegionNames', () => {
+  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+  showChromosomeBoxes()
+  fireEvent.change(chromosomeBox(0), { target: { value: 'ctgA, ctgB' } })
+  fireEvent.click(launchButton())
+  expect(model.views.map(v => v.init)).toEqual([
+    { assembly: 'hg38', displayedRegionNames: ['ctgA', 'ctgB'] },
+    // omitted rather than [], which would take the named-regions path with
+    // nothing to name
+    { assembly: 'mm39' },
+  ])
+})
+
+test('changing a row assembly drops the chromosomes typed for it', () => {
+  // the names were typed about mm39; on rn7 they at best unrestrict the row
+  // with a warning, at worst match and stack the wrong thing quietly
+  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  showChromosomeBoxes()
+  fireEvent.change(chromosomeBox(0), { target: { value: 'ctgA' } })
+  fireEvent.change(chromosomeBox(1), { target: { value: 'ctgB' } })
+
+  pickAssembly(1, 'rn7')
+  expect(chromosomeBox(1)).toHaveValue('')
+  // the other row is untouched — its assembly did not change
+  expect(chromosomeBox(0)).toHaveValue('ctgA')
+})
+
+// Hiding has to CLEAR, or a stack comes back restricted by a box that is no
+// longer on screen — the one failure the disclosure can introduce.
+test('hiding the boxes clears what was typed in them', () => {
+  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+  showChromosomeBoxes()
+  fireEvent.change(chromosomeBox(0), { target: { value: 'ctgA' } })
+
+  fireEvent.click(chromosomesCheckbox())
+  fireEvent.click(launchButton())
+  expect(model.views.map(v => v.init)).toEqual([
+    { assembly: 'hg38' },
+    { assembly: 'mm39' },
+  ])
 })

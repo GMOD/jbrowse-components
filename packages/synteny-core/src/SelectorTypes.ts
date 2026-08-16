@@ -19,6 +19,7 @@ export type ImportFormSyntenyTrack =
 export interface ImportFormSyntenyModel {
   importFormSyntenyTrackSelections: ImportFormSyntenyTrack[]
   setImportFormSyntenyTrack: (idx: number, val: ImportFormSyntenyTrack) => void
+  clearImportFormSyntenyTracks: () => void
 }
 
 export const helpStrings: Record<string, string> = {

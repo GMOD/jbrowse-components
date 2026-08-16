@@ -9,7 +9,9 @@ import {
   allSessionTracks,
   blockedByUnfinishedUpload,
   dotplotAxesFromRows,
+  remapImportFormSelections,
   syntenyPairStatuses,
+  useChromosomeFilters,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
 import {
@@ -81,29 +83,20 @@ const DotplotImportForm = observer(function DotplotImportForm({
   // any synteny track opens the form in Quick start instead, and reaching Manual
   // from there hands over that track's axes.
   const [assemblyY, setAssemblyY] = useState(assemblyNames[1] ?? firstAssembly)
-  // Empty is "whole assembly", which is what every non-fragmented assembly
-  // wants, so both boxes start empty and the form behaves as it always did
-  // until someone types in one.
-  const [regionsX, setRegionsX] = useState('')
-  const [regionsY, setRegionsY] = useState('')
-  const [showChromosomes, setShowChromosomes] = useState(false)
+  // row-indexed, and a dotplot's rows are its axes, x first — the order
+  // doSubmit and `init.views` already use
+  const chromosomes = useChromosomeFilters()
 
-  // Changing an axis's assembly drops what was typed for that axis. `*_MATERNAL`
-  // is typed ABOUT a particular assembly, so carrying it to a different one is
-  // never what was meant — at best its names don't exist there and the axis
-  // comes back unrestricted with a warning, at worst they do and the plot is
-  // quietly of the wrong thing. LinearSyntenyView's applyRows makes the same
-  // reset per row, and this form was the one that didn't.
-  function setAxis(
-    next: string,
-    current: string,
-    setAssembly: (arg: string) => void,
-    setRegions: (arg: string) => void,
-  ) {
-    setAssembly(next)
-    if (next !== current) {
-      setRegions('')
-    }
+  // The one way the axes change, and the counterpart of LinearSyntenyView's
+  // applyRows: re-match the track selection and the chromosome boxes to the pair
+  // the axes now name.
+  function applyAxes(nextX: string, nextY: string) {
+    const from = [assemblyX, assemblyY]
+    const to = [nextX, nextY]
+    remapImportFormSelections(model, from, to)
+    chromosomes.remap(from, to)
+    setAssemblyX(nextX)
+    setAssemblyY(nextY)
   }
 
   // the track's own row order plus the Swap flag, not `quick.rows`: Swap
@@ -136,7 +129,12 @@ const DotplotImportForm = observer(function DotplotImportForm({
 
   // the model owns the error: doSubmit clears it on the way in, so a re-submit
   // supersedes the old banner without a second copy of the state here
-  const launch = (x: string, y: string, rx = regionsX, ry = regionsY) => {
+  const launch = (
+    x: string,
+    y: string,
+    rx = chromosomes.get(0),
+    ry = chromosomes.get(1),
+  ) => {
     try {
       doSubmit({
         model,
@@ -169,8 +167,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
             setAssemblyY(quickY)
             // the handover brings the track's axes, so nothing typed against
             // whatever the Manual form was showing before still applies
-            setRegionsX('')
-            setRegionsY('')
+            chromosomes.reset()
             applyQuickSelection()
           }}
           onQuickLaunch={() => {
@@ -205,24 +202,13 @@ const DotplotImportForm = observer(function DotplotImportForm({
           <Typography className={classes.header}>
             Select assemblies for dotplot view
           </Typography>
-          {/* The chromosome boxes are off unless asked for (review: "it could
-              be optional to show the search boxes ... most people might not
-              care, and might think they NEED to use them which is not
-              intended"). Two empty text fields sitting between the reader and
-              Launch read as required, and the case they exist for — an assembly
-              fragmented into hundreds of scaffolds — is the rare one. Unticking
-              clears both, so a filter can never be applied from a box nobody
-              can see. */}
+          {/* off unless asked for — see useChromosomeFilters */}
           <FormControlLabel
             control={
               <Checkbox
-                checked={showChromosomes}
+                checked={chromosomes.shown}
                 onChange={event => {
-                  setShowChromosomes(event.target.checked)
-                  if (!event.target.checked) {
-                    setRegionsX('')
-                    setRegionsY('')
-                  }
+                  chromosomes.setShown(event.target.checked)
                 }}
               />
             }
@@ -236,15 +222,17 @@ const DotplotImportForm = observer(function DotplotImportForm({
                 selected={assemblyX}
                 session={session}
                 onChange={asm => {
-                  setAxis(asm, assemblyX, setAssemblyX, setRegionsX)
+                  applyAxes(asm, assemblyY)
                 }}
               />
-              {showChromosomes ? (
+              {chromosomes.shown ? (
                 <ChromosomeFilter
                   label="X-axis chromosomes"
                   testId="chromosome-filter-x"
-                  value={regionsX}
-                  onChange={setRegionsX}
+                  value={chromosomes.get(0)}
+                  onChange={value => {
+                    chromosomes.set(0, value)
+                  }}
                 />
               ) : null}
             </div>
@@ -255,15 +243,17 @@ const DotplotImportForm = observer(function DotplotImportForm({
                 selected={assemblyY}
                 session={session}
                 onChange={asm => {
-                  setAxis(asm, assemblyY, setAssemblyY, setRegionsY)
+                  applyAxes(assemblyX, asm)
                 }}
               />
-              {showChromosomes ? (
+              {chromosomes.shown ? (
                 <ChromosomeFilter
                   label="Y-axis chromosomes"
                   testId="chromosome-filter-y"
-                  value={regionsY}
-                  onChange={setRegionsY}
+                  value={chromosomes.get(1)}
+                  onChange={value => {
+                    chromosomes.set(1, value)
+                  }}
                 />
               ) : null}
             </div>

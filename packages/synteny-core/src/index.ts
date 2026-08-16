@@ -187,6 +187,8 @@ export {
   syntenyTrackRows,
 } from './syntenyTrackRows.ts'
 export { default as ChromosomeFilter } from './ChromosomeFilter.tsx'
+export { useChromosomeFilters } from './useChromosomeFilters.ts'
+export type { ChromosomeFilters } from './useChromosomeFilters.ts'
 export { default as ImportFormModeToggle } from './ImportFormModeToggle.tsx'
 export type { ImportFormMode } from './ImportFormModeToggle.tsx'
 export { default as ImportFormModes } from './ImportFormModes.tsx'
@@ -208,7 +210,10 @@ export type { PairStatus } from './syntenyPairStatuses.ts'
 // re-exported here so the synteny/comparative consumers keep one import.
 export { allSessionTracks } from '@jbrowse/core/util/tracks'
 export { syntenyPairs } from './syntenyPairs.ts'
-export { remapSelectionsToPairs } from './remapSelectionsToPairs.ts'
+export {
+  remapImportFormSelections,
+  remapSelectionsToPairs,
+} from './remapSelectionsToPairs.ts'
 export { applySyntenyTrackSelections } from './applySyntenyTrackSelections.ts'
 export { default as ImportFormSyntenyTrackPanel } from './ImportFormSyntenyTrackPanel.tsx'
 export { default as NoSyntenyTrackMessage } from './NoSyntenyTrackMessage.tsx'

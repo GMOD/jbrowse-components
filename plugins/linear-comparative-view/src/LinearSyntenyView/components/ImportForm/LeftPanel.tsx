@@ -9,13 +9,19 @@ import {
   getConnectedAssemblies,
   getSyntenyTracks,
   planSyntenyChain,
-  remapSelectionsToPairs,
+  remapImportFormSelections,
 } from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
-import { Button, IconButton, Tooltip } from '@mui/material'
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  Tooltip,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -24,7 +30,7 @@ import {
 } from '../../util/importFormRows.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
-import type { PairStatus } from '@jbrowse/synteny-core'
+import type { ChromosomeFilters, PairStatus } from '@jbrowse/synteny-core'
 
 const useStyles = makeStyles()(theme => ({
   mb: {
@@ -73,8 +79,7 @@ const useStyles = makeStyles()(theme => ({
 const AssemblyRows = observer(function AssemblyRows({
   selectedRow,
   selectedAssemblyNames,
-  regionNames,
-  setRegionName,
+  chromosomes,
   statusByPair,
   applyRows,
   setSelectedRow,
@@ -82,8 +87,7 @@ const AssemblyRows = observer(function AssemblyRows({
 }: {
   selectedRow: number
   selectedAssemblyNames: string[]
-  regionNames: string[]
-  setRegionName: (idx: number, value: string) => void
+  chromosomes: ChromosomeFilters
   statusByPair: PairStatus[]
   applyRows: (rows: string[], nextSelectedPair: number) => void
   setSelectedRow: (idx: number) => void
@@ -141,14 +145,16 @@ const AssemblyRows = observer(function AssemblyRows({
             }}
             session={session}
           />
-          <ChromosomeFilter
-            label={`Row ${idx + 1} chromosomes`}
-            testId={`chromosome-filter-row-${idx}`}
-            value={regionNames[idx] ?? ''}
-            onChange={value => {
-              setRegionName(idx, value)
-            }}
-          />
+          {chromosomes.shown ? (
+            <ChromosomeFilter
+              label={`Row ${idx + 1} chromosomes`}
+              testId={`chromosome-filter-row-${idx}`}
+              value={chromosomes.get(idx)}
+              onChange={value => {
+                chromosomes.set(idx, value)
+              }}
+            />
+          ) : null}
           <Tooltip
             title={
               selectedAssemblyNames.length <= 2
@@ -210,8 +216,7 @@ const LeftPanel = observer(function LeftPanel({
   statusByPair,
   selectedAssemblyNames,
   setSelectedAssemblyNames,
-  regionNames,
-  setRegionNames,
+  chromosomes,
   selectedRow,
   setSelectedRow,
 }: {
@@ -221,8 +226,7 @@ const LeftPanel = observer(function LeftPanel({
   statusByPair: PairStatus[]
   selectedAssemblyNames: string[]
   setSelectedAssemblyNames: (names: string[]) => void
-  regionNames: string[]
-  setRegionNames: (names: string[]) => void
+  chromosomes: ChromosomeFilters
   selectedRow: number
   setSelectedRow: (row: number) => void
 }) {
@@ -240,31 +244,11 @@ const LeftPanel = observer(function LeftPanel({
   // means no caller can forget. See remapSelectionsToPairs for what that
   // silently cost when only the reordering paths did it.
   function applyRows(rows: string[], nextSelectedPair: number) {
-    const remapped = remapSelectionsToPairs(
-      model.importFormSyntenyTrackSelections,
-      selectedAssemblyNames,
-      rows,
-    )
-    model.clearImportFormSyntenyTracks()
-    for (const [pairIdx, selection] of remapped.entries()) {
-      if (selection) {
-        model.setImportFormSyntenyTrack(pairIdx, selection)
-      }
-    }
+    remapImportFormSelections(model, selectedAssemblyNames, rows)
+    // positional, unlike the selections: rows arrive here as a bare name list
+    // with no permutation to follow a glob along. See useChromosomeFilters.
+    chromosomes.remap(selectedAssemblyNames, rows)
     setSelectedAssemblyNames(rows)
-    // POSITIONAL, and reset when the assembly at a position changes. Rows are
-    // added, removed and reordered through here with only the new name list to
-    // go on, so there is no permutation to follow a glob along — and following
-    // one would be wrong anyway: `*_MATERNAL` was typed about a particular
-    // assembly, so a row that becomes a different assembly must not keep it.
-    // A row still holding the same name keeps what was typed, which covers
-    // every edit to some OTHER row, and covers a self-alignment reorder (both
-    // rows name the same assembly) for free.
-    setRegionNames(
-      rows.map((asm, i) =>
-        asm === selectedAssemblyNames[i] ? (regionNames[i] ?? '') : '',
-      ),
-    )
     setSelectedRow(nextSelectedPair)
   }
 
@@ -315,20 +299,27 @@ const LeftPanel = observer(function LeftPanel({
       <div className={classes.mb}>
         Select assemblies for linear synteny view
       </div>
+      {/* off unless asked for — see useChromosomeFilters. One box per row makes
+          this the form the disclosure matters most on: a five-row stack put five
+          empty fields between the reader and Launch. */}
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={chromosomes.shown}
+            onChange={event => {
+              chromosomes.setShown(event.target.checked)
+            }}
+          />
+        }
+        label="Show only certain chromosomes"
+      />
       <div data-testid="synteny-assembly-rows">
         <AssemblyRows
           model={model}
           selectedAssemblyNames={selectedAssemblyNames}
           statusByPair={statusByPair}
           applyRows={applyRows}
-          regionNames={regionNames}
-          setRegionName={(idx, value) => {
-            setRegionNames(
-              selectedAssemblyNames.map((_, i) =>
-                i === idx ? value : (regionNames[i] ?? ''),
-              ),
-            )
-          }}
+          chromosomes={chromosomes}
           selectedRow={selectedRow}
           setSelectedRow={setSelectedRow}
         />
