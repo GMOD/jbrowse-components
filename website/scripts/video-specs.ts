@@ -19,9 +19,9 @@
 // searchable, diffable, annotatable and readable at a glance, and none of that
 // survives being turned into a video.
 //
-// The sessions come from specs/graph-ecoli.ts rather than being written again
-// here. A tour whose track config had drifted from the figures' would document a
-// route through an app the rest of the page is not showing.
+// The sessions come from the spec modules rather than being written again here.
+// A tour whose track config had drifted from the figures' would document a route
+// through an app the rest of the page is not showing.
 import { CODE_BASE } from '../src/lib/code-base.ts'
 import { sessionSpec } from './screenshot-spec-helpers.ts'
 import { pggbVideoFixtures } from './specs/graph-ecoli.ts'
@@ -29,6 +29,7 @@ import {
   TOOLBAR_READY,
   referencePositionColor,
 } from './specs/graph-fixtures.ts'
+import { hprcMhcVideoSession } from './specs/graph-hprc.ts'
 
 import type { ScreenshotAction } from './screenshot-spec-types.ts'
 
@@ -64,8 +65,8 @@ export interface VideoStep extends ScreenshotAction {
 }
 
 export interface VideoSpec {
-  // Output basename under website/static/video, directories allowed:
-  // `pangenome/pggb_subgraph_launch` -> static/video/pangenome/pggb_subgraph_launch.mp4
+  // Output basename under website/static/media, directories allowed:
+  // `pangenome/pggb_subgraph_launch` -> static/media/pangenome/pggb_subgraph_launch.mp4
   name: string
   // Session URL, the same form as a screenshot spec's: a query string served
   // against the local jbrowse-web build, or an absolute url.
@@ -228,6 +229,39 @@ export const videoSpecs: VideoSpec[] = [
         timeout: 120000,
         cut: true,
       },
+    ],
+    tailMs: 3000,
+  },
+  // The human half of the same re-layout, where the anchored mode has the
+  // stronger claim: every x becomes a GRCh38 coordinate, so each allele drops
+  // under the place it attaches and the drawing lines up with the linear view
+  // above it. The still pair (pangenome/hprc_mhc_anchored) states that in a
+  // caption; here the nodes are watched going there, which is the one reading a
+  // caption cannot give.
+  {
+    name: 'pangenome/hprc_layout_anchored',
+    description:
+      'One MHC class II subgraph moving from the force drawing onto the reference axis it shares with the linear view',
+    url: hprcMhcVideoSession('force'),
+    viewportWidth: 1280,
+    // The linear view and a `paneHeight: 420` graph pane, the same pane the
+    // still's force half is measured at. Confirmed against the run's own
+    // content report rather than guessed.
+    viewportHeight: 900,
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 180000,
+    settleMs: 6000,
+    steps: [
+      { type: 'click', selector: LAYOUT_SELECT, say: 'Layout', hold: 800 },
+      { type: 'waitForText', text: 'Anchored' },
+      { type: 'click', text: 'Anchored', say: 'Anchored' },
+      {
+        type: 'waitForSelector',
+        selector: TOOLBAR_READY,
+        timeout: 180000,
+        cut: true,
+      },
+      { type: 'delay', ms: 2500 },
     ],
     tailMs: 3000,
   },

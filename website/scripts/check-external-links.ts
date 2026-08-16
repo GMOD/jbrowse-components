@@ -152,10 +152,9 @@ const EXPECTED_NON_2XX = new Set([
   'https://jbrowse.org/plugins/',
   'https://jbrowse.org/hubs/genark/',
   // written as an illustration of a URL shape rather than as a link: somewhere
-  // to host demo files, the prefix a prerelease uploads to, a video not yet up
+  // to host demo files, the prefix a prerelease uploads to
   'https://jbrowse.org/demos/arabidopsis/',
   'https://jbrowse.org/code/jb2/v5.0.0-beta.1/',
-  'https://jbrowse.org/video/volvox_tour.mp4',
   'https://jbrowse.org/ucsc/',
   // an external site that reorganized, kept as the provenance note for a demo
   // track whose data we mirror

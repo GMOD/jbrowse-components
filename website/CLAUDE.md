@@ -31,16 +31,17 @@ staging deploy. Buckets and hosted assets: `agent-docs/reference/HOSTING.md`.
 never on the screenshots' path: a screencast is not content-stable, so it is
 filmed on demand and never by a sweep. `pnpm video --list` says what there is;
 `pnpm video --filter <name>` films one. Embed with
-`<Video src="/video/...mp4" caption="..." />`, which grows a link to the session
+`<Video src="/media/...mp4" caption="..." />`, which grows a link to the session
 the tour was filmed in.
 
 - **A video is for a ROUTE or a RE-LAYOUT**, and everything else is a figure. A
   still is searchable, diffable, annotatable and readable at a glance, and none
   of that survives being filmed.
-- `static/video/` is gitignored; bytes live in the store (`pnpm videos`,
-  `video.lock`), which `pnpm build` pulls **because `rclone sync` deletes** what
+- `static/media/` is gitignored; bytes live in the store (`pnpm media`,
+  `media.lock`), which `pnpm build` pulls **because `rclone sync` deletes** what
   dist/ does not carry. Push before committing a `<Video>` or the embed 404s;
-  `check-figure-refs` is the gate.
+  `check-figure-refs` is the gate. The store is media rather than video because
+  a clip already ships a poster, and a caption track is next.
 - **Size the viewport from the run's own content report**, which names the app's
   height at the first frame, the last and its tallest in between. A tour grows
   the app and one frame has to serve every state.

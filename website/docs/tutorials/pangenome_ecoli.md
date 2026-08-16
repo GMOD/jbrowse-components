@@ -811,6 +811,8 @@ view → Graph genome view (this region)** cuts a subgraph from the index with n
 `odgi` step in between. Rubberbanding the ruler and picking **Graph genome view
 (this selection)** does the same for a window you drag.
 
+<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="The route, on 1.6 kb of K12 around the IS5 element: the segments lane's own menu, and the subgraph it cuts from the window on screen. The nodes that arrive below are the blocks the lane above draws, in the same colors." />
+
 #### One node per bubble, when the window is wider than the graph can draw
 
 The index above draws one node per GFA segment, and a pggb graph runs about 17
@@ -913,6 +915,11 @@ the K12 backbone, and below it each strain's marks are the segments it takes
 instead. The MAF row above says the same thing base by base.
 
 <Figure caption="460 bp at the ycbF/pyrD boundary in both layouts, under the same MAF lane. Left, Sample rows. Right, the same nodes with the reference axis let go." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
+
+Watching the dropdown redraw them says one thing the pair of pictures cannot,
+which is that the two drawings hold the same nodes:
+
+<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown and back. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing lets the axis go, and the alternate routes hang off the backbone where the rows had flattened them." />
 
 #### Who carries a segment
 

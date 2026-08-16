@@ -1,11 +1,11 @@
-// CLI for the video store — the third corpus in the content-addressed blob
-// store (@jbrowse/browser-test-utils/blobStore), beside the website's figures
-// and the browser-test goldens.
+// CLI for the media store — the third corpus in the content-addressed blob store
+// (@jbrowse/browser-test-utils/blobStore), beside the website's figures and the
+// browser-test goldens.
 //
-//   pnpm videos status         what the worktree and video.lock disagree about
-//   pnpm video:pull            install every video the manifest names (no credentials)
-//   pnpm video:push            upload new bytes, rewrite video.lock (needs AWS)
-//   pnpm videos check          CI gate: manifest and worktree agree
+//   pnpm media status          what the worktree and media.lock disagree about
+//   pnpm media:pull            install every file the manifest names (no credentials)
+//   pnpm media:push            upload new bytes, rewrite media.lock (needs AWS)
+//   pnpm media check           CI gate: manifest and worktree agree
 //
 // WHY A STORE AT ALL, when the docs deploy already publishes `static/`.
 //
@@ -13,8 +13,8 @@
 // DELETES anything in the bucket that the freshly-built `dist/` does not carry.
 // The bytes cannot be committed (a screencast is an undeltifiable blob git keeps
 // forever, and re-filming the same tour produces different bytes every time), so
-// a CI checkout has no `static/video` and the sync would delete the videos on the
-// first docs push after they landed. `pnpm build` runs `video:pull`, so the
+// a CI checkout has no `static/media` and the sync would delete the videos on
+// the first docs push after they landed. `pnpm build` runs `media:pull`, so the
 // files are there when astro copies `static/` in, and the sync finds them.
 //
 // The alternative was regenerating them in the docs CI — a jbrowse-web build
@@ -42,30 +42,30 @@ import {
 } from '@jbrowse/browser-test-utils/blobStore'
 
 import { matchesFilterTokens, parseFilterTokens } from './filter-tokens.ts'
-import { repoRoot } from './paths.ts'
 import {
   MANIFEST_HEADER,
   contentTypes,
   describeFile,
-  listVideoFiles,
+  listMediaFiles,
   manifestPath,
+  mediaCorpus,
+  mediaExtRe,
   readManifest,
   shortName,
-  videoCorpus,
-  videoExtRe,
-} from './video-store.ts'
+} from './media-store.ts'
+import { repoRoot } from './paths.ts'
 
 import type { BlobEntry } from '@jbrowse/browser-test-utils/blobStore'
 
 // A year, immutable: the url names the bytes, so it can never be wrong.
 const CACHE_CONTROL = 'public, max-age=31536000, immutable'
 
-const usage = `videos — the S3-backed video store
+const usage = `media — the S3-backed media store
 
-  status              compare the worktree against website/video.lock
-  pull [--force]      install every video video.lock names
+  status              compare the worktree against website/media.lock
+  pull [--force]      install every file media.lock names
   push [--dry-run] [--filter a,b]
-                      upload new bytes, then rewrite video.lock
+                      upload new bytes, then rewrite media.lock
   check               fail if the manifest and the worktree disagree
 `
 
@@ -87,10 +87,10 @@ const { values, positionals } = (() => {
   }
 })()
 
-const name = (p: string) => videoCorpus.name(p)
+const name = (p: string) => mediaCorpus.name(p)
 
 function inspect(manifest: Map<string, BlobEntry>) {
-  const onDisk = new Map(listVideoFiles().map(p => [p, describeFile(p)]))
+  const onDisk = new Map(listMediaFiles().map(p => [p, describeFile(p)]))
   const missing: string[] = []
   const modified: string[] = []
   const ok: string[] = []
@@ -111,7 +111,7 @@ function inspect(manifest: Map<string, BlobEntry>) {
 function status() {
   const manifest = readManifest()
   const state = inspect(manifest)
-  console.log(`${state.ok.length} video file(s) match video.lock`)
+  console.log(`${state.ok.length} media file(s) match media.lock`)
   for (const [label, list] of [
     ['missing (pull)', state.missing],
     ['differs from the manifest', state.modified],
@@ -137,19 +137,19 @@ async function pull() {
   const wanted = [...state.missing, ...(values.force ? state.modified : [])]
   if (state.modified.length && !values.force) {
     console.log(
-      `keeping ${state.modified.length} video file(s) that differ from video.lock — ` +
-        '`pnpm video:push` to publish them, or --force to discard',
+      `keeping ${state.modified.length} media file(s) that differ from media.lock — ` +
+        '`pnpm media:push` to publish them, or --force to discard',
     )
   }
   if (!wanted.length) {
-    console.log(`${state.ok.length} video file(s) already present`)
+    console.log(`${state.ok.length} media file(s) already present`)
     return
   }
-  console.log(`fetching ${wanted.length} video file(s) from the store…`)
+  console.log(`fetching ${wanted.length} media file(s) from the store…`)
   const errors: string[] = []
   await mapLimit(wanted, 6, async path => {
     try {
-      const buf = await fetchBlob(videoCorpus, manifest.get(path)!)
+      const buf = await fetchBlob(mediaCorpus, manifest.get(path)!)
       const abs = join(repoRoot, path)
       mkdirSync(dirname(abs), { recursive: true })
       writeFileSync(abs, buf)
@@ -183,7 +183,7 @@ function readStoreKeys(): Set<string> | undefined {
       '--bucket',
       storeBucket.replace('s3://', ''),
       '--prefix',
-      `${videoCorpus.storePrefix}/`,
+      `${mediaCorpus.storePrefix}/`,
       '--query',
       'Contents[].Key',
       '--output',
@@ -199,15 +199,15 @@ function readStoreKeys(): Set<string> | undefined {
 function push() {
   const before = readManifest()
   const tokens = parseFilterTokens(values.filter)
-  const selected = listVideoFiles()
+  const selected = listMediaFiles()
     .filter(p => matchesFilterTokens(name(p), tokens, false))
     .map(describeFile)
   const existing = readStoreKeys()
   const toUpload = selected.filter(
-    e => !existing?.has(storeKey(videoCorpus, e)),
+    e => !existing?.has(storeKey(mediaCorpus, e)),
   )
   for (const entry of toUpload) {
-    console.log(`  ${storeUrl(videoCorpus, entry)}`)
+    console.log(`  ${storeUrl(mediaCorpus, entry)}`)
   }
   if (values['dry-run']) {
     console.log(`${toUpload.length} blob(s) would be uploaded`)
@@ -216,12 +216,12 @@ function push() {
   // Bytes BEFORE the manifest, always: a manifest line whose blob was never
   // pushed breaks `pull` for everyone else.
   for (const entry of toUpload) {
-    const ext = videoExtRe.exec(entry.path)![0].toLowerCase()
+    const ext = mediaExtRe.exec(entry.path)![0].toLowerCase()
     aws([
       's3',
       'cp',
       join(repoRoot, entry.path),
-      `${storeBucket}/${storeKey(videoCorpus, entry)}`,
+      `${storeBucket}/${storeKey(mediaCorpus, entry)}`,
       '--content-type',
       contentTypes[ext] ?? 'application/octet-stream',
       '--cache-control',
@@ -251,17 +251,17 @@ function check() {
   const state = inspect(manifest)
   const problems = [
     ...state.missing.map(p => `missing: ${shortName(p)}`),
-    ...state.modified.map(p => `differs from video.lock: ${shortName(p)}`),
-    ...state.unpublished.map(p => `not in video.lock: ${shortName(p)}`),
+    ...state.modified.map(p => `differs from media.lock: ${shortName(p)}`),
+    ...state.unpublished.map(p => `not in media.lock: ${shortName(p)}`),
   ]
   if (problems.length) {
-    console.error(`video.lock and the worktree disagree:`)
+    console.error('media.lock and the worktree disagree:')
     for (const p of problems) {
       console.error(`  ${p}`)
     }
     process.exit(1)
   }
-  console.log(`${state.ok.length} video file(s) match video.lock`)
+  console.log(`${state.ok.length} media file(s) match media.lock`)
 }
 
 const command = positionals[0] ?? 'status'

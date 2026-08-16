@@ -8,7 +8,7 @@
 // `node`, NOT `npx tsx` — the same reason generate-screenshots.ts says so: tsx's
 // keepNames breaks the functions this hands to page.evaluate.
 //
-// WHAT IT PRODUCES, per spec, under website/static/video:
+// WHAT IT PRODUCES, per spec, under website/static/media:
 //   <name>.mp4   h264, what the docs <Video> plays
 //   <name>.jpg   the poster frame, so the embed is a picture before it is a play
 //                button
@@ -19,7 +19,7 @@
 // mp4 plays in every browser that plays anything, so a second encode was a
 // bigger file, a longer run and another blob in the store for nothing.
 //
-// The bytes are gitignored and live in the video store (scripts/video-store.ts),
+// The bytes are gitignored and live in the media store (scripts/media-store.ts),
 // the same arrangement the figures use and for the same reason: a screencast is
 // an undeltifiable blob that git would keep forever.
 //
@@ -64,7 +64,6 @@ import {
 } from './video-overlay.ts'
 import { videoSpecs } from './video-specs.ts'
 
-import type { SessionUrlSpec } from './screenshot-specs.ts'
 import type { VideoSpec, VideoStep } from './video-specs.ts'
 import type { Page } from 'puppeteer'
 
@@ -99,7 +98,7 @@ process.on('unhandledRejection', (reason: unknown) => {
   log(`UNHANDLED REJECTION: ${reason instanceof Error ? reason.stack : reason}`)
 })
 
-const outDir = path.resolve(import.meta.dirname, '..', 'static', 'video')
+const outDir = path.resolve(import.meta.dirname, '..', 'static', 'media')
 
 // Away from the screenshots' 3334 and a dev server on 3000, so a film can be
 // taken while either is running. Overridable because this repo is worked in by

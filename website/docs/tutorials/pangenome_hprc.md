@@ -334,6 +334,11 @@ drawn across the reference it replaces and never over its own length.
 
 <Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: nothing in the drawing lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so each allele hangs below where it attaches." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
+Taking the dropdown from one to the other says which node in the tangle is which
+node on the axis:
+
+<Video src="/media/pangenome/hprc_layout_anchored.mp4" caption="The same subgraph through Layout, force-directed to anchored. The tangle resolves into ranked rows under the segments lane, and every node lands under the GRCh38 coordinates it holds." />
+
 Each locus below is a window small enough to draw:
 
 | Locus        | Window                         |

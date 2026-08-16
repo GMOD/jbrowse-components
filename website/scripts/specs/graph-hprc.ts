@@ -719,6 +719,37 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
   ]
 }
 
+// What website/scripts/video-specs.ts films on this dataset: the MHC class II
+// window, in the layout the still pair (pangenome/hprc_mhc_anchored) draws it
+// in twice. Shared rather than copied for the same reason the E. coli tours
+// share theirs — a tour through a session that had drifted from the figures'
+// walks a reader into an app the rest of the page is not showing.
+//
+// `paneHeight` is the force half's, and it is doing the same job here as there:
+// this drawing is tall and narrow, so left to size itself the pane takes the
+// whole frame and the linear view the anchored layout is about to line up with
+// goes off the top.
+export function hprcMhcVideoSession(layoutMode: 'auto' | 'force') {
+  return sessionSpec(HPRC_CONFIG, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: 'chr6:32,500,000-32,560,000',
+        tracks: [hg38GeneLane(70), hprcSegmentsLane(MHC_REGION)],
+      },
+      {
+        type: 'GraphGenomeView',
+        loadedTrackId: SEGMENTS_TRACK,
+        loadedRegion: MHC_REGION,
+        layoutMode,
+        colorScheme: 'reference-position',
+        paneHeight: 420,
+      },
+    ],
+  })
+}
+
 export const hprcGraphSpecs: ScreenshotSpec[] = [
   // A WHOLE HUMAN CHROMOSOME AS A GRAPH. This is the scale claim, and the two
   // numbers that make it are in the header: 249 Mb of GRCh38 chr1, drawn from

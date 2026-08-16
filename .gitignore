@@ -32,7 +32,13 @@
 website/static/img
 products/jbrowse-img/img
 
-website/static/video
+# The media store, same arrangement for the same reason: bytes in S3
+# (jb2-media), git tracking website/media.lock, `pnpm media:pull` installing what
+# it names and `build` running it. A screencast is a worse offender than a
+# figure — re-filming the same tour produces different bytes every time, so every
+# regen is a new undeltifiable blob. website/scripts/media.ts is the CLI, and
+# says why the docs deploy needs the pull.
+website/static/media
 scripts/__pycache__
 **/.env
 **/node_modules/

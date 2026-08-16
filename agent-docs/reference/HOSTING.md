@@ -1,6 +1,6 @@
 ---
 name: hosting
-description: Where JBrowse's own hosted assets live and how they are published — the jbrowse.org bucket and its CloudFront distribution, the content-addressed figure store, hosted genome and PIF assets and which of them carry a coarse tier, the three plugins served off jbrowse.org rather than npm, and the drift between a hosted demo file and the script that claims to build it. Read before uploading, overwriting, or citing a hosted URL.
+description: Where JBrowse's own hosted assets live and how they are published — the jbrowse.org bucket and its CloudFront distribution, the content-addressed figure and media stores, hosted genome and PIF assets and which of them carry a coarse tier, the three plugins served off jbrowse.org rather than npm, and the drift between a hosted demo file and the script that claims to build it. Read before uploading, overwriting, or citing a hosted URL.
 ---
 
 # Hosted assets and how they are published
@@ -43,17 +43,23 @@ the full sha256 and `pull` verifies against it, so a collision fails loudly.
 **Never delete from the store, including orphans** — URLs get pasted into issues
 and papers. There is deliberately no `gc`.
 
-## Video store
+## Media store
 
-Same store, third corpus: `s3://jbrowse.org/jb2-video/`, git tracks
-`website/video.lock`, CLI `website/scripts/videos.ts` (`pnpm videos`,
-`video:pull`, `video:push`). `website/static/video/` is gitignored, and a clip is
+Same store, third corpus: `s3://jbrowse.org/jb2-media/`, git tracks
+`website/media.lock`, CLI `website/scripts/media.ts` (`pnpm media`,
+`media:pull`, `media:push`). `website/static/media/` is gitignored, and a clip is
 two files, the mp4 and its poster frame.
+
+MEDIA rather than VIDEO because the corpus already holds a file that is not one:
+every clip ships a poster frame, and the boundary that matters is "a big binary
+the docs embed, kept out of git". A caption track is the next thing on the other
+side of it, and it would otherwise be a second corpus with a second CLI, a second
+lock and a second pull step in `build`.
 
 **It exists because the docs deploy would otherwise delete the videos.**
 `update-docs.yml` runs `rclone sync … s3:jbrowse.org/jb2`, and sync removes
 whatever the freshly-built `dist/` does not carry; a CI checkout has no
-`static/video`. `pnpm build` runs `video:pull`, so astro copies the files in and
+`static/media`. `pnpm build` runs `media:pull`, so astro copies the files in and
 the sync finds them. Regenerating them in CI instead would mean a jbrowse-web
 build plus a headless capture on every "update docs" commit, for output that is
 non-deterministic and re-uploads in full each time.

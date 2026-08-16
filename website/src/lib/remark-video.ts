@@ -11,11 +11,11 @@ import type { Plugin } from 'unified'
 // and deliberately its shape: a caption under the frame, and a link to the live
 // session the tour was filmed in.
 //
-//   <Video src="/video/pangenome/pggb_subgraph_launch.mp4"
+//   <Video src="/media/pangenome/pggb_subgraph_launch.mp4"
 //     caption="Cutting a subgraph out of the locus on screen." />
 //
 // Attributes:
-//   src      required; the mp4 url (local `/video/...` or absolute https://…)
+//   src      required; the mp4 url (local `/media/...` or absolute https://…)
 //   poster   optional; defaults to the `.jpg` generate-video.ts writes beside it
 //   caption  optional; figcaption text
 //   loop     "true" to loop
@@ -28,9 +28,9 @@ import type { Plugin } from 'unified'
 // rectangle, so it is derived rather than left to each call site to remember.
 const videoRe = /<Video\s+([\s\S]*?)\s*\/>/
 
-// `/video/pangenome/x.mp4` -> the spec named `pangenome/x`.
+// `/media/pangenome/x.mp4` -> the spec named `pangenome/x`.
 const specNameOf = (src: string) =>
-  /^\/video\/(.+)\.mp4$/.exec(src)?.[1] ?? undefined
+  /^\/media\/(.+)\.mp4$/.exec(src)?.[1] ?? undefined
 
 const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
   const base = options.base?.replace(/\/$/, '') ?? ''
