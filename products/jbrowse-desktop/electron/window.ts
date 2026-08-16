@@ -4,10 +4,12 @@ import { pathToFileURL } from 'node:url'
 import { BrowserWindow, Menu, app, shell } from 'electron'
 
 import { checkForUpdatesManually } from './autoUpdater.ts'
+import { BLAT_PARTITION } from './blatSession.ts'
 import {
   isAppUrl,
   isOAuthRedirect,
   isSafeExternalUrl,
+  isWebUrl,
 } from './navigationGuard.ts'
 import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
@@ -177,10 +179,11 @@ export async function createMainWindow(
 
 /**
  * Open genome.ucsc.edu (or any BLAT server) in a window so the user can solve
- * the Cloudflare Turnstile CAPTCHA that now fronts hgBlat. This window shares
- * the default session cookie jar with the app, so once solved the cf_clearance
- * cookie is available to subsequent main-process BLAT requests. Resolves true
- * when the clearance cookie appears, false if the user closes the window first.
+ * the Cloudflare Turnstile CAPTCHA that now fronts hgBlat. The window runs on
+ * the BLAT partition rather than the app's default jar, so the cf_clearance
+ * cookie a solve leaves behind is visible to `blatFetch` (which uses the same
+ * partition) and to nothing else. Resolves true when the clearance cookie
+ * appears, false if the user closes the window first.
  */
 export function createChallengeWindow(url: string): Promise<boolean> {
   const win = new BrowserWindow({
@@ -190,7 +193,24 @@ export function createChallengeWindow(url: string): Promise<boolean> {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      partition: BLAT_PARTITION,
     },
+  })
+
+  // A challenge page is a whole third-party site the user is looking at, so it
+  // navigates freely — a Turnstile solve is a redirect chain. What it may not
+  // do is leave the web: a file:// or custom-scheme navigation reaches for the
+  // machine rather than the server. Popups go to the real browser, as they do
+  // from the main window.
+  win.webContents.setWindowOpenHandler(edata => {
+    openExternal(edata.url)
+    return { action: 'deny' }
+  })
+  win.webContents.on('will-navigate', (event, target) => {
+    if (!isWebUrl(target)) {
+      event.preventDefault()
+      console.error(`Refusing to navigate the BLAT window to: ${target}`)
+    }
   })
 
   win.loadURL(url).catch(logError)

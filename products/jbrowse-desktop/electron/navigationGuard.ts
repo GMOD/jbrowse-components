@@ -50,15 +50,22 @@ export function isOAuthRedirect(target: string, redirectUri: string) {
   }
 }
 
-// shell.openExternal hands the url to the OS, which will happily launch a
-// file:// path in whatever application claims it — so a page must not be able
-// to open one. Only the web protocols a browser would take.
-const EXTERNALLY_OPENABLE_PROTOCOLS = new Set(['http:', 'https:'])
+const WEB_PROTOCOLS = new Set(['http:', 'https:'])
 
-export function isSafeExternalUrl(target: string) {
+// A url that names a server rather than the machine. Everything else — file://,
+// a custom scheme some other installed app registered — is a way to reach past
+// the web from a page, so the two guards below both start here.
+export function isWebUrl(target: string) {
   try {
-    return EXTERNALLY_OPENABLE_PROTOCOLS.has(new URL(target).protocol)
+    return WEB_PROTOCOLS.has(new URL(target).protocol)
   } catch {
     return false
   }
+}
+
+// shell.openExternal hands the url to the OS, which will happily launch a
+// file:// path in whatever application claims it — so a page must not be able
+// to open one.
+export function isSafeExternalUrl(target: string) {
+  return isWebUrl(target)
 }
