@@ -1,5 +1,6 @@
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 
+import { hitTestClip } from '../../features/clip/hitTest.ts'
 import { hitTestCoverage } from '../../features/coverage/hitTest.ts'
 import { hitTestGap } from '../../features/gap/hitTest.ts'
 import { hitTestInterbase } from '../../features/indicator/hitTest.ts'
@@ -10,8 +11,7 @@ import {
 import { hitTestMismatch } from '../../features/mismatch/hitTest.ts'
 import { hitTestModification } from '../../features/modification/hitTest.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
-import { hitTestSoftclipBase } from '../../features/softclip/hitTest.ts'
-import { hitTestClip } from '../../shared/clipPass.ts'
+import { hitTestSoftclipBase } from '../../features/softclipBases/hitTest.ts'
 import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'

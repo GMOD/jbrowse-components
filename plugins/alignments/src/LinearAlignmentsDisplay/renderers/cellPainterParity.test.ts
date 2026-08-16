@@ -2,7 +2,7 @@ import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
 import { drawModifications } from '../../features/modification/drawCanvas.ts'
 import { drawPerBaseLetter } from '../../features/perBaseLetter/drawCanvas.ts'
 import { drawPerBaseQuality } from '../../features/perBaseQuality/drawCanvas.ts'
-import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
+import { drawSoftclipBases } from '../../features/softclipBases/drawCanvas.ts'
 
 import type { DrawBlock, RenderState } from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'

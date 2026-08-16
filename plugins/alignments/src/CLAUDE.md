@@ -8,6 +8,25 @@ shared layer here, one pass per directory, so the shaders it packs for belong
 beside it rather than inside the single display that mounts them. Other plugins
 keep shaders display-local and are right to: theirs have one consumer.
 
+**A pass directory holds the canonical file set** — `extract.ts` (worker),
+`buildArrays.ts` (worker), `packGpu.ts` (GPU instances), `drawCanvas.ts`
+(Canvas2D), `hitTest.ts`, `types.ts`. Not every pass needs all six, but a pass
+that has one of these spells it that way, so `features/` can be read as the pass
+list. Every `PileupLayerId` maps to exactly one directory; four ids are
+abbreviations of theirs (`connLine`, `linkedReadLine`, `mod`, `perBaseQual`),
+and `GPU_PILEUP_PASS` is where the mapping is written down.
+
+Two directories are **not** passes and say so by having no `packGpu.ts` —
+`sashimi/` and `derivativePaths/` compute geometry for React SVG overlays, which
+are a separate draw mechanism with no registry. `alignedBaseWalk.ts` is a bare
+shared walk, not a directory at all.
+
+The `clip` layer draws soft AND hard clips from one shader, so `features/clip/`
+owns both emitters and there is no `hardclip/`. `features/softclipBases/` is the
+separate letters-past-the-alignment-end pass; it consumes the `sequence` field
+`emitSoftclip` captures, which is why extraction for two passes lives in one
+place.
+
 ## Strand comes from `strand`; `flags` answers everything else
 
 This pipeline serves SAM-flavoured records and flagless ones (PAF/synteny

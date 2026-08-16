@@ -9,11 +9,10 @@ import {
   parseCigar2Typed,
 } from '@jbrowse/cigar-utils'
 
+import { emitHardclip, emitSoftclip } from '../features/clip/extract.ts'
 import { emitGap, getEffectiveStrand } from '../features/gap/extract.ts'
-import { emitHardclip } from '../features/hardclip/extract.ts'
 import { emitInsertion } from '../features/insertion/extract.ts'
 import { emitMismatch } from '../features/mismatch/extract.ts'
-import { emitSoftclip } from '../features/softclip/extract.ts'
 
 import type {
   GapData,

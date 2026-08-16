@@ -21,6 +21,7 @@ import {
   ARC_MARKER_PASS,
   ARC_PASS,
 } from '../../features/arcs/packGpu.ts'
+import { CLIP_PASS } from '../../features/clip/packGpu.ts'
 import { CONN_LINE_PASS } from '../../features/connectingLines/packGpu.ts'
 import { hasCoverageScale } from '../../features/coverage/coverageScale.ts'
 import { COVERAGE_PASS } from '../../features/coverage/packGpu.ts'
@@ -38,11 +39,10 @@ import { PER_BASE_LETTER_PASS } from '../../features/perBaseLetter/packGpu.ts'
 import { PER_BASE_QUALITY_PASS } from '../../features/perBaseQuality/packGpu.ts'
 import { READ_PASS } from '../../features/read/packGpu.ts'
 import { SNP_COVERAGE_PASS } from '../../features/snpCoverage/packGpu.ts'
-import { SOFTCLIP_BASES_PASS } from '../../features/softclip/packBases.ts'
+import { SOFTCLIP_BASES_PASS } from '../../features/softclipBases/packGpu.ts'
 import { ARC_SLOT_KEYS, LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
 import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
-import { CLIP_PASS } from '../../shared/clipPass.ts'
 import { READ_COLOR_CATEGORY, readCategoryPaletteKeys } from '../colorUtils.ts'
 import {
   getSelectionBounds,

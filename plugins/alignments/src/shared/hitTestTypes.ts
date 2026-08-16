@@ -1,7 +1,7 @@
 // Hit-test types shared across per-feature `features/X/hitTest.ts` files
 // and the orchestrator in `LinearAlignmentsDisplay/hitTestPipeline.ts`.
 //
-// Lives in `shared/` so feature folders and `shared/clipPass.ts` don't have
+// Lives in `shared/` so feature folders and `features/clip/packGpu.ts` don't have
 // to import upward into `LinearAlignmentsDisplay/components/`.
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'

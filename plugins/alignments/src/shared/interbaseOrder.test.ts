@@ -12,7 +12,7 @@ import { interbaseRangeEnds } from './uploadTypes.ts'
 //   - sorted inside a block, so `forEachAtPosition` can binary-search it and the
 //     interbase hover readers keep no side index;
 //   - grouped as (insertions, softclips, hardclips) with the counts intact, so
-//     `insertion/packGpu.ts`, `shared/clipPass.ts` and `shared/uploadTypes.ts`
+//     `insertion/packGpu.ts`, `features/clip/packGpu.ts` and `shared/uploadTypes.ts`
 //     keep slicing subranges without re-scanning `interbaseTypes`.
 //
 // A change that sorted the whole array would satisfy the first and break the

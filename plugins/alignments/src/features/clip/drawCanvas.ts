@@ -1,15 +1,15 @@
-import { rgb255, rgba255 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   frequencyFade,
   pileupRowOffCanvas,
   pileupRowY,
-} from '../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
 import type {
   DrawBlock,
   RenderState,
-} from '../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 type ColorTuple = RenderState['colors']['colorSoftclip']

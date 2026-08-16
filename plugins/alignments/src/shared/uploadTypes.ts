@@ -5,7 +5,7 @@
 // the right fields, including the test fixtures and SVG-export shims.
 //
 // Lives in `shared/` so per-feature folders and shared orchestrators
-// (`clipPass.ts`, `runCoveragePipeline.ts`) don't have to import upward
+// (`features/clip/packGpu.ts`, `runCoveragePipeline.ts`) don't have to import upward
 // into `LinearAlignmentsDisplay/components/`.
 
 import type { InsertSizeBand } from './insertSizeStats.ts'

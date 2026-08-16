@@ -43,7 +43,7 @@
  * each of its (insertions, softclips, hardclips) blocks** and not across them,
  * because those boundaries are a contract: `numInsertions` / `numSoftclips` /
  * `numHardclips` let three GPU passes slice subranges without re-scanning
- * `interbaseTypes` (`insertion/packGpu.ts`, `shared/clipPass.ts`,
+ * `interbaseTypes` (`insertion/packGpu.ts`, `features/clip/packGpu.ts`,
  * `shared/uploadTypes.ts`), and sorting the array outright breaks all three.
  *
  * `forEachAtPosition` is what reads that shape — one binary search per block. It

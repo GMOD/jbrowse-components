@@ -32,7 +32,7 @@ interface InterbaseInput {
 // Sorting the whole array instead would be simpler to read and would break three
 // GPU passes: the block boundaries are a published contract (`numInsertions` /
 // `numSoftclips` / `numHardclips`), sliced by `insertion/packGpu.ts`,
-// `shared/clipPass.ts` and `shared/uploadTypes.ts` so they never re-scan
+// `features/clip/packGpu.ts` and `shared/uploadTypes.ts` so they never re-scan
 // `interbaseTypes`. Sorting inside the blocks keeps every one of those slices
 // exactly where it was, which is why it beat shipping a separate order array.
 export function buildInterbaseArrays(

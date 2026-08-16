@@ -1,9 +1,9 @@
-import { drawSoftclips } from './drawClipBars.ts'
+import { drawSoftclips } from './drawCanvas.ts'
 
 import type {
   DrawBlock,
   RenderState,
-} from '../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Records the fillStyle in effect at each fillRect, so we can read back the

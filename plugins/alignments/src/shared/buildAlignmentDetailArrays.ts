@@ -6,7 +6,7 @@ import { buildModificationArrays } from '../features/modification/buildArrays.ts
 import { buildPerBaseLetterArrays } from '../features/perBaseLetter/buildArrays.ts'
 import { buildPerBaseQualityArrays } from '../features/perBaseQuality/buildArrays.ts'
 import { buildSegmentArrays } from '../features/read/buildSegments.ts'
-import { buildSoftclipBaseArrays } from '../features/softclip/buildArrays.ts'
+import { buildSoftclipBaseArrays } from '../features/softclipBases/buildArrays.ts'
 import { buildInterbaseArrays } from './buildInterbaseArrays.ts'
 
 import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'

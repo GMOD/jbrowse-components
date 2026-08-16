@@ -1,5 +1,5 @@
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
-import { packSoftclipBases } from './packBases.ts'
+import { packSoftclipBases } from './packGpu.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 

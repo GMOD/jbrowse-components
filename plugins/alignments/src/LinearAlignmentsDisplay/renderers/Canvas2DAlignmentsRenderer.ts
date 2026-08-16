@@ -6,6 +6,7 @@ import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBack
 
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
+import { drawHardclips, drawSoftclips } from '../../features/clip/drawCanvas.ts'
 import { drawConnectingLines } from '../../features/connectingLines/drawCanvas.ts'
 import { emptyConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
 import {
@@ -33,8 +34,7 @@ import {
 } from '../../features/read/buildRegion.ts'
 import { drawReads } from '../../features/read/drawCanvas.ts'
 import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
-import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
-import { drawHardclips, drawSoftclips } from '../../shared/drawClipBars.ts'
+import { drawSoftclipBases } from '../../features/softclipBases/drawCanvas.ts'
 import { getSelectionBounds } from '../components/chainOverlayUtils.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
