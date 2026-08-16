@@ -26,6 +26,7 @@ import path from 'node:path'
 const packages = path.join(__dirname, '../..')
 const workspace: Record<string, string> = {
   '@jbrowse/core': path.join(packages, 'core/src'),
+  '@jbrowse/display-ui': __dirname,
   '@jbrowse/render-core': path.join(packages, 'render-core/src'),
 }
 
@@ -37,6 +38,16 @@ function resolveWorkspace(spec: string) {
     if (spec.startsWith(`${pkg}/`)) {
       return path.join(dir, spec.slice(pkg.length + 1))
     }
+  }
+  // A `@jbrowse/*` this map does not know is the one shape that fails OPEN: the
+  // walk would find no file, decline to call it an `@mui/*` offender, and stop —
+  // so a future import of a workspace package that itself reaches Material UI
+  // would pass in silence, which is precisely the class of bug this file exists
+  // to catch. Add the package to `workspace` above.
+  if (spec.startsWith('@jbrowse/') && !spec.startsWith('@jbrowse/mobx-state')) {
+    throw new Error(
+      `muiFree cannot follow '${spec}' — add its source dir to the workspace map in this file`,
+    )
   }
   return undefined
 }
@@ -52,14 +63,26 @@ function resolveFile(base: string) {
 // Value imports only — `import type` is erased, and the overlay contract is
 // built out of type-only imports precisely so it costs nothing at runtime.
 // `export … from` counts as much as `import … from`: a barrel is made of them.
+//
+// `import('x')` counts too. It is a separate chunk rather than startup weight,
+// so it is a weaker offence than a static import — but this repo reaches for
+// `lazy(() => import(…))` constantly, and a claim of "no Material UI in the
+// graph" that a one-line idiom can falsify without the check noticing is not a
+// claim. A deliberate lazy Material import here would need a `@mui/*` entry in
+// package.json anyway, which is the stronger guard this one backs up.
 function valueImports(file: string) {
-  return [
-    ...readFileSync(file, 'utf8').matchAll(
+  const source = readFileSync(file, 'utf8')
+  const statics = [
+    ...source.matchAll(
       /^(?:import|export)\s+(type\s+)?([^;]*?)from\s+'([^']+)'/gm,
     ),
   ]
     .filter(m => !m[1])
     .map(m => m[3]!)
+  const dynamics = [...source.matchAll(/\bimport\('([^']+)'\)/g)].map(
+    m => m[1]!,
+  )
+  return [...statics, ...dynamics]
 }
 
 function muiReach(entry: string) {
@@ -98,19 +121,34 @@ const lgv = path.join(
   __dirname,
   '../../../plugins/linear-genome-view/src/BaseLinearDisplay/components',
 )
+const core = path.join(packages, 'core/src')
 const weightPath = {
-  DisplayChromeBase: 'DisplayChromeBase.tsx',
-  DisplayStatusChromeBase: 'DisplayStatusChromeBase.tsx',
+  DisplayChromeBase: path.join(lgv, 'DisplayChromeBase.tsx'),
+  DisplayStatusChromeBase: path.join(lgv, 'DisplayStatusChromeBase.tsx'),
   // Rendered by canvas, alignments, variants and multi-wiggle *directly*, so it
   // sits behind neither seam and no provider can redirect it. It drew seven
   // Material elements until 2026-08; its own test counts what it renders, and
   // this counts what it imports, which is the half a census misses.
-  FloatingLegend: 'FloatingLegend.tsx',
+  FloatingLegend: path.join(lgv, 'FloatingLegend.tsx'),
+  // The same shape, found the same way, fixed the same way — and it had only
+  // half the guard. DISPLAYCHROME.md names `BaseTooltip` and `FloatingLegend`
+  // together: each is rendered by a display directly, behind neither seam, and
+  // each was drawing Material UI while the census scored it zero. `BaseTooltip`
+  // was pinned only by a test counting what it renders, which is the check its
+  // own history proves insufficient — a tooltip appears only on a hover the
+  // browser census never performs.
+  BaseTooltip: path.join(core, 'ui/BaseTooltip.tsx'),
+  // The determinate bar every loading indicator reaches, including the
+  // comparative displays' — which sit behind neither seam, so an embedder who
+  // mounted `DisplayUIProvider` used to get a `MuiLinearProgress` anyway. Its
+  // own test asserts the rendered tree; this catches an `alpha()` reached two
+  // modules deep, which is how it would regress.
+  StatusProgressBar: path.join(core, 'ui/StatusProgressBar.tsx'),
 }
 
 test.each(Object.entries(weightPath))(
   '%s reaches no Material UI',
   (_name, file) => {
-    expect(muiReach(path.join(lgv, file))).toEqual([])
+    expect(muiReach(file)).toEqual([])
   },
 )
