@@ -72,9 +72,12 @@ test('leaves an index past the end of the list alone', () => {
   )
 })
 
-// The alignments result is the deepest one in the tree and the reason MAX_DEPTH
-// is 3: at 2 it reported every entry of an 86-buffer list as "not in the
-// payload", which reads as a bug in the transfer list rather than in the walk.
+// Both of these pin MAX_DEPTH from below, and each was found the same way: too
+// short, the walk reports every entry of a long list as "not in the payload",
+// which reads as a bug in the transfer list rather than in the walk. At 2 the
+// alignments result reported all 86 of its buffers that way; at 3 the variant
+// one reported all 109 of its genotype-code arrays, and the test-only check in
+// rpcResult threw, taking the fetch behind the matrix and the SVG export.
 test('reaches a buffer three containers down, as the alignments result is', () => {
   const starts = new Uint32Array(4)
   const mismatchStarts = new Uint32Array(4)
@@ -88,6 +91,23 @@ test('reaches a buffer three containers down, as the alignments result is', () =
   ]) as Error
 
   expect(message).toContain('index 1 is groups.1.data.mismatchStarts')
+})
+
+test('reaches a buffer four containers down, as the variant result is', () => {
+  const genotypeCodes = new Uint32Array(4)
+  const value = {
+    perRegionCellData: {
+      0: { featureGenotypeMap: { 'feat-1': { genotypeCodes } } },
+    },
+  }
+
+  const { message } = explainTransferError(detached(0), value, [
+    genotypeCodes.buffer,
+  ]) as Error
+
+  expect(message).toContain(
+    'index 0 is perRegionCellData.0.featureGenotypeMap.feat-1.genotypeCodes',
+  )
 })
 
 test('terminates on a cyclic payload', () => {
