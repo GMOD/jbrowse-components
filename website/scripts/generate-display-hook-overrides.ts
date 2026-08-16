@@ -159,6 +159,20 @@ const HOOKS: Hook[] = [
     ifNotOverridden:
       'false, the strict answer — a comparative display that grows an inert state and does not declare it hangs `displaysSettled` (diagnosable) rather than reporting done with nothing drawn',
   },
+  {
+    name: 'featureNoun',
+    owner:
+      'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
+    ifNotOverridden:
+      '`feature`, which is right wherever the generic word already fits — an override changes what CONTENT is called ("Showing 3 variants"), never what a control is called, since "Variant height" reads as a different setting from "Feature height"',
+  },
+  {
+    name: 'featureWidgetType',
+    owner:
+      'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
+    ifNotOverridden:
+      'the generic `BaseFeatureWidget`. An override is a display whose features have a vocabulary of their own, and its `id` decides which displays share one drawer panel',
+  },
 ]
 
 // Directories whose declarations are attributed to themselves. A display's

@@ -165,6 +165,53 @@ function stateModelFactory() {
 
       /**
        * #getter
+       * Overridable hook (default `'feature'`): the SINGULAR word for one of
+       * the things this display draws, as a menu row or a chip says it —
+       * "Hide this read", "Showing 3 variants".
+       *
+       * Declared here for the same reason as `hoveredFeature` above: it is read
+       * across the display boundary, by chrome that has no idea which display
+       * it is drawing for (`SoloSelectionChip`, alignments' group-label
+       * overlay), and a name only the base declares is a name every such
+       * consumer can rely on. Two displays declared it independently and one of
+       * those declarations WAS this default.
+       *
+       * **A control keeps the generic word; content takes this one.** "Variant
+       * height" reads as a different setting from "Feature height" when it is
+       * the same one, so the shared menus stay on "feature" however the display
+       * answers here, and the noun varies where it names what the user is
+       * looking at — "Showing 3 variants", "Hide this read". A display drawing
+       * something the generic word already fits is right to leave this alone.
+       *
+       * Distinct from the per-hit noun a context menu takes off the clicked
+       * item's own `type` ("mRNA", "gene"); that names one annotation, this
+       * names what the track holds. The hit noun falls back to this.
+       */
+      get featureNoun(): string {
+        return 'feature'
+      },
+
+      /**
+       * #getter
+       * Overridable hook: which widget `openFeatureWidget` opens for one of
+       * this display's features. The default is the generic one, which is what
+       * a display drawing plain features wants and what the canvas base spelled
+       * out by hand.
+       *
+       * An override is a display whose features have a vocabulary of their own —
+       * a read, a variant, a synteny block — and the `id` is deliberately part
+       * of it: two displays naming one id share the drawer panel, which is the
+       * behaviour when the two are showing the same kind of thing.
+       */
+      get featureWidgetType(): { type: string; id: string } {
+        return {
+          type: 'BaseFeatureWidget',
+          id: 'baseFeature',
+        }
+      },
+
+      /**
+       * #getter
        * Returns the effective RPC driver name with hierarchical fallback:
        * 1. This display's explicit rpcDriverName
        * 2. Parent display's effectiveRpcDriverName (for nested displays)

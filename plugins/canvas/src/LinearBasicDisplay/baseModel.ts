@@ -888,19 +888,10 @@ export default function baseStateModelFactory(
          * clicked item's own `type` ("mRNA", "gene"); that names one annotation,
          * this names the track's contents. The hit noun falls back to this.
          */
-        get featureNoun() {
-          return 'feature'
-        },
-
-        /**
-         * #getter
-         */
-        get featureWidgetType() {
-          return {
-            type: 'BaseFeatureWidget',
-            id: 'baseFeature',
-          }
-        },
+        // `featureNoun` and `featureWidgetType` are `BaseDisplay`'s, and this
+        // display's answers ARE the defaults — it draws plain features into the
+        // generic widget. The variant display, which shares this base, overrides
+        // both.
       }))
       .views(self => ({
         /**

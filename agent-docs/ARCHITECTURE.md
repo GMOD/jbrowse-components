@@ -417,7 +417,7 @@ nothing declares — `undefined`, read as a boolean, in silence.
 <!-- BEGIN GENERATED DISPLAY_HOOK_OVERRIDES -->
 
 
-17 overridable hooks. **Sitting on the default** is what a display that does not override one gets.
+19 overridable hooks. **Sitting on the default** is what a display that does not override one gets.
 
 <!-- prettier-ignore -->
 | Hook | Sitting on the default | Declared by |
@@ -439,6 +439,8 @@ nothing declares — `undefined`, read as a boolean, in silence.
 | `scrollableHeight` | `Infinity` — the display does not scroll internally | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `maf/LinearMafDisplay`, `variants/shared` |
 | `growTargetHeight` | grow mode targets the raw `height` slot | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
 | `fetchInert` | false, the strict answer — a comparative display that grows an inert state and does not declare it hangs `displaysSettled` (diagnosable) rather than reporting done with nothing drawn | `linear-comparative-view/LinearSyntenyDisplay` |
+| `featureNoun` | `feature`, which is right wherever the generic word already fits — an override changes what CONTENT is called ("Showing 3 variants"), never what a control is called, since "Variant height" reads as a different setting from "Feature height" | `alignments/LinearAlignmentsDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `variants/LinearVariantDisplay` |
+| `featureWidgetType` | the generic `BaseFeatureWidget`. An override is a display whose features have a vocabulary of their own, and its `id` decides which displays share one drawer panel | `alignments/LinearAlignmentsDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `variants/LinearVariantDisplay`, `variants/shared` |
 <!-- END GENERATED DISPLAY_HOOK_OVERRIDES -->
 
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
