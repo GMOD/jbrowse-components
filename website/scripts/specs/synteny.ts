@@ -3226,8 +3226,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // tall enough to include the optional synteny-track row below the assembly
     // selectors and the full wrapped helper text — 400 clipped the card's bottom
-    // edge mid-sentence
-    viewportHeight: 477,
+    // edge mid-sentence, and 477 clipped it again once each axis took its own
+    // row (the run reported 83 css px)
+    viewportHeight: 561,
     actions: [
       // Manual inherits Quick start's track, so the axes already read
       // HG008T v3.2 / GRCh38_GIABv3 with the synteny track selected — exactly
@@ -3305,8 +3306,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // assemblies intentionally not pre-set: supplying them auto-launches the
     // DotplotView, but this tutorial image is specifically the import form
     name: 'sv_synteny/dotplot_import',
-    // sized to the content: the rest of the viewport was page background
-    viewportHeight: 471,
+    // sized to the content: the rest of the viewport was page background. 471
+    // until the chromosome boxes became opt-in and each axis took its own row,
+    // which the run's own below-the-fold report priced at 89 css px.
+    viewportHeight: 561,
     url: hpyloriUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
     // the hpylori config has synteny tracks, so the form opens in Quick start;
     // this tutorial is specifically about choosing each axis, so switch to

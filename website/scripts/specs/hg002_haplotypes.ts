@@ -409,9 +409,10 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 3000,
     viewportWidth: 950,
-    // 505: measured back from the run's below-the-fold report, which had 55 css
-    // px of blank under the form at 560.
-    viewportHeight: 505,
+    // Measured back from the run's below-the-fold report every time the form's
+    // own height moved: 505 until each axis took its own row and the chromosome
+    // boxes gained an opt-in above them, which cost 55 css px.
+    viewportHeight: 561,
     stages: [
       {
         actions: [
