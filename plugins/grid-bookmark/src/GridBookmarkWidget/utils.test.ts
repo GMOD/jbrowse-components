@@ -2,6 +2,10 @@ import { downloadBookmarkFile, parseBookmarks } from './utils.ts'
 
 import type { GridBookmarkModel } from './model.ts'
 
+// jsdom's Blob implements only slice/size/type (jsdom/jsdom#2555);
+// `config/jest/blob.js` fills `text()` off its FileReader.
+const readBlobText = (blob: Blob) => blob.text()
+
 const mockSaveAs = jest.fn((_blob: Blob, _name: string) => {})
 
 // Factory is hoisted, so reference mockSaveAs lazily via a wrapper to avoid
@@ -12,21 +16,6 @@ jest.mock('@jbrowse/core/util/FileSaver', () => ({
     mockSaveAs(blob, name)
   },
 }))
-
-// jsdom's Blob does not implement Blob.prototype.text() — only slice/size/type
-// are present (see jsdom/jsdom#2555). FileReader is fully implemented though.
-function readBlob(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      resolve(reader.result as string)
-    }
-    reader.onerror = () => {
-      reject(reader.error ?? new Error('FileReader error'))
-    }
-    reader.readAsText(blob)
-  })
-}
 
 const sampleBookmarks = [
   {
@@ -70,10 +59,10 @@ test('BED export writes one file per assembly, omits header, uses . for empty la
     mockSaveAs.mock.calls.map(([blob, name]) => [name, blob]),
   )
 
-  expect(await readBlob(byName['jbrowse_bookmarks_volvox.bed']!)).toBe(
+  expect(await readBlobText(byName['jbrowse_bookmarks_volvox.bed']!)).toBe(
     'ctgA\t100\t200\tfirst\nctgA\t300\t400\t.\n',
   )
-  expect(await readBlob(byName['jbrowse_bookmarks_hg38.bed']!)).toBe(
+  expect(await readBlobText(byName['jbrowse_bookmarks_hg38.bed']!)).toBe(
     'ctgB\t50\t60\tother-asm\n',
   )
 })
@@ -83,7 +72,7 @@ test('TSV export concatenates all assemblies into one file with header and 1-bas
   expect(mockSaveAs).toHaveBeenCalledTimes(1)
   const [blob, name] = mockSaveAs.mock.calls[0]!
   expect(name).toBe('jbrowse_bookmarks.tsv')
-  expect(await readBlob(blob)).toBe(
+  expect(await readBlobText(blob)).toBe(
     'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n' +
       'ctgA\t101\t200\tfirst\tvolvox\t{volvox}ctgA:101..200\n' +
       'ctgA\t301\t400\t.\tvolvox\t{volvox}ctgA:301..400\n' +
@@ -96,7 +85,7 @@ test('only selected bookmarks are exported when selection is non-empty', async (
     'TSV',
     makeModel([sampleBookmarks[0]!, sampleBookmarks[2]!]),
   )
-  const text = await readBlob(mockSaveAs.mock.calls[0]![0])
+  const text = await readBlobText(mockSaveAs.mock.calls[0]![0])
   expect(text).toContain('ctgA\t101\t200\tfirst')
   expect(text).toContain('ctgB\t51\t60\tother-asm')
   expect(text).not.toContain('300\t400')
@@ -148,7 +137,7 @@ test('TSV import converts 1-based starts back to 0-based and uses its own assemb
 
 test('TSV export then import round-trips coordinates', async () => {
   await downloadBookmarkFile('TSV', makeModel())
-  const exported = await readBlob(mockSaveAs.mock.calls[0]![0])
+  const exported = await readBlobText(mockSaveAs.mock.calls[0]![0])
   const parsed = parseBookmarks(exported, 'ignored')
   expect(parsed.map(b => ({ start: b.start, end: b.end }))).toEqual(
     sampleBookmarks.map(b => ({ start: b.start, end: b.end })),

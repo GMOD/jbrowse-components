@@ -89,10 +89,11 @@ test.each([
     const call = (saveAs as unknown as jest.Mock).mock.calls[0]
     const blob = call[0] as Blob
     const filename = call[1] as string
-    // Blob.text() rather than a FileReader: node supplies the global `Blob`
-    // that the dialog constructs, and jsdom's FileReader takes only its own
-    // realm's, so every case in here failed on the read rather than on
-    // anything it was checking
+    // `config/jest/blob.js` fills `Blob.prototype.text` on jsdom's Blob, which
+    // implements only slice/size/type. This used to read node's Blob, which the
+    // test environment installed over jsdom's — and that broke jsdom's
+    // FileReader for every OTHER export test, since it brand-checks its
+    // argument. The shim is what lets both idioms work against one realm.
     const content = await blob.text()
 
     expect(filename).toBe(expectedFilename)

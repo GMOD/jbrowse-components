@@ -13,11 +13,26 @@ const JSDOMEnvironment = require('jest-environment-jsdom').default
 // They must be installed as ONE consistent set. Mixing jsdom's Headers with
 // another realm's Response/Request is exactly the mismatch that made the old
 // jest-fetch-mock setup delete jsdom's copies before calling enableMocks().
-// AbortController/AbortSignal are deliberately NOT in this set. They are the
-// one pair jsdom already implements and that jsdom's own EventTarget
-// brand-checks: `document.addEventListener(t, fn, { signal })` throws
-// "member 'signal' that is not of type 'AbortSignal'" for a node-realm signal.
-// Every drag gesture in the app aborts its listeners that way.
+//
+// What stays OUT is a type jsdom implements AND brand-checks from its OWN
+// implementation of the type that consumes it. Overriding one of those breaks
+// the pair, and neither realm can satisfy both halves — so the tie goes to the
+// pair the app code actually uses. `jsdomRealms.test.ts` pins both, including
+// what each choice costs.
+//
+// - **AbortController/AbortSignal**: jsdom's EventTarget brand-checks the
+//   signal, so `document.addEventListener(t, fn, { signal })` throws "member
+//   'signal' that is not of type 'AbortSignal'" for a node-realm one. Every
+//   drag gesture in the app aborts its listeners that way.
+// - **Blob**: jsdom's `FileReader.readAsText` brand-checks it, and every export
+//   feature in the app pairs `new Blob(...)` with `saveAs`. Overriding it threw
+//   "parameter 1 is not of type 'Blob'" in six tests across two suites and
+//   nothing else — it was in this set only for symmetry with `Response`, which
+//   never needed it. What node's Blob genuinely had over jsdom's is
+//   `text`/`arrayBuffer`/`stream`, and `config/jest/blob.js` fills those off
+//   jsdom's own FileReader instead. The residual price is that undici
+//   stringifies a jsdom Blob handed to `new Response(blob)`; nothing here does
+//   that.
 const FETCH_GLOBALS = [
   'fetch',
   'Headers',
@@ -25,7 +40,6 @@ const FETCH_GLOBALS = [
   'Response',
   'FormData',
   'ReadableStream',
-  'Blob',
 ]
 
 module.exports = class JSDOMWithFetchEnvironment extends JSDOMEnvironment {
