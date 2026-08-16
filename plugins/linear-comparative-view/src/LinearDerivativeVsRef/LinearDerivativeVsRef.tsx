@@ -278,12 +278,27 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     }) as unknown as {
       views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
     }
+    // Before the navigation, not after it, and this is the ordering the bug
+    // was. A replace detaches the launching view and destroys it a task later
+    // (`scheduleDetachedDestroy`), and `track` lives in it — so a dialog left
+    // mounted across an await is a dialog whose next render walks a dead node.
+    // `getContainingView(track)` in the body below is that walk, and it THROWS,
+    // out of `DialogQueue`, which sits above every per-view ErrorBoundary: the
+    // whole page became jbrowse-web's fatal-error dialog. `drawSynteny` closes
+    // in the same tick and never saw it.
+    //
+    // Navigation errors therefore go to the session rather than into `error`
+    // below: this component is gone by the time one can arrive.
+    handleClose()
     await Promise.all(
       locStrings.map(async (loc, idx) => {
-        await created.views[idx]?.navToLocString(loc, trackAssembly!)
+        try {
+          await created.views[idx]?.navToLocString(loc, trackAssembly!)
+        } catch (e) {
+          session.notifyError(`Could not navigate to ${loc}`, e)
+        }
       }),
     )
-    handleClose()
   }
 
   async function drawSynteny(candidate: DerivativeCandidate, replace: boolean) {
@@ -352,6 +367,16 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
       console.error(e)
       setError(e)
     })
+  }
+
+  // The backstop under the ordering `drawSplitView` now keeps. Every read below
+  // starts at `track`, and a destroyed `track` turns the two walks in the
+  // dialog's own props into throws rather than into `undefined`, so a route to
+  // here that closes late — a plugin's, or one added next — takes the page
+  // instead of the dialog. MST's `isAlive` is observable, so the render that
+  // sees it flip is the one the destroy schedules.
+  if (!isAlive(track)) {
+    return null
   }
 
   return (

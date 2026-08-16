@@ -3588,6 +3588,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Linear synteny view' },
       { type: 'delay', ms: 1000 },
     ],
+    // The drag ends on the dotplot canvas, so its position readout was left
+    // hanging over the selection the top frame is OF, reading "x - out of
+    // bounds". Hidden at the shot rather than cleared with PARK_CURSOR: the
+    // cursor is what holds the rubberband and the context menu that go with it.
+    hideTooltip: true,
     stages: [
       // top frame: the context menu left open by the shared actions above
       {},

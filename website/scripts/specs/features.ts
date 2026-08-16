@@ -751,5 +751,11 @@ export const featuresSpecs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 6000 },
     ],
+    // The click leaves the cursor on the motif, so protein3d's own tooltip sat
+    // over the feature rows beside it — including the bar that was clicked,
+    // which is the one thing in that panel the figure needs visible. Hidden at
+    // the shot rather than cleared with PARK_CURSOR, which would also drop
+    // whatever molstar is drawing off the hover.
+    hideTooltip: true,
   },
 ]

@@ -1,7 +1,9 @@
 import '@testing-library/jest-dom'
 
+import { getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
+import { observer } from 'mobx-react'
 
 import { measure } from './teardownNoise.ts'
 import {
@@ -84,6 +86,50 @@ test('replaceView does not read the view it swapped out', async () => {
   await waitFor(() => {
     expect(isAlive(view)).toBe(false)
   }, delay)
+}, 60000)
+
+// The same replace, seen a task later and through what is mounted BESIDE the
+// view rather than under it — the window `measure` deliberately stops short of,
+// and the one that actually took the page.
+//
+// A launch dialog resolves its source off a track, in its own render, and
+// "Replace current view" destroys the view that track lives in. The dialog is
+// still mounted while that happens, so the deferred destroy invalidates what it
+// is observing and the re-render walks a dead node: `getContainingView` throws
+// where a scalar read would only warn. `DialogQueue` renders under `App`, above
+// every per-view boundary, so the throw reached jbrowse-web's own and the whole
+// page became the fatal-error dialog. The figure sweep saw it as a missing
+// `[aria-label="JBrowse"]` on `cancer_sv/multihop_split_view`.
+//
+// So the assertion is that the app is still there, not that nothing threw: the
+// boundary this gates CATCHES the throw and reports it, which is the outcome
+// being asked for.
+test('a dialog holding a node in a replaced view does not take the page', async () => {
+  const { view, session } = await viewWithTrack()
+  const track = view.tracks[0]
+
+  const SourceReadingDialog = observer(function SourceReadingDialog() {
+    // subscribed to the tree that is about to die, which is what makes the
+    // destroy re-render this rather than leave it holding a stale frame
+    const count = track.displays.length
+    getContainingView(track)
+    return <div data-testid="source-reading-dialog">{count}</div>
+  })
+
+  session.queueDialog(() => [SourceReadingDialog, {}])
+  await screen.findByTestId('source-reading-dialog', ...opts)
+
+  act(() => {
+    session.replaceView(view, 'LinearGenomeView')
+  })
+  await act(async () => {
+    await new Promise(resolve => {
+      setTimeout(resolve, 0)
+    })
+  })
+
+  expect(screen.queryByText('Fatal error')).toBeNull()
+  expect(screen.getByTestId('app-bar')).toBeTruthy()
 }, 60000)
 
 // The half of the detach that would have broken silently, and the reason
