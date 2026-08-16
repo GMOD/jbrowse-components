@@ -24,6 +24,7 @@ function makeState(overrides: Partial<RenderState> = {}): RenderState {
     coverageMinDepth: undefined,
     coverageMaxDepth: undefined,
     coverageIsLog: false,
+    coverageSnpMinFrequency: 0,
     showPerBaseQuality: false,
     showPerBaseLetter: false,
     showMismatches: true,

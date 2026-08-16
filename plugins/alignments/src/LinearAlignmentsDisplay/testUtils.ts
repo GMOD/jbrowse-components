@@ -104,6 +104,7 @@ export function makeTestRenderState(
     coverageMinDepth: undefined,
     coverageMaxDepth: undefined,
     coverageIsLog: false,
+    coverageSnpMinFrequency: 0,
     showMismatches: false,
     filterMismatchesByFrequency: false,
     mismatchAlpha: false,

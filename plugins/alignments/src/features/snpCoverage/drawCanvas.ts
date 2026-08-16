@@ -24,5 +24,6 @@ export function drawSnpSegmentsCanvas(
     buildSnpBaseColors(state),
     bpToX,
     viewWidth,
+    state.coverageSnpMinFrequency,
   )
 }

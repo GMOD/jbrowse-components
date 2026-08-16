@@ -265,6 +265,7 @@ export function drawSnpSegments(
   colors: SnpBaseColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
+  minFrequency = 0,
 ) {
   const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const u32 = new Uint32Array(buffer)
@@ -280,6 +281,14 @@ export function drawSnpSegments(
     const px = Math.min(pxA, pxB)
     const px2 = Math.max(pxA, pxB)
     if (px > viewWidth || px2 < 0) {
+      continue
+    }
+    // The allele-fraction floor, the twin of snpCoverage.slang's own test.
+    // `segHeight` IS this allele's share of the position's depth, so the
+    // setting needs no conversion, and skipping leaves the segments above it
+    // where they were — the grey depth bar underneath is ungated, so a hidden
+    // slice reads as reference rather than as a gap.
+    if (f32[off + SNP_F32.segHeight]! < minFrequency) {
       continue
     }
     const barH =

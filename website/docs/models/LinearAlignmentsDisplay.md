@@ -145,6 +145,7 @@ the whole surface.
 | <span id="getter-showcoverage">**showCoverage**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showpileup">**showPileup**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-coverageheight">**coverageHeight**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-coveragesnpminfrequency">**coverageSnpMinFrequency**</span><br><code>number</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showmismatches">**showMismatches**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-drawsingletons">**drawSingletons**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
@@ -400,6 +401,7 @@ the whole surface.
 | <span id="action-setdebugarcgeometry">**setDebugArcGeometry**</span><br><code>(on: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setshowpileup">**setShowPileup**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setcoverageheight">**setCoverageHeight**</span><br><code>(height: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setcoveragesnpminfrequency">**setCoverageSnpMinFrequency**</span><br><code>(fraction: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setreadconnectionsheight">**setReadConnectionsHeight**</span><br><code>(height: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setsashimiarcsheight">**setSashimiArcsHeight**</span><br><code>(height: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setminsashimiscore">**setMinSashimiScore**</span><br><code>(score: number) =&gt; void</code> |  | LinearAlignmentsDisplay |

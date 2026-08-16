@@ -432,6 +432,10 @@ export default function stateModelFactory(
           return getConf(self, 'coverageHeight')
         },
         /** #getter */
+        get coverageSnpMinFrequency(): number {
+          return getConf(self, 'coverageSnpMinFrequency')
+        },
+        /** #getter */
         get showMismatches(): boolean {
           return getConf(self, 'showMismatches')
         },
@@ -2830,6 +2834,7 @@ export default function stateModelFactory(
             coverageMinDepth: self.coverageDepthDomain?.[0],
             coverageMaxDepth: self.coverageDepthDomain?.[1],
             coverageIsLog: self.coverageIsLog,
+            coverageSnpMinFrequency: self.coverageSnpMinFrequency,
             showMismatches: self.showMismatches,
             filterMismatchesByFrequency: self.filterMismatchesByFrequency,
             mismatchAlpha: self.mismatchAlpha,
@@ -3584,6 +3589,13 @@ export default function stateModelFactory(
                 self.resizableBandBounds,
               ),
             )
+          },
+
+          /**
+           * #action
+           */
+          setCoverageSnpMinFrequency(fraction: number) {
+            setConf(self, 'coverageSnpMinFrequency', fraction)
           },
 
           /**

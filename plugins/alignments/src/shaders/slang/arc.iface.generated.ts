@@ -33,13 +33,14 @@ export const UNIFORM_OFFSET_F32 = {
   interbaseHeight: 15,
   depthDomainMax: 16,
   depthDomainMin: 17,
-  blockStartPx: 18,
-  blockWidth: 19,
-  lineWidthPx: 20,
-  pairedArcsDown: 21,
-  arcsYDomainBp: 22,
-  arcsYLog: 23,
-  reversed: 30,
+  snpMinFreq: 18,
+  blockStartPx: 19,
+  blockWidth: 20,
+  lineWidthPx: 21,
+  pairedArcsDown: 22,
+  arcsYDomainBp: 23,
+  arcsYLog: 24,
+  reversed: 31,
   pxPerBp: 212,
   arcBandH: 213,
   dpr: 214,
@@ -47,34 +48,34 @@ export const UNIFORM_OFFSET_F32 = {
 
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
-  colorBaseA: 31,
-  colorBaseC: 32,
-  colorBaseG: 33,
-  colorBaseT: 34,
-  colorBaseN: 35,
-  colorInsertion: 36,
-  colorDeletion: 37,
-  colorSkip: 38,
-  colorSoftclip: 39,
-  colorHardclip: 40,
-  colorInsertionIndicator: 41,
-  colorSoftclipIndicator: 42,
-  colorHardclipIndicator: 43,
-  colorCoverage: 44,
-  colorFlatConnector: 45,
-  colorConnectingLine: 46,
-  colorOverlapTint: 47,
-  colorOverlap: 48,
+  colorBaseA: 32,
+  colorBaseC: 33,
+  colorBaseG: 34,
+  colorBaseT: 35,
+  colorBaseN: 36,
+  colorInsertion: 37,
+  colorDeletion: 38,
+  colorSkip: 39,
+  colorSoftclip: 40,
+  colorHardclip: 41,
+  colorInsertionIndicator: 42,
+  colorSoftclipIndicator: 43,
+  colorHardclipIndicator: 44,
+  colorCoverage: 45,
+  colorFlatConnector: 46,
+  colorConnectingLine: 47,
+  colorOverlapTint: 48,
+  colorOverlap: 49,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
-  colorScheme: 24,
-  chainMode: 25,
-  showStroke: 26,
-  coverageScaleType: 27,
-  filterMismatchesByFrequency: 28,
-  mismatchAlpha: 29,
+  colorScheme: 25,
+  chainMode: 26,
+  showStroke: 27,
+  coverageScaleType: 28,
+  filterMismatchesByFrequency: 29,
+  mismatchAlpha: 30,
 } as const
 
 
@@ -156,6 +157,7 @@ export interface Uniforms {
   interbaseHeight: number
   depthDomainMax: number
   depthDomainMin: number
+  snpMinFreq: number
   blockStartPx: number
   blockWidth: number
   lineWidthPx: number
@@ -217,37 +219,38 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[15] = uniforms.interbaseHeight
   f32[16] = uniforms.depthDomainMax
   f32[17] = uniforms.depthDomainMin
-  f32[18] = uniforms.blockStartPx
-  f32[19] = uniforms.blockWidth
-  f32[20] = uniforms.lineWidthPx
-  f32[21] = uniforms.pairedArcsDown
-  f32[22] = uniforms.arcsYDomainBp
-  f32[23] = uniforms.arcsYLog
-  i32[24] = uniforms.colorScheme
-  i32[25] = uniforms.chainMode
-  i32[26] = uniforms.showStroke
-  i32[27] = uniforms.coverageScaleType
-  i32[28] = uniforms.filterMismatchesByFrequency
-  i32[29] = uniforms.mismatchAlpha
-  f32[30] = uniforms.reversed
-  u32[31] = uniforms.colorBaseA
-  u32[32] = uniforms.colorBaseC
-  u32[33] = uniforms.colorBaseG
-  u32[34] = uniforms.colorBaseT
-  u32[35] = uniforms.colorBaseN
-  u32[36] = uniforms.colorInsertion
-  u32[37] = uniforms.colorDeletion
-  u32[38] = uniforms.colorSkip
-  u32[39] = uniforms.colorSoftclip
-  u32[40] = uniforms.colorHardclip
-  u32[41] = uniforms.colorInsertionIndicator
-  u32[42] = uniforms.colorSoftclipIndicator
-  u32[43] = uniforms.colorHardclipIndicator
-  u32[44] = uniforms.colorCoverage
-  u32[45] = uniforms.colorFlatConnector
-  u32[46] = uniforms.colorConnectingLine
-  u32[47] = uniforms.colorOverlapTint
-  u32[48] = uniforms.colorOverlap
+  f32[18] = uniforms.snpMinFreq
+  f32[19] = uniforms.blockStartPx
+  f32[20] = uniforms.blockWidth
+  f32[21] = uniforms.lineWidthPx
+  f32[22] = uniforms.pairedArcsDown
+  f32[23] = uniforms.arcsYDomainBp
+  f32[24] = uniforms.arcsYLog
+  i32[25] = uniforms.colorScheme
+  i32[26] = uniforms.chainMode
+  i32[27] = uniforms.showStroke
+  i32[28] = uniforms.coverageScaleType
+  i32[29] = uniforms.filterMismatchesByFrequency
+  i32[30] = uniforms.mismatchAlpha
+  f32[31] = uniforms.reversed
+  u32[32] = uniforms.colorBaseA
+  u32[33] = uniforms.colorBaseC
+  u32[34] = uniforms.colorBaseG
+  u32[35] = uniforms.colorBaseT
+  u32[36] = uniforms.colorBaseN
+  u32[37] = uniforms.colorInsertion
+  u32[38] = uniforms.colorDeletion
+  u32[39] = uniforms.colorSkip
+  u32[40] = uniforms.colorSoftclip
+  u32[41] = uniforms.colorHardclip
+  u32[42] = uniforms.colorInsertionIndicator
+  u32[43] = uniforms.colorSoftclipIndicator
+  u32[44] = uniforms.colorHardclipIndicator
+  u32[45] = uniforms.colorCoverage
+  u32[46] = uniforms.colorFlatConnector
+  u32[47] = uniforms.colorConnectingLine
+  u32[48] = uniforms.colorOverlapTint
+  u32[49] = uniforms.colorOverlap
   f32[52] = uniforms.arcColor[0][0]
   f32[53] = uniforms.arcColor[0][1]
   f32[54] = uniforms.arcColor[0][2]

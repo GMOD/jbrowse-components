@@ -257,6 +257,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     coverageYOffset: 0,
     coverageMaxDepth: 9,
     coverageIsLog: false,
+    coverageSnpMinFrequency: 0,
     showMismatches: true,
     filterMismatchesByFrequency: false,
     mismatchAlpha: false,

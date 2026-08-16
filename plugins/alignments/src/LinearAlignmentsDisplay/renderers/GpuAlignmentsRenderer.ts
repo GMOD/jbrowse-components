@@ -142,6 +142,9 @@ function fillFrameUniforms(
   // `makeScoreNormalizer` rather than a max-only approximation of it. 0 unless
   // the track carries a `minScore` bound.
   f[U.depthDomainMin] = state.coverageMinDepth ?? 0
+  // The band's allele-fraction floor, tested against each segment's own
+  // `segHeight` in snpCoverage.slang and in `drawSnpSegments`.
+  f[U.snpMinFreq] = state.coverageSnpMinFrequency
   i[UI.coverageScaleType] = state.coverageIsLog ? 1 : 0
   i[UI.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
   i[UI.mismatchAlpha] = state.mismatchAlpha ? 1 : 0

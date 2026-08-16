@@ -77,6 +77,11 @@ public struct Uniforms {
   // carries a `minScore` bound, which moves the depth the bars draw flat at.
   public float depthDomainMax;
   public float depthDomainMin;
+  // Allele-fraction floor for the band's SNP segments: a segment whose
+  // `segHeight` (its share of THIS position's depth) is below this is folded
+  // away. 0 draws every mismatch. The grey depth bar is drawn underneath and is
+  // not gated, so a hidden segment reads as reference rather than as a gap.
+  public float snpMinFreq;
 
   // Arc pass
   public float blockStartPx;

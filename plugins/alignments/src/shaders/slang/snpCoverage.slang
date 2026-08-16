@@ -36,6 +36,14 @@ float3 snpColor(float ct, Uniforms u) {
 
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  // The allele-fraction floor. `segHeight` IS this allele's share of the
+  // position's depth, so the test is the setting with no conversion. Folding
+  // the vertex rather than shrinking the segment is what leaves the stack above
+  // it where it was: the grey depth bar underneath is ungated, so the hidden
+  // slice reads as reference. Canvas2D's `drawSnpSegments` runs the same test.
+  if (inst.segHeight < u.snpMinFreq) {
+    return discardVertex();
+  }
   ColorVsOut o;
   o.position = covSegQuad(inst.position, 1u, inst.yOffset, inst.segHeight,
                           inst.relDepth, quadLocal(vid), u);

@@ -115,6 +115,7 @@ the whole surface.
 | <span id="getter-showcoverage">**showCoverage**</span><br><code>boolean</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#getter-showcoverage) |
 | <span id="getter-showpileup">**showPileup**</span><br><code>boolean</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#getter-showpileup) |
 | <span id="getter-coverageheight">**coverageHeight**</span><br><code>number</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#getter-coverageheight) |
+| <span id="getter-coveragesnpminfrequency">**coverageSnpMinFrequency**</span><br><code>number</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#getter-coveragesnpminfrequency) |
 | <span id="getter-showmismatches">**showMismatches**</span><br><code>boolean</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#getter-showmismatches) |
 | <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#getter-showinterbaseindicators) |
 | <span id="getter-drawsingletons">**drawSingletons**</span><br><code>boolean</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#getter-drawsingletons) |
@@ -369,6 +370,7 @@ the whole surface.
 | <span id="action-setdebugarcgeometry">**setDebugArcGeometry**</span><br><code>(on: boolean) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setdebugarcgeometry) |
 | <span id="action-setshowpileup">**setShowPileup**</span><br><code>(show: boolean) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setshowpileup) |
 | <span id="action-setcoverageheight">**setCoverageHeight**</span><br><code>(height: number) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setcoverageheight) |
+| <span id="action-setcoveragesnpminfrequency">**setCoverageSnpMinFrequency**</span><br><code>(fraction: number) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setcoveragesnpminfrequency) |
 | <span id="action-setreadconnectionsheight">**setReadConnectionsHeight**</span><br><code>(height: number) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setreadconnectionsheight) |
 | <span id="action-setsashimiarcsheight">**setSashimiArcsHeight**</span><br><code>(height: number) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setsashimiarcsheight) |
 | <span id="action-setminsashimiscore">**setMinSashimiScore**</span><br><code>(score: number) =&gt; void</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#action-setminsashimiscore) |

@@ -70,6 +70,12 @@ export interface RenderState {
   coverageMinDepth: number | undefined
   coverageMaxDepth: number | undefined
   coverageIsLog: boolean
+  // Allele-fraction floor for the band's coloured segments: a segment whose
+  // share of its position's depth is below this is not drawn, and the grey
+  // depth bar shows through where it would have been. 0 colours every
+  // mismatch. Nothing to do with `filterMismatchesByFrequency`, which is the
+  // PILEUP's depth-dependent fade.
+  coverageSnpMinFrequency: number
   showMismatches: boolean
   filterMismatchesByFrequency: boolean
   // Fade mismatch bases by their per-base Phred quality (advanced setting).

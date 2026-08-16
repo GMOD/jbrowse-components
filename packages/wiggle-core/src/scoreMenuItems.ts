@@ -122,9 +122,11 @@ export function makeCrossHatchItem(self: {
 
 // The single Score submenu used by every wiggle-family display. Composition is
 // capability-driven: `leadingItems` lets wiggle prepend its Resolution/Summary
-// submenus and coverage prepend its on/off + y-axis toggles; `scaleType` is
-// dropped by manhattan (linear-only); `autoscaleOptions` is overridden by
-// coverage's reduced + dynamic-σ list.
+// submenus and coverage prepend its on/off + y-axis toggles, `trailingItems`
+// appends what belongs after the range controls rather than before them (the
+// alignments band's allele-fraction floor); `scaleType` is dropped by manhattan
+// (linear-only); `autoscaleOptions` is overridden by coverage's reduced +
+// dynamic-σ list.
 //
 // `autoscale` is the same kind of opt-out as `scaleType`, and exists for the
 // same reason: a display whose domain doesn't consult `autoscaleType` must not
@@ -141,6 +143,7 @@ export function makeScoreSubMenu(
     autoscale?: boolean
     autoscaleOptions?: [string, string][]
     leadingItems?: MenuItem[]
+    trailingItems?: MenuItem[]
   } = {},
 ): MenuItem {
   const {
@@ -149,6 +152,7 @@ export function makeScoreSubMenu(
     autoscale = true,
     autoscaleOptions,
     leadingItems = [],
+    trailingItems = [],
   } = opts
   return {
     label,
@@ -161,6 +165,7 @@ export function makeScoreSubMenu(
       ...(resolveScoreBounds(self).hasManual
         ? [makeClearMinMaxScoreItem(self)]
         : []),
+      ...trailingItems,
     ],
   }
 }

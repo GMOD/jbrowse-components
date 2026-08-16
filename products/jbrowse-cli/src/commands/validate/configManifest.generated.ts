@@ -3172,6 +3172,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "coverageSnpMinFrequency",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "showMismatches",
           "type": "(JexlString | boolean)"
         },
@@ -3475,6 +3479,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "coverageHeight",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "coverageSnpMinFrequency",
           "type": "(JexlString | number)"
         },
         {
