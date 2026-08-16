@@ -34,7 +34,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
   // Y of the flat line at this insert size — arcFlat.slang's own formula.
   float cy = arcBandY(inst.yBp, u);
-  float screenX = u.blockStartPx + bpToLinear(inst.position, u) * u.blockWidth;
+  float screenX = arcBandX(inst.position, u);
 
   float2 corner = quadLocal(vid) * 2.0 - 1.0;
   o.position = arcBandClipPos(

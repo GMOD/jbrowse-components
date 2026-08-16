@@ -647,6 +647,20 @@ public float arcStrokeHalfPx(float instWidthPx, Uniforms u) {
   return max(instWidthPx, u.lineWidthPx) * 0.5;
 }
 
+// Where a genomic position sits along the band, in CSS px across the BLOCK.
+//
+// The band's x is the one piece of its frame that was still spelled six times —
+// twice each in arc.slang and arcFlat.slang, once each in arcMarker.slang and
+// arcLine.slang, identically. It is the block's own projection rather than
+// `bpToClipX`'s canvas one because an arc's foot may be extrapolated well
+// outside the block (a cross-region pair's far mate), and `blockStartPx` /
+// `blockWidth` are what carry that extrapolation; `arcBandClipPos` normalizes
+// the result afterwards. Passes that reach clip space directly — arcLine.slang,
+// whose y is already canvas-absolute — still take their x from here.
+public float arcBandX(uint bp, Uniforms u) {
+  return u.blockStartPx + bpToLinear(bp, u) * u.blockWidth;
+}
+
 // A band-local point (CSS px from the anchor) placed on the canvas. The arc
 // passes run in the FULL-canvas viewport — a grouped section's band may scroll
 // partly off-screen, and WebGPU rejects an out-of-bounds one — so every band

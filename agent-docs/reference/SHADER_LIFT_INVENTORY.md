@@ -64,7 +64,7 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 21 | `aaHalf`, `arcBandDestY`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `covAreaTop`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 22 | `aaHalf`, `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, … |
 | type 'vec2' is outside the supported scalar subset | 20 | `arcBandClipPos`, `covSegQuad`, `crispSquareCornerPx`, `diagonalCellToClip`, `discAlpha`, `discCoverage`, … |
 | type 'ptr' is outside the supported scalar subset | 10 | `aaHalfPx`, `bpToClipX`, `curveGeometry`, `curveParamAtY`, `fillVsEmit`, `flipX`, … |
 | type 'vec3' is outside the supported scalar subset | 9 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `clipKindColor`, `hueRampHalfSat`, … |

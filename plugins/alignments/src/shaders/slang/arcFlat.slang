@@ -85,8 +85,8 @@ struct VsOut {
 [shader("vertex")]
 VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
-  float x1Px = u.blockStartPx + bpToLinear(inst.x1, u) * u.blockWidth;
-  float x2Px = u.blockStartPx + bpToLinear(inst.x2, u) * u.blockWidth;
+  float x1Px = arcBandX(inst.x1, u);
+  float x2Px = arcBandX(inst.x2, u);
   // Clamp the span to ARC_FLAT_MIN_PX about the midpoint; the line is
   // horizontal, so the span's sign is moot.
   float halfLen = max(abs(x2Px - x1Px), ARC_FLAT_MIN_PX) * 0.5;

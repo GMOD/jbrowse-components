@@ -248,8 +248,8 @@ Curve arcCurve(Instance inst, Uniforms u, float strokeHalfPx) {
   // keeps a pair with both endpoints on screen drawing a complete arc BETWEEN
   // those endpoints instead of a curve that leaves through the band edge.
   float destY = arcBandDestY(inst.yBp, availH, u);
-  float x1Px = u.blockStartPx + bpToLinear(inst.x1, u) * u.blockWidth;
-  float x2Px = u.blockStartPx + bpToLinear(inst.x2, u) * u.blockWidth;
+  float x1Px = arcBandX(inst.x1, u);
+  float x2Px = arcBandX(inst.x2, u);
   float halfWidthPx = abs(x2Px - x1Px) * 0.5;
 
   Curve cv;

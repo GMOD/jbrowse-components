@@ -79,8 +79,7 @@ struct VsOut {
 VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
 
-  float norm = bpToLinear(inst.position, u);
-  float screenX = u.blockStartPx + norm * u.blockWidth;
+  float screenX = arcBandX(inst.position, u);
 
   // covOffset is the arc baseline in absolute canvas px (band bottom in up mode,
   // band top in down mode); the band spans arcBandH px from it. This is the one
