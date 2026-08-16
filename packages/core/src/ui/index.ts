@@ -137,6 +137,7 @@ export { default as Crosshairs } from './Crosshairs.tsx'
 export { hoverBoxStyle } from './hoverBoxStyle.ts'
 export { useMouseState, useMouseTracking } from './useMouseTracking.ts'
 export type { MouseState, MouseTracker } from './useMouseTracking.ts'
+export { useCoalescedPointer } from './useCoalescedPointer.ts'
 export { PinAdornment } from './PinAdornment.tsx'
 export {
   promotableRadioItem,

@@ -79,13 +79,6 @@ export function getMappingQuality(feature: Feature) {
   return mappingQual ?? MAPQ_UNAVAILABLE
 }
 
-// Element-wise equality for two id lists, so a setter can skip rewriting an MST
-// array with the same contents (a rewrite replaces the node and invalidates
-// everything computed from it, which primitive props get for free).
-export function sameStrings(a: readonly string[], b: readonly string[]) {
-  return a.length === b.length && a.every((s, i) => s === b[i])
-}
-
 // Get `key`'s entry, lazily creating + inserting it on first miss. The shared
 // shape of every "accumulate into a Map of arrays / nested Maps" pass. (The TC39
 // `Map.prototype.getOrInsertComputed` upsert proposal would fold this into one

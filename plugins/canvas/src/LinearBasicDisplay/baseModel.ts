@@ -21,6 +21,7 @@ import {
   isFeature,
   openFeatureWidget,
   pluralize,
+  sameOptionalStrings,
 } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
@@ -1958,9 +1959,17 @@ export default function baseStateModelFactory(
           subfeatureId: string | null,
           tooltip: string[] | undefined,
         ) {
-          if (!self.contextMenuInfo) {
-            self.featureIdUnderMouse = featureId
-            self.subfeatureIdUnderMouse = subfeatureId
+          if (self.contextMenuInfo) {
+            return
+          }
+          self.featureIdUnderMouse = featureId
+          self.subfeatureIdUnderMouse = subfeatureId
+          // The two ids above are primitives, so MobX already drops a rewrite
+          // with the same value; the tooltip is a fresh array on every hit and
+          // needs the comparison spelled out. Without it a cursor resting on one
+          // feature re-rendered `FeatureTooltip` on every raw mousemove — the
+          // rows were identical each time, and only the array's identity moved.
+          if (!sameOptionalStrings(self.mouseoverExtraInformation, tooltip)) {
             self.mouseoverExtraInformation = tooltip
           }
         },

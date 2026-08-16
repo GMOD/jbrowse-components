@@ -125,6 +125,7 @@
     "./ui/styleTheme": "./src/ui/styleTheme.ts",
     "./ui/theme": "./src/ui/theme.ts",
     "./ui/trackRowAdornment": "./src/ui/trackRowAdornment.ts",
+    "./ui/useCoalescedPointer": "./src/ui/useCoalescedPointer.ts",
     "./ui/useMouseTracking": "./src/ui/useMouseTracking.ts",
     "./ui/zIndexes": "./src/ui/zIndexes.ts",
     "./util": "./src/util/index.ts",
@@ -678,6 +679,10 @@
       "./ui/trackRowAdornment": {
         "types": "./esm/ui/trackRowAdornment.d.ts",
         "import": "./esm/ui/trackRowAdornment.js"
+      },
+      "./ui/useCoalescedPointer": {
+        "types": "./esm/ui/useCoalescedPointer.d.ts",
+        "import": "./esm/ui/useCoalescedPointer.js"
       },
       "./ui/useMouseTracking": {
         "types": "./esm/ui/useMouseTracking.d.ts",
@@ -1328,6 +1333,9 @@
         ],
         "ui/trackRowAdornment": [
           "esm/ui/trackRowAdornment.d.ts"
+        ],
+        "ui/useCoalescedPointer": [
+          "esm/ui/useCoalescedPointer.d.ts"
         ],
         "ui/useMouseTracking": [
           "esm/ui/useMouseTracking.d.ts"

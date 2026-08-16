@@ -24,6 +24,7 @@ import {
   isFeature,
   measureText,
   openFeatureWidget,
+  sameStrings,
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -74,7 +75,6 @@ import {
   DEFAULT_MODIFICATION_THRESHOLD,
   normalizeFilterBy,
 } from '../shared/types.ts'
-import { sameStrings } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
 import {
   updateColorTagMap as updateColorTagMapPure,

@@ -140,7 +140,9 @@ export const suite: TestSuite = {
         // the row label comes from the live row order, and the locus from the hit
         const tip = await tooltipText(page)
         assert(
-          /offspring\d+/.test(tip) && /ctgA:\d+\.\.\d+/.test(tip),
+          // `assembleLocString` groups the thousands, so the coordinates carry
+          // separators — a `\d+` either side of the `..` matches none of them
+          /offspring\d+/.test(tip) && /ctgA:[\d,]+\.\.[\d,]+/.test(tip),
           `tooltip missing row label or locus: ${tip}`,
         )
 
@@ -229,6 +231,66 @@ export const suite: TestSuite = {
         assert(
           (await countGuideLines(page)) === 0,
           'guides survived the pointer leaving the plot',
+        )
+      },
+    },
+    {
+      // The two displays that resolve their own pointer rather than taking the
+      // chrome's `onPointerPosition` — a borderless leaf canvas for the pileup,
+      // a canvas with label overlays over it for the feature track. Both run
+      // their hit test through `useCoalescedPointer`, so what a hover costs and
+      // when it lands are decided a frame away from the event, and neither had
+      // anything asserting the tooltip appears at all.
+      //
+      // A tooltip's TEXT is the assertion, not its presence: the hover writes
+      // are guarded on their own contents now, so a hit that resolves to the
+      // wrong feature, or to none, reads as text that is absent or does not name
+      // the locus.
+      name: 'canvas features and pileup: tooltip on hover, and it clears',
+      fn: async page => {
+        await bootTrack(page, 'gff3tabix_genes', 'feature-display')
+        // On a feature rather than the gap between two rows: this track lays out
+        // several rows over the locus and the gaps between them answer nothing,
+        // which is a miss and not a failure. Half way down and across lands on
+        // one of the `seg` genes.
+        const { x, y } = await hoverFraction(
+          page,
+          displayPainted('feature-display'),
+          0.5,
+          0.5,
+        )
+        const featureTip = await tooltipText(page)
+        assert(
+          featureTip.length > 0,
+          'no tooltip while hovering a canvas feature',
+        )
+        // Still on the same feature one frame later — the coalesced hover must
+        // land, not merely be scheduled.
+        await page.mouse.move(x + 2, y, { steps: 2 })
+        await delay(400)
+        assert(
+          (await tooltipText(page)) === featureTip,
+          'the tooltip changed while the cursor stayed on one feature',
+        )
+        await page.mouse.move(5, 5)
+        await delay(500)
+        assert(
+          (await tooltipText(page)) === '',
+          'the feature tooltip survived the pointer leaving the display',
+        )
+
+        await bootTrack(page, 'volvox_bam_pileup', 'pileup-display')
+        await hoverFraction(page, displayPainted('pileup-display'), 0.5, 0.4)
+        const readTip = await tooltipText(page)
+        assert(
+          readTip.includes('ctgA'),
+          `pileup tooltip missing the read's locus: ${readTip}`,
+        )
+        await page.mouse.move(5, 5)
+        await delay(500)
+        assert(
+          (await tooltipText(page)) === '',
+          'the pileup tooltip survived the pointer leaving the display',
         )
       },
     },

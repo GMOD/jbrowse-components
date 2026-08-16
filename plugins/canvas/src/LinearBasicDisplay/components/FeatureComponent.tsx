@@ -7,8 +7,10 @@ import {
   useMouseState,
 } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
+import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -165,8 +167,9 @@ const FeatureComponent = observer(function FeatureComponent({
 })
 
 // `mouseoverExtraInformation` is what decides whether there is a tooltip at
-// all — the hit test that sets it runs on the canvas's own handlers, at raw
-// event coordinates, because the click and right-click paths share it. Only the
+// all — the hit test that sets it runs on the canvas's own handlers, from the
+// event's own coordinates, because the click and right-click paths share it
+// (coalesced to a frame for the hover alone; see `hover` below). Only the
 // *position* comes from the chrome's tracker, and client coordinates are
 // viewport-relative, so it makes no difference which element measured them.
 const FeatureTooltipLayer = observer(function FeatureTooltipLayer({
@@ -268,28 +271,36 @@ const FeatureBody = observer(function FeatureBody({
     }
   }, [model])
 
-  const hitTestAtEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-    // model.scrollTop, not the live DOM scrollTop: the canvas paints at
-    // model.scrollTop (renderState.scrollY) and the DOM->model sync lags one
-    // frame, so hit-testing the DOM value can miss by a frame mid-scroll
-    const yPos = mouseY + model.scrollTop
-    return performMultiRegionHitDetection(
+  const hitTestAt = (canvasX: number, canvasY: number) =>
+    performMultiRegionHitDetection(
       model.laidOutDataMap,
       model.flatbushIndexes,
       view.visibleRegions,
-      mouseX,
-      yPos,
+      canvasX,
+      // model.scrollTop, not the live DOM scrollTop: the canvas paints at
+      // model.scrollTop (renderState.scrollY) and the DOM->model sync lags one
+      // frame, so hit-testing the DOM value can miss by a frame mid-scroll
+      canvasY + model.scrollTop,
     )
+
+  const hitTestAtEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    return hitTestAt(e.clientX - rect.left, e.clientY - rect.top)
   }
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (model.contextMenuInfo) {
+  // Hover, resolved at most once per frame. `mousemove` outruns the frame, and
+  // every raw event here walked the Flatbush indexes and built a fresh row of
+  // tooltip strings; `setHover` drops the write when the rows match, but the
+  // work ahead of it was paid either way.
+  //
+  // Safe for the same reason it is in the pileup: the two gestures that decide
+  // anything re-hit-test from their own event (see below), so a hover landing a
+  // frame later than the cursor is invisible.
+  const hover = useCoalescedPointer(([canvasX, canvasY]: [number, number]) => {
+    if (!isAlive(model)) {
       return
     }
-    const result = hitTestAtEvent(e)
+    const result = hitTestAt(canvasX, canvasY)
     if (isHitFeature(result)) {
       model.setHover(
         result.feature.featureId,
@@ -299,6 +310,17 @@ const FeatureBody = observer(function FeatureBody({
     } else {
       model.clearHover()
     }
+  })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // The early return skips the hit test as well as the write, which is the
+    // half `setHover`'s own open-menu guard cannot do.
+    if (model.contextMenuInfo) {
+      return
+    }
+    // read the coordinates now; the event's own fields are gone by the frame
+    const rect = e.currentTarget.getBoundingClientRect()
+    hover.queue([e.clientX - rect.left, e.clientY - rect.top])
   }
 
   // Both handlers hit-test at the event coordinates rather than reading
@@ -354,9 +376,13 @@ const FeatureBody = observer(function FeatureBody({
   // identity so a hover tick — which re-renders FeatureBody for the cursor
   // style — doesn't force the label layer to rebuild every label. clearHover
   // itself holds the open-menu pin, so no guard here.
-  const handleMouseLeave = useCallback(() => {
+  //
+  // The cancel comes first: a hover queued just before the pointer left lands
+  // after it has gone and re-lights what this is clearing.
+  const handleMouseLeave = useEventCallback(() => {
+    hover.cancel()
     model.clearHover()
-  }, [model])
+  })
 
   // setHover itself is inert while a context menu is open (it pins the hover to
   // the menu's target), so this needs no guard of its own — unlike

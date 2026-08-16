@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
@@ -281,10 +282,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   function handleMouseLeave() {
     // drop a hover queued for the next frame, or it would land after the cursor
     // has already gone and re-light the tooltip we are clearing here
-    if (hoverRafRef.current !== undefined) {
-      cancelAnimationFrame(hoverRafRef.current)
-      hoverRafRef.current = undefined
-    }
+    hover.cancel()
     if (!model.contextMenuAnchor) {
       model.clearMouseoverState()
     }
@@ -330,53 +328,27 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       : []
   }
 
-  // Hover, resolved at most once per frame.
+  // Hover, resolved at most once per frame — `useCoalescedPointer` owns the
+  // frame discipline and the two cancels (leave, unmount); the guards below are
+  // this display's own.
   //
-  // The pileup hit test is not cheap — it walks the render sections, resolves a
-  // block, then runs the full `performHitTest` pipeline — and `mousemove`
-  // arrives far faster than a frame on any modern pointer. Running it per raw
-  // event measured 3.3ms of listener time per event on a 150px pileup, so five
-  // events into a frame the frame is already gone; it was comfortably the most
-  // expensive hover of any display.
-  //
-  // Coalescing is safe precisely because nothing *decides* anything from the
-  // hover: click and context-menu re-hit-test from their own event (see
-  // handleClick, and the note on the two handlers below), which was already the
-  // rule so that a hover recorded a frame ago can't act. A hover that lands one
-  // frame later than the cursor is, by construction, invisible.
-  const hoverRafRef =
-    useRef<ReturnType<typeof requestAnimationFrame>>(undefined)
-  const hoverPosRef = useRef<[number, number]>(undefined)
-
-  // A queued hover must not outlive the component: the display is detached from
-  // the MST tree before React unmounts it (see AlignmentsDisplayComponent), so
-  // a frame landing in between would write hover state onto a dead node.
-  useEffect(
-    () => () => {
-      if (hoverRafRef.current !== undefined) {
-        cancelAnimationFrame(hoverRafRef.current)
-      }
-    },
-    [],
-  )
+  // The pileup hit test is not cheap: it walks the render sections, resolves a
+  // block, then runs the full `performHitTest` pipeline, which measured 3.3ms of
+  // listener time per raw event on a 150px pileup.
+  const hover = useCoalescedPointer(([canvasX, canvasY]: [number, number]) => {
+    // re-check the drag: one queued before the press would otherwise land
+    // mid-pan, which is the case the event-time guard alone can't see
+    if (isAlive(model) && !isDragInProgress(dragControllerRef)) {
+      resolveHoverAt(canvasX, canvasY)
+    }
+  })
 
   function handleCanvasMouseMove(e: React.MouseEvent) {
     if (isDragInProgress(dragControllerRef)) {
       return
     }
     // read off the event now; it is pooled-adjacent and gone by the next frame
-    hoverPosRef.current = [e.nativeEvent.offsetX, e.nativeEvent.offsetY]
-    if (hoverRafRef.current === undefined) {
-      hoverRafRef.current = requestAnimationFrame(() => {
-        hoverRafRef.current = undefined
-        const pos = hoverPosRef.current
-        // re-check the drag: one queued before the press would otherwise land
-        // mid-pan, which is the case the event-time guard alone can't see
-        if (pos && isAlive(model) && !isDragInProgress(dragControllerRef)) {
-          resolveHoverAt(pos[0], pos[1])
-        }
-      })
-    }
+    hover.queue([e.nativeEvent.offsetX, e.nativeEvent.offsetY])
   }
 
   // What one hit hovers to, minus the coverage band every branch shares. A
