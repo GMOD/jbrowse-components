@@ -109,6 +109,15 @@ already had its chance and the row still reports where it was — so `execute`
 refuses the second. Arriving clears the record, which is what keeps a
 hand-nudged row navigable back to exactly the span it was nudged off.
 
+**A navigation that REJECTED keeps its record too, deliberately.** By the
+backstop's own wording it never had its chance, so clearing it reads like the
+correction — but a `navToLocString` that replaces `displayedRegions` and then
+throws would wake the pass and be retried on every wake, which is the unbounded
+loop again. The cost of leaving it is a level that will not retry that exact
+from→to pair until something moves, which the next settle supplies. Weighed and
+left alone: the failure it prevents is a spun core, the failure it causes is one
+delayed placement.
+
 That backstop bounds the shape; the two checks below close the two ways in.
 
 A view cannot show a span below `minBpPerPx * width`; it centres and widens it.
@@ -128,9 +137,14 @@ coordinate — which is what a swapped-assembly track does, and it is a config
 someone can legitimately write. Widening one would fling the row to base-level
 zoom on a coordinate the arithmetic never identified.
 
-The two are separate holes. `interpolateFollowSpan` and `followWindowMapping`
-clamp their answers up to a base on purpose, so a collapsed interpolation is one
-base wide, clears the zero-width check, and needs the floor.
+The two are separate holes, and a collapse has to be **reported rather than
+rounded away** for the second to close. `interpolateFollowSpan` used to widen a
+degenerate answer to one base, which cleared the zero-width check and flung the
+row exactly as above; it now returns the collapse and only widens a real span.
+The inverted-locstring case that clamp was written for is covered where it
+matters anyway — `navToResolvedSpan` clamps before assembling one, and
+`positionViewOnSpan` refuses a zero-width span. `followWindowMapping` never had
+the problem: its `hi > lo` gate rejects a collapse before the rounding.
 
 A frame-pass span off the row's displayed regions is not an error — the row is
 showing another contig and the exact pass is on its way to navigate it.

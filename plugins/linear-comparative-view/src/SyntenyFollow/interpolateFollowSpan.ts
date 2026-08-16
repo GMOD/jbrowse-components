@@ -40,8 +40,14 @@ export function interpolateFollowSpan({
   return {
     refName: b.refName,
     start: lo,
-    // at least one base, since a zero-width span assembles into an inverted
-    // locstring
-    end: Math.max(lo + 1, Math.ceil(Math.max(p, q))),
+    // A COLLAPSE STAYS COLLAPSED, and everything else gets at least one base.
+    // Rounding a degenerate answer up hid it from the caller's zero-width
+    // check — the one that decides a walk landing on a single coordinate is
+    // not a place — so the row navigated to maximum zoom on a coordinate the
+    // arithmetic never identified. Nothing downstream needs the clamp for the
+    // inverted-locstring case it was written for: `navToResolvedSpan` applies
+    // its own before assembling one, and `positionViewOnSpan` refuses a
+    // zero-width span outright.
+    end: p === q ? lo : Math.max(lo + 1, Math.ceil(Math.max(p, q))),
   }
 }

@@ -115,12 +115,40 @@ test('the reverse direction clamps to the mate block', () => {
   ).toEqual({ refName: 'chr1', start: 1000, end: 2000 })
 })
 
-test('a zero-length block resolves to one base rather than an inverted span', () => {
-  // assembleLocStringRaw would render an inverted span as a backwards locstring
+// This used to round up to one base so a locstring could never come out
+// backwards. `navToResolvedSpan` clamps for that itself, and rounding here cost
+// the caller the only signal it has: `execute` holds the row on a zero-width
+// answer, and a collapse widened to a base cleared that check and flung the row
+// to maximum zoom on a coordinate the arithmetic never identified.
+test('a block with no width on either axis reports the collapse', () => {
+  expect(
+    interpolateFollowSpan({
+      feat: feat({ start: 1000, end: 1000, mateStart: 5000, mateEnd: 5000 }),
+      window: win(1000, 1000),
+      toMate: true,
+    }),
+  ).toEqual({ refName: 'chr1_pat', start: 5000, end: 5000 })
+})
+
+test('a zero-length MATE under a real window still collapses', () => {
+  // the anchor axis has width and the window is genuinely inside it, so only
+  // the mate being a point makes the two edges land together
+  expect(
+    interpolateFollowSpan({
+      feat: feat({ mateStart: 5000, mateEnd: 5000 }),
+      window: win(1250, 1750),
+      toMate: true,
+    }),
+  ).toEqual({ refName: 'chr1_pat', start: 5000, end: 5000 })
+})
+
+test('a sub-base answer is still a place, and keeps its base', () => {
+  // 1bp of anchor against 1bp of mate: the edges differ, so this is a real
+  // window at base-level zoom rather than a collapse
   const span = interpolateFollowSpan({
-    feat: feat({ start: 1000, end: 1000, mateStart: 5000, mateEnd: 5000 }),
-    window: win(1000, 1000),
+    feat: feat({ start: 1000, end: 1001, mateStart: 5000, mateEnd: 5001 }),
+    window: win(1000, 1001),
     toMate: true,
   })
-  expect(span.end).toBeGreaterThan(span.start)
+  expect(span).toEqual({ refName: 'chr1_pat', start: 5000, end: 5001 })
 })
