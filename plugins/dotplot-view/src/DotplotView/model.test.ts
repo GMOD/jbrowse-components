@@ -470,6 +470,21 @@ test('two assemblyNames is not an error, and neither is none', () => {
   expect(session.views[0].error).toBeFalsy()
 })
 
+// "Return to import form" is the one route to the form that isn't a submit, so
+// it was the one that left the previous submit's banner standing over a form
+// with nothing wrong with it.
+test('returning to the import form drops the banner with the view', () => {
+  const model = setup()
+  model.setError(new Error('could not resolve track'))
+  expect(model.showImportForm).toBe(true)
+
+  model.clearView()
+
+  expect(model.error).toBeFalsy()
+  expect(model.showImportForm).toBe(true)
+  expect(model.assemblyNames).toHaveLength(0)
+})
+
 test('highlight actions add/remove and toggle visibility', () => {
   const model = setup()
   const h = { refName: 'ctgA', start: 0, end: 10, assemblyName: 'volvox' }

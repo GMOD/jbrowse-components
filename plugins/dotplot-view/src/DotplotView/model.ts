@@ -1125,6 +1125,12 @@ export default function stateModelFactory(pm: PluginManager) {
           // synthesized them; nothing can resolve them once its tracks are
           // gone, and they persist into the session snapshot.
           self.viewTrackConfigs.clear()
+          // The banner over the form describes the submit that failed, and this
+          // is the one route to the form that isn't a submit — so it was the one
+          // that left an error standing over a form with nothing wrong with it,
+          // until the next Launch cleared it. `LinearComparativeView.clearView`
+          // already does this.
+          self.volatileError = undefined
         },
         /**
          * #action
