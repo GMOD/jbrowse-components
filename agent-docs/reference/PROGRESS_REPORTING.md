@@ -72,10 +72,17 @@ part of startup.
 
 `loadPre` now runs on the same transport: one `createStatusFanOut` slot per
 file (they are concurrent, so last-writer-wins would blank the label the moment
-the fastest of the four finished), behind one `createStatusThrottle`, writing
-`assembly.statusMessage` / `assembly.statusProgress` — the same split as
-`BaseDisplayModel`, so `LoadingProgress` renders both. The clear in `loadPre`'s
-`finally` bypasses the throttle, which has no trailing flush.
+the fastest of the four finished), every slot behind one
+`createGuardedStatusSink`, writing `assembly.statusMessage` /
+`assembly.statusProgress` — the same split as `BaseDisplayModel`, so
+`LoadingProgress` renders both.
+
+The guard is what the four-at-once shape needs and a single fetch does not:
+`Promise.all` rejects on the FIRST of them to fail, and the other three go on
+downloading and go on reporting. Unguarded, their progress repaints the field
+`loadPre`'s `finally` has already cleared, so a failed assembly load sits under
+a live "Downloading cytobands 40%". The `finally` closes the guard and then
+clears through `throttle.runNow`, for the reason every phase's `''` does.
 
 Views read it through `assemblyManager.loadingAssembly(names)` — the first name
 that isn't `initialized` — and expose `loadingMessage` / `loadingProgress`, which

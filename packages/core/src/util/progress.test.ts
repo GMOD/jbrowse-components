@@ -581,13 +581,12 @@ describe('createStatusFanOut', () => {
   })
 })
 
-// assembly.loadPre composes these two — a fan-out slot per concurrent file,
-// behind one throttle — and then clears the status OUTSIDE the throttle. This
-// pins why: the throttle has no trailing flush, so the retire that would have
-// cleared the label is exactly the kind of write a burst swallows. Route that
-// clear through the throttle to "tidy up" and the last "Downloading …" stays on
-// screen after the load finishes, with nothing else failing.
-describe('a throttled fan-out needs an unthrottled clear', () => {
+// The shape `assembly.loadPre` runs on: a fan-out slot per concurrent file,
+// every slot behind ONE guarded sink, and a `runNow` clear at the end. The two
+// halves are separable and each fails on its own, so both are pinned here — a
+// hand-assembled `throttle.run` fan-out with a bare clear beside it had both
+// faults and neither was visible in the passing state.
+describe('a fan-out behind one guarded sink', () => {
   let clock = 0
   beforeEach(() => {
     clock = 1_000_000
@@ -597,20 +596,64 @@ describe('a throttled fan-out needs an unthrottled clear', () => {
     jest.restoreAllMocks()
   })
 
-  it('swallows the final clear when it goes through the throttle', () => {
+  // A `''` reaching the sink is routed through `runNow`, so the retire lands
+  // even though every write after the first fell inside the same window. Sent
+  // through `throttle.run` instead it is queued, and the last "Downloading …"
+  // is what stays on screen until something else writes.
+  it('lands the final clear even inside a closed window', () => {
     const seen: RpcStatus[] = []
-    const throttle = createStatusThrottle()
-    const slot = createStatusFanOut(s => {
-      throttle.run(() => seen.push(s))
-    })
+    const slot = createStatusFanOut(
+      createGuardedStatusSink({
+        isCurrent: () => true,
+        sink: s => {
+          seen.push(s)
+        },
+        throttle: createStatusThrottle(),
+      }),
+    )
     const a = slot()
     const b = slot()
     a({ message: 'Downloading', current: 1, total: 2 })
     b({ message: 'Downloading', current: 1, total: 2 })
     a('')
     b('')
-    // every write after the first landed inside the same 100ms window
-    expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 2 }])
-    expect(seen.at(-1)).not.toBe('')
+    expect(seen.at(-1)).toBe('')
+  })
+
+  // `Promise.all` rejects on the first of the concurrent loads to fail while
+  // the rest go on downloading and go on reporting. Unguarded, their progress
+  // repaints the field the failure path has already cleared.
+  it('drops a still-running sibling load once the owner has finished', () => {
+    jest.useFakeTimers()
+    try {
+      const seen: RpcStatus[] = []
+      let loading = true
+      const throttle = createStatusThrottle()
+      const slot = createStatusFanOut(
+        createGuardedStatusSink({
+          isCurrent: () => loading,
+          sink: s => {
+            seen.push(s)
+          },
+          throttle,
+        }),
+      )
+      const failed = slot()
+      const stillGoing = slot()
+      failed({ message: 'Downloading', current: 1, total: 2 })
+      expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 2 }])
+
+      // the `finally` of a load that threw: close the guard, then clear
+      loading = false
+      throttle.runNow(() => {
+        seen.push('cleared')
+      })
+      stillGoing({ message: 'Downloading', current: 2, total: 2 })
+      clock += 100
+      jest.advanceTimersByTime(100)
+      expect(seen.at(-1)).toBe('cleared')
+    } finally {
+      jest.useRealTimers()
+    }
   })
 })

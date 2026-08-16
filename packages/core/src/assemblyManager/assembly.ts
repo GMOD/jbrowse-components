@@ -5,6 +5,7 @@ import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import {
+  createGuardedStatusSink,
   createStatusFanOut,
   createStatusThrottle,
   statusFraction,
@@ -282,12 +283,24 @@ export default function assemblyFactory(
         // fan-out slot each turns them into one aggregate bar. Throttled
         // because a whole-file download reports per chunk and each write
         // repaints the spinner.
+        //
+        // Guarded, like every other owner of a progress stream, and this one
+        // needs it for a reason the display fetches don't have: `Promise.all`
+        // rejects on the FIRST of the four to fail, while the other three go on
+        // downloading and go on reporting. Without the guard their progress
+        // repaints the field the `finally` below has already cleared, so a
+        // failed assembly load sits under a live "Downloading cytobands 40%".
         const throttle = createStatusThrottle()
-        const fanOut = createStatusFanOut(status => {
-          throttle.run(() => {
-            self.setStatus(status)
-          })
-        })
+        let loading = true
+        const fanOut = createStatusFanOut(
+          createGuardedStatusSink({
+            isCurrent: () => loading,
+            sink: status => {
+              self.setStatus(status)
+            },
+            throttle,
+          }),
+        )
         const optsFor = (): BaseOptions => ({ statusCallback: fanOut() })
 
         try {
@@ -338,10 +351,16 @@ export default function assemblyFactory(
             geneticCodes,
           })
         } finally {
-          // cleared directly rather than through the throttle, which has no
-          // trailing flush: a clear landing inside a closed window would leave
-          // the last "Downloading …" on screen for good
-          self.setStatus(undefined)
+          // `runNow`, not `run` and not a bare write: the clear has to land
+          // (inside a closed window `run` would only queue it) AND it has to
+          // drop what is queued behind it, or the trailing timer puts the last
+          // "Downloading …" back on screen after the load has ended. Closing
+          // the guard first is what stops a still-running sibling load from
+          // writing over it — see the `loading` flag above.
+          loading = false
+          throttle.runNow(() => {
+            self.setStatus(undefined)
+          })
         }
       },
     }))
