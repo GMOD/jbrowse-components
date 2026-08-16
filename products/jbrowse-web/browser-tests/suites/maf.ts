@@ -179,8 +179,12 @@ const suite: TestSuite = {
             `rows canvas is ${g.canvasCssHeight}px, expected the ${g.rowsHeight}px viewport`,
           )
         }
-        await assertVirtualScrollStructure(page, `${ROWS} > canvas`)
+        // scrollbar first: `assertVirtualScrollStructure` also measures that the
+        // thumb is on the display's right edge, and skips that half when there
+        // is no thumb in the DOM yet — so asserting before it mounts quietly
+        // dropped the geometry check rather than failing.
         await findByTestId(page, 'vertical-scrollbar', 5000)
+        await assertVirtualScrollStructure(page, `${ROWS} > canvas`)
       },
     },
 

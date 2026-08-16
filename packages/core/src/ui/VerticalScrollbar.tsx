@@ -2,10 +2,9 @@ import { useRef, useState } from 'react'
 
 import { clamp } from '../util/numericUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
+import { usePointerDrag } from '../util/usePointerDrag.ts'
 import { useRafCommit } from '../util/useRafCommit.ts'
 import { useVirtualScrollWheel } from '../util/useVirtualScrollWheel.ts'
-
-import type React from 'react'
 
 /**
  * How much of a display's right edge this occupies while it is drawn.
@@ -40,6 +39,10 @@ const useStyles = makeStyles()(theme => ({
     width: VERTICAL_SCROLLBAR_WIDTH,
     cursor: 'default',
     zIndex: 10,
+    // `usePointerDrag`'s one caller-owned requirement: without it the browser
+    // claims a touch drag on this strip as a page scroll and no pointer stream
+    // arrives at all, so the thumb simply doesn't drag by finger.
+    touchAction: 'none',
     // theme-aware so the thumb stays visible in dark mode (a hardcoded black
     // thumb vanished against a dark canvas)
     '&:hover > *': {
@@ -113,9 +116,6 @@ export default function VerticalScrollbar({
     e.stopPropagation()
   })
 
-  if (scrollableHeight <= 0) {
-    return null
-  }
   const clampedScrollTop = clamp(scrollTop, 0, scrollableHeight)
   // never taller than the track itself — on a very short viewport the
   // MIN_THUMB_HEIGHT floor would otherwise exceed viewportHeight, pushing
@@ -138,37 +138,50 @@ export default function VerticalScrollbar({
     usableTrack,
   )
 
-  function handlePointerDown(e: React.PointerEvent) {
-    // stopPropagation so the drag doesn't also pan the view; no preventDefault
-    // on pointerdown so its native focus shift can still close open popups.
-    e.stopPropagation()
-    // Click-to-page: a click on the track above/below the thumb jumps one
-    // viewport toward the click (like a native scrollbar), rather than starting
-    // a drag. The thumb is pointerEvents:none so every click lands on the track;
-    // decide page-vs-drag from the click's Y relative to the thumb.
-    const clickY = e.clientY - e.currentTarget.getBoundingClientRect().top
-    if (clickY < thumbTop || clickY > thumbTop + thumbHeight) {
-      const dir = clickY < thumbTop ? -1 : 1
-      setScrollTop(
-        clamp(clampedScrollTop + dir * viewportHeight, 0, scrollableHeight),
-      )
-    } else {
-      dragRef.current = { startY: e.clientY, startScroll: clampedScrollTop }
-      e.currentTarget.setPointerCapture(e.pointerId)
-    }
-  }
+  // The press lifecycle is `usePointerDrag`'s: primary button only, one drag per
+  // pointer, capture on the track so moves keep arriving once the pointer leaves
+  // the 12px strip, and auto-release on unmount. Hand-rolled here before that
+  // existed, which cost two of the bugs it is written to prevent — a right-press
+  // started a drag that then ran underneath its own context menu, and a second
+  // finger landing mid-drag re-anchored the gesture.
+  const drag = usePointerDrag({
+    // Click-to-page: a press on the track above/below the thumb jumps one
+    // viewport toward it (like a native scrollbar) rather than starting a drag.
+    // The thumb is pointerEvents:none so every press lands on the track; decide
+    // page-vs-drag from its Y relative to the thumb. `dragRef` staying undefined
+    // is what makes the paging branch ignore the moves that follow — the pointer
+    // is captured either way, and a page press simply has nothing to do with them.
+    onDragStart: e => {
+      const clickY = e.clientY - e.currentTarget.getBoundingClientRect().top
+      if (clickY < thumbTop || clickY > thumbTop + thumbHeight) {
+        const dir = clickY < thumbTop ? -1 : 1
+        setScrollTop(
+          clamp(clampedScrollTop + dir * viewportHeight, 0, scrollableHeight),
+        )
+      } else {
+        dragRef.current = { startY: e.clientY, startScroll: clampedScrollTop }
+      }
+    },
+    onDrag: e => {
+      const d = dragRef.current
+      if (d && usableTrack > 0) {
+        const delta = ((e.clientY - d.startY) / usableTrack) * scrollableHeight
+        scheduleScroll(clamp(d.startScroll + delta, 0, scrollableHeight))
+      }
+    },
+    onDragEnd: () => {
+      flushScroll()
+      dragRef.current = undefined
+    },
+  })
 
-  function handlePointerMove(e: React.PointerEvent) {
-    const drag = dragRef.current
-    if (drag && usableTrack > 0) {
-      const delta = ((e.clientY - drag.startY) / usableTrack) * scrollableHeight
-      scheduleScroll(clamp(drag.startScroll + delta, 0, scrollableHeight))
-    }
-  }
-
-  function handlePointerUp() {
-    flushScroll()
-    dragRef.current = undefined
+  // Below every hook, not above the geometry it reads: "the content fits" is a
+  // prop-driven condition that flips while mounted, so an early return above
+  // `usePointerDrag` would call a different number of hooks per render. The
+  // geometry it closes over is computed either way and simply goes unused here —
+  // nothing renders, so nothing can dispatch a pointer event at it.
+  if (scrollableHeight <= 0) {
+    return null
   }
 
   return (
@@ -190,13 +203,15 @@ export default function VerticalScrollbar({
       aria-valuemin={0}
       aria-valuemax={Math.round(scrollableHeight)}
       aria-valuenow={Math.round(clampedScrollTop)}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={() => {
-        handlePointerUp()
-      }}
-      onPointerCancel={() => {
-        handlePointerUp()
+      {...drag}
+      // Wraps the hook's own handler rather than replacing it: stopPropagation
+      // so the press doesn't also pan the view, and it runs for every button, so
+      // a right-press the drag ignores still doesn't reach the view. No
+      // preventDefault, so the native focus shift can still close open popups
+      // and the context menu still opens.
+      onPointerDown={e => {
+        e.stopPropagation()
+        drag.onPointerDown(e)
       }}
     >
       <div
