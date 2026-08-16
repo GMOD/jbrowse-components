@@ -68,7 +68,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-setheight">**setHeight**</span><br><code>(n: number) =&gt; void</code> |  | LinearSyntenyViewHelper |
-| <span id="action-showtrack">**showTrack**</span><br><code>(trackId: string, initialSnapshot?: any) =&gt; any</code> |  | LinearSyntenyViewHelper |
+| <span id="action-showtrack">**showTrack**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackId: string, initialSnapshot?: Record&lt;string, unknown&gt;) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackId: string, initialSnapshot?: Record&lt;string, unknown&gt;) =&gt; any</code></pre></dialog></span> |  | LinearSyntenyViewHelper |
 | <span id="action-hidetrack">**hideTrack**</span><br><code>(trackId: string) =&gt; boolean</code> |  | LinearSyntenyViewHelper |
 | <span id="action-toggletrack">**toggleTrack**</span><br><code>(trackId: string) =&gt; boolean</code> |  | LinearSyntenyViewHelper |
 | <span id="action-sethoveredfeature">**setHoveredFeature**</span><br><code>(hit: SyntenyPickResult &#124; undefined) =&gt; void</code> | Point the whole level's hover state at one pick hit: the display whose geometry was hit takes the instance index, every other display clears. `undefined` (a miss) therefore clears the level. An action rather than a loop in the canvas component so the N writes land in one MobX batch, and so the canvas never has to resolve the pick key to a display model. | LinearSyntenyViewHelper |
