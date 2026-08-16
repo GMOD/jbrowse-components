@@ -38,9 +38,27 @@ test('flipping a region orientation changes the key (diagonalize reversal)', () 
   )
 })
 
-test('a zoom (bpPerPx) change changes the key', () => {
-  expect(dotplotFetchKey('fine', h, v, win)).not.toBe(
-    dotplotFetchKey('fine', { ...h, bpPerPx: 2 }, v, win),
+// The zoom enters as a log2 bucket. A wheel notch inside one leaves the key
+// alone — on a whole-genome plot, where `syntenyFetchRegions` has clamped its
+// window to the displayed region, that key was the only thing moving, so every
+// notch refetched every alignment in the file. See `bucketBpPerPx`.
+test('a zoom within one bucket leaves the key alone', () => {
+  expect(dotplotFetchKey('fine', { ...h, bpPerPx: 1100 }, v, win)).toBe(
+    dotplotFetchKey('fine', { ...h, bpPerPx: 1900 }, v, win),
+  )
+})
+
+test('a zoom across a bucket boundary changes the key', () => {
+  expect(dotplotFetchKey('fine', { ...h, bpPerPx: 1100 }, v, win)).not.toBe(
+    dotplotFetchKey('fine', { ...h, bpPerPx: 2100 }, v, win),
+  )
+})
+
+// Both axes carry their own, so a v-only zoom is still a refetch: the worker
+// reads vViewSnap.bpPerPx too (cigarWorthParsing takes the wider of the two).
+test('the vertical axis has its own bucket', () => {
+  expect(dotplotFetchKey('fine', h, { ...v, bpPerPx: 1100 }, win)).not.toBe(
+    dotplotFetchKey('fine', h, { ...v, bpPerPx: 4000 }, win),
   )
 })
 

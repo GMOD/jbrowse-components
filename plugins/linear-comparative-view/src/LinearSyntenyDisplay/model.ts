@@ -11,6 +11,7 @@ import { sharedBackendKey } from '@jbrowse/render-core/keyedUploadSync'
 import {
   NO_CIGAR_OPS,
   SyntenyFetchStateMixin,
+  bucketBpPerPx,
   featureAttributes,
   getCoarseBpPerPxThreshold,
   isDataCurrent,
@@ -110,14 +111,6 @@ export interface FeatPos {
   // panel used to show while the fetch carried mapping quality, dN/dS and any
   // column the track declared. `featureAttributes` drops the -1 sentinel.
   attributes: Record<string, number>
-}
-
-// The worker sizes its viewport cull in px at fetch time, so zooming out by
-// ~2x can leave features missing beyond the previous cull window. Bucketing
-// bpPerPx on log2 lets the fetch autorun refire once per doubling of zoom
-// instead of on every settled zoom.
-function bucketBpPerPx(bpPerPx: number) {
-  return Math.floor(Math.log2(Math.max(bpPerPx, 1)))
 }
 
 function windowSignature(regions: Region[]) {
