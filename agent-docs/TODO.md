@@ -25,10 +25,9 @@ before anyone noticed.
 
 | Item | Area | First move |
 | --- | --- | --- |
-| [Sort the api-docs generator's output](#sort-the-api-docs-generators-output-so-an-unrelated-file-cannot-reorder-it) | tooling, CI | sort at each emission point; a double run does NOT reproduce it |
+| [Does anything still reorder the api-docs output](#whether-anything-still-reorders-the-api-docs-output) | tooling, CI | two sorts landed; REPRODUCE a permuting "Extended by" before building |
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
-| [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
-| [Validate the react-app site's volvox config](#run-jbrowse-validate-over-the-react-app-sites-volvox-configjson) | embedded, config | 8 errors already reported; fix the file, then ask why it is a copy |
+| [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
@@ -43,7 +42,6 @@ before anyone noticed.
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
-| [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
@@ -83,33 +81,34 @@ before anyone noticed.
 
 ## Ready to build: small and self-contained
 
-### Sort the api-docs generator's output so an unrelated file cannot reorder it
+### Whether anything still reorders the api-docs output
 
-`pnpm autogen --check` is a CI gate (`push.yml`), and it goes red for changes that
-touch nothing it covers. The generator emits TypeScript union members and model
-table rows in the order the checker visited them, so **adding or removing any file
-in the program reorders them in unrelated docs**: `"none" | "overlay" | "below"`
-becomes `"none" | "below" | "overlay"`, a `BaseTrack` "Extended by" list permutes,
-a `packInstances` row moves up two places. Nothing about the affected doc changed.
+`pnpm autogen --check` is a CI gate (`push.yml`), and it went red for changes that
+touched nothing it covers, because the generator emitted in the order the checker
+visited rather than an order of its own. Two sorts have landed against that:
+`161d06e858` for the display-link bullets, and the literal-union sort in
+`typeSignature` (`util.ts`), which covers the `"none" | "overlay" | "below"` case
+at any nesting depth.
 
-Already paid for repeatedly, which is the argument for fixing it rather than
-regenerating again — `19a97a8aaf` ("regenerate for the file-order churn the new
-test file causes") names the mechanism, and `6a2cb0e47f`, `81ba418132`,
-`b9670e300d` and `97d62f5d4c` are four more regen-only commits. With several
-agents landing a day it also ping-pongs: each one's regen looks stale to the next,
-so the same two lines flip back and forth.
+**What is left is a question, not a build.** The original entry also claimed a
+`BaseTrack` "Extended by" list permutes and a `packInstances` row moves up two
+places, and neither has been reproduced since. `extendedByMap` really does build
+in accumulation order and really is unsorted, so the claim is plausible in the
+code; what is missing is a case where it moves.
 
-**Do not try to reproduce it by running autogen twice.** A clean tree is
-idempotent — verified — because the visit order only changes when the file set
-does. Reproduce by adding any new source or test file to a package that has model
-docs, then running autogen and diffing docs you did not touch.
+Nothing reproduced on the last attempt, which is the thing to know before
+spending on it: a trivial untracked `.ts`, one importing `@jbrowse/product-core`
+(the file `161d06e858` says reproduced it then), and one redeclaring the same
+string literals in a different order all changed **zero** files. TypeScript
+interns literal types by value, so a scratch file does not steal their ids. A
+clean tree is idempotent — verified repeatedly.
 
-The fix is a sort at each emission point in `website/scripts/api-docs/generate.ts`
-— union members and the "Extended by"/member rows — not a re-run. Sort keys have
-to be the printed strings, since that is what has to be stable; sorting union
-members changes what the docs *say* for a handful of slots, so the first commit is
-the sort plus the one-time regen it produces, and after that a regen is only ever
-caused by a real source change.
+So the first move is to reproduce a permuting "Extended by" list, from the five
+regen-only commits the churn has already been paid for in (`19a97a8aaf`,
+`6a2cb0e47f`, `81ba418132`, `b9670e300d`, `97d62f5d4c` — `19a97a8aaf` names the
+mechanism in its message). If one of those diffs shows a permuted "Extended by"
+or a moved member row, sorting `extendedByMap` is a two-line fix. If they only
+ever show union reorderings, this is done and the entry is closed.
 
 ### Let a dotplot click open the alignment it is on
 
@@ -168,32 +167,32 @@ Two things make this not a copy of the fix that landed:
   emit work per position is genuinely different here, since both channels are
   kept rather than only the winner.
 
-### Grey out the genomic-coordinate option instead of hiding it
+### Decide whether the examples sites' configs get a validator gate
 
-`SequenceFeatureDetails/dialogs/SequenceFeatureMenu.tsx` drops the "Coordinates
-relative to genome" radio entirely when `showGenomicCoordsOption(mode)` is
-false, so the option disappears rather than explaining itself. Render it
-disabled, with the reason the label already carries.
+The react-app site's `volvox-config.json` is fixed — it was a copy forked before
+the config migration, and its eight pre-slot spellings (`pileupDisplay`,
+`renderers`, singular `renderer`, `get(feature,'x')` jexl, the
+`showLabels`/`showDescriptions` pair) each loaded, appeared and silently did
+nothing. Each block took the canonical config's own value for the same trackId;
+`lollipop_track` went with it, following `fb1fd404b3`.
 
-### Run `jbrowse validate` over the react-app site's volvox-config.json
+Two things did not get decided, and they are the entry:
 
-`products/jbrowse-react-app/examples-site/src/volvox-config.json` is a private
-copy of the volvox config, drifted from the canonical one, and the validator
-reports **8 errors** on it — three `pileupDisplay` and three `renderers` blocks
-that are neither slots nor properties, plus two tracks naming assemblies the
-file never defines (`wombat`, `volvox_del2`). Every one is silent at runtime.
+- **Should it be a copy at all.** Nothing regenerates it from
+  `test_data/volvox/config.json`, so it can fork again the same way, silently.
+- **Where the check lives.** The lineargenomeview site's generator refuses to
+  write an invalid config (`gen-nextstrain-demos.mjs`, `assertConfigValid`); this
+  site has no generator. Doing every site at once means
+  `runExamplesSiteChecks` (`@jbrowse/browser-test-utils`), which would put
+  `@jbrowse/cli` in all four sites' installs for one function — weigh that
+  against two fixtures.
 
-The equivalent bugs in the lineargenomeview site's `nextstrain_*.json` are
-fixed, and its generator now refuses to write an invalid config (`gen-nextstrain-
-demos.mjs`, `assertConfigValid`). This one has no generator, so the fix is to
-correct the file and then decide whether it should be a copy at all — the two
-`renderers`/`pileupDisplay` shapes are pre-slot spellings that suggest it was
-forked before the config migration and never re-synced.
-
-Doing this for every site at once means the check belongs in
-`runExamplesSiteChecks` (`@jbrowse/browser-test-utils`), which would put
-`@jbrowse/cli` in all four sites' installs for one function — weigh that against
-two fixtures.
+Note the validator's two remaining errors on that file are **not** bugs to fix:
+`wombat` is the deliberate `volvox_wrong_assembly` fixture and `volvox_del2` is
+missing in the canonical config too, so both are inherited rather than drift. A
+gate has to exempt them, which is its own small design question — and `vvx`
+reports as a missing assembly when it is an assembly *alias*, which is a
+validator gap rather than a config error.
 
 ### Give the coordinate ruler a genuinely fixed tick pool
 
@@ -360,15 +359,6 @@ an `evaluateOnNewDocument` override of `getContext` verified against a plain
 canvas first. **This is one deliberate diagnostic run, not another A/B, and it
 must not be left on** — it was measured and refuted as a *fix*
 ([reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md)).
-
-### Report a callout that draws off-frame
-
-`drawAnnotationOverlay` throws on an anchor that resolves to nothing and says
-nothing about one that resolves and then draws outside the viewport, which is
-how a correct pill shipped invisible for a round (see
-[reference/SCREENSHOT_CALLOUT_ANCHORS.md](reference/SCREENSHOT_CALLOUT_ANCHORS.md)).
-An item whose drawn rect falls outside the capture is almost always a bug —
-report it the way the overlay already reports an unresolvable anchor.
 
 ### Render the twenty specs whose callouts were converted to anchors
 
