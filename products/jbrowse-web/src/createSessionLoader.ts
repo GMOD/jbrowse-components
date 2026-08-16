@@ -3,10 +3,10 @@ import {
   readNavParam,
   readTracklistParam,
 } from '@jbrowse/app-core'
+import { deleteQueryParams, readQueryParams } from '@jbrowse/app-core'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import SessionLoader from './SessionLoader.ts'
-import { deleteQueryParams, readQueryParams } from './useQueryParam.ts'
 
 import type { SessionLoaderModel } from './SessionLoader.ts'
 import type { Snap } from './types.ts'

@@ -4,7 +4,7 @@ import {
   deleteQueryParams,
   setQueryParams,
   useQueryParam,
-} from './useQueryParam.ts'
+} from './queryParams.ts'
 
 // The Loader reads what to open (?config=, ?specLink=) out of the query string
 // and clears it once the session is up or the load failed. history.replaceState

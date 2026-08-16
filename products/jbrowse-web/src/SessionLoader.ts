@@ -1,4 +1,5 @@
 import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
+import { deleteQueryParams } from '@jbrowse/app-core'
 import {
   dropVendoredPlugins,
   pluginsNotIn,
@@ -22,7 +23,6 @@ import {
   writeSessionToIDB,
 } from './sessionLoaderHelpers.ts'
 import { arePluginsRemembered } from './trustedPlugins.ts'
-import { deleteQueryParams } from './useQueryParam.ts'
 import {
   checkPlugins,
   fromUrlSafeB64,

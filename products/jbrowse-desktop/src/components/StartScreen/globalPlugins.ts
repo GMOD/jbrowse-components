@@ -1,3 +1,4 @@
+import { setQueryParams } from '@jbrowse/app-core'
 import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import {
   localStorageGetItem,
@@ -7,7 +8,6 @@ import {
 } from '@jbrowse/core/util'
 
 import { invokeIpc } from '../../ipc.ts'
-import { setQueryParams } from '../../useQueryParam.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 

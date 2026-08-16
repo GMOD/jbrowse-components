@@ -44,5 +44,14 @@ export type {
   ViewSpec,
 } from './SessionSpec/index.ts'
 export type { SessionModelFactory } from './sessionModelFactory.ts'
+// URL params, for the two products that own their page (web, desktop). An
+// embedded product must not rewrite its host's URL — see queryParams.ts
+export {
+  deleteQueryParams,
+  readAllQueryParams,
+  readQueryParams,
+  setQueryParams,
+  useQueryParam,
+} from './queryParams.ts'
 export { processMutableMenuActions, resolveMenus } from './menus.ts'
 export type { Menu, MenuAction, MenuDefinition } from './menus.ts'

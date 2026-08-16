@@ -1,10 +1,10 @@
 import { Suspense, lazy } from 'react'
 
+import { readQueryParams } from '@jbrowse/app-core'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 
 import Loading from './components/Loading.tsx'
 import { initAuthWindow } from './initAuthWindow.ts'
-import { readQueryParams } from './useQueryParam.ts'
 
 const Main = lazy(() => import('./components/Loader.tsx'))
 

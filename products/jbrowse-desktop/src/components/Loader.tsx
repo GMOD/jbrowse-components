@@ -1,5 +1,6 @@
 import { Suspense, lazy, useMemo, useRef, useState } from 'react'
 
+import { deleteQueryParams, useQueryParam } from '@jbrowse/app-core'
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
@@ -9,7 +10,6 @@ import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../ipc.ts'
 import { useIpc } from '../useIpc.ts'
-import { deleteQueryParams, useQueryParam } from '../useQueryParam.ts'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'

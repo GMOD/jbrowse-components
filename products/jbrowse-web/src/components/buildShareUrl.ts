@@ -1,6 +1,5 @@
+import { readAllQueryParams } from '@jbrowse/app-core'
 import { encodeSessionParam } from '@jbrowse/core/util'
-
-import { readAllQueryParams } from '../useQueryParam.ts'
 
 import type { SessionShareMode } from '@jbrowse/core/util'
 

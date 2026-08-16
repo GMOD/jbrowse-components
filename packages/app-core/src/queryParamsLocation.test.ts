@@ -2,7 +2,7 @@ import {
   deleteQueryParams,
   readQueryParams,
   setQueryParams,
-} from './useQueryParam.ts'
+} from './queryParams.ts'
 
 function setUrl(url: string) {
   window.history.replaceState(null, '', url)

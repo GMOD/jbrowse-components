@@ -1,3 +1,4 @@
+import { readQueryParams } from '@jbrowse/app-core'
 import {
   sessionStorageGetItem,
   sessionStorageRemoveItem,
@@ -5,7 +6,6 @@ import {
 } from '@jbrowse/core/util'
 
 import { getSessionQueryType, stripPrefix } from './sessionLoaderHelpers.ts'
-import { readQueryParams } from './useQueryParam.ts'
 
 // The one thing a boot needs to know about the boot before it: that the last
 // attempt to put this session on screen ended at the app-level ErrorBoundary,
