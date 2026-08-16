@@ -33,19 +33,13 @@ import { makeStyles } from '../../../util/tss-react/index.ts'
 import { useFetch } from '../../../util/useFetch.ts'
 import { fetchTrackData, roundRegions } from './fetchTrackData.ts'
 
-import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { ExportableTrack } from './fetchTrackData.ts'
 
 const MAX_PREVIEW_CHARS = 500_000
 const TOO_BIG_TO_PREVIEW =
   'File greater than 500kb, too large to view here. Click "Download" to save results to file'
-
-interface SaveTrackModel extends IStateTreeNode {
-  configuration: AnyConfigurationModel
-  saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
-}
 
 const useStyles = makeStyles()({
   root: { width: '80em' },
@@ -73,7 +67,7 @@ function useTrackDataExport({
   type,
   options,
 }: {
-  model: SaveTrackModel
+  model: ExportableTrack
   regions: Region[]
   regionStr: string
   type: string
@@ -180,7 +174,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   model,
   handleClose,
 }: {
-  model: SaveTrackModel
+  model: ExportableTrack
   handleClose: () => void
 }) {
   const { classes } = useStyles()

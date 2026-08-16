@@ -1,24 +1,23 @@
 import { getConf } from '../../../configuration/getConf.ts'
-import { getEnv, getSession } from '../../../util/mstUtils.ts'
+import { getSession } from '../../../util/mstUtils.ts'
 import SimpleFeature from '../../../util/simpleFeature.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 import { fetchTrackData } from './fetchTrackData.ts'
 
 import type { Feature, Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { ExportableTrack } from './fetchTrackData.ts'
 
-// The dialog reaches the adapter through four seams and nothing else, so
-// standing them up is what lets this test be about the branching rather than
-// about MST. `configuration/index.ts` and `util/index.ts` re-export these, so
-// mocking the defining module is enough for fetchTrackData's own imports.
+// Everything the export reads off the track is a getter on it, so a plain
+// object is the whole model here; only the three tree lookups need standing up.
+// `configuration/index.ts` and `util/index.ts` re-export these, so mocking the
+// defining module is enough for fetchTrackData's own imports.
 jest.mock('../../../configuration/getConf.ts', () => ({
   ...jest.requireActual('../../../configuration/getConf.ts'),
   getConf: jest.fn(),
 }))
 jest.mock('../../../util/mstUtils.ts', () => ({
   ...jest.requireActual('../../../util/mstUtils.ts'),
-  getEnv: jest.fn(),
   getSession: jest.fn(),
 }))
 jest.mock('../../../util/tracks.ts', () => ({
@@ -53,28 +52,21 @@ const options: Record<string, FileTypeExporter> = {
 
 const call = jest.fn()
 
+let model: ExportableTrack
+
 function setup({
   exportsData = false,
-  fetchSizeLimit,
+  byteLimit = 5_000_000,
 }: {
   exportsData?: boolean
-  fetchSizeLimit?: number
+  byteLimit?: number
 } = {}) {
-  jest
-    .mocked(getConf)
-    .mockImplementation((_model: unknown, path?: unknown) =>
-      Array.isArray(path) && path[1] === 'fetchSizeLimit'
-        ? fetchSizeLimit
-        : adapterConfig,
-    )
+  model = {
+    exportsDataViaAdapter: exportsData,
+    exportByteLimit: byteLimit,
+  } as unknown as ExportableTrack
+  jest.mocked(getConf).mockReturnValue(adapterConfig)
   jest.mocked(getRpcSessionId).mockReturnValue('session-1')
-  jest.mocked(getEnv).mockReturnValue({
-    pluginManager: {
-      getAdapterType: () => ({
-        adapterCapabilities: exportsData ? ['exportData'] : [],
-      }),
-    },
-  } as unknown as ReturnType<typeof getEnv>)
   jest.mocked(getSession).mockReturnValue({
     rpcManager: { call },
   } as unknown as ReturnType<typeof getSession>)
@@ -91,8 +83,6 @@ function respond(handlers: Record<string, unknown>) {
     method === 'CoreGetRegionByteEstimate' ? undefined : handlers[method],
   )
 }
-
-const model = {} as IAnyStateTreeNode
 
 beforeEach(() => {
   call.mockReset()
@@ -168,7 +158,7 @@ test('the stop token and status callback reach every RPC', async () => {
 })
 
 test('a region over budget downloads nothing and says what it would cost', async () => {
-  setup({ fetchSizeLimit: 1_000_000 })
+  setup({ byteLimit: 1_000_000 })
   call.mockImplementation(async (_sessionId, method) =>
     method === 'CoreGetRegionByteEstimate' ? 4_000_000 : [feature('gene1')],
   )
@@ -185,7 +175,7 @@ test('a region over budget downloads nothing and says what it would cost', async
 })
 
 test('force skips the pre-flight entirely', async () => {
-  setup({ fetchSizeLimit: 1_000_000 })
+  setup({ byteLimit: 1_000_000 })
   call.mockImplementation(async (_sessionId, method) =>
     method === 'CoreGetRegionByteEstimate' ? 4_000_000 : [feature('gene1')],
   )
@@ -203,7 +193,7 @@ test('force skips the pre-flight entirely', async () => {
 })
 
 test('an adapter quoting no estimate does not gate', async () => {
-  setup({ fetchSizeLimit: 1 })
+  setup({ byteLimit: 1 })
   respond({ CoreGetFeatures: [feature('gene1')] })
 
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
@@ -218,15 +208,4 @@ test('an empty export stays empty rather than becoming one newline', async () =>
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
   expect(res.str).toBe('')
-})
-
-test('an adapter declaring no limit falls back to the default budget', async () => {
-  setup()
-  call.mockImplementation(async (_sessionId, method) =>
-    method === 'CoreGetRegionByteEstimate' ? 6_000_000 : [feature('gene1')],
-  )
-
-  const res = await fetchTrackData({ model, regions, type: 'bed', options })
-
-  expect(res.tooLarge).toEqual({ bytes: 6_000_000, limit: 5_000_000 })
 })

@@ -1,28 +1,25 @@
 import { getConf } from '../../../configuration/index.ts'
-import { getEnv, getSession } from '../../../util/index.ts'
+import { getSession } from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 
+import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'
 import type { StatusCallback } from '../../../util/progress.ts'
 import type { StopToken } from '../../../util/stopToken.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * Whether this track's adapter writes the file format itself, rather than the
- * dialog rebuilding one out of rendered features.
- *
- * A capability is a claim about the adapter type, not about a given format:
- * {@link fetchTrackData} still falls back when the adapter declines the one
- * that was asked for, which is why the answer a caller shows comes from
- * {@link TrackDataResult.usedAdapterExport} rather than from here.
+ * What the export needs off the track, duck-typed rather than imported: this
+ * module is behind `BaseTrackModel`'s lazy dialog import, so naming that model
+ * type here would close the circle. `exportsDataViaAdapter` and
+ * `exportByteLimit` are its getters.
  */
-function trackSupportsAdapterExport(model: IAnyStateTreeNode) {
-  const { pluginManager } = getEnv(model)
-  const adapterConfig = getConf(model, ['adapter'])
-  return pluginManager
-    .getAdapterType(adapterConfig.type)
-    .adapterCapabilities.includes('exportData')
+export interface ExportableTrack extends IStateTreeNode {
+  configuration: AnyConfigurationModel
+  exportsDataViaAdapter: boolean
+  exportByteLimit: number
+  saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
 }
 
 export function roundRegions(regions: Region[]) {
@@ -31,22 +28,6 @@ export function roundRegions(regions: Region[]) {
     start: Math.floor(r.start),
     end: Math.ceil(r.end),
   }))
-}
-
-/**
- * What a save may pull before it asks. The adapter's own `fetchSizeLimit` where
- * it declares one, so a save does not quietly disagree with the size its own
- * display already refuses to render; otherwise this. Deliberately generous —
- * unlike the display's gate this is not a refusal, it is a confirmation, and
- * the user asked for these bytes by name.
- */
-const DEFAULT_SAVE_BYTE_LIMIT = 5_000_000
-
-function saveByteLimit(model: IAnyStateTreeNode) {
-  const declared = getConf(model, ['adapter', 'fetchSizeLimit'])
-  return typeof declared === 'number' && declared > 0
-    ? declared
-    : DEFAULT_SAVE_BYTE_LIMIT
 }
 
 /**
@@ -85,7 +66,7 @@ export async function fetchTrackData({
   stopToken,
   statusCallback,
 }: {
-  model: IAnyStateTreeNode
+  model: ExportableTrack
   regions: Region[]
   type: string
   options: Record<string, FileTypeExporter>
@@ -98,8 +79,7 @@ export async function fetchTrackData({
   const sessionId = getRpcSessionId(model)
   const adapterConfig = getConf(model, ['adapter'])
   const opts = { stopToken, statusCallback }
-
-  const supportsExport = trackSupportsAdapterExport(model)
+  const { exportsDataViaAdapter } = model
 
   // The same index lookup the display's gate takes before it fetches, for the
   // same reason: this menu item pulls the region the display just refused to
@@ -112,17 +92,17 @@ export async function fetchTrackData({
       'CoreGetRegionByteEstimate',
       { adapterConfig, regions, ...opts },
     )
-    const limit = saveByteLimit(model)
+    const limit = model.exportByteLimit
     if (bytes !== undefined && bytes > limit) {
       return {
         str: '',
-        usedAdapterExport: supportsExport,
+        usedAdapterExport: exportsDataViaAdapter,
         tooLarge: { bytes, limit },
       }
     }
   }
 
-  if (supportsExport) {
+  if (exportsDataViaAdapter) {
     const str = await session.rpcManager.call(sessionId, 'CoreGetExportData', {
       adapterConfig,
       regions,

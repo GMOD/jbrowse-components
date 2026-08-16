@@ -35,6 +35,8 @@ import type {
 
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData.tsx'))
 
+const DEFAULT_EXPORT_BYTE_LIMIT = 5_000_000
+
 interface DisplayConf {
   displayId: string
   type: string
@@ -374,7 +376,34 @@ export function createBaseTrackModel(
         })
       },
     }))
-    .views(() => ({
+    .views(self => ({
+      /**
+       * #getter
+       * Whether this track's adapter writes an export format itself, rather
+       * than the save dialog rebuilding one out of rendered features. A claim
+       * about the adapter type, not about a given format — the fetch still
+       * falls back when the adapter declines the one that was asked for.
+       */
+      get exportsDataViaAdapter(): boolean {
+        return getEnv(self)
+          .pluginManager.getAdapterType(getConf(self, ['adapter']).type)
+          .adapterCapabilities.includes('exportData')
+      },
+      /**
+       * #getter
+       * What "Save track data" may pull before it asks. The adapter's own
+       * `fetchSizeLimit` where it declares one, so a save does not quietly
+       * disagree with the size this track's display already refuses to render;
+       * otherwise a default. Deliberately generous — unlike the display's gate
+       * this is a confirmation rather than a refusal, and the user asked for
+       * these bytes by name.
+       */
+      get exportByteLimit(): number {
+        const declared = getConf(self, ['adapter', 'fetchSizeLimit'])
+        return typeof declared === 'number' && declared > 0
+          ? declared
+          : DEFAULT_EXPORT_BYTE_LIMIT
+      },
       /**
        * #method
        */
