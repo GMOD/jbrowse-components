@@ -7,6 +7,7 @@ import { autorun } from 'mobx'
 
 import { featureRefNames } from './featureRefNames.ts'
 import { sameCircularRegions } from './sameCircularRegions.ts'
+import { svTypeTallies } from './svChordColor.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -193,6 +194,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the SV classes among the rows on screen, with their chord color and
+       * count — the circle's legend, and the view's only tally of the callset
+       */
+      get svTypeTallies() {
+        return svTypeTallies(this.features)
+      },
+      /**
+       * #getter
        * every refName the features' chords land on, both ends included
        */
       get featureRefNames() {
@@ -284,6 +293,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                   displayId: `${trackId}-chord-display`,
                   onChordClick:
                     'jexl:defaultOnChordClick(feature, track, pluginManager)',
+                  // one orange for every class said nothing about a callset
+                  // whose whole question is which kind of event is where. The
+                  // legend beside the circle is built from the same colors
+                  strokeColor: 'jexl:svChordColor(feature)',
                 },
               ],
             }

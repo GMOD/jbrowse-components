@@ -16,7 +16,6 @@ for your SV data.
 
 The following formats are supported:
 
-- CSV, TSV
 - VCF or VCF.gz (plain text or (b)gzipped)
 - BED, BEDPE
 - STAR-fusion result file
@@ -25,8 +24,14 @@ The following formats are supported:
 
 The SV inspector is best for long-range SV records: VCF entries with
 `SVTYPE=BND` (breakends; the VCF-spec way to encode translocations) or the
-caller-specific `SVTYPE=TRA` used by some tools. Single-locus deletions and
-duplications load fine but don't show up usefully in the circular overview.
+caller-specific `SVTYPE=TRA` used by some tools.
+
+Single-locus deletions and duplications load into the table like anything else,
+but the circular overview cannot draw them: a chord runs between a record's two
+ends, and at whole-genome scale a deletion's two ends are the same point. The
+legend below the circle is what says so — it counts every class in the rows on
+screen, including the ones with no chord to draw, so a mostly-local callset
+reads as such instead of as an empty circle.
 
 Compatible variant callers include:
 

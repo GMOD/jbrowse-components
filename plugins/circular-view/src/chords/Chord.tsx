@@ -5,7 +5,7 @@ import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { bpToRadians } from '../CircularView/slices.ts'
-import { getEndpoint } from './chordGeometry.ts'
+import { chordControlRadius, getEndpoint } from './chordGeometry.ts'
 
 import type { Slice } from '../CircularView/slices.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -47,7 +47,7 @@ const Chord = observer(function Chord({
   const [x1, y1] = polarToCartesian(radius, startRadians)
   const [x2, y2] = polarToCartesian(radius, endRadians)
   const [cx, cy] = polarToCartesian(
-    bezierRadius,
+    chordControlRadius({ startRadians, endRadians, radius, bezierRadius }),
     (endRadians + startRadians) / 2,
   )
   const stroke = readConfObject(

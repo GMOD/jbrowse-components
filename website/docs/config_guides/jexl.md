@@ -180,6 +180,7 @@ jexl: logThickness(feature, 'score') // log(attribute + 1), the arc display's de
 jexl: defaultPairedArcColor(feature, alt) // a color per SV type read off the ALT (DEL, DUP, INV, TRA, CNV)
 jexl: lgvSyntenyTooltip(feature) // both sides of a synteny feature, the LGVSyntenyDisplay's default mouseover
 jexl: defaultOnChordClick(feature, track, pluginManager) // opens a breakpoint split view on the clicked chord
+jexl: svChordColor(feature) // the SV-type color the inspector's chords are drawn in
 ```
 
 **Variant functions**

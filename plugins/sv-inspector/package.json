@@ -34,6 +34,7 @@
     "@jbrowse/mobx-state-tree": "^6.3.0",
     "@jbrowse/plugin-circular-view": "workspace:^",
     "@jbrowse/plugin-spreadsheet-view": "workspace:^",
+    "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
     "@mui/icons-material": "^9.3.1",
     "mobx": "^7.0.0",

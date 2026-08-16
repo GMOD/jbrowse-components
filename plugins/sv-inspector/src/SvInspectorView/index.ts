@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/sv-core'
 
 import stateModelFactory from './model.ts'
+import { svChordColor } from './svChordColor.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -68,6 +69,8 @@ function defaultOnChordClick(
 export default function SvInspectorViewF(pluginManager: PluginManager) {
   /** #jexlFunction Slot defaults from plugins | defaultOnChordClick(feature, track, pluginManager) | opens a breakpoint split view on the clicked chord */
   pluginManager.jexl.addFunction('defaultOnChordClick', defaultOnChordClick)
+  /** #jexlFunction Slot defaults from plugins | svChordColor(feature) | the SV-type color the inspector's chords are drawn in */
+  pluginManager.jexl.addFunction('svChordColor', svChordColor)
 
   pluginManager.addViewType(() => {
     const stateModel = stateModelFactory(pluginManager)

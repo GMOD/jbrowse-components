@@ -38,7 +38,8 @@ const ErrorMessageStackTraceDialog = lazy(
  * #example
  * The circular-view display for a `VariantTrack` of structural variants;
  * translocations are drawn as chords across the circle. `bezierRadiusRatio`
- * controls how far the chords bow toward the center:
+ * sets the deepest bow toward the center, which a chord straight across the
+ * circle reaches; a shorter-range one bows in proportion to its span:
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -146,7 +147,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
 
       /**
        * #getter
-       * how far chords bow toward the center
+       * the deepest a chord bows toward the center, which a chord straight
+       * across the circle reaches. A shorter one bows in proportion to how far
+       * apart its ends are — see `chordControlRadius`
        */
       get bezierRadius() {
         return this.radiusPx * self.bezierRadiusRatio

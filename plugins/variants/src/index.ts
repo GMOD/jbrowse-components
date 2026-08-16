@@ -112,6 +112,16 @@ export default class VariantsPlugin extends Plugin {
 
 export { default as VcfFeature } from './VcfFeature/index.ts'
 
+// The SV-type color scheme, for the other plugins that paint the same callset:
+// the SV inspector's chords read it so a chord and a variant cell agree on what
+// a deletion looks like, and it carries the legend's labels and order with it
+export {
+  PREDEFINED_SV_TYPES,
+  getVariantSvType,
+  getVariantSvTypeColor,
+  svTypeDisplayLabel,
+} from './shared/variantSvType.ts'
+
 export type { LinearVariantDisplayModel } from './LinearVariantDisplay/model.ts'
 export type { LinearMultiSampleVariantDisplayModel } from './LinearMultiSampleVariantDisplay/model.ts'
 export type { LinearMultiSampleVariantMatrixDisplayModel } from './LinearMultiSampleVariantMatrixDisplay/model.ts'

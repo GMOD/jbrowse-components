@@ -2,6 +2,7 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import ChordLegend from './ChordLegend.tsx'
 import CircularViewOptions from './CircularViewOptions.tsx'
 
 import type { SvInspectorViewModel } from '../model.ts'
@@ -51,7 +52,9 @@ const SvInspectorView = observer(function SvInspectorView({
             />
             <div style={{ width: model.circularView.width }}>
               <CircularViewOptions svInspector={model} />
-              <CircularViewReactComponent model={model.circularView} />
+              <ChordLegend model={model}>
+                <CircularViewReactComponent model={model.circularView} />
+              </ChordLegend>
             </div>
           </>
         ) : null}

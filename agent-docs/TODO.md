@@ -25,7 +25,7 @@ before anyone noticed.
 
 | Item | Area | First move |
 | --- | --- | --- |
-| [Does anything still reorder the api-docs output](#whether-anything-still-reorders-the-api-docs-output) | tooling, CI | two sorts landed; REPRODUCE a permuting "Extended by" before building |
+| [Does anything still reorder the api-docs output](#whether-anything-still-reorders-the-api-docs-output) | tooling, CI | a permuting list has now been seen; sort `extendedByMap` |
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
@@ -82,6 +82,9 @@ before anyone noticed.
 | [Sweep the unused exports, or close the question](#sweep-the-unused-exports-with-a-real-tool-or-close-the-question) | tooling, CI | configure knip per package; a grep returns 623 names and almost none are dead |
 | [charactersPerRow is a constant on a model](#charactersperrow-is-a-constant-living-on-a-model) | feature details | decide setting vs const; a setter with no UI is the worst option |
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
+| [Both SV inspector drill-downs open empty](#both-of-the-sv-inspectors-drill-downs-open-empty) | SV inspector | the wizard already holds the location; decide the session track's lifetime |
+| [The circular view's padding and spacing are fixed pixels](#the-circular-views-padding-and-spacing-are-fixed-pixels) | circular view | it moves every committed figure with a circle in it |
+| [The SV inspector holds one callset](#the-sv-inspector-can-only-hold-one-callset) | SV inspector | try just un-hiding the track selector before designing more |
 | [Do a transcript's exons ever fall short of its bounds](#does-any-real-annotation-leave-a-transcripts-exons-short-of-its-bounds) | feature details | find an annotation that does it, or write the comment instead |
 
 ## Ready to build: small and self-contained
@@ -108,12 +111,29 @@ string literals in a different order all changed **zero** files. TypeScript
 interns literal types by value, so a scratch file does not steal their ids. A
 clean tree is idempotent — verified repeatedly.
 
-So the first move is to reproduce a permuting "Extended by" list, from the five
-regen-only commits the churn has already been paid for in (`19a97a8aaf`,
-`6a2cb0e47f`, `81ba418132`, `b9670e300d`, `97d62f5d4c` — `19a97a8aaf` names the
-mechanism in its message). If one of those diffs shows a permuted "Extended by"
-or a moved member row, sorting `extendedByMap` is a two-line fix. If they only
-ever show union reorderings, this is done and the entry is closed.
+**A permuting "Extended by" list has now been seen.** Working on
+`plugins/sv-inspector` — which added a dependency on `@jbrowse/plugin-variants`,
+then rebased onto main and reinstalled — a regen moved `LDTrack` and
+`VariantTrack` between the front and the end of `BaseTrack.md`'s list, with the
+same permutation in `BaseLinearDisplay.md` and five VariantTrack-family files,
+and then moved them back. Each state is idempotent: three consecutive regens
+inside one of them produced byte-identical output. So the entry's premise holds
+and its "verified repeatedly" idempotence does too — they were never in
+conflict, because what moves the order is not the tree.
+
+**Which of the two changes moved it was not isolated**, and the cheap-looking
+test is not cheap: the dependency edge only reaches the generator through an
+install, so telling the edge apart from the rebase costs a reinstall each way.
+Worth doing only if the fix below is somehow contentious.
+
+The mechanism is legible without that. `extendedByMap` accumulates into a `Map`
+over `Object.values(byFile)`, which is filename-keyed insertion order — the
+order the TypeScript program visits sources, which follows the module graph —
+and nothing sorts it afterwards. That is deterministic for a given tree *and*
+install and stable across neither, which is exactly the failure shape: the churn
+lands on whoever next touches the package graph and reads as theirs.
+
+So this is a two-line fix rather than a question: sort `extendedByMap`.
 
 ### Let a dotplot click open the alignment it is on
 
@@ -614,7 +634,75 @@ tool while copy implies a human, which argues for stripping in the download path
 only — but that makes two behaviors out of one helper, so it needs a deliberate
 yes rather than a drive-by.
 
-## Ready to build: the design is settled
+### Both of the SV inspector's drill-downs open empty
+
+The file loaded into the inspector never becomes a track, so every way out of it
+lands somewhere blank:
+
+- `locationLinkClick` (`spreadsheet-view/src/SpreadsheetView/util.ts`) opens a
+  `LinearGenomeView` with `init: { assembly, loc }` and no tracks.
+- `navToMultiLevelBreak` takes `tracks: viewTracks ?? []`, and both launch sites
+  here — the row menu's `FeatureMenu` and `defaultOnChordClick` — pass
+  `undefined`, since neither has a source view to copy from. Two empty panels at
+  the two breakends.
+
+The user guide documents this rather than working around it ("It opens empty;
+add alignment tracks to both via their track selectors"), and the tutorial
+figures only look right because their sessions hand-author the same VCF as a
+track alongside the inspector.
+
+**The import wizard already holds what is needed** —
+`importWizard.cachedFileLocation` and `fileType`, which is exactly the pair
+`adapterFileTypes` maps in reverse. So the build is: register the loaded file as
+a session track once per import, and seed both targets with it plus whatever the
+session already has for that assembly.
+
+Two things to decide before writing it. Registering a session track has a
+lifetime — the sheet can be replaced or returned to the import form, and a
+track left behind outlives the view that made it. And "Open from track" already
+started from a track, so that path should reuse the existing one rather than
+add a second copy of it under a different id.
+
+### The circular view's padding and spacing are fixed pixels
+
+`paddingPx: 80` and `spacingPx: 10` (`CircularView/model.ts`) are tuned for a
+standalone circular view and are the whole budget in a small one. The SV
+inspector gives the circle 34% of the width by default:
+
+| circular box | radius | what the constants take |
+| --- | --- | --- |
+| 446 px (inspector default, height 550) | 143 px | padding eats 160 of 446; 24 slices × 10 px is 27% of the circumference |
+| 316 px (the `height: 420` tutorial figure) | 78 px | **49% of the ring is inter-chromosome gap** |
+
+That second row is why the chromosomes in `sv_cgiab/deletion_sv_inspector_search`
+are ticks with holes between them. `radiusPx` is `min(width, height) / 2 -
+paddingPx`, so at the inspector's default the drawn disc covers 41% of the area
+it is given.
+
+Scale both with the radius — the padding exists for the chromosome labels
+outside the circle, so it wants a floor and a cap rather than a constant, and
+the spacing wants to be a fraction of the circumference with a floor.
+
+**Take the blast radius seriously**: this moves every committed figure with a
+circular view in it, which is the reason it was split out of the chord work
+rather than bundled with it. Refresh the goldens deliberately, and read the diff
+images.
+
+### The SV inspector can only hold one callset
+
+The child circular view is created with `hideTrackSelectorButton: true` and
+`disableImportForm: true` (`SvInspectorView/model.ts`), so nothing can be added
+beside the chord track the sheet builds. Tumour vs normal, and caller A vs
+caller B, are the two commonest things anyone does with an SV callset and
+neither is reachable.
+
+`CircularView` already holds many tracks and `svChordColor` already colours by
+class, so what is missing is a second colour axis — by track, or by class with
+the second callset drawn on a second ring — and a way to name the second file.
+The plainest version is to stop hiding the track selector and let a second
+`VariantTrack` from the session be turned on, which costs one line and answers
+"is this event in the normal too" without any new UI at all. Decide whether that
+is enough before designing more.
 
 Each of these carries a design that already survived a rejected alternative.
 Read the linked ADR or reference doc before re-proposing the thing it rejected.

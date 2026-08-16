@@ -185,6 +185,63 @@ test('svTypeOptions lists the distinct sorted SVTYPE values', () => {
   expect(model.svTypeOptions).toEqual(['DEL', 'DUP'])
 })
 
+// The derived size column is one column with two meanings, and the SVTYPE
+// column is what picks between them. The field stays `Length` across both so a
+// saved column-visibility preference covers either spelling
+describe('the derived size column', () => {
+  const insertion = {
+    uniqueId: 'i1',
+    refName: 'chr1',
+    start: 100,
+    end: 101,
+    ALT: ['<INS>'],
+    INFO: { SVLEN: [2000] },
+  }
+
+  // Narrowed to the three fields under test rather than read as a GridColDef:
+  // `satisfies` keeps each column's literal type, so `find` hands back a union
+  // whose other members have no headerName at all, and GridColDef's own
+  // callbacks are generic over a row type this test does not have
+  interface SizeColumn {
+    headerName?: string
+    valueGetter?: (v: unknown, row: { feature?: unknown }) => number | undefined
+    valueFormatter?: (v?: number) => string
+  }
+  function sizeColumn(overrides: Record<string, unknown>) {
+    return makeModel(overrides).dataGridColumns!.find(
+      c => c.field === 'Length',
+    )! as unknown as SizeColumn
+  }
+
+  test('a plain sheet reports the interval length under "Length"', () => {
+    const col = sizeColumn({
+      rowSet: { rows: [{ feature: insertion, cellData: { c: 'x' } }] },
+      columns: [{ name: 'c' }],
+    })
+    expect(col.headerName).toBe('Length')
+    expect(col.valueGetter!(undefined, { feature: insertion })).toBe(1)
+  })
+
+  test('an SV sheet reports the SV size instead', () => {
+    const col = sizeColumn({
+      rowSet: {
+        rows: [{ feature: insertion, cellData: { 'INFO.SVTYPE': 'INS' } }],
+      },
+      columns: [{ name: 'INFO.SVTYPE' }],
+    })
+    expect(col.headerName).toBe('SV size')
+    expect(col.valueGetter!(undefined, { feature: insertion })).toBe(2000)
+  })
+
+  test('a row with no size to report formats as blank, not "undefined"', () => {
+    const col = sizeColumn({
+      rowSet: { rows: [{ cellData: { 'INFO.SVTYPE': 'BND' } }] },
+      columns: [{ name: 'INFO.SVTYPE' }],
+    })
+    expect(col.valueFormatter!(undefined)).toBe('')
+  })
+})
+
 test('setSvTypeFilter stores the selected value', () => {
   const model = makeModel({
     rowSet: { rows: [{ cellData: { 'INFO.SVTYPE': 'DEL' } }] },

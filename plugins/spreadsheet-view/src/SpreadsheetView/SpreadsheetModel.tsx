@@ -7,6 +7,7 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 
 import LocationCell from './components/LocationCell.tsx'
+import { svSize } from './svSize.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -167,6 +168,16 @@ export default function stateModelFactory() {
           getSession(self).assemblyManager.get(assemblyName)?.initialized
         )
       },
+      /**
+       * #getter
+       * the SVTYPE column field name, present only for structural-variant VCFs.
+       * Doubles as the sheet's "this is an SV callset" signal: it drives the
+       * SV-type quick-filter dropdown, and it decides whether the derived size
+       * column reports SV size or a plain interval length
+       */
+      get svTypeColumnField() {
+        return self.columns.find(c => c.name === 'INFO.SVTYPE')?.name
+      },
     }))
     .views(self => ({
       /**
@@ -174,6 +185,15 @@ export default function stateModelFactory() {
        */
       get dataGridColumns() {
         const { rows } = self
+        const isSvSheet = !!self.svTypeColumnField
+        // a non-SV sheet keeps reporting the plain interval length, so BED,
+        // BEDPE and STAR-Fusion read exactly as before
+        const rowSize = ({ feature }: { feature?: SimpleFeatureSerialized }) =>
+          feature
+            ? isSvSheet
+              ? svSize(feature)
+              : feature.end - feature.start
+            : undefined
         // widths come off a sample, not the sheet. measureGridWidth walks every
         // character of every value it is handed, so measuring all of them is
         // rows × columns × characters of blocking main thread — 3.6s for a
@@ -209,25 +229,33 @@ export default function stateModelFactory() {
                 },
               } satisfies GridColDef,
               {
+                // the field stays `Length` across both spellings so one saved
+                // column-visibility preference covers them, and only the header
+                // changes: for an SV callset the number is the SV's size, which
+                // is a different quantity from the record's footprint on the
+                // reference and is what a reader of that sheet wants. See
+                // `svSize`
                 field: 'Length',
+                headerName: isSvSheet ? 'SV size' : 'Length',
                 type: 'number',
                 // measured through the same formatter the cell renders with:
                 // measuring the bare number left the column a separator short
                 // per three digits, so a megabase-scale SV read as `1,234,5…`
                 width: measureGridWidth(
                   sample.map(row => {
-                    const { feature } = row
-                    return feature ? toLocale(feature.end - feature.start) : ''
+                    const size = rowSize(row)
+                    return size === undefined ? '' : toLocale(size)
                   }),
                 ),
                 valueGetter: (
                   _val: unknown,
                   row: { feature?: SimpleFeatureSerialized },
-                ) => {
-                  const { feature } = row
-                  return feature ? feature.end - feature.start : undefined
-                },
-                valueFormatter: arg => toLocale(arg),
+                ) => rowSize(row),
+                // blank, not the string "undefined", for a row with no size to
+                // report — an interchromosomal breakend has none, and there are
+                // 26 of them in the 210-call C-GIAB benchmark alone
+                valueFormatter: (arg?: number) =>
+                  arg === undefined ? '' : toLocale(arg),
               } satisfies GridColDef,
 
               ...self.columns.map(
@@ -271,19 +299,11 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * the SVTYPE column field name, present only for structural-variant VCFs
-       * (drives whether the SV-type quick-filter dropdown is shown)
-       */
-      get svTypeColumnField() {
-        return self.columns.find(c => c.name === 'INFO.SVTYPE')?.name
-      },
-      /**
-       * #getter
        * the distinct SVTYPE values present in the data, sorted, for the
        * quick-filter dropdown options
        */
       get svTypeOptions() {
-        const field = this.svTypeColumnField
+        const field = self.svTypeColumnField
         return field
           ? [
               ...new Set(

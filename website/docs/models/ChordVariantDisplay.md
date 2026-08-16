@@ -12,8 +12,9 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 ## Example usage
 
 The circular-view display for a `VariantTrack` of structural variants;
-translocations are drawn as chords across the circle. `bezierRadiusRatio`
-controls how far the chords bow toward the center:
+translocations are drawn as chords across the circle. `bezierRadiusRatio` sets
+the deepest bow toward the center, which a chord straight across the circle
+reaches; a shorter-range one bows in proportion to its span:
 
 ```js
 {
@@ -72,7 +73,7 @@ the whole surface.
 | <span id="getter-ready">**ready**</span><br><code>boolean</code> | both halves of a chord render: the features, and the refName map that translates the assembly's names to the adapter's. `blocksForRefs` falls back to untranslated names while the map is in flight, so a render that only waited on features could draw a figure with every chord silently dropped (whenever the adapter names differ, e.g. `1` vs `chr1`). | ChordVariantDisplay |
 | <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | Off-screen SVG export gate: "Export SVG" waits on this before drawing (see the [SVG export guide](/docs/developer_guides/svg_export)). Chord displays are non-rectangular (radial), so on screen they keep a bespoke `<DisplayError>` error UI instead of `SvgChrome`; the export has no box to draw one in either, and doesn't try — `awaitSvgReady` fails the export on a chord track that wouldn't load. Same shared `computeSvgReady` policy as every other display, awaited the same shared way — no inlined `when()`. No `regionTooLarge` state, and a chord fetch covers the whole view at once, so `ready` (features and refName map arrived) is the whole freshness axis. | ChordVariantDisplay |
 | <span id="getter-radiuspx">**radiusPx**</span><br><code>number</code> |  | ChordVariantDisplay |
-| <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> | how far chords bow toward the center | ChordVariantDisplay |
+| <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> | the deepest a chord bows toward the center, which a chord straight across the circle reaches. A shorter one bows in proportion to how far apart its ends are — see `chordControlRadius` | ChordVariantDisplay |
 | <span id="getter-blocksforrefs">**blocksForRefs**</span><br><code>Record&lt;string, Slice&gt;</code> | every slice of the circle, keyed by the refName a feature off this display's adapter carries. An elided slice answers to each of the refNames it swallowed | ChordVariantDisplay |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | ChordVariantDisplay |
 | <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |

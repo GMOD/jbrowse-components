@@ -12,8 +12,9 @@ plugin.
 ## Example usage
 
 The circular-view display for a `VariantTrack` of structural variants;
-translocations are drawn as chords across the circle. `bezierRadiusRatio`
-controls how far the chords bow toward the center:
+translocations are drawn as chords across the circle. `bezierRadiusRatio` sets
+the deepest bow toward the center, which a chord straight across the circle
+reaches; a shorter-range one bows in proportion to its span:
 
 ```js
 {
