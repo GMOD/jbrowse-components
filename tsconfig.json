@@ -27,12 +27,7 @@
     "noFallthroughCasesInSwitch": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
-    // jest-fetch-mock ships its own `declare global { var fetchMock }` rather
-    // than living under @types, and an explicit `types` array loads only what it
-    // names — so without this entry the global is undeclared and every
-    // `fetchMock.mockResponse(...)` in a test is TS2304. `config/jest/` is
-    // excluded below, so nothing else in the program pulls the declaration in.
-    "types": ["jest", "jest-fetch-mock"]
+    "types": ["jest"]
   },
   "exclude": [
     "products/aws/",

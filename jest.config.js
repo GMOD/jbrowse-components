@@ -198,7 +198,9 @@ export default {
         // Own lockfile/test runner (vitest), CI'd separately (blat_proxy job).
         '<rootDir>/products/aws/',
       ],
-      testEnvironment: 'jsdom',
+      // jsdom, plus node's fetch/Response/Request/Headers — jsdom ships no
+      // fetch at all and a `Headers` that strips `range`. See the file.
+      testEnvironment: '<rootDir>/config/jest/jsdomWithFetch.cjs',
       ...baseConfig,
       // After the spread, and spreading baseConfig's own entry back in: this key
       // is the one both halves define, and `...baseConfig` last would otherwise
