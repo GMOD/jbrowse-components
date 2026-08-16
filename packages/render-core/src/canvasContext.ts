@@ -54,6 +54,14 @@ export function acquiredCanvasContext(canvas: HTMLCanvasElement) {
  * consumers whose canvas *never* unmounts (dotplot, the synteny level), i.e.
  * exactly where a reused element is reachable.
  */
+export function acquireCanvas2D(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    throw canvasContextError(canvas, '2d')
+  }
+  noteCanvasContext(canvas, '2d')
+  return ctx
+}
 
 /**
  * The error to throw when `getContext(requested)` returned null.
@@ -64,15 +72,6 @@ export function acquiredCanvasContext(canvas: HTMLCanvasElement) {
  * recoverable case, with the remedy named — or an honest statement of the two
  * possibilities when we don't know.
  */
-export function acquireCanvas2D(canvas: HTMLCanvasElement) {
-  const ctx = canvas.getContext('2d')
-  if (!ctx) {
-    throw canvasContextError(canvas, '2d')
-  }
-  noteCanvasContext(canvas, '2d')
-  return ctx
-}
-
 export function canvasContextError(
   canvas: HTMLCanvasElement,
   requested: CanvasContextKind,

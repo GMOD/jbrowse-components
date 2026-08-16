@@ -19,7 +19,7 @@
     "directory": "packages/render-core"
   },
   "author": "JBrowse Team",
-  "//files": "src/shaders ships the shared .slang modules (hpmath, colorPack, pointGlyph) that any shader imports. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
+  "//files": "src/shaders ships the shared .slang modules (hpmath, colorPack, diagonalGrid, pointGlyph, rowRect) that any shader imports. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
   "files": [
     "esm",
     "src/shaders"
