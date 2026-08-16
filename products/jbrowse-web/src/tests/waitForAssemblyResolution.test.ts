@@ -41,7 +41,7 @@ function onUnrecognized(
   session: ReturnType<typeof setup>,
   cb: (assemblyName: string) => void | Promise<void>,
 ) {
-  getEnv(session).pluginManager.observeExtensionPoint(
+  getEnv(session).pluginManager.listenToExtensionPoint(
     'Core-handleUnrecognizedAssembly',
     ({ assemblyName }) => cb(assemblyName),
   )

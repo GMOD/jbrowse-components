@@ -139,10 +139,10 @@ test('two async observers both settle before the folded promise does', async () 
       }, ms)
     })
   // the slow one first, so "last registered wins" would resolve without it
-  pm.observeExtensionPoint('Core-handleUnrecognizedAssembly', () =>
+  pm.listenToExtensionPoint('Core-handleUnrecognizedAssembly', () =>
     settle('slow', 20),
   )
-  pm.observeExtensionPoint('Core-handleUnrecognizedAssembly', () =>
+  pm.listenToExtensionPoint('Core-handleUnrecognizedAssembly', () =>
     settle('fast', 0),
   )
   await pm.evaluateExtensionPoint(
@@ -160,7 +160,7 @@ test('two async observers both settle before the folded promise does', async () 
 test('a sync observer passes an accumulated completion promise through', async () => {
   const pm = new PluginManager([])
   const done: string[] = []
-  pm.observeExtensionPoint(
+  pm.listenToExtensionPoint(
     'Core-handleUnrecognizedAssembly',
     () =>
       new Promise<void>(resolve => {
@@ -170,7 +170,7 @@ test('a sync observer passes an accumulated completion promise through', async (
         }, 20)
       }),
   )
-  pm.observeExtensionPoint('Core-handleUnrecognizedAssembly', () => {
+  pm.listenToExtensionPoint('Core-handleUnrecognizedAssembly', () => {
     done.push('sync')
   })
   await pm.evaluateExtensionPoint(
@@ -181,4 +181,21 @@ test('a sync observer passes an accumulated completion promise through', async (
     },
   )
   expect(done).toEqual(['sync', 'async'])
+})
+
+// typecheck-only, the way accumulatingExtensionPoint.test.tsx asserts its
+// guarantee: an unused @ts-expect-error fails `pnpm typecheck`. The two tests
+// above are what listenToExtensionPoint is FOR — joining the handlers' promises
+// so a producer learns when they have all finished — and neither happens if a
+// plugin reaches the same point through addToExtensionPoint instead. Nothing
+// stopped it doing that until this exclusion, and the failure is a producer
+// that stops waiting early, which looks like a race rather than like a wrong
+// registration method.
+test('addToExtensionPoint refuses a notification point', () => {
+  const pm = new PluginManager([])
+  // @ts-expect-error notification points go through listenToExtensionPoint
+  pm.addToExtensionPoint('Core-handleUnrecognizedAssembly', arg => arg)
+  expect(
+    pm.extensionPointCallbackCount('Core-handleUnrecognizedAssembly'),
+  ).toBe(1)
 })

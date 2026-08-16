@@ -24,7 +24,7 @@ function setup() {
   )!
   const samples = readConfObject(track, ['adapter', 'samples']) as Sample[]
   const reported: string[] = []
-  getEnv(session).pluginManager.observeExtensionPoint(
+  getEnv(session).pluginManager.listenToExtensionPoint(
     'Core-handleUnrecognizedAssembly',
     ({ assemblyName }) => {
       reported.push(assemblyName)

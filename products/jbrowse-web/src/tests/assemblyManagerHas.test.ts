@@ -23,7 +23,7 @@ function setup() {
     sequence: sequenceConf('volvox'),
   })
   const reported: string[] = []
-  getEnv(session).pluginManager.observeExtensionPoint(
+  getEnv(session).pluginManager.listenToExtensionPoint(
     'Core-handleUnrecognizedAssembly',
     ({ assemblyName }) => {
       reported.push(assemblyName)

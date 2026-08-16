@@ -307,7 +307,7 @@ export type ExtensionPointProps<N extends ExtensionPointName> =
 /**
  * Points that carry their whole payload in `props` and whose return value
  * nothing reads — a notification rather than a fold. Registered with
- * {@link PluginManager.observeExtensionPoint}.
+ * {@link PluginManager.listenToExtensionPoint}.
  */
 export type NotificationPointName = {
   [N in ExtensionPointName]: ExtensionPointArgs<N> extends undefined ? N : never
@@ -360,12 +360,12 @@ export type UnregisteredPointName<S extends string> =
     : S
 
 /**
- * The same guard for `addToExtensionPoint`'s loose overload, which needs its own
- * message because the interesting case is different: an accumulating point has a
- * registration method of its own.
+ * The same guard for `addToExtensionPoint`'s loose overload. Each excluded kind
+ * needs its own message, because the useful thing to say is which method the
+ * point does belong to.
  *
- * Excluding accumulating names from the *typed* overload is not enough on its
- * own. The loose overload matches whenever the typed one doesn't, so
+ * Excluding those names from the *typed* overload is not enough on its own. The
+ * loose overload matches whenever the typed one doesn't, so
  * `addToExtensionPoint('Core-extraFeaturePanel', panels => [MyPanel])` — the one
  * call `contributeToExtensionPoint` exists to make impossible — fell through and
  * compiled, with `T` inferred from whatever the callback returned, dropping every
@@ -376,10 +376,13 @@ export type UnregisteredPointName<S extends string> =
  * pins `T` and leaves `S` on its default — which is the price of keeping that
  * arity working for plugins compiled against the older signature.
  */
-export type NonAccumulatingPointName<S extends string> =
-  S extends AccumulatingPointName
+export type FoldPointName<S extends string> = S extends AccumulatingPointName
+  ? {
+      ERROR: 'this extension point accumulates a list; register with contributeToExtensionPoint, whose callback returns only its own entries'
+    }
+  : S extends NotificationPointName
     ? {
-        ERROR: 'this extension point accumulates a list; register with contributeToExtensionPoint, whose callback returns only its own entries'
+        ERROR: 'this extension point is a notification; register with listenToExtensionPoint, which joins async handlers rather than letting the last one registered replace the rest'
       }
     : S extends ExtensionPointName
       ? {
@@ -984,32 +987,32 @@ export default class PluginManager {
   }
 
   /**
-   * React to a notification point — one that carries its payload in `props` and
-   * whose return value nothing reads.
+   * Listen to a notification point — one that carries its payload in `props`
+   * and whose return value nothing reads. The callback returns nothing;
+   * `addToExtensionPoint` rejects these names, so this is the only way in.
    *
-   * Every point is a fold, which meant a callback on one of these had to
-   * `return arg`: returning the nothing the point carries, so the chain stayed
-   * intact for whoever registered after it. Forgetting cost the later plugins
-   * their callbacks, for a value that was never data in the first place. That
-   * bookkeeping is this method's job now, and the callback returns nothing.
+   * The reason it is the only way in is the async join below, not the shorter
+   * callback. A handler that works asynchronously states so by returning a
+   * promise, and the producer waits on the folded value; written by hand
+   * through `addToExtensionPoint`, the second async handler's promise silently
+   * replaced the first's, so the producer stopped waiting as soon as the
+   * *last*-registered handler finished rather than when they all had. That is
+   * not a mistake a plugin author can see, which is why it is not left to them.
    */
-  observeExtensionPoint<N extends NotificationPointName & ExtensionPointName>(
+  listenToExtensionPoint<N extends NotificationPointName>(
     extensionPointName: N,
     callback: (props: ExtensionPointProps<N>) => void | Promise<void>,
   ): void {
     this.pushExtensionPointCallback(extensionPointName, (extendee, props) => {
       const ret = callback(props as ExtensionPointProps<N>)
-      // An async observer is awaited — by evaluateAsyncExtensionPoint, or by a
+      // An async handler is awaited — by evaluateAsyncExtensionPoint, or by a
       // producer that checks the folded value for a thenable to learn when
       // handlers have finished. A sync one passes through whatever an earlier
-      // observer left, so its promise is not dropped on the way past.
+      // handler left, so its promise is not dropped on the way past.
       //
-      // Two async ones are joined rather than the later replacing the earlier.
-      // Under the sync runner nothing awaits between callbacks, so returning
-      // just this observer's promise discarded the one before it, and a
-      // producer waiting on the fold (waitForAssembly) stopped waiting as soon
-      // as the *last*-registered handler finished — whichever handler was
-      // actually going to supply the assembly.
+      // Two async ones are joined rather than the later replacing the earlier;
+      // under the sync runner nothing awaits between callbacks. waitForAssembly
+      // is the producer that depends on it.
       if (!(ret instanceof Promise)) {
         return extendee
       }
@@ -1019,10 +1022,16 @@ export default class PluginManager {
     })
   }
 
-  // Accumulating points are excluded: they go through
-  // contributeToExtensionPoint, which owns the concatenation.
+  // Accumulating and notification points are both excluded: they go through
+  // contributeToExtensionPoint, which owns the concatenation, and
+  // listenToExtensionPoint, which owns the async join. Leaving either reachable
+  // here would leave the road that quietly does the wrong thing open beside the
+  // one that doesn't.
   addToExtensionPoint<
-    N extends Exclude<ExtensionPointName, AccumulatingPointName>,
+    N extends Exclude<
+      ExtensionPointName,
+      AccumulatingPointName | NotificationPointName
+    >,
   >(
     extensionPointName: N,
     callback: (
@@ -1032,9 +1041,9 @@ export default class PluginManager {
   ): void
   // untyped fallback, for a plugin-defined point; mirrors the typed overload in
   // allowing a promise, since evaluateAsyncExtensionPoint awaits each callback.
-  // Registered names are kept out of it — see NonAccumulatingPointName
+  // Registered names are kept out of it — see FoldPointName
   addToExtensionPoint<T, S extends string = string>(
-    extensionPointName: NonAccumulatingPointName<S>,
+    extensionPointName: FoldPointName<S>,
     callback: (extendee: T, props: Record<string, unknown>) => T | Promise<T>,
   ): void
   addToExtensionPoint(
@@ -1050,7 +1059,7 @@ export default class PluginManager {
   /**
    * The one place a callback joins a point's chain. The three public
    * registration methods go through this rather than through each other:
-   * `contributeToExtensionPoint` and `observeExtensionPoint` register on exactly
+   * `contributeToExtensionPoint` and `listenToExtensionPoint` register on exactly
    * the point names their own signatures reject, so routing them via
    * `addToExtensionPoint` would either fail to compile or force its guard to be
    * loose enough to let a plugin do the same thing by hand.

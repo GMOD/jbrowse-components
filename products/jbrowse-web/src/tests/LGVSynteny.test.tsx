@@ -106,7 +106,7 @@ test('nav to synteny from right click, with launch connection plugin', async () 
   await mockConsoleWarn(async () => {
     const { session, view, findByTestId, findByText } = await createView()
 
-    getEnv(session).pluginManager.observeExtensionPoint(
+    getEnv(session).pluginManager.listenToExtensionPoint(
       'Core-handleUnrecognizedAssembly',
       ({ assemblyName, session }) => {
         const jb2asm = `jb2hub-${assemblyName}`

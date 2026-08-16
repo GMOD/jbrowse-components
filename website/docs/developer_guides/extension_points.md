@@ -8,8 +8,8 @@ guide_category: Core concepts
 `evaluateExtensionPoint`; plugins register callbacks with `addToExtensionPoint`,
 each receiving the previous callback's return value. Points that accumulate a
 list take `contributeToExtensionPoint` instead, where a callback returns only
-its own entries, and points that only notify take `observeExtensionPoint`, where
-it returns nothing.
+its own entries, and points that only notify take `listenToExtensionPoint`,
+where it returns nothing.
 
 ## Using extension points
 
@@ -112,7 +112,7 @@ pluginManager.contributeToExtensionPoint(extensionPointName, props => {
 
 // points whose args are `undefined` carry everything in props and read nothing
 // back — see "Notification points" below
-pluginManager.observeExtensionPoint(extensionPointName, props => {
+pluginManager.listenToExtensionPoint(extensionPointName, props => {
   react(props) // returns nothing; an async callback's promise reaches the producer
 })
 
@@ -237,13 +237,13 @@ docs tag goes on its `ExtensionPointRegistry` entry instead.
 ### Notification points
 
 A point declaring `args: undefined` carries its whole payload in `props` and
-reads nothing back. Register on it with **`observeExtensionPoint`**, whose
+reads nothing back. Register on it with **`listenToExtensionPoint`**, whose
 callback returns nothing:
 
 <!-- include: plugins/canvas/src/index.ts#searchResultSelected -->
 
 ```typescript
-pluginManager.observeExtensionPoint(
+pluginManager.listenToExtensionPoint(
   'LinearGenomeView-searchResultSelected',
   ({ result, model, assemblyName }) => {
     highlightSearchResultFeature({ result, model, assemblyName })
@@ -256,18 +256,20 @@ later one to overwrite. That is what the `notify` shape in the listing below
 means, and it is the opposite of `single`, where only the last plugin to
 register is visible.
 
-Every point is a fold, so a callback on one of these used to have to
-`return arg` — returning the nothing the point carries, so the chain stayed
-intact for whoever registered after it. Forgetting cost the later plugins their
-callbacks, for a value that was never data.
+`addToExtensionPoint` rejects these names, and the reason is the promise
+handling rather than the shorter callback. An `async` callback's promise is the
+point's completion signal, and two of them are **joined** rather than the later
+one replacing the earlier — so a producer waiting on the folded value learns
+when every handler has finished, not when the last-registered one has. A
+hand-written callback that returns its own promise gets that wrong, and gets it
+wrong invisibly: the symptom is a producer that stops waiting early, which reads
+as a race rather than as the wrong registration method.
 
-An `async` callback's promise is not dropped either: the folded value is the
-completion signal, and two async callbacks are joined rather than the later one
-replacing the earlier. That is how `Core-handleUnrecognizedAssembly` works — a
-handler supplies the assembly out of band, and its promise is what lets
-`waitForAssembly` stop waiting on an event rather than on a clock. Note the
-producer there fires the point with the **sync** runner and awaits the folded
-value itself; only `evaluateAsyncExtensionPoint` awaits each callback in turn.
+That is how `Core-handleUnrecognizedAssembly` works — a handler supplies the
+assembly out of band, and its promise is what lets `waitForAssembly` stop
+waiting on an event rather than on a clock. Note the producer there fires the
+point with the **sync** runner and awaits the folded value itself; only
+`evaluateAsyncExtensionPoint` awaits each callback in turn.
 
 ## Extension point listing
 
@@ -278,10 +280,10 @@ site. The detailed sections that follow are hand-written.
 and is derived from the point's `args`. A `list` point accumulates, so every
 plugin's contribution survives; register with `contributeToExtensionPoint`. A
 `notify` point carries no value at all, so every plugin's callback runs;
-register with `observeExtensionPoint`. A `single` point threads one value along,
-so each callback overwrites what the one before it returned and only the last
-plugin to register is visible; register with `addToExtensionPoint`. The names
-don't carry this: `Desktop-StartScreenMenuItems` accumulates and
+register with `listenToExtensionPoint`. A `single` point threads one value
+along, so each callback overwrites what the one before it returned and only the
+last plugin to register is visible; register with `addToExtensionPoint`. The
+names don't carry this: `Desktop-StartScreenMenuItems` accumulates and
 `Desktop-StartScreenLaunchPanel` does not. Check the Shape column before
 registering — a `single` point is a slot, and taking it hides whatever the
 plugin before you put there.
@@ -1195,9 +1197,9 @@ action, e.g. selecting a corresponding feature. It's a
 [notification point](#notification-points): the payload lives in `props` (passed
 unchanged to every callback) rather than `args`, so callbacks can't alter what
 later callbacks see, and every plugin registered on it runs. Register with
-`observeExtensionPoint` — the canvas plugin's registration, which highlights the
-feature the result names rather than only the region the search navigated to, is
-the worked example in that section.
+`listenToExtensionPoint` — the canvas plugin's registration, which highlights
+the feature the result names rather than only the region the search navigated
+to, is the worked example in that section.
 
 ### DotplotView-ImportFormSyntenyOptions
 
