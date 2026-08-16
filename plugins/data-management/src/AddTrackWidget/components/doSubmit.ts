@@ -65,6 +65,12 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
     textIndexTrack &&
     isSupportedIndexingAdapter(trackAdapter.type)
 
+  // Coerced even though `DraftTrackConfig` types this `string`: `mixinData` is
+  // a plugin extension point and deepmerge lets it write any key, so the
+  // declared shape is what the widget builds rather than a guarantee about what
+  // survives the merge. Nothing in-tree contributes a `trackId` — the four
+  // comparative components and GWAS all contribute `adapter`/`assemblyNames` —
+  // so this only ever normalizes a third-party one.
   const trackId = String(trackConfig.trackId)
   if (addTrackFromWidget({ model, session, conf: trackConfig }) && wantsIndex) {
     doTextIndexTrack({ model, trackId, timestamp, assembly, attr })

@@ -554,3 +554,22 @@ test('getTrackConfig keeps the view assembly when mixinData contributes none', (
 
   expect(widget.getTrackConfig(Date.now())?.assemblyNames).toEqual(['hg38'])
 })
+
+// The fields `addTrackFromWidget` reads off the result. `deepmerge` used to
+// erase them — a config the widget fully specifies came back as a bare index
+// signature, so every one of these had to be re-narrowed by hand at the call
+// site and none could be passed to a parameter with a real type.
+test('getTrackConfig fills the identity fields the add path reads', () => {
+  const { widget } = makeHg38Session()
+  widget.setTrackData({
+    uri: 'https://example.com/test.bam',
+    locationType: 'UriLocation',
+  })
+
+  const config = widget.getTrackConfig(1_700_000_000_000)
+  expect(config?.type).toBe('AlignmentsTrack')
+  expect(config?.name).toBe('test.bam')
+  expect(config?.assemblyNames).toEqual(['hg38'])
+  expect(typeof config?.trackId).toBe('string')
+  expect(config?.trackId).toContain('test.bam')
+})
