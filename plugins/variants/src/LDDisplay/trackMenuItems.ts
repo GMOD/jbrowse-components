@@ -5,18 +5,20 @@ import {
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
+import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { squashToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 
 // lazy: this builder is reached from a state model, so a dialog named here is
 // in every host's first paint — see ../shared/lazyDialogs.ts
-import { AddFiltersDialog, LDFilterDialog } from '../shared/lazyDialogs.ts'
+import { JexlFilterDialog, LDFilterDialog } from '../shared/lazyDialogs.ts'
 
 import type { LDMethod, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDFilterModel } from '../shared/components/LDFilterDialog.tsx'
 import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
+import type { JexlFilterModel } from '@jbrowse/core/util/jexlFilters'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // Structural, so the menu's shape is testable without an MST instance (same
@@ -30,7 +32,8 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // Extends `LDFilterModel` rather than restating its three filter setters: that
 // interface is the dialog's own prop type, so anything satisfying this one can
 // be passed straight to it.
-export interface LDMenuSelf extends IStateTreeNode, LDFilterModel {
+export interface LDMenuSelf
+  extends IStateTreeNode, LDFilterModel, JexlFilterModel {
   isPrecomputedLD: boolean
   ldMethod: LDMethod | undefined
   effectiveLdMetric: LDMetric
@@ -44,7 +47,6 @@ export interface LDMenuSelf extends IStateTreeNode, LDFilterModel {
   showVerticalGuides: boolean
   squashToHeight: boolean
   useGenomicPositions: boolean
-  jexlFilters?: string[]
   setFocalSnp: (snp: LDSnp | undefined) => void
   setLDMetric: (metric: LDMetric) => void
   setSignedLD: (arg: boolean) => void
@@ -54,7 +56,6 @@ export interface LDMenuSelf extends IStateTreeNode, LDFilterModel {
   setShowVerticalGuides: (arg: boolean) => void
   setSquashToHeight: (arg: boolean) => void
   setUseGenomicPositions: (arg: boolean) => void
-  setJexlFilters: (arg?: string[]) => void
 }
 
 // The metric radios' help text. Both rows state how the numbers on screen were
@@ -189,12 +190,7 @@ function ldNarrowings(self: LDMenuSelf): Reversibles {
         self.setCallRateFilter(0)
       },
     },
-    jexlFilters: {
-      count: self.jexlFilters?.length ?? 0,
-      clear: () => {
-        self.setJexlFilters(undefined)
-      },
-    },
+    jexlFilters: jexlFilterNarrowing(self),
   }
 }
 
@@ -221,7 +217,7 @@ function ldFilterMenuItems(self: LDMenuSelf): MenuItem[] {
             label: 'General JEXL filters...',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
-                AddFiltersDialog,
+                JexlFilterDialog,
                 { model: self, handleClose },
               ])
             },

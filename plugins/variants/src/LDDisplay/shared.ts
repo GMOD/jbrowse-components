@@ -8,7 +8,11 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import { getRpcSessionId, getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  activeJexlFilters,
+  configuredJexlFilters,
+} from '@jbrowse/core/util/jexlFilters'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
@@ -72,6 +76,14 @@ export default function sharedModelFactory(
       StaleViewportRescaleMixin(),
       types.model({
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * Runtime "General JEXL filters..." override, already `jexl:`-prefixed.
+         * When set (even to an empty list) it replaces the `jexlFilters` config
+         * slot; when undefined the config default applies. The two-tier contract
+         * every display with this row implements — see `JexlFilterModel`.
+         */
+        jexlFiltersSetting: types.maybe(types.array(types.string)),
       }),
     )
     .volatile(() => ({
@@ -136,8 +148,8 @@ export default function sharedModelFactory(
       setSignedLD(value: boolean) {
         setConf(self, 'signedLD', value)
       },
-      setJexlFilters(filters: string[] | undefined) {
-        setConf(self, 'jexlFilters', filters)
+      setJexlFilters(filters?: string[]) {
+        self.jexlFiltersSetting = cast(filters)
       },
     }))
     .views(self => ({
@@ -198,8 +210,17 @@ export default function sharedModelFactory(
       get signedLD() {
         return getConf(self, 'signedLD')
       },
-      get jexlFilters(): string[] {
-        return getConf(self, 'jexlFilters')
+      /**
+       * #method
+       * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed.
+       * Prefixing on read is what makes a config-declared filter work at all —
+       * the slot stores them unprefixed (deferred evaluation) and
+       * `stringToJexlExpression` throws on anything else, so before this an
+       * admin following the slot's own documented convention got a worker
+       * exception.
+       */
+      configuredFilters(): string[] {
+        return configuredJexlFilters(self)
       },
       /**
        * #getter
@@ -390,6 +411,18 @@ export default function sharedModelFactory(
     }))
     .views(self => ({
       /**
+       * #method
+       * The filters actually applied, `jexl:`-prefixed: the runtime override
+       * when set, otherwise the config tier. In its own block after
+       * `configuredFilters` so it reaches it through `self`, the arrangement
+       * `LinearBasicDisplay` uses for the same pair.
+       */
+      activeFilters(): string[] {
+        return activeJexlFilters(self)
+      },
+    }))
+    .views(self => ({
+      /**
        * #getter
        * Pixel height of the SVG zone above the canvas (variant labels +
        * lines). The hit-test subtracts this from mouseY before reversing the
@@ -464,7 +497,7 @@ export default function sharedModelFactory(
           lengthCutoffFilter: self.lengthCutoffFilter,
           hweFilterThreshold: self.hweFilterThreshold,
           callRateFilter: self.callRateFilter,
-          jexlFilters: self.jexlFilters,
+          jexlFilters: self.activeFilters(),
           signedLD: self.signedLD,
           useGenomicPositions: self.useGenomicPositions,
         }

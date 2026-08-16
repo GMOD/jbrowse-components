@@ -98,16 +98,24 @@ const MIGRATED_INSTANCE_SLOTS: Record<
 }
 
 /**
- * Every display-instance key this module still understands, keyed by the display
- * type it applies to — `*` for the ones any display gets. A session snapshot
- * carrying one of these loads correctly, so `jbrowse validate` reports it as
- * stale rather than dead; that command reads this map (through the generated
- * config manifest) rather than keeping a copy that could drift.
+ * Every display-instance key a session snapshot may still carry and have
+ * honored, keyed by the display type it applies to — `*` for the ones any
+ * display gets. A snapshot carrying one of these loads correctly, so `jbrowse
+ * validate` reports it as stale rather than dead; that command reads this map
+ * (through the generated config manifest) rather than keeping a copy that could
+ * drift.
+ *
+ * Not every entry is lifted *here*. The two multi-sample variant displays lift
+ * their own `jexlFilters` in the model's `preProcessSnapshot`, because the value
+ * stays on the instance (under `jexlFiltersSetting`) rather than moving to a
+ * config slot, which is the only shape this module handles. What decides
+ * membership is whether the key still works, not which file makes it work.
  *
  * Keyed rather than flat because the same name means different things on
- * different displays: `jexlFilters` is lifted here for the alignments display,
- * while on a LinearBasicDisplay — whose own prop is `jexlFiltersSetting` — it is
- * simply dead, and a flat list would call that one supported.
+ * different displays: `jexlFilters` is lifted for the alignments display and,
+ * differently, for the two variant ones, while on a LinearBasicDisplay — whose
+ * own prop has always been `jexlFiltersSetting` — it is simply dead, and a flat
+ * list would call that one supported.
  */
 export const MIGRATED_DISPLAY_INSTANCE_KEYS: Record<string, string[]> = {
   '*': ['heightPreConfig'],
@@ -115,6 +123,8 @@ export const MIGRATED_DISPLAY_INSTANCE_KEYS: Record<string, string[]> = {
     ...Object.keys(MIGRATED_INSTANCE_SLOTS),
     ...NESTED_ALIGNMENTS_SUBNODES,
   ],
+  LinearMultiSampleVariantDisplay: ['jexlFilters'],
+  LinearMultiSampleVariantMatrixDisplay: ['jexlFilters'],
 }
 
 // Read the migrated settings off one node (a nested sub-node, or an old flat

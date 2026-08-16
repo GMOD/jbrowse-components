@@ -22,6 +22,11 @@ import {
   openFeatureWidget,
   pluralize,
 } from '@jbrowse/core/util'
+import {
+  activeJexlFilters,
+  configuredJexlFilters,
+  jexlFilterNarrowing,
+} from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -208,7 +213,7 @@ const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
 )
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
-const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
+const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 
 // Floor for GROW mode's target height, so a sparse or empty track doesn't shrink
 // the track to a sliver. Nothing to do with the fit ladder below, which never
@@ -423,9 +428,6 @@ export default function baseStateModelFactory(
         /**
          * #method
          * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed.
-         * The slot stores expressions unprefixed (deferred evaluation) and every
-         * runtime consumer wants them prefixed, so the prefixing happens once
-         * here.
          *
          * In its own block ahead of `activeFilters` / `featureFilterCount` so
          * both reach it through `self`: `featureFilterCount` is super-captured by
@@ -433,7 +435,7 @@ export default function baseStateModelFactory(
          * there.
          */
         configuredFilters(): string[] {
-          return getConf(self, 'jexlFilters').map((f: string) => `jexl:${f}`)
+          return configuredJexlFilters(self)
         },
       }))
       .views(() => ({
@@ -687,15 +689,11 @@ export default function baseStateModelFactory(
 
         /**
          * #method
-         * The filters actually applied, as `jexl:`-prefixed expressions. The
-         * runtime override shadows the config slot when set; otherwise the
-         * deferred-evaluation `jexlFilters` config slot is prefixed on read.
-         * This is the single source of truth for both the worker (via rpcProps)
-         * and the "Filter by..." dialog (so existing config filters show up and
-         * are editable).
+         * The filters actually applied, as `jexl:`-prefixed expressions — see
+         * `activeJexlFilters`, which is the shared two-tier resolution.
          */
         activeFilters(): string[] {
-          return toJS(self.jexlFiltersSetting) ?? self.configuredFilters()
+          return activeJexlFilters(self)
         },
 
         /**
@@ -2278,7 +2276,7 @@ export default function baseStateModelFactory(
          */
         openFilterDialog() {
           getSession(self).queueDialog(handleClose => [
-            AddFiltersDialog,
+            JexlFilterDialog,
             { model: self, handleClose },
           ])
         },
@@ -2330,14 +2328,9 @@ export default function baseStateModelFactory(
          * A narrowing counts when its value is not the **no-op** one, which is
          * not always its default:
          *
-         * - the jexl override's no-op is the CONFIG DEFAULT, not the empty list,
-         *   because clearing it restores that default — so an override equal to
-         *   it is one the clear could not change. The dialog is seeded from
-         *   `activeFilters()`, so on a track whose config declares filters,
-         *   opening "Filter by..." and pressing Submit unchanged would otherwise
-         *   read as a filter. It counts in both directions when it differs:
-         *   narrowing further, and — emptied over a slot that declares filters —
-         *   widening past what the config asked for.
+         * - the jexl override's no-op is the CONFIG DEFAULT, not the empty list —
+         *   `jexlFilterNarrowing` states that one, since all three displays with
+         *   this row need it.
          * - `soloApplied`, not `soloFeatureIds.length`: while the user is still
          *   collecting (ctrl+click) the set only draws boxes and hides nothing.
          *   The SoloSelectionChip's × is the recovery for an unapplied one.
@@ -2345,22 +2338,8 @@ export default function baseStateModelFactory(
          *   thing to clear, and its own row already names N.
          */
         featureNarrowings(): Reversibles {
-          const override = self.jexlFiltersSetting
-          const configured = self.configuredFilters()
-          const overrideDiffers =
-            override !== undefined &&
-            (override.length !== configured.length ||
-              override.some((f, i) => f !== configured[i]))
           return {
-            jexlFilters: {
-              count: overrideDiffers ? 1 : 0,
-              // no per-item row: a list of jexl expressions has no recovery to
-              // name beyond restoring the config default, which the group clear
-              // already is
-              clear: () => {
-                self.setJexlFilters(undefined)
-              },
-            },
+            jexlFilters: jexlFilterNarrowing(self),
             solo: {
               count: self.soloApplied ? 1 : 0,
               clear: () => {

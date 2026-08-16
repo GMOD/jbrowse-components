@@ -152,15 +152,13 @@ export default function sharedLDConfigFactory() {
         defaultValue: false,
         advanced: true,
       },
-      /**
-       * #slot
-       * JEXL filter expressions to apply to variants (one per line, starting with jexl:)
-       */
-      jexlFilters: {
-        type: 'stringArray',
-        defaultValue: [],
-        advanced: true,
-      },
+      // `jexlFilters` is BaseLinearDisplay's slot, inherited. It used to be
+      // redeclared here with a description saying the expressions carry the
+      // `jexl:` prefix, which is the opposite of what the base slot documents
+      // (deferred evaluation stores them bare) — and nothing on this path added
+      // the prefix, so an admin following either description got a worker
+      // exception from the other one. The prefix now goes on at read time, in
+      // `activeFilters`, for every display alike.
       /**
        * #slot
        * Starting height in pixels for the LD triangle, excluding the

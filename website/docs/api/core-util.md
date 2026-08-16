@@ -7,6 +7,30 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how
 to import these from a plugin.
 
+## boundBandHeight
+
+Bound a band height to its legal range — a config value, a menu choice, or a
+slider position, i.e. anywhere the number is being _stated_ rather than dragged.
+
+The **floor** keeps the band operable at its smallest: for a drag-resized band
+that means keeping the handle grabbable, for a menu-sized one it is the height
+below which its content stops reading. The **ceiling** stops a band from
+swallowing the plot it sits over — every display floors its plot area at 0, so
+an unbounded band takes the rows to zero height rather than to a scrollbar, and
+takes the band's own handle off-screen with them.
+
+The bounds differ per band and the rule does not, which is why this takes them
+rather than each band re-deriving the reasoning — that is how the two
+`clampBandHeight`s in this repo drifted apart, each ending up with one half of
+this rule and a doc comment claiming to be the whole of it.
+
+```js
+// type signature
+(n: number, { min, max }?: BandBounds) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
+
 ## canonicalizeViewRefName
 
 Resolve user-authored refName text against the assembly of the view containing
@@ -47,14 +71,18 @@ refName at all before this is the right question to ask of it.
 
 ## clampBandHeight
 
-Clamp one resize of a drag-resizable band.
+Clamp one _resize_ of a drag-resizable band: boundBandHeight, plus the one rule
+a resize needs that a stated height does not.
 
-The floor is `min(MIN_BAND_HEIGHT, current)`, never the bare constant: a band
-whose config declares it smaller than the floor must stay where it is. Taking
-`Math.max(MIN_BAND_HEIGHT, target)` instead made the _first_ drag on such a band
-jump it up to 20 before honoring the delta. A band at or above the floor is
-unaffected, one below it can still be dragged but never smaller than it already
-is, and one dragged back past the floor regains it.
+The floor becomes `min(bounds.min, current)`, never the bare bound: a band whose
+config declares it smaller than the floor must stay where it is. Taking the bare
+floor instead made the _first_ drag on such a band jump it up to the floor
+before honoring the delta. A band at or above the floor is unaffected, one below
+it can still be dragged but never smaller than it already is, and one dragged
+back past the floor regains it.
+
+The ceiling is not relaxed the same way — a band already over its ceiling is the
+state the user is trying to escape, so a resize brings it back inside.
 
 `ResizeHandle` emits one delta per animation frame, so callers driving a drag
 pass `current + distance` as the target and read `current` inside the action — a
@@ -63,7 +91,7 @@ lands before React re-renders.
 
 ```js
 // type signature
-(current: number, target: number) => number
+(current: number, target: number, bounds?: BandBounds) => number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)

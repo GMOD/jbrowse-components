@@ -13,6 +13,11 @@ import {
   getSession,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import {
+  activeJexlFilters,
+  configuredJexlFilters,
+} from '@jbrowse/core/util/jexlFilters'
+import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
@@ -371,7 +376,19 @@ export default function MultiSampleVariantBaseModelF(
         types.model({
           type: types.string,
           configuration: ConfigurationReference(configSchema),
-          jexlFilters: types.stripDefault(
+          /**
+           * #property
+           * Runtime "Filter by..." override, already `jexl:`-prefixed. When set
+           * (even to an empty list) it replaces the `jexlFilters` config slot;
+           * when undefined the config default applies. See `JexlFilterModel`.
+           *
+           * The name is load-bearing: this used to be called `jexlFilters`, the
+           * same name as the inherited config slot, so `self.jexlFilters` read
+           * the property and the slot was live in no reader at all — a config
+           * declaring filters on one of these tracks did nothing and said
+           * nothing. `preProcessSnapshot` below carries the old name over.
+           */
+          jexlFiltersSetting: types.stripDefault(
             types.maybe(types.array(types.string)),
             undefined,
           ),
@@ -384,6 +401,22 @@ export default function MultiSampleVariantBaseModelF(
       // pre-config-slot rowHeight) need no handling — MST drops them, and
       // length filtering is now a general jexl filter
       // (`jexl:get(feature,'end')-get(feature,'start')<N`).
+      //
+      // `jexlFilters` is the exception, because it held a live value: a session
+      // saved before the rename carries the user's filters under it, and being
+      // dropped is silent. Prefixed on the way in, since the property stores the
+      // runtime form and the old one stored whatever the dialog was handed.
+      .preProcessSnapshot((snap: Record<string, unknown>) => {
+        const { jexlFilters, ...rest } = snap
+        return Array.isArray(jexlFilters)
+          ? {
+              ...rest,
+              jexlFiltersSetting: (jexlFilters as string[]).map(
+                ensureJexlPrefix,
+              ),
+            }
+          : snap
+      })
       .volatile(() => ({
         /**
          * #volatile
@@ -440,6 +473,15 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .views(self => ({
+        /**
+         * #method
+         * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed.
+         * In its own block ahead of every reader so they reach it through
+         * `self`, the arrangement `LinearBasicDisplay` uses for the same pair.
+         */
+        configuredFilters(): string[] {
+          return configuredJexlFilters(self)
+        },
         /**
          * #getter
          * SimpleFeature instances derived from the simplifiedFeatures list in
@@ -531,6 +573,16 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .views(self => ({
+        /**
+         * #method
+         * The filters actually applied, `jexl:`-prefixed: the runtime override
+         * when set, otherwise the config tier. In its own block after
+         * `configuredFilters` so it reaches it through `self`, the arrangement
+         * `LinearBasicDisplay` uses for the same pair.
+         */
+        activeFilters(): string[] {
+          return activeJexlFilters(self)
+        },
         /**
          * #getter
          * Returns the rendering mode config slot value
@@ -695,8 +747,7 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setJexlFilters(f?: string[]) {
-          // normalize empty to undefined so the field has a single stripped state
-          self.jexlFilters = f?.length ? cast(f) : undefined
+          self.jexlFiltersSetting = cast(f)
         },
         /**
          * #action
@@ -918,9 +969,10 @@ export default function MultiSampleVariantBaseModelF(
          * this to string[] and rebuilds it in the worker with pluginManager.jexl.
          */
         get filters() {
-          return self.jexlFilters?.length
+          const filters = self.activeFilters()
+          return filters.length
             ? new SerializableFilterChain({
-                filters: [...self.jexlFilters],
+                filters,
                 jexl: getEnv<{ pluginManager: PluginManager }>(self)
                   .pluginManager.jexl,
               })
@@ -1428,7 +1480,7 @@ export default function MultiSampleVariantBaseModelF(
             }
           }
           return {
-            jexlFilters: self.jexlFilters,
+            jexlFiltersSetting: self.jexlFiltersSetting,
             clusterTree: self.clusterTree,
             treeAreaWidth: self.treeAreaWidth,
             layout: self.layout,

@@ -14,13 +14,13 @@ import { lazy } from 'react'
  * component to `DialogQueue`, which already renders it inside a `Suspense`
  * boundary. Same arrangement as `plugin-linear-genome-view`'s `lazyDialogs.ts`.
  *
- * One module rather than a `lazy()` beside each menu, because `AddFiltersDialog`
- * is opened from both the LD menu and the multi-sample one: wrapping the same
- * import twice mints two distinct lazy component types for one chunk, so the two
- * menus suspend against separate boundaries and neither warms the other.
+ * One module rather than a `lazy()` beside each menu, because the jexl filter
+ * dialog is opened from both the LD menu and the multi-sample one: wrapping the
+ * same import twice mints two distinct lazy component types for one chunk, so
+ * the two menus suspend against separate boundaries and neither warms the other.
  */
-export const AddFiltersDialog = lazy(
-  () => import('./components/AddFiltersDialog.tsx'),
+export const JexlFilterDialog = lazy(
+  () => import('@jbrowse/core/ui/JexlFilterDialog'),
 )
 export const LDFilterDialog = lazy(
   () => import('./components/LDFilterDialog.tsx'),

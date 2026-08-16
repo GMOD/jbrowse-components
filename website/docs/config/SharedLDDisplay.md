@@ -16,8 +16,8 @@ the same slots against different track types, so the slots live here once.
 
 ## Related links
 
-- **Extended by:** [LDTrackDisplay](../ldtrackdisplay)
 - **Extended by:** [LDDisplay](../lddisplay)
+- **Extended by:** [LDTrackDisplay](../ldtrackdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 
 ## Config slots
@@ -47,10 +47,10 @@ surface.
 | <span id="slot-tickheight">**tickHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6</code> | Height of the vertical tick marks at the genomic position<br>_advanced_ |
 | <span id="slot-usegenomicpositions">**useGenomicPositions**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | When true, draw cells sized according to genomic distance between SNPs rather than uniform squares<br>_advanced_ |
 | <span id="slot-signedld">**signedLD**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | When true, show signed LD values (-1 to 1) instead of absolute values (0 to 1). For R², this shows R (correlation) instead. For D', this preserves the sign.<br>_advanced_ |
-| <span id="slot-jexlfilters">**jexlFilters**</span><br>`stringArray` = <code>[]</code> | JEXL filter expressions to apply to variants (one per line, starting with jexl:)<br>_advanced_ |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>400</code> | Starting height in pixels for the LD triangle, excluding the lineZoneHeight band; drag-resizable |
-| <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">4 slots</span> |
+| <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">5 slots</span> |
 | <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
 | <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></dialog></span> | text to display when the cursor hovers over a feature<br>_callback args:_ `feature` |
+| <span id="slot-jexlfilters">**jexlFilters**</span><br>`stringArray` = <code>[]</code> | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config |

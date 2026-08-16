@@ -4,6 +4,7 @@ import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
+import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -22,8 +23,8 @@ import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 // lazy: this file is reached from a state model, so a dialog named here is in
 // every host's first paint — see ./lazyDialogs.ts
 import {
-  AddFiltersDialog,
   MultiSampleVariantClusterDialog as ClusterDialog,
+  JexlFilterDialog,
   SetColorDialog,
 } from './lazyDialogs.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
@@ -243,16 +244,11 @@ export function variantTrackMenuItems(
             self.setMaxMissingnessFilter(1)
           },
         },
-        jexlFilters: {
-          count: self.jexlFilters?.length ?? 0,
-          clear: () => {
-            self.setJexlFilters(undefined)
-          },
-        },
+        jexlFilters: jexlFilterNarrowing(self),
       },
       onEdit: () => {
         getSession(self).queueDialog(handleClose => [
-          AddFiltersDialog,
+          JexlFilterDialog,
           {
             model: self,
             handleClose,

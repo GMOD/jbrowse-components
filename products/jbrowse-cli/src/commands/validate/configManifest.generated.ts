@@ -3885,7 +3885,7 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "configuration",
-        "jexlFilters"
+        "jexlFiltersSetting"
       ]
     },
     "LinearMultiSampleVariantMatrixDisplay": {
@@ -3994,7 +3994,7 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "configuration",
-        "jexlFilters"
+        "jexlFiltersSetting"
       ]
     },
     "LDDisplay": {
@@ -4092,7 +4092,8 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "rpcDriverName",
-        "configuration"
+        "configuration",
+        "jexlFiltersSetting"
       ]
     },
     "LDTrackDisplay": {
@@ -4190,7 +4191,8 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "rpcDriverName",
-        "configuration"
+        "configuration",
+        "jexlFiltersSetting"
       ]
     },
     "LinearWiggleDisplay": {
@@ -5178,6 +5180,12 @@ export const configManifest: ConfigManifest = {
       "hideMismatchesSetting",
       "jexlFilters",
       "trackMaxHeight"
+    ],
+    "LinearMultiSampleVariantDisplay": [
+      "jexlFilters"
+    ],
+    "LinearMultiSampleVariantMatrixDisplay": [
+      "jexlFilters"
     ]
   }
 }

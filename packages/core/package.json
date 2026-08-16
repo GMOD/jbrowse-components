@@ -91,6 +91,7 @@
     "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
     "./ui/Icons": "./src/ui/Icons.tsx",
     "./ui/InfoDialog": "./src/ui/InfoDialog.tsx",
+    "./ui/JexlFilterDialog": "./src/ui/JexlFilterDialog.tsx",
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
     "./ui/Logo": "./src/ui/Logo.tsx",
     "./ui/Menu": "./src/ui/Menu.tsx",
@@ -157,6 +158,7 @@
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
     "./util/jexl": "./src/util/jexl.ts",
+    "./util/jexlFilters": "./src/util/jexlFilters.ts",
     "./util/jexlStrings": "./src/util/jexlStrings.ts",
     "./util/layouts": "./src/util/layouts/index.ts",
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
@@ -528,6 +530,10 @@
         "types": "./esm/ui/InfoDialog.d.ts",
         "import": "./esm/ui/InfoDialog.js"
       },
+      "./ui/JexlFilterDialog": {
+        "types": "./esm/ui/JexlFilterDialog.d.ts",
+        "import": "./esm/ui/JexlFilterDialog.js"
+      },
       "./ui/LoadingEllipses": {
         "types": "./esm/ui/LoadingEllipses.d.ts",
         "import": "./esm/ui/LoadingEllipses.js"
@@ -791,6 +797,10 @@
       "./util/jexl": {
         "types": "./esm/util/jexl.d.ts",
         "import": "./esm/util/jexl.js"
+      },
+      "./util/jexlFilters": {
+        "types": "./esm/util/jexlFilters.d.ts",
+        "import": "./esm/util/jexlFilters.js"
       },
       "./util/jexlStrings": {
         "types": "./esm/util/jexlStrings.d.ts",
@@ -1152,6 +1162,9 @@
         "ui/InfoDialog": [
           "esm/ui/InfoDialog.d.ts"
         ],
+        "ui/JexlFilterDialog": [
+          "esm/ui/JexlFilterDialog.d.ts"
+        ],
         "ui/LoadingEllipses": [
           "esm/ui/LoadingEllipses.d.ts"
         ],
@@ -1349,6 +1362,9 @@
         ],
         "util/jexl": [
           "esm/util/jexl.d.ts"
+        ],
+        "util/jexlFilters": [
+          "esm/util/jexlFilters.d.ts"
         ],
         "util/jexlStrings": [
           "esm/util/jexlStrings.d.ts"

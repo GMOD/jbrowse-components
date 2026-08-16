@@ -20,6 +20,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | SharedLDModel |
+| <span id="property-jexlfilterssetting">**jexlFiltersSetting**</span><br><code>jexlFiltersSetting: types.maybe(types.array(types.string))</code> | Runtime "General JEXL filters..." override, already `jexl:`-prefixed. When set (even to an empty list) it replaces the `jexlFilters` config slot; when undefined the config default applies. The two-tier contract every display with this row implements — see `JexlFilterModel`. | SharedLDModel |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
 | <span id="property-type">**type**</span><br><code>type: types.string</code> |  | [BaseDisplay](../basedisplay#property-type) |
 | <span id="property-rpcdrivername">**rpcDriverName**</span><br><code>rpcDriverName: types.maybe(types.string)</code> |  | [BaseDisplay](../basedisplay#property-rpcdrivername) |
@@ -72,7 +73,6 @@ the whole surface.
 | <span id="getter-tickheight">**tickHeight**</span><br><code>number</code> |  | SharedLDModel |
 | <span id="getter-usegenomicpositions">**useGenomicPositions**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-signedld">**signedLD**</span><br><code>boolean</code> |  | SharedLDModel |
-| <span id="getter-jexlfilters">**jexlFilters**</span><br><code>string[]</code> |  | SharedLDModel |
 | <span id="getter-snps">**snps**</span><br><code>LDSnp[]</code> | The loaded matrix's SNPs, in the order they are drawn along the column axis (the worker puts them in screen order — see `RenderLDDataRPC/reversedRegions.ts`). Empty until data arrives. | SharedLDModel |
 | <span id="getter-cellwidth">**cellWidth**</span><br><code>number</code> | Fetch-time width of one column in the un-rotated frame (`uniformW`). Read through `columnX`, which rescales it to the live viewport. | SharedLDModel |
 | <span id="getter-filterstats">**filterStats**</span><br><code>FilterStats &#124; undefined</code> |  | SharedLDModel |
@@ -142,6 +142,8 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="method-configuredfilters">**configuredFilters**</span><br><code>() =&gt; string[]</code> | What the `jexlFilters` config slot alone declares, `jexl:`-prefixed. Prefixing on read is what makes a config-declared filter work at all — the slot stores them unprefixed (deferred evaluation) and `stringToJexlExpression` throws on anything else, so before this an admin following the slot's own documented convention got a worker exception. | SharedLDModel |
+| <span id="method-activefilters">**activeFilters**</span><br><code>() =&gt; string[]</code> | The filters actually applied, `jexl:`-prefixed: the runtime override when set, otherwise the config tier. In its own block after `configuredFilters` so it reaches it through `self`, the arrangement `LinearBasicDisplay` uses for the same pair. | SharedLDModel |
 | <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; {…}</code> |  | SharedLDModel |
 | <span id="method-columnx">**columnX**</span><br><code>(column: number) =&gt; number</code> | Viewport x of a position on the matrix's column axis, in fractional column indices: 0 is the triangle's left corner, `i + 0.5` the apex of column i, `i + 1` the boundary between columns i and i+1. The index-mode connector lines anchor through this.<br><br>It rides the same forward transform the shader does — `cellWidth` (uniformW) is the fetch-time cell width and `renderTransform` rescales it to the live viewport, exactly like `hitTest` inverts it. Deriving the column pitch from the *current* block width instead applies the zoom twice, sliding everything anchored here off the triangle for the whole debounce+RPC window after a zoom. | SharedLDModel |
 | <span id="method-locusviewportx">**locusViewportX**</span><br><code>(refName: string, coord: number) =&gt; number &#124; undefined</code> | Viewport x of one locus, through the same `genomicViewportX` the connector lines use. The crosshair ticks and the view's vertical guides go through this rather than measuring off `contentBlocks[0]`: that block's own left edge is only x=0 while the content reaches the viewport edge, and a SNP in any *later* block isn't measured against its own region at all. Undefined when the locus has no on-screen x, which the caller drops rather than pinning to 0. | SharedLDModel |
@@ -173,7 +175,7 @@ the whole surface.
 | <span id="action-setshowlabels">**setShowLabels**</span><br><code>(show: boolean) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-setusegenomicpositions">**setUseGenomicPositions**</span><br><code>(value: boolean) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-setsignedld">**setSignedLD**</span><br><code>(value: boolean) =&gt; void</code> |  | SharedLDModel |
-| <span id="action-setjexlfilters">**setJexlFilters**</span><br><code>(filters: string[] &#124; undefined) =&gt; void</code> |  | SharedLDModel |
+| <span id="action-setjexlfilters">**setJexlFilters**</span><br><code>(filters?: string[] &#124; undefined) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: LDRenderingBackend) =&gt; void</code> | Starts the upload/render autorun. No upload-diffing helper here on purpose: matrix and color ramp both derive from the one `rpcData` object, so the upload autorun's whole dependency set is that field and it can't re-fire without both genuinely being stale. (HiC needs `createGlobalUploadSync` because its palette is a config slot with an input independent of the RPC result.) | SharedLDModel |
 | <span id="action-performldfetch">**performLDFetch**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Re-fetches LD matrix for the current viewport. Driven by the `afterAttach` autorun; `reload()` reaches it by bumping `reloadCounter`, which that autorun tracks. | SharedLDModel |
 | <span id="action-setstatusmessage">**setStatusMessage**</span><br><code>(status?: RpcStatus &#124; undefined) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setstatusmessage) |

@@ -30,7 +30,7 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     minorAlleleFrequencyFilter: 0.1,
     hweFilterThreshold: 0,
     callRateFilter: 0,
-    jexlFilters: [],
+    configuredFilters: () => [],
     setFocalSnp: jest.fn(),
     setLDMetric: jest.fn(),
     setSignedLD: jest.fn(),
@@ -83,7 +83,7 @@ test('the count adds up the thresholds and the jexl list', () => {
       minorAlleleFrequencyFilter: 0.05,
       hweFilterThreshold: 1e-6,
       callRateFilter: 0.9,
-      jexlFilters: ["jexl:get(feature,'end')>100"],
+      jexlFiltersSetting: ["jexl:get(feature,'end')>100"],
     }),
   )
   expect(labels(items)).toContain('Filter by... (4)')

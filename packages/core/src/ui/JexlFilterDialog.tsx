@@ -1,12 +1,18 @@
 import { useState } from 'react'
 
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
-import { stringToJexlExpression } from '../util/jexlStrings.ts'
+import { activeJexlFilters } from '../util/jexlFilters.ts'
+import {
+  ensureJexlPrefix,
+  stringToJexlExpression,
+} from '../util/jexlStrings.ts'
 import ExternalLink from './ExternalLink.tsx'
 import MonospaceTextField from './MonospaceTextField.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
 
+import type { JexlFilterModel } from '../util/jexlFilters.ts'
 import type { JexlInstance } from '../util/jexlStrings.ts'
 
 // Non-blank, trimmed lines — the filter list excludes blank lines a user leaves
@@ -33,24 +39,27 @@ function jexlError(text: string, jexl: JexlInstance) {
 }
 
 /**
- * Editor for a list of jexl feature filters (one per line). Shared by the
- * feature-track and multi-sample-variant displays — callers pass the current
- * filter list and receive the trimmed, non-blank lines on submit (empty-list
- * handling is the caller's policy, since clearing means different things to a
- * config-backed slot vs a plain field).
+ * Editor for a list of jexl feature filters (one per line), for any display
+ * implementing the two-tier {@link JexlFilterModel} contract.
+ *
+ * It takes the display node rather than a filter list and a setter because the
+ * three plugins offering this row each wrote their own 30-line adapter to
+ * supply exactly that pair, and the adapters had drifted: one seeded the dialog
+ * from the *resolved* filters (so config-declared ones showed up and were
+ * editable) and the others from the raw override (so they did not), and only one
+ * of them normalized an emptied list. Both are policy this dialog can state
+ * once — the dialog is where "the box is empty" becomes a value.
  */
 const JexlFilterDialog = observer(function JexlFilterDialog({
-  filters,
-  setFilters,
+  model,
   handleClose,
-  jexl,
 }: {
-  filters?: string[]
-  setFilters: (arg: string[]) => void
+  model: JexlFilterModel
   handleClose: () => void
-  jexl: JexlInstance
 }) {
-  const [data, setData] = useState((filters ?? []).join('\n'))
+  const jexl = getEnv<{ pluginManager: { jexl: JexlInstance } }>(model)
+    .pluginManager.jexl
+  const [data, setData] = useState(activeJexlFilters(model).join('\n'))
   const error = jexlError(data, jexl)
 
   return (
@@ -61,7 +70,12 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
       submitDisabled={!!error}
       onCancel={handleClose}
       onSubmit={() => {
-        setFilters(filterLines(data))
+        const lines = filterLines(data).map(ensureJexlPrefix)
+        // An emptied box is "show everything", which is NOT the same as
+        // following the config slot — it has to survive as a set override, or a
+        // track whose config declares filters could never have them cleared.
+        // Clearing the override is the "Clear all filters" menu row's job.
+        model.setJexlFilters(lines)
         handleClose()
       }}
     >
