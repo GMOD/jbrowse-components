@@ -1355,10 +1355,12 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track menu: two-stage figure. Top frame opens the track selector and rings
-  // both track-menu icons — the one on the LGV track label and the one on the
-  // track-list entry. Bottom frame opens the track menu (from the LGV label)
-  // with a box around it.
+  // Track menu: one frame. It was two — the icons ringed above, the opened menu
+  // below — and the second frame contains the first, since the menu hangs off
+  // the very icon the top frame was pointing at. So the menu is opened before
+  // the shot and all three marks share it: a ring on each of the two places the
+  // menu lives (the LGV track label, the track-list entry) and a box on what
+  // they open.
   {
     mode: 'url',
     name: 'track_menu',
@@ -1368,8 +1370,9 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['volvox_sv_test'],
     }),
     viewportWidth: 1200,
-    // taller + wider browser so the opened track menu isn't clipped (reviewer)
-    viewportHeight: 680,
+    // the opened menu is the tallest thing in the frame and this clears it; the
+    // two-frame version needed 680 to hold the taller of the two
+    viewportHeight: 540,
     readyText: 'ctgA',
     settleMs: 4000,
     actions: [
@@ -1378,32 +1381,23 @@ export const uiSpecs: ScreenshotSpec[] = [
       // filter the (virtualized) list so the target row is rendered
       { type: 'type', text: 'Filter tracks', value: 'structural variant' },
       { type: 'delay', ms: 800 },
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'About track' },
     ],
-    stages: [
+    annotations: [
+      // the rings alone mark the menu icons; arrows from the empty band below
+      // read as ambiguous, so they were dropped (reviewer)
       {
-        annotations: [
-          {
-            type: 'circle',
-            anchor: { selector: '[data-testid="track_menu_icon"]' },
-          },
-          {
-            type: 'circle',
-            anchor: {
-              selector:
-                '[data-testid="htsTrackEntryMenu-Tracks,volvox_sv_test"]',
-            },
-          },
-          // the two rings alone mark the menu icons; the arrows from the empty
-          // band below read as ambiguous, so they were dropped (reviewer)
-        ],
+        type: 'circle',
+        anchor: { selector: '[data-testid="track_menu_icon"]' },
       },
       {
-        actions: [
-          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          { type: 'waitForText', text: 'About track' },
-        ],
-        annotations: [{ type: 'box', anchor: { selector: 'ul[role="menu"]' } }],
+        type: 'circle',
+        anchor: {
+          selector: '[data-testid="htsTrackEntryMenu-Tracks,volvox_sv_test"]',
+        },
       },
+      { type: 'box', anchor: { selector: 'ul[role="menu"]' } },
     ],
   },
 

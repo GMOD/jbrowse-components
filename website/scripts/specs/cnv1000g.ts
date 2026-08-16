@@ -197,7 +197,32 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
       assembly: 'hg38',
       loc: 'chr4:68,480,000-68,660,000',
       tracks: [
-        { trackId: GENE_TRACK, displayMode: 'compact', height: 80 },
+        {
+          trackId: GENE_TRACK,
+          displayMode: 'compact',
+          // The lane is here to name the locus the deletion sits in, and the
+          // 80px it gets holds one row. RefSeq packs two more under it here, a
+          // UBX pseudogene and an uncharacterized LOC, so the track really did
+          // hide rows and drew the scroll shadow saying so. Dropping the
+          // non-genes leaves the named ones on one row with nothing below —
+          // shorter than raising the height, in a figure whose subject is the
+          // 2504-row heatmap underneath.
+          //
+          // NOT `showOnlyGenes`, which was rendered and compared: its gene-like
+          // set admits 'pseudogene' by name (featureAdmission.ts), so both extra
+          // rows survive it and the frame is pixel-identical — with a "One
+          // isoform" chip added.
+          //
+          // The config slot, not the `jexlFiltersSetting` override: a figure
+          // wants a track configured this way, and the override is the user's
+          // own "Filter by...", which `featureNarrowings` counts and draws
+          // filter chrome for. The slot is deferred-evaluated and gets its
+          // prefix on read, so the expression is written bare here — a `jexl:`
+          // on it double-prefixes into an error banner reading "Token : (colon)
+          // unexpected in expression: jexl:".
+          jexlFilters: ["feature.type=='gene'"],
+          height: 80,
+        },
         { trackId: SV_MAP_TRACK, height: 90 },
         {
           ...CN_HEATMAP,
@@ -209,7 +234,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     }),
     readySelector: CLUSTERED_READY,
     readyTimeout: 300000,
-    viewportHeight: 865,
+    viewportHeight: 875,
     settleMs: 15000,
   },
 

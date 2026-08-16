@@ -46,7 +46,11 @@ export const scatacSpecs: ScreenshotSpec[] = [
             {
               trackId: 'pbmc5k_scatac_pseudobulk_hg38',
               type: 'MultiLinearWiggleDisplay',
-              height: 400,
+              // 25px a row. The peaks are narrow and the rows are mostly empty
+              // between them, so the height above this was spending itself on
+              // the flat parts of a lane rather than on the marker peak that
+              // has to be comparable across the two columns.
+              height: 300,
             },
           ],
         },
@@ -57,6 +61,6 @@ export const scatacSpecs: ScreenshotSpec[] = [
     // 12 rows plus the gene track. The app is content-sized here, so this is
     // the app's own height and not a crop: raising it only adds page background
     // below the frame, which the run reports as slack.
-    viewportHeight: 780,
+    viewportHeight: 680,
   },
 ]
