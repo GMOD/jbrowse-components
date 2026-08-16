@@ -97,7 +97,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
   function applyAxes(nextX: string, nextY: string) {
     const from = [assemblyX, assemblyY]
     const to = [nextX, nextY]
-    remapImportFormSelections(model, from, to)
+    choices.remap(remapImportFormSelections(model, from, to))
     chromosomes.remap(from, to)
     setAssemblyX(nextX)
     setAssemblyY(nextY)

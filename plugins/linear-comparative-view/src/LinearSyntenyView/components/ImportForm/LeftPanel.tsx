@@ -30,7 +30,11 @@ import {
 } from '../../util/importFormRows.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
-import type { ChromosomeFilters, PairStatus } from '@jbrowse/synteny-core'
+import type {
+  ChromosomeFilters,
+  ImportFormSyntenyChoices,
+  PairStatus,
+} from '@jbrowse/synteny-core'
 
 const useStyles = makeStyles()(theme => ({
   mb: {
@@ -217,6 +221,7 @@ const LeftPanel = observer(function LeftPanel({
   selectedAssemblyNames,
   setSelectedAssemblyNames,
   chromosomes,
+  choices,
   selectedRow,
   setSelectedRow,
 }: {
@@ -227,6 +232,8 @@ const LeftPanel = observer(function LeftPanel({
   selectedAssemblyNames: string[]
   setSelectedAssemblyNames: (names: string[]) => void
   chromosomes: ChromosomeFilters
+  // moved by applyRows, so a pair's radio ends up where its selection did
+  choices: ImportFormSyntenyChoices
   selectedRow: number
   setSelectedRow: (row: number) => void
 }) {
@@ -244,7 +251,7 @@ const LeftPanel = observer(function LeftPanel({
   // means no caller can forget. See remapSelectionsToPairs for what that
   // silently cost when only the reordering paths did it.
   function applyRows(rows: string[], nextSelectedPair: number) {
-    remapImportFormSelections(model, selectedAssemblyNames, rows)
+    choices.remap(remapImportFormSelections(model, selectedAssemblyNames, rows))
     // positional, unlike the selections: rows arrive here as a bare name list
     // with no permutation to follow a glob along. See useChromosomeFilters.
     chromosomes.remap(selectedAssemblyNames, rows)

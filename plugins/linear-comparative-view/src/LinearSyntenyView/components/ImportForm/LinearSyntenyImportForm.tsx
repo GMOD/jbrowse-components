@@ -176,6 +176,7 @@ const LinearSyntenyViewImportForm = observer(
                 selectedAssemblyNames={selectedAssemblyNames}
                 setSelectedAssemblyNames={setSelectedAssemblyNames}
                 chromosomes={chromosomes}
+                choices={choices}
                 selectedRow={selectedRow}
                 setSelectedRow={setSelectedRow}
               />

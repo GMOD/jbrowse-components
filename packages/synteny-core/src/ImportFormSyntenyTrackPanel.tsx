@@ -70,11 +70,7 @@ const ImportFormSyntenyTrackPanel = observer(
     children?: React.ReactNode
   }) {
     const session = getSession(model)
-    const { choice, setChoice } = choices.forPair(
-      rowIndex,
-      assembly1,
-      assembly2,
-    )
+    const { choice, setChoice } = choices.forPair(rowIndex)
     const customSelected = customOptions.some(opt => opt.value === choice)
 
     return (

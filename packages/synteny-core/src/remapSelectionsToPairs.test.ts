@@ -94,6 +94,33 @@ test('two selections over the same assemblies take one pair each', () => {
   ).toEqual(selections)
 })
 
+// A self-alignment stack is the reachable case: one assembly holding both
+// haplotypes, three rows of it, so every pair is the same assembly set. Only
+// pairs that HELD a selection used to go into the pool, so the lower band's
+// config was the first thing an identical-looking upper band matched, and
+// Reverse rows or Auto-arrange moved it up a band.
+test('a lower pair’s selection does not slide up between identical pairs', () => {
+  expect(
+    remapSelectionsToPairs(
+      [undefined, { type: 'none' }],
+      ['hg002', 'hg002', 'hg002'],
+      ['hg002', 'hg002', 'hg002'],
+    ),
+  ).toEqual([undefined, { type: 'none' }])
+})
+
+test('an empty pair never blocks a selection that has to move', () => {
+  // the empty source pair is a different assembly set, so it does not claim the
+  // target the real selection is looking for
+  expect(
+    remapSelectionsToPairs(
+      [undefined, { type: 'none' }],
+      ['hg38', 'mm39', 'rn7'],
+      ['mm39', 'rn7'],
+    ),
+  ).toEqual([{ type: 'none' }])
+})
+
 test('a row added at the bottom leaves every existing pair alone', () => {
   expect(
     remapSelectionsToPairs(

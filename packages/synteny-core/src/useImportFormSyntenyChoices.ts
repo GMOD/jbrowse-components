@@ -18,19 +18,6 @@ function derivedChoice(selection: ImportFormSyntenyTrack | undefined) {
       : 'tracklist'
 }
 
-// A pair of assemblies, order-insensitively, as the identity of the radio choice
-// made for it. Same rule remapSelectionsToPairs matches selections by — a
-// synteny track answers in either direction — so a choice follows its pair
-// through a row edit exactly as far as the selection does, and no further,
-// without either of them knowing about the other.
-//
-// Two row pairs over the same two assemblies share an entry. That is the wart
-// the selection remap already has for the same reason, and here it costs a radio
-// rather than a track.
-function pairKey(assembly1: string, assembly2: string) {
-  return [assembly1, assembly2].sort().join(' ')
-}
-
 /**
  * Which radio each row pair of an import form has selected — held by the FORM,
  * not by the panel that draws it. The panel is deliberately remounted per pair
@@ -44,19 +31,35 @@ function pairKey(assembly1: string, assembly2: string) {
  * it built, the slot reads back as "New track". So visiting another pair and
  * returning replaced the plugin's panel with the built-in uploader, standing
  * over a selection the plugin had already made.
+ *
+ * Indexed by pair position and moved by `remap`, which takes the permutation
+ * `remapImportFormSelections` just applied — so a choice ends up wherever that
+ * pair's selection ended up. Keying on the pair's assemblies instead looks
+ * simpler and is wrong on the stack that needs it most: a self-alignment carries
+ * one assembly on every row, so every band would share one entry.
  */
 export function useImportFormSyntenyChoices(model: ImportFormSyntenyModel) {
-  const [byPair, setByPair] = useState<Record<string, string>>({})
+  const [byPair, setByPair] = useState<Record<number, string>>({})
 
   return {
-    forPair(rowIndex: number, assembly1: string, assembly2: string) {
-      const key = pairKey(assembly1, assembly2)
+    /** move each pair's choice to where that pair's selection went */
+    remap(movedFrom: (number | undefined)[]) {
+      setByPair(prev =>
+        Object.fromEntries(
+          movedFrom.flatMap((from, to) => {
+            const choice = from === undefined ? undefined : prev[from]
+            return choice === undefined ? [] : [[to, choice]]
+          }),
+        ),
+      )
+    },
+    forPair(rowIndex: number) {
       return {
         choice:
-          byPair[key] ??
+          byPair[rowIndex] ??
           derivedChoice(model.importFormSyntenyTrackSelections[rowIndex]),
         setChoice(choice: string) {
-          setByPair(prev => ({ ...prev, [key]: choice }))
+          setByPair(prev => ({ ...prev, [rowIndex]: choice }))
           // every choice writes the slot, so whichever body owns it from here
           // starts from a known state — an extension option included, which
           // holds `none` until the plugin puts a track there

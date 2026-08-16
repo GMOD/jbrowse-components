@@ -739,6 +739,38 @@ test('a plugin option follows its pair when the rows are reversed', () => {
   expect(serverRadio()).toBeChecked()
 })
 
+// One assembly carrying both haplotypes, three rows of it — the shape the
+// HG002 tutorial's dataset takes — so every band is the same assembly set and
+// nothing tells the bands apart but their position. Both halves of matching a
+// band to what was configured for it used to collapse here: the selection remap
+// only pooled the pairs that HELD one, so the lower band's was the first thing
+// the upper band claimed, and the radio was keyed by the pair's assemblies,
+// which every band shares.
+test('a self-alignment stack keeps each band’s own configuration', () => {
+  setup({ assemblyNames: ['hg002'], contribute: contributeServerOption })
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  expect(rowSelects().map(s => s.textContent)).toEqual([
+    'hg002',
+    'hg002',
+    'hg002',
+  ])
+
+  // the LOWER band only
+  fireEvent.click(screen.getAllByTestId('synbutton')[1]!)
+  fireEvent.click(serverRadio())
+
+  fireEvent.click(screen.getAllByTestId('synbutton')[0]!)
+  expect(serverRadio()).not.toBeChecked()
+
+  // the rows are identical, so reversing them changes nothing about which band
+  // is which
+  fireEvent.click(screen.getByRole('button', { name: /Reverse the row order/ }))
+  fireEvent.click(screen.getAllByTestId('synbutton')[1]!)
+  expect(serverRadio()).toBeChecked()
+  fireEvent.click(screen.getAllByTestId('synbutton')[0]!)
+  expect(serverRadio()).not.toBeChecked()
+})
+
 test('a pair the option was never chosen for keeps the built-in default', () => {
   setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
