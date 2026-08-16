@@ -12,12 +12,11 @@ import { getSession, openFeatureWidget } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
-  installClearHoverOnViewportChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import {
@@ -1119,6 +1118,19 @@ export default function stateModelFactory(
         // MultiRegionDisplayMixin's afterAttach already runs (see
         // afterAttachAutoChain.test.ts). An explicit call would double-install
         // its fetch autoruns.
+        /**
+         * #action
+         * Fills `BaseDisplay`'s hover-clear hook, which the fetch
+         * foundation's reaction calls on every viewport change.
+         *
+         * The painting is a sticky canvas, so a pan or zoom fires no
+         * mousemove and no mouseleave and `hoveredFeature` keeps naming
+         * whatever used to be under the cursor.
+         */
+        clearHoveredFeature() {
+          self.setHoveredFeature(undefined)
+        },
+
         afterAttach() {
           // The byte/density gate clears its own stale per-region stats on
           // chromosome nav (CanvasFeatureGateMixin.afterAttach) — nothing to
@@ -1130,12 +1142,6 @@ export default function stateModelFactory(
           // to be under the pointer — the tooltip and `MultiRowHoverHighlight`
           // then describe a block that has scrolled away. The component's
           // handlers cover only the cases where the *pointer* moves.
-          addDisposer(
-            self,
-            installClearHoverOnViewportChange(self, () => {
-              self.setHoveredFeature(undefined)
-            }),
-          )
 
           // Both are mobx-only glue and the barrel is a static import above, so
           // they install synchronously. The tree drawing one came through

@@ -35,7 +35,6 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   autorunOnReadyView,
-  installClearHoverOnViewportChange,
   installGrowExitBake,
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -2684,6 +2683,19 @@ export default function baseStateModelFactory(
           // MultiRegionDisplayMixin's afterAttach already runs (see
           // afterAttachAutoChain.test.ts). An explicit call would double-install
           // its fetch autoruns.
+          /**
+           * #action
+           * Fills `BaseDisplay`'s hover-clear hook, which the fetch
+           * foundation's reaction calls on every viewport change.
+           *
+           * The painting is a sticky canvas, so a pan or zoom under a stationary
+           * cursor fires no mousemove and no mouseleave, and the highlight box
+           * keeps naming whatever used to be under it.
+           */
+          clearHoveredFeature() {
+            self.clearHover()
+          },
+
           afterAttach() {
             // Grow mode needs no autorun to drive height: the `height` getter
             // returns `grownHeight` reactively (see the getter above), so
@@ -2745,12 +2757,6 @@ export default function baseStateModelFactory(
             // Clear hover when the viewport moves under a stationary cursor
             // (pan, zoom, internal vertical scroll). Shared with the alignments
             // display; see installClearHoverOnViewportChange.
-            addDisposer(
-              self,
-              installClearHoverOnViewportChange(self, () => {
-                self.clearHover()
-              }),
-            )
 
             // Drive the feature-Y transition. When laidOutDataMap re-packs at
             // the same vertical scale (a zoom step — not a label/mode change,

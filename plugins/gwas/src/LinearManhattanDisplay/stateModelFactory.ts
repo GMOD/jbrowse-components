@@ -18,7 +18,6 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   fetchEachRegion,
-  installClearHoverOnViewportChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { WiggleScoreConfigMixin } from '@jbrowse/plugin-wiggle'
 import {
@@ -681,6 +680,20 @@ export function stateModelFactory(
           // MultiRegionDisplayMixin's afterAttach already runs (see
           // afterAttachAutoChain.test.ts). An explicit call would double-install
           // its fetch autoruns.
+          /**
+           * #action
+           * Fills `BaseDisplay`'s hover-clear hook, which the fetch
+           * foundation's reaction calls on every viewport change.
+           *
+           * The hover highlight is a DOM ring positioned from the hit's
+           * screenX/screenY, captured when the pointer last moved — so a
+           * viewport change under a stationary cursor leaves it parked on empty
+           * space while the tooltip beside it describes a SNP that has moved.
+           */
+          clearHoveredFeature() {
+            self.setHoveredFeature(undefined)
+          },
+
           afterAttach() {
             // The hover highlight is a DOM ring positioned from the hit's
             // screenX/screenY, captured when the pointer last moved — so a
@@ -689,12 +702,6 @@ export function stateModelFactory(
             // while the tooltip beside it describes a SNP that has moved. All
             // three axes, not just bpPerPx: see
             // installClearHoverOnViewportChange.
-            addDisposer(
-              self,
-              installClearHoverOnViewportChange(self, () => {
-                self.setHoveredFeature(undefined)
-              }),
-            )
             // LocusZoom-style default: while no index SNP is pinned, keep the
             // index anchored on the highest-scoring loaded SNP, re-tracking it as
             // higher-scoring data lands.

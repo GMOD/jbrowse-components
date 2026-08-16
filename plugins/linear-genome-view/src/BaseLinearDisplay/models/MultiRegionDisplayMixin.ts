@@ -16,6 +16,7 @@ import FetchMixin from './FetchMixin.ts'
 import { assertDisplayContract } from './assertDisplayContract.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
+import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
@@ -593,6 +594,24 @@ export default function MultiRegionDisplayMixin() {
               }
             },
             { name: 'ClearBlockingStateOnViewportChange' },
+          )
+
+          // Drop a stored hover whenever the content it names moves or goes
+          // away. Installed here rather than per display because the six
+          // displays that store one all reach it through this foundation, and
+          // the failure mode is omission: a seventh that forgets keeps naming
+          // what USED to be under the cursor, with no error anywhere. Clears
+          // through `BaseDisplay.clearHoveredFeature`, whose default is a
+          // no-op, so a display deriving its hover pays nothing.
+          //
+          // Cast because `clearHoveredFeature` is `BaseDisplay`'s and this mixin
+          // does not compose it — the same shape as `WiggleScoreConfigMixin`'s
+          // `confNode(self)`, and the cast names exactly what is read.
+          addDisposer(
+            self,
+            installClearHoverOnViewportChange(
+              self as typeof self & { clearHoveredFeature: () => void },
+            ),
           )
         },
       }))

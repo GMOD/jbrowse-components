@@ -95,6 +95,7 @@ the whole surface.
 | <span id="action-setrenderingtype">**setRenderingType**</span><br><code>(type: string) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setsummaryscoremode">**setSummaryScoreMode**</span><br><code>(val: string) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setlinewidth">**setLineWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-clearhoveredfeature">**clearHoveredFeature**</span><br><code>() =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-togglecrosshatches">**toggleCrossHatches**</span><br><code>() =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-togglecrosshatches) |
 | <span id="action-setloadedbpperpx">**setLoadedBpPerPx**</span><br><code>(bpPerPx: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setloadedbpperpx) |
 | <span id="action-setscatterpointsize">**setScatterPointSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setscatterpointsize) |

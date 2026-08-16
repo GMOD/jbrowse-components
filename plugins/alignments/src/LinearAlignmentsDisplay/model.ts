@@ -32,7 +32,6 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   callEachRegion,
-  installClearHoverOnViewportChange,
   installGrowExitBake,
 } from '@jbrowse/plugin-linear-genome-view'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
@@ -4233,6 +4232,20 @@ export default function stateModelFactory(
           return renderSvg(self as LinearAlignmentsDisplayModel, opts)
         },
 
+        /**
+         * #action
+         * Fills `BaseDisplay`'s hover-clear hook, which the fetch
+         * foundation's reaction calls on every viewport change.
+         *
+         * The pileup is a sticky canvas, so a pan, a zoom or an internal
+         * scroll under a stationary cursor fires no mousemove and no
+         * mouseleave, and the highlight box and tooltip go on naming the read
+         * that *was* there.
+         */
+        clearHoveredFeature() {
+          self.clearMouseoverState()
+        },
+
         afterAttach() {
           // Keep the fitted-height cache in sync while in "fit to display height"
           // mode — re-fits as the display resizes, data loads, or groups collapse.
@@ -4277,12 +4290,6 @@ export default function stateModelFactory(
           // Drop a lingering hover tooltip/highlight whenever the content moves
           // under a stationary cursor. Shared with the canvas display: see
           // installClearHoverOnViewportChange for why zoom is not the only axis.
-          addDisposer(
-            self,
-            installClearHoverOnViewportChange(self, () => {
-              self.clearMouseoverState()
-            }),
-          )
         },
       }))
   )

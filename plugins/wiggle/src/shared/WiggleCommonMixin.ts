@@ -5,8 +5,7 @@ import {
   getEnv,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { installClearHoverOnViewportChange } from '@jbrowse/plugin-linear-genome-view'
+import { types } from '@jbrowse/mobx-state-tree'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   autoscaleDomainFromStats,
@@ -314,32 +313,14 @@ export function WiggleCommonMixin() {
       },
     }))
     .actions(self => ({
-      // No superAfterAttach() call: the fork auto-chains lifecycle hooks, so a
-      // composing display's own afterAttach still runs.
-      afterAttach() {
-        // The plot is a painted canvas with no element travelling with its
-        // features, so a pan/zoom/scroll under a stationary cursor fires no
-        // mousemove and no mouseleave: the tooltip stays open reporting the bp
-        // and score the cursor was over *before* the content moved. Clearing on
-        // all three axes is what installClearHoverOnViewportChange is for —
-        // don't reduce it to bpPerPx, a locstring pan moves offsetPx alone.
-        //
-        // `scrollTop` belongs to TrackHeightMixin and `regionTooLarge` to
-        // RegionTooLargeMixin, which both composers bring but this mixin can't
-        // see — the same reason WiggleScoreConfigMixin casts for its config
-        // reads.
-        addDisposer(
-          self,
-          installClearHoverOnViewportChange(
-            self as typeof self & {
-              scrollTop: number
-              regionTooLarge: boolean
-            },
-            () => {
-              self.setHoveredFeature(undefined)
-            },
-          ),
-        )
+      // The plot is a painted canvas with no element travelling with its
+      // features, so a pan/zoom/scroll under a stationary cursor fires no
+      // mousemove and no mouseleave: the tooltip would stay open reporting the
+      // bp and score the cursor was over *before* the content moved.
+      // `MultiRegionDisplayMixin` installs the reaction that catches all four
+      // axes; this is the half it calls.
+      clearHoveredFeature() {
+        self.setHoveredFeature(undefined)
       },
     }))
 }

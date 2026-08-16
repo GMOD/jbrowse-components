@@ -20,18 +20,11 @@ import {
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  addDisposer,
-  cast,
-  getEnv,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
-  installClearHoverOnViewportChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   TreeSidebarMixin,
@@ -1649,6 +1642,22 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         * Fills `BaseDisplay`'s hover-clear hook, which the fetch
+         * foundation's reaction calls on every viewport change.
+         *
+         * The matrix is a sticky canvas, so a pan, a zoom or an internal
+         * wheel-scroll fires no mousemove and no mouseleave, and
+         * `hoveredGenotype` goes on naming a cell that has moved out from under
+         * the pointer — the tooltip then reports another sample's genotype at
+         * the cursor. `useVariantCanvasInteraction` only covers the cases where
+         * the *pointer* moves.
+         */
+        clearHoveredFeature() {
+          self.setHoveredGenotype(undefined)
+        },
+
         afterAttach() {
           // Clear the hovered cell when the viewport moves under a stationary
           // cursor. The matrix is a sticky canvas, so a pan, a zoom or an
@@ -1659,12 +1668,6 @@ export default function MultiSampleVariantBaseModelF(
           // the cases where the *pointer* moves, and `scrollTop` is the axis
           // where this shows worst, since the highlight derived from the hover
           // does follow the row and visibly separates from the tooltip.
-          addDisposer(
-            self,
-            installClearHoverOnViewportChange(self, () => {
-              self.setHoveredGenotype(undefined)
-            }),
-          )
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {

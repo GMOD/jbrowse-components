@@ -198,6 +198,13 @@ so its effect can read hover state without setting a hover re-firing it. Clearin
 on `bpPerPx` alone is the same bug with two axes left in it, which is where
 alignments started.
 
+**The fetch foundation installs it, so a display does not.** It clears through
+`BaseDisplay.clearHoveredFeature` — the writing twin of the `hoveredFeature`
+getter below, defaulting to a no-op — so a display that stores a hover overrides
+one action and a display that derives one does nothing. It used to be six
+displays each passing their own closure to the installer, which is six chances
+to omit the call entirely, and omitting it is invisible until someone pans.
+
 **A fourth axis *removes* the content, and it is the same installer's job.**
 `regionTooLarge` replaces the subtree with the banner, and Force load brings it
 back — where a highlight box positioned from the layout draws with no pointer
@@ -1328,6 +1335,9 @@ and 12 lines — and both have since been given the sections they wanted.
   spells it differently drops out of `session.hovered` in silence. A stored hit
   goes in a differently-named volatile with a getter over it — MST refuses to
   instantiate a volatile over a base computed.
+- Don't install the hover clear yourself, and don't skip overriding
+  `clearHoveredFeature` if you store one. The fetch foundation installs the
+  reaction for every display; what a storer owes is that one action.
 
 ### Backends and generated code
 

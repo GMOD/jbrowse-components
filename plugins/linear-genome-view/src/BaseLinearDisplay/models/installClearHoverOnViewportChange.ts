@@ -6,8 +6,11 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { IReactionDisposer } from 'mobx'
 
 interface HoverHost extends IStateTreeNode {
-  scrollTop: number
+  // `TrackHeightMixin`'s, and not every display composes it — a display with
+  // no internal scroll simply has no third axis to move on
+  scrollTop?: number
   regionTooLarge: boolean
+  clearHoveredFeature: () => void
 }
 
 /**
@@ -28,17 +31,25 @@ interface HoverHost extends IStateTreeNode {
  *
  * A display that never opts the gate in reads `regionTooLarge` as a literal
  * `false`, so the fourth term costs it nothing.
+ *
+ * **The fetch foundations install this, so a display does not.** It clears
+ * through `BaseDisplay.clearHoveredFeature`, whose default is a no-op, so a
+ * display that derives its hover pays one string interpolation per viewport
+ * change and one empty call. That is cheaper than the alternative it replaces:
+ * six displays each passing their own one-line closure, and any seventh being
+ * free to forget.
  */
 export function installClearHoverOnViewportChange(
   self: HoverHost,
-  clear: () => void,
 ): IReactionDisposer {
   return reaction(
     () => {
       const view = getContainingView(self) as LinearGenomeViewModel
-      return `${view.bpPerPx}-${view.offsetPx}-${self.scrollTop}-${self.regionTooLarge}`
+      return `${view.bpPerPx}-${view.offsetPx}-${self.scrollTop ?? 0}-${self.regionTooLarge}`
     },
-    clear,
+    () => {
+      self.clearHoveredFeature()
+    },
     { name: 'ClearHoverOnViewportChange' },
   )
 }
