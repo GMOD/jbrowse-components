@@ -1,7 +1,16 @@
 import { createContext } from 'react'
 
 /**
+ * #api
  * The one box per display that owns the bottom-right corner.
+ *
+ * It lives beside the overlay contract rather than with the chrome that mounts
+ * it, because it is the half of that contract the types cannot carry:
+ * `DisplayChromeOverlays.BackgroundProgress` is the one state told to render an
+ * in-flow chip with no `position` and no corner offsets, and this is the box it
+ * is laid out in. A host writing their own display over `DisplayChromeBase`
+ * needs to be able to build that corner; while this sat one layer up in the LGV
+ * plugin, the rule was a paragraph they could only obey by hand.
  *
  * Two independent things want that corner and neither could see the other:
  * the display's own control row (`BottomRightIndicators` — track sizing, the

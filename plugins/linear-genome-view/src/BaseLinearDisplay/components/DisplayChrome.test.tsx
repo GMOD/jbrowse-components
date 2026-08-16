@@ -138,7 +138,7 @@ test('a status set while ready shows the corner chip, not the scrim', async () =
 // underneath. It has never been reachable (the two displays with a control row
 // are not among the four that report a ready-phase status), which is the reason
 // to make it structural rather than to leave it: nothing on either side is aware
-// of the constraint. See bottomRightCorner.ts.
+// of the constraint. See `@jbrowse/display-ui`'s bottomRightCorner.ts.
 describe('the bottom-right corner has one owner', () => {
   function renderWithControls(model: Instance<typeof TestChromeModel>) {
     return render(

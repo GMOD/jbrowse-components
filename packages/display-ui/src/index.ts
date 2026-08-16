@@ -59,3 +59,11 @@ export { tooLargeBannerText } from './tooLargeBannerText.ts'
 // MST node or the plain object the contract invites. Exported because both
 // shipped sets render that button and a bare `isAlive` is wrong in each.
 export { isLiveModel } from './isLiveModel.ts'
+
+// The corner `BackgroundProgress` is laid out in — the half of that state's
+// contract the prop types cannot carry, so it belongs with them rather than
+// with the chrome that happens to mount it.
+export {
+  BOTTOM_RIGHT_CONTROLS_ORDER,
+  BottomRightCornerContext,
+} from './bottomRightCorner.ts'

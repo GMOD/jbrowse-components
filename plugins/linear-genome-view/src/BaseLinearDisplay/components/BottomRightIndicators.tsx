@@ -1,12 +1,11 @@
 import { use } from 'react'
 
-import { TrackOverlayPortal } from '@jbrowse/display-ui'
-import { createPortal } from 'react-dom'
-
 import {
   BOTTOM_RIGHT_CONTROLS_ORDER,
   BottomRightCornerContext,
-} from './bottomRightCorner.ts'
+  TrackOverlayPortal,
+} from '@jbrowse/display-ui'
+import { createPortal } from 'react-dom'
 
 import type { ReactNode } from 'react'
 

@@ -82,7 +82,9 @@ themselves to `bottom: 2; right: 2` of the same per-track overlay layer. The
 chrome anchors a single flex column there and publishes it through
 `BottomRightCornerContext`; the chip is its first member and the row portals in
 as its second. So `BackgroundProgress` is the one overlay state that does **not**
-own its box (see `bottomRightCorner.ts`).
+own its box (see `packages/display-ui/src/bottomRightCorner.ts`, which sits with
+the contract rather than with this chrome precisely because it is the half of
+that contract the prop types cannot carry).
 
 A status set while the phase is `ready` — work with no fetch behind it, e.g.
 declarative clustering — renders as that corner chip rather than the scrim,

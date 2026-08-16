@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
-import { TrackOverlayPortal } from '@jbrowse/display-ui'
-
-import { BottomRightCornerContext } from './bottomRightCorner.ts'
+import {
+  BottomRightCornerContext,
+  TrackOverlayPortal,
+} from '@jbrowse/display-ui'
 
 import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
