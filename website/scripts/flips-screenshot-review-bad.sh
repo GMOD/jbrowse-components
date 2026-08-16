@@ -1,215 +1,159 @@
 #!/bin/bash
-# Verdict flips for the 2026-08-16 pass over the twenty `bad` items, to be run
-# FROM THE PRIMARY CHECKOUT once the branch has landed.
+# Verdict flips for the 2026-08-16 second pass over the five `bad` items, to be
+# run FROM THE PRIMARY CHECKOUT once the branch has landed.
 #
 # They are not on the branch on purpose: a worktree does not share the review
 # server's lock, and a branch carrying screenshot-review.json makes the ff-only
 # landing refuse against a reviewer's dirty copy. See screenshot-review-plan.md,
 # "Shared worktree".
 #
-# `answered` where the note is a reply rather than a change, `good` for the
-# rest. What is still open keeps its verdict and says why in a comment.
+# All five were UNCHANGED by the hash triage, i.e. genuinely still open, and all
+# five are answered with a change rather than a reply.
 #
 # NO BACKTICKS INSIDE A NOTE. They are double-quoted here, so a backtick pair is
 # command substitution and the words between it vanish from the note the
-# reviewer reads — silently, apart from a "command not found" in the run's own
-# output that scrolls past. Name a symbol bare, or single-quote the whole note.
+# reviewer reads -- silently, apart from a "command not found" that scrolls past.
+# Name a symbol bare, or single-quote the whole note.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# ---------------------------------------------------------------- app fixes
+node scripts/flip-review.ts good chromhmm \
+  "NAMES ONLY, and the lane went from eight genes to the whole cluster. This
+started life as showDescriptions:false, which has no home on the unified labels
+enum, so migrateBasicConfigSnapshot had resolved it to 'auto' -- and 500 kb of
+HOXA is low enough density that 'auto' brings descriptions back. So the widest
+thing in the lane was 'HOXA cluster antisense RNA 2'.
 
-node scripts/flip-review.ts good customized_feature_details \
-  "FIXED IN THE APP, and the shading was wrong rather than merely ugly. The
-fetch buffers half a viewport either side and the packer places every buffered
-feature, so a window holding nine genes can carry a stack twenty rows deep whose
-bottom rows draw nothing in view. The scrollbar and the edge shadow are two
-readouts of one number, and measured over the whole pack they answered 'features
-are hidden below' about a track showing all of them -- and offered a scroll
-gesture onto blank canvas.
+Pinned to 'name' the same three rows now carry HOXA1 through HOTTIP, both HOXA
+antisense rows, MIR196B and both EVX1 rows. That is also what makes the two
+boxes readable as what they are: the genes left of the red box are the anterior
+half by name now, rather than by taking the label's word for it.
 
-scrollExtentMaxY measures the same on-screen set the fit ladder already
-measures, on the same 500ms coarse debounce, so a pan re-measures once it
-settles. Fit mode was already narrowed at the source. The DRAWING height is
-untouched, so a buffered feature keeps its box and its label and is unreachable
-rather than clipped.
-
-Three figures in this pass came back for it; this is the one where nothing was
-below the fold at all, and its bottom band is now the same white as the rest of
-the track."
-
-node scripts/flip-review.ts good edit_track_settings \
-  "FIXED IN THE APP. A callout box rings its element from OUTSIDE, which needs
-room the viewport edge does not have: the settings drawer is docked flush right,
-so three of the box's four edges were off frame and the fourth read as a red
-line in the page margin -- exactly the 'border on outside of element' you named.
-
-Each side now clamps to the stroke's own half-width, so the pad goes outward
-where there is room and inward where there is not, and the whole line lands. A
-box with room around it is unchanged, which is every other boxed figure in the
-repo."
-
-# ---------------------------------------------------------------- figures
-
-node scripts/flip-review.ts good track_menu \
-  "ONE FRAME. You were right that the second frame contained the first: the
-menu hangs off the very icon the top frame was ringing, so opening it before the
-shot lets all three marks share one picture -- a ring on each of the two places
-the menu lives, and a box on what they open. 2400x2720 to 2400x1080."
-
-node scripts/flip-review.ts good scatac/pbmc5k_marker_swap \
-  "400px of multi-wiggle to 300, 25px a row. The peaks are narrow and the lanes
-mostly empty between them, so the height above this was spending itself on the
-flat parts rather than on the marker peak that has to be comparable across the
-two columns. The swap still reads: CD8A in the four CD8-expressing rows, MS4A1
-in the two B rows."
-
-node scripts/flip-review.ts good cnv1000g/ugt2b17_biallelic \
-  "THIS ONE'S SHADOW WAS HONEST, so the fix is the lane rather than the app. The
-80px gene track really did hide rows -- a UBX pseudogene and an uncharacterized
-LOC packed under the named genes, with a third row clipped at the fold. A type
-filter drops them and leaves TMPRSS11E, UGT2B17 and UGT2B15 on one row with
-nothing below.
-
-showOnlyGenes was rendered and compared first, since it is the obvious reach:
-its gene-like set admits 'pseudogene' by name, so the frame came back
-pixel-identical with a 'One isoform' chip added. The config slot rather than the
-runtime override, too -- the override is the user's own Filter by..., which the
-narrowing count would draw chrome for."
+On the wider question, since you asked whether I am happy with it: the 127-row
+painting is as dense as it is because 127 rows is the dataset, and the two
+things that were chaotic and fixable have both been fixed now -- the key's
+stripe order, and this. What is left that I would still change is the 19-group
+sidebar vocabulary, which is Roadmap's own and whose alternatives in the same
+file are worse (that is the previous round's note). Say the word if you want
+that re-plotted rather than defended."
 
 node scripts/flip-review.ts good dog10k-size-fst-scan \
-  "A NUMBERED BADGE ON EACH HALF. The zoom panel showed a window with a
-highlight in it and nothing said the window was the scan's IGF1 point; a badge
-beside that point and its twin on the highlighted peak carries the link. Both
-are locus-anchored inside their own part, which a wedge across the seam could
-not be -- a composition is a flat image with no view model to resolve a locus
-in.
+  "BOTH, and the badge turns out to have been a rendering problem rather than a
+spec one. It was already gone from the spec last round; what kept it in the
+picture is the content-stable gate -- removing a 30 px circle from a 3000 px
+capture is under the 0.5% a re-render has to differ by, so the part was skipped
+and the composition restacked the old PNG. --force is the answer, and the same
+trap is worth knowing for any small annotation edit.
 
-The gene lane's scroll shading is gone with the app fix (see
-customized_feature_details): its deeper rows were all fetch buffer."
+THE WEDGE. Its apex is under three pixels wide, since the lower panel is 2 Mb of
+chr15 against 2,229 Mb of row, so where it lands is the whole of its accuracy --
+half a percent off and it points at a different chromosome. It is fitted rather
+than eyeballed: least squares over the row's own region dividers, thirty-three
+of them, every one predicted to within 2.4 px, and the data area it solves for
+is the one popgen/in2lt_inversion independently solved for against different
+landmarks. Measured back off the finished render, the apex sits within 2 px of
+the IGF1 point.
 
-node scripts/flip-review.ts good ld/lct_haploblock \
-  "BOTH HEADS MOVED LEFT, 135.9 to 135.76 Mb, and you were right about the
-direction. Measured off the capture against the highlight, whose edges are known
-in bp: the clade's unbroken slab runs about 135.73-135.97 Mb, so the old anchor
-was inside it but within an arrowhead's length of where it stops -- and an
-arrowhead is drawn short of its anchor, so both landed on the edge rather than
-in it. The new x is left of the LCT/MCM6 stripe, in the part of the slab no
-highlight tints.
+SHORTER: both score lanes 380 to 240, so the figure is 2632 px to 2192 even
+after paying 120 for the gutter the wedge lives in. What a Manhattan lane is
+read for is a ratio, and the ratio survives a third off the height.
 
-They share one column on purpose: the claim is about ROWS, so two heads in one
-column of the matrix say it and two heads at different columns would not."
+That broke every hand-fitted dy on the scan half, which is the part worth
+keeping: those are gone, and a score's y now comes from wiggle-core's own
+axisPlotBox. The three peak labels also moved to the SIDE of their points rather
+than above them, because the tallest peak sits within 40 px of the axis top at
+any lane height, so a pill above it is clipped by exactly the shrink that leaves
+the other two alone."
 
-node scripts/flip-review.ts good orthofinder_synteny/wheat \
-  "EACH PILL IS ON ITS ROW NOW, WITH THE ROW LABEL RINGED. Both were dropped
-60px into the margin below their row label, which put them in the BAND under the
-row rather than on it -- and a band is a pair of genomes, so 'A genome donor'
-read as naming urartu-to-timopheevii, which is not what it says. On the row's
-own line beside a boxed label, each pill names one genome."
+node scripts/flip-review.ts good qc/smn_block_and_reads \
+  "ALL THREE.
 
-node scripts/flip-review.ts good orthofinder_synteny/vertebrates \
-  "THE PILL CARRIES THE RESULT NOW, not just the event's name: each gar
-chromosome lands on two in zebrafish. The band's shape IS that result and a
-reader who does not already know the duplication cannot get from one to the
-other -- every other band in the stack is one row's chromosome onto one
-partner's, and this one is each gar chromosome arriving at two places."
+THE WEDGE, sized off the upper frame's own SMN highlight bands -- four landmarks
+whose coordinates are exact, fitted to under 0.8 px of residual. It lands where
+a reader can check it, because the block's right-hand edge is in both frames.
 
-node scripts/flip-review.ts good display_type_default_badge \
-  "A RED PILL SAYING WHAT THE RING MEANS: this track follows a session-wide
-default. The ring alone pointed at a 16px glyph and left the reader to work out
-what it was.
+MEDICALLY RELEVANT, said on the picture: SMN1, biallelic loss causes spinal
+muscular atrophy. That was the gap. Every lane in both frames says something
+about mappability and none of them said why anyone sequences here, so the locus
+read as chosen for being hard. SMN1 alone rather than the pair, because SMN2 is
+900 kb away and outside the read frame; its copy-number-modifier role is in the
+prose beside the frame that shows both.
 
-Anchored to the add-track button rather than to the badge, and that is placement
-rather than pedantry: every row left of the badge is a track name, so a pill
-reaching for it covers the list it is about. The button sits below the last row,
-where the panel is empty."
+COMPRESSED: 3330 px to 3110, with the two frames themselves down 170 css px
+between them and the gutter costing 60 back.
 
-node scripts/flip-review.ts good sv_synteny/dotplot_import \
-  "ALL THREE, in the app rather than in the spec.
+The pileup's share of that is height alone, and featureHeight is not a lever
+here -- it was tried and reverted. At 464 bp a pixel a 150 bp read is a third of
+a pixel wide, so the compact preset's extra rows are the sparse tail of the pack
+rather than more field: the MAPQ block came back a picket fence over white.
+Shorter at the default row height keeps every drawn row inside the dense part,
+which is the thing being read."
 
-THE SEARCH BOXES ARE OPT-IN NOW, behind 'Plot only certain chromosomes', and
-unticking clears both so no filter can be applied from a box nobody can see. You
-were right about why: two empty text fields sitting between the reader and
-Launch read as required, and the case they exist for -- an assembly fragmented
-into hundreds of scaffolds -- is the rare one.
+node scripts/flip-review.ts good hic/loops_and_domains \
+  "BOTH CORNERS BANDED, which is the version of 'make the message obvious' that
+lets the data say it. The frame had no callout at all: the section defines a
+contact domain and a loop in prose, the figure drew one of each, and which one
+was left to the caption -- with six Arrowhead arcs, four HiCCUPS arcs and more
+than one block in the matrix, including a denser one left of MYC that is a
+different domain.
 
-ONE ROW PER AXIS. The four controls were a single flowed row that wrapped
-wherever the window width put it, so on a wide window they read as four
-unrelated fields; the row is the axis now.
+The two bands are the domain's own corners, drawn by the view rather than the
+overlay, so they are columns through every lane. The Arrowhead arc's feet, the
+HiCCUPS arc's feet and the matrix block's two corners all land on them, which is
+the section's claim made checkable instead of asserted. The left corner needed no
+band of its own: the domain starts within half a kilobase of MYC and the gene's
+band was already there, which is also why the ranking was taken to this window.
 
-OUTLINED. ChromosomeFilter sets it against the theme's 'standard' default, since
-it sits beside an assembly dropdown that draws its own outline and underlined it
-read as page text with a rule under it. On the control rather than on the theme
--- flipping the theme restyles every TextField in the app and moves every figure
-with a form in it, which wants its own round.
+The pills then say only what no lane can -- that those two columns are one
+object's ends, and that the arc was called FROM the matrix under it, which two
+track names naming the same cell line do not convey.
 
-Three figures show this form and all three are regenerated;
-hg002_haplotypes_import_form now clicks the checkbox as part of its path, so the
-outlined boxes are visible there."
+WHY GM12878, now in the prose, because the page never said: a domain-and-loop
+figure needs a matrix whose own published Arrowhead and HiCCUPS calls exist, and
+deep enough that a 600 kb block has edges. Worth a reader knowing before they
+read the three lanes agreeing as corroboration, since they cannot disagree.
 
-# ---------------------------------------------------------------- answered
+IS IT DIFFERENT IN DIFFERENT CELL TYPES: measured again, and at the level this
+frame draws, no -- every one of the twelve lineages is enriched inside the domain
+against its flanks, 3.6x for NK to 5.2x for CD4 Naive. That is what the lane is
+there to say and the prose says it.
 
-node scripts/flip-review.ts answered cancer_sv/split_view_from_breakend \
-  "NEITHER, and the overlap is one drawing rather than one figure. What the two
-share is the three-panel split view of chr3/chr10/chr12. What they claim is
-disjoint:
+But there IS a real answer one zoom down, which I did not build because you asked
+this figure to zoom OUT last round. Per 10 kb site inside the domain the lineages
+split: of the fourteen strongest sites, three are myeloid-dominated (~70% of the
+bin across CD14, CD16 and cDC) and two are B-dominated (~50-56% across the two B
+rows). A 700 kb second frame under this one would show that as peaks present in
+some rows and blank in others, which is a genuine negative in the picture. Say
+the word and it is the same two-part shape as the other figures in this pass."
 
-  - this figure claims the three panels come out of the CALLSET, from one BND
-    record plus the walk that leaves each end by a co-located junction. Its
-    subject is the route, and the result frame is what the route produced.
-  - realigned_reads claims the same molecules are torn in four against hg38 and
-    whole against the derivative. Its subject is the reads, and its left half is
-    the reference alignment those reads are being compared FROM.
+node scripts/flip-review.ts good ld/lct_pooled_vs_panel \
+  "TAKEN YOU UP ON IT, and the wider calculation pays off by more than the ask
+assumed. ld/lct_sweep_two_scales is the figure now: a 40 Mb Fst scan of chr2
+above, this frame under a trapezoid below it. Both parts keep their own live
+link, so this one is still openable on its own.
 
-Delete either and the page loses a claim the other never makes. They also sit
-200 lines apart, under sections that are about different things.
+scripts/build_lct_fst_scan.sh recomputes the same Weir & Cockerham estimator
+over the same panels of the same release, 40 Mb with LCT in the middle.
+rs4988235 comes out the highest-scoring site of 977,763, and the ten highest are
+all inside the block with it. Of the sites clearing 0.35, sixty-one are in
+134-136 Mb and five are in the other thirty-nine megabases. The lane draws that
+as one cluster at the top of the axis with nothing else near it.
 
-The nearest real simplification is the step frames, and it was considered and
-declined: the menu frame and the dialog frame are the only place the route is
-shown, and the last round asked for exactly those to be numbered so the flow
-reads. Say the word and the menu frame goes -- right-clicking a record and
-picking a named row is close to what the sentence beside it already says."
+THE ONE THING THAT DESTROYS IT IS WINDOWING, and I built it that way first on
+the reasoning that a 40 Mb scan wants bins the way a Manhattan does. At 100 kb
+bins with WEIGHTED_FST the block ranks 58th of 400 windows, behind runs at 121.5
+and 151.7 Mb that have nothing to do with lactase. A sweep differentiates the
+variants on its own haplotype and leaves the rest of a bin on the background, so
+the bin averages the signal away. Not the bin size and not the contrast: the
+same slice unbinned puts the block first outright. That negative is recorded at
+the top of the build script so nobody re-adds --fst-window-size.
 
-# ---------------------------------------------------------------- still bad
-#
-# Not reached this pass. Each keeps its verdict rather than being flipped on a
-# partial answer.
-#
-# chromhmm: "labelColors are kind of chaotic. what is encode2012." The second
-#   half is answerable from the build script (the sidebar stripe is Roadmap's
-#   own 19-group vocabulary, and encode2012 is one of its GROUP values) but the
-#   first half is a question about whether 19 colours belong on a 127-row
-#   sidebar at all, which is a re-plot rather than a caption fix.
-#
-# pangenome/rgfa_hover_sync: three asks, and the third one ("the MAF track says
-#   nothing about a 65kb insert so this is a mystery to user where this came
-#   from") is a data question rather than a callout question -- the MAF is a
-#   projection that cannot represent an insertion absent from the reference, so
-#   answering it means either a different track or saying so on the page. Carried
-#   from the previous pass, still a figure rebuild.
-#
-# ld/lct_pooled_vs_panel: the zoom-out/dual-figure ask needs the Fst lane at two
-#   scales, which is a new part plus a rebin, in the shape dog10k-size-fst-scan
-#   already has.
-#
-# cancer_sv/derivative_synteny: "why would the coverage be uneven in the derived
-#   allele" is a question about the DATA (the realignment's depth over the
-#   reconstructed contig), not about the drawing, and it deserves a measurement
-#   off the BAM rather than a guess.
-#
-# hic/loops_and_domains: "are there any further improvements you'd suggest?"
-#   wants a proposal, and the figure is at the end of three rounds of them.
-#
-# qc/smn_block_and_reads: the two frames exist because a 30x Illumina pileup
-#   cannot be drawn across 2.5 Mb -- that part is answerable. "Is there a shorter
-#   stretch of poor mappability" is the actionable half and needs the Umap track
-#   queried for a shorter block that still carries a story, which SMN1/SMN2 is
-#   chosen for.
-#
-# multirow/display_types_menu: the two-part ask needs a result frame, which is a
-#   new spec (the same RepeatMasker window drawn by the multi-row display) rather
-#   than an edit to this one.
-#
-# hg002_haplotypes_location_markers: unchanged from the last pass -- the travel
-#   cap landed, and the zoom half is still blocked on the synteny RPC's
-#   DataCloneError at the locus that would deliver it.
+Drawing it needs the opposite adapter setting from the lane below, which pins
+resolutionMultiplier to force raw values: 977k points is 650 a pixel, so here
+the zoom bin is what makes it drawable and summaryScoreMode 'max' is what keeps
+the peak through it. Both lanes share one 0.1-0.5 axis, so the peak is the same
+height in each.
+
+The bigWig is deployed to demos/popgen through deploy-demo.sh. Note the prior
+round's other offer still stands and was not taken: combining this with the
+haplotype matrix figure is a separate column and a separate question."
