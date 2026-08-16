@@ -40,8 +40,9 @@ export function buildMismatchArrays(
   const mismatchBases = new Uint8Array(n)
   const mismatchStrands = new Int8Array(n)
   const mismatchReadIndices = new Uint32Array(n)
-  // Per-base Phred quality, already a byte from the BAM/CRAM QUAL array. 0 = no
-  // quality, which the fade-by-quality renderers read as fully opaque.
+  // Per-base Phred quality, already a byte from the BAM/CRAM QUAL array.
+  // QUAL_UNAVAILABLE (255) is "the read reports none", which the fade-by-quality
+  // renderers read as fully opaque; every other value including 0 is a score.
   const mismatchQuals = new Uint8Array(n)
   for (let i = 0; i < n; i++) {
     const mm = filtered[order[i]!]!

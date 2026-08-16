@@ -1,5 +1,6 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
+import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
 // Softclip-base bases reuse the mismatch pass's shader/geometry — same
 // instanced quad with a base-letter slot.
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
@@ -35,6 +36,11 @@ export function packSoftclipBases(data: CigarUploadData): ArrayBuffer {
     // frequency (not a 0 left-as-default) is what pins alpha at 1. Matches the
     // Canvas2D drawSoftclipBases path, which never fades.
     f32[o + F_F32.frequency] = 1
+    // Same argument for the second fade this shared shader applies: a clipped
+    // base has no quality to report, so it packs the sentinel. Leaving the slot
+    // at its 0 default used to mean the same thing and now means Phred 0, which
+    // would fade every clipped base to nothing under the mismatch-alpha setting.
+    f32[o + F_F32.qual] = QUAL_UNAVAILABLE
   }
   return buf
 }

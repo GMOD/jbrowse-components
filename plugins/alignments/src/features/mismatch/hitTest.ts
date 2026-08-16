@@ -1,4 +1,5 @@
 import { passesFrequencyGate } from '../../LinearAlignmentsDisplay/constants.ts'
+import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
 import { findTopmostOnRow } from '../../shared/hitTestTypes.ts'
 
 import type {
@@ -38,14 +39,21 @@ export function hitTestMismatch(
         filterMismatchesByFrequency,
       ),
   )
-  return i === undefined
-    ? undefined
-    : {
-        type: 'mismatch',
-        index: i,
-        position: mismatchPositions[i]!,
-        length: 1,
-        base: String.fromCharCode(mismatchBases[i]!),
-        qual: mismatchQuals[i],
-      }
+  if (i === undefined) {
+    return undefined
+  }
+  // The array's sentinel resolves to "absent" here, at the boundary where the
+  // byte stops being a shader input and becomes something a person reads. Past
+  // this point `qual` is a Phred score or nothing, so a hover can report Q0 —
+  // a real, and notably bad, score — without the readers having to know that 255
+  // is not one.
+  const qual = mismatchQuals[i]!
+  return {
+    type: 'mismatch',
+    index: i,
+    position: mismatchPositions[i]!,
+    length: 1,
+    base: String.fromCharCode(mismatchBases[i]!),
+    qual: qual === QUAL_UNAVAILABLE ? undefined : qual,
+  }
 }

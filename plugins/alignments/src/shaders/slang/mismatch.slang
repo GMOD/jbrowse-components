@@ -1,6 +1,7 @@
 // Mismatch pass: one colored 1bp rectangle per mismatch base. Also used for
 // the softclip-bases overlay (same geometry, same color lookup).
 //! targets: wgsl, glsl
+//! export-consts: QUAL_UNAVAILABLE
 //! js-export: qualityFade
 
 import alignmentsUniforms;
@@ -15,12 +16,20 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // below fades linearly toward transparent.
 static const float OPAQUE_QUAL = 50.0;
 
+// "This base carries no quality": a read whose QUAL is absent, and every base of
+// the softclip-bases overlay, which shares this shader and has no quality to
+// report. 255 rather than 0, because 0 is a REAL Phred score — the worst one —
+// and the sentinel has to be a value no base can hold. BAM already spells a
+// missing QUAL as 0xFF, the SAM text range stops at 93, and this ramp saturates
+// at 50, so 255 was already indistinguishable from opaque; 0 was not.
+static const float QUAL_UNAVAILABLE = 255.0;
+
 struct Instance {
   uint  position  : ATTR0;   // absolute genomic bp
   uint  y         : ATTR1;   // pileup row
   uint  base      : ATTR2;   // ASCII: A=65/97 C=67/99 G=71/103 T=84/116
   float frequency : ATTR3;   // 0..1, fraction of reads with this base
-  float qual      : ATTR4;   // per-base Phred quality; 0 = none (softclip pass leaves it 0)
+  float qual      : ATTR4;   // per-base Phred quality; QUAL_UNAVAILABLE = none
 };
 
 float3 baseColor(uint b, Uniforms u) {
@@ -38,13 +47,19 @@ float3 baseColor(uint b, Uniforms u) {
 }
 
 // Alpha multiplier for a mismatch of this per-base Phred quality: 1 when the
-// setting is off, 1 when the base carries no quality (qual == 0, which is also
-// what the softclip-bases pass packs), and a linear ramp to OPAQUE_QUAL
-// otherwise. `//! js-export`ed: features/mismatch/drawCanvas.ts carried the
-// same three-way conditional under a "Mirrors the GPU mismatch.slang path"
-// comment, which is the whole setting's behavior kept in agreement by eye.
+// setting is off, 1 when the base carries no quality (QUAL_UNAVAILABLE), and a
+// linear ramp to OPAQUE_QUAL otherwise. `//! js-export`ed:
+// features/mismatch/drawCanvas.ts carried the same three-way conditional under a
+// "Mirrors the GPU mismatch.slang path" comment, which is the whole setting's
+// behavior kept in agreement by eye.
+//
+// The guard tests the sentinel, not `> 0`. Under `> 0` a Phred 0 base — the
+// least trustworthy call in the file — took the no-quality branch and drew fully
+// opaque, while Phred 1 drew at alpha 0.02 and vanished. The ramp ran backwards
+// across its own first step, and did so on exactly the bases the setting exists
+// to push off the screen.
 float qualityFade(float qual, bool enabled) {
-  if (enabled && qual > 0.0) {
+  if (enabled && qual != QUAL_UNAVAILABLE) {
     return min(1.0, qual / OPAQUE_QUAL);
   }
   return 1.0;

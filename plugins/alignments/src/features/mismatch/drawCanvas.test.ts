@@ -1,3 +1,4 @@
+import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
 import { drawMismatches } from './drawCanvas.ts'
 
 import type {
@@ -160,8 +161,18 @@ describe('drawMismatches quality fade', () => {
     expect(drawOne(baseState({ mismatchAlpha: true }), 60)).toBe('rgb(255,0,0)')
   })
 
-  test('mismatchAlpha on: quality 0 (no recorded quality) stays opaque', () => {
-    expect(drawOne(baseState({ mismatchAlpha: true }), 0)).toBe('rgb(255,0,0)')
+  test('mismatchAlpha on: the no-quality sentinel stays opaque', () => {
+    expect(drawOne(baseState({ mismatchAlpha: true }), QUAL_UNAVAILABLE)).toBe(
+      'rgb(255,0,0)',
+    )
+  })
+
+  test('mismatchAlpha on: Phred 0 fades all the way out', () => {
+    // The worst score the file can carry, drawn as such. It used to share the
+    // sentinel's value and so came out fully opaque — see qualityFadeParity.
+    expect(drawOne(baseState({ mismatchAlpha: true }), 0)).toBe(
+      'rgba(255,0,0,0)',
+    )
   })
 })
 

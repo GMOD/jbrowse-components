@@ -11,7 +11,7 @@ function _min(a: number, b: number) {
 export function qualityFade(qual: number, enabled: boolean): number {
   let _t0: boolean
   if (enabled) {
-    _t0 = (qual > 0.0)
+    _t0 = (qual != 255.0)
   } else {
     _t0 = false
   }

@@ -344,8 +344,12 @@ export function formatCigarTooltip(cigarHit: CigarHitResult) {
   const pos = toLocale(cigarHit.position + 1)
   switch (cigarHit.type) {
     case 'mismatch': {
-      // qual 0 = no base quality reported; omit rather than show a bare "Q0".
-      const qual = cigarHit.qual ? ` (Q${cigarHit.qual})` : ''
+      // Absent = the read reported no base quality; omit the parenthetical
+      // rather than invent one. Q0 is a score and prints, which is the point of
+      // resolving the sentinel in `hitTestMismatch` rather than here: the worst
+      // possible call is worth showing, and truthiness could not tell the two
+      // apart.
+      const qual = cigarHit.qual === undefined ? '' : ` (Q${cigarHit.qual})`
       return `SNP: ${cigarHit.base} at ${pos}${qual}`
     }
     case 'insertion':

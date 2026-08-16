@@ -1,3 +1,4 @@
+import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
 import {
   LABEL_FADE_FLOOR,
@@ -140,11 +141,11 @@ describe('SNP letters carry the per-base quality fade', () => {
                 mismatchPositions: new Uint32Array([10, 20, 30, 40, 50]),
                 mismatchYs: new Uint16Array([0, 0, 0, 0, 0]),
                 mismatchBases: new Uint8Array([65, 67, 71, 84, 65]),
-                // Phred 60 (opaque), 25 (half), 0 (no quality => opaque), 1
-                // (0.02, under MIN_QUALITY_LETTER_OPACITY), 10 (0.2 — a faint
-                // letter that survives, which is the case a floor raised toward
-                // the size labels' would silently delete)
-                mismatchQuals: new Uint8Array([60, 25, 0, 1, 10]),
+                // Phred 60 (opaque), 25 (half), the no-quality sentinel
+                // (opaque), 1 (0.02, under MIN_QUALITY_LETTER_OPACITY), 10
+                // (0.2 — a faint letter that survives, which is the case a
+                // floor raised toward the size labels' would silently delete)
+                mismatchQuals: new Uint8Array([60, 25, QUAL_UNAVAILABLE, 1, 10]),
               }),
           },
           topOffset: 0,

@@ -137,7 +137,7 @@ export interface WorkerPileupData {
   mismatchStrands: Int8Array // -1=reverse, 1=forward (for tooltip strand counts)
   mismatchReadIndices: Uint32Array // maps each mismatch to its parent read index
   mismatchFrequencies: Uint8Array // 0-255 representing 0-100% frequency at position
-  mismatchQuals: Uint8Array // per-base Phred quality; 0 = no quality (fully opaque)
+  mismatchQuals: Uint8Array // per-base Phred quality; QUAL_UNAVAILABLE (255) = none. 0 is a score.
 
   // Soft clip base data - per-base rendering for showSoftClipping feature
   // Absolute genomic uint32 position for each base

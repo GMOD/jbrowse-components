@@ -25,7 +25,10 @@ export interface CigarHitResult {
   length: number
   base?: string
   sequence?: string
-  // Phred base quality for a mismatch (0 = no quality reported / not applicable).
+  // Phred base quality for a mismatch, absent when the read reports none.
+  // `hitTestMismatch` resolves the arrays' QUAL_UNAVAILABLE sentinel here, so 0
+  // is the score rather than the missing case and readers must test for
+  // `undefined` rather than truthiness.
   qual?: number
 }
 
