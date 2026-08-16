@@ -348,19 +348,62 @@ export const qcSpecs: ScreenshotSpec[] = [
               // ceiling then comes from the window rather than from a number
               // somebody chose, and it survives the window being moved.
               autoscale: 'localsd',
-              height: 380,
+              // 260, from 380 (review: "make it render even more compressed").
+              // The lane is read as a colour FIELD -- red where nothing can be
+              // placed uniquely, multi-coloured where the reads recover -- and
+              // the field is the same field in two thirds of the height, because
+              // what comes off is the BOTTOM of the pack.
+              //
+              // THE HEIGHT IS THE ONLY LEVER HERE; featureHeight is not, and it
+              // was tried. The display's compact preset (3) fits about twice the
+              // rows, and at 464 bp a pixel a 150 bp read is a third of a pixel
+              // wide, so a row is a line of sub-pixel ticks rather than a bar:
+              // the extra rows it reaches are the sparse tail of the pack, and
+              // the lane came back a picket fence over white with the MAPQ block
+              // broken up. Shorter at the default row height keeps every drawn
+              // row inside the dense part of the pack, which is the field.
+              height: 260,
             },
           ],
         },
       ],
     })}&sessionName=Screenshot`,
     // 760 cut 42 css px off the bottom, from the run's own report; +95 more
-    // for the mappability lane
-    viewportHeight: 925,
+    // for the mappability lane, then -120 with the pileup lane
+    viewportHeight: 805,
     hideSelectors: HIDE_ISOFORM_CHIP,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 600000,
     settleMs: 30000,
+    // WHY THE LOCUS IS WORTH THE TROUBLE (review: "put red text annotation that
+    // the genes there are medically relevant"). Every lane in both frames says
+    // the same thing about mappability, and none of them says why anyone would
+    // sequence here anyway -- so the figure read as a hard region chosen for
+    // being hard. It is the region a diagnosis is called from, and that is the
+    // one thing about it a picture of read placement cannot carry.
+    //
+    // SMN1 alone, not the pair: SMN2 is 900 kb away and outside this frame,
+    // which is the wide frame's own band. Its copy number is what modifies
+    // severity, and that belongs in the prose beside the frame that shows both.
+    //
+    // In the coverage lane's upper fifth, the placement the wide frame's two
+    // pills already use here: the axis runs to 40x and the depth over the block
+    // is a fraction of it, so the top of the lane is empty and the pill covers
+    // no signal.
+    annotations: [
+      {
+        type: 'text',
+        text: 'SMN1: biallelic loss causes spinal muscular atrophy',
+        fontSize: 18,
+        maxWidth: 330,
+        anchor: {
+          track: 'hg38-gnomad3MeanCoverage',
+          locus: 'chr5:70,925,000',
+          alignX: 'left',
+          fracY: 0.15,
+        },
+      },
+    ],
   },
 
   {
@@ -379,7 +422,9 @@ export const qcSpecs: ScreenshotSpec[] = [
             // the note above the mappability consts): the depth collapse is a
             // broad plateau rather than per-base structure, so summarizing it
             // into 2 kb pixels keeps it.
-            gnomadCoverageTrack(120, 'avg'),
+            // 100, from 120: the lane is read as a plateau against its flanks,
+            // and the step is the same step at either height
+            gnomadCoverageTrack(100, 'avg'),
             // ONE flagged-region lane, where this had two (reviewer: "we are
             // mixing gnomad coverage, giab problematic regions, encode
             // problematic regions, 1000g nanopore, etc. kind of too many
@@ -405,14 +450,19 @@ export const qcSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38-lrSv1kgOnt',
               type: 'LinearBasicDisplay',
-              height: 130,
+              // 100, from 130 (review: "make it render even more compressed").
+              // What is read off this lane is a HOLE, and a hole is as legible
+              // in four rows of records as in five -- the rows that came off are
+              // the ones furthest from the block, on both flanks at once.
+              height: 100,
             },
           ],
         },
       ],
     })}&sessionName=Screenshot`,
-    // 780 - 40 for the ENCODE lane
-    viewportHeight: 740,
+    // 780 - 40 for the ENCODE lane, then -50 across the coverage and callset
+    // lanes
+    viewportHeight: 690,
     hideSelectors: HIDE_ISOFORM_CHIP,
     // TWO PILLS, ONE MESSAGE. The previous pair said "coverage returns at
     // ENCODE's edge, 350 kb past GIAB's", which the review rejected on both
@@ -500,11 +550,47 @@ export const qcSpecs: ScreenshotSpec[] = [
   // 4,222 bp. So the size IS the subject: the failure covers a whole gene
   // neighbourhood rather than scattered sites, and a window narrow enough to
   // make a read visible cannot show that it has edges.
+  //
+  // THE ZOOM, DRAWN (review: "might use the 'trapezoid' to show that figure 2
+  // is a zoom in"). Stacked alone the lower frame was a second picture of the
+  // same chromosome and nothing said which quarter of the upper one it is; the
+  // wedge says it, and it lands where a reader can check it, because the block's
+  // right-hand edge is visible in both.
+  //
+  // The gutter is what the wedge needs to exist in -- flush, the two facing
+  // edges are one line and it has no height. 120 in the composition's own px,
+  // 60 css px of either capture, paid for several times over by the two frames
+  // coming down 170 css px between them.
+  //
+  // THE NARROW END IS SOLVED FOR, not assumed: the app's data area is inset by
+  // its own margins, so the genomic fraction is not the image fraction. The
+  // upper frame hands over four landmarks whose coordinates are known exactly --
+  // the two edges of each SMN highlight band, which the view draws from
+  // SMN_HIGHLIGHT -- and a least-squares fit over them gives
+  //
+  //   x = L + f * W  ->  L = 9.7, W = 2978.5  (3000 px wide, residuals < 0.8 px)
+  //
+  // the same data area dog10k-size-fst-scan and popgen/in2lt_inversion each
+  // solved for independently against different landmarks. WIDE_LOC is then
+  // 0.660-0.920 of that area, i.e. the fracX below. Re-derive by taking the
+  // columns where the band's warm tint sits and fitting them against
+  // SMN_HIGHLIGHT's own coordinates over OVERVIEW_LOC.
   {
     mode: 'compose',
     name: 'qc/smn_block_and_reads',
     parts: ['qc/smn_problematic_regions', 'qc/smn_read_placement'],
     direction: 'vertical',
+    gutter: 120,
+    annotations: [
+      {
+        type: 'trapezoid',
+        fromAnchor: {
+          selector: '[data-part="0"]',
+          fracX: [0.6585, 0.9166],
+        },
+        anchor: { selector: '[data-part="1"]' },
+      },
+    ],
   },
 
   // qc/callsets_at_smn was here and is DELETED (review: "this is not a good

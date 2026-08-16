@@ -72,7 +72,7 @@ on the scale the plot draws, so only the column has to be named.
 Opening the assembly without a location shows all of its regions at once, so the
 display lays the autosomes out side by side rather than one at a time.
 
-<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed line at the 99.9th percentile of the scan's own windows. Bottom: two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band is the single 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
+<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed significance line. Bottom: the wedge's span, two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band is the top half's own 200 kb window." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Each point is a window, so a peak names a region rather than a variant. A
 genome-wide scan has to bin wide enough to hold down twelve thousand windows'

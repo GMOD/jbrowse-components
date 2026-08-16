@@ -37,7 +37,7 @@ Nothing about the pileup itself announces it.
 
 ## The block, and the reads inside it
 
-<Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, a wide span of chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Bottom, a window inside it, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
+<Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, a wide span of chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Bottom, the span the wedge marks, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
 The affected sequence is a much larger block than the gene, so a locus can be
 inside one of these regions without being inside anything that carries the

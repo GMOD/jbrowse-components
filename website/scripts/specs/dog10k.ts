@@ -262,6 +262,58 @@ const CEA_LAYOUT = CEA_GROUPS.flatMap(({ label, color, ids }) =>
 // the two axes from parting company when only one of them is autoscaled.
 const FST_AXIS = { minScore: 0, maxScore: 0.8 }
 
+// Both halves of dog10k-size-fst-scan are 240px where they were 380 (review:
+// "make both figures shorter in y-axis real estate space"). What each lane is
+// read for is a RATIO -- three named peaks against a dense band, and the same
+// peak against its neighbours -- and a ratio survives a third off the height.
+const FST_LANE_H = 240
+
+// Where a score lands, in px below the TRACK's own top edge, so a callout can be
+// placed at a peak without anyone measuring the capture again. `fracY` cannot
+// say "at this score", and the hand-fitted `dy` numbers this replaces were the
+// one thing in the pair that a height change silently broke.
+//
+// Two terms, both from the app rather than from a ruler. wiggle-core's
+// `axisPlotBox` insets the plot by YSCALEBAR_LABEL_OFFSET at each end, so the
+// domain spans `h - 10` px starting `h - 5` up from the display's top; the
+// track element then starts 6px above the display. Checked against the previous
+// capture's own numbers, where all three peaks land within 6px of where its
+// hand-fitted offsets put them.
+const fstY = (fst: number, h = FST_LANE_H) =>
+  Math.round(6 + (h - 5) - (fst / FST_AXIS.maxScore) * (h - 10))
+
+// A peak is named from the SIDE, at its own height, rather than from above it.
+// `side` is which way the pill hangs: the two loci near the middle of the row
+// have room on their right, chr34 sits against the frame edge and does not.
+//
+// Sideways because the tallest peak has no room above it at any lane height --
+// HMGA2 sits within ~40px of the axis top whatever `h` is, since it is nearly
+// the axis maximum -- so a pill placed above it is clipped by the shrink that
+// leaves every other one alone. At the peak's own y the three callouts also
+// stack in score order, which is the reading.
+const fstCallout = (
+  trackId: string,
+  locus: string,
+  text: string,
+  fst: number,
+  side: 1 | -1 = 1,
+) => {
+  const dy = fstY(fst)
+  return [
+    {
+      type: 'text' as const,
+      text,
+      fontSize: 20,
+      anchor: { track: trackId, locus, fracY: 0, dx: side * 150, dy },
+    },
+    {
+      type: 'arrow' as const,
+      anchor: { track: trackId, locus, fracY: 0, dx: side * 14, dy },
+      fromAnchor: { track: trackId, locus, fracY: 0, dx: side * 88, dy },
+    },
+  ]
+}
+
 // The scan carries no p-value, so what counts as a peak is empirical: this is
 // the 99.9th percentile of the scan's own 11,158 scored windows, which
 // build_dog10k_size_fst.sh now prints beside its top-20 table so the number can
@@ -924,7 +976,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'dog10k_size_fst',
           type: 'LinearManhattanDisplay',
-          height: 380,
+          height: FST_LANE_H,
           scatterPointSize: 4,
           ...FST_AXIS,
           ...FST_SIGNIFICANCE,
@@ -934,7 +986,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('manhattan-display'),
     readyTimeout: 120000,
     settleMs: 10000,
-    viewportHeight: 600,
+    // 460, tracking the lane's own 240 (was 600 for 380)
+    viewportHeight: 460,
     // Three known body-size loci among the top windows, named. A reader cannot
     // get a gene out of a scatter point, and a Manhattan whose peaks are
     // anonymous is only a shape.
@@ -946,108 +999,29 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // build_dog10k_size_fst.sh prints so the ranks can be re-derived.
     //
     // The locus is each gene's own coordinate resolved through the live model,
-    // so a re-render cannot leave a label pointing at the wrong chromosome. The
-    // pill is then pushed off that position and an arrow drawn back to it,
-    // because a pill centered on its own peak covers the one point it names,
-    // and a pill nudged clear of the peak with nothing joining them names any
-    // of the lanes it happens to sit over — both of which the first pass did.
-    //
-    // Only `dy` is hand-set, since `fracY` cannot say "at this score": the
-    // y-axis runs 0 to 0.8 over 461 px, so a window's point sits `381 - 461*fst`
-    // px below the track's top edge. Each head's `dy` is that value less about
-    // 15 px, deliberately: a head placed exactly on the point covers it, which
-    // the arrowhead is wide enough to do at this point size. The pills sit
-    // further up again, clear of both.
+    // so a re-render cannot leave a label pointing at the wrong chromosome, and
+    // the score beside it is what puts the callout at the point's own height --
+    // see `fstCallout`, which took over three sets of hand-fitted `dy` numbers
+    // when the lane came down to 240. The scores are the drawn points', read off
+    // the previous capture at the x each locus resolves to; IGF1's 0.367 is the
+    // value the zoom half's own comment already carried, which is the check.
     annotations: [
-      {
-        type: 'text',
-        text: 'HMGA2',
-        fontSize: 20,
-        anchor: {
-          track: 'dog10k_size_fst',
-          locus: 'chr10:8,600,000-8,800,000',
-          fracY: 0,
-          dx: 150,
-          dy: 18,
-        },
-      },
-      {
-        type: 'arrow',
-        anchor: {
-          track: 'dog10k_size_fst',
-          locus: 'chr10:8,600,000-8,800,000',
-          fracY: 0,
-          dx: 12,
-          dy: 34,
-        },
-        fromAnchor: {
-          track: 'dog10k_size_fst',
-          locus: 'chr10:8,600,000-8,800,000',
-          fracY: 0,
-          dx: 92,
-          dy: 26,
-        },
-      },
-      {
-        type: 'text',
-        text: 'IGF1',
-        fontSize: 20,
-        anchor: {
-          track: 'dog10k_size_fst',
-          locus: IGF1_PEAK_WINDOW,
-          fracY: 0,
-          dx: 128,
-          dy: 152,
-        },
-      },
-      {
-        type: 'arrow',
-        anchor: {
-          track: 'dog10k_size_fst',
-          locus: IGF1_PEAK_WINDOW,
-          fracY: 0,
-          dx: 8,
-          dy: 204,
-        },
-        fromAnchor: {
-          track: 'dog10k_size_fst',
-          locus: IGF1_PEAK_WINDOW,
-          fracY: 0,
-          dx: 88,
-          dy: 168,
-        },
-      },
-      {
-        // chr34 sits against the right edge of the view, so this one is labelled
-        // from the left; the other two have room on the right.
-        type: 'text',
-        text: 'IGF2BP2',
-        fontSize: 20,
-        anchor: {
-          track: 'dog10k_size_fst',
-          locus: 'chr34:18,600,000-18,800,000',
-          fracY: 0,
-          dx: -150,
-          dy: 186,
-        },
-      },
-      {
-        type: 'arrow',
-        anchor: {
-          track: 'dog10k_size_fst',
-          locus: 'chr34:18,600,000-18,800,000',
-          fracY: 0,
-          dx: -14,
-          dy: 234,
-        },
-        fromAnchor: {
-          track: 'dog10k_size_fst',
-          locus: 'chr34:18,600,000-18,800,000',
-          fracY: 0,
-          dx: -88,
-          dy: 202,
-        },
-      },
+      ...fstCallout(
+        'dog10k_size_fst',
+        'chr10:8,600,000-8,800,000',
+        'HMGA2',
+        0.738,
+      ),
+      ...fstCallout('dog10k_size_fst', IGF1_PEAK_WINDOW, 'IGF1', 0.367),
+      // chr34 sits against the right edge of the view, so this one is labelled
+      // from the left; the other two have room on the right.
+      ...fstCallout(
+        'dog10k_size_fst',
+        'chr34:18,600,000-18,800,000',
+        'IGF2BP2',
+        0.287,
+        -1,
+      ),
     ],
   },
 
@@ -1103,7 +1077,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // arrived at from the genotype matrix rather than from Fst.
           trackId: 'dog10k_size_fst_igf1_20kb',
           type: 'LinearManhattanDisplay',
-          height: 380,
+          height: FST_LANE_H,
           // a hundred windows across this view rather than the ten the 200 kb
           // lane drew, so the points come down from 9: at that size a hundred of
           // them merge into a band and the sweep stops having edges
@@ -1115,9 +1089,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('manhattan-display'),
     readyTimeout: 120000,
     settleMs: 6000,
-    // the gene lane, all 380 px of the score lane, and its bottom border: at 700
-    // the lowest windows sat on the frame edge
-    viewportHeight: 716,
+    // the gene lane, all 240 px of the score lane, and its bottom border: at 700
+    // the lowest windows sat on the frame edge, and 716 was that fixed against a
+    // 380 lane
+    viewportHeight: 576,
     // THE NAME, NOT A NUMBER (review: "the '1' is unneeded"). The pair used to
     // carry a numbered badge each, and a number is a sequence marker on a figure
     // with one zoom in it — there is nothing to be second. What the panels
@@ -1135,16 +1110,59 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           track: 'dog10k_size_fst_igf1_20kb',
           locus: IGF1_PEAK_WINDOW,
           fracY: 0,
-          dy: 34,
+          dy: 30,
         },
       },
     ],
   },
 
+  // THE ZOOM, DRAWN (review: "dont need the numbered badge, use the trapezoid
+  // like zoom system to show the connection between the two panels"). The badge
+  // pair it replaces is gone from both halves; a wedge says the same thing
+  // without either panel having to carry a mark that means nothing on its own.
+  //
+  // A gutter is what the wedge needs to exist in: stacked flush, the two parts'
+  // facing edges are the same line and it has no height. 120 in the
+  // composition's own px, which is 60 css px of either capture — less than the
+  // 280 the two score lanes gave back, so the figure is shorter than it was.
+  //
+  // THE NARROW END IS SOLVED FOR, not assumed. The bottom panel is 2 Mb of
+  // chr15 and the row above lays out 2,229 Mb, so the apex is under three
+  // pixels wide and its position is the whole of its accuracy: 0.5% off would
+  // put it on a different chromosome. The genomic fraction is not the image
+  // fraction either, since the app's own margins are whatever they are, so L and
+  // W come out of a least-squares fit over the row's OWN region dividers —
+  // thirty-three of them found dark through the score band, every one predicted
+  // to within 2.4 px:
+  //
+  //   x = L + f * W  ->  L = 12.5, W = 2975.8  (3000 px wide)
+  //
+  // which is the same data area popgen/in2lt_inversion solved for independently
+  // (12.3 / 2976.0), so a third figure agreeing is the check that it is the
+  // app's layout rather than one capture's accident. Re-derive by taking the
+  // columns dark across the score band and fitting them against the cumulative
+  // shares in UU_Cfam_GSD_1.0.chrom.sizes.
+  //
+  // No sideMargin, unlike that figure: chr15 sits mid-row, so neither slanted
+  // side reaches an image edge.
+  //
+  // No label on it either. A wedge from a point to a panel is the idiom for
+  // "this is that, opened up", and both panels already say IGF1.
   {
     mode: 'compose',
     name: 'dog10k-size-fst-scan',
     parts: ['dog10k-size-fst-scan-genome', 'dog10k-size-fst-scan-igf1'],
+    gutter: 120,
+    annotations: [
+      {
+        type: 'trapezoid',
+        fromAnchor: {
+          selector: '[data-part="0"]',
+          fracX: [0.52108, 0.52198],
+        },
+        anchor: { selector: '[data-part="1"]' },
+      },
+    ],
   },
 
   // The FGF4 retrogene (Parker et al. 2009). A processed retrocopy has no

@@ -2220,13 +2220,20 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_gff_hg19',
           type: 'LinearBasicDisplay',
-          // was `showDescriptions: false`, meaning "names suffice here". That
-          // pairing has no home on the unified labels enum, so
-          // migrateBasicConfigSnapshot resolved it to 'auto' — descriptions do
-          // come back at low density. Written as what it actually resolved to;
-          // pinning 'name' would honor the original intent but change the
-          // figure, so that is a call for whoever regenerates it.
-          showLabels: 'auto',
+          // NAMES ONLY (review: "might hide descriptions on the gene track, so
+          // more genes are seen"). This started as `showDescriptions: false`,
+          // meaning "names suffice here"; that pairing has no home on the
+          // unified labels enum, so migrateBasicConfigSnapshot resolved it to
+          // 'auto', which brings descriptions back at low density — and 500 kb
+          // of HOXA is low density. So the lane drew "HOXA cluster antisense
+          // RNA 2" under HOXA-AS2 and stacked three rows to fit it.
+          //
+          // A description is the widest thing in the lane and the least of what
+          // is being read: the figure's subject is a column boundary, and what
+          // says where the boundary falls is which GENE is left of it. Names
+          // alone pack the same set into fewer rows, which is what the height
+          // below comes down by.
+          showLabels: 'name',
           // the flanks are a pseudogene desert (RPL7AP38, HMGB3P20, NHP2P2,
           // TPM3P4, RPL35P4), which is exactly why the window extends into them
           // — but drawn, they crowd the lane with names that have nothing to do
