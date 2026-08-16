@@ -12,15 +12,16 @@ export default function SelectionContextMenu({
   model: DotplotViewModel
   interaction: DotplotInteraction
 }) {
-  const { committed, anchor, pointer, clear, setHovering } = interaction
-  // unhover prevents the tooltip from sticking after the menu closes; the
-  // selection itself is cleared by clear() from onClose, which ContextMenu
-  // fires ahead of the item's own callback.
+  const { committed, anchor, pointer, clear } = interaction
+  // The selection is cleared by clear() from onClose, which ContextMenu fires
+  // ahead of the item's own callback — these closures hold the corners from the
+  // render that built the menu, so they still have them. Nothing unhovers here:
+  // the menu's backdrop takes the pointer off the plot, and the plot's own
+  // pointerleave is what drops the tooltip.
   const act = (fn: (down: Coord, up: Coord) => void) => () => {
     if (anchor && pointer) {
       fn([anchor.x, anchor.y], [pointer.x, pointer.y])
     }
-    setHovering(false)
   }
   return (
     <ContextMenu

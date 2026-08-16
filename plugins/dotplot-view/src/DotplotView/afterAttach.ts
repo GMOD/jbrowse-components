@@ -476,11 +476,13 @@ function setupAspectLockAutorun(self: DotplotViewModel) {
 // nothing fires a pointer event and nothing re-picks — the tooltip and the
 // highlight just stay pinned to an alignment sliding away from the pointer.
 //
-// One reaction over `plotTransform`, the four numbers that decide where a cumBp
+// One reaction over `plotTransform`, the numbers that decide where a cumBp
 // lands on screen, covers every way that can happen at once: the wheel, a drag
 // pan, the zoom buttons, `squareView` and the aspect lock, an axis locstring
-// navigation, `showAllRegions`. Listing entry points instead is how this was
-// wrong to begin with — the wheel was the one nobody had written a clear for.
+// navigation, `showAllRegions`, and — through `viewHeight`, which is in there
+// for this reason — a resize of the plot itself. Listing entry points instead is
+// how this was wrong to begin with — the wheel was the one nobody had written a
+// clear for.
 // Dotplot's twin of `installClearHoverOnViewportChange` on the LGV side, minus
 // the two axes a plot doesn't have: no per-display scroll, no too-large banner.
 //

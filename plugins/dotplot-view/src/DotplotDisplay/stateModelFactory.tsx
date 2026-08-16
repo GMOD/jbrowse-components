@@ -313,8 +313,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           // was raised past it while the pointer sat still.
           return undefined
         }
-        const { viewHeight } = this.view
-        const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv } =
+        const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, viewHeight } =
           this.view.plotTransform
         let path = ''
         for (let s = start; s < end; s++) {

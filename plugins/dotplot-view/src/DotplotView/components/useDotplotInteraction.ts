@@ -50,25 +50,28 @@ export interface DotplotInteraction {
     onPointerMove: (event: React.PointerEvent<HTMLDivElement>) => void
     onPointerUp: (event: React.PointerEvent<HTMLDivElement>) => void
     onPointerCancel: () => void
-    onPointerEnter: () => void
     onPointerLeave: () => void
   }
   // drag anchor, undefined outside a drag
   anchor: PointerSample | undefined
-  // live pointer; during a drag it is the opposite corner (squared off under
-  // the aspect lock, pinned once the drag is committed)
+  // Where the pointer is, or undefined once it has left the plot — which is
+  // also what says "nothing is hovered", so there is no second `hovering` flag
+  // to re-arm. There was one, set only by pointerenter, and anything that
+  // lowered it without the pointer leaving (the selection menu did) left the
+  // coordinate tooltip dead until the pointer exited the plot and came back.
+  //
+  // During a drag it is the opposite corner of the rect, squared off under the
+  // aspect lock and pinned once the drag is committed.
   pointer: PointerSample | undefined
   // signed drag extent in component px; sign drives tooltip placement
   dx: number
   dy: number
-  hovering: boolean
   // drag would select rather than pan, under the current cursor mode + modifier
   validSelect: boolean
   // the drag is a selection worth acting on, not a click
   selecting: boolean
   // pointer released on a selection — the context menu is open
   committed: boolean
-  setHovering: (arg: boolean) => void
   clear: () => void
 }
 
@@ -82,7 +85,6 @@ export function useDotplotInteraction(
   const [down, setDown] = useState<PointerSample>()
   const [curr, setCurr] = useState<PointerSample>()
   const [up, setUp] = useState<PointerSample>()
-  const [hovering, setHovering] = useState(false)
 
   // The previous pointer sample, for the pan delta. Kept in a ref as well as in
   // `curr` because a pan does not need to re-render: the scroll it produces is a
@@ -233,11 +235,12 @@ export function useDotplotInteraction(
         lastRef.current = undefined
         clear()
       },
-      onPointerEnter: () => {
-        setHovering(true)
-      },
+      // Both halves of "the pointer is gone": the alignment it was over stops
+      // being hovered, and the sample the coordinate tooltip reads stops
+      // existing. Dropping only the first left a tooltip printing the position
+      // the pointer had when it crossed the edge.
       onPointerLeave: () => {
-        setHovering(false)
+        setCurr(undefined)
         model.setHoveredFeature(undefined)
       },
     },
@@ -245,11 +248,9 @@ export function useDotplotInteraction(
     pointer,
     dx,
     dy,
-    hovering,
     validSelect,
     selecting,
     committed: !!up,
-    setHovering,
     clear,
   }
 }

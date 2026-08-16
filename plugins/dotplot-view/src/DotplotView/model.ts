@@ -871,15 +871,23 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * The cumBp -> plot px reconstruction, as the four numbers everything
-         * that draws or hit-tests this plot runs on: the viewport-start cumBp
-         * per axis, and the inverse bpPerPx per axis.
+         * The cumBp -> plot px reconstruction, as the numbers everything that
+         * draws or hit-tests this plot runs on: the viewport-start cumBp per
+         * axis, the inverse bpPerPx per axis, and the plot height the v axis is
+         * flipped through (it lays out bottom-up).
          *
          * Its own getter because three readers want exactly these and nothing
          * else — the render state below, the pick's exact test, and
          * `DotplotDisplay.hoveredFeatureHighlight`. Taking them off
          * `dotplotRenderState` also subscribes to `alpha`, `lineWidth` and the
          * display-key list, so an opacity drag rebuilt the hover path.
+         *
+         * `viewHeight` belongs in here and not beside it: this is also what
+         * `setupClearHoverOnPlotMove` watches to decide the plot has moved under
+         * a stationary cursor, and a height change slides every alignment down
+         * the canvas exactly as a pan does. Left out, it was the one way to move
+         * the plot that kept the hover pinned to the alignment it no longer
+         * pointed at.
          */
         get plotTransform() {
           const { hview, vview } = self
@@ -888,6 +896,7 @@ export default function stateModelFactory(pm: PluginManager) {
             viewBpV: vview.offsetPx * vview.bpPerPx,
             bpPerPxHInv: 1 / hview.bpPerPx,
             bpPerPxVInv: 1 / vview.bpPerPx,
+            viewHeight: this.viewHeight,
           }
         },
         /**
@@ -903,8 +912,16 @@ export default function stateModelFactory(pm: PluginManager) {
          * but nothing repainted).
          */
         get dotplotRenderState() {
+          // Named rather than spread: `plotTransform`'s `viewHeight` is not a
+          // render input. A backend gets the plot height through `resize`, and
+          // shipping it twice in one frame is two numbers to disagree.
+          const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv } =
+            this.plotTransform
           return {
-            ...this.plotTransform,
+            viewBpH,
+            viewBpV,
+            bpPerPxHInv,
+            bpPerPxVInv,
             lineWidth: self.lineWidth,
             alpha: self.alpha,
             displayKeys: [...this.geometryByDisplayKey.keys()],
@@ -951,15 +968,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * nearest where a ribbon answers topmost.
          */
         pickFeatureAt(x: number, y: number) {
-          const { hview, vview } = self
-          const { viewBpH, viewBpV } = this.plotTransform
-          const transform = {
-            viewBpH,
-            viewBpV,
-            bpPerPxH: hview.bpPerPx,
-            bpPerPxV: vview.bpPerPx,
-            viewHeight: this.viewHeight,
-          }
+          const transform = this.plotTransform
           // Half the drawn line width, so anything painted under the cursor
           // hits, plus a fixed slack for the sub-pixel dots a whole-genome plot
           // is mostly made of — they are a couple of px across at most, and

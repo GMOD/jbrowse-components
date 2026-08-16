@@ -58,17 +58,23 @@ export function tickKey(tick: Tick) {
   return `${tick.displayedRegionIndex}-${tick.refName}-${tick.base}`
 }
 
-// `coord0`, not a hand-rolled `start + offset`: `offset` is bp from the
+// `pxToBp`, not a hand-rolled `start + offset`: `offset` is bp from the
 // region's LEFT SCREEN EDGE, which on a reversed region is its `end`. Both
 // dotplot axes routinely carry reversed regions — auto-diagonalize flips query
 // regions on the vertical axis — and there the two disagree by
 // `(end - start) - 2*offset`, so the tooltip named a mirrored position inside
 // the right contig. pxToBp already applies that reflection; read its answer.
+//
+// `coord`, its 1-BASED field, not `coord0`. The ruler this tooltip reads
+// against is 1-based (`tickLabel` re-adds the 1 `makeTicks` took off), so on
+// coord0 the two disagreed by one: hovering the tick labelled 1,000 reported
+// 999. Every other coordinate a user reads in JBrowse is 1-based too, this
+// being the only place that printed the interbase one.
 export function locstr(px: number, view: Dotplot1DViewModel) {
-  const { assemblyName, refName, coord0, oob } = view.pxToBp(px)
+  const { assemblyName, refName, coord, oob } = view.pxToBp(px)
   return oob
     ? 'out of bounds'
-    : `{${assemblyName}}${refName}:${toLocale(coord0)}`
+    : `{${assemblyName}}${refName}:${toLocale(coord)}`
 }
 
 // One source of truth for the axis label/tick font, imported by both the

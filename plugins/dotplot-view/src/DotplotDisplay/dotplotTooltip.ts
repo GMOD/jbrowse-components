@@ -1,11 +1,15 @@
-import { toLocale } from '@jbrowse/core/util'
-import { attributeTooltipLines, featureAttributes } from '@jbrowse/synteny-core'
+import { assembleLocString } from '@jbrowse/core/util'
+import {
+  comparativeTooltipLines,
+  featureAttributes,
+} from '@jbrowse/synteny-core'
 
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotRpcData } from './types.ts'
+import type { ComparativeTooltipSide } from '@jbrowse/synteny-core'
 
-// `{assembly}refName:start-end` for one axis' span of a feature, from the two
-// absolute cumBp endpoints the geometry was built from.
+// One axis' span of a feature, from the two absolute cumBp endpoints the
+// geometry was built from.
 //
 // It goes through `pxToBp` rather than reading `refNameDict[refNameIds[i]]`,
 // which looks like the direct answer and is the wrong namespace: the dictionary
@@ -36,41 +40,57 @@ import type { DotplotRpcData } from './types.ts'
 // `coord0`'s floor is right for what it is for — naming the base under a pixel,
 // including pixels off the end of the region — and wrong for reading back a
 // coordinate that was exact on the way in.
+//
+// `assembleLocString`, the same 1-based spelling the synteny tooltip and every
+// other coordinate in the app use — not a hand-rolled `refName:start-end`,
+// which printed the interbase start and so read one lower than both the axis
+// ruler beside it and the nav box a user pastes it into. Its fields are named
+// explicitly rather than spread from the `pxToBp` result, which carries the
+// region's `reversed` and would append a `[rev]` describing the axis rather
+// than the alignment.
 function axisSpan(
+  label: string,
   cumBpA: number,
   cumBpB: number,
   view: Dotplot1DViewModel,
-): { label: string; length: number } {
+): ComparativeTooltipSide {
   const { bpPerPx, offsetPx } = view
   const at = (cumBp: number) => {
     const r = view.pxToBp(cumBp / bpPerPx - offsetPx)
     return {
-      ...r,
+      assemblyName: r.assemblyName,
+      refName: r.refName,
       coord: Math.round(r.reversed ? r.end - r.offset : r.start + r.offset),
     }
   }
   const a = at(cumBpA)
   const b = at(cumBpB)
-  const lo = Math.min(a.coord, b.coord)
-  const hi = Math.max(a.coord, b.coord)
+  const start = Math.min(a.coord, b.coord)
+  const end = Math.max(a.coord, b.coord)
   return {
-    label: `{${a.assemblyName}}${a.refName}:${toLocale(lo)}-${toLocale(hi)}`,
-    length: hi - lo,
+    label,
+    loc: assembleLocString({
+      assemblyName: a.assemblyName,
+      refName: a.refName,
+      start,
+      end,
+    }),
+    length: end - start,
   }
 }
 
 /**
  * The hover tooltip for one dotplot feature, as lines.
  *
- * Lines rather than an HTML string: a refName comes out of a file and can hold
- * anything, and `ComparativeTooltip` renders these as text nodes, so nothing
- * here has to be trusted or sanitized on the way to the screen.
+ * The shape — two locations, inverted, two lengths, the numeric channels, the
+ * CIGAR operator, the name — comes off `comparativeTooltipLines`, shared with
+ * the synteny display so the pair cannot drift again. All this side decides is
+ * that its two sides are called x and y.
  *
  * The two spans are the DRAWN ones (the trimmed cumBp endpoints), not
  * `alignmentLengths` — that is the feature's full reference span, which on a
  * block trimmed to the displayed region disagrees with the locations printed
- * right above it. The numeric channels come off the shared builder, so they are
- * named and rounded the same here and in the synteny tooltip.
+ * right above it.
  */
 export function getDotplotTooltipLines({
   rpcData,
@@ -89,24 +109,16 @@ export function getDotplotTooltipLines({
   cigarOp?: { op: string; length: number }
 }) {
   const { p11, p12, p21, p22, strands, attributes, nameDict, nameIds } = rpcData
-  const h = axisSpan(p11[featureIdx]!, p12[featureIdx]!, hview)
-  const v = axisSpan(p21[featureIdx]!, p22[featureIdx]!, vview)
-  const lines = [
-    `x - ${h.label}`,
-    `y - ${v.label}`,
-    `Inverted: ${strands[featureIdx] === -1}`,
-    `x len: ${toLocale(h.length)}`,
-    `y len: ${toLocale(v.length)}`,
-    ...attributeTooltipLines(featureAttributes(attributes, featureIdx)),
-  ]
-  if (cigarOp) {
-    lines.push(`CIGAR operator: ${toLocale(cigarOp.length)}${cigarOp.op}`)
-  }
-  // Last because it is the line most tracks don't have: a PAF names no feature,
-  // so the dictionary holds one empty string and this never fires.
-  const name = nameDict[nameIds[featureIdx]!]
-  if (name) {
-    lines.push(`Name: ${name}`)
-  }
-  return lines
+  return comparativeTooltipLines({
+    sides: [
+      axisSpan('x', p11[featureIdx]!, p12[featureIdx]!, hview),
+      axisSpan('y', p21[featureIdx]!, p22[featureIdx]!, vview),
+    ],
+    inverted: strands[featureIdx] === -1,
+    attributes: featureAttributes(attributes, featureIdx),
+    cigarOp,
+    // A PAF names no feature, so the dictionary holds one empty string and the
+    // Name line never appears.
+    name: nameDict[nameIds[featureIdx]!],
+  })
 }

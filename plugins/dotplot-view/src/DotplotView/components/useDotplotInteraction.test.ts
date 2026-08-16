@@ -164,14 +164,19 @@ test.each([
   expect(setHoveredFeature).not.toHaveBeenCalledWith(undefined)
 })
 
-test('leaving the plot drops the hover', () => {
+// Both halves of it: the alignment the pointer was over, and the sample itself
+// — which is what tells the coordinate tooltip there is no pointer, so there is
+// no separate `hovering` flag that something else can lower and leave lowered.
+test('leaving the plot drops the hover and the pointer with it', () => {
   const { setHoveredFeature, result } = setup('move')
   act(() => {
     result.current.containerProps.onPointerMove(pointerEvent(140, 140))
   })
+  expect(result.current.pointer).toBeDefined()
+
   act(() => {
     result.current.containerProps.onPointerLeave()
   })
-
   expect(setHoveredFeature).toHaveBeenLastCalledWith(undefined)
+  expect(result.current.pointer).toBeUndefined()
 })

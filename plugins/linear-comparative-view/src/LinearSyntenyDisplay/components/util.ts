@@ -1,5 +1,5 @@
-import { assembleLocString, toLocale } from '@jbrowse/core/util'
-import { attributeTooltipLines } from '@jbrowse/synteny-core'
+import { assembleLocString } from '@jbrowse/core/util'
+import { comparativeTooltipLines } from '@jbrowse/synteny-core'
 
 import {
   KIND_CIGAR_D,
@@ -52,23 +52,39 @@ export function getCigarOpAtInstance(
 }
 
 // The hovered ribbon's tooltip, as LINES rather than a `<br/>`-joined HTML
-// string. A refName and a feature name both come out of an alignment file and
-// can hold anything; `ComparativeTooltip` renders these as text nodes, so
-// nothing here has to be sanitized on the way to the screen. This used to be
-// one string, which bought a `SanitizedHTML` on the render path to undo the
-// join. Same shape as the dotplot's `getDotplotTooltipLines`, whose numeric
-// channels come off the same `attributeTooltipLines`.
+// string. This used to be one string, which bought a `SanitizedHTML` on the
+// render path to undo the join. The shape is `comparativeTooltipLines`, shared
+// with the dotplot's `getDotplotTooltipLines`; all this side decides is that
+// its two sides are the two rows, named for which assembly each one is.
 export function getTooltipLines(feat: FeatPos, cigarOp?: CigarOpInfo) {
-  const l1 = feat.end - feat.start
-  const l2 = feat.mate.end - feat.mate.start
-  return [
-    `Loc1: ${assembleLocString({ refName: feat.refName, start: feat.start, end: feat.end, assemblyName: feat.assemblyName })}`,
-    `Loc2: ${assembleLocString({ refName: feat.mate.refName, start: feat.mate.start, end: feat.mate.end, assemblyName: feat.mate.assemblyName })}`,
-    `Inverted: ${feat.strand === -1}`,
-    `Query len: ${toLocale(l1)}`,
-    `Target len: ${toLocale(l2)}`,
-    ...attributeTooltipLines(feat.attributes),
-    cigarOp ? `CIGAR operator: ${toLocale(cigarOp.length)}${cigarOp.op}` : '',
-    feat.name ? `Name: ${feat.name}` : '',
-  ].filter(Boolean)
+  return comparativeTooltipLines({
+    sides: [
+      {
+        label: 'Loc1',
+        lengthLabel: 'Query len',
+        loc: assembleLocString({
+          refName: feat.refName,
+          start: feat.start,
+          end: feat.end,
+          assemblyName: feat.assemblyName,
+        }),
+        length: feat.end - feat.start,
+      },
+      {
+        label: 'Loc2',
+        lengthLabel: 'Target len',
+        loc: assembleLocString({
+          refName: feat.mate.refName,
+          start: feat.mate.start,
+          end: feat.mate.end,
+          assemblyName: feat.mate.assemblyName,
+        }),
+        length: feat.mate.end - feat.mate.start,
+      },
+    ],
+    inverted: feat.strand === -1,
+    attributes: feat.attributes,
+    cigarOp,
+    name: feat.name,
+  })
 }

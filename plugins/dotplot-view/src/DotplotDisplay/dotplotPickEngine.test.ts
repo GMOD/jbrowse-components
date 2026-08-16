@@ -29,8 +29,8 @@ function makeData(
 const UNIT: DotplotPickTransform = {
   viewBpH: 0,
   viewBpV: 0,
-  bpPerPxH: 1,
-  bpPerPxV: 1,
+  bpPerPxHInv: 1,
+  bpPerPxVInv: 1,
   viewHeight: 100,
 }
 
@@ -156,7 +156,7 @@ describe('pickDotplotFeature', () => {
   // whichever feature is nearest in the compressed axis' units, which is not
   // the one under the cursor.
   test('distance is measured in px, not bp', () => {
-    const anisotropic: DotplotPickTransform = { ...UNIT, bpPerPxV: 100 }
+    const anisotropic: DotplotPickTransform = { ...UNIT, bpPerPxVInv: 1 / 100 }
     // Cursor at px (20, 50), i.e. cumBp (20, 5000). Feature 0 is 2 bp away
     // along h, which is 2px; feature 1 is 100 bp away along v, which is 1px.
     // So px says 1 and bp says 0.

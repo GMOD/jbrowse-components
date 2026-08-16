@@ -4,16 +4,17 @@ import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
 
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 
-// The screen transform a pick is answered against: the same four numbers
-// `drawDotplotInstances` and the shader reconstruct px from, plus the plot
-// height (the v axis lays out bottom-up, so a px y has to be flipped through
-// it). Held as bpPerPx rather than its inverse because the px->bp direction is
-// what a cursor position needs.
+// The screen transform a pick is answered against: `DotplotView.plotTransform`
+// itself, which is the same reconstruction `drawDotplotInstances` and the shader
+// run on. Held as the INVERSE bpPerPx, which is the form the exact test below
+// needs (cumBp -> px, the direction that has to agree with the draw); the two
+// divisions that turn the cursor's px back into bp are once per pick, against a
+// segment loop.
 export interface DotplotPickTransform {
   viewBpH: number
   viewBpV: number
-  bpPerPxH: number
-  bpPerPxV: number
+  bpPerPxHInv: number
+  bpPerPxVInv: number
   viewHeight: number
 }
 
@@ -216,7 +217,9 @@ export function pickDotplotFeature({
   if (!index) {
     return undefined
   }
-  const { viewBpH, viewBpV, bpPerPxH, bpPerPxV, viewHeight } = transform
+  const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, viewHeight } = transform
+  const bpPerPxH = 1 / bpPerPxHInv
+  const bpPerPxV = 1 / bpPerPxVInv
   const cursorBpH = viewBpH + x * bpPerPxH
   const cursorBpV = viewBpV + (viewHeight - y) * bpPerPxV
   // The tolerance is a px radius, so it is a different bp distance on each axis.
@@ -229,8 +232,6 @@ export function pickDotplotFeature({
     cursorBpV + tolV,
   )
   const { x1, y1, x2, y2, instanceFeatureIdx, instanceCount } = data
-  const bpPerPxHInv = 1 / bpPerPxH
-  const bpPerPxVInv = 1 / bpPerPxV
   const toleranceSq = tolerancePx * tolerancePx
   let best: DotplotPickHit | undefined
   let bestDistSq = Infinity

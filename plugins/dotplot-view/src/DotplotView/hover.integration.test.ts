@@ -148,7 +148,7 @@ test('the view resolves the tooltip and the highlight off the hovered track', as
   view.setHoveredFeature(pickAtBp(view, 1500, 1500))
 
   expect(view.hoveredTooltipLines).toEqual(a.tooltipLines)
-  expect(view.hoveredTooltipLines?.[0]).toBe('x - {volvox}ctgA:1,000-2,000')
+  expect(view.hoveredTooltipLines?.[0]).toBe('x: {volvox}ctgA:1,001..2,000')
 
   const highlight = view.hoveredHighlight
   // one segment (no CIGAR detail), drawn between the feature's two corners
@@ -177,6 +177,19 @@ test('a pan drops the hover, and the tooltip and highlight with it', async () =>
   expect(a.hoveredSegmentIdx).toBe(-1)
   expect(view.hoveredTooltipLines).toBeUndefined()
   expect(view.hoveredHighlight).toBeUndefined()
+}, 20000)
+
+// A resize is a pan of the v axis: it lays out bottom-up, so every alignment
+// slides down the canvas by the height delta while the cursor stays put. It
+// reaches the reaction because `viewHeight` is one of `plotTransform`'s numbers
+// — left out, this was the one way to move the plot that kept the hover.
+test('a height change drops the hover too', async () => {
+  const { view, a } = await setup()
+  view.setHoveredFeature(pickAtBp(view, 1500, 1500))
+  expect(a.hoveredSegmentIdx).toBe(0)
+
+  view.setHeight(view.height + 100)
+  expect(a.hoveredSegmentIdx).toBe(-1)
 }, 20000)
 
 // The stored index addresses the geometry, so it cannot outlive it — a surviving

@@ -104,6 +104,8 @@ export {
   attributeTooltipLines,
   featureAttributes,
 } from './attributeTooltipLines.ts'
+export { comparativeTooltipLines } from './comparativeTooltipLines.ts'
+export type { ComparativeTooltipSide } from './comparativeTooltipLines.ts'
 export {
   ATTRIBUTE_PREFIX,
   continuousRampConfig,

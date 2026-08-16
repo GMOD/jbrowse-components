@@ -82,16 +82,19 @@
   gesture instead is how the wheel got missed while pointerdown and pointerleave
   were both covered. The LGV side reached the same shape from the same bug:
   `installClearHoverOnViewportChange`.
-- **`plotTransform` is where the four numbers come from; `dotplotProject.ts` is
-  where the arithmetic lives.** Read `plotTransform` rather than
-  `dotplotRenderState` unless you also want `alpha` and `lineWidth` — the hover
-  highlight took the latter and rebuilt its path once a frame under an opacity
-  drag. Then project with `cumBpToPxH` / `cumBpToPxV` rather than writing
-  `viewHeight - (…)` again: draw and pick have to agree pixel for pixel or the
-  cursor picks an alignment other than the one it is pointing at, and the v-axis
-  flip is the half a fourth copy would get wrong. The scalar-primitive shape is
-  not a style choice — a transform-object helper costs the Canvas2D loop 1.45x
-  and a projector closure 3.5x, both measured in
+- **`plotTransform` is where the projection numbers come from;
+  `dotplotProject.ts` is where the arithmetic lives.** Read `plotTransform`
+  rather than `dotplotRenderState` unless you also want `alpha` and `lineWidth`
+  — the hover highlight took the latter and rebuilt its path once a frame under
+  an opacity drag. `viewHeight` is one of them, so the pick takes the whole
+  object and the clear-on-move reaction covers a resize; `dotplotRenderState`
+  names the four it wants instead of spreading, because a backend already has
+  the plot height from `resize`. Then project with `cumBpToPxH` / `cumBpToPxV`
+  rather than writing `viewHeight - (…)` again: draw and pick have to agree
+  pixel for pixel or the cursor picks an alignment other than the one it is
+  pointing at, and the v-axis flip is the half a fourth copy would get wrong.
+  The scalar-primitive shape is not a style choice — a transform-object helper
+  costs the Canvas2D loop 1.45x and a projector closure 3.5x, both measured in
   `benches/cumBpProjection.bench.ts` and written up in `REJECTED_IDEAS.md`.
 - **The pick's tie-break needs `>`, not `<=`.** Flatbush hands candidates back
   in Hilbert order past `nodeSize` items, so an equidistant EARLIER segment can
@@ -108,6 +111,18 @@
   different lengths at two zoom levels. `dotplotTooltip.test.ts` carries the
   four zoom/pan pairs that reproduce it; note that `offsetPx: 0` never does,
   which is why the first spelling of that test passed on the broken code.
+- **Every coordinate either tooltip prints is 1-BASED**, through
+  `assembleLocString` for a span and `pxToBp`'s `coord` for the cursor. The axis
+  ruler is 1-based too (`tickLabel` re-adds the 1 `makeTicks` took off), so an
+  interbase readout disagreed with the tick right beside it, with the nav box a
+  user pastes it into, and with the synteny tooltip. `coord0` stays what
+  arithmetic reads — `centerAt`, the highlight bounds — and is not for printing.
+- **The tooltip's SHAPE is `comparativeTooltipLines` in synteny-core, not this
+  file.** Two locations, inverted, two lengths, the numeric channels, the CIGAR
+  operator, the name — in that order, with the last two dropped when absent. The
+  pair had drifted twice by the time it was shared (the channels first, then the
+  coordinate convention), and each time only one of the two views was fixed. All
+  that is decided here is that the sides are called x and y.
 - **A display getter that reads `this.view` needs an explicit return type.**
   Every one of them has one, and an inferred one collapses the view/display
   mutual reference — TS7023 on the factory, TS2310 on `DotplotDisplayModel`,

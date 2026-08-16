@@ -16,7 +16,7 @@ const DotplotTooltips = observer(function DotplotTooltips({
   model: DotplotViewModel
   interaction: DotplotInteraction
 }) {
-  const { hovering, validSelect, anchor, pointer, dx, selecting } = interaction
+  const { validSelect, anchor, pointer, dx, selecting } = interaction
   const { hview, vview, viewHeight, hoveredTooltipLines } = model
   // The cursor's own position on both axes. The v axis lays out bottom-up, so
   // its pixel is flipped through the plot height first.
@@ -31,7 +31,7 @@ const DotplotTooltips = observer(function DotplotTooltips({
   // only, and the two can never be live at once.
   const pointerLines =
     hoveredTooltipLines ??
-    (hovering && validSelect && pointer ? coordLines(pointer) : undefined)
+    (validSelect && pointer ? coordLines(pointer) : undefined)
   return (
     <>
       {pointer && pointerLines ? (

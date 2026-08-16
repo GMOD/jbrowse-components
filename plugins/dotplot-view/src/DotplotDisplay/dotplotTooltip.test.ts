@@ -59,8 +59,8 @@ function lines(
 
 test('names both axes and their spans', () => {
   expect(lines().slice(0, 5)).toEqual([
-    'x - {hg38}chr1:100-200',
-    'y - {mm10}chr5:300-450',
+    'x: {hg38}chr1:101..200',
+    'y: {mm10}chr5:301..450',
     'Inverted: false',
     'x len: 100',
     'y len: 150',
@@ -76,8 +76,8 @@ test('reports reverse strand as inverted', () => {
     p12: new Float64Array([100]),
   })
   expect(lines(data).slice(0, 4)).toEqual([
-    'x - {hg38}chr1:100-200',
-    'y - {mm10}chr5:300-450',
+    'x: {hg38}chr1:101..200',
+    'y: {mm10}chr5:301..450',
     'Inverted: true',
     'x len: 100',
   ])
@@ -92,8 +92,8 @@ test('the refName comes off the axis, not the fetch dictionary', () => {
   expect(lines()[0]).not.toContain('{hg38}1:')
 })
 
-// pxToBp's coord0 applies the reflection; both dotplot axes routinely carry
-// reversed regions, since auto-diagonalize flips query regions on the v axis.
+// pxToBp applies the reflection; both dotplot axes routinely carry reversed
+// regions, since auto-diagonalize flips query regions on the v axis.
 test('a reversed region reports the mirrored coordinates', () => {
   const vview = axis({
     assemblyName: 'mm10',
@@ -101,22 +101,22 @@ test('a reversed region reports the mirrored coordinates', () => {
     reversed: true,
   })
   // cumBp 300..450 measured leftward from the right-hand edge of a 0..1000
-  // region, in the same 0-based `coord0` the coordinate tooltip prints
+  // region
   expect(lines(fakeRpcData(), undefined, vview)[1]).toBe(
-    'y - {mm10}chr5:550-700',
+    'y: {mm10}chr5:551..700',
   )
 })
 
 // The span is where it is on the axis, not where the axis is scrolled to.
 test('a pan does not move the reported span', () => {
   const hview = axis({ assemblyName: 'hg38', refName: 'chr1', offsetPx: 137 })
-  expect(lines(fakeRpcData(), hview)[0]).toBe('x - {hg38}chr1:100-200')
+  expect(lines(fakeRpcData(), hview)[0]).toBe('x: {hg38}chr1:101..200')
 })
 
 // A feature endpoint is an exact integer bp, and the round trip out to px and
 // back cancels `offsetPx` against itself, landing a hair either side of the
-// integer. `coord0` floors, so on a panned axis some endpoints came back one bp
-// short — and WHICH ones depended on the zoom, so the same alignment reported two
+// integer. A floor takes the low side, so on a panned axis some endpoints came
+// back one bp short — and WHICH ones depended on the zoom, so the same alignment reported two
 // different lengths at two zoom levels (the probe caught 593 vs 592). Every
 // zoom/pan pair must read it identically.
 //
@@ -141,7 +141,7 @@ test.each([
     p11: new Float64Array([10_182_444]),
     p12: new Float64Array([10_182_970]),
   })
-  expect(lines(data, hview)[0]).toBe('x - {hg38}chr1:10,182,444-10,182,970')
+  expect(lines(data, hview)[0]).toBe('x: {hg38}chr1:10,182,445..10,182,970')
   expect(lines(data, hview)[3]).toBe('x len: 526')
 })
 
