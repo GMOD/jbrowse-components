@@ -256,6 +256,15 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     u.chainMode == 1, u.pxPerBp, u.featHeight, u.colorScheme,
     inst.flags, inst.interchrom, inst.insertSize, featWPx);
 
+  // Which edge the arrowhead caps, asked ONCE: the body quad spends the answer
+  // as `ef` (which side skips its outline) and the cap verts as their geometry,
+  // and a read whose chevron is suppressed must get the same answer from both or
+  // the body hides an outline edge no cap covers.
+  bool isFirst = (inst.edgeFlags & 1u) != 0u;
+  bool isLast = (inst.edgeFlags & 2u) != 0u;
+  bool drawFwd = showChev && inst.strand > 0 && isLast;
+  bool drawRev = showChev && inst.strand < 0 && isFirst;
+
   float sx, sy, lx, ly;
   float ef = 0.0;
 
@@ -265,15 +274,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     ly = q.y;
     sx = lerp(sx1, sx2, lx);
     sy = lerp(syBot, syTop, ly);
-    bool isLast = (inst.edgeFlags & 2u) != 0u;
-    bool isFirst = (inst.edgeFlags & 1u) != 0u;
-    if (showChev && inst.strand > 0 && isLast)       { ef = 1.0; }
-    else if (showChev && inst.strand < 0 && isFirst) { ef = -1.0; }
-  } else if (showChev) {
-    bool isLast = (inst.edgeFlags & 2u) != 0u;
-    bool isFirst = (inst.edgeFlags & 1u) != 0u;
-    bool drawFwd = inst.strand > 0 && isLast;
-    bool drawRev = inst.strand < 0 && isFirst;
+    if (drawFwd)      { ef = 1.0; }
+    else if (drawRev) { ef = -1.0; }
+  } else if (drawFwd || drawRev) {
     ef = 2.0;
     float chevW = CHEVRON_PX;
     float halfH = u.featHeight * 0.5;
@@ -282,15 +285,15 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
       if (v == 6u)      { sx = sx2; sy = syTop; lx = 0.0; ly = alt; }
       else if (v == 7u) { sx = sx2; sy = syBot; lx = alt; ly = 0.0; }
       else              { sx = sx2 + chevronClip; sy = syMid; lx = 0.0; ly = 0.0; }
-    } else if (drawRev) {
+    } else {
       if (v == 6u)      { sx = sx1; sy = syTop; lx = 0.0; ly = alt; }
       else if (v == 7u) { sx = sx1 - chevronClip; sy = syMid; lx = 0.0; ly = 0.0; }
       else              { sx = sx1; sy = syBot; lx = alt; ly = 0.0; }
-    } else {
-      // degenerate — fold chevron verts to one zero-area (culled) point.
-      lx = 999.0; ly = 999.0; sx = sx1; sy = syTop;
     }
   } else {
+    // No cap on this read — fold its three verts to one zero-area (culled)
+    // point. Both ways of having no cap land here: the zoom gates said no, or
+    // this segment is not the end the arrow belongs on.
     lx = 0.5; ly = 0.5; sx = sx1; sy = syTop;
   }
 
@@ -309,13 +312,13 @@ float4 fs_main(VsOut fragIn) : SV_Target {
       // chevron tip — distance to the two diagonal edges
       edgeDist = min(fragIn.localPos.x, fragIn.localPos.y);
     } else {
+      // Whichever side the chevron joins on hands its outline to the cap.
       float dxL = fragIn.localPos.x * fragIn.featWPx;
       float dxR = (1.0 - fragIn.localPos.x) * fragIn.featWPx;
-      if (fragIn.edgeFlag > 0.5)  { dxR = 999.0; }  // hide outline on chevron side
-      float dxLL = dxL;
-      if (fragIn.edgeFlag < -0.5) { dxLL = 999.0; }
+      if (fragIn.edgeFlag > 0.5)  { dxR = 999.0; }
+      if (fragIn.edgeFlag < -0.5) { dxL = 999.0; }
       float dy = min(fragIn.localPos.y, 1.0 - fragIn.localPos.y) * u.featHeight;
-      edgeDist = min(min(dxLL, dxR), dy);
+      edgeDist = min(min(dxL, dxR), dy);
     }
     // No height gate: `u.showStroke` already carries it, frame-level.
     if (edgeDist < READ_OUTLINE_PX
