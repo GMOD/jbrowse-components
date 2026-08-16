@@ -679,3 +679,35 @@ test('the two row-sync modes are mutually exclusive', async () => {
   view.setRowSyncMode('independent')
   expect([model.linkViews, model.followSynteny]).toEqual([false, false])
 })
+
+// The exclusion belongs to the two properties, and `setRowSyncMode` was the
+// only thing applying it — so a session naming both arrived with neither half
+// applied and nothing downstream resolved it. The header reads `follow` while
+// the pixel lock is still installed underneath, which is the pair fighting.
+test('a session naming both row-sync modes loads with only the follow on', () => {
+  const { session } = getTestSession()
+  const view = session.addView('LinearSyntenyView', {
+    linkViews: true,
+    followSynteny: true,
+    init: {
+      views: [{ assembly: QUERY_ASM }, { assembly: TARGET_ASM }],
+      tracks: ['volvox_inv_indels'],
+    },
+  }) as unknown as { linkViews: boolean; followSynteny: boolean }
+
+  expect([view.linkViews, view.followSynteny]).toEqual([false, true])
+})
+
+test('setLinkViews drops the follow rather than running beside it', async () => {
+  const view = await openSyntenyView()
+  const model = view as unknown as {
+    linkViews: boolean
+    followSynteny: boolean
+    setLinkViews: (arg: boolean) => void
+  }
+  view.setRowSyncMode('follow')
+
+  model.setLinkViews(true)
+
+  expect([model.linkViews, model.followSynteny]).toEqual([true, false])
+})

@@ -367,6 +367,17 @@ function stateModelFactory(pluginManager: PluginManager) {
         // synteny as zero or one. The actions below keep the invariant once the
         // view is live; this is the same repair applied to what was loaded.
         self.reconcileLevels()
+        // The same repair for the other pair of properties that cannot both
+        // hold. `setRowSyncMode` is the only writer that enforces it, so a
+        // snapshot naming both arrives with neither half of the exclusion
+        // applied and nothing downstream resolves it: the header reports
+        // `follow` (menus.ts picks it first) while the middleware below keeps
+        // replaying the anchor's pixel scroll onto every row, which is the
+        // fight `setRowSyncMode` exists to prevent. Follow wins, matching what
+        // the header already says.
+        if (self.followSynteny) {
+          self.linkViews = false
+        }
         // doesn't link showTrack/hideTrack, doesn't make sense in synteny
         // views most time
         installLinkedViewSync(self, ['horizontalScroll', 'zoomTo'])
@@ -452,14 +463,20 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Kept for the plugin ABI; `setRowSyncMode` is what the UI calls. It
+       * still has to drop the follow, since the exclusion below is a property
+       * of the two flags rather than of the action that happens to set them.
        */
       setLinkViews(arg: boolean) {
         self.linkViews = arg
+        if (arg) {
+          self.followSynteny = false
+        }
       },
       /**
        * #action
-       * The one way to change how the rows track each other, so the two flags
-       * can't both be on. They fight if they are: `linkViews` replays the
+       * The one way the UI changes how the rows track each other, so the two
+       * flags can't both be on. They fight if they are: `linkViews` replays the
        * anchor's own scroll/zoom onto every row, which is precisely the pixel
        * lock the follow then has to undo on the next settle, and the moving row
        * visibly jumps twice.
