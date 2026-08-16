@@ -169,7 +169,9 @@ test('svType getters are inert without an INFO.SVTYPE column', () => {
   expect(model.svTypeOptions).toEqual([])
 })
 
-test('svTypeOptions lists the distinct sorted SVTYPE values', () => {
+// the dropdown names CLASSES, not raw tokens, so it and the SV inspector's
+// legend cannot disagree about what a callset holds
+test('svTypeOptions lists the classes present, with their raw tokens', () => {
   const model = makeModel({
     rowSet: {
       rows: [
@@ -182,7 +184,10 @@ test('svTypeOptions lists the distinct sorted SVTYPE values', () => {
     columns: [{ name: 'INFO.SVTYPE' }],
   })
   expect(model.svTypeColumnField).toBe('INFO.SVTYPE')
-  expect(model.svTypeOptions).toEqual(['DEL', 'DUP'])
+  expect(model.svTypeOptions).toEqual([
+    { type: 'DEL', label: 'Deletion', tokens: ['DEL'], count: 2 },
+    { type: 'DUP', label: 'Duplication', tokens: ['DUP'], count: 1 },
+  ])
 })
 
 // The derived size column is one column with two meanings, and the SVTYPE

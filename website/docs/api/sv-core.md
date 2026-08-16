@@ -113,3 +113,24 @@ there stays visible in each.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
+## svMateLocus
+
+Where a record's other end is, in the feature's own refName namespace and
+0-based like every other coordinate on a feature.
+
+The places that need it were each resolving it themselves — `parseSvAlt` first,
+for a breakend or a symbolic allele carrying CHR2/END, then an explicit `mate`
+field for a BEDPE row — and each had its own off-by-one to get wrong, since
+`parseSvAlt` reports VCF's 1-based position while `mate.start` is already
+0-based.
+
+`undefined` when the record names no other end, which is most of a VCF: a plain
+SNV, or an indel that is only ever its own span.
+
+```js
+// type signature
+(feature: Feature) => { refName: string; pos: number; } | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

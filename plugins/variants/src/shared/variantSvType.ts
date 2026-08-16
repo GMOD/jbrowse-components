@@ -70,6 +70,15 @@ function normalizeRawToken(raw: string) {
   return RAW_TOKEN_TO_BUCKET[token] ?? token
 }
 
+/**
+ * The class a bare `SVTYPE` token names, for a caller holding the declared type
+ * and no parsed record to read an ALT from — a spreadsheet row whose feature
+ * did not survive an older session, say. `''` for a token that names nothing.
+ */
+export function svTypeFromToken(raw: string) {
+  return raw && raw !== '.' ? normalizeRawToken(raw) : ''
+}
+
 // <CN0>/<CN1>/<CN3>/... copy-number alleles: kept as distinct types (not folded
 // into one CNV bucket) so each copy-number state gets its own color.
 function isCopyNumberType(type: string) {
@@ -139,25 +148,32 @@ export function getVariantSvType(feature: Feature) {
   const info = feature.get('INFO') as Record<string, unknown> | undefined
   const svtype = info?.SVTYPE
   const raw = Array.isArray(svtype) ? svtype[0] : svtype
-  return typeof raw === 'string' && raw && raw !== '.'
-    ? normalizeRawToken(raw)
-    : ''
+  return typeof raw === 'string' ? svTypeFromToken(raw) : ''
 }
 
 /**
- * A fixed CSS color for a variant's SV class, for the single-variant display's
- * `color` slot (via the `svTypeColor` jexl function): the predefined class
- * color, the absolute copy-number rainbow color for a CN state, else a neutral
- * grey for a non-SV or unrecognized token. Unlike the multi-sample palette this
- * is a pure function (no present-set auto-assignment), so it can't distinguish
- * arbitrary unknown tokens — those all read grey.
+ * A fixed CSS color for an SV class: the predefined class color, the absolute
+ * copy-number rainbow color for a CN state, else a neutral grey for a non-SV or
+ * unrecognized token. Unlike the multi-sample palette this is a pure function
+ * (no present-set auto-assignment), so it can't distinguish arbitrary unknown
+ * tokens — those all read grey.
+ *
+ * By class rather than by feature, so a legend — which has counted its classes
+ * and no longer holds a record of each — paints the same swatch the records
+ * themselves get.
+ */
+export function getSvTypeColor(type: string) {
+  return isCopyNumberType(type)
+    ? copyNumberColor(copyNumberValue(type))
+    : (PREDEFINED_COLOR[type] ?? OTHER_SV_COLOR)
+}
+
+/**
+ * The color a variant is painted, for the single-variant display's `color` slot
+ * (via the `svTypeColor` jexl function).
  */
 export function getVariantSvTypeColor(feature: Feature) {
-  const type = getVariantSvType(feature)
-  if (isCopyNumberType(type)) {
-    return copyNumberColor(copyNumberValue(type))
-  }
-  return PREDEFINED_COLOR[type] ?? OTHER_SV_COLOR
+  return getSvTypeColor(getVariantSvType(feature))
 }
 
 // Human-readable legend label for a bucket, copy-number state, or raw token.

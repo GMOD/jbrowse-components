@@ -1,5 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { parseSvAlt } from '@jbrowse/sv-core'
+import { svMateLocus } from '@jbrowse/sv-core'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -24,13 +24,8 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
  */
 export function svSize(data: SimpleFeatureSerialized) {
   const feature = new SimpleFeature(data)
-  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
-  const parsed = parseSvAlt(feature, alt)
-  const mate = feature.get('mate') as
-    | { refName?: string; start?: number }
-    | undefined
-  const mateRefName = parsed?.mateRefName ?? mate?.refName
-  if (mateRefName !== undefined && mateRefName !== data.refName) {
+  const mate = svMateLocus(feature)
+  if (mate !== undefined && mate.refName !== data.refName) {
     return undefined
   }
 
@@ -49,10 +44,8 @@ export function svSize(data: SimpleFeatureSerialized) {
     return Math.abs(svLen)
   }
 
-  // parseSvAlt's matePos is VCF 1-based; convert like its other consumers
-  const matePos = parsed ? parsed.matePos - 1 : mate?.start
   const footprint = data.end - data.start
-  if (matePos === undefined) {
+  if (mate === undefined) {
     return footprint
   }
   // The footprint and the reach to the mate are each a lower bound on how far
@@ -62,5 +55,5 @@ export function svSize(data: SimpleFeatureSerialized) {
   // deliberately fall through to REF.length there and only the mate position
   // says. The larger picks the right one in both cases without restating
   // `getEnd`'s policy — restating it is what disagreed with it by a base.
-  return Math.max(footprint, Math.abs(matePos - data.start))
+  return Math.max(footprint, Math.abs(mate.pos - data.start))
 }

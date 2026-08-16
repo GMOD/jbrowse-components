@@ -15,6 +15,7 @@ export {
   readTranslocationMate,
   safeParseBreakend,
   splitRegionAtPosition,
+  svMateLocus,
 } from './util.ts'
 export type { Region, ViewWithAssemblyNames } from './util.ts'
 export {

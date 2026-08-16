@@ -1,13 +1,18 @@
 import {
+  SimpleFeature,
   assembleLocString,
   getSession,
+  isFeature,
   measureGridWidth,
   toLocale,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { svMateLocus } from '@jbrowse/sv-core'
 
 import LocationCell from './components/LocationCell.tsx'
+import MateCell from './components/MateCell.tsx'
 import { svSize } from './svSize.ts'
+import { tallySvTypes } from './svTypeTally.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -123,8 +128,11 @@ export default function stateModelFactory() {
       ),
       /**
        * #property
-       * selected value of the SVTYPE quick-filter dropdown (undefined = show
-       * all); applied to the INFO.SVTYPE column when the imported data has one
+       * the SV class the quick-filter dropdown is showing (undefined = show
+       * all) — a class like `BND`, not a raw token, so it and the SV
+       * inspector's legend name the same thing. `svTypeOptions` carries the raw
+       * `INFO.SVTYPE` values behind each class, which is what the grid filters
+       * the column on
        */
       svTypeFilter: types.maybe(types.string),
       /**
@@ -194,6 +202,31 @@ export default function stateModelFactory() {
               ? svSize(feature)
               : feature.end - feature.start
             : undefined
+        // Where the record's other end is. Its own column because it is the one
+        // thing about an SV that the sheet held and could not be searched for:
+        // the mate chromosome lives inside the ALT string, so "everything
+        // touching chr17" meant typing `17` and hoping it did not also match a
+        // position or an ID. A column puts it in front of the quick filter and
+        // the filter panel like any other field.
+        const rowMate = ({
+          feature,
+        }: {
+          feature?: SimpleFeatureSerialized
+        }) => {
+          const mate = feature
+            ? svMateLocus(new SimpleFeature(feature))
+            : undefined
+          return mate
+            ? {
+                raw: `${mate.refName}:${mate.pos + 1}`,
+                display: assembleLocString({
+                  refName: mate.refName,
+                  start: mate.pos,
+                  end: mate.pos + 1,
+                }),
+              }
+            : undefined
+        }
         // widths come off a sample, not the sheet. measureGridWidth walks every
         // character of every value it is handed, so measuring all of them is
         // rows × columns × characters of blocking main thread — 3.6s for a
@@ -257,6 +290,32 @@ export default function stateModelFactory() {
                 valueFormatter: (arg?: number) =>
                   arg === undefined ? '' : toLocale(arg),
               } satisfies GridColDef,
+              ...(isSvSheet
+                ? [
+                    {
+                      field: 'Mate',
+                      width: measureGridWidth(
+                        sample.map(row => rowMate(row)?.display ?? ''),
+                      ),
+                      // the plain string for sorting, the quick filter and the
+                      // CSV export; renderCell only changes how it is drawn
+                      valueGetter: (
+                        _val: unknown,
+                        row: { feature?: SimpleFeatureSerialized },
+                      ) => rowMate(row)?.display,
+                      renderCell: ({ row }) => {
+                        const mate = rowMate(row)
+                        return mate ? (
+                          <MateCell
+                            model={self}
+                            locString={mate.raw}
+                            display={mate.display}
+                          />
+                        ) : null
+                      },
+                    } satisfies GridColDef,
+                  ]
+                : []),
 
               ...self.columns.map(
                 f =>
@@ -299,22 +358,36 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * the distinct SVTYPE values present in the data, sorted, for the
-       * quick-filter dropdown options
+       * the SV classes in the whole sheet, which is what the quick-filter
+       * dropdown offers — off every row rather than the visible ones, or
+       * narrowing to one class would remove the way back
        */
       get svTypeOptions() {
-        const field = self.svTypeColumnField
-        return field
-          ? [
-              ...new Set(
-                self.rows
-                  ?.map(r => r[field])
-                  .filter(
-                    (v): v is string => typeof v === 'string' && v !== '',
-                  ),
-              ),
-            ].sort((a, b) => a.localeCompare(b))
-          : []
+        return tallySvTypes(self.rows, self.svTypeColumnField)
+      },
+      /**
+       * #getter
+       * the SV classes among the rows on screen, which is what the SV
+       * inspector's legend counts. Same tally as `svTypeOptions`, so the two
+       * controls cannot name a class differently
+       */
+      get visibleSvTypes() {
+        return tallySvTypes(this.visibleRows, self.svTypeColumnField)
+      },
+      /**
+       * #getter
+       * the row holding whatever the session has selected, so a chord click in
+       * the SV inspector's circle lands on a row here rather than only opening
+       * a view. The circle reads the same selection to decide which chord to
+       * draw as selected, so this is the two halves reading one channel rather
+       * than a second one invented between them
+       */
+      get selectedRowId() {
+        const { selection } = getSession(self)
+        const id = isFeature(selection) ? selection.id() : undefined
+        return id === undefined
+          ? undefined
+          : self.rows?.find(r => r.feature?.uniqueId === id)?.id
       },
     }))
     .actions(self => ({
@@ -331,6 +404,21 @@ export default function stateModelFactory() {
         // just spelled as a fresh object rather than an empty one
         if (!sameVisibleRowFlags(self.visibleRowFlags, next)) {
           self.visibleRowFlags = next
+        }
+      },
+      /**
+       * #action
+       * put a row's record on the session selection, which is what lights its
+       * chord in the SV inspector's circle. Clearing it when the row carries no
+       * feature keeps the circle from holding a highlight the sheet cannot
+       * explain
+       */
+      setSelectedFeature(feature?: SimpleFeatureSerialized) {
+        const session = getSession(self)
+        if (feature) {
+          session.setSelection(new SimpleFeature(feature))
+        } else {
+          session.clearSelection()
         }
       },
       /**

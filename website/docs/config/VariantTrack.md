@@ -64,11 +64,11 @@ and custom feature details in `LinearVariantDisplay`
   ([state model](../../models/linearpairedarcdisplay))
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
   ([state model](../../models/linearvariantdisplay))
-- **Adapter:** [BedpeAdapter](../bedpeadapter)
-- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
 - **Adapter:** [VcfAdapter](../vcfadapter)
 - **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Config slots

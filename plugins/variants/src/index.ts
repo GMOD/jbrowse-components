@@ -117,9 +117,11 @@ export { default as VcfFeature } from './VcfFeature/index.ts'
 // a deletion looks like, and it carries the legend's labels and order with it
 export {
   PREDEFINED_SV_TYPES,
+  getSvTypeColor,
   getVariantSvType,
   getVariantSvTypeColor,
   svTypeDisplayLabel,
+  svTypeFromToken,
 } from './shared/variantSvType.ts'
 
 export type { LinearVariantDisplayModel } from './LinearVariantDisplay/model.ts'

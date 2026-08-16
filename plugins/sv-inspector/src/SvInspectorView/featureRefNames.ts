@@ -1,24 +1,17 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { parseSvAlt } from '@jbrowse/sv-core'
+import { svMateLocus } from '@jbrowse/sv-core'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 /**
- * The refNames a feature's chord touches, resolved in the same order the
- * circular view's `getEndpoint` resolves them: a VCF breakend (a BND ALT, or a
- * symbolic allele plus INFO.CHR2) first, then an explicit `mate` field.
+ * The refNames a feature's chord touches.
  *
- * Reading INFO.CHR2 off the serialized feature directly would miss BND mates
- * entirely — their only coordinate lives in the ALT string — and would hand
- * getCanonicalRefName an array, since VCF INFO values are always arrays.
+ * Through the same `svMateLocus` the circular view's `getEndpoint` resolves the
+ * far end with, so the set of chromosomes this reports and the set the chords
+ * are actually drawn on cannot disagree — which is what "show only regions with
+ * data" narrows the circle to.
  */
 export function featureRefNames(data: SimpleFeatureSerialized) {
   const feature = new SimpleFeature(data)
-  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
-  const mate = feature.get('mate') as { refName?: string } | undefined
-  return [
-    feature.get('refName'),
-    parseSvAlt(feature, alt)?.mateRefName,
-    mate?.refName,
-  ]
+  return [feature.get('refName'), svMateLocus(feature)?.refName]
 }

@@ -110,6 +110,34 @@ export function parseSvAlt(
 }
 
 /**
+ * #api
+ * Where a record's other end is, in the feature's own refName namespace and
+ * 0-based like every other coordinate on a feature.
+ *
+ * The places that need it were each resolving it themselves — `parseSvAlt`
+ * first, for a breakend or a symbolic allele carrying CHR2/END, then an
+ * explicit `mate` field for a BEDPE row — and each had its own off-by-one to
+ * get wrong, since `parseSvAlt` reports VCF's 1-based position while
+ * `mate.start` is already 0-based.
+ *
+ * `undefined` when the record names no other end, which is most of a VCF: a
+ * plain SNV, or an indel that is only ever its own span.
+ */
+export function svMateLocus(feature: Feature) {
+  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
+  const parsed = parseSvAlt(feature, alt)
+  if (parsed) {
+    return { refName: parsed.mateRefName, pos: parsed.matePos - 1 }
+  }
+  const mate = feature.get('mate') as
+    | { refName?: string; start?: number }
+    | undefined
+  return mate?.refName !== undefined && mate.start !== undefined
+    ? { refName: mate.refName, pos: mate.start }
+    : undefined
+}
+
+/**
  * Resolve a refName read out of a feature or an ALT string through the
  * assembly's aliases, leaving one it doesn't know alone. The two functions that
  * turn a VCF record into coordinates — `getBreakendCoveringRegions` here and

@@ -7,7 +7,6 @@ import { autorun } from 'mobx'
 
 import { featureRefNames } from './featureRefNames.ts'
 import { sameCircularRegions } from './sameCircularRegions.ts'
-import { svTypeTallies } from './svChordColor.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -208,14 +207,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             ?.map(row => row.feature)
             .filter(f => !!f) ?? []
         )
-      },
-      /**
-       * #getter
-       * the SV classes among the rows on screen, with their chord color and
-       * count — the circle's legend, and the view's only tally of the callset
-       */
-      get svTypeTallies() {
-        return svTypeTallies(this.features)
       },
       /**
        * #getter

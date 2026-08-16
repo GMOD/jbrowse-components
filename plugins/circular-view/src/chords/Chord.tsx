@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 
 import { bpToRadians } from '../CircularView/slices.ts'
 import { chordControlRadius, getEndpoint } from './chordGeometry.ts'
+import { chordLabel } from './chordLabel.ts'
 
 import type { Slice } from '../CircularView/slices.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -75,7 +76,9 @@ const Chord = observer(function Chord({
       onPointerLeave={() => {
         setHovered(false)
       }}
-    />
+    >
+      <title>{chordLabel(feature)}</title>
+    </path>
   )
 })
 

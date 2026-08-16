@@ -1,18 +1,37 @@
 import { useEffect } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Chip, MenuItem, TextField } from '@mui/material'
 import { DataGrid, useGridApiRef } from '@mui/x-data-grid'
 import {
   gridQuickFilterValuesSelector,
   gridVisibleRowsLookupSelector,
 } from '@mui/x-data-grid/hooks'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import type { SpreadsheetModel } from '../SpreadsheetModel.tsx'
 
+const useStyles = makeStyles()(theme => ({
+  // the row the circle's selected chord belongs to. Deliberately not the grid's
+  // own row-selection model, which is the reader's multi-select for exports and
+  // would be taken over by every chord click
+  selectedRow: {
+    background: theme.palette.action.selected,
+  },
+}))
+
 // stable id so the dropdown's filter item is upserted/replaced in place rather
 // than stacking alongside the user's own column filters and quick-filter search
 const SV_TYPE_FILTER_ID = 'sv-type-quick-filter'
+
+function disposeAll(disposers: (() => void)[]) {
+  return () => {
+    for (const dispose of disposers) {
+      dispose()
+    }
+  }
+}
 
 const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
   model,
@@ -28,99 +47,144 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
     svTypeFilter,
     filterText,
     visibleRows,
+    selectedRowId,
   } = model
+  const { classes } = useStyles()
   const apiRef = useGridApiRef()
-  // gate the subscription on the grid actually being rendered: rows start
-  // undefined while data loads, so apiRef.current isn't populated on the first
-  // effect run — re-run once the grid mounts.
+  // gate on the grid actually being rendered: rows start undefined while data
+  // loads, so apiRef.current isn't populated on the first effect run — re-run
+  // once the grid mounts
   const gridReady = !!(rows && dataGridColumns)
 
-  // The visible-rows lookup is recomputed by the filter pipeline, which fires
-  // `filteredRowsSet` only AFTER `filterModelChange`. Reading the lookup inside
-  // onFilterModelChange therefore returns the prior filter's result, so anything
-  // downstream of visibleRows (the SV-inspector circular view) lagged a filter
-  // behind — or never updated on the first filter. Sync off filteredRowsSet so
-  // visibleRows reflects the filter that just ran (covers column filters and the
-  // quick-filter search box alike).
+  // Two directions, two mechanisms, and what separates them is what each can
+  // track.
+  //
+  // MODEL -> GRID is an `autorun`: it re-runs on whatever it read, where a
+  // dependency array is a hand-maintained restatement of the body that goes
+  // stale as soon as the body reads one more thing. This one already did — the
+  // SV-type push grew a read of the class tally, and the array had to be
+  // corrected to match it.
+  //
+  // Both pushes compare before writing, so the round trip with the handlers
+  // below settles in one pass rather than ping-ponging, and both read the
+  // grid's current value rather than trusting a ref, so a remount (session
+  // reload, StrictMode) re-applies instead of skipping.
   useEffect(() => {
-    if (gridReady) {
-      return apiRef.current?.subscribeEvent('filteredRowsSet', () => {
-        model.setVisibleRows(gridVisibleRowsLookupSelector(apiRef))
-      })
+    const api = apiRef.current
+    if (!gridReady || !api) {
+      return undefined
     }
-    return undefined
+    return disposeAll([
+      // Driven through the grid's own filter pipeline rather than a parallel
+      // row filter, so the `filteredRowsSet` handler below keeps everything
+      // downstream (the SV inspector's circle) in sync, and it composes with
+      // the user's column filters and quick search instead of replacing them.
+      autorun(() => {
+        const { svTypeColumnField, svTypeFilter, svTypeOptions } = model
+        if (!svTypeColumnField) {
+          return
+        }
+        if (svTypeFilter) {
+          // `isAnyOf` over the class's raw tokens, not `equals` on the class:
+          // the dropdown names a class (Breakend) while the column holds
+          // whatever the caller wrote (BND, or TRA, or both in one file). A
+          // value naming no class passes through as a token, so a session saved
+          // before the dropdown spoke classes still filters to what it did then
+          const { tokens } = svTypeOptions.find(
+            o => o.type === svTypeFilter,
+          ) ?? { tokens: [svTypeFilter] }
+          api.upsertFilterItem({
+            id: SV_TYPE_FILTER_ID,
+            field: svTypeColumnField,
+            operator: 'isAnyOf',
+            value: tokens,
+          })
+        } else {
+          api.deleteFilterItem({
+            id: SV_TYPE_FILTER_ID,
+            field: svTypeColumnField,
+            operator: 'isAnyOf',
+          })
+        }
+      }),
+      // the search box is the grid's own uncontrolled state, so the persisted
+      // text is pushed in rather than passed as a prop
+      autorun(() => {
+        const wanted = model.filterText?.split(' ').filter(Boolean) ?? []
+        const current = gridQuickFilterValuesSelector(apiRef) ?? []
+        if (current.join(' ') !== wanted.join(' ')) {
+          api.setQuickFilterValues(wanted)
+        }
+      }),
+      // Bring the selected row into view. A chord click in the SV inspector's
+      // circle selects the record it drew, and the row it belongs to is
+      // routinely hundreds of rows down a virtualized grid — off screen, and so
+      // not in the DOM at all, which is why this scrolls rather than relying on
+      // the highlight alone.
+      autorun(() => {
+        const { selectedRowId } = model
+        if (selectedRowId !== undefined) {
+          const rowIndex = api.getRowIndexRelativeToVisibleRows(selectedRowId)
+          // -1 for a row the current filter leaves out, which is a real state:
+          // the circle draws what the filter left, but a selection can outlive
+          // the filter that was in force when it was made
+          if (rowIndex >= 0) {
+            api.scrollToIndexes({ rowIndex })
+          }
+        }
+      }),
+    ])
   }, [apiRef, model, gridReady])
 
-  // Drive the SVTYPE dropdown through the grid's own filter pipeline (rather
-  // than a parallel row filter) so the existing filteredRowsSet handler keeps
-  // the circular view / downstream views in sync, and it composes with the
-  // user's column filters and quick search instead of replacing them.
+  // GRID -> MODEL stays a pair of event subscriptions, which is a lifecycle and
+  // is what an effect is for. Neither body takes its observables from the
+  // closure — they are read off `model` when the event fires — so this depends
+  // on the grid being mounted and nothing else, and a changing tally cannot
+  // tear the subscriptions down and rebuild them.
   useEffect(() => {
     const api = apiRef.current
-    if (gridReady && svTypeColumnField && api) {
-      if (svTypeFilter) {
-        api.upsertFilterItem({
-          id: SV_TYPE_FILTER_ID,
-          field: svTypeColumnField,
-          operator: 'equals',
-          value: svTypeFilter,
-        })
-      } else {
-        api.deleteFilterItem({
-          id: SV_TYPE_FILTER_ID,
-          field: svTypeColumnField,
-          operator: 'equals',
-        })
-      }
+    if (!gridReady || !api) {
+      return undefined
     }
-  }, [apiRef, gridReady, svTypeColumnField, svTypeFilter])
-
-  // The search box is the grid's own uncontrolled state, so the persisted
-  // `filterText` is pushed in rather than passed as a prop: the two effects are
-  // the two directions of one binding. Both compare before writing, so the
-  // round trip settles after one pass instead of ping-ponging — and the push
-  // has to survive a remount (session reload, StrictMode) rather than only
-  // running on a change, which is why it reads the grid's current values
-  // instead of trusting a ref.
-  useEffect(() => {
-    const api = apiRef.current
-    if (gridReady && api) {
-      const wanted = filterText?.split(' ').filter(Boolean) ?? []
-      const current = gridQuickFilterValuesSelector(apiRef) ?? []
-      if (current.join(' ') !== wanted.join(' ')) {
-        api.setQuickFilterValues(wanted)
-      }
-    }
-  }, [apiRef, gridReady, filterText])
-
-  useEffect(() => {
-    if (gridReady) {
-      return apiRef.current?.subscribeEvent(
-        'filterModelChange',
-        filterModel => {
-          model.setFilterText(
-            filterModel.quickFilterValues?.join(' ') || undefined,
+    return disposeAll([
+      // The visible-rows lookup is recomputed by the filter pipeline, which
+      // fires `filteredRowsSet` only AFTER `filterModelChange`. Reading the
+      // lookup inside the latter therefore returns the prior filter's result,
+      // so anything downstream of visibleRows lagged a filter behind — or never
+      // updated on the first one.
+      api.subscribeEvent('filteredRowsSet', () => {
+        model.setVisibleRows(gridVisibleRowsLookupSelector(apiRef))
+      }),
+      api.subscribeEvent('filterModelChange', filterModel => {
+        model.setFilterText(
+          filterModel.quickFilterValues?.join(' ') || undefined,
+        )
+        // the same direction for the SV-type dropdown: it owns one item in the
+        // grid's filter model, but the grid's own filter panel can edit or
+        // delete that item, and the dropdown then went on naming a filter
+        // nothing was applying
+        const { svTypeColumnField, svTypeOptions } = model
+        if (svTypeColumnField) {
+          const item = filterModel.items.find(
+            i => i.id === SV_TYPE_FILTER_ID && i.field === svTypeColumnField,
           )
-          // the same direction for the SV-type dropdown: it owns one item in
-          // the grid's filter model, but the grid's own filter panel can edit
-          // or delete that item, and the dropdown then went on naming a filter
-          // nothing was applying. Reading it back keeps the two spellings of
-          // the one filter agreed
-          if (svTypeColumnField) {
-            const item = filterModel.items.find(
-              i => i.id === SV_TYPE_FILTER_ID && i.field === svTypeColumnField,
-            )
-            model.setSvTypeFilter(
-              typeof item?.value === 'string' && item.value
-                ? item.value
-                : undefined,
-            )
-          }
-        },
-      )
-    }
-    return undefined
-  }, [apiRef, model, gridReady, svTypeColumnField])
+          // the item's value is the class's raw tokens; map it back to the
+          // class the dropdown names. An edit that no longer matches a class
+          // clears the dropdown rather than leaving it naming something else
+          const tokens = Array.isArray(item?.value)
+            ? (item.value as string[])
+            : []
+          model.setSvTypeFilter(
+            svTypeOptions.find(
+              o =>
+                o.tokens.length === tokens.length &&
+                o.tokens.every(t => tokens.includes(t)),
+            )?.type,
+          )
+        }
+      }),
+    ])
+  }, [apiRef, model, gridReady])
 
   const showSvTypeFilter = !!svTypeColumnField && svTypeOptions.length > 0
   return rows && dataGridColumns ? (
@@ -148,8 +212,8 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
             >
               <MenuItem value="">All</MenuItem>
               {svTypeOptions.map(opt => (
-                <MenuItem key={opt} value={opt}>
-                  {opt}
+                <MenuItem key={opt.type} value={opt.type}>
+                  {opt.label} ({opt.count})
                 </MenuItem>
               ))}
             </TextField>
@@ -192,6 +256,14 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
           showToolbar
           rows={rows}
           columns={dataGridColumns}
+          // the other direction of the same channel the circle reads: clicking
+          // a row lights its chord, the way clicking a chord lands on its row
+          onRowClick={({ row }) => {
+            model.setSelectedFeature(row.feature)
+          }}
+          getRowClassName={({ id }) =>
+            id === selectedRowId ? classes.selectedRow : ''
+          }
         />
       </div>
     </div>

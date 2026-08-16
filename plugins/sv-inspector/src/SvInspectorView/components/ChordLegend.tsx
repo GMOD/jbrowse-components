@@ -1,6 +1,8 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { chordColorForType } from '../svChordColor.ts'
+
 import type { SvInspectorViewModel } from '../model.ts'
 
 // Over the circle rather than in the options bar above it, which is a fixed 52px
@@ -25,7 +27,6 @@ const useStyles = makeStyles()(theme => ({
     // own ground rather than reading against whatever is behind it
     background: theme.palette.background.paper,
     opacity: 0.9,
-    pointerEvents: 'none',
     fontSize: 11,
     lineHeight: 1.4,
   },
@@ -34,6 +35,18 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
     gap: 4,
     whiteSpace: 'nowrap',
+    border: 'none',
+    background: 'none',
+    padding: 0,
+    font: 'inherit',
+    color: 'inherit',
+    cursor: 'pointer',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+  active: {
+    fontWeight: 'bold',
   },
   swatch: {
     width: 10,
@@ -53,27 +66,46 @@ const ChordLegend = observer(function ChordLegend({
   model: SvInspectorViewModel
   children: React.ReactNode
 }) {
-  const { classes } = useStyles()
-  const { svTypeTallies } = model
+  const { classes, cx } = useStyles()
+  const { spreadsheet } = model.spreadsheetView
+  const tallies = spreadsheet?.visibleSvTypes ?? []
 
   return (
     <div className={classes.container}>
       {children}
-      {svTypeTallies.length > 0 ? (
+      {tallies.length > 0 ? (
         <div className={classes.legend}>
-          {svTypeTallies.map(({ type, label, color, count }) => (
-            <div key={type} className={classes.row}>
-              <div
-                className={classes.swatch}
-                style={{ background: color }}
-                // the swatch is the color itself, so it has no text to read;
-                // the label beside it is the accessible name
-                aria-hidden
-              />
-              <span>{label}</span>
-              <span className={classes.count}>{count}</span>
-            </div>
-          ))}
+          {tallies.map(({ type, label, count, tokens }) => {
+            const active = spreadsheet?.svTypeFilter === type
+            return (
+              <button
+                key={type}
+                type="button"
+                className={cx(classes.row, active && classes.active)}
+                // a class the sheet has no SVTYPE column to filter on is still
+                // worth counting, but clicking it could not narrow anything
+                disabled={!tokens.length}
+                title={
+                  tokens.length
+                    ? `Show only ${label} (click again for all)`
+                    : undefined
+                }
+                onClick={() => {
+                  spreadsheet?.setSvTypeFilter(active ? undefined : type)
+                }}
+              >
+                <div
+                  className={classes.swatch}
+                  style={{ background: chordColorForType(type) }}
+                  // the swatch is the color itself, so it has no text to read;
+                  // the label beside it is the accessible name
+                  aria-hidden
+                />
+                <span>{label}</span>
+                <span className={classes.count}>{count}</span>
+              </button>
+            )
+          })}
         </div>
       ) : null}
     </div>

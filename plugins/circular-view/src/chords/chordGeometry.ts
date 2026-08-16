@@ -1,4 +1,4 @@
-import { parseSvAlt } from '@jbrowse/sv-core'
+import { svMateLocus } from '@jbrowse/sv-core'
 
 import type { Slice } from '../CircularView/slices.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -38,28 +38,17 @@ export function chordControlRadius({
 }
 
 /**
- * The slice+position a chord's far end lands on. Prefers a VCF breakend
- * (ALT/INFO), then an explicit `mate` field, else the feature's own end.
+ * The slice+position a chord's far end lands on: the record's mate where it
+ * names one, else the feature's own end — which for anything but a breakend is
+ * where the chord degenerates to a point.
  */
 export function getEndpoint(
   feature: Feature,
   blocksForRefs: Record<string, Slice>,
   startBlock: Slice,
 ) {
-  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
-  const mate = feature.get('mate') as
-    | { refName: string; start: number }
-    | undefined
-  const parsed = parseSvAlt(feature, alt)
-  return parsed
-    ? {
-        endBlock: blocksForRefs[parsed.mateRefName],
-        // parsed.matePos is VCF 1-based; convert to 0-based like the other
-        // parseSvAlt consumers (sv-core getBreakendCoveringRegions, arc
-        // makeFeaturePair)
-        endPosition: parsed.matePos - 1,
-      }
-    : mate
-      ? { endBlock: blocksForRefs[mate.refName], endPosition: mate.start }
-      : { endBlock: startBlock, endPosition: feature.get('end') }
+  const mate = svMateLocus(feature)
+  return mate
+    ? { endBlock: blocksForRefs[mate.refName], endPosition: mate.pos }
+    : { endBlock: startBlock, endPosition: feature.get('end') }
 }

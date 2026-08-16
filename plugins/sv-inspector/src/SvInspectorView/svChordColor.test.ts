@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { svChordColor, svTypeTallies } from './svChordColor.ts'
+import { chordColorForType, svChordColor } from './svChordColor.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -16,7 +16,6 @@ function feat(id: string, rest: Record<string, unknown>) {
 
 const del = (id: string) => feat(id, { ALT: ['<DEL>'] })
 const dup = (id: string) => feat(id, { ALT: ['<DUP:TANDEM>'] })
-const bnd = (id: string) => feat(id, { ALT: ['C]chr13:11435321]'] })
 
 test('a chord color is translucent, so overlapping chords still read', () => {
   const color = svChordColor(new SimpleFeature(del('a')))
@@ -33,32 +32,16 @@ test('the class decides the color, not the record', () => {
   )
 })
 
-test('tallies count each class and carry the color the chords use', () => {
-  const tallies = svTypeTallies([del('a'), del('b'), bnd('c')])
-  expect(tallies).toEqual([
-    {
-      type: 'DEL',
-      label: 'Deletion',
-      color: svChordColor(new SimpleFeature(del('a'))),
-      count: 2,
-    },
-    {
-      type: 'BND',
-      label: 'Breakend',
-      color: svChordColor(new SimpleFeature(bnd('c'))),
-      count: 1,
-    },
-  ])
+// the legend has counted its classes and no longer holds a record of each, so
+// it paints from the class alone — and has to land on the same color
+test('a class alone gets the color its records get', () => {
+  expect(chordColorForType('DEL')).toBe(
+    svChordColor(new SimpleFeature(del('a'))),
+  )
 })
 
-// canonical order, not the order the rows happen to arrive in, so the legend
-// does not reshuffle itself as a filter changes which class is seen first
-test('tallies come back in canonical order', () => {
-  expect(
-    svTypeTallies([bnd('a'), dup('b'), del('c')]).map(t => t.type),
-  ).toEqual(['DEL', 'DUP', 'BND'])
-})
-
-test('a record that is not a structural variant is left out', () => {
-  expect(svTypeTallies([feat('snv', { ALT: ['G'] })])).toEqual([])
+test('a record that is not a structural variant still gets a color', () => {
+  expect(svChordColor(new SimpleFeature(feat('snv', { ALT: ['G'] })))).toMatch(
+    /^rgba\(/,
+  )
 })
