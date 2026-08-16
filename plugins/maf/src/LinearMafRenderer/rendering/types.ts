@@ -1,8 +1,22 @@
+import { measureText } from '@jbrowse/core/util'
+
 import type { MafCellColorConfig } from '../resolveCellColor.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-export const FONT_CONFIG = 'bold 10px Courier New,monospace'
+const LABEL_FONT_SIZE = 10
+export const FONT_CONFIG = `bold ${LABEL_FONT_SIZE}px Courier New,monospace`
 export const CHAR_SIZE_WIDTH = 10
+
+// FONT_CONFIG's own width, for the callers that reserve room before drawing in
+// it. `measureText` measures against a Helvetica table unless told the family is
+// monospace, and this font IS monospace — so measuring it plain under-read every
+// digit by 0.55px, which the deletion count's 2px of padding covered up to three
+// digits and not beyond: a 1000bp+ run cleared a fit test its label then
+// overflowed. Bold costs nothing here, monospace being the one face whose bold
+// advance equals its regular.
+export function measureLabelText(text: string) {
+  return measureText(text, LABEL_FONT_SIZE, 'monospace')
+}
 // Used to overlap adjacent cells by a sub-pixel so hairlines don't appear at
 // scale ~1px/bp; mirrors the +0.5/+0.4 fudge used in plugin-alignments.
 export const GAP_STROKE_OFFSET = 0.4

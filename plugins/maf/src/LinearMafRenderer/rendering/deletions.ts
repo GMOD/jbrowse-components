@@ -1,8 +1,7 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { getContrastText } from '@jbrowse/core/ui/palette'
-import { measureText } from '@jbrowse/core/util'
 
-import { FONT_CONFIG } from './types.ts'
+import { FONT_CONFIG, measureLabelText } from './types.ts'
 
 import type { DeletionMarker } from '../../LinearMafDisplay/components/computeVisibleDeletions.ts'
 import type { MafColorPalette } from '../util.ts'
@@ -37,7 +36,7 @@ export function drawMafDeletionLabels(
   ctx.fillStyle = getContrastText(palette.gapColor)
   for (const m of markers) {
     const text = String(m.length)
-    if (m.width >= measureText(text) + 2 && m.h >= MIN_HEIGHT_FOR_TEXT) {
+    if (m.width >= measureLabelText(text) + 2 && m.h >= MIN_HEIGHT_FOR_TEXT) {
       ctx.fillText(text, m.xLeft + m.width / 2, Math.round(m.rowTop + m.h / 2))
     }
   }

@@ -1,8 +1,8 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
-import { measureText } from '@jbrowse/core/util'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
+import { measureLabelText } from '../../LinearMafRenderer/rendering/types.ts'
 import { regionDeletionRunBounds } from './mafRowEvents.ts'
 import {
   bpSpanPx,
@@ -13,10 +13,12 @@ import {
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 
-// Narrowest label `drawMafDeletionLabels` could ever fit: the min over the
-// single digits, plus its 2px padding. A run below this can't draw at any digit
-// count — a longer run is proportionally wider, so width outruns the label long
-// before the digit count does.
+// Narrowest label `drawMafDeletionLabels` could ever fit: one digit in its own
+// font, plus its 2px padding. A run below this can't draw at any digit count — a
+// longer run is proportionally wider, so width outruns the label long before the
+// digit count does. One digit answers for all ten because the font is monospace;
+// this used to take a `Math.min` over the ten, which the proportional table it
+// was measuring against made look necessary and returned the same width anyway.
 //
 // This is a hard cut, where plugin-alignments ramps the same label's opacity
 // across the band above its own threshold (`labelFadeOpacity`). The two displays
@@ -28,8 +30,7 @@ import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 // ramp is for. Undecided because nobody has watched a MAF track zoom to say
 // whether a fading number in a short row beats a clean cut, and adopting it
 // moves every MAF figure carrying a count.
-const MIN_LABEL_WIDTH =
-  Math.min(...'0123456789'.split('').map(d => measureText(d))) + 2
+const MIN_LABEL_WIDTH = measureLabelText('0') + 2
 
 export interface DeletionMarker {
   /** screen px of the left edge of the deleted run */

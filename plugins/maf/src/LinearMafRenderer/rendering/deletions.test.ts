@@ -61,3 +61,17 @@ test('draws nothing where the run is too short or too narrow for the text', () =
   drawMafDeletionLabels(ctx, [{ ...marker, width: 1 }], palette)
   expect(texts).toEqual([])
 })
+
+// The fit test has to measure the font the label is DRAWN in. FONT_CONFIG is
+// monospace at 6.1px a digit; `measureText`'s default table is Helvetica at
+// 5.55px, and the 2px padding hid the 0.55px-a-digit shortfall up to three
+// digits. A four-digit count is the first that overflows: 26px of run holds
+// 24.19px of Helvetica "1000" and 24.4px of the Courier actually painted.
+test('a run is measured in the monospace font the count is drawn in', () => {
+  const { ctx, texts } = mockCtx()
+  const palette = getMafColorPalette(resolvePalette())
+  drawMafDeletionLabels(ctx, [{ ...marker, width: 26, length: 1000 }], palette)
+  expect(texts).toEqual([])
+  drawMafDeletionLabels(ctx, [{ ...marker, width: 27, length: 1000 }], palette)
+  expect(texts.map(t => t.text)).toEqual(['1000'])
+})
