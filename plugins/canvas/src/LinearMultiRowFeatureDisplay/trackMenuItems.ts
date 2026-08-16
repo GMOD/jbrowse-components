@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
   checkboxItem,
+  radioItems,
   showLegendCheckboxItem,
   toggleItem,
 } from '@jbrowse/core/ui/menuItems'
@@ -17,6 +18,7 @@ import {
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
+import TableRowsIcon from '@mui/icons-material/TableRows'
 
 import { MIN_SEPARATOR_ROW_PX } from './rendering/rowBand.ts'
 
@@ -64,6 +66,11 @@ interface MultiRowMenuSelf
   // asks whether a category is hidden — the checkbox below has to agree with the
   // legend row it mirrors, so it reads the same derivation rather than its own
   hiddenCategorySet: ReadonlySet<string>
+  // which attribute assigns a feature to a row, and the names the loaded
+  // features actually carry — the menu offers the second and writes the first
+  partitionField: string
+  partitionCandidates: string[]
+  setPartitionField: (field: string) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
@@ -184,12 +191,55 @@ function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     : []
 }
 
+// Which attribute assigns a feature to a row — the one thing the whole display
+// is built on that had no way in from the UI. Picking the display type from
+// "Display types" left `partitionField` at its `name` default, which on
+// RepeatMasker is one row per repeat: thousands of hairlines, and no menu item
+// anywhere to say what a reader was supposed to do about it.
+//
+// The options are DISCOVERED, off the loaded features' own attribute names
+// (`partitionCandidates`), the same way the rows are. So a file gains a column
+// and the menu offers it with no config change, and a track whose data has not
+// loaded offers nothing rather than a stale list.
+//
+// A `jexl:` partition — the recipe for a file that carries its category inside
+// another column, see makeFeaturePartitionResolver — checks none of the radios,
+// and gets a disabled row naming it rather than being silently unrepresented.
+// Nothing here can write one: an expression is a config-level thing, and a menu
+// that could clear it but not restore it would be a one-way door.
+function partitionMenuItems(self: MultiRowMenuSelf): MenuItem[] {
+  const { partitionCandidates, partitionField } = self
+  if (!partitionCandidates.length) {
+    return []
+  }
+  const isExpression = partitionField.startsWith('jexl:')
+  return [
+    {
+      label: 'Partition by...',
+      icon: TableRowsIcon,
+      subMenu: [
+        ...(isExpression
+          ? [{ label: 'Custom expression', disabled: true, onClick: () => {} }]
+          : []),
+        ...radioItems(
+          partitionCandidates.map(value => ({ value, label: value })),
+          isExpression ? undefined : partitionField,
+          (field: string) => {
+            self.setPartitionField(field)
+          },
+        ),
+      ],
+    },
+  ]
+}
+
 export function buildMultiRowTrackMenuItems(
   self: MultiRowMenuSelf,
 ): MenuItem[] {
   return [
     ...makeShowSubMenu(showMenuItems(self)),
     rowHeightMenuItem(self, ROW_HEIGHT_PRESETS),
+    ...partitionMenuItems(self),
     ...categoriesMenuItems(self),
     rowArrangementMenuItem({
       ready: !!self.editableSources.length,

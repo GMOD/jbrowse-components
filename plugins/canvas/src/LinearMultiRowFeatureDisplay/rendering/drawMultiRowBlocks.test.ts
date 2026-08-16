@@ -47,6 +47,7 @@ const region: MultiRowRegionData = {
   featureIds: ['f1', 'f2'],
   featureDeltas: new Int32Array(0),
   usedItemRgb: false,
+  partitionCandidates: [],
 }
 
 const block: RenderBlock = {

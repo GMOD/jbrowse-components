@@ -80,9 +80,12 @@ const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 //   `minScore` / `maxScore`, so a reader gets there through two track-menu trips
 //   or not at all.
 // - RepeatMasker wants one lane per repeat class.
-//   `LinearMultiRowFeatureDisplay` has no menu item for `partitionField` and
-//   defaults it to `name`, which on a GenArk bigRmskBed is one row per repeat --
-//   thousands of hairlines, rendered rather than reasoned about. jb2hubs ALREADY
+//   `LinearMultiRowFeatureDisplay` defaults `partitionField` to `name`, which on
+//   a GenArk bigRmskBed is one row per repeat -- thousands of hairlines,
+//   rendered rather than reasoned about. There IS a menu item for it now
+//   ("Partition by...", offering the attribute names the loaded features carry),
+//   so this is a click rather than a dead end; the hub still wants to open on
+//   the right one. jb2hubs ALREADY
 //   writes the right display (hubtools' repeatClassDisplay, jexl partition,
 //   cookbook colours, fixed row order); it is gated behind RMSK_MULTIROW_DISPLAY
 //   because the display type landed after v4.3.0, which is what

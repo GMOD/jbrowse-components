@@ -92,6 +92,7 @@ const narrow: MultiRowRegionData = {
   featureIds: ['f1', 'f2'],
   featureDeltas: new Int32Array(0),
   usedItemRgb: false,
+  partitionCandidates: [],
 }
 
 // The same two features spanning 10bp (100px) each, comfortably wider than any

@@ -6,7 +6,10 @@ import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTyp
 // declared: `sourcesWithoutLayout` is the distinct `partitionField` values
 // across `rpcDataMap`. So the row set grows as regions load, with no action to
 // hook an invalidation onto.
-function regionData(partitionValues: string[]): MultiRowRegionData {
+function regionData(
+  partitionValues: string[],
+  partitionCandidates: string[] = [],
+): MultiRowRegionData {
   return {
     partitionValues,
     featureStarts: new Uint32Array(0),
@@ -17,6 +20,7 @@ function regionData(partitionValues: string[]): MultiRowRegionData {
     featureIds: [],
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
+    partitionCandidates,
   }
 }
 
@@ -52,5 +56,52 @@ describe('the dendrogram positions only while it describes the rows', () => {
     expect(rowNames(display)).toEqual(['c', 'a', 'b', 'd'])
     expect(display.clusterTree).toBe('((c,a),b);')
     expect(display.hierarchy).toBeUndefined()
+  })
+})
+
+// The "Partition by..." menu writes this. Its options are the attribute names
+// the loaded features carry, which the worker samples and ships beside the rows.
+describe('repartitioning', () => {
+  it('offers the names the loaded regions carry, unioned and sorted', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    expect(display.partitionCandidates).toEqual([])
+
+    display.setRpcData(0, regionData(['a'], ['repFamily', 'repClass']))
+    display.setRpcData(1, regionData(['b'], ['repClass', 'strain']))
+
+    expect(display.partitionCandidates).toEqual([
+      'repClass',
+      'repFamily',
+      'strain',
+    ])
+  })
+
+  // `layout` names rows by VALUE, so under a new partition its entries name
+  // rows that no longer exist — and `getSources` appends a row a layout omits
+  // rather than dropping it, so the old row set would have come back beside the
+  // new one, empty, each with whatever colour it had been given.
+  it('drops the row state keyed on the old partition', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']))
+    display.setLayoutAndClusterTree([{ name: 'b' }, { name: 'a' }], '(b,a);')
+    display.setHiddenCategories(['a'])
+
+    display.setPartitionField('clade')
+
+    expect(display.partitionField).toBe('clade')
+    expect(display.layout).toEqual([])
+    expect(display.hiddenCategories).toEqual([])
+    expect(display.clusterTree).toBeUndefined()
+  })
+
+  it('leaves everything alone when the partition is already that', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setRpcData(0, regionData(['a', 'b'], ['sample']))
+    display.setLayoutAndClusterTree([{ name: 'b' }, { name: 'a' }], '(b,a);')
+
+    display.setPartitionField(display.partitionField)
+
+    expect(display.layout).toEqual([{ name: 'b' }, { name: 'a' }])
+    expect(display.clusterTree).toBe('(b,a);')
   })
 })

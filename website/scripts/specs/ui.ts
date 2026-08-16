@@ -2387,7 +2387,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   // dense enough that rows read behind the menu.
   {
     mode: 'url',
-    name: 'multirow/display_types_menu',
+    name: 'multirow/display_types_pick',
     url: sessionSpec(DEMO_CONFIG, {
       sessionTracks: [HG38_RMSK_TRACK],
       views: [
@@ -2412,5 +2412,61 @@ export const uiSpecs: ScreenshotSpec[] = [
       'Display types',
       'Multi-row feature display (painting)',
     ]),
+  },
+
+  // What the pick above produces, which is the half the figure was missing
+  // (review: "might want to make two-part figure showing result").
+  //
+  // It could not be built honestly until this round: picking the display type
+  // leaves `partitionField` at `name`, which on RepeatMasker is one row per
+  // repeat -- thousands of hairlines -- and there was no menu item to get out of
+  // it, so a result frame showing rows by CLASS would have claimed an effect the
+  // click does not have. "Partition by..." is that item now, so this frame is
+  // two clicks from the one above rather than a config edit.
+  //
+  // Declarative rather than driven, per the compose note: the state is a session
+  // a live link can open, so the figure cannot drift from a menu path and each
+  // half stays openable on its own.
+  //
+  // Same window and same viewport WIDTH as the frame above -- a vertical append
+  // pads a narrower part rather than scaling it.
+  {
+    mode: 'url',
+    name: 'multirow/display_types_rows',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [HG38_RMSK_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:45,700,000-45,750,000',
+          tracks: [
+            {
+              trackId: 'rmsk_hg38_ucsc',
+              type: 'LinearMultiRowFeatureDisplay',
+              // the class column, which is what "Partition by..." offers on this
+              // file. No sampleColorMap: this is what the menu path produces,
+              // and the cookbook figure is where a chosen palette belongs.
+              partitionField: 'repClass',
+              showRowSeparators: true,
+              height: 260,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'RepeatMasker',
+    readyTimeout: 60000,
+    viewportWidth: 1000,
+    settleMs: 6000,
+    // the rows plus the ruler and track header; sized from the run's own
+    // below-the-fold report
+    viewportHeight: 400,
+  },
+
+  {
+    mode: 'compose',
+    name: 'multirow/display_types_menu',
+    parts: ['multirow/display_types_pick', 'multirow/display_types_rows'],
   },
 ]

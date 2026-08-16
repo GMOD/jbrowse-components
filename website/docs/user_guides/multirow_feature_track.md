@@ -20,11 +20,17 @@ Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
 
 ## Turning a feature track into rows
 
-Picking it from **Display types** shows the rows right away.
+Picking it from **Display types** shows the rows right away, split on the `name`
+column. Which column assigns a feature to a row is then **Partition by…** in the
+same track menu: it lists the attribute names the loaded features carry, so on
+RepeatMasker it offers `repClass` and `repFamily` beside `name`, and one row per
+repeat class is a click rather than a config edit. Repartitioning discards a
+saved row order, a clustering run and any hidden categories, since all three
+name rows that the new partition does not have.
 
-<Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on the UCSC RepeatMasker track, listing the multi-row display beside the default feature display. Any feature track can be switched over this way." />
+<Figure src="/img/multirow/display_types_menu.png" caption="Turning the UCSC RepeatMasker track into rows: the track menu's Display types submenu (top), and the same window partitioned by repeat class (bottom). Any feature track can be switched over this way." />
 
-By default it splits on the `name` column. To split on a column of your own, set
+To fix the column in config rather than picking it per session, set
 [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
 in the track config:
 

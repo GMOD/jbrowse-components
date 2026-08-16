@@ -69,6 +69,50 @@ function partitionValue(raw: unknown) {
   return raw === undefined || raw === null ? '' : String(raw)
 }
 
+// Attributes that name a feature's PLACE rather than anything about it. Rows
+// keyed on one of these are one row per feature, which is the shape this menu
+// exists to get a reader out of.
+const NON_PARTITION_TAGS = new Set([
+  'start',
+  'end',
+  'refName',
+  'uniqueId',
+  'subfeatures',
+  'parentId',
+  'strand',
+  'score',
+  'phase',
+  'source',
+])
+
+// How many features to read tags off. A BED's columns are the same on every
+// line, so one would do; a GFF's attributes are per record, so a few rows cover
+// the common case of a file whose first feature happens to omit an optional
+// column. Bounded either way — this cannot grow with the region.
+const PARTITION_CANDIDATE_SAMPLE = 20
+
+/**
+ * The attribute names a reader could partition on, sampled off the head of the
+ * feature list. Sorted, so the menu built from it does not reorder itself when a
+ * pan changes which features arrive first.
+ *
+ * Through `toJSON`, not `tags()`: `tags` is `SimpleFeature`'s, and the `Feature`
+ * interface an adapter is free to implement carries only the serializer. Both
+ * enumerate the same attribute set.
+ */
+export function collectPartitionCandidates(features: Feature[]) {
+  const names = new Set<string>()
+  const n = Math.min(features.length, PARTITION_CANDIDATE_SAMPLE)
+  for (let i = 0; i < n; i++) {
+    for (const tag of Object.keys(features[i]!.toJSON())) {
+      if (!NON_PARTITION_TAGS.has(tag)) {
+        names.add(tag)
+      }
+    }
+  }
+  return [...names].sort()
+}
+
 /**
  * Build the per-feature row resolver for a `partitionField` value: the plain
  * attribute lookup, or a `jexl:` expression evaluated per feature.
@@ -221,5 +265,6 @@ export function packMultiRowFeatures({
     featureNames,
     featureIds,
     usedItemRgb,
+    partitionCandidates: collectPartitionCandidates(features),
   }
 }

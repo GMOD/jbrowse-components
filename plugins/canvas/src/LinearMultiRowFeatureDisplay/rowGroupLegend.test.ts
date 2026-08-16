@@ -15,6 +15,7 @@ function rows(n: number): MultiRowRegionData {
     featureNames: [],
     featureIds: [],
     usedItemRgb: false,
+    partitionCandidates: [],
   }
 }
 

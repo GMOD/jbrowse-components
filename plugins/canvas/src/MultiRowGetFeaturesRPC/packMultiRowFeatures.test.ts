@@ -1,3 +1,4 @@
+import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
@@ -9,11 +10,20 @@ import {
 
 import type { Feature } from '@jbrowse/core/util'
 
-function feat(attrs: Record<string, unknown>): Feature {
-  return {
-    get: (k: string) => attrs[k],
-    id: () => String(attrs.id ?? `${attrs.start}`),
-  } as Feature
+// A real SimpleFeature rather than a stub of one. The pack reads features three
+// ways now — `get`, `id` and (for the partition candidates) `toJSON` — and a
+// hand-rolled object answering those independently can pass a test while naming
+// a column nothing can be read from. It also needs no cast.
+function feat(
+  attrs: Record<string, unknown> & { start: number; end: number },
+): Feature {
+  return new SimpleFeature({
+    uniqueId: String(attrs.id ?? attrs.start),
+    // required of a serialized feature and irrelevant to every assertion here;
+    // ahead of the spread so a case can still name its own
+    refName: 'ctgA',
+    ...attrs,
+  })
 }
 
 const features = [
@@ -317,4 +327,51 @@ test('coerces a numeric partition value rather than dropping it', () => {
     jexl: createJexlInstance(),
   })
   expect(r.partitionValues).toEqual(['15', ''])
+})
+
+// The "Partition by..." menu's options. Discovered from the data rather than
+// declared, so the one thing the display is built on stops being config-only.
+test('collects the attribute names a reader could partition on', () => {
+  const r = packMultiRowFeatures({
+    features,
+    partitionField: 'sample',
+    lengthField: '',
+    colorConfig: undefined,
+    jexl: createJexlInstance(),
+  })
+  // sorted, and without the ones naming a feature's PLACE — rows keyed on
+  // `start` are one row per feature, which is what the menu exists to get a
+  // reader out of
+  expect(r.partitionCandidates).toEqual(['itemRgb', 'sample'])
+})
+
+test('unions the names over the head of the list, not just the first feature', () => {
+  const r = packMultiRowFeatures({
+    features: [
+      feat({ start: 0, end: 50, sample: 'mom' }),
+      feat({ start: 0, end: 30, sample: 'dad', clade: 'B' }),
+    ],
+    partitionField: 'sample',
+    lengthField: '',
+    colorConfig: undefined,
+    jexl: createJexlInstance(),
+  })
+  expect(r.partitionCandidates).toEqual(['clade', 'sample'])
+})
+
+// Bounded, so this cannot become a per-feature cost on a painting carrying half
+// a million segments.
+test('samples the head rather than every feature', () => {
+  const many = Array.from({ length: 500 }, (_, i) =>
+    feat({ start: i, end: i + 1, sample: 'a', [`col${i}`]: 1 }),
+  )
+  const r = packMultiRowFeatures({
+    features: many,
+    partitionField: 'sample',
+    lengthField: '',
+    colorConfig: undefined,
+    jexl: createJexlInstance(),
+  })
+  expect(r.partitionCandidates).toContain('col0')
+  expect(r.partitionCandidates).not.toContain('col400')
 })

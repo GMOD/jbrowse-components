@@ -15,6 +15,7 @@ const region: MultiRowRegionData = {
   featureIds: ['f1', 'f2', 'f3', 'f4'],
   featureDeltas: new Int32Array(0),
   usedItemRgb: false,
+  partitionCandidates: [],
 }
 
 const rowIndexByValue = new Map([
@@ -136,6 +137,7 @@ test('too many distinct labels is treated as non-categorical', () => {
     featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
+    partitionCandidates: [],
   }
   expect(buildColorLegend([many], new Map([['E001', 0]]), [undefined])).toEqual(
     [],

@@ -346,6 +346,26 @@ export default function stateModelFactory(
       get usedItemRgb(): boolean {
         return [...self.rpcDataMap.values()].some(data => data.usedItemRgb)
       },
+      /**
+       * #getter
+       * The attribute names the loaded features carry, which is what the
+       * "Partition by..." menu offers. Unioned across regions and re-sorted,
+       * since two regions can be served by adapters that saw different optional
+       * columns.
+       *
+       * Empty until something is loaded, which is the menu's own disabled
+       * condition — the names are discovered from the data rather than declared,
+       * the same way the rows themselves are.
+       */
+      get partitionCandidates(): string[] {
+        const names = new Set<string>()
+        for (const data of self.rpcDataMap.values()) {
+          for (const name of data.partitionCandidates) {
+            names.add(name)
+          }
+        }
+        return [...names].sort()
+      },
     }))
     .views(self => ({
       /**
@@ -888,6 +908,26 @@ export default function stateModelFactory(
        */
       setHiddenCategories(labels: string[]) {
         self.hiddenCategories.replace(labels)
+      },
+      /**
+       * #action
+       * Repartition: which feature attribute assigns a feature to a row.
+       *
+       * A fetch input, so writing the slot refetches on its own — nothing here
+       * has to ask for one. What it DOES have to do is drop the state keyed on
+       * the old rows: `layout` names rows by value, so under a new partition its
+       * entries name rows that no longer exist, and `getSources` appends a row a
+       * layout omits rather than dropping it — the old row set would have come
+       * back beside the new one, empty, with a saved color each. Same for the
+       * hidden categories, whose labels are the old values.
+       */
+      setPartitionField(field: string) {
+        if (field === self.partitionField) {
+          return
+        }
+        setConf(self, 'partitionField', field)
+        self.setLayout([])
+        self.hiddenCategories.clear()
       },
       /**
        * #action

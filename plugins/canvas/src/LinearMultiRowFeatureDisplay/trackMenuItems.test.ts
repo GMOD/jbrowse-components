@@ -27,6 +27,11 @@ function makeSelf(
     colorLegend: [],
     rowGroupLegend: [],
     hiddenCategories: [],
+    // nothing loaded by default, which is the "Partition by..." item's own
+    // absent condition — a case that wants the submenu supplies candidates
+    partitionField: 'name',
+    partitionCandidates: [] as string[],
+    setPartitionField: () => {},
     showBranchLength: true,
     treeHasBranchLengths: false,
     layout: [],
@@ -259,6 +264,72 @@ describe('multi-row track menu', () => {
       label: 'Cluster rows by similarity',
       disabled: true,
       disabledHelpText: 'Needs at least two rows to cluster',
+    })
+  })
+
+  // "Partition by..." is the only way into the setting the whole display is
+  // built on. Its options are discovered from the loaded features, so an
+  // unloaded track offers no submenu rather than a stale list.
+  describe('partition', () => {
+    it('offers nothing until the data says what the columns are', () => {
+      expect(labels(buildMultiRowTrackMenuItems(makeSelf()))).not.toContain(
+        'Partition by...',
+      )
+    })
+
+    it('radios the discovered names, checking the one in force', () => {
+      const items = subMenuOf(
+        buildMultiRowTrackMenuItems(
+          makeSelf({
+            partitionCandidates: ['repClass', 'repFamily'],
+            partitionField: 'repClass',
+          }),
+        ),
+        'Partition by...',
+      )
+      expect(items).toMatchObject([
+        { label: 'repClass', type: 'radio', checked: true },
+        { label: 'repFamily', type: 'radio', checked: false },
+      ])
+    })
+
+    it('writes the picked name through the model', () => {
+      const picked: string[] = []
+      const items = subMenuOf(
+        buildMultiRowTrackMenuItems(
+          makeSelf({
+            partitionCandidates: ['repClass', 'repFamily'],
+            partitionField: 'repClass',
+            setPartitionField: (f: string) => {
+              picked.push(f)
+            },
+          }),
+        ),
+        'Partition by...',
+      )
+      const family = items.find(i => 'label' in i && i.label === 'repFamily')!
+      ;(family as { onClick: () => void }).onClick()
+      expect(picked).toEqual(['repFamily'])
+    })
+
+    // A jexl partition is the recipe for a file carrying its category inside
+    // another column. It matches no radio, and saying nothing would leave the
+    // submenu looking like the partition was unset.
+    it('names a jexl partition rather than leaving it unrepresented', () => {
+      const items = subMenuOf(
+        buildMultiRowTrackMenuItems(
+          makeSelf({
+            partitionCandidates: ['name'],
+            partitionField: "jexl:split(feature.name,'#')[1]",
+          }),
+        ),
+        'Partition by...',
+      )
+      expect(items[0]).toMatchObject({
+        label: 'Custom expression',
+        disabled: true,
+      })
+      expect(items.filter(i => 'checked' in i && i.checked)).toHaveLength(0)
     })
   })
 })

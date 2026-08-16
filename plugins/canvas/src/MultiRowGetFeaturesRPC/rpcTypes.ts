@@ -63,6 +63,16 @@ export interface MultiRowRegionData {
   // The main thread reads this to suppress the per-row palette, which would
   // otherwise paint over the colors the BED explicitly asked for.
   usedItemRgb: boolean
+  // Attribute names the loaded features carry, for the "Partition by..." menu —
+  // the one thing this display's rows depend on that a reader could not reach
+  // from the UI, so picking the display type from the track menu gave whatever
+  // `name` happened to mean (on RepeatMasker, one row per repeat: thousands of
+  // hairlines).
+  //
+  // Sampled rather than unioned over every feature: the columns of a BED are the
+  // same on every line, and a union over half a million features would rebuild a
+  // Set per region for an answer the first few rows already give.
+  partitionCandidates: string[]
 }
 
 // What the worker actually returns: the painting plus what the fetch measured on
