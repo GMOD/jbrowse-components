@@ -1,16 +1,11 @@
 import { useState } from 'react'
 
-import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
-import {
-  addAndShowTrack,
-  getSession,
-  isSessionModelWithWidgets,
-  isSessionWithAddTracks,
-  makeTrackId,
-} from '@jbrowse/core/util'
+import { AssemblySelector, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
+import { addTrackFromWidget, getSession, makeTrackId } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Button, Paper, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import RadioSelector from './RadioSelector.tsx'
 import { buildAdapterConfig, parseSampleNames } from './buildAdapterConfig.ts'
@@ -56,8 +51,13 @@ const fileTypeLabel: Record<AdapterTypeOptions, string> = {
 const SUMMARY_BED_LABEL =
   'Path to summary BED (.bed.gz from `maf2bed --summary`, optional — enables zoom-out rendering)'
 
-export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
+const MultiMAFWidget = observer(function MultiMAFWidget({
+  model,
+}: {
+  model: AddTrackModel
+}) {
   const { classes } = useStyles()
+  const session = getSession(model)
   const [samples, setSamples] = useState('')
   const [loc, setLoc] = useState<FileLocation>()
   const [indexLoc, setIndexLoc] = useState<FileLocation>()
@@ -76,35 +76,27 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
   function handleSubmit() {
     try {
       setError(undefined)
-      const session = getSession(model)
-      if (isSessionWithAddTracks(session)) {
-        addAndShowTrack(
-          session,
-          {
-            trackId: makeTrackId({ name: trackName }),
-            type: 'MafTrack',
-            name: trackName,
-            assemblyNames: [model.assembly],
-            adapter: buildAdapterConfig({
-              fileTypeChoice,
-              indexTypeChoice,
-              loc,
-              indexLoc,
-              nhLoc,
-              summaryLoc,
-              framesLoc,
-              sampleNames: parseSampleNames(samples),
-            }),
-          },
-          model.view,
-        )
-        model.clearData()
-        if (isSessionModelWithWidgets(session)) {
-          session.hideWidget(model)
-        }
-      } else {
-        throw new Error("Can't add tracks to this session")
-      }
+      const name = trackName.trim()
+      addTrackFromWidget({
+        model,
+        session,
+        conf: {
+          trackId: makeTrackId({ name }),
+          type: 'MafTrack',
+          name,
+          assemblyNames: [model.assembly],
+          adapter: buildAdapterConfig({
+            fileTypeChoice,
+            indexTypeChoice,
+            loc,
+            indexLoc,
+            nhLoc,
+            summaryLoc,
+            framesLoc,
+            sampleNames: parseSampleNames(samples),
+          }),
+        },
+      })
     } catch (e) {
       setError(e)
     }
@@ -253,9 +245,19 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
           setTrackName(event.target.value)
         }}
       />
+      <AssemblySelector
+        session={session}
+        helperText="Select assembly to add track to"
+        selected={model.assembly}
+        onChange={arg => {
+          model.setAssembly(arg)
+        }}
+        fullWidth
+      />
       <Button
         variant="contained"
         className={classes.submit}
+        disabled={!loc || !trackName.trim() || !model.assembly}
         onClick={() => {
           handleSubmit()
         }}
@@ -264,4 +266,6 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
       </Button>
     </Paper>
   )
-}
+})
+
+export default MultiMAFWidget

@@ -1,8 +1,12 @@
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import {
+  containerDisplaysAssembly,
+  finishAddTrack,
+  getSession,
+  isSessionWithAddTracks,
+} from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
 import { parseTrackConfigs } from './parseTrackConfigs.ts'
-import { finishAddTrack, containerDisplaysAssembly } from './util.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -43,7 +47,7 @@ export function doPasteConfigSubmit({
           }
         }
       }
-      finishAddTrack(model)
+      finishAddTrack(model, session)
     })
     if (notShown.length) {
       // These tracks were added to the session but can't be shown here because

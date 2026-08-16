@@ -1,13 +1,7 @@
 import { useState } from 'react'
 
-import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
-import {
-  addAndShowTrack,
-  getSession,
-  isSessionModelWithWidgets,
-  isSessionWithAddTracks,
-  makeTrackId,
-} from '@jbrowse/core/util'
+import { AssemblySelector, ErrorMessage, FileSelector } from '@jbrowse/core/ui'
+import { addTrackFromWidget, getSession, makeTrackId } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Button, Divider, Paper, TextField, Typography } from '@mui/material'
@@ -67,29 +61,24 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   function doSubmit() {
     try {
       setError(undefined)
-      if (gwasLocation && assembly && isSessionWithAddTracks(session)) {
-        addAndShowTrack(
-          session,
-          buildGwasTrackConfig({
-            trackId: makeTrackId({ name: trackName }),
-            trackName,
-            assembly,
-            gwasLocation,
-            gwasIndexLocation,
-            scoreColumn,
-            scoreTransform,
-            ldLocation,
-            ldIndexLocation,
-          }),
-          model.view,
-        )
-        model.clearData()
-        if (isSessionModelWithWidgets(session)) {
-          session.hideWidget(model)
-        }
-      } else {
-        throw new Error("Can't add tracks to this session")
+      if (!gwasLocation || !assembly) {
+        throw new Error('Please supply a GWAS file and an assembly')
       }
+      addTrackFromWidget({
+        model,
+        session,
+        conf: buildGwasTrackConfig({
+          trackId: makeTrackId({ name: trackName }),
+          trackName: trackName.trim(),
+          assembly,
+          gwasLocation,
+          gwasIndexLocation,
+          scoreColumn,
+          scoreTransform,
+          ldLocation,
+          ldIndexLocation,
+        }),
+      })
     } catch (e) {
       setError(e)
     }
@@ -170,6 +159,15 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           value={trackName}
           onChange={e => {
             setTrackName(e.target.value)
+          }}
+          fullWidth
+        />
+        <AssemblySelector
+          session={session}
+          helperText="Select assembly to add track to"
+          selected={assembly}
+          onChange={arg => {
+            model.setAssembly(arg)
           }}
           fullWidth
         />

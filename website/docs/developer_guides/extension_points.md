@@ -294,7 +294,7 @@ plugin before you put there.
 | Extension point | Type | Shape | Description |
 | --- | --- | --- | --- |
 | `Core-addTrackComponent` | sync | single | Inject a custom React component into the add-track widget |
-| `Core-addTrackComponentAdapterTypes` | sync | list | Adapter types whose add-track form contributes required config |
+| `Core-addTrackComponentAdapterTypes` | sync | list | Adapter types whose add-track picker supplies the assembly |
 | `Core-customizeAbout` | sync | single | Transform the config shown in a track's About dialog |
 | `Core-extendPluggableElement` | sync | single | Mutate any pluggable element after it is created |
 | `Core-extendSession` | sync | single | Extend the session model with extra state or actions |

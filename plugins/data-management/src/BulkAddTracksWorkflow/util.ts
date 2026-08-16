@@ -1,4 +1,6 @@
 import {
+  containerDisplaysAssembly,
+  finishAddTrack,
   getSession,
   isSessionWithAddTracks,
   isUriLocation,
@@ -8,10 +10,6 @@ import {
 import { stripFileExtension } from '@jbrowse/core/util/tracks'
 import { transaction } from 'mobx'
 
-import {
-  containerDisplaysAssembly,
-  finishAddTrack,
-} from '../AddTrackWidget/components/util.ts'
 import {
   isBlockedHttpUrl,
   isFtpUrl,
@@ -212,7 +210,7 @@ export function submitBulkTracks({
     // away the list the user assembled — the expensive part of this workflow —
     // behind the snackbars explaining why it failed, with nothing to retry from.
     if (added > 0) {
-      finishAddTrack(model)
+      finishAddTrack(model, session)
     }
   })
   if (added > 0 && !showInView) {

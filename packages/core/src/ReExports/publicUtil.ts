@@ -45,6 +45,7 @@ export {
   addAddTrackComponent,
   addAndShowTrack,
   addOrReplaceView,
+  addTrackFromWidget,
   addTrackTypeGuesser,
   aesDecrypt,
   aesEncrypt,

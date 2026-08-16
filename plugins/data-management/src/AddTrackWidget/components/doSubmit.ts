@@ -1,18 +1,14 @@
 import {
+  addTrackFromWidget,
   getSession,
   isElectron,
-  isSessionWithAddTracks,
   isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 
-import {
-  defaultIndexingConf,
-  finishAddTrack,
-  containerDisplaysAssembly,
-} from './util.ts'
+import { defaultIndexingConf } from './util.ts'
 
-import type { AddTrackModel } from '../model.ts'
+import type { AddTrackModel, IndexingAttr } from '../model.ts'
 
 interface RootWithJobsManager {
   jobsManager: {
@@ -24,14 +20,16 @@ function doTextIndexTrack({
   trackId,
   timestamp,
   model,
+  assembly,
+  attr,
 }: {
   trackId: string
   timestamp: number
   model: AddTrackModel
+  assembly: string | undefined
+  attr: IndexingAttr
 }) {
-  const { textIndexingConf, assembly } = model
   const { jobsManager } = getRoot<RootWithJobsManager>(model)
-  const attr = textIndexingConf ?? defaultIndexingConf
   jobsManager.queueJob({
     indexingParams: {
       ...attr,
@@ -48,44 +46,27 @@ function doTextIndexTrack({
 }
 
 export function doSubmit({ model }: { model: AddTrackModel }) {
-  const { textIndexTrack, trackAdapter, trackContainer } = model
+  const { textIndexTrack, trackAdapter } = model
   const session = getSession(model)
   const timestamp = Date.now()
   const trackConfig = model.getTrackConfig(timestamp)
 
-  if (!isSessionWithAddTracks(session)) {
-    throw new Error("Can't add tracks to this session")
-  } else if (trackConfig && trackAdapter) {
-    const trackId = String(trackConfig.trackId)
-    session.addTrackConf(trackConfig)
-    if (containerDisplaysAssembly(trackContainer, [model.assembly])) {
-      trackContainer?.showTrack(trackId)
-    } else {
-      // The track was added to the session but can't be shown here because its
-      // assembly isn't open in this view (common when the assembly dropdown is
-      // changed in a multi-assembly session). Tell the user instead of silently
-      // doing nothing.
-      session.notify(
-        `Added track "${model.submittableTrackName}" to the session, but it was not displayed because it uses assembly "${model.assembly}", which is not open in this view. Open a view for that assembly and use its track selector to display it.`,
-        'warning',
-      )
-    }
-
-    if (
-      isElectron &&
-      textIndexTrack &&
-      isSupportedIndexingAdapter(trackAdapter.type)
-    ) {
-      doTextIndexTrack({
-        model,
-        trackId,
-        timestamp,
-      })
-    }
-    finishAddTrack(model)
-  } else {
+  if (!trackConfig || !trackAdapter) {
     throw new Error(
       'Failed to add track.\nThe configuration of this file is not currently supported.',
     )
+  }
+
+  // read before the add, which clears the form on success
+  const assembly = model.assembly
+  const attr = model.textIndexingConf ?? defaultIndexingConf
+  const wantsIndex =
+    isElectron &&
+    textIndexTrack &&
+    isSupportedIndexingAdapter(trackAdapter.type)
+
+  const trackId = String(trackConfig.trackId)
+  if (addTrackFromWidget({ model, session, conf: trackConfig }) && wantsIndex) {
+    doTextIndexTrack({ model, trackId, timestamp, assembly, attr })
   }
 }

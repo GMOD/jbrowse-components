@@ -1,10 +1,6 @@
-import {
-  getSession,
-  groupBy,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { groupBy } from '@jbrowse/core/util'
 
-import type { AddTrackModel, IndexingAttr } from '../model.ts'
+import type { IndexingAttr } from '../model.ts'
 import type { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
 export const defaultIndexingConf: IndexingAttr = {
@@ -49,29 +45,4 @@ export function alternativeAdapters({
           adapter.adapterMetadata?.alsoReads?.test(fileName),
       )
     : []
-}
-
-/**
- * Whether the target track list currently displays any of the track's
- * assemblies, i.e. the track can be shown here after adding it. Shared by the
- * single-track and paste-JSON submit paths so both decide "show vs. warn" the
- * same way.
- */
-export function containerDisplaysAssembly(
-  container: { assemblyNames?: readonly string[] } | undefined,
-  assemblyNames: readonly (string | undefined)[] | undefined,
-) {
-  return !!container?.assemblyNames?.some(a => assemblyNames?.includes(a))
-}
-
-/**
- * Reset the form and dismiss the widget after a successful add. Shared by the
- * single-track and paste-JSON submit paths.
- */
-export function finishAddTrack(model: AddTrackModel) {
-  const session = getSession(model)
-  model.clearData()
-  if (isSessionModelWithWidgets(session)) {
-    session.hideWidget(model)
-  }
 }

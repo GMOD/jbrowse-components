@@ -1,10 +1,9 @@
 import { useState } from 'react'
 
-import { SanitizedHTML } from '@jbrowse/core/ui'
+import { AssemblySelector, SanitizedHTML } from '@jbrowse/core/ui'
 import {
+  addTrackFromWidget,
   getSession,
-  isSessionModelWithWidgets,
-  isSessionWithAddTracks,
   resolveSelectedIds,
 } from '@jbrowse/core/util'
 import { nanoid } from '@jbrowse/core/util/nanoid'
@@ -23,9 +22,9 @@ import { observer } from 'mobx-react'
 
 import DropZone from './DropZone.tsx'
 import {
-  addMultiWiggleTrack,
   applyName,
   buildAdapterPayload,
+  buildMultiWiggleTrackConf,
   canSubmit,
   itemToName,
   parseItems,
@@ -69,25 +68,21 @@ function doSubmit({
   trackName: string
   model: AddTrackModel
 }) {
-  const session = getSession(model)
   const { assembly } = model
-  if (assembly && isSessionWithAddTracks(session)) {
-    addMultiWiggleTrack({
-      session,
-      view: model.view,
+  if (!assembly) {
+    throw new Error('Please choose an assembly')
+  }
+  // addTrackFromWidget tears the form down only once the track actually landed,
+  // so a failure leaves the user's input intact to retry
+  addTrackFromWidget({
+    model,
+    session: getSession(model),
+    conf: buildMultiWiggleTrackConf({
       name: trackName.trim(),
       assemblyNames: [assembly],
       adapter: buildAdapterPayload(tracks.map(t => applyName(t.item, t.name))),
-    })
-    // only tear down the form once the track actually landed, so a failure
-    // leaves the user's input intact to retry
-    model.clearData()
-    if (isSessionModelWithWidgets(session)) {
-      session.hideWidget(model)
-    }
-  } else {
-    throw new Error('This session does not support adding tracks')
-  }
+    }),
+  })
 }
 
 const MultiWiggleAddTrackWorkflow = observer(
@@ -218,6 +213,15 @@ const MultiWiggleAddTrackWorkflow = observer(
           onChange={event => {
             setTrackName(event.target.value)
           }}
+        />
+        <AssemblySelector
+          session={getSession(model)}
+          helperText="Select assembly to add track to"
+          selected={model.assembly}
+          onChange={arg => {
+            model.setAssembly(arg)
+          }}
+          fullWidth
         />
         <Button
           variant="contained"

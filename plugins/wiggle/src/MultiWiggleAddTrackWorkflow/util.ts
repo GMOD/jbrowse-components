@@ -117,16 +117,36 @@ export function buildAdapterPayload(items: TrackItem[]) {
 }
 
 /**
- * Shared between the add-track workflow and the track-selector "Create
- * multi-wiggle track" extension: builds a MultiQuantitativeTrack config around a
- * MultiWiggleAdapter and shows it in the target view.
+ * A MultiQuantitativeTrack config around a MultiWiggleAdapter. Shared between
+ * the add-track workflow and the track-selector "Create multi-wiggle track"
+ * extension, which add it two different ways — the workflow through the widget
+ * (which also dismisses itself), the extension straight into its own view.
  */
-export function addMultiWiggleTrack({
-  session,
-  view,
+export function buildMultiWiggleTrackConf({
   name,
   assemblyNames,
   adapter,
+}: {
+  name: string
+  assemblyNames: string[]
+  adapter: Record<string, unknown>
+}) {
+  return {
+    trackId: makeTrackId({ name }),
+    type: 'MultiQuantitativeTrack',
+    name,
+    assemblyNames,
+    adapter: {
+      type: 'MultiWiggleAdapter',
+      ...adapter,
+    },
+  }
+}
+
+export function addMultiWiggleTrack({
+  session,
+  view,
+  ...rest
 }: {
   session: SessionWithAddTracks
   view?: { showTrack: (trackId: string) => void }
@@ -134,18 +154,5 @@ export function addMultiWiggleTrack({
   assemblyNames: string[]
   adapter: Record<string, unknown>
 }) {
-  addAndShowTrack(
-    session,
-    {
-      trackId: makeTrackId({ name }),
-      type: 'MultiQuantitativeTrack',
-      name,
-      assemblyNames,
-      adapter: {
-        type: 'MultiWiggleAdapter',
-        ...adapter,
-      },
-    },
-    view,
-  )
+  addAndShowTrack(session, buildMultiWiggleTrackConf(rest), view)
 }

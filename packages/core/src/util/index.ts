@@ -232,6 +232,12 @@ export {
 } from './localStorage.ts'
 export { renameRegionIfNeeded, renameRegionsIfNeeded } from './renameRegions.ts'
 export { addAndShowTrack } from './addAndShowTrack.ts'
+export {
+  addTrackFromWidget,
+  containerDisplaysAssembly,
+  finishAddTrack,
+  type AddTrackWidgetSelf,
+} from './addTrackFromWidget.ts'
 export { makeTrackId } from './makeTrackId.ts'
 export { matchTrackId } from './matchTrackId.ts'
 
