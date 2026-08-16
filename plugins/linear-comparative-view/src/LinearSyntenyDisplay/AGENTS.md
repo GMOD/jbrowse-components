@@ -61,6 +61,15 @@
   twin is the recolor fast path — dotplot's
   `DotplotDisplay/instanceInterleave.ts` is the same two functions for the same
   reason.
+- **The pick context is never the render context.** `makePickCtx` (in
+  `syntenyPickEngine.ts`) hands each backend a private 1x1 offscreen 2D context,
+  because `isPointInPath` takes its point in the canvas coordinate space
+  _unaffected by the current transformation_ while the path it tests was built
+  through it — so on the Canvas2D backend's own context, which carries
+  `setTransform(dpr, …)` from `clear()`, hover and click missed by the device
+  pixel ratio on every HiDPI screen. No mock ctx applies a transform, so no
+  assertion about hit coordinates can catch a regression here; what the suites
+  pin instead is that the pick builds no path on the drawing context.
 - Picking is CPU-side: `syntenyPickEngine.ts` mirrors the shader's geometry
   (`projectCorners`, `isRibbonCulled`) and runs a Flatbush bbox query refined
   with `isPointInPath`. Both `Canvas2DSyntenyRenderer` and `GpuSyntenyRenderer`

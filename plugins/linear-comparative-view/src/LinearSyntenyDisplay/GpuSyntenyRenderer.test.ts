@@ -6,6 +6,7 @@ import {
   INSTANCE_STRIDE_BYTES,
   UNIFORM_OFFSET_F32 as U,
 } from './shaders/syntenyFillStraight.generated.ts'
+import { stubPickCtx } from './testUtils.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
@@ -61,30 +62,6 @@ function makeState(
   return { overdrawPx: 300, perTrack: new Map(perTrack) }
 }
 
-// pickFeatureAtPoint uses ctx.isPointInPath; the OffscreenCanvas path is
-// patched to return true so the Flatbush bbox candidate (always one candidate
-// for our 1-instance fixtures) is accepted as a hit.
-function stubOffscreenIsPointInPath(returnValue: boolean) {
-  const original = (globalThis as unknown as { OffscreenCanvas?: unknown })
-    .OffscreenCanvas
-  ;(globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
-    class {
-      getContext() {
-        return {
-          beginPath() {},
-          closePath() {},
-          moveTo() {},
-          lineTo() {},
-          isPointInPath: () => returnValue,
-        }
-      }
-    }
-  return () => {
-    ;(globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas =
-      original
-  }
-}
-
 describe('GpuSyntenyRenderer CPU pick', () => {
   let restore: (() => void) | undefined
 
@@ -94,7 +71,7 @@ describe('GpuSyntenyRenderer CPU pick', () => {
   })
 
   test('pick returns hit when the point falls inside a feature', () => {
-    restore = stubOffscreenIsPointInPath(true)
+    restore = stubPickCtx(true).restore
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
     const state = makeState([[0, makeParams()]])
@@ -104,7 +81,7 @@ describe('GpuSyntenyRenderer CPU pick', () => {
   })
 
   test('pick returns undefined when the path does not match', () => {
-    restore = stubOffscreenIsPointInPath(false)
+    restore = stubPickCtx(false).restore
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
     const state = makeState([[0, makeParams()]])
@@ -114,7 +91,7 @@ describe('GpuSyntenyRenderer CPU pick', () => {
   })
 
   test('off-canvas Y returns undefined without consulting the path', () => {
-    restore = stubOffscreenIsPointInPath(true)
+    restore = stubPickCtx(true).restore
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
     const state = makeState([[0, makeParams()]])

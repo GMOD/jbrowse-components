@@ -3,6 +3,51 @@ import { makeStringDict } from '@jbrowse/synteny-core'
 import type { SyntenyFeatureData } from './model.ts'
 
 /**
+ * Stand in for the context `makePickCtx` hands the pick engine, so a suite can
+ * say whether a candidate's path contains the point without a real canvas.
+ *
+ * Both backends resolve that context through `OffscreenCanvas`, which is what
+ * this replaces — and going through the same door as production is the point:
+ * the pick used to run on the Canvas2D backend's own RENDER context, where the
+ * device-scale transform silently moved the path out from under the query
+ * point. A suite that reaches into the renderer's mock ctx cannot see that,
+ * because a mock has no transform to apply.
+ *
+ * Returns the restore function and a call count, so a test can assert the pick
+ * went through here rather than through anything that draws.
+ */
+export function stubPickCtx(inPath: boolean | (() => boolean) = true) {
+  const answer = typeof inPath === 'function' ? inPath : () => inPath
+  const calls = { isPointInPath: 0, bezierCurveTo: 0 }
+  const key = 'OffscreenCanvas'
+  const globals = globalThis as unknown as Record<string, unknown>
+  const original = globals[key]
+  globals[key] = class {
+    getContext() {
+      return {
+        beginPath() {},
+        closePath() {},
+        moveTo() {},
+        lineTo() {},
+        bezierCurveTo: () => {
+          calls.bezierCurveTo++
+        },
+        isPointInPath: () => {
+          calls.isPointInPath++
+          return answer()
+        },
+      }
+    }
+  }
+  return {
+    calls,
+    restore: () => {
+      globals[key] = original
+    },
+  }
+}
+
+/**
  * One alignment block as a test writes it: readable objects, the fields it cares
  * about, defaults for the rest.
  */

@@ -21,6 +21,33 @@ export interface PickCanvasLike extends CanvasLike {
   isPointInPath(x: number, y: number): boolean
 }
 
+// The 2D context the pick path evaluates `isPointInPath` in. 1x1 and offscreen:
+// the path is rebuilt per candidate and never composited, so size doesn't
+// matter. Lazily created by each backend on its first pick.
+//
+// **It must never be a context that draws.** `isPointInPath` takes its point in
+// the canvas coordinate space *unaffected by the current transformation*, while
+// the path it tests against was transformed as it was built — so on a context
+// carrying `setTransform(dpr, …)` the two land in different spaces and the pick
+// is off by the device pixel ratio. `Canvas2DSyntenyRenderer` used to pass its
+// render context, where that made hover and click miss by 2x on every retina
+// screen (and answer a ribbon at half the cursor's x, in the top half of the
+// band, when they hit at all). A context of our own is transform-free by
+// construction, which is why this returns one rather than resetting the
+// caller's.
+export function makePickCtx(): PickCanvasLike | undefined {
+  if (typeof OffscreenCanvas !== 'undefined') {
+    const ctx = new OffscreenCanvas(1, 1).getContext('2d')
+    if (ctx) {
+      return ctx
+    }
+  }
+  if (typeof document !== 'undefined') {
+    return document.createElement('canvas').getContext('2d') ?? undefined
+  }
+  return undefined
+}
+
 // Lazily-built horizontal-extent index over one region's PICKABLE instances.
 // Boxes hold only the instance hull; the per-instance predicates that depend on
 // the live pan or on view state (min length, alpha, viewport cull) are evaluated

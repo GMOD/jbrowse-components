@@ -1,5 +1,6 @@
 import { KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { Canvas2DSyntenyRenderer } from './Canvas2DSyntenyRenderer.ts'
+import { stubPickCtx } from './testUtils.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
@@ -102,11 +103,23 @@ function makeState(
 }
 
 describe('Canvas2DSyntenyRenderer', () => {
+  // The pick path evaluates isPointInPath on a context of its own, never on the
+  // one that draws (see makePickCtx), so the pick tests below steer THIS rather
+  // than the renderer's mock ctx. `inPath` is the answer each candidate gets.
+  let pick: ReturnType<typeof stubPickCtx>
+  let inPath: () => boolean
+
   beforeEach(() => {
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
+    inPath = () => true
+    pick = stubPickCtx(() => inPath())
+  })
+
+  afterEach(() => {
+    pick.restore()
   })
 
   test('constructor throws if 2d context unavailable', () => {
@@ -519,10 +532,9 @@ describe('Canvas2DSyntenyRenderer', () => {
   })
 
   test('pick returns hit with key + instanceIndex', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
@@ -530,11 +542,41 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 0 })
   })
 
+  test('pick never builds its path on the context that draws', () => {
+    // The bug this holds: `pick` used to pass `this.ctx`, whose transform is
+    // still the `setTransform(dpr, …)` `clear()` left on it. `isPointInPath`
+    // takes its point unaffected by that transform while the path it tests was
+    // built through it, so at dpr=2 the whole silhouette sat twice as far right
+    // and down as the cursor and hovering the band answered nothing.
+    //
+    // A mock ctx applies no transform, so no assertion about hit COORDINATES
+    // can reproduce it — the checkable form of the invariant is that the pick
+    // path is built somewhere that never carries one.
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 2,
+      writable: true,
+    })
+    const { canvas, ctx, pathOps } = createMockCanvas()
+    canvas.width = 1600
+    canvas.height = 200
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    const state = makeState([[0, makeParams()]])
+    renderer.render(state)
+    const drawnOps = pathOps.length
+
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 0 })
+    expect(pathOps).toHaveLength(drawnOps)
+    expect(ctx.isPointInPath).not.toHaveBeenCalled()
+    expect(pick.calls.isPointInPath).toBeGreaterThan(0)
+  })
+
   test('pick returns undefined when isPointInPath does not match', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => false)
+    inPath = () => false
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
@@ -543,10 +585,9 @@ describe('Canvas2DSyntenyRenderer', () => {
   })
 
   test('pick returns last feature when multiple overlap (top-most wins)', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(3))
@@ -555,10 +596,9 @@ describe('Canvas2DSyntenyRenderer', () => {
   })
 
   test('pick prefers later track when multiple overlap', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 200
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 200)
     renderer.uploadGeometry(0, makeInstanceData(1))
@@ -571,10 +611,9 @@ describe('Canvas2DSyntenyRenderer', () => {
   })
 
   test('pick respects per-track yTop range', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 200
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 200)
     renderer.uploadGeometry(0, makeInstanceData(1))
@@ -590,10 +629,9 @@ describe('Canvas2DSyntenyRenderer', () => {
   })
 
   test('pick skips features below minAlignmentLength', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(
@@ -602,14 +640,13 @@ describe('Canvas2DSyntenyRenderer', () => {
     )
     const state = makeState([[0, makeParams({ minAlignmentLength: 500 })]])
     expect(renderer.pick(50, 50, state)).toBeUndefined()
-    expect(ctx.isPointInPath).not.toHaveBeenCalled()
+    expect(pick.calls.isPointInPath).toBe(0)
   })
 
   test('pick skips features with zero alpha', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(
@@ -618,17 +655,16 @@ describe('Canvas2DSyntenyRenderer', () => {
     )
     const state = makeState([[0, makeParams()]])
     expect(renderer.pick(50, 50, state)).toBeUndefined()
-    expect(ctx.isPointInPath).not.toHaveBeenCalled()
+    expect(pick.calls.isPointInPath).toBe(0)
   })
 
   test('thin ribbon drawn as a fill (perpW >= 1) is pickable', () => {
     // 1.5px-wide vertical ribbon: perpFactor 1, perpW 1.5 -> rendered as a
     // solid fill, so it must also be pickable. Regression: the old horizontal
     // span < 2 gate made this visible-but-unclickable.
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     const c1 = bpArr([100])
@@ -657,10 +693,9 @@ describe('Canvas2DSyntenyRenderer', () => {
     // 0.5px-wide vertical ribbon: perpW 0.5 -> drawn as a 1px centerline, not a
     // fill, so it's excluded from the pick index (its sliver polygon can't be
     // reliably hit) and isPointInPath is never consulted.
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     const c1 = bpArr([100])
@@ -680,27 +715,25 @@ describe('Canvas2DSyntenyRenderer', () => {
     )
     const state = makeState([[0, makeParams()]])
     expect(renderer.pick(100.25, 50, state)).toBeUndefined()
-    expect(ctx.isPointInPath).not.toHaveBeenCalled()
+    expect(pick.calls.isPointInPath).toBe(0)
   })
 
   test('pick builds curve path for curved features', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
     const state = makeState([[0, makeParams({ drawCurves: true })]])
     expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 0 })
-    expect(ctx.bezierCurveTo.mock.calls.length).toBeGreaterThan(0)
+    expect(pick.calls.bezierCurveTo).toBeGreaterThan(0)
   })
 
   test('pick after dispose returns undefined (cache cleared)', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
-    ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
@@ -710,14 +743,14 @@ describe('Canvas2DSyntenyRenderer', () => {
   })
 
   test('pick handles selective matching across multiple features', () => {
-    const { canvas, ctx } = createMockCanvas()
+    const { canvas } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
     let callCount = 0
-    ctx.isPointInPath = jest.fn(() => {
+    inPath = () => {
       callCount++
       return callCount === 2
-    })
+    }
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(3))

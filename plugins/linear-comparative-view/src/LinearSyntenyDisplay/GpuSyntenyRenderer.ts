@@ -12,10 +12,11 @@ import * as syntenyEdgeStraightShader from './shaders/syntenyEdgeStraight.genera
 import * as syntenyFillCurveShader from './shaders/syntenyFillCurve.generated.ts'
 import * as syntenyFillStraightShader from './shaders/syntenyFillStraight.generated.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
-import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
+import { makePickCtx, pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import { computeTransform } from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { PickCanvasLike } from './syntenyPickEngine.ts'
 import type {
   SyntenyRenderState,
   SyntenyRenderingBackend,
@@ -48,22 +49,6 @@ export const SYNTENY_PASSES: PipelineDescriptor[] = [
   slangPass({ id: PASS_EDGE_STRAIGHT, mod: syntenyEdgeStraightShader }),
   slangPass({ id: PASS_EDGE_CURVE, mod: syntenyEdgeCurveShader }),
 ]
-
-// 1×1 offscreen 2D context used solely to evaluate isPointInPath during CPU
-// pick — the path is rebuilt per candidate and never composited, so size
-// doesn't matter. Lazily created on first pick.
-function makePickCtx(): CanvasRenderingContext2D | undefined {
-  if (typeof OffscreenCanvas !== 'undefined') {
-    const ctx = new OffscreenCanvas(1, 1).getContext('2d')
-    if (ctx) {
-      return ctx as unknown as CanvasRenderingContext2D
-    }
-  }
-  if (typeof document !== 'undefined') {
-    return document.createElement('canvas').getContext('2d') ?? undefined
-  }
-  return undefined
-}
 
 export class GpuSyntenyRenderer
   extends GpuRenderingBackendBase
@@ -100,7 +85,7 @@ export class GpuSyntenyRenderer
       count: number
     }
   >()
-  private pickCtx: CanvasRenderingContext2D | undefined
+  private pickCtx: PickCanvasLike | undefined
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
     // The base owns `hal`, the reusable uniform scratch, `dispose`, and the
@@ -253,9 +238,6 @@ export class GpuSyntenyRenderer
     }
   }
 
-  // Packed instance bytes for a region, reusing the cached buffer when the
-  // geometry is unchanged. A recolor (new `colors`, same geometry arrays)
-  // patches only the color lane; a drawCurves toggle returns the bytes as-is.
   pick(x: number, y: number, state: SyntenyRenderState) {
     this.pickCtx ??= makePickCtx()
     const ctx = this.pickCtx

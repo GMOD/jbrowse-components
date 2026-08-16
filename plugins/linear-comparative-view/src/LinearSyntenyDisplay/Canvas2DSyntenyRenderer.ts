@@ -15,7 +15,7 @@ import {
   thinWidthFade,
 } from './shaders/syntenyTypes.js.generated.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
-import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
+import { makePickCtx, pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import {
   buildFeaturePath,
   computeTransform,
@@ -29,6 +29,7 @@ import {
 } from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { PickCanvasLike } from './syntenyPickEngine.ts'
 import type {
   SyntenyRenderState,
   SyntenyRenderingBackend,
@@ -257,6 +258,10 @@ export class Canvas2DSyntenyRenderer
   implements SyntenyRenderingBackend
 {
   private cache = new SyntenyGeometryCache()
+  // Its own, NOT `this.ctx` — see makePickCtx. This backend is the one that
+  // carries a device-scale transform on its render context, so it is the one
+  // the distinction was invisible in.
+  private pickCtx: PickCanvasLike | undefined
 
   private get dpr() {
     return getDpr()
@@ -314,8 +319,13 @@ export class Canvas2DSyntenyRenderer
   }
 
   pick(x: number, y: number, state: SyntenyRenderState) {
+    this.pickCtx ??= makePickCtx()
+    const ctx = this.pickCtx
+    if (!ctx) {
+      return undefined
+    }
     return pickFeatureAtPoint({
-      ctx: this.ctx,
+      ctx,
       state,
       regions: this.cache.regions,
       pickIndices: this.cache.pickIndices,
