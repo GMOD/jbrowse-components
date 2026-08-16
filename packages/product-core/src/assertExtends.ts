@@ -41,10 +41,16 @@ export type AssertExtends<Actual extends Expected, Expected> = Actual
  * type parameter has nothing to infer those four from and the composed result
  * degrades.
  *
- * It takes the computed boolean rather than the type itself because the
- * constraint has to be checked where it is concrete: written as
- * `AssertNotAny<T> = AssertExtends<IsAny<T>, false>` the unbound `IsAny<T>` is
- * `boolean` and the alias fails at its own declaration, and the self-referential
- * `T extends IsAny<T> extends true ? never : unknown` is a circular constraint.
+ * Naming `any` twice at the call site is not an oversight. It takes the computed
+ * boolean because the constraint has to be checked where it is concrete, and all
+ * three single-argument spellings were tried and fail:
+ *
+ * - `AssertNotAny<T> = AssertExtends<IsAny<T>, false>` — unbound, `IsAny<T>` is
+ *   `boolean`, so the alias fails at its own declaration.
+ * - `AssertNotAny<T, _ extends false = IsAny<T>> = T` — the tempting one. Same
+ *   declaration-site failure, and it does not even catch: instantiated at `any`
+ *   it reports nothing.
+ * - `AssertNotAny<T extends IsAny<T> extends true ? never : unknown>` — TS2313,
+ *   circular constraint.
  */
 export type AssertNotAny<IsItAny extends false> = IsItAny
