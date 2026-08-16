@@ -8,18 +8,18 @@
 // See ADR-004.
 
 import {
+  coverageSegmentBuffers,
   downsampleDenseMax,
   packCoverageBinsForGpu,
-  packCoverageSegmentsForGpu,
 } from '@jbrowse/alignments-core'
 
 import { packModCovSegmentsForGpu } from '../features/modCoverage/packGpu.ts'
 
 import type { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import type {
-  SNPCoverageResult,
   computeCoverage,
   computeInterbaseCoverage,
+  computeSNPCoverage,
 } from '@jbrowse/alignments-core'
 
 // The GPU coverage-depth buffer is one 8-byte record per bin. At per-bp
@@ -47,7 +47,7 @@ const MAX_GPU_COVERAGE_BINS = 262144
 // transferring the packed buffers to the main thread.
 export function packCoverageAreaForGpu(
   coverage: ReturnType<typeof computeCoverage>,
-  snp: SNPCoverageResult,
+  snp: ReturnType<typeof computeSNPCoverage>,
   interbase: ReturnType<typeof computeInterbaseCoverage>,
   modCov: ReturnType<typeof computeModificationCoverage> | undefined,
 ) {
@@ -65,7 +65,7 @@ export function packCoverageAreaForGpu(
       coverageBins.length,
       coverageBinSize,
     ),
-    ...packCoverageSegmentsForGpu(snp, interbase),
+    ...coverageSegmentBuffers(snp, interbase),
     modCovPackedBuffer: modCov
       ? packModCovSegmentsForGpu(
           modCov.positions,

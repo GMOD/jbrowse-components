@@ -2,8 +2,6 @@ import {
   computeCoverage,
   computeInterbaseCoverage,
   computeSNPCoverage,
-  emptyInterbaseCoverage,
-  emptySnpCoverage,
 } from '@jbrowse/alignments-core'
 import { updateStatus } from '@jbrowse/core/util'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
@@ -216,10 +214,13 @@ function computeCoverageBand({
     modCoverage,
   )
 
+  // Only the packed buffers, the interbase denominator, the tooltip index and
+  // the arcs leave here. The three compute results themselves were also
+  // returned and nothing downstream read them — `buildCoverageResultFields`
+  // ships `coverageAreaPacked` — so returning them kept a second, unpacked
+  // spelling of every segment alive across the RPC reply's transferable walk.
   return {
-    snpCoverage,
-    interbaseCoverage,
-    modCoverage,
+    interbaseMaxCount: interbaseCoverage.maxCount,
     modTooltip,
     sashimi,
     coverageAreaPacked,
@@ -232,9 +233,7 @@ function computeCoverageBand({
 // allocated per call (collectGroupedTransferables detaches them on transfer).
 function emptyCoverageBand(): ReturnType<typeof computeCoverageBand> {
   return {
-    snpCoverage: emptySnpCoverage(),
-    interbaseCoverage: emptyInterbaseCoverage(),
-    modCoverage: undefined,
+    interbaseMaxCount: 0,
     modTooltip: emptyModTooltipIndex(),
     sashimi: {
       sashimiX1: new Uint32Array(0),

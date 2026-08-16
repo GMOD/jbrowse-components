@@ -1,3 +1,4 @@
+import { readModCovSegments, readSnpSegments } from '@jbrowse/alignments-core'
 import { packAbgr } from '@jbrowse/core/util/colorBits'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
@@ -81,14 +82,20 @@ describe('runCoveragePipeline coverage-band gate', () => {
     // GPU device-limit crash at whole-chromosome scale.
     expect(withBand.coverage.depths.length).toBe(100)
     expect(noBand.coverage.depths.length).toBe(0)
-    expect(noBand.coverageAreaPacked.coveragePackedBuffer.byteLength).toBe(0)
-    expect(noBand.snpCoverage.count).toBe(0)
-    expect(noBand.interbaseCoverage.segmentCount).toBe(0)
+    // Asserted on the packed buffers because they are the only form these
+    // layers ship in — the compute results stay inside computeCoverageBand.
+    const packedOff = noBand.coverageAreaPacked
+    expect(packedOff.coveragePackedBuffer.byteLength).toBe(0)
+    expect(packedOff.snpPackedBuffer.byteLength).toBe(0)
+    expect(packedOff.interbasePackedBuffer.byteLength).toBe(0)
+    expect(packedOff.modCovPackedBuffer.byteLength).toBe(0)
     expect(noBand.sashimi.sashimiX1.length).toBe(0)
-    expect(noBand.modCoverage).toBeUndefined()
 
     // With the band on, the SNP segment IS produced (50% variant at depth 40).
-    expect(withBand.snpCoverage.count).toBeGreaterThan(0)
+    const snp = readSnpSegments(withBand.coverageAreaPacked.snpPackedBuffer)
+    expect(snp).toHaveLength(1)
+    expect(snp[0]!.position).toBe(MISMATCH_POS)
+    expect(snp[0]!.height).toBeCloseTo(MISMATCHES / READS)
 
     // The critical coupling: the low-frequency pileup fade must not depend on
     // whether the coverage band is drawn. Frequencies are byte-identical, and
@@ -139,8 +146,11 @@ describe('runCoveragePipeline bisulfite mod coverage', () => {
       trackStrands: true,
       bisulfite: true,
     })
-    expect(out.modCoverage?.count).toBe(2)
-    const heights = Array.from(out.modCoverage!.heights)
+    const segments = readModCovSegments(
+      out.coverageAreaPacked.modCovPackedBuffer,
+    )
+    expect(segments).toHaveLength(2)
+    const heights = segments.map(s => s.height)
     expect(heights[0]).toBeCloseTo(0.75) // methylated, bottom
     expect(heights[1]).toBeCloseTo(0.25) // unmethylated, top
     expect(heights[0]! + heights[1]!).toBeCloseTo(1)

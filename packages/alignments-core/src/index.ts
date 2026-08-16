@@ -75,10 +75,9 @@ export {
 } from './rendererUtils.ts'
 export type { Canvas2DCoverageBuffer } from './rendererUtils.ts'
 export {
+  coverageSegmentBuffers,
   packCoverageBinsForGpu,
-  packCoverageSegmentsForGpu,
   packModCovSegmentsForGpu,
-  packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
 export {
   computeInterbaseCoverage,
@@ -94,24 +93,28 @@ export type {
   IndicatorReader,
   InterbaseSegmentReader,
 } from './interbaseSegments.ts'
-// The two coverage-band buffers `computeInterbaseCoverage` owns, re-exported as
-// their shaders' own generated packers. Production has no caller — the compute
-// writes them incrementally — but a fixture stating a bar directly should still
-// encode it the way the shader decodes it, rather than by hand.
+export { computeSNPCoverage, emptySnpCoverage } from './snpCoverage.ts'
+export { readSnpSegments } from './snpSegments.ts'
+export type { SnpSegment } from './snpSegments.ts'
+export { readModCovSegments } from './modCovSegments.ts'
+export type { ModCovSegment } from './modCovSegments.ts'
+// The three coverage-band buffers the computes own, re-exported as their
+// shaders' own generated packers. Production has no caller — each compute
+// writes its buffer incrementally — but a fixture stating a segment directly
+// should still encode it the way the shader decodes it, rather than by hand.
 export { packInstances as packIndicatorInstances } from './indicatorLayout.generated.ts'
 export { packInstances as packInterbaseInstances } from './interbaseHistogramLayout.generated.ts'
+export { packInstances as packSnpInstances } from './snpCoverageLayout.generated.ts'
 export { computeCoverage } from './coverageCompute.ts'
 export type { CoverageGap } from './coverageCompute.ts'
 export {
   buildCoverageTooltipBin,
   computeCoverageTicks,
   coverageDepthDomain,
-  computeSNPCoverage,
   computeVisibleCoverageStats,
   countSnpsAtPosition,
   downsampleDenseMax,
   downsampleStatsBins,
-  emptySnpCoverage,
   findSignificantInBin,
   interbaseDepthAt,
   niceStep,
@@ -122,7 +125,6 @@ export type {
   CoverageTooltipBin,
   InterbaseArrays,
   MismatchEntry,
-  SNPCoverageResult,
 } from './coverageDownsampling.ts'
 export {
   forEachAtPosition,

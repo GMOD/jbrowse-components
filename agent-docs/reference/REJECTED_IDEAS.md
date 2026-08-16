@@ -626,8 +626,7 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   them is calls-per-record, not how much of the loop is generated:
 
   - `packInstances` (struct-of-arrays in, **zero** calls per record) — **0.99
-    to 1.15x, free.** It is what `packSnpSegmentsForGpu` and
-    `packModCovSegmentsForGpu` run.
+    to 1.15x, free.** It is what `packModCovSegmentsForGpu` runs.
   - `InstanceWriter.push` (**one** call per record) — **0.20-0.36x**, i.e.
     worse than the four bare accessors, because the method also reloads four
     `this.` views and tests capacity on every record.
@@ -638,9 +637,10 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   So a caller that cannot hand `packInstances` one array per field — because it
   scales on the way in, computes a field, or emits a variable number of records
   — should write the loop over the generated offset maps, NOT reach for a
-  generated per-record form. `packCoverageBinsForGpu` (scales and computes) and
-  `computeInterbaseCoverage` (one to three records per bucket) are both that
-  case, and both are hand-written on purpose. The codegen's own header already says
+  generated per-record form. `packCoverageBinsForGpu` (scales and computes),
+  `computeSNPCoverage` (one to five records per position) and
+  `computeInterbaseCoverage` (one to three records per bucket) are all that
+  case, and all are hand-written on purpose. The codegen's own header already says
   this for `packInstances`; the addition is that no other generated shape is an
   escape from it.
 

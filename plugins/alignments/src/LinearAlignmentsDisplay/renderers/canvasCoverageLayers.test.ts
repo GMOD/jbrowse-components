@@ -1,7 +1,7 @@
 import {
   packCoverageBinsForGpu,
   packModCovSegmentsForGpu,
-  packSnpSegmentsForGpu,
+  packSnpInstances,
 } from '@jbrowse/alignments-core'
 
 import {
@@ -56,12 +56,14 @@ function fullyPopulated(): Canvas2DRegionData {
       START,
       1,
     ),
-    snpPackedBuffer: packSnpSegmentsForGpu(
-      new Uint32Array([START + 1]),
-      new Float32Array([0]),
-      new Float32Array([0.4]),
-      new Uint8Array([1]),
-      new Float32Array([1]),
+    snpPackedBuffer: packSnpInstances(
+      {
+        position: [START + 1],
+        yOffset: [0],
+        segHeight: [0.4],
+        colorType: [1],
+        relDepth: [1],
+      },
       1,
     ),
     modCovPackedBuffer: packModCovSegmentsForGpu(

@@ -23,7 +23,8 @@ here comparing two implementations is an interleaved ratio.
   computeSNPCoverage                             27 ms
   computeInterbaseCoverage                        6 ms
   packCoverageBinsCanvas2D                        1 ms
-  packCoverageSegmentsForGpu                      6 ms
+  packCoverageSegmentsForGpu                      6 ms   <- since folded into
+                                                         the two computes
   collectMafTransferables                       0.0 ms
   ---------------------------------------------------
   worker total                                 ~186 ms

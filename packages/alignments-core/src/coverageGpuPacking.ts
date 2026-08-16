@@ -7,10 +7,10 @@
 //
 // Offsets come in through `INSTANCE_OFFSET_U32` / `_F32` — one map per
 // typed-array view, holding only the fields whose Slang type takes that view —
-// so `SNP_F32.position` on a `uint position` doesn't compile, and the view a
-// field wants is legible at the call site instead of being this file's guess.
-// (A deliberate `f32[o + SNP_U32.position]` still type-checks; the split ends
-// the drift, it doesn't prove the pairing.)
+// so `COVERAGE_F32.position` on a `uint position` doesn't compile, and the view
+// a field wants is legible at the call site instead of being this file's guess.
+// (A deliberate `f32[o + COVERAGE_U32.position]` still type-checks; the split
+// ends the drift, it doesn't prove the pairing.)
 //
 // The generated `packInstances` DOES prove it, and where a packer is a straight
 // interleave — one input array per field, no scaling on the way in — it is what
@@ -46,10 +46,9 @@ import {
   INSTANCE_STRIDE_WORDS as COVERAGE_STRIDE,
 } from './coverageLayout.generated.ts'
 import { packInstances as packModCovInstances } from './modCoverageLayout.generated.ts'
-import { packInstances as packSnpInstances } from './snpCoverageLayout.generated.ts'
 
-import type { SNPCoverageResult } from './coverageDownsampling.ts'
 import type { computeInterbaseCoverage } from './interbaseCoverage.ts'
+import type { computeSNPCoverage } from './snpCoverage.ts'
 
 // Position is absolute genomic uint32 (exact up to 4 Gbp); the shader uses
 // hp-math for clip-space conversion. `binSize` is the bin width in bp: bin i spans
@@ -85,37 +84,15 @@ export function packCoverageBinsForGpu(
   return buffer
 }
 
-// relDepth = totalDepthAtPos / regionMaxDepth lets the shader draw segments as
-// a linear fraction of a possibly-log-scaled coverage bar at this position.
-//
-// This and `packModCovSegmentsForGpu` below each used to spell `relDepths[i] ??
-// 1`. That default was unreachable — both producers allocate `relDepths` at
-// exactly `count`, and an in-range read of a Float32Array is a number — and it
-// was worse than unreachable: had `count` ever exceeded the array (the crossed
-// (array, count) pairing `packCoverageArea.test.ts` guards), it would have
-// packed a plausible 1 instead of the NaN that shows.
-export function packSnpSegmentsForGpu(
-  positions: Uint32Array,
-  yOffsets: Float32Array,
-  heights: Float32Array,
-  colorTypes: Uint8Array,
-  relDepths: Float32Array,
-  count: number,
-) {
-  return packSnpInstances(
-    {
-      position: positions,
-      yOffset: yOffsets,
-      segHeight: heights,
-      colorType: colorTypes,
-      relDepth: relDepths,
-    },
-    count,
-  )
-}
-
 // Position is absolute uint32; `colors` is pre-packed ABGR u32. relDepth =
 // totalDepthAtPos / regionMaxDepth (see snpCoverage.slang for details).
+//
+// This used to spell `relDepths[i] ?? 1`. That default was unreachable — the
+// producer allocates `relDepths` at exactly `count`, and an in-range read of a
+// Float32Array is a number — and it was worse than unreachable: had `count`
+// ever exceeded the array (the crossed (array, count) pairing
+// `packCoverageArea.test.ts` guards), it would have packed a plausible 1
+// instead of the NaN that shows.
 export function packModCovSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
@@ -137,26 +114,19 @@ export function packModCovSegmentsForGpu(
 }
 
 // The SNP + interbase-histogram + indicator GPU segment buffers are the coverage
-// area's position-aggregate passes, packed identically for every backend (the
+// area's position-aggregate passes, shipped identically for every backend (the
 // pileup worker and the MAF worker both feed the same three shaders). Grouping
-// them here keeps the field order in one place so the two callers can't drift.
+// them here keeps the field naming in one place so the two callers can't drift.
 //
-// The interbase pair is forwarded rather than packed: `computeInterbaseCoverage`
-// writes those two buffers directly, so there is no intermediate array form of
-// them to pack from and no separable count to pair with the wrong array.
-export function packCoverageSegmentsForGpu(
-  snp: SNPCoverageResult,
+// Nothing is packed here any more: all three computes write their own instance
+// buffer, so there is no intermediate array form to pack from and no separable
+// count to pair with the wrong array. This is a rename of three fields.
+export function coverageSegmentBuffers(
+  snp: ReturnType<typeof computeSNPCoverage>,
   interbase: ReturnType<typeof computeInterbaseCoverage>,
 ) {
   return {
-    snpPackedBuffer: packSnpSegmentsForGpu(
-      snp.positions,
-      snp.yOffsets,
-      snp.heights,
-      snp.colorTypes,
-      snp.relDepths,
-      snp.count,
-    ),
+    snpPackedBuffer: snp.snpPackedBuffer,
     interbasePackedBuffer: interbase.interbasePackedBuffer,
     indicatorPackedBuffer: interbase.indicatorPackedBuffer,
   }

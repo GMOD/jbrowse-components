@@ -1,29 +1,31 @@
-import { emptyInterbaseCoverage } from '@jbrowse/alignments-core'
+import {
+  emptyInterbaseCoverage,
+  emptySnpCoverage,
+} from '@jbrowse/alignments-core'
 
 import { COVERAGE_PASS } from '../features/coverage/packGpu.ts'
 import { MOD_COVERAGE_PASS } from '../features/modCoverage/packGpu.ts'
-import { SNP_COVERAGE_PASS } from '../features/snpCoverage/packGpu.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 
 import type { PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 /**
- * Three of the coverage-band packers still take their record count as a plain
- * argument beside the arrays it belongs to — `packSnpSegmentsForGpu(positions,
- * …, count)` and friends — and swapping two of those arguments type-checks,
- * both being `number` off the same compute result. A crossed pairing packs the
- * wrong number of bytes, the GPU draws as many instances as the bytes hold, and
- * the two backends disagree about how many segments exist.
+ * `packModCovSegmentsForGpu(positions, …, count)` still takes its record count
+ * as a plain argument beside the arrays it belongs to, and swapping two of
+ * those arguments type-checks, both being `number` off the same compute result.
+ * A crossed pairing packs the wrong number of bytes, the GPU draws as many
+ * instances as the bytes hold, and the two backends disagree about how many
+ * segments exist.
  *
  * So the fixtures below give every pass a DIFFERENT length, and this asserts
  * each buffer came out at its own.
  *
- * The interbase and indicator passes are deliberately absent: their buffers are
- * written by `computeInterbaseCoverage` itself and forwarded, so there is no
- * (array, count) pair left to cross and nothing here could fail.
+ * The SNP, interbase and indicator passes are deliberately absent: their
+ * buffers are written by `computeSNPCoverage` / `computeInterbaseCoverage`
+ * themselves and forwarded, so there is no (array, count) pair left to cross
+ * and nothing here could fail.
  */
 
-const SNP_N = 3
 const MOD_COV_N = 5
 const BIN_N = 6
 
@@ -44,14 +46,7 @@ function packed() {
       binSize: 1,
       startPos: 10_000,
     },
-    {
-      positions: positions(SNP_N),
-      yOffsets: new Float32Array(SNP_N),
-      heights: ramp(SNP_N),
-      colorTypes: new Uint8Array(SNP_N).fill(1),
-      relDepths: new Float32Array(SNP_N).fill(1),
-      count: SNP_N,
-    },
+    emptySnpCoverage(),
     emptyInterbaseCoverage(),
     {
       positions: positions(MOD_COV_N),
@@ -73,11 +68,9 @@ describe('the worker packs as many instances as the arrays it packed from', () =
     const p = packed()
     expect({
       coverage: instances(COVERAGE_PASS, p.coveragePackedBuffer),
-      snp: instances(SNP_COVERAGE_PASS, p.snpPackedBuffer),
       modCov: instances(MOD_COVERAGE_PASS, p.modCovPackedBuffer),
     }).toEqual({
       coverage: BIN_N,
-      snp: SNP_N,
       modCov: MOD_COV_N,
     })
   })
@@ -95,14 +88,7 @@ describe('the worker packs as many instances as the arrays it packed from', () =
         binSize: 1,
         startPos: 0,
       },
-      {
-        positions: new Uint32Array(0),
-        yOffsets: new Float32Array(0),
-        heights: new Float32Array(0),
-        colorTypes: new Uint8Array(0),
-        relDepths: new Float32Array(0),
-        count: 0,
-      },
+      emptySnpCoverage(),
       emptyInterbaseCoverage(),
       undefined,
     )

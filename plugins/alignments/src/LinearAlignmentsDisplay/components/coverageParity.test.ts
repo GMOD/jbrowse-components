@@ -1,7 +1,7 @@
 import {
   coverageLayout,
   packCoverageBinsForGpu,
-  packSnpSegmentsForGpu,
+  packSnpInstances,
 } from '@jbrowse/alignments-core'
 import { MockHal } from '@jbrowse/render-core/hal'
 
@@ -42,11 +42,6 @@ const COVERAGE_START_OFFSET = REGION_START + 5
 function makeCoverageData(): CoverageUploadData {
   const coverageDepths = new Float32Array([10, 30, 50, 20, 40])
   const coverageMaxDepth = 50
-  const snpPositions = new Uint32Array([REGION_START + 1, REGION_START + 3])
-  const snpYOffsets = new Float32Array([0, 0.2])
-  const snpHeights = new Float32Array([0.4, 0.3])
-  const snpColorTypes = new Uint8Array([1, 2])
-  const snpRelDepths = new Float32Array([1, 1])
   return {
     coverageDepths,
     coverageMaxDepth,
@@ -59,14 +54,7 @@ function makeCoverageData(): CoverageUploadData {
       COVERAGE_START_OFFSET,
       coverageDepths.length,
     ),
-    snpPackedBuffer: packSnpSegmentsForGpu(
-      snpPositions,
-      snpYOffsets,
-      snpHeights,
-      snpColorTypes,
-      snpRelDepths,
-      snpPositions.length,
-    ),
+    snpPackedBuffer: SNP_BUFFER,
     interbaseMaxCount: 0,
     interbasePackedBuffer: packedInterbaseSegments([]),
     indicatorPackedBuffer: packedIndicators([
@@ -77,10 +65,24 @@ function makeCoverageData(): CoverageUploadData {
 
 // The SNP fixture's own values, for the parity assertions below: the buffer is
 // the only shipped form, so the expectation has to name them here rather than
-// read them back off the region.
+// read them back off the region. Encoded through the shader's own generated
+// packer — `computeSNPCoverage` writes this layout directly and has no array
+// form to build a fixture from, and its stacking rules wouldn't produce these
+// two segments anyway.
+const SNP_POSITIONS = [REGION_START + 1, REGION_START + 3]
 const SNP_YOFFSETS = [0, 0.2]
 const SNP_HEIGHTS = [0.4, 0.3]
 const SNP_COLOR_TYPES = [1, 2]
+const SNP_BUFFER = packSnpInstances(
+  {
+    position: SNP_POSITIONS,
+    yOffset: SNP_YOFFSETS,
+    segHeight: SNP_HEIGHTS,
+    colorType: SNP_COLOR_TYPES,
+    relDepth: [1, 1],
+  },
+  SNP_POSITIONS.length,
+)
 
 function makeMinimalReadData() {
   return {

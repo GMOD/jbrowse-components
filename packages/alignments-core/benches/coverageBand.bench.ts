@@ -18,15 +18,21 @@
 // breakdown and is on by default with the band, so a deep short-read window
 // paid two extra full walks of every read on every fetch.
 //
-// **The SNP segment build.** `computeSNPCoverage` counts mismatches into a flat
-// per-bp lane array and then walks THE WHOLE WINDOW twice — once to size the
-// output, once to fill it. Both walks cost the region's width no matter how few
+// **The SNP segment build.** `computeSNPCoverage` used to count mismatches into
+// a flat per-bp lane array — `new Uint32Array(windowLength * 5)`, 20 bytes per
+// bp of the coverage window — and then walk the window to fill the output.
+// Both the allocation and the walk cost the region's width no matter how few
 // mismatches are in it, which is the regime a zoomed-out pileup and every MAF
-// region are in.
+// region are in. The mismatches arrive ascending, so the lane array is not
+// needed at all: equal positions are contiguous and five scratch counters group
+// them.
 //
 // ARMS, and why each is declared longhand here rather than imported:
-//   three-pass / window-scan   what shipped before
-//   one-pass / data-bound      what ships now
+//   three-pass / window-scan   the first shape: bucket, size by scanning the
+//                              window, fill by scanning it again
+//   one-pass / data-bound      the second: size off the mismatch walk, and
+//                              bound the fill to [minOffset, maxOffset]
+//   run-walk                   what ships now: no per-bp structure
 //   control                    a second, separately-declared copy of the
 //                              baseline. Whatever it scores is what this
 //                              machine could resolve; a row whose control is
@@ -61,13 +67,18 @@
 // noise swamps them. The win is in the read count, and the short-read row is
 // where the read count is.
 //
-// The dense SNP row is small on purpose: with mismatches over the whole window,
-// both arms walk the same span and all that is removed is the separate sizing
-// walk. The sparse row is the one that matters, and it is the regime every
-// zoomed-out pileup and every MAF region is in.
+// The two SNP rows are the two regimes, and only one of them separates the
+// arms. dense-spread puts 300k mismatches over 200k bins, so the lane array is
+// nearly full and the runs are 1.5 long — every arm walks the same span, and
+// the three non-baseline arms swap places run to run inside a spread the
+// control shows is noise. Don't read a winner off that row. sparse-clustered is
+// the regime every zoomed-out pileup and every MAF region is in, and there the
+// window-sized allocation IS the cost: run-walk is ~2.5x data-bound and never
+// allocates the 10 MB.
 
 import { computeCoverage } from '../src/coverageCompute.ts'
-import { computeSNPCoverage } from '../src/coverageDownsampling.ts'
+import { computeSNPCoverage } from '../src/snpCoverage.ts'
+import { readSnpSegments } from '../src/snpSegments.ts'
 
 const arg = (name: string, dflt: string) =>
   process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? dflt
@@ -144,12 +155,19 @@ function makeMismatches(
   seed: number,
 ) {
   const rand = rng(seed)
+  const drawn = Array.from({ length: count }, () => ({
+    position: spanStart + Math.floor(rand() * (spanEnd - spanStart)),
+    base: [65, 67, 71, 84, 78][Math.floor(rand() * 5)]!,
+  }))
+  // Ascending, which is `computeSNPCoverage`'s input contract and what the
+  // run-walk arm needs. The two window-scan arms are order-insensitive, so
+  // sorting here costs them nothing and keeps every arm on one fixture.
+  drawn.sort((a, b) => a.position - b.position)
   const positions = new Uint32Array(count)
   const bases = new Uint8Array(count)
-  const codes = [65, 67, 71, 84, 78]
   for (let i = 0; i < count; i++) {
-    positions[i] = spanStart + Math.floor(rand() * (spanEnd - spanStart))
-    bases[i] = codes[Math.floor(rand() * 5)]!
+    positions[i] = drawn[i]!.position
+    bases[i] = drawn[i]!.base
   }
   return { positions, bases }
 }
@@ -390,6 +408,90 @@ const snpWindowScan = (
   return { positions, yOffsets, heights, colorTypes, relDepths, count }
 }
 
+// Set bits in a 5-lane mask, for the run-walk's sizing pass.
+const LANES_SET = Uint8Array.from({ length: 32 }, (_, m) => {
+  let n = 0
+  for (let bit = 0; bit < 5; bit++) {
+    n += (m >> bit) & 1
+  }
+  return n
+})
+
+// NEW. No per-bp structure at all: the mismatches arrive ascending, so equal
+// positions are contiguous and a run-walk with five scratch counters groups
+// them. Costs the DATA, never the region.
+const snpRunWalk = (
+  mismatchPositions: Uint32Array,
+  mismatchBases: Uint8Array,
+  coverageDepths: Float32Array,
+  maxDepth: number,
+  coverageStartPos: number,
+) => {
+  const windowLength = coverageDepths.length
+  const len = mismatchPositions.length
+  let count = 0
+  let i = 0
+  while (i < len) {
+    const position = mismatchPositions[i]!
+    const offset = position - coverageStartPos
+    if (offset >= 0 && offset < windowLength && coverageDepths[offset]! > 0) {
+      let mask = 0
+      while (i < len && mismatchPositions[i] === position) {
+        mask |= 1 << laneOf(mismatchBases[i])
+        i++
+      }
+      count += LANES_SET[mask]!
+    } else {
+      while (i < len && mismatchPositions[i] === position) {
+        i++
+      }
+    }
+  }
+  const positions = new Uint32Array(count)
+  const yOffsets = new Float32Array(count)
+  const heights = new Float32Array(count)
+  const colorTypes = new Uint8Array(count)
+  const relDepths = new Float32Array(count)
+  const counts = new Uint32Array(5)
+  let idx = 0
+  i = 0
+  while (i < len) {
+    const position = mismatchPositions[i]!
+    const offset = position - coverageStartPos
+    const totalDepth =
+      offset >= 0 && offset < windowLength ? coverageDepths[offset]! : 0
+    while (i < len && mismatchPositions[i] === position) {
+      counts[laneOf(mismatchBases[i])]!++
+      i++
+    }
+    if (totalDepth > 0) {
+      const relDepth = totalDepth / maxDepth
+      let yOffset = 0
+      for (let lane = 0; lane < 5; lane++) {
+        const n = counts[lane]!
+        if (n > 0) {
+          counts[lane] = 0
+          const height = n / totalDepth
+          positions[idx] = position
+          yOffsets[idx] = yOffset
+          heights[idx] = height
+          colorTypes[idx] = lane + 1
+          relDepths[idx] = relDepth
+          idx++
+          yOffset += height
+        }
+      }
+    } else {
+      counts[0] = 0
+      counts[1] = 0
+      counts[2] = 0
+      counts[3] = 0
+      counts[4] = 0
+    }
+  }
+  return { positions, yOffsets, heights, colorTypes, relDepths, count }
+}
+
 // CONTROL. Byte-identical to snpWindowScan; separate literal on purpose.
 const snpControl = (
   mismatchPositions: Uint32Array,
@@ -447,8 +549,10 @@ const snpControl = (
   return { positions, yOffsets, heights, colorTypes, relDepths, count }
 }
 
-// NEW. The size is derived off each lane's 0 -> 1 transition during the
-// mismatch walk, and the fill is bounded to the span the mismatches occupy.
+// The second shape. The size is derived off each lane's 0 -> 1 transition
+// during the mismatch walk, and the fill is bounded to the span the mismatches
+// occupy — but the lane array is still window-sized, and one mismatch near each
+// end widens the fill bound back to the whole window.
 const snpDataBound = (
   mismatchPositions: Uint32Array,
   mismatchBases: Uint8Array,
@@ -730,18 +834,33 @@ for (const fx of SNP_FIXTURES) {
   const a = snpWindowScan(positions, bases, depths, maxDepth, coverageStartPos)
   const b = snpDataBound(positions, bases, depths, maxDepth, coverageStartPos)
   const c = snpControl(positions, bases, depths, maxDepth, coverageStartPos)
+  const d = snpRunWalk(positions, bases, depths, maxDepth, coverageStartPos)
   checkSnp(fx.name, a, b)
   checkSnp(`${fx.name} control`, a, c)
-  const shipped = computeSNPCoverage(positions, bases, {
-    depths,
-    maxDepth,
-    startPos: coverageStartPos,
+  checkSnp(`${fx.name} run-walk`, a, d)
+  // The shipped fn writes the packed instance buffer and has no array form, so
+  // the identity check decodes it back into one. Same records, same order.
+  const decoded = readSnpSegments(
+    computeSNPCoverage(positions, bases, {
+      depths,
+      maxDepth,
+      startPos: coverageStartPos,
+    }).snpPackedBuffer,
+  )
+  checkSnp(`${fx.name} shipped`, a, {
+    count: decoded.length,
+    positions: decoded.map(s => s.position),
+    yOffsets: decoded.map(s => s.yOffset),
+    heights: decoded.map(s => s.height),
+    colorTypes: decoded.map(s => s.colorType),
+    relDepths: decoded.map(s => s.relDepth),
   })
-  checkSnp(`${fx.name} shipped`, b, shipped)
 
-  const best = {
+  const ARMS = ['window-scan', 'data-bound', 'run-walk', 'control'] as const
+  const best: Record<string, number> = {
     'window-scan': Infinity,
     'data-bound': Infinity,
+    'run-walk': Infinity,
     control: Infinity,
   }
   for (let r = 0; r < ROUNDS; r++) {
@@ -749,31 +868,28 @@ for (const fx of SNP_FIXTURES) {
     // Rotated, same reason as the sweep above. Each branch is its own call
     // expression to a distinct function literal, so no call site goes
     // polymorphic — what rotates is the ORDER, not the dispatch.
-    for (let k = 0; k < 3; k++) {
-      const which = (r + k) % 3
+    for (let k = 0; k < ARMS.length; k++) {
+      const which = (r + k) % ARMS.length
       const t = performance.now()
       if (which === 0) {
         snpWindowScan(positions, bases, depths, maxDepth, coverageStartPos)
       } else if (which === 1) {
         snpDataBound(positions, bases, depths, maxDepth, coverageStartPos)
+      } else if (which === 2) {
+        snpRunWalk(positions, bases, depths, maxDepth, coverageStartPos)
       } else {
         snpControl(positions, bases, depths, maxDepth, coverageStartPos)
       }
       const ms = performance.now() - t
-      const label =
-        which === 0 ? 'window-scan' : which === 1 ? 'data-bound' : 'control'
-      best[label] = Math.min(best[label], ms)
+      const label = ARMS[which]!
+      best[label] = Math.min(best[label]!, ms)
     }
   }
   console.log(
     `\nsnp segments — ${fx.name}: ${fx.windowLength} bins, ${fx.mismatches} mismatches over ${span} bp, ${a.count} segments`,
   )
   report(
-    [
-      { label: 'window-scan', ms: best['window-scan'] },
-      { label: 'data-bound', ms: best['data-bound'] },
-      { label: 'control', ms: best.control },
-    ],
+    ARMS.map(label => ({ label, ms: best[label]! })),
     'window-scan',
   )
 }

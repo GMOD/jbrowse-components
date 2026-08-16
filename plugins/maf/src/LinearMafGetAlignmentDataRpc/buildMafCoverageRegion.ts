@@ -1,8 +1,8 @@
 import {
   computeInterbaseCoverage,
   computeSNPCoverage,
+  coverageSegmentBuffers,
   packCoverageBinsCanvas2D,
-  packCoverageSegmentsForGpu,
   positionOrder,
 } from '@jbrowse/alignments-core'
 
@@ -87,6 +87,6 @@ export function buildMafCoverageRegion(
       mafCov.startPos,
     ),
     interbaseMaxCount: interbaseCoverage.maxCount,
-    ...packCoverageSegmentsForGpu(snpCoverage, interbaseCoverage),
+    ...coverageSegmentBuffers(snpCoverage, interbaseCoverage),
   }
 }

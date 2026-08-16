@@ -29,7 +29,7 @@ export function buildCoverageResultFields(
 ) {
   const {
     coverage,
-    interbaseCoverage,
+    interbaseMaxCount,
     coverageAreaPacked,
     sashimi,
     modTooltip,
@@ -61,7 +61,7 @@ export function buildCoverageResultFields(
     // The denominator the interbase stack fractions were baked against; see
     // `interbaseBarHeightPx`. Not derivable from the buffer, so it travels
     // beside it.
-    interbaseMaxCount: interbaseCoverage.maxCount,
+    interbaseMaxCount,
 
     ...coverageAreaPacked,
     ...sashimi,
