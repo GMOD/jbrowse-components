@@ -606,17 +606,33 @@ exits, so a warning would scroll past and leave you with a wrong image. The
 
 **All tracks**
 
-| Modifier        | Example                | Description                                           |
-| --------------- | ---------------------- | ----------------------------------------------------- |
-| `height:N`      | `height:400`           | Track height in pixels                                |
-| `force:true`    | `force:true`           | Render even if region is too large                    |
-| `display:value` | `display:multivariant` | Pick a non-default display for the track (see below)  |
-| `name:label`    | `name:"Tumor"`         | Track label (defaults to the filename)                |
-| `index:path`    | `index:reads.bam.csi`  | Index file, when it isn't `<file>.bai`/`.tbi`/`.crai` |
+| Modifier        | Example                | Description                                          |
+| --------------- | ---------------------- | ---------------------------------------------------- |
+| `height:N`      | `height:400`           | Track height in pixels                               |
+| `force:true`    | `force:true`           | Render even if region is too large                   |
+| `display:value` | `display:multivariant` | Pick a non-default display for the track (see below) |
+| `name:label`    | `name:"Tumor"`         | Track label (defaults to the filename)               |
+| `index:path`    | `index:reads.bam.csi`  | Index file, when it isn't a sibling of the data file |
 
 A track is identified by its filename, so two inputs sharing one —
 `--bam tumor/sample.bam --bam normal/sample.bam` — would both be labelled
 `sample.bam`. Both render, but pass `name:` to tell them apart in the figure.
+
+With no `index:`, a **local** file's index is whichever of these siblings is
+actually there, opened as the type it is:
+
+<!-- INJECT_INDEX_SPELLINGS START: auto-filled from indexSpellings in products/jbrowse-img/src/makeConfigs.ts by website/scripts/generate-img-doc.ts -->
+
+| Spelling                       | Written by                                                     |
+| ------------------------------ | -------------------------------------------------------------- |
+| `<file>.tbi`, `<file>.bai`     | samtools, tabix                                                |
+| `<file>.csi`                   | htslib, for a reference over 512 Mb and on request at any size |
+| `reads.bai` beside `reads.bam` | Picard, GATK                                                   |
+
+<!-- INJECT_INDEX_SPELLINGS END -->
+
+A remote file is not probed, since checking costs a request, so a hosted `.csi`
+still wants an explicit `index:`.
 
 By default each track uses its primary display. `display:value` selects an
 alternate one. These friendly aliases are recognized (any other value is passed

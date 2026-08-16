@@ -186,6 +186,107 @@ describe('makeTrackConfig', () => {
     expect(config?.adapter).toMatchObject({ index: { indexType: 'CSI' } })
   })
 
+  describe('a local file indexed only with .csi', () => {
+    // htslib writes .csi rather than .tbi/.bai for a reference over 512 Mb, and
+    // on request at any size. Those files used to need an explicit `index:` and
+    // otherwise failed on a sibling they never had.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-csi-'))
+    const vcf = path.join(dir, 'variants.vcf.gz')
+    const bam = path.join(dir, 'reads.bam')
+    beforeAll(() => {
+      fs.writeFileSync(vcf, '')
+      fs.writeFileSync(`${vcf}.csi`, '')
+      fs.writeFileSync(bam, '')
+      fs.writeFileSync(`${bam}.csi`, '')
+    })
+    afterAll(() => {
+      fs.rmSync(dir, { recursive: true, force: true })
+    })
+
+    test('a tabix track finds it, and opens it as CSI', () => {
+      expect(
+        makeTrackConfig('vcfgz', vcf, undefined, fakeAssembly)?.adapter,
+      ).toMatchObject({
+        index: { indexType: 'CSI', location: { localPath: `${vcf}.csi` } },
+      })
+    })
+
+    test('a bam track finds it too', () => {
+      expect(
+        makeTrackConfig('bam', bam, undefined, fakeAssembly)?.adapter,
+      ).toMatchObject({
+        index: { indexType: 'CSI', location: { localPath: `${bam}.csi` } },
+      })
+    })
+
+    test('the conventional sibling still wins when it is there', () => {
+      fs.writeFileSync(`${vcf}.tbi`, '')
+      try {
+        expect(
+          makeTrackConfig('vcfgz', vcf, undefined, fakeAssembly)?.adapter,
+        ).toMatchObject({ index: { indexType: 'TBI' } })
+      } finally {
+        fs.rmSync(`${vcf}.tbi`)
+      }
+    })
+  })
+
+  test('a bam finds the Picard/GATK "reads.bai" spelling', () => {
+    // samtools writes reads.bam.bai; Picard and GATK write reads.bai
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-bai-'))
+    const bam = path.join(dir, 'reads.bam')
+    fs.writeFileSync(bam, '')
+    fs.writeFileSync(path.join(dir, 'reads.bai'), '')
+    try {
+      expect(
+        makeTrackConfig('bam', bam, undefined, fakeAssembly)?.adapter,
+      ).toMatchObject({
+        index: {
+          indexType: 'BAI',
+          location: { localPath: path.join(dir, 'reads.bai') },
+        },
+      })
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('a non-bam is never opened as its own index', () => {
+    // the stripped-extension guess is guarded on the extension matching; without
+    // that, `file.replace(/\.bam$/, '.bai')` returns the data file itself, which
+    // exists, and would be handed over as the index
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-self-'))
+    const data = path.join(dir, 'reads.sam')
+    fs.writeFileSync(data, '')
+    try {
+      expect(
+        makeTrackConfig('bam', data, undefined, fakeAssembly)?.adapter,
+      ).toMatchObject({
+        index: { location: { localPath: `${data}.bai` } },
+      })
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('a remote file keeps the conventional sibling, unprobed', () => {
+    // A URL cannot be checked without a request, and this builder is
+    // synchronous, so a remote .csi still wants an explicit `index:`.
+    expect(
+      makeTrackConfig(
+        'vcfgz',
+        'https://example.com/variants.vcf.gz',
+        undefined,
+        fakeAssembly,
+      )?.adapter,
+    ).toMatchObject({
+      index: {
+        indexType: 'TBI',
+        location: { uri: 'https://example.com/variants.vcf.gz.tbi' },
+      },
+    })
+  })
+
   test('gffgz track', () => {
     const config = makeTrackConfig(
       'gffgz',

@@ -8,6 +8,7 @@ import {
 import { join } from 'node:path'
 
 import {
+  indexSpellings,
   syntenyTrackTypes,
   trackTypes,
 } from '../../products/jbrowse-img/src/makeConfigs.ts'
@@ -98,6 +99,27 @@ function injectHelp(md: string) {
   )
 }
 
+// The index spellings a track flag probes for, generated from the list
+// `siblingIndex` actually walks — a spelling added there appears here rather
+// than being restated in prose that then goes out of date.
+const indexStartRe =
+  /(<!-- INJECT_INDEX_SPELLINGS START[^>]*-->)[\s\S]*?(<!-- INJECT_INDEX_SPELLINGS END -->)/
+
+function injectIndexSpellings(md: string) {
+  if (!indexStartRe.test(md)) {
+    throw new Error('README is missing the INJECT_INDEX_SPELLINGS marker block')
+  }
+  const table = [
+    '| Spelling | Written by |',
+    '| -------- | ---------- |',
+    ...indexSpellings.map(s => `| ${s.name} | ${s.writtenBy} |`),
+  ].join('\n')
+  return md.replace(
+    indexStartRe,
+    (_match, start: string, end: string) => `${start}\n\n${table}\n\n${end}`,
+  )
+}
+
 // The site renders captioned figures via the <Figure> component (handled by
 // remark-figure), so convert the README's plain markdown images into <Figure>s
 // — the image alt text becomes the figcaption.
@@ -121,7 +143,7 @@ function generate() {
   // is byte-identical to what `pnpm format` produces — then both the README and
   // the doc generated from it stay current and idempotent under --check.
   const readme = formatMarkdown(
-    injectHelp(readFileSync(readmePath, 'utf8')),
+    injectIndexSpellings(injectHelp(readFileSync(readmePath, 'utf8'))),
     readmePath,
   )
   // Drop the leading "# @jbrowse/img" H1 — the frontmatter title supplies the
