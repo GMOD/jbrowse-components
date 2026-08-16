@@ -1,4 +1,6 @@
 import { getSession, isUriLocation, makeTrackId } from '@jbrowse/core/util'
+import { detectIndexLocation } from '@jbrowse/core/util/indexCandidates'
+import { openLocation } from '@jbrowse/core/util/io'
 import {
   UNKNOWN,
   getFileName,
@@ -44,6 +46,11 @@ function createVolatileState() {
     textIndexTrack: true,
     textIndexingConf: undefined as IndexingAttr | undefined,
     mixinData: {} as Record<string, unknown>,
+    // The filename of an index this widget found beside the main file, so the
+    // form can say the field was filled in for you rather than leaving a path
+    // you did not type looking like one you did. Cleared the moment you set an
+    // index yourself.
+    detectedIndexName: undefined as string | undefined,
   }
 }
 
@@ -121,6 +128,12 @@ export default function f(pluginManager: PluginManager) {
         self.trackData = obj
         // Clear adapter hint when track data changes to force re-evaluation
         self.adapterHint = ''
+        // a detection belongs to the file it was made against, so a new main
+        // file drops both the note and the index it filled in
+        if (self.detectedIndexName !== undefined) {
+          self.detectedIndexName = undefined
+          self.indexTrackData = undefined
+        }
       },
       /**
        * #action
@@ -129,6 +142,21 @@ export default function f(pluginManager: PluginManager) {
         self.indexTrackData = obj
         // Clear adapter hint when index data changes to force re-evaluation
         self.adapterHint = ''
+        // typed by hand, so it is no longer this widget's guess to explain
+        self.detectedIndexName = undefined
+      },
+      /**
+       * #action
+       * Records an index found beside the main file. Ignored when an index is
+       * already set, since a probe resolving late must never overwrite one
+       * typed while it was in flight.
+       */
+      setDetectedIndex(obj: FileLocation, name: string) {
+        if (!self.indexTrackData) {
+          self.indexTrackData = obj
+          self.detectedIndexName = name
+          self.adapterHint = ''
+        }
       },
       /**
        * #action
@@ -182,6 +210,49 @@ export default function f(pluginManager: PluginManager) {
                 lastTarget = target
                 self.clearData()
               }
+            }),
+          )
+
+          // Fill the index field from whatever is actually beside the main
+          // file. The guess it replaces is a bare `<file>.bai`/`.tbi` append
+          // (makeIndex), so a `.csi` or a Picard-style `reads.bai` — both
+          // ordinary htslib output — produced a track that failed on a path
+          // nobody typed.
+          //
+          // The probe reads a location, which costs a request for a URL, so it
+          // runs only when there is no index yet and only for a file type that
+          // has one. A Blob gets no candidates at all: a file picked out of a
+          // browser dialog has no directory to look in.
+          addDisposer(
+            self,
+            autorun(() => {
+              // read inside the autorun body, not through an action, or the
+              // dependency is never recorded
+              const { trackData, indexTrackData } = self
+              if (!trackData || indexTrackData) {
+                return
+              }
+              // captured so a probe that resolves after the user has moved to
+              // another file cannot write the wrong answer into the form
+              const probedFor = trackData
+              detectIndexLocation(trackData, async location => {
+                try {
+                  await openLocation(location, pluginManager).stat()
+                  return true
+                } catch {
+                  return false
+                }
+              })
+                .then(found => {
+                  if (found && self.trackData === probedFor) {
+                    self.setDetectedIndex(found, getFileName(found))
+                  }
+                })
+                .catch(() => {
+                  // a probe that cannot run is not a failure the user needs
+                  // told about: the conventional guess still applies, and it is
+                  // what they got before this existed
+                })
             }),
           )
         },

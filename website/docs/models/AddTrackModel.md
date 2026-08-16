@@ -55,6 +55,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | <span id="action-settextindextrack">**setTextIndexTrack**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-settrackdata">**setTrackData**</span><br><code>(obj: FileLocation) =&gt; void</code> |  |
 | <span id="action-setindextrackdata">**setIndexTrackData**</span><br><code>(obj: FileLocation) =&gt; void</code> |  |
+| <span id="action-setdetectedindex">**setDetectedIndex**</span><br><code>(obj: FileLocation, name: string) =&gt; void</code> | Records an index found beside the main file. Ignored when an index is already set, since a probe resolving late must never overwrite one typed while it was in flight. |
 | <span id="action-setassembly">**setAssembly**</span><br><code>(str: string) =&gt; void</code> |  |
 | <span id="action-settrackname">**setTrackName**</span><br><code>(str: string) =&gt; void</code> |  |
 | <span id="action-settracktype">**setTrackType**</span><br><code>(str: string) =&gt; void</code> |  |

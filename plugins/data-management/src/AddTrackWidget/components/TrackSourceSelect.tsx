@@ -38,7 +38,11 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
       <div className={classes.spacer} />
       <FileSelector
         name="Index file"
-        description="(Optional) The URL of the index file is automatically inferred from the URL of the main file if it is not supplied."
+        description={
+          model.detectedIndexName
+            ? `Found "${model.detectedIndexName}" next to the main file and filled it in. Replace it to use a different index.`
+            : '(Optional) The URL of the index file is automatically inferred from the URL of the main file if it is not supplied.'
+        }
         location={model.indexTrackData}
         setLocation={loc => {
           model.setIndexTrackData(loc)
