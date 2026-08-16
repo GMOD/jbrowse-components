@@ -1,7 +1,7 @@
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { RGBColor } from '../../shaders/colors.ts'
+import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 
 /**
@@ -67,13 +67,37 @@ export function baseColorFallback(state: RenderState): RGBColor {
 // display produces, so an `rgb()` template literal per cell is real allocation.
 // Whether de-duplicating the *assignment* on top of that pays (as `drawReads`
 // does with its `lastFill`) is unmeasured here.
+// Memoized on the two things it reads, for the reason `lineCss` in
+// linkedReads/drawCanvas.ts is: three passes call this and each calls it per
+// section per block, so a grouped display rebuilt a 256-entry array up to 360
+// times a frame to hold the same six strings. Not at module scope — the palette
+// is THEMED, and baking it at import time is how a dark-mode pileup came to draw
+// connectors in the light palette's colors.
+//
+// `showModifications` is in the key because it is the other half of
+// `effectiveBaseColors`: it mutes all five bases, so a palette-only key would
+// serve the unmuted table for the whole session after one modifications toggle.
+let baseCssMemo:
+  | { colors: ColorPalette; showModifications: boolean; table: string[] }
+  | undefined
+
 export function buildBaseCssMap(state: RenderState): string[] {
-  const tuples = buildBaseColorTupleMap(state)
-  const table = new Array<string>(256).fill(rgb255(baseColorFallback(state)))
-  for (const [code, tuple] of Object.entries(tuples)) {
-    table[Number(code)] = rgb255(tuple)
+  if (
+    baseCssMemo?.colors !== state.colors ||
+    baseCssMemo.showModifications !== state.showModifications
+  ) {
+    const tuples = buildBaseColorTupleMap(state)
+    const table = new Array<string>(256).fill(rgb255(baseColorFallback(state)))
+    for (const [code, tuple] of Object.entries(tuples)) {
+      table[Number(code)] = rgb255(tuple)
+    }
+    baseCssMemo = {
+      colors: state.colors,
+      showModifications: state.showModifications,
+      table,
+    }
   }
-  return table
+  return baseCssMemo.table
 }
 
 // CigarOpDrawColors palette for Canvas2D SNP-coverage segment draws.

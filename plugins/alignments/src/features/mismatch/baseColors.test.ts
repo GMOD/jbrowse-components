@@ -65,4 +65,29 @@ describe('per-base canvas palette', () => {
     expect(baseColorFallback(state(true))).toEqual([0.5, 0.5, 0.5])
     expect(baseColorFallback(state(false))).toEqual([0, 0, 1])
   })
+
+  // The table is memoized across draws, and `state()` above hands out a fresh
+  // `colors` object every call — so every case above invalidates it on palette
+  // identity alone and none of them reaches the other half of the key. A
+  // modifications toggle does not change the palette object: it is the same
+  // theme, read through a different rule. Keyed on the palette alone, the memo
+  // would serve the unmuted table for the rest of the session.
+  test('the memo reacts to a modifications toggle at a fixed palette', () => {
+    const colors = state(false).colors
+    const shared = (showModifications: boolean) =>
+      ({ showModifications, colors }) as RenderState
+    expect(buildBaseCssMap(shared(false))[65]).toBe('rgb(255,0,0)')
+    expect(buildBaseCssMap(shared(true))[65]).toBe(GREY)
+    expect(buildBaseCssMap(shared(false))[65]).toBe('rgb(255,0,0)')
+  })
+
+  // The other direction: a theme change at a fixed toggle. Palette identity is
+  // the memo's only signal here, which is why the model must rebuild the object
+  // rather than mutate it.
+  test('the memo reacts to a new palette at a fixed toggle', () => {
+    expect(buildBaseCssMap(state(false))[65]).toBe('rgb(255,0,0)')
+    const dark = state(false)
+    dark.colors = { ...dark.colors, colorBaseA: [0, 0, 0] }
+    expect(buildBaseCssMap(dark)[65]).toBe('rgb(0,0,0)')
+  })
 })

@@ -24,11 +24,21 @@ class ShaderCompileError extends Error {
 
 // Maximum number of writeUniforms() calls per frame. Each call occupies one
 // aligned slot in the uniform ring buffer. 2048 slots × 256-byte alignment =
-// 512 KB — trivial GPU memory, generous headroom (busy alignments tracks do
-// ~50 writes/frame). Exhausting it would silently drop draws; if we ever
-// hit the cap, switch to a dynamic-growth buffer (recreate buffer + every
-// region's bind group) rather than just bumping the constant again.
+// 512 KB — trivial GPU memory. Exhausting it does not throw: the write is
+// dropped and its draws render against the previous batch's uniforms, which is
+// wrong data rather than stale data. If we ever hit the cap, switch to a
+// dynamic-growth buffer (recreate buffer + every region's bind group) rather
+// than just bumping the constant again.
 const MAX_UNIFORM_SLOTS = 2048
+
+// Warn while there is still headroom, because the cap itself is not a place to
+// find out. A renderer's per-frame write count is rarely one number: alignments
+// writes once per stacked section per block, plus one per section with an arc
+// band, so a grouped view multiplies it by up to MAX_GROUPS (40) and a
+// multi-region view by the block count again. The headroom is real but it is not
+// the "~50 writes/frame" this file used to claim, and nothing reported the
+// difference between 50 and 1900.
+const UNIFORM_SLOT_WARN_AT = MAX_UNIFORM_SLOTS / 2
 // Set to 1 to disable MSAA (e.g. to debug Firefox compositor stalls).
 // All render-pass, texture, and pipeline setup is conditioned on this value,
 // so changing it will not cause a mismatch.
@@ -226,6 +236,10 @@ export class WebGPUHal implements GpuHal {
   private uniformRingBuffer: GPUBuffer
   private uniformStaging: Uint8Array
   private uniformSlot = 0
+  // Once per HAL, not once per frame: at 60fps a per-frame warning is a
+  // console the developer stops reading, and the fact is about the renderer
+  // rather than about this frame.
+  private warnedUniformSlots = false
 
   // Shared bind group for every uniform-only pass — only references
   // `uniformRingBuffer` (via dynamic offset at draw time), so one instance
@@ -678,6 +692,12 @@ export class WebGPUHal implements GpuHal {
         this.uniformStaging,
         0,
         uploadSize,
+      )
+    }
+    if (this.uniformSlot >= UNIFORM_SLOT_WARN_AT && !this.warnedUniformSlots) {
+      this.warnedUniformSlots = true
+      console.warn(
+        `[WebGPUHal] this frame used ${this.uniformSlot} of ${MAX_UNIFORM_SLOTS} uniform ring slots. At the cap, writes are dropped and their draws render against another batch's uniforms — wrong pixels, no error. A count this high usually means a per-frame write inside a loop that has grown a dimension (stacked sections, displayed regions), or a write nothing draws with. Check the renderer before raising the cap.`,
       )
     }
     const slotAtSubmit = this.uniformSlot
