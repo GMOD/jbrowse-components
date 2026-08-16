@@ -47,6 +47,18 @@ export const repoRoot = findRepoRoot()
 export const websiteDir = join(repoRoot, 'website')
 export const docsDir = join(websiteDir, 'docs')
 export const distDir = join(websiteDir, 'dist')
+// Where a capture that failed dumps the frame it failed on. OUTSIDE static/, not
+// next to the figure it failed on: astro.config sets `publicDir: './static'`,
+// and Astro copies that directory verbatim without consulting .gitignore — so a
+// debug dump under static/img is kept out of git and then published anyway,
+// which `deploy_staging.sh` (it builds from the working tree) uploads. One stray
+// dump was 3.2 MB.
+//
+// Here rather than in screenshot-options.ts, which parses process.argv when it
+// is imported: the dump is written by screenshot-asserts.ts, which the video
+// generator's readiness stack reaches too, and that CLI's own flags are not the
+// screenshot run's.
+export const debugDir = join(websiteDir, 'debug-screenshots')
 
 // The checkout the sibling repositories sit beside, which is the PRIMARY one
 // even when this code runs from a worktree. `repoRoot` above answers "which tree

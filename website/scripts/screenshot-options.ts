@@ -130,15 +130,6 @@ export const CONCURRENCY = Math.max(
   optNum('concurrency', values.concurrency) ?? (headed || check ? 1 : 4),
 )
 
-// Plugin urls a hosted demo config may declare, pre-approved for the capture so
-// the cross-origin warning modal never covers the app. See trustCapturePlugins:
-// this is scoped to the capture's own localhost origin and vouches for nothing
-// beyond it. Keep it an explicit list rather than "trust everything", so a
-// config that starts pulling an unexpected plugin still fails loudly.
-export const TRUSTED_PLUGIN_URLS = [
-  'https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js',
-]
-
 const HELP = `Render website screenshots from scripts/screenshot-specs.ts.
 
 Usage: pnpm generate-screenshots [options]
@@ -199,12 +190,6 @@ export const buildPath = path.resolve(
 )
 export const testDataRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 export const outDir = path.resolve(__dirname, '..', 'static', 'img')
-// Failure dumps go OUTSIDE static/, not next to the figure they failed on.
-// astro.config sets `publicDir: './static'`, and Astro copies that directory
-// verbatim without consulting .gitignore — so a debug dump under static/img is
-// kept out of git and then published anyway, which `deploy_staging.sh` (it
-// builds from the working tree) uploads. One stray dump was 3.2 MB.
-export const debugDir = path.resolve(__dirname, '..', 'debug-screenshots')
 // jb2export (the @jbrowse/img CLI) renders the products/jbrowse-img/README
 // example images straight to PNG via React SSR — no browser involved, so
 // CliSpecs bypass the puppeteer pipeline entirely and land here instead of
@@ -225,13 +210,6 @@ export const EMBED_UMD_PATH = path.resolve(
   'dist',
   'react-linear-genome-view.umd.production.min.js',
 )
-// Maximum time to wait for canvas displays to signal paint-complete via their
-// *-done testids. Acts as a timeout (proceed if it expires), not a fixed floor.
-export const DEFAULT_SETTLE_MS = 2500
-// Default ceiling for the ready-selector / loading-overlay / quiescent waits.
-// Slow remote-data specs raise it via spec.readyTimeout.
-export const DEFAULT_READY_TIMEOUT_MS = 30000
-
 // Build a per-process temp PNG path for a spec, sanitizing '/' in the name and
 // tagging with the pid (and an optional suffix) so concurrent workers and the
 // two captures of a --check run never collide on one path.

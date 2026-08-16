@@ -1321,6 +1321,27 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
   ]
 }
 
+// What website/scripts/video-specs.ts films. The two pggb tours open the same
+// config, the same session tracks and the same loci these figures do, so they
+// are shared rather than copied: a tour whose track definition had drifted from
+// the figures' would walk a reader through a route into an app the rest of the
+// page is not showing, and nothing would report it.
+//
+// One export rather than nine, because none of these is independently
+// interesting outside that file and a module's export list is read as its
+// surface.
+export const pggbVideoFixtures = {
+  config: CONFIG,
+  genesTrack: K12_GENES_SESSION_TRACK,
+  segmentsTrack: PGGB_SEGMENTS_SESSION_TRACK,
+  segmentsTrackId: PGGB_SEGMENTS_TRACK,
+  locus: PGGB_LOCUS,
+  locusWindow: PGGB_LOCUS_WINDOW,
+  rowsLocus: PGGB_ROWS_LOCUS,
+  rowsWindow: PGGB_ROWS_WINDOW,
+  locusSession: pggbLocusSession,
+}
+
 export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // THE COARSE END OF THE LADDER: the pggb graph drawn one node per bubble
   // instead of one node per segment. This was the answer to the second report

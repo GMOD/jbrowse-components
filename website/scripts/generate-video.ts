@@ -1,18 +1,94 @@
+// Films the tours in video-specs.ts against the local jbrowse-web build.
+//
+//   node scripts/generate-video.ts                    every spec, headless
+//   node scripts/generate-video.ts --filter layout    the ones whose name matches
+//   node scripts/generate-video.ts --headed           on the real GPU
+//   node scripts/generate-video.ts --list             what there is to film
+//
+// `node`, NOT `npx tsx` — the same reason generate-screenshots.ts says so: tsx's
+// keepNames breaks the functions this hands to page.evaluate.
+//
+// WHAT IT PRODUCES, per spec, under website/static/video:
+//   <name>.mp4   h264, what the docs <Video> plays
+//   <name>.jpg   the poster frame, so the embed is a picture before it is a play
+//                button
+//
+// No webm, and it was measured rather than assumed: VP9 is usually the smaller
+// codec for screen content, and at matched quality on these tours it came out
+// LARGER than h264 both times (392 KB against 272 KB, 278 against 250). h264 in
+// mp4 plays in every browser that plays anything, so a second encode was a
+// bigger file, a longer run and another blob in the store for nothing.
+//
+// The bytes are gitignored and live in the video store (scripts/video-store.ts),
+// the same arrangement the figures use and for the same reason: a screencast is
+// an undeltifiable blob that git would keep forever.
+//
+// TWO THINGS THIS DOES THAT A SCREENSHOT RUN DOES NOT, both because a film is
+// watched rather than glanced at:
+//
+//   IT DRAWS A CURSOR (scripts/video-overlay.ts). Headless Chrome renders no OS
+//   pointer into a screencast, so without one the menus open themselves.
+//
+//   IT TAKES THE CAMERA OFF FOR THE LONG WAITS (`cut` on a step). A subgraph cut
+//   is seconds of spinner, and a film of a spinner is not a film of anything.
+//   The clip is stitched back together at encode time, so the pacing is a
+//   property of the spec rather than of the machine it was filmed on.
+//
+// KEEP THE TOURS ON LIGHT TRACKS. A per-read pileup under headless swiftshader
+// blocks the main thread for seconds per animated frame, which starves the
+// click's own round trip until it throws "Target closed" — measured, and the
+// reason the first prototype could not finish a capture. It is a software
+// rasterization artifact rather than a rendering bug (the same tour is smooth on
+// a real GPU), so heavy content can still be filmed with --headed.
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
 
-import {
-  waitForLoadingComplete,
-  waitForQuiescent,
-} from '@jbrowse/browser-test-utils'
+import { delay } from '@jbrowse/browser-test-utils'
 
-import { delay, textSelector, waitForVisible } from './actions.ts'
+import { actionTargetPoint, runAction } from './actions.ts'
 import { withHarness } from './dev-harness.ts'
-import { VOLVOX, lgvSession } from './screenshot-spec-helpers.ts'
+import { matchesFilterTokens, parseFilterTokens } from './filter-tokens.ts'
+import { debugDump } from './screenshot-asserts.ts'
+import { trustCapturePlugins } from './screenshot-page.ts'
+import { pinRenderer, waitForReady } from './screenshot-ready.ts'
+import {
+  injectOverlay,
+  clickPulse,
+  dragCursor,
+  moveCursor,
+  parkCursor,
+  scrollPage,
+  setCaption,
+} from './video-overlay.ts'
+import { videoSpecs } from './video-specs.ts'
 
+import type { SessionUrlSpec } from './screenshot-specs.ts'
+import type { VideoSpec, VideoStep } from './video-specs.ts'
 import type { Page } from 'puppeteer'
+
+const { values } = (() => {
+  try {
+    return parseArgs({
+      args: process.argv.slice(2),
+      options: {
+        help: { type: 'boolean', short: 'h', default: false },
+        filter: { type: 'string', multiple: true },
+        headed: { type: 'boolean', default: false },
+        list: { type: 'boolean', default: false },
+        // keep the per-segment webm captures next to the output, for working out
+        // why a stitched clip looks wrong
+        'keep-segments': { type: 'boolean', default: false },
+        // the capture server's port, for a machine already running one
+        port: { type: 'string' },
+      },
+    })
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : String(e))
+    process.exit(1)
+  }
+})()
 
 function log(msg: string) {
   process.stderr.write(
@@ -23,237 +99,198 @@ process.on('unhandledRejection', (reason: unknown) => {
   log(`UNHANDLED REJECTION: ${reason instanceof Error ? reason.stack : reason}`)
 })
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const outDir = path.resolve(__dirname, '..', 'static', 'video')
+const outDir = path.resolve(import.meta.dirname, '..', 'static', 'video')
 
-const headed = process.argv.includes('--headed')
+// Away from the screenshots' 3334 and a dev server on 3000, so a film can be
+// taken while either is running. Overridable because this repo is worked in by
+// several agents at once and a taken port is a run that dies before it loads
+// anything.
+const PORT = Number(values.port ?? process.env.VIDEO_PORT ?? 3335)
+const FPS = 30
+// ONE, and it is not a choice. `page.screencast` sets deviceScaleFactor to 0 for
+// the duration of the recording (it wants "native pixel dimensions"), so frames
+// come back at the viewport's CSS size whatever the page was laid out at — and
+// asking for 2 only buys a viewport change at the moment the camera starts. The
+// frame is the delivery resolution, so a tour is framed for legibility by
+// choosing a viewport, not by supersampling one.
+const DEVICE_SCALE = 1
+// A ceiling rather than a target: the encode never upscales, so this only bites
+// on a spec filmed wider than a docs column can use.
+const OUTPUT_WIDTH = 1600
+// What a step holds for once it has finished, unless it says otherwise. Long
+// enough to see a menu open, short enough that a six-step tour is not a minute.
+const HOLD_MS = 900
+// Filmed after the click that starts a `cut` step's work, before the camera goes
+// off. Without it the click and its result are the same frame, and a reader sees
+// a menu item teleport into a graph.
+const PRE_CUT_MS = 1200
+const TAIL_MS = 2500
+const DEFAULT_VIEWPORT = { width: 1280, height: 860 }
 
-const PORT = 3335
-// Widescreen ~21:9 and short — the LGV is a horizontal strip (header + a couple
-// tracks), so a wide, shallow frame fills with genome instead of dead space
-// below the tracks. deviceScaleFactor 1 (video doesn't need the stills' 2x).
-const VIEWPORT = { width: 1600, height: 620, deviceScaleFactor: 1 }
-// Time a cursor glide takes on camera; also how long we let each animated zoom
-// spring play before the next click.
-const GLIDE_MS = 550
-const SETTLE_MS = 650
+// The actions with somewhere on screen to be, which are the ones the drawn
+// cursor travels to. A wait or a keypress has no target and must not move it:
+// the pointer belongs where the last click left it.
+const POINTED = new Set(['click', 'rightclick', 'hover', 'type', 'scroll'])
+// ...and the ones that are already a wait, so a hold after them would be dead
+// footage rather than a beat.
+const UNHELD = new Set(['delay', 'waitForText', 'waitForSelector'])
 
-// Inject a fake pointer + click-ripple overlay. Headless Chrome renders no OS
-// cursor into the screencast, so the motion would otherwise look untethered —
-// this draws an arrow that we keep in sync with page.mouse and pulse on click.
-async function injectCursor(page: Page) {
-  await page.evaluate(glideMs => {
-    const cursor = document.createElement('div')
-    cursor.id = '__tour_cursor'
-    cursor.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24">
-      <path d="M5 3l14 7-6 1.5L9.5 19 5 3z" fill="#fff"
-        stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg>`
-    Object.assign(cursor.style, {
-      position: 'fixed',
-      left: '0',
-      top: '0',
-      zIndex: '2147483647',
-      pointerEvents: 'none',
-      transform: 'translate(-100px, -100px)',
-      transition: `transform ${glideMs}ms cubic-bezier(0.4, 0, 0.2, 1)`,
-      filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45))',
-    })
-    document.body.append(cursor)
-  }, GLIDE_MS)
-}
+// ---------------------------------------------------------------------------
+// the camera
+// ---------------------------------------------------------------------------
 
-// Glide the fake cursor to (x, y) and move the real mouse there in lockstep, then
-// wait out the CSS glide so the screencast records the travel.
-async function moveCursor(page: Page, x: number, y: number) {
-  await page.evaluate(
-    (cx, cy) => {
-      const c = document.getElementById('__tour_cursor')
-      if (c) {
-        c.style.transform = `translate(${cx}px, ${cy}px)`
+// A clip is filmed as one webm per on-camera stretch, stitched at encode time.
+// `page.screencast` writes through ffmpeg's stdin, so the file is only complete
+// once stop() has closed that pipe — which is why every stop is awaited and
+// bounded rather than left to the process exiting.
+function camera(page: Page, stem: string) {
+  const segments: string[] = []
+  let recorder: Awaited<ReturnType<Page['screencast']>> | undefined
+  return {
+    get recording() {
+      return recorder !== undefined
+    },
+    segments,
+    async start() {
+      const file: `${string}.webm` = `${stem}.seg${segments.length}.webm`
+      segments.push(file)
+      recorder = await page.screencast({ path: file, fps: FPS })
+    },
+    async stop() {
+      const active = recorder
+      recorder = undefined
+      if (!active) {
+        return
+      }
+      const outcome = await Promise.race([
+        active
+          .stop()
+          .then(() => 'ok')
+          .catch(
+            (err: unknown) =>
+              `stop rejected: ${err instanceof Error ? err.message : err}`,
+          ),
+        delay(15000).then(() => 'TIMEOUT after 15s'),
+      ])
+      if (outcome !== 'ok') {
+        log(`  recorder.stop() -> ${outcome}`)
       }
     },
-    x,
-    y,
-  )
-  await page.mouse.move(x, y)
-  await delay(GLIDE_MS + 80)
+  }
 }
 
-// Expanding-ring pulse at (x, y) to make each click legible on camera.
-async function clickPulse(page: Page, x: number, y: number) {
-  await page.evaluate(
-    (cx, cy) => {
-      const ring = document.createElement('div')
-      Object.assign(ring.style, {
-        position: 'fixed',
-        left: `${cx}px`,
-        top: `${cy}px`,
-        width: '14px',
-        height: '14px',
-        marginLeft: '-7px',
-        marginTop: '-7px',
-        borderRadius: '50%',
-        border: '2px solid #1e88e5',
-        pointerEvents: 'none',
-        zIndex: '2147483646',
-      })
-      document.body.append(ring)
-      ring
-        .animate(
-          [
-            { transform: 'scale(0.4)', opacity: 0.9 },
-            { transform: 'scale(3.2)', opacity: 0 },
-          ],
-          { duration: 450, easing: 'ease-out' },
-        )
-        .addEventListener('finish', () => {
-          ring.remove()
-        })
-    },
-    x,
-    y,
-  )
-}
+// ---------------------------------------------------------------------------
+// the motion
+// ---------------------------------------------------------------------------
 
-// Move the visible cursor onto a header button, pulse, then perform the real
-// click. With a light render the main thread is free, so the click's
-// clickable-point evaluate resolves immediately (a heavy pileup render would
-// stall it for seconds — the original CRAM tour's failure mode).
-async function clickButton(page: Page, testid: string, label: string) {
-  const btn = await page.$(`[data-testid="${testid}"]`)
-  const box = await btn?.boundingBox()
-  if (btn && box) {
-    const x = box.x + box.width / 2
-    const y = box.y + box.height / 2
-    await moveCursor(page, x, y)
-    await clickPulse(page, x, y)
-    await btn.click()
+async function filmStep(page: Page, step: VideoStep) {
+  if (step.say !== undefined) {
+    await setCaption(page, step.say)
+  }
+  if (step.scrollTo !== undefined) {
+    await scrollPage(page, step.scrollTo)
+  }
+  if (step.type === 'drag' && step.from && step.to) {
+    // filmed rather than delegated: runAction's stepped move finishes instantly,
+    // so a drawn cursor gliding after it would trail the rubberband it is
+    // supposed to be drawing
+    await dragCursor(page, step.from, step.to)
   } else {
-    log(`clickButton: ${label} (${testid}) not found`)
-  }
-}
-
-async function zoomTour(page: Page, dir: 'in' | 'out', times: number) {
-  for (let i = 0; i < times; i++) {
-    await clickButton(page, `zoom_${dir}`, `zoom ${dir}`)
-    await delay(SETTLE_MS)
-  }
-}
-
-// Typed as a `.webm` template literal so it satisfies screencast's branded
-// path type without a cast.
-const webmPath: `${string}.webm` = `${outDir}/volvox_tour.webm`
-
-async function main() {
-  fs.mkdirSync(outDir, { recursive: true })
-  await withHarness(
-    { port: PORT, headless: !headed, viewport: VIEWPORT },
-    async ({ page }) => {
-      // Surface a tab crash / uncaught page error instead of only seeing its
-      // downstream "Target closed" when the next command runs.
-      page.on('error', err => {
-        log('PAGE CRASH:')
-        console.error(err)
-      })
-      page.on('pageerror', err => {
-        log('PAGE ERROR:')
-        console.error(err)
-      })
-      // Light tracks (wiggle + genes) keep the main thread free so button clicks
-      // never stall and the zoom springs stay smooth on camera. A per-read CRAM
-      // pileup under swiftshader blocks the thread for seconds per zoom frame.
-      const url = lgvSession(VOLVOX, {
-        assembly: 'volvox',
-        loc: 'ctgA:1-50,000',
-        tracks: ['volvox_microarray', 'gff3tabix_genes'],
-      })
-      await page.goto(`http://localhost:${PORT}/${url}`, {
-        waitUntil: 'networkidle0',
-        timeout: 60000,
-      })
-      log('page loaded, waiting for quiescence')
-      await waitForVisible(page, textSelector('ctgA'))
-      await waitForLoadingComplete(page, { waitForDownloads: true })
-      await waitForQuiescent(page)
-      await injectCursor(page)
-      await moveCursor(page, VIEWPORT.width / 2, VIEWPORT.height / 2)
-      await delay(800)
-
-      log('starting screencast')
-      const recorder = await page.screencast({ path: webmPath, fps: 30 })
-      // Always stop the recorder, however the motion ends — stop() flushes the
-      // remaining frames and closes ffmpeg's stdin so the webm isn't left
-      // truncated ("File ended prematurely" on later reads).
-      try {
-        await delay(600)
-        log('zoom in')
-        await zoomTour(page, 'in', 6)
-        await delay(700)
-        log('zoom out')
-        await zoomTour(page, 'out', 6)
-        await delay(700)
-        log('motion complete')
-      } catch (err: unknown) {
-        log('motion threw:')
-        console.error(err)
-      } finally {
-        log('calling recorder.stop()')
-        const stopped = await Promise.race([
-          recorder
-            .stop()
-            .then(() => 'ok')
-            .catch(
-              (err: unknown) =>
-                `stop rejected: ${err instanceof Error ? err.message : err}`,
-            ),
-          delay(15000).then(() => 'TIMEOUT after 15s'),
-        ])
-        log(`recorder.stop() → ${stopped}`)
+    if (POINTED.has(step.type)) {
+      const point = await actionTargetPoint(page, step)
+      if (point) {
+        await moveCursor(page, point.x, point.y)
+        if (step.type === 'click' || step.type === 'rightclick') {
+          await clickPulse(page, point.x, point.y)
+        }
       }
-      log(`wrote ${webmPath}`)
-    },
-  )
-
-  // Transcode to broadly-embeddable mp4 (h264/yuv420p) and a preview gif. The
-  // screencast's piped VP9/webm has no container-level duration header
-  // (duration=N/A is normal), so the mp4 — which does carry a real duration — is
-  // what we verify to confirm the capture wasn't truncated.
-  const mp4Path = path.join(outDir, 'volvox_tour.mp4')
-  execFileSync('ffmpeg', [
-    '-y',
-    '-loglevel',
-    'error',
-    '-i',
-    webmPath,
-    '-vf',
-    'scale=1280:-2:flags=lanczos',
-    '-c:v',
-    'libx264',
-    '-pix_fmt',
-    'yuv420p',
-    '-crf',
-    '23',
-    '-movflags',
-    '+faststart',
-    mp4Path,
-  ])
-  const duration = probeDuration(mp4Path)
-  if (!duration) {
-    throw new Error(`mp4 has no duration (${duration}s) — capture truncated`)
+    }
+    await runAction(page, step)
   }
-  const gifPath = path.join(outDir, 'volvox_tour.gif')
-  execFileSync('ffmpeg', [
-    '-y',
-    '-loglevel',
-    'error',
-    '-i',
-    webmPath,
-    '-vf',
-    'fps=12,scale=720:-1:flags=lanczos',
-    gifPath,
-  ])
-  log(`wrote ${mp4Path} (${duration.toFixed(1)}s)`)
-  log(`wrote ${gifPath}`)
+  await delay(step.hold ?? (UNHELD.has(step.type) ? 0 : HOLD_MS))
+}
+
+async function film(page: Page, spec: VideoSpec, stem: string) {
+  const height = spec.viewportHeight ?? DEFAULT_VIEWPORT.height
+  const cam = camera(page, stem)
+  // What the app actually fills, at the start and at the end. A tour grows the
+  // app (a launch adds a whole view), so one viewport has to serve both states
+  // and neither number is guessable from the spec: too short clips the graph the
+  // tour was filmed for, too tall is a frame of page background. Reported rather
+  // than asserted, because which way to trade is the author's.
+  //
+  // Off the view containers, never `documentElement.scrollHeight`: the app fills
+  // the window and absorbs its own overflow in inner scroll containers, so the
+  // document never reports being taller than the viewport even when the graph is
+  // visibly cut in half. Same measurement, and the same reason, as the
+  // screenshot run's below-the-fold report.
+  const contentHeight = () =>
+    page.evaluate(() =>
+      Math.round(
+        Math.max(
+          0,
+          ...Array.from(
+            document.querySelectorAll('[data-testid^="view-container-"]'),
+            el => el.getBoundingClientRect().bottom + window.scrollY,
+          ),
+        ),
+      ),
+    )
+  const openedAt = await contentHeight()
+  // Sampled after every step, not only at the ends: a tour that switches layouts
+  // and switches back is at its tallest in the middle, and a first/last reading
+  // reports the frame as roomy while the state the tour was filmed for is cut
+  // off the bottom.
+  let tallest = openedAt
+  await injectOverlay(page)
+  await moveCursor(page, (spec.viewportWidth ?? DEFAULT_VIEWPORT.width) / 2, 90)
+  await delay(500)
+  try {
+    for (const step of spec.steps) {
+      if (step.cut) {
+        if (cam.recording) {
+          // the click that started this wait is still the last thing on screen;
+          // hold it long enough to read before the cut
+          await delay(PRE_CUT_MS)
+          await cam.stop()
+        }
+      } else if (!cam.recording) {
+        await cam.start()
+      }
+      await filmStep(page, step)
+      tallest = Math.max(tallest, await contentHeight())
+    }
+    if (!cam.recording) {
+      await cam.start()
+    }
+    await setCaption(page, '')
+    await parkCursor(page, height)
+    await delay(spec.tailMs ?? TAIL_MS)
+    const endedAt = await contentHeight()
+    log(
+      `  content ${openedAt}px at the first frame, ${endedAt}px at the last, ` +
+        `${tallest}px at its tallest, in a ${height}px frame`,
+    )
+  } catch (err) {
+    // The frame the tour died on, which for a step that could not find its
+    // target is the whole diagnosis: a menu that opened somewhere else, an item
+    // this plugin build spells differently, a modal over the app.
+    await debugDump(page, spec.name)
+    throw err
+  } finally {
+    await cam.stop()
+  }
+  return cam.segments
+}
+
+// ---------------------------------------------------------------------------
+// encoding
+// ---------------------------------------------------------------------------
+
+function ffmpeg(args: string[]) {
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args], {
+    stdio: ['ignore', 'inherit', 'inherit'],
+  })
 }
 
 function probeDuration(file: string) {
@@ -270,6 +307,180 @@ function probeDuration(file: string) {
     .trim()
   const duration = Number.parseFloat(out)
   return Number.isFinite(duration) ? duration : undefined
+}
+
+function probeSize(file: string) {
+  return execFileSync('ffprobe', [
+    '-v',
+    'error',
+    '-select_streams',
+    'v:0',
+    '-show_entries',
+    'stream=width,height',
+    '-of',
+    'csv=p=0',
+    file,
+  ])
+    .toString()
+    .trim()
+}
+
+// One filter graph over every segment: concatenate, then scale DOWN to the
+// delivery width if the capture was wider. `min(w,iw)` rather than a bare `w`,
+// because a run whose frames came back at 1x must not be upscaled — that would
+// claim a resolution the pixels do not have.
+function concatFilter(segments: string[]) {
+  const inputs = segments.map((_, i) => `[${i}:v]`).join('')
+  return [
+    ...segments.flatMap(s => ['-i', s]),
+    '-filter_complex',
+    `${inputs}concat=n=${segments.length}:v=1:a=0[cat];` +
+      `[cat]scale='min(${OUTPUT_WIDTH},iw)':-2:flags=lanczos,fps=${FPS},format=yuv420p[out]`,
+    '-map',
+    '[out]',
+  ]
+}
+
+function encode(segments: string[], stem: string) {
+  const mp4 = `${stem}.mp4`
+  ffmpeg([
+    ...concatFilter(segments),
+    '-c:v',
+    'libx264',
+    '-preset',
+    'slow',
+    '-crf',
+    '23',
+    '-pix_fmt',
+    'yuv420p',
+    // the moov atom in front, so a browser can start playing before the whole
+    // file has arrived
+    '-movflags',
+    '+faststart',
+    mp4,
+  ])
+  // The mp4 is what carries a real duration (a webm piped out of the screencast
+  // reports `duration=N/A` at the container level, which is normal and not a
+  // truncation), so it is what proves the capture finished.
+  const duration = probeDuration(mp4)
+  if (!duration) {
+    throw new Error(`${mp4} has no duration — the capture was truncated`)
+  }
+  return { mp4, duration }
+}
+
+// The still a reader sees before pressing play, and the image a card would use.
+// The end of the clip by default: a tour's last frame is the state it was filmed
+// to reach, where its first is the app before anything has happened.
+function poster(mp4: string, stem: string, at: number) {
+  const jpg = `${stem}.jpg`
+  ffmpeg(['-ss', at.toFixed(2), '-i', mp4, '-frames:v', '1', '-q:v', '3', jpg])
+  return jpg
+}
+
+// ---------------------------------------------------------------------------
+
+async function main() {
+  if (values.help) {
+    console.log(
+      'generate-video [--filter name] [--headed] [--list] [--keep-segments]',
+    )
+    return
+  }
+  const tokens = parseFilterTokens(values.filter)
+  const selected = tokens.length
+    ? videoSpecs.filter(s => matchesFilterTokens(s.name, tokens, false))
+    : videoSpecs
+  if (values.list) {
+    for (const spec of videoSpecs) {
+      console.log(`${spec.name}\n    ${spec.description}`)
+    }
+    return
+  }
+  if (!selected.length) {
+    console.error(`no video spec matches ${values.filter?.join(', ')}`)
+    process.exit(1)
+  }
+
+  const failures: string[] = []
+  await withHarness(
+    { port: PORT, headless: !values.headed, protocolTimeout: 300000 },
+    async ({ browser }) => {
+      for (const spec of selected) {
+        const stem = path.join(outDir, spec.name)
+        fs.mkdirSync(path.dirname(stem), { recursive: true })
+        const page = await browser.newPage()
+        // Surface a tab crash or an uncaught page error here rather than as the
+        // "Target closed" the next command would report.
+        page.on('error', err => {
+          log(`PAGE CRASH: ${err.message}`)
+        })
+        page.on('pageerror', (err: unknown) => {
+          log(`PAGE ERROR: ${err instanceof Error ? err.message : String(err)}`)
+        })
+        let segments: string[] = []
+        try {
+          await page.setViewport({
+            width: spec.viewportWidth ?? DEFAULT_VIEWPORT.width,
+            height: spec.viewportHeight ?? DEFAULT_VIEWPORT.height,
+            deviceScaleFactor: DEVICE_SCALE,
+          })
+          // The pangenome configs declare the GraphGenomeView plugin by url, and
+          // its cross-origin warning is a modal over the whole app. Written
+          // before any app script runs, so SessionLoader reads it at startup.
+          await trustCapturePlugins(page)
+          log(`${spec.name}: loading`)
+          const url = spec.url.startsWith('http')
+            ? spec.url
+            : `http://localhost:${PORT}/${spec.url}`
+          await page.goto(pinRenderer(url), {
+            waitUntil: spec.url.startsWith('http')
+              ? 'domcontentloaded'
+              : 'networkidle0',
+            timeout: Math.max(60000, spec.readyTimeout ?? 0),
+          })
+          // The whole readiness stack the stills use, so a tour opens on the
+          // same settled app a figure is captured from. Everything it waits out
+          // happens before the camera starts.
+          await waitForReady(page, {
+            mode: 'url',
+            name: spec.name,
+            url: spec.url,
+            readySelector: spec.readySelector,
+            readyTimeout: spec.readyTimeout,
+            settleMs: spec.settleMs,
+          })
+          log(`${spec.name}: filming`)
+          segments = await film(page, spec, stem)
+          const { mp4, duration } = encode(segments, stem)
+          const jpg = poster(mp4, stem, spec.posterAt ?? duration - 0.2)
+          const mb = (f: string) =>
+            `${(fs.statSync(f).size / 1e6).toFixed(2)} MB`
+          log(
+            `${spec.name}: ${duration.toFixed(1)}s ${probeSize(mp4)} ` +
+              `mp4 ${mb(mp4)}, poster ${mb(jpg)}`,
+          )
+        } catch (err: unknown) {
+          failures.push(spec.name)
+          log(`${spec.name}: FAILED`)
+          console.error(err)
+        } finally {
+          if (!values['keep-segments']) {
+            for (const s of segments) {
+              fs.rmSync(s, { force: true })
+            }
+          }
+          await page.close()
+        }
+      }
+    },
+  )
+  if (failures.length) {
+    console.error(
+      `\n${failures.length} video(s) failed: ${failures.join(', ')}`,
+    )
+    process.exit(1)
+  }
 }
 
 main().catch((err: unknown) => {

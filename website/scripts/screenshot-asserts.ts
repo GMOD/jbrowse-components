@@ -9,7 +9,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { debugDir } from './screenshot-options.ts'
+import { debugDir } from './paths.ts'
 
 import type { BrowserScreenshotSpec } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'

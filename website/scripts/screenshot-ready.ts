@@ -14,10 +14,6 @@ import {
 
 import { textSelector, waitForVisible } from './actions.ts'
 import { debugDump, markPageAlive } from './screenshot-asserts.ts'
-import {
-  DEFAULT_READY_TIMEOUT_MS,
-  DEFAULT_SETTLE_MS,
-} from './screenshot-options.ts'
 
 import type {
   BrowserScreenshotSpec,
@@ -25,6 +21,20 @@ import type {
   SessionUrlSpec,
 } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
+
+// The readiness stack's own two defaults. They live here rather than in
+// screenshot-options.ts because importing that module PARSES process.argv and
+// exits on `--help`, which its own header says nothing outside a screenshot run
+// should trigger — and this module has a second caller now
+// (generate-video.ts), whose CLI takes different flags and died on its own
+// `--list` before it reached main().
+//
+// Maximum time to wait for canvas displays to signal paint-complete via their
+// *-done testids. A timeout (proceed if it expires), not a fixed floor.
+const DEFAULT_SETTLE_MS = 2500
+// Default ceiling for the ready-selector / loading-overlay / quiescent waits.
+// Slow remote-data specs raise it via spec.readyTimeout.
+const DEFAULT_READY_TIMEOUT_MS = 30000
 
 // The ceiling for every wait a spec is subject to. readyText is only the track
 // label (present well before a slow remote BAM finishes), so a spec that says it

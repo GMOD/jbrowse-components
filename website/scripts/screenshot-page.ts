@@ -1,5 +1,3 @@
-import { TRUSTED_PLUGIN_URLS } from './screenshot-options.ts'
-
 // Per-page setup and diagnosis: what is installed before the app's first script
 // runs, what the run remembers about the network so a timeout can name the fetch
 // it was waiting on, and the rasterization barrier every capture ends with.
@@ -100,6 +98,19 @@ export function freezeAnimations(page: Page) {
     }
   })
 }
+
+// Plugin urls a hosted demo config may declare, pre-approved for the capture so
+// the cross-origin warning modal never covers the app. Scoped to the capture's
+// own localhost origin (see below) and vouching for nothing beyond it. Keep it an
+// explicit list rather than "trust everything", so a config that starts pulling
+// an unexpected plugin still fails loudly.
+//
+// Beside its one consumer rather than in screenshot-options.ts, which parses
+// process.argv on import: generate-video.ts trusts the same plugins and takes
+// different flags.
+const TRUSTED_PLUGIN_URLS = [
+  'https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js',
+]
 
 // Pre-approve the cross-origin plugin warning, which otherwise covers the whole
 // app with a modal and fails every spec whose `?config=` points at a hosted

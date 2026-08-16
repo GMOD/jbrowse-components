@@ -265,6 +265,28 @@ async function actionPoint(page: Page, action: ScreenshotAction) {
   return action.from
 }
 
+// Where a filmed cursor has to travel before this action fires: the model- or
+// spec-resolved point when the action carries one, else the centre of the
+// element it targets.
+//
+// For generate-video.ts, which draws a cursor into the frame because headless
+// Chrome renders no OS one. It resolves the target a second time rather than
+// having runAction report where it clicked, so that the two stay one code path:
+// the click below is the one the stills take, and the cursor is drawn onto
+// whatever it is about to hit. A menu item's rect has settled by the time
+// resolveTarget returns, so the two lookups agree.
+export async function actionTargetPoint(page: Page, action: ScreenshotAction) {
+  const point = await actionPoint(page, action)
+  if (point) {
+    return point
+  }
+  const el = await resolveTarget(page, action)
+  const box = await el?.boundingBox()
+  return box
+    ? { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+    : undefined
+}
+
 export async function runAction(page: Page, action: ScreenshotAction) {
   if (action.type === 'delay') {
     await delay(action.ms ?? DEFAULT_ACTION_DELAY_MS)
