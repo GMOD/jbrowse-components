@@ -48,6 +48,7 @@ export {
   heightModeLabel,
 } from './models/heightMode.ts'
 export type { HeightMode } from './models/heightMode.ts'
+export { heightModeConfigSchemaFields } from './models/heightModeConfigSchemaFields.ts'
 export { heightModeMenuItems } from './models/heightModeMenu.ts'
 export type { HeightModeMenuModel } from './models/heightModeMenu.ts'
 

@@ -1,8 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  HEIGHT_MODE_VALUES,
   baseLinearDisplayConfigSchema,
+  heightModeConfigSchemaFields,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { isRegisteredColorScheme } from '../shared/colorSchemes.ts'
@@ -95,20 +95,14 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // default and re-inherit Compact. See promotableDefaults.ts.
         promotedBase: 7,
       },
-      /**
-       * #slot
-       */
-      heightMode: {
-        type: 'maybeStringEnum',
-        model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
-        description:
+      // `growMaxHeight` rides along, so both of `HeightModeMixin`'s slots are
+      // declared here at once. It is NOT the `maxHeight` layout cap below.
+      ...heightModeConfigSchemaFields({
+        heightMode:
           'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`',
-        // Unset is the CSS-style sentinel (the inherit state); `promotedBase`
-        // ('fixed') is what it resolves to when nothing is promoted. Being a
-        // sentinel lets a track customize `fixed` back over a session-wide
-        // `fit`/`grow` default. See promotableDefaults.ts.
-        promotedBase: 'fixed',
-      },
+        growMaxHeight:
+          'Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight)',
+      }),
       /**
        * #slot
        */
@@ -133,27 +127,14 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      // NOT the grow ceiling (`growMaxHeight`, above). This caps how much is
+      // laid out; that caps how tall `grow` mode sizes the track. Two different
+      // limits, don't conflate them.
       maxHeight: {
         type: 'number',
         defaultValue: 6000,
         description:
           'Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)',
-        advanced: true,
-      },
-      /**
-       * #slot
-       */
-      // NOT the layout cap above. This bounds only how tall `grow` mode sizes
-      // the track; content past it scrolls, exactly as in `fixed`. Two different
-      // limits, don't conflate them.
-      growMaxHeight: {
-        type: 'number',
-        // literal so the generated config doc shows the number; pinned to the
-        // shared GROW_MAX_HEIGHT default by a test, so it can't drift from the
-        // canvas display's copy
-        defaultValue: 800,
-        description:
-          'Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight)',
         advanced: true,
       },
       /**

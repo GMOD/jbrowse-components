@@ -2795,12 +2795,12 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "growMaxHeight",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "heightMode",
           "type": "(JexlString | (heightMode | undefined))"
+        },
+        {
+          "name": "growMaxHeight",
+          "type": "(JexlString | number)"
         },
         {
           "name": "showLabels",
@@ -3076,6 +3076,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (heightMode | undefined))"
         },
         {
+          "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "readConnectionsLineWidth",
           "type": "(JexlString | number)"
         },
@@ -3085,10 +3089,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "maxHeight",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "growMaxHeight",
           "type": "(JexlString | number)"
         },
         {
@@ -3386,6 +3386,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (heightMode | undefined))"
         },
         {
+          "name": "growMaxHeight",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "readConnectionsLineWidth",
           "type": "(JexlString | number)"
         },
@@ -3395,10 +3399,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "maxHeight",
-          "type": "(JexlString | number)"
-        },
-        {
-          "name": "growMaxHeight",
           "type": "(JexlString | number)"
         },
         {
@@ -3651,12 +3651,12 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "growMaxHeight",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "heightMode",
           "type": "(JexlString | (heightMode | undefined))"
+        },
+        {
+          "name": "growMaxHeight",
+          "type": "(JexlString | number)"
         },
         {
           "name": "showLabels",

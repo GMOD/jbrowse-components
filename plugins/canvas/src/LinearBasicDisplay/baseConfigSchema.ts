@@ -1,8 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  HEIGHT_MODE_VALUES,
   baseLinearDisplayConfigSchema,
+  heightModeConfigSchemaFields,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import {
@@ -45,39 +45,17 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'Outer clamp in pixels on the content height the "autogrow track height" mode sizes to. Applies to no other mode — fixed and fit keep their configured height and scroll taller content. The autogrow ceiling proper is growMaxHeight, which is lower by default, so this only binds when set below it',
         advanced: true,
       },
-      /**
-       * #slot
-       */
-      // `maxHeight` clamps `growTargetHeight` first, so the effective grow
-      // ceiling here is min(maxHeight, growMaxHeight) — raising this past
-      // maxHeight alone changes nothing.
-      growMaxHeight: {
-        type: 'number',
-        // literal so the generated config doc shows the number; pinned to the
-        // shared GROW_MAX_HEIGHT default by a test, so it can't drift from the
-        // alignments display's copy
-        defaultValue: 800,
-        description:
+      // `maxHeight` above clamps `growTargetHeight` first, so the effective grow
+      // ceiling is min(maxHeight, growMaxHeight) — raising `growMaxHeight` past
+      // `maxHeight` alone changes nothing.
+      ...heightModeConfigSchemaFields({
+        heightMode:
+          'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
+        growMaxHeight:
           'Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes. Raising it past maxHeight has no effect, since that clamps the content height first',
-        advanced: true,
-      },
+      }),
       // maxFeatureScreenDensity is inherited from baseLinearDisplayConfigSchema
       // (default 1) — single source of truth for the density gate
-      /**
-       * #slot
-       */
-      heightMode: {
-        type: 'maybeStringEnum',
-        model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
-        description:
-          'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
-        // Promotable sentinel slot (see promotableDefaults.ts / displayMode):
-        // unset is the inherit state, `promotedBase` ('fixed') is what it
-        // resolves to when nothing is promoted — so every real mode, `fixed`
-        // included, is customizable back over a session default. Read through the
-        // resolved `heightMode` getter (resolveConf), never raw.
-        promotedBase: 'fixed',
-      },
       /**
        * #slot
        */

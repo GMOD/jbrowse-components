@@ -123,6 +123,7 @@ export {
   foundationDisplayStatusPhase,
   squashToHeightCheckboxItem,
   getHeightModeOptions,
+  heightModeConfigSchemaFields,
   heightModeLabel,
   heightModeMenuItems,
   installClearHoverOnViewportChange,
