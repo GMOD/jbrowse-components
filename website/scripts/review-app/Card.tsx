@@ -281,6 +281,22 @@ export const Card = memo(function Card({
         />
         <div className="actions">
           {verdictBtn('approve', '✓ Approve', 'good')}
+          {/* For the scratch text typed while looking, not meant to be kept —
+              approves with an empty note instead of whatever the box holds,
+              and clears the box to match so it isn't left showing text the
+              report doesn't have. */}
+          <button
+            type="button"
+            className="approve clearnote"
+            disabled={!canJudge}
+            title="Approve without keeping the note text, and clear the box"
+            onClick={() => {
+              onSetVerdict(spec.name, 'good', '')
+              note.clearBox()
+            }}
+          >
+            ✓ Approve, clear note
+          </button>
           {verdictBtn('deny', '✗ Deny', 'bad')}
           {/* Disabled rather than absent on an unreviewed card. Rendered only
               when there is a verdict, it appears the instant a write lands and

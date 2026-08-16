@@ -719,6 +719,10 @@ button.approve.active {
   background: #22c55e;
   color: #fff;
 }
+button.approve.clearnote {
+  font-size: 13px;
+  padding: 7px 10px;
+}
 button.deny {
   border-color: #ef4444;
   color: #dc2626;

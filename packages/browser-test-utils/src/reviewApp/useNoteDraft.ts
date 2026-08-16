@@ -57,13 +57,17 @@ export function useNoteDraft({ entry, drafts, onSave }: UseNoteDraftOptions) {
   // Adjusted during render, the pattern React documents for state derived from
   // a changed input; the draft write rides along because the two are the same
   // fact and a box emptied without it is the bug above in miniature.
+  const clearBox = useCallback(() => {
+    setValue('')
+    atFocus.current = ''
+    drafts.set(name, '', '')
+  }, [drafts, name])
+
   const [hadVerdict, setHadVerdict] = useState(!!entry.verdict)
   if (hadVerdict !== !!entry.verdict) {
     setHadVerdict(!!entry.verdict)
     if (!entry.verdict) {
-      setValue('')
-      atFocus.current = ''
-      drafts.set(name, '', '')
+      clearBox()
     }
   }
 
@@ -142,6 +146,7 @@ export function useNoteDraft({ entry, drafts, onSave }: UseNoteDraftOptions) {
     onFocus,
     onBlur,
     addNote,
+    clearBox,
     // Whether what is in the box has reached the report yet.
     hint: draftHint(entry, value !== savedNote),
   }
