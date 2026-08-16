@@ -32,15 +32,39 @@ if (!isNodeEnvironment) {
   // `volvox.2bit` to `http://localhost/volvox.2bit` turns every track into a
   // 404. So construct against a base to get a real Request — one whose
   // `.text()`, `.headers` and `range` all work — then put the original url back.
+  // WITHOUT `signal`, and the mock is why that is fine: it resolves from a
+  // canned body and never has a request in flight to cancel, so a signal here
+  // could only ever be inspected, never obeyed.
+  //
+  // It has to go because the two realms brand-check each other's AbortSignal.
+  // `jsdomWithFetch.cjs` installs node's fetch primitives and deliberately
+  // leaves AbortController as jsdom's (jsdom's EventTarget refuses a node signal
+  // in `addEventListener(t, fn, {signal})`, which every drag gesture uses). So
+  // `new Request(url, {signal})` below gets a jsdom signal and node's Request
+  // rejects it: `Expected signal ("AbortSignal {}") to be an instance of
+  // AbortSignal`. Every range read composes one — @gmod/range-cache-filehandle
+  // puts a response deadline on each — so this is every fetch, not an edge case.
+  function withoutSignal(init) {
+    if (!init?.signal) {
+      return init
+    }
+    const { signal, ...rest } = init
+    return rest
+  }
+
   function toRequest(input, init) {
     if (input instanceof Request) {
       return input
     }
     const raw = typeof input === 'string' ? input : String(input)
+    const reqInit = withoutSignal(init)
     try {
-      return new Request(raw, init)
+      return new Request(raw, reqInit)
     } catch {
-      const request = new Request(new URL(raw, 'http://localhost/').href, init)
+      const request = new Request(
+        new URL(raw, 'http://localhost/').href,
+        reqInit,
+      )
       Object.defineProperty(request, 'url', { value: raw, configurable: true })
       return request
     }
@@ -81,7 +105,7 @@ if (!isNodeEnvironment) {
   const implement = (bodyOrFunction, init) => async (input, reqInit) =>
     mocking
       ? respondWith(bodyOrFunction, init, toRequest(input, reqInit))
-      : realFetch(input, reqInit)
+      : realFetch(input, withoutSignal(reqInit))
 
   const defaultImplementation = implement('', undefined)
 
