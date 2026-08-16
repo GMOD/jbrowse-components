@@ -8,7 +8,7 @@ import { MOD_COVERAGE_PASS } from '../../features/modCoverage/packGpu.ts'
 import { SNP_COVERAGE_PASS } from '../../features/snpCoverage/packGpu.ts'
 import {
   ALIGNMENTS_PASSES,
-  COVERAGE_LAYERS,
+  GPU_COVERAGE_PASS,
   GPU_PILEUP_PASS,
   GpuAlignmentsRenderer,
 } from './GpuAlignmentsRenderer.ts'
@@ -139,7 +139,8 @@ describe('every drawn pass is also uploaded', () => {
     // Guards the guard: if a future field rename empties an array, the
     // assertions below would pass vacuously by uploading nothing at all.
     expect(uploadedPasses().size).toBe(
-      Object.keys(GPU_PILEUP_PASS).length + COVERAGE_LAYERS.length,
+      Object.keys(GPU_PILEUP_PASS).length +
+        Object.keys(GPU_COVERAGE_PASS).length,
     )
   })
 
@@ -155,9 +156,9 @@ describe('every drawn pass is also uploaded', () => {
 
   it('every coverage-band pass gets a buffer', () => {
     const uploaded = uploadedPasses()
-    for (const { pass } of COVERAGE_LAYERS) {
-      expect({ pass: pass.id, uploaded: uploaded.has(pass.id) }).toEqual({
-        pass: pass.id,
+    for (const [layer, pass] of Object.entries(GPU_COVERAGE_PASS)) {
+      expect({ layer, uploaded: uploaded.has(pass.id) }).toEqual({
+        layer,
         uploaded: true,
       })
     }

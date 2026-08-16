@@ -37,6 +37,7 @@ import { drawReads } from '../../features/read/drawCanvas.ts'
 import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
 import { drawSoftclipBases } from '../../features/softclipBases/drawCanvas.ts'
 import { getSelectionBounds } from '../components/chainOverlayUtils.ts'
+import { COVERAGE_LAYERS } from './coverageLayers.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
   bpToScreenX,
@@ -50,6 +51,7 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
 import type { CoverageRegionFields } from '../../features/coverage/buildRegion.ts'
+import type { CoverageScale } from '../../features/coverage/coverageScale.ts'
 import type { GapUploadData } from '../../features/gap/types.ts'
 import type { LinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
 import type { MismatchUploadData } from '../../features/mismatch/types.ts'
@@ -58,6 +60,7 @@ import type { OverlapsUploadData } from '../../features/overlap/types.ts'
 import type { PerBaseLetterUploadData } from '../../features/perBaseLetter/types.ts'
 import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
+import type { CoverageLayerId } from './coverageLayers.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -471,6 +474,70 @@ export function drawAlignmentBlocks(
   return painted
 }
 
+type CoverageDrawFn = (
+  ctx: Ctx2D,
+  region: Canvas2DRegionData,
+  bpToX: (bp: number) => number,
+  viewWidth: number,
+  state: RenderState,
+  scale: CoverageScale | undefined,
+) => void
+
+// Each coverage-band layer's Canvas2D draw. The z-order and gating live in the
+// shared `COVERAGE_LAYERS` list (the GPU renderer iterates the same one); this
+// map resolves each id to its call, and being a `Record<CoverageLayerId, …>` is
+// what makes a layer added to that list a compile error here.
+//
+// The sixth argument is the whole `CoverageScale` rather than the piece each
+// layer wants, because the pieces differ — the depth-scaled layers read
+// `normalize`, the interbase bars read `domainMax` (their height is a ratio of
+// event counts against a half-band reference, so the domain MIN has nothing to
+// say about them), and the indicator triangles are fixed-size and read neither.
+//
+// The `if (scale)` in the first four is a narrowing, not a second gate: their
+// entry in `COVERAGE_LAYERS` is `hasCoverageScale`, which is the same question
+// `makeCoverageScale` answers by returning `undefined`, and TypeScript cannot
+// see that the list already asked it.
+export const CANVAS_COVERAGE_DRAW: Record<CoverageLayerId, CoverageDrawFn> = {
+  coverage: (ctx, region, bpToX, viewWidth, state, scale) => {
+    if (scale) {
+      drawCoverageBars(ctx, region, bpToX, viewWidth, state, scale.normalize)
+    }
+  },
+  snpCov: (ctx, region, bpToX, viewWidth, state, scale) => {
+    if (scale) {
+      drawSnpSegmentsCanvas(
+        ctx,
+        region,
+        bpToX,
+        viewWidth,
+        state,
+        scale.normalize,
+      )
+    }
+  },
+  modCov: (ctx, region, bpToX, viewWidth, state, scale) => {
+    if (scale) {
+      drawModCoverageCanvas(
+        ctx,
+        region,
+        bpToX,
+        viewWidth,
+        state,
+        scale.normalize,
+      )
+    }
+  },
+  interbase: (ctx, region, bpToX, viewWidth, state, scale) => {
+    if (scale) {
+      drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, scale.domainMax)
+    }
+  },
+  indicator: (ctx, region, bpToX, viewWidth, state) => {
+    drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
+  },
+}
+
 function drawCoverage(
   ctx: Ctx2D,
   region: Canvas2DRegionData,
@@ -481,41 +548,33 @@ function drawCoverage(
 ) {
   const bpToX = (bp: number) => bpToScreenX(bp, block, bpLength, fullBlockWidth)
   const viewWidth = fullBlockWidth + block.screenStartPx
-  // Depth-scaled layers need the autoscaled domain max; until coverage stats
-  // are computed (coarseDynamicBlocks is 500ms-debounced) it's undefined and
-  // these are skipped. Interbase clip/insertion bars are *positioned* at the
-  // band top but their *height* tracks the depth domain (like the coverage and
-  // SNP bars), so they belong inside this block. Both the interbase count bars
-  // and the fixed-size indicator triangles are gated on showInterbaseIndicators
-  // — the one toggle governs all interbase marks.
   // The coverage draw helpers anchor bars/segments/indicators at the canvas
   // top (clip-top). Shifting the whole band by coverageTopOffset lets grouped
   // sections scroll their coverage with the section; it is 0 (no-op) for the
   // ungrouped sticky-coverage path, mirroring the shader `covTop` uniform.
   ctx.save()
   ctx.translate(0, state.coverageTopOffset)
-  // One scale for the whole band, and it doubles as the resolved-domain gate —
-  // `undefined` while autoscale is still settling. Built once here because the
-  // bars, the SNP segments stacked inside them and the modification segments are
-  // readings of one axis; each building its own normalizer is how all three came
-  // to hardcode a zero floor and ignore `minScore`.
-  const scale = makeCoverageScale(state)
-  if (scale) {
-    drawCoverageBars(ctx, region, bpToX, viewWidth, state, scale.normalize)
-    drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, scale.normalize)
-    drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, scale.normalize)
-    if (state.showInterbaseIndicators) {
-      // `domainMax`, not the normalizer: an interbase bar's height is
-      // `count / regionMaxDepth` against a half-band reference — a ratio of
-      // event counts rather than a depth read off the axis — so the domain min
-      // has nothing to say about it. See CoverageScale.
-      drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, scale.domainMax)
+  try {
+    // One scale for the whole band. Built once here because the bars, the SNP
+    // segments stacked inside them and the modification segments are readings of
+    // one axis; each building its own normalizer is how all three came to
+    // hardcode a zero floor and ignore `minScore`.
+    const scale = makeCoverageScale(state)
+    for (const layer of COVERAGE_LAYERS) {
+      if (layer.enabled(state)) {
+        CANVAS_COVERAGE_DRAW[layer.id](
+          ctx,
+          region,
+          bpToX,
+          viewWidth,
+          state,
+          scale,
+        )
+      }
     }
+  } finally {
+    ctx.restore()
   }
-  if (state.showInterbaseIndicators) {
-    drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
-  }
-  ctx.restore()
 }
 
 interface OverlayBounds {

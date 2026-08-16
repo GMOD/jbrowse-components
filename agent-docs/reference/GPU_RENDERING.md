@@ -421,7 +421,17 @@ touching either path, preserve whichever of these the display uses:
   trusting it.** Multi-layer displays list layers/z-order/gating once and map
   each id to a per-backend mechanism through a `Record<LayerId, …>`, which makes
   a half-added layer a compile error; `coverageParity.test.ts` cross-checks
-  output.
+  output. Alignments has two such lists — `PILEUP_LAYERS` and `COVERAGE_LAYERS`
+  — because its two bands take different draw signatures; that is a reason for a
+  second list, never for a second backend keeping its own.
+
+  **"The layers aren't 1:1" is not a reason to skip this**, and it read like one
+  for two months. A registry shares the LIST, not the calls: a backend's record
+  entry is free to be a shim calling two functions, or one call with a different
+  sixth argument. What a shared list buys is that a layer cannot exist in one
+  backend and not the other — and that gap costs correctness, since the missing
+  half is also the SVG export. REJECTED_IDEAS.md has the decline and its
+  overturn.
 
   **A pass that is drawn but never uploaded fails silently and on the GPU
   backend only**, so the Canvas2D half of a parity comparison still paints it and
@@ -459,6 +469,14 @@ touching either path, preserve whichever of these the display uses:
   with the two non-obvious cases commented on the entries themselves, upload and
   draw ~60 lines apart and readable together. Don't add registries to a renderer
   you can check by reading.
+
+  **The `id` is the last unkeyed thing, and it is two keys.** A pass id names
+  the pipeline in both HALs *and* the instance buffer in `RegionRegistry`, so two
+  passes sharing one collide in both: the second registration replaces the
+  first's pipeline, both upload to a single buffer, and the wider stride reads
+  off the end of it. `assertUniquePassIds` runs in `createRenderingBackend` and
+  in `MockHal`'s constructor — the latter being what puts it in front of the
+  backend suites, which all build one from their display's real pass list.
 - **A per-instance vertex budget is a cap, and the other backend has no such
   cap.** Where one instance draws an unbounded number of marks — canvas's chevron
   pass, whose instance is an intron line and whose marks are the strand chevrons
@@ -1275,12 +1293,16 @@ Named here in the standard vocabulary so the reach lands on the reason.
 allocate transient render targets when a frame has many of both, with
 dependencies between them. Ours has one render pass, one color attachment, no
 offscreen targets, and no pass that consumes another's output. Ordering is a
-static z-ordered list in the renderer that owns it (`PILEUP_LAYERS` in
-`GpuAlignmentsRenderer.ts` is the largest, at ~16 entries with per-layer
-`enabled` gates), and resource lifetime is `RegionRegistry`'s. The closest
-proposal to this — a unified GPU/Canvas2D "layer manifest" driving draw dispatch
-from a table — was declined 2026-06 because the layers are not 1:1 across
-backends; see REJECTED_IDEAS.md.
+static z-ordered list beside the renderers that read it (`PILEUP_LAYERS` is the
+largest, at 12 entries with per-layer `enabled` gates; `COVERAGE_LAYERS` is the
+other), and resource lifetime is `RegionRegistry`'s. The nearest proposal to a
+frame graph — a unified GPU/Canvas2D "layer manifest" driving draw dispatch from
+a table — was declined 2026-06 and has since been overturned for both of those
+bands, which is a narrower thing than a frame graph and worth not confusing with
+one: a shared list of layer ids carrying z-order and gates, plus a
+`Record<LayerId, …>` per backend. No dependencies between passes, no targets, no
+scheduling. See REJECTED_IDEAS.md for what the decline got wrong and what of it
+survives.
 
 **Indirect drawing (`drawIndirect`).** Indirect draws exist to remove a CPU
 roundtrip when the GPU decides how much to draw. Nothing here generates geometry

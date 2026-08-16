@@ -23,7 +23,6 @@ import {
 } from '../../features/arcs/packGpu.ts'
 import { CLIP_PASS } from '../../features/clip/packGpu.ts'
 import { CONN_LINE_PASS } from '../../features/connectingLines/packGpu.ts'
-import { hasCoverageScale } from '../../features/coverage/coverageScale.ts'
 import { COVERAGE_PASS } from '../../features/coverage/packGpu.ts'
 import { GAP_PASS } from '../../features/gap/packGpu.ts'
 import { INDICATOR_PASS } from '../../features/indicator/packGpu.ts'
@@ -48,6 +47,7 @@ import {
   getSelectionBounds,
   toClipRect,
 } from '../components/chainOverlayUtils.ts'
+import { COVERAGE_LAYERS } from './coverageLayers.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
   lazyReadIdToIndex,
@@ -61,6 +61,7 @@ import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
+import type { CoverageLayerId } from './coverageLayers.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -569,35 +570,17 @@ export const GPU_PILEUP_PASS: Record<PileupLayerId, PileupPass> = {
   perBaseLetter: PER_BASE_LETTER_PASS,
 }
 
-// Coverage-band passes in z-order with their draw gates — the band's answer to
-// PILEUP_LAYERS, which it has no share in: these are position-aggregate passes
-// packed in the worker, not row-instanced marks, and the Canvas2D band draws
-// them through its own path rather than a per-layer draw fn.
-//
-// The band itself is gated by `showCoverage` at the call site. The depth-scaled
-// passes need the autoscaled domain max, so they are skipped until coverage
-// stats settle (coarseDynamicBlocks is 500ms-debounced and `coverageMaxDepth`
-// is undefined until then) — matching the Canvas2D `domainMax !== undefined`
-// gate. The interbase count bars (depth-scaled) and the fixed-size indicator
-// triangles are both gated on the user's `showInterbaseIndicators` — the one
-// toggle governs all interbase marks.
-//
-// `enabled` is the DRAW's, never the upload's: gating an upload on a repaint-
-// tier setting would make a mid-session toggle paint nothing until the next
-// fetch replaced the buffer it never wrote.
-export const COVERAGE_LAYERS: {
-  pass: PileupPass
-  enabled: (state: RenderState) => boolean
-}[] = [
-  { pass: COVERAGE_PASS, enabled: hasCoverageScale },
-  { pass: SNP_COVERAGE_PASS, enabled: hasCoverageScale },
-  { pass: MOD_COVERAGE_PASS, enabled: hasCoverageScale },
-  {
-    pass: INTERBASE_PASS,
-    enabled: s => hasCoverageScale(s) && s.showInterbaseIndicators,
-  },
-  { pass: INDICATOR_PASS, enabled: s => s.showInterbaseIndicators },
-]
+// Each coverage-band layer's GPU pass, keyed on the shared `CoverageLayerId` for
+// the reason `GPU_PILEUP_PASS` is keyed on `PileupLayerId`: the z-order and the
+// gating live in `COVERAGE_LAYERS`, and a layer added there is a compile error
+// here until it is wired.
+export const GPU_COVERAGE_PASS: Record<CoverageLayerId, PileupPass> = {
+  coverage: COVERAGE_PASS,
+  snpCov: SNP_COVERAGE_PASS,
+  modCov: MOD_COVERAGE_PASS,
+  interbase: INTERBASE_PASS,
+  indicator: INDICATOR_PASS,
+}
 
 // The arc band's passes, in paint order — the interchromosomal ticks FIRST,
 // then curves and flat connectors (one of the two is always empty, since read
@@ -629,7 +612,7 @@ const ARC_PASSES: InstancePass<ArcsPackData>[] = [
 // nothing and throws nothing.
 export const ALIGNMENTS_PASSES: PipelineDescriptor[] = [
   ...Object.values(GPU_PILEUP_PASS),
-  ...COVERAGE_LAYERS.map(l => l.pass),
+  ...Object.values(GPU_COVERAGE_PASS),
   ...ARC_PASSES,
   FLAT_QUAD_PASS,
 ]
@@ -857,7 +840,7 @@ export class GpuAlignmentsRenderer
       for (const pass of Object.values(GPU_PILEUP_PASS)) {
         uploadPass(this.hal, idx, pass, data)
       }
-      for (const { pass } of COVERAGE_LAYERS) {
+      for (const pass of Object.values(GPU_COVERAGE_PASS)) {
         uploadPass(this.hal, idx, pass, data)
       }
     }
@@ -973,9 +956,9 @@ export class GpuAlignmentsRenderer
     const drewCoverage = state.showCoverage && cov.height > 0
     if (drewCoverage) {
       this.hal.setScissor(geom.vpX, cov.top, geom.vpW, cov.height)
-      for (const { pass, enabled } of COVERAGE_LAYERS) {
-        if (enabled(state)) {
-          this.hal.drawPass(pass.id, regionKey)
+      for (const layer of COVERAGE_LAYERS) {
+        if (layer.enabled(state)) {
+          this.hal.drawPass(GPU_COVERAGE_PASS[layer.id].id, regionKey)
         }
       }
     }
