@@ -75,9 +75,61 @@ const MUI_BUDGET = {
   synteny: 0,
 }
 
+// Record every MUI-classed element that is ever inserted, from before the
+// page's own scripts run. `recordFromLoad` in the shared harness.
+//
+// **This is the half the census was missing, and the reason it was missing is
+// the sampling instant rather than any assertion.** Everything below runs once
+// the page is quiet, and quiet means nothing is loading any more — so a
+// component that exists only while something is fetching is gone before
+// anything looks. The budget read zero on `synteny` for as long as that page
+// existed while it drew a `MuiLinearProgress` on every visit, and no amount of
+// care in the at-rest count could have caught it: `ComparativeFetchStatus`
+// reaches `@jbrowse/core/ui` directly, so `DisplayUIProvider` never redirected
+// it, and the bar was gone by the time the census ran. Same shape as the
+// `FloatingLegend` hole below, one step further out — that one needs a click,
+// this one needs you not to have waited.
+//
+// **An interval, and a MutationObserver was tried first and killed the page.**
+// Observing `document` with `subtree` + `attributes` looks like the better
+// instrument — event-driven, no sampling gap — and on a React page repainting a
+// pileup it fires on every frame's class churn, with a `querySelectorAll` walk
+// per added subtree. Under swiftshader that wedged the renderer: two runs in
+// three died on `multiple-tracks` with a detached frame, and the same runs
+// passed with this recorder switched off. One `[class*="Mui"]` query every
+// 100ms is a single tree walk against a DOM that is mostly canvas, and three
+// full sweeps of the site never cost a page.
+//
+// The sampling gap that buys is theoretical here: what this is looking for is a
+// fetch indicator, which lives for about a second. Something that mounts and
+// unmounts inside 100ms is not a thing a reader could see either.
+//
+// Outermost-ness is decided at sample time, while the element still has a
+// parent chain to ask — the same filter the at-rest count applies.
+function recordMuiFromLoad() {
+  const seen = new Set()
+  window.__muiEver = seen
+  setInterval(() => {
+    for (const el of document.querySelectorAll('[class*="Mui"]')) {
+      if (!el.parentElement?.closest('[class*="Mui"]')) {
+        seen.add(
+          el.getAttribute('aria-label') ||
+            el.textContent?.trim().slice(0, 40) ||
+            `<${el.tagName.toLowerCase()} class="${el.getAttribute('class')}">`,
+        )
+      }
+    }
+  }, 100)
+}
+
 // Count the outermost MUI-classed elements (an icon button and the svg inside it
 // are one control, not two) and report what they were, since the label is the
 // only thing that says which control appeared.
+//
+// Both instants are held to the same budget. A page's Material is either
+// permanent chrome or it is a loading state, and the second one is the one
+// nobody notices — so "ever" having a bigger number than "at rest" is not a
+// looser bar to record, it is the finding.
 async function muiBudget(page, slug) {
   const expected = MUI_BUDGET[slug]
   if (expected === undefined) {
@@ -93,12 +145,24 @@ async function muiBudget(page, slug) {
           el.tagName.toLowerCase(),
       ),
   )
-  return found.length === expected
-    ? []
-    : [
-        `renders ${found.length} Material UI element(s), expected ${expected}:\n` +
-          found.map(f => `           - ${f}`).join('\n'),
-      ]
+  const ever = await page.evaluate(() => [...(window.__muiEver ?? [])])
+  const out =
+    found.length === expected
+      ? []
+      : [
+          `renders ${found.length} Material UI element(s), expected ${expected}:\n` +
+            found.map(f => `           - ${f}`).join('\n'),
+        ]
+  if (ever.length > expected) {
+    out.push(
+      `rendered ${ever.length} Material UI element(s) at some point during the ` +
+        `load, expected ${expected}. A page at rest shows ${found.length}, so ` +
+        'the difference only exists while something is fetching — which is ' +
+        'where a component behind neither bring-your-own provider hides:\n' +
+        ever.map(f => `           - ${f}`).join('\n'),
+    )
+  }
+  return out
 }
 
 // The second half of the census, and the one that catches what counting `Mui*`
@@ -745,6 +809,9 @@ const failures = await smokeExamplesSite({
   // circular-dependency TDZ that webpack tolerates and Vite does not — and the
   // page's own claim is that a worker spawns, which loading it cannot show.
   workerSlug: 'web-workers',
+  // installed before each page's own scripts, so `muiBudget` can hold the
+  // census to what ever rendered rather than to what survived the load
+  recordFromLoad: recordMuiFromLoad,
   // The one console error on this site that is a page working rather than
   // failing: `loading-and-errors` points a radio at an assembly whose sequence
   // file does not exist, and `viewStatusStatesAreDrawn` below clicks it. Named

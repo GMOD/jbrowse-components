@@ -63,6 +63,29 @@ export interface SmokeOptions {
   // other error on that page. For anything a load-only check can't see — a
   // control that renders but doesn't respond to a real click, say
   check?: (page: Page, slug: string) => Promise<string[]>
+  // Installed in every page *before its own scripts run*, to record something a
+  // settled-page `check` cannot see. It should stash what it finds on `window`
+  // for `check` to read back.
+  //
+  // The gap it exists for: `check` runs once the page is quiet, and "quiet" is
+  // defined as nothing loading any more — so a component that exists only
+  // while something is fetching is gone by the time anything looks. That is not
+  // a hole in a particular assertion, it is the sampling instant, and no check
+  // written on this side of the load can close it. BYO's MUI census scored a
+  // page zero for months while it drew a Material progress bar on every visit.
+  //
+  // **Keep it to one cheap sample on an interval, and resist the
+  // MutationObserver.** Event-driven looks strictly better — no sampling gap,
+  // idle when the page is idle — and BYO's census tried it first: observing
+  // `document` with `subtree` + `attributes` fires on every frame of a React
+  // page repainting a pileup, and under swiftshader it wedged the renderer,
+  // two runs in three, reported as a detached frame rather than as anything
+  // about the recorder. A `querySelectorAll` every 100ms costs nothing by
+  // comparison. If you do reach for one, observe `document`, not
+  // `document.documentElement` — this runs before the latter exists, and
+  // `observe(null)` throws and takes the rest of the init script with it,
+  // silently.
+  recordFromLoad?: () => void
   // Console errors a specific page produces *on purpose*, and the escape hatch
   // for a demo whose subject is a failure: a page teaching what a broken data
   // URL looks like has to break one, and the resulting error is the page
@@ -93,6 +116,7 @@ export async function smokeExamplesSite({
   settleMs = 4000,
   viewport = DESKTOP_VIEWPORT,
   check,
+  recordFromLoad,
   allowedConsoleError = () => false,
   log = () => {},
 }: SmokeOptions): Promise<number> {
@@ -151,6 +175,10 @@ export async function smokeExamplesSite({
         }
       }, 50)
     })
+    // after the stamp, so a recorder that throws cannot cost us the mount time
+    if (recordFromLoad) {
+      await page.evaluateOnNewDocument(recordFromLoad)
+    }
     const errors: string[] = []
     const workers: string[] = []
     page.on('workercreated', w => {

@@ -536,14 +536,13 @@ context.
   `plugin-linear-genome-view`, so no inversion. Keeps one contract and puts the
   wiring where the layering already permits it.
 
-**Add a loading-time census to the BYO site's `smoke.mjs` in the same commit.**
-That census is how this was found and it is not in the repo: a throwaway probe
-sampled the site's own MUI count every 40ms from before the first script ran,
-rather than once after settle, and `synteny` came back 0 at rest and 1 while
-fetching. A census of a page at rest cannot see a component that only exists
-while something is loading — the same shape as the `FloatingLegend` hole
-`smoke.mjs` already describes. Until it is wired in, every state on this list is
-invisible to CI.
+**The loading-time census is wired in, so this list is no longer invisible.**
+`recordMuiFromLoad` in the BYO site's `smoke.mjs` samples from before each page's
+own scripts run and holds the union to `MUI_BUDGET`, which is how the progress
+bar was found in the first place. It catches an element that *renders*, so it
+covers the cancel and retry buttons the moment a caller passes those handlers —
+but not the tooltip or the context menu, which need a hover and a right-click
+that nothing on that page drives.
 
 ## Ready to build: the design is settled
 

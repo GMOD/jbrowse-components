@@ -49,6 +49,17 @@ Every page installing `plainChromeOverlays` + `plainTrackControl` scores
 started rendering a Material component behind neither provider, and raising the
 budget quietly makes the prose false.
 
+**`MUI_BUDGET` is held at two instants, and the second one is why.** The count
+at rest is the obvious half; `recordMuiFromLoad` samples from before the page's
+own scripts run and holds the _union_ to the same number. Everything else here
+runs once the page is quiet, and quiet means nothing is loading — so a component
+that exists only while something is fetching was structurally unreachable. That
+is not a hypothetical: `synteny` scored zero for as long as it existed while
+drawing a `MuiLinearProgress` on every visit, from `ComparativeFetchStatus`,
+which is behind neither provider. **So a failure naming only the "ever" number
+is the interesting one** — it means the page is clean by the time you look at
+it, which is exactly why nobody had.
+
 **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
 re-checked by `pnpm smoke`. Going **under** a budget fails as well as over —
 bank the win by re-running and committing, or the next change spends it quietly.
