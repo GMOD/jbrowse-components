@@ -109,4 +109,18 @@ describe('outputName', () => {
       '1_chr1_1000-chr5_2000_BCR--ABL1-fusion.svg',
     )
   })
+
+  it('sanitizes the refNames too, not only the name column', () => {
+    // A refName is no safer than a caller's label: a `/` in one builds a path
+    // into a directory that does not exist, and the record then fails at write
+    // time having already paid for its render.
+    const name = outputName(
+      { ...ROW, refName1: 'GL000/1', refName2: 'gi|123|ref' },
+      0,
+      1,
+      'png',
+    )
+    expect(name).not.toContain('/')
+    expect(name).toBe('1_GL000-1_1000-gi-123-ref_2000.png')
+  })
 })

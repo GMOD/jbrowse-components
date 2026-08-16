@@ -42,6 +42,14 @@ function infoField(info: string, key: string) {
 
 type Endpoint = [string, number]
 
+// A junction plus the label to file it under: the record's own ID column when it
+// has one, so an image can be traced back to the VCF row that produced it.
+interface Junction {
+  a: Endpoint
+  b: Endpoint
+  id?: string
+}
+
 function near(a: number, b: number, tolerance: number) {
   return Math.abs(a - b) <= tolerance
 }
@@ -56,10 +64,11 @@ function near(a: number, b: number, tolerance: number) {
  * the failure is silent - every translocation queued twice reads as a callset
  * with twice as many events.
  */
-function dedupe(junctions: [Endpoint, Endpoint][], tolerance: number) {
-  const kept: [Endpoint, Endpoint][] = []
-  for (const [a, b] of junctions) {
-    const dup = kept.some(([ka, kb]) => {
+function dedupe(junctions: Junction[], tolerance: number) {
+  const kept: Junction[] = []
+  for (const j of junctions) {
+    const { a, b } = j
+    const dup = kept.some(({ a: ka, b: kb }) => {
       const same =
         ka[0] === a[0] &&
         kb[0] === b[0] &&
@@ -73,7 +82,7 @@ function dedupe(junctions: [Endpoint, Endpoint][], tolerance: number) {
       return same || flipped
     })
     if (!dup) {
-      kept.push([a, b])
+      kept.push(j)
     }
   }
   return kept
@@ -88,7 +97,10 @@ function dedupe(junctions: [Endpoint, Endpoint][], tolerance: number) {
  * its own: a run that quietly rendered 80 of 100 junctions is the failure this
  * workflow exists to prevent.
  */
-export function parseVcfJunctions(text: string, tolerance = DEDUP_TOLERANCE) {
+export function parseVcfJunctions(
+  text: string,
+  { tolerance = DEDUP_TOLERANCE, passOnly = false } = {},
+) {
   const skipped: string[] = []
   // The spelling the FILE uses, keyed case-insensitively. Callers upper-case the
   // mate contig in the ALT bracket (`G]CHR3:25359111]`), and `CHR3` is not a
@@ -96,7 +108,7 @@ export function parseVcfJunctions(text: string, tolerance = DEDUP_TOLERANCE) {
   // Lower-casing instead reaches only this case and breaks every assembly not
   // spelled in lower case, which is the bug sv_multihop.py records having had.
   const contigs = new Map<string, string>()
-  const junctions: [Endpoint, Endpoint][] = []
+  const junctions: Junction[] = []
   let lineNo = 0
 
   for (const rawLine of text.split('\n')) {
@@ -117,7 +129,7 @@ export function parseVcfJunctions(text: string, tolerance = DEDUP_TOLERANCE) {
       skipped.push(`line ${lineNo}: fewer than 8 columns`)
       continue
     }
-    const [chrom, posStr, , , alt, , , info] = f
+    const [chrom, posStr, id, , alt, , filter, info] = f
     const pos = Number(posStr)
     if (!chrom || !Number.isFinite(pos)) {
       skipped.push(`line ${lineNo}: no usable CHROM/POS`)
@@ -125,6 +137,13 @@ export function parseVcfJunctions(text: string, tolerance = DEDUP_TOLERANCE) {
     }
     if (!contigs.has(chrom.toLowerCase())) {
       contigs.set(chrom.toLowerCase(), chrom)
+    }
+    // An unfiltered callset is mostly rows nobody wants pictures of, and --limit
+    // takes the first N in FILE order, which is not the first N worth looking at.
+    // `.` is "no filter applied", which is a pass rather than a fail.
+    if (passOnly && filter && filter !== 'PASS' && filter !== '.') {
+      skipped.push(`line ${lineNo}: FILTER is "${filter}", not PASS`)
+      continue
     }
     const svtype = infoField(info ?? '', 'SVTYPE')
     let mate: Endpoint | undefined
@@ -155,23 +174,43 @@ export function parseVcfJunctions(text: string, tolerance = DEDUP_TOLERANCE) {
       )
       continue
     }
-    const canonical = (e: Endpoint): Endpoint => [
-      contigs.get(e[0].toLowerCase()) ?? e[0],
-      e[1],
-    ]
-    junctions.push([canonical([chrom, pos]), canonical(mate)])
+    junctions.push({
+      a: [chrom, pos],
+      b: mate,
+      ...(id && id !== '.' ? { id } : {}),
+    })
   }
 
-  const records: BedpeRecord[] = dedupe(junctions, tolerance).map(
-    ([[c1, p1], [c2, p2]], i) => ({
-      refName1: c1,
+  // Canonicalized after the loop, not inside it. `contigs` is still being filled
+  // while the records are read, so a mate contig spelled `CHR3` in a file whose
+  // header names no contigs stayed uncanonical whenever it appeared BEFORE the
+  // record that establishes `chr3` — the empty-panel failure this map exists to
+  // prevent, reintroduced by reading the map too early. Before dedupe, which
+  // compares contig names.
+  const canonical = (e: Endpoint): Endpoint => [
+    contigs.get(e[0].toLowerCase()) ?? e[0],
+    e[1],
+  ]
+  const canonicalized = junctions.map(j => ({
+    ...j,
+    a: canonical(j.a),
+    b: canonical(j.b),
+  }))
+
+  const records: BedpeRecord[] = dedupe(canonicalized, tolerance).map(
+    ({ a, b, id }, i) => ({
+      refName1: a[0],
       // 1-based VCF POS in, 0-based half-open BEDPE out
-      start1: p1 - 1,
-      end1: p1,
-      refName2: c2,
-      start2: p2 - 1,
-      end2: p2,
-      name: `junction_${i}`,
+      start1: a[1] - 1,
+      end1: a[1],
+      refName2: b[0],
+      start2: b[1] - 1,
+      end2: b[1],
+      // The caller's own ID, so an image traces back to the VCF row. Falls back
+      // to an index only when the file supplies none — `junction_N` alongside
+      // outputName's own leading index was the same number twice, off by one
+      // from itself, and said nothing a filename did not already say.
+      name: id ?? `junction_${i}`,
     }),
   )
   return { records, skipped }

@@ -121,4 +121,50 @@ describe('parseVcfJunctions', () => {
     )
     expect(records).toEqual([])
   })
+
+  it('files a junction under the caller’s own ID', () => {
+    // So an image traces back to the VCF row that produced it. The old
+    // `junction_N` was outputName's leading index again, off by one from it.
+    const { records } = parseVcfJunctions(
+      vcf('chr3\t1000\tgridss12o\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=2000'),
+    )
+    expect(records[0]!.name).toBe('gridss12o')
+  })
+
+  it('falls back to an index when the file supplies no ID', () => {
+    const { records } = parseVcfJunctions(
+      vcf('chr3\t1000\t.\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=2000'),
+    )
+    expect(records[0]!.name).toBe('junction_0')
+  })
+
+  it('canonicalizes a mate contig first seen before its own record', () => {
+    // The map is filled WHILE the records are read, so reading it inside the
+    // loop left `CHR12` uncanonical whenever it appeared before the record that
+    // establishes `chr12` — and a header that names no contigs is what exposes
+    // it. The panel then renders empty rather than failing.
+    const { records } = parseVcfJunctions(
+      [
+        '##fileformat=VCFv4.2',
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+        'chr3\t100\ta\tG\tG[CHR12:200[\t.\tPASS\tSVTYPE=BND',
+        'chr12\t900\tb\tG\tG[chr3:500[\t.\tPASS\tSVTYPE=BND',
+      ].join('\n'),
+    )
+    expect(records.map(r => r.refName2)).toEqual(['chr12', 'chr3'])
+  })
+
+  it('drops a filtered record under passOnly, and reports it', () => {
+    const { records, skipped } = parseVcfJunctions(
+      vcf(
+        'chr3\t1000\ta\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=2000',
+        'chr3\t5000\tb\tN\t<DEL>\t.\tLOW_QUAL\tSVTYPE=DEL;END=6000',
+        // `.` is "no filter applied", which is a pass rather than a fail
+        'chr3\t8000\tc\tN\t<DEL>\t.\t.\tSVTYPE=DEL;END=9000',
+      ),
+      { passOnly: true },
+    )
+    expect(records.map(r => r.name)).toEqual(['a', 'c'])
+    expect(skipped[0]).toMatch(/FILTER is "LOW_QUAL"/)
+  })
 })
