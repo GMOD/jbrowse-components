@@ -3,7 +3,7 @@ import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models
 // the same four columns QuantitativeTrack downloads, and this track renders the
 // wiggle body anyway — a second copy of the writer was one place for the
 // score-missing fallback to drift
-import { stringifyBedGraph } from '@jbrowse/plugin-wiggle'
+import { bedGraphFormatOptions } from '@jbrowse/plugin-wiggle'
 
 import configSchemaF from './configSchema.ts'
 
@@ -22,13 +22,7 @@ export default function GCContentTrackF(pm: PluginManager) {
         configSchema,
       ).views(() => ({
         saveTrackFileFormatOptions() {
-          return {
-            bedGraph: {
-              name: 'BedGraph',
-              extension: 'bedgraph',
-              callback: stringifyBedGraph,
-            },
-          }
+          return bedGraphFormatOptions
         },
       })),
     })

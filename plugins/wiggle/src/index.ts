@@ -82,7 +82,10 @@ export { WiggleCommonMixin } from './shared/WiggleCommonMixin.ts'
 // The bedGraph writer QuantitativeTrack and MultiQuantitativeTrack register as
 // their save-file format. Exported because gccontent's track offers the same
 // download of the same four columns, and had its own copy.
-export { stringifyBedGraph } from './saveTrackFormats/bedGraph.ts'
+export {
+  bedGraphFormatOptions,
+  stringifyBedGraph,
+} from './saveTrackFormats/bedGraph.ts'
 // The score axis alone, for a display that has one without wiggle's palette and
 // rendering vocabulary (GWAS Manhattan), plus the snapshot remap that keeps
 // retired autoscale values loading.
