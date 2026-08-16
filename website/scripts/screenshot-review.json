@@ -2279,8 +2279,8 @@
     "name": "tcga/mutations_cdh1_histology",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T23:13:59.481Z",
-    "hash": "028b2f2f0f83680f6d4ad55c647768d418248269"
+    "reviewedAt": "2026-08-16T19:30:54.650Z",
+    "hash": "dfbf47a52abc4ebcc4d26bc7c854628d74f5871a"
   },
   "scrna/ms4a1_bcell": {
     "name": "scrna/ms4a1_bcell",
@@ -2886,16 +2886,16 @@
   "pangenome/pggb_bubble_tier": {
     "name": "pangenome/pggb_bubble_tier",
     "status": "good",
-    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
-    "reviewedAt": "2026-08-15T22:56:26.643Z",
-    "hash": "1383d1e206e19621dc2cb4dcc1f01dc54aefc0a0"
+    "note": "",
+    "reviewedAt": "2026-08-16T19:30:46.371Z",
+    "hash": "c3d90a9a2874edb1bb8a54af20e8f7800df491e3"
   },
   "synteny_self_chry_palindromes": {
     "name": "synteny_self_chry_palindromes",
     "status": "good",
-    "note": "DONE. 'this one, below' is an arrow now, out of the box and down to just above the bottom axis. Its head takes the same locus anchor as its tail rather than the canvas element -- a selector anchor centres on the element, so the first render sloped the arrow off into the middle of the plot instead of running straight down. A compose has no annotation layer of its own, so nothing can be drawn ACROSS the seam; pointing at it is as far as this goes, and it is further than the words got.",
-    "reviewedAt": "2026-08-16T03:45:46.860Z",
-    "hash": "c3fe6cbdcf28ee711b31b93403510ecf61f74cd7"
+    "note": "",
+    "reviewedAt": "2026-08-16T19:30:50.591Z",
+    "hash": "1a0689b93287fde679a454ba3c51b7a13344c7be"
   },
   "sv_cgiab/three_ways": {
     "name": "sv_cgiab/three_ways",
