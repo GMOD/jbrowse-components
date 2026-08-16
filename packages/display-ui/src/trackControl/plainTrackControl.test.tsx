@@ -98,12 +98,52 @@ test('an option is reachable by keyboard alone', () => {
   expect(document.activeElement).toBe(screen.getByLabelText('Track sizing'))
 })
 
+// The three dismissal routes. Each is a bug when missed and none of them shows
+// up in a screenshot, which is the reason the hook owns them rather than leaving
+// them to whoever writes the markup.
 test('Escape closes and returns focus to the trigger', () => {
   open()
   fireEvent.keyDown(document, { key: 'Escape' })
 
   expect(screen.queryByRole('menu')).toBeNull()
   expect(document.activeElement).toBe(screen.getByLabelText('Track sizing'))
+})
+
+test('a press outside closes it', () => {
+  open()
+  fireEvent.pointerDown(document.body)
+
+  expect(screen.queryByRole('menu')).toBeNull()
+})
+
+test('a press inside the menu does not', () => {
+  // The dismissal listens on the document in the capture phase, so without the
+  // containment check it would fire before the option's own click and the menu
+  // would close under the pointer on its way to being used.
+  open()
+  fireEvent.pointerDown(screen.getByRole('menu'))
+
+  expect(screen.queryByRole('menu')).toBeTruthy()
+})
+
+test('an ancestor scrolling closes it', () => {
+  // The menu is `position: fixed` at coordinates measured off the trigger once,
+  // at open time, so a scroll leaves it floating somewhere of its own. Fired on
+  // the container rather than on document because a scroll event does not bubble
+  // from an element — only the capture-phase listener sees this one, which is
+  // the half that makes a scroll in *any* ancestor count.
+  const { container } = render(
+    <PlainTrackControl
+      icon="height"
+      tooltip="Track sizing"
+      options={options()}
+    />,
+  )
+  fireEvent.click(screen.getByLabelText('Track sizing'))
+  expect(screen.queryByRole('menu')).toBeTruthy()
+
+  fireEvent.scroll(container)
+  expect(screen.queryByRole('menu')).toBeNull()
 })
 
 test('a control with no options opens no menu', () => {

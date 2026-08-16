@@ -98,33 +98,11 @@ describe('plainTrackControl', () => {
     expect(baseElement.querySelectorAll('[class*="Mui"]')).toHaveLength(0)
     expect(screen.getByRole('menu')).toBeTruthy()
   })
-
-  it('closes its menu on Escape', () => {
-    renderPlain({
-      icon: 'height',
-      tooltip: 'Track sizing',
-      options: options(() => {}),
-    })
-    fireEvent.click(screen.getByLabelText('Track sizing'))
-    expect(screen.queryByRole('menu')).toBeTruthy()
-    fireEvent.keyDown(document, { key: 'Escape' })
-    expect(screen.queryByRole('menu')).toBeNull()
-  })
-
-  it('closes its menu when an ancestor scrolls', () => {
-    // The menu is `position: fixed` at coordinates measured off the trigger once
-    // at open time, so a scroll leaves it floating somewhere of its own. Fired
-    // on the container rather than on document because a scroll event does not
-    // bubble from an element — only the capture-phase listener sees this one,
-    // which is the half that makes a scroll in any ancestor count.
-    const { container } = renderPlain({
-      icon: 'height',
-      tooltip: 'Track sizing',
-      options: options(() => {}),
-    })
-    fireEvent.click(screen.getByLabelText('Track sizing'))
-    expect(screen.queryByRole('menu')).toBeTruthy()
-    fireEvent.scroll(container)
-    expect(screen.queryByRole('menu')).toBeNull()
-  })
 })
+
+// Its dismissal routes, its keyboard and its focus handling are pinned in
+// `@jbrowse/display-ui`'s own `plainTrackControl.test.tsx`, next to the hook
+// that implements them. What has to be tested *here* is the seam: that the two
+// implementations behave alike, and that swapping one in leaks no Material UI
+// through the resolver. Restating the dismissal cases in both packages only
+// buys two places to update them.
