@@ -8,13 +8,11 @@
 allowedGappyness
 arcHeight
 autoscale
-bubbleSpread
 color
 colorDomain
 connectedView
 displayMode
 filterBy
-gfaLocation
 growMaxHeight
 height
 jexlFiltersSetting
@@ -23,7 +21,6 @@ legend
 maxRegionBp
 orthologParams
 paneHeight
-partitionField
 readConnections
 sampleColorMap
 showCoverage

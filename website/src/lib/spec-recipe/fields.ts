@@ -566,14 +566,14 @@ const SHOW_LEGEND_DISPLAYS = new Set([
   'LinearHicDisplay',
 ])
 
-// The displays composing LinearCanvasBaseDisplay, which is where
-// `featureHighlights` is declared and where the right-click item that writes it
-// lives. LinearVariantDisplay is in it because it renames its noun rather than
-// its behaviour — its menu row reads "Highlight variant" and is the same item.
-const FEATURE_HIGHLIGHT_DISPLAYS = new Set([
-  'LinearBasicDisplay',
-  'LinearVariantDisplay',
-])
+// The displays composing LinearCanvasBaseDisplay, so they share its whole track
+// menu: the size submenu, the flattened "Show..." one, and the right-click item
+// that writes `featureHighlights`. LinearVariantDisplay is in it because it
+// renames its noun rather than its behaviour — its menu row reads "Highlight
+// variant" and is the same item, and its size submenu is titled with the same
+// generic "feature" the gene one is (featureHeightMenuItems in the canvas
+// display's trackMenus.ts says so in as many words).
+const CANVAS_DISPLAYS = new Set(['LinearBasicDisplay', 'LinearVariantDisplay'])
 
 // The three displays declaring `squashToHeight`, all of which draw a triangle
 // whose natural height is half the view width: the Hi-C contact matrix and the
@@ -626,7 +626,7 @@ const SUBFEATURE_LABELS: Record<string, string> = {
 // here that can still be wrong; resolving it needs pickDisplayForView's plugin
 // registry.
 const heightMenu = (noun: string, displayType?: string) =>
-  displayType === 'LinearBasicDisplay'
+  displayType && CANVAS_DISPLAYS.has(displayType)
     ? `${TRACK_MENU} → Set feature height`
     : `${TRACK_MENU} → ${noun.charAt(0).toUpperCase()}${noun.slice(1)} height`
 
@@ -642,6 +642,14 @@ const DISPLAY_MODES: Record<string, string> = {
   compact: 'Compact',
   superCompact: 'Super-compact',
   collapsed: 'Collapsed',
+}
+
+// The arc display's `displayMode`, a different setting under the same name:
+// what an arc is drawn as. Labels from ARC_DISPLAY_MODE_OPTIONS, which the
+// plugin's config schema and its menu radios are both built from.
+const ARC_DISPLAY_MODES: Record<string, string> = {
+  arcs: 'Arcs',
+  semicircles: 'Semi-circles',
 }
 
 const SHOW_LABELS_MODES: Record<string, string> = {
@@ -819,6 +827,20 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show... → Show row separators (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
+  // Which attribute becomes the rows. The submenu's options are discovered from
+  // the loaded features rather than configured, so the figure's own value is
+  // the label to click — except a `jexl:` partition, which that menu shows as a
+  // disabled row it cannot write (partitionMenuItems in the display's
+  // trackMenuItems.ts).
+  partitionField: (value, { displayType }) =>
+    typeof value === 'string' &&
+    !value.startsWith('jexl:') &&
+    displayType === 'LinearMultiRowFeatureDisplay'
+      ? {
+          path: `${TRACK_MENU} → Partition by... → ${value}`,
+          note: 'The list is built from the attributes the loaded features carry, so a track whose data has not loaded yet offers nothing.',
+        }
+      : undefined,
   showRowLabels: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'MultiLinearWiggleDisplay'
       ? {
@@ -831,7 +853,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   featureHighlights: (value, { displayType, noun }) =>
     Array.isArray(value) &&
     displayType &&
-    FEATURE_HIGHLIGHT_DISPLAYS.has(displayType)
+    CANVAS_DISPLAYS.has(displayType)
       ? {
           path: `Right-click the ${noun} → Highlight ${noun} (searching for it by name in the location box leaves the same highlight behind)`,
           note: `This figure highlights ${value.length} ${noun}${value.length === 1 ? '' : 's'}. The spec form differs from the click in one way that matters to a figure: a highlight the user did not click also sorts its ${noun} to a top row of the track, so it is boxed at the top of a dense lane rather than boxed several rows down.`,
@@ -1123,15 +1145,25 @@ export const trackFields: Record<string, FieldRecipe> = {
   // Both radios sit directly in the canvas display's size submenu, above the
   // 'Track sizing' subheader that heightMode lands under.
   displayMode: (value, { displayType }) => {
-    const label = typeof value === 'string' ? DISPLAY_MODES[value] : undefined
-    return label && displayType === 'LinearBasicDisplay'
+    if (typeof value !== 'string') {
+      return undefined
+    }
+    // The arc display's own field of the same name, which is what the
+    // connection is drawn AS rather than how tall it is
+    // (ARC_DISPLAY_MODE_OPTIONS in arc/LinearArcDisplay/displayModes.ts).
+    if (displayType === 'LinearArcDisplay') {
+      const shape = ARC_DISPLAY_MODES[value]
+      return shape ? { path: `${TRACK_MENU} → Display mode → ${shape}` } : undefined
+    }
+    const label = DISPLAY_MODES[value]
+    return label && displayType && CANVAS_DISPLAYS.has(displayType)
       ? { path: `${TRACK_MENU} → Set feature height → ${label}` }
       : undefined
   },
   showLabels: (value, { displayType }) => {
     const label =
       typeof value === 'string' ? SHOW_LABELS_MODES[value] : undefined
-    return label && displayType === 'LinearBasicDisplay'
+    return label && displayType && CANVAS_DISPLAYS.has(displayType)
       ? { path: `${TRACK_MENU} → Show... → Labels → ${label}` }
       : undefined
   },
@@ -1344,6 +1376,7 @@ const GRAPH_BUBBLE_SPREADS: Record<string, string> = {
   auto: 'Proportional',
   open: 'Open bubbles',
   wide: 'Wide bubbles',
+  compress: 'Compress lengths',
 }
 
 // The Layout quality radio, which is FMMM's iteration budget rather than a
@@ -1657,6 +1690,17 @@ export const viewFields: Record<string, FieldRecipe> = {
       ? {
           path: 'Set the location box before launching the graph view.',
           note: 'The cut is the window the linear view was showing, so the graph covers what you were looking at.',
+        }
+      : undefined,
+  // The other way a graph view gets its data, and the one a reader bringing a
+  // .gfa of their own takes: the view opens on its own import form ("Load a GFA
+  // graph"), which reads a whole file rather than cutting one from a track.
+  gfaLocation: value =>
+    asRecord(value)
+      ? {
+          path: 'Open the view: **Add → Graph genome view**, then on its "Load a GFA graph" form paste the URL and click **Open** (or **Choose file** for a local .gfa)',
+          note: 'Loads the whole graph, so it suits a subgraph or a small assembly. A window of a large one is cut from a segments track instead.',
+          opensView: true,
         }
       : undefined,
   layoutMode: graphToolbarField('Layout', GRAPH_LAYOUTS),
