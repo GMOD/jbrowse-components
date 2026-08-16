@@ -130,3 +130,40 @@ test.each([
   },
   60000,
 )
+
+// The dialog pulls the region with the same index estimate the display's gate
+// takes, and over budget it downloads nothing until asked twice. Driven from a
+// 1-byte adapter limit rather than a large region: volvox has nothing big
+// enough, and the budget is the thing being tested either way.
+test('a track over its adapter budget asks before downloading', async () => {
+  const config = volvoxConfigWithTracks(['volvox_bam'])
+  const { view } = await createView({
+    ...config,
+    tracks: config.tracks.map(t => ({
+      ...t,
+      adapter: { ...t.adapter, fetchSizeLimit: 1 },
+    })),
+  })
+  await view.navToLocString('ctgA:4,318..4,440')
+
+  await openSaveTrackDataDialog('volvox_bam')
+
+  // the estimate is quoted, and both ways out of the dialog with data are held
+  await screen.findByDisplayValue(
+    /is an estimated .* over the 1 bytes/,
+    ...opts,
+  )
+  const download = await screen.findByText('Download', ...opts)
+  expect(download.closest('button')!.disabled).toBe(true)
+  expect(saveAs).not.toHaveBeenCalled()
+
+  fireEvent.click(await screen.findByText('Download anyway', ...opts))
+
+  await waitFor(() => {
+    expect(download.closest('button')!.disabled).toBe(false)
+  }, delay)
+  fireEvent.click(download)
+  await waitFor(() => {
+    expect(saveAs).toHaveBeenCalled()
+  }, delay)
+}, 60000)
