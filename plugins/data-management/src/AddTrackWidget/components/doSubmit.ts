@@ -66,7 +66,7 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
       // changed in a multi-assembly session). Tell the user instead of silently
       // doing nothing.
       session.notify(
-        `Added track "${model.trackName}" to the session, but it was not displayed because it uses assembly "${model.assembly}", which is not open in this view. Open a view for that assembly and use its track selector to display it.`,
+        `Added track "${model.submittableTrackName}" to the session, but it was not displayed because it uses assembly "${model.assembly}", which is not open in this view. Open a view for that assembly and use its track selector to display it.`,
         'warning',
       )
     }

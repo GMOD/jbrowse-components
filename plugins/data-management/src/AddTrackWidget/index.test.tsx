@@ -233,7 +233,7 @@ test('clearData resets all volatile state', () => {
 
   expect(widget.trackData).toBeUndefined()
   expect(widget.indexTrackData).toBeUndefined()
-  expect(widget.altTrackName).toBe('')
+  expect(widget.altTrackName).toBeUndefined()
   expect(widget.altTrackType).toBe('')
   expect(widget.altAssemblyName).toBe('')
   expect(widget.adapterHint).toBe('')
@@ -261,7 +261,7 @@ test('setTrackData clears adapterHint for re-evaluation', () => {
   expect(widget.adapterHint).toBe('')
 })
 
-test('setIndexTrackData clears adapterHint for re-evaluation', () => {
+test('setIndexTrackData keeps adapterHint', () => {
   const session = standardInitializer()
   const { widget } = session
 
@@ -270,14 +270,13 @@ test('setIndexTrackData clears adapterHint for re-evaluation', () => {
     locationType: 'UriLocation',
   })
   widget.setAdapterHint('BamAdapter')
-  expect(widget.adapterHint).toBe('BamAdapter')
 
-  // Changing index data should also clear the adapter hint
+  // an index names no format, so supplying one must not discard the choice
   widget.setIndexTrackData({
     uri: 'test.bam.csi',
     locationType: 'UriLocation',
   })
-  expect(widget.adapterHint).toBe('')
+  expect(widget.adapterHint).toBe('BamAdapter')
 })
 
 test('detects FTP URLs in track data', () => {
@@ -376,6 +375,31 @@ test('trackName falls back to filename when altTrackName is empty', () => {
 
   widget.setTrackName('Custom Name')
   expect(widget.trackName).toBe('Custom Name')
+})
+
+test('an emptied track name stays empty rather than refilling the filename', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'https://example.com/my-track.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setTrackName('')
+  expect(widget.trackName).toBe('')
+  expect(widget.submittableTrackName).toBe('')
+})
+
+test('a whitespace-only track name is not submittable', () => {
+  const session = standardInitializer()
+  const { widget } = session
+
+  widget.setTrackData({
+    uri: 'https://example.com/my-track.bam',
+    locationType: 'UriLocation',
+  })
+  widget.setTrackName('   ')
+  expect(widget.submittableTrackName).toBe('')
 })
 
 test('assembly falls back to view assemblyNames when altAssemblyName is empty', () => {

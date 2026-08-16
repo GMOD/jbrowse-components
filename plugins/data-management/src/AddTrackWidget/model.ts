@@ -40,7 +40,12 @@ function createVolatileState() {
     trackData: undefined as FileLocation | undefined,
     indexTrackData: undefined as FileLocation | undefined,
     altAssemblyName: '',
-    altTrackName: '',
+    // A sentinel, not a plain string: `undefined` is "the user has not touched
+    // the name", which is what falls back to the filename, and `''` is "the
+    // user emptied the field". Conflating the two makes the field impossible to
+    // clear — deleting the last character refills it with the filename. The
+    // resolved value is `trackName`.
+    altTrackName: undefined as string | undefined,
     altTrackType: '',
     adapterHint: '',
     textIndexTrack: true,
@@ -139,9 +144,10 @@ export default function f(pluginManager: PluginManager) {
        * #action
        */
       setIndexTrackData(obj: FileLocation) {
+        // The adapter hint deliberately survives this, unlike setTrackData: an
+        // index names no format, so supplying one after choosing an adapter
+        // used to discard the choice with nothing on screen to say so.
         self.indexTrackData = obj
-        // Clear adapter hint when index data changes to force re-evaluation
-        self.adapterHint = ''
         // typed by hand, so it is no longer this widget's guess to explain
         self.detectedIndexName = undefined
       },
@@ -155,7 +161,6 @@ export default function f(pluginManager: PluginManager) {
         if (!self.indexTrackData) {
           self.indexTrackData = obj
           self.detectedIndexName = name
-          self.adapterHint = ''
         }
       },
       /**
@@ -275,9 +280,19 @@ export default function f(pluginManager: PluginManager) {
        */
       get trackName() {
         return (
-          self.altTrackName ||
+          self.altTrackName ??
           (self.trackData ? getFileName(self.trackData) : '')
         )
+      },
+
+      /**
+       * #getter
+       * The name the track is added under, which is what an all-whitespace
+       * entry has to be judged on — `!!trackName` accepts `'   '` and mints a
+       * track whose name renders as nothing in the selector.
+       */
+      get submittableTrackName() {
+        return this.trackName.trim()
       },
 
       /**
@@ -354,17 +369,22 @@ export default function f(pluginManager: PluginManager) {
           ? session.assemblyManager.get(self.assembly)
           : undefined
 
-        return assemblyInstance &&
+        // `name` gates alongside the adapter and assembly rather than being
+        // taken on trust: an all-whitespace entry otherwise mints a track that
+        // renders as a blank row in the selector, with a trackId to match
+        const name = self.submittableTrackName
+        return name &&
+          assemblyInstance &&
           self.trackAdapter &&
           self.trackAdapter.type !== UNKNOWN
           ? deepmerge(
               {
                 trackId: makeTrackId({
-                  name: self.trackName,
+                  name,
                   timestamp,
                 }),
                 type: self.trackType,
-                name: self.trackName,
+                name,
                 assemblyNames: [self.assembly],
                 adapter: { ...self.trackAdapter },
               },

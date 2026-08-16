@@ -121,6 +121,33 @@ test('adds a track', async () => {
   expect(session.sessionTracks.length).toBe(2)
 })
 
+test('a whitespace-only name builds no config; a padded one is trimmed', () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'test.bam', locationType: 'UriLocation' })
+
+  model.setTrackName('   ')
+  expect(model.getTrackConfig(1)).toBeUndefined()
+
+  model.setTrackName('  Padded  ')
+  const conf = model.getTrackConfig(1)
+  expect(conf?.name).toBe('Padded')
+  expect(conf?.trackId).toBe('padded-1')
+})
+
+test('emptying the track name leaves the field empty and blocks Add', () => {
+  const { model } = getSession()
+  model.setTrackData({ uri: 'test.bam', locationType: 'UriLocation' })
+  const { getByTestId, getByText } = render(<ConfirmTrack model={model} />)
+  const input = getByTestId('trackNameInput') as HTMLInputElement
+  expect(input.value).toBe('test.bam')
+
+  // it used to refill itself with the filename, which made the field
+  // impossible to clear by backspacing
+  fireEvent.change(input, { target: { value: '' } })
+  expect(input.value).toBe('')
+  expect(getByText('Enter a track name')).toBeTruthy()
+})
+
 test('picking a non-configurable adapter keeps the dropdown (no dead-end)', () => {
   const { model } = getSession()
   model.setTrackData({ uri: 'test.txt', locationType: 'UriLocation' })

@@ -47,7 +47,7 @@ const steps = [
     content: (model: AddTrackModel) => <ConfirmTrack model={model} />,
     isComplete: (model: AddTrackModel) =>
       !!(
-        model.trackName &&
+        model.submittableTrackName &&
         model.trackType &&
         model.trackAdapter?.type &&
         model.assembly

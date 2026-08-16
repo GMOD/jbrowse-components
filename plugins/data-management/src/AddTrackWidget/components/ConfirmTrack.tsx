@@ -63,6 +63,7 @@ const ConfirmTrack = observer(function ConfirmTrack({
   const { classes } = useStyles()
   const {
     trackName,
+    submittableTrackName,
     trackAdapter,
     trackType,
     warningMessage,
@@ -90,7 +91,15 @@ const ConfirmTrack = observer(function ConfirmTrack({
         <TextField
           className={classes.spacing}
           label="Track name"
-          helperText="A name for this track"
+          // The field can now be emptied (it used to refill itself with the
+          // filename), so say why Add is disabled rather than leaving a greyed
+          // button and no reason
+          error={!submittableTrackName}
+          helperText={
+            submittableTrackName
+              ? 'A name for this track'
+              : 'Enter a track name'
+          }
           fullWidth
           value={trackName}
           onChange={event => {
