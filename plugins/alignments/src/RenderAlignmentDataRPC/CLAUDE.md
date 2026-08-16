@@ -73,5 +73,15 @@ refName because a session spec can carry an alias, and says an unresolvable one
 leaves the reads _unsorted_. The multi-region path keeps its own `regions &&`
 check on top — structural, not policy.
 
+**Which reads a sort ranks is `partitionBySort`, and it is not just the span
+test.** An interbase mark sits BETWEEN reference bases, so a right-edge soft or
+hard clip is recorded at the read's **exclusive end** and `end > sortPos` drops
+it — sinking the clipped reads below the ones reading through the breakpoint,
+the inverse of the request, while the track menu showed the sort as applied
+(interbase types tick "Base pair"). A read carrying a ranked mark at `sortPos`
+counts however its alignment ends. Left-edge clips sit on the read's own start,
+so the feature worked on half its inputs, and the interbase sorts are reachable
+only from the right-click menu.
+
 `showSoftClipping` belongs in `rpcProps` — the worker gates per-base extraction
 on it.

@@ -1,7 +1,11 @@
 import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
-import { INTERBASE_SOFTCLIP } from '../shared/types.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../shared/types.ts'
 import {
   buildLaidOutPileupMap,
   computeLayout,
@@ -21,8 +25,10 @@ interface Read {
   baseAtSortPos?: string
   tagValue?: string
   strand?: number
-  // A soft clip at genomic `pos` of `length` bp (left clip when pos <= start).
-  softclip?: { pos: number; length: number }
+  // An interbase mark at genomic `pos` of `length` bp — a soft clip unless
+  // `type` says otherwise (left clip when pos <= start). Only soft clips expand
+  // a read's layout extent; the other kinds exist here to be sorted on.
+  softclip?: { pos: number; length: number; type?: number }
 }
 
 function makePileupData(opts: {
@@ -86,7 +92,7 @@ function makePileupData(opts: {
     const e = softclipEntries[i]!
     interbasePositions[i] = e.pos
     interbaseLengths[i] = e.length
-    interbaseTypes[i] = INTERBASE_SOFTCLIP
+    interbaseTypes[i] = e.type ?? INTERBASE_SOFTCLIP
     interbaseReadIndices[i] = e.readIdx
   }
 
@@ -756,6 +762,135 @@ describe('computeSortedLayout', () => {
     expect(readYs[2]).toBe(1)
     expect(readYs[0]).toBe(2)
   })
+
+  // The interbase sorts (soft clip / hard clip / insertion), reachable only from
+  // the pileup's right-click menu. An interbase mark sits BETWEEN reference
+  // bases, so a RIGHT-edge one is recorded at the read's exclusive end — which
+  // the plain `end > sortPos` span test rejects. That put the clipped reads
+  // BELOW the ones reading through the breakpoint, the exact inverse of what was
+  // asked, while the track menu went on showing the sort as applied.
+  describe('interbase sorts raise the marked reads from either edge', () => {
+    // ids run z-last so a passing assertion can't be canonical order in disguise
+    const breakpointReads = (clipPos: number, alignEnd: number): Read[] => [
+      { start: 100, end: 300, id: 'aThrough1' },
+      {
+        start: 100,
+        end: alignEnd,
+        id: 'zClipShort',
+        softclip: { pos: clipPos, length: 40 },
+      },
+      { start: 100, end: 300, id: 'bThrough2' },
+      {
+        start: 100,
+        end: alignEnd,
+        id: 'zClipLong',
+        softclip: { pos: clipPos, length: 55 },
+      },
+    ]
+
+    test('a right-edge clip, at the read end, still sorts to the top', () => {
+      const data = makePileupData({
+        regionStart: 0,
+        reads: breakpointReads(200, 200),
+      })
+      const { readYs } = computeSortedLayout(
+        data,
+        makeSortedBy(200, 'softclip'),
+      )
+      // longest clip first, then the shorter, then the reads through the column
+      expect(readYs[3]).toBe(0)
+      expect(readYs[1]).toBe(1)
+      expect([readYs[0], readYs[2]]).toEqual([2, 3])
+    })
+
+    test('a left-edge clip, on the read start, sorts to the top as before', () => {
+      const data = makePileupData({
+        regionStart: 0,
+        reads: [
+          { start: 100, end: 300, id: 'aThrough' },
+          {
+            start: 100,
+            end: 300,
+            id: 'zClip',
+            softclip: { pos: 100, length: 40 },
+          },
+        ],
+      })
+      const { readYs } = computeSortedLayout(
+        data,
+        makeSortedBy(100, 'softclip'),
+      )
+      expect(readYs[1]).toBe(0)
+      expect(readYs[0]).toBe(1)
+    })
+
+    test('a hard clip at the read end sorts by its own type', () => {
+      const data = makePileupData({
+        regionStart: 0,
+        reads: [
+          { start: 100, end: 300, id: 'aThrough' },
+          {
+            start: 100,
+            end: 200,
+            id: 'zClip',
+            softclip: { pos: 200, length: 40, type: INTERBASE_HARDCLIP },
+          },
+        ],
+      })
+      const { readYs } = computeSortedLayout(
+        data,
+        makeSortedBy(200, 'hardclip'),
+      )
+      expect(readYs[1]).toBe(0)
+      expect(readYs[0]).toBe(1)
+    })
+
+    test("an insertion at a read's 3' end sorts to the top", () => {
+      const data = makePileupData({
+        regionStart: 0,
+        reads: [
+          { start: 100, end: 300, id: 'aThrough' },
+          {
+            start: 100,
+            end: 200,
+            id: 'zIns',
+            softclip: { pos: 200, length: 12, type: INTERBASE_INSERTION },
+          },
+        ],
+      })
+      const { readYs } = computeSortedLayout(
+        data,
+        makeSortedBy(200, 'insertion'),
+      )
+      expect(readYs[1]).toBe(0)
+      expect(readYs[0]).toBe(1)
+    })
+
+    // A read whose alignment neither covers nor is marked at the column keeps
+    // gap-filling around the sorted ones, so widening membership doesn't drag
+    // unrelated reads into the "one row each" pass.
+    test('an unmarked read clear of the column still fills gaps', () => {
+      const data = makePileupData({
+        regionStart: 0,
+        reads: [
+          {
+            start: 100,
+            end: 200,
+            id: 'aClip',
+            softclip: { pos: 200, length: 40 },
+          },
+          { start: 400, end: 500, id: 'bElsewhere' },
+        ],
+      })
+      const { readYs, maxY } = computeSortedLayout(
+        data,
+        makeSortedBy(200, 'softclip'),
+      )
+      expect(readYs[0]).toBe(0)
+      expect(readYs[1]).toBe(0)
+      expect(maxY).toBe(1)
+    })
+  })
 })
 
 describe('placeRect scale', () => {
@@ -876,6 +1011,44 @@ describe('computeMultiRegionLayout', () => {
     // ascending base order A < C < T, each on its own row (all collide at 250)
     expect(rowMap.get('b1')).toBeLessThan(rowMap.get('b2')!)
     expect(rowMap.get('b2')).toBeLessThan(rowMap.get('b0')!)
+  })
+
+  // The right-edge interbase rule is `partitionBySort`'s, shared with the
+  // single-region path, so this path can't drift back to the bare span test.
+  test('a right-edge clip sorts to the top here too', () => {
+    const exon = makePileupData({
+      regionStart: 200,
+      idPrefix: 'b',
+      reads: [
+        { start: 240, end: 300, id: 'bThrough' },
+        {
+          start: 240,
+          end: 260,
+          id: 'zClip',
+          softclip: { pos: 260, length: 40 },
+        },
+      ],
+    })
+    const { rowMap } = computeMultiRegionLayout({
+      entries: [
+        [
+          0,
+          makePileupData({ regionStart: 0, reads: [{ start: 10, end: 50 }] }),
+        ],
+        [1, exon],
+      ],
+      regions: new Map([
+        [0, chr1(0, 100)],
+        [1, chr1(200, 300)],
+      ]),
+      sortedBy: {
+        type: 'softclip',
+        pos: 260,
+        refName: 'chr1',
+        assemblyName: 'a',
+      },
+    })
+    expect(rowMap.get('zClip')).toBeLessThan(rowMap.get('bThrough')!)
   })
 
   test('largeFeaturesFirst orders by unioned extent across regions', () => {

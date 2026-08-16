@@ -227,12 +227,12 @@ function sortOverlappingByIndex(
   data: PileupDataResult,
   sortedBy: SortedBy,
   sortTagValues: string[] | undefined,
+  keyMap: { map: Map<number, number>; desc: boolean } | undefined,
 ) {
-  const { type, pos: sortPos } = sortedBy
+  const { type } = sortedBy
   const { readPositions, readKeys } = data
   const canonical = (a: number, b: number) =>
     compareReadsCanonically(readPositions, readKeys, a, b)
-  const keyMap = buildSortKeyMap(data, type, sortPos)
   if (keyMap) {
     sortByMapWithUnknownsLast(overlapping, keyMap.map, keyMap.desc, data)
   } else if (type === 'position') {
@@ -271,6 +271,48 @@ function sortOverlappingByIndex(
     // rather than an unstable one.
     overlapping.sort(canonical)
   }
+}
+
+/**
+ * Split the reads into the ones a position sort ranks — in ranked order — and
+ * the rest, which fill gaps around them in whatever order the caller places
+ * them.
+ *
+ * MEMBERSHIP IS NOT JUST "this read's alignment covers sortPos". An interbase
+ * mark sits BETWEEN reference bases, so a right-edge soft or hard clip (and a
+ * trailing insertion) is recorded at the read's EXCLUSIVE end — which
+ * `end > sortPos` rejects. That dropped exactly the reads a clip sort exists to
+ * raise: at a breakpoint the clipped reads sank BELOW the ones reading through
+ * it, the precise inverse of the request, and since the track menu shows every
+ * interbase type with "Base pair" checked, the sort still read as applied. A
+ * read carrying a ranked mark at sortPos therefore counts however its alignment
+ * ends. Left-edge clips sit on the read's own start and always passed, so the
+ * feature worked on half its inputs.
+ *
+ * Shared by both layout paths for the same reason `sortForRegions` is: the two
+ * spelled the span test separately, and a rule spelled twice is one that drifts.
+ */
+function partitionBySort(
+  data: PileupDataResult,
+  sortedBy: SortedBy,
+  sortTagValues: string[] | undefined,
+) {
+  const { type, pos: sortPos } = sortedBy
+  const { readPositions } = data
+  const keyMap = buildSortKeyMap(data, type, sortPos)
+  const ranked: number[] = []
+  const rest: number[] = []
+  for (let i = 0; i < data.readKeys.length; i++) {
+    const start = readPositions[i * 2]!
+    const end = readPositions[i * 2 + 1]!
+    if ((start <= sortPos && end > sortPos) || keyMap?.map.has(i)) {
+      ranked.push(i)
+    } else {
+      rest.push(i)
+    }
+  }
+  sortOverlappingByIndex(ranked, data, sortedBy, sortTagValues, keyMap)
+  return { ranked, rest }
 }
 
 // Place a rect but never let the layout grow past `maxRows` rows. When
@@ -560,10 +602,10 @@ export function computeLayout(
 }
 
 /**
- * Compute pileup row layout with a custom sort at `sortedBy.pos`. Reads
- * overlapping the sort position are placed first in sort-criterion
- * order (each gets its own row since they all collide pairwise at
- * sortPos), then non-overlapping reads fill gaps around them.
+ * Compute pileup row layout with a custom sort at `sortedBy.pos`. The reads the
+ * sort ranks are placed first, in criterion order (each gets its own row since
+ * they all collide pairwise at sortPos), then the rest fills gaps around them.
+ * `partitionBySort` decides which reads those are.
  */
 export function computeSortedLayout(
   data: PileupDataResult,
@@ -573,24 +615,15 @@ export function computeSortedLayout(
 ) {
   const { readPositions } = data
   const numReads = data.readKeys.length
-  const { pos: sortPos } = sortedBy
   const expansions = showSoftClipping
     ? buildSoftclipExpansions(data)
     : undefined
 
-  const overlapping: number[] = []
-  const nonOverlapping: number[] = []
-  for (let i = 0; i < numReads; i++) {
-    const start = readPositions[i * 2]!
-    const end = readPositions[i * 2 + 1]!
-    if (start <= sortPos && end > sortPos) {
-      overlapping.push(i)
-    } else {
-      nonOverlapping.push(i)
-    }
-  }
-
-  sortOverlappingByIndex(overlapping, data, sortedBy, data.sortTagValues)
+  const { ranked: overlapping, rest: nonOverlapping } = partitionBySort(
+    data,
+    sortedBy,
+    data.sortTagValues,
+  )
   // The gap-filling reads are placed after the sorted ones, and first-fit is
   // order-sensitive, so they need a canonical order for the same reason.
   nonOverlapping.sort((a, b) =>
@@ -811,23 +844,13 @@ export function computeMultiRegionLayout({
     })
     if (sortEntry) {
       const [, sData] = sortEntry
-      const overlapping: number[] = []
-      for (let i = 0; i < sData.readKeys.length; i++) {
-        const start = sData.readPositions[i * 2]!
-        const end = sData.readPositions[i * 2 + 1]!
-        if (start <= sortPos && end > sortPos) {
-          overlapping.push(i)
-        }
-      }
-      sortOverlappingByIndex(
-        overlapping,
-        sData,
-        activeSort,
-        sData.sortTagValues,
-      )
+      // `rest` is dropped: this path already holds every read in dedup order
+      // (`orderedIds`, deduplicated across regions), so it only needs to know
+      // which reads the sort ranks and in what order.
+      const { ranked } = partitionBySort(sData, activeSort, sData.sortTagValues)
       // Sorted overlapping reads first (each gets its own row — they all collide
       // at sortPos), then the rest in dedup order fills gaps around them.
-      const overlappingIds = overlapping.map(i => sData.readKeys[i]!)
+      const overlappingIds = ranked.map(i => sData.readKeys[i]!)
       const overlappingSet = new Set(overlappingIds)
       placementOrder = [
         ...overlappingIds,
