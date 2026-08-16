@@ -10,6 +10,7 @@ import {
   blockedByUnfinishedUpload,
   syntenyPairStatuses,
   useChromosomeFilters,
+  useImportFormSyntenyChoices,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
 import { Button, Container, Typography } from '@mui/material'
@@ -84,6 +85,8 @@ const LinearSyntenyViewImportForm = observer(
     })
     // parallel to the rows, and kept in step by applyRows
     const chromosomes = useChromosomeFilters()
+    // held here rather than in the selector area, which the key below remounts
+    const choices = useImportFormSyntenyChoices(model)
 
     // computed once for the whole form: the row icons, the Auto-arrange offer
     // and the Launch button are three views of the same answer, and each entry
@@ -192,14 +195,17 @@ const LinearSyntenyViewImportForm = observer(
                 {selectedAssemblyNames[selectedRow + 1]} (rows {selectedRow + 1}{' '}
                 and {selectedRow + 2})
               </Typography>
-              {/* the selector area holds local radio-choice state per pair, so
-                it remounts whenever the pair being configured changes. This key
-                is the only thing resetting it */}
+              {/* the uploader and any plugin body below hold local state that
+                belongs to one pair, so the area remounts whenever the pair being
+                configured changes. This key is the only thing resetting them —
+                and the radio choice is deliberately NOT among them, which is why
+                `choices` lives in this form. */}
               <ImportSyntenyTrackSelectorArea
                 key={`${selectedRow}-${selectedAssemblyNames[selectedRow]}-${selectedAssemblyNames[selectedRow + 1]}`}
                 model={model}
                 selectedRow={selectedRow}
                 labelledBy={pairHeadingId}
+                choices={choices}
                 assembly1={selectedAssemblyNames[selectedRow]!}
                 assembly2={selectedAssemblyNames[selectedRow + 1]!}
               />

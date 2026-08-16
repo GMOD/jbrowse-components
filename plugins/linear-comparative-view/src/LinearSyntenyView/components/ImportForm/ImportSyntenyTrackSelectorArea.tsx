@@ -5,6 +5,7 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
+import type { ImportFormSyntenyChoices } from '@jbrowse/synteny-core'
 
 // #region option
 export interface LinearSyntenyImportFormSyntenyOption {
@@ -53,11 +54,13 @@ const ImportSyntenyTrackSelectorArea = observer(
     assembly2,
     selectedRow,
     labelledBy,
+    choices,
   }: {
     model: LinearSyntenyViewModel
     assembly1: string
     assembly2: string
     selectedRow: number
+    choices: ImportFormSyntenyChoices
     /** id of the form's per-pair heading, which names this radio group */
     labelledBy: string
   }) {
@@ -76,6 +79,7 @@ const ImportSyntenyTrackSelectorArea = observer(
         rowIndex={selectedRow}
         assembly1={assembly1}
         assembly2={assembly2}
+        choices={choices}
         /** #extensionPoint LinearSyntenyView-SyntenyFileFormats | sync | Add synteny file formats to the linear synteny import form */
         fileFormatsExtensionPoint="LinearSyntenyView-SyntenyFileFormats"
         labelledBy={labelledBy}

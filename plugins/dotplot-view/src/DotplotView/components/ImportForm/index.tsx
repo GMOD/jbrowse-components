@@ -13,6 +13,7 @@ import {
   remapImportFormSelections,
   syntenyPairStatuses,
   useChromosomeFilters,
+  useImportFormSyntenyChoices,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
 import {
@@ -87,6 +88,8 @@ const DotplotImportForm = observer(function DotplotImportForm({
   // row-indexed, and a dotplot's rows are its axes, x first — the order
   // doSubmit and `init.views` already use
   const chromosomes = useChromosomeFilters()
+  // held here rather than in the panel, which the key below remounts
+  const choices = useImportFormSyntenyChoices(model)
 
   // The one way the axes change, and the counterpart of LinearSyntenyView's
   // applyRows: re-match the track selection and the chromosome boxes to the pair
@@ -261,6 +264,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
             model={model}
             assemblyX={assemblyX}
             assemblyY={assemblyY}
+            choices={choices}
           />
           <div className={classes.footer}>
             <Button

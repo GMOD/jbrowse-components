@@ -11,7 +11,7 @@ import {
 /**
  * The None / Existing track / New track radio group shared by the linear
  * synteny and dotplot import forms, plus any extension-registered options.
- * Controlled: `choice`/`onChange` come from useImportFormSyntenyChoice.
+ * Controlled: `choice`/`onChange` come from useImportFormSyntenyChoices.
  *
  * Three ways to name the group, in precedence order: `labelledBy` points at a
  * heading the caller already renders (the synteny form's per-pair one, which is

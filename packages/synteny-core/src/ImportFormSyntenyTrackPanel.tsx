@@ -10,12 +10,12 @@ import ImportFormSyntenyChoiceRadioGroup from './ImportFormSyntenyChoiceRadioGro
 import NoSyntenyTrackMessage from './NoSyntenyTrackMessage.tsx'
 import PreConfiguredSyntenyTrackSelect from './PreConfiguredSyntenyTrackSelect.tsx'
 import { getSyntenyTracks } from './getSyntenyTracks.ts'
-import { useImportFormSyntenyChoice } from './useImportFormSyntenyChoice.ts'
 
 import type {
   ImportFormSyntenyModel,
   SyntenyFileFormatsExtensionPoint,
 } from './SelectorTypes.ts'
+import type { ImportFormSyntenyChoices } from './useImportFormSyntenyChoices.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -40,6 +40,7 @@ const ImportFormSyntenyTrackPanel = observer(
     rowIndex,
     assembly1,
     assembly2,
+    choices,
     fileFormatsExtensionPoint,
     customOptions,
     renderCustomOption,
@@ -53,6 +54,8 @@ const ImportFormSyntenyTrackPanel = observer(
     rowIndex: number
     assembly1: string
     assembly2: string
+    /** the form's per-pair radio state, which outlives this panel's remount */
+    choices: ImportFormSyntenyChoices
     fileFormatsExtensionPoint: SyntenyFileFormatsExtensionPoint
     /** the view's own ImportFormSyntenyOptions point, already evaluated */
     customOptions: { value: string; label: string }[]
@@ -67,7 +70,11 @@ const ImportFormSyntenyTrackPanel = observer(
     children?: React.ReactNode
   }) {
     const session = getSession(model)
-    const { choice, setChoice } = useImportFormSyntenyChoice(model, rowIndex)
+    const { choice, setChoice } = choices.forPair(
+      rowIndex,
+      assembly1,
+      assembly2,
+    )
     const customSelected = customOptions.some(opt => opt.value === choice)
 
     return (

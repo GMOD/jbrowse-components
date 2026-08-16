@@ -5,6 +5,7 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../../model.ts'
+import type { ImportFormSyntenyChoices } from '@jbrowse/synteny-core'
 
 // #region option
 export interface DotplotImportFormSyntenyOption {
@@ -47,10 +48,12 @@ const TrackSelector = observer(function TrackSelector({
   model,
   assemblyX,
   assemblyY,
+  choices,
 }: {
   model: DotplotViewModel
   assemblyX: string
   assemblyY: string
+  choices: ImportFormSyntenyChoices
 }) {
   const { pluginManager } = getEnv(model)
 
@@ -72,6 +75,7 @@ const TrackSelector = observer(function TrackSelector({
       rowIndex={0}
       assembly1={assembly1}
       assembly2={assembly2}
+      choices={choices}
       /** #extensionPoint DotplotView-SyntenyFileFormats | sync | Add synteny file formats to the dotplot import form */
       fileFormatsExtensionPoint="DotplotView-SyntenyFileFormats"
       label="(Optional) Select or add a synteny track"

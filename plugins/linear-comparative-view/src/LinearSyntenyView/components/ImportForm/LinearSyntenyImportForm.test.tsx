@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
@@ -8,6 +9,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import LinearSyntenyImportForm from './LinearSyntenyImportForm.tsx'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -49,6 +51,7 @@ function setup({
   aliases = {},
   tracks = [],
   connectionTracks,
+  contribute,
 }: {
   assemblyNames?: string[]
   // other names for an assembly, which a track config is free to use
@@ -56,6 +59,9 @@ function setup({
   tracks?: ReturnType<typeof syntenyTrack>[]
   // tracks a connection supplies, which live outside session.tracks
   connectionTracks?: ReturnType<typeof syntenyTrack>[]
+  // runs against the session's plugin manager before the first render, which is
+  // where a plugin's own contributions would already be
+  contribute?: (pluginManager: PluginManager) => void
 } = {}) {
   const session = createTestSession({
     jbrowseConfig: {
@@ -71,6 +77,7 @@ function setup({
     },
   })
   const model = session.views[0] as unknown as LinearSyntenyViewModel
+  contribute?.(getEnv(session).pluginManager)
   const utils = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <LinearSyntenyImportForm model={model} />
@@ -673,4 +680,76 @@ test('hiding the boxes clears what was typed in them', () => {
     { assembly: 'hg38' },
     { assembly: 'mm39' },
   ])
+})
+
+// A plugin's own option stores a plain `none`, so rebuilding the radio from the
+// stored selection reads it back as "None" — and once the plugin writes the
+// track it built, as "New track". Either way the panel came back on a built-in
+// radio the moment the user visited another pair, which is why the choice is
+// held by the form and keyed by the pair's assemblies.
+const contributeServerOption = (pluginManager: PluginManager) => {
+  pluginManager.contributeToExtensionPoint(
+    'LinearSyntenyView-ImportFormSyntenyOptions',
+    () => ({
+      value: 'my-server',
+      label: 'Load from my server',
+      ReactComponent: () => <div data-testid="my-server-panel" />,
+    }),
+  )
+}
+
+const serverRadio = () =>
+  screen.getByRole('radio', { name: 'Load from my server' })
+
+test('a plugin option survives a visit to another pair', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    contribute: contributeServerOption,
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  pickAssembly(2, 'rn7')
+
+  fireEvent.click(screen.getAllByTestId('synbutton')[0]!)
+  fireEvent.click(serverRadio())
+  expect(screen.getByTestId('my-server-panel')).toBeInTheDocument()
+
+  fireEvent.click(screen.getAllByTestId('synbutton')[1]!)
+  expect(screen.queryByTestId('my-server-panel')).not.toBeInTheDocument()
+
+  fireEvent.click(screen.getAllByTestId('synbutton')[0]!)
+  expect(serverRadio()).toBeChecked()
+  expect(screen.getByTestId('my-server-panel')).toBeInTheDocument()
+})
+
+// keyed by the pair's assemblies, the same rule remapSelectionsToPairs matches
+// selections by, so the two move together instead of one being stranded
+test('a plugin option follows its pair when the rows are reversed', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    contribute: contributeServerOption,
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  pickAssembly(2, 'rn7')
+  fireEvent.click(screen.getAllByTestId('synbutton')[0]!)
+  fireEvent.click(serverRadio())
+
+  fireEvent.click(screen.getByRole('button', { name: /Reverse the row order/ }))
+  // hg38/mm39 is now the bottom pair, and the arrow followed it there
+  expect(rowSelects().map(s => s.textContent)).toEqual(['rn7', 'mm39', 'hg38'])
+  expect(serverRadio()).toBeChecked()
+})
+
+test('a pair the option was never chosen for keeps the built-in default', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    contribute: contributeServerOption,
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  pickAssembly(2, 'rn7')
+  fireEvent.click(screen.getAllByTestId('synbutton')[0]!)
+  fireEvent.click(serverRadio())
+
+  fireEvent.click(screen.getAllByTestId('synbutton')[1]!)
+  expect(serverRadio()).not.toBeChecked()
+  expect(screen.getByRole('radio', { name: 'Existing track' })).toBeChecked()
 })
