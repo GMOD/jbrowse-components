@@ -131,12 +131,13 @@ export const PROCEDURES: Record<string, Procedure> = {
       {
         title: 'open-genome dialog',
         annotations: [
-          // ABOVE the drop zone, into the empty half of the dialog's title row.
-          // This label used to go left, onto the dimmed start screen: that
-          // worked while the dialog was `maxWidth="sm"` and had start screen
-          // either side of it, and clipped at the frame edge the moment it
-          // became `lg` and the drop zone reached almost the full width. Above
-          // it there is title-row whitespace at any dialog width.
+          // ABOVE the drop zone, in the empty half of the dialog's title row.
+          // This label used to go left, onto the dimmed start screen, and that
+          // placement is only as safe as the dialog is narrow — it clipped at
+          // the frame edge the moment the dialog went wider and the drop zone
+          // reached most of the frame. Title-row whitespace is there at every
+          // dialog width, so this one does not have to be revisited with the
+          // next change to it.
           ...step({
             n: 2,
             anchor: { selector: '[data-testid="file-drop-zone"]' },
@@ -144,9 +145,8 @@ export const PROCEDURES: Record<string, Procedure> = {
             labelSide: 'above',
             labelDy: -6,
             // an 'above' label starts at its control's left edge, and the drop
-            // zone's left edge is the dialog's, so it lands on the title.
-            // Pushed clear of "Open genome(s)" into the empty middle of the
-            // title row — which is space `lg` is what created.
+            // zone's left edge is the dialog's, so it would land on the title.
+            // Pushed clear of "Open genome(s)".
             labelDx: 190,
             maxWidth: 320,
           }),

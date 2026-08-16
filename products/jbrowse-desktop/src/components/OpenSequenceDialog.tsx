@@ -118,7 +118,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     <Dialog
       open
       fullWidth
-      maxWidth="lg"
+      maxWidth="md"
       onClose={() => {
         handleCancel()
       }}
