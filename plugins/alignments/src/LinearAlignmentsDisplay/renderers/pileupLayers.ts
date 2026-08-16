@@ -43,6 +43,10 @@ export interface PileupLayer {
 // the story is written down, and the test checks the classification against
 // this list's actual `enabled` behaviour rather than taking its word.
 //
+// Whether a display wants a list like this at all is
+// `agent-docs/reference/DRAW_PASS_REGISTRIES.md` — most don't, and the two other
+// registries in tree are not GPU pass lists.
+//
 // This list is the row-instanced feature set (see RenderAlignmentDataRPC/CLAUDE.md
 // "Two feature categories"). The coverage band has a list of its own,
 // `COVERAGE_LAYERS`, built the same way and separate because its marks are

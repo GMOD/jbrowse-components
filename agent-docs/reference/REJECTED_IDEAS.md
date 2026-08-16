@@ -152,6 +152,8 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   costs correctness — a coverage pass added to the GPU registry compiled clean
   and silently vanished from Canvas2D and the SVG export for as long as this
   entry stood. Read a "not uniform" claim as naming the layer it is true at.
+  [DRAW_PASS_REGISTRIES.md](DRAW_PASS_REGISTRIES.md) carries the precondition
+  that settles the next case without re-arguing this one.
 
   **What survives:** the asymmetry inside the coverage band is real and was not
   erased. Four layers scale to the depth domain and one does not, and forcing
