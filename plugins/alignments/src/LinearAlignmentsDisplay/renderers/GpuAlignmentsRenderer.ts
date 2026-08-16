@@ -702,9 +702,20 @@ export class GpuAlignmentsRenderer
   private uF32: Float32Array
   private uU32: Uint32Array
   private uI32: Int32Array
-  // Reusable scratch for save/restore around overlay & arc passes that mutate
-  // the UBO. Pre-allocated to avoid per-overlay-block allocations during hover.
-  private uScratch = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
+  // The arc band's own copy of the UBO. The arc shaders share the struct but
+  // place Y against the band rather than the pileup, so a handful of slots
+  // differ — and the band draws in the middle of a frame whose other passes
+  // need the originals back.
+  //
+  // A copy rather than a clobber-and-restore of `uData`, which is what this was:
+  // that spent two full-buffer memcpys and two HAL writes per section per block
+  // (the restoring write consumed by nothing — the next section writes uniforms
+  // before anything draws), and it left `uData` holding arc uniforms for the
+  // width of the bracket, so any early return or throw inside corrupted every
+  // later pass in the frame. Copying forward costs one memcpy, one write, and
+  // has no window to get wrong.
+  private uArc = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
+  private uArcF32 = new Float32Array(this.uArc)
   private regions = new Map<number, LocalRegion>()
   // Upload memo, written only by `sync`. Lives on the renderer rather than in a
   // model-side `createRegionUploadSync` because this backend is whole-map synced
@@ -723,15 +734,12 @@ export class GpuAlignmentsRenderer
     this.uI32 = new Int32Array(this.uData)
   }
 
-  // Save/restore the entire UBO via byte-level memcpy. Float32Array.set on a
-  // shared-byte view technically works on spec-compliant engines, but a
-  // Uint8Array copy reads as "restore the bytes" and avoids any NaN-pattern
-  // reinterpretation concerns.
-  private saveUBO() {
-    new Uint8Array(this.uScratch).set(new Uint8Array(this.uData))
-  }
-  private restoreUBO() {
-    new Uint8Array(this.uData).set(new Uint8Array(this.uScratch))
+  // Copy the frame's UBO into the arc scratch via byte-level memcpy.
+  // Float32Array.set on a shared-byte view technically works on spec-compliant
+  // engines, but a Uint8Array copy reads as "the same bytes" and avoids any
+  // NaN-pattern reinterpretation concerns.
+  private copyUboToArcScratch() {
+    new Uint8Array(this.uArc).set(new Uint8Array(this.uData))
   }
 
   sync(sources: AlignmentsSources) {
@@ -862,8 +870,17 @@ export class GpuAlignmentsRenderer
     }
   }
 
-  private writeUniforms(state: RenderState, frame: BlockFrame) {
-    fillFrameUniforms(this.uF32, this.uI32, state, frame)
+  // The colour half of the UBO, which is frame-constant: every input is
+  // display-wide (`sectionRenderState` overrides two Y offsets and nothing
+  // else), so this is ~60 slot writes that produce identical bytes for every
+  // block and every section. It ran inside that loop — up to 120 times a frame
+  // at MAX_GROUPS, and again on every frame of a pan.
+  //
+  // Hoisting works because the CPU-side `uData` persists between `writeUniforms`
+  // calls and the arc band no longer clobbers it. The palette slots and the
+  // per-frame ones are disjoint by construction: each is one field of the
+  // generated struct, at one offset, in one of the three views.
+  private writePalette(state: RenderState) {
     writePaletteToUbo(this.uU32, this.uF32, state.colors)
     // Overwrite the five base slots `writePaletteToUbo` just filled from the raw
     // palette with the resolved ones — unconditional, because
@@ -876,6 +893,10 @@ export class GpuAlignmentsRenderer
     this.uU32[UU.colorBaseG] = packRgb(base.G)
     this.uU32[UU.colorBaseT] = packRgb(base.T)
     this.uU32[UU.colorBaseN] = packRgb(base.N)
+  }
+
+  private writeUniforms(state: RenderState, frame: BlockFrame) {
+    fillFrameUniforms(this.uF32, this.uI32, state, frame)
     this.hal.writeUniforms(this.uData)
   }
 
@@ -885,6 +906,9 @@ export class GpuAlignmentsRenderer
     const bufH = Math.round(canvasHeight * dpr)
     this.hal.resize(canvasWidth, canvasHeight)
     this.hal.beginFrame(0, 0, 0, 0)
+
+    // Once, ahead of the loop. Nothing below rewrites these slots.
+    this.writePalette(state)
 
     let hasDrawn = false
     for (const block of blocks) {
@@ -1008,14 +1032,11 @@ export class GpuAlignmentsRenderer
     // scissored output is byte-identical to the pre-grouping single pass.
     const scissor = devBand(band.top, band.height, dpr, bufH)
     if (scissor.height > 0) {
-      // saveUBO/restoreUBO bracket a temporary clobber of the shared UBO with
-      // arc-band uniforms. There's no try/finally, so everything between them
-      // MUST stay synchronous and exception-free: an early return or throw here
-      // would leave the UBO holding arc uniforms for the rest of the frame,
-      // corrupting every later pass. Keep this block straight-line; if it ever
-      // needs a guard that can bail, wrap the save/restore in try/finally.
-      this.saveUBO()
-      fillArcUniforms(this.uF32, {
+      // The frame's uniforms, then the band's differences on top, in a buffer of
+      // this pass's own — so `uData` still holds what every other pass needs and
+      // an early return here can't strand the frame in arc uniforms.
+      this.copyUboToArcScratch()
+      fillArcUniforms(this.uArcF32, {
         block,
         state,
         scissorX: geom.scissorX,
@@ -1027,7 +1048,7 @@ export class GpuAlignmentsRenderer
         // Canvas2D placement and the insert-size ruler take their anchor from.
         arcAnchorPx: arcAnchorY(band.top, band.height, band.down),
       })
-      this.hal.writeUniforms(this.uData)
+      this.hal.writeUniforms(this.uArc)
 
       this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
       this.hal.setScissor(geom.vpX, scissor.top, geom.vpW, scissor.height)
@@ -1035,9 +1056,6 @@ export class GpuAlignmentsRenderer
       for (const pass of ARC_PASSES) {
         this.hal.drawPass(pass.id, regionKey)
       }
-
-      this.restoreUBO()
-      this.hal.writeUniforms(this.uData)
     }
   }
 

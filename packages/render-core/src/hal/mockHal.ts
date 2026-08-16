@@ -21,7 +21,13 @@ export class MockHal implements GpuHal {
   // hand-rolled twin that can drift out of parity. There is nothing to free, so
   // the destroy hook is a no-op.
   private regions = new RegionRegistry<MockBuffer>(() => {})
-  private lastUniforms: ArrayBuffer | null = null
+  // Every write of the frame, in order, not just the last. A renderer that
+  // rewrites the UBO mid-frame — for a band that reads it differently, or a
+  // section with its own offsets — has invariants the final state cannot show:
+  // that each write carries the frame-constant slots, that a temporary
+  // overwrite doesn't outlive its pass, and how many writes a frame costs at
+  // all (the real HALs stage these into a fixed-size ring).
+  private uniformWrites: ArrayBuffer[] = []
 
   // The pass list is here for parity with the WebGL2Hal / WebGPUHal
   // constructors, and it validates for the same reason `createRenderingBackend`
@@ -112,7 +118,7 @@ export class MockHal implements GpuHal {
   }
 
   writeUniforms(data: ArrayBuffer) {
-    this.lastUniforms = data.slice(0)
+    this.uniformWrites.push(data.slice(0))
     this.record('writeUniforms', data.byteLength)
   }
 
@@ -151,6 +157,10 @@ export class MockHal implements GpuHal {
 
   // Test helpers
 
+  private get lastUniforms() {
+    return this.uniformWrites.at(-1) ?? null
+  }
+
   getLastUniformsF32() {
     return this.lastUniforms ? new Float32Array(this.lastUniforms) : null
   }
@@ -161,6 +171,16 @@ export class MockHal implements GpuHal {
 
   getLastUniformsI32() {
     return this.lastUniforms ? new Int32Array(this.lastUniforms) : null
+  }
+
+  // Every write of the frame, in order. `getLastUniforms*` is the same list's
+  // tail and stays the right call for a renderer that writes once.
+  getUniformWritesF32() {
+    return this.uniformWrites.map(u => new Float32Array(u))
+  }
+
+  getUniformWritesU32() {
+    return this.uniformWrites.map(u => new Uint32Array(u))
   }
 
   getBuffer(regionKey: number, passId: string) {
@@ -176,6 +196,6 @@ export class MockHal implements GpuHal {
     // endUpload first so an in-flight transaction doesn't survive the reset.
     this.regions.endUpload()
     this.regions.deleteAll()
-    this.lastUniforms = null
+    this.uniformWrites = []
   }
 }
