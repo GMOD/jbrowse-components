@@ -139,7 +139,7 @@ function makeCigarEmitter(
         readIndex,
         featureStart,
         strand,
-        0,
+        strand,
         output.gaps,
       )
     } else if (type === SKIP_TYPE) {

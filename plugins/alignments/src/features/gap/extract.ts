@@ -69,9 +69,10 @@ export function emitGap(
   readIndex: number,
   featureStart: number,
   strand: number,
-  // Transcript strand for a skip (see getEffectiveStrand), resolved once per
-  // read by the caller. Ignored for a deletion, which uses the read's strand.
-  skipStrand: number,
+  // The strand the gap itself carries — the caller's to decide. A deletion has
+  // no strand of its own and passes the read's; a skip passes the transcript
+  // strand `getEffectiveStrand` resolved once for the read.
+  gapStrand: number,
   gapsData: GapData[],
 ) {
   gapsData.push({
@@ -79,7 +80,7 @@ export function emitGap(
     start: featureStart + start,
     end: featureStart + start + length,
     type,
-    strand: type === 'deletion' ? strand : skipStrand,
+    strand: gapStrand,
     featureStrand: strand,
   })
 }
