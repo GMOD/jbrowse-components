@@ -50,12 +50,17 @@ export function bpRangeXTuple(
     : [clip.bpStartHi, clip.bpStartLo, clip.clippedLengthBp]
 }
 
-// Write the hp-math bpRangeX tuple (hi, lo, ±clippedLengthBp) into the uniform
-// buffer at `offsetF32` — pass the shader's `UNIFORM_OFFSET_F32.bpRangeX`. This
-// is the one uniform write every genome-mapped shader shares; routing all of
-// them through here keeps the reversed-block pivot and hi/lo split in one place
-// (a hand-rolled `uniformF32[U.bpRangeX + n] = …` triple is easy to get subtly
-// wrong for reversed blocks).
+// Poke the hp-math bpRangeX tuple (hi, lo, ±clippedLengthBp) into the uniform
+// buffer at `offsetF32` — pass the shader's `UNIFORM_OFFSET_F32.bpRangeX`.
+//
+// **The offset-poke form, for a renderer that writes its uniforms
+// incrementally.** A renderer that sets the whole block in one place says
+// `bpRangeX: bpRangeXTuple(clip, reversed)` inside the generated
+// `writeUniforms` instead, which is every genome-mapped renderer in tree today.
+// Either way the point is the same and is the reason neither is spelled out at
+// the call site: the reversed-block pivot and the hi/lo split live in one place,
+// and a hand-rolled `uniformF32[U.bpRangeX + n] = …` triple is easy to get
+// subtly wrong for reversed blocks.
 export function writeBpRangeUniforms(
   uniformF32: Float32Array,
   offsetF32: number,

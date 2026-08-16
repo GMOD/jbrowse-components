@@ -1,4 +1,4 @@
-import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 import {
@@ -22,9 +22,6 @@ import type {
 const PASS_FILL = 'fill'
 const PASS_LINE = 'line'
 const PASS_LINE_CENTER = 'lineCenter'
-
-const U = wiggleShader.UNIFORM_OFFSET_F32
-const UI = wiggleShader.UNIFORM_OFFSET_I32
 
 // Two shaders, three triangle-list passes. PASS_FILL draws xyplot / density /
 // scatter as 6-vert quads off wiggle.slang's 20-byte record; PASS_LINE draws the
@@ -86,8 +83,6 @@ export class GpuWiggleRenderer
   extends GpuPerRegionRenderingBackend<SourceRenderData[], WiggleGPURenderState>
   implements WiggleRenderingBackend
 {
-  private uniformF32: Float32Array
-  private uniformI32: Int32Array
   // One per instance layout. Both are packed for every region and one of them
   // comes back empty, which releases its buffer — so a region holds only the
   // layout its rendering actually draws. PASS_LINE_CENTER reads PASS_LINE's via
@@ -96,8 +91,6 @@ export class GpuWiggleRenderer
 
   constructor(hal: GpuHal) {
     super(hal, wiggleShader.UNIFORMS_SIZE_BYTES)
-    this.uniformF32 = new Float32Array(this.uniformData)
-    this.uniformI32 = new Int32Array(this.uniformData)
   }
 
   protected drawRegion(
@@ -125,33 +118,39 @@ export class GpuWiggleRenderer
         : PASS_LINE_CENTER
       : PASS_FILL
 
-    writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
-    this.uniformF32[U.canvasHeight] = state.canvasHeight
-    this.uniformI32[UI.scaleType] = state.scaleType
-    // The layers' rendering, for the same reason the pass is: it is what the
-    // shader branches on, so taking it from `state` could tell a fill shader to
-    // draw a rendering its module no longer contains. Buffer, pass and uniform
-    // are one decision.
-    this.uniformI32[UI.renderingType] = renderingType
-    this.uniformF32[U.numRows] = state.numRows
-    this.uniformF32[U.domainYMin] = state.domainY[0]
-    this.uniformF32[U.domainYMax] = state.domainY[1]
-    // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
-    this.uniformF32[U.zero] = 0
-    // viewportWidth stays in CSS units to match canvasHeight (per CLAUDE.md
-    // GPU conventions). `extendToMinWidthX` divides `MIN_FILL_WIDTH_PX` by it to
-    // reach clip space, so a CSS width is what makes the floor a stable 1.5 CSS
-    // px across DPRs rather than 1.5 DEVICE px — and `WIGGLE_MIN_PX`, the
-    // Canvas2D floor, is that same generated constant.
-    //
-    // `clip.scissorW`, therefore, and never `clip.pxW`, which is the same span
-    // in device px. GpuMafRenderer feeds `pxW` into the same-named uniform of a
-    // different shader, deliberately and with its own note; the two are not
-    // interchangeable.
-    this.uniformF32[U.viewportWidth] = clip.scissorW
-    this.uniformF32[U.scatterPointSize] = state.scatterPointSize
-    this.uniformF32[U.lineWidth] = state.lineWidth
-    this.uniformF32[U.origin] = state.origin
+    // Either module's packer serves: wiggle.slang and wiggleLine.slang share
+    // `wiggleCommon.slang`'s uniform block, so the two generated `Uniforms` are
+    // the same block — the same reason `UNIFORMS_SIZE_BYTES` above is read off
+    // one of them.
+    wiggleShader.writeUniforms(this.uniformData, {
+      bpRangeX: bpRangeXTuple(clip, block.reversed),
+      canvasHeight: state.canvasHeight,
+      scaleType: state.scaleType,
+      // The layers' rendering, for the same reason the pass is: it is what the
+      // shader branches on, so taking it from `state` could tell a fill shader
+      // to draw a rendering its module no longer contains. Buffer, pass and
+      // uniform are one decision.
+      renderingType,
+      numRows: state.numRows,
+      domainYMin: state.domainY[0],
+      domainYMax: state.domainY[1],
+      // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
+      zero: 0,
+      // viewportWidth stays in CSS units to match canvasHeight (per CLAUDE.md
+      // GPU conventions). `extendToMinWidthX` divides `MIN_FILL_WIDTH_PX` by it
+      // to reach clip space, so a CSS width is what makes the floor a stable 1.5
+      // CSS px across DPRs rather than 1.5 DEVICE px — and `WIGGLE_MIN_PX`, the
+      // Canvas2D floor, is that same generated constant.
+      //
+      // `clip.scissorW`, therefore, and never `clip.pxW`, which is the same span
+      // in device px. GpuMafRenderer feeds `pxW` into the same-named uniform of
+      // a different shader, deliberately and with its own note; the two are not
+      // interchangeable.
+      viewportWidth: clip.scissorW,
+      scatterPointSize: state.scatterPointSize,
+      lineWidth: state.lineWidth,
+      origin: state.origin,
+    })
 
     this.hal.writeUniforms(this.uniformData)
     // Each pass draws off the buffer for its own layout — the line passes share

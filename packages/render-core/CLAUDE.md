@@ -70,9 +70,15 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   the other is scaled wrong. Analytics is not a drawing path. The cap's own
   consequences are in `reference/ARCHITECTURAL_LIMITS.md`.
 - **Two uniform-write patterns, don't invent a third**: the generated
-  object-packer when every field is set each frame, or offset-pokes when writes
-  are incremental. The `bpRangeX` triple always goes through
-  `writeBpRangeUniforms`.
+  object-packer (`writeUniforms`) when every field is set in one place, or
+  offset-pokes when writes are incremental. Every per-region and global renderer
+  but alignments is now the first — the packer makes the set _total_, and the
+  scratch buffer outlives the frame, so a poke left out silently redraws with
+  last frame's value. Alignments is the second and stays: it writes the palette
+  once ahead of the block loop, then per section.
+- **The `bpRangeX` triple never gets hand-rolled** — `bpRangeXTuple` as a packer
+  field, or `writeBpRangeUniforms` if you are poking. Both carry the reversed
+  pivot, which is the part that goes wrong.
 - **Per-block Canvas2D clipping goes through `forEachClippedBlock`.** Its
   `select` callback is the single skip gate, and the `finally`-paired restore is
   what keeps a throwing painter from leaving every later frame clipped.

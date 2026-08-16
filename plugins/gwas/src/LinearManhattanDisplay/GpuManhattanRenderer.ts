@@ -1,4 +1,4 @@
-import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -11,7 +11,6 @@ import type { GpuHal } from '@jbrowse/render-core/hal'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const PASS = 'point'
-const U = shader.UNIFORM_OFFSET_F32
 
 export const MANHATTAN_PASSES = [
   {
@@ -27,12 +26,10 @@ export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
   ManhattanRpcResult,
   ManhattanRenderState
 > {
-  private uniformF32: Float32Array
   protected regionPasses = MANHATTAN_PASSES
 
   constructor(hal: GpuHal) {
     super(hal, shader.UNIFORMS_SIZE_BYTES)
-    this.uniformF32 = new Float32Array(this.uniformData)
   }
 
   protected drawRegion(
@@ -41,17 +38,19 @@ export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
     _region: ManhattanRpcResult,
     state: ManhattanRenderState,
   ) {
-    writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
-    this.uniformF32[U.canvasHeight] = state.canvasHeight
-    this.uniformF32[U.domainYMin] = state.domainY[0]
-    this.uniformF32[U.domainYMax] = state.domainY[1]
-    this.uniformF32[U.zero] = 0
-    // viewportWidth + pointRadius stay in CSS units to match canvasHeight
-    // (per CLAUDE.md GPU conventions). Mixing DPR-scaled radius with
-    // CSS-scaled canvasHeight produces vertically-stretched ellipses on
-    // hi-DPI displays.
-    this.uniformF32[U.viewportWidth] = clip.scissorW
-    this.uniformF32[U.pointRadius] = state.pointDiameterPx / 2
+    shader.writeUniforms(this.uniformData, {
+      bpRangeX: bpRangeXTuple(clip, block.reversed),
+      canvasHeight: state.canvasHeight,
+      domainYMin: state.domainY[0],
+      domainYMax: state.domainY[1],
+      zero: 0,
+      // viewportWidth + pointRadius stay in CSS units to match canvasHeight
+      // (per CLAUDE.md GPU conventions). Mixing DPR-scaled radius with
+      // CSS-scaled canvasHeight produces vertically-stretched ellipses on
+      // hi-DPI displays.
+      viewportWidth: clip.scissorW,
+      pointRadius: state.pointDiameterPx / 2,
+    })
 
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(PASS, block.displayedRegionIndex)
