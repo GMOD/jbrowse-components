@@ -116,22 +116,34 @@ function coarsePieces({
   splitGap: number
 }): CoarsePiece[] {
   const whole = { tstart, tend, qstart, qend, numMatches, blockLen }
-  const segments =
+  const split =
     cigar && splitGap > 0
-      ? splitCigarOnLargeGaps({ cigar, strand, tstart, qstart, qend, splitGap })
+      ? splitCigarOnLargeGaps({
+          cigar,
+          strand,
+          tstart,
+          tend,
+          qstart,
+          qend,
+          splitGap,
+        })
       : undefined
-  // A row with nothing to split on keeps its PAF columns verbatim rather than
-  // the CIGAR walk's reconstruction of them: identical for a well-formed cg, and
-  // when they disagree (clipping ops, a CIGAR whose spans don't match the
-  // coordinate columns) the columns are what the fine tier draws, so the coarse
-  // row must not drift off them.
-  return segments === undefined || segments.length < 2
-    ? [whole]
-    : segments.map(seg => ({
+  // The walk's reconstruction is taken only when it CLOSED on the row's own far
+  // corner (see `CigarSplit.closed`) — otherwise the columns are what the fine
+  // tier draws and the coarse row must not drift off them.
+  //
+  // Closure rather than a piece count: `segments.length < 2` read as "nothing to
+  // split on", but a large gap at either END also yields a single piece, a
+  // genuine tightening that was being thrown away for the loose box. It is the
+  // ordinary case below the default `--coarse`. The count also never noticed a
+  // MULTI-piece walk that failed to close, which is the case it was written for.
+  return split?.closed && split.segments.length > 0
+    ? split.segments.map(seg => ({
         ...seg,
         numMatches:
           blockLen > 0 ? Math.round((numMatches * seg.blockLen) / blockLen) : 0,
       }))
+    : [whole]
 }
 
 // A PIF row carries exactly ONE alignment string — `cg:Z:`, in the orientation

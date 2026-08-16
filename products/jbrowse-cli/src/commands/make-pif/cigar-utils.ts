@@ -12,16 +12,34 @@ export interface CigarSegment {
   blockLen: number
 }
 
+/** One split of a row, plus whether the walk that produced it can be trusted. */
+export interface CigarSplit {
+  segments: CigarSegment[]
+  // Whether the walk landed exactly on the row's own far corner — the target at
+  // `tend`, the query at whichever end the strand puts it. A well-formed `cg`
+  // consumes exactly the coordinate columns, so this is what separates a gap the
+  // split legitimately trimmed out from a CIGAR that disagrees with its columns:
+  // clipping ops, a hand-made cg, a `cs` whose spans don't add up. The caller
+  // keeps the columns verbatim when it is false, since the columns are what the
+  // fine tier draws and the coarse row must not drift off them.
+  //
+  // It has to be reported rather than inferred from the segments: a large gap at
+  // either END yields a single tight piece that starts or stops short of the
+  // columns on purpose, which is indistinguishable, from the outside, from a
+  // CIGAR that simply didn't reach.
+  closed: boolean
+}
+
 // Walk a CIGAR and split the alignment wherever an insertion or deletion is at
 // least `splitGap` bp, so each coarse-tier row's bounding box stays tight.
 // Returns one segment per contiguous run; `splitGap` must be positive (the
 // caller keeps the whole row when there is nothing to split on).
 // PAF semantics: qstart < qend always; '-' strand CIGAR walks query backward.
-// The target end is derived from the walk, so it isn't taken as an input.
 export function splitCigarOnLargeGaps({
   cigar,
   strand,
   tstart,
+  tend,
   qstart,
   qend,
   splitGap,
@@ -29,10 +47,11 @@ export function splitCigarOnLargeGaps({
   cigar: string
   strand: string
   tstart: number
+  tend: number
   qstart: number
   qend: number
   splitGap: number
-}): CigarSegment[] {
+}): CigarSplit {
   const qStep = strand === '-' ? -1 : 1
   let tCursor = tstart
   let qCursor = strand === '-' ? qend : qstart
@@ -90,5 +109,8 @@ export function splitCigarOnLargeGaps({
     // S/H/P (clipping/padding) don't consume target or forward-strand query in PAF
   }
   emit()
-  return out
+  return {
+    segments: out,
+    closed: tCursor === tend && qCursor === (strand === '-' ? qstart : qend),
+  }
 }
