@@ -20,9 +20,17 @@ function mockFeature(opts: {
   strand?: number
   phase?: number
   subfeatures?: Feature[]
+  // anything else the annotation carries, for the config-jexl slots that read
+  // arbitrary attributes off a feature
+  attributes?: Record<string, unknown>
 }): Feature {
-  const { strand = 1, subfeatures = [], ...rest } = opts
-  const map: Record<string, unknown> = { strand, subfeatures, ...rest }
+  const { strand = 1, subfeatures = [], attributes, ...rest } = opts
+  const map: Record<string, unknown> = {
+    strand,
+    subfeatures,
+    ...attributes,
+    ...rest,
+  }
   return {
     get: (key: string) => map[key],
     id: () => opts.id,
@@ -366,6 +374,22 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
     })
     const result = collect(boxLayout(feature), { config: cfg })
     expect(result.flatbushItems[0]!.tooltip).toBe('m1')
+  })
+
+  // An attribute that is present but empty comes back as null, not undefined —
+  // a VCF INFO key, a JSON `null` — and jexl hands it straight through. Rendered
+  // with String() that put the word "null" over the feature.
+  it('degrades to the feature name when a custom mouseover jexl reads a null attribute', () => {
+    const feature = mockFeature({
+      type: 'gene',
+      id: 'g1',
+      start: 0,
+      end: 50,
+      attributes: { note: null },
+    })
+    const cfg = mockDisplayConfig({ mouseover: `jexl:get(feature,'note')` })
+    const result = collect(boxLayout(feature), { config: cfg })
+    expect(result.flatbushItems[0]!.tooltip).toBe('g1')
   })
 
   it('the default slot resolves to the feature id when there is no name', () => {

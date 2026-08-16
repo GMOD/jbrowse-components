@@ -28,6 +28,11 @@ export function readConfigValue<T>(
 // on the main thread on hover, so a bad expression only broke that one tooltip;
 // here every feature is evaluated up front in the worker, so an unguarded throw
 // would fail the entire track render.
+//
+// `null` counts as no value, alongside `undefined`. An attribute present but
+// empty is null rather than undefined — a VCF INFO key, a JSON `null` — and
+// jexl hands it straight back, so `mouseover` rendered the word "null" over the
+// feature and a color slot returned it as a color.
 export function readConfigValueSafe<T>(
   config: DisplayConfig,
   key: string | string[],
@@ -37,7 +42,7 @@ export function readConfigValueSafe<T>(
 ): T {
   try {
     const value = readConfigValue<T>(config, key, feature, jexl)
-    return value === undefined ? fallback : value
+    return value ?? fallback
   } catch {
     return fallback
   }
