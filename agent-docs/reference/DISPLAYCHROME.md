@@ -586,7 +586,14 @@ wrong.
 
 ## The bring-your-own seams
 
-Two of them, and they answer different questions. Both default to *undefined*
+**All of it lives in `@jbrowse/display-ui`, a package with no `@mui/*`
+dependency**, and that dependency edge is the guarantee — see "the seam used to
+import what it replaces" below for what happened while the guarantee was a
+convention. This plugin holds the Material bindings and depends on that package;
+nothing runs the other way. The LGV barrel re-exports the lot, so a consumer can
+name either.
+
+Two seams, and they answer different questions. Both default to *undefined*
 rather than to a component set, so a display rendering outside any provider
 (unit tests, SVG export, breakpoint-split-view's `overlayUtils`) keeps JBrowse's
 own look — a plain default would degrade those invisibly.
@@ -606,6 +613,50 @@ corner buttons, and every consumer mounts the two together with the same two
 plain sets. `DisplayUIProvider` is the pair, both props defaulting to the plain
 sets, so the common case is `<DisplayUIProvider>{tracks}</DisplayUIProvider>` —
 no arguments, one import. Supplying either brings your own.
+
+**`overlays` is a partial set**, merged over the plain one, because a host
+replacing one state was writing the other four by hand — every example of it
+spread `plainChromeOverlays` in to say so. It also survives a *sixth* state: a
+whole set goes stale on upgrade (a compile error if they typecheck, a missing
+component if they ship JS), a partial one picks up the new plain default.
+
+### The seam used to import what it replaces
+
+`DisplayUIProvider` reached **45 `@mui/*` modules**, and every check in the repo
+said it was clean, because every check counted rendered `Mui*` elements. Two
+edges did it, both one hop:
+
+- the two `createContext` calls lived in `DisplayChrome.tsx` and
+  `TrackControl.tsx` — the modules that *bind the Material sets*. An override
+  channel sharing a module with the default it overrides drags that default into
+  every consumer;
+- `DisplayBackgroundProgress` named the `@jbrowse/core/ui` **barrel** for one
+  chip, which lands `FileSelector`, `FatalErrorDialog`, the cascading-menu stack
+  and `PluginManager` in whatever chunk reaches it.
+
+Measured on the build-your-own site, the page called "Removing Material UI"
+carried **34 first-party eager modules importing `@mui/material` against 16** on
+the page that deliberately leaves Material chrome on screen, and downloaded 53 KB
+gzip more. Zero Material elements rendered, so the census was right and useless.
+
+Three things now hold the line, in order of strength: the package declares no
+`@mui/*` dependency at all; `packages/display-ui/src/muiFree.test.ts` walks the
+value-import graph across workspace packages and fails with the trail; and the
+census still counts what renders. The last one cannot see this class of bug —
+**a claim about a module graph needs a check on the module graph.**
+
+### The behaviour under the plain control is separately reusable
+
+`useTrackControlMenu` is the corner control's menu as prop getters — dismissal
+(Escape, outside pointerdown, ancestor scroll), focus, the top layer, and
+anchoring bottom-to-top/right-to-right so the menu clears a `contain: strict`
+box and the window edge. `plainTrackControl` is the markup left over it.
+
+That split exists because a host writing their own control was inheriting a
+styling decision to get behaviour they could not otherwise have: each of those
+dismissal rules is a bug when missed and none shows up in a screenshot. Prop
+getters over a component is the headless-library shape, and it is what the
+repo's own `usePanZoom` / `useResizeDrag` already do for gestures.
 
 Defaulting *that component's props* is not the ambient default the contexts
 avoid, which is what makes it safe: the contexts still resolve to `undefined`, so
@@ -739,10 +790,15 @@ elements before, 0 after.
 displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
 stays in the bundle. *Weight* is only available to code writing its own display
 component — `DisplayChromeBase` plus a `TrackControlComponent` of its own import
-no toolkit at all. `pnpm measure-chrome-bundle` measures that half and CI
-re-checks it. `makeStyles` no longer stands in the way of the second, handing a
-component JBrowse's own plain-data theme (`ui/styleTheme.ts`), but that alone did
-not get MUI out of a host's first paint; [EAGER_BUNDLE.md](EAGER_BUNDLE.md)
+no toolkit at all. `pnpm measure-chrome-bundle` measures three entry points and
+CI re-checks them: the Material chrome, the base-plus-plain pairing, and the
+whole of `@jbrowse/display-ui`. **Quote the third when describing what mounting
+the seam costs.** The build-your-own landing page quoted the second for a year
+while every page on it took the first, which reads as a saving where the page in
+fact pays 18 KB gzip on top. `makeStyles` no longer stands in the way of the
+second, handing a component JBrowse's own plain-data theme
+(`ui/styleTheme.ts`), but that alone did not get MUI out of a host's first
+paint; [EAGER_BUNDLE.md](EAGER_BUNDLE.md)
 §"What still holds Material UI in the eager set" is the measured list of what
 does.
 

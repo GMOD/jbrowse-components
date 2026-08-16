@@ -318,7 +318,7 @@ does. Two corrections fall out of it:
   ~21 KB of source — under 10 KB gzipped — for a public ABI change across ~39
   modules. Its design, if the whole knot is ever cut at once: follow
   `TrackControlIcon`
-  (`plugins/linear-genome-view/src/BaseLinearDisplay/components/trackControl/types.ts`),
+  (`packages/display-ui/src/trackControl/types.ts`),
   a closed string union with a `satisfies Record<Name, unknown>` map per
   implementation, widening the field to `React.ElementType | MenuIconName` so
   external plugins keep working (PLUGIN_ABI_STABILITY.md). The resolver goes on

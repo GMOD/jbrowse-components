@@ -524,20 +524,22 @@ That entry adds exactly those handlers, which is the commit that would put a
 Material `IconButton` back on the page — and it would land green, because
 nothing measures it.
 
-Three options, and the layering rules the obvious one out: `synteny-core`
-depends on `@jbrowse/core` alone, while `DisplayChromeOverlays` and its provider
-live in `plugins/linear-genome-view`, so the component cannot simply read that
-context.
+**The layering objection is gone.** This entry used to weigh three options
+because `DisplayChromeOverlays` and its provider lived in
+`plugins/linear-genome-view` while `synteny-core` depends on `@jbrowse/core`
+alone, so the component could not read that context. The contract is
+`@jbrowse/display-ui` now — a package, with no UI-toolkit dependency and no
+plugin above it — so `synteny-core` can depend on it like anything else, and the
+prop types it names are the four structural model shapes that moved with it
+rather than LGV display models.
 
-- move the overlay contract down into `@jbrowse/core/ui`. Principled, and the
-  widest blast radius: the contract's prop types name LGV display models.
-- give the comparative path its own narrow seam (the components as props,
-  defaulted to the Material set), threaded from the two render areas that mount
-  it. Smallest, and a second seam an embedder has to know about.
-- have the *plugins* read the LGV context and pass the components down —
-  `plugin-linear-comparative-view` and `plugin-dotplot-view` may both depend on
-  `plugin-linear-genome-view`, so no inversion. Keeps one contract and puts the
-  wiring where the layering already permits it.
+What is left is a design question rather than a layering one: the comparative
+components are not `DisplayChromeOverlays` entries. `ComparativeFetchStatus`
+takes the same `{statusMessage, statusProgress}` shape as
+`DisplayBackgroundProgressModel` and could be one; the tooltip and the context
+menu are their own shapes and want either entries of their own or a second small
+contract in the same package. Decide that before writing the wiring, and add the
+components to `packages/display-ui/src/muiFree.test.ts` when you do.
 
 **The loading-time census is wired in, so this list is no longer invisible.**
 `recordMuiFromLoad` in the BYO site's `smoke.mjs` samples from before each page's

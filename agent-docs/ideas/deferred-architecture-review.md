@@ -108,6 +108,16 @@ to be a supported public extension point?** If yes, the work is: publish
 boilerplate never enters it. If no, the page cannot honestly exist on those
 sites, because the reader could not run what it shows.
 
+**`@jbrowse/display-ui` joins that list if the answer is yes, and for a sharper
+reason than reach.** It holds three React contexts (the two chrome seams and
+`TrackOverlayContext`), and a context is only a seam if both sides hold the same
+module instance. A runtime plugin that bundles its own copy gets its own
+contexts: the host's `DisplayUIProvider` silently fails to reach its display, and
+what the user sees is Material chrome inside an app that mounted the plain set.
+So the package needs a `ReExports/modules.ts` entry at the same time as
+`render-core`, not later. Nothing needs it today, since a runtime plugin cannot
+write a display at all.
+
 Unmeasured, and worth doing before committing: the **state model** is the real
 bulk of a display, not the renderer (gwas's is 689 lines, though much of that is
 LD-specific). Size a genuinely minimal display first; the ~120-line figure above
