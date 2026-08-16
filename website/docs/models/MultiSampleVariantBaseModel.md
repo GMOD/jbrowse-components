@@ -124,7 +124,7 @@ the whole surface.
 | <span id="getter-minorallelefrequencyfilter">**minorAlleleFrequencyFilter**</span><br><code>number</code> | Returns the minor allele frequency filter config slot value | MultiSampleVariantBaseModel |
 | <span id="getter-maxmissingnessfilter">**maxMissingnessFilter**</span><br><code>number</code> | Max fraction of no-call genotypes a variant may have before it's hidden; 1 keeps every variant | MultiSampleVariantBaseModel |
 | <span id="getter-filters">**filters**</span><br><code>SerializableFilterChain &#124; undefined</code> | The jexl filter expressions (from the Edit filters dialog) as a SerializableFilterChain, ready to pass as the RPC `filters` arg. MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix} all extend RpcMethodTypeWithFiltersAndRenameRegions, which serializes this to string[] and rebuilds it in the worker with pluginManager.jexl. | MultiSampleVariantBaseModel |
-| <span id="getter-showsidebarlabels">**showSidebarLabels**</span><br><code>boolean</code> |  | MultiSampleVariantBaseModel |
+| <span id="getter-showrowlabels">**showRowLabels**</span><br><code>boolean</code> |  | MultiSampleVariantBaseModel |
 | <span id="getter-showtree">**showTree**</span><br><code>boolean</code> |  | MultiSampleVariantBaseModel |
 | <span id="getter-showbranchlength">**showBranchLength**</span><br><code>boolean</code> |  | MultiSampleVariantBaseModel |
 | <span id="getter-referencedrawingmode">**referenceDrawingMode**</span><br><code>string</code> |  | MultiSampleVariantBaseModel |
@@ -242,7 +242,7 @@ the whole surface.
 | <span id="action-setgroupby">**setGroupBy**</span><br><code>(groupBy: string) =&gt; void</code> | Reorder sample rows so each value of a metadata attribute (e.g. 'population') is contiguous, or pass '' to clear the grouping. Persists the arrangement as the layout and records the choice in the `groupBy` config slot so it survives a data refetch and serializes into the session. Re-applies `colorBy` in the same pass so grouping doesn't drop an existing palette. | MultiSampleVariantBaseModel |
 | <span id="action-setmaffilter">**setMafFilter**</span><br><code>(arg: number) =&gt; void</code> |  | MultiSampleVariantBaseModel |
 | <span id="action-setmaxmissingnessfilter">**setMaxMissingnessFilter**</span><br><code>(arg: number) =&gt; void</code> |  | MultiSampleVariantBaseModel |
-| <span id="action-setshowsidebarlabels">**setShowSidebarLabels**</span><br><code>(arg: boolean) =&gt; void</code> |  | MultiSampleVariantBaseModel |
+| <span id="action-setshowrowlabels">**setShowRowLabels**</span><br><code>(arg: boolean) =&gt; void</code> |  | MultiSampleVariantBaseModel |
 | <span id="action-setshowtree">**setShowTree**</span><br><code>(arg: boolean) =&gt; void</code> |  | MultiSampleVariantBaseModel |
 | <span id="action-setshowbranchlength">**setShowBranchLength**</span><br><code>(arg: boolean) =&gt; void</code> |  | MultiSampleVariantBaseModel |
 | <span id="action-setphasedmode">**setPhasedMode**</span><br><code>(arg: string) =&gt; void</code> |  | MultiSampleVariantBaseModel |

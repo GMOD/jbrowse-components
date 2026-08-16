@@ -36,6 +36,46 @@ export function treeBranchLengthMenuItem(
   )
 }
 
+interface RowLabelsMenuModel {
+  showTree: boolean
+  showRowLabels: boolean
+  setShowRowLabels: (arg: boolean) => void
+}
+
+/**
+ * Shared "Show row labels" toggle. Every display with a sidebar had written its
+ * own, and they had drifted in three ways at once — one called the slot
+ * `showSidebarLabels`, one dropped the row from the menu entirely while the
+ * tree was off, and one carried a `subLabel` explaining the swatch degradation
+ * that is true of all of them (`SvgRowLabels` falls back to a `labelColor`
+ * stripe below `MIN_TEXT_ROW_HEIGHT` whoever is drawing).
+ *
+ * `requiresTree` is a real difference rather than more drift: MAF mounts its
+ * label overlay only under `showTree`, so with the tree off the toggle has
+ * nothing to toggle, while canvas and multi-wiggle draw labels over the plot
+ * with no gutter reserved and no tree needed. Disabled rather than dropped, so
+ * the setting stays discoverable — a row that vanishes teaches the reader it
+ * does not exist.
+ */
+export function showRowLabelsMenuItem(
+  self: RowLabelsMenuModel,
+  { requiresTree = false }: { requiresTree?: boolean } = {},
+): MenuItem {
+  return checkboxItem(
+    'Show row labels',
+    self.showRowLabels,
+    () => {
+      self.setShowRowLabels(!self.showRowLabels)
+    },
+    {
+      disabled: requiresTree && !self.showTree,
+      disabledHelpText: 'Show the tree first',
+      subLabel:
+        'below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
+    },
+  )
+}
+
 interface SubtreeFilterMenuModel {
   subtreeFilter?: readonly string[]
   setSubtreeFilter: (arg?: string[]) => void

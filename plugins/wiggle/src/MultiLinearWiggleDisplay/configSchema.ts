@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
 
 import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
@@ -149,22 +150,10 @@ const configSchema = ConfigurationSchema(
       description: 'Draw only the min/max Y-axis ticks',
       advanced: true,
     },
-    /**
-     * #slot
-     */
-    showTree: {
-      type: 'boolean',
-      defaultValue: true,
-      description: 'Show the subtrack clustering tree in the sidebar',
-    },
-    /**
-     * #slot
-     */
-    showBranchLength: {
-      type: 'boolean',
-      defaultValue: true,
-      description: 'Draw the clustering tree with branch lengths',
-    },
+    ...treeSidebarConfigSchemaFields({
+      tree: 'Show the subtrack clustering tree in the sidebar',
+      rowLabels: 'Name each subtrack row down the left edge',
+    }),
     /**
      * #slot
      */
@@ -172,15 +161,6 @@ const configSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: false,
       description: 'Draw separator lines between subtrack rows',
-    },
-    /**
-     * #slot
-     */
-    showRowLabels: {
-      type: 'boolean',
-      defaultValue: true,
-      description:
-        'Name each subtrack row down the left edge. Below the height a name fits in, the labels degrade to a column of color swatches — informative when the colors are a grouping and noise when they are per-row identity, which is why this can be turned off',
     },
     /**
      * #slot

@@ -74,7 +74,6 @@ function MafSvgBody({
     showRowLabels,
     treeAreaWidth,
     sources,
-    labelSources,
     effectiveRowHeight,
     rowsHeight,
     coverageDisplayHeight,
@@ -197,8 +196,7 @@ function MafSvgBody({
         <SvgTreeSidebar
           showTree={showTree}
           hierarchy={hierarchy}
-          // see `labelSources` — the sidebar tints from `labelColor`
-          sources={labelSources}
+          sources={sources}
           rowHeight={effectiveRowHeight}
           treeAreaWidth={treeAreaWidth}
           showLabels={showRowLabels && !!sources.length}

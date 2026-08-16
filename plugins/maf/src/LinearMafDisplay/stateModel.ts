@@ -108,7 +108,7 @@ import type { LegendItem } from '@jbrowse/core/ui'
 import type { Region, UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-import type { RowLabelSource } from '@jbrowse/tree-sidebar'
+import type { RowSource } from '@jbrowse/tree-sidebar'
 
 /**
  * Zoom at which the GPU encoder stops encoding every base and starts
@@ -122,10 +122,21 @@ const MIN_BINNED_BP_PER_PX = 4
  * Per-row metadata stored in `sourcesVolatile`. `name` is the sample id
  * (matches the canonical `Sample.id`); `label`/`color` are display-only.
  */
-export interface MafSource {
-  name: string
-  label?: string
-  color?: string
+/**
+ * One species row. `RowSource` is the shared vocabulary every display with a
+ * dendrogram sidebar draws rows by; this adds the two navigation fields only
+ * MAF has.
+ *
+ * The adapter's `samples[].color` slot lands on **`labelColor`**, the name the
+ * sidebar tints with, because that is the only thing MAF ever does with it —
+ * nothing here paints a row in it. It used to be carried as `color` and
+ * translated by a `labelSources` computed, which existed because
+ * `RowLabelSource` is satisfied structurally: handing `sources` straight to the
+ * sidebar type-checked and dropped the tint in silence, which is how the slot
+ * came to be documented in three adapter schemas while reaching no renderer at
+ * all. Naming it what it is removes the translation and the trap together.
+ */
+export interface MafSource extends RowSource {
   /** assembly this row's genome is loaded as, when it is navigable */
   assemblyName?: string
   /** config to load that assembly from, when the session lacks it */
@@ -467,7 +478,7 @@ export default function stateModelFactory(
           const incoming = samples.map(s => ({
             name: s.id,
             label: s.label,
-            color: s.color,
+            labelColor: s.color,
             ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
             ...(s.assemblyConfigLocation
               ? { assemblyConfigLocation: s.assemblyConfigLocation }
@@ -885,43 +896,11 @@ export default function stateModelFactory(
           return self.sources.map(s => ({
             id: s.name,
             label: s.label ?? s.name,
-            color: s.color,
+            color: s.labelColor,
             ...(s.assemblyName ? { assemblyName: s.assemblyName } : {}),
             ...(s.assemblyConfigLocation
               ? { assemblyConfigLocation: s.assemblyConfigLocation }
               : {}),
-          }))
-        },
-        /**
-         * #getter
-         * `sources` in the shape the sidebar's label half reads: the per-sample
-         * `color` the adapter config supplies, surfaced under the name
-         * `SvgRowLabels` actually tints with.
-         *
-         * The rename is the whole job, and it is why this exists. `MafSource`
-         * calls the field `color` (as `TreeSource` does); `RowLabelSource` calls
-         * it `labelColor`, and an object carrying extra properties satisfies
-         * that interface — so handing `sources` straight to `RowLabelsOverlay`
-         * type-checked and silently dropped the color. Three adapter schemas
-         * advertise the slot and the track guide documents it as "the row's
-         * color", while it reached no renderer at all: it was threaded from the
-         * config through `normalizeSamples`, the RPC result, `setSamples` and
-         * `sources` to be read by nothing.
-         *
-         * A computed rather than a `.map()` at each call site: the on-screen
-         * labels and the SVG export both take it, and both are memoized
-         * components that a fresh array per render would defeat.
-         *
-         * The tint matters most here of anywhere. `SvgRowLabels` drops to a
-         * color swatch below `MIN_TEXT_ROW_HEIGHT`, where it is the only thing
-         * left carrying row identity — and a 447-way cactus alignment at the
-         * default fit height is 1.2px a row.
-         */
-        get labelSources(): RowLabelSource[] {
-          return self.sources.map(s => ({
-            name: s.name,
-            label: s.label,
-            labelColor: s.color,
           }))
         },
         /**

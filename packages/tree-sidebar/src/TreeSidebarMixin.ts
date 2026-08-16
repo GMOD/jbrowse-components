@@ -4,7 +4,7 @@ import { applySubtreeFilter, buildTree } from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { HoveredTreeNode } from './types.ts'
+import type { HoveredTreeNode, RowSource } from './types.ts'
 
 /**
  * #stateModel TreeSidebarMixin
@@ -14,9 +14,7 @@ import type { HoveredTreeNode } from './types.ts'
  * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
  * used while drawing the tree.
  */
-export function TreeSidebarMixin<
-  S extends { name: string } = { name: string },
->() {
+export function TreeSidebarMixin<S extends RowSource = RowSource>() {
   return types
     .model({
       layout: types.stripDefault(types.frozen<S[]>(), []),

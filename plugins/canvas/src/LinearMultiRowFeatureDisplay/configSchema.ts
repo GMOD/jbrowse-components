@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -217,24 +218,6 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * Draw each row's name over the left of the plot. On by default, because a
-       * row nobody can name is a stripe.
-       *
-       * Turn it off when the labels would cover the data they name. They are an
-       * overlay on the plot rather than a gutter beside it, and each one is as
-       * wide as its own text, so on a whole-chromosome view of a track with long
-       * row names the left megabases of every row sit under them — and a block
-       * that starts at the chromosome's beginning reads as absent rather than as
-       * covered. Pairing a labelled view with an unlabelled one of the same rows
-       * is the other way out, and is what a compose figure does.
-       */
-      showRowLabels: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'draw the row name over the left of each row',
-      },
-      /**
-       * #slot
        * Show the categorical color key (swatch + label per distinct per-feature
        * color). Only appears in per-feature color mode; in per-row palette /
        * sampleColorMap mode the sidebar labels are already the key, so nothing
@@ -330,24 +313,15 @@ export default function configSchemaF(pluginManager: PluginManager) {
         description:
           'array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only',
       },
-      /**
-       * #slot
-       */
-      showTree: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'show the cluster tree sidebar',
-      },
-      /**
-       * #slot
-       * Position tree nodes by cluster merge height (dendrogram) vs. evenly by
-       * topology (cladogram).
-       */
-      showBranchLength: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'position tree nodes by branch length (dendrogram)',
-      },
+      // Turn the labels off when they would cover the data they name: on a
+      // whole-chromosome view of a track with long row names, a feature that
+      // starts at the chromosome's beginning reads as absent rather than as
+      // covered. Pairing a labelled view with an unlabelled one of the same rows
+      // is the other way out, and is what a compose figure does.
+      ...treeSidebarConfigSchemaFields({
+        tree: 'show the cluster tree sidebar',
+        rowLabels: 'draw the row name over the left of each row',
+      }),
       /**
        * #slot
        * The same 5 Mb `LinearBasicDisplay` uses, raised from the base display's

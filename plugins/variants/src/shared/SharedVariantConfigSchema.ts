@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
 
 /**
  * #config SharedVariantDisplay
@@ -17,14 +18,6 @@ export default function sharedVariantConfigFactory() {
         defaultValue: false,
         description:
           'Starting value for drawing reference alleles. When false, the row background is filled solid grey and only ALT alleles are painted on top (makes overlapping variants easier to see); when true, reference alleles are drawn normally. Seeds referenceDrawingMode the first time a config is loaded.',
-      },
-      /**
-       * #slot
-       */
-      showSidebarLabels: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Show the per-sample row labels in the sidebar',
       },
       /**
        * #slot
@@ -53,22 +46,10 @@ export default function sharedVariantConfigFactory() {
         description:
           'per-row height in px, scrolling the rows that do not fit; 0 fits the rows to the display height instead',
       },
-      /**
-       * #slot
-       */
-      showTree: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Show the sample clustering tree in the sidebar',
-      },
-      /**
-       * #slot
-       */
-      showBranchLength: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Draw the clustering tree with branch lengths',
-      },
+      ...treeSidebarConfigSchemaFields({
+        tree: 'Show the sample clustering tree in the sidebar',
+        rowLabels: 'Show the per-sample row labels in the sidebar',
+      }),
       /**
        * #slot
        */
@@ -171,14 +152,27 @@ export default function sharedVariantConfigFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      preProcessSnapshot: (snap: Record<string, unknown>) =>
-        snap.referenceDrawingMode === undefined &&
-        snap.showReferenceAlleles !== undefined
-          ? {
-              ...snap,
-              referenceDrawingMode: snap.showReferenceAlleles ? 'draw' : 'skip',
-            }
-          : snap,
+      preProcessSnapshot: (snap: Record<string, unknown>) => {
+        const migrated = { ...snap }
+        if (
+          migrated.referenceDrawingMode === undefined &&
+          migrated.showReferenceAlleles !== undefined
+        ) {
+          migrated.referenceDrawingMode = migrated.showReferenceAlleles
+            ? 'draw'
+            : 'skip'
+        }
+        // `showSidebarLabels` was this display's spelling of what the other
+        // three sidebar displays call `showRowLabels`; the shared slot set
+        // (`treeSidebarConfigSchemaFields`) is the one name now.
+        if (
+          migrated.showRowLabels === undefined &&
+          migrated.showSidebarLabels !== undefined
+        ) {
+          migrated.showRowLabels = migrated.showSidebarLabels
+        }
+        return migrated
+      },
     },
   )
 }

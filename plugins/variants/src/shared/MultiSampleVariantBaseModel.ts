@@ -121,7 +121,7 @@ const PORTABLE_CONFIG_KEYS = [
   'renderingMode',
   'minorAlleleFrequencyFilter',
   'maxMissingnessFilter',
-  'showSidebarLabels',
+  'showRowLabels',
   'showTree',
   'showBranchLength',
   'referenceDrawingMode',
@@ -852,8 +852,8 @@ export default function MultiSampleVariantBaseModelF(
         setMaxMissingnessFilter(arg: number) {
           setConf(self, 'maxMissingnessFilter', arg)
         },
-        setShowSidebarLabels(arg: boolean) {
-          setConf(self, 'showSidebarLabels', arg)
+        setShowRowLabels(arg: boolean) {
+          setConf(self, 'showRowLabels', arg)
         },
         setShowTree(arg: boolean) {
           setConf(self, 'showTree', arg)
@@ -979,8 +979,8 @@ export default function MultiSampleVariantBaseModelF(
             : undefined
         },
 
-        get showSidebarLabels(): boolean {
-          return getConf(self, 'showSidebarLabels')
+        get showRowLabels(): boolean {
+          return getConf(self, 'showRowLabels')
         },
 
         get showTree(): boolean {
@@ -1427,8 +1427,7 @@ export default function MultiSampleVariantBaseModelF(
          */
         get canDisplayLabels() {
           return (
-            rowLabelsCarryText(self.effectiveRowHeight) &&
-            self.showSidebarLabels
+            rowLabelsCarryText(self.effectiveRowHeight) && self.showRowLabels
           )
         },
         /**

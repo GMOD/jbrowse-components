@@ -30,22 +30,22 @@ describe('SharedVariantConfigSchema', () => {
     })
   })
 
-  describe('showSidebarLabels config slot', () => {
+  describe('showRowLabels config slot', () => {
     it('has default value of true', () => {
       const config = configSchema.create({
         type: 'SharedVariantDisplay',
         displayId: 'test-3',
       })
-      expect(readConfObject(config, 'showSidebarLabels')).toBe(true)
+      expect(readConfObject(config, 'showRowLabels')).toBe(true)
     })
 
     it('can be set to false', () => {
       const config = configSchema.create({
         type: 'SharedVariantDisplay',
         displayId: 'test-4',
-        showSidebarLabels: false,
+        showRowLabels: false,
       })
-      expect(readConfObject(config, 'showSidebarLabels')).toBe(false)
+      expect(readConfObject(config, 'showRowLabels')).toBe(false)
     })
   })
 

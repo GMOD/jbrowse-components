@@ -12,6 +12,7 @@ import {
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowHeightMenuItem,
+  showRowLabelsMenuItem,
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
@@ -94,13 +95,7 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     checkboxItem('Show sidebar with tree and labels', self.showTree, () => {
       self.setShowTree(!self.showTree)
     }),
-    // Separate from the sidebar toggle above, which owns the tree gutter. The
-    // labels are an overlay ON the plot rather than a gutter beside it, so on a
-    // wide view they cover the left of the rows they name — which is the reason
-    // this is a toggle at all. See the config slot.
-    checkboxItem('Show row labels', self.showRowLabels, () => {
-      self.setShowRowLabels(!self.showRowLabels)
-    }),
+    showRowLabelsMenuItem(self),
     // Both keys, because `showLegend` governs both and the legend's own "×"
     // writes it: the row-group key draws on a track whose `colorLegend` is
     // empty — that is its ordinary case, since every row carrying a per-row

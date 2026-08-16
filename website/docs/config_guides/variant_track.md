@@ -128,7 +128,7 @@ preset ones:
   rises above the threshold
 - `featureColor` - color each cell by the variant rather than by genotype
   (covered below)
-- `showSidebarLabels` - show the per-sample row labels in the sidebar
+- `showRowLabels` - show the per-sample row labels in the sidebar
 - `colorBy` - auto-color samples by a sample-metadata attribute on load (covered
   below)
 
@@ -156,7 +156,7 @@ preset both the linear and matrix displays, set the slot on each:
       "type": "LinearMultiSampleVariantDisplay",
       "showReferenceAlleles": true,
       "minorAlleleFrequencyFilter": 0.05,
-      "showSidebarLabels": true,
+      "showRowLabels": true,
       "renderingMode": "alleleCount"
     },
     {

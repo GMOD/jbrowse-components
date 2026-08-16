@@ -55,12 +55,6 @@ describe('a discovered row set widens under a custom arrangement', () => {
     expect(display.sources[1]).toMatchObject({
       name: 'panTro4',
       label: 'Chimp',
-      color: 'red',
-    })
-    // and the rename reaches the sidebar, which tints from `labelColor`
-    expect(display.labelSources[1]).toEqual({
-      name: 'panTro4',
-      label: 'Chimp',
       labelColor: 'red',
     })
   })
@@ -134,13 +128,14 @@ describe('the guide tree positions only while it describes the rows', () => {
 })
 
 // The adapter schemas advertise a per-sample `color` and the track guide calls
-// it "the row's color", but `MafSource` names the field `color` while the
-// sidebar's label half tints from `labelColor` — and an object with extra
-// properties satisfies `RowLabelSource`, so handing `sources` straight over
-// type-checked and dropped it. `labelSources` is the rename, and both the
-// on-screen labels and the SVG export read it.
+// it "the row's color". It lands on `MafSource.labelColor`, the field the
+// sidebar's label half tints from — it used to be carried as `color` and
+// translated on the way over, and because an object with extra properties
+// satisfies `RowLabelSource`, handing `sources` straight to the sidebar
+// type-checked and dropped it. Both the on-screen labels and the SVG export
+// read `sources` directly now.
 describe('the configured per-sample color reaches the sidebar', () => {
-  it('surfaces `color` as the `labelColor` the labels tint with', () => {
+  it('lands on the `labelColor` the labels tint with', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
       samples: [
@@ -150,7 +145,7 @@ describe('the configured per-sample color reaches the sidebar', () => {
       treeNewick: undefined,
       samplesCanonical: true,
     })
-    expect(display.labelSources).toEqual([
+    expect(display.sources).toEqual([
       { name: 'hg38', label: 'Human', labelColor: 'red' },
       { name: 'mm10', label: 'Mouse', labelColor: undefined },
     ])
@@ -161,7 +156,7 @@ describe('the configured per-sample color reaches the sidebar', () => {
   // label components take an array either way.
   it('is empty before any fetch, like `sources`', () => {
     const { display } = createMafTestEnvironment().createDisplay()
-    expect(display.labelSources).toEqual([])
+    expect(display.sources).toEqual([])
     expect(display.sourcesKnown).toBe(false)
   })
 })

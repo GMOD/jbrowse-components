@@ -8,6 +8,7 @@ import {
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowHeightMenuItem,
+  showRowLabelsMenuItem,
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -231,13 +232,9 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.showTree,
       self.setShowTree,
     ),
-    // Separate from the sidebar toggle above so the tree can be kept without
-    // the names, which are an overlay on the alignment and cover the left of
-    // the rows they name. Only reachable while the sidebar is on, since that is
-    // what reserves their gutter.
-    ...(self.showTree
-      ? [toggle('Show row labels', self.showRowLabels, self.setShowRowLabels)]
-      : []),
+    // gated: this display mounts its label overlay only under `showTree`, so
+    // with the tree off the toggle would change nothing
+    showRowLabelsMenuItem(self, { requiresTree: true }),
     treeBranchLengthMenuItem(self),
     toggle('Show coverage', self.showCoverage, self.setShowCoverage, {
       subLabel: self.showSummary ? ZOOM_IN_FOR_BAND : undefined,

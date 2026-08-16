@@ -103,7 +103,7 @@ const MafBody = observer(function MafBody({
     scrollTop,
     effectiveRowHeight,
     showTree,
-    labelSources,
+    sources,
     samples,
     colorPalette,
   } = model
@@ -260,9 +260,7 @@ const MafBody = observer(function MafBody({
         {showTree ? (
           <RowLabelsOverlay
             testId="maf-row-labels"
-            // `labelSources`, not `sources`: the sidebar tints from
-            // `labelColor` and MafSource calls the field `color`
-            sources={labelSources}
+            sources={sources}
             rowHeight={effectiveRowHeight}
             labelOffset={sidebarOffset}
             width={width}

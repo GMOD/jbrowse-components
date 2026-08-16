@@ -65,8 +65,10 @@ export {
   clusterProvenanceMenuItems,
   clusteringMenuItem,
   resetRowOrderMenuItems,
+  showRowLabelsMenuItem,
   treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'
+export { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
 export { rowArrangementMenuItem } from './rowArrangementMenuItem.ts'
 export { rowHeightMenuItem } from './rowHeight/rowHeightMenu.ts'
 export type {
@@ -98,6 +100,7 @@ export type {
   ClusterNodeData,
   HoveredTreeNode,
   RowLabelSource,
+  RowSource,
   TreeDrawingModel,
   TreeSidebarModel,
   TreeSource,

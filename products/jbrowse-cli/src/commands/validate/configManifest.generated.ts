@@ -2993,10 +2993,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "showRowLabels",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "showLegend",
           "type": "(JexlString | (boolean | undefined))"
         },
@@ -3014,6 +3010,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showBranchLength",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showRowLabels",
           "type": "(JexlString | boolean)"
         }
       ],
@@ -3802,10 +3802,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "showSidebarLabels",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "lineZoneHeight",
           "type": "(JexlString | number)"
         },
@@ -3819,6 +3815,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showBranchLength",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showRowLabels",
           "type": "(JexlString | boolean)"
         },
         {
@@ -3927,10 +3927,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "showSidebarLabels",
-          "type": "(JexlString | boolean)"
-        },
-        {
           "name": "lineZoneHeight",
           "type": "(JexlString | number)"
         },
@@ -3944,6 +3940,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showBranchLength",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showRowLabels",
           "type": "(JexlString | boolean)"
         },
         {
@@ -4377,11 +4377,11 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "showRowSeparators",
+          "name": "showRowLabels",
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "showRowLabels",
+          "name": "showRowSeparators",
           "type": "(JexlString | boolean)"
         },
         {
@@ -4678,11 +4678,11 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "showRowLabels",
+          "name": "showBranchLength",
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "showBranchLength",
+          "name": "showRowLabels",
           "type": "(JexlString | boolean)"
         },
         {

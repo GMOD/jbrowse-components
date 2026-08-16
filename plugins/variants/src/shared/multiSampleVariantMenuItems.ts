@@ -10,6 +10,7 @@ import {
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowHeightMenuItem,
+  showRowLabelsMenuItem,
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -41,14 +42,7 @@ export function variantShowSubmenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {
   return [
-    {
-      label: 'Show sidebar labels',
-      type: 'checkbox',
-      checked: self.showSidebarLabels,
-      onClick: () => {
-        self.setShowSidebarLabels(!self.showSidebarLabels)
-      },
-    },
+    showRowLabelsMenuItem(self),
     showLegendCheckboxItem(
       self.showLegend,
       () => {

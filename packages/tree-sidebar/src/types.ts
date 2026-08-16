@@ -12,22 +12,48 @@ export interface HoveredTreeNode {
   descendantNames: string[]
 }
 
-export interface TreeSource {
+/**
+ * One row of a display with a dendrogram sidebar, as everything in this package
+ * draws it. `TreeSidebarMixin`'s generic is bound to this, so a display's own
+ * row type must extend it.
+ *
+ * The bound is what keeps the sidebar honest. It used to be `{ name: string }`
+ * — the weakest possible — and the four displays that compose the mixin each
+ * declared their own row type against it; `MafSource` came out without
+ * `labelColor`, so every MAF row below `MIN_TEXT_ROW_HEIGHT` drew no swatch at
+ * all, and nothing said so. A field the sidebar draws belongs here, where
+ * omitting it is a compile error rather than a blank stripe.
+ *
+ * Every member but `name` is optional, so widening this does not break a
+ * display that has nothing to put in it — what it breaks is a display that
+ * *does* and forgot to say so.
+ */
+export interface RowSource {
+  /** Identity: the React key, and what the tree's leaves are matched against. */
   name: string
+  /** Displayed instead of `name` when the adapter config supplied one. */
+  label?: string
+  /** What the row's own content is painted in, where the display paints per row. */
   color?: string
+  /**
+   * The identity tint the sidebar carries the row with when it is too short for
+   * text. Separate from `color` because a display that spends `color` on its
+   * painting (multi-row features' itemRgb ramp, multi-wiggle's density mode)
+   * would otherwise have a group hue overwrite the encoding it is read by.
+   */
+  labelColor?: string
+  /** Grouping key, where rows are gathered under a heading. */
+  group?: string
 }
 
-// One row as the sidebar's label half draws it: `name` is the identity (React
-// key, and what the tree's leaves are matched against), `label` the displayed
-// string when the adapter config supplied one, `labelColor` the identity tint
-// that carries the row when it is too short for text. Shared by `SvgRowLabels`,
-// its on-screen wrapper `RowLabelsOverlay`, and `SvgTreeSidebar`, which each
-// used to redeclare it.
-export interface RowLabelSource {
-  name: string
-  label?: string
-  labelColor?: string
-}
+/** What the dendrogram itself reads: a name to match, a color to draw. */
+export type TreeSource = Pick<RowSource, 'name' | 'color'>
+
+/**
+ * What the sidebar's label half draws — `SvgRowLabels`, its on-screen wrapper
+ * `RowLabelsOverlay`, and `SvgTreeSidebar`, which each used to redeclare it.
+ */
+export type RowLabelSource = Pick<RowSource, 'name' | 'label' | 'labelColor'>
 
 export interface TreeSidebarModel {
   totalHeight?: number

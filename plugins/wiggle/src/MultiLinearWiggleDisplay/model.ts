@@ -26,14 +26,15 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   clusteringMenuItem,
-  reconcileLayout,
   computeClusterHierarchy,
+  reconcileLayout,
   resetRowOrderMenuItems,
-  rowLabelsCarryText,
   rowArrangementMenuItem,
+  rowLabelsCarryText,
   setupRowSortAutorun,
   setupRunClusteringAutorun,
   setupTreeDrawingAutorun,
+  showRowLabelsMenuItem,
 } from '@jbrowse/tree-sidebar'
 import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -702,17 +703,7 @@ export default function stateModelFactory(
                     self.setShowRowSeparators(!self.showRowSeparators)
                   },
                 ),
-                checkboxItem(
-                  'Show row labels',
-                  self.showRowLabels,
-                  () => {
-                    self.setShowRowLabels(!self.showRowLabels)
-                  },
-                  {
-                    subLabel:
-                      'below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
-                  },
-                ),
+                showRowLabelsMenuItem(self),
               ]),
           // the color key only renders as an overlay of >1 source
           ...(self.overlayLegendApplies

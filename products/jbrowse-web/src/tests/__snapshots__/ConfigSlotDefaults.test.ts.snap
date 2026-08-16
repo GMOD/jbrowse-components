@@ -681,7 +681,7 @@ exports[`every registered schema slot default 1`] = `
     "showInsertionGlyphs": "boolean = true",
     "showLegend": "maybeBoolean promotedBase true",
     "showReferenceAlleles": "boolean = false",
-    "showSidebarLabels": "boolean = true",
+    "showRowLabels": "boolean = true",
     "showTree": "boolean = true",
     "showVariantLane": "boolean = false",
     "variantLaneHeight": "number = 40",
@@ -706,7 +706,7 @@ exports[`every registered schema slot default 1`] = `
     "showBranchLength": "boolean = true",
     "showLegend": "maybeBoolean promotedBase true",
     "showReferenceAlleles": "boolean = false",
-    "showSidebarLabels": "boolean = true",
+    "showRowLabels": "boolean = true",
     "showTree": "boolean = true",
   },
   "display: LinearPairedArcDisplay": {
