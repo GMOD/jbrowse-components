@@ -47,11 +47,20 @@ annotation files derived from the same matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-<Figure src="/img/hic/loops_and_domains.png" caption="The MYC contact domain, its bounding HiCCUPS loop and the denser triangle in the matrix, under twelve single-cell ATAC pseudobulks. The ATAC peaks pile up inside the domain and thin out to its right in every blood lineage." links="Open this view=hic/loops_and_domains" />
+<Figure src="/img/hic/loops_and_domains.png" caption="Bands on the two corners of one MYC contact domain, with its Arrowhead arc, its bounding HiCCUPS loop and the denser triangle in the matrix all ending on them, under twelve single-cell ATAC pseudobulks." links="Open this view=hic/loops_and_domains" />
 
 A contact domain and the loop at its corner are the same object seen two ways.
-The block in the matrix and the arc above it end at the same two coordinates,
-because the loop is what holds the domain together.
+The two bands in the figure are the domain's corners, and the block in the
+matrix, the Arrowhead arc and the HiCCUPS arc all end on them, because the loop
+is what holds the domain together. _MYC_ is at the left one.
+
+All three of those lanes are one experiment read three ways: ENCODE's Arrowhead
+and HiCCUPS call sets for GM12878 are derived from the in situ matrix drawn
+underneath them, so the arcs cannot agree with the matrix by coincidence and
+cannot be checked against it either. That is the reason the page reads GM12878
+here rather than any other line — a domain-and-loop figure needs a matrix whose
+own published calls are available, and it needs them deep enough that a 600 kb
+block has visible edges.
 
 The ATAC lane is the one thing in the frame not derived from the contact map.
 GM12878 is a B-lymphoblastoid line, so B-cell accessibility is the nearest

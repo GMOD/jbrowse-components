@@ -240,12 +240,31 @@ export const hicSpecs: ScreenshotSpec[] = [
       // and left the gene the figure is named for unmarked. MYC's own span is
       // 7.5 kb, so at this width it is a hairline -- which is the honest scale
       // of it against a 600 kb domain, and the label carries the name.
+      // BOTH ENDS OF THE DOMAIN, banded by the view (review: "i want the
+      // message to be very 'obvious' from the figure and let the data speak for
+      // itself"). A band is a column through every lane, so the two of them are
+      // what make the section's claim checkable rather than asserted: the
+      // Arrowhead arc's feet, the HiCCUPS arc's feet and the matrix block's two
+      // corners all land on these same two lines.
+      //
+      // The left one is MYC's own span and needs no second band -- the domain
+      // starts within half a kilobase of the gene, which is why this window was
+      // the one the scoring script's ranking was taken to. The right one is the
+      // domain's own end, widened to about a pixel's worth at this scale so it
+      // draws at all.
       highlight: [
         {
           refName: 'chr8',
           start: 127_735_434,
           end: 127_742_951,
           label: 'MYC',
+          color: 'rgba(214,137,16,0.45)',
+        },
+        {
+          refName: 'chr8',
+          start: 128_331_000,
+          end: 128_339_000,
+          label: 'domain edge',
           color: 'rgba(214,137,16,0.45)',
         },
       ],
@@ -390,6 +409,67 @@ export const hicSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('hic-display'),
     readyTimeout: 240000,
     settleMs: 20000,
+    // THE TWO NAMED OBJECTS, ON THE PICTURE (review: "if this is a well known
+    // result, might add red text annotation describing what it is ... i want
+    // the message to be very 'obvious' from the figure"). The frame had no
+    // callout at all: the section defines a contact domain and a loop in prose,
+    // the figure drew one of each, and which one was left to the caption.
+    //
+    // That is not a naming-the-obvious case, because the frame holds SEVERAL of
+    // each. Six Arrowhead arcs and four HiCCUPS arcs are in view and the matrix
+    // carries more than one block -- the dense one left of MYC is a different
+    // domain -- so pointing at the pair the section is about is the information.
+    //
+    // WHAT EACH PILL SAYS IS WHAT ITS LANE CANNOT. That MYC is at a corner
+    // rather than in the middle is the reason this window was picked and is
+    // invisible without knowing where the corner is; that the arc above the
+    // matrix was CALLED FROM the matrix is not something a reader can get from
+    // two track names, and it is the whole of "the same object seen two ways".
+    annotations: [
+      {
+        type: 'text',
+        // Names both bands, because the view draws neither label at this width
+        // and an unnamed second band is furniture. What it says is the part a
+        // reader cannot get by looking: that these two columns are one object's
+        // ends, and that the gene is at one of them.
+        text: "the two bands are one contact domain's corners, MYC at the left one",
+        fontSize: 19,
+        maxWidth: 330,
+        anchor: {
+          track: 'hic_gm12878_insitu',
+          locus: 'chr8:128,035,000',
+          fracY: 0.1,
+        },
+      },
+      // Into the block rather than at its corner: a contact between screen
+      // positions x1 and x2 is drawn at their MIDPOINT and at depth |x2-x1|/2,
+      // so the domain's own apex is the midpoint locus about 180 css px down --
+      // which is where the head goes, and the pill sits above it.
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'hic_gm12878_insitu',
+          locus: 'chr8:128,035,000',
+          fracY: 0.14,
+        },
+        anchor: {
+          track: 'hic_gm12878_insitu',
+          locus: 'chr8:128,035,000',
+          fracY: 0.36,
+        },
+      },
+      {
+        type: 'text',
+        text: 'this loop was called from the matrix below it',
+        fontSize: 19,
+        maxWidth: 330,
+        anchor: {
+          track: 'hic_gm12878_loops',
+          locus: 'chr8:128,035,000',
+          fracY: 0.7,
+        },
+      },
+    ],
   },
 
   // Compartments: the OTHER pair of annotation files ENCODE derives from the same
