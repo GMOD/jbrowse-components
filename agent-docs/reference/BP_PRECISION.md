@@ -382,13 +382,23 @@ test that only exercises realistic starts passes against both spellings; the
 sweep in `canvas2dUtils.test.ts` pins `start: 0` for exactly this reason, and it
 is why the old form survived review.
 
-**What this does not transfer to.** `basePaintedAt`
+**What this does not transfer to, and does not need to.** `basePaintedAt`
 (`@jbrowse/core/util/Base1DUtils`) answers the same question and cannot use this
 form: it takes an already-divided `offsetBp` from `pxToBp`, which works in
 view-cumulative coordinates off an arbitrary `bpPerPx`, so there is no exact
-integer product to preserve and the dominant error is upstream of the floor.
-Aligning the two would mean pushing one coordinate family's assumptions into the
-other. Its accuracy is **unmeasured**.
+integer product to preserve. Aligning the two would push one coordinate family's
+assumptions into the other.
+
+It is also **exact as it stands** — measured against the same oracle over 2.1M
+samples (whole-chromosome and multi-region layouts, both orientations, quarter-
+pixel cursors, `bpPerPx` from 0.02 to 5000 including the exactly-representable
+zooms where every integer pixel *is* a base boundary): zero wrong. The reason is
+structural rather than lucky, and it is the same reason stated from the other
+side: **`pxToBp` never forms a normalized fraction.** It goes straight to
+genome-scale bp in one multiply, `(offsetPx + px) * bpPerPx`, so its absolute
+error stays around one ULP of a genome-scale number. The bug above came from
+building a value in `[0, 1)` — whose error is then *amplified* by multiplying
+back up by the span — which is a step this chain does not have. Don't "fix" it.
 
 The painting side was checked and left alone. `makeCellLeftMapper` uses the same
 divide-then-multiply shape, but over 1.15M cursor positions the base `bpAtPx`

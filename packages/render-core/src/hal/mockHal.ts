@@ -13,6 +13,26 @@ interface MockBuffer {
   count: number
 }
 
+export interface MockRect {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+/**
+ * One draw, with the clip that was in force when it was issued. `null` means
+ * unclipped — the full canvas — which is what both HALs owe after a
+ * `clearScissor` / `clearViewport`.
+ */
+export interface MockDraw {
+  passId: string
+  regionKey: number
+  bufferPassId: string | undefined
+  scissor: MockRect | null
+  viewport: MockRect | null
+}
+
 export class MockHal implements GpuHal {
   calls: MockCall[] = []
 
@@ -33,6 +53,26 @@ export class MockHal implements GpuHal {
   // and return early from `drawPass` on an id they don't hold; keeping the set
   // is what lets `drawPass` below say so instead of recording the call.
   private registered: Set<string>
+
+  /**
+   * The clip each draw of the frame went out under — see {@link draws}.
+   *
+   * Scissor and viewport are the one part of the HAL contract a call log cannot
+   * show. They are *state*: set once, they hold over every later draw until
+   * changed, so "which columns did the mismatch pass actually paint into" is a
+   * question about the order of two different methods, and a test asking it off
+   * `calls` has to re-implement the state machine to find out.
+   *
+   * That is not hypothetical. `clearScissor` on WebGPU used to drop the stored
+   * rect without re-issuing a full-canvas one, so every draw after it went on
+   * being clipped to the previous block while WebGL2 drew them unclipped — right
+   * on Canvas2D, right on WebGL2, wrong on WebGPU alone. Nothing in tree clears
+   * mid-frame today, which is exactly why nothing caught it. Recording the
+   * effective clip per draw is what makes that assertable at all.
+   */
+  private scissor: MockRect | null = null
+  private viewport: MockRect | null = null
+  private drawLog: MockDraw[] = []
 
   // The pass list is here for parity with the WebGL2Hal / WebGPUHal
   // constructors, and it validates for the same reason `createRenderingBackend`
@@ -130,6 +170,11 @@ export class MockHal implements GpuHal {
 
   beginFrame(clearR: number, clearG: number, clearB: number, clearA?: number) {
     this.record('beginFrame', clearR, clearG, clearB, clearA)
+    // A fresh frame starts unclipped on both real HALs — WebGL2 disables
+    // SCISSOR_TEST and sets the full viewport, WebGPU opens a render pass whose
+    // initial state is the whole attachment.
+    this.scissor = null
+    this.viewport = null
   }
 
   // Throws on an id the display never registered, where both real HALs return
@@ -150,6 +195,13 @@ export class MockHal implements GpuHal {
       this.assertRegistered(bufferPassId, 'bufferPassId')
     }
     this.record('drawPass', passId, regionKey, bufferPassId)
+    this.drawLog.push({
+      passId,
+      regionKey,
+      bufferPassId,
+      scissor: this.scissor && { ...this.scissor },
+      viewport: this.viewport && { ...this.viewport },
+    })
   }
 
   private assertRegistered(passId: string, role: string) {
@@ -169,18 +221,22 @@ export class MockHal implements GpuHal {
 
   setScissor(x: number, y: number, w: number, h: number) {
     this.record('setScissor', x, y, w, h)
+    this.scissor = { x, y, w, h }
   }
 
   clearScissor() {
     this.record('clearScissor')
+    this.scissor = null
   }
 
   setViewport(x: number, y: number, w: number, h: number) {
     this.record('setViewport', x, y, w, h)
+    this.viewport = { x, y, w, h }
   }
 
   clearViewport() {
     this.record('clearViewport')
+    this.viewport = null
   }
 
   dispose() {
@@ -224,11 +280,25 @@ export class MockHal implements GpuHal {
     return this.calls.filter(c => c.method === method)
   }
 
+  /**
+   * Every draw of the frame with the clip it went out under, in order — the
+   * answer to "which columns did this pass actually paint into", which
+   * `callsOf('drawPass')` cannot give because scissor and viewport are state
+   * rather than arguments. `scissor: null` is unclipped. See the field above for
+   * the bug this exists for.
+   */
+  draws() {
+    return this.drawLog
+  }
+
   reset() {
     this.calls = []
     // endUpload first so an in-flight transaction doesn't survive the reset.
     this.regions.endUpload()
     this.regions.deleteAll()
     this.uniformWrites = []
+    this.drawLog = []
+    this.scissor = null
+    this.viewport = null
   }
 }

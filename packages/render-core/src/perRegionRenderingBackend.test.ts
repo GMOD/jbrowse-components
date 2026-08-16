@@ -5,6 +5,7 @@ import {
 } from './perRegionRenderingBackend.ts'
 
 import type { BlockClipResult } from './blockClipUtils.ts'
+import type { PipelineDescriptor } from './hal/types.ts'
 import type { InstancePass } from './instancePass.ts'
 import type { FrameDimensions } from './perRegionRenderingBackend.ts'
 import type { RenderBlock } from './renderBlock.ts'
@@ -59,6 +60,19 @@ class TestCanvas2DBackend extends Canvas2DPerRegionRenderingBackend<
 
   protected draw() {
     this.drawCalls++
+  }
+}
+
+// Same scaffold, but it actually issues a draw, so `hal.draws()` can report the
+// clip each block went out under.
+class DrawingGpuBackend extends GpuPerRegionRenderingBackend<
+  Data,
+  FrameDimensions
+> {
+  protected regionPasses = []
+
+  protected drawRegion(b: RenderBlock) {
+    this.hal.drawPass('rect', b.displayedRegionIndex)
   }
 }
 
@@ -241,5 +255,66 @@ describe('GpuPerRegionRenderingBackend.uploadRegion', () => {
     b.uploadRegion(0, { value: 3 })
     b.uploadRegion(0, { value: 0 })
     expect(counts(hal)).toEqual([0, 0])
+  })
+})
+
+// The scaffold sets a scissor and viewport per block and clears both after the
+// loop. Those are HAL *state*, so a call log cannot say which columns a given
+// block's draw actually landed in — `hal.draws()` carries the clip in force at
+// each one (see MockHal).
+describe('GpuPerRegionRenderingBackend.renderBlocks block clipping', () => {
+  function drawingBackend() {
+    const hal = new MockHal([{ id: 'rect' } as unknown as PipelineDescriptor])
+    return { hal, b: new DrawingGpuBackend(hal, 256) }
+  }
+
+  test('each block draws clipped to its own columns', () => {
+    const { hal, b } = drawingBackend()
+    const blocks = [
+      block(0, { screenStartPx: 0, screenEndPx: 400 }),
+      block(1, { screenStartPx: 400, screenEndPx: 800 }),
+    ]
+    b.renderBlocks(
+      blocks,
+      new Map([
+        [0, { value: 1 }],
+        [1, { value: 1 }],
+      ]),
+      STATE,
+    )
+
+    // dpr is 1 in jsdom, so CSS px and device px coincide
+    expect(hal.draws().map(d => [d.regionKey, d.scissor])).toEqual([
+      [0, { x: 0, y: 0, w: 400, h: 100 }],
+      [1, { x: 400, y: 0, w: 400, h: 100 }],
+    ])
+  })
+
+  test('a block is clipped to the canvas, not to its own span', () => {
+    // A block hanging off the right edge must not scissor past the backing
+    // store — WebGPU rejects an out-of-bounds rect and blanks the whole frame.
+    const { hal, b } = drawingBackend()
+    b.renderBlocks(
+      [block(0, { screenStartPx: 600, screenEndPx: 1400 })],
+      new Map([[0, { value: 1 }]]),
+      STATE,
+    )
+
+    expect(hal.draws()[0]!.scissor).toEqual({ x: 600, y: 0, w: 200, h: 100 })
+  })
+
+  test('the frame ends with the clip released', () => {
+    // Not observable on a draw, since nothing draws after — assert the calls.
+    // A frame that left a scissor set would clip whatever the next one begins
+    // with on a HAL that does not reset in beginFrame.
+    const { hal, b } = drawingBackend()
+    b.renderBlocks([block(0)], new Map([[0, { value: 1 }]]), STATE)
+
+    const methods = hal.calls.map(c => c.method)
+    expect(methods.slice(-3)).toEqual([
+      'clearScissor',
+      'clearViewport',
+      'endFrame',
+    ])
   })
 })
