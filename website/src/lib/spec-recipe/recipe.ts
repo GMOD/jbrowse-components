@@ -25,6 +25,13 @@ export interface RecipeStep {
   // the figure's own value for this step, shown as the concrete example
   example?: string
   note?: string
+  // Which pane, row and track the step belongs to, general to specific.
+  // Collected as the recipe is built and folded into `example` at the end, so a
+  // step gains a segment wherever a figure has more than one of something and
+  // the reader would otherwise be counting identical steps.
+  where?: string[]
+  // this step is what opens its view (see FieldStep.opensView)
+  opensView?: boolean
 }
 
 export interface Recipe {
@@ -116,12 +123,58 @@ function fieldSteps(
     }
     const step = table[field]?.(value, context)
     if (step) {
-      steps.push({ title: step.path, note: step.note })
+      steps.push({
+        title: step.path,
+        note: step.note,
+        opensView: step.opensView,
+      })
     } else {
       unmapped.push(field)
     }
   }
   return { steps, unmapped }
+}
+
+// Says which pane, row or track a run of steps belongs to. A recipe with three
+// of anything reads as three copies of one step otherwise, and the reader has
+// only the order to go on. Outermost caller wins the leading segment, since
+// each level of the walk labels what it is looping over.
+function labelSteps(steps: RecipeStep[], label: string): RecipeStep[] {
+  return steps.map(step => ({ ...step, where: [label, ...(step.where ?? [])] }))
+}
+
+function withWhere({ where, ...step }: RecipeStep): RecipeStep {
+  if (!where?.length) {
+    return step
+  }
+  const breadcrumb = where.join(' · ')
+  return {
+    ...step,
+    example: step.example ? `${breadcrumb} — ${step.example}` : `${breadcrumb}.`,
+  }
+}
+
+function trackName(entry: SpecTrackEntry, config: string): string {
+  const trackId = specTrackId(entry)
+  const info = lookupTrack(config, trackId)
+  return info ? `“${info.name}”` : `the “${trackId}” track`
+}
+
+// What the Add menu calls each view, for a figure whose spec holds more than
+// one. The fallback splits the type name (GraphGenomeView → "Graph genome
+// view"), which is the label for every view type registered under its own name;
+// the entries are the ones whose menu label is not that.
+const VIEW_NAMES: Record<string, string> = {
+  SvInspectorView: 'SV inspector',
+  MsaView: 'Multiple sequence alignment view',
+}
+
+function viewName(type: string | undefined): string {
+  if (!type) {
+    return 'view'
+  }
+  const split = type.replaceAll(/(?<=[a-z])(?=[A-Z])/g, ' ')
+  return VIEW_NAMES[type] ?? split[0] + split.slice(1).toLowerCase()
 }
 
 // See the FieldContext note in trackStep: the one branch of pickDisplayForView a
@@ -192,7 +245,7 @@ function importFormSteps(
   const unmapped: string[] = []
   const assemblies = (view.views ?? [])
     .map(row => row.assembly)
-    .filter(name => !!name)
+    .filter(name => name !== undefined)
   if (assemblies.length) {
     steps.push({
       title:
@@ -204,6 +257,7 @@ function importFormSteps(
     title: assemblies.length
       ? `Open the view: **Add → ${form.menu}**, and set ${form.rowsControl} to those assemblies in the import form.`
       : `Open the view: **Add → ${form.menu}**, and choose ${form.rowsControl} in the import form.`,
+    opensView: true,
   })
 
   // The bands of an all-vs-all figure carry the same entry, and that is one
@@ -313,13 +367,22 @@ function viewSteps(
     steps.push(...formSteps.steps)
     unmapped.push(...formSteps.unmapped)
   } else {
-    for (const entry of specTracks(view)) {
+    const entries = specTracks(view)
+    for (const entry of entries) {
       const {
         settings,
         unmapped: trackUnmapped,
         ...step
       } = trackStep(entry, config)
-      steps.push(step, ...settings)
+      // Three tracks in one view produce three runs of "Track menu → ..." with
+      // nothing between them, and every one of those menus hangs off a
+      // different track's label. The settings say which.
+      steps.push(
+        step,
+        ...(entries.length > 1
+          ? labelSteps(settings, trackName(entry, config))
+          : settings),
+      )
       unmapped.push(...trackUnmapped)
     }
   }
@@ -344,14 +407,7 @@ function viewSteps(
       ? `${form.rowLabel(index)}${subView.assembly ? ` (${subView.assembly})` : ''}`
       : undefined
     const sub = viewSteps(subView, config, label)
-    steps.push(
-      ...(label
-        ? sub.steps.map(step => ({
-            ...step,
-            example: step.example ? `${label} — ${step.example}` : `${label}.`,
-          }))
-        : sub.steps),
-    )
+    steps.push(...(label ? labelSteps(sub.steps, label) : sub.steps))
     unmapped.push(...sub.unmapped)
   }
 
@@ -421,7 +477,29 @@ export function buildRecipe(
     desktopUrl: toProtocolUrl(desktopWebUrl),
     config,
     specJson,
-    steps: collected.flatMap(c => c.steps),
+    // A figure of two panes describes both, and the reader has to know which
+    // pane each step opens a genome or a track in. **Add → <view>** is what
+    // makes a pane exist, so it leads that pane's steps — unless the pane
+    // already says how it opened, which an import form and a launched-from-a-
+    // track graph view both do.
+    steps: collected
+      .flatMap((c, index) => {
+        if (views.length < 2) {
+          return c.steps
+        }
+        const opened = c.steps.some(step => step.opensView)
+        return [
+          ...(opened
+            ? []
+            : [
+                {
+                  title: `Open pane ${index + 1}: **Add → ${viewName(views[index]?.type)}**.`,
+                },
+              ]),
+          ...labelSteps(c.steps, `Pane ${index + 1}`),
+        ]
+      })
+      .map(withWhere),
     python: firstView ? pythonSnippet(firstView, config) : undefined,
     agentCommand: agentCommandFor(base, config, specJson),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],

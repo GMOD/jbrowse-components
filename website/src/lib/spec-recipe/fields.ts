@@ -71,6 +71,9 @@ export interface FieldStep {
   path: string
   // what the setting does, when the label alone doesn't say it
   note?: string
+  // set when the path is how the view itself gets opened, which is otherwise a
+  // step the recipe adds for it
+  opensView?: boolean
 }
 
 // Some labels name what the track holds ('Fixed read height' vs 'Fixed feature
@@ -1646,6 +1649,7 @@ export const viewFields: Record<string, FieldRecipe> = {
       ? {
           path: `${TRACK_MENU} (on the graph segments track) → Launch view → Graph genome view (this region)`,
           note: 'Launching from the track is what ties the two panels together: the graph is cut from the same file the lane above it draws.',
+          opensView: true,
         }
       : undefined,
   loadedRegion: value =>
