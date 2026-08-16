@@ -51,14 +51,53 @@ suggested.
 
 ### Reproducing it
 
-The fixture is not in the repo — 2.8 MB compressed, and generating it is four
-lines. Write 1600 lines of `chr1 \t start \t end \t blockN \t 1 \t <entries>`,
-where each entry is `spN.chr1:start:size:+:srcSize:SEQ` and entries are joined
-with commas; that is exactly what `MafTabixAdapter` reads out of column 6. Use
-~250 columns, ~4% `-` in the reference, and **2–20% divergence graded across the
-26 species** so the mismatch count is realistic (783k for the numbers above) — a
-uniform divergence gets this badly wrong in both directions. Then `bgzip` and
-`tabix -p bed`.
+`plugins/maf/benches/mafTabixFixture.ts` writes it: 1600 lines of
+`chr1 \t start \t end \t blockN \t 1 \t <entries>`, each entry
+`spN.chr1:start:size:+:srcSize:SEQ` and entries joined with commas, which is
+exactly what `MafTabixAdapter` reads out of column 6. 250 columns, 4% `-` in the
+reference, and **2–20% divergence graded across the 26 species** so the mismatch
+count is realistic (783k for the numbers above) — a uniform divergence gets this
+badly wrong in both directions. Then `bgzip` and `tabix -p bed`. It stays out of
+the repo at 2.5 MB compressed; the generator is deterministic, so regenerating
+it costs a second and gives the same bytes.
+
+## The byte-native adapter path is the restructure, not the bytes
+
+`GMOD/tabix-js#156` proposes `lineBytesCallback` — the decompressed bgzf buffer
+and the line's range within it, instead of a decoded string — and MAF is the
+consumer its description argues from. `plugins/maf/benches/mafTabixBytes.bench.ts`
+measures it end to end, from the bgzf block to a finished `MafWirePacked`,
+against the tabix branch with the PR applied.
+
+The result is that "byte-native" is **two** changes, and the one that pays is not
+the one the PR enables. Handing over a buffer instead of a string means the
+buffer is only valid during the call, which forces the block to be packed inside
+the callback rather than buffered for a second pass — and that restructure, on
+its own, is most of the win:
+
+| shape | bed+string | string | string-1pass | bytes | peak RSS (string / 1pass / bytes) |
+| --- | --- | --- | --- | --- | --- |
+| 1600 blocks x 250 columns | 0.92x | 1.00x | 0.97x | **1.17x** | 256 / 207 / 205 MB |
+| 20000 blocks x 8 columns | 0.94x | 1.00x | **1.18x** | 1.17x | 491 / 263 / 265 MB |
+
+Min of 30–40 interleaved rounds, byte-identical control within 3% of 1.00 on
+every row, all four arms verified to emit identical packed columns.
+
+**The second shape is the real one.** [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md)
+measures ce11's 26-way at a 7bp median block and volvox at 100bp; 250 columns is
+the synthetic wide case. On the real shape the byte arm does not beat the
+single-pass string arm at all, and it never beats it on memory — 228 MB of the
+229 MB saved there is the restructure. What the bytes buy is a decode, so their
+win scales with bytes per line, while the restructure's win scales with rows.
+
+Two riders. `string` here is already a direct tabix read with no
+`BedTabixAdapter` in it, worth 6-8% by itself; quoting the byte arm against
+`bed+string` would credit the PR with that too. And the single-pass arm gives up
+the exact `reserve` — it grows the arena by doubling, which is the cost the
+buffered pass exists to avoid, and it wins anyway on the shape that has 1.2M
+rows to retain.
+
+So the item worth doing is in "What is left" below, and it needs no tabix change.
 
 ## Two things that look like wins and are not
 
@@ -131,6 +170,26 @@ So the lever that was there for months was invisible to the method being used to
 look for it. Before declaring a hot loop finished, decompose it: measure the bare
 loop against the loop-plus-output, sweep the working set, and peel the body one
 operation at a time. The rung that costs is rarely the rung that looks expensive.
+
+**Pack each block as it arrives, instead of buffering every block to size the
+arena exactly.** Measured above, as the `string-1pass` arm: **1.18x** on the
+whole read-parse-pack stage and **491 → 263 MB** of peak RSS on the 20000-block
+shape, which is the one real files look like. On the 250-column shape it is a
+wash (0.97x), so this trades a little on wide blocks for a lot on narrow ones.
+
+It gives up the exact `reserve` — the arena grows by doubling — and that is the
+part worth stating plainly, because the buffered pass exists to avoid exactly
+that and its comment says so. The memcpy the doubling costs is real; it is just
+much smaller than what holding 1.2M `seq` strings and their records until the
+end of the fetch costs, and the sizing pass that `bc9e6a1d24` fused into the
+discovery walk is work that then stops existing at all.
+
+`discoveredOrder` is what has to be checked before writing it: pass 1 collects
+it, and the returned `samples` list depends on it, but the packer already builds
+its own `sampleIds` dictionary in row-add order — which is the same order — so
+this is a question of reading the order off the packer rather than a blocker.
+The subtree filter is already resolved before the fetch, so filtering does not
+need the pass either.
 
 **Mismatch decimation is the biggest remaining win and is a compromise.** A
 region that wide emits 783k `(position, base)` pairs which are computed, packed,

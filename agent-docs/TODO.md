@@ -66,7 +66,7 @@ before anyone noticed.
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
-| [Byte-native MAF adapter path](#a-byte-native-maf-adapter-path-once-tabix-js-publishes-linebytescallback) | MAF | blocked on a tabix-js publish; measure the pack stage, not the decode |
+| [Pack MAF blocks as they arrive](#pack-maf-blocks-as-they-arrive-rather-than-buffering-to-size-the-arena) | MAF | measured 1.18x and 491 -> 263 MB on the real block shape; needs no tabix change |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
 | [Does a quality floor still buy anything on the band](#does-a-base-quality-floor-still-buy-anything-on-the-coverage-band) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
 | [Walk the CIGAR once per MM tag](#walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
@@ -1649,21 +1649,32 @@ HPRC ships 466 TPA files as a first-class alternative to the PAFs and nothing
 reads the format. Of everything on the HPRC list this is the one integration
 that would be genuinely differentiating rather than catching up.
 
-### A byte-native MAF adapter path, once tabix-js publishes `lineBytesCallback`
+### Pack MAF blocks as they arrive, rather than buffering to size the arena
 
-`GMOD/tabix-js` PR #156 adds `lineBytesCallback` — the decompressed buffer and
-the line's `[lineStart, lineEnd)` range instead of a decoded string. Open,
-mergeable, green there; nothing in jbrowse can consume it until it is published.
+`executeMafAlignmentData` buffers every block of a region into `rawBlocks` so
+the second pass can allocate the arena exactly once. Packing inside the
+subscription instead — arena growing by doubling — measures **1.18x** on the
+whole read-parse-pack stage and drops peak RSS from **491 MB to 263 MB** on a
+20000-block x 8-column region, which is the shape real files have
+(MAF_LARGE_BLOCKS.md puts ce11's 26-way at a 7bp median block). On the synthetic
+250-column shape it is a wash at 0.97x, so it trades a little on wide blocks for
+a lot on narrow ones.
 
-**Size it honestly before spending the follow-up**, because the PR's own
-description argues a different number than the one that matters here. The decode
-it removes is part of a **7.3 ms** line walk, not the ~26 ms a pre-columnar
-profile implied. The real win for MAF is downstream of the decode:
-`MafWirePacker.write` already takes a `Uint8Array` as readily as a string, so a
-byte-native path skips the decode *and* the `encodeInto` inside the 31 ms pack
-stage. That is the number to measure when the publish lands.
-[reference/MAF_WORKER_PIPELINE.md](reference/MAF_WORKER_PIPELINE.md) is the
-profile it has to be measured against.
+The bench is `plugins/maf/benches/mafTabixBytes.bench.ts` and the numbers are
+written up in
+[reference/MAF_WORKER_PIPELINE.md](reference/MAF_WORKER_PIPELINE.md) § "The
+byte-native adapter path is the restructure, not the bytes". What has to be
+checked before writing it is `discoveredOrder`: pass 1 collects it and the
+returned `samples` depends on it, but the packer's own `sampleIds` dictionary is
+filled in the same order, so it can be read off the packer.
+
+**This entry used to be "a byte-native MAF adapter path, once tabix-js publishes
+`lineBytesCallback`"** (`GMOD/tabix-js#156`), and the reason it is not is worth
+keeping. Measured against a checkout of that PR, the byte handoff is 1.17x on
+the *wide* shape and nothing at all on the real one — because the single pass
+above is not a separate idea, it is what a buffer that dies at the end of the
+call forces you into, and it is where both the time and all 228 MB of the memory
+actually come from. The PR is not needed to get it.
 
 ### Does a base-quality floor still buy anything on the coverage band
 

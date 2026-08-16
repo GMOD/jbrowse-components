@@ -221,6 +221,12 @@ specific to its own question:
   with a separately-declared control class.
 - `plugins/maf/benches/mafCoverage.bench.ts` — A/Bs the working tree against
   another git ref, over synthetic input whose shape is swept deliberately.
+- `plugins/maf/benches/mafTabixBytes.bench.ts` — A/Bs a proposed upstream API
+  against the path that ships, and carries the arm that decides whether the
+  proposal is worth anything: the candidate changed two things at once, so a
+  third arm makes the *other* change on its own. It came back worth all of it.
+  Also the one bench here that measures peak RSS, since that turned out to be
+  the whole story.
 - `plugins/maf/benches/mafOverlays.bench.ts` — same, for code that runs on
   *every frame of a pan* rather than once. It reports two times per row, a cold
   call and a whole pan sweep, because an implementation that pays up front to
