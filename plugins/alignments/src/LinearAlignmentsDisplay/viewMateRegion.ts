@@ -17,6 +17,26 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // checks plus the mate-unmapped flag, whose fields point at the read's own
 // locus by convention). Re-reading `next_ref`/`next_pos` off the feature here
 // was a second, weaker copy of the same decision.
+/**
+ * Collapse the two loci into one where they meet, which for an ordinary pair is
+ * the normal case rather than an edge one.
+ *
+ * `setDisplayedRegions` does not merge, so a 300bp insert produced two padded
+ * windows that overlap by most of their width — the SAME reads drawn twice, side
+ * by side, with a region boundary down the middle of the pair the reader asked
+ * to see. Whether that happens is decided by the insert size against the padding,
+ * so it hit the commonest case (a proper pair) and not the one this feature is
+ * really for (a distant or inter-chromosomal mate), which is why it survived.
+ *
+ * Only touching regions on ONE refName merge; two chromosomes stay two regions,
+ * which is the split view the caller wants.
+ */
+function mergeTouchingRegions([a, b]: [Region, Region]): Region[] {
+  return a.refName === b.refName && a.start <= b.end && b.start <= a.end
+    ? [{ ...a, start: Math.min(a.start, b.start), end: Math.max(a.end, b.end) }]
+    : [a, b]
+}
+
 export function viewMateRegionInCurrentView({
   view,
   mate,
@@ -49,10 +69,12 @@ export function viewMateRegionInCurrentView({
     bpPerPx: view.bpPerPx,
     offsetPx: view.offsetPx,
   }
-  view.setDisplayedRegions([
-    clampRegion(refName, start - pad, end + pad),
-    clampRegion(nextRef, nextPos - pad, nextPos + (end - start) + pad),
-  ])
+  view.setDisplayedRegions(
+    mergeTouchingRegions([
+      clampRegion(refName, start - pad, end + pad),
+      clampRegion(nextRef, nextPos - pad, nextPos + (end - start) + pad),
+    ]),
+  )
   // fit, not showAllRegions: `pad` above is the padding this wants, and
   // showAllRegions would add a second 10% on top of it that nothing asked for.
   view.fitAllRegions()

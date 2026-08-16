@@ -196,12 +196,19 @@ function sortAndDetailsSubMenu({
     : detailsItem
 }
 
+// The tags worth a one-click filter, and what to call each in the row. A closed
+// list rather than a walk of the read's tags: these two are the ones a reader
+// narrows a pileup by, and offering every tag on the read (NM, AS, ms, de…)
+// would bury them. A third is one entry here.
+const QUICK_TAG_FILTERS = [
+  { tag: 'HP', noun: 'haplotype' },
+  { tag: 'RG', noun: 'read group' },
+]
+
 // Quick per-read filters (read name / HP / RG) plus a clear item, shown only
 // when a filter is active. Each coexists with the others (setTagFilter merges).
 function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
   const readName = feat.get('name')
-  const hp = getReadTag(feat, 'HP')
-  const rg = getReadTag(feat, 'RG')
   const sub: MenuItem[] = []
   if (readName) {
     sub.push({
@@ -212,23 +219,17 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
       },
     })
   }
-  if (hp !== undefined) {
-    sub.push({
-      label: `Filter for this haplotype (HP:${hp})`,
-      icon: FilterAltIcon,
-      onClick: () => {
-        setTagFilter(self, 'HP', hp)
-      },
-    })
-  }
-  if (rg !== undefined) {
-    sub.push({
-      label: `Filter for this read group (RG:${rg})`,
-      icon: FilterAltIcon,
-      onClick: () => {
-        setTagFilter(self, 'RG', rg)
-      },
-    })
+  for (const { tag, noun } of QUICK_TAG_FILTERS) {
+    const value = getReadTag(feat, tag)
+    if (value !== undefined) {
+      sub.push({
+        label: `Filter for this ${noun} (${tag}:${value})`,
+        icon: FilterAltIcon,
+        onClick: () => {
+          setTagFilter(self, tag, value)
+        },
+      })
+    }
   }
   const hasReadOrTagFilter =
     self.filterBy.readName !== undefined ||
