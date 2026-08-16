@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { createFrameCoalescer } from '@jbrowse/core/util/frameCoalescer'
+
 import { DRAG_THRESHOLD_PX } from '../types.ts'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -133,47 +135,57 @@ export function useDotplotInteraction(
   // hand-registered non-passive listener. The per-frame accumulator lives in
   // this closure — many wheel events land between paints and must collapse into
   // one zoom/pan step, and nothing outside the listener reads them.
+  //
+  // The dotplot runs its own gesture rule rather than `createWheelZoomController`
+  // (LGV, breakpoint, synteny): those zoom about a cursor x on a stack of
+  // 1D views and pan one axis, where this zooms about a 2D anchor on a plot with
+  // two independently scaled axes and pans both. What the two do share is the
+  // frame coalescing, which is `createFrameCoalescer` — including the cancel,
+  // without which a view closed mid-fling flushed into a destroyed MST node.
   useEffect(() => {
     if (!refEl) {
       return
     }
     const el = refEl
+    const frame = createFrameCoalescer()
     let dx = 0
     let dy = 0
-    let scheduled = false
+    let anchor: Coord = [0, 0]
     function onWheel(event: WheelEvent) {
       // Every gesture below is handled (zoom or pan), so this never swallows a
       // scroll the view then ignores.
       event.preventDefault()
       dx += event.deltaX
       dy -= event.deltaY
-      if (!scheduled) {
-        scheduled = true
-        // Anchor on the wheel event's own position, so zoom doesn't depend on
-        // a pointermove having landed first.
+      if (!frame.pending) {
+        // Anchor on the wheel event's own position, so zoom doesn't depend on a
+        // pointermove having landed first. Measured once per frame, behind the
+        // pending check: `getBoundingClientRect` forces a synchronous reflow,
+        // and a trackpad burst reaching it per event is what trips
+        // "[Violation] 'wheel' handler took Nms".
         const { left, top } = el.getBoundingClientRect()
-        const anchor: Coord = [event.clientX - left, event.clientY - top]
-        window.requestAnimationFrame(() => {
-          if (Math.abs(dy) > Math.abs(dx) * 2) {
-            model.zoomAt(dy < 0 ? 1.07 : 0.935, anchor)
-          } else {
-            // dy is already sign-flipped, matching vview's bottom-up axis: a
-            // downward wheel moves the viewport toward the bottom of the
-            // plot, the opposite of a downward drag.
-            model.scrollXY(dx, dy)
-          }
-          // No hover clear here: a wheel moves the plot under a stationary
-          // cursor, and `setupClearHoverOnPlotMove` answers that for every way
-          // the plot can move rather than for this one.
-          scheduled = false
-          dx = 0
-          dy = 0
-        })
+        anchor = [event.clientX - left, event.clientY - top]
       }
+      frame.schedule(() => {
+        if (Math.abs(dy) > Math.abs(dx) * 2) {
+          model.zoomAt(dy < 0 ? 1.07 : 0.935, anchor)
+        } else {
+          // dy is already sign-flipped, matching vview's bottom-up axis: a
+          // downward wheel moves the viewport toward the bottom of the plot,
+          // the opposite of a downward drag.
+          model.scrollXY(dx, dy)
+        }
+        // No hover clear here: a wheel moves the plot under a stationary
+        // cursor, and `setupClearHoverOnPlotMove` answers that for every way
+        // the plot can move rather than for this one.
+        dx = 0
+        dy = 0
+      })
     }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => {
       el.removeEventListener('wheel', onWheel)
+      frame.cancel()
     }
   }, [refEl, model])
 

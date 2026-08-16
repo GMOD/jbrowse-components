@@ -27,8 +27,16 @@ function setup(cursorMode: 'move' | 'crosshair') {
     cursorMode,
     lockAspectRatio: false,
   } as unknown as DotplotViewModel
-  const { result } = renderHook(() => useDotplotInteraction(model))
-  return { scrollXY, zoomAt, setHoveredFeature, pickFeatureAt, hit, result }
+  const { result, unmount } = renderHook(() => useDotplotInteraction(model))
+  return {
+    scrollXY,
+    zoomAt,
+    setHoveredFeature,
+    pickFeatureAt,
+    hit,
+    result,
+    unmount,
+  }
 }
 
 // Attach the container ref and run the wheel listener's rAF body inline, which
@@ -179,4 +187,45 @@ test('leaving the plot drops the hover and the pointer with it', () => {
   })
   expect(setHoveredFeature).toHaveBeenLastCalledWith(undefined)
   expect(result.current.pointer).toBeUndefined()
+})
+
+// A wheel accumulates into a frame, and closing the view before that frame runs
+// used to flush into a destroyed MST node — the model call throws there, so the
+// fling that outlived its view took the page down with it. The listener is gone
+// by then; the frame is what has to be cancelled, and `createFrameCoalescer`
+// hands the effect that cancel.
+test('a view closed before the frame runs does not write to it', () => {
+  const { zoomAt, scrollXY, result, unmount } = setup('move')
+  const el = document.createElement('div')
+  act(() => {
+    result.current.containerProps.ref(el)
+  })
+  // A frame queue the test owns, so the cancel is observable: the real
+  // cancelAnimationFrame would take an id this fake never issued.
+  const queued = new Map<number, FrameRequestCallback>()
+  let nextId = 1
+  const raf = jest
+    .spyOn(window, 'requestAnimationFrame')
+    .mockImplementation(cb => {
+      const id = nextId++
+      queued.set(id, cb)
+      return id
+    })
+  const cancel = jest
+    .spyOn(window, 'cancelAnimationFrame')
+    .mockImplementation(id => {
+      queued.delete(id)
+    })
+  act(() => {
+    el.dispatchEvent(new WheelEvent('wheel', { deltaX: 0, deltaY: -120 }))
+  })
+  expect(queued.size).toBe(1)
+
+  unmount()
+  expect(queued.size).toBe(0)
+  raf.mockRestore()
+  cancel.mockRestore()
+
+  expect(zoomAt).not.toHaveBeenCalled()
+  expect(scrollXY).not.toHaveBeenCalled()
 })
