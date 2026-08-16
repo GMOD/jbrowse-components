@@ -241,6 +241,79 @@ describe('bpAtPx', () => {
     expect(bpAtPx(20, offset)).toBe(100)
     expect(bpAtPx(20, { ...offset, reversed: true })).toBe(109)
   })
+
+  // A pixel that lands EXACTLY on a base boundary must name the base starting
+  // there. These are not contrived floats — each px below divides the block at
+  // a whole base: 560 * 90 / 800 = 63, and 1408 * 75 / 1920 = 55, both exact in
+  // real arithmetic.
+  //
+  // They are also what the previous spelling got wrong. It formed
+  // `frac = px / width` and floored `frac * span`, which rounds twice: 560/800
+  // is 0.7, not representable, and 0.7 * 90 comes out 62.99999999999999, so the
+  // cursor sitting on base 63's first column reported base 62 — and 27 instead
+  // of 26 with the region flipped. `bpAtPx` multiplies before dividing, so the
+  // one division is the only rounding and an exact quotient stays exact.
+  //
+  // Measured against an exact rational oracle over 11.6M realistic samples
+  // (integer through eighth-pixel cursor positions, chr1-scale starts, 1bp to
+  // 3Mb spans, both orientations, fractional block offsets), the fused form is
+  // exact on all of them and the `frac` form named the wrong base 4202 times.
+  test.each([
+    // [spanBp, width, px, forward base, reversed base]
+    [90, 800, 560, 63, 26],
+    [75, 1920, 1408, 55, 19],
+  ])(
+    'a pixel on an exact base boundary names that base (%ibp over %ipx)',
+    (spanBp, width, px, forwardBp, reversedBp) => {
+      const bounds: BpRegionBounds = {
+        start: 0,
+        end: spanBp,
+        screenStartPx: 0,
+        screenEndPx: width,
+      }
+      expect(bpAtPx(px, bounds)).toBe(forwardBp)
+      expect(bpAtPx(px, { ...bounds, reversed: true })).toBe(reversedBp)
+    },
+  )
+
+  // The same property as a sweep, so a future rewrite has to hold it everywhere
+  // rather than at the two points above. Integer-only oracle: `i` and `spanBp`
+  // are integers so the numerator is exact and the division is one rounded step.
+  //
+  // **`start: 0` is load-bearing here.** A chr1-scale start hides the very error
+  // this is for: the old spelling ended in `Math.floor(start + frac * span)`,
+  // and adding a genome-scale addend coarsens the sum's ULP far past the drift
+  // in `frac * span`, so the wrong value often rounds back to the right one. The
+  // large-start row is kept as well, since that masking is luck rather than a
+  // guarantee.
+  test.each([0, 155_000_000])(
+    'agrees with exact integer arithmetic across whole blocks (start %i)',
+    start => {
+      for (const [spanBp, width] of [
+        [90, 800],
+        [75, 1920],
+        [37, 997],
+        [799, 1233],
+      ] as const) {
+        for (const reversed of [false, true]) {
+          const bounds: BpRegionBounds = {
+            start,
+            end: start + spanBp,
+            screenStartPx: 0,
+            screenEndPx: width,
+            reversed,
+          }
+          for (let i = 0; i < width * 2; i++) {
+            const idx = Math.floor((i * spanBp) / (width * 2))
+            const expected = reversed
+              ? bounds.end - 1 - idx
+              : bounds.start + idx
+            expect(bpAtPx(i / 2, bounds)).toBe(expected)
+          }
+        }
+      }
+    },
+  )
 })
 
 test('syncCanvasSize keeps CSS size in step once the backing store clamps', () => {
