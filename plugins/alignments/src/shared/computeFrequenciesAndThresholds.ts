@@ -121,7 +121,12 @@ function spanOf(
 // stray event there reads as full frequency rather than dividing by zero.
 //
 // Same flat-count shape as computeMismatchFrequencies above, one lane per bp
-// since there is no base to key on.
+// since there is no base to key on. Neither can be a run-walk over contiguous
+// equal positions the way `computeSNPCoverage` is — these positions are
+// ascending only WITHIN each of the three interbase blocks the caller
+// concatenates, and one position can appear in more than one block. The
+// mismatch pass upstairs *could* and is measurably worse for it; see
+// `benches/coverageFrequencies.bench.ts`.
 export function computePositionFrequencies(
   positions: Uint32Array,
   coverageDepths: Float32Array,
