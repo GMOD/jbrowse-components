@@ -29,6 +29,15 @@
 // has to cover rather than left as a bare 2.
 const MAX_DEPTH = 3
 
+// The allocation a payload node names, whether it is a view or the buffer.
+function bufferOf(node: unknown) {
+  return ArrayBuffer.isView(node)
+    ? node.buffer
+    : node instanceof ArrayBuffer
+      ? node
+      : undefined
+}
+
 /**
  * Every payload field each transferred buffer is reachable by.
  *
@@ -37,11 +46,20 @@ const MAX_DEPTH = 3
  * gets into a hand-built list, and naming both ends is what makes that
  * actionable.
  */
-function bufferPaths(value: unknown) {
+export function bufferPaths(value: unknown) {
   const paths = new Map<ArrayBufferLike, string[]>()
   const seen = new WeakSet<object>()
   const visit = (node: unknown, prefix: string, depth: number) => {
     if (!node || typeof node !== 'object' || depth > MAX_DEPTH) {
+      return
+    }
+    // A result can BE a buffer rather than hold one — `rpcResult(buf, [buf])`.
+    // Without this the root has no fields to walk, so the entry blamed by index
+    // reads as "not in the payload", which is the one wording that sends the
+    // reader looking for a list bug that isn't there.
+    const root = bufferOf(node)
+    if (root) {
+      paths.set(root, [...(paths.get(root) ?? []), prefix || '<result>'])
       return
     }
     // structuredClone accepts a cyclic payload, so the walk over one has to
@@ -52,11 +70,7 @@ function bufferPaths(value: unknown) {
     seen.add(node)
     for (const [key, child] of Object.entries(node)) {
       const path = prefix ? `${prefix}.${key}` : key
-      const buffer = ArrayBuffer.isView(child)
-        ? child.buffer
-        : child instanceof ArrayBuffer
-          ? child
-          : undefined
+      const buffer = bufferOf(child)
       if (buffer) {
         paths.set(buffer, [...(paths.get(buffer) ?? []), path])
       } else {

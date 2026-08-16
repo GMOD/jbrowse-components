@@ -1,6 +1,6 @@
 import { isRpcResult } from '../util/rpc.ts'
 import { markStopTokenStopped } from '../util/stopToken.ts'
-import { explainTransferError } from './explainTransferError.ts'
+import { bufferPaths, explainTransferError } from './explainTransferError.ts'
 import { serializeError } from './serializeError/index.ts'
 
 import type { ErrorObject } from './serializeError/index.ts'
@@ -26,10 +26,65 @@ export interface RpcResult<T = unknown> {
   transferables: Transferable[]
 }
 
+/**
+ * Under test, report a hand-built transfer list that disagrees with the payload
+ * it describes. Nothing else checks one, and neither direction shows up as a
+ * failure of its own:
+ *
+ * - a field added to the result and forgotten here is silently STRUCTURE-CLONED,
+ *   a copy per fetch of the largest arrays a worker produces;
+ * - an entry naming a buffer the payload does not carry detaches something for
+ *   nobody, and the throw lands on a later call as a `DataCloneError` naming an
+ *   index.
+ *
+ * A check rather than a derivation, which is the whole reason it is safe to
+ * apply to every result at once. Deriving the list would mean transferring
+ * whatever a walk finds, and transferring MOVES: `positionOrder` returned a
+ * module-level empty result, a wider walk swept it in, and every
+ * `hg002_haplotypes_*` figure was unrenderable until it was fixed (2026-08-15).
+ * This reports and transfers nothing.
+ *
+ * Test-only because it walks the payload, which also carries plain data — a
+ * `featureIds` array of half a million strings — and `bufferPaths` was written
+ * for the error path for exactly that reason. `rpcResultWithArrayBuffers`
+ * derives its own list and so cannot disagree with itself; it is checked anyway,
+ * since its walk stops one level down and the deeper one here is what would
+ * catch a producer that nests further.
+ */
+function checkTransferList(value: unknown, transferables: Transferable[]) {
+  const listed = new Set(transferables.filter(t => t instanceof ArrayBuffer))
+  const carried = bufferPaths(value)
+  const missing: string[] = []
+  for (const [buffer, paths] of carried) {
+    // A SharedArrayBuffer cannot be transferred at all, only cloned, so its
+    // absence from the list is the correct answer rather than an omission.
+    if (buffer instanceof ArrayBuffer && !listed.has(buffer)) {
+      missing.push(paths.join(' = '))
+    }
+  }
+  const stray = [...listed].filter(b => !carried.has(b)).length
+  if (missing.length > 0 || stray > 0) {
+    const parts = [
+      missing.length > 0
+        ? `not transferred, so structure-cloned: ${missing.join(', ')}`
+        : undefined,
+      stray > 0
+        ? `${stray} transfer-list entr${stray === 1 ? 'y is' : 'ies are'} not in the payload`
+        : undefined,
+    ].filter(p => p !== undefined)
+    throw new Error(
+      `RPC transfer list disagrees with its payload — ${parts.join('; ')}`,
+    )
+  }
+}
+
 export function rpcResult<T>(
   value: T,
   transferables: Transferable[],
 ): RpcResult<T> {
+  if (process.env.NODE_ENV === 'test') {
+    checkTransferList(value, transferables)
+  }
   return { __rpcResult: true, value, transferables }
 }
 

@@ -131,12 +131,13 @@ describe('RpcServer.handler()', () => {
 
     const dead = new Uint32Array(4).buffer
     dead.transfer()
+    const starts = new Uint32Array(4)
+    // The list names exactly what the payload carries — the failure being staged
+    // is the detached buffer at index 1, not a mismatched list, which
+    // `rpcResult` now refuses under test.
     const server = makeServer({
       pack: async () =>
-        rpcResult({ starts: new Uint32Array(4), instanceData: { dead } }, [
-          new Uint32Array(4).buffer,
-          dead,
-        ]),
+        rpcResult({ starts, instanceData: { dead } }, [starts.buffer, dead]),
     })
     sendMessage(server, { method: 'pack', uid: 'p', data: null, libRpc: true })
     await flushPromises()
@@ -217,6 +218,51 @@ describe('RpcServer reply with rpcResult (transferables)', () => {
     expect((sent[0]?.data as any)?.data).toBe(42)
     expect(sent[0]?.transferables).toEqual([])
     restore()
+  })
+})
+
+// Only the hand-built lists need this; `rpcResultWithArrayBuffers` derives its
+// own and so cannot disagree with itself. Both directions are silent otherwise —
+// a forgotten field is structure-cloned and a stray entry detaches for nobody,
+// and neither is a test failure anywhere.
+describe('rpcResult checks a hand-built transfer list under test', () => {
+  test('names a payload field the list forgot', () => {
+    const starts = new Uint32Array(2)
+    const ends = new Uint32Array(2)
+    expect(() => rpcResult({ starts, ends }, [starts.buffer])).toThrow(/ends/)
+  })
+
+  test('reaches a field the derived walk stops short of', () => {
+    const deep = new Uint32Array(2)
+    expect(() => rpcResult({ groups: [{ data: { deep } }] }, [])).toThrow(
+      /groups\.0\.data\.deep/,
+    )
+  })
+
+  test('rejects an entry the payload does not carry', () => {
+    const starts = new Uint32Array(2)
+    expect(() =>
+      rpcResult({ starts }, [starts.buffer, new Uint32Array(2).buffer]),
+    ).toThrow(/not in the payload/)
+  })
+
+  test('accepts two views onto one buffer named once', () => {
+    const backing = new ArrayBuffer(16)
+    const first = new Uint32Array(backing, 0, 2)
+    const second = new Uint32Array(backing, 8, 2)
+    expect(() => rpcResult({ first, second }, [backing])).not.toThrow()
+  })
+
+  // A SharedArrayBuffer can only be cloned, so its absence from the list is the
+  // right answer rather than an omission.
+  test('does not ask for a SharedArrayBuffer', () => {
+    const shared = new Int32Array(new SharedArrayBuffer(8))
+    expect(() => rpcResult({ shared }, [])).not.toThrow()
+  })
+
+  test('accepts a result that IS a buffer', () => {
+    const buf = new ArrayBuffer(8)
+    expect(() => rpcResult(buf, [buf])).not.toThrow()
   })
 })
 
