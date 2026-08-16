@@ -48,6 +48,15 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
     model.showCoordinatesSetting,
     mode,
   )
+  // every export row reads the rendered panel out of the ref, which is empty
+  // until the panel mounts (the sequence is still loading, or errored)
+  const withPanel =
+    (f: (panel: HTMLDivElement) => Promise<void> | void) => async () => {
+      const panel = ref.current
+      if (panel) {
+        await f(panel)
+      }
+    }
 
   return (
     <>
@@ -55,51 +64,39 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
         menuItems={[
           {
             label: 'Copy plaintext',
-            onClick: async () => {
-              const r = ref.current
-              if (r) {
-                await copyText(model, getSequencePlaintext(r), 'sequence')
-              }
-            },
+            onClick: withPanel(panel =>
+              copyText(model, getSequencePlaintext(panel), 'sequence'),
+            ),
           },
           {
             label: 'Copy HTML',
-            onClick: async () => {
-              const r = ref.current
-              if (r) {
-                await copyText(model, r.outerHTML, 'sequence HTML', {
-                  format: 'text/html',
-                })
-              }
-            },
+            onClick: withPanel(panel =>
+              copyText(model, panel.outerHTML, 'sequence HTML', {
+                format: 'text/html',
+              }),
+            ),
           },
           {
             label: 'Download plaintext',
-            onClick: async () => {
-              const r = ref.current
-              if (r) {
-                saveAs(
-                  new Blob([getSequencePlaintext(r)], {
-                    type: 'text/plain;charset=utf-8',
-                  }),
-                  'sequence.txt',
-                )
-              }
-            },
+            onClick: withPanel(panel => {
+              saveAs(
+                new Blob([getSequencePlaintext(panel)], {
+                  type: 'text/plain;charset=utf-8',
+                }),
+                'sequence.txt',
+              )
+            }),
           },
           {
             label: 'Download HTML',
-            onClick: async () => {
-              const r = ref.current
-              if (r) {
-                saveAs(
-                  new Blob([r.outerHTML], {
-                    type: 'text/html;charset=utf-8',
-                  }),
-                  'sequence.html',
-                )
-              }
-            },
+            onClick: withPanel(panel => {
+              saveAs(
+                new Blob([panel.outerHTML], {
+                  type: 'text/html;charset=utf-8',
+                }),
+                'sequence.html',
+              )
+            }),
           },
 
           ...extraItems,
