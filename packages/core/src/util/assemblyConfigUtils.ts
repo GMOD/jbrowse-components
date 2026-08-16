@@ -428,11 +428,11 @@ export function classifyAssemblyFiles(
 // The roles that describe the sequence itself. A file set is authoritative over
 // these — one not present in `locations` resets to blank, so removing an input
 // clears its field.
-export const sequenceRoles = [
+const sequenceRoles: ReadonlySet<FileRole> = new Set([
   'fasta',
   'fastaGz',
   'twoBit',
-] as const satisfies FileRole[]
+])
 
 // The members of a dropped set that are a primary sequence file, in the order
 // classifyAssemblyFiles reads them — so the last is the one it keeps. Two of
@@ -441,7 +441,7 @@ export const sequenceRoles = [
 export function sequenceLocations(locations: FileLocation[]) {
   return locations.filter(loc => {
     const role = classifyFilename(getFileName(loc))
-    return role !== undefined && (sequenceRoles as FileRole[]).includes(role)
+    return role !== undefined && sequenceRoles.has(role)
   })
 }
 

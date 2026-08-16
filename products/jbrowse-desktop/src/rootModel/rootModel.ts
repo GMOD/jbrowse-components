@@ -70,7 +70,7 @@ function addAssemblyConfs(
   confs: AnyConfigurationModel[],
 ) {
   const taken = confs
-    .map(conf => conf.name as string)
+    .map(conf => String(conf.name))
     .filter(name => jbrowse.assemblyNames.includes(name))
   if (taken.length) {
     throw new Error(
