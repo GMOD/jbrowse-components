@@ -74,6 +74,9 @@ the tour was filmed in.
   measured pixel. Shapes belong in
   `@jbrowse/browser-test-utils/src/annotationOverlay.ts`. Prefer an in-app
   `highlight` to an overlay.
+- **A label that points at something is `leader: true` on the text**, never a
+  pill plus its own `arrow`: the tail belongs at the pill's edge and only the
+  page knows how wide the pill is.
 - Captures rasterize in software, so a spec that dies on volume is a claim about
   swiftshader until checked on real hardware. Don't write one into a caption as
   a product limit.

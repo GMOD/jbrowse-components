@@ -33,7 +33,8 @@ error:
   until an `alignX: 'right'` is involved.
 - **`alignX`/`alignY` are ignored on `fromAnchor`.** A tail is always the rect's
   centre plus `dx`/`dy`. That is the only way to move it, so a tail that has to
-  sit at an element's edge carries half that element's width as a `dx`.
+  sit at an element's edge carries half that element's width as a `dx` — and
+  when that element is one of our own text pills, don't: use `leader` below.
 - **A `box` whose anchor sets `fracY` gets a zero-height band**, so `height`
   falls back to `2 * pad` (12px). Supply `height` explicitly. Omitting `fracY`
   instead wraps the whole track band — right for a short track, wrong for a
@@ -41,6 +42,31 @@ error:
 - **`pad` insets a box on every side** (default 6), and `width`/`height` given
   explicitly are used verbatim while `x`/`y` still get the `pad`. Frames that
   have to meet a row exactly, or meet each other at a breakpoint, want `pad: 0`.
+
+## A label that points at something is ONE annotation
+
+`leader: true` on a `text` annotation draws the label's arrow with it. The
+anchor is then what the callout NAMES, and the annotation's own `dx`/`dy` place
+the label off it: `dx`'s sign picks the side, its magnitude is the gap between
+the target and the pill's facing edge, and `dy` centres the pill on that line.
+The tail comes off the measured pill, so nothing about it is written down.
+
+Two annotations cannot do this, and the reason is not fixable by better
+numbers. A tail belongs at the pill's edge; a pill's width is only known once
+its text is measured in the page; so a spec can only guess it, and one guess
+fits one label length. `dog10k-size-fst-scan-genome` named three peaks with one
+pair of offsets and got three different gaps — IGF1's arrow stopped 50px short
+of its pill and IGF2BP2's tail vanished inside one — while `ld/lct_fst_scan`'s
+three-letter label floated on its own. Both came back from review as "the
+arrows are no longer next to the text boxes".
+
+A `leader` whose pill covers its own target draws no arrow and reports a miss,
+so the fix (raise `dx`) surfaces as a thrown error rather than as a figure with
+a label and no arrow in it.
+
+The remaining hand-paired text-and-arrow specs are the ones this landed before:
+convert one when you next touch its figure, since the conversion moves pixels
+and wants the regen anyway.
 
 One trick worth reusing: `parseAnnotationLocus` accepts `..` as well as `-`, so
 a location string printed by the UI (`chr10:122,835,344..122,837,142`) works
@@ -114,7 +140,8 @@ Two cases, and converting them to satisfy a count makes the figure worse:
   off the pill it leaves the first time a layout moves, which is worse than
   either end being raw. Both or neither — and "both" means anchoring the pill to
   the panel it sits over, the way `inverted_duplication`'s three callouts hang
-  off their pileup track's top edge.
+  off their pileup track's top edge. Where the whole callout can anchor to what
+  it names, `leader` makes the question moot.
 
 ## Verifying
 
