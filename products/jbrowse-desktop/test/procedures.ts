@@ -131,15 +131,24 @@ export const PROCEDURES: Record<string, Procedure> = {
       {
         title: 'open-genome dialog',
         annotations: [
-          // the dialog sits mid-window, so its callouts go left, onto the
-          // dimmed start screen behind it, rather than over the dialog's own
-          // controls
+          // ABOVE the drop zone, into the empty half of the dialog's title row.
+          // This label used to go left, onto the dimmed start screen: that
+          // worked while the dialog was `maxWidth="sm"` and had start screen
+          // either side of it, and clipped at the frame edge the moment it
+          // became `lg` and the drop zone reached almost the full width. Above
+          // it there is title-row whitespace at any dialog width.
           ...step({
             n: 2,
             anchor: { selector: '[data-testid="file-drop-zone"]' },
             label: 'Drop the FASTA and its .fai here, or click to browse',
-            labelSide: 'left',
-            maxWidth: 260,
+            labelSide: 'above',
+            labelDy: -6,
+            // an 'above' label starts at its control's left edge, and the drop
+            // zone's left edge is the dialog's, so it lands on the title.
+            // Pushed clear of "Open genome(s)" into the empty middle of the
+            // title row — which is space `lg` is what created.
+            labelDx: 190,
+            maxWidth: 320,
           }),
           // BELOW its control, not beside it (reviewer: "the red boxes are
           // slightly overlapping which looks messy"). "Open from a URL" sits

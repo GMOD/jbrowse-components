@@ -237,21 +237,30 @@ says there are some. Keep new waits off `findElements` for the same reason.
 
 ## Opening the volvox genome
 
-The screenshot flow opens `volvox.2bit`, not `volvox.fa`, and that is not
-arbitrary: **pasting a remote `.fa` together with its `.fa.fai` does not produce
-a remote indexed FASTA.** The submitted form comes out as `FastaAdapter`, so the
-app downloads the whole FASTA and builds its own index through the `indexFasta`
-IPC handler, and the resulting assembly names a `LocalPathLocation` under the
-profile's `fai/` dir rather than the `.fai` that was pasted. That index step
-also hangs outright often enough (roughly one run in two, unattended, on a busy
-machine) to fail a run, and it fails silently: the assembly sits at
-`initialized: false` with an empty `error` and the import form reads "Loading"
-forever. `classifyAssemblyFiles` classifies the pair correctly in isolation, so
-whatever drops the pasted `.fai` is between there and submit.
+**A plain `.fa` with no `.fai` is the one thing not to send.** It comes out as
+`FastaAdapter`, so the app downloads the whole FASTA and builds its own index
+through the `indexFasta` IPC handler, and the resulting assembly names a
+`LocalPathLocation` under the profile's `fai/` dir. That step hangs outright
+often enough (roughly one run in two, unattended, on a busy machine) to fail a
+run, and it fails silently: the assembly sits at `initialized: false` with an
+empty `error` and the import form reads "Loading" forever. `openVolvoxGenome`
+therefore gates on the assembly manager rather than on the import form's Open
+button, and names the assembly that never initialized.
 
-`openVolvoxGenome` therefore gates on the assembly manager rather than on the
-import form's Open button, and names the assembly that never initialized. A
-2bit needs no index at all, which is why it is what the figures use.
+Sending the `.fai` with it avoids the handler entirely — a `.fai` in the set is
+exactly what stops `classifyAssemblyFiles` falling back to the self-indexing
+`FastaAdapter` — which is what the e2e test does. The figures send `volvox.2bit`,
+which needs no index at all, because they want the shortest path to a painted
+view rather than coverage of the pair.
+
+**Resolved: why the pasted `.fai` used to get dropped.** This page long recorded
+that `classifyAssemblyFiles` classified the pair correctly in isolation and that
+something between there and submit lost it. It was neither: `sendKeys` types one
+character at a time, and `AddGenomePane` swapped its URL box for the recognition
+card the moment the text in it classified as a sequence. The box unmounted on the
+`volvox.fa` line and the `.fai` line was never typed at all. The box stays
+mounted now, and `AddGenomePane.test.tsx` types a `.fa.gz` url one character at a
+time to hold it.
 
 ## Unresolved
 

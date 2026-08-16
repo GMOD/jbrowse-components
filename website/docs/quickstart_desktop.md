@@ -78,7 +78,10 @@ FASTA, or 2bit, along with any `.fai`/`.gzi` index files) onto the drop area, or
 click it to browse. To load from the web instead, click **Open from a URL** and
 paste your file URLs, one per line. JBrowse classifies each file, and once it
 recognizes a sequence it shows a confirmation card with a **Genome name** field
-(e.g. `hg38`).
+(e.g. `hg38`). The drop area and the URL box stay where they are, so a `.fai`
+you forgot can go in after the sequence is already recognized. Anything JBrowse
+can't place, or can't use with the format it detected, it names rather than
+loading in silence.
 
 If a filename doesn't match the conventions JBrowse detects, it offers **Enter
 details manually**, opening a form with a **Format** dropdown:
@@ -86,8 +89,9 @@ details manually**, opening a form with a **Format** dropdown:
 - `FASTA with index (.fa + .fai)`
 - `Compressed FASTA (.fa.gz + .fai + .gzi)` (bgzip-compressed)
 - `FASTA (automatically indexed)` - a plain FASTA with no index. JBrowse builds
-  one on open (it downloads the whole file first if it's a URL, so this can take
-  a minute)
+  one on open, reading the whole file (and downloading all of it first if it's a
+  URL), so this can take a while on a large genome. **Cancel** stops it — supply
+  a `.fai` and choose "FASTA with index" to skip the step entirely
 - `2bit file (.2bit)`
 
 Click **More options** to set an assembly display name, refName aliases (e.g. to
