@@ -27,13 +27,13 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   flatbushes: ReadonlyMap<number, Flatbush>
   renderState: ManhattanRenderState
   scatterPointSize: number
-  featureUnderMouse: ManhattanHit | undefined
+  hoveredFeature: ManhattanHit | undefined
   ldColoringActive: boolean
   indexSnpMissing: boolean
   indexSnpOffscreen: boolean
   showLdLegend: boolean
   significanceLineY: number | undefined
-  setFeatureUnderMouse: (hit: ManhattanHit | undefined) => void
+  setHoveredFeature: (hit: ManhattanHit | undefined) => void
   selectFeature: (hit: ManhattanHit) => void
   contextMenuItems: (hit: ManhattanHit) => MenuItem[]
   setShowLdLegend: (val: boolean) => void

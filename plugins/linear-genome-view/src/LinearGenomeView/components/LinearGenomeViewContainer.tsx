@@ -123,8 +123,14 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         onMouseMove={event => {
           const leftPx = event.clientX - rectLeftRef.current
           const hoverPosition = model.pxToBp(leftPx)
+          // `hoveredFeature` is BaseDisplay's hook, so every display type
+          // answers it — this used to read `featureUnderMouse`, a name only the
+          // wiggle, alignments and Manhattan families used, off `displays[0]`
+          // alone. At most one display can be under the pointer, so the first
+          // non-empty answer is the answer.
           const hoverFeature = tracks
-            .map(t => t.displays[0]?.featureUnderMouse)
+            .flatMap(t => t.displays)
+            .map(d => d.hoveredFeature)
             .find(Boolean)
           session.setHovered({ hoverPosition, hoverFeature })
         }}

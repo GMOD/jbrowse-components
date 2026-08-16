@@ -7,7 +7,7 @@ import type { ManhattanHit } from '../findManhattanHit.ts'
 import type { MouseState } from '@jbrowse/core/ui'
 
 export interface TooltipModel {
-  featureUnderMouse: ManhattanHit | undefined
+  hoveredFeature: ManhattanHit | undefined
 }
 
 // SNPs/insertions span one bp (end === start + 1) and show a single 1-based
@@ -25,17 +25,17 @@ const TooltipComponent = observer(function TooltipComponent({
   model: TooltipModel
   mouseState: MouseState | undefined
 }) {
-  const { featureUnderMouse } = model
-  return featureUnderMouse && mouseState ? (
+  const { hoveredFeature } = model
+  return hoveredFeature && mouseState ? (
     <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
       <div>
-        {featureUnderMouse.refName}:{formatCoord(featureUnderMouse)}
+        {hoveredFeature.refName}:{formatCoord(hoveredFeature)}
         <br />
-        score: {toP(featureUnderMouse.score, 4)}
-        {featureUnderMouse.r2 !== undefined ? (
+        score: {toP(hoveredFeature.score, 4)}
+        {hoveredFeature.r2 !== undefined ? (
           <>
             <br />
-            r²: {toP(featureUnderMouse.r2, 3)}
+            r²: {toP(hoveredFeature.r2, 3)}
           </>
         ) : null}
       </div>

@@ -1344,6 +1344,15 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * Fills `BaseDisplay`'s cross-display hover hook with the genotype cell
+         * under the pointer, so the view's `session.hovered` channel sees this
+         * display like every other one.
+         */
+        get hoveredFeature() {
+          return self.hoveredGenotype
+        },
+        /**
+         * #getter
          */
         get hoveredTooltipSource() {
           const { hoveredGenotype, sourceMap } = self

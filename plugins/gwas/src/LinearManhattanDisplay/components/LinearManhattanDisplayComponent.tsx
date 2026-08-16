@@ -73,7 +73,7 @@ const LinearManhattanDisplayComponent = observer(
       if (hit) {
         event.preventDefault()
         // clear the hover tooltip so it doesn't stay stuck behind the menu
-        model.setFeatureUnderMouse(undefined)
+        model.setHoveredFeature(undefined)
         setContextMenu({
           anchor: { clientX: event.clientX, clientY: event.clientY },
           hit,
@@ -132,7 +132,7 @@ const ManhattanBody = observer(function ManhattanBody({
   const mouseState = useMouseState(mouseTracker)
   const {
     ticks,
-    featureUnderMouse,
+    hoveredFeature,
     showCrossHatches,
     ldColoringActive,
     significanceLineY,
@@ -164,10 +164,10 @@ const ManhattanBody = observer(function ManhattanBody({
       {significanceLineY === undefined ? null : (
         <SignificanceLine y={significanceLineY} width={width} height={height} />
       )}
-      {featureUnderMouse ? (
+      {hoveredFeature ? (
         <HoverHighlight
-          screenX={featureUnderMouse.screenX}
-          screenY={featureUnderMouse.screenY}
+          screenX={hoveredFeature.screenX}
+          screenY={hoveredFeature.screenY}
           width={width}
           height={height}
           pointDiameterPx={model.scatterPointSize}

@@ -156,7 +156,7 @@ export function configSchemaFactory() {
       // would need separate switches.
       //
       // Promotable, and a config slot at all only as of this change — it was a
-      // volatile, so it sat with `featureUnderMouse` and `rpcDataMap` and reset
+      // volatile, so it sat with `hoveredFeature` and `rpcDataMap` and reset
       // on every retick. Read through the resolved `showLdLegend` getter
       // (resolveConf), never raw.
       showLdLegend: {

@@ -147,7 +147,7 @@ const WiggleBody = observer(function WiggleBody({
       {/* no mouseY, so no horizontal guide: y here is the score axis, which
           CrossHatches above already rules, and a second line at the cursor would
           read as another threshold */}
-      {model.featureUnderMouse && mouseState ? (
+      {model.hoveredFeature && mouseState ? (
         <Crosshairs mouseX={mouseState.x} width={width} height={height} />
       ) : null}
       <WiggleTooltip model={model} mouseState={mouseState} />

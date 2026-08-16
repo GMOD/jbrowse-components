@@ -22,7 +22,7 @@ import {
 } from './WiggleScoreConfigMixin.ts'
 import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
-import type { WiggleFeatureUnderMouse } from '../util.ts'
+import type { WiggleHoveredFeature } from '../util.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
@@ -88,10 +88,22 @@ export function WiggleCommonMixin() {
       rpcDataMap: regionDataMap<WiggleDataResult>(),
       /**
        * #volatile
+       * The stored hit. Named apart from the `hoveredFeature` getter below it
+       * fills, because `BaseDisplay` declares that hook as a computed and MST
+       * refuses to instantiate a volatile over one — a display filling it stores
+       * under its own name and exposes a getter, which is what canvas,
+       * alignments and the variant displays already did.
        */
-      featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined,
+      hoveredWiggleFeature: undefined as WiggleHoveredFeature | undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Fills `BaseDisplay`'s cross-display hover hook.
+       */
+      get hoveredFeature() {
+        return self.hoveredWiggleFeature
+      },
       /**
        * #getter
        */
@@ -243,13 +255,13 @@ export function WiggleCommonMixin() {
       /**
        * #action
        */
-      setFeatureUnderMouse(feat?: WiggleFeatureUnderMouse) {
-        self.featureUnderMouse = feat
+      setHoveredFeature(feat?: WiggleHoveredFeature) {
+        self.hoveredWiggleFeature = feat
       },
       /**
        * #action
        */
-      selectFeature(feat: WiggleFeatureUnderMouse) {
+      selectFeature(feat: WiggleHoveredFeature) {
         openFeatureWidget(self, wiggleFeatureWidgetData(feat))
       },
       /**
@@ -324,7 +336,7 @@ export function WiggleCommonMixin() {
               regionTooLarge: boolean
             },
             () => {
-              self.setFeatureUnderMouse(undefined)
+              self.setHoveredFeature(undefined)
             },
           ),
         )

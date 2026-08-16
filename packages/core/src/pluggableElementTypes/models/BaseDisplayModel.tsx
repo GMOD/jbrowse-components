@@ -140,6 +140,31 @@ function stateModelFactory() {
 
       /**
        * #getter
+       * Overridable hook (default `undefined`): what the pointer is currently
+       * over, for readers **outside** the display. `LinearGenomeViewContainer`
+       * publishes it to `session.hovered`, the view-wide "what is the user
+       * pointing at" channel a plugin can subscribe to.
+       *
+       * Declared here because a cross-display consumer can only read a name the
+       * base declares — the same reason `SyntenyFetchStateMixin.fetchInert` is a
+       * hook rather than a getter each display invents. The container used to
+       * read `featureUnderMouse`, which only the wiggle, alignments and
+       * Manhattan families spelled that way — canvas said `hoveredFeature`,
+       * variants `hoveredGenotype` — so the channel carried a hover from a third
+       * of the display types and nothing said which. It also asked only
+       * `displays[0]` of each track.
+       *
+       * `unknown` because the payload genuinely differs — a read, a wiggle bin,
+       * a SNP, a genotype cell — and `session.hovered` is typed to match ("can
+       * be anything; code that wants to deal with this should examine it").
+       * Narrow it in the override.
+       */
+      get hoveredFeature(): unknown {
+        return undefined
+      },
+
+      /**
+       * #getter
        * Returns the effective RPC driver name with hierarchical fallback:
        * 1. This display's explicit rpcDriverName
        * 2. Parent display's effectiveRpcDriverName (for nested displays)

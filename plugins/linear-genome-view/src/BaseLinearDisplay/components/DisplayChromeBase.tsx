@@ -174,7 +174,7 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
   // FIRST render, drawing a crosshair or tooltip where the cursor is not. The
   // displays whose pointer layer has no other gate — multi-row features, maf,
   // both multi-sample variant displays — draw it immediately. `onPointerPosition`
-  // consumers (`featureUnderMouse`, `hoveredFeature`) are pinned to the same
+  // consumers (`hoveredFeature`, `hoveredFeature`) are pinned to the same
   // stale hit, and get their `undefined` from the same call.
   //
   // Declared above the `renderError` return because it is a hook; the handler is

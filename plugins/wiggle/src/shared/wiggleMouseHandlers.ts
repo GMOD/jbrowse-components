@@ -1,7 +1,7 @@
 import type { MouseState } from '@jbrowse/core/ui'
 
 interface MouseTrackingModel<T> {
-  setFeatureUnderMouse: (feat?: T) => void
+  setHoveredFeature: (feat?: T) => void
   selectFeature: (feat: T) => void
 }
 
@@ -20,9 +20,7 @@ export function wiggleMouseHandlers<T>(
 ) {
   return {
     onPointerPosition: (state?: MouseState) => {
-      model.setFeatureUnderMouse(
-        state ? computeHit(state.x, state.y) : undefined,
-      )
+      model.setHoveredFeature(state ? computeHit(state.x, state.y) : undefined)
     },
     // Resolved from the click itself rather than from the hover a previous frame
     // recorded, which can be stale — the viewport moves under a stationary

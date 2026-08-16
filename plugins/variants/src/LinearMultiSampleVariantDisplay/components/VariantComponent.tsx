@@ -41,7 +41,7 @@ interface VariantHit {
   cell: HoveredCell
 }
 
-function getFeatureUnderMouse(
+function getHoveredFeature(
   model: LinearMultiSampleVariantDisplayModel,
   rect: DOMRect,
   eventClientX: number,
@@ -237,7 +237,7 @@ const VariantBody = observer(function VariantBody({
   const { canvasHandlers, contextMenuNode } =
     useVariantCanvasInteraction<VariantHit>({
       model,
-      getHit: (rect, x, y) => getFeatureUnderMouse(model, rect, x, y),
+      getHit: (rect, x, y) => getHoveredFeature(model, rect, x, y),
       getKey: hit => variantTooltipKey(hit.fields),
       getTooltip: hit => hit.fields,
       enrich: hit => {

@@ -370,8 +370,12 @@ prefersOffset: true,
  * The feature under the mouse, or undefined when not hovering a block. Pure
  * hover identity — the cursor position that places the tooltip is component
  * state, so moving inside one block doesn't invalidate this.
+ *
+ * Named apart from the `hoveredFeature` getter it fills, because
+ * `BaseDisplay` declares that hook as a computed and MST refuses to
+ * instantiate a volatile over one.
  */
-hoveredFeature: undefined as MultiRowHit | undefined,
+hoveredMultiRowFeature: undefined as MultiRowHit | undefined,
 /**
  * #volatile
  * Right-click context menu anchor + the genomic position clicked (and the

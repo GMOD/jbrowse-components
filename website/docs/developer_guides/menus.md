@@ -193,6 +193,7 @@ installs the plugin.
 | `radioItem` | one radio setting row; the singular of `radioItems` |
 | `radioItems` | a radio group, one row per option |
 | `showLegendCheckboxItem` | the shared "Show legend" checkbox |
+| `toggleItem` | a checkbox row whose setter takes the new value |
 
 <!-- MENU_ITEM_BUILDERS END -->
 

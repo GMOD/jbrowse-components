@@ -159,8 +159,12 @@ export default function stateModelFactory(
        * The feature under the mouse, or undefined when not hovering a block. Pure
        * hover identity — the cursor position that places the tooltip is component
        * state, so moving inside one block doesn't invalidate this.
+       *
+       * Named apart from the `hoveredFeature` getter it fills, because
+       * `BaseDisplay` declares that hook as a computed and MST refuses to
+       * instantiate a volatile over one.
        */
-      hoveredFeature: undefined as MultiRowHit | undefined,
+      hoveredMultiRowFeature: undefined as MultiRowHit | undefined,
       /**
        * #volatile
        * Right-click context menu anchor + the genomic position clicked (and the
@@ -178,6 +182,14 @@ export default function stateModelFactory(
       // #endregion
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Fills `BaseDisplay`'s cross-display hover hook, which the view reads to
+       * publish `session.hovered`.
+       */
+      get hoveredFeature() {
+        return self.hoveredMultiRowFeature
+      },
       /**
        * #getter
        * config typed off the concrete schema (ConfigurationReference erases it
@@ -952,9 +964,9 @@ export default function stateModelFactory(
        * observers watching this.
        */
       setHoveredFeature(arg?: MultiRowHit) {
-        const cur = self.hoveredFeature
+        const cur = self.hoveredMultiRowFeature
         if (arg?.id !== cur?.id || arg?.regionIndex !== cur?.regionIndex) {
-          self.hoveredFeature = arg
+          self.hoveredMultiRowFeature = arg
         }
       },
       /**

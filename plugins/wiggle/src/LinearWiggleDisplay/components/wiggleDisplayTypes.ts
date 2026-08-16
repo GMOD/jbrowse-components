@@ -1,5 +1,5 @@
 import type { ScoreRamp } from '../../shared/ScoreLegend.tsx'
-import type { WiggleFeatureUnderMouse } from '../../util.ts'
+import type { WiggleHoveredFeature } from '../../util.ts'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
 // What WiggleComponent reads off the display. NOT `WiggleGpuProps` (the
@@ -20,7 +20,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   effectiveSummaryScoreMode: string
   isDensityMode: boolean
   scoreRamp: ScoreRamp | undefined
-  featureUnderMouse?: WiggleFeatureUnderMouse
-  setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse) => void
-  selectFeature: (feat: WiggleFeatureUnderMouse) => void
+  hoveredFeature?: WiggleHoveredFeature
+  setHoveredFeature: (feat?: WiggleHoveredFeature) => void
+  selectFeature: (feat: WiggleHoveredFeature) => void
 }

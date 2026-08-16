@@ -37,7 +37,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;WiggleDataResult&gt;()</code> |  | WiggleCommonMixin |
-| <span id="volatile-featureundermouse">**featureUnderMouse**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>featureUnderMouse: undefined as WiggleFeatureUnderMouse &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>featureUnderMouse: undefined as WiggleFeatureUnderMouse &#124; undefined</code></pre></dialog></span> |  | WiggleCommonMixin |
+| <span id="volatile-hoveredwigglefeature">**hoveredWiggleFeature**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hoveredWiggleFeature: undefined as WiggleHoveredFeature &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hoveredWiggleFeature: undefined as WiggleHoveredFeature &#124; undefined</code></pre></dialog></span> | The stored hit. Named apart from the `hoveredFeature` getter below it fills, because `BaseDisplay` declares that hook as a computed and MST refuses to instantiate a volatile over one — a display filling it stores under its own name and exposes a getter, which is what canvas, alignments and the variant displays already did. | WiggleCommonMixin |
 | <span id="volatile-loadedbpperpx">**loadedBpPerPx**</span><br><code>loadedBpPerPx: undefined as number &#124; undefined</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#volatile-loadedbpperpx) |
 
 ## Getters
@@ -45,6 +45,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>WiggleHoveredFeature &#124; undefined</code> | Fills `BaseDisplay`'s cross-display hover hook. | WiggleCommonMixin |
 | <span id="getter-poscolor">**posColor**</span><br><code>string</code> |  | WiggleCommonMixin |
 | <span id="getter-negcolor">**negColor**</span><br><code>string</code> |  | WiggleCommonMixin |
 | <span id="getter-bicolorpivot">**bicolorPivot**</span><br><code>number</code> |  | WiggleCommonMixin |
@@ -85,8 +86,8 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> |  | WiggleCommonMixin |
-| <span id="action-setfeatureundermouse">**setFeatureUnderMouse**</span><br><code>(feat?: WiggleFeatureUnderMouse &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
-| <span id="action-selectfeature">**selectFeature**</span><br><code>(feat: WiggleFeatureUnderMouse) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-sethoveredfeature">**setHoveredFeature**</span><br><code>(feat?: WiggleHoveredFeature &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-selectfeature">**selectFeature**</span><br><code>(feat: WiggleHoveredFeature) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setbicolorpivot">**setBicolorPivot**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setposcolor">**setPosColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> | Lives here beside the `posColor`/`negColor` getters and `setBicolorPivot` so both the single- and multi-wiggle color editors write the score-sign palette the same way. | WiggleCommonMixin |

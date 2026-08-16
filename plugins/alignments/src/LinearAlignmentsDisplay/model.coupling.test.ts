@@ -753,7 +753,7 @@ describe('the feature-details lookup', () => {
   // second derivation from SAM_FLAG_REVERSE. The two agree for BAM/CRAM, but a
   // PAF/synteny block (LGVSyntenyDisplay pushes those through this same model)
   // carries a real `strand` and no flags at all — so the flag read named every
-  // reverse-strand block `(+)` in the hover tooltip and in `featureUnderMouse`.
+  // reverse-strand block `(+)` in the hover tooltip and in `hoveredFeature`.
   test.each([
     ['a BAM read (strand and SAM_FLAG_REVERSE agree)', 16, -1],
     ['a synteny block (real strand, no flags)', 0, -1],

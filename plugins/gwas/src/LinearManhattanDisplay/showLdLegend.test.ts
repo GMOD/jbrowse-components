@@ -6,7 +6,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // The LD color key labels the r² ramp the points are painted against. It was a
 // VOLATILE until it became a promotable config slot — sitting with
-// `featureUnderMouse` and `rpcDataMap`, so it reset on every retick and turning
+// `hoveredFeature` and `rpcDataMap`, so it reset on every retick and turning
 // the key off lasted only until the track was hidden and reshown. These pin the
 // two halves of that change: it persists, and it cascades.
 //

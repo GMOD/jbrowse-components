@@ -54,7 +54,7 @@ export type WiggleTooltipRow = {
 // (`[bp, bp + 1)`) in overlay mode, since sources with differing bin widths share
 // no single feature interval. `rows` holds one entry for single/row mode and
 // one-per-source in overlay mode.
-export interface WiggleFeatureUnderMouse {
+export interface WiggleHoveredFeature {
   refName: string
   start: number
   end: number

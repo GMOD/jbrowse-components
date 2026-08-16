@@ -89,7 +89,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
     } else {
       event.preventDefault()
       // the tooltip and crosshair would otherwise sit behind the menu
-      model.setFeatureUnderMouse(undefined)
+      model.setHoveredFeature(undefined)
     }
   }
 
@@ -211,7 +211,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
       {/* the full crosshair, not just a genomic guide: cursor y picks the row
           being read in multi-row mode and a score level in overlay mode, and
           both are hard to eyeball across a tall stack of plots */}
-      {model.featureUnderMouse && mouseState ? (
+      {model.hoveredFeature && mouseState ? (
         <DisplayCrosshairs
           model={model}
           mouseX={mouseState.x}

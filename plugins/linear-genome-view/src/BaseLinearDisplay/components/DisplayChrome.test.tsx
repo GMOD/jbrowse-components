@@ -652,7 +652,7 @@ describe('the pointer measurement drops when the container is replaced', () => {
     act(() => {
       model.setRenderError(new Error('boom'))
     })
-    // `onPointerPosition` consumers (featureUnderMouse, hoveredFeature) would
+    // `onPointerPosition` consumers (hoveredFeature, hoveredFeature) would
     // otherwise stay pinned to the hit under the banner
     expect(seen.at(-1)).toBeUndefined()
 

@@ -2713,7 +2713,7 @@ export default function stateModelFactory(
             // SAM_FLAG_REVERSE. Identical for BAM/CRAM (whose `strand` IS that
             // flag), but a PAF/synteny block carries a real strand and no flags
             // at all — so the flag read reported every reverse-strand block as
-            // `(+)` in the hover tooltip and in `featureUnderMouse`. Same
+            // `(+)` in the hover tooltip and in `hoveredFeature`. Same
             // reasoning as `strandKey` in shared/groupFeatures.ts.
             strand: rpcData.readStrands[idx] ?? 1,
             refName: region.refName,
@@ -3088,7 +3088,7 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get featureUnderMouse() {
+        get hoveredFeature() {
           const featId = self.featureIdUnderMouse
           if (!featId) {
             return undefined

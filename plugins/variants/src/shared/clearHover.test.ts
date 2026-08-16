@@ -23,6 +23,16 @@ function hovering() {
   return { display, view }
 }
 
+// The cross-display hook `LinearGenomeViewContainer` publishes to
+// `session.hovered`. It is what makes that read total: the container asks every
+// display the same question, and this display's answer is its genotype cell.
+test('the genotype hover fills BaseDisplay hoveredFeature', () => {
+  const { display } = hovering()
+  expect(display.hoveredFeature).toEqual(HOVER)
+  display.setHoveredGenotype(undefined)
+  expect(display.hoveredFeature).toBeUndefined()
+})
+
 test('a zoom clears the hover', () => {
   const { display, view } = hovering()
   view.zoomTo(view.bpPerPx * 2)

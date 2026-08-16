@@ -8,7 +8,7 @@ import {
 } from '../../shared/wiggleHitTest.ts'
 
 import type { MouseRegion } from '../../shared/wiggleHitTest.ts'
-import type { WiggleFeatureUnderMouse, WiggleTooltipRow } from '../../util.ts'
+import type { WiggleHoveredFeature, WiggleTooltipRow } from '../../util.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface VisibleSource {
@@ -31,7 +31,7 @@ export function findOverlayHit(
   bp: number,
   refName: string,
   summaryScoreMode: string,
-): WiggleFeatureUnderMouse | undefined {
+): WiggleHoveredFeature | undefined {
   const dataByName = new Map(data.sources.map(s => [s.name, s]))
   const rows: WiggleTooltipRow[] = []
   for (const src of visibleSources) {
@@ -60,7 +60,7 @@ export function findRowHit(
   rowHeight: number,
   refName: string,
   summaryScoreMode: string,
-): WiggleFeatureUnderMouse | undefined {
+): WiggleHoveredFeature | undefined {
   if (rowHeight <= 0) {
     return undefined
   }
@@ -102,7 +102,7 @@ export function findMultiWiggleHit(
   regions: MouseRegion[],
   offsetX: number,
   offsetY: number,
-): WiggleFeatureUnderMouse | undefined {
+): WiggleHoveredFeature | undefined {
   const {
     effectiveRowHeight,
     sources,

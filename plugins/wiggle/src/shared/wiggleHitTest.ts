@@ -2,7 +2,7 @@
 // bp, and the tooltip/feature-widget payloads built from the hit. Shared by
 // single-wiggle and multi-wiggle so hover, the cursor guides and
 // click-to-select can't disagree about what is under the pointer.
-import type { WiggleFeatureUnderMouse, WiggleTooltipRow } from '../util.ts'
+import type { WiggleHoveredFeature, WiggleTooltipRow } from '../util.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { WiggleSourceData } from '@jbrowse/wiggle-core'
 
@@ -77,7 +77,7 @@ export function makeTooltipRow(
 // multi-wiggle. Single-wiggle has one unnamed row keyed as `score`; multi has
 // one entry per source name.
 export function wiggleFeatureWidgetData(
-  feat: WiggleFeatureUnderMouse,
+  feat: WiggleHoveredFeature,
 ): SimpleFeatureSerialized {
   return {
     uniqueId: `wiggle-${feat.refName}-${feat.start}-${feat.end}`,
@@ -100,7 +100,7 @@ export function findSourceHit(
   summaryScoreMode: string,
   name?: string,
   color?: string,
-): WiggleFeatureUnderMouse | undefined {
+): WiggleHoveredFeature | undefined {
   const { featurePositions, numFeatures } = source
   const i = findFeatureAtBp(featurePositions, numFeatures, bp)
   return i === -1

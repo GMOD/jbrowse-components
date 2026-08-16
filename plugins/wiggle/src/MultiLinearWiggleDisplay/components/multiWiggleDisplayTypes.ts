@@ -1,6 +1,6 @@
 import type { ScoreRamp } from '../../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
-import type { WiggleFeatureUnderMouse } from '../../util.ts'
+import type { WiggleHoveredFeature } from '../../util.ts'
 import type { MultiWiggleContextHit } from './findHit.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -48,14 +48,14 @@ export interface MultiWiggleDisplayModel
   hoveredTreeNode?: HoveredTreeNode
   treeCanvas?: HTMLCanvasElement | null
   mouseoverCanvas?: HTMLCanvasElement | null
-  featureUnderMouse?: WiggleFeatureUnderMouse
+  hoveredFeature?: WiggleHoveredFeature
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
-  setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse) => void
-  selectFeature: (feat: WiggleFeatureUnderMouse) => void
+  setHoveredFeature: (feat?: WiggleHoveredFeature) => void
+  selectFeature: (feat: WiggleHoveredFeature) => void
   contextMenuInfo?: ContextMenuAnchor & MultiWiggleContextHit
   openContextMenu: (info: ContextMenuAnchor & MultiWiggleContextHit) => void
   closeContextMenu: () => void

@@ -37,7 +37,7 @@ the whole surface.
 | --- | --- | --- |
 | <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;ManhattanRpcResult&gt;()</code> |  | LinearManhattanDisplay |
 | <span id="volatile-flatbushes">**flatbushes**</span><br><code>flatbushes: regionDataMap&lt;Flatbush&gt;()</code> |  | LinearManhattanDisplay |
-| <span id="volatile-featureundermouse">**featureUnderMouse**</span><br><code>featureUnderMouse: undefined as ManhattanHit &#124; undefined</code> |  | LinearManhattanDisplay |
+| <span id="volatile-hoveredmanhattanhit">**hoveredManhattanHit**</span><br><code>hoveredManhattanHit: undefined as ManhattanHit &#124; undefined</code> |  | LinearManhattanDisplay |
 | <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
 | <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
 | <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |
@@ -62,6 +62,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>ManhattanHit &#124; undefined</code> | Fills `BaseDisplay`'s cross-display hover hook. | LinearManhattanDisplay |
 | <span id="getter-conf">**conf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;Record&lt;…&gt;&gt; &amp; { setSubschema(slotName: st…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;Record&lt;…&gt;&gt; &amp; { setSubschema(slotName: string, data: Record&lt;string, unknown&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so reads route through this to stay typed | LinearManhattanDisplay |
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> | Offset the track label above the plot so the -log10(p) y-axis stays pinned to the content edge instead of dodging right of the label. | LinearManhattanDisplay |
 | <span id="getter-color">**color**</span><br><code>string</code> | The `color` slot — a CSS color, or a `jexl:` expression — forwarded to the worker, which binds `feature` and evaluates it once per point (`makeColorEvaluator`).<br><br>Reads the raw slot value, not `getConf`: this is a transport read, and `getConf` evaluates a callback against whatever context the call passes, which here is none. `get(feature,…)` against no feature throws `reading 'get'`, and that escaped this getter and bannered the whole display. Pinned end-to-end by colorSlotTransport.test.ts. | LinearManhattanDisplay |
@@ -161,7 +162,7 @@ the whole surface.
 | --- | --- | --- |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(hit: ManhattanHit) =&gt; void</code> | open the feature details widget for a clicked point | LinearManhattanDisplay |
 | <span id="action-setrpcdata">**setRpcData**</span><br><code>(idx: number, data: ManhattanRpcResult) =&gt; void</code> |  | LinearManhattanDisplay |
-| <span id="action-setfeatureundermouse">**setFeatureUnderMouse**</span><br><code>(hit: ManhattanHit &#124; undefined) =&gt; void</code> |  | LinearManhattanDisplay |
+| <span id="action-sethoveredfeature">**setHoveredFeature**</span><br><code>(hit: ManhattanHit &#124; undefined) =&gt; void</code> |  | LinearManhattanDisplay |
 | <span id="action-setshowldlegend">**setShowLdLegend**</span><br><code>(val: boolean) =&gt; void</code> |  | LinearManhattanDisplay |
 | <span id="action-setcolorby">**setColorBy**</span><br><code>(mode: "normal" &#124; "ld") =&gt; void</code> |  | LinearManhattanDisplay |
 | <span id="action-setsignificanceline">**setSignificanceLine**</span><br><code>(score?: number &#124; undefined) =&gt; void</code> | Score to draw the threshold line at; undefined removes it. | LinearManhattanDisplay |

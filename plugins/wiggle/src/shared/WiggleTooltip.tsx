@@ -4,7 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import type { WiggleFeatureUnderMouse, WiggleTooltipRow } from '../util.ts'
+import type { WiggleHoveredFeature, WiggleTooltipRow } from '../util.ts'
 import type { MouseState } from '@jbrowse/core/ui'
 
 // Overlay-mode hits collect one row per source; cap the list so a track with
@@ -56,7 +56,7 @@ function SourceRow({ row }: { row: WiggleTooltipRow }) {
   )
 }
 
-function TooltipContents({ feature }: { feature: WiggleFeatureUnderMouse }) {
+function TooltipContents({ feature }: { feature: WiggleHoveredFeature }) {
   const { classes } = useStyles()
   const { refName, start, end, rows } = feature
   return (
@@ -82,18 +82,18 @@ function TooltipContents({ feature }: { feature: WiggleFeatureUnderMouse }) {
 // cursor guides, and click-to-select share one definition of "over the plot".
 // The guides themselves belong to each display component (a vertical line for
 // the single-source plots, the full crosshair for multi-wiggle), gated on the
-// same `featureUnderMouse` this reads.
+// same `hoveredFeature` this reads.
 const WiggleTooltip = observer(function WiggleTooltip({
   model,
   mouseState,
 }: {
-  model: { featureUnderMouse?: WiggleFeatureUnderMouse }
+  model: { hoveredFeature?: WiggleHoveredFeature }
   mouseState: MouseState | undefined
 }) {
-  const { featureUnderMouse } = model
-  return featureUnderMouse && mouseState ? (
+  const { hoveredFeature } = model
+  return hoveredFeature && mouseState ? (
     <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
-      <TooltipContents feature={featureUnderMouse} />
+      <TooltipContents feature={hoveredFeature} />
     </BaseTooltip>
   ) : null
 })

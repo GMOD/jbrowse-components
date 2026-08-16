@@ -109,10 +109,20 @@ export function stateModelFactory(
         // a single-region fetch only re-wraps that region (whole-genome views
         // land 20+ regions serially; a derived view would re-wrap them all).
         flatbushes: regionDataMap<Flatbush>(),
-        // Currently hovered point — drives the hover circle + tooltip.
-        featureUnderMouse: undefined as ManhattanHit | undefined,
+        // Currently hovered point — drives the hover circle + tooltip. Named
+        // apart from the `hoveredFeature` getter below it fills, because
+        // `BaseDisplay` declares that hook as a computed and MST refuses to
+        // instantiate a volatile over one.
+        hoveredManhattanHit: undefined as ManhattanHit | undefined,
       }))
       .views(self => ({
+        /**
+         * #getter
+         * Fills `BaseDisplay`'s cross-display hover hook.
+         */
+        get hoveredFeature() {
+          return self.hoveredManhattanHit
+        },
         /**
          * #getter
          * the config typed off the concrete schema; `ConfigurationReference`
@@ -427,8 +437,8 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setFeatureUnderMouse(hit: ManhattanHit | undefined) {
-          self.featureUnderMouse = hit
+        setHoveredFeature(hit: ManhattanHit | undefined) {
+          self.hoveredManhattanHit = hit
         },
         /**
          * #action
@@ -682,7 +692,7 @@ export function stateModelFactory(
             addDisposer(
               self,
               installClearHoverOnViewportChange(self, () => {
-                self.setFeatureUnderMouse(undefined)
+                self.setHoveredFeature(undefined)
               }),
             )
             // LocusZoom-style default: while no index SNP is pinned, keep the

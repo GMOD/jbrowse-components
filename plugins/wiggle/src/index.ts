@@ -68,7 +68,7 @@ export {
 export type {
   RawFeatureArrays,
   Source,
-  WiggleFeatureUnderMouse,
+  WiggleHoveredFeature,
   WiggleTooltipRow,
 } from './util.ts'
 
