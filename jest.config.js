@@ -175,7 +175,7 @@ export default {
       ...baseConfig,
     },
     {
-      // jbrowse-img uses Node environment with native fetch (no jest-fetch-mock)
+      // jbrowse-img uses the node environment and the real fetch, unmocked
       displayName: 'jbrowse-img',
       testMatch: ['<rootDir>/products/jbrowse-img/**/*.test.ts'],
       testPathIgnorePatterns: ['/dist/', '/demos/'],
@@ -183,7 +183,7 @@ export default {
       ...baseConfig,
     },
     {
-      // All other tests use jsdom with jest-fetch-mock
+      // All other tests use jsdom with the fetch mock below
       displayName: 'default',
       testMatch: [
         '<rootDir>/packages/**/*.test.{ts,tsx,js,jsx}',
