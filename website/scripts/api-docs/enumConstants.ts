@@ -17,6 +17,12 @@
 //   const B = A.map(([value]) => value)                 // tuple table -> values
 //   const C = G.flatMap(([, opts]) => opts.map(([v]) => v))  // grouped table
 //
+// The file grew three more indexes on the same principle — one fact, written
+// once, and the docs following the indirection rather than the author retyping
+// the value. Each says what it resolves and why below: a lone string constant, a
+// lone numeric one, and a whole table of slots, the last in both its const and
+// its factory form.
+//
 // Resolution is by name across the whole repo. A name defined more than once
 // with different values is dropped rather than guessed at, so an ambiguous
 // constant degrades to today's behavior (source block) instead of documenting
@@ -37,6 +43,18 @@ const index = new Map<string, string[] | null>()
 // identifier rather than documenting the wrong default.
 const scalarIndex = new Map<string, string | null>()
 
+// And for a *numeric* one, which is the same fact about the reader and a
+// different fact about the rendering — a string default prints quoted and a
+// number must not. Kept as its own index rather than a flag on the one above so
+// neither call site can print the other's form.
+//
+// Slot defaults naming a shared number are common (`GROW_MAX_HEIGHT` is the
+// grow ceiling both height-mode displays cap at, `MAX_LABEL_FEATURE_DENSITY`
+// the zoom threshold the worker also reads), and every one of them used to
+// print its identifier — 18 rows across the config pages telling a reader the
+// name of the number instead of the number.
+const numericIndex = new Map<string, string | null>()
+
 // And the same idea one level up: a constant holding a whole *group* of slots,
 // spread into a schema's slot table:
 //
@@ -51,6 +69,50 @@ const scalarIndex = new Map<string, string | null>()
 //
 // name -> ordered `slotName: { ... }` source pairs, or null on a conflict
 const slotFieldsIndex = new Map<string, [string, string][] | null>()
+
+// The same table, one indirection further out: a slot table written as a
+// *function* of its per-display prose.
+//
+//   export function treeSidebarConfigSchemaFields({ tree, rowLabels }) {
+//     return { showTree: { type: 'boolean', description: tree }, ... } as const
+//   }
+//   ConfigurationSchema('LinearMafDisplay', { ...treeSidebarConfigSchemaFields({ tree: '…' }) })
+//
+// A mixin's slots are shared in their types and defaults while their
+// descriptions genuinely differ per display — a MAF row is a species, a
+// multi-wiggle row a subtrack — so the shared table takes the sentences as
+// arguments. The const form above cannot express that, and every such factory
+// was therefore invisible here: `treeSidebarConfigSchemaFields` alone took
+// `showTree`, `showBranchLength` and `showRowLabels` off **five** display pages
+// while all five schemas really declared them.
+//
+// A factory's recorded slot sources still name its parameters
+// (`description: tree`), so the pairs are only meaningful once a call site's
+// arguments are substituted in — hence the separate index and
+// `slotFieldFactoryPairs` rather than an entry in `slotFieldsIndex`.
+
+// One property of a factory's destructured parameter, keyed in `params` by the
+// name the slot bodies reference (the binding), since a call site supplies it
+// under a name that can differ (`{ tree: t }` is passed `tree` and read as `t`).
+interface SlotFieldParam {
+  /** the name a call site's argument object uses */
+  prop: string
+  /**
+   * Source of the parameter's default, where it declares one. A default is a
+   * real answer rather than a fallback: `treeSidebarConfigSchemaFields`'s
+   * `branchLength` sentence is display-independent and no caller passes it, so
+   * reading the default is the only way that slot's prose reaches the page.
+   */
+  fallback: string | undefined
+}
+
+interface SlotFieldFactory {
+  parts: SlotPart[]
+  params: Map<string, SlotFieldParam>
+}
+
+// name -> the factory, or null on a conflict
+const slotFieldFactoryIndex = new Map<string, SlotFieldFactory | null>()
 
 // One entry of a slot table's source: either a slot of its own, or another slot
 // table it spreads in.
@@ -133,6 +195,109 @@ function resolveSlotParts(
   return [...byName].map(([name, source]) => [name, source])
 }
 
+// A slot-table factory: one destructured object parameter, and a body that is a
+// single `return <slot-shaped object literal>`. Deliberately that narrow — the
+// point is to read a table whose shape is fixed and whose prose is supplied,
+// not to interpret an arbitrary function, and anything else falls through to
+// today's behaviour (the slots go undocumented, as they do now, rather than
+// being documented wrongly).
+function slotFieldFactory(
+  fn: ts.FunctionDeclaration,
+  sf: ts.SourceFile,
+): SlotFieldFactory | undefined {
+  const [param, ...rest] = fn.parameters
+  if (
+    !param ||
+    rest.length ||
+    !ts.isObjectBindingPattern(param.name) ||
+    fn.body?.statements.length !== 1
+  ) {
+    return undefined
+  }
+  const [stmt] = fn.body.statements
+  const returned =
+    stmt && ts.isReturnStatement(stmt) ? stmt.expression : undefined
+  if (!returned) {
+    return undefined
+  }
+  const parts = slotFieldParts(
+    ts.isAsExpression(returned) ? returned.expression : returned,
+    sf,
+  )
+  if (!parts) {
+    return undefined
+  }
+  const params = new Map<string, SlotFieldParam>()
+  for (const el of param.name.elements) {
+    if (ts.isIdentifier(el.name)) {
+      const prop =
+        el.propertyName && ts.isIdentifier(el.propertyName)
+          ? el.propertyName.text
+          : el.name.text
+      params.set(el.name.text, { prop, fallback: el.initializer?.getText(sf) })
+    }
+  }
+  return params.size ? { parts, params } : undefined
+}
+
+/**
+ * Rewrite each identifier in `source` that names one of `params` with that
+ * argument's own source, so a factory's `description: tree` becomes the sentence
+ * the call site passed.
+ *
+ * Splices by position rather than reprinting: the caller strips the
+ * `description` property back out of this text by offset (see
+ * `slotSourceWithoutDescription`), so the result has to stay formatted the way
+ * the factory wrote it.
+ *
+ * By AST position and never by regex — the identifier `heightMode` is both a
+ * parameter of `heightModeConfigSchemaFields` and a **string literal** inside
+ * the same slot (`types.enumeration('heightMode', …)`), so a textual
+ * substitution replaces the enum's own name with a paragraph of prose.
+ */
+function substituteParams(
+  source: string,
+  params: Map<string, SlotFieldParam>,
+  args: Map<string, string>,
+) {
+  const sf = ts.createSourceFile(
+    'slot.ts',
+    `const __slot = ${source}`,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const edits: { start: number; end: number; text: string }[] = []
+  const offset = `const __slot = `.length
+  const visit = (node: ts.Node) => {
+    // A property's *name* is not a reference to anything, so only its value is
+    // walked. Shorthand (`{ description }`) is both at once and is left alone —
+    // no factory here writes one, and rewriting it would need a name as well.
+    if (ts.isPropertyAssignment(node)) {
+      visit(node.initializer)
+      return
+    }
+    const param = ts.isIdentifier(node) ? params.get(node.text) : undefined
+    if (param) {
+      const text = args.get(param.prop) ?? param.fallback
+      if (text !== undefined) {
+        edits.push({
+          start: node.getStart(sf) - offset,
+          end: node.getEnd() - offset,
+          text,
+        })
+      }
+      return
+    }
+    ts.forEachChild(node, visit)
+  }
+  ts.forEachChild(sf, visit)
+  let out = source
+  for (const edit of edits.sort((a, b) => b.start - a.start)) {
+    out = out.slice(0, edit.start) + edit.text + out.slice(edit.end)
+  }
+  return out
+}
+
 function stringsOf(node: ts.Expression): string[] | undefined {
   if (!ts.isArrayLiteralExpression(node)) {
     return undefined
@@ -212,6 +377,49 @@ function recordScalar(name: string, value: string) {
     scalarIndex.set(name, value)
   } else if (prior !== value) {
     scalarIndex.set(name, null)
+  }
+}
+
+// Author's own source, not the parsed value, so a separated literal keeps the
+// separators a reader put there (`1_000_000`, never `1000000`).
+function numericLiteralText(node: ts.Expression, sf: ts.SourceFile) {
+  if (ts.isNumericLiteral(node)) {
+    return node.getText(sf)
+  }
+  // A negative literal parses as a unary minus over one.
+  return ts.isPrefixUnaryExpression(node) &&
+    node.operator === ts.SyntaxKind.MinusToken &&
+    ts.isNumericLiteral(node.operand)
+    ? node.getText(sf)
+    : undefined
+}
+
+function recordNumeric(name: string, value: string) {
+  const prior = numericIndex.get(name)
+  if (prior === undefined) {
+    numericIndex.set(name, value)
+  } else if (prior !== value) {
+    numericIndex.set(name, null)
+  }
+}
+
+// Same "drop rather than guess" conflict rule as everything else here: two
+// factories of one name, agreeing on neither shape nor parameters, document
+// nothing rather than whichever was seen first.
+function recordSlotFieldFactory(name: string, value: SlotFieldFactory) {
+  const prior = slotFieldFactoryIndex.get(name)
+  if (prior === undefined) {
+    slotFieldFactoryIndex.set(name, value)
+  } else if (
+    prior === null ||
+    !sameParts(prior.parts, value.parts) ||
+    prior.params.size !== value.params.size ||
+    [...value.params].some(([binding, p]) => {
+      const other = prior.params.get(binding)
+      return !other || other.prop !== p.prop || other.fallback !== p.fallback
+    })
+  ) {
+    slotFieldFactoryIndex.set(name, null)
   }
 }
 
@@ -323,10 +531,23 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
   const derived = new Map<string, Projection | null>()
   const slotParts = new Map<string, SlotPart[] | null>()
   for (const sf of sourceFiles) {
-    if (!/\bconst\s+[A-Za-z_$][\w$]*\s*=/.test(sf.text)) {
+    // Cheap prefilter. `function` is in it for the slot-table factories, whose
+    // files hold nothing else — `treeSidebarConfigSchemaFields.ts` has no
+    // top-level `const` at all, so a const-only guard skipped the file and the
+    // factory arm below would never have run.
+    if (
+      !/\bconst\s+[A-Za-z_$][\w$]*\s*=/.test(sf.text) &&
+      !/\bfunction\s+[A-Za-z_$][\w$]*\s*\(/.test(sf.text)
+    ) {
       continue
     }
     for (const stmt of sf.statements) {
+      if (ts.isFunctionDeclaration(stmt) && stmt.name) {
+        const factory = slotFieldFactory(stmt, sf)
+        if (factory) {
+          recordSlotFieldFactory(stmt.name.text, factory)
+        }
+      }
       if (ts.isVariableStatement(stmt)) {
         for (const decl of stmt.declarationList.declarations) {
           const init = decl.initializer
@@ -341,6 +562,8 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
             }
             if (ts.isStringLiteralLike(value)) {
               recordScalar(name, value.text)
+            } else if (numericLiteralText(value, sf) !== undefined) {
+              recordNumeric(name, numericLiteralText(value, sf)!)
             } else if (direct) {
               record(name, direct)
               recordTable(tables, name, value)
@@ -404,9 +627,44 @@ export function scalarConstantValue(name: string) {
 }
 
 /**
+ * Source of a named numeric constant, or undefined if unknown/ambiguous.
+ * Rendered unquoted, unlike {@link scalarConstantValue}.
+ */
+export function numericConstantValue(name: string) {
+  return numericIndex.get(name) ?? undefined
+}
+
+/**
  * `slotName: { ... }` source pairs of a named slot-table constant a schema
  * spreads, or undefined if the name is unknown, ambiguous, or not slot-shaped.
  */
 export function slotFieldConstantPairs(name: string) {
   return slotFieldsIndex.get(name) ?? undefined
+}
+
+/**
+ * The same, for a slot table spread as a **call** —
+ * `...treeSidebarConfigSchemaFields({ tree: '…', rowLabels: '…' })` — with the
+ * call's own arguments substituted for the factory's parameters, so each slot
+ * carries the description this display passed rather than the parameter name.
+ *
+ * `args` maps a parameter name to the argument's source text. A parameter the
+ * call omits falls back to the default the factory declares; one with neither
+ * keeps its reference, which renders as a bare identifier — visible in the page
+ * and caught by the blank-description gap check, rather than silently dropping
+ * the slot.
+ */
+export function slotFieldFactoryPairs(
+  name: string,
+  args: Map<string, string>,
+): [string, string][] | undefined {
+  const factory = slotFieldFactoryIndex.get(name)
+  if (!factory) {
+    return undefined
+  }
+  const pairs = resolveSlotParts(factory.parts, slotFieldsIndex)
+  return pairs?.map(([slot, source]) => [
+    slot,
+    substituteParams(source, factory.params, args),
+  ])
 }

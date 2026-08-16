@@ -5,8 +5,10 @@ import * as ts from 'typescript'
 
 import {
   enumConstantValues,
+  numericConstantValue,
   scalarConstantValue,
   slotFieldConstantPairs,
+  slotFieldFactoryPairs,
 } from './enumConstants.ts'
 import { writeDoc } from './format.ts'
 import {
@@ -99,6 +101,33 @@ interface ConfigIndex {
 // nine tabix adapters wrote before the table was shared — without the prefix
 // they would each have grown two slots at the wrong level, which reads as a
 // schema change rather than as a docs bug.
+// The two ways a schema names a shared slot table: `...tabixIndexFields` (a
+// const) and `...heightModeConfigSchemaFields({ … })` (a factory taking the
+// per-display prose). Only the first was recognized, so every factory's slots
+// were absent from the pages of every schema spreading one.
+function spreadPairs(expr: ts.Expression, sf: ts.SourceFile) {
+  if (ts.isIdentifier(expr)) {
+    return slotFieldConstantPairs(expr.text)
+  }
+  if (!ts.isCallExpression(expr) || !ts.isIdentifier(expr.expression)) {
+    return undefined
+  }
+  // One object-literal argument, matching the single destructured parameter the
+  // factory index accepts. Anything else is not a shape this can substitute
+  // into, and gets no entry rather than a half-substituted one.
+  const [arg, ...rest] = expr.arguments
+  if (!arg || rest.length || !ts.isObjectLiteralExpression(arg)) {
+    return undefined
+  }
+  const args = new Map<string, string>()
+  for (const p of arg.properties) {
+    if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name)) {
+      args.set(p.name.text, p.initializer.getText(sf))
+    }
+  }
+  return slotFieldFactoryPairs(expr.expression.text, args)
+}
+
 function spreadSlots(configNode: string): Item[] {
   const sf = ts.createSourceFile(
     'config.ts',
@@ -108,8 +137,8 @@ function spreadSlots(configNode: string): Item[] {
   )
   const slots: Item[] = []
   const visit = (node: ts.Node, prefix: string) => {
-    if (ts.isSpreadAssignment(node) && ts.isIdentifier(node.expression)) {
-      const pairs = slotFieldConstantPairs(node.expression.text)
+    if (ts.isSpreadAssignment(node)) {
+      const pairs = spreadPairs(node.expression, sf)
       for (const [name, value] of pairs ?? []) {
         slots.push({
           name: `${prefix}${name}`,
@@ -964,6 +993,15 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
     : undefined
   if (scalarConst !== undefined) {
     return `'${scalarConst}'`
+  }
+  // Same for a number, unquoted. `defaultValue: GROW_MAX_HEIGHT` is written that
+  // way because the ceiling is one fact shared with the mixin that caps against
+  // it, and the reader still wants `800`.
+  const numericConst = ts.isIdentifier(node)
+    ? numericConstantValue(node.text)
+    : undefined
+  if (numericConst !== undefined) {
+    return numericConst
   }
   if (isScalar) {
     return node.getText()

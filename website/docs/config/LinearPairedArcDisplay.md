@@ -61,7 +61,7 @@ surface.
 | Slot | Description |
 | --- | --- |
 | <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'jexl:defaultPairedArcColor(feature,alt)'</code> | the color of the arcs<br>_callback args:_ `feature`, `alt` |
-| <span id="slot-linewidth">**lineWidth**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) = <code>defaultArcLineWidth</code> _promotable_ | the stroke width of the arcs, in pixels. Unset (the default) follows the session-wide default for this display type |
+| <span id="slot-linewidth">**lineWidth**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) = <code>3</code> _promotable_ | the stroke width of the arcs, in pixels. Unset (the default) follows the session-wide default for this display type |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">6 slots</span> |
 | <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ |
