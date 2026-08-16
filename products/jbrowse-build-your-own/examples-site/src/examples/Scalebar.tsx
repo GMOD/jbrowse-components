@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
+import { usePointerDrag } from '@jbrowse/core/util/usePointerDrag'
 import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -353,8 +354,16 @@ const RUBBERBAND_MIN_PX = 4
  * `view.moveTo(start, end)` frames the span between two of them, working out
  * the zoom itself. Both are the same calls JBrowse's own rubberband makes.
  *
- * The container's left edge is measured once at the press rather than per move:
- * it cannot move during the drag, and `getBoundingClientRect` in a pointermove
+ * `usePointerDrag` is the lifecycle around them, and it is core's -- the same
+ * one every JBrowse resize handle runs. Written by hand this is the block that
+ * looks finished and is not: it owns the pointer capture (so the drag survives
+ * the cursor leaving the row and ends even if the button comes up outside the
+ * window), it starts only on a primary press, and it keeps the whole gesture to
+ * the pointer that began it, so a second finger neither hijacks a drag nor
+ * re-anchors one.
+ *
+ * The row's left edge is measured once at the press rather than per move: it
+ * cannot move during the drag, and `getBoundingClientRect` in a pointermove
  * handler forces layout on every frame of one.
  *
  * A drag shorter than a few pixels is a click, and zooming to it would land the
@@ -364,57 +373,40 @@ function useRubberband(view: BrowserView) {
   const [range, setRange] = useState<
     { left: number; right: number } | undefined
   >(undefined)
-  const dragRef = useRef<{ anchor: number; originX: number } | undefined>(
-    undefined,
-  )
+  // written by `onDragStart`, which the hook guarantees runs first
+  const originRef = useRef({ anchor: 0, originX: 0 })
 
   function clampToView(clientX: number, originX: number) {
     return Math.min(Math.max(clientX - originX, 0), view.width)
   }
 
+  function spanTo(clientX: number) {
+    const { anchor, originX } = originRef.current
+    const x = clampToView(clientX, originX)
+    return { left: Math.min(anchor, x), right: Math.max(anchor, x) }
+  }
+
   return {
     range,
-    props: {
-      onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-        if (event.button !== 0) {
-          return
-        }
+    props: usePointerDrag({
+      onDragStart(event) {
         const { left } = event.currentTarget.getBoundingClientRect()
-        const anchor = clampToView(event.clientX, left)
-        dragRef.current = { anchor, originX: left }
-        event.currentTarget.setPointerCapture(event.pointerId)
-      },
-      onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-        const drag = dragRef.current
-        if (!drag) {
-          return
+        originRef.current = {
+          anchor: clampToView(event.clientX, left),
+          originX: left,
         }
-        const x = clampToView(event.clientX, drag.originX)
-        setRange({
-          left: Math.min(drag.anchor, x),
-          right: Math.max(drag.anchor, x),
-        })
       },
-      onPointerUp(event: React.PointerEvent<HTMLDivElement>) {
-        const drag = dragRef.current
-        dragRef.current = undefined
+      onDrag(event) {
+        setRange(spanTo(event.clientX))
+      },
+      onDragEnd(event) {
+        const { left, right } = spanTo(event.clientX)
         setRange(undefined)
-        event.currentTarget.releasePointerCapture(event.pointerId)
-        if (!drag) {
-          return
-        }
-        const x = clampToView(event.clientX, drag.originX)
-        const left = Math.min(drag.anchor, x)
-        const right = Math.max(drag.anchor, x)
         if (right - left >= RUBBERBAND_MIN_PX) {
           view.moveTo(view.pxToBp(left), view.pxToBp(right))
         }
       },
-      onPointerCancel() {
-        dragRef.current = undefined
-        setRange(undefined)
-      },
-    },
+    }),
   }
 }
 

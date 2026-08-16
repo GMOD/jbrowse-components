@@ -190,6 +190,7 @@
     "./util/useFetchPlugins": "./src/util/useFetchPlugins.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/usePanZoom": "./src/util/usePanZoom.ts",
+    "./util/usePointerDrag": "./src/util/usePointerDrag.ts",
     "./util/useResizeDrag": "./src/util/useResizeDrag.ts",
     "./util/useRowVirtualScroll": "./src/util/useRowVirtualScroll.ts",
     "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts",
@@ -928,6 +929,10 @@
         "types": "./esm/util/usePanZoom.d.ts",
         "import": "./esm/util/usePanZoom.js"
       },
+      "./util/usePointerDrag": {
+        "types": "./esm/util/usePointerDrag.d.ts",
+        "import": "./esm/util/usePointerDrag.js"
+      },
       "./util/useResizeDrag": {
         "types": "./esm/util/useResizeDrag.d.ts",
         "import": "./esm/util/useResizeDrag.js"
@@ -1464,6 +1469,9 @@
         ],
         "util/usePanZoom": [
           "esm/util/usePanZoom.d.ts"
+        ],
+        "util/usePointerDrag": [
+          "esm/util/usePointerDrag.d.ts"
         ],
         "util/useResizeDrag": [
           "esm/util/useResizeDrag.d.ts"

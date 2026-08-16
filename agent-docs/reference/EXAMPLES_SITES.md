@@ -73,9 +73,8 @@ also puts it under a real test, where a site-local helper never is. If no, it
 stays copied.
 
 **The tell is that the copies are worse than what JBrowse already runs**, and it
-has now held four times. Every one of these was a block sitting quietly in
-several example files, and in each case the published version knew something the
-copies did not:
+has now held five times, and in each case the published version knew something
+the copies did not:
 
 | the copies                        | what they were missing                                    | became                                  |
 | --------------------------------- | --------------------------------------------------------- | --------------------------------------- |
@@ -83,11 +82,19 @@ copies did not:
 | `setConf(session, 'theme', …)`, ×8 | `theme` is a frozen slot, so the write discarded the host's own theme | `useSessionPalette` + `setThemeMode`     |
 | a region-seam filter, ×3          | elided and past-the-end blocks; and it drew a seam per elided region, which at whole-genome zoom is a grey wall | `view.paddingSpans`      |
 | sticky refName labels, ×2         | the same-refName run dedup, the whole-name fit test        | `view.scalebarRefNameLabels`            |
+| a rubberband's pointer-capture drag, ×1 | a primary-button guard, so a right-press started a drag under its own context menu and released capture it never took; and one-pointer ownership, so a second finger re-anchored a drag in progress | `usePointerDrag`      |
 
 That is the argument for treating "the examples all write X" as a missing export
 rather than a duplication problem: the reader is not merely repeating himself,
 he is shipping a worse version of something that already exists, and the site is
 teaching him to.
+
+**The count is evidence, not the trigger.** The last row is a single copy: the
+test is whether an embedder would *have* to write the block, and one hand-rolled
+gesture already answers yes, because a gesture is where the knowledge is dense
+and the failures are silent — a phone, a second finger, a right-click. Where a
+count does gate something it is the other question, `COPY_THRESHOLD` below, which
+asks whether copies should exist rather than whether they should be an export.
 
 `jbrowse-build-your-own` asks this question automatically now — see its
 `CLAUDE.md` for the `COPIED` list, where a block copied into three or more files
