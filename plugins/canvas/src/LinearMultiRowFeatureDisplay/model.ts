@@ -84,6 +84,7 @@ import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { RowSortSpec } from '@jbrowse/tree-sidebar'
 import type React from 'react'
 
 export interface MultiRowHit {
@@ -143,9 +144,11 @@ export default function stateModelFactory(
          * `layout` persists but the trigger never re-fires.
          */
         // #region frozenProp
-        sortRowsBy: types.maybe(
-          types.frozen<{ refName: string; pos: number }>(),
-        ),
+        // `RowSortSpec`, not a second spelling of it: the autorun that consumes
+        // this and `setSortRowsBy` are both typed on tree-sidebar's, so an
+        // inline shape here is a copy that can only ever drift away from the one
+        // doing the checking. Multi-wiggle's twin already reads it from there.
+        sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
         // #endregion
         /**
          * #property
@@ -1003,7 +1006,7 @@ export default function stateModelFactory(
        * directly (instant, data already loaded); this prop is the session-level
        * entry point.
        */
-      setSortRowsBy(arg?: { refName: string; pos: number }) {
+      setSortRowsBy(arg?: RowSortSpec) {
         self.sortRowsBy = arg
       },
       /**
