@@ -154,10 +154,11 @@ function withWhere({ where, ...step }: RecipeStep): RecipeStep {
   }
 }
 
+// The track's own name as a breadcrumb segment, falling back to the id a
+// figure's config doesn't carry a name for.
 function trackName(entry: SpecTrackEntry, config: string): string {
   const trackId = specTrackId(entry)
-  const info = lookupTrack(config, trackId)
-  return info ? `“${info.name}”` : `the “${trackId}” track`
+  return `“${lookupTrack(config, trackId)?.name ?? trackId}”`
 }
 
 // What the Add menu calls each view, for a figure whose spec holds more than
@@ -195,10 +196,20 @@ interface BandContext {
   bands: number
 }
 
+// **File → Open track...** adds to `session.views[0]` and says so in a
+// notification (MULTI_VIEW_WARNING in product-core's menuItems). Any track that
+// belongs somewhere else — a second pane, a row of a synteny view — is added
+// from that view's own track selector, which is the app's own advice.
+const OPEN_TRACK =
+  'Add your own track: **File → Open track...**, then paste a URL or choose a local file.'
+const ADD_TRACK =
+  "Add your own track: open this view's track selector, click **+** and choose **Add track**, then paste a URL or choose a local file."
+
 function trackStep(
   entry: SpecTrackEntry,
   config: string,
   band?: BandContext,
+  viaTrackSelector?: boolean,
 ): RecipeStep & { settings: RecipeStep[]; unmapped: string[] } {
   const trackId = specTrackId(entry)
   const info = lookupTrack(config, trackId)
@@ -223,7 +234,7 @@ function trackStep(
   return {
     title: band
       ? `Point the import form at your own file: ${band.form.band}, choose **New track**, and paste a URL or pick a local file.${needs}`
-      : `Add your own track: **File → Open track...**, then paste a URL or choose a local file.${needs}`,
+      : `${viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`,
     example:
       band && band.bands > 1
         ? `This figure uses ${name} for ${band.bands === 2 ? 'both bands' : `all ${band.bands} bands`}.`
@@ -347,6 +358,9 @@ function viewSteps(
   // already opened its genome, and the steps left are about that row, so each
   // says which one it belongs to
   row?: string,
+  // the session holds more than this one view, so a track goes in through the
+  // view's own track selector (see OPEN_TRACK)
+  viaTrackSelector = false,
 ): { steps: RecipeStep[]; unmapped: string[] } {
   const steps: RecipeStep[] = []
   const unmapped: string[] = []
@@ -373,7 +387,7 @@ function viewSteps(
         settings,
         unmapped: trackUnmapped,
         ...step
-      } = trackStep(entry, config)
+      } = trackStep(entry, config, undefined, viaTrackSelector)
       // Three tracks in one view produce three runs of "Track menu → ..." with
       // nothing between them, and every one of those menus hangs off a
       // different track's label. The settings say which.
@@ -406,7 +420,9 @@ function viewSteps(
     const label = form
       ? `${form.rowLabel(index)}${subView.assembly ? ` (${subView.assembly})` : ''}`
       : undefined
-    const sub = viewSteps(subView, config, label)
+    // a sub-view is never the session's only view, so its tracks go in through
+    // its own track selector
+    const sub = viewSteps(subView, config, label, true)
     steps.push(...(label ? labelSteps(sub.steps, label) : sub.steps))
     unmapped.push(...sub.unmapped)
   }
@@ -465,7 +481,9 @@ export function buildRecipe(
   }
   const { base, config, spec } = decoded
   const views = spec.views ?? []
-  const collected = views.map(view => viewSteps(view, config))
+  const collected = views.map(view =>
+    viewSteps(view, config, undefined, views.length > 1),
+  )
   const firstView = views[0]
   const desktopWebUrl = withSessionName(liveUrl, figureName)
   const specJson = JSON.stringify(spec, null, 2)
