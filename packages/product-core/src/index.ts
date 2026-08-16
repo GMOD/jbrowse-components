@@ -105,6 +105,8 @@ export type {
 export { initializeWorker } from './rpcWorker.ts'
 export { toPluginLoadRecord } from './pluginInput.ts'
 export type { PluginInput } from './pluginInput.ts'
+export { loadRuntimePlugins } from './loadPlugins.ts'
+export type { LoadPluginsArgs } from './loadPlugins.ts'
 export { decodeSessionFromUrl, encodeSessionToUrl } from './sessionUrl.ts'
 export type { SessionSnapshot } from './sessionUrl.ts'
 // in-memory files as tracks, for hosts whose data lives in a process rather

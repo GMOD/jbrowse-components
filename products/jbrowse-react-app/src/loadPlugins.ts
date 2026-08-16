@@ -1,8 +1,7 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
-import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
+import { loadRuntimePlugins } from '@jbrowse/product-core'
 
-import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+import type { LoadPluginsArgs } from '@jbrowse/product-core'
 
 /**
  * Fetch plugins at runtime from their urls. Returns `{ plugin, definition }`
@@ -15,23 +14,9 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
  * `loadPlugins(config.plugins ?? [], { baseUri: configUrl })` is the whole
  * story for a fetched config.
  */
-export default async function loadPlugins(
+export default function loadPlugins(
   pluginDefinitions: PluginDefinition[],
-  args?: {
-    fetchESM?: (url: string) => Promise<LoadedPlugin>
-    /**
-     * Resolve relative plugin urls against this instead of the page. A config
-     * fetched from somewhere else names its plugins relative to itself, so pass
-     * that config's url — otherwise a `"url": "umd_plugin.js"` entry is looked
-     * for next to your own app and 404s.
-     */
-    baseUri?: string
-  },
+  args?: LoadPluginsArgs,
 ) {
-  const pluginLoader = new PluginLoader(
-    dropVendoredPlugins(pluginDefinitions),
-    args,
-  )
-  pluginLoader.installGlobalReExports(window)
-  return pluginLoader.load(args?.baseUri ?? window.location.href)
+  return loadRuntimePlugins(pluginDefinitions, { ...args, dropVendored: true })
 }
