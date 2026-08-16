@@ -3,7 +3,29 @@ import { when } from 'mobx'
 
 import type { LinearSyntenyViewModel } from './model.ts'
 
+type WebSession = ReturnType<typeof createTestSession>
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+// Showing a synteny track starts a real fetch through the main-thread RPC
+// driver, and these tests assert on layout rather than on data, so each one
+// ended with that fetch still in flight. Jest then tore the module registry
+// down under it, the driver's lazy require failed, and the autorun's catch
+// logged it — `isCurrent()` folds in `isAlive`, so a view nobody closed still
+// counts as current. Closing it is what the app does and closes that guard, so
+// the late rejection lands on the floor where it belongs.
+//
+// Worth fixing here rather than filtering in `config/jest/console.js`: a
+// genuine post-teardown error reads exactly like this one, and a filter would
+// leave nothing to tell them apart.
+let openViews: { session: WebSession; view: LinearSyntenyViewModel }[] = []
+
+afterEach(() => {
+  for (const { session, view } of openViews) {
+    session.removeView(view)
+  }
+  openViews = []
+})
 
 const assembly = (name: string) => ({
   name,
@@ -55,6 +77,7 @@ async function openStack(rowCount: number) {
     () => view.views.length > 0 && view.views.every(v => v.initialized),
   )
   await when(() => view.levels.length === rowCount - 1)
+  openViews.push({ session, view })
   return { session, view }
 }
 
