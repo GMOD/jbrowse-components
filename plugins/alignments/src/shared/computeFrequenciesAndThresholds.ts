@@ -1,6 +1,7 @@
 import { interbaseDepthAt } from '@jbrowse/alignments-core'
 
 import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
+import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
 
 function getDepthAt(
   coverageDepths: Float32Array,
@@ -205,10 +206,59 @@ function thresholdedPositionFrequencies(
   return frequencies
 }
 
+/**
+ * Per-deletion frequency, one entry per GAP with a zero at every skip — the
+ * packers index this by gap index.
+ *
+ * Only a deletion has a frequency to draw: `gapFrequencies` is read in the
+ * deletion branch of gap.slang and of drawGaps, and nowhere else. Anchoring a
+ * skip's start in the same per-bp buckets therefore bought nothing and cost
+ * correctness twice over — a deletion beginning at a splice donor had every
+ * spliced read's skip added to its own count, so it read as more frequent than
+ * it is and drew opaque past the fade; and the walk computed and thresholded a
+ * frequency per skip, which on a long-read RNA pileup is most of the array.
+ */
+function deletionStartFrequencies(
+  gapPositions: Uint32Array,
+  gapTypes: Uint8Array,
+  depths: Float32Array,
+  coverageStartPos: number,
+) {
+  const numGaps = gapPositions.length / 2
+  let numDeletions = 0
+  for (let i = 0; i < numGaps; i++) {
+    if (gapTypes[i] === GAP_DELETION) {
+      numDeletions++
+    }
+  }
+  // gapPositions stores [start, end] pairs; a deletion's frequency is anchored
+  // at its start.
+  const starts = new Uint32Array(numDeletions)
+  const gapIndices = new Uint32Array(numDeletions)
+  let w = 0
+  for (let i = 0; i < numGaps; i++) {
+    if (gapTypes[i] === GAP_DELETION) {
+      starts[w] = gapPositions[i * 2]!
+      gapIndices[w] = i
+      w++
+    }
+  }
+  const deletionFrequencies = thresholdedPositionFrequencies(
+    starts,
+    depths,
+    coverageStartPos,
+  )
+  const frequencies = new Uint8Array(numGaps)
+  for (let k = 0; k < numDeletions; k++) {
+    frequencies[gapIndices[k]!] = deletionFrequencies[k]!
+  }
+  return frequencies
+}
+
 export function computeFrequenciesAndThresholds(
   mismatchArrays: { mismatchPositions: Uint32Array; mismatchBases: Uint8Array },
   interbaseArrays: { interbasePositions: Uint32Array },
-  gapArrays: { gapPositions: Uint32Array },
+  gapArrays: { gapPositions: Uint32Array; gapTypes: Uint8Array },
   depths: Float32Array,
   coverageStartPos: number,
 ) {
@@ -225,12 +275,6 @@ export function computeFrequenciesAndThresholds(
     coverageStartPos,
     featureFrequencyThreshold,
   )
-  // gapPositions stores [start, end] pairs; a gap's frequency is anchored at
-  // its start.
-  const gapStartPositions = new Uint32Array(gapArrays.gapPositions.length / 2)
-  for (let i = 0; i < gapStartPositions.length; i++) {
-    gapStartPositions[i] = gapArrays.gapPositions[i * 2]!
-  }
   return {
     mismatchFrequencies,
     interbaseFrequencies: thresholdedPositionFrequencies(
@@ -238,8 +282,9 @@ export function computeFrequenciesAndThresholds(
       depths,
       coverageStartPos,
     ),
-    gapFrequencies: thresholdedPositionFrequencies(
-      gapStartPositions,
+    gapFrequencies: deletionStartFrequencies(
+      gapArrays.gapPositions,
+      gapArrays.gapTypes,
       depths,
       coverageStartPos,
     ),

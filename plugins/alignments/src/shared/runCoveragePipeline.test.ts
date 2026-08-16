@@ -43,7 +43,10 @@ const mismatchArrays = {
   mismatchBases: new Uint8Array(MISMATCHES).fill(65), // 'A'
 }
 const interbaseArrays = { interbasePositions: new Uint32Array(0) }
-const gapArrays = { gapPositions: new Uint32Array(0) }
+const gapArrays = {
+  gapPositions: new Uint32Array(0),
+  gapTypes: new Uint8Array(0),
+}
 
 const baseArgs = {
   features,
