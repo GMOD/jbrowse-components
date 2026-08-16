@@ -1,4 +1,9 @@
-import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getParent,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { onBecomeObserved } from 'mobx'
 
 import { getConf } from '../configuration/index.ts'
@@ -290,11 +295,17 @@ export default function assemblyFactory(
         // downloading and go on reporting. Without the guard their progress
         // repaints the field the `finally` below has already cleared, so a
         // failed assembly load sits under a live "Downloading cytobands 40%".
+        //
+        // `isAlive` as well as `loading`, because neither implies the other and
+        // the trailing write needs both: a tree destroyed WHILE the four loads
+        // are in flight never runs the `finally`, so `loading` is still true
+        // when the throttle's trailing timer fires and setStatus lands on a dead
+        // node. That is the case this sink's second isCurrent read exists for.
         const throttle = createStatusThrottle()
         let loading = true
         const fanOut = createStatusFanOut(
           createGuardedStatusSink({
-            isCurrent: () => loading,
+            isCurrent: () => loading && isAlive(self),
             sink: status => {
               self.setStatus(status)
             },

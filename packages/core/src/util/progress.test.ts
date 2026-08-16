@@ -763,4 +763,41 @@ describe('a fan-out behind one guarded sink', () => {
       jest.useRealTimers()
     }
   })
+
+  // The other way the owner can go away, and the reason the assembly's guard
+  // asks `isAlive(self)` as well as its own `loading` flag. A tree destroyed
+  // WHILE its loads are in flight never reaches the `finally` that closes
+  // `loading`, so that flag alone is still true when the trailing timer fires
+  // and the write lands on a dead MST node. Neither flag implies the other, and
+  // this covers the liveness half.
+  it('drops a trailing write when the owner died before its finally ran', () => {
+    jest.useFakeTimers()
+    try {
+      const seen: RpcStatus[] = []
+      let alive = true
+      const throttle = createStatusThrottle()
+      const slot = createStatusFanOut(
+        createGuardedStatusSink({
+          isCurrent: () => alive,
+          sink: s => {
+            seen.push(s)
+          },
+          throttle,
+        }),
+      )
+      const load = slot()
+      load({ message: 'Downloading', current: 1, total: 2 })
+      expect(seen).toHaveLength(1)
+
+      // queued behind the throttle window, then the tree dies mid-load, with no
+      // `finally` to close anything
+      load({ message: 'Downloading', current: 2, total: 2 })
+      alive = false
+      clock += 100
+      jest.advanceTimersByTime(100)
+      expect(seen).toHaveLength(1)
+    } finally {
+      jest.useRealTimers()
+    }
+  })
 })
