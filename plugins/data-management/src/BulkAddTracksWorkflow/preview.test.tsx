@@ -7,7 +7,7 @@ import type Plugin from '@jbrowse/core/Plugin'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 // summarizeBulkInput expects an already-deduped location list (the workflow
-// dedupes via useBulkLocations before calling it).
+// dedupes via bulkLocations before calling it).
 function summarize(locations: FileLocation[], extraPlugins: Plugin[] = []) {
   return summarizeBulkInput({
     locations,

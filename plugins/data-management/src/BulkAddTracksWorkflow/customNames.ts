@@ -1,6 +1,6 @@
-import { useState } from 'react'
-
 import { withEditedName, withoutName } from './util.ts'
+
+import type { AddTrackModel } from '../AddTrackWidget/model.ts'
 
 /**
  * The names the user typed over the automatic ones, keyed by row id (the data
@@ -8,23 +8,29 @@ import { withEditedName, withoutName } from './util.ts'
  * and forgetting a row that was removed so a later re-add of the same URL
  * starts from the automatic name rather than resurrecting the old edit.
  *
- * Owning the map here keeps its shape out of the preview table, which only ever
- * renames one row at a time.
+ * Held on the widget model with the rest of the bulk input, so a rename
+ * outlives the drawer unmounting the workflow. Owning the map here keeps its
+ * shape out of the preview table, which only ever renames one row at a time.
  */
-export function useCustomNames() {
-  const [customNames, setCustomNames] = useState<Record<string, string>>({})
-
+export function customNames(model: AddTrackModel) {
   return {
-    customNames,
+    customNames: model.bulk.customNames,
 
     renameRow(args: { id: string; name: string; autoName: string }) {
-      setCustomNames(prev => withEditedName({ customNames: prev, ...args }))
+      model.updateBulkInput({
+        customNames: withEditedName({
+          customNames: model.bulk.customNames,
+          ...args,
+        }),
+      })
     },
 
     forgetRow(id: string) {
-      setCustomNames(prev => withoutName(prev, id))
+      model.updateBulkInput({
+        customNames: withoutName(model.bulk.customNames, id),
+      })
     },
   }
 }
 
-export type CustomNamesState = ReturnType<typeof useCustomNames>
+export type CustomNamesState = ReturnType<typeof customNames>

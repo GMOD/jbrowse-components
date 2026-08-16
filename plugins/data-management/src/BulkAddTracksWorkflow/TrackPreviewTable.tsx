@@ -5,7 +5,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import type { TrackConfRow, TrackStatus } from './buildConfigs.ts'
-import type { CustomNamesState } from './useCustomNames.ts'
+import type { CustomNamesState } from './customNames.ts'
 import type { NamedRow } from './util.ts'
 import type { GridColDef } from '@mui/x-data-grid'
 

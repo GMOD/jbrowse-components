@@ -32,9 +32,28 @@ export interface IndexingAttr {
   exclude: string[]
 }
 
+export type BulkInputMode = 'remote' | 'local'
+
+/**
+ * What the bulk workflow has collected so far. It lives here rather than in
+ * that component's `useState` because the drawer unmounts a widget the moment
+ * anything else is shown in it — which discarded the list of URLs the user had
+ * assembled, the expensive part of that workflow, while the single-track form
+ * beside it survived the same trip. `clearData` covers it for the same reason
+ * it covers the rest.
+ */
+export interface BulkInputState {
+  mode: BulkInputMode
+  text: string
+  localLocations: FileLocation[]
+  /** names typed over the automatic ones, by row id */
+  customNames: Record<string, string>
+  stripExtensions: boolean
+}
+
 // A factory (not a shared const) so each model instance — and each clearData
-// call — gets its own fresh mixinData object rather than aliasing one shared
-// reference.
+// call — gets its own fresh mixinData/bulk object rather than aliasing one
+// shared reference.
 function createVolatileState() {
   return {
     trackData: undefined as FileLocation | undefined,
@@ -56,6 +75,13 @@ function createVolatileState() {
     // you did not type looking like one you did. Cleared the moment you set an
     // index yourself.
     detectedIndexName: undefined as string | undefined,
+    bulk: {
+      mode: 'remote',
+      text: '',
+      localLocations: [],
+      customNames: {},
+      stripExtensions: false,
+    } as BulkInputState,
   }
 }
 
@@ -107,6 +133,15 @@ export default function f(pluginManager: PluginManager) {
        */
       setMixinData(arg: Record<string, unknown>) {
         self.mixinData = arg
+      },
+      /**
+       * #action
+       * Patch the bulk workflow's collected input. A patch rather than a setter
+       * per field: the bulk form edits several of these together (removing a
+       * row rewrites the input *and* forgets that row's rename).
+       */
+      updateBulkInput(patch: Partial<BulkInputState>) {
+        self.bulk = { ...self.bulk, ...patch }
       },
       /**
        * #action

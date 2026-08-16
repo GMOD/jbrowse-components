@@ -10,9 +10,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { BulkLocationsState } from './useBulkLocations.ts'
+import type { BulkLocationsState } from './bulkLocations.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
-import type { Dispatch, SetStateAction } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   section: {
@@ -22,24 +21,26 @@ const useStyles = makeStyles()(theme => ({
 
 const DropZone = observer(function DropZone({
   localLocations,
-  setLocalLocations,
+  addLocalLocations,
+  clearLocalLocations,
 }: {
   localLocations: FileLocation[]
-  setLocalLocations: Dispatch<SetStateAction<FileLocation[]>>
+  addLocalLocations: (arg: FileLocation[]) => void
+  clearLocalLocations: () => void
 }) {
   const { classes } = useStyles()
   return (
     <div className={classes.section}>
       <FileDropZone
         onDrop={accepted => {
-          setLocalLocations(prev => [...prev, ...accepted.map(fileToLocation)])
+          addLocalLocations(accepted.map(fileToLocation))
         }}
       />
       {localLocations.length > 0 ? (
         <Button
           size="small"
           onClick={() => {
-            setLocalLocations([])
+            clearLocalLocations()
           }}
         >
           Clear {localLocations.length}{' '}
@@ -55,8 +56,15 @@ const LocationInput = observer(function LocationInput({
 }: {
   input: BulkLocationsState
 }) {
-  const { mode, setMode, text, setText, localLocations, setLocalLocations } =
-    input
+  const {
+    mode,
+    setMode,
+    text,
+    setText,
+    localLocations,
+    addLocalLocations,
+    clearLocalLocations,
+  } = input
   const { classes } = useStyles()
   return (
     <>
@@ -100,7 +108,8 @@ const LocationInput = observer(function LocationInput({
       ) : (
         <DropZone
           localLocations={localLocations}
-          setLocalLocations={setLocalLocations}
+          addLocalLocations={addLocalLocations}
+          clearLocalLocations={clearLocalLocations}
         />
       )}
     </>

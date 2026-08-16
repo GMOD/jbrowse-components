@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { AssemblySelector, LabeledCheckbox } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -11,9 +9,9 @@ import LocationInput from './LocationInput.tsx'
 import PreviewMessages from './PreviewMessages.tsx'
 import SubmitTracksButton from './SubmitTracksButton.tsx'
 import TrackPreviewTable from './TrackPreviewTable.tsx'
+import { bulkLocations } from './bulkLocations.ts'
+import { customNames } from './customNames.ts'
 import { summarizeBulkInput } from './preview.ts'
-import { useBulkLocations } from './useBulkLocations.ts'
-import { useCustomNames } from './useCustomNames.ts'
 import { resolveTrackNames } from './util.ts'
 
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
@@ -37,21 +35,25 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const input = useBulkLocations()
+  const input = bulkLocations(model)
   const { locations } = input
   // Reuse the widget model's assembly derivation/action (shared with the
   // single-track flow): it resolves to the view's assembly until the user picks
   // one, and setAssembly is reactive via observer.
   const assembly = model.assembly ?? ''
-  const { customNames, renameRow, forgetRow } = useCustomNames()
-  const [stripExtensions, setStripExtensions] = useState(false)
+  const names = customNames(model)
+  const { stripExtensions } = model.bulk
 
   const { rows, skippedCount, needsSetupCount, orphanIndexCount, warnings } =
     summarizeBulkInput({ locations, model, assembly })
 
   // Resolved once over every row, then filtered: collisions must be counted
   // across the whole list or the preview and the added names could disagree.
-  const named = resolveTrackNames({ rows, customNames, stripExtensions })
+  const named = resolveTrackNames({
+    rows,
+    customNames: names.customNames,
+    stripExtensions,
+  })
   const okNamed = named.filter(({ row }) => row.status === 'ok')
 
   function removeRow(rowId: string) {
@@ -61,7 +63,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
       dropped.add(indexId)
     }
     input.removeLocations(dropped)
-    forgetRow(rowId)
+    names.forgetRow(rowId)
   }
 
   return (
@@ -101,13 +103,13 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
           <LabeledCheckbox
             checked={stripExtensions}
             onChange={val => {
-              setStripExtensions(val)
+              model.updateBulkInput({ stripExtensions: val })
             }}
             label="Strip file extensions from track names"
           />
           <TrackPreviewTable
             named={named}
-            onRename={renameRow}
+            onRename={names.renameRow}
             onRemove={removeRow}
           />
         </>

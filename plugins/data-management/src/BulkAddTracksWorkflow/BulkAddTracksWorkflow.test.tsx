@@ -262,16 +262,53 @@ test('a removed row does not resurrect its edited name when re-added', async () 
   expect(getByText('a.bam')).toBeTruthy()
 })
 
+test('the collected input survives the workflow unmounting', () => {
+  const { model } = getSession()
+  const first = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  pasteUrls(first.getByLabelText, 'https://x.com/a.bam\nhttps://x.com/b.vcf.gz')
+  fireEvent.click(
+    first.getByRole('checkbox', { name: /Strip file extensions/ }),
+  )
+  first.unmount()
+
+  // the drawer unmounts a widget the moment anything else is shown in it, and
+  // this list is the expensive part of the workflow to reassemble
+  const second = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  expect(second.getByRole('button', { name: 'Add 2 tracks' })).toBeTruthy()
+  expect(second.getByText('a')).toBeTruthy()
+  expect(second.getByText('b')).toBeTruthy()
+})
+
+test('a submit clears the collected input', () => {
+  const { model } = getSession()
+  const { getByLabelText, getByRole } = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  pasteUrls(getByLabelText, 'https://x.com/a.bam')
+  fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
+
+  // the input lives on the widget model, so finishing resets it along with the
+  // rest of the form rather than leaving a list that re-adds on a second click
+  expect(model.bulk.text).toBe('')
+  expect(getByRole('button', { name: 'Add 0 tracks' })).toBeTruthy()
+})
+
 test('submitting twice from the same widget adds two distinct tracks', () => {
   const { session, model } = getSession()
   const { getByLabelText, getByRole } = render(
     <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
-  pasteUrls(getByLabelText, 'https://x.com/a.bam')
 
-  // trackIds are minted per submit, not per mount: a second click must not
-  // re-mint the first click's ids, which addTrackConf would silently collapse
+  // trackIds are minted per submit, not per mount: pasting the same URL again
+  // must not re-mint the first submit's id, which addTrackConf would silently
+  // collapse onto the existing track
+  pasteUrls(getByLabelText, 'https://x.com/a.bam')
   fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
+  pasteUrls(getByLabelText, 'https://x.com/a.bam')
   fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
 
   expect(session.sessionTracks.length).toBe(2)

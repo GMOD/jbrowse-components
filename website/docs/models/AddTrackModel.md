@@ -27,6 +27,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | <span id="getter-trackcontainer">**trackContainer**</span><br><code>TrackContainer &#124; undefined</code> | The track list a submitted track opens in. |
 | <span id="getter-trackadapter">**trackAdapter**</span><br><code>AdapterConfig &#124; undefined</code> |  |
 | <span id="getter-trackname">**trackName**</span><br><code>string</code> |  |
+| <span id="getter-submittabletrackname">**submittableTrackName**</span><br><code>string</code> | The name the track is added under, which is what an all-whitespace entry has to be judged on — `!!trackName` accepts `' '` and mints a track whose name renders as nothing in the selector. |
 | <span id="getter-uris">**uris**</span><br><code>(string &#124; undefined)[]</code> |  |
 | <span id="getter-isftp">**isFtp**</span><br><code>boolean</code> |  |
 | <span id="getter-isrelativeurl">**isRelativeUrl**</span><br><code>boolean</code> |  |
@@ -50,6 +51,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | Member | Description |
 | --- | --- |
 | <span id="action-setmixindata">**setMixinData**</span><br><code>(arg: Record&lt;string, unknown&gt;) =&gt; void</code> |  |
+| <span id="action-updatebulkinput">**updateBulkInput**</span><br><code>(patch: Partial&lt;BulkInputState&gt;) =&gt; void</code> | Patch the bulk workflow's collected input. A patch rather than a setter per field: the bulk form edits several of these together (removing a row rewrites the input *and* forgets that row's rename). |
 | <span id="action-setadapterhint">**setAdapterHint**</span><br><code>(obj: string) =&gt; void</code> |  |
 | <span id="action-settextindexingconf">**setTextIndexingConf**</span><br><code>(conf: IndexingAttr) =&gt; void</code> |  |
 | <span id="action-settextindextrack">**setTextIndexTrack**</span><br><code>(flag: boolean) =&gt; void</code> |  |
