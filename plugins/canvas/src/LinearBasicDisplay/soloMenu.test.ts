@@ -138,7 +138,7 @@ describe('show-only list context menu', () => {
     load(display)
 
     rightClick(display, geneA!)
-    expect(soloRow(display).subLabel).toBeUndefined()
+    expect(soloRow(display)).toMatchObject({ subLabel: undefined })
 
     // nor once applied, where the list IS what is shown and narrowing it is the
     // row's advertised job rather than a loss
@@ -149,7 +149,7 @@ describe('show-only list context menu', () => {
     load(applied)
 
     rightClick(applied, geneA!)
-    expect(soloRow(applied).subLabel).toBeUndefined()
+    expect(soloRow(applied)).toMatchObject({ subLabel: undefined })
   })
 
   it('offers only the undo once the list holds this feature alone', () => {

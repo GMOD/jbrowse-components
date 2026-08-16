@@ -1,6 +1,4 @@
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
-import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import {
   DisplayChrome,
   FloatingSvgOverlay,
@@ -10,7 +8,6 @@ import {
   RowLabelsOverlay,
   RowSeparatorLines,
   TreeSidebar,
-  treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -26,7 +23,6 @@ import MultiRowTooltip from './MultiRowTooltip.tsx'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 // The guides and the tooltip, in their own component so that following the
@@ -168,7 +164,6 @@ const LinearMultiRowFeatureDisplayComponent = observer(
   }: {
     model: LinearMultiRowFeatureDisplayModel
   }) {
-    const view = getContainingView(model) as LinearGenomeViewModel
     function onClick(e: React.MouseEvent<HTMLDivElement>) {
       const rect = e.currentTarget.getBoundingClientRect()
       const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
@@ -178,22 +173,21 @@ const LinearMultiRowFeatureDisplayComponent = observer(
     }
     function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
       const rect = e.currentTarget.getBoundingClientRect()
-      const px = e.clientX - rect.left
-      const p = view.pxToBp(px)
       // preventDefault only when a menu actually opens, so a right-click in the
       // inter-region gutter, or on the tree sidebar that overlays this container
-      // and owns its own menu, falls through instead of being a dead zone
-      if (!p.oob && px >= treeSidebarRightEdge(model)) {
+      // and owns its own menu, falls through instead of being a dead zone. What
+      // counts as either is `contextTargetAt`'s to say.
+      const target = model.contextTargetAt(
+        e.clientX - rect.left,
+        e.clientY - rect.top,
+      )
+      if (target) {
         e.preventDefault()
         model.setHoveredFeature(undefined)
         model.openContextMenu({
           clientX: e.clientX,
           clientY: e.clientY,
-          refName: p.refName,
-          // anchors "sort rows by color here" on the clicked column, so it
-          // must be the base drawn there (coord0 is off by one when reversed)
-          pos: basePaintedAt(p, p.offset),
-          hit: model.featureAt(px, e.clientY - rect.top),
+          ...target,
         })
       }
     }

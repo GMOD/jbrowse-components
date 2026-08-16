@@ -8,8 +8,13 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
-import { getSession, openFeatureWidget } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getSession,
+  openFeatureWidget,
+} from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
+import { copyText } from '@jbrowse/core/util/copyText'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -38,6 +43,7 @@ import {
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
@@ -850,6 +856,37 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       /**
+       * #method
+       * What a right-click at this display-relative pixel resolves to: the
+       * genomic position the menu's position-scoped rows act on ("Sort rows by
+       * color here"), and the feature there when the click landed on one.
+       *
+       * Undefined wherever no menu should open, which is what the component
+       * needs in order to decide whether to `preventDefault` — over the tree
+       * sidebar, which overlays this display and owns its own menu, and in the
+       * inter-region gutter, where there is no base to name. Model-side and
+       * beside `featureAt` because it is the same question about the same pixel;
+       * spelled out in the component it re-derived `pxToBp`, the sidebar bound
+       * and the painted base that `featureAt` was about to derive again.
+       */
+      contextTargetAt(mouseX: number, mouseY: number) {
+        if (mouseX < treeSidebarRightEdge(self)) {
+          return undefined
+        }
+        const p = self.lgv.pxToBp(mouseX)
+        if (p.oob) {
+          return undefined
+        }
+        return {
+          refName: p.refName,
+          // anchors "sort rows by color here" on the clicked column, so it must
+          // be the base drawn there (coord0 is off by one when reversed)
+          pos: basePaintedAt(p, p.offset),
+          hit: self.featureAt(mouseX, mouseY),
+        }
+      },
+
+      /**
        * #getter
        * Screen box of the block to mark, or undefined when there's nothing to
        * mark. The hover drops when a right-click menu opens (else its tooltip
@@ -1256,6 +1293,27 @@ export default function stateModelFactory(
                   icon: MenuOpenIcon,
                   onClick: () => {
                     self.selectFeatureById(hit.id, hit.regionIndex)
+                  },
+                },
+                // The same row the feature display offers, for the same
+                // reason: it is the one thing in either menu that gets pasted
+                // somewhere rather than read. A row painting is where a reader
+                // is most likely to want it, since nothing else here names the
+                // block's span.
+                {
+                  label: 'Copy location',
+                  subLabel: 'e.g. to paste into the location search box',
+                  icon: ContentCopyIcon,
+                  onClick: () => {
+                    void copyText(
+                      self,
+                      assembleLocString({
+                        refName: hit.refName,
+                        start: hit.start,
+                        end: hit.end,
+                      }),
+                      'location',
+                    )
                   },
                 },
               ]
