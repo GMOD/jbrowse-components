@@ -95,7 +95,13 @@ export default function sharedModelFactory(
         self.focalSnpLocus = snp ? `${snp.refName}:${snp.start}` : undefined
       },
       setLineZoneHeight(n: number) {
-        setConf(self, 'lineZoneHeight', clampLineZoneHeight(n))
+        // `getConf`, not the `lineZoneHeight` getter, which is declared in a
+        // later views block and so is not on `self` here — same value either way
+        setConf(
+          self,
+          'lineZoneHeight',
+          clampLineZoneHeight(getConf(self, 'lineZoneHeight'), n),
+        )
       },
       setMafFilter(arg: number) {
         setConf(self, 'minorAlleleFrequencyFilter', arg)

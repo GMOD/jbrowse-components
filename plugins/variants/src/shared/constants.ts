@@ -1,7 +1,7 @@
 import { set1 } from '@jbrowse/core/ui/colors'
+import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 
-import { clampBandHeight } from './variantTopBands.ts'
 import { getCachedABGR } from './variantWebglUtils.ts'
 
 export const GENOTYPE_SPLITTER = /[/|]/
@@ -22,9 +22,13 @@ export const SIDEBAR_BACKGROUND_OPACITY = 0.8
 // Both displays' connector-line zone is drag-resizable, and both clamp the drag
 // through the shared band rule (`clampBandHeight`) — the floor keeps the resize
 // handle, drawn at lineZoneHeight - 4, reachable. A config or snapshot may still
-// declare 0 to turn the zone off entirely; only a *drag* comes through here.
-export function clampLineZoneHeight(n: number) {
-  return clampBandHeight(n, 10, 1000)
+// declare 0 to turn the zone off entirely; only a *drag* comes through here,
+// which is also why this is the resize form and takes the current height: a zone
+// a config declared below the floor is not snapped up by its first drag.
+export const LINE_ZONE_BOUNDS = { min: 10, max: 1000 }
+
+export function clampLineZoneHeight(current: number, target: number) {
+  return clampBandHeight(current, target, LINE_ZONE_BOUNDS)
 }
 
 // Screen row a worker row maps to when the display isn't drawing it (see

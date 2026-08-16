@@ -25,7 +25,7 @@ import {
   measureText,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   HeightModeMixin,
@@ -3110,6 +3110,26 @@ export default function stateModelFactory(
           })
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * The legal range for any of the three drag-resizable bands stacked over
+         * the pileup (coverage, read connections, sashimi).
+         *
+         * The ceiling is what makes the drag recoverable. `pileupViewportHeight`
+         * floors at 0, so without one a band dragged past the display height
+         * squashes the pileup to nothing *and* carries its own resize handle off
+         * the bottom edge — leaving no way back except growing the track. Each
+         * band is bounded against the display height individually; three of them
+         * dragged large can still crowd the pileup, but every one of them stays
+         * reachable, which is the property the user needs.
+         */
+        get resizableBandBounds() {
+          return {
+            max: Math.max(MIN_BAND_HEIGHT, self.height - MIN_BAND_HEIGHT),
+          }
+        },
+      }))
       .actions(self => {
         const superSetError = self.setError
         const superSetHeightMode = self.setHeightMode
@@ -3565,7 +3585,11 @@ export default function stateModelFactory(
             setConf(
               self,
               'coverageHeight',
-              clampBandHeight(self.coverageHeight, height),
+              clampBandHeight(
+                self.coverageHeight,
+                height,
+                self.resizableBandBounds,
+              ),
             )
           },
 
@@ -3576,7 +3600,11 @@ export default function stateModelFactory(
             setConf(
               self,
               'readConnectionsHeight',
-              clampBandHeight(self.readConnectionsHeight, height),
+              clampBandHeight(
+                self.readConnectionsHeight,
+                height,
+                self.resizableBandBounds,
+              ),
             )
           },
 
@@ -3587,7 +3615,11 @@ export default function stateModelFactory(
             setConf(
               self,
               'sashimiArcsHeight',
-              clampBandHeight(self.sashimiArcsHeight, height),
+              clampBandHeight(
+                self.sashimiArcsHeight,
+                height,
+                self.resizableBandBounds,
+              ),
             )
           },
 

@@ -181,7 +181,11 @@ export default function stateModelFactory(
          * #action
          */
         setLineZoneHeight(n: number) {
-          setConf(self, 'lineZoneHeight', clampLineZoneHeight(n))
+          setConf(
+            self,
+            'lineZoneHeight',
+            clampLineZoneHeight(self.lineZoneHeight, n),
+          )
         },
         /**
          * #action

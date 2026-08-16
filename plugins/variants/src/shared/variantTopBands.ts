@@ -22,6 +22,7 @@
  * paints over the first row of the plot, and nothing fails — it just looks
  * wrong, in the direction a screenshot review reads as a rendering bug.
  */
+import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 import {
   LABEL_FONT_SIZE,
   modeCanShowDescription,
@@ -80,28 +81,6 @@ export interface VariantTopBands {
    * the display height. The sum of every band above.
    */
   bottom: number
-}
-
-/**
- * Clamp a user-resized band height.
- *
- * Every band above the rows is resizable and every one of them clamps the same
- * way, for the same two reasons. The **floor** keeps the band operable at its
- * smallest — for the connector zone that means keeping the resize handle (drawn
- * just inside its bottom edge) grabbable, so a zone dragged shut can be dragged
- * back open; for the variant lane, which is sized from the track menu rather
- * than by a handle, it is the height below which a record stops reading as a
- * mark at all. The **ceiling** stops a resize from swallowing the plot it sits
- * over — `availableHeight` floors at 0, so an unbounded band takes the rows to
- * zero height rather than to a scrollbar.
- *
- * The bounds differ per band and the rule does not, which is why this is one
- * function taking them rather than one clamp per band re-deriving the reasoning
- * — that is how `clampLineZoneHeight` and the matrix's own bespoke clamp drifted
- * apart before they were unified.
- */
-export function clampBandHeight(n: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, Math.round(n)))
 }
 
 // Floor/ceiling for a resized lane, and the ceiling is also the size menu's —
@@ -171,8 +150,19 @@ export const VARIANT_LANE_LABEL_OPTIONS = [
   { value: 'none' as const, label: 'None' },
 ]
 
-export function clampVariantLaneHeight(n: number) {
-  return clampBandHeight(n, MIN_VARIANT_LANE_HEIGHT, MAX_VARIANT_LANE_HEIGHT)
+export const VARIANT_LANE_BOUNDS = {
+  min: MIN_VARIANT_LANE_HEIGHT,
+  max: MAX_VARIANT_LANE_HEIGHT,
+}
+
+/**
+ * The lane height as *stated* — by config, by the size menu, or by this file's
+ * own geometry read below. The drag-resize twin is `clampBandHeight` in the
+ * setter, which additionally leaves a config-declared sub-floor lane where it
+ * is; see `@jbrowse/core/util/bandHeight`.
+ */
+export function boundVariantLaneHeight(n: number) {
+  return boundBandHeight(n, VARIANT_LANE_BOUNDS)
 }
 
 // The shortest a mark can be drawn and still read as a mark rather than as an
@@ -191,7 +181,7 @@ export function variantTopBandsGeometry({
   // to leave the display pixel-identical to what it was before the lane
   // existed, or every committed figure moves by 8px.
   const laneHeight = showVariantLane
-    ? clampVariantLaneHeight(variantLaneHeight)
+    ? boundVariantLaneHeight(variantLaneHeight)
     : 0
   // One text line per kind the mode admits, plus the gap above the first and
   // the descender allowance below the last. The font and both spacings are

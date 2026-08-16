@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -528,24 +528,9 @@ export default function stateModelFactory(
         setCoverageHeight(arg: number) {
           setConf(self, 'coverageHeight', arg)
         },
-        /**
-         * #action
-         * Apply one drag delta to the coverage band. Reads the current height
-         * inside the action rather than taking an absolute target: `ResizeHandle`
-         * emits one delta per animation frame, so a component computing
-         * `renderHeight + delta` drops every tick that lands before React
-         * re-renders. Mirrors `resizeHeight`.
-         */
-        resizeCoverageHeight(distance: number) {
-          setConf(
-            self,
-            'coverageHeight',
-            clampBandHeight(
-              self.coverageHeight,
-              self.coverageHeight + distance,
-            ),
-          )
-        },
+        // `resizeCoverageHeight` / `resizeConservationHeight` are NOT here, with
+        // their `set*` twins: they clamp against `resizableBandBounds`, which is
+        // derived from `fitTargetHeight` further down the chain.
         /**
          * #action
          */
@@ -599,21 +584,6 @@ export default function stateModelFactory(
          */
         setConservationHeight(arg: number) {
           setConf(self, 'conservationHeight', arg)
-        },
-        /**
-         * #action
-         * Per-frame drag delta for the conservation band — see
-         * `resizeCoverageHeight` for why this reads the height itself.
-         */
-        resizeConservationHeight(distance: number) {
-          setConf(
-            self,
-            'conservationHeight',
-            clampBandHeight(
-              self.conservationHeight,
-              self.conservationHeight + distance,
-            ),
-          )
         },
       }))
       .actions(self => {
@@ -1095,6 +1065,27 @@ export default function stateModelFactory(
               )
             : 0
         },
+        /**
+         * #getter
+         * The legal range for the two drag-resizable bands stacked over the rows
+         * (coverage, conservation).
+         *
+         * The ceiling is what makes the drag recoverable: `rowsHeight` above
+         * floors at 0, so without one a band dragged past the track height
+         * squashes the rows to nothing *and* carries its own resize handle —
+         * drawn at the band's bottom edge — off the display, leaving no way back.
+         * Bounded against `fitTargetHeight`, the same pot `rowsHeight` divides,
+         * and per band rather than across both: two bands dragged large can still
+         * crowd the rows, but each stays reachable.
+         */
+        get resizableBandBounds() {
+          return {
+            max: Math.max(
+              MIN_BAND_HEIGHT,
+              self.fitTargetHeight - MIN_BAND_HEIGHT,
+            ),
+          }
+        },
       }))
       .views(self => ({
         /**
@@ -1232,6 +1223,45 @@ export default function stateModelFactory(
           const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
           setConf(self, 'height', newHeight)
           return newHeight - oldHeight
+        },
+        /**
+         * #action
+         * Apply one drag delta to the coverage band. Reads the current height
+         * inside the action rather than taking an absolute target: `ResizeHandle`
+         * emits one delta per animation frame, so a component computing
+         * `renderHeight + delta` drops every tick that lands before React
+         * re-renders. Mirrors `resizeHeight`.
+         *
+         * Sits here rather than with its `setCoverageHeight` twin because the
+         * ceiling comes off `fitTargetHeight`, which is declared above this
+         * block.
+         */
+        resizeCoverageHeight(distance: number) {
+          setConf(
+            self,
+            'coverageHeight',
+            clampBandHeight(
+              self.coverageHeight,
+              self.coverageHeight + distance,
+              self.resizableBandBounds,
+            ),
+          )
+        },
+        /**
+         * #action
+         * Per-frame drag delta for the conservation band — see
+         * `resizeCoverageHeight` for why this reads the height itself.
+         */
+        resizeConservationHeight(distance: number) {
+          setConf(
+            self,
+            'conservationHeight',
+            clampBandHeight(
+              self.conservationHeight,
+              self.conservationHeight + distance,
+              self.resizableBandBounds,
+            ),
+          )
         },
         // `setScrollTop` and the re-clamp autorun are TrackHeightMixin's, earned
         // by overriding `scrollableHeight` above — nothing self-corrects a

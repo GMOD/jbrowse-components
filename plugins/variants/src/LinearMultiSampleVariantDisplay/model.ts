@@ -6,6 +6,7 @@ import {
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { getSession } from '@jbrowse/core/util'
+import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
@@ -16,8 +17,8 @@ import {
   DEFAULT_VARIANT_LANE_HEIGHT,
   MAX_VARIANT_LANE_HEIGHT,
   MIN_VARIANT_LANE_HEIGHT,
+  VARIANT_LANE_BOUNDS,
   VARIANT_LANE_LABEL_OPTIONS,
-  clampVariantLaneHeight,
 } from '../shared/variantTopBands.ts'
 import { markersForBlock } from './components/drawVariantInsertionGlyphs.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
@@ -84,7 +85,11 @@ export function stateModelFactory(
          * deliver any number, and a band dragged shut has to stay grabbable.
          */
         setVariantLaneHeight(arg: number) {
-          setConf(self, 'variantLaneHeight', clampVariantLaneHeight(arg))
+          setConf(
+            self,
+            'variantLaneHeight',
+            clampBandHeight(self.variantLaneHeight, arg, VARIANT_LANE_BOUNDS),
+          )
         },
         /**
          * #action
