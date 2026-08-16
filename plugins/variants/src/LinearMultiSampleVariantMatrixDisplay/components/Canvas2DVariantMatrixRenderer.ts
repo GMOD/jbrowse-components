@@ -1,5 +1,4 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 import { f2 } from '../../shared/constants.ts'
@@ -55,10 +54,13 @@ export class Canvas2DVariantMatrixRenderer extends Canvas2DGlobalRenderingBacken
   VariantMatrixUploadData,
   MatrixRenderState
 > {
-  render(data: VariantMatrixUploadData | null, state: MatrixRenderState) {
-    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    if (data && data.numCells > 0) {
-      drawVariantMatrixBlocks(this.ctx, data, state)
+  // `prepareCanvas` is the base's (Canvas2DGlobalRenderingBackend), which is
+  // also what clears the canvas on the null-payload frame.
+  protected draw(data: VariantMatrixUploadData, state: MatrixRenderState) {
+    if (data.numCells === 0) {
+      return false
     }
+    drawVariantMatrixBlocks(this.ctx, data, state)
+    return true
   }
 }

@@ -691,20 +691,16 @@ export default function sharedModelFactory(
               b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
             }
           },
-          // Gates on the data, not on a nullable render state: a monolithic
-          // `render` returns void, so this callback owns the "did real content
-          // reach the canvas" answer, and painting an empty frame would flip
-          // `canvasDrawn` before the first matrix arrives (see the matrix
-          // display for the same note).
-          render: b => {
-            const d = self.rpcData
-            if (d) {
-              b.render(toLDUploadData(d), self.renderState)
-              return true
-            } else {
-              return false
-            }
-          },
+          // The backend answers "did real content reach the canvas". It used to
+          // be this callback's answer, because a monolithic `render` returned
+          // void — and "the data is here" is not the same claim as "something
+          // was painted": the Canvas2D renderer draws nothing until the colour
+          // ramp arrives, and the GPU one nothing until a buffer is filled.
+          render: b =>
+            b.render(
+              self.rpcData ? toLDUploadData(self.rpcData) : null,
+              self.renderState,
+            ),
         })
       },
     }))

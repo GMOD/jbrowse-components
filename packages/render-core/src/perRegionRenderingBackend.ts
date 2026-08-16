@@ -9,16 +9,15 @@ import {
 import type { BlockClipResult } from './blockClipUtils.ts'
 import type { InstancePass } from './instancePass.ts'
 import type { RenderBlock } from './renderBlock.ts'
-import type { RenderingBackend } from './renderingBackendBase.ts'
+import type {
+  FrameDimensions,
+  RenderingBackend,
+} from './renderingBackendBase.ts'
 
-/**
- * Minimum render-state shape the GPU frame scaffold needs: the CSS-pixel
- * canvas dimensions used to size the backing store and clip each block.
- */
-export interface FrameDimensions {
-  canvasWidth: number
-  canvasHeight: number
-}
+// Re-exported from its home beside the two backend bases, both families having
+// the same claim on it. Kept on this subpath because that is where the exports
+// map has always served it.
+export type { FrameDimensions } from './renderingBackendBase.ts'
 
 /**
  * Shared contract for per-region streamed GPU backends.

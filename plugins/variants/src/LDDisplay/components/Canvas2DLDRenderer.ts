@@ -1,7 +1,6 @@
 import {
   lookupColorRamp,
   makeRampFillStyleLut,
-  prepareCanvas,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
@@ -97,11 +96,13 @@ export class Canvas2DLDRenderer
     this.colorRamp = colors
   }
 
-  render(data: LDUploadData | null, state: LDRenderState) {
-    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    if (!data || !this.colorRamp) {
-      return
+  // `prepareCanvas` is the base's (Canvas2DGlobalRenderingBackend), which is
+  // also what clears the canvas on the null-payload frame.
+  protected draw(data: LDUploadData, state: LDRenderState) {
+    if (!this.colorRamp) {
+      return false
     }
     drawLDBlocks(this.ctx, data, this.colorRamp, state)
+    return true
   }
 }

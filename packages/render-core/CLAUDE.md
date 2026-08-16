@@ -21,6 +21,12 @@ rules those two state; don't restate them. What follows is this package's own.
 - **`GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` own
   `setErrorHandler`**, which turns a HAL over-limit allocation into the "too
   much data, zoom in" banner rather than a blank canvas.
+- **A backend subclass implements `draw`, never `render`/`renderBlocks`.** Both
+  families' bases own the frame scaffold — `resize` + paired
+  `beginFrame`/`endFrame` on GPU, `prepareCanvas` on Canvas2D — and own the "did
+  real content reach the canvas" answer `RenderLifecycleMixin` flips
+  `canvasDrawn` from. A display that re-derives that answer from its own data is
+  answering a different question than the renderer's guard.
 - **HAL parity**: a behavior change to one HAL lands in the other and in
   `MockHal`. The gates are `browser-tests/compare-backends.ts` and
   `hal/regionRegistry.test.ts` — not the attribute layout, which

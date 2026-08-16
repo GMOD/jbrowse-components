@@ -1,4 +1,3 @@
-import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 import { makeHicFillStyleLut } from './colorRamp.ts'
@@ -124,11 +123,13 @@ export class Canvas2DHicRenderer
     this.fillStyleLut = makeHicFillStyleLut(colors)
   }
 
-  render(data: HicUploadData | null, state: HicRenderState) {
-    prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    if (!data || !this.fillStyleLut) {
-      return
+  // `prepareCanvas` is the base's (Canvas2DGlobalRenderingBackend), which is
+  // also what clears the canvas on the null-payload frame.
+  protected draw(data: HicUploadData, state: HicRenderState) {
+    if (!this.fillStyleLut) {
+      return false
     }
     drawHicBlocks(this.ctx, data, this.fillStyleLut, state, state.canvasWidth)
+    return true
   }
 }

@@ -198,21 +198,14 @@ export default function stateModelFactory(
                 b.uploadData(placedMatrixData)
               }
             },
-            // A monolithic backend's `render` returns void, so the "did real
-            // content reach the canvas" answer has to come from here — unlike a
-            // per-region `renderBlocks`, which answers it itself (ADR-009). Skip
-            // the tick rather than paint an empty frame: painting one flips
-            // `canvasDrawn`, and the loading scrim and every readiness wait key
-            // off that, so the first snapshot would catch a blank canvas.
-            render: b => {
-              const { placedMatrixData } = self
-              if (placedMatrixData) {
-                b.render(placedMatrixData, self.renderState)
-                return true
-              } else {
-                return false
-              }
-            },
+            // The backend answers "did real content reach the canvas", the same
+            // way a per-region `renderBlocks` does (ADR-009). It used to be this
+            // callback's answer, and "the placed data is here" was the wrong
+            // question: a payload with no cells paints nothing, and flipping
+            // `canvasDrawn` over it would let the loading scrim drop and the
+            // first snapshot catch a blank canvas.
+            render: b =>
+              b.render(self.placedMatrixData ?? null, self.renderState),
           })
         },
       }))

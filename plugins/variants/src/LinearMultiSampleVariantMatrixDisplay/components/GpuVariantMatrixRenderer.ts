@@ -14,7 +14,6 @@ import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 const PASS_MAIN = 'main'
 const REGION_KEY = 0
 const UNIFORMS_SIZE_BYTES = variantMatrixShader.UNIFORMS_SIZE_BYTES
-const U = variantMatrixShader.UNIFORM_OFFSET_F32
 
 export const VARIANT_MATRIX_PASSES: PipelineDescriptor[] = [
   slangPass({
@@ -29,11 +28,8 @@ export class GpuVariantMatrixRenderer extends GpuGlobalRenderingBackend<
   VariantMatrixUploadData,
   MatrixRenderState
 > {
-  private uniformF32: Float32Array
-
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
-    this.uniformF32 = new Float32Array(this.uniformData)
   }
 
   uploadData(data: VariantMatrixUploadData) {
@@ -45,28 +41,35 @@ export class GpuVariantMatrixRenderer extends GpuGlobalRenderingBackend<
     this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, buf, data.numCells)
   }
 
-  render(data: VariantMatrixUploadData | null, state: MatrixRenderState) {
-    const { canvasWidth, canvasHeight } = state
-    this.hal.resize(canvasWidth, canvasHeight)
-    this.hal.beginFrame(0, 0, 0, 0)
-
-    const numFeatures = data?.numFeatures ?? 0
-    if (numFeatures > 0 && this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0) {
-      this.uniformF32[U.numFeatures] = numFeatures
-      this.uniformF32[U.canvasWidth] = canvasWidth
-      this.uniformF32[U.canvasHeight] = canvasHeight
-      this.uniformF32[U.rowHeight] = state.rowHeight
-      this.uniformF32[U.scrollTop] = state.scrollTop
+  // The resize and the beginFrame/endFrame around this belong to
+  // `GpuGlobalRenderingBackend`.
+  protected draw(data: VariantMatrixUploadData, state: MatrixRenderState) {
+    const { numFeatures } = data
+    if (
+      numFeatures === 0 ||
+      this.hal.getBufferCount(REGION_KEY, PASS_MAIN) === 0
+    ) {
+      return false
+    }
+    // Whole-block packer rather than offset pokes: every field is set once a
+    // frame, and the scratch buffer outlives the frame, so a poke left out would
+    // silently reuse the last frame's value where a missing key here is a type
+    // error.
+    variantMatrixShader.writeUniforms(this.uniformData, {
+      numFeatures,
+      canvasWidth: state.canvasWidth,
+      canvasHeight: state.canvasHeight,
+      rowHeight: state.rowHeight,
+      scrollTop: state.scrollTop,
       // Must be `getDpr()`, not a bare `devicePixelRatio` read: the shader
       // rebuilds the backing-store width as `canvasWidth * devicePixelRatio` to
       // snap column edges to physical pixels, so this has to be the same ratio
       // `hal.resize` just sized the backing store with — including its cap.
-      this.uniformF32[U.devicePixelRatio] = getDpr()
+      devicePixelRatio: getDpr(),
+    })
 
-      this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(PASS_MAIN, REGION_KEY)
-    }
-
-    this.hal.endFrame()
+    this.hal.writeUniforms(this.uniformData)
+    this.hal.drawPass(PASS_MAIN, REGION_KEY)
+    return true
   }
 }

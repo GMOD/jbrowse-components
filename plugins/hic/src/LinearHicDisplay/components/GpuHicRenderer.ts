@@ -13,8 +13,6 @@ import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 const PASS_MAIN = 'main'
 const REGION_KEY = 0
 const UNIFORMS_SIZE_BYTES = hicShader.UNIFORMS_SIZE_BYTES
-const U = hicShader.UNIFORM_OFFSET_F32
-const UU = hicShader.UNIFORM_OFFSET_U32
 
 export const HIC_PASSES: PipelineDescriptor[] = [
   slangPass({
@@ -29,13 +27,8 @@ export class GpuHicRenderer
   extends GpuGlobalRenderingBackend<HicUploadData, HicRenderState>
   implements HicRenderingBackend
 {
-  private uniformF32: Float32Array
-  private uniformU32: Uint32Array
-
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
-    this.uniformF32 = new Float32Array(this.uniformData)
-    this.uniformU32 = new Uint32Array(this.uniformData)
   }
 
   uploadData(data: HicUploadData) {
@@ -61,29 +54,31 @@ export class GpuHicRenderer
     this.hal.uploadTexture(PASS_MAIN, colors, 256, 1)
   }
 
-  render(data: HicUploadData | null, state: HicRenderState) {
-    const { canvasWidth, canvasHeight } = state
-
-    this.hal.resize(canvasWidth, canvasHeight)
-    this.hal.beginFrame(0, 0, 0, 0)
-
-    // binWidth comes from the payload the buffers were packed from, so an
-    // uploaded buffer with no current data draws nothing rather than scaling
-    // bins by a stand-in.
-    if (data && this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0) {
-      this.uniformF32[U.canvasSize] = canvasWidth
-      this.uniformF32[U.canvasSize + 1] = canvasHeight
-      this.uniformF32[U.binWidth] = data.binWidth
-      this.uniformF32[U.yScalar] = state.yScalar
-      this.uniformF32[U.colorMaxScore] = state.colorMaxScore
-      this.uniformF32[U.viewScale] = state.viewScale
-      this.uniformF32[U.viewOffsetX] = state.viewOffsetX
-      this.uniformU32[UU.useLogScale] = state.useLogScale ? 1 : 0
-
-      this.hal.writeUniforms(this.uniformData)
-      this.hal.drawPass(PASS_MAIN, REGION_KEY)
+  // binWidth comes from the payload the buffers were packed from, so an
+  // uploaded buffer with no current data draws nothing rather than scaling bins
+  // by a stand-in. The resize and the beginFrame/endFrame around this belong to
+  // `GpuGlobalRenderingBackend`.
+  protected draw(data: HicUploadData, state: HicRenderState) {
+    if (this.hal.getBufferCount(REGION_KEY, PASS_MAIN) === 0) {
+      return false
     }
+    // The generated whole-block packer, not offset pokes: this writes every
+    // field of the block once a frame, which is the case render-core's CLAUDE.md
+    // gives to the packer. It also makes the set *total* — the scratch buffer
+    // outlives the frame, so a poke left out silently reuses the last frame's
+    // value, where a missing key here is a type error.
+    hicShader.writeUniforms(this.uniformData, {
+      canvasSize: [state.canvasWidth, state.canvasHeight],
+      binWidth: data.binWidth,
+      yScalar: state.yScalar,
+      colorMaxScore: state.colorMaxScore,
+      viewScale: state.viewScale,
+      viewOffsetX: state.viewOffsetX,
+      useLogScale: state.useLogScale ? 1 : 0,
+    })
 
-    this.hal.endFrame()
+    this.hal.writeUniforms(this.uniformData)
+    this.hal.drawPass(PASS_MAIN, REGION_KEY)
+    return true
   }
 }

@@ -18,8 +18,6 @@ const REGION_KEY = 0
 // Both shader variants share an identical uniform block (ldUniforms.slang
 // module) — either module's offsets are authoritative.
 const UNIFORMS_SIZE_BYTES = ldGenomicShader.UNIFORMS_SIZE_BYTES
-const U = ldGenomicShader.UNIFORM_OFFSET_F32
-const UU = ldGenomicShader.UNIFORM_OFFSET_U32
 
 // The generated packer, not a loop of our own: `ldGenomic`'s instance struct is
 // exactly `{position: float2, cellSize: float2, ldValue: float}`, and
@@ -62,13 +60,8 @@ export class GpuLDRenderer
   extends GpuGlobalRenderingBackend<LDUploadData, LDRenderState>
   implements LDRenderingBackend
 {
-  private uniformF32: Float32Array
-  private uniformU32: Uint32Array
-
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
-    this.uniformF32 = new Float32Array(this.uniformData)
-    this.uniformU32 = new Uint32Array(this.uniformData)
   }
 
   uploadData(data: LDUploadData) {
@@ -102,36 +95,38 @@ export class GpuLDRenderer
     this.hal.uploadTexture(PASS_GENOMIC, colors, 256, 1)
   }
 
-  render(data: LDUploadData | null, state: LDRenderState) {
-    const { canvasWidth, canvasHeight } = state
-
-    this.hal.resize(canvasWidth, canvasHeight)
-    this.hal.beginFrame(0, 0, 0, 0)
-
+  // signedLD/uniformW come from the payload the buffers were packed from, so an
+  // uploaded buffer with no current data draws nothing rather than coloring by
+  // a stand-in convention. The resize and the beginFrame/endFrame around this
+  // belong to `GpuGlobalRenderingBackend`.
+  protected draw(data: LDUploadData, state: LDRenderState) {
     const hasMain = this.hal.getBufferCount(REGION_KEY, PASS_MAIN) > 0
     const hasGenomic = this.hal.getBufferCount(REGION_KEY, PASS_GENOMIC) > 0
-
-    // signedLD/uniformW come from the payload the buffers were packed from, so
-    // an uploaded buffer with no current data draws nothing rather than coloring
-    // by a stand-in convention.
-    if (data && (hasMain || hasGenomic)) {
-      this.uniformF32[U.canvasSize] = canvasWidth
-      this.uniformF32[U.canvasSize + 1] = canvasHeight
-      this.uniformF32[U.yScalar] = state.yScalar
-      this.uniformF32[U.viewScale] = state.viewScale
-      this.uniformF32[U.viewOffsetX] = state.viewOffsetX
-      this.uniformU32[UU.signedLd] = data.signedLD ? 1 : 0
-      this.uniformF32[U.uniformW] = data.uniformW
-
-      this.hal.writeUniforms(this.uniformData)
-      if (hasMain) {
-        this.hal.drawPass(PASS_MAIN, REGION_KEY)
-      }
-      if (hasGenomic) {
-        this.hal.drawPass(PASS_GENOMIC, REGION_KEY)
-      }
+    if (!hasMain && !hasGenomic) {
+      return false
     }
+    // Either variant's offsets are authoritative — both draw the one
+    // `ldUniforms.slang` block — so the packer is `ldGenomic`'s the same way the
+    // size above is. Whole-block rather than offset pokes: every field is set
+    // once a frame, and the scratch buffer outlives the frame, so a poke left
+    // out would silently reuse the last frame's value where a missing key here
+    // is a type error.
+    ldGenomicShader.writeUniforms(this.uniformData, {
+      canvasSize: [state.canvasWidth, state.canvasHeight],
+      yScalar: state.yScalar,
+      viewScale: state.viewScale,
+      viewOffsetX: state.viewOffsetX,
+      signedLd: data.signedLD ? 1 : 0,
+      uniformW: data.uniformW,
+    })
 
-    this.hal.endFrame()
+    this.hal.writeUniforms(this.uniformData)
+    if (hasMain) {
+      this.hal.drawPass(PASS_MAIN, REGION_KEY)
+    }
+    if (hasGenomic) {
+      this.hal.drawPass(PASS_GENOMIC, REGION_KEY)
+    }
+    return true
   }
 }

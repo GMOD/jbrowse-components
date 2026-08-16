@@ -465,14 +465,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               bb.uploadColorRamp(generateColorRamp(colorScheme))
             })
           },
-          render: b => {
-            const data = self.rpcData
-            if (!data) {
-              return false
-            }
-            b.render(data, self.renderState)
-            return true
-          },
+          // The backend answers "did real content reach the canvas" — its own
+          // guard (an empty HAL buffer, a colour ramp that has not arrived) is
+          // narrower than anything this callback can see.
+          render: b => b.render(self.rpcData ?? null, self.renderState),
         })
       },
       /**

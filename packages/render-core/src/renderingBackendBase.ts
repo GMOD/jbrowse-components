@@ -3,6 +3,21 @@ import { acquireCanvas2D } from './canvasContext.ts'
 import type { GpuHal } from './hal/types.ts'
 
 /**
+ * Minimum render-state shape a frame scaffold needs: the CSS-pixel canvas
+ * dimensions used to size the backing store, and — on the per-region side —
+ * to clip each block.
+ *
+ * Here rather than beside either family because both bound their render state
+ * by it: `GpuPerRegionRenderingBackend.renderBlocks` and
+ * `GpuGlobalRenderingBackend.render` open with the same `hal.resize`, and the
+ * two Canvas2D bases with the same `prepareCanvas`.
+ */
+export interface FrameDimensions {
+  canvasWidth: number
+  canvasHeight: number
+}
+
+/**
  * What every rendering backend has, whatever its upload shape — the three
  * shape contracts (`PerRegionRenderingBackend`, `GlobalRenderingBackend`,
  * `KeyedRenderingBackend`) all extend this, and `useRenderingBackend` is
