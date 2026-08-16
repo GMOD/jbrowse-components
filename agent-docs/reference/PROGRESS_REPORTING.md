@@ -48,6 +48,13 @@ worker adapter → opts.statusCallback(status)
   `report()` auto-increments; the cancel-check and emit are counter-gated, so
   calling it every iteration is cheap.
 - `updateStatus` for indeterminate phases.
+- Both phase helpers **nest**: an inner phase restores its caller's label rather
+  than blanking it, and `''` still closes the outermost. They used to not, and
+  the rule was "run phases in sequence, or give the inner one no
+  `statusCallback`" — a rule about code two files from the call site
+  (`cachedSetup` wrapping a `setup` that reaches `fetchAndMaybeUnzip`), so a rule
+  waiting to be broken. Two phases sharing one callback concurrently is fine
+  too; each retires its own entry, so the one still running keeps the channel.
 - `statusMessageText` / `statusFraction` / `statusProgressLabel` extract the
   parts back out.
 - `aggregateStatus` merges concurrent statuses into one `Σcurrent/Σtotal`.

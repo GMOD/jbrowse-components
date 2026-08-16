@@ -18,7 +18,9 @@ type OnProgress = (current: number, total?: number) => void
  *   pan/zoom (every getFeatures and byte estimate awaits the loader) would
  *   otherwise re-flash "Downloading index" over an index that is already
  *   resident. Omit it for a setup whose progress is reported from the inside,
- *   e.g. a whole-file fetch that drives its own download bar.
+ *   e.g. a whole-file fetch that drives its own download bar — two labels for
+ *   one download now, rather than the inner one blanking this, since phases
+ *   nest (see `openPhase` in progress.ts).
  *
  * `setup` receives the opts of whichever call happened to run it first, so its
  * statusCallback/stopToken belong to that caller, plus an `onProgress` to pass

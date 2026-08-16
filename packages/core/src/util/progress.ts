@@ -7,19 +7,69 @@ import { createTimeGate } from './timeGate.ts'
 
 import type { StopToken, StopTokenChecker } from './stopToken.ts'
 
+// The phases currently open on one status channel, keyed by the callback that
+// *is* that channel. Entries are objects rather than strings so a phase removes
+// its own on the way out by identity: two phases running concurrently on one
+// callback (a `Promise.all` handed the same one) finish in either order, and a
+// LIFO pop would retire the wrong one.
+//
+// A WeakMap, so a channel that goes away takes its stack with it, and a caller
+// that builds a fresh callback per call simply gets a fresh stack — which is
+// the pre-stack behavior, not a regression.
+interface OpenPhase {
+  label: string
+}
+const openPhases = new WeakMap<StatusCallback, OpenPhase[]>()
+
 /**
- * Indeterminate phase: set `label` on the status channel, run `fn`, then clear
- * it. Pass `stopToken` and the phase becomes a cancellation boundary too — this
- * is the labelled form of {@link withStopTokenCheck}, so `fn` is checked on both
- * sides of its await and neither check has to be remembered at the call site.
- * The determinate counterpart is {@link withProgress}.
+ * Open a phase on `cb`'s channel and return its close. The close emits the
+ * enclosing phase's label, or `''` when this was the outermost — which is what
+ * makes phases nest.
  *
- * The clear is absolute — `''`, not "restore whatever was there" — so these do
- * not nest: an inner phase blanks the label its caller set, for the rest of the
- * caller's work. Run phases in sequence, or give the inner one no
- * `statusCallback`. `cachedSetup` is the shape that keeps almost-tripping this,
- * which is why the in-memory adapters that report from inside their load omit
- * its `label`.
+ * They used to not: the clear was absolute, so an inner phase blanked the label
+ * its caller had set for the whole rest of the caller's work, and the rule was
+ * "run phases in sequence, or give the inner one no `statusCallback`". That is a
+ * rule about code you cannot see from the call site — `cachedSetup` wrapping a
+ * `setup` that reaches `fetchAndMaybeUnzip` is two files apart — so it was a
+ * rule waiting to be broken rather than one anybody could follow.
+ *
+ * `''` still closes the outermost phase, so nothing downstream changes: it is
+ * how every consumer already reads "this phase is over", it is what
+ * {@link createGuardedStatusSink} routes through `runNow`, and it is what
+ * {@link aggregateStatus} reads as "not in flight".
+ */
+function openPhase(cb: StatusCallback | undefined, label: string) {
+  if (cb === undefined) {
+    return () => {}
+  }
+  let stack = openPhases.get(cb)
+  if (stack === undefined) {
+    stack = []
+    openPhases.set(cb, stack)
+  }
+  const phase: OpenPhase = { label }
+  stack.push(phase)
+  return () => {
+    const index = stack.lastIndexOf(phase)
+    if (index !== -1) {
+      stack.splice(index, 1)
+    }
+    cb(stack.at(-1)?.label ?? '')
+  }
+}
+
+/**
+ * Indeterminate phase: set `label` on the status channel, run `fn`, then restore
+ * whatever phase encloses it — `''` when there is none. Pass `stopToken` and the
+ * phase becomes a cancellation boundary too: this is the labelled form of
+ * {@link withStopTokenCheck}, so `fn` is checked on both sides of its await and
+ * neither check has to be remembered at the call site. The determinate
+ * counterpart is {@link withProgress}.
+ *
+ * Nests, and see {@link openPhase} for what that replaced. An inner phase's
+ * determinate bar is not restored with its caller's label, only the label — the
+ * enclosing phase's next `report()` re-establishes it, and an enclosing phase
+ * that has none to send was indeterminate anyway.
  */
 export async function updateStatus<U>(
   msg: string,
@@ -27,13 +77,14 @@ export async function updateStatus<U>(
   fn: () => U | Promise<U>,
   stopToken?: StopToken,
 ) {
+  const endPhase = openPhase(cb, msg)
   cb?.(msg)
   // finally, so a throwing `fn` doesn't leave its phase label sitting on the
   // channel forever — the error surfaces under a stale "Downloading file"
   try {
     return await withStopTokenCheck(stopToken, fn)
   } finally {
-    cb?.('')
+    endPhase()
   }
 }
 
@@ -468,7 +519,8 @@ export function createProgressReporter({
 /**
  * Run a measurable phase: shows `label` at 0%, hands `fn` a {@link
  * ProgressReporter} to drive during the work, then checks the stop token once
- * more and clears the status. The determinate counterpart to `updateStatus`.
+ * more and restores the enclosing phase. The determinate counterpart to
+ * `updateStatus`, and it nests the same way — see {@link openPhase}.
  */
 export async function withProgress<T>(
   {
@@ -490,10 +542,11 @@ export async function withProgress<T>(
     statusCallback,
     stopToken,
   })
+  const endPhase = openPhase(statusCallback, label)
   report(0)
   try {
     return await withStopTokenCheck(stopToken, () => fn(report))
   } finally {
-    statusCallback?.('')
+    endPhase()
   }
 }

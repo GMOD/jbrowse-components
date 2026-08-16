@@ -402,6 +402,113 @@ describe('updateStatus', () => {
   })
 })
 
+// The clear used to be absolute, so an inner phase blanked its caller's label
+// for the whole rest of the caller's work. The rule was "run phases in
+// sequence, or give the inner one no statusCallback" — a rule about code two
+// files away from the call site, which is one waiting to be broken.
+describe('phases nest', () => {
+  it('restores the enclosing label instead of blanking it', async () => {
+    const seen: RpcStatus[] = []
+    const cb = (s: RpcStatus) => {
+      seen.push(s)
+    }
+    await updateStatus('Loading track', cb, async () => {
+      await updateStatus('Downloading index', cb, () => 1)
+      await updateStatus('Parsing', cb, () => 2)
+    })
+    expect(seen).toEqual([
+      'Loading track',
+      'Downloading index',
+      'Loading track',
+      'Parsing',
+      'Loading track',
+      '',
+    ])
+  })
+
+  it('restores it when the inner phase throws', async () => {
+    const seen: RpcStatus[] = []
+    const cb = (s: RpcStatus) => {
+      seen.push(s)
+    }
+    await expect(
+      updateStatus('Loading track', cb, () =>
+        updateStatus('Downloading index', cb, () =>
+          Promise.reject(new Error('404')),
+        ),
+      ),
+    ).rejects.toThrow('404')
+    // the outer phase's own finally then closes it — the point is that the
+    // inner one did not blank it on the way past
+    expect(seen).toEqual([
+      'Loading track',
+      'Downloading index',
+      'Loading track',
+      '',
+    ])
+  })
+
+  it('nests a determinate phase inside an indeterminate one', async () => {
+    const seen: RpcStatus[] = []
+    const cb = (s: RpcStatus) => {
+      seen.push(s)
+    }
+    await updateStatus('Loading track', cb, () =>
+      withProgress(
+        { label: 'Parsing', total: 2, statusCallback: cb },
+        () => undefined,
+      ),
+    )
+    expect(seen).toEqual([
+      'Loading track',
+      { message: 'Parsing', current: 0, total: 2 },
+      'Loading track',
+      '',
+    ])
+  })
+
+  // two phases on ONE channel, settling in the order they did not start in — a
+  // Promise.all handed the same callback. A LIFO pop retires the wrong entry
+  // and the survivor's label is the one that goes missing.
+  it('a phase closing out of order retires its own entry', async () => {
+    const seen: RpcStatus[] = []
+    const cb = (s: RpcStatus) => {
+      seen.push(s)
+    }
+    let releaseFirst = () => {}
+    const first = updateStatus(
+      'Downloading alignments',
+      cb,
+      () =>
+        new Promise<void>(resolve => {
+          releaseFirst = resolve
+        }),
+    )
+    const second = updateStatus('Downloading sequence', cb, () => undefined)
+    await second
+    // the still-running phase's label, not a blank and not the finished one's
+    expect(seen.at(-1)).toBe('Downloading alignments')
+    releaseFirst()
+    await first
+    expect(seen.at(-1)).toBe('')
+  })
+
+  // the enclosing phase is what a nested clear restores; with nothing enclosing
+  // it, `''` is still what closes the channel, which every consumer downstream
+  // reads as "this phase is over"
+  it('still closes the outermost phase with an empty string', async () => {
+    const seen: RpcStatus[] = []
+    await updateStatus(
+      'Working',
+      s => {
+        seen.push(s)
+      },
+      () => undefined,
+    )
+    expect(seen.at(-1)).toBe('')
+  })
+})
+
 describe('downloadStatus', () => {
   it('labels the phase, hands fn a reporter, and clears when done', async () => {
     const seen: RpcStatus[] = []
