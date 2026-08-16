@@ -15,19 +15,19 @@
 //
 // Only runs on the error path.
 
-// The deepest RPC result in the tree is the alignments one: `{ groups }`, an
-// array of groups each holding its arrays under `data`, so a buffer sits at
-// `groups.3.data.mismatchStarts` — three containers down. The synteny result is
-// two (`instanceData.bp1`, `attributes.identity`) and most are one. The walk is
-// capped rather than unbounded because a payload also carries plain data — a
-// featureIds array of half a million strings — and there is no reason to
+// The deepest RPC result in the tree is the regular multi-sample variant one:
+// `perRegionCellData.0.featureGenotypeMap.<featureId>.genotypeCodes` — four
+// containers down. The alignments result is three (`groups.3.data.mismatchStarts`),
+// synteny two (`instanceData.bp1`, `attributes.identity`) and most are one. The
+// walk is capped rather than unbounded because a payload also carries plain data
+// — a featureIds array of half a million strings — and there is no reason to
 // descend past where buffers are known to live.
 //
 // A cap that is too SHORT fails silently and expensively: it reports the blamed
 // entry as "not in the payload", which reads as a bug in the transfer list. That
-// is how this number was found to be wrong, so it is stated with the shape it
-// has to cover rather than left as a bare 2.
-const MAX_DEPTH = 3
+// is how this number was found to be wrong twice, so it is stated with the shape
+// it has to cover rather than left as a bare 2.
+const MAX_DEPTH = 4
 
 // The allocation a payload node names, whether it is a view or the buffer.
 function bufferOf(node: unknown) {

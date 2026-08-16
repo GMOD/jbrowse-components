@@ -159,12 +159,16 @@ exports[`renders all the different types of built-in slots 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink css-10ghipd-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
+                      id="_r_8_"
                     >
                       fileLocationTest
                     </label>
                   </div>
                   <div
+                    aria-describedby="_r_9_"
+                    aria-labelledby="_r_8_"
                     class="MuiBox-root css-3a3hw0"
+                    role="group"
                   >
                     <div
                       aria-label="file, url, or account picker"
@@ -198,8 +202,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                       <label
                         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-outlined css-cdyptd-MuiFormLabel-root-MuiInputLabel-root"
                         data-shrink="true"
-                        for="_r_8_"
-                        id="_r_8_-label"
+                        for="_r_a_"
+                        id="_r_a_-label"
                       >
                         Enter URL
                       </label>
@@ -210,7 +214,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
                           data-testid="urlInput"
-                          id="_r_8_"
+                          id="_r_a_"
                           type="text"
                           value="/path/to/my.file"
                         />
@@ -231,6 +235,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                   </div>
                   <p
                     class="MuiFormHelperText-root css-uuncon-MuiFormHelperText-root"
+                    id="_r_9_"
                   >
                     fileLocationTest
                   </p>
@@ -263,7 +268,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                            id="_r_9_"
+                            id="_r_b_"
                             type="text"
                             value="string1"
                           />
@@ -303,7 +308,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                            id="_r_b_"
+                            id="_r_d_"
                             type="text"
                             value="string2"
                           />
@@ -343,7 +348,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                            id="_r_d_"
+                            id="_r_f_"
                             placeholder="add new"
                             type="text"
                             value=""
@@ -450,7 +455,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               <input
                                 aria-invalid="false"
                                 class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                id="_r_g_"
+                                id="_r_i_"
                                 type="text"
                                 value="string1"
                               />
@@ -490,7 +495,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               <input
                                 aria-invalid="false"
                                 class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                id="_r_i_"
+                                id="_r_k_"
                                 type="text"
                                 value="string2"
                               />
@@ -530,7 +535,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               <input
                                 aria-invalid="false"
                                 class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                                id="_r_k_"
+                                id="_r_m_"
                                 placeholder="add new"
                                 type="text"
                                 value=""
@@ -588,7 +593,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                             <input
                               aria-invalid="false"
                               class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                              id="_r_m_"
+                              id="_r_o_"
                               placeholder="add new"
                               type="text"
                               value=""
@@ -640,8 +645,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for="_r_o_"
-                      id="_r_o_-label"
+                      for="_r_q_"
+                      id="_r_q_-label"
                     >
                       numberTest
                     </label>
@@ -649,17 +654,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby="_r_o_-helper-text"
+                        aria-describedby="_r_q_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id="_r_o_"
+                        id="_r_q_"
                         type="text"
                         value="88.5"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id="_r_o_-helper-text"
+                      id="_r_q_-helper-text"
                     >
                       <span>
                         numberTest
@@ -681,8 +686,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                     <label
                       class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                       data-shrink="true"
-                      for="_r_p_"
-                      id="_r_p_-label"
+                      for="_r_r_"
+                      id="_r_r_-label"
                     >
                       integerTest
                     </label>
@@ -690,17 +695,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        aria-describedby="_r_p_-helper-text"
+                        aria-describedby="_r_r_-helper-text"
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                        id="_r_p_"
+                        id="_r_r_"
                         type="text"
                         value="42"
                       />
                     </div>
                     <div
                       class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                      id="_r_p_-helper-text"
+                      id="_r_r_-helper-text"
                     >
                       <span>
                         integerTest
@@ -725,8 +730,8 @@ exports[`renders all the different types of built-in slots 1`] = `
                       <label
                         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeSmall MuiInputLabel-standard css-o6lxy0-MuiFormLabel-root-MuiInputLabel-root"
                         data-shrink="true"
-                        for="_r_q_"
-                        id="_r_q_-label"
+                        for="_r_s_"
+                        id="_r_s_-label"
                       >
                         colorTest
                       </label>
@@ -734,17 +739,17 @@ exports[`renders all the different types of built-in slots 1`] = `
                         class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-17skhn2-MuiInputBase-root-MuiInput-root"
                       >
                         <input
-                          aria-describedby="_r_q_-helper-text"
+                          aria-describedby="_r_s_-helper-text"
                           aria-invalid="false"
                           class="MuiInputBase-input MuiInput-input css-1wd3yy0-MuiInputBase-input-MuiInput-input"
-                          id="_r_q_"
+                          id="_r_s_"
                           type="text"
                           value="#396494"
                         />
                       </div>
                       <div
                         class="MuiFormHelperText-root MuiFormHelperText-sizeSmall MuiFormHelperText-filled css-ng1q56-MuiFormHelperText-root"
-                        id="_r_q_-helper-text"
+                        id="_r_s_-helper-text"
                       >
                         <span>
                           colorTest

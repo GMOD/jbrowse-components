@@ -88,7 +88,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               style="transform: translate(204px,0px);"
             >
               <svg
-                class="css-1cibtmu css-dg9xgn"
+                class="css-1cibtmu css-ehba41 css-1mucw6i"
                 height="400"
                 style="transform: rotate(-1.5707963267948966rad); transform-origin: 200px 200px;"
                 width="400"
@@ -103,14 +103,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                     font-weight="500"
                     letter-spacing="0.0075em"
                     text-anchor="middle"
-                    transform="translate(-50.162928934118504,114.49314634837569) rotate(23.659687593887426)"
+                    transform="translate(-68.25126837055943,150.22238303864665) rotate(24.43395488460476)"
                     x="0"
                     y="0"
                   >
                     ctgA
                   </text>
                   <path
-                    d="M 120.99999999999999 0 A 120.99999999999999 120.99999999999999 0 1 1 -82.02724452490492 -88.95240949885199"
+                    d="M 161 0 A 161 161 0 1 1 -105.9053489730314 -121.26440969592207"
                     fill="none"
                     stroke="#996600"
                     stroke-width="2"
@@ -122,14 +122,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                     font-weight="500"
                     letter-spacing="0.0075em"
                     text-anchor="middle"
-                    transform="translate(50.16292893411838,-114.49314634837573) rotate(383.6596875938874)"
+                    transform="translate(68.25126837055933,-150.22238303864668) rotate(384.43395488460476)"
                     x="0"
                     y="0"
                   >
                     ctgB
                   </text>
                   <path
-                    d="M -74.33846823476652 -95.47142054305364 A 120.99999999999999 120.99999999999999 0 0 1 120.58010419076767 -10.07166686023764"
+                    d="M -98.12447760419309 -127.64241808624675 A 161 161 0 0 1 160.68564922271597 -10.055950172623252"
                     fill="none"
                     stroke="#666600"
                     stroke-width="2"

@@ -17,8 +17,7 @@ error state.
 single state is one entry rather than five. `TrackControlComponent` takes props
 that _describe_ the control: an icon name, never an element — and
 `useTrackControlMenu` hands you the menu behaviour behind it (dismissal, focus,
-the top layer, the anchoring) if you would rather write your own markup than
-restyle the plain one.
+the top layer, the anchoring) if you would rather write your own markup.
 
 Two obligations the types can't carry. The error bar and loading scrim mount
 **unconditionally** and gate on `visible`, so a replacement can hold state
@@ -28,10 +27,9 @@ included on the scrim's _canceled_ branch.
 ## Keeping MUI out of the bundle
 
 All of the above is `@jbrowse/display-ui`, which depends on no UI toolkit — so
-asking for the plain look does not download the Material one on the way. That is
-worth stating because it was not true until 2026-08: the contract shared a
-module with the implementations it replaces, and this page carried twice the
-Material UI of the page that keeps Material on screen.
+asking for the plain look does not download the Material one on the way. That
+only became true in 2026-08, when the contract stopped sharing a module with the
+implementations it replaces.
 
 What the package cannot do is unship what a _display_ imports. Stock displays
 import `DisplayChrome` and `TrackControl` directly, so a provider only changes
