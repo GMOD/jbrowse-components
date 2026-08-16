@@ -31,14 +31,17 @@ error:
   `alignY` are read off it; the annotation's shifts the point afterwards. For a
   point anchor they are equivalent, which is why the difference goes unnoticed
   until an `alignX: 'right'` is involved.
-- **`alignX`/`alignY` are ignored on `fromAnchor`.** A tail is always the rect's
-  centre plus `dx`/`dy`. That is the only way to move it, so a tail that has to
-  sit at an element's edge carries half that element's width as a `dx` — and
-  when that element is one of our own text pills, don't: use `leader` below.
-  `homoeolog_synteny/oat_homoeologs` is what ignoring it looks like in a figure:
-  the tail carried an `alignX: 'right'` that did nothing, so it sat a dotplot
-  cell's width left of where the spec read as putting it and the arrow drew as a
-  stub in open space.
+- **A `fromAnchor` is read exactly like an `anchor`**, `alignX`/`alignY`
+  included, so an arrow's two ends align the same way and a tail can sit at an
+  element's edge. It did NOT used to: align was applied to the head and dropped
+  on the tail, which put the tail at the rect's centre while the spec said edge.
+  Silent in every case and loudest on a wide rect —
+  `tcga/mutations_cdh1_histology` asked for a short vertical arrow at a track's
+  left edge and drew a diagonal across the whole panel, half a view width off.
+  A tail leaving one of our own text pills is still not this: use `leader`.
+  Note the anchor's own `dx`/`dy` shift the rect *before* the align is read off
+  it, at both ends, so a spec that encodes half an element's width as a `dx`
+  (what this used to advise) must drop that `dx` when it adopts an align.
 - **A `box` whose anchor sets `fracY` gets a zero-height band**, so `height`
   falls back to `2 * pad` (12px). Supply `height` explicitly. Omitting `fracY`
   instead wraps the whole track band — right for a short track, wrong for a

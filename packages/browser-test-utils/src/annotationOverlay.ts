@@ -72,13 +72,16 @@ export interface AnnotationAnchor {
   // hand-written `dx` off the center would have to encode it (and would move
   // the moment the label inside the control changed). `box` ignores these — it
   // always wraps the whole rect.
+  //
+  // Read on `fromAnchor` too, so an arrow's two ends align the same way: both
+  // ends of a vertical arrow down a track say `alignX: 'left'` and mean it.
   alignX?: 'left' | 'center' | 'right'
   alignY?: 'top' | 'center' | 'bottom'
   // px nudge off the resolved position, for readability only — separating two
   // labels whose loci are a few px apart, or lifting an arrow tail clear of the
   // pill it leaves from. On the annotation's primary `anchor` this is equivalent
-  // to the annotation's own `dx`/`dy`; on `fromAnchor` it is the only way to
-  // nudge the tail.
+  // to the annotation's own `dx`/`dy`; on `fromAnchor` it is the only `dx`/`dy`
+  // there is, the annotation's own applying to the head.
   dx?: number
   dy?: number
   // a HORIZONTAL SUB-SPAN of the resolved rect, as two fractions of its width.
@@ -171,8 +174,8 @@ export interface Annotation {
   fillOpacity?: number // box: tint the interior with a translucent wash of color
   anchor?: AnnotationAnchor
   // for 'arrow' with an anchored head: the tail can be anchored too, so a
-  // callout's whole geometry is model-derived. Same shape as `anchor`; `from`
-  // is the raw-pixel fallback.
+  // callout's whole geometry is model-derived. Same shape as `anchor`, read the
+  // same way (`alignX`/`alignY` included); `from` is the raw-pixel fallback.
   fromAnchor?: AnnotationAnchor
   dx?: number
   dy?: number
@@ -422,15 +425,40 @@ export function drawAnnotationOverlay(
     }
   }
 
-  // Apply anchoring: fill in x/y (element center) and, for box/ring shapes,
-  // width/height (element bounds + padding), then nudge by dx/dy.
+  // Which point of a resolved rect an anchor names. Both ends of an arrow read
+  // it, so a tail can sit at an element's edge the same way a head can. It used
+  // to be inlined for the head only, and a tail carrying an `alignX` was
+  // silently the rect's centre instead: tcga/mutations_cdh1_histology asked for
+  // a short vertical arrow at a track's left edge + 400 and drew a diagonal
+  // across the whole panel, because a track's rect is the full view width and
+  // half of that is what the tail was off by.
+  function anchorPoint(rect: Rect, anchor: Anchor) {
+    const alignX = anchor?.alignX ?? 'center'
+    const alignY = anchor?.alignY ?? 'center'
+    return {
+      x:
+        alignX === 'left'
+          ? rect.left
+          : alignX === 'right'
+            ? rect.left + rect.width
+            : rect.left + rect.width / 2,
+      y:
+        alignY === 'top'
+          ? rect.top
+          : alignY === 'bottom'
+            ? rect.top + rect.height
+            : rect.top + rect.height / 2,
+    }
+  }
+
+  // Apply anchoring: fill in x/y (the anchor's point on the element) and, for
+  // box/ring shapes, width/height (element bounds + padding), then nudge by
+  // dx/dy.
   const resolved = items.map(a => {
     const dx = a.dx ?? 0
     const dy = a.dy ?? 0
     const from = a.fromAnchor ? anchorRect(a.fromAnchor) : undefined
-    const tail = from
-      ? { x: from.left + from.width / 2, y: from.top + from.height / 2 }
-      : a.from
+    const tail = from ? anchorPoint(from, a.fromAnchor) : a.from
     const r = anchorRect(a.anchor)
     if (!r) {
       return {
@@ -447,20 +475,7 @@ export function drawAnnotationOverlay(
     // a numbered badge stays a fixed small disc; a hollow ring grows to wrap
     // the anchored element
     const ringRadius = Math.max(r.width, r.height) / 2 + pad
-    const alignX = a.anchor?.alignX ?? 'center'
-    const alignY = a.anchor?.alignY ?? 'center'
-    const px =
-      alignX === 'left'
-        ? r.left
-        : alignX === 'right'
-          ? r.left + r.width
-          : r.left + r.width / 2
-    const py =
-      alignY === 'top'
-        ? r.top
-        : alignY === 'bottom'
-          ? r.top + r.height
-          : r.top + r.height / 2
+    const { x: px, y: py } = anchorPoint(r, a.anchor)
     // A box's pad goes outward where there is room and inward where there is
     // not. An element flush against the window edge — a docked drawer, a panel
     // pinned to the right — has no outside on that side, so a stroke drawn
