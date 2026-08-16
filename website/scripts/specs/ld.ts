@@ -706,6 +706,150 @@ export const ldSpecs: ScreenshotSpec[] = [
       },
     ],
   },
+
+  // THE ZOOM-OUT, WHICH IS NOW AVAILABLE (review: "we can make wider
+  // calculations if it results in better figure", answering the round before it,
+  // "it might be worth zooming out even more to see that fst is peaking here").
+  // It needed a second file, since the lane below reads a 3.4 Mb slice and a
+  // wider frame on it draws blank either side. scripts/build_lct_fst_scan.sh
+  // recomputes the same Weir & Cockerham estimator, from the same panels of the
+  // same release, over 40 Mb of chr2 with LCT at the middle.
+  //
+  // It does result in a better figure, and by more than expected: rs4988235 is
+  // the highest-scoring site of 977,763 across the whole span, and the top ten
+  // are all inside the block with it. Of the sites clearing 0.35, sixty-one are
+  // in 134-136 Mb and five are in the other thirty-nine megabases.
+  //
+  // WINDOWED FST IS THE ONE THING THAT WOULD DESTROY THIS, and it was built
+  // that way first. See the build script: at 100 kb bins the block ranks 58th
+  // of 400 and the lane says the locus is ordinary. A sweep differentiates its
+  // own haplotype's variants and leaves the rest of the bin on the background.
+  {
+    mode: 'url',
+    name: 'ld/lct_fst_scan',
+    url: `${HG38_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'kgp_lct_fst_scan',
+          name: 'Fst, European panel vs the other 1000 Genomes samples, across 40 Mb of chr2',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest_scan.bw',
+              locationType: 'UriLocation',
+            },
+            // NO resolutionMultiplier here, where the lane below pins one. That
+            // lane draws 81,000 sites and needs the raw values, because a zoom
+            // bin's average over ninety variants is the background. This one
+            // draws 977,000 over 40 Mb -- 650 to a pixel -- so raw values are
+            // both unfetchable and unplottable, and the zoom bin is what makes
+            // it drawable. `summaryScoreMode: 'max'` below is what keeps the
+            // peak through that bin; `avg` is the same trap one level down.
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr2:116,000,000-156,000,000',
+          tracks: [
+            {
+              trackId: 'kgp_lct_fst_scan',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              useBicolor: false,
+              scatterPointSize: 2,
+              summaryScoreMode: 'max',
+              // The lane below's floor and ceiling, so the two are one axis
+              // read at two scales and the peak is the same height in both.
+              minScore: 0.1,
+              maxScore: 0.5,
+              height: 230,
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readySelector: displayPainted('wiggle-display'),
+    readyTimeout: 120000,
+    settleMs: 8000,
+    // 450, not the 390 the lane and its chrome add up to: at 390 the axis was
+    // cut off below 0.2 and the noise floor went with it, which is the half of
+    // the picture that makes the peak a peak. Neither of the run's own reports
+    // sees this -- the clipping is the viewport cutting the display, not content
+    // below the fold.
+    viewportHeight: 450,
+    // The peak named, from the side. It sits at 0.474 on an axis that stops at
+    // 0.5, so there is no room above it for a pill, and the y is derived rather
+    // than measured: wiggle-core's axisPlotBox insets the plot by
+    // YSCALEBAR_LABEL_OFFSET at each end, and the track element starts 6px above
+    // the display, so a score s is 6 + (h-5) - ((s-min)/(max-min))*(h-10) below
+    // the track's top edge. Same derivation as dog10k-size-fst-scan's fstY.
+    annotations: [
+      {
+        type: 'text',
+        text: 'LCT',
+        fontSize: 20,
+        anchor: {
+          track: 'kgp_lct_fst_scan',
+          locus: 'chr2:135,851,076',
+          fracY: 0,
+          dx: 150,
+          dy: 25,
+        },
+      },
+      {
+        type: 'arrow',
+        anchor: {
+          track: 'kgp_lct_fst_scan',
+          locus: 'chr2:135,851,076',
+          fracY: 0,
+          dx: 14,
+          dy: 25,
+        },
+        fromAnchor: {
+          track: 'kgp_lct_fst_scan',
+          locus: 'chr2:135,851,076',
+          fracY: 0,
+          dx: 88,
+          dy: 25,
+        },
+      },
+    ],
+  },
+
+  // The two scales as one figure. The lower frame cannot say the locus is
+  // unusual -- every site in it is on the same swept haplotype, so its own
+  // background is the sweep -- and the upper frame cannot say what the sweep did
+  // to linkage, because an LD triangle over 40 Mb is not computable and would
+  // not be legible if it were.
+  //
+  // THE NARROW END IS SOLVED FOR: the lower frame is chr2:134.0-137.15 Mb of the
+  // upper one's 116-156, i.e. 0.450-0.529 of its DATA AREA, which is not its
+  // image width -- the app's own margins take the difference. L = 12.4,
+  // W = 2976.0 over 3000 px is the layout three figures have now each solved for
+  // independently (popgen/in2lt_inversion off region dividers,
+  // dog10k-size-fst-scan off the same, qc/smn_block_and_reads off two highlight
+  // bands), so it is the app's rather than one capture's.
+  {
+    mode: 'compose',
+    name: 'ld/lct_sweep_two_scales',
+    parts: ['ld/lct_fst_scan', 'ld/lct_pooled_vs_panel'],
+    gutter: 120,
+    annotations: [
+      {
+        type: 'trapezoid',
+        fromAnchor: {
+          selector: '[data-part="0"]',
+          fracX: [0.45053, 0.52867],
+        },
+        anchor: { selector: '[data-part="1"]' },
+      },
+    ],
+  },
   {
     mode: 'url',
     // ONE FIGURE, four lanes: each population's LD panel with its own karyotype

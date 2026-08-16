@@ -80,9 +80,22 @@ along, leaving a stretch of correlated variants. That stretch is the signal
 Two things decide whether it shows as a block: the window you cut, and which
 samples went into the file.
 
-<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: all 1000 Genomes populations pooled, then the European panel alone. Above both, Weir and Cockerham Fst per variant between that panel and the rest of the release, and the deCODE genetic map, which reads flat across the span the triangles fill and spikes at each end of it."/>
+<Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, Weir and Cockerham Fst per variant across 40 Mb of chr2. Under the wedge, the same locus, window and MAF floor twice, differing only in which samples went in, over that Fst lane at its own scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
-Nothing about the display changed between those two lanes. Lactase persistence
+The upper frame is what says the locus is unusual, and it is the one thing the
+lower frame cannot say about itself: every site down there sits on the same
+swept haplotype, so the frame's own background is the sweep. Widened to forty
+megabases, the most differentiated variant in the span is rs4988235 and the ten
+highest-scoring sites are all inside the block with it.
+
+Read it per variant rather than in windows. The
+[build script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh)
+was written windowed first and the block came out unremarkable, ranked behind
+runs elsewhere on the arm: a sweep differentiates the variants on its own
+haplotype and leaves the rest of a bin on the background, so averaging a bin
+averages the signal away.
+
+Nothing about the display changed between the two triangles. Lactase persistence
 swept in Europe, so the block is a property of that panel: pooling it with
 populations the haplotype never reached mixes in their backgrounds and the
 correlations average down.
@@ -261,6 +274,19 @@ release, and where rs4988235 ranks on per-site Fst.
 It reads the 2504 unrelated samples rather than the release's full 3202.
 Relatives share long haplotypes for reasons that have nothing to do with a
 sweep, which is the one quantity every lane here draws.
+
+The wide Fst lane is a second file, from
+[`build_lct_fst_scan.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh),
+because the slice above it stops a little either side of the block:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_fst_scan.sh
+bash build_lct_fst_scan.sh            # builds ./lct_fst_scan_build
+```
+
+Same panels, same estimator and the same tool, over forty megabases instead of
+three. It prints where rs4988235 ranks across the whole span, and the
+million-site slice it needs to get there takes a few minutes to come down.
 
 ## See also
 
