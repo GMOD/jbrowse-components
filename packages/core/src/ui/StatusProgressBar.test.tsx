@@ -26,13 +26,30 @@ test('a fraction fills that much of the track, and says so', () => {
   )
 })
 
-test('a fraction outside 0..1 is clamped rather than overflowing the track', () => {
+// Both ends, because a caller passing a fraction of its own rather than
+// `statusFraction`'s clamped one can overshoot either way — `CurrentJobCard`
+// divides an external job's self-reported `progressPct`. The bar and the value
+// it announces have to clamp together: a bar parked at one end of the track
+// while `aria-valuenow` sits outside the min/max declared beside it is the
+// worse half of the bug, since only the screen reader sees it.
+test('a fraction over 1 is clamped rather than overflowing the track', () => {
   const { getByRole } = render(<StatusProgressBar fraction={1.4} />)
   const track = getByRole('progressbar')
 
   expect(track.getAttribute('aria-valuenow')).toBe('100')
   expect(track.firstElementChild?.getAttribute('style')).toBe(
     'transform: scaleX(1);',
+  )
+})
+
+test('a fraction under 0 is clamped rather than inverting the bar', () => {
+  const { getByRole } = render(<StatusProgressBar fraction={-0.5} />)
+  const track = getByRole('progressbar')
+
+  expect(track.getAttribute('aria-valuemin')).toBe('0')
+  expect(track.getAttribute('aria-valuenow')).toBe('0')
+  expect(track.firstElementChild?.getAttribute('style')).toBe(
+    'transform: scaleX(0);',
   )
 })
 

@@ -52,8 +52,10 @@ const useStyles = makeStyles()(theme => ({
  * loading state is: the census runs once the page has settled.
  *
  * `makeStyles` hands it `JBrowseStyleTheme`, so it follows the app's palette in
- * both modes exactly as the Material one did, and `muiFree.test.ts` keeps it
- * from drifting back.
+ * both modes exactly as the Material one did. Two guards keep it from drifting
+ * back: `muiFree.test.ts` traces its imports, which catches an `alpha()` reached
+ * two modules deep, and its own test asserts the rendered tree carries no `Mui*`
+ * class, which catches a Material component rendered directly.
  */
 export default function StatusProgressBar({
   fraction,
@@ -66,6 +68,11 @@ export default function StatusProgressBar({
 }) {
   const { classes } = useStyles()
   const determinate = fraction !== undefined
+  // one clamp for both halves. `statusFraction` clamps its own output, but a
+  // caller passing a fraction of its own does not — `CurrentJobCard` divides an
+  // external job's self-reported `progressPct` — and clamping the top alone let
+  // a negative announce a value below the `aria-valuemin` declared beside it.
+  const filled = Math.min(1, Math.max(0, fraction ?? 0))
   return (
     <div
       className={cx(classes.track, className)}
@@ -73,17 +80,11 @@ export default function StatusProgressBar({
       role="progressbar"
       aria-valuemin={determinate ? 0 : undefined}
       aria-valuemax={determinate ? 100 : undefined}
-      aria-valuenow={
-        determinate ? Math.round(Math.min(1, fraction) * 100) : undefined
-      }
+      aria-valuenow={determinate ? Math.round(filled * 100) : undefined}
     >
       <div
         className={cx(classes.bar, determinate ? undefined : classes.sweep)}
-        style={
-          determinate
-            ? { transform: `scaleX(${Math.min(1, Math.max(0, fraction))})` }
-            : undefined
-        }
+        style={determinate ? { transform: `scaleX(${filled})` } : undefined}
       />
     </div>
   )

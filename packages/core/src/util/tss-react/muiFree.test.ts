@@ -87,6 +87,29 @@ test('the hover tooltip reaches no Material UI', () => {
   ).toEqual([])
 })
 
+// The loading bar, here for the same reason as the two above it.
+//
+// It was a MUI `LinearProgress` reached from `LoadingOverlay`, which
+// `ComparativeFetchStatus` draws behind neither bring-your-own seam — so a
+// synteny or dotplot display's first load put a `MuiLinearProgress` on a page
+// whose host had mounted `DisplayUIProvider` to keep Material off it. The
+// examples site's census missed it for the ordinary reason a loading state is
+// missed: the census runs once the page has settled.
+//
+// `StatusProgressBar.test.tsx` asserts the rendered tree carries no `Mui*`
+// class, which is the check that catches a revert to `LinearProgress`. This is
+// the half that check cannot see: `alpha()` imported for the track tint, or a
+// `useTheme` reached through some helper, draws no element of its own to carry
+// a class. The bar's tint is `color-mix` rather than `alpha` precisely because
+// that one import is the whole cost.
+test('the loading bar reaches no Material UI', () => {
+  const bare = reach(path.join(__dirname, '../../ui/StatusProgressBar.tsx'))
+  const offenders = [...bare].filter(([spec]) => isMui(spec))
+  expect(
+    offenders.map(([spec, trail]) => `${spec} via ${trail.join(' -> ')}`),
+  ).toEqual([])
+})
+
 // The tracer is only worth trusting if it can see a violation, and the one it
 // exists to catch is transitive. `ui/theme.ts` is the module that legitimately
 // builds the MUI theme, so it is the exact negative case.
