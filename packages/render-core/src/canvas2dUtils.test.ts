@@ -10,6 +10,7 @@ import {
   makeCellLeftMapper,
   spanLeft,
   syncCanvasSize,
+  withClip,
 } from './canvas2dUtils.ts'
 
 import type { BpRegionBounds } from './renderBlock.ts'
@@ -290,6 +291,69 @@ describe('getDpr', () => {
     expect(getDpr()).toBe(MAX_DPR)
     setDpr(4)
     expect(getDpr()).toBe(MAX_DPR)
+  })
+})
+
+describe('withClip', () => {
+  function makeRecordingCtx() {
+    const log: string[] = []
+    const rects: number[][] = []
+    return {
+      log,
+      rects,
+      ctx: {
+        save: () => log.push('save'),
+        restore: () => log.push('restore'),
+        beginPath: () => log.push('beginPath'),
+        clip: () => log.push('clip'),
+        rect: (x: number, y: number, w: number, h: number) => {
+          log.push('rect')
+          rects.push([x, y, w, h])
+        },
+      },
+    }
+  }
+
+  test('clips to the given rect around the paint', () => {
+    const { ctx, log, rects } = makeRecordingCtx()
+    withClip(ctx, 5, 10, 20, 30, () => {
+      log.push('paint')
+    })
+    expect(log).toEqual([
+      'save',
+      'beginPath',
+      'rect',
+      'clip',
+      'paint',
+      'restore',
+    ])
+    expect(rects[0]).toEqual([5, 10, 20, 30])
+  })
+
+  test('restores when paint throws', () => {
+    const { ctx, log } = makeRecordingCtx()
+    expect(() => {
+      withClip(ctx, 0, 0, 1, 1, () => {
+        throw new Error('boom')
+      })
+    }).toThrow('boom')
+    expect(log.at(-1)).toBe('restore')
+  })
+
+  // The nesting case is the one a hand-rolled pairing gets wrong: a display
+  // whose bands each clip inside a block clip. An inner throw has to unwind
+  // both, or the block's clip outlives the frame too.
+  test('unwinds every level when an inner paint throws', () => {
+    const { ctx, log } = makeRecordingCtx()
+    expect(() => {
+      withClip(ctx, 0, 0, 100, 100, () => {
+        withClip(ctx, 0, 0, 100, 10, () => {
+          throw new Error('boom')
+        })
+      })
+    }).toThrow('boom')
+    expect(log.filter(c => c === 'save')).toHaveLength(2)
+    expect(log.filter(c => c === 'restore')).toHaveLength(2)
   })
 })
 

@@ -1,6 +1,7 @@
 import {
-  clipBlockForCanvas,
+  forEachClippedBlock,
   prepareCanvas,
+  withClip,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
@@ -65,6 +66,7 @@ import type {
   DrawBlock,
   RenderBlock,
   RenderState,
+  SectionRender,
 } from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -353,105 +355,119 @@ export function drawAlignmentBlocks(
   // collapsed-pileup, no-arc section paints nothing yet reported drawn.
   let painted = false
 
-  for (const block of blocks) {
-    const blockClip = clipBlockForCanvas(block, canvasWidth)
-    if (!blockClip) {
-      continue
-    }
+  // Which layers draw this frame, resolved once. The gates read the
+  // display-wide `state` (the show flags are the same in every section), so
+  // asking them per section per block re-answered one question up to 120 times
+  // a frame at MAX_GROUPS.
+  const layers = PILEUP_LAYERS.filter(l => l.enabled(state))
 
-    const { fullBlockWidth, bpLength, scissorX, scissorW } = blockClip
+  forEachClippedBlock(
+    ctx,
+    blocks,
+    canvasWidth,
+    canvasHeight,
+    // The block's drawable sections, or `undefined` to skip the block whole.
+    // A section with no region in the map paints nothing and reports nothing,
+    // so resolving them here rather than `continue`-ing inside the paint body
+    // also gives the gate something real to answer: a block no section has
+    // data for now costs neither the clip nor the SvgCanvas group.
+    block => {
+      const found = state.sections
+        .map((sec, s) => ({
+          sec,
+          region: regions.get(sectionRegionKey(s, block.displayedRegionIndex)),
+        }))
+        .filter((e): e is { sec: SectionRender; region: Canvas2DRegionData } =>
+          Boolean(e.region),
+        )
+      return found.length > 0 ? found : undefined
+    },
+    (sections, block, { fullBlockWidth, bpLength, scissorX, scissorW }) => {
+      // Each stacked section sets its own vertical offsets and clip bands.
+      // Section 0's region key equals the raw region index, so the ungrouped
+      // (single-section) path reproduces the prior draw exactly.
+      for (const { sec, region } of sections) {
+        const sectionState = sectionRenderState(state, sec)
 
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(scissorX, 0, scissorW, canvasHeight)
-    ctx.clip()
+        // Same three bands the GPU's drawSection counts. A collapsed band
+        // (height 0) draws nothing — matching the GPU's `cov.height > 0` /
+        // `pileup.height > 0` gates — so it must not count as a paint. Arcs and
+        // coverage-only sections (empty pileup, e.g. read-cloud) still count.
+        const drewCoverage = state.showCoverage && sec.covClipHeight > 0
+        const drewPileup = sec.pileupClipHeight > 0
+        if (drewCoverage || drewPileup || sec.arcBand !== undefined) {
+          painted = true
+        }
 
-    // Each stacked section sets its own vertical offsets and clip bands.
-    // Section 0's region key equals the raw region index, so the ungrouped
-    // (single-section) path reproduces the prior draw exactly.
-    for (let s = 0; s < state.sections.length; s++) {
-      const sec = state.sections[s]!
-      const region = regions.get(
-        sectionRegionKey(s, block.displayedRegionIndex),
-      )
-      if (!region) {
-        continue
-      }
-      const sectionState = sectionRenderState(state, sec)
-
-      // Same three bands the GPU's drawSection counts. A collapsed band
-      // (height 0) draws nothing — matching the GPU's `cov.height > 0` /
-      // `pileup.height > 0` gates — so it must not count as a paint. Arcs and
-      // coverage-only sections (empty pileup, e.g. read-cloud) still count.
-      const drewCoverage = state.showCoverage && sec.covClipHeight > 0
-      const drewPileup = sec.pileupClipHeight > 0
-      if (drewCoverage || drewPileup || sec.arcBand !== undefined) {
-        painted = true
-      }
-
-      if (state.showCoverage) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(scissorX, sec.covClipTop, scissorW, sec.covClipHeight)
-        ctx.clip()
-        drawCoverage(ctx, region, block, bpLength, fullBlockWidth, sectionState)
-        ctx.restore()
-      }
-
-      // Clip pileup area
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(scissorX, sec.pileupClipTop, scissorW, sec.pileupClipHeight)
-      ctx.clip()
-
-      // Pileup layers in z-order, gated and ordered by the shared PILEUP_LAYERS
-      // list (the GPU renderer iterates the same list). Gating reads the
-      // display-wide `state`; the draw fns take the per-section `sectionState`.
-      for (const layer of PILEUP_LAYERS) {
-        if (layer.enabled(state)) {
-          CANVAS_PILEUP_DRAW[layer.id](
+        if (state.showCoverage) {
+          withClip(
             ctx,
-            region,
-            block,
-            bpLength,
-            fullBlockWidth,
-            sectionState,
+            scissorX,
+            sec.covClipTop,
+            scissorW,
+            sec.covClipHeight,
+            () => {
+              drawCoverage(
+                ctx,
+                region,
+                block,
+                bpLength,
+                fullBlockWidth,
+                sectionState,
+              )
+            },
           )
         }
-      }
 
-      drawSelectionOverlays(ctx, region, block, sectionState)
-
-      ctx.restore() // pileup clip
-
-      // Up- and down-mode arcs both draw here, after the pileup. The band never
-      // overlaps the pileup region, and up-mode arcs still land in front of the
-      // coverage histogram (drawn earlier), matching the GPU pass order. Each
-      // section carries its own (scrolled) band; undefined when arcs are off.
-      const arcBand = sec.arcBand
-      if (arcBand) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(scissorX, arcBand.top, scissorW, arcBand.height)
-        ctx.clip()
-        drawArcs(
+        withClip(
           ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          sectionState,
-          arcBand.top,
-          arcBand.height,
-          arcBand.down,
+          scissorX,
+          sec.pileupClipTop,
           scissorW,
+          sec.pileupClipHeight,
+          () => {
+            // Pileup layers in z-order, ordered by the shared PILEUP_LAYERS list
+            // (the GPU renderer iterates the same list) and gated above. The
+            // draw fns take the per-section `sectionState`.
+            for (const layer of layers) {
+              CANVAS_PILEUP_DRAW[layer.id](
+                ctx,
+                region,
+                block,
+                bpLength,
+                fullBlockWidth,
+                sectionState,
+              )
+            }
+            drawSelectionOverlays(ctx, region, block, sectionState)
+          },
         )
-        ctx.restore()
-      }
-    }
 
-    ctx.restore() // block clip
-  }
+        // Up- and down-mode arcs both draw here, after the pileup. The band
+        // never overlaps the pileup region, and up-mode arcs still land in front
+        // of the coverage histogram (drawn earlier), matching the GPU pass
+        // order. Each section carries its own (scrolled) band; undefined when
+        // arcs are off.
+        const arcBand = sec.arcBand
+        if (arcBand) {
+          withClip(ctx, scissorX, arcBand.top, scissorW, arcBand.height, () => {
+            drawArcs(
+              ctx,
+              region,
+              block,
+              bpLength,
+              fullBlockWidth,
+              sectionState,
+              arcBand.top,
+              arcBand.height,
+              arcBand.down,
+              scissorW,
+            )
+          })
+        }
+      }
+    },
+  )
   return painted
 }
 

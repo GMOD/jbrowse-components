@@ -220,6 +220,43 @@ export interface ClipContext2D {
 }
 
 /**
+ * Clip to one rect, paint, unclip — the `save`/`clip`/`restore` triple with the
+ * `restore` in a `finally`.
+ *
+ * The `finally` is the whole point, and the cost of missing it is not local: an
+ * on-screen ctx outlives the frame and `prepareCanvas`'s setTransform/clearRect
+ * do **not** reset clip state, so one painter throwing once leaves every later
+ * frame drawing through a stale clip. A transient error becomes permanent
+ * corruption, and the visible symptom (content missing from a band that has no
+ * reason to be clipped) points nowhere near the painter that threw.
+ *
+ * `forEachClippedBlock` is the per-block form and covers the common case on its
+ * own. Reach for this one for the clips *nested inside* a block — a display
+ * whose bands each own a horizontal strip of the canvas (alignments clips its
+ * coverage, pileup and arc bands separately within one block clip), where the
+ * nesting is what makes a hand-rolled pairing easy to get wrong: an early
+ * `return` inside the band body unbalances the block's `save` too.
+ */
+export function withClip(
+  ctx: ClipContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  paint: () => void,
+) {
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(x, y, w, h)
+  ctx.clip()
+  try {
+    paint()
+  } finally {
+    ctx.restore()
+  }
+}
+
+/**
  * The Canvas2D twin of `GpuPerRegionRenderingBackend.renderBlocks`' per-block
  * scissor: skip blocks with nothing to draw or no on-screen span, clip to the
  * block's columns, paint, unclip. Owning it here means a painter can't pair
@@ -259,19 +296,9 @@ export function forEachClippedBlock<T, B extends BpRegionBounds>(
     const clip =
       data === undefined ? null : clipBlockForCanvas(block, canvasWidth)
     if (data !== undefined && clip) {
-      ctx.save()
-      ctx.beginPath()
-      ctx.rect(clip.scissorX, 0, clip.scissorW, clipHeight)
-      ctx.clip()
-      try {
+      withClip(ctx, clip.scissorX, 0, clip.scissorW, clipHeight, () => {
         paint(data, block, clip)
-      } finally {
-        // An on-screen ctx outlives the frame and `prepareCanvas`'s
-        // setTransform/clearRect do not reset clip state, so a painter that
-        // throws once would otherwise leave every later frame drawing through
-        // a stale clip — a transient error turned permanent corruption.
-        ctx.restore()
-      }
+      })
     }
   }
 }
