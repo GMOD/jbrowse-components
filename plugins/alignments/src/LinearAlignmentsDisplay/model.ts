@@ -98,11 +98,13 @@ import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
 import {
   anyRegionTruncated,
   applyReadColorsByGroup,
+  collectAcrossGroups,
   groupMaxY,
   layoutGroupRowCounts,
   layoutGroupsToViewport,
   maxRowsFor,
   nextGroupHeightOverride,
+  someAcrossGroups,
 } from './groupLayout.ts'
 import {
   buildReadIdsByChainName,
@@ -1282,12 +1284,15 @@ export default function stateModelFactory(
             // under a tag scheme the legend listed "Tag" for reads the renderer
             // was painting with the no-value neutral, and never listed
             // "No tag value" at all.
-            for (const map of this.laidOutByGroup.values()) {
-              for (const { readColorCategories } of map.values()) {
-                for (const idx of readColorCategories) {
-                  present.add(READ_COLOR_CATEGORY_BY_INDEX[idx]!)
-                }
-              }
+            //
+            // Indices first, mapped once at the end: the category set is a
+            // dozen entries where the index arrays are per read, so the lookup
+            // runs a dozen times rather than once per read.
+            for (const idx of collectAcrossGroups(
+              this.laidOutByGroup,
+              d => d.readColorCategories,
+            )) {
+              present.add(READ_COLOR_CATEGORY_BY_INDEX[idx]!)
             }
           }
           return present
@@ -1315,15 +1320,7 @@ export default function stateModelFactory(
           if (!this.showLegend || (type !== 'tag' && type !== 'mateRefName')) {
             return undefined
           }
-          const present = new Set<string>()
-          for (const map of this.laidOutByGroup.values()) {
-            for (const { readTagValues } of map.values()) {
-              for (const value of readTagValues ?? []) {
-                present.add(value)
-              }
-            }
-          }
-          return present
+          return collectAcrossGroups(this.laidOutByGroup, d => d.readTagValues)
         },
 
         /**
@@ -1348,15 +1345,10 @@ export default function stateModelFactory(
           if (!this.showLegend || !isModificationScheme(this.colorBy.type)) {
             return undefined
           }
-          const present = new Set<string>()
-          for (const map of this.laidOutByGroup.values()) {
-            for (const { modificationTypes } of map.values()) {
-              for (const type of modificationTypes ?? []) {
-                present.add(type)
-              }
-            }
-          }
-          return present
+          return collectAcrossGroups(
+            this.laidOutByGroup,
+            d => d.modificationTypes,
+          )
         },
 
         /**
@@ -1467,14 +1459,14 @@ export default function stateModelFactory(
           ) {
             return undefined
           }
-          for (const map of this.laidOutByGroup.values()) {
-            for (const { overlapPositions } of map.values()) {
-              if (overlapPositions.length > 0) {
-                return self.isChainMode ? 'chain' : 'collapsed'
-              }
-            }
-          }
-          return undefined
+          return someAcrossGroups(
+            this.laidOutByGroup,
+            d => d.overlapPositions.length > 0,
+          )
+            ? self.isChainMode
+              ? 'chain'
+              : 'collapsed'
+            : undefined
         },
 
         /**

@@ -23,6 +23,60 @@ import type { GroupId } from './groupedDataMaps.ts'
 // Per group key: region index → laid-out data (Y arrays filled).
 export type LaidOutByGroup = Map<string, Map<number, PileupDataResult>>
 
+/**
+ * Every value `pick` yields across every laid-out region of every group.
+ *
+ * This is the "what is actually on screen" question, and the legend asks it of
+ * four different fields — read color categories, tag values, modification types,
+ * and whether anything overlaps. Each asked it with its own copy of the same
+ * two-deep walk, and getting the nesting wrong is silent: a scan that stops a
+ * level early collects nothing and the legend simply lists fewer swatches.
+ *
+ * **The walk is over groups × REGIONS, not reads** — the inner map is keyed by
+ * region index and each value holds that region's per-read arrays. So the O(n)
+ * the callers gate on `showLegend` for is the iteration of what `pick` returns,
+ * not this; one closure call per region costs nothing next to it.
+ *
+ * A `pick` returning `undefined` contributes nothing, so a field the worker only
+ * sometimes ships needs no guard at the call site.
+ */
+export function collectAcrossGroups<T>(
+  byGroup: LaidOutByGroup,
+  pick: (data: PileupDataResult) => Iterable<T> | undefined,
+): Set<T> {
+  const present = new Set<T>()
+  for (const map of byGroup.values()) {
+    for (const data of map.values()) {
+      const values = pick(data)
+      if (values) {
+        for (const value of values) {
+          present.add(value)
+        }
+      }
+    }
+  }
+  return present
+}
+
+/**
+ * Whether any laid-out region satisfies `pred`. The same walk asked as a
+ * question rather than a collection, and its own function because it stops at
+ * the first yes — which `collectAcrossGroups` cannot do.
+ */
+export function someAcrossGroups(
+  byGroup: LaidOutByGroup,
+  pred: (data: PileupDataResult) => boolean,
+): boolean {
+  for (const map of byGroup.values()) {
+    for (const data of map.values()) {
+      if (pred(data)) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
 // Max pileup rows a layout may produce before overflow reads collapse to the
 // bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
 // `readYs`) and the overflow sentinel never wrap.

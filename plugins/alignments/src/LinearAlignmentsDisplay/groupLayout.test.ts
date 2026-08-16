@@ -1,9 +1,13 @@
 import {
   MIN_FIT_ROWS,
+  collectAcrossGroups,
   fitGroupMaxRows,
   nextGroupHeightOverride,
   reclaimFitRows,
+  someAcrossGroups,
 } from './groupLayout.ts'
+
+import type { LaidOutByGroup } from './groupLayout.ts'
 
 test('fitGroupMaxRows: splits the post-overhead height evenly across groups', () => {
   // 1000px height, 2 groups, 50px overhead each => (1000 - 100)/2 = 450px per
@@ -200,4 +204,75 @@ test('nextGroupHeightOverride: clamps a stale over-content override to one row o
   // existing 500px runs well past the 100px content; base clamps to 100+20 so a
   // reversing (shrink) drag only walks back one row of dead space, not 400px.
   expect(drag({ dy: -5, existingPx: 500, fullyShown: true })).toBe(115)
+})
+
+// The two-deep walk the legend's four presence scans share. Every one of them
+// used to spell it out, and the failure mode is silent in the direction that
+// matters: a scan stopping a level early collects nothing, so the legend simply
+// lists fewer swatches than the picture has colors. Nothing else asserts the
+// walk — `legendUtils.test.ts` starts from a present-set already built — so
+// these are what say the nesting is right.
+
+// Only the two fields these read, as the walk sees them.
+function byGroup(
+  groups: { readTagValues?: string[]; overlapPositions?: number[] }[][],
+) {
+  return new Map(
+    groups.map((regions, g) => [
+      `group${g}`,
+      new Map(
+        regions.map((r, i) => [
+          i,
+          {
+            readTagValues: r.readTagValues,
+            overlapPositions: new Uint32Array(r.overlapPositions ?? []),
+          },
+        ]),
+      ),
+    ]),
+  ) as unknown as LaidOutByGroup
+}
+
+test('collectAcrossGroups: unions every region of every group', () => {
+  expect([
+    ...collectAcrossGroups(
+      byGroup([
+        [{ readTagValues: ['a', 'b'] }, { readTagValues: ['b', 'c'] }],
+        [{ readTagValues: ['d'] }],
+      ]),
+      d => d.readTagValues,
+    ),
+  ]).toEqual(['a', 'b', 'c', 'd'])
+})
+
+test('collectAcrossGroups: a field the worker did not ship contributes nothing', () => {
+  // the guard is the helper's, so no call site needs its own `?? []`
+  expect([
+    ...collectAcrossGroups(
+      byGroup([[{}, { readTagValues: ['a'] }]]),
+      d => d.readTagValues,
+    ),
+  ]).toEqual(['a'])
+})
+
+test('collectAcrossGroups: no groups is the empty set, not a throw', () => {
+  expect(collectAcrossGroups(byGroup([]), d => d.readTagValues).size).toBe(0)
+})
+
+test('someAcrossGroups: true from a region in any group', () => {
+  const pred = (d: { overlapPositions: Uint32Array }) =>
+    d.overlapPositions.length > 0
+  expect(
+    someAcrossGroups(byGroup([[{}], [{}, { overlapPositions: [1] }]]), pred),
+  ).toBe(true)
+  expect(someAcrossGroups(byGroup([[{}], [{}]]), pred)).toBe(false)
+})
+
+test('someAcrossGroups: stops at the first yes', () => {
+  const seen: number[] = []
+  someAcrossGroups(byGroup([[{ overlapPositions: [1] }, {}], [{}]]), d => {
+    seen.push(d.overlapPositions.length)
+    return d.overlapPositions.length > 0
+  })
+  expect(seen).toEqual([1])
 })
