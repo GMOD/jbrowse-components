@@ -116,7 +116,7 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
         const args = isAlive(self) ? prepare() : undefined
         if (args !== undefined) {
           const { adapterConfig } = self
-          const { stopToken, isCurrent, statusCallback } = fetch.begin()
+          const { stopToken, isCurrent, statusCallback, end } = fetch.begin()
           // clear any prior error as the new fetch begins, so a stale banner
           // never lingers over freshly-loaded data
           self.setError(undefined)
@@ -149,10 +149,12 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
               self.setError(e)
             }
           } finally {
+            // the fetching flag under the staleness guard, the status through
+            // `end()` — which closes that guard, so it goes last
             if (isCurrent()) {
-              self.setStatusMessage(undefined)
               self.setFetching(false)
             }
+            end()
           }
         }
       },

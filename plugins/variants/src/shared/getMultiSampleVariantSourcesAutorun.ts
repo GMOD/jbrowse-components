@@ -20,6 +20,14 @@ export function getMultiSampleVariantSourcesAutorun(
     reloadCount: number
     setError: (error?: unknown) => void
     setStatusMessage: (status?: RpcStatus) => void
+    // This display composes the LGV fetch mixins, so it already owns a status
+    // window; handing the pair to the rotation is what keeps this fetch and the
+    // region fetches thinning through ONE of them rather than two writing the
+    // same field.
+    makeStatusCallback: (
+      isCurrent: () => boolean,
+    ) => (status: RpcStatus) => void
+    flushStatus: (apply: () => void) => void
     setSources: (sources: Source[]) => void
   },
 ) {
@@ -45,14 +53,23 @@ export function getMultiSampleVariantSourcesAutorun(
           }
           const { rpcManager } = getSession(self)
           const { adapterConfig } = self
-          const { stopToken, isCurrent, statusCallback } = rotation.begin()
-          const sources = await rpcManager.call(
-            getRpcSessionId(self),
-            'MultiSampleVariantGetSources',
-            { adapterConfig, stopToken, statusCallback },
-          )
-          if (isCurrent()) {
-            self.setSources(sources)
+          const { stopToken, isCurrent, statusCallback, end } = rotation.begin()
+          try {
+            const sources = await rpcManager.call(
+              getRpcSessionId(self),
+              'MultiSampleVariantGetSources',
+              { adapterConfig, stopToken, statusCallback },
+            )
+            if (isCurrent()) {
+              self.setSources(sources)
+            }
+          } finally {
+            // The clear this fetch had never had. Nothing else drops the label:
+            // `getSources` has no index to consult and scans every feature in
+            // every region, so it reports for as long as that takes, and a
+            // failure partway left the last status standing with
+            // `DisplayBackgroundProgress` rendering a chip off it for good.
+            end()
           }
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {

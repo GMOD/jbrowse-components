@@ -100,4 +100,85 @@ describe('the status window', () => {
     jest.advanceTimersByTime(100)
     expect(host.statusMessage).toBe('Downloading')
   })
+
+  // A run that COMPLETES still holds the current token, so the token comparison
+  // alone leaves its guard open — this is the term that closes it, and without
+  // it the queued write below lands on top of the clear.
+  test('end() clears, and drops the write queued behind the clear', () => {
+    jest.useFakeTimers()
+    const host = makeHost()
+    const rotation = createStopTokenRotation(host)
+    const fetch = rotation.begin()
+    fetch.statusCallback('Downloading')
+    fetch.statusCallback({ message: 'Downloading', current: 9, total: 10 })
+    expect(host.statusMessage).toBe('Downloading')
+    fetch.end()
+    expect(host.statusMessage).toBeUndefined()
+    expect(fetch.isCurrent()).toBe(false)
+    clock += 100
+    jest.advanceTimersByTime(100)
+    expect(host.statusMessage).toBeUndefined()
+    rotation.dispose()
+  })
+
+  // A superseded run reaches its own `finally` too — it unwinds on the abort the
+  // rotation raised — and clearing there would wipe the label belonging to the
+  // fetch that replaced it.
+  test('end() on a superseded fetch leaves the live one alone', () => {
+    const host = makeHost()
+    const rotation = createStopTokenRotation(host)
+    const first = rotation.begin()
+    const second = rotation.begin()
+    second.statusCallback('Downloading')
+    first.end()
+    expect(host.statusMessage).toBe('Downloading')
+    rotation.dispose()
+  })
+
+  // The replacing fetch's first status is a worker hop away, and nothing else
+  // drops the label describing the work that was just abandoned.
+  test('begin() clears the superseded fetch label', () => {
+    const host = makeHost()
+    const rotation = createStopTokenRotation(host)
+    rotation.begin().statusCallback('Downloading')
+    expect(host.statusMessage).toBe('Downloading')
+    rotation.begin()
+    expect(host.statusMessage).toBeUndefined()
+    rotation.dispose()
+  })
+})
+
+// A host composing `FetchMixin` already owns a throttle over the same status
+// field. Handing the rotation its pair keeps the two fetches thinning through
+// one window rather than two, which is the whole point of one-per-owner.
+describe('a host that owns its own window', () => {
+  test('reports through the host callback rather than a second throttle', () => {
+    const seen: RpcStatus[] = []
+    const flushed: string[] = []
+    // stands in for FetchMixin: the sink and the flush are the model's, and the
+    // rotation must reach for them instead of building its own
+    const host = Model.actions(() => ({
+      makeStatusCallback(isCurrent: () => boolean) {
+        return (status: RpcStatus) => {
+          if (isCurrent()) {
+            seen.push(status)
+          }
+        }
+      },
+      flushStatus(apply: () => void) {
+        flushed.push('flushed')
+        apply()
+      },
+    })).create({})
+    const rotation = createStopTokenRotation(host)
+    const fetch = rotation.begin()
+    fetch.statusCallback('Downloading')
+    fetch.statusCallback('Parsing')
+    // both landed: the host's window, not a second one thinning them here
+    expect(seen).toEqual(['Downloading', 'Parsing'])
+    fetch.end()
+    expect(flushed.length).toBeGreaterThan(0)
+    expect(host.statusMessage).toBeUndefined()
+    rotation.dispose()
+  })
 })
