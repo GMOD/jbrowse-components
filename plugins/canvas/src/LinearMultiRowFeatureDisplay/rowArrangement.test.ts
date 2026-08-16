@@ -94,6 +94,24 @@ describe('repartitioning', () => {
     expect(display.clusterTree).toBeUndefined()
   })
 
+  // The subtree filter is a set of row NAMES, matched with no tree involved, so
+  // a reorder or a re-cluster leaves it valid and `setLayout` keeps it. A
+  // repartition is the one thing here that renames the rows, and the old names
+  // then match none of the new ones.
+  it('drops a subtree filter naming rows the new partition cannot have', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setRpcData(0, regionData(['a', 'b', 'c'], ['sample', 'clade']))
+    display.setSubtreeFilter(['a', 'b'])
+    expect(rowNames(display)).toEqual(['a', 'b'])
+
+    display.setPartitionField('clade')
+    display.setRpcData(0, regionData(['x', 'y'], ['sample', 'clade']))
+
+    // without the clear this is [], i.e. a blank canvas with no row labels
+    expect(display.subtreeFilter).toBeUndefined()
+    expect(rowNames(display)).toEqual(['x', 'y'])
+  })
+
   it('leaves everything alone when the partition is already that', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample']))

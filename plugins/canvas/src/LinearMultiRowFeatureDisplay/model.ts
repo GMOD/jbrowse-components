@@ -957,13 +957,23 @@ export default function stateModelFactory(
        * layout omits rather than dropping it — the old row set would have come
        * back beside the new one, empty, with a saved color each. Same for the
        * hidden categories, whose labels are the old values.
+       *
+       * `clearLayout`, not `setLayout([])`, because the subtree filter is keyed
+       * on row names too. It is otherwise independent of the tree and of the
+       * order — `filterRowsBySubtree` matches on `name` and needs neither, so
+       * `setLayout` deliberately keeps a focused clade across a reorder — but
+       * this is the one action here that renames the rows out from under it.
+       * Left set, it matched nothing and `sources` came back empty: a blank
+       * canvas with no row labels, recoverable only by finding "Clear subtree
+       * filter" in the track menu. `setPhasedMode` is the same action on the
+       * multi-sample variant displays and clears it for the same reason.
        */
       setPartitionField(field: string) {
         if (field === self.partitionField) {
           return
         }
         setConf(self, 'partitionField', field)
-        self.setLayout([])
+        self.clearLayout()
         self.hiddenCategories.clear()
       },
       /**
