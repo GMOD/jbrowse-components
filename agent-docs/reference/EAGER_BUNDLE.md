@@ -429,8 +429,15 @@ Two things generalize from it:
 On the examples sites, each page's eager figure is measured independently and
 ratcheted in `eagerBundleSizes.json` — but the numbers are not independent.
 Rolldown cuts chunks by which pages reach a module together, so a new entry
-re-partitions chunks across the whole site and pages that import nothing new
-start downloading co-located modules they don't use.
+re-partitions chunks across the whole site and every page's figure moves.
+
+**It is re-partitioning, not modules.** The obvious reading — pages start
+downloading co-located modules they don't use — is measurable and nearly false:
+`probe-eager-graph` now reports how much of a page's eager set its own static
+graph reaches, and on `synteny` that is **1714 of 1715 modules, 3553 of 3555
+KB**. A page's eager chunks are its own imports. What a neighbouring page
+changes is where the cuts fall and therefore how well it all compresses —
+removing `synteny.astro` takes `ultraminimal` from 253 chunks to 221.
 
 Measured, since the figure is what makes a budget move readable: building
 `jbrowse-build-your-own`'s site with and without `synteny.astro` moves each of
@@ -444,6 +451,41 @@ on the same product) — and both were attributed rather than assumed, with
 `pnpm probe-eager-graph --page ultraminimal --holds <pkg>` reporting **zero**
 eager modules importing the new page's product. The ratchet is normal again from
 a banked step; a further rise is a real regression.
+
+### The noise is larger than the band, which is why this keeps costing a session
+
+`OVER_KB` is 10. A page addition moves every other page 12-14 KB. So the
+confound is not merely present, it is **bigger than the threshold it hides in**:
+adding one page fails the over-budget check everywhere, and a genuine 13 KB
+regression looks exactly like it.
+
+The same probe run, on the same two builds, gives a figure that mostly does not
+move — `ultraminimal`'s own-graph total goes 2744 KB → 2727 KB when
+`synteny.astro` is deleted, **0.6%**, against gzip's 2.3%:
+
+| `ultraminimal` | with `synteny` | without | move |
+| --- | --- | --- | --- |
+| eager gzip (delivered) | 523 KB | 511 KB | 2.3% |
+| own-graph, uncompressed | 2744 KB | 2727 KB | 0.6% |
+
+The residual 17 KB is not co-location either — it is treeshaking granularity. A
+module keeps more of itself when something else in the bundle uses more of it,
+so its `renderedLength` genuinely differs between the two builds. **No
+measurement over a shared build removes that**, which is the honest ceiling on
+this approach.
+
+Building each page as its own bundle would remove the confound completely, and
+it is the wrong trade twice over: twelve builds instead of one, and the number
+you get describes a bundle nobody ships — the same page measured alone
+treeshakes *smaller*, because less of each shared module is alive. Prefer the
+coupled build with an attribution number over an isolated build with a delivered
+one.
+
+**If the ratchet moves to it, ratchet proportionally** (~1%), not in absolute KB.
+That fits a page addition inside the band while still failing on a 38 KB module
+— the size of the MUI `Slider` that section 5 removed. Not done: the delivered
+gzip figure is what a reader downloads and is worth continuing to report, so the
+change is which number CI *gates* on, and that is a call to make deliberately.
 
 ## What is not worth chasing
 

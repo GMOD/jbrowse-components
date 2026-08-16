@@ -42,6 +42,11 @@ function graphProbe() {
           graph.chunks[file] = {
             imports: chunk.imports,
             dynamicImports: chunk.dynamicImports,
+            // the module the chunk exists for, when it is an entry — the root a
+            // per-page walk of `graph.source` starts from. Without it the only
+            // available roots are "every module in the entry chunk", which is
+            // the co-location the walk is trying to get out from under.
+            facadeModuleId: chunk.facadeModuleId,
             modules: Object.fromEntries(
               Object.entries(chunk.modules).map(([id, m]) => [
                 id,

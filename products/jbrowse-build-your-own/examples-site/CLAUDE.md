@@ -86,6 +86,13 @@ level, never by chunk name (a rolldown chunk is named after one of its modules
 and holds unrelated ones); and when nothing first-party names the target
 directly it falls back to the package's barrel importers.
 
+Every run also prints **how much of the eager set the page's own static graph
+reaches**, which is the figure to quote when a budget moved and you need to know
+whether this page's imports did. It barely moves when a neighbouring page is
+added (0.6%, against gzip's 2.3%) — see "the noise is larger than the band" in
+EAGER_BUNDLE.md, which also says why it is uncompressed and why the per-page
+figures do not sum to the site.
+
 The probe build overwrites `dist/` — re-run `pnpm build` before trusting a
 measurement taken after it. The chrome bundle figures in the prose come from the
 repo-root `scripts/measureChromeBundle.ts`.

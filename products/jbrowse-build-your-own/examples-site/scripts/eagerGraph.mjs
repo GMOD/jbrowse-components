@@ -126,6 +126,59 @@ for (const file of eagerChunks) {
 const short = id => path.relative(path.join(site, '../../..'), id)
 const firstParty = id => !id.includes('node_modules')
 
+// What a page's OWN graph costs, as opposed to what it downloads.
+//
+// The eager-chunk sum above is the delivered figure and it is coupled: rolldown
+// cuts chunks by which pages reach a module together, so a page that imports
+// nothing new still moves when a neighbour is added (~13 KB gzip a page,
+// measured). That is honest about bytes on the wire and useless for attribution
+// — the number a ratchet wants is the one that only moves when THIS page's
+// imports move.
+//
+// So walk the page's own static graph from its entry modules and count only what
+// it reaches. Static edges only: a `dynamic` edge is a chunk the page does not
+// download up front, which is the whole distinction being measured. Intersected
+// with the eager modules, so a module treeshaken away is not billed.
+//
+// Two properties to keep in mind before quoting it. It is **uncompressed** —
+// gzip does not decompose per module, so this trades unit for stability. And a
+// module two pages both import is billed to **both**, so the per-page figures
+// deliberately do not sum to the site total.
+function attributed(forPage) {
+  const roots = [...eagerChunks]
+    .map(f => chunkFor(f).facadeModuleId)
+    .filter(Boolean)
+  if (roots.length === 0) {
+    return { modules: 0, bytes: 0, stale: true }
+  }
+  // Walk the SOURCE graph without gating on the eager set, and bill only the
+  // intersection at the end. Gating the traversal instead cuts a subtree off at
+  // any module treeshaking removed — an inlined barrel is exactly that, and it
+  // sits between a page and most of what it imports, so the first version of
+  // this read 54% of synteny as co-location when the real figure is a third of
+  // that.
+  const seen = new Set()
+  const stack = [...roots]
+  while (stack.length) {
+    const id = stack.pop()
+    if (seen.has(id)) {
+      continue
+    }
+    seen.add(id)
+    stack.push(...(graph.source[id]?.imports ?? []))
+  }
+  let bytes = 0
+  let modules = 0
+  for (const id of seen) {
+    const cost = eagerModules.get(id)
+    if (cost !== undefined) {
+      bytes += cost
+      modules++
+    }
+  }
+  return { modules, bytes, page: forPage }
+}
+
 // Package root of a node_modules path: `.../node_modules/@mui/material/Button/
 // Button.mjs` -> `.../node_modules/@mui/material`. What a bare specifier
 // resolves to when it names a barrel.
@@ -200,6 +253,12 @@ const total = [...eagerModules.values()].reduce((a, b) => a + b, 0)
 console.log(
   `page "${page}": ${eagerChunks.size} eager chunks, ${eagerModules.size} ` +
     `modules, ${Math.round(total / 1024)} KB rendered (uncompressed)\n`,
+)
+const own = attributed(page)
+console.log(
+  `  of which this page's own static graph reaches: ${own.modules} modules, ` +
+    `${Math.round(own.bytes / 1024)} KB — the rest is chunk co-location with ` +
+    'other pages\n',
 )
 const byPackage = new Map()
 for (const [id, bytes] of eagerModules) {
