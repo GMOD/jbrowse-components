@@ -1,10 +1,14 @@
+import {
+  GAP_DELETION,
+  GAP_SKIP,
+} from '../../shaders/slang/gap.consts.generated.ts'
 import { drawDeletions, drawSkips } from './drawCanvas.ts'
 
 import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { GapUploadData } from './types.ts'
+import type { GapTypeCode, GapUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 function recordingCtx() {
@@ -37,10 +41,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
   } as RenderState
 }
 
-const GAP_DELETION = 0
-const GAP_SKIP = 1
-
-function oneGap(start: number, end: number, type: number): GapUploadData {
+function oneGap(start: number, end: number, type: GapTypeCode): GapUploadData {
   return {
     gapPositions: new Uint32Array([start, end]),
     gapYs: new Uint16Array([0]),

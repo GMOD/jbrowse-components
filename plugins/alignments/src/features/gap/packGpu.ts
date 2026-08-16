@@ -6,7 +6,7 @@ import {
 } from '../../shaders/slang/gap.consts.generated.ts'
 import * as gapShader from '../../shaders/slang/gap.generated.ts'
 
-import type { GapUploadData } from './types.ts'
+import type { GapTypeCode, GapUploadData } from './types.ts'
 
 // Two passes over one worker payload and one shader. The split is a VISIBILITY
 // decision rather than a geometric one: `showMismatches` takes the deletion bars
@@ -28,7 +28,7 @@ export const SKIP_PASS = {
   pack: (data: GapUploadData) => packGapsOfType(data, GAP_SKIP),
 }
 
-export function packGapsOfType(data: GapUploadData, gapType: number) {
+export function packGapsOfType(data: GapUploadData, gapType: GapTypeCode) {
   const { gapPositions, gapYs, gapTypes, gapFrequencies } = data
   const numGaps = gapPositions.length / 2
   // Counted rather than over-allocated: `uploadPass` reads the instance count

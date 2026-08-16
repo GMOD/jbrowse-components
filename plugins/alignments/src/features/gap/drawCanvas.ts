@@ -18,7 +18,7 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { GapUploadData } from './types.ts'
+import type { GapTypeCode, GapUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // One walk per gap kind, since the two are separate draw layers with separate
@@ -33,7 +33,7 @@ function drawGapsOfType(
   bpLength: number,
   fullBlockWidth: number,
   state: RenderState,
-  wanted: number,
+  wanted: GapTypeCode,
 ) {
   const fH = state.featureHeight
   const deletions = wanted === GAP_DELETION

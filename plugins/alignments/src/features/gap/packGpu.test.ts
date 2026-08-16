@@ -64,6 +64,20 @@ test('the two passes partition the array', () => {
   ])
 })
 
+// Compile-time only, and it guards itself: `GapTypeCode` is
+// `typeof GAP_DELETION | typeof GAP_SKIP`, so if the generated constants ever
+// gained a `: number` annotation the union would silently collapse to `number`
+// — a type that documents the argument while checking nothing. Then this call
+// would compile, the `@ts-expect-error` would go unused, and `pnpm typecheck`
+// fails on the directive instead. Which is the point: the assertion breaks in
+// both directions.
+function typeGuard() {
+  // @ts-expect-error a byte value that is neither gap kind selects nothing,
+  // packs a zero-length buffer and draws nothing — silently, on both backends
+  packGapsOfType(GAPS, 7)
+}
+void typeGuard
+
 test('an empty payload packs an empty buffer', () => {
   const empty: GapUploadData = {
     gapPositions: new Uint32Array(0),
