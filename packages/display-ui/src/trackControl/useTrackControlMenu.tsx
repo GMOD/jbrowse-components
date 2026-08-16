@@ -21,6 +21,11 @@ import type { CSSProperties } from 'react'
 //   - **dismissal.** Escape, a pointer press outside, and any ancestor
 //     scrolling. Each is a bug when missed, and none of them shows up in a
 //     screenshot.
+//   - **the keyboard.** `role="menu"` is a promise: a screen-reader user who
+//     opens one expects Up/Down to walk it and Home/End to reach its ends. The
+//     Material control gets that from MUI's `Menu` for free, so a host swapping
+//     in a plain one was trading working keyboard operation for a look — the
+//     one thing the seam must not cost them.
 //
 // `style` on `menuProps` carries **position only**. Sizing, colour and border
 // are the caller's, and merging is `{...menuProps.style, ...yours}`.
@@ -47,7 +52,13 @@ export interface TrackControlMenu {
     tabIndex: -1
     style: CSSProperties
   }
-  /** Spread onto each option. Selecting closes and returns focus to the trigger. */
+  /**
+   * Spread onto each option. Selecting closes and returns focus to the trigger.
+   *
+   * `role="menuitemradio"` is also how the arrow keys find their targets — the
+   * hook queries the container for it rather than collecting refs, so any markup
+   * that spreads these props is navigable without handing anything back.
+   */
   getOptionProps: (option: TrackControlOption) => {
     role: 'menuitemradio'
     'aria-checked': boolean
@@ -67,11 +78,61 @@ export function useTrackControlMenu(): TrackControlMenu {
     if (!anchor) {
       return
     }
-    ref.current?.focus()
+    // Found by role rather than by a collected ref: the caller owns the markup,
+    // and `getOptionProps` already stamps the role onto every option.
+    const items = () => [
+      ...(ref.current?.querySelectorAll<HTMLElement>(
+        '[role="menuitemradio"]',
+      ) ?? []),
+    ]
+    const moveFocus = (to: number | 'first' | 'last') => {
+      const list = items()
+      if (list.length === 0) {
+        return
+      }
+      const from = list.indexOf(document.activeElement as HTMLElement)
+      const next =
+        to === 'first'
+          ? 0
+          : to === 'last'
+            ? list.length - 1
+            : from === -1
+              ? 0
+              : // wraps, which is what a menu of a handful of options wants:
+                // the list is short enough that walking off one end and
+                // arriving at the other is faster than reversing
+                (from + to + list.length) % list.length
+      list[next]?.focus()
+    }
+    // Opening lands on the option already chosen, so the current setting is
+    // what a screen reader reads first and one keypress reaches its neighbour.
+    // Focusing the container instead announces the menu and none of its
+    // contents.
+    const list = items()
+    ;(
+      list.find(el => el.getAttribute('aria-checked') === 'true') ??
+      list[0] ??
+      ref.current
+    )?.focus()
+
+    const moves: Record<string, number | 'first' | 'last'> = {
+      ArrowDown: 1,
+      ArrowUp: -1,
+      Home: 'first',
+      End: 'last',
+    }
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         close()
         anchor.focus()
+        return
+      }
+      const to = moves[event.key]
+      if (to !== undefined) {
+        // Without this the arrows scroll the page, and a page scroll closes
+        // this menu — so every attempt to walk the list would dismiss it.
+        event.preventDefault()
+        moveFocus(to)
       }
     }
     // pointerdown rather than click: the press is what dismisses, and listening
