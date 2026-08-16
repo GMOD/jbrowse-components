@@ -252,6 +252,39 @@ test('overlapping features: the hit feature keeps its own topmost subfeature', (
   expect(result.subfeature!.featureId).toBe('mRNA1')
 })
 
+// The consumer half of the invariant `emitSubfeaturesGlyph` holds: a subfeature
+// names the RECORD's id, however deep it sits. Named after the intermediate
+// container it hangs off, the gate below drops it — and the symptom is the
+// quietest kind, since it is drawn and labelled exactly as before and simply
+// never resolves. No hover, no highlight scope, no subfeature rows on the
+// right-click menu.
+test('pairs a subfeature named after the record, at any nesting depth', () => {
+  const record = makeItem('match1', 1000, 5000, 0, 20)
+  const nested = makeSub('part1', 'match1', 2000, 3000, 0, 20)
+  const result = hit(
+    new Map([[0, makeData([record], [nested])]]),
+    [makeRegion(0, 0, 10000, 0, 800)],
+    200, // ≈2500bp, inside both
+    10,
+  )
+  expect(result.subfeature!.featureId).toBe('part1')
+})
+
+test('drops a subfeature naming a container instead of the record', () => {
+  const record = makeItem('match1', 1000, 5000, 0, 20)
+  // 'inner' is a container between the record and this part; the gate pairs on
+  // the record's id alone, so this resolves to no subfeature at all
+  const nested = makeSub('part1', 'inner', 2000, 3000, 0, 20)
+  const result = hit(
+    new Map([[0, makeData([record], [nested])]]),
+    [makeRegion(0, 0, 10000, 0, 800)],
+    200,
+    10,
+  )
+  expect(result.feature!.featureId).toBe('match1')
+  expect(result.subfeature).toBeNull()
+})
+
 test('returns null subfeature when outside subfeature but inside feature', () => {
   const parent = makeItem('gene1', 1000, 5000, 0, 30)
   const sub = makeSub('mRNA1', 'gene1', 2000, 3000, 5, 15)

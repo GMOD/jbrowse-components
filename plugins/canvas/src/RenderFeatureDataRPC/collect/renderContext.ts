@@ -46,11 +46,20 @@ export interface GlyphPlacement {
   isRoot: boolean
   // The record's ROOT feature, at every depth — never the immediate container a
   // nested glyph happens to sit in. It is the `parentFeatureId` every subfeature
-  // registers itself under, and three consumers read that field as the top-level
-  // id: `resolveSubfeature` pairs a subfeature hit with its feature by it,
-  // `GetCanvasFeatureDetails` resolves only top-level features by id, and the
-  // highlight sweep pins by it. `emitSubfeaturesGlyph` forwards this rather than
-  // its own `layout.feature` to hold the invariant one level down.
+  // and every subfeature LABEL registers itself under, and the main thread reads
+  // that field as the top-level id everywhere:
+  //
+  //   - `resolveSubfeature` pairs a subfeature hit with its feature by it, so a
+  //     mis-named one is drawn, labelled, and never hoverable;
+  //   - the layout's post-pack pass adds the parent's row offset by it, falling
+  //     back to `?? 0` — the un-offset worker Y;
+  //   - that same pass DELETES a floating label whose key misses the layout map,
+  //     so a mis-named subfeature label vanishes with no other symptom;
+  //   - `GetCanvasFeatureDetails` resolves only top-level features by id;
+  //   - the highlight sweep pins by it, and the packer keys on top-level ids.
+  //
+  // `emitSubfeaturesGlyph` forwards this rather than its own `layout.feature`,
+  // which is what holds the invariant more than one level down.
   parentFeature: Feature
 }
 
