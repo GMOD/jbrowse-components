@@ -3,7 +3,7 @@ import '@testing-library/jest-dom'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import LaunchSyntenyViewForRegionDialog from './LaunchSyntenyViewForRegionDialog.tsx'
 
@@ -12,6 +12,8 @@ import type {
   AbstractSessionModel,
   AbstractViewModel,
   Region,
+  RpcStatus,
+  StatusCallback,
 } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -67,11 +69,30 @@ function renderDialog(
   )
 }
 
+// A discovery that never settles, handing back the callback the RPC would
+// report its phase through — the only way to see what the dialog draws WHILE it
+// waits, which is the whole of what a status is for.
+function renderDialogReportingStatus() {
+  let report: StatusCallback | undefined
+  renderDialogFor([{ trackId: 't1', name: 'all vs all' }], () => (_, cb) => {
+    report = cb
+    return new Promise<MateDiscoveryResult>(() => {})
+  })
+  return (status: RpcStatus) => {
+    act(() => {
+      report!(status)
+    })
+  }
+}
+
 function renderDialogFor(
   tracks: { trackId: string; name: string }[],
   discoverMatesFor: (
     trackId: string,
-  ) => (stopToken: StopToken) => Promise<MateDiscoveryResult>,
+  ) => (
+    stopToken: StopToken,
+    statusCallback: StatusCallback,
+  ) => Promise<MateDiscoveryResult>,
   {
     session = {} as AbstractSessionModel,
     sourceView,
@@ -281,6 +302,31 @@ test('the discovery in flight says what it is waiting on', () => {
   expect(
     screen.getByText(/Finding assemblies that align to this region/),
   ).toBeTruthy()
+})
+
+// The sentence above is what is shown up to the first status. These two pin the
+// rest of that transport, which now crosses a hook boundary (useMateDiscovery
+// owns the guarded sink; the dialog only renders what it returns) — a seam
+// nothing else would fail on, since dropping the status leaves the fallback
+// sentence in place and every other assertion here green.
+test("the RPC's own phase replaces the fallback sentence", () => {
+  const report = renderDialogReportingStatus()
+  report('Downloading alignments')
+  expect(screen.getByText(/Downloading alignments/)).toBeTruthy()
+  expect(screen.queryByText(/Finding assemblies that align/)).toBeNull()
+})
+
+test('a determinate phase draws the bar as well as the label', () => {
+  const report = renderDialogReportingStatus()
+  report({ message: 'Downloading', current: 45, total: 100 })
+  expect(screen.getByText(/Downloading 45%/)).toBeTruthy()
+  // getAllByRole, because the spinner beside the label is a progressbar too —
+  // the determinate one is the one carrying a value
+  expect(
+    screen
+      .getAllByRole('progressbar')
+      .map(el => el.getAttribute('aria-valuenow')),
+  ).toContain('45')
 })
 
 // An all-vs-all file holds every sample it was built with, and only the ones the
