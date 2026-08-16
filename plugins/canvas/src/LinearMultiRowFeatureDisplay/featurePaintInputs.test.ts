@@ -53,7 +53,7 @@ describe('featurePaintInputs', () => {
     const paint = countRecomputes(() => display.featurePaintInputs)
     // the hit test's per-region memo, which has the same dependency set and had
     // the same over-invalidation: `featureAt` runs per pointer frame off it
-    const contexts = countRecomputes(() => display.drawnFeatureContexts)
+    const contexts = countRecomputes(() => display.drawnFeaturesByRow)
     const render = countRecomputes(() => display.renderState)
 
     display.setRowHeight(14)

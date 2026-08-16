@@ -118,26 +118,83 @@ export function forEachDrawnFeature(
 }
 
 /**
- * Index of the topmost drawn feature matching `match`, or -1.
+ * The drawn features of one region, bucketed by the display row they paint on:
+ * row `r`'s feature indices are `indices[rowStart[r] .. rowStart[r + 1])`, in
+ * ascending order, which is paint order.
  *
- * Back-to-front, which is the whole reason this is not `forEachDrawnFeature`
- * with a break: both render paths paint in array order, so a later feature sits
- * *on top of* an overlapping earlier one, and a hit has to resolve to the one
- * the user can actually see. Searching forwards returns the buried feature, and
- * only on overlaps — which the data that motivates this display (segments
- * tiling a row) mostly does not have, so it would look right until it didn't.
+ * A compressed-row layout (two flat typed arrays) rather than an array of
+ * arrays, because the row count is the thing that grows here — a cohort
+ * painting is a couple of thousand rows — and one sub-array each is a couple of
+ * thousand allocations to answer a question about one of them.
+ *
+ * Built where the caller can memoize it: the hit test is the only consumer and
+ * it runs per pointer frame, while the three painters walk every feature in
+ * array order and want `forEachDrawnFeature` instead.
  */
-export function findTopDrawnFeature(
+export interface DrawnFeaturesByRow {
+  rowStart: Int32Array
+  indices: Int32Array
+}
+
+export function drawnFeaturesByRow(
   data: Pick<
     MultiRowRegionData,
     'featureStarts' | 'featurePartitionIndex' | 'featureColors'
   >,
   ctx: DrawnFeatureContext,
-  match: (i: number, rowIndex: number) => boolean,
+  rowCount: number,
+): DrawnFeaturesByRow {
+  // counting pass, then a prefix sum, then a placing pass — `forEachDrawnFeature`
+  // both times, so which features are in here cannot diverge from which ones
+  // paint
+  const rowStart = new Int32Array(rowCount + 1)
+  let drawn = 0
+  forEachDrawnFeature(data, ctx, (_i, rowIndex) => {
+    rowStart[rowIndex + 1]!++
+    drawn++
+  })
+  for (let r = 0; r < rowCount; r++) {
+    rowStart[r + 1]! += rowStart[r]!
+  }
+  const indices = new Int32Array(drawn)
+  const cursor = Int32Array.from(rowStart.subarray(0, rowCount))
+  forEachDrawnFeature(data, ctx, (i, rowIndex) => {
+    indices[cursor[rowIndex]!++] = i
+  })
+  return { rowStart, indices }
+}
+
+/**
+ * Index of the topmost drawn feature on `rowIndex` matching `match`, or -1.
+ *
+ * Back-to-front over that row, which is the whole reason this is not
+ * `forEachDrawnFeature` with a break: both render paths paint in array order, so
+ * a later feature sits *on top of* an overlapping earlier one, and a hit has to
+ * resolve to the one the user can actually see. Searching forwards returns the
+ * buried feature, and only on overlaps — which the data that motivates this
+ * display (segments tiling a row) mostly does not have, so it would look right
+ * until it didn't.
+ *
+ * Scoped to the row rather than scanning the region, because this runs on every
+ * rAF-coalesced mouse move and the region is the whole painting: a walk over
+ * half a million features, sixty times a second, to look at the couple of
+ * hundred on the row under the cursor. The row is known before the scan starts,
+ * so the bucketing above is what the scan should have been indexed by all along.
+ */
+export function findTopDrawnFeatureInRow(
+  byRow: DrawnFeaturesByRow,
+  rowIndex: number,
+  match: (i: number) => boolean,
 ) {
-  for (let i = data.featureStarts.length - 1; i >= 0; i--) {
-    const rowIndex = drawnRowAt(data, ctx, i)
-    if (rowIndex !== undefined && match(i, rowIndex)) {
+  const { rowStart, indices } = byRow
+  const lo = rowStart[rowIndex]
+  const hi = rowStart[rowIndex + 1]
+  if (lo === undefined || hi === undefined) {
+    return -1
+  }
+  for (let k = hi - 1; k >= lo; k--) {
+    const i = indices[k]!
+    if (match(i)) {
       return i
     }
   }

@@ -57,7 +57,8 @@ import {
 } from './rendering/colorLegend.ts'
 import {
   drawnFeatureContext,
-  findTopDrawnFeature,
+  drawnFeaturesByRow,
+  findTopDrawnFeatureInRow,
 } from './rendering/featurePainting.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
@@ -72,7 +73,7 @@ import type {
   LinearMultiRowFeatureDisplayConfig,
   LinearMultiRowFeatureDisplayConfigModel,
 } from './configSchema.ts'
-import type { DrawnFeatureContext } from './rendering/featurePainting.ts'
+import type { DrawnFeaturesByRow } from './rendering/featurePainting.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
@@ -765,10 +766,10 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Per-region `DrawnFeatureContext`, keyed by displayedRegionIndex — the
-       * same thing the painters build per draw, off the same `renderState`, so
-       * the hit test cannot answer "is this feature drawn" differently from the
-       * paint that put it there.
+       * Per-region drawn features bucketed by display row, keyed by
+       * displayedRegionIndex. Built through `forEachDrawnFeature` off the same
+       * `featurePaintInputs` the painters use, so the hit test cannot answer "is
+       * this feature drawn" differently from the paint that put it there.
        *
        * Memoized because the hit test needs it per *pointer frame*: `featureAt`
        * runs on every rAF-coalesced mouse move, and building it inline meant
@@ -776,16 +777,26 @@ export default function stateModelFactory(
        * on a cohort painting) sixty times a second for a value that changes
        * only when the rows, the colors or the data do.
        *
+       * Bucketing rather than a bare context, because the memo only removed the
+       * *setup* from the pointer frame and left the scan: the row is known
+       * before the search starts, so a hit on a 200-feature row was still
+       * walking the region's other half-million. See `findTopDrawnFeatureInRow`.
+       *
        * `featurePaintInputs` rather than the whole `renderState`, so that
        * "changes only when the rows, the colors or the data do" is actually
        * true — see there.
        */
-      get drawnFeatureContexts(): Map<number, DrawnFeatureContext> {
+      get drawnFeaturesByRow(): Map<number, DrawnFeaturesByRow> {
         const state = self.featurePaintInputs
+        const rowCount = self.sources.length
         return new Map(
           [...self.rpcDataMap.entries()].map(([index, data]) => [
             index,
-            drawnFeatureContext(data, state),
+            drawnFeaturesByRow(
+              data,
+              drawnFeatureContext(data, state),
+              rowCount,
+            ),
           ]),
         )
       },
@@ -821,25 +832,22 @@ export default function stateModelFactory(
         if (!region) {
           return undefined
         }
-        const ctx = self.drawnFeatureContexts.get(p.index)
-        if (!ctx) {
+        const byRow = self.drawnFeaturesByRow.get(p.index)
+        if (!byRow) {
           return undefined
         }
         // the base drawn under the cursor, which the containment test compares
         // against; coord0 names the one to its right when reversed
         const bp = basePaintedAt(p, p.offset)
         const { featureStarts, featureEnds, featureNames, featureIds } = region
-        // `findTopDrawnFeature` owns both halves of "which feature is under
-        // this pixel" that the painters also own: which features are drawn at
-        // all, and which of two overlapping ones is on top. All this adds is
-        // the row and the span.
-        const i = findTopDrawnFeature(
-          region,
-          ctx,
-          (i, rowIndex) =>
-            rowIndex === targetRow &&
-            featureStarts[i]! <= bp &&
-            bp < featureEnds[i]!,
+        // `findTopDrawnFeatureInRow` owns both halves of "which feature is
+        // under this pixel" that the painters also own: which features are
+        // drawn at all, and which of two overlapping ones is on top. All this
+        // adds is the span.
+        const i = findTopDrawnFeatureInRow(
+          byRow,
+          targetRow,
+          i => featureStarts[i]! <= bp && bp < featureEnds[i]!,
         )
         return i === -1
           ? undefined
