@@ -49,6 +49,16 @@ function saveByteLimit(model: IAnyStateTreeNode) {
     : DEFAULT_SAVE_BYTE_LIMIT
 }
 
+/**
+ * A text file ends with a newline, and deciding that once here is what keeps
+ * the three adapters and seven writers from each deciding it: every one of them
+ * ends in a `join('\n')`, and they disagreed — GFF3, BED and GenBank appended
+ * one, VCF, SAM, bedGraph and FASTA did not. An empty export stays empty.
+ */
+function endWithNewline(str: string) {
+  return str && !str.endsWith('\n') ? `${str}\n` : str
+}
+
 export interface TrackDataResult {
   str: string
   usedAdapterExport: boolean
@@ -120,7 +130,7 @@ export async function fetchTrackData({
       ...opts,
     })
     if (str !== undefined) {
-      return { str, usedAdapterExport: true }
+      return { str: endWithNewline(str), usedAdapterExport: true }
     }
   }
 
@@ -134,5 +144,5 @@ export async function fetchTrackData({
     session,
     assemblyName: regions[0]!.assemblyName,
   })
-  return { str, usedAdapterExport: false }
+  return { str: endWithNewline(str), usedAdapterExport: false }
 }

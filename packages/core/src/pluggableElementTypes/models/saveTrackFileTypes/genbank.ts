@@ -220,5 +220,5 @@ export async function stringifyGBK({
   const body = features.map(feat =>
     formatFeatWithSubfeatures({ feature: feat, minPos }),
   )
-  return `${[...header, ...body, ...formatOrigin(contig)].join('\n')}\n`
+  return [...header, ...body, ...formatOrigin(contig)].join('\n')
 }

@@ -115,5 +115,5 @@ export function stringifyBED({ features }: { features: Feature[] }) {
   const bed12 = rows.some(
     row => row.blocks.length > 1 || row.thickStart !== row.thickEnd,
   )
-  return `${rows.map(row => formatRow(row, bed12)).join('\n')}\n`
+  return rows.map(row => formatRow(row, bed12)).join('\n')
 }

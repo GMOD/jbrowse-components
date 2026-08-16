@@ -151,8 +151,8 @@ export function formatMultiLevelFeat({
 }
 
 export function stringifyGFF3({ features }: { features: Feature[] }) {
-  return `${[
+  return [
     '##gff-version 3',
     ...features.map(f => formatMultiLevelFeat({ feature: f })),
-  ].join('\n')}\n`
+  ].join('\n')
 }

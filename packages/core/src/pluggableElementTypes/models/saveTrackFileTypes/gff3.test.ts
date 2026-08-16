@@ -160,7 +160,7 @@ describe('GFF3 export', () => {
 
   it('returns just header for empty features array', () => {
     const result = stringifyGFF3({ features: [] })
-    expect(result).toBe('##gff-version 3\n')
+    expect(result).toBe('##gff-version 3')
   })
 
   it('handles phase attribute correctly', () => {

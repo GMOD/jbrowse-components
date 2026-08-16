@@ -39,6 +39,15 @@ import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const MAX_PREVIEW_CHARS = 500_000
+const TOO_BIG_TO_PREVIEW =
+  'File greater than 500kb, too large to view here. Click "Download" to save results to file'
+
+function tooLargeMessage(
+  regionStr: string,
+  { bytes, limit }: { bytes: number; limit: number },
+) {
+  return `${regionStr} is an estimated ${getDisplayStr(bytes)} on this track, over the ${getDisplayStr(limit)} this export asks about. Nothing has been downloaded — click "Download anyway" to fetch it.`
+}
 
 const useStyles = makeStyles()({
   root: { width: '80em' },
@@ -65,7 +74,8 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
 }) {
   const { classes } = useStyles()
   const options = model.saveTrackFileFormatOptions()
-  const [type, setType] = useState(Object.keys(options)[0])
+  // every track type declaring this view declares at least one format
+  const [type, setType] = useState(Object.keys(options)[0]!)
   const [helpText, setHelpText] = useState<string>()
 
   // Captured once rather than read live. The dialog is modal, so the user
@@ -90,7 +100,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
     isLoading: loading,
     status,
   } = useFetch(
-    regions.length && type
+    regions.length
       ? ([
           'fetchTrackData',
           getConf(model, 'trackId'),
@@ -122,8 +132,15 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   )
   const tooLarge = result?.tooLarge
   const str = result?.str ?? ''
-  const usedAdapterExport = result?.usedAdapterExport ?? false
-  const format = type ? options[type] : undefined
+  const format = options[type]!
+  const noResult = loading || !!error || !!tooLarge
+  const preview = loading
+    ? statusProgressLabel(status) || 'Loading...'
+    : tooLarge
+      ? tooLargeMessage(regionStr, tooLarge)
+      : str.length > MAX_PREVIEW_CHARS
+        ? TOO_BIG_TO_PREVIEW
+        : str
 
   return (
     <InfoDialog
@@ -143,7 +160,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             </Button>
           ) : null}
           <CopyToClipboardButton
-            disabled={loading || !!error || !!tooLarge}
+            disabled={noResult}
             value={str}
             copiedLabel="Copied!"
             startIcon={<ContentCopyIcon />}
@@ -152,14 +169,12 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           </CopyToClipboardButton>
           <Button
             variant="contained"
-            disabled={loading || !!error || !!tooLarge || !format}
+            disabled={noResult}
             onClick={() => {
-              if (format) {
-                saveAs(
-                  new Blob([str], { type: 'text/plain;charset=utf-8' }),
-                  `jbrowse_track_data.${format.extension}`,
-                )
-              }
+              saveAs(
+                new Blob([str], { type: 'text/plain;charset=utf-8' }),
+                `jbrowse_track_data.${format.extension}`,
+              )
             }}
             startIcon={<GetAppIcon />}
           >
@@ -179,7 +194,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         </div>
         <FormControl>
           <FormLabel>
-            {`File type${usedAdapterExport ? ' (adapter export)' : ''}`}
+            {`File type${result?.usedAdapterExport ? ' (adapter export)' : ''}`}
           </FormLabel>
           <RadioGroup
             value={type}
@@ -215,15 +230,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           minRows={5}
           maxRows={15}
           fullWidth
-          value={
-            loading
-              ? statusProgressLabel(status) || 'Loading...'
-              : tooLarge
-                ? `${regionStr} is an estimated ${getDisplayStr(tooLarge.bytes)} on this track, over the ${getDisplayStr(tooLarge.limit)} this export asks about. Nothing has been downloaded — click "Download anyway" to fetch it.`
-                : str.length > MAX_PREVIEW_CHARS
-                  ? 'File greater than 500kb, too large to view here. Click "Download" to save results to file'
-                  : str
-          }
+          value={preview}
           slotProps={{
             input: {
               readOnly: true,

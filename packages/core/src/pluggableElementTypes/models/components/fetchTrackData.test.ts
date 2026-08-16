@@ -106,7 +106,7 @@ test('an adapter that exports the format returns its raw lines', async () => {
   const res = await fetchTrackData({ model, regions, type: 'sam', options })
 
   expect(res).toEqual({
-    str: '@HD\tVN:1.6\nread1\t0\tctgA',
+    str: '@HD\tVN:1.6\nread1\t0\tctgA\n',
     usedAdapterExport: true,
   })
   expect(callsTo('CoreGetExportData')[0]![2]).toMatchObject({
@@ -128,7 +128,7 @@ test('an adapter declining one format falls through to the features', async () =
 
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
-  expect(res).toEqual({ str: 'read1,read2', usedAdapterExport: false })
+  expect(res).toEqual({ str: 'read1,read2\n', usedAdapterExport: false })
   expect(callsTo('CoreGetExportData')).toHaveLength(1)
   expect(callsTo('CoreGetFeatures')).toHaveLength(1)
 })
@@ -139,7 +139,7 @@ test('a track with no export capability is never asked to export', async () => {
 
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
-  expect(res).toEqual({ str: 'gene1', usedAdapterExport: false })
+  expect(res).toEqual({ str: 'gene1\n', usedAdapterExport: false })
   expect(callsTo('CoreGetExportData')).toHaveLength(0)
 })
 
@@ -198,7 +198,7 @@ test('force skips the pre-flight entirely', async () => {
     force: true,
   })
 
-  expect(res).toEqual({ str: 'gene1', usedAdapterExport: false })
+  expect(res).toEqual({ str: 'gene1\n', usedAdapterExport: false })
   expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)
 })
 
@@ -208,7 +208,16 @@ test('an adapter quoting no estimate does not gate', async () => {
 
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
-  expect(res).toEqual({ str: 'gene1', usedAdapterExport: false })
+  expect(res).toEqual({ str: 'gene1\n', usedAdapterExport: false })
+})
+
+test('an empty export stays empty rather than becoming one newline', async () => {
+  setup()
+  respond({ CoreGetFeatures: [] })
+
+  const res = await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(res.str).toBe('')
 })
 
 test('an adapter declaring no limit falls back to the default budget', async () => {
