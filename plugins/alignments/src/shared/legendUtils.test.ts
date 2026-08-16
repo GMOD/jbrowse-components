@@ -741,6 +741,59 @@ describe('getAlignmentsLegendSections', () => {
     })
   })
 
+  // The merge is about what a color means in the OTHER vocabulary, so two read
+  // rows sharing a palette entry are two meanings and stay two rows. Three
+  // category triples alias in the real palette — noStrand/nonSplit/
+  // mapqUnavailable, pairLR/normalInsert/noTagValue, supplementary/splitDeletion
+  // — and no scheme emits two of one today, so this pins the shape rather than a
+  // live case: fed the concatenation, the same rules dropped the second row.
+  test('two read rows in one color are two meanings, not one', () => {
+    const [reads] = getAlignmentsLegendSections(
+      model(
+        [
+          { color: '#ccc', label: 'Unsplit read' },
+          { color: '#ccc', label: 'MAPQ unavailable (255)' },
+          { color: '#0a0', label: 'LL - Both mates forward strand' },
+        ],
+        // shares LL, so the merge path is the one under test
+        [{ color: '#0a0', label: 'LL - Both mates forward strand' }],
+      ),
+    )
+    expect(reads!.items.map(i => i.label)).toEqual([
+      'Unsplit read',
+      'MAPQ unavailable (255)',
+      'LL - Both mates forward strand',
+    ])
+  })
+
+  // A merged row SHOWS two colors, and only one of them is its `color`. Keying
+  // the de-dup off that field alone let a connection row repeat the arc's half
+  // verbatim — same color, same words, one section down.
+  test('a connection row repeating either half of a merged row is dropped', () => {
+    const sections = getAlignmentsLegendSections({
+      legendItems: () => [
+        { color: '#aaa', label: 'LR - Normal pair orientation' },
+        { color: '#ffc0cb', label: 'Short insert' },
+      ],
+      arcLegendTitle: 'Arc colors',
+      arcLegendItems: () => [
+        { color: '#aaa', label: 'Normal', mark: 'curve' as const },
+        { color: '#ff3a8c', label: 'Short insert', mark: 'curve' as const },
+      ],
+      bezierLegendItems: () => [
+        // the arc's half of the merged short-insert row, verbatim
+        { color: '#ff3a8c', label: 'Short insert', mark: 'curve' as const },
+        // same label, a color neither half carries — still its own row
+        { color: '#123456', label: 'Short insert', mark: 'curve' as const },
+      ],
+    })
+    expect(shown(sections).at(-1)).toEqual([
+      'Read connections',
+      ['Short insert'],
+    ])
+    expect(sections.at(-1)!.items[0]!.color).toBe('#123456')
+  })
+
   // The mirror case stays one swatch: same color AND same meaning is one mark
   // drawn two ways, and a column of doubled greys is noise, not information.
   test('a shared color stays a single swatch', () => {

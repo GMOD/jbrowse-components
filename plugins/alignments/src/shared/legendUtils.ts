@@ -71,11 +71,38 @@ export type { LegendItem } from '@jbrowse/core/ui'
 // section is curves throughout.
 //
 // Color-less rows (headings, notes) merge by label only, never by color.
-function oneRowPerMeaning(items: LegendItem[]): LegendItem[] {
-  const rows: { item: LegendItem; swatches: LegendSwatch[] }[] = []
+//
+// TWO lists, not one concatenation, and that is the half the rules above cannot
+// state on their own: they are about what a color means in a DIFFERENT
+// vocabulary, so only the arcs are ever folded. Handed the concatenation, the
+// same rules also collapsed two READ rows that happen to share a palette entry
+// — and three triples do (`{noStrand, nonSplit, mapqUnavailable}` on
+// colorNeutralRead, `{pairLR, normalInsert, noTagValue}` on colorPairLR,
+// `{supplementary, splitDeletion}` on colorSupplementary), each member a
+// distinct bucket the renderer paints for a distinct reason. No scheme emits
+// two of one triple today, so nothing was being dropped; the drop would have
+// been silent when one did, which is the wrong way round for a box whose claim
+// is that it names every color drawn.
+function oneRowPerMeaning(
+  reads: LegendItem[],
+  arcs: LegendItem[],
+): LegendItem[] {
+  // Copied, because `legendSwatches` hands back the item's OWN array for a row
+  // that already carries one — and the merge below pushes onto this.
+  const rows: { item: LegendItem; swatches: LegendSwatch[] }[] = reads.map(
+    item => ({ item, swatches: [...legendSwatches(item)] }),
+  )
   const byColor = new Map<string, number>()
   const byLabel = new Map<string, number>()
-  for (const item of items) {
+  rows.forEach(({ item }, i) => {
+    if (!byLabel.has(item.label)) {
+      byLabel.set(item.label, i)
+    }
+    if (item.color !== undefined && !byColor.has(item.color)) {
+      byColor.set(item.color, i)
+    }
+  })
+  for (const item of arcs) {
     const at =
       (item.color === undefined ? undefined : byColor.get(item.color)) ??
       byLabel.get(item.label)
@@ -84,8 +111,6 @@ function oneRowPerMeaning(items: LegendItem[]): LegendItem[] {
       if (item.color !== undefined) {
         byColor.set(item.color, rows.length)
       }
-      // Copied, because `legendSwatches` hands back the item's OWN array for a
-      // row that already carries one — and the merge below pushes onto this.
       rows.push({ item, swatches: [...legendSwatches(item)] })
     } else if (item.color !== undefined) {
       const row = rows[at]!
@@ -127,6 +152,18 @@ const KEY_SEP = '\u0000'
 
 function legendKey(i: Pick<LegendItem, 'color' | 'label'>) {
   return `${i.color}${KEY_SEP}${i.label}`
+}
+
+// Every (color, label) a row actually SHOWS, which for a merged row is two —
+// and the second one is a color `item.color` does not carry, so keying off that
+// field alone let a connection row repeat a swatch verbatim as long as it
+// matched the arc's half of the merge rather than the reads'. A color-less row
+// keys as itself, since nothing it could collide with has a color either.
+function rowKeys(item: LegendItem) {
+  const swatches = legendSwatches(item)
+  return swatches.length === 0
+    ? [legendKey(item)]
+    : swatches.map(s => legendKey({ color: s.color, label: item.label }))
 }
 
 /**
@@ -179,7 +216,7 @@ export function getAlignmentsLegendSections(model: {
     ? {
         id: 'reads',
         title: mergedTitle(model.arcLegendTitle),
-        items: oneRowPerMeaning([...reads, ...arcs]),
+        items: oneRowPerMeaning(reads, arcs),
       }
     : { id: 'reads', title: 'Read colors', items: reads }
   const arcSection = {
@@ -188,7 +225,7 @@ export function getAlignmentsLegendSections(model: {
     items: merge ? [] : arcs,
   }
   const keyed = new Set(
-    [...readSection.items, ...arcSection.items].map(legendKey),
+    [...readSection.items, ...arcSection.items].flatMap(rowKeys),
   )
   return [
     readSection,
