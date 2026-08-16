@@ -18,6 +18,7 @@ const FeatureTooltip = observer(function FeatureTooltip({
   return (
     <HoverTooltip hit={rows?.length} mouseState={mouseState}>
       {rows?.map((row, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- row position IS the identity here; the rows are positional and the list is rebuilt whole per hover
         <div key={i}>
           <SanitizedHTML html={row} />
         </div>
