@@ -1,12 +1,15 @@
 import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import {
+  buildBatchHelp,
   buildHelp,
   getBoolean,
   getBooleanValue,
   getCigarMode,
   getColorBy,
+  getFormat,
   getNumber,
   getNumberList,
+  getOptionalCount,
   getOptionalNumber,
   getString,
   getThemeName,
@@ -247,5 +250,50 @@ describe('comparative options are scoped to the modes that read them', () => {
       'cigarMode',
     ])
     expect(ignoredComparativeOptions('synteny')).toEqual([])
+  })
+})
+
+describe('batch options', () => {
+  test('a count rejects a fraction or a negative rather than acting on it', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(getOptionalCount(parse('--limit 20'), 'limit')).toBe(20)
+      expect(getOptionalCount(parse('--limit 0'), 'limit')).toBe(0)
+      // `slice(0, -2)` renders all but the LAST two, silently
+      expect(getOptionalCount(parse('--limit=-2'), 'limit')).toBeUndefined()
+      // a negative flank inverts the window into a start-greater-than-end that
+      // every record then fails on separately
+      expect(getOptionalCount(parse('--flank=-500'), 'flank')).toBeUndefined()
+      expect(getOptionalCount(parse('--limit 2.5'), 'limit')).toBeUndefined()
+      expect(warn).toHaveBeenCalledTimes(3)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  test('an unknown --format warns instead of quietly writing a PNG', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(getFormat(parse('--format svg'))).toBe('svg')
+      expect(getFormat(parse('--format pdf'))).toBe('pdf')
+      expect(getFormat(parse('--format jpg'))).toBeUndefined()
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('unknown --format "jpg"'),
+      )
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  test('batch help offers only what a batch can honor', () => {
+    const help = buildBatchHelp('jb2export')
+    for (const flag of ['--outDir', '--flank', '--limit', '--resume']) {
+      expect(help).toContain(flag)
+    }
+    // --outDir replaces --out and the junction file replaces --loc; --spec and
+    // --session fix the view, which in a batch is N identical images
+    for (const flag of ['--out ', '--loc ', '--spec', '--session']) {
+      expect(help).not.toContain(flag)
+    }
   })
 })

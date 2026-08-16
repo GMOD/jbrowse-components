@@ -51,7 +51,7 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
 ```
 
 ```
-Warning: 35 record(s) name no junction to draw, e.g. line 271: names no second locus (INS)
+Warning: skipped 35 record(s), e.g. line 271: names no second locus (INS)
 [########################] 100% 100/100
 wrote 100/100 images to tumor
 ```
@@ -72,19 +72,32 @@ ways, all of them silent:
 - `END=` matches inside `CIEND=`, and the first hit wins
 - the two records of one breakend pair name the same translocation twice
 
-One image per row, written as `1_chr1_33053494-chr6_2919922_junction_0.png`:
+One image per row, written as `1_chr1_33053494-chr6_2919922_gridss12o.png`:
 index first so the directory sorts in callset order, coordinates next so you can
-find the one you are looking at.
+find the one you are looking at, and the caller's own ID last so you can go back
+to the VCF row it came from. A file with no ID column falls back to
+`junction_<n>`.
 
 `--flank` is the setting that decides the picture. A caller's breakend is one
 base, and a panel drawn on one base is zoomed past anything readable, so the
-flank is what actually frames it. Start with `--limit 20` to check the framing
-before committing to the whole callset.
+flank is what actually frames it. `--dryRun` prints the file and loci of every
+row and renders nothing, and `--limit 20` renders the first few, so you can
+check the framing before committing to the whole callset.
+
+Two flags for a long run. `--resume` skips a row whose image is already in
+`--outDir`, so an interrupted callset continues from where it stopped.
+`--manifest` writes `manifest.tsv` beside the images: one row per junction with
+its file, both loci, its name, and whether it rendered. The status column is
+where the failed rows stay readable after the run's output has scrolled past.
+
+`--passOnly` drops the records the caller has already filtered out. `--limit`
+takes the first N in _file_ order, so on an unfiltered callset the two go
+together.
 
 Nothing is downloaded and no browser is involved: the reads stream from the
 hosted CRAM and each image is rendered server-side. The run is a single process,
 so the module graph loads once for the whole callset rather than once per
-variant.
+variant, and a `--config` URL or a `--hub` is fetched once rather than per row.
 
 A row that cannot be rendered is reported and the run continues, so a
 translocation into a contig the assembly does not have costs you that row and

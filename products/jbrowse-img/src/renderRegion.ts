@@ -597,8 +597,19 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
   breakpoint: renderBreakpoint,
 }
 
-export async function renderRegion(opts: Opts) {
-  const data = readData(opts, await resolveConfigObject(opts))
+/**
+ * `configObject` is an already-fetched config standing in for this call's own
+ * `resolveConfigObject`. Only a batch passes it: `--hub`/a URL `--config` is one
+ * fetch per call otherwise, so a 400-junction run made 400 requests for the same
+ * file — and for a `--hub` that includes 400 chromAlias fetches from UCSC, which
+ * is 400 chances to hit the transient failure `navToLocOrGene` describes rather
+ * than one.
+ *
+ * `readData` MUTATES what it is given (tracks, assembly, openTracks), so a
+ * caller reusing one across calls has to hand over a copy each time.
+ */
+export async function renderRegion(opts: Opts, configObject?: Config) {
+  const data = readData(opts, configObject ?? (await resolveConfigObject(opts)))
   const model = createModel(data)
   // Set the theme on the session up front: worker-side label/feature colors
   // (e.g. gene-description blue) are baked at feature-fetch time from

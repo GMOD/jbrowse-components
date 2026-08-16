@@ -397,6 +397,23 @@ export function getNumber(
   return getOptionalNumber(rest, key) ?? fallback
 }
 
+// A count: a whole number of things, so a fraction or a negative is a mistake
+// rather than a value. Both spellings reached something that accepted them
+// quietly — `--limit=-2` is `slice(0, -2)`, which renders all but the LAST two,
+// and a negative `--flank` inverts the window into a `start greater than end`
+// that every record then fails on separately. Warned and dropped, like every
+// other unusable flag value here.
+export function getOptionalCount(rest: Record<string, unknown>, key: string) {
+  const n = getOptionalNumber(rest, key)
+  if (n !== undefined && (n < 0 || !Number.isInteger(n))) {
+    console.warn(
+      `Warning: --${key} takes a whole number of 0 or more, got "${n}"; ignoring`,
+    )
+    return undefined
+  }
+  return n
+}
+
 // Resolve a flag against a fixed set of allowed values, warning (rather than
 // silently falling back to the default) when a present value isn't one of them —
 // a typo like `--cigarMode ful` or `--trackLabels lft` should be reported, the
@@ -457,6 +474,17 @@ export function getColorBy(rest: Record<string, unknown>) {
   return getEnum(rest, 'colorBy', syntenyColorByModes)
 }
 
+// The output formats of a batch run, which are the extensions writeRendered
+// dispatches on. Validated rather than folded to png by an `=== 'svg'` test:
+// `--format jpg` silently wrote a PNG, and `--format SVG` did too.
+const batchFormats = ['png', 'svg', 'pdf'] as const
+
+export type BatchFormat = (typeof batchFormats)[number]
+
+export function getFormat(rest: Record<string, unknown>) {
+  return getEnum(rest, 'format', batchFormats)
+}
+
 // Options only the `batch` subcommand reads. Kept out of optionDefs so they do
 // not appear in every subcommand's help, but listed here so they are not
 // reported as unknown when batch is what is running.
@@ -482,8 +510,54 @@ export const batchOptionDefs: OptionDef[] = [
     default: '500',
   },
   { name: 'limit', description: 'Render only the first N rows' },
-  { name: 'format', description: "'png' or 'svg'", default: 'png' },
+  {
+    name: 'format',
+    description: `Output format: ${orList(batchFormats)}`,
+    default: 'png',
+  },
+  {
+    name: 'passOnly',
+    description: 'Skip VCF records whose FILTER is neither PASS nor "."',
+    default: false,
+  },
+  {
+    name: 'resume',
+    description:
+      'Skip a record whose image is already in --outDir, so an interrupted run picks up where it stopped',
+    default: false,
+  },
+  {
+    name: 'manifest',
+    description:
+      'Also write manifest.tsv to --outDir: one row per record with its file, loci, name and status',
+    default: false,
+  },
+  {
+    name: 'dryRun',
+    description:
+      'Print the file and loci each record would render, and render nothing',
+    default: false,
+  },
 ]
+
+// Options a batch run cannot honor, in the two kinds it has of not honoring
+// them. Neither appears in `batch --help`, which used to list every one.
+//
+// DROPPED: `--outDir` replaces `--out`, and the junction file replaces `--loc`
+// (a stray one would render the same window for every row). Harmless, so they
+// are warned about and ignored.
+//
+// REFUSED: `--spec` and `--session` FIX the view, and in a batch that is N
+// identical images under N filenames each naming a different junction —
+// `renderBreakpoint` prefers a spec over the per-record panels, and
+// `addInitView` adopts a session's view of the same type. Silent, and wrong in
+// the direction that looks like it worked.
+export const batchDroppedOptions = ['out', 'loc']
+export const batchRefusedOptions = ['spec', 'session']
+const batchUnsupported = new Set([
+  ...batchDroppedOptions,
+  ...batchRefusedOptions,
+])
 
 export const knownOptions = new Set([
   ...optionDefs.map(o => o.name),
@@ -494,7 +568,10 @@ export const knownOptions = new Set([
 ])
 
 export function buildBatchHelp(scriptName: string) {
-  const defs = [...optionDefs, ...batchOptionDefs]
+  const defs = [
+    ...optionDefs.filter(o => !batchUnsupported.has(o.name)),
+    ...batchOptionDefs,
+  ]
   const pad = Math.max(...defs.map(o => o.name.length))
   return [
     `Usage: ${scriptName} batch --vcf <file> [options]`,
