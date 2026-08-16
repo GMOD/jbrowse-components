@@ -25,6 +25,7 @@ const useStyles = makeStyles()({
 const SequenceDialog = observer(function SequenceDialog({
   handleClose,
   sequenceFeatureDetails,
+  transcriptSelector,
   feature,
   mode,
   setMode,
@@ -41,6 +42,9 @@ const SequenceDialog = observer(function SequenceDialog({
   handleClose: () => void
   feature: SimpleFeatureSerialized
   sequenceFeatureDetails: SequenceFeatureDetailsModel
+  // the owning panel's transcript picker, rendered here rather than rebuilt:
+  // the transcript index is its state, not the dialog's
+  transcriptSelector?: React.ReactNode
   mode: SequenceDisplayMode
   setMode: (mode: SequenceDisplayMode) => void
   revcomp: boolean
@@ -67,6 +71,7 @@ const SequenceDialog = observer(function SequenceDialog({
     >
       <div className={classes.content}>
         <div>
+          {transcriptSelector}
           <SequenceTypeSelector
             model={sequenceFeatureDetails}
             feature={feature}

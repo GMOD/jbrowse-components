@@ -63,27 +63,37 @@ const SequenceFeatureDetailsPanel = observer(
     const [mode, setMode] = useState(() => getDefaultMode(effectiveFeature))
     const [revcomp, setRevcomp] = useState(false)
     const [openInDialog, setOpenInDialog] = useState(false)
-    const { sequence, error, status, assemblyGeneticCodeId, onForceLoad } =
-      useSequenceFetch({
-        session,
-        assemblyName,
-        feature: effectiveFeature,
-        upDownBp,
-      })
+    // spread into whichever readout is mounted, rather than forwarded field by
+    // field: the inline body and the dialog want the same five, and listing
+    // them by hand is what dropped `status` from the dialog, whose loading
+    // indicator then had no progress to report
+    const fetched = useSequenceFetch({
+      session,
+      assemblyName,
+      feature: effectiveFeature,
+      upDownBp,
+    })
+
+    // handed to the dialog as well, which renders the same controls: the
+    // transcript lives in this component's state, so a dialog without the
+    // selector strands a multi-transcript gene on whichever one was picked
+    // before it opened (the inline copy is behind the modal and unclickable)
+    const transcriptSelector =
+      transcripts.length > 1 ? (
+        <TranscriptSelector
+          transcripts={transcripts}
+          transcriptIndex={transcriptIndex}
+          setTranscriptIndex={index => {
+            setTranscriptIndex(index)
+            setMode(getDefaultMode(transcripts[index]!))
+          }}
+        />
+      ) : null
 
     return (
       <>
         <div>
-          {transcripts.length > 1 ? (
-            <TranscriptSelector
-              transcripts={transcripts}
-              transcriptIndex={transcriptIndex}
-              setTranscriptIndex={index => {
-                setTranscriptIndex(index)
-                setMode(getDefaultMode(transcripts[index]!))
-              }}
-            />
-          ) : null}
+          {transcriptSelector}
           <SequenceTypeSelector
             model={model}
             feature={effectiveFeature}
@@ -113,18 +123,16 @@ const SequenceFeatureDetailsPanel = observer(
         {openInDialog ? (
           <Suspense fallback={<LoadingEllipses />}>
             <SequenceDialog
+              {...fetched}
               sequenceFeatureDetails={model}
+              transcriptSelector={transcriptSelector}
               feature={effectiveFeature}
               mode={mode}
               setMode={setMode}
               revcomp={revcomp}
               setRevcomp={setRevcomp}
-              sequence={sequence}
-              error={error}
-              assemblyGeneticCodeId={assemblyGeneticCodeId}
               assemblyName={assemblyName}
               hoverTarget={hoverTarget}
-              onForceLoad={onForceLoad}
               handleClose={() => {
                 setOpenInDialog(false)
               }}
@@ -133,18 +141,14 @@ const SequenceFeatureDetailsPanel = observer(
         ) : (
           <Suspense fallback={<LoadingEllipses />}>
             <SequenceBody
-              error={error}
-              sequence={sequence}
-              status={status}
+              {...fetched}
               feature={effectiveFeature}
               seqPanelRef={seqPanelRef}
               model={model}
               mode={mode}
               revcomp={revcomp}
-              assemblyGeneticCodeId={assemblyGeneticCodeId}
               assemblyName={assemblyName}
               hoverTarget={hoverTarget}
-              onForceLoad={onForceLoad}
             />
           </Suspense>
         )}
