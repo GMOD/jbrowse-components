@@ -5,10 +5,9 @@ import {
 import { createGpuContextLostError } from '@jbrowse/render-core/useRenderingBackend'
 import { act, render } from '@testing-library/react'
 
-import DisplayChrome, {
-  DisplayChromeOverlayProvider,
-} from './DisplayChrome.tsx'
+import DisplayChrome from './DisplayChrome.tsx'
 import DisplayChromeBase from './DisplayChromeBase.tsx'
+import { DisplayChromeOverlayProvider } from './chromeOverlayContext.ts'
 import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
 import plainChromeOverlays from './plainChromeOverlays.tsx'
 

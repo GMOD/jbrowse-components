@@ -2,8 +2,9 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import TrackControl, { TrackControlProvider } from './TrackControl.tsx'
+import TrackControl from './TrackControl.tsx'
 import plainTrackControl from './plainTrackControl.tsx'
+import { TrackControlProvider } from './trackControlContext.ts'
 
 import type { TrackControlProps } from './types.ts'
 

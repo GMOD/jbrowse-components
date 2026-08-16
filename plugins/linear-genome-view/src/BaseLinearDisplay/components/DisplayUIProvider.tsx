@@ -1,7 +1,9 @@
-import { DisplayChromeOverlayProvider } from './DisplayChrome.tsx'
+import { useMemo } from 'react'
+
+import { DisplayChromeOverlayProvider } from './chromeOverlayContext.ts'
 import plainChromeOverlays from './plainChromeOverlays.tsx'
-import { TrackControlProvider } from './trackControl/TrackControl.tsx'
 import plainTrackControl from './trackControl/plainTrackControl.tsx'
+import { TrackControlProvider } from './trackControl/trackControlContext.ts'
 
 import type { DisplayChromeOverlays } from './chromeOverlays.ts'
 import type { TrackControlComponent } from './trackControl/types.ts'
@@ -24,14 +26,27 @@ import type { ReactNode } from 'react'
  *
  * Both props default to the plain, toolkit-free sets, so the common case — "I
  * do not want Material UI in my app" — needs no arguments and no second import.
- * Supply either to bring your own:
+ *
+ * **`overlays` is a partial set**, merged over the plain one, so replacing a
+ * single state is one entry rather than five:
  *
  * ```tsx
- * <DisplayUIProvider overlays={{ ...plainChromeOverlays, ErrorBar: MyErrorBar }}>
+ * <DisplayUIProvider overlays={{ ErrorBar: MyErrorBar }}>
  * ```
  *
- * **The contexts still default to `undefined`, and that stays true.** A display
- * rendering outside any provider — a unit test, the SVG export,
+ * Partial rather than whole for two reasons. A host writing four of the five
+ * states by hand only ever wanted one of them, and every example of this had
+ * spread `plainChromeOverlays` in to say so. And a *sixth* state is a thing
+ * JBrowse can add: with a whole set the host's object goes stale on upgrade —
+ * a compile error if they typecheck, a missing component if they ship JS — while
+ * a partial one keeps working and picks up the new plain default.
+ *
+ * Hold the object still (module scope, or `useMemo`) if you build one: it is a
+ * context value, so a fresh identity each render re-renders every display
+ * beneath.
+ *
+ * **The contexts themselves still default to `undefined`, and that stays true.**
+ * A display rendering outside any provider — a unit test, the SVG export,
  * breakpoint-split-view's `overlayUtils` — keeps JBrowse's own Material look,
  * because a plain ambient default would degrade those invisibly. Defaulting
  * *this component's props* is a different thing: mounting it is a deliberate
@@ -43,23 +58,29 @@ import type { ReactNode } from 'react'
  * it arrives through `PaletteProvider` (`@jbrowse/core/ui/PaletteContext`)
  * whatever these are set to. A feature track needs it even with plain chrome.
  *
- * This is *reach*, not *weight*: stock displays import `DisplayChrome` and
- * `TrackControl` directly, so Material UI stays in the bundle and merely stops
- * rendering. Keeping it out of the module graph means writing your own display
- * component over `DisplayChromeBase`, which takes `overlays` as a prop and
- * imports no toolkit. See `agent-docs/reference/DISPLAYCHROME.md`.
+ * This module reaches no `@mui/*` module, and `muiFreeSeam.test.ts` keeps it
+ * that way — asking for less Material UI must not download more of it. What it
+ * cannot do is unship the Material components a *stock display* imports:
+ * `DisplayChrome` and `TrackControl` are in that display's chunk either way,
+ * and merely stop rendering. Keeping them out of the graph means writing your
+ * own display component over `DisplayChromeBase`, which takes `overlays` as a
+ * prop and imports no toolkit. See `agent-docs/reference/DISPLAYCHROME.md`.
  */
 export default function DisplayUIProvider({
-  overlays = plainChromeOverlays,
+  overlays,
   trackControl = plainTrackControl,
   children,
 }: {
-  overlays?: DisplayChromeOverlays
+  overlays?: Partial<DisplayChromeOverlays>
   trackControl?: TrackControlComponent
   children: ReactNode
 }) {
+  const resolved = useMemo(
+    () => (overlays ? { ...plainChromeOverlays, ...overlays } : undefined),
+    [overlays],
+  )
   return (
-    <DisplayChromeOverlayProvider value={overlays}>
+    <DisplayChromeOverlayProvider value={resolved ?? plainChromeOverlays}>
       <TrackControlProvider value={trackControl}>
         {children}
       </TrackControlProvider>

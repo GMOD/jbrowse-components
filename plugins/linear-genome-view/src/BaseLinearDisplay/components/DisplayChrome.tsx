@@ -1,5 +1,3 @@
-import { createContext, use } from 'react'
-
 import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 import DisplayBackgroundProgress from './DisplayBackgroundProgress.tsx'
 import DisplayChromeBase from './DisplayChromeBase.tsx'
@@ -7,6 +5,7 @@ import DisplayErrorBar from './DisplayErrorBar.tsx'
 import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
+import { useChromeOverlayOverride } from './chromeOverlayContext.ts'
 
 import type { DisplayChromeBaseProps } from './DisplayChromeBase.tsx'
 import type { DisplayStatusChromeBaseProps } from './DisplayStatusChromeBase.tsx'
@@ -29,35 +28,15 @@ const muiOverlays: DisplayChromeOverlays = {
   BackgroundProgress: DisplayBackgroundProgress,
 }
 
-/**
- * Runtime override for the overlay set. **Defaults to undefined, not to a
- * component set** — that is deliberate. A plain default would silently degrade
- * every display that renders outside a provider (unit tests, SVG export,
- * breakpoint-split-view's overlayUtils), and that degradation is invisible: the
- * display still works, it just stops looking like JBrowse. Undefined means
- * "nobody asked", so `DisplayChrome` keeps its MUI set and nothing changes.
- *
- * This is the escape hatch for embedders who want JBrowse's *own* displays
- * (wiggle, alignments, variants — all of which import `DisplayChrome` directly
- * and so can't be redirected at the import level) to draw with their overlays:
- * no MUI rendered, no ThemeProvider needed, no emotion in their page. MUI still
- * lands in the bundle, because `DisplayChrome` references it above.
- *
- * To also drop MUI from the bundle you need the other seam: import
- * `DisplayChromeBase` and pass `overlays` as a prop, which is only available to
- * code writing its own display component. Two mechanisms because they solve
- * different halves — this one is reach, that one is weight.
- */
-const DisplayChromeOverlayContext = createContext<
-  DisplayChromeOverlays | undefined
->(undefined)
-
-export const DisplayChromeOverlayProvider = DisplayChromeOverlayContext.Provider
-
 // Both binders resolve the set the same way, so a provider redirects the
 // backend-free displays (arc) exactly as it does the GPU ones.
+//
+// The context itself lives in `chromeOverlayContext.ts` and NOT here, which is
+// load-bearing rather than tidiness: this module binds the Material set above,
+// so anything importing the provider from here would pull all of Material UI in
+// on the way to asking for less of it. See that file.
 function useChromeOverlays() {
-  return use(DisplayChromeOverlayContext) ?? muiOverlays
+  return useChromeOverlayOverride() ?? muiOverlays
 }
 
 /**

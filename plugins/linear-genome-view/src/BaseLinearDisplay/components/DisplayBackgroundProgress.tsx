@@ -1,4 +1,10 @@
-import { ProgressChip } from '@jbrowse/core/ui'
+// the deep subpath, never the `@jbrowse/core/ui` barrel: one named import from
+// it lands 40-odd Material modules — FileSelector, FatalErrorDialog, the
+// cascading-menu stack, PluginManager via addReplaceWidget — in whatever chunk
+// reaches this file. `plainChromeOverlays.tsx` carries the same rule; this is
+// the module where breaking it cost the most, because the overlay seam ran
+// through here.
+import ProgressChip from '@jbrowse/core/ui/ProgressChip'
 import { observer } from 'mobx-react'
 
 export interface DisplayBackgroundProgressModel {

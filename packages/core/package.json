@@ -93,12 +93,14 @@
     "./ui/Icons": "./src/ui/Icons.tsx",
     "./ui/InfoDialog": "./src/ui/InfoDialog.tsx",
     "./ui/JexlFilterDialog": "./src/ui/JexlFilterDialog.tsx",
+    "./ui/LegendSwatchGlyph": "./src/ui/LegendSwatchGlyph.tsx",
     "./ui/LoadingEllipses": "./src/ui/LoadingEllipses.tsx",
     "./ui/Logo": "./src/ui/Logo.tsx",
     "./ui/Menu": "./src/ui/Menu.tsx",
     "./ui/PaletteContext": "./src/ui/PaletteContext.tsx",
     "./ui/PluginStoreCard": "./src/ui/PluginStoreCard.tsx",
     "./ui/PopoverPicker": "./src/ui/PopoverPicker.tsx",
+    "./ui/ProgressChip": "./src/ui/ProgressChip.tsx",
     "./ui/ResizeHandle": "./src/ui/ResizeHandle.tsx",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
@@ -542,6 +544,10 @@
         "types": "./esm/ui/JexlFilterDialog.d.ts",
         "import": "./esm/ui/JexlFilterDialog.js"
       },
+      "./ui/LegendSwatchGlyph": {
+        "types": "./esm/ui/LegendSwatchGlyph.d.ts",
+        "import": "./esm/ui/LegendSwatchGlyph.js"
+      },
       "./ui/LoadingEllipses": {
         "types": "./esm/ui/LoadingEllipses.d.ts",
         "import": "./esm/ui/LoadingEllipses.js"
@@ -565,6 +571,10 @@
       "./ui/PopoverPicker": {
         "types": "./esm/ui/PopoverPicker.d.ts",
         "import": "./esm/ui/PopoverPicker.js"
+      },
+      "./ui/ProgressChip": {
+        "types": "./esm/ui/ProgressChip.d.ts",
+        "import": "./esm/ui/ProgressChip.js"
       },
       "./ui/ResizeHandle": {
         "types": "./esm/ui/ResizeHandle.d.ts",
@@ -1188,6 +1198,9 @@
         "ui/JexlFilterDialog": [
           "esm/ui/JexlFilterDialog.d.ts"
         ],
+        "ui/LegendSwatchGlyph": [
+          "esm/ui/LegendSwatchGlyph.d.ts"
+        ],
         "ui/LoadingEllipses": [
           "esm/ui/LoadingEllipses.d.ts"
         ],
@@ -1205,6 +1218,9 @@
         ],
         "ui/PopoverPicker": [
           "esm/ui/PopoverPicker.d.ts"
+        ],
+        "ui/ProgressChip": [
+          "esm/ui/ProgressChip.d.ts"
         ],
         "ui/ResizeHandle": [
           "esm/ui/ResizeHandle.d.ts"

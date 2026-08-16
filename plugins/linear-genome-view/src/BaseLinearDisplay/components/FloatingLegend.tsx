@@ -1,16 +1,20 @@
 import { useState } from 'react'
 
+// deep subpaths, never the `@jbrowse/core/ui` barrel: a display renders this
+// legend directly, so it sits behind neither bring-your-own seam, and one named
+// import of that barrel lands FileSelector, FatalErrorDialog and the
+// cascading-menu stack in the chunk. `muiFreeSeam.test.ts` fails on it.
+import { LegendSwatchGlyph } from '@jbrowse/core/ui/LegendSwatchGlyph'
 import {
-  LegendSwatchGlyph,
   legendSwatches,
   nonEmptyLegendSections,
-} from '@jbrowse/core/ui'
+} from '@jbrowse/core/ui/legendSpec'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
 
-import type { LegendItem, LegendSection } from '@jbrowse/core/ui'
+import type { LegendItem, LegendSection } from '@jbrowse/core/ui/legendSpec'
 
 const useStyles = makeStyles()(theme => ({
   legend: {
@@ -157,7 +161,7 @@ export type {
   LegendSection,
   LegendSpec,
   LegendSwatch,
-} from '@jbrowse/core/ui'
+} from '@jbrowse/core/ui/legendSpec'
 
 // One list of swatches with its own independent collapse state, so each section
 // in a multi-section legend expands/collapses on its own.

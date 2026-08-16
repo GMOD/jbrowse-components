@@ -13,7 +13,11 @@ export type { StatusChromeModel } from './components/DisplayChrome.tsx'
 // The toolkit-free half of the chrome, for embedders supplying their own
 // overlays. Importing DisplayChromeBase + plainChromeOverlays instead of
 // DisplayChrome keeps MUI out of the graph entirely; see chromeOverlays.ts.
-export { DisplayChromeOverlayProvider } from './components/DisplayChrome.tsx'
+//
+// The provider comes from the context module and NOT from DisplayChrome.tsx,
+// which binds the Material set — see chromeOverlayContext.ts for what that one
+// edge cost when it ran the other way.
+export { DisplayChromeOverlayProvider } from './components/chromeOverlayContext.ts'
 export { default as DisplayChromeBase } from './components/DisplayChromeBase.tsx'
 export { default as plainChromeOverlays } from './components/plainChromeOverlays.tsx'
 // Both seams at once, defaulting to the plain sets — what an embedder who does
@@ -88,10 +92,10 @@ export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'
 export { default as TrackHeightIndicator } from './components/TrackHeightIndicator.tsx'
 export { default as BottomRightIndicators } from './components/BottomRightIndicators.tsx'
-export {
-  default as TrackControl,
-  TrackControlProvider,
-} from './components/trackControl/TrackControl.tsx'
+export { default as TrackControl } from './components/trackControl/TrackControl.tsx'
+// From the context module, not from the binder above it, for the reason on
+// DisplayChromeOverlayProvider.
+export { TrackControlProvider } from './components/trackControl/trackControlContext.ts'
 export { default as plainTrackControl } from './components/trackControl/plainTrackControl.tsx'
 export type {
   TrackControlComponent,
