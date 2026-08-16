@@ -44,8 +44,6 @@ export {
   detectDisplayAssembliesSwapped,
   installAssemblySwapCheck,
 } from './detectSwappedAssemblies.ts'
-// Lives in @jbrowse/cigar-utils (no synteny deps); re-exported here so the
-// comparative-view consumers keep importing it from @jbrowse/synteny-core.
 // Promoted to core (depends only on core); re-exported here so the
 // comparative-view consumers keep importing it from @jbrowse/synteny-core.
 export { type ActiveFetch, createStopTokenRotation } from '@jbrowse/core/util'

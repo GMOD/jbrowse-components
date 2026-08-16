@@ -1,7 +1,4 @@
 {
   "extends": "../../tsconfig.base.esm.json",
-  "references": [
-    { "path": "../cigar-utils/tsconfig.build.esm.json" },
-    { "path": "../core/tsconfig.build.esm.json" }
-  ]
+  "references": [{ "path": "../core/tsconfig.build.esm.json" }]
 }

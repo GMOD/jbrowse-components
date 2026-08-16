@@ -3,7 +3,6 @@
   "references": [
     { "path": "../cigar-utils/tsconfig.build.esm.json" },
     { "path": "../core/tsconfig.build.esm.json" },
-    { "path": "../modifications-utils/tsconfig.build.esm.json" },
     { "path": "../wiggle-core/tsconfig.build.esm.json" }
   ]
 }
