@@ -460,12 +460,8 @@
           "type": "LinearAlignmentsDisplay",
           "height": 600,
           "displayId": "volvox_alignments_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "colorBy": {
-              "type": "mappingQuality"
-            }
+          "colorBy": {
+            "type": "mappingQuality"
           }
         }
       ]
@@ -585,16 +581,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_bam_small_max_height_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_small_max_height_alignments_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "type": "PileupRenderer",
-                "maxHeight": 10
-              }
-            }
-          }
+          "maxHeight": 10
         }
       ]
     },
@@ -910,12 +897,7 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "renderers": {
-            "XYPlotRenderer": {
-              "type": "XYPlotRenderer",
-              "color": "#C8B414"
-            }
-          }
+          "color": "#C8B414"
         }
       ]
     },
@@ -1044,68 +1026,6 @@
           "locationType": "UriLocation"
         }
       }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "lollipop_track",
-      "name": "FromConfig Track (defaults to LinearLollipopDisplay)",
-      "assemblyNames": ["volvox"],
-      "category": ["Miscellaneous"],
-      "adapter": {
-        "type": "FromConfigAdapter",
-        "adapterId": "Xvg1McRUAP",
-        "features": [
-          {
-            "uniqueId": "one",
-            "refName": "ctgA",
-            "start": 190,
-            "end": 191,
-            "type": "foo",
-            "score": 200,
-            "name": "Boris",
-            "note": "note for boris"
-          },
-          {
-            "uniqueId": "two",
-            "refName": "ctgA",
-            "start": 191,
-            "end": 192,
-            "type": "bar",
-            "score": 20,
-            "name": "Theresa",
-            "note": "note for theresa"
-          },
-          {
-            "uniqueId": "three",
-            "refName": "ctgA",
-            "start": 210,
-            "end": 211,
-            "type": "baz",
-            "score": 300,
-            "name": "Nigel",
-            "note": "note for nigel"
-          },
-          {
-            "uniqueId": "four",
-            "refName": "ctgA",
-            "start": 220,
-            "end": 221,
-            "score": 2,
-            "type": "quux",
-            "name": "Geoffray",
-            "note": "note for geoffray"
-          }
-        ]
-      },
-      "displays": [
-        {
-          "type": "LinearLollipopDisplay",
-          "displayId": "lollipop_track_linear",
-          "renderer": {
-            "type": "LollipopRenderer"
-          }
-        }
-      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -1704,19 +1624,13 @@
       "displays": [
         {
           "type": "ChordVariantDisplay",
-          "displayId": "volvox_filtered_vcf_color-ChordVariantDisplay",
-          "renderer": {
-            "type": "StructuralVariantChordRenderer"
-          }
+          "displayId": "volvox_filtered_vcf_color-ChordVariantDisplay"
         },
         {
           "type": "LinearVariantDisplay",
           "maxFeatureScreenDensity": 0.0006,
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
-          }
+          "color": "jexl:feature.type=='SNV'?'green':'purple'"
         }
       ]
     },
@@ -1883,16 +1797,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "deep_seq_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "deep_seq_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "type": "PileupRenderer",
-                "maxHeight": 10000
-              }
-            }
-          }
+          "maxHeight": 10000
         }
       ]
     },
@@ -1947,10 +1852,7 @@
       "displays": [
         {
           "type": "LinearArcDisplay",
-          "displayId": "arc_track_linear",
-          "renderer": {
-            "type": "ArcRenderer"
-          }
+          "displayId": "arc_track_linear"
         }
       ]
     },
@@ -1988,10 +1890,7 @@
         {
           "type": "LinearArcDisplay",
           "displayId": "arc_track_custom_height_linear",
-          "renderer": {
-            "type": "ArcRenderer",
-            "height": "jexl:log10(get(feature,'end')-get(feature,'start'))*20"
-          }
+          "arcHeight": "jexl:log10(feature.end-feature.start)*20"
         }
       ]
     },
@@ -2410,12 +2309,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "volvox_repeats-minus-LinearWiggleDisplay",
-          "renderers": {
-            "XYPlotRenderer": {
-              "type": "XYPlotRenderer",
-              "color": "jexl:repeatColor(feature)"
-            }
-          }
+          "color": "jexl:repeatColor(feature)"
         }
       ]
     },
@@ -2436,12 +2330,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "volvox_repeat-plus-LinearWiggleDisplay",
-          "renderers": {
-            "XYPlotRenderer": {
-              "type": "XYPlotRenderer",
-              "color": "jexl:repeatColor(feature)"
-            }
-          }
+          "color": "jexl:repeatColor(feature)"
         }
       ]
     },
@@ -2513,18 +2402,13 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "gff3_custom_tooltips_linear",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "mouseover": "jexl:`${get(feature,'name')} [${get(feature,'type')}] at ${get(feature,'start')} - ${get(feature,'end')} (strand: ${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})`",
-            "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
-            "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
-            },
-            "showLabels": true,
-            "showDescriptions": true,
-            "subfeatureLabels": "below"
-          }
+          "mouseover": "jexl:`${feature.name} [${feature.type}] at ${feature.start} - ${feature.end} (strand: ${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})`",
+          "labels": {
+            "name": "jexl:feature.name || feature.id",
+            "description": "jexl:feature.note || feature.description || ''"
+          },
+          "showLabels": "auto",
+          "subfeatureLabels": "below"
         }
       ]
     },
@@ -2545,16 +2429,12 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "gff3_mouseover_attr_linear",
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
-            },
-            "showLabels": true,
-            "showDescriptions": false,
-            "subfeatureLabels": "below"
-          }
+          "labels": {
+            "name": "jexl:feature.name || feature.id",
+            "description": "jexl:feature.note || feature.description || ''"
+          },
+          "showLabels": "auto",
+          "subfeatureLabels": "below"
         }
       ]
     },
@@ -2608,11 +2488,8 @@
         {
           "type": "LinearVariantDisplay",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
-          "jexlFilters": ["get(feature,'start')<8000"],
-          "renderer": {
-            "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
-          }
+          "jexlFilters": ["feature.start<8000"],
+          "color": "jexl:feature.start>5000?'darkgreen':'red'"
         }
       ]
     }
