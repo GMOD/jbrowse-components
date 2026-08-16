@@ -16,12 +16,18 @@ waste.
 `wiggleCommon.slang` holds what they must agree on: the struct is shared, the
 **binding is not**, and each re-imports `colorPack`/`hpmath`.
 
-**The pass, the buffer and the `renderingType` uniform all come off the encoded
-layers, never off `renderState`.** Encode and render are separate autoruns and
-render is registered first, so the frame after a plot-type switch sees a state
-that moved and a region that has not; with two record sizes a pass reading the
-wrong one reads past the end of its instances. Drawing the previous plot for one
-frame is the correct stale.
+**The pass, the buffer, the `renderingType` uniform and the Canvas2D painter all
+come off the encoded layers, never off `renderState`.** Encode and render are
+separate autoruns and render is registered first, so the frame after a plot-type
+switch sees a state that moved and a region that has not. Drawing the previous
+plot for one frame is the correct stale.
+
+The consequence differs by backend and the rule does not: on the GPU the two
+record sizes mean a pass reading the wrong one reads past the end of its
+instances; on Canvas2D the layer SET is chosen by the rendering (`filled` splits
+whiskers by sign) and so is `gapLimitBp`, so the new painter over the old layers
+is a plot that is neither. Canvas2D read `state` until 2026-08 and drew chords
+across every hole for that frame.
 
 Each pass packs its own buffer and returns **empty** for renderings that are not
 its own — an empty pack is how a pass releases its buffer.

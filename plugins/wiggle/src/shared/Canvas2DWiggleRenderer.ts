@@ -35,7 +35,6 @@ function drawWiggleBlocks(
   const {
     canvasWidth,
     canvasHeight,
-    renderingType,
     scaleType,
     domainY,
     numRows,
@@ -76,7 +75,19 @@ function drawWiggleBlocks(
           origin,
         }
 
-        switch (renderingType) {
+        // The layer's own rendering, never `state`'s — the same rule the GPU
+        // renderer follows when it picks a pass, and for the same reason. Encode
+        // and render are separate autoruns and render is registered first, so
+        // the frame after a plot-type switch sees a state that moved and a
+        // region that has not. Taking it from `state` here paints the NEW
+        // painter over the OLD layers, which is the one pairing neither backend
+        // should ever show: the layer SET depends on the rendering
+        // (`buildSourceRenderData`'s `filled` splits whiskers by sign) and so
+        // does `gapLimitBp`, so switching xyplot -> linecenter drew chords
+        // across every hole, over bands that should not have been separate
+        // lines. Drawing the previous plot for one frame is the correct stale,
+        // and it is what the GPU path already did.
+        switch (source.renderingType) {
           case RENDERING_TYPE_LINE:
             drawLine({ ...row, rgb, lineWidth })
             break

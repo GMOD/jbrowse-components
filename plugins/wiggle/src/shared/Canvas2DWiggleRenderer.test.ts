@@ -74,7 +74,19 @@ function createMockCanvas() {
   }
 }
 
-function makeSource(scores: number[], startBps: number[], endBps: number[]) {
+function makeSource(
+  scores: number[],
+  startBps: number[],
+  endBps: number[],
+  // The rendering this layer was ENCODED for, which is what both backends
+  // branch on. It has to match the state each test draws with, because
+  // production cannot separate them: `buildSourceRenderData` reads one
+  // `gpuProps.renderingType` to choose the layer set AND to stamp every layer
+  // with it. A fixture that sets them apart describes a frame that only exists
+  // mid-switch, and `draws the plot its layers were encoded for` below is the
+  // test that owns that case.
+  renderingType: WiggleRenderingType = RENDERING_TYPE_XYPLOT,
+) {
   const positions = new Uint32Array(scores.length * 2)
   for (let i = 0; i < scores.length; i++) {
     positions[i * 2] = startBps[i]!
@@ -86,11 +98,7 @@ function makeSource(scores: number[], startBps: number[], endBps: number[]) {
     numFeatures: scores.length,
     color: [0.5, 0.5, 0.5] as [number, number, number],
     rowIndex: 0,
-    // Inert on this backend: `renderingType` on a layer names the GPU instance
-    // encoding, and the Canvas2D path branches on the render state instead. Set
-    // to satisfy the type; the tests below that draw lines pass the mode in
-    // their state, which is what this renderer reads.
-    renderingType: RENDERING_TYPE_XYPLOT,
+    renderingType,
   }
 }
 
@@ -216,7 +224,12 @@ describe('Canvas2DWiggleRenderer', () => {
     })
 
     const renderer = new Canvas2DWiggleRenderer(canvas)
-    const source = makeSource([5, 8], [0, 500], [500, 1000])
+    const source = makeSource(
+      [5, 8],
+      [0, 500],
+      [500, 1000],
+      RENDERING_TYPE_LINE,
+    )
 
     renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
       ...defaultState,
@@ -238,7 +251,7 @@ describe('Canvas2DWiggleRenderer', () => {
     // 0..1000bp spans the whole 800px block, far wider than the 2px point, but
     // scatter always draws a point marker centered on the midpoint (bp 500 →
     // 400px), never a bar spanning the bin
-    const source = makeSource([5], [0], [1000])
+    const source = makeSource([5], [0], [1000], RENDERING_TYPE_SCATTER)
 
     renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
       ...defaultState,
@@ -267,7 +280,7 @@ describe('Canvas2DWiggleRenderer', () => {
     const renderer = new Canvas2DWiggleRenderer(canvas)
     // a zero-width feature at bp 500 → x = 400px; the default 2px point is
     // below the small-point threshold, so a crisp square is drawn (not a disc)
-    const source = makeSource([5], [500], [500])
+    const source = makeSource([5], [500], [500], RENDERING_TYPE_SCATTER)
 
     renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
       ...defaultState,
@@ -291,7 +304,7 @@ describe('Canvas2DWiggleRenderer', () => {
     })
 
     const renderer = new Canvas2DWiggleRenderer(canvas)
-    const source = makeSource([5], [500], [500])
+    const source = makeSource([5], [500], [500], RENDERING_TYPE_SCATTER)
 
     renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
       ...defaultState,
@@ -330,7 +343,7 @@ describe('Canvas2DWiggleRenderer', () => {
       })
 
       const renderer = new Canvas2DWiggleRenderer(canvas)
-      const source = makeSource([5], [0], [500])
+      const source = makeSource([5], [0], [500], renderingType)
 
       renderer.renderBlocks(
         [{ ...defaultBlock, reversed: true }],
@@ -388,7 +401,7 @@ describe('Canvas2DWiggleRenderer', () => {
 
     const renderer = new Canvas2DWiggleRenderer(canvas)
     // feature 0..500bp reversed: bp 0→800px, bp 500→400px, midpoint → 600px
-    const source = makeSource([5], [0], [500])
+    const source = makeSource([5], [0], [500], RENDERING_TYPE_SCATTER)
 
     renderer.renderBlocks(
       [{ ...defaultBlock, reversed: true }],
@@ -459,7 +472,9 @@ describe('drawLine path commands', () => {
     drawWiggleToCtx(
       ctx as unknown as CanvasRenderingContext2D,
       {
-        rpcDataMap: new Map([[0, [makeSource([5], [0], [100])]]]),
+        rpcDataMap: new Map([
+          [0, [makeSource([5], [0], [100], RENDERING_TYPE_LINE)]],
+        ]),
         encode: (s: SourceRenderData[]) => s,
       },
       [lineBlock],
@@ -483,7 +498,9 @@ describe('drawLine path commands', () => {
     drawWiggleToCtx(
       ctx as unknown as CanvasRenderingContext2D,
       {
-        rpcDataMap: new Map([[0, [makeSource([5, 8], [0, 100], [100, 200])]]]),
+        rpcDataMap: new Map([
+          [0, [makeSource([5, 8], [0, 100], [100, 200], RENDERING_TYPE_LINE)]],
+        ]),
         encode: (s: SourceRenderData[]) => s,
       },
       [lineBlock],
@@ -517,7 +534,9 @@ describe('drawLine path commands', () => {
     drawWiggleToCtx(
       ctx as unknown as CanvasRenderingContext2D,
       {
-        rpcDataMap: new Map([[0, [makeSource([5, 8], [0, 300], [100, 400])]]]),
+        rpcDataMap: new Map([
+          [0, [makeSource([5, 8], [0, 300], [100, 400], RENDERING_TYPE_LINE)]],
+        ]),
         encode: (s: SourceRenderData[]) => s,
       },
       [lineBlock],
@@ -556,7 +575,7 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
     const mock = createMockCanvas()
     // adjacent so the step-line stays one run: only the color splits the batch
     const source = {
-      ...makeSource([5, 8], [0, 100], [100, 200]),
+      ...makeSource([5, 8], [0, 100], [100, 200], renderingType),
       colorsAbgr: new Uint32Array([red, blue]),
     }
     drawWiggleToCtx(
@@ -597,7 +616,9 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
     drawWiggleToCtx(
       mock.ctx as unknown as CanvasRenderingContext2D,
       {
-        rpcDataMap: new Map([[0, [makeSource([5, 8], [0, 100], [100, 200])]]]),
+        rpcDataMap: new Map([
+          [0, [makeSource([5, 8], [0, 100], [100, 200], RENDERING_TYPE_LINE)]],
+        ]),
         encode: (s: SourceRenderData[]) => s,
       },
       [lineBlock],
@@ -629,7 +650,12 @@ describe('drawLineCenter gap breaks', () => {
             0,
             [
               {
-                ...makeSource([5, 5, 5], [0, 100, 650], [100, 200, 750]),
+                ...makeSource(
+                  [5, 5, 5],
+                  [0, 100, 650],
+                  [100, 200, 750],
+                  RENDERING_TYPE_LINE_CENTER,
+                ),
                 gapLimitBp,
               },
             ],
@@ -742,5 +768,44 @@ describe('a log domain entirely under 1', () => {
     const [atMin, atMax] = barHeights([domainY[0], domainY[1]])
     expect(atMin).toBe(0)
     expect(atMax).toBe(200)
+  })
+})
+
+// The one frame where the layer and the state disagree. Encode and render are
+// separate autoruns and render is registered first, so a plot-type switch shows
+// a state that has moved over a region that has not — and this backend has to
+// answer it the way `GpuWiggleRenderer` does, by drawing what the layers were
+// encoded FOR. Reading `state` instead pairs the new painter with the old
+// layers, which is neither plot: the layer SET is chosen by the rendering
+// (`buildSourceRenderData`'s `filled` splits whiskers by sign) and so is
+// `gapLimitBp`.
+//
+// Only this test may build a source whose rendering differs from its state.
+describe('a plot-type switch mid-frame', () => {
+  test('draws the plot its layers were encoded for, not the state’s', () => {
+    const { canvas, ctx, fillRectCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    // Layers encoded for xyplot; the state has already moved to linecenter.
+    const source = makeSource(
+      [5, 8],
+      [0, 500],
+      [500, 1000],
+      RENDERING_TYPE_XYPLOT,
+    )
+
+    renderer.renderBlocks([lineBlock], new Map([[0, [source]]]), {
+      ...lineState,
+      renderingType: RENDERING_TYPE_LINE_CENTER,
+    })
+
+    // Bars, because that is what these layers are. A stroked path here would be
+    // the interpolated line drawn over whiskers bands split for stacking.
+    expect(fillRectCalls).toHaveLength(2)
+    expect(ctx.stroke).not.toHaveBeenCalled()
   })
 })
