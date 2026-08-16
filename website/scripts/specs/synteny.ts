@@ -1214,14 +1214,21 @@ export const syntenySpecs: ScreenshotSpec[] = [
         text: '4A/7C, largest of 18 cross-group pairs',
         fontSize: 18,
         maxWidth: 320,
-        // 230 was the centre of a three-line pill; one line is narrower, so
-        // the same dx left a gap between the arrowhead's tail and the text
-        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'right', dx: 170 },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: { hLocus: '4A', vLocus: '7C', alignX: 'right', dx: 60 },
-        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'right', dx: 10 },
+        // ONE ANNOTATION, and it had to become one twice over. The pill and its
+        // arrow were separate, so the gap between them was two hand-written
+        // offsets that a re-worded label kept invalidating -- the comment they
+        // replace was already the second attempt at the number. And the tail
+        // silently ignored the `alignX: 'right'` it carried (a fromAnchor is
+        // always the rect's centre, which is the trap SCREENSHOT_CALLOUT_ANCHORS
+        // names), so it sat a cell-width left of where it read as sitting and
+        // the arrow collapsed to a stub in open space between box and pill.
+        //
+        // `leader` has neither failure to make: the tail comes off the measured
+        // pill and the head off the anchor, so `dx` is the gap and nothing else
+        // is a number.
+        leader: true,
+        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'right' },
+        dx: 170,
       },
     ],
   },
