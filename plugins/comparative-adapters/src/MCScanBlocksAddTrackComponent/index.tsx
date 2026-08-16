@@ -16,5 +16,6 @@ export default function MCScanBlocksAddTrackComponentF(
   addAddTrackComponent(pluginManager, {
     adapterTypes: mcscanBlocksTypes,
     component: MCScanBlocksAddTrackComponent,
+    ownsAssembly: true,
   })
 }

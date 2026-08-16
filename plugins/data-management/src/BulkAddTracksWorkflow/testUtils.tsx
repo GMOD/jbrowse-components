@@ -32,10 +32,10 @@ class FakeViewPlugin extends Plugin {
 }
 
 /**
- * Claims `adapterTypes` for an add-track picker, the way the synteny and GWAS
- * plugins do. Lets a test exercise "this format needs the single-track form"
- * against a format the alignments/variants plugins already guess, rather than
- * pulling a whole extra plugin in to get one real claim.
+ * Claims `adapterTypes` for an add-track picker that supplies the assembly, the
+ * way the synteny plugins do. Lets a test exercise "this format needs the
+ * single-track form" against a format the alignments/variants plugins already
+ * guess, rather than pulling a whole extra plugin in to get one real claim.
  */
 export function fakeAddTrackComponentPlugin(adapterTypes: string[]) {
   return new (class extends Plugin {
@@ -45,6 +45,7 @@ export function fakeAddTrackComponentPlugin(adapterTypes: string[]) {
       addAddTrackComponent(pluginManager, {
         adapterTypes,
         component: () => null,
+        ownsAssembly: true,
       })
     }
   })()

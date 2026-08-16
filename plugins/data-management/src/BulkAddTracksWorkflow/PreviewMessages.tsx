@@ -36,10 +36,11 @@ const PreviewMessages = observer(function PreviewMessages({
       {needsSetupCount > 0 ? (
         <Typography variant="body2" color="warning">
           {needsSetupCount} {pluralize(needsSetupCount, 'row')}{' '}
-          {pluralize(needsSetupCount, 'needs', 'need')} settings a filename
-          cannot supply (a synteny file needs its assembly pair, for one) and
-          will not be added — use the single-track workflow for{' '}
-          {pluralize(needsSetupCount, 'it', 'them')}
+          {pluralize(needsSetupCount, 'names', 'name')} a format whose assembly
+          a filename cannot supply — a synteny file needs its assembly pair, not
+          the one assembly chosen above — so{' '}
+          {pluralize(needsSetupCount, 'it', 'they')} will not be added. Use the
+          single-track workflow for {pluralize(needsSetupCount, 'it', 'them')}
         </Typography>
       ) : null}
     </>

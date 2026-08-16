@@ -16,5 +16,6 @@ export default function AllVsAllAddTrackComponentF(
   addAddTrackComponent(pluginManager, {
     adapterTypes: allVsAllTypes,
     component: AllVsAllAddTrackComponent,
+    ownsAssembly: true,
   })
 }

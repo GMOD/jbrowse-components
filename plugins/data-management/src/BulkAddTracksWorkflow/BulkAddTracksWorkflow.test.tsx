@@ -113,7 +113,7 @@ test('a synteny file is held back for the single-track workflow, not added', () 
   )
   pasteUrls(getByLabelText, 'https://x.com/a.paf')
 
-  expect(getByText(/use the single-track workflow/)).toBeTruthy()
+  expect(getByText(/use the single-track workflow/i)).toBeTruthy()
   const button = getByRole('button', { name: 'Add 0 tracks' })
   expect((button as HTMLButtonElement).disabled).toBe(true)
   expect(session.sessionTracks.length).toBe(before)

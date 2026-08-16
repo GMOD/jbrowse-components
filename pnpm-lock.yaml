@@ -1139,6 +1139,9 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
+      '@jbrowse/plugin-gwas':
+        specifier: workspace:^
+        version: link:../gwas
       '@jbrowse/plugin-hic':
         specifier: workspace:^
         version: link:../hic

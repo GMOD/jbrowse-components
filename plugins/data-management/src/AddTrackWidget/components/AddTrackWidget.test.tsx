@@ -148,6 +148,21 @@ test('emptying the track name leaves the field empty and blocks Add', () => {
   expect(getByText('Enter a track name')).toBeTruthy()
 })
 
+test('the assembly dropdown survives a picker that contributes only its own fields', async () => {
+  const { model } = getSession()
+  // GWASAdapter has a picker (score column/transform) that does not ask for an
+  // assembly. It used to be passed as the extension point's default component,
+  // so claiming the point removed the assembly dropdown outright.
+  model.setTrackData({
+    uri: 'https://example.com/study.txt.gz',
+    locationType: 'UriLocation',
+  })
+  expect(model.trackAdapter?.type).toBe('GWASAdapter')
+
+  const { findByRole } = render(<ConfirmTrack model={model} />)
+  expect(await findByRole('combobox', { name: 'Assembly' })).toBeTruthy()
+})
+
 test('picking a non-configurable adapter keeps the dropdown (no dead-end)', () => {
   const { model } = getSession()
   model.setTrackData({ uri: 'test.txt', locationType: 'UriLocation' })

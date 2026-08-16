@@ -16,5 +16,6 @@ export default function ComparativeAddTrackComponentF(
   addAddTrackComponent(pluginManager, {
     adapterTypes: pairwiseTypes,
     component: ComparativeAddTrackComponent,
+    ownsAssembly: true,
   })
 }

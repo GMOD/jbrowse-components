@@ -1,3 +1,5 @@
+import GWAS from '@jbrowse/plugin-gwas'
+
 import { summarizeBulkInput } from './preview.ts'
 import { fakeAddTrackComponentPlugin, makeModel, uri } from './testUtils.tsx'
 
@@ -80,6 +82,18 @@ describe('formats whose add-track form contributes required config', () => {
 
   test('nothing is held back when no plugin claims an adapter', () => {
     expect(summarize([uri('/a.bam')]).needsSetupCount).toBe(0)
+  })
+
+  it('adds a format whose picker only contributes optional fields', () => {
+    // GWASAdapter has a picker, but it asks for a score column with a schema
+    // default rather than an assembly, so a filename is enough to build it
+    const { rows, needsSetupCount } = summarize(
+      [uri('/study.txt.gz')],
+      [new GWAS()],
+    )
+    expect(rows[0]!.adapterType).toBe('GWASAdapter')
+    expect(rows[0]!.status).toBe('ok')
+    expect(needsSetupCount).toBe(0)
   })
 })
 

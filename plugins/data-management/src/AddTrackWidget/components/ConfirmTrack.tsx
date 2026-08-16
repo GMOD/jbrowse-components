@@ -6,6 +6,7 @@ import {
   PluggableComponent,
 } from '@jbrowse/core/ui'
 import {
+  adapterNeedsAddTrackComponent,
   getEnv,
   getSession,
   isElectron,
@@ -36,24 +37,33 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const DefaultAddTrackExtensionComponent = observer(
-  function DefaultAddTrackExtensionComponent({
-    model,
-  }: AddTrackComponentProps) {
-    const session = getSession(model)
-    return (
-      <AssemblySelector
-        session={session}
-        helperText="Select assembly to add track to"
-        selected={model.assembly}
-        onChange={asm => {
-          model.setAssembly(asm)
-        }}
-        fullWidth
-      />
-    )
-  },
-)
+// The assembly dropdown is the widget's own field, not a fallback for the
+// extension point — it used to be passed as the point's default component, so
+// any picker that didn't happen to render one replaced the only way to choose
+// an assembly with its own fields. A picker that genuinely asks for the
+// assembly says so with `ownsAssembly`, and this yields to it.
+const TrackAssemblySelector = observer(function TrackAssemblySelector({
+  model,
+}: AddTrackComponentProps) {
+  const session = getSession(model)
+  return (
+    <AssemblySelector
+      session={session}
+      helperText="Select assembly to add track to"
+      selected={model.assembly}
+      onChange={asm => {
+        model.setAssembly(asm)
+      }}
+      fullWidth
+    />
+  )
+})
+
+// The extension point contributes nothing by default: most adapters have no
+// picker at all
+function NoAddTrackExtension() {
+  return null
+}
 
 const ConfirmTrack = observer(function ConfirmTrack({
   model,
@@ -114,12 +124,18 @@ const ConfirmTrack = observer(function ConfirmTrack({
         <div className={classes.selectorsContainer}>
           <TrackAdapterSelector model={model} />
           <TrackTypeSelector model={model} />
+          {adapterNeedsAddTrackComponent(
+            pluginManager,
+            trackAdapter.type,
+          ) ? null : (
+            <TrackAssemblySelector model={model} />
+          )}
 
           <Suspense fallback={null}>
             <PluggableComponent
               pluginManager={pluginManager}
               name="Core-addTrackComponent"
-              component={DefaultAddTrackExtensionComponent}
+              component={NoAddTrackExtension}
               props={{ model }}
             />
           </Suspense>
