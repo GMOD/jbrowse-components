@@ -1,7 +1,10 @@
 import { useState } from 'react'
 
-import { TrackOverlayContext, TrackOverlayPortal } from '@jbrowse/display-ui'
-import { FloatingLegend } from '@jbrowse/display-ui'
+import {
+  TrackOverlayContext,
+  TrackOverlayPortal,
+  FloatingLegend,
+} from '@jbrowse/display-ui'
 import { act, fireEvent, render } from '@testing-library/react'
 
 import { useSideScroll } from './useSideScroll.ts'

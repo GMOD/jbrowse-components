@@ -43,7 +43,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-gettrackconfig">**getTrackConfig**</span><br><code>(timestamp: number) =&gt; { [x: string]: ...; } &#124; undefined</code> |  |
+| <span id="method-gettrackconfig">**getTrackConfig**</span><br><code>(timestamp: number) =&gt; DraftTrackConfig &#124; undefined</code> |  |
 
 ## Actions
 
