@@ -12,11 +12,11 @@ import { KIND_BASE, KIND_MARKER } from './syntenyColors.ts'
 // genomic bp and screen px are all the same number and a marker's position can
 // be read straight off `bp1`. The grid the markers land on is the query view's
 // scalebar grid subdivided, which at this scale is:
-const PITCH = markerGridPitch(1) // 100
+const PITCH = markerGridPitch(1) // 40
 
 // The subdivision, stated against the ruler it subdivides rather than as the
-// literal 100 above: every labelled scalebar gridline carries a tick, and so
-// does the midpoint between each adjacent pair.
+// literal 40 above: every labelled scalebar gridline carries a tick, and so do
+// the evenly spaced positions between each adjacent pair.
 test('the marker pitch divides the query ruler pitch', () => {
   for (const bpPerPx of [0.5, 1, 13, 500, 6428, 103_571]) {
     const ruler = chooseGridPitch(bpPerPx, 120, 15).majorPitch
@@ -63,14 +63,14 @@ function markerIndices(kinds: Uint8Array) {
 }
 
 test('markers land on the query axis grid, not at fractions of the feature', () => {
-  const g = buildWithMarkers(1000)
+  const g = buildWithMarkers(400)
   const markers = markerIndices(g.kinds)
 
-  // One base below each round coordinate, because that is where the scalebar
-  // puts the gridline it labels with that coordinate — the ruler's phase, not
-  // an off-by-one here. See RULER_GRID_ORIGIN.
+  // One base below each multiple of the pitch, because that is where the
+  // scalebar puts the gridline it labels with that coordinate — the ruler's
+  // phase, not an off-by-one here. See RULER_GRID_ORIGIN.
   expect(markers.map(i => g.bp1[i])).toEqual([
-    99, 199, 299, 399, 499, 599, 699, 799, 899, 999,
+    39, 79, 119, 159, 199, 239, 279, 319, 359, 399,
   ])
 
   // Each marker is a vertical tick: a point on each axis (top span and bottom
@@ -82,18 +82,18 @@ test('markers land on the query axis grid, not at fractions of the feature', () 
 })
 
 test('the grid is absolute, so panning does not slide the markers', () => {
-  // Same 1000bp feature, moved 30bp along the query axis. A per-feature ladder
+  // Same 400bp feature, moved 30bp along the query axis. A per-feature ladder
   // would carry its ticks with it; a grid does not.
   const g = buildSyntenyGeometry({
     p11_cumBp: new Float64Array([30]),
-    p12_cumBp: new Float64Array([1030]),
+    p12_cumBp: new Float64Array([430]),
     p21_cumBp: new Float64Array([30]),
-    p22_cumBp: new Float64Array([1030]),
+    p22_cumBp: new Float64Array([430]),
     queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
     strands: new Int8Array([1]),
     parsedCigars: [[]],
     starts: new Uint32Array([30]),
-    ends: new Uint32Array([1030]),
+    ends: new Uint32Array([430]),
     drawCIGAR: false,
     drawCIGARMatchesOnly: false,
     drawLocationMarkers: true,
@@ -101,12 +101,12 @@ test('the grid is absolute, so panning does not slide the markers', () => {
     bpPerPx1: 1,
     viewOff0: 0,
     viewOff1: 0,
-    viewWidth: 1100,
+    viewWidth: 500,
   })
   // The same ten positions the un-moved feature above took, not the same ten
   // offsets into the feature.
   expect(markerIndices(g.kinds).map(i => g.bp1[i])).toEqual([
-    99, 199, 299, 399, 499, 599, 699, 799, 899, 999,
+    39, 79, 119, 159, 199, 239, 279, 319, 359, 399,
   ])
 })
 
@@ -141,17 +141,17 @@ test('a fine-grained CIGAR does not cost the feature its markers', () => {
 // alignment does. Interpolating across the corners would smear one 100bp
 // deletion evenly over the whole ribbon.
 test('markers follow the CIGAR through a deletion', () => {
-  // Query spans 1000, target 900: 500M, 100D (query only), 400M.
+  // Query spans 400, target 360: 200M, 40D (query only), 160M.
   const g = buildSyntenyGeometry({
     p11_cumBp: new Float64Array([0]),
-    p12_cumBp: new Float64Array([1000]),
+    p12_cumBp: new Float64Array([400]),
     p21_cumBp: new Float64Array([0]),
-    p22_cumBp: new Float64Array([900]),
+    p22_cumBp: new Float64Array([360]),
     queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
     strands: new Int8Array([1]),
-    parsedCigars: [[op(500, CIGAR_M), op(100, CIGAR_D), op(400, CIGAR_M)]],
+    parsedCigars: [[op(200, CIGAR_M), op(40, CIGAR_D), op(160, CIGAR_M)]],
     starts: new Uint32Array([0]),
-    ends: new Uint32Array([1000]),
+    ends: new Uint32Array([400]),
     drawCIGAR: true,
     drawCIGARMatchesOnly: false,
     drawLocationMarkers: true,
@@ -159,19 +159,19 @@ test('markers follow the CIGAR through a deletion', () => {
     bpPerPx1: 1,
     viewOff0: 0,
     viewOff1: 0,
-    viewWidth: 1000,
+    viewWidth: 400,
   })
   const markers = markerIndices(g.kinds)
   // Ticks are still on the query grid — the deletion moves where they LAND on
   // the target axis, never where they sit on the query one.
   expect(markers.map(i => g.bp1[i])).toEqual([
-    99, 199, 299, 399, 499, 599, 699, 799, 899, 999,
+    39, 79, 119, 159, 199, 239, 279, 319, 359, 399,
   ])
-  // Query 600 and up is past the deletion, so those pair 100bp back. The tick at
-  // 599 falls INSIDE the deletion, which is a span of query with no target to
+  // Query 240 and up is past the deletion, so those pair 40bp back. The tick at
+  // 239 falls INSIDE the deletion, which is a span of query with no target to
   // travel over: it pairs at the target coordinate the whole deletion collapses
-  // to (500), which is 99 back rather than a round 100.
+  // to (200), which is 39 back rather than a round 40.
   expect(markers.map(i => g.bp1[i]! - g.bp3[i]!)).toEqual([
-    0, 0, 0, 0, 0, 99, 100, 100, 100, 100,
+    0, 0, 0, 0, 0, 39, 40, 40, 40, 40,
   ])
 })

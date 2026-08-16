@@ -56,24 +56,26 @@ test('every ruler gridline in view carries a marker', () => {
   }
 })
 
-// The other half of "the grid IS the ruler's": the extra ticks the halving adds
-// are midpoints between neighbouring gridlines, not a second grid that happens
-// to be finer. A phase error would show here too — as markers that are neither
-// a gridline nor centred between two.
-test('a marker is a gridline, or the midpoint between two', () => {
+// The other half of "the grid IS the ruler's": the extra ticks the subdivision
+// adds are even steps between neighbouring gridlines, not a second grid that
+// happens to be finer. A phase error would show here too — as a marker that is
+// neither a gridline nor one of those steps.
+test('a marker is a gridline, or an even step between two', () => {
   for (const bpPerPx of ZOOMS) {
     const end = Math.ceil(WIDTH_PX * bpPerPx)
     const pitch = markerGridPitch(bpPerPx)
-    // Both neighbours of an in-window midpoint have to be in the set, and the
-    // ones bracketing the window's own edges sit outside it — so this set is
-    // taken unfiltered and over a window widened past both ends.
-    const ruler = new Set(
-      makeTicks(0, end + 4 * pitch, bpPerPx, true, false).map(t => t.base),
-    )
-    for (const base of markerBases(bpPerPx, end)) {
-      if (!ruler.has(base)) {
-        expect(ruler.has(base - pitch) && ruler.has(base + pitch)).toBe(true)
-      }
+    const ruler = rulerMajorBases(bpPerPx, end)
+    const markers = markerBases(bpPerPx, end)
+    for (let i = 0; i + 1 < ruler.length; i++) {
+      const lo = ruler[i]!
+      const hi = ruler[i + 1]!
+      expect((hi - lo) % pitch).toBe(0)
+      expect(markers.filter(m => m > lo && m < hi)).toEqual(
+        Array.from(
+          { length: (hi - lo) / pitch - 1 },
+          (_, n) => lo + (n + 1) * pitch,
+        ),
+      )
     }
   }
 })

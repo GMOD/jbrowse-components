@@ -75,8 +75,8 @@ export const MIN_CIGAR_PX_WIDTH = 2
 // has a PHASE too, and taking only the pitch left every tick one base off the
 // gridline it continues — see RULER_GRID_ORIGIN.
 //
-// HALVED, so a tick sits on every labelled gridline AND on the midpoint between
-// each adjacent pair — see MARKER_PITCH_DIVISOR.
+// SUBDIVIDED, so a tick sits on every labelled gridline and several more
+// between each adjacent pair — see MARKER_PITCH_DIVISORS.
 //
 // What this replaced, and why the replacement is not a tuning change: markers
 // used to be spaced by PIXELS along each drawn shape, one every 20px, with a
@@ -90,35 +90,50 @@ export const MIN_CIGAR_PX_WIDTH = 2
 const MARKER_GRID_MIN_MAJOR_PX = 120
 const MARKER_GRID_MIN_MINOR_PX = 15
 
-// How far the ruler's major pitch is subdivided for the marker grid.
+// How far the ruler's major pitch is subdivided for the marker grid, and the
+// tick spacing that decides which subdivision it takes.
 //
 // The ruler's own major pitch is >=120px, and on chooseGridPitch's 1/2/5 ladder
-// it typically lands at 150-300px — so a 1400px frame has room for only 6-10
-// ticks, and any of those that falls in a gap between alignments (or outside the
-// blocks whose mate is in the other panel's window at all) is one fewer line.
-// Measured on the tutorial's own data, the HG002 maternal-vs-paternal chain: the
-// 70kb frame drew 6 lines and the 9Mb 8p23 frame 7, which is EVERY tick the
-// ruler offered — nothing was being dropped, there was simply nothing more to
-// draw. The way to get more correspondence lines is a finer grid, not a looser
-// gate.
+// it lands at 120-300px — so a 1400px frame has room for only 6-10 ticks, and
+// any of those that falls in a gap between alignments (or outside the blocks
+// whose mate is in the other panel's window at all) is one fewer line. Measured
+// on the tutorial's own data, the HG002 maternal-vs-paternal chain: the 70kb
+// frame drew 6 lines and the 9Mb 8p23 frame 7, which is EVERY tick the ruler
+// offered — nothing was being dropped, there was simply nothing more to draw.
+// The way to get more correspondence lines is a finer grid, not a looser gate.
 //
 // A DIVISOR of the ruler's pitch rather than a second, independent
-// chooseGridPitch call at a smaller minimum. Asking the ladder for >=60px
+// chooseGridPitch call at a smaller minimum. Asking the ladder for >=30px
 // answers with a pitch that need not divide the ruler's: ruler at 5000 and
 // markers at 2000 puts ticks on 2000/4000/6000 and leaves the LABELLED 5000
 // gridline without one, which gives up the whole point of using the ruler's
-// grid. Halving keeps every labelled gridline ticked and adds the midpoint
-// between neighbours, at 60-150px, and the midpoint is itself a drawn minor
-// gridline whenever the ruler's minor pitch is majorPitch/10.
+// grid.
 //
-// Two is as far as this should go: majorPitch/5 would put ticks 24-60px apart,
-// and at the markers' fixed 0.25 alpha that many lines over one ribbon reads as
-// hatching rather than as a set of positions.
-const MARKER_PITCH_DIVISOR = 2
+// The list and the floor are chooseGridPitch's OWN minor-gridline rule, applied
+// to the ruler's major pitch rather than to the raw scale: take the finest
+// subdivision that stays whole bp and keeps the ticks apart. Every labelled
+// gridline keeps its tick, and swept from base-level zoom to whole-chromosome
+// the answer is a FIFTH of the ruler's pitch at every zoom but the boundary
+// ones — 30-50px, or 28-46 ticks across a 1400px frame. (10 is in the list
+// because this is chooseGridPitch's rule rather than a copy of its shape; it
+// needs a 300px ruler pitch, the exact top of that 120-300px range.)
+//
+// Halving, which this replaced, put them 60-150px apart. Counted along one
+// scanline of the tutorial's 300kb pericentromere frame, that was about one tick
+// per indel in the ribbon — enough to put a line on one side of an indel and
+// nothing on the other, which is the arrangement in which a tick states a
+// position and no pair of them states a shear. A fifth carries about two, so a
+// reader can watch one line enter an indel and the next leave it.
+//
+// 30px is the floor because a tick is drawn at a fixed 0.25 alpha, and closer
+// than that a run of them over one ribbon reads as hatching rather than as a set
+// of positions.
+const MARKER_PITCH_DIVISORS = [10, 5, 2]
+const MARKER_MIN_TICK_PX = 30
 
 // A feature narrower than this on the QUERY AXIS draws no markers.
 //
-// Not a density rule — the >=60px pitch already spaces the ticks. It is that a
+// Not a density rule — the >=30px pitch already spaces the ticks. It is that a
 // tick is a 1px line, so on a block of comparable width the tick IS the block
 // and marks nothing inside it; and that a whole-genome hairball would otherwise
 // put one on every sub-pixel thread it crosses, at the markers' fixed 0.25 alpha
@@ -165,10 +180,12 @@ export const RULER_GRID_ORIGIN = -1
 // The marker grid's pitch in query-axis bp at this zoom: the query view's own
 // scalebar pitch, subdivided.
 //
-// The divisor applies only when it leaves a whole number of bp. chooseGridPitch
+// A divisor applies only when it leaves a whole number of bp. chooseGridPitch
 // floors its major pitch at 5bp, the one odd value the 1/2/5 ladder can hand
 // back, and that floor is reached at base-level zoom — where a tick every 2.5bp
-// would sit between bases and mark a coordinate that does not exist.
+// would sit between bases and mark a coordinate that does not exist. 5 divides
+// it, so the floor subdivides to whole single bases rather than falling back to
+// the undivided ruler.
 //
 // Exported so the tests read the pitch from here rather than re-spelling the
 // derivation: a test that computes its own expected grid cannot notice this one
@@ -179,9 +196,12 @@ export function markerGridPitch(bpPerPx: number) {
     MARKER_GRID_MIN_MAJOR_PX,
     MARKER_GRID_MIN_MINOR_PX,
   ).majorPitch
-  return rulerPitch % MARKER_PITCH_DIVISOR === 0
-    ? rulerPitch / MARKER_PITCH_DIVISOR
-    : rulerPitch
+  const rulerPitchPx = rulerPitch / Math.abs(bpPerPx)
+  const divisor =
+    MARKER_PITCH_DIVISORS.find(
+      d => rulerPitch % d === 0 && rulerPitchPx / d >= MARKER_MIN_TICK_PX,
+    ) ?? 1
+  return rulerPitch / divisor
 }
 
 // Colored-indel instance kind for an I/D/N op; undefined for any match op.
