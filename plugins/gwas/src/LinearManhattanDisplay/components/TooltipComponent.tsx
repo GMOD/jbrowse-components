@@ -1,5 +1,5 @@
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { toLocale } from '@jbrowse/core/util'
+import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
+import { assembleLocString } from '@jbrowse/core/util'
 import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -10,14 +10,6 @@ export interface TooltipModel {
   hoveredFeature: ManhattanHit | undefined
 }
 
-// SNPs/insertions span one bp (end === start + 1) and show a single 1-based
-// coordinate; ranged structural variants show the full start..end interval.
-function formatCoord({ start, end }: ManhattanHit) {
-  return end - start > 1
-    ? `${toLocale(start + 1)}..${toLocale(end)}`
-    : toLocale(start + 1)
-}
-
 const TooltipComponent = observer(function TooltipComponent({
   model,
   mouseState,
@@ -26,21 +18,25 @@ const TooltipComponent = observer(function TooltipComponent({
   mouseState: MouseState | undefined
 }) {
   const { hoveredFeature } = model
-  return hoveredFeature && mouseState ? (
-    <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
-      <div>
-        {hoveredFeature.refName}:{formatCoord(hoveredFeature)}
-        <br />
-        score: {toP(hoveredFeature.score, 4)}
-        {hoveredFeature.r2 !== undefined ? (
-          <>
-            <br />
-            r²: {toP(hoveredFeature.r2, 3)}
-          </>
-        ) : null}
-      </div>
-    </BaseTooltip>
-  ) : null
+  return (
+    <HoverTooltip hit={hoveredFeature} mouseState={mouseState}>
+      {hoveredFeature ? (
+        <div>
+          {/* assembleLocString collapses a one-bp SNP to a single 1-based
+              coordinate rather than printing "101..101", and localizes the
+              numbers — this used to be a local formatCoord doing both by hand */}
+          {assembleLocString(hoveredFeature)}
+          <br />
+          score: {toP(hoveredFeature.score, 4)}
+          {hoveredFeature.r2 === undefined ? null : (
+            <>
+              <br />r{'\u00b2'}: {toP(hoveredFeature.r2, 3)}
+            </>
+          )}
+        </div>
+      ) : null}
+    </HoverTooltip>
+  )
 })
 
 export default TooltipComponent

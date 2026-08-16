@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { useMouseState } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { getBpDisplayStr } from '@jbrowse/core/util'
+import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -24,7 +24,10 @@ function SnpRow({ snp }: { snp: LDFlatbushItem['snp1'] }) {
   return (
     <div>
       {snp.id ? <b>{snp.id} </b> : null}
-      {snp.refName}:{(snp.start + 1).toLocaleString()}
+      {/* the shared coordinate readout, not a hand-rolled +1 and
+          toLocaleString: it honours the numberGrouping display preference and
+          shortens the refName, which a bare toLocaleString does neither of */}
+      {stringify({ refName: snp.refName, coord: snp.start + 1 })}
       {snp.maf === undefined ? null : ` · MAF ${snp.maf.toFixed(3)}`}
     </div>
   )

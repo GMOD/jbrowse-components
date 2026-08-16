@@ -1,5 +1,5 @@
 import { useMouseState } from '@jbrowse/core/ui'
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { Alert } from '@mui/material'
@@ -85,11 +85,11 @@ const SequenceHoverTooltip = observer(function SequenceHoverTooltip({
   const hover = mouseState
     ? model.hoverAt(mouseState.x, mouseState.y)
     : undefined
-  return hover && mouseState ? (
-    <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
-      <HoverContents hover={hover} />
-    </BaseTooltip>
-  ) : null
+  return (
+    <HoverTooltip hit={hover} mouseState={mouseState}>
+      {hover ? <HoverContents hover={hover} /> : null}
+    </HoverTooltip>
+  )
 })
 
 const SequenceDisplayComponent = observer(function SequenceDisplayComponent({

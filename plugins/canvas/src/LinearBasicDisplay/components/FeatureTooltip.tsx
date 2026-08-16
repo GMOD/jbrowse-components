@@ -1,5 +1,5 @@
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { observer } from 'mobx-react'
 
 import type { MouseState } from '@jbrowse/core/ui'
@@ -11,13 +11,11 @@ const FeatureTooltip = observer(function FeatureTooltip({
   info: string | undefined
   mouseState: MouseState | undefined
 }) {
-  return info && mouseState ? (
-    <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
-      <div>
-        <SanitizedHTML html={info} />
-      </div>
-    </BaseTooltip>
-  ) : null
+  return (
+    <HoverTooltip hit={info} mouseState={mouseState}>
+      <div>{info ? <SanitizedHTML html={info} /> : null}</div>
+    </HoverTooltip>
+  )
 })
 
 export default FeatureTooltip

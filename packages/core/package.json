@@ -89,6 +89,7 @@
     "./ui/EditableTypography": "./src/ui/EditableTypography.tsx",
     "./ui/ErrorBoundary": "./src/ui/ErrorBoundary.tsx",
     "./ui/ErrorMessageStackTraceDialog": "./src/ui/ErrorMessageStackTraceDialog.tsx",
+    "./ui/HoverTooltip": "./src/ui/HoverTooltip.tsx",
     "./ui/Icons": "./src/ui/Icons.tsx",
     "./ui/InfoDialog": "./src/ui/InfoDialog.tsx",
     "./ui/JexlFilterDialog": "./src/ui/JexlFilterDialog.tsx",
@@ -521,6 +522,10 @@
       "./ui/ErrorMessageStackTraceDialog": {
         "types": "./esm/ui/ErrorMessageStackTraceDialog.d.ts",
         "import": "./esm/ui/ErrorMessageStackTraceDialog.js"
+      },
+      "./ui/HoverTooltip": {
+        "types": "./esm/ui/HoverTooltip.d.ts",
+        "import": "./esm/ui/HoverTooltip.js"
       },
       "./ui/Icons": {
         "types": "./esm/ui/Icons.d.ts",
@@ -1155,6 +1160,9 @@
         ],
         "ui/ErrorMessageStackTraceDialog": [
           "esm/ui/ErrorMessageStackTraceDialog.d.ts"
+        ],
+        "ui/HoverTooltip": [
+          "esm/ui/HoverTooltip.d.ts"
         ],
         "ui/Icons": [
           "esm/ui/Icons.d.ts"

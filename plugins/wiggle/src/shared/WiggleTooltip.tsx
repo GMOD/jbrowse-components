@@ -1,4 +1,4 @@
-import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { assembleLocString } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { toP } from '@jbrowse/wiggle-core'
@@ -91,11 +91,11 @@ const WiggleTooltip = observer(function WiggleTooltip({
   mouseState: MouseState | undefined
 }) {
   const { hoveredFeature } = model
-  return hoveredFeature && mouseState ? (
-    <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
-      <TooltipContents feature={hoveredFeature} />
-    </BaseTooltip>
-  ) : null
+  return (
+    <HoverTooltip hit={hoveredFeature} mouseState={mouseState}>
+      {hoveredFeature ? <TooltipContents feature={hoveredFeature} /> : null}
+    </HoverTooltip>
+  )
 })
 
 export default WiggleTooltip
