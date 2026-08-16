@@ -4,7 +4,12 @@ import {
 } from '@jbrowse/core/configuration'
 
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
-import { bootAlignmentsDisplay } from './testUtils.ts'
+import {
+  bootAlignmentsDisplay,
+  clickMenuItem,
+  findMenuItem,
+  menuSubItems,
+} from './testUtils.ts'
 
 // Boots a real LinearAlignmentsDisplay so the showSoftClipping resolution and
 // the promote/clear actions run against the actual MST model. `baseSession`
@@ -591,21 +596,10 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
   })
 
   it('the top-level Show menu exposes the fade-by-quality toggle', () => {
-    interface MenuNode {
-      label?: string
-      onClick?: () => void
-      subMenu?: MenuNode[]
-    }
-    const byLabel = (items: MenuNode[] | undefined, label: string) =>
-      items?.find(i => i.label === label)
-
     const { display } = createDisplay()
-    const items = display.trackMenuItems() as MenuNode[]
-    const show = byLabel(items, 'Show...')
     // Top-level Show item, not nested under Advanced.
-    const item = byLabel(show?.subMenu, 'Fade low quality mismatches')
-    expect(item?.onClick).toBeDefined()
-    item?.onClick?.()
+    const show = menuSubItems(display.trackMenuItems(), 'Show...')
+    clickMenuItem(show, 'Fade low quality mismatches')
     expect(display.mismatchAlpha).toBe(true)
   })
 })
@@ -732,16 +726,11 @@ describe('alignments showLegend (color-scheme key)', () => {
   })
 
   it('the Show menu row carries the pin', () => {
-    interface MenuNode {
-      label?: string
-      pin?: { control: { toggle: () => void } }
-      subMenu?: MenuNode[]
-    }
     const { session, display } = createDisplay()
-    const items = display.trackMenuItems() as MenuNode[]
-    const row = items
-      .find(i => i.label === 'Show...')
-      ?.subMenu?.find(i => i.label === 'Show legend')
+    const row = findMenuItem(
+      menuSubItems(display.trackMenuItems(), 'Show...'),
+      'Show legend',
+    )
     expect(row?.pin).toBeDefined()
 
     row?.pin?.control.toggle()
