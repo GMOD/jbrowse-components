@@ -90,11 +90,13 @@ test('the hover tooltip reaches no Material UI', () => {
 // The loading bar, here for the same reason as the two above it.
 //
 // It was a MUI `LinearProgress` reached from `LoadingOverlay`, which
-// `ComparativeFetchStatus` draws behind neither bring-your-own seam — so a
+// `ComparativeFetchStatus` then drew behind neither bring-your-own seam — so a
 // synteny or dotplot display's first load put a `MuiLinearProgress` on a page
 // whose host had mounted `DisplayUIProvider` to keep Material off it. The
 // examples site's census missed it for the ordinary reason a loading state is
-// missed: the census runs once the page has settled.
+// missed: the census runs once the page has settled. That component reads the
+// overlay override now, so a host with its own set never reaches this at all —
+// but this is still what JBrowse's own comparative loading draws.
 //
 // `StatusProgressBar.test.tsx` asserts the rendered tree carries no `Mui*`
 // class, which is the check that catches a revert to `LinearProgress`. This is

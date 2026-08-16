@@ -78,7 +78,7 @@ before anyone noticed.
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 | [Nothing checks a hand-built transfer list](#nothing-checks-a-hand-built-rpc-transfer-list-against-its-payload) | RPC | decide whether the synteny list should be derived instead |
-| [The comparative displays sit behind neither bring-your-own seam](#the-comparative-displays-sit-behind-neither-bring-your-own-seam) | synteny, dotplot, embedded | the bar is fixed; take this WITH the comparative cancel/retry entry |
+| [The comparative displays sit behind neither bring-your-own seam](#the-comparative-displays-sit-behind-neither-bring-your-own-seam) | synteny, dotplot, embedded | fetch status done; tooltip and context menu left, and they need shapes of their own |
 | [Sweep the unused exports, or close the question](#sweep-the-unused-exports-with-a-real-tool-or-close-the-question) | tooling, CI | configure knip per package; a grep returns 623 names and almost none are dead |
 | [charactersPerRow is a constant on a model](#charactersperrow-is-a-constant-living-on-a-model) | feature details | decide setting vs const; a setter with no UI is the worst option |
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
@@ -539,12 +539,26 @@ wrong version of this is a build error rather than a fourth repetition.
 
 ### The comparative displays sit behind neither bring-your-own seam
 
-`ComparativeFetchStatus` (`packages/synteny-core`), `ComparativeTooltip` and
-`SyntenyContextMenu` are mounted by the two comparative render areas and reach
-`@jbrowse/core/ui` directly. `DisplayUIProvider` does not redirect any of them —
-that provider swaps `DisplayChromeOverlays`, and none of these is behind that
-contract — so an embedder who mounted it to keep Material off the page gets it
-anyway from a synteny or dotplot display.
+**`ComparativeFetchStatus` is done — the remaining two are the tooltip and the
+context menu.** `ComparativeTooltip` and `SyntenyContextMenu` are mounted by the
+two comparative render areas and reach `@jbrowse/core/ui` directly, so an
+embedder who mounted `DisplayUIProvider` to keep Material off the page still
+gets it from a synteny or dotplot hover or right-click.
+
+The fetch status now goes through the seam, and the design question this entry
+posed turned out not to be one. Its two states *are* `DisplayChromeOverlays`
+entries — `Loading` and `BackgroundProgress` — and `ComparativeStatusModel`
+already satisfies both of their model shapes structurally, both being
+`{statusMessage?, statusProgress?}`. So it needed no new contract and no second
+one: `synteny-core` depends on `@jbrowse/display-ui`, reads
+`useChromeOverlayOverride()`, and falls back to a Material pair it binds itself
+(a package cannot depend on `plugin-linear-genome-view`'s bindings).
+`ComparativeFetchStatus.test.tsx` pins both directions.
+
+**Check the shapes before designing a contract for the other two.** The tooltip
+and the context menu genuinely are their own shapes, so they want entries of
+their own or a second small contract in the same package — but the fetch status
+looked like that too until someone compared the interfaces.
 
 **One piece of this is fixed and the rest is latent, which is the trap.** The
 loading bar was the only one that rendered without the user doing anything, and
@@ -575,17 +589,9 @@ because `DisplayChromeOverlays` and its provider lived in
 `plugins/linear-genome-view` while `synteny-core` depends on `@jbrowse/core`
 alone, so the component could not read that context. The contract is
 `@jbrowse/display-ui` now — a package, with no UI-toolkit dependency and no
-plugin above it — so `synteny-core` can depend on it like anything else, and the
+plugin above it — so `synteny-core` depends on it like anything else, and the
 prop types it names are the four structural model shapes that moved with it
 rather than LGV display models.
-
-What is left is a design question rather than a layering one: the comparative
-components are not `DisplayChromeOverlays` entries. `ComparativeFetchStatus`
-takes the same `{statusMessage, statusProgress}` shape as
-`DisplayBackgroundProgressModel` and could be one; the tooltip and the context
-menu are their own shapes and want either entries of their own or a second small
-contract in the same package. Decide that before writing the wiring, and add the
-components to `packages/display-ui/src/muiFree.test.ts` when you do.
 
 **The loading-time census is wired in, so this list is no longer invisible.**
 `recordMuiFromLoad` in the BYO site's `smoke.mjs` samples from before each page's

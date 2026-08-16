@@ -46,16 +46,19 @@ const useStyles = makeStyles()(theme => ({
  * element is already a `makeStyles` span — so it was the one Material component
  * that rendered on a page whose host had asked for none. That reaches further
  * than it sounds: a comparative display's first load draws this through
- * `ComparativeFetchStatus`, which sits behind neither bring-your-own seam, so an
- * embedder who mounted `DisplayUIProvider` got a `MuiLinearProgress` anyway. It
- * was invisible to the examples site's MUI census for the ordinary reason a
- * loading state is: the census runs once the page has settled.
+ * `ComparativeFetchStatus`, which then sat behind neither bring-your-own seam,
+ * so an embedder who mounted `DisplayUIProvider` got a `MuiLinearProgress`
+ * anyway. It was invisible to the examples site's MUI census for the ordinary
+ * reason a loading state is: the census runs once the page has settled. (That
+ * component goes through the seam now, so a host supplying their own overlays
+ * replaces this rather than restyling it — but it is still what JBrowse's own
+ * comparative loading draws.)
  *
  * **What that bought is the look, not the bytes.** `LoadingOverlay` one level up
- * still imports `IconButton` and `Tooltip`, and the comparative path reaches the
- * `@jbrowse/core/ui` barrel, so Material UI is in that page's bundle either way
- * — 42 first-party eager modules hold it on the synteny page. Nothing here is a
- * step toward getting it out; EAGER_BUNDLE.md owns that and says what it needs.
+ * still imports `IconButton` and `Tooltip`, so Material UI is in that page's
+ * bundle either way — 42 first-party eager modules hold it on the synteny page.
+ * Nothing here is a step toward getting it out; EAGER_BUNDLE.md owns that and
+ * says what it needs.
  *
  * `makeStyles` hands it `JBrowseStyleTheme`, so it follows the app's palette in
  * both modes exactly as the Material one did. Two guards keep it from drifting
