@@ -231,6 +231,14 @@ export function useDotplotInteraction(
         }
       },
       onPointerUp: event => {
+        // The same button that started the drag ends it. Pressing a second
+        // button mid-drag and releasing it delivers a pointerup like any other,
+        // which without this ended the gesture: a right-click during a
+        // selection committed the box and opened the menu under the browser's
+        // own context menu, and during a pan it dropped the anchor mid-stroke.
+        if (event.button !== 0) {
+          return
+        }
         // Commit a real selection (opens the context menu); a click cancels.
         if (selecting) {
           setUp(sample(event))

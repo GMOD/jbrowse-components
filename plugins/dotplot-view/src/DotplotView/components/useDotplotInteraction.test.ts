@@ -229,3 +229,32 @@ test('a view closed before the frame runs does not write to it', () => {
   expect(zoomAt).not.toHaveBeenCalled()
   expect(scrollXY).not.toHaveBeenCalled()
 })
+
+// The same button that started the drag ends it. A right-click during a
+// selection used to commit the box and open the menu under the browser's own
+// context menu; during a pan it dropped the anchor mid-stroke.
+test('a non-primary release leaves the gesture alone', () => {
+  const { result } = setup('crosshair')
+  act(() => {
+    result.current.containerProps.onPointerDown(pointerEvent(100, 100))
+  })
+  act(() => {
+    result.current.containerProps.onPointerMove(pointerEvent(200, 200))
+  })
+  expect(result.current.selecting).toBe(true)
+
+  act(() => {
+    result.current.containerProps.onPointerUp({
+      ...pointerEvent(200, 200),
+      button: 2,
+    })
+  })
+  // still dragging: not committed, and the anchor is intact
+  expect(result.current.committed).toBe(false)
+  expect(result.current.anchor).toBeDefined()
+
+  act(() => {
+    result.current.containerProps.onPointerUp(pointerEvent(200, 200))
+  })
+  expect(result.current.committed).toBe(true)
+})
