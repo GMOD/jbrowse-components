@@ -80,6 +80,15 @@ states one of four stories: gated on a named `HitTestOptions` flag, empty of
 data when its setting is off, unconditionally drawn, or a decoration
 `hitTestFeature` already answers for.
 
+**Zoom is the second gate axis, and `HIT_GATES` cannot see it.** That record
+varies settings; `performHitTest` also drops the per-base tests above
+`SNP_HIT_MAX_BP_PER_PX`. So a layer filed as `alwaysDrawn` can still go inert on
+zoom alone — which `clip` did, drawing a fixed 1px bar at every zoom while
+answering nothing past 25 bp/px. The whole CIGAR priority chain therefore lives
+in `hitTestCigarItem`, which takes `bpPerPx` and decides the regime itself; the
+zoomed-out steps used to be spelled a second time at the call site and clips
+were missing from the copy.
+
 The converse gap is a layer with no hit test: `readPositions` carries the read's
 TRUE aligned extent, so `hitTestFeature` misses what `drawSoftclipBases` paints
 past the alignment end — and a miss clears the selection and falls through to

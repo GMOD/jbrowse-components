@@ -777,3 +777,70 @@ describe('clip hit gates on frequency like every other mark', () => {
     }
   })
 })
+
+// `clip` is the one PILEUP_LAYERS entry with `enabled: () => true`, and
+// `drawClipBars` honours that literally: a fixed 1px bar at every zoom, opaque
+// unless the worker zeroed its frequency. The priority chain used to be spelled
+// twice — once in `hitTestCigarItem` for the zoomed-in branch, once inline for
+// the zoomed-out one — and clips were absent from the second copy, so above
+// `SNP_HIT_MAX_BP_PER_PX` a drawn bar answered nothing and the hover fell
+// through to the read body. `hitTestGateParity.test.ts` cannot see this: it
+// varies settings, never zoom.
+describe('clips stay hittable when zoomed out, as they stay drawn', () => {
+  // ZOOMED_OUT_OPTS' block is [0,20000] over 200px → bpPerPx=100, four times
+  // SNP_HIT_MAX_BP_PER_PX. canvasX=100 → genomicPos=10000; canvasY=60 → row 0.
+  function clipAtCursor(type: number, frequency = 255) {
+    return makeResolved({
+      interbasePositions: new Uint32Array([10000]),
+      interbaseYs: new Uint16Array([0]),
+      interbaseTypes: new Uint8Array([type]),
+      interbaseLengths: new Uint32Array([20]),
+      interbaseFrequencies: new Uint8Array([frequency]),
+    })
+  }
+
+  it('a soft clip answers past the per-base zoom threshold', () => {
+    const result = performHitTest(
+      100,
+      60,
+      clipAtCursor(INTERBASE_SOFTCLIP),
+      ZOOMED_OUT_OPTS,
+    )
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('softclip')
+    }
+  })
+
+  it('a hard clip does too', () => {
+    const result = performHitTest(
+      100,
+      60,
+      clipAtCursor(INTERBASE_HARDCLIP),
+      ZOOMED_OUT_OPTS,
+    )
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('hardclip')
+    }
+  })
+
+  // Clips are not a `showMismatches` layer, so the flag that silences the mark
+  // layers must leave them alone at this zoom exactly as it does zoomed in.
+  it('and is unaffected by showMismatches, which does not gate its layer', () => {
+    const result = performHitTest(100, 60, clipAtCursor(INTERBASE_SOFTCLIP), {
+      ...ZOOMED_OUT_OPTS,
+      showMismatches: false,
+    })
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('softclip')
+    }
+  })
+
+  // The gate that DOES apply still applies: a zeroed clip hands the click back.
+  it('but a noise-floor clip still declines', () => {
+    const resolved = clipAtCursor(INTERBASE_SOFTCLIP, 0)
+    expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe('none')
+  })
+})

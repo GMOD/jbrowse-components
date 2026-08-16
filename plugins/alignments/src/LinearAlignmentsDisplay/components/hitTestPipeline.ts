@@ -188,6 +188,18 @@ export interface HitTestOptions {
   pileupVisible: boolean
 }
 
+// A deletion/skip under the cursor, dropped when it is narrower than
+// `minLength`. Zoomed in that is 0 — every gap the cursor is over counts —
+// and zoomed out it is `bpPerPx`, i.e. keep only what still spans a pixel.
+function hitTestSignificantGap(
+  resolved: ResolvedBlock,
+  coords: CigarCoords,
+  minLength: number,
+) {
+  const gap = hitTestGap(resolved, coords)
+  return gap && gap.length >= minLength ? gap : undefined
+}
+
 // Priority chain across CIGAR features, top-down:
 //  1. large insertions (wide boxes that overlap SNPs)
 //  2. mismatches (1bp features under the cursor base)
@@ -197,22 +209,42 @@ export interface HitTestOptions {
 //
 // Steps 1-4 are the `showMismatches` layers and vanish with them; step 5 draws
 // unconditionally and so stays. Callers have already checked `isWithinReadBand`.
+//
+// Above `SNP_HIT_MAX_BP_PER_PX` the per-base steps drop out — a mismatch or a
+// thin insertion is narrower than the cursor by then — leaving the marks that
+// still read at that zoom: a large insertion, and a deletion at least a pixel
+// wide. Clips stay in at EVERY zoom, because their layer draws at every zoom:
+// `drawClipBars` paints a fixed 1px bar whatever `bpPerPx` is. What thins them
+// instead is `hitTestClip`'s own `passesFrequencyGate` — the significance gate
+// every other mark test applies, which drops a clip the worker zeroed rather
+// than one the shader merely faded.
+//
+// The whole chain lives here for that last reason. The zoomed-out steps used to
+// be spelled a second time at the call site, and clips were simply absent from
+// the copy — so above 25 bp/px an opaque clip bar answered nothing, and a hover
+// fell through to the read body. `HIT_GATES` files `clip` as `alwaysDrawn`,
+// whose contract is that the hit test is ungated too; the parity test could not
+// catch the drift because it varies settings, never zoom.
 function hitTestCigarItem(
   resolved: ResolvedBlock,
   coords: CigarCoords,
   featureHeight: number,
+  bpPerPx: number,
   { filterMismatchesByFrequency, showMismatches }: HitTestOptions,
 ): CigarHitResult | undefined {
+  const perBase = bpPerPx <= SNP_HIT_MAX_BP_PER_PX
   const marks = showMismatches
     ? (hitTestLargeInsertion(resolved, coords, featureHeight) ??
-      hitTestMismatch(resolved, coords, filterMismatchesByFrequency) ??
-      hitTestSmallInsertion(
-        resolved,
-        coords,
-        featureHeight,
-        filterMismatchesByFrequency,
-      ) ??
-      hitTestGap(resolved, coords))
+      (perBase
+        ? (hitTestMismatch(resolved, coords, filterMismatchesByFrequency) ??
+          hitTestSmallInsertion(
+            resolved,
+            coords,
+            featureHeight,
+            filterMismatchesByFrequency,
+          ))
+        : undefined) ??
+      hitTestSignificantGap(resolved, coords, perBase ? 0 : bpPerPx))
     : undefined
   return marks ?? hitTestClip(resolved, coords, filterMismatchesByFrequency)
 }
@@ -267,7 +299,6 @@ export function performHitTest(
     featureSpacing,
     scrollTop,
     isChainMode,
-    showMismatches,
     pileupVisible,
   } = options
 
@@ -336,12 +367,26 @@ export function performHitTest(
   // hitTestSoftclipBase — keep their own guard.
   const inReadBand = isWithinReadBand(coords, featureHeight)
 
-  if (inReadBand && bpPerPx <= SNP_HIT_MAX_BP_PER_PX) {
+  if (inReadBand) {
     // Modification before CIGAR: a modified+mismatched base resolves as a
-    // modification hit, not a mismatch hit. modFlatbush is undefined when
-    // not in modification mode so this is a no-op.
-    const modificationHit = hitTestModification(resolved, coords, featureHeight)
-    const cigarHit = hitTestCigarItem(resolved, coords, featureHeight, options)
+    // modification hit, not a mismatch hit. Per-base like the mismatch step, so
+    // it drops out at the same zoom; `modFlatbush` is undefined outside
+    // modification mode, which makes this a no-op there.
+    const modificationHit =
+      bpPerPx <= SNP_HIT_MAX_BP_PER_PX
+        ? hitTestModification(resolved, coords, featureHeight)
+        : undefined
+    // `hitTestCigarItem` owns the zoom regime, so this reads the same at every
+    // zoom. `featureHit` rides along throughout: without it a right-click on a
+    // zoomed-out insertion/deletion loses the read's own menu items and a hover
+    // drops the chain highlight, purely because of zoom.
+    const cigarHit = hitTestCigarItem(
+      resolved,
+      coords,
+      featureHeight,
+      bpPerPx,
+      options,
+    )
     if (modificationHit) {
       return {
         type: 'modification',
@@ -355,34 +400,6 @@ export function performHitTest(
       return {
         type: 'cigar',
         hit: cigarHit,
-        featureHit: hitTestFeature(resolved, coords, featureHeight),
-        resolved,
-      }
-    }
-  } else if (inReadBand && showMismatches) {
-    // When zoomed out, surface features that are still visually significant.
-    // Both are `showMismatches` layers, so the gate covers the whole branch.
-    // `featureHit` is attached just as in the zoomed-in branch: without it a
-    // right-click on a zoomed-out insertion/deletion loses the read's own menu
-    // items and a hover drops the chain highlight, purely because of zoom.
-    const largeInsertionHit = hitTestLargeInsertion(
-      resolved,
-      coords,
-      featureHeight,
-    )
-    if (largeInsertionHit) {
-      return {
-        type: 'cigar',
-        hit: largeInsertionHit,
-        featureHit: hitTestFeature(resolved, coords, featureHeight),
-        resolved,
-      }
-    }
-    const gapHit = hitTestGap(resolved, coords)
-    if (gapHit && gapHit.length >= bpPerPx) {
-      return {
-        type: 'cigar',
-        hit: gapHit,
         featureHit: hitTestFeature(resolved, coords, featureHeight),
         resolved,
       }
