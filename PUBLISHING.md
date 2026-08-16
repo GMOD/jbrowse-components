@@ -21,6 +21,18 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    that silently truncates the summary, its own frontmatter. `pnpm release` runs
    it again before it writes anything.
 
+   **Have an agent read the finished draft against the source before you
+   publish.** A draft is written months ahead of the release it describes, so
+   between writing and shipping there is a whole development cycle in which a
+   feature can be renamed, reverted or quietly dropped — and the draft is the
+   one document here that describes the code and is never compiled against it.
+   The v5.0.0 draft announced `jbrowse transitive-paf` for ten days after
+   `79080af254` reverted the command, and named a `StatusChip` that had been
+   renamed. Ask for every command, flag, config slot and component the draft
+   names to be looked up in the tree, and for anything absent to be sorted into
+   "gone, and the draft says so on purpose" or "stale claim". A checker was
+   tried for this and is in `agent-docs/reference/REJECTED_IDEAS.md`.
+
    Check the published plugins too, on a major release — nothing else does:
 
    ```bash
