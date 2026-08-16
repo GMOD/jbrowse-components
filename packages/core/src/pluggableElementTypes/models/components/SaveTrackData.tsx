@@ -42,11 +42,9 @@ const MAX_PREVIEW_CHARS = 500_000
 const TOO_BIG_TO_PREVIEW =
   'File greater than 500kb, too large to view here. Click "Download" to save results to file'
 
-function tooLargeMessage(
-  regionStr: string,
-  { bytes, limit }: { bytes: number; limit: number },
-) {
-  return `${regionStr} is an estimated ${getDisplayStr(bytes)} on this track, over the ${getDisplayStr(limit)} this export asks about. Nothing has been downloaded — click "Download anyway" to fetch it.`
+interface SaveTrackModel extends IStateTreeNode {
+  configuration: AnyConfigurationModel
+  saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
 }
 
 const useStyles = makeStyles()({
@@ -62,44 +60,27 @@ const useStyles = makeStyles()({
   },
 })
 
-const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
+/**
+ * The export in the selected format, and the confirmation the size gate needs.
+ * `force` lives here rather than in the component because it is a fetch input:
+ * saying yes has to re-run the fetch, and then stay said for the rest of the
+ * dialog, including a later format change.
+ */
+function useTrackDataExport({
   model,
-  handleClose,
+  regions,
+  regionStr,
+  type,
+  options,
 }: {
-  model: IStateTreeNode & {
-    configuration: AnyConfigurationModel
-    saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
-  }
-  handleClose: () => void
+  model: SaveTrackModel
+  regions: Region[]
+  regionStr: string
+  type: string
+  options: Record<string, FileTypeExporter>
 }) {
-  const { classes } = useStyles()
-  const options = model.saveTrackFileFormatOptions()
-  // every track type declaring this view declares at least one format
-  const [type, setType] = useState(Object.keys(options)[0]!)
-  const [helpText, setHelpText] = useState<string>()
-
-  // Captured once rather than read live. The dialog is modal, so the user
-  // cannot navigate under it, but the view's visible regions are derived from
-  // its width — and a window resize behind the dialog would otherwise change
-  // the fetch key and restart a long export from zero. Captured, they are also
-  // what the Region field can name, so the label always describes the bytes.
-  const view = getContainingView(model) as unknown as {
-    visibleRegions?: Region[]
-  }
-  const [regions] = useState(() => roundRegions(view.visibleRegions ?? []))
-  const regionStr = assembleLocStrings(regions)
-
-  // set once the user has seen the estimate and asked for it anyway. In the
-  // fetch key, so saying yes re-runs the fetch and then stays said for the rest
-  // of the dialog, including a later format change.
   const [force, setForce] = useState(false)
-
-  const {
-    data: result,
-    error,
-    isLoading: loading,
-    status,
-  } = useFetch(
+  const { data, error, isLoading, status } = useFetch(
     regions.length
       ? ([
           'fetchTrackData',
@@ -130,17 +111,104 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         statusCallback,
       }),
   )
+  return { result: data, error, loading: isLoading, status, setForce }
+}
+
+/**
+ * The format picker, owning the per-format help text and the dialog that shows
+ * it — nothing above needs to know a format can carry one.
+ */
+function FormatSelector({
+  options,
+  type,
+  setType,
+  usedAdapterExport,
+}: {
+  options: Record<string, FileTypeExporter>
+  type: string
+  setType: (arg: string) => void
+  usedAdapterExport: boolean
+}) {
+  const { classes } = useStyles()
+  const [helpText, setHelpText] = useState<string>()
+  return (
+    <FormControl>
+      <FormLabel>
+        {`File type${usedAdapterExport ? ' (adapter export)' : ''}`}
+      </FormLabel>
+      <RadioGroup
+        value={type}
+        onChange={e => {
+          setType(e.target.value)
+        }}
+      >
+        {Object.entries(options).map(([key, val]) => (
+          <div key={key} className={classes.formatRow}>
+            <FormControlLabel
+              value={key}
+              control={<Radio />}
+              label={val.name}
+            />
+            {val.helpText ? (
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setHelpText(val.helpText)
+                }}
+                title="Show help for this format"
+              >
+                <HelpOutlineIcon fontSize="small" />
+              </IconButton>
+            ) : null}
+          </div>
+        ))}
+      </RadioGroup>
+      <InfoDialog
+        open={helpText !== undefined}
+        onClose={() => {
+          setHelpText(undefined)
+        }}
+        title="Format Information"
+      >
+        <DialogContentText>{helpText}</DialogContentText>
+      </InfoDialog>
+    </FormControl>
+  )
+}
+
+const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
+  model,
+  handleClose,
+}: {
+  model: SaveTrackModel
+  handleClose: () => void
+}) {
+  const { classes } = useStyles()
+  const options = model.saveTrackFileFormatOptions()
+  // every track type declaring this view declares at least one format
+  const [type, setType] = useState(Object.keys(options)[0]!)
+
+  // Captured once rather than read live. The dialog is modal, so the user
+  // cannot navigate under it, but the view's visible regions are derived from
+  // its width — and a window resize behind the dialog would otherwise change
+  // the fetch key and restart a long export from zero. Captured, they are also
+  // what the Region field can name, so the label always describes the bytes.
+  const view = getContainingView(model) as unknown as {
+    visibleRegions?: Region[]
+  }
+  const [regions] = useState(() => roundRegions(view.visibleRegions ?? []))
+  const regionStr = assembleLocStrings(regions)
+
+  const { result, error, loading, status, setForce } = useTrackDataExport({
+    model,
+    regions,
+    regionStr,
+    type,
+    options,
+  })
   const tooLarge = result?.tooLarge
   const str = result?.str ?? ''
-  const format = options[type]!
   const noResult = loading || !!error || !!tooLarge
-  const preview = loading
-    ? statusProgressLabel(status) || 'Loading...'
-    : tooLarge
-      ? tooLargeMessage(regionStr, tooLarge)
-      : str.length > MAX_PREVIEW_CHARS
-        ? TOO_BIG_TO_PREVIEW
-        : str
 
   return (
     <InfoDialog
@@ -173,7 +241,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             onClick={() => {
               saveAs(
                 new Blob([str], { type: 'text/plain;charset=utf-8' }),
-                `jbrowse_track_data.${format.extension}`,
+                `jbrowse_track_data.${options[type]!.extension}`,
               )
             }}
             startIcon={<GetAppIcon />}
@@ -192,45 +260,27 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             slotProps={{ input: { readOnly: true } }}
           />
         </div>
-        <FormControl>
-          <FormLabel>
-            {`File type${result?.usedAdapterExport ? ' (adapter export)' : ''}`}
-          </FormLabel>
-          <RadioGroup
-            value={type}
-            onChange={e => {
-              setType(e.target.value)
-            }}
-          >
-            {Object.entries(options).map(([key, val]) => (
-              <div key={key} className={classes.formatRow}>
-                <FormControlLabel
-                  value={key}
-                  control={<Radio />}
-                  label={val.name}
-                />
-                {val.helpText ? (
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      setHelpText(val.helpText)
-                    }}
-                    title="Show help for this format"
-                  >
-                    <HelpOutlineIcon fontSize="small" />
-                  </IconButton>
-                ) : null}
-              </div>
-            ))}
-          </RadioGroup>
-        </FormControl>
+        <FormatSelector
+          options={options}
+          type={type}
+          setType={setType}
+          usedAdapterExport={!!result?.usedAdapterExport}
+        />
         <TextField
           variant="outlined"
           multiline
           minRows={5}
           maxRows={15}
           fullWidth
-          value={preview}
+          value={
+            loading
+              ? statusProgressLabel(status) || 'Loading...'
+              : tooLarge
+                ? `${regionStr} is an estimated ${getDisplayStr(tooLarge.bytes)} on this track, over the ${getDisplayStr(tooLarge.limit)} this export asks about. Nothing has been downloaded — click "Download anyway" to fetch it.`
+                : str.length > MAX_PREVIEW_CHARS
+                  ? TOO_BIG_TO_PREVIEW
+                  : str
+          }
           slotProps={{
             input: {
               readOnly: true,
@@ -239,15 +289,6 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           }}
         />
       </div>
-      <InfoDialog
-        open={helpText !== undefined}
-        onClose={() => {
-          setHelpText(undefined)
-        }}
-        title="Format Information"
-      >
-        <DialogContentText>{helpText}</DialogContentText>
-      </InfoDialog>
     </InfoDialog>
   )
 })
