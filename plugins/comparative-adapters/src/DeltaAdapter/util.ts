@@ -45,15 +45,70 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let x = 0
   let y = 0
   let seen_gt = false
+  // An alignment is only complete at its `0` terminator, so `open` is what
+  // distinguishes "between records" from "mid-record": the file's last
+  // alignment used to be dropped without a word when the file was truncated
+  // before that terminator.
+  let open = false
+  let skipped = 0
 
   const records: PAFRecord[] = []
   const regex = /^>(\S+)\s+(\S+)\s+(\d+)\s+(\d+)/
+
+  // The remaining ungapped run closes the alignment. A record whose offsets do
+  // not reconcile with its own header interval is unrenderable, so it is
+  // dropped — but only it. This used to throw, and since the throw escaped
+  // `paf_delta2paf` a single bad record cost every good one in the file: the
+  // track came up empty, saying `inconsistent alignment on line 0`, which names
+  // the terminator rather than the record that was wrong.
+  function flush() {
+    if (!open) {
+      return
+    }
+    open = false
+    const rrem = re - rs - x
+    const qrem = qe - qs - y
+    if (rrem !== qrem || rrem < 0) {
+      skipped++
+      return
+    }
+    let blen = 0
+    const cigar_str = []
+    cigar.push(rrem << 4)
+    for (const entry of cigar) {
+      const rlen = entry >> 4
+      blen += rlen
+      cigar_str.push(rlen + 'MID'.charAt(entry & 0xf))
+    }
+
+    records.push({
+      qname,
+      qstart: qs,
+      qend: qe,
+      tname: rname,
+      tstart: rs,
+      tend: re,
+      strand,
+      // No mappingQual: a delta file carries no mapping quality, and
+      // emitting 0 made every alignment read as MAPQ 0 ("multi-mapping")
+      // in the MAPQ color ramp and group-by rather than "unavailable".
+      extra: {
+        numMatches: blen - NM,
+        blockLen: blen,
+        NM,
+        cg: cigar_str.join(''),
+      },
+    })
+  }
 
   parseLineByLine(
     buffer,
     line => {
       const m = regex.exec(line)
       if (m !== null) {
+        // a well-formed file has already flushed at the previous `0`; this
+        // catches an alignment cut short by the next header
+        flush()
         rname = m[1]!
         qname = m[2]!
         seen_gt = true
@@ -69,7 +124,10 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
         const t2 = +t[2]!
         const t3 = +t[3]!
         const t4 = +t[4]!
-        strand = (t0 < t1 && t2 < t3) || (t0 > t1 && t2 > t3) ? 1 : -1
+        // Compared as a pair of directions rather than two strict-inequality
+        // clauses, which both went false on a single-base alignment (t0 === t1)
+        // and reported a forward match as reverse.
+        strand = t0 <= t1 === t2 <= t3 ? 1 : -1
         rs = Math.min(t0, t1) - 1
         re = Math.max(t1, t0)
         qs = Math.min(t2, t3) - 1
@@ -77,40 +135,18 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
         x = y = 0
         NM = t4
         cigar = []
-      } else if (t.length === 1) {
+        open = true
+      } else if (t.length === 1 && open) {
         const d = +t[0]!
+        // Anything that is neither a 7-column header nor an integer offset is a
+        // line this parser does not understand. Falling through to the offset
+        // branch turned it into a NaN that rode into the CIGAR and surfaced
+        // much later as the record failing to reconcile.
+        if (!Number.isInteger(d)) {
+          return true
+        }
         if (d === 0) {
-          let blen = 0
-          const cigar_str = []
-
-          if (re - rs - x !== qe - qs - y) {
-            throw new Error(`inconsistent alignment on line ${line}`)
-          }
-          cigar.push((re - rs - x) << 4)
-          for (const entry of cigar) {
-            const rlen = entry >> 4
-            blen += rlen
-            cigar_str.push(rlen + 'MID'.charAt(entry & 0xf))
-          }
-
-          records.push({
-            qname,
-            qstart: qs,
-            qend: qe,
-            tname: rname,
-            tstart: rs,
-            tend: re,
-            strand,
-            // No mappingQual: a delta file carries no mapping quality, and
-            // emitting 0 made every alignment read as MAPQ 0 ("multi-mapping")
-            // in the MAPQ color ramp and group-by rather than "unavailable".
-            extra: {
-              numMatches: blen - NM,
-              blockLen: blen,
-              NM,
-              cg: cigar_str.join(''),
-            },
-          })
+          flush()
         } else if (d > 0) {
           const l = d - 1
           x += l + 1
@@ -144,5 +180,12 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
     statusCallback,
     { label: 'Parsing delta', stopToken: opts?.stopToken },
   )
+  // the file's last alignment, when it was truncated before its `0`
+  flush()
+  if (skipped) {
+    console.warn(
+      `DeltaAdapter: skipped ${skipped} alignment(s) whose indel offsets do not reconcile with their own header interval`,
+    )
+  }
   return records
 }
