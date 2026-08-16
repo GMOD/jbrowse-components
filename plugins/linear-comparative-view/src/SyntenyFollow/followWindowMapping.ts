@@ -18,11 +18,9 @@ interface Accumulator {
 }
 
 // One candidate contig on the other axis: how much of the window aligns to it,
-// and where the window's two edges land on it. Carries its dictionary id as well
-// as its name so the per-block lookup below is an integer compare.
+// and where the window's two edges land on it.
 interface Target {
   name: string
-  nameId: number
   total: number
   startAt: Accumulator
   endAt: Accumulator
@@ -122,9 +120,18 @@ export function followWindowMapping({
   // 500k against 5ms for a bare pass. A `Target` is per CONTIG, of which even a
   // whole-genome window reaches a few dozen, so the loop below allocates once
   // per contig and then only reads.
+  //
+  // A slot per dictionary id, not a search. Blocks do NOT arrive grouped by
+  // contig — `executeSyntenyFeaturesAndPositions` sorts them by feature LENGTH
+  // so big ribbons composite over sub-pixel noise — so a "same contig as last
+  // block" shortcut in front of a scan hits almost never and the scan runs per
+  // block. Ids are dense, since `renameDictLane` re-interns the lane. Measured
+  // both ways at 300k blocks over 8, 24 and 200 contigs and there is no
+  // difference; this spelling is simply the one that assumes no ordering.
   const targets: Target[] = []
-  let lastNameId = -1
-  let target: Target | undefined
+  const byNameId = new Array<Target | undefined>(otherRefNameDict.length).fill(
+    undefined,
+  )
   for (let i = 0; i < n; i++) {
     if (
       refNameIds[i] !== windowRefNameId ||
@@ -133,21 +140,17 @@ export function followWindowMapping({
     ) {
       continue
     }
-    // blocks arrive grouped by refName, so this resolves once per contig
     const nameId = otherRefNameIds[i]!
-    if (nameId !== lastNameId || !target) {
-      lastNameId = nameId
-      target = targets.find(t => t.nameId === nameId)
-      if (!target) {
-        target = {
-          name: otherRefNameDict[nameId]!,
-          nameId,
-          total: 0,
-          startAt: newAccumulator(windowStartBp),
-          endAt: newAccumulator(windowEndBp),
-        }
-        targets.push(target)
+    let target = byNameId[nameId]
+    if (!target) {
+      target = {
+        name: otherRefNameDict[nameId]!,
+        total: 0,
+        startAt: newAccumulator(windowStartBp),
+        endAt: newAccumulator(windowEndBp),
       }
+      byNameId[nameId] = target
+      targets.push(target)
     }
     const aLo = starts[i]!
     const aHi = ends[i]!
