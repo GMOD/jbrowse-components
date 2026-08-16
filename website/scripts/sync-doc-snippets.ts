@@ -93,7 +93,13 @@ const stale: string[] = []
 // difference between the two kinds of key it documents — `drawer_widgets.md`
 // includes the real declaration and says the split matters. Both are includes
 // now, `TrackInit` having gained a region marker at its declaration.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '18')
+//
+// 18 -> 19 on 2026-08-15: `jbrowse-capture.md` (mirrored from
+// products/jbrowse-capture/README.md) carries the README's own "## Library"
+// example — captureJBrowse/openJBrowse usage — for the same reason the
+// "Writing your own script" example above is exempt: nothing in the repo
+// compiles that exact shape, so there is no source to point an include at.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '19')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {
