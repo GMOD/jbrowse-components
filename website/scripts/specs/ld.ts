@@ -1208,10 +1208,22 @@ export const ldSpecs: ScreenshotSpec[] = [
     //
     // ARROW HEADS ARE GENOMIC, the matrix's columns are not (matrix mode gives
     // every variant equal width), so the heads are placed to land inside the
-    // drawn block rather than at a variant: 135,900,000 is just right of the
-    // stripe and well inside the slab. fracY 0.30 and 0.78 are the clade's and
-    // the mosaic's centres, measured off the capture -- the clade occupies the
-    // top ~0.08-0.52 of the lane and the mosaic the rest.
+    // drawn block rather than at a variant. fracY 0.30 and 0.78 are the clade's
+    // and the mosaic's centres, measured off the capture -- the clade occupies
+    // the top ~0.08-0.52 of the lane and the mosaic the rest.
+    //
+    // 135,900,000 -> 135,760,000 (review: "the arrows might be slightly
+    // pointing to the wrong place, too far to right, off"). Measured off the
+    // capture against the highlight, whose edges are known: the clade's
+    // unbroken slab runs about 135.73-135.97 Mb, so 135,900,000 was inside it
+    // but within a head's length of its right edge, and an arrowhead is drawn
+    // short of its anchor -- so both heads landed on the edge where the slab
+    // stops rather than in it. 135,760,000 is left of the LCT/MCM6 stripe, in
+    // the part of the slab no highlight tints.
+    //
+    // Both heads share that x on purpose. The claim is about ROWS -- these rows
+    // hold the block, those rows do not -- so two heads in one column of the
+    // matrix say it and two heads at different columns would not.
     annotations: [
       {
         type: 'text',
@@ -1265,7 +1277,7 @@ export const ldSpecs: ScreenshotSpec[] = [
         },
         anchor: {
           track: 'kgp_lct_haplotypes',
-          locus: 'chr2:135,900,000',
+          locus: 'chr2:135,760,000',
           fracY: 0.3,
           alignX: 'left',
         },
@@ -1280,7 +1292,7 @@ export const ldSpecs: ScreenshotSpec[] = [
         },
         anchor: {
           track: 'kgp_lct_haplotypes',
-          locus: 'chr2:135,900,000',
+          locus: 'chr2:135,760,000',
           fracY: 0.78,
           alignX: 'left',
         },

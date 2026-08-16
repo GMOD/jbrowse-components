@@ -1468,15 +1468,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // The one published result this stack is evidence for, named on the band
     // that shows it (reviewer: "add a small number (1-2) red box text
     // annotations to figure showing e.g. known results about the chromosome
-    // changes"). Two words: the caption already explains why that band is
-    // dense, and the row labels either side say which two genomes it joins.
-    // Anchored to the `gar` row label, which is DOM text, and pushed down into
-    // the left of the band it heads, where no ribbons run.
+    // changes"). Anchored to the `gar` row label, which is DOM text, and pushed
+    // down into the left of the band it heads, where no ribbons run.
+    //
+    // The name alone was two words and the follow-up review is why it now
+    // carries a second line: "might need to explain it is teleost duplication,
+    // so the result is, the ribbons are all scattered/duplicated between gar
+    // and zebrafish". The band's shape IS the result and a reader who does not
+    // already know the event cannot get from one to the other -- every other
+    // band in the stack is one row's chromosome onto one partner's, and this
+    // one is each gar chromosome arriving at two places. That is the sentence
+    // the picture cannot say.
     annotations: [
       {
         type: 'text',
-        text: 'teleost duplication',
+        text: 'teleost duplication:\neach gar chromosome lands on two in zebrafish',
         fontSize: 20,
+        maxWidth: 380,
         anchor: { text: 'gar', alignX: 'left' },
         dx: 10,
         dy: 60,
@@ -1799,25 +1807,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // hexaploid A+B+D, and the two diploids in the stack are the donors of two
     // of those subgenomes -- which is exactly what the ribbons show, each
     // donor's seven chromosomes fanning onto the wheat chromosomes carrying its
-    // subgenome letter. Anchored to the row labels, which are DOM text, and
-    // dropped into the empty left margin of each donor's own band.
+    // subgenome letter.
+    //
+    // EACH PILL NOW SITS ON ITS ROW AND THE ROW IS RINGED (review: "the text
+    // boxes are interesting but hard to see exactly what it is referring to.
+    // might need to circle what it is saying"). Both were dropped 60px into the
+    // margin below their row label, which put them in the BAND under the row
+    // rather than on it -- and a band is a pair of genomes, so "A genome donor"
+    // read as naming urartu-to-timopheevii, which is not what it says. On the
+    // row's own line, with a box round the label, the pill names one genome.
     annotations: [
       {
         type: 'text',
         text: 'D genome donor',
         fontSize: 20,
         anchor: { text: 'tauschii', alignX: 'left' },
-        dx: 10,
-        dy: 60,
+        dx: 90,
       },
+      { type: 'box', anchor: { text: 'tauschii' } },
       {
         type: 'text',
         text: 'A genome donor',
         fontSize: 20,
         anchor: { text: 'urartu', alignX: 'left' },
-        dx: 10,
-        dy: 60,
+        dx: 90,
       },
+      { type: 'box', anchor: { text: 'urartu' } },
     ],
   },
 

@@ -2003,7 +2003,29 @@ export const uiSpecs: ScreenshotSpec[] = [
           },
           { type: 'delay', ms: 500 },
         ],
+        // The ring alone said "look here" at a 16px glyph and left the reader to
+        // work out what it meant (review: "might help to have red text
+        // annotation explaining what they are seeing"). The pill says the one
+        // thing the badge cannot: that the track is following a default set
+        // elsewhere rather than carrying an edit of its own.
+        //
+        // Anchored to the add-track FAB rather than to the badge, and that is
+        // placement rather than pedantry: every row left of the badge is a track
+        // name, so a pill reaching for it covers the list it is about. The FAB
+        // sits below the last row, where the panel is empty.
         annotations: [
+          {
+            type: 'text',
+            text: 'this track follows a session-wide default',
+            fontSize: 20,
+            maxWidth: 420,
+            textAlign: 'end',
+            anchor: {
+              selector: '[data-testid="hierarchical-add-track-fab"]',
+              alignX: 'left',
+            },
+            dx: -30,
+          },
           {
             type: 'circle',
             anchor: {
