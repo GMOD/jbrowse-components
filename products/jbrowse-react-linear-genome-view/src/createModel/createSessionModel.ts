@@ -1,42 +1,29 @@
-import { EmbeddedSessionThemeMixin } from '@jbrowse/embedded-core'
+import { EmbeddedSessionMixin } from '@jbrowse/embedded-core'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
-import {
-  BaseSessionModel,
-  ConnectionManagementSessionMixin,
-  DrawerWidgetSessionMixin,
-  ReferenceManagementSessionMixin,
-  SessionTracksManagerSessionMixin,
-  TrackMenuSessionMixin,
-} from '@jbrowse/product-core'
+import { SessionTracksManagerSessionMixin } from '@jbrowse/product-core'
 
 import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
-  AssemblyManager,
   SessionWithAddTracks,
   SessionWithConfigEditing,
   SessionWithConnections,
   SessionWithDrawerWidgets,
 } from '@jbrowse/core/util/types'
+import type { EmbeddedSessionParent } from '@jbrowse/embedded-core'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
 
-// This session lives at rootModel.session, so its MST parent is the root model;
-// this is the slice it reaches for. A typed contract in place of getParent<any>,
-// mirroring product-core's ConfigModelParent and web-core's AbstractWebRootModel.
-interface SessionModelParent {
-  version: string
+// This product's root carries one prop beyond the shared shadow, so the slice
+// this session reaches for is that shadow plus the one field.
+interface SessionModelParent extends EmbeddedSessionParent {
   disableAddTracks: boolean
-  assemblyManager: AssemblyManager
-  config: {
-    assemblyName: string
-  }
 }
 
-// Compile-time guard binding this shadow to the real root. getParent<T> is an
-// unchecked assertion, so this catches SessionModelParent drifting from the
-// root model (e.g. a renamed/removed prop) at build time, not runtime.
+// Compile-time guard binding the shadow to the real root. getParent<T> is an
+// unchecked assertion, so this catches SessionModelParent drifting from the root
+// model (e.g. a renamed/removed prop) at build time, not runtime.
 export type _SessionModelParentCheck = AssertExtends<
   ViewModel,
   SessionModelParent
@@ -44,19 +31,19 @@ export type _SessionModelParentCheck = AssertExtends<
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel
+ *
+ * The shared {@link EmbeddedSessionMixin} plus this product's tracks mixin, its
+ * single LinearGenomeView, and `disableAddTracks`, which is a root prop rather
+ * than a session one. The mixin and the view are spelled out here rather than
+ * passed to a shared factory because `types.compose` cannot infer through a
+ * generic — see EmbeddedSessionMixin.
  */
-
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
       'ReactLinearGenomeViewSession',
-      BaseSessionModel(pluginManager),
-      DrawerWidgetSessionMixin(pluginManager),
-      ConnectionManagementSessionMixin(pluginManager),
-      ReferenceManagementSessionMixin(pluginManager),
+      EmbeddedSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
-      TrackMenuSessionMixin(pluginManager),
-      EmbeddedSessionThemeMixin(pluginManager),
     )
     .props({
       /**
@@ -70,30 +57,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get version() {
-        return getParent<SessionModelParent>(self).version
-      },
-      /**
-       * #getter
-       */
       get disableAddTracks() {
         return getParent<SessionModelParent>(self).disableAddTracks
-      },
-      /**
-       * #getter
-       */
-      // `assemblies` and `connections` are intentionally omitted: BaseSessionModel
-      // and ConnectionManagementSessionMixin already resolve them through
-      // `self.jbrowse` (= root.config), so re-declaring here would just duplicate
-      // the base getters with looser types
-      get assemblyNames() {
-        return [getParent<SessionModelParent>(self).config.assemblyName]
-      },
-      /**
-       * #getter
-       */
-      get assemblyManager() {
-        return getParent<SessionModelParent>(self).assemblyManager
       },
       /**
        * #getter

@@ -31,10 +31,17 @@ function siteRoot(scriptUrl: string) {
   return path.join(path.dirname(fileURLToPath(scriptUrl)), '..')
 }
 
-function loadExamples(root: string) {
-  return import(
-    pathToFileURL(path.join(root, 'src', 'examples.ts')).href
-  ) as Promise<ExamplesModule>
+// the specifier is only known at runtime, so `import()` is typed `any` here;
+// the declared return type is what gives it a shape, without a cast
+async function loadExamples(root: string): Promise<ExamplesModule> {
+  return import(pathToFileURL(path.join(root, 'src', 'examples.ts')).href)
+}
+
+async function loadAstroConfig(site: string): Promise<{ base: string }> {
+  const { default: config } = await import(
+    pathToFileURL(path.join(site, 'astro.config.mjs')).href
+  )
+  return config
 }
 
 /**
@@ -84,9 +91,7 @@ export async function writeExamplesSiteDemoHeights(
 ) {
   const site = siteRoot(scriptUrl)
   const { examples } = await loadExamples(site)
-  const { default: config } = (await import(
-    pathToFileURL(path.join(site, 'astro.config.mjs')).href
-  )) as { default: { base: string } }
+  const config = await loadAstroConfig(site)
   const outFile = path.join(site, 'demoHeights.json')
 
   const heights = await measureDemoHeights({

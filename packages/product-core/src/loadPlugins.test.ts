@@ -1,8 +1,9 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
+import { isUMDPluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 import { loadRuntimePlugins } from './loadPlugins.ts'
 
-import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+import type { UMDLocPluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 // The three embedded products' `loadPlugins` are one-line wrappers over this,
 // and before they were they had drifted in two ways that nothing caught:
@@ -16,7 +17,7 @@ function captureLoad() {
     baseUri?: string,
   ) {
     calls.push({
-      names: this.definitions.map(d => (d as { name: string }).name),
+      names: this.definitions.filter(isUMDPluginDefinition).map(d => d.name),
       baseUri,
     })
     return []
@@ -24,10 +25,10 @@ function captureLoad() {
   return calls
 }
 
-const defs = [
-  { name: 'MafViewer', umdUrl: 'https://example.com/maf.js' },
-  { name: 'UCSC', umdUrl: 'https://example.com/ucsc.js' },
-] as PluginDefinition[]
+const defs: UMDLocPluginDefinition[] = [
+  { name: 'MafViewer', umdLoc: { uri: 'https://example.com/maf.js' } },
+  { name: 'UCSC', umdLoc: { uri: 'https://example.com/ucsc.js' } },
+]
 
 afterEach(() => {
   jest.restoreAllMocks()
