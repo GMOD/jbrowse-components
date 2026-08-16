@@ -1,9 +1,15 @@
 import { readFileSync } from 'node:fs'
 
+import { getLength, getLengthOnRef, parseCigar2 } from '@jbrowse/cigar-utils'
+
 import { paf_delta2paf } from './util.ts'
 
 const enc = (s: string) => new TextEncoder().encode(s)
 const HEAD = '/data/ref.fa /data/qry.fa\nNUCMER\n\n'
+
+/** Alignment columns, M+I+D — the length PAF's blockLen column counts. */
+const alignmentColumns = (cigar: string) =>
+  parseCigar2(cigar).reduce((a, op) => a + (op >> 4), 0)
 
 // Three sections of real nucmer output from the R64-vs-YJM1447 alignment the
 // yeast_synteny demo serves.
@@ -125,22 +131,10 @@ some trailing junk
     expect(records.length).toBeGreaterThan(50)
     expect(records.some(r => r.strand === -1)).toBe(true)
     for (const r of records) {
-      let m = 0
-      let i = 0
-      let d = 0
-      for (const op of r.extra.cg!.matchAll(/(\d+)([MID])/g)) {
-        const n = +op[1]!
-        if (op[2] === 'M') {
-          m += n
-        } else if (op[2] === 'I') {
-          i += n
-        } else {
-          d += n
-        }
-      }
-      expect(m + d).toBe(r.tend - r.tstart)
-      expect(m + i).toBe(r.qend - r.qstart)
-      expect(r.extra.blockLen).toBe(m + i + d)
+      const cg = r.extra.cg!
+      expect(getLengthOnRef(cg)).toBe(r.tend - r.tstart)
+      expect(getLength(cg)).toBe(r.qend - r.qstart)
+      expect(r.extra.blockLen).toBe(alignmentColumns(cg))
     }
   })
 

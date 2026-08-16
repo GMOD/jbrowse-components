@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 
+import { getLength, getLengthOnRef, parseCigar2 } from '@jbrowse/cigar-utils'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -44,6 +45,10 @@ const key = (r: {
 const chainRecords = paf_chain2paf(new Uint8Array(readFileSync(CHAIN)))
 const pafRecords = parsePafBuffer(new Uint8Array(readFileSync(PAF)))
 
+/** Alignment columns, M+I+D — the length PAF's blockLen column counts. */
+const alignmentColumns = (cigar: string) =>
+  parseCigar2(cigar).reduce((a, op) => a + (op >> 4), 0)
+
 test('the two files describe the same ten alignments', () => {
   expect(chainRecords).toHaveLength(10)
   expect(pafRecords).toHaveLength(10)
@@ -65,31 +70,14 @@ test('chain and PAF agree on every CIGAR, byte for byte', () => {
   }
 })
 
-function opCounts(cg: string) {
-  let m = 0
-  let i = 0
-  let d = 0
-  for (const op of cg.matchAll(/(\d+)([MID])/g)) {
-    const n = +op[1]!
-    if (op[2] === 'M') {
-      m += n
-    } else if (op[2] === 'I') {
-      i += n
-    } else {
-      d += n
-    }
-  }
-  return { m, i, d }
-}
-
 test("a CIGAR spans the record's own coordinates", () => {
   // The invariant that makes a synteny band and its sub-blocks agree. The delta
   // parser asserts it on the way in; nothing checked it here, and the demo
   // chain track ships 215 records that violate it by up to 20kb.
   for (const r of [...chainRecords, ...pafRecords]) {
-    const { m, i, d } = opCounts(r.extra.cg as string)
-    expect(m + d).toBe(r.tend - r.tstart)
-    expect(m + i).toBe(r.qend - r.qstart)
+    const cg = r.extra.cg as string
+    expect(getLengthOnRef(cg)).toBe(r.tend - r.tstart)
+    expect(getLength(cg)).toBe(r.qend - r.qstart)
   }
 })
 
@@ -101,8 +89,7 @@ test('a chain reports blockLen the way PAF defines it', () => {
   // Asserted on the chain side only: minimap2 writes its own column 11, and on
   // these ten records it sits within 0.06% of M+I+D rather than exactly on it.
   for (const r of chainRecords) {
-    const { m, i, d } = opCounts(r.extra.cg)
-    expect(r.extra.blockLen).toBe(m + i + d)
+    expect(r.extra.blockLen).toBe(alignmentColumns(r.extra.cg))
   }
 })
 
