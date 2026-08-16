@@ -50,16 +50,29 @@ const external = [
   'mobx-react-lite',
 ]
 
-// Two entry points, same behavior, different overlay sets. `DisplayChrome`
-// binds JBrowse's MUI components; `DisplayChromeBase` takes them as a prop and
-// imports no toolkit, so pairing it with the plain set is what an embedder who
-// writes their own display component actually ships.
+// Three entry points, and they answer three different questions.
+//
+// `mui` — what JBrowse's own status chrome costs. `DisplayChrome` binds the
+// Material components, and every stock display imports it.
+//
+// `plain` — what a display *written over the base* costs: `DisplayChromeBase`
+// takes the overlay set as a prop and imports no toolkit, so pairing it with the
+// plain set is the only path that keeps Material out of the bundle rather than
+// merely off the screen. It needs a display component of your own.
+//
+// `seam` — the whole of `@jbrowse/display-ui`, which is what an embedder adds
+// to their app to mount `DisplayUIProvider` over JBrowse's stock displays. The
+// honest figure for the common case, and the one the build-your-own landing page
+// quotes: those displays still carry `DisplayChrome`, so this is what asking for
+// the plain look *adds*, not what it saves.
+const displayUi = path.join(root, 'packages/display-ui/src/index.ts')
 const variants = {
   mui: `export { default } from ${JSON.stringify(path.join(chromeDir, 'DisplayChrome.tsx'))}`,
   plain: [
     `export { default as DisplayChromeBase } from ${JSON.stringify(path.join(chromeDir, 'DisplayChromeBase.tsx'))}`,
-    `export { default as plainChromeOverlays } from ${JSON.stringify(path.join(chromeDir, 'plainChromeOverlays.tsx'))}`,
+    `export { default as plainChromeOverlays } from ${JSON.stringify(displayUi.replace('index.ts', 'plainChromeOverlays.tsx'))}`,
   ].join('\n'),
+  seam: `export * from ${JSON.stringify(displayUi)}`,
 }
 
 async function measure(source: string) {
@@ -88,18 +101,22 @@ function kb(bytes: number) {
 const measured = {
   mui: await measure(variants.mui),
   plain: await measure(variants.plain),
+  seam: await measure(variants.seam),
 }
 
 const sizes = {
   // regenerate with `pnpm measure-chrome-bundle --update`; do not hand edit
   mui: measured.mui,
   plain: measured.plain,
+  seam: measured.seam,
   savedBytes: measured.mui.bytes - measured.plain.bytes,
   savedGzipBytes: measured.mui.gzipBytes - measured.plain.gzipBytes,
   muiKb: kb(measured.mui.bytes),
   plainKb: kb(measured.plain.bytes),
+  seamKb: kb(measured.seam.bytes),
   muiGzipKb: kb(measured.mui.gzipBytes),
   plainGzipKb: kb(measured.plain.gzipBytes),
+  seamGzipKb: kb(measured.seam.gzipBytes),
 }
 
 const args = new Set(process.argv.slice(2))
@@ -109,6 +126,7 @@ const summary = [
   `stock chrome (MUI overlays):  ${sizes.muiKb} KB  (${sizes.muiGzipKb} KB gzip)`,
   `base + plain overlays:        ${sizes.plainKb} KB  (${sizes.plainGzipKb} KB gzip)`,
   `saved:                        ${kb(sizes.savedBytes)} KB  (${kb(sizes.savedGzipBytes)} KB gzip)`,
+  `@jbrowse/display-ui, whole:   ${sizes.seamKb} KB  (${sizes.seamGzipKb} KB gzip)`,
 ].join('\n')
 
 if (args.has('--check')) {
@@ -118,7 +136,14 @@ if (args.has('--check')) {
   // a permanent nuisance. What must not drift is the claim the docs make, so
   // this gates on the rounded KB the prose actually shows.
   const drifted = (
-    ['muiKb', 'plainKb', 'muiGzipKb', 'plainGzipKb'] as const
+    [
+      'muiKb',
+      'plainKb',
+      'seamKb',
+      'muiGzipKb',
+      'plainGzipKb',
+      'seamGzipKb',
+    ] as const
   ).filter(k => sizes[k] !== prev[k])
   if (drifted.length) {
     console.error(
