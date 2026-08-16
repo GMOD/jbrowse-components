@@ -44,9 +44,11 @@ afterEach(() => {
 // openVolvoxGenome). Testing the handler directly is what lets that run take the
 // 2bit route without giving up on covering this one.
 test('indexFasta writes a .fai matching the one shipped beside the FASTA', async () => {
-  const faiPath = await invoke('indexFasta', {
-    localPath: path.join(VOLVOX, 'volvox.fa'),
-  })
+  const faiPath = await invoke(
+    'indexFasta',
+    { localPath: path.join(VOLVOX, 'volvox.fa') },
+    'job1',
+  )
 
   expect(faiPath.startsWith(paths.faiDir)).toBe(true)
   // byte-identical to samtools faidx's own output, which is what is committed
@@ -59,12 +61,16 @@ test('indexFasta writes a .fai matching the one shipped beside the FASTA', async
 // collide with the index already on disk. (Nothing prunes them, which is why
 // `reset` clears faiDir.)
 test('indexing the same FASTA twice writes two files, not one', async () => {
-  const first = await invoke('indexFasta', {
-    localPath: path.join(VOLVOX, 'volvox.fa'),
-  })
-  const second = await invoke('indexFasta', {
-    localPath: path.join(VOLVOX, 'volvox.fa'),
-  })
+  const first = await invoke(
+    'indexFasta',
+    { localPath: path.join(VOLVOX, 'volvox.fa') },
+    'job1',
+  )
+  const second = await invoke(
+    'indexFasta',
+    { localPath: path.join(VOLVOX, 'volvox.fa') },
+    'job2',
+  )
 
   expect(first).not.toEqual(second)
   expect(fs.readdirSync(paths.faiDir)).toHaveLength(2)
@@ -78,8 +84,40 @@ test('a FASTA that cannot be indexed leaves no partial .fai behind', async () =>
   // ragged line widths: legal FASTA, but not indexable
   fs.writeFileSync(bogus, '>seq\nACGTACGTAC\nACGT\nACGTACGTAC\n')
 
-  await expect(invoke('indexFasta', { localPath: bogus })).rejects.toThrow()
+  await expect(
+    invoke('indexFasta', { localPath: bogus }, 'job1'),
+  ).rejects.toThrow()
   expect(fs.readdirSync(paths.faiDir)).toEqual([])
+})
+
+// A cancelled read ends its stream cleanly, so generateFastaIndex resolves over
+// a truncated FASTA and the .fai it wrote reads as a whole one — the worst
+// outcome available, since the next open would trust it. Rejecting routes it to
+// the same cleanup a rejected index gets.
+test('a cancelled index rejects and leaves no .fai behind', async () => {
+  const pending = invoke(
+    'indexFasta',
+    { localPath: path.join(VOLVOX, 'volvox.fa') },
+    'job1',
+  )
+  invoke('cancelIndexFasta', 'job1')
+
+  await expect(pending).rejects.toThrow(/cancel/i)
+  expect(fs.readdirSync(paths.faiDir)).toEqual([])
+})
+
+// The dialog cancels whenever it closes, which is normally long after the index
+// finished — and the id is reused by nothing, so this has to be inert rather
+// than reach whatever ran next.
+test('cancelling a job that already finished does nothing', async () => {
+  await invoke(
+    'indexFasta',
+    { localPath: path.join(VOLVOX, 'volvox.fa') },
+    'job1',
+  )
+
+  expect(() => invoke('cancelIndexFasta', 'job1')).not.toThrow()
+  expect(fs.readdirSync(paths.faiDir)).toHaveLength(1)
 })
 
 // The index name is built from the FASTA's own basename, which is whatever the
@@ -120,7 +158,7 @@ test('a FASTA whose name needs escaping still indexes', async () => {
   const odd = path.join(dir, 'my genome (v2).fa')
   fs.copyFileSync(path.join(VOLVOX, 'volvox.fa'), odd)
 
-  const faiPath = await invoke('indexFasta', { localPath: odd })
+  const faiPath = await invoke('indexFasta', { localPath: odd }, 'job1')
 
   expect(path.dirname(faiPath)).toEqual(paths.faiDir)
   expect(fs.readFileSync(faiPath, 'utf8')).toEqual(

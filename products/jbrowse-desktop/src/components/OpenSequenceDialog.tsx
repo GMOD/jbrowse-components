@@ -14,14 +14,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { invokeIpc } from '../ipc.ts'
 import StagedAssemblies from './StagedAssemblies.tsx'
+import { useFastaIndexer } from './useFastaIndexer.ts'
 
-import type {
-  AssemblyAdapter,
-  AssemblyConf,
-} from '@jbrowse/core/util/assemblyConfigUtils'
-import type { FileLocation } from '@jbrowse/core/util/types'
+import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
 
 const useStyles = makeStyles()(theme => ({
   message: {
@@ -42,36 +38,14 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [form, setForm] = useState(initialFormState)
   const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
-  const [loading, setLoading] = useState('')
+  const {
+    status: loading,
+    indexFasta,
+    cancel: cancelIndexing,
+  } = useFastaIndexer()
 
   const formReady = isFormReady(form)
   const totalToOpen = assemblyConfs.length + (formReady ? 1 : 0)
-
-  async function indexFasta(
-    fastaLocation: FileLocation,
-  ): Promise<AssemblyAdapter> {
-    // Narrowing, not a case that happens: core hands desktop a localPath (a
-    // uri if the user typed a url) because both producers branch on isElectron
-    // — LocalFileChooser's picker and fileToLocation's drag-and-drop — so the
-    // blob and file-handle members of FileLocation are unreachable here. The
-    // union still includes them and the main process can index neither, so say
-    // so out loud rather than send it a location it would read as `undefined`.
-    if (!('localPath' in fastaLocation) && !('uri' in fastaLocation)) {
-      throw new Error(
-        `Cannot index a FASTA at this location type: ${fastaLocation.locationType}`,
-      )
-    }
-    setLoading('Creating .fai file for FASTA')
-    const faiPath = await invokeIpc('indexFasta', fastaLocation)
-    return {
-      type: 'IndexedFastaAdapter',
-      fastaLocation,
-      faiLocation: {
-        localPath: faiPath,
-        locationType: 'LocalPathLocation',
-      },
-    }
-  }
 
   // Both name checks happen before buildAssemblyConf, which on a plain FASTA
   // runs faidx over the whole file — a name that was never going to be accepted
@@ -89,7 +63,10 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         `An assembly named "${name}" is already open. Give this one a different name.`,
       )
     }
-    return [...assemblyConfs, await buildAssemblyConf(form, indexFasta)]
+    const conf = await buildAssemblyConf(form, fastaLocation =>
+      indexFasta(name, fastaLocation),
+    )
+    return [...assemblyConfs, conf]
   }
 
   async function runStaging(action: () => Promise<void>) {
@@ -99,8 +76,6 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     } catch (e) {
       setError(e)
       console.error(e)
-    } finally {
-      setLoading('')
     }
   }
 
@@ -129,12 +104,14 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     })
   }
 
+  // Cancel stays live while a FASTA is being indexed, and stops that read
+  // rather than closing the window over it. A dialog that cannot be dismissed
+  // for the minutes a large or remote FASTA takes is the worse of the two.
   function handleCancel() {
-    if (!loading) {
-      onClose().catch((e: unknown) => {
-        setError(e)
-      })
-    }
+    cancelIndexing()
+    onClose().catch((e: unknown) => {
+      setError(e)
+    })
   }
 
   return (
@@ -185,7 +162,6 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             handleCancel()
           }}
           color="secondary"
-          disabled={!!loading}
         >
           Cancel
         </Button>

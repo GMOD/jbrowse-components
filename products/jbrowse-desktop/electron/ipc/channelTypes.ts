@@ -100,10 +100,16 @@ export interface AuthWindowParams {
 export interface IpcChannels {
   quit: { args: []; return: void }
   userData: { args: []; return: string }
+  // A FASTA with no .fai is read end to end, and a remote one is downloaded in
+  // full first, so this is the one handler that can hold a dialog for minutes.
+  // `jobId` is the caller's handle on that run: cancelIndexFasta takes the same
+  // one, so a dialog the user dismissed mid-index stops the read rather than
+  // leaving it going with nothing waiting on it.
   indexFasta: {
-    args: [location: { uri: string } | { localPath: string }]
+    args: [location: { uri: string } | { localPath: string }, jobId: string]
     return: string
   }
+  cancelIndexFasta: { args: [jobId: string]; return: void }
   promptOpenFile: { args: []; return: string | undefined }
   promptOpenLocalFile: {
     args: [defaultDir?: string]

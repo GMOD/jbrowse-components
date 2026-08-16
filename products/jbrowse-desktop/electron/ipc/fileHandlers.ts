@@ -5,6 +5,7 @@ import { Writable } from 'node:stream'
 import { generateFastaIndex } from '@gmod/faidx'
 import { app, dialog } from 'electron'
 
+import { runAbortableJob } from '../abortableJob.ts'
 import { getFileStream } from '../fileStream.ts'
 import { SESSION_EXTENSION, getFaiPath, hasSessionExtension } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
@@ -36,25 +37,45 @@ export function registerFileHandlers(paths: AppPaths) {
     return paths.userData
   })
 
-  ipcHandle('indexFasta', async (_, location) => {
-    const filename = 'localPath' in location ? location.localPath : location.uri
-    // getFaiPath appends the .fai extension
-    const faiPath = getFaiPath(
-      paths,
-      `${path.basename(filename)}-${Date.now()}`,
-    )
-    const stream = await getFileStream(location)
-    const write = Writable.toWeb(fs.createWriteStream(faiPath))
+  // in-flight indexFasta runs, by the jobId their caller passed. Scoped to this
+  // registration rather than the module so a second app window gets its own.
+  const indexJobs = new Map<string, AbortController>()
 
-    try {
-      await generateFastaIndex(write, stream)
-    } catch (e) {
-      // a rejected index (e.g. ragged line widths) has already written part of
-      // the .fai; leaving it would litter faiDir with files that look valid
-      await fs.promises.rm(faiPath, { force: true })
-      throw e
-    }
-    return faiPath
+  ipcHandle('indexFasta', (_, location, jobId) =>
+    runAbortableJob(indexJobs, jobId, async signal => {
+      const filename =
+        'localPath' in location ? location.localPath : location.uri
+      // getFaiPath appends the .fai extension
+      const faiPath = getFaiPath(
+        paths,
+        `${path.basename(filename)}-${Date.now()}`,
+      )
+      try {
+        const stream = await getFileStream(location, signal)
+        signal.addEventListener('abort', () => {
+          void stream.cancel()
+        })
+        const write = Writable.toWeb(fs.createWriteStream(faiPath))
+        await generateFastaIndex(write, stream)
+        // a cancelled stream ends cleanly, so generateFastaIndex resolves over
+        // a truncated FASTA and the .fai it wrote reads as a whole one.
+        // Throwing sends it to the same cleanup a rejected index gets.
+        if (signal.aborted) {
+          throw new Error('FASTA indexing cancelled')
+        }
+      } catch (e) {
+        // a rejected index (e.g. ragged line widths) has already written part
+        // of the .fai; leaving it would litter faiDir with files that look
+        // valid
+        await fs.promises.rm(faiPath, { force: true })
+        throw e
+      }
+      return faiPath
+    }),
+  )
+
+  ipcHandle('cancelIndexFasta', (_, jobId) => {
+    indexJobs.get(jobId)?.abort()
   })
 
   ipcHandle('promptOpenFile', async () => {

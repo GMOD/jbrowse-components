@@ -109,6 +109,34 @@ test('an error clears as soon as the form is edited again', async () => {
   expect(screen.queryByText(/already open/)).not.toBeInTheDocument()
 })
 
+// The index reads the whole FASTA, and downloads a remote one in full first, so
+// this is the step that can hold the dialog for minutes. Cancel has to reach the
+// run rather than close the window over a download nothing is waiting for.
+test('cancelling mid-index stops the index, not just the dialog', async () => {
+  // the index never settles: what this test is about is the dialog while one is
+  // still running
+  mockInvokeIpc.mockImplementation((...args) =>
+    args[0] === 'indexFasta'
+      ? new Promise<never>(() => {})
+      : Promise.resolve(undefined),
+  )
+  const { user, onClose } = setup()
+  await enterUrls(user, 'https://example.com/hg38.fa')
+  await user.click(submit())
+
+  expect(
+    await screen.findByText(/Reading hg38 to build its .fai/),
+  ).toBeInTheDocument()
+  const cancel = screen.getByRole('button', { name: 'Cancel' })
+  expect(cancel).toBeEnabled()
+  await user.click(cancel)
+
+  const [channel, jobId] = mockInvokeIpc.mock.calls.at(-1)!
+  expect(channel).toBe('cancelIndexFasta')
+  expect(jobId).toBe(mockInvokeIpc.mock.calls[0]![2])
+  expect(onClose).toHaveBeenCalledWith()
+})
+
 test('both staged genomes are handed over together', async () => {
   const { user, onClose } = setup()
   await enterUrls(user, 'https://example.com/hg38.2bit')
