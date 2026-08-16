@@ -533,7 +533,14 @@ function stateModelFactory(pluginManager: PluginManager) {
        * creating one here would append a level whose views[level+1] is absent,
        * which renders nothing and silently breaks the views/levels invariant.
        */
-      showTrack(trackId: string, level = 0, initialSnapshot = {}) {
+      showTrack(
+        trackId: string,
+        level = 0,
+        // annotated rather than inferred: a bare `{}` accepts a number, which is
+        // what let the dotplot's two-argument twin pass an
+        // `applySyntenyTrackSelections` level off as a track snapshot
+        initialSnapshot: Record<string, unknown> = {},
+      ) {
         self.levels[level]?.showTrack(trackId, initialSnapshot)
       },
 

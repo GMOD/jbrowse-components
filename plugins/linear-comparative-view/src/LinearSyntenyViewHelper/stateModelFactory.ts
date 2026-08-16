@@ -88,7 +88,12 @@ export function linearSyntenyViewHelperModelFactory(
       /**
        * #action
        */
-      showTrack(trackId: string, initialSnapshot = {}) {
+      // annotated, not inferred: see LinearComparativeView.showTrack, which
+      // delegates here
+      showTrack(
+        trackId: string,
+        initialSnapshot: Record<string, unknown> = {},
+      ) {
         return showTrackGeneric(self, trackId, initialSnapshot)
       },
       /**

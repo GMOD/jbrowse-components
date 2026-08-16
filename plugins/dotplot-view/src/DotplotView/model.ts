@@ -1233,8 +1233,16 @@ export default function stateModelFactory(pm: PluginManager) {
 
         /**
          * #action
+         * `initialSnapshot` is annotated rather than inferred from its default.
+         * A bare `{}` accepts a number, so this signature satisfied
+         * `applySyntenyTrackSelections`' `(trackId, level) => void` callback —
+         * passing `model.showTrack` there typechecked and handed the pair index
+         * over as the new track's snapshot.
          */
-        showTrack(trackId: string, initialSnapshot = {}) {
+        showTrack(
+          trackId: string,
+          initialSnapshot: Record<string, unknown> = {},
+        ) {
           return showTrackGeneric(self, trackId, initialSnapshot)
         },
 

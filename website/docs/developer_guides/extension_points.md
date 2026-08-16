@@ -1421,9 +1421,22 @@ export interface LinearSyntenyImportFormSyntenyOption {
 }
 ```
 
-Register it the same way as `DotplotView-ImportFormSyntenyOptions` above, with
-`contributeToExtensionPoint` returning your `{ value, label, ReactComponent }`
-option.
+Example: the same server option, told which row pair it is rendering for
+
+<!-- include: plugins/linear-comparative-view/src/LinearSyntenyView/components/ImportForm/syntenyOptions.test.tsx#register -->
+
+```typescript
+function addSyntenyOption(pluginManager: PluginManager) {
+  pluginManager.contributeToExtensionPoint(
+    'LinearSyntenyView-ImportFormSyntenyOptions',
+    ({ assembly1, assembly2, selectedRow }) => ({
+      value: `my-server-${assembly1}-${assembly2}`,
+      label: `Load rows ${selectedRow + 1} and ${selectedRow + 2} from my server`,
+      ReactComponent: MySyntenyServerComponent,
+    }),
+  )
+}
+```
 
 ### Desktop-StartScreenMenuItems
 
