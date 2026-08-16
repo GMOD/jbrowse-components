@@ -136,7 +136,10 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         stopToken,
         statusCallback,
       })
-      featureCache.current = res.features
+      // an adapter-exported format hands back no features, and that is not a
+      // reason to drop the ones an earlier format read: `regions` is captured
+      // for the dialog's lifetime, so they still describe this export
+      featureCache.current = res.features ?? featureCache.current
       return res
     },
   )

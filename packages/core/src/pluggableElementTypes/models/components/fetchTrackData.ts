@@ -89,11 +89,13 @@ export async function fetchTrackData({
     }
   }
 
-  // handed-back features are only reusable on a track whose adapter exports
-  // nothing: where it exports some formats and not others, the next format may
-  // be one it does write, and the raw lines beat a reconstruction
+  // Reaching here means no raw lines for this format, whatever the adapter
+  // declares — the attempt above is unconditional, so "the next format may be
+  // one it does write" is already answered and cannot be a reason to re-read.
+  // The features are the same features either way: CoreGetFeatures takes no
+  // format, so what a declined format read is what the next declined one wants.
   const feats =
-    (supportsExport ? undefined : features) ??
+    features ??
     (await session.rpcManager.call(sessionId, 'CoreGetFeatures', {
       adapterConfig,
       regions,
