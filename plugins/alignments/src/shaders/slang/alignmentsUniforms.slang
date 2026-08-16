@@ -714,8 +714,17 @@ public float3 hueRampHalfSat(float hueDeg) {
 // coverage bars, the SNP segments and the modification segments. Both backends
 // measure every coverage mark from these, so disagreeing shifts the whole band
 // rather than one glyph — visible only against the other backend.
+//
+// Floored at 0 here, at the declaration, because a band shorter than its two
+// insets otherwise INVERTS rather than degrades: every mark in the band is
+// `baseline - fraction * effectiveH`, so a negative height grows the depth
+// bars, the SNP segments stacked in them and the interbase bars DOWNWARD from a
+// baseline sitting near the band's top edge. `coverageHeight` reaches here
+// unclamped — the resize handles floor at 20 but a config slot declaring less
+// is left where it is (bandHeight.test.ts) — and 2 * covYOffset is 10, so any
+// band under 10px drew upside down on both backends.
 public float covEffectiveHeightPx(float covHeight, float covYOffset) {
-  return covHeight - 2.0 * covYOffset;
+  return max(covHeight - 2.0 * covYOffset, 0.0);
 }
 
 // Distance from the coverage area's top edge down to the bars' baseline.

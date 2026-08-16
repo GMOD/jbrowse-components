@@ -28,12 +28,28 @@ function retiredCoverageLayout(coverageHeight: number) {
 }
 
 // 0 and a height under the inset are degenerate but reachable — a collapsed
-// coverage strip during a resize drag — and both sides must agree there too.
+// coverage strip during a resize drag, or a config slot declaring a small
+// `coverageHeight` (bandHeight.test.ts) — and both sides must agree there too.
 const HEIGHTS = [0, 1, 5, 10, 11, 50, 100, 337]
+const DRAWABLE = HEIGHTS.filter(h => h >= 2 * YSCALEBAR_LABEL_OFFSET)
 
 test('the generated band layout reproduces the hand-written twin it replaced', () => {
-  for (const h of HEIGHTS) {
+  for (const h of DRAWABLE) {
     expect(coverageLayout(h)).toEqual(retiredCoverageLayout(h))
+  }
+})
+
+// The one place the generated layout deliberately leaves the twin behind. Every
+// coverage mark is `bottom - fraction * effectiveH`, so a band shorter than its
+// two insets INVERTS rather than degrades: the depth bars, the SNP segments
+// stacked in them and the interbase bars all grow DOWNWARD from a baseline near
+// the band's top edge. The floor lives in alignmentsUniforms.slang, at the
+// declaration, so both backends and the axis inherit it — a sub-inset band
+// draws nothing instead of upside down.
+test('a band shorter than its two insets draws nothing rather than inverting', () => {
+  for (const h of HEIGHTS.filter(h => h < 2 * YSCALEBAR_LABEL_OFFSET)) {
+    expect(retiredCoverageLayout(h).effectiveH).toBeLessThan(0)
+    expect(coverageLayout(h).effectiveH).toBe(0)
   }
 })
 
@@ -55,7 +71,7 @@ test('the baseline sits inside the band, and the bars fit between the insets', (
 // bars are drawn in. `computeCoverageTicks` open-coded that box, so the two
 // agreed by transcription rather than by construction.
 test('the coverage axis places itself in the band the bars are drawn in', () => {
-  for (const h of HEIGHTS.filter(x => x > 2 * YSCALEBAR_LABEL_OFFSET)) {
+  for (const h of DRAWABLE.filter(x => x > 2 * YSCALEBAR_LABEL_OFFSET)) {
     const { effectiveH, bottom } = coverageLayout(h)
     const ticks = computeCoverageTicks([0, 100], h)
     expect(ticks.yBottom).toBe(bottom)

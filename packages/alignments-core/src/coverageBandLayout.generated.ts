@@ -4,10 +4,14 @@
 // Scalar twins of coverage.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _max(a: number, b: number) {
+  return a > b ? a : b
+}
+
 export function covBottomOffsetPx(covHeight: number, covYOffset: number): number {
   return (covHeight - covYOffset)
 }
 
 export function covEffectiveHeightPx(covHeight: number, covYOffset: number): number {
-  return (covHeight - (2.0 * covYOffset))
+  return _max((covHeight - (2.0 * covYOffset)), 0.0)
 }
