@@ -119,9 +119,10 @@ const DotplotImportForm = observer(function DotplotImportForm({
     }),
   )
 
-  // a dotplot is one pair however many assemblies the track names
+  // the two axes are the dotplot's rows, so this is the one-pair case however
+  // many assemblies the track names
   function applyQuickSelection() {
-    applyQuickStartSelections(model, quick.trackId, 1)
+    applyQuickStartSelections(model, quick.trackId, [quickX, quickY])
   }
 
   // the model owns the error: doSubmit clears it on the way in, so a re-submit

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { allSessionTracks } from '@jbrowse/core/util/tracks'
 
 import { pickSyntenyTrackId } from './getSyntenyTracks.ts'
+import { syntenyPairs } from './syntenyPairs.ts'
 import {
   quickStartSyntenyTracks,
   syntenyTrackRows,
@@ -94,17 +95,17 @@ export function useQuickStartState(
  * a pairwise track has one pair, an all-vs-all track one per adjacent row, and a
  * dotplot one however many assemblies the track names.
  *
- * `pairCount` rather than a row list, since the two forms count differently. The
- * clear is what makes it one rule rather than two: this replaces whatever Manual
- * had configured, and a per-form copy is free to forget that.
+ * The clear is what makes it one rule rather than two: this replaces whatever
+ * Manual had configured, and a per-form copy is free to forget that.
  */
 export function applyQuickStartSelections(
   model: ImportFormSyntenyModel,
   trackId: string,
-  pairCount: number,
+  /** the rows the form is about to open; a dotplot's are its two axes */
+  rows: string[],
 ) {
   model.clearImportFormSyntenyTracks()
-  for (let idx = 0; idx < pairCount; idx++) {
+  for (const [idx] of syntenyPairs(rows).entries()) {
     model.setImportFormSyntenyTrack(idx, {
       type: 'preConfigured',
       value: trackId,

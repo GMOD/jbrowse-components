@@ -99,7 +99,7 @@ const LinearSyntenyViewImportForm = observer(
 
     // one band between each pair of adjacent rows
     function applyQuickSelections() {
-      applyQuickStartSelections(model, quick.trackId, quick.rows.length - 1)
+      applyQuickStartSelections(model, quick.trackId, quick.rows)
     }
 
     // the model owns the error: setViews clears it, so a re-submit after a bad
