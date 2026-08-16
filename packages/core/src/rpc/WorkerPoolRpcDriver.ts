@@ -111,6 +111,16 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
 
   private workerPool?: LazyWorker[]
 
+  // `Core-extendWorker` answers "what is this worker", not "what is this call",
+  // and it is handed no props to tell one call from the next. Firing it per
+  // dispatch built a plugin's wrapper afresh for every RPC — so a wrapper
+  // holding per-worker state (a pending-call table, a registered method map)
+  // was thrown away before its second use, and a callback that extends by
+  // mutating the handle re-ran its registration on every call. Memoized on the
+  // handle instead, so the fold runs once per booted worker; a slot that
+  // re-boots hands back a new handle and extends that one.
+  private extendedWorkers = new WeakMap<WorkerHandle, WorkerHandle>()
+
   // a stopped token has to reach the thread actually running the work, and this
   // is the seam that carries it. Broadcast rather than routed per call: one
   // token is commonly in flight on several calls at once, and a worker holding
@@ -181,11 +191,15 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
     statusCallback: StatusCallback | undefined,
   ) {
     const unextendedWorker = await this.getWorker(sessionId)
-    const worker = pluginManager.evaluateExtensionPoint(
-      /** #extensionPoint Core-extendWorker | sync | Register extra RPC methods on the web worker */
-      'Core-extendWorker',
-      unextendedWorker,
-    )
+    let worker = this.extendedWorkers.get(unextendedWorker)
+    if (!worker) {
+      worker = pluginManager.evaluateExtensionPoint(
+        /** #extensionPoint Core-extendWorker | sync | Register extra RPC methods on the web worker. Fired once per booted worker, not per call */
+        'Core-extendWorker',
+        unextendedWorker,
+      )
+      this.extendedWorkers.set(unextendedWorker, worker)
+    }
     return worker.call(rpcMethod.name, serializedArgs, { statusCallback })
   }
 }

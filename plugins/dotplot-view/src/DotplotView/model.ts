@@ -71,7 +71,7 @@ import type {
   ComparativeTrackModel,
   LodMode,
 } from '@jbrowse/synteny-core'
-import type { ComponentType, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import type React from 'react'
 
 // lazies
@@ -1568,21 +1568,29 @@ export interface DotplotViewModel extends Instance<DotplotViewStateModel> {}
 export { Dotplot1DView, type Dotplot1DViewModel } from './1dview.ts'
 
 declare module '@jbrowse/core/PluginManager' {
+  // Both overlay points accumulate, so the highlight bands this plugin draws
+  // and a third party's overlay both appear. The HTML one used to be a single
+  // component, which meant the slot was already taken: installDotplotHighlights
+  // returns its chip overlay unconditionally, so a second contributor either
+  // lost its own overlay or erased the chips, depending on install order.
+  //
+  // Both render through PluggableElements' `name` prop, so neither has a
+  // string-literal fire site for its docs tag to sit at; they live here at the
+  // contract, the same way Core-replaceWidget's does.
   interface ExtensionPointRegistry {
+    /** #extensionPoint DotplotView-OverlaySVGComponent | sync | Add an SVG overlay component to the dotplot view */
     'DotplotView-OverlaySVGComponent': {
       args: ReactNode[]
       result: ReactNode[]
       props: { model: DotplotViewModel }
     }
+    /** #extensionPoint DotplotView-OverlayHTMLComponent | sync | Add an HTML overlay component to the dotplot view */
     'DotplotView-OverlayHTMLComponent': {
-      args: ComponentType<{ model: DotplotViewModel }>
-      result: ComponentType<{ model: DotplotViewModel }>
+      args: ReactNode[]
+      result: ReactNode[]
       props: { model: DotplotViewModel }
     }
   }
-}
-
-declare module '@jbrowse/core/PluginManager' {
   interface ViewTypeRegistry {
     DotplotView: DotplotViewStateModel
   }

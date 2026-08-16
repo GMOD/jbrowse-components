@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { PluggableComponent } from '@jbrowse/core/ui'
+import { PluggableElements } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -19,10 +19,6 @@ const useStyles = makeStyles()({
   },
 })
 
-function NoHTMLOverlay(_props: { model: DotplotViewModel }) {
-  return null
-}
-
 const MouseInteractionLayer = observer(function MouseInteractionLayer({
   model,
   interaction,
@@ -33,12 +29,6 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
   const { validSelect, anchor, pointer, dx, dy } = interaction
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
-  const svgOverlays = pluginManager.evaluateExtensionPoint(
-    /** #extensionPoint DotplotView-OverlaySVGComponent | sync | Add an SVG overlay component to the dotplot view */
-    'DotplotView-OverlaySVGComponent',
-    [],
-    { model },
-  )
   return (
     <>
       {/* grid then overlays, the same order the SVG export's plot group uses
@@ -47,7 +37,11 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
           selection the user is still dragging out. */}
       <svg width={model.viewWidth} height={model.viewHeight}>
         <DotplotGrid model={model} />
-        {svgOverlays}
+        <PluggableElements
+          pluginManager={pluginManager}
+          name="DotplotView-OverlaySVGComponent"
+          props={{ model }}
+        />
         {validSelect && anchor && pointer ? (
           <rect
             fill="rgba(255,0,0,0.3)"
@@ -60,10 +54,9 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
       </svg>
       <div className={classes.htmlOverlay}>
         <Suspense fallback={null}>
-          <PluggableComponent
+          <PluggableElements
             pluginManager={pluginManager}
             name="DotplotView-OverlayHTMLComponent"
-            component={NoHTMLOverlay}
             props={{ model }}
           />
         </Suspense>

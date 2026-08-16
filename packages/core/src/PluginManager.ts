@@ -305,12 +305,6 @@ export type ExtensionPointProps<N extends ExtensionPointName> =
     : Record<string, unknown>
 
 /**
- * Points whose `args` are an array accumulate: the value threaded through the
- * fold is every plugin's entries so far. They are registered with
- * {@link PluginManager.contributeToExtensionPoint}, never
- * {@link PluginManager.addToExtensionPoint} — see the entry type below for why.
- */
-/**
  * Points that carry their whole payload in `props` and whose return value
  * nothing reads — a notification rather than a fold. Registered with
  * {@link PluginManager.observeExtensionPoint}.
@@ -319,6 +313,12 @@ export type NotificationPointName = {
   [N in ExtensionPointName]: ExtensionPointArgs<N> extends undefined ? N : never
 }[ExtensionPointName]
 
+/**
+ * Points whose `args` are an array accumulate: the value threaded through the
+ * fold is every plugin's entries so far. They are registered with
+ * {@link PluginManager.contributeToExtensionPoint}, never
+ * {@link PluginManager.addToExtensionPoint} — see the entry type below for why.
+ */
 export type AccumulatingPointName = {
   [N in ExtensionPointName]: ExtensionPointArgs<N> extends readonly unknown[]
     ? N
@@ -1059,6 +1059,20 @@ export default class PluginManager {
     extensionPointName: string,
     callback: ExtensionPointCallback,
   ) {
+    // `Core-extendPluggableElement` fires once per element, inside
+    // createPluggableElements(). Registering after that run joins a fold that
+    // has already happened, so the extension never applies — the same mistake
+    // `addElementType` throws on, and the reason it throws: from `configure()`
+    // instead of `install()`, an extendViewType call compiles, runs, and
+    // silently extends nothing.
+    if (
+      extensionPointName === 'Core-extendPluggableElement' &&
+      this.pluggableElementsCreated
+    ) {
+      throw new Error(
+        "Cannot register on Core-extendPluggableElement after createPluggableElements() has been called: the point has already fired for every element, so this callback would never run. Register it from a plugin's install(), not configure().",
+      )
+    }
     let callbacks = this.extensionPoints.get(extensionPointName)
     if (!callbacks) {
       callbacks = []

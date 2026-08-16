@@ -10,25 +10,32 @@ import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { ReactNode } from 'react'
 
 declare module '@jbrowse/core/PluginManager' {
+  // The two container points render through PluggableElements' `name` prop, so
+  // there is no string-literal fire site for their docs tags to sit at; they
+  // live here at the contract, the same way Core-replaceWidget's does.
   interface ExtensionPointRegistry {
     // #region tracksContainer
+    /** #extensionPoint LinearGenomeView-TracksContainerComponent | sync | Add a component into the LGV tracks container */
     'LinearGenomeView-TracksContainerComponent': {
       args: ReactNode[]
       result: ReactNode[]
       props: { model: LinearGenomeViewModel }
     }
     // #endregion
+    /** #extensionPoint LinearGenomeView-ScalebarHighlightComponent | sync | Add a highlight component to the scalebar */
     'LinearGenomeView-ScalebarHighlightComponent': {
       args: ReactNode[]
       result: ReactNode[]
       props: { model: LinearGenomeViewModel }
     }
+    /** #extensionPoint LinearGenomeView-HighlightSVGComponent | sync | Add an SVG highlight overlay in the LGV SVG export */
     'LinearGenomeView-HighlightSVGComponent': {
       args: ReactNode[]
       result: ReactNode[]
       props: { model: LinearGenomeViewModel; height: number }
     }
     // #region overviewScalebar
+    /** #extensionPoint LinearGenomeView-OverviewScalebarComponent | sync | Add a component to the overview scalebar */
     'LinearGenomeView-OverviewScalebarComponent': {
       args: ReactNode[]
       result: ReactNode[]

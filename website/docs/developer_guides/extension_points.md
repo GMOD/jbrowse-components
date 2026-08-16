@@ -115,6 +115,11 @@ pluginManager.contributeToExtensionPoint(extensionPointName, props => {
 pluginManager.observeExtensionPoint(extensionPointName, props => {
   react(props) // returns nothing; an async callback's promise reaches the producer
 })
+
+// a producer whose point resolves to UI fires it as JSX instead. One component
+// per shape — see "Firing a point that renders" below
+<PluggableComponent name={extensionPointName} component={Default} props={props} pluginManager={pluginManager} />
+<PluggableElements name={extensionPointName} props={props} pluginManager={pluginManager} />
 ```
 
 Only `addToExtensionPoint` threads a value: each callback's return value becomes
@@ -131,7 +136,7 @@ user rather than as an empty session. Producers of accumulating points want the
 plain runner, where one plugin failing does not cost the others their entries.
 
 These are the only signatures on this page that are not generated from source —
-they name placeholder arguments so the five read side by side, which the real
+they name placeholder arguments so the seven read side by side, which the real
 generic signatures do not.
 
 ## Registering on a point
@@ -212,6 +217,23 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 }
 ```
 
+### Firing a point that renders
+
+A producer whose point resolves to UI fires it as JSX from `@jbrowse/core/ui`,
+rather than calling `evaluateExtensionPoint` and rendering the result. One
+component per shape, both shown in the API block above: `PluggableComponent` for
+a `single` point, where `component` is the default the slot resolves to when no
+plugin claims it, and `PluggableElements` for a `list` point, which renders
+every contribution in registration order.
+
+Both are observers, so a contributor that scopes itself on an observable is
+re-evaluated when that observable changes. `PluggableElements` accepts only the
+points whose `args` are `ReactNode[]`, so pointing it at a slot point is a
+compile error rather than a component that renders nothing.
+
+A point fired this way has no string-literal call site, so its `#extensionPoint`
+docs tag goes on its `ExtensionPointRegistry` entry instead.
+
 ### Notification points
 
 A point declaring `args: undefined` carries its whole payload in `props` and
@@ -259,8 +281,10 @@ plugin's contribution survives; register with `contributeToExtensionPoint`. A
 register with `observeExtensionPoint`. A `single` point threads one value along,
 so each callback overwrites what the one before it returned and only the last
 plugin to register is visible; register with `addToExtensionPoint`. The names
-don't carry this: `DotplotView-OverlaySVGComponent` accumulates and
-`DotplotView-OverlayHTMLComponent` does not.
+don't carry this: `Desktop-StartScreenMenuItems` accumulates and
+`Desktop-StartScreenLaunchPanel` does not. Check the Shape column before
+registering — a `single` point is a slot, and taking it hides whatever the
+plugin before you put there.
 
 <!-- EXTENSION_POINTS_INDEX START -->
 
@@ -272,7 +296,7 @@ don't carry this: `DotplotView-OverlaySVGComponent` accumulates and
 | `Core-customizeAbout` | sync | single | Transform the config shown in a track's About dialog |
 | `Core-extendPluggableElement` | sync | single | Mutate any pluggable element after it is created |
 | `Core-extendSession` | sync | single | Extend the session model with extra state or actions |
-| `Core-extendWorker` | sync | single | Register extra RPC methods on the web worker |
+| `Core-extendWorker` | sync | single | Register extra RPC methods on the web worker. Fired once per booted worker, not per call |
 | `Core-extraAboutPanel` | sync | list | Add extra panels to a track's About dialog |
 | `Core-extraFeaturePanel` | sync | list | Add extra panels to the feature details widget |
 | `Core-extraTrackMenuItems` | sync | list | Add items to a single track's menu |
@@ -287,7 +311,7 @@ don't carry this: `DotplotView-OverlaySVGComponent` accumulates and
 | `Desktop-StartScreenMenuItems` | sync | list | Add items to the start screen menu |
 | `Desktop-StartScreenRecentSessionsPanel` | sync | single | Replace or wrap the recent sessions panel |
 | `DotplotView-ImportFormSyntenyOptions` | sync | list | Add options to the dotplot view import form |
-| `DotplotView-OverlayHTMLComponent` | sync | single | Add an HTML overlay component to the dotplot view |
+| `DotplotView-OverlayHTMLComponent` | sync | list | Add an HTML overlay component to the dotplot view |
 | `DotplotView-OverlaySVGComponent` | sync | list | Add an SVG overlay component to the dotplot view |
 | `DotplotView-SyntenyFileFormats` | sync | list | Add synteny file formats to the dotplot import form |
 | `LaunchView-BreakpointSplitView` | async | single | Programmatically launch a breakpoint split view |
@@ -1100,6 +1124,7 @@ div:
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/index.ts#tracksContainer -->
 
 ```typescript
+/** #extensionPoint LinearGenomeView-TracksContainerComponent | sync | Add a component into the LGV tracks container */
 'LinearGenomeView-TracksContainerComponent': {
   args: ReactNode[]
   result: ReactNode[]
@@ -1122,6 +1147,7 @@ scalebar:
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/index.ts#overviewScalebar -->
 
 ```typescript
+/** #extensionPoint LinearGenomeView-OverviewScalebarComponent | sync | Add a component to the overview scalebar */
 'LinearGenomeView-OverviewScalebarComponent': {
   args: ReactNode[]
   result: ReactNode[]

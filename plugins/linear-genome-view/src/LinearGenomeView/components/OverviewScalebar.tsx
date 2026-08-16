@@ -1,3 +1,4 @@
+import { PluggableElements } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
@@ -233,13 +234,6 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
   const { pluginManager } = getEnv(model)
   const { overviewLayout: overview, overviewBlocks } = model
 
-  const additional = pluginManager.evaluateExtensionPoint(
-    /** #extensionPoint LinearGenomeView-OverviewScalebarComponent | sync | Add a component to the overview scalebar */
-    'LinearGenomeView-OverviewScalebarComponent',
-    [],
-    { model, overview },
-  )
-
   const showRefName = showRefNameLabels(overviewBlocks, getBlockRefName)
 
   return (
@@ -265,7 +259,11 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
         ) : null,
       )}
       <OverviewHighlight model={model} />
-      {additional}
+      <PluggableElements
+        pluginManager={pluginManager}
+        name="LinearGenomeView-OverviewScalebarComponent"
+        props={{ model, overview }}
+      />
     </div>
   )
 })

@@ -6,6 +6,7 @@ import {
   awaitViewInitialized,
 } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { PluggableElements } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { SVGColorByLegend } from '@jbrowse/synteny-core'
 
@@ -47,11 +48,6 @@ export async function renderToSvg(
   const { width, borderX, viewWidth, viewHeight, height } = model
 
   const { pluginManager } = getEnv(model)
-  const additional = pluginManager.evaluateExtensionPoint(
-    'DotplotView-OverlaySVGComponent',
-    [],
-    { model },
-  )
 
   // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
@@ -72,7 +68,11 @@ export async function renderToSvg(
             height={viewHeight}
           >
             <DotplotGrid model={model} />
-            {additional}
+            <PluggableElements
+              pluginManager={pluginManager}
+              name="DotplotView-OverlaySVGComponent"
+              props={{ model }}
+            />
             {displayResults.map(({ id, node }) => (
               <g key={id}>{node}</g>
             ))}

@@ -202,3 +202,71 @@ describe('WorkerPoolRpcDriver LazyWorker retry on failure', () => {
     expect(driver.workers).toHaveLength(2)
   })
 })
+
+describe('WorkerPoolRpcDriver Core-extendWorker', () => {
+  const rpcMethod = {
+    name: 'SomeMethod',
+    serializeArguments: async (args: unknown) => args,
+    deserializeReturn: (ret: unknown) => ret,
+  }
+
+  // counts the fold, and hands back a distinct wrapper so a per-call fire also
+  // shows up as the extended handle changing identity between calls
+  function countingPluginManager() {
+    let fired = 0
+    return {
+      fired: () => fired,
+      pluginManager: {
+        getRpcMethodType: () => rpcMethod,
+        evaluateExtensionPoint: (_name: string, worker: WorkerHandle) => {
+          fired++
+          return {
+            ...worker,
+            call: (...callArgs: Parameters<WorkerHandle['call']>) =>
+              worker.call(...callArgs),
+          }
+        },
+      } as unknown as PluginManager,
+    }
+  }
+
+  test('fires once per booted worker, not once per call', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
+    const { fired, pluginManager } = countingPluginManager()
+
+    await driver.call(pluginManager, 's', 'SomeMethod', { sessionId: 's' })
+    await driver.call(pluginManager, 's', 'SomeMethod', { sessionId: 's' })
+    await driver.call(pluginManager, 's', 'SomeMethod', { sessionId: 's' })
+
+    expect(fired()).toBe(1)
+    // all three calls still reached the underlying worker through the wrapper
+    expect(driver.workers[0]!.calls).toHaveLength(3)
+  })
+
+  test('a re-booted slot is extended again', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
+    const { fired, pluginManager } = countingPluginManager()
+
+    await driver.call(pluginManager, 's', 'SomeMethod', { sessionId: 's' })
+    // let the .then() that registers the onError handler run, then kill it
+    await Promise.resolve()
+    driver.workers[0]!.triggerError()
+
+    await driver.call(pluginManager, 's', 'SomeMethod', { sessionId: 's' })
+
+    expect(driver.workers).toHaveLength(2)
+    expect(fired()).toBe(2)
+  })
+
+  test('each worker in the pool is extended on its own', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 2 }))
+    const { fired, pluginManager } = countingPluginManager()
+
+    await driver.call(pluginManager, 's1', 'SomeMethod', { sessionId: 's1' })
+    await driver.call(pluginManager, 's2', 'SomeMethod', { sessionId: 's2' })
+    await driver.call(pluginManager, 's1', 'SomeMethod', { sessionId: 's1' })
+
+    expect(driver.workers).toHaveLength(2)
+    expect(fired()).toBe(2)
+  })
+})

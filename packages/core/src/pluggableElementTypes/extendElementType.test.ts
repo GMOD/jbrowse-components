@@ -90,3 +90,16 @@ test('a display sharing the name is not reached, because the group is checked', 
   // the name matches; only the group tells them apart
   expect((display as unknown as { marked?: unknown }).marked).toBeUndefined()
 })
+
+// The point fires inside createPluggableElements, so a registration after that
+// run joins a fold that has already happened. `addElementType` throws on the
+// same mistake; this used to accept the callback, run nothing, and leave the
+// author with a view type that was simply never extended — from `configure()`
+// rather than `install()`, which is a one-word slip.
+test('registering after createPluggableElements throws instead of no-opping', () => {
+  const pm = new PluginManager([])
+  addViews(pm)
+  expect(() => {
+    extendViewType(pm, 'TestViewA', stateModel => stateModel)
+  }).toThrow(/after createPluggableElements/)
+})

@@ -1,5 +1,6 @@
 import { Suspense, lazy, useRef } from 'react'
 
+import { PluggableElements } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
@@ -58,13 +59,6 @@ const TracksContainer = observer(function TracksContainer({
   // scalebar control); don't dedupe them — they cover different regions.
   const range = useRangeSelect(ref, model, true)
 
-  const additional = pluginManager.evaluateExtensionPoint(
-    /** #extensionPoint LinearGenomeView-TracksContainerComponent | sync | Add a component into the LGV tracks container */
-    'LinearGenomeView-TracksContainerComponent',
-    [],
-    { model },
-  )
-
   return (
     <div
       ref={ref}
@@ -106,7 +100,11 @@ const TracksContainer = observer(function TracksContainer({
       />
       <ScalebarHighlightGroup model={model} />
       <HighlightGroup model={model} />
-      {additional}
+      <PluggableElements
+        pluginManager={pluginManager}
+        name="LinearGenomeView-TracksContainerComponent"
+        props={{ model }}
+      />
       {children}
     </div>
   )
@@ -150,16 +148,14 @@ const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
         ) : null
       })
     : []
-  const additional = pluginManager.evaluateExtensionPoint(
-    /** #extensionPoint LinearGenomeView-ScalebarHighlightComponent | sync | Add a highlight component to the scalebar */
-    'LinearGenomeView-ScalebarHighlightComponent',
-    [],
-    { model },
-  )
   return (
     <div className={classes.scalebarHighlights}>
       {viewBands}
-      {additional}
+      <PluggableElements
+        pluginManager={pluginManager}
+        name="LinearGenomeView-ScalebarHighlightComponent"
+        props={{ model }}
+      />
     </div>
   )
 })
