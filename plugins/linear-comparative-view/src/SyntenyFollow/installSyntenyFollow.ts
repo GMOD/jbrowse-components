@@ -40,8 +40,14 @@ export interface SyntenyFollowHost extends IStateTreeNode {
 // One level's placement, with the observables the async half needs already read
 // off the tree. `movingWindow` is `alreadyShowing`'s operand — where the row
 // ACTUALLY is, which the exact pass reads on purpose.
+//
+// The two fields off the `FollowPair` rather than the pair itself, so that this
+// says what the async half can still reach: `step` already carries the window,
+// the display and `toMate`, and the staying row is the one thing a settled
+// answer must never re-read.
 interface FollowWork {
-  pair: FollowPair
+  level: FollowLevel
+  movingView: LinearGenomeViewModel
   step: FollowStep
   movingWindow: FollowWindow | undefined
   // the narrowest window the moving row can show, which is what lets
@@ -85,15 +91,15 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   const levelStates = createFollowLevelStates<FollowLevel>()
 
   async function execute({
-    pair,
+    level,
+    movingView,
     step,
     movingWindow,
     movingMinWidthBp,
     seq,
     generation,
   }: FollowWork) {
-    const { movingView } = pair
-    const state = levelStates.get(pair.level)
+    const state = levelStates.get(level)
     const { span, approximate } = await state.answer(step)
     // Switching the mode off bumps no seq, so it needs its own check — and
     // switching it back on again defeats that one, since `state` is then the
@@ -190,7 +196,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // `execute` is async and MobX stops tracking at its first `await`, so a field
   // missing from `FollowStep` can only be read untracked, producing a follow
   // that works once and never re-fires.
-  function planLevel(pair: FollowPair): FollowPlan | undefined {
+  function planLevel(pair: FollowPair): FollowPlan {
     const { level, stayingView, movingView, toMate, mateAssembly } = pair
     const state = levelStates.get(level)
     // EVERY LEVEL THE PASS VISITS, not only the ones it goes on to resolve. A
@@ -201,7 +207,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const seq = ++state.seq
     const window = followAnchorWindow(stayingView.coarseDynamicBlocks)
     if (!window) {
-      return undefined
+      // an anchor with no window says nothing about alignment either way
+      return { unaligned: false, approximate: false }
     }
     // reading the moving row makes it a dependency, which is what re-asserts
     // the follow over a row nudged by hand
@@ -215,7 +222,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     })
     return {
       work: step && {
-        pair,
+        level,
+        movingView,
         step,
         movingWindow,
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
@@ -241,8 +249,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         const plans = self.followPairs.map(pair => planLevel(pair))
         // written, never read here: reading either would make the autorun a
         // dependency of its own write
-        self.setFollowUnaligned(plans.some(p => p?.unaligned))
-        self.setFollowApproximate(plans.some(p => p?.approximate))
+        self.setFollowUnaligned(plans.some(p => p.unaligned))
+        self.setFollowApproximate(plans.some(p => p.approximate))
         // UNTRACKED, because `execute` runs synchronously up to its first
         // `await` and so still inside this reaction. `FollowStep` is meant to
         // be everything it needs, but the resolve reaches the display for
@@ -252,11 +260,10 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // as a dependency of the debounced pass, costing an extra full plan
         // (the envelope scan included) per settle.
         untracked(() => {
-          for (const plan of plans) {
-            if (plan?.work) {
-              const { work } = plan
+          for (const { work } of plans) {
+            if (work) {
               execute(work).catch((e: unknown) => {
-                reportError(work.pair.level, e)
+                reportError(work.level, e)
               })
             }
           }
