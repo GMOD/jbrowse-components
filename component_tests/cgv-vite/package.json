@@ -25,7 +25,6 @@
     "@jbrowse/core": "file:./packed/jbrowse-core.tgz",
     "@jbrowse/embedded-core": "file:./packed/jbrowse-embedded-core.tgz",
     "@jbrowse/ld-core": "file:./packed/jbrowse-ld-core.tgz",
-    "@jbrowse/modifications-utils": "file:./packed/jbrowse-modifications-utils.tgz",
     "@jbrowse/plugin-authentication": "file:./packed/jbrowse-plugin-authentication.tgz",
     "@jbrowse/plugin-canvas": "file:./packed/jbrowse-plugin-canvas.tgz",
     "@jbrowse/plugin-circular-view": "file:./packed/jbrowse-plugin-circular-view.tgz",
