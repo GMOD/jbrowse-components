@@ -6,13 +6,14 @@ import { getGpuDevice } from '../gpuDevice.ts'
 import {
   STANDARD_BLEND_STATE,
   createUniformOnlyBindGroup,
-  createUniformOnlyBindGroupLayout,
   createVertexBuffer,
   toGpuVertexFormat,
 } from '../webgpuUtils.ts'
+import { getDeviceLayouts, getOrBuildPipeline } from './deviceGpuCache.ts'
 import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
+import type { DeviceLayouts } from './deviceGpuCache.ts'
 import type { BlendState, GpuHal, PipelineDescriptor } from './types.ts'
 
 class ShaderCompileError extends Error {
@@ -23,12 +24,20 @@ class ShaderCompileError extends Error {
 }
 
 // Maximum number of writeUniforms() calls per frame. Each call occupies one
-// aligned slot in the uniform ring buffer. 2048 slots × 256-byte alignment =
-// 512 KB — trivial GPU memory. Exhausting it does not throw: the write is
-// dropped and its draws render against the previous batch's uniforms, which is
-// wrong data rather than stale data. If we ever hit the cap, switch to a
-// dynamic-growth buffer (recreate buffer + every region's bind group) rather
-// than just bumping the constant again.
+// aligned slot in the uniform ring buffer.
+//
+// The ring is allocated eagerly at this many slots, as a GPU buffer AND a CPU
+// staging array, whether a renderer writes 4 slots or 1900 — so the cost is
+// per display and is the aligned uniform size that decides it, not the slot
+// count. A display whose uniform fits the 256-byte minimum alignment pays
+// 512 KB each side; alignments' 864-byte uniform aligns to 1024, so 2 MiB each
+// side. Trivial once, per-track at ten open alignments tracks.
+//
+// Exhausting it does not throw: the write is dropped and its draws render
+// against the previous batch's uniforms, which is wrong data rather than stale
+// data. If we ever hit the cap, switch to a dynamic-growth buffer (recreate
+// buffer + every region's bind group) rather than just bumping the constant
+// again.
 const MAX_UNIFORM_SLOTS = 2048
 
 // Warn while there is still headroom, because the cap itself is not a place to
@@ -68,133 +77,83 @@ interface RegionPassBuffer {
   count: number
 }
 
-// Per-HAL bind group and pipeline layouts. Two layouts, both @group(0):
-//   - uniformOnly: uniform buffer (binding 1) only
-//   - textured: uniform (1) + texture (2) + sampler (3), created lazily on first use
 // Every pass reads per-instance data from a vertex buffer (no storage binding
-// at 0) because Slang-generated shaders cross-compile to GLSL ES, which has
-// no SSBOs.
-interface LayoutState {
-  uniformOnlyBindGroupLayout: GPUBindGroupLayout
-  uniformOnlyPipelineLayout: GPUPipelineLayout
-  // Lazily created on first pass with textures. Bundled so null/non-null is
-  // always consistent between the two — avoids a non-null assertion on access.
-  texturedLayouts: {
-    bindGroupLayout: GPUBindGroupLayout
-    pipelineLayout: GPUPipelineLayout
-  } | null
-}
+// at 0) because Slang-generated shaders cross-compile to GLSL ES, which has no
+// SSBOs. The two @group(0) layouts a pass is built against — uniform-only, and
+// uniform + texture + sampler — belong to the device, not to this HAL, and live
+// in `deviceGpuCache.ts` with the pipelines.
 
-function createLayoutState(device: GPUDevice): LayoutState {
-  const uniformOnlyBindGroupLayout = createUniformOnlyBindGroupLayout(device)
-  return {
-    uniformOnlyBindGroupLayout,
-    uniformOnlyPipelineLayout: device.createPipelineLayout({
-      bindGroupLayouts: [uniformOnlyBindGroupLayout],
-    }),
-    texturedLayouts: null,
+async function buildPipeline(
+  device: GPUDevice,
+  desc: PipelineDescriptor,
+  layouts: DeviceLayouts,
+) {
+  const module = device.createShaderModule({ code: desc.wgslSource })
+  const info = await module.getCompilationInfo()
+  const errors = info.messages.filter(m => m.type === 'error')
+  if (errors.length > 0) {
+    const details = errors
+      .map(m => `line ${m.lineNum}: ${m.message}`)
+      .join('; ')
+    throw new ShaderCompileError(desc.id, details)
   }
-}
+  const blend = desc.blend
+    ? desc.blendState
+      ? gpuBlendState(desc.blendState)
+      : STANDARD_BLEND_STATE
+    : undefined
 
-function getOrCreateTexturedLayout(device: GPUDevice, state: LayoutState) {
-  if (!state.texturedLayouts) {
-    const bindGroupLayout = device.createBindGroupLayout({
-      entries: [
+  // Every pass feeds @location(N) inputs from a bound vertex buffer.
+  const vertexBuffers: GPUVertexBufferLayout[] = [
+    {
+      arrayStride: desc.instanceStride,
+      stepMode: 'instance',
+      attributes: desc.vertexAttributes.map((attr, i) => ({
+        shaderLocation: i,
+        offset: attr.offsetBytes,
+        format: toGpuVertexFormat(attr),
+      })),
+    },
+  ]
+
+  return device.createRenderPipelineAsync({
+    layout: desc.textures?.length
+      ? layouts.texturedPipelineLayout
+      : layouts.uniformOnlyPipelineLayout,
+    vertex: { module, entryPoint: 'vs_main', buffers: vertexBuffers },
+    fragment: {
+      module,
+      entryPoint: desc.wgslFragmentEntry ?? 'fs_main',
+      targets: [
         {
-          binding: 1,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: {
-            type: 'uniform',
-            hasDynamicOffset: true,
-          },
-        },
-        {
-          binding: 2,
-          visibility: GPUShaderStage.FRAGMENT,
-          texture: { sampleType: 'float' },
-        },
-        {
-          binding: 3,
-          visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: 'filtering' },
+          format: navigator.gpu.getPreferredCanvasFormat(),
+          ...(blend && { blend }),
         },
       ],
-    })
-    state.texturedLayouts = {
-      bindGroupLayout,
-      pipelineLayout: device.createPipelineLayout({
-        bindGroupLayouts: [bindGroupLayout],
-      }),
-    }
-  }
-  return state.texturedLayouts
+    },
+    primitive: { topology: desc.topology ?? 'triangle-list' },
+    multisample:
+      MSAA_SAMPLE_COUNT === 1 ? undefined : { count: MSAA_SAMPLE_COUNT },
+  })
 }
 
-async function compilePipelines(
+// Resolve every declared pass to its pipeline, taking the device-wide cache's
+// answer wherever another display of this type already built one. Still every
+// pass up front rather than on first draw — the WebGL2 side compiles lazily
+// (`getPass`) and this side does not; see ARCHITECTURAL_LIMITS.md §"Every
+// WebGPU display resolves its whole pass list before it can paint".
+async function resolvePipelines(
   device: GPUDevice,
   descriptors: PipelineDescriptor[],
-  state: LayoutState,
 ) {
-  const preferredFormat = navigator.gpu.getPreferredCanvasFormat()
-  const pipelines = new Map<string, GPURenderPipeline>()
-
-  await Promise.all(
-    descriptors.map(async desc => {
-      const module = device.createShaderModule({ code: desc.wgslSource })
-      const info = await module.getCompilationInfo()
-      const errors = info.messages.filter(m => m.type === 'error')
-      if (errors.length > 0) {
-        const details = errors
-          .map(m => `line ${m.lineNum}: ${m.message}`)
-          .join('; ')
-        throw new ShaderCompileError(desc.id, details)
-      }
-      const fragEntry = desc.wgslFragmentEntry ?? 'fs_main'
-      const format: GPUTextureFormat = preferredFormat
-      const blend = desc.blend
-        ? desc.blendState
-          ? gpuBlendState(desc.blendState)
-          : STANDARD_BLEND_STATE
-        : undefined
-      const topo: GPUPrimitiveTopology = desc.topology ?? 'triangle-list'
-      const pLayout = desc.textures?.length
-        ? getOrCreateTexturedLayout(device, state).pipelineLayout
-        : state.uniformOnlyPipelineLayout
-
-      // Every pass feeds @location(N) inputs from a bound vertex buffer.
-      const vertexBuffers: GPUVertexBufferLayout[] = [
-        {
-          arrayStride: desc.instanceStride,
-          stepMode: 'instance',
-          attributes: desc.vertexAttributes.map((attr, i) => ({
-            shaderLocation: i,
-            offset: attr.offsetBytes,
-            format: toGpuVertexFormat(attr),
-          })),
-        },
-      ]
-
-      const pipeline = await device.createRenderPipelineAsync({
-        layout: pLayout,
-        vertex: {
-          module,
-          entryPoint: 'vs_main',
-          buffers: vertexBuffers,
-        },
-        fragment: {
-          module,
-          entryPoint: fragEntry,
-          targets: [{ format, ...(blend && { blend }) }],
-        },
-        primitive: { topology: topo },
-        multisample:
-          MSAA_SAMPLE_COUNT === 1 ? undefined : { count: MSAA_SAMPLE_COUNT },
-      })
-      pipelines.set(desc.id, pipeline)
-    }),
+  const built = await Promise.all(
+    descriptors.map(desc =>
+      getOrBuildPipeline(device, desc, layouts =>
+        buildPipeline(device, desc, layouts),
+      ),
+    ),
   )
-
-  return pipelines
+  return new Map(descriptors.map((desc, i) => [desc.id, built[i]!]))
 }
 
 interface PassTextureState {
@@ -227,7 +186,10 @@ export class WebGPUHal implements GpuHal {
   // dropped when `uploadTexture` swaps that pass's texture. Uniform-only passes
   // are not stored here — they all share `uniformOnlyBindGroup`.
   private passBindGroups = new Map<string, GPUBindGroup>()
-  private layoutState: LayoutState
+  // The device's layouts, not this HAL's — shared with every other display on
+  // the same device. The bind GROUPS above stay per-HAL: they reference this
+  // HAL's uniform ring buffer.
+  private layouts: DeviceLayouts
 
   // Uniform ring buffer: holds up to MAX_UNIFORM_SLOTS sets of uniforms so
   // that all draw calls in a frame can reference different uniform data via
@@ -282,14 +244,14 @@ export class WebGPUHal implements GpuHal {
     descriptors: PipelineDescriptor[],
     uniformByteSize: number,
     pipelines: Map<string, GPURenderPipeline>,
-    layoutState: LayoutState,
+    layouts: DeviceLayouts,
   ) {
     this.device = device
     this.canvas = canvas
     this.context = context
     this.descriptors = new Map(descriptors.map(d => [d.id, d]))
     this.pipelines = pipelines
-    this.layoutState = layoutState
+    this.layouts = layouts
 
     // Align uniform slots to device requirements for dynamic offsets
     const alignment = device.limits.minUniformBufferOffsetAlignment
@@ -303,7 +265,7 @@ export class WebGPUHal implements GpuHal {
     this.uniformStaging = new Uint8Array(ringSize)
     this.uniformOnlyBindGroup = createUniformOnlyBindGroup(
       device,
-      layoutState.uniformOnlyBindGroupLayout,
+      layouts.uniformOnlyBindGroupLayout,
       this.uniformRingBuffer,
       this.alignedUniformSize,
     )
@@ -321,13 +283,13 @@ export class WebGPUHal implements GpuHal {
     if (!device) {
       return null
     }
-    // Compile pipelines BEFORE acquiring the canvas's webgpu context. A canvas's
+    // Resolve pipelines BEFORE acquiring the canvas's webgpu context. A canvas's
     // context type is permanent once acquired, so if shader compilation throws
     // here the canvas stays pristine and createGpuHal's WebGL2 fallback can
     // still claim it — otherwise a partial WebGPU init would drop us all the way
     // to Canvas2D on a WebGL2-capable machine.
-    const layoutState = createLayoutState(device)
-    const pipelines = await compilePipelines(device, descriptors, layoutState)
+    const layouts = getDeviceLayouts(device)
+    const pipelines = await resolvePipelines(device, descriptors)
     const context = canvas.getContext('webgpu')
     if (!context) {
       // Returning null (rather than throwing) keeps the ladder running, so this
@@ -349,7 +311,7 @@ export class WebGPUHal implements GpuHal {
       descriptors,
       uniformByteSize,
       pipelines,
-      layoutState,
+      layouts,
     )
   }
 
@@ -431,12 +393,8 @@ export class WebGPUHal implements GpuHal {
       if (!bindGroup) {
         const texState = this.passTextures.get(passId)
         if (texState) {
-          const { bindGroupLayout } = getOrCreateTexturedLayout(
-            this.device,
-            this.layoutState,
-          )
           bindGroup = this.device.createBindGroup({
-            layout: bindGroupLayout,
+            layout: this.layouts.texturedBindGroupLayout,
             entries: [
               {
                 binding: 1,

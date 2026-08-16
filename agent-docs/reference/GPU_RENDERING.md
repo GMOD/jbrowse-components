@@ -899,11 +899,27 @@ WebGPU's own and the collision inverts what two of them appear to do.
 
 **`PipelineDescriptor` is a pipeline state object (PSO).** It carries shader
 source, the vertex input layout, blend state, primitive topology and texture
-bindings, and `compilePipelines` turns each one into exactly one
-`GPURenderPipeline` (`webgpuHal.ts`) or one linked program + VAO
-(`webgl2Hal.ts`). One `PipelineDescriptor` ⇄ one PSO, built once at HAL
-construction — every pipeline in a display is compiled up front, never lazily
-mid-frame.
+bindings, and each one becomes exactly one `GPURenderPipeline`
+(`resolvePipelines`, `webgpuHal.ts`) or one linked program + VAO (`compilePass`,
+`webgl2Hal.ts`).
+
+**The two HALs build them at opposite times, and that is not cosmetic.** WebGL2
+builds a pass on its first *draw* (`getPass`), keeping one canary link in the
+constructor so a GL stack that cannot compile our shaders at all still falls to
+Canvas2D; a three-track LGV declares 29 programs and links 14. WebGPU resolves
+the whole declared list before `WebGPUHal.create` returns, so a track's first
+paint waits on every pass it could ever draw. What takes the sting out of that
+is that pipelines are **shared across displays** — `hal/deviceGpuCache.ts`
+memoizes them per device on the descriptor's own identity, so the second
+alignments track builds none of its 23 — but the first still pays for all of
+them. See
+[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#every-webgpu-display-resolves-its-whole-pass-list-before-it-can-paint).
+
+A descriptor's identity is what makes that cache correct rather than clever: a
+plugin's `*_PASSES` is a module-level const and `slangPass` reads `wgslSource`
+off a generated const, so every display of a type hands the HAL the *same*
+objects. WebGL2 has no counterpart and wants none — a program belongs to the
+context that linked it, and each display owns a context.
 
 The type says so; the **identifiers around it still say "pass"** — `passId`,
 `drawPass`, `slangPass`, `InstancePass`, every plugin's `*_PASSES` array. Those

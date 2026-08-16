@@ -26,12 +26,12 @@
 // error naming the parameter and its reflected shape.
 //
 // The binding table is also the thing three separate places were asserting by
-// hand — `createUniformOnlyBindGroupLayout` (uniform at 1),
-// `getOrCreateTexturedLayout` (uniform 1, texture 2, sampler 3), and the LD
-// compute driver's own `makeBindGroupLayout` (0 read-only-storage, 1 storage,
-// 2 uniform) — none of which consulted reflection. Emitting it lets a consumer
-// build its layout from the shader instead of from a comment promising the two
-// agree.
+// hand — the render HALs' uniform-only layout (uniform at 1) and their textured
+// one (uniform 1, texture 2, sampler 3), both now built in render-core's
+// `hal/deviceGpuCache.ts`, and the LD compute driver's own `makeBindGroupLayout`
+// (0 read-only-storage, 1 storage, 2 uniform) — none of which consulted
+// reflection. Emitting it lets a consumer build its layout from the shader
+// instead of from a comment promising the two agree.
 
 import type { Parameter, Reflection } from './reflection.ts'
 
@@ -266,11 +266,10 @@ export function assertRenderBindingShape(
     throw new Error(
       `${label}: binding table '${shape}' is not one the render HALs bind. ` +
         `They implement '${RENDER_SHAPES.join("' and '")}' — the uniform block ` +
-        `at binding 1, and optionally one combined Sampler2D at 2/3. ` +
-        `webgpuUtils.ts's createUniformOnlyBindGroupLayout used to promise this ` +
-        `in a comment ("Binding index 1 matches what the codegen emits"); this ` +
-        `checks it. Adjust the shader's [[vk::binding]] attributes, or teach ` +
-        `both HALs the new shape first.`,
+        `at binding 1, and optionally one combined Sampler2D at 2/3. The HALs' ` +
+        `layouts used to promise this in a comment ("Binding index 1 matches ` +
+        `what the codegen emits"); this checks it. Adjust the shader's ` +
+        `[[vk::binding]] attributes, or teach both HALs the new shape first.`,
     )
   }
 }

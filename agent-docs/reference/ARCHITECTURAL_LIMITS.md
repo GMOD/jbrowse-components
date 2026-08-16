@@ -102,8 +102,118 @@ bounds pixels, not GPU instance count). So OOM is reportable, not preventable,
 which is acceptable while the per-object guards keep catching the pathological
 single upload.
 
+Both HALs now hold that per-object floor on the vertex-buffer axis. WebGPU
+refuses past `device.limits.maxBufferSize`; WebGL2, which can query no such
+limit, refuses past the fixed `MAX_VERTEX_BUFFER_BYTES` set to WebGPU's own
+256 MiB default, so the two backends banner on the same region instead of one
+bannering while the other loses its context into the eviction cascade in
+[GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md).
+
 **Retire when** a HAL byte counter with cross-display LRU prune exists, or an OOM
-report arrives that the per-object guards missed.
+report arrives that the per-object guards missed. The counter's first customer
+is the MSAA target below, which is larger than the buffers and is not counted
+anywhere today.
+
+### The MSAA target is the largest per-display allocation, and a resize rebuilds it
+
+**Status:** Open, and the arithmetic below is arithmetic — nothing here has a
+WebGPU machine to measure it on (Chrome 151 on this hardware reports no
+compatible adapter, per GPU_CONTEXT_BUDGET.md).
+
+`WebGPUHal` holds one 4x MSAA color attachment sized to its own canvas
+(`recreateMsaaTexture`). Two things follow that nothing else in this register
+covers.
+
+**It is per display, and its size has nothing to do with the data.** Cost is
+canvas area x dpr² x 4 samples, so an empty 600px-tall track costs exactly what
+a full one does. A 1600x600 CSS track at dpr 2 is 3200x1200x4 B ≈ 15 MB of
+single-sample color, so **~61 MB at 4x** — an order of magnitude past the
+instance buffers the OOM guards do check, and a ten-track view is hundreds of MB
+before a feature is uploaded. `recreateMsaaTexture` compares against
+`maxTextureDimension2D` and nothing else. WebGL2 has no counterpart in our
+accounting because `antialias: true` puts the multisample backbuffer inside the
+browser's own budget.
+
+**`resize` rebuilds it on every backing-store change, and a height drag is one
+per frame.** `GpuPerRegionRenderingBackend.renderBlocks` calls
+`hal.resize(canvasWidth, canvasHeight)` each frame; `syncCanvasSize` reports the
+change; `useResizeDrag` commits one height per animation frame. So dragging a
+track taller destroys and creates a tens-of-MB multisample texture for the
+length of the gesture.
+
+**The obvious fix is not available, which is the part worth recording.** A
+render pass validates that its `resolveTarget` is the same size as its
+multisampled `view`, so an MSAA texture kept deliberately oversized and reused
+across sizes cannot be attached — growing in steps and shrinking on settle, the
+hysteresis this looks like it wants, is not a legal shape. What is left is to
+quantize the *canvas* (backing store and CSS together, clipped by the track
+container to the true height), or to accept it.
+
+**Retire when** the reallocation is measured on WebGPU hardware and found not to
+matter, or the canvas is quantized so a drag reallocates once per step. Measure
+before building: the drag is the whole case, and `probe-dotplot-pad-cost.ts` is
+the pattern for a probe that changes one thing about a real shipped path.
+
+### Every WebGPU display resolves its whole pass list before it can paint
+
+**Status:** Mitigated (the set is shared across displays), root cause is that
+the resolution is eager.
+
+The two HALs sit on opposite sides of a decision WebGL2 made deliberately.
+`WebGL2Hal.getPass` links a program on its first *draw*, with a one-descriptor
+canary in the constructor so an unusable GL stack still falls to Canvas2D; its
+comment records a three-track LGV that declared 29 programs and drew with 14.
+`WebGPUHal.create` awaits its whole declared list — alignments declares 23 — and
+does it before acquiring the canvas context, so a track's first paint waits on
+every pass it could ever draw, including the ones behind a `colorBy` nobody
+selected.
+
+That is the shape GPU_CONTEXT_BUDGET.md already measured on the other backend,
+where **the load-time pipeline build**, not the per-pass rebuild, turned out to
+be what costs. Whether it costs the same here is unknown: `createRenderPipelineAsync`
+is meant to keep the work off the main thread, and nothing in tree has WebGPU
+hardware to check on.
+
+What bounds it today is `hal/deviceGpuCache.ts`: pipelines and the two bind
+group layouts are memoized per device, keyed on the `PipelineDescriptor` object
+itself, so displays 2..N of a track type build nothing. Before it, ten
+alignments tracks compiled 230 pipelines for 23 distinct programs. The cache is
+correct rather than approximate because a plugin's `*_PASSES` is a module const
+and `slangPass` reads `wgslSource` off a generated const, so descriptor identity
+already means "same shader, same layout, same blend, same topology"; two passes
+sharing a `.slang` shape module get separate entries because `slangPass` built
+them separate objects. It holds the in-flight promise rather than the resolved
+pipeline, which is the half that matters — many tracks mount in one tick, so a
+memo of finished compiles would miss on all of them.
+
+**Retire when** WebGPU builds a pass on first draw the way WebGL2 does, or a
+measurement on WebGPU hardware says the eager set is free and this becomes an
+Accepted entry with a number in it.
+
+### A uniform write binds to its draws by adjacency, and the HALs mean different things by it
+
+**Status:** Accepted, latent — no renderer in tree violates it.
+
+`WebGL2Hal.writeUniforms` does an immediate `bufferSubData` into one UBO.
+`WebGPUHal.writeUniforms` stages into a ring slot, and `drawPass` binds slot
+`uniformSlot - 1` — "whatever was written most recently". The two agree only
+while every renderer writes-then-draws adjacently, which every renderer does.
+
+There is no way to say otherwise: `writeUniforms` returns nothing, so a renderer
+cannot name the slot it wants a draw to read. One that batched its writes and
+then issued its draws would be correct on Canvas2D and WebGL2 and silently wrong
+on WebGPU — the failure class `packages/render-core/CLAUDE.md` says this package
+exists to refuse, and one no test in tree would catch, since the parity gate
+compares backends on renderers that all obey the convention.
+
+The ring's cost is fixed and paid whether a renderer writes 4 slots or 1900:
+`MAX_UNIFORM_SLOTS` x the device-aligned uniform size, as a GPU buffer **and** a
+CPU staging array. Alignments' 864-byte uniform aligns to 1024, so 2 MiB on each
+side per alignments HAL.
+
+**Retire when** `writeUniforms` returns a slot token that `drawPass` takes and
+WebGL2 ignores. Cheap, and the reason to wait is that nothing needs it yet —
+take it the first time a renderer wants two uniform sets alive at once.
 
 ### A canvas past `MAX_CANVAS_DIM_PX` renders wrong, not smaller
 
@@ -763,6 +873,18 @@ file rather than being attributed wrongly.
   expression reads it. What is exposed is `installComparativeFetchAutorun`, whose
   `prepare()` may `return undefined` above its own reads; held today only by the
   convention that whatever it bails on is itself observable.
+- **An `installPerRegionLifecycle` `encode` must read a narrow inputs getter,
+  never `renderState`.** The encode body runs inside the per-key autorun, so
+  every observable it touches re-encodes *every* region — and a `renderState`
+  carries the canvas box and row geometry, which move on each frame of a height
+  drag. The failure is not wrong pixels but tens of MB per frame of
+  byte-identical output, which reads as "the GPU path is slow". Two call sites
+  each carry a paragraph about the time they got it wrong
+  (`LinearMultiRowFeatureDisplay`'s model, MAF's `stateModel`), and prose is the
+  whole enforcement. Probably checkable — the encode is a pure function the
+  installer calls, so it could run once at attach inside a MobX probe that
+  reports which observables it touched, and compare against `gpuProps()`'s set.
+
 - **A display that omits `rpcProps()` gets no settings invalidation, silently.**
   `rpcPropsCacheKey` returns `''` and `SettingsInvalidate` is never installed —
   correct for `LinearReferenceSequenceDisplay`, indistinguishable from an

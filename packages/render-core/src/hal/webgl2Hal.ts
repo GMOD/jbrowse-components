@@ -142,6 +142,23 @@ interface RegionPassBuffer {
 let totalCreated = 0
 let totalDisposed = 0
 
+// The vertex-buffer ceiling this HAL refuses past, in bytes.
+//
+// WebGL2 exposes no max-buffer-size parameter, so unlike WebGPU there is
+// nothing to ask — but "ask the driver" was never what the guard was for. Its
+// job is to turn one pathological upload into the "zoom in" banner, and without
+// it the same upload that banners on WebGPU takes Chrome's context down here
+// instead. That is strictly worse than a blank track on a page at the context
+// ceiling: the loss evicts a sibling, whose recovery evicts another, and
+// GPU_CONTEXT_BUDGET.md is that cascade.
+//
+// 256 MiB is WebGPU's own default `maxBufferSize`, so the two backends refuse
+// the same region rather than one bannering while the other dies. Deliberately
+// a ceiling and not a budget: it catches the single upload nothing else bounds,
+// and says nothing about the total, which is
+// ARCHITECTURAL_LIMITS.md §"No session-level GPU memory budget".
+const MAX_VERTEX_BUFFER_BYTES = 256 * 1024 * 1024
+
 // Behavioral parity with WebGPUHal is enforced by tests, not by this file:
 // products/jbrowse-web/browser-tests/compare-backends.ts pixel-diffs webgl vs
 // webgpu vs canvas2d output, and shared buffer bookkeeping is covered by
@@ -369,10 +386,18 @@ export class WebGL2Hal implements GpuHal {
     if (count === 0) {
       return
     }
-    // No proactive size check: WebGL2 exposes no max-buffer-size limit, and an
-    // over-large bufferData loses the context in Chrome (handled by
-    // useRenderingBackend's context-loss recovery) or throws RangeError in
-    // Firefox — neither is a getError() case worth a per-upload sync flush.
+    // A fixed ceiling rather than a queried one — see MAX_VERTEX_BUFFER_BYTES
+    // for why this exists at all and why the number is WebGPU's. Past it, an
+    // unguarded bufferData loses the context in Chrome and throws RangeError in
+    // Firefox; neither is a getError() case, so this is the only place the
+    // display can be told. Below it the upload stays unchecked, exactly as
+    // before: no per-upload sync flush.
+    if (data.byteLength > MAX_VERTEX_BUFFER_BYTES) {
+      this.oom.report(
+        `This region has too much data to render on this GPU — zoom in. (vertex buffer ${data.byteLength} bytes exceeds the ${MAX_VERTEX_BUFFER_BYTES}-byte WebGL2 ceiling)`,
+      )
+      return
+    }
     const vbo = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)

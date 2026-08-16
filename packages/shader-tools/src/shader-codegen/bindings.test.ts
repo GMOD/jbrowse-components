@@ -154,9 +154,9 @@ describe('assertRenderBindingShape', () => {
     }).not.toThrow()
   })
 
-  // webgpuUtils.ts's createUniformOnlyBindGroupLayout hardcodes binding 1 with
-  // a comment promising it "matches what the codegen emits". This is the check
-  // that promise never had.
+  // The render HALs' uniform-only layout (render-core's hal/deviceGpuCache.ts)
+  // hardcodes binding 1 with a comment promising it "matches what the codegen
+  // emits". This is the check that promise never had.
   test('refuses a uniform at any index but 1', () => {
     expect(() => {
       assertRenderBindingShape('t', [{ index: 0, kind: 'uniform', name: 'u' }])
