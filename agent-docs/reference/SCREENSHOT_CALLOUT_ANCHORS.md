@@ -35,6 +35,10 @@ error:
   centre plus `dx`/`dy`. That is the only way to move it, so a tail that has to
   sit at an element's edge carries half that element's width as a `dx` — and
   when that element is one of our own text pills, don't: use `leader` below.
+  `homoeolog_synteny/oat_homoeologs` is what ignoring it looks like in a figure:
+  the tail carried an `alignX: 'right'` that did nothing, so it sat a dotplot
+  cell's width left of where the spec read as putting it and the arrow drew as a
+  stub in open space.
 - **A `box` whose anchor sets `fracY` gets a zero-height band**, so `height`
   falls back to `2 * pad` (12px). Supply `height` explicitly. Omitting `fracY`
   instead wraps the whole track band — right for a short track, wrong for a
@@ -58,15 +62,26 @@ fits one label length. `dog10k-size-fst-scan-genome` named three peaks with one
 pair of offsets and got three different gaps — IGF1's arrow stopped 50px short
 of its pill and IGF2BP2's tail vanished inside one — while `ld/lct_fst_scan`'s
 three-letter label floated on its own. Both came back from review as "the
-arrows are no longer next to the text boxes".
+arrows are no longer next to the text boxes". `oat_homoeologs` was the same
+defect a third time, found by counting the pattern rather than by a reviewer.
 
 A `leader` whose pill covers its own target draws no arrow and reports a miss,
 so the fix (raise `dx`) surfaces as a thrown error rather than as a figure with
 a label and no arrow in it.
 
-The remaining hand-paired text-and-arrow specs are the ones this landed before:
-convert one when you next touch its figure, since the conversion moves pixels
-and wants the regen anyway.
+**`countDetachableLabels` ratchets the rest** (`screenshot-spec-rules.ts`,
+run by `check-specs`), pairing a `text` with an `arrow` whose `fromAnchor`
+resolves to the same site. That is authorship rather than proximity, so it
+cannot fire on an arrow that legitimately starts in open space. Converting one
+moves pixels, so they land as their figures are touched; lower `LEADER_BASELINE`
+when one does.
+
+Only the SIDEWAYS ones are fragile, which is worth knowing before spending a
+regen on a figure that reads fine. Horizontal is the axis whose extent only the
+page knows, so a pill whose arrow leaves through a horizontal edge — every one
+of `lgv_usage_guide`'s toolbar callouts — sits where it was put. The sideways
+ones that look right today are right by coincidence, and go wrong on the next
+edit to a label or a font size.
 
 One trick worth reusing: `parseAnnotationLocus` accepts `..` as well as `-`, so
 a location string printed by the UI (`chr10:122,835,344..122,837,142`) works

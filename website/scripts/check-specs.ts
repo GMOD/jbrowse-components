@@ -12,7 +12,11 @@
 //   node website/scripts/check-specs.ts
 
 import { reportProblems } from './check-utils.ts'
-import { countRawCallouts, validateSpecs } from './screenshot-spec-rules.ts'
+import {
+  countDetachableLabels,
+  countRawCallouts,
+  validateSpecs,
+} from './screenshot-spec-rules.ts'
 import { specs } from './screenshot-specs.ts'
 
 const problems = validateSpecs(specs)
@@ -38,6 +42,27 @@ const ratchet =
         ]
       : []
 
+// The second ratchet: a label and the arrow leaving it, written as two
+// annotations with the gap between them spelled out. Three committed figures
+// have been sent back for the gap going wrong; `leader: true` on the text makes
+// the pair one annotation that measures its own.
+const labels = countDetachableLabels(specs)
+const leaderRatchet =
+  labels.found.length > labels.baseline
+    ? [
+        `${labels.found.length} label+arrow pairs in screenshot specs, up from ${labels.baseline}.`,
+        '  Write the new one as one annotation: `leader: true` on the text, with',
+        '  the anchor on what it names and `dx` placing the label off it. See',
+        '  website/CLAUDE.md and reference/SCREENSHOT_CALLOUT_ANCHORS.md.',
+        ...labels.found.map(entry => `  - ${entry}`),
+      ]
+    : labels.found.length < labels.baseline
+      ? [
+          `Only ${labels.found.length} label+arrow pairs left, down from ${labels.baseline}.`,
+          '  Lower LEADER_BASELINE in screenshot-spec-rules.ts so the ratchet holds the gain.',
+        ]
+      : []
+
 reportProblems(
   [
     ...(problems.length > 0
@@ -47,6 +72,7 @@ reportProblems(
         ]
       : []),
     ...ratchet,
+    ...leaderRatchet,
   ],
-  `${specs.length} screenshot specs are well formed, ${found.length} hand-placed coordinates left.`,
+  `${specs.length} screenshot specs are well formed, ${found.length} hand-placed coordinates and ${labels.found.length} label+arrow pairs left.`,
 )

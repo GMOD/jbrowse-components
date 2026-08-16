@@ -11,7 +11,10 @@
  * about the rules themselves, which is why every case here is synthetic: the
  * committed corpus is (and should stay) clean, so it can't exercise them.
  */
-import { validateSpecs } from './screenshot-spec-rules.ts'
+import {
+  countDetachableLabels,
+  validateSpecs,
+} from './screenshot-spec-rules.ts'
 
 import type { ScreenshotSpec } from './screenshot-spec-types.ts'
 
@@ -144,4 +147,94 @@ test('the ordinary spec shapes are quiet', () => {
       { mode: 'compose', name: 'd', parts: ['a', 'b'] },
     ]),
   ).toBe('')
+})
+
+// ── the detached-label ratchet ──
+//
+// The pairing is by ANCHOR, so what has to be proved is that it fires on the
+// authored pair and stays quiet on an arrow that merely shares a figure with a
+// pill. A ratchet that matches everything is as useless as one that matches
+// nothing, and both look like a passing check.
+const site = { track: 't', locus: 'ctgA:100' }
+const labels = (list: ScreenshotSpec[]) => countDetachableLabels(list).found
+
+test('a pill and the arrow leaving it', () => {
+  expect(
+    labels([
+      {
+        mode: 'url',
+        name: 'a',
+        url: '?x',
+        annotations: [
+          { type: 'text', text: 'LCT', anchor: { ...site, dx: 150 } },
+          {
+            type: 'arrow',
+            anchor: { ...site, dx: 14 },
+            fromAnchor: { ...site, dx: 88 },
+          },
+        ],
+      },
+    ]),
+  ).toEqual(['a: "LCT"'])
+})
+
+test('a pill that draws its own arrow is the fix, not a pair', () => {
+  expect(
+    labels([
+      {
+        mode: 'url',
+        name: 'a',
+        url: '?x',
+        annotations: [
+          {
+            type: 'text',
+            text: 'LCT',
+            leader: true,
+            anchor: site,
+            dx: 150,
+          },
+        ],
+      },
+    ]),
+  ).toEqual([])
+})
+
+test('an arrow that starts somewhere else is not this pattern', () => {
+  expect(
+    labels([
+      {
+        mode: 'url',
+        name: 'a',
+        url: '?x',
+        annotations: [
+          { type: 'text', text: 'LCT', anchor: { ...site, dx: 150 } },
+          {
+            type: 'arrow',
+            anchor: { ...site, dx: 14 },
+            fromAnchor: { track: 't', locus: 'ctgA:900' },
+          },
+        ],
+      },
+    ]),
+  ).toEqual([])
+})
+
+test('it reaches a stage, where a figure keeps half its callouts', () => {
+  expect(
+    labels([
+      {
+        mode: 'url',
+        name: 'a',
+        url: '?x',
+        stages: [
+          {
+            annotations: [
+              { type: 'text', text: 'sorted', anchor: { ...site, dx: 150 } },
+              { type: 'arrow', fromAnchor: { ...site, dx: 88 } },
+            ],
+          },
+        ],
+      },
+    ]),
+  ).toEqual(['a stage 0: "sorted"'])
 })

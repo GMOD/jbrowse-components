@@ -196,3 +196,76 @@ export function countRawCallouts(list: ScreenshotSpec[]) {
   }
   return { found, baseline: CALLOUT_BASELINE }
 }
+
+// ── The detached-label ratchet ─────────────────────────────────────────────
+//
+// A `text` pill and an `arrow` whose tail leaves that same pill, written as two
+// annotations. The gap between them is then a number in the spec, and no number
+// is right: a tail belongs at the pill's edge, and a pill's width is only known
+// once the page measures its text. One spacing fits one label length, so the
+// pair drifts apart the moment anyone edits the label or the font size — with
+// nothing to catch it, since both shapes resolve and both draw in frame.
+//
+// It has been caught three times by a human reading a committed PNG:
+// dog10k-size-fst-scan-genome (IGF1 50px clear of its arrow, IGF2BP2's tail
+// inside its pill), ld/lct_fst_scan, and homoeolog_synteny/oat_homoeologs.
+// `leader: true` on the text draws the arrow from the measured pill instead and
+// takes the number out of the spec entirely.
+//
+// Paired by ANCHOR EQUALITY rather than by proximity: an arrow whose
+// `fromAnchor` resolves to the same place as a pill's `anchor` is a pill-arrow
+// pair by authorship, so this cannot fire on an arrow that legitimately starts
+// in open space.
+//
+// A ratchet for the same reason the one above is: converting a pair moves
+// pixels, so each conversion wants its figure regenerated and they land as
+// figures are touched. Lower LEADER_BASELINE when one does.
+export const LEADER_BASELINE = 25
+
+// Only the fields that place the anchor — dx/dy are the offsets that differ
+// BETWEEN the pill and its tail, which is the whole point.
+function anchorSite(anchor: Annotation['anchor']) {
+  return anchor
+    ? JSON.stringify([
+        anchor.track,
+        anchor.locus,
+        anchor.selector,
+        anchor.text,
+        anchor.graphNode,
+        anchor.hLocus,
+        anchor.vLocus,
+        anchor.view,
+        anchor.fracY,
+      ])
+    : undefined
+}
+
+export function countDetachableLabels(list: ScreenshotSpec[]) {
+  const found: string[] = []
+  const annotations = (name: string, anns: Annotation[] | undefined) => {
+    for (const pill of anns ?? []) {
+      if (pill.type !== 'text' || pill.leader) {
+        continue
+      }
+      const site = anchorSite(pill.anchor)
+      if (site === undefined) {
+        continue
+      }
+      for (const arrow of anns ?? []) {
+        if (arrow.type === 'arrow' && anchorSite(arrow.fromAnchor) === site) {
+          found.push(`${name}: "${(pill.text ?? '').split('\n')[0]}"`)
+        }
+      }
+    }
+  }
+  for (const spec of list) {
+    if (spec.mode === 'cli') {
+      continue
+    }
+    annotations(spec.name, spec.annotations)
+    for (const [i, stage] of (spec.stages ?? []).entries()) {
+      annotations(`${spec.name} stage ${i}`, stage.annotations)
+    }
+  }
+  return { found, baseline: LEADER_BASELINE }
+}
