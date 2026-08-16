@@ -1,8 +1,11 @@
+import { waitFor } from '@testing-library/react'
+
 import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import {
+  clickContextMenuItem,
   contextMenuLabels,
   createTestEnvironment,
   rightClick,
@@ -89,6 +92,44 @@ describe('Copy tooltip context menu item', () => {
     open(display)
 
     expect(contextMenuLabels(display)).not.toContain('Copy tooltip text')
+  })
+})
+
+describe('Copy location context menu item', () => {
+  // The one row here whose value gets pasted somewhere rather than read, so it
+  // is written the way the location box reads it back: 1-based, closed.
+  it('copies the feature span as a locString', async () => {
+    const writeText = jest.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    })
+    // copyToClipboard gates the async API on this and otherwise falls back to
+    // execCommand, which jsdom does not implement
+    Object.defineProperty(window, 'isSecureContext', {
+      value: true,
+      configurable: true,
+    })
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    open(display)
+
+    expect(contextMenuLabels(display)).toContain('Copy location')
+    clickContextMenuItem(display, 'Copy location')
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith('ctgA:1,051..9,000')
+    })
+  })
+
+  // The refName naming the span comes off the loaded region, so a hit whose
+  // region has been pruned has no honest location to offer.
+  it('offers nothing when the hit region is no longer loaded', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    rightClick(display, gene)
+
+    expect(contextMenuLabels(display)).not.toContain('Copy location')
   })
 })
 

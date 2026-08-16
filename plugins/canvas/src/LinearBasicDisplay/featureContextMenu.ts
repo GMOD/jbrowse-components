@@ -2,7 +2,12 @@ import { lazy } from 'react'
 
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { undoItems } from '@jbrowse/core/ui/filterMenuItems'
-import { getContainingView, getSession, pluralize } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getContainingView,
+  getSession,
+  pluralize,
+} from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import BiotechIcon from '@mui/icons-material/Biotech'
@@ -30,6 +35,7 @@ import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { ElementType } from 'react'
 
 const FeatureSequenceDialog = lazy(
   () => import('./components/FeatureSequenceDialog.tsx'),
@@ -114,6 +120,24 @@ export interface FeatureMenuSelf extends IStateTreeNode {
 function showHiddenFeaturesMenuItems(self: FeatureMenuSelf): MenuItem[] {
   const { hiddenFeatures } = self.featureNarrowings()
   return hiddenFeatures ? undoItems({ hiddenFeatures }) : []
+}
+
+// A group of rows, or the single row itself when only one applies — a submenu
+// wrapping one item is pure indirection, and the user has to hover into it to
+// find out there was nothing to choose between. The rows keep their own labels
+// when promoted, which is why every one of them reads as a complete instruction
+// ("Copy tooltip text", "Highlight variant") rather than leaning on the group
+// above it to finish the sentence.
+//
+// Both groups below collapse this way and each used to say so at length in its
+// own words. Core states the same rule for "Filter by..." but cannot share this:
+// there the singleton takes the GROUP's label, since the row it promotes is a
+// bare dialog opener.
+function groupOrSingleRow(
+  group: { label: string; icon: ElementType },
+  rows: MenuItem[],
+): MenuItem[] {
+  return rows.length === 1 ? rows : [{ ...group, subMenu: rows }]
 }
 
 // What every group below is built from: the model to act on, the right-click
@@ -271,8 +295,14 @@ function highlightItem(
 // Two highlight scopes. When the click resolved to a subfeature (an isoform, an
 // LTR part) both the whole feature and that subfeature can be boxed, so the
 // scopes are grouped under a "Highlight" submenu. With no subfeature there is a
-// single scope, kept as a top-level entry so the common case stays one click
-// away.
+// single scope, and groupOrSingleRow keeps it a top-level entry so the common
+// case stays one click away.
+//
+// The lone row names the track's noun ("Highlight variant") while the grouped
+// pair names the annotation types ("Whole gene (EDEN)", "mRNA (EDEN.1)"). That
+// is the point of the pair — telling the gene from its isoform is the only
+// reason there are two rows — whereas the lone row is a sibling of "Hide this
+// variant" and "Open variant details" and reads with them.
 function highlightItems(ctx: MenuContext): MenuItem[] {
   const { self, info, hitNoun, subfeatureNoun } = ctx
   const {
@@ -288,21 +318,18 @@ function highlightItems(ctx: MenuContext): MenuItem[] {
       : 'Remove highlight',
     { startBp, endBp, name, featureId },
   )
-  if (subfeature) {
-    // Named by its own label where it has one ("mRNA (EDEN.1)") — never
-    // case-folded, since the nouns come from the annotation's own types
-    // (mRNA, ncRNA) where case carries meaning.
-    const scope = subfeature.displayLabel
-      ? `${subfeatureNoun} (${subfeature.displayLabel})`
-      : undefined
-    return [
-      {
-        label: 'Highlight',
-        icon: Highlighter,
-        subMenu: [
-          // The subfeature scope carries the subfeature's own id, so it
-          // resolves to this isoform rather than its gene even when the two
-          // share a span (the common GFF3 case).
+  // Named by its own label where it has one ("mRNA (EDEN.1)") — never
+  // case-folded, since the nouns come from the annotation's own types
+  // (mRNA, ncRNA) where case carries meaning.
+  const scope = subfeature?.displayLabel
+    ? `${subfeatureNoun} (${subfeature.displayLabel})`
+    : undefined
+  return groupOrSingleRow({ label: 'Highlight', icon: Highlighter }, [
+    // The subfeature scope carries the subfeature's own id, so it resolves to
+    // this isoform rather than its gene even when the two share a span (the
+    // common GFF3 case).
+    ...(subfeature
+      ? [
           highlightItem(
             ctx,
             scope ?? `This ${subfeatureNoun}`,
@@ -314,12 +341,10 @@ function highlightItems(ctx: MenuContext): MenuItem[] {
               featureId: subfeature.featureId,
             },
           ),
-          wholeItem,
-        ],
-      },
-    ]
-  }
-  return [wholeItem]
+        ]
+      : []),
+    wholeItem,
+  ])
 }
 
 // The show/hide family (pin, solo, hide) groups the growing set of visibility
@@ -380,12 +405,23 @@ function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
   // only the undo row is offered.
   const onlyThisApplied =
     self.soloApplied && inSoloList && self.soloFeatureCount === 1
+  // `soloFeature` REPLACES the list, so a user part-way through collecting loses
+  // the rest of what they had ctrl+clicked. That is the row's job — it is the
+  // one-click "just this one" — but the collection is only visible as a corner
+  // count, so the row says what it costs rather than letting the badge drop from
+  // "4 selected" to "Showing 1" unannounced. Applying the collected set intact
+  // is the badge's own click.
+  const replaces =
+    !self.soloApplied && self.soloFeatureCount > 1
+      ? `replaces the ${self.soloFeatureCount} selected`
+      : undefined
   return [
     ...(onlyThisApplied
       ? []
       : [
           {
             label: `Show only this ${self.featureNoun}`,
+            subLabel: replaces,
             icon: FilterAltIcon,
             onClick: () => {
               self.soloFeature(featureId)
@@ -428,9 +464,11 @@ function copyItem(
   label: string,
   text: string,
   what: string,
+  subLabel?: string,
 ): MenuItem {
   return {
     label,
+    subLabel,
     icon: ContentCopyIcon,
     onClick: () => {
       void copyText(self, text, what)
@@ -492,17 +530,37 @@ function copyJsonItem(
   }
 }
 
-// Up to four copy entries would clutter the top level as plain "Copy …" items,
-// so they're grouped under one submenu — unless only one applies, where a
-// submenu holding a single item is pure indirection. That happens for a
+// The copy entries would clutter the top level as plain "Copy …" items, so
+// groupOrSingleRow puts them under one submenu — promoting the lone row for a
 // nameless feature clicked away from a transcript (no HGVS position, no
-// tooltip rows, no subfeature); the label layer always has a tooltip, since a
-// rendered label means the feature had a name. Every label says "Copy", so an
-// item reads the same either way.
+// tooltip rows, no subfeature, no refName loaded). The label layer always has a
+// tooltip, since a rendered label means the feature had a name.
 function copyItems(ctx: MenuContext): MenuItem[] {
   const { self, info } = ctx
-  const { subfeature, hgvsLabel, tooltipText } = info
+  const { subfeature, hgvsLabel, tooltipText, displayedRegionIndex } = info
+  const { startBp, endBp } = info.item
+  const region = self.loadedRegions.get(displayedRegionIndex)
   const items = [
+    // The feature's own span, 1-based and formatted the way the location box
+    // reads it back, which is what makes it worth a row of its own: it is the
+    // one thing here a user pastes somewhere rather than reads. Absent when the
+    // region carrying this hit is no longer loaded, since the refName that
+    // names the span comes off it.
+    ...(region
+      ? [
+          copyItem(
+            self,
+            'Copy location',
+            assembleLocString({
+              refName: region.refName,
+              start: startBp,
+              end: endBp,
+            }),
+            'location',
+            'e.g. to paste into the location search box',
+          ),
+        ]
+      : []),
     // The clicked base in transcript coordinates, already qualified with the
     // transcript accession (e.g. `EDEN.1:c.93+1` — see hgvsHitLabel), which is
     // how a clinical report names it. Absent — rather than disabled — when the
@@ -531,7 +589,8 @@ function copyItems(ctx: MenuContext): MenuItem[] {
     ...(subfeature ? [copyJsonItem(ctx, subfeature)] : []),
     copyJsonItem(ctx, undefined),
   ]
-  return items.length === 1
-    ? items
-    : [{ label: 'Copy to clipboard', icon: ContentCopyIcon, subMenu: items }]
+  return groupOrSingleRow(
+    { label: 'Copy to clipboard', icon: ContentCopyIcon },
+    items,
+  )
 }

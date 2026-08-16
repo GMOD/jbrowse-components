@@ -4,6 +4,7 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import {
   clickContextMenuItem,
+  contextMenuItem,
   contextMenuLabels,
   createTestEnvironment,
   rightClick,
@@ -30,6 +31,12 @@ const [geneA, geneB] = genes
 function load(display: TestDisplay) {
   display.setRpcData(0, makeFeatureData({ flatbushItems: genes }), 10, ctgA)
   display.setLoadedRegion(0, ctgA)
+}
+
+// The one-shot isolate row itself, for the assertions below that read more than
+// its label.
+function soloRow(display: TestDisplay) {
+  return contextMenuItem(display, 'Show only this feature')
 }
 
 // Only the show-only rows, in menu order — the rest of the menu is other tests'.
@@ -109,6 +116,40 @@ describe('show-only list context menu', () => {
     rightClick(display, geneA!)
 
     expect(soloLabels(display)[0]).toBe('Show only this feature')
+  })
+
+  // `soloFeature` replaces the list, and the collection it discards is visible
+  // only as a corner count — so the row that discards it says so.
+  it('warns that the one-shot isolate discards a collection', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ soloFeatureIds: ['a', 'b', 'c'] })
+    load(display)
+
+    rightClick(display, geneA!)
+    expect(soloRow(display)).toMatchObject({
+      label: 'Show only this feature',
+      subLabel: 'replaces the 3 selected',
+    })
+  })
+
+  it('says nothing about replacing when there is nothing to lose', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ soloFeatureIds: ['a'] })
+    load(display)
+
+    rightClick(display, geneA!)
+    expect(soloRow(display).subLabel).toBeUndefined()
+
+    // nor once applied, where the list IS what is shown and narrowing it is the
+    // row's advertised job rather than a loss
+    const applied = createDisplay({
+      soloFeatureIds: ['a', 'b', 'c'],
+      soloApplied: true,
+    }).display
+    load(applied)
+
+    rightClick(applied, geneA!)
+    expect(soloRow(applied).subLabel).toBeUndefined()
   })
 
   it('offers only the undo once the list holds this feature alone', () => {

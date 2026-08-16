@@ -75,18 +75,27 @@ export function contextMenuLabels(display: TestDisplay) {
   )
 }
 
-// Click the context-menu row with this label. Throws — rather than silently
-// doing nothing — when no such row exists, so a renamed or dropped item fails
+// The context-menu row with this label, submenus included — for a test
+// asserting on something other than the label (a subLabel, a disabled gate).
+// Throws rather than answering undefined, so a renamed or dropped row fails
 // where the test names it instead of one assertion later.
-export function clickContextMenuItem(display: TestDisplay, label: string) {
+export function contextMenuItem(display: TestDisplay, label: string) {
   const item = flattenMenuItems(display.contextMenuItems()).find(
     m => 'label' in m && m.label === label,
   )
-  if (item && 'onClick' in item) {
-    item.onClick()
-  } else {
-    throw new Error(`no clickable menu item labeled "${label}"`)
+  if (!item) {
+    throw new Error(`no menu item labeled "${label}"`)
   }
+  return item
+}
+
+// Click the context-menu row with this label.
+export function clickContextMenuItem(display: TestDisplay, label: string) {
+  const item = contextMenuItem(display, label)
+  if (!('onClick' in item)) {
+    throw new Error(`menu item "${label}" is not clickable`)
+  }
+  item.onClick()
 }
 
 // Right-click on `item`, resolving `subfeature` when the click landed on one —

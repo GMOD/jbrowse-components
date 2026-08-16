@@ -22,9 +22,9 @@ const CollapseIntronsDialog = lazy(
 
 // Loose type test, matched case-insensitively like isCDS/isExon: real GFFs carry
 // 'mRNA', 'lnc_RNA', 'protein_coding_gene', 'transcript'. Gates the menu item on
-// the clicked FEATURE (the display's `isGeneLike`) and the transcript scope on
-// the clicked SUBFEATURE, so a mature-protein or repeat subpart hit doesn't
-// offer to collapse itself.
+// the clicked FEATURE (see the display's contextMenuItems) and the transcript
+// scope on the clicked SUBFEATURE, so a mature-protein or repeat subpart hit
+// doesn't offer to collapse itself.
 export function isGeneLikeType(type: string | undefined) {
   const t = (type ?? '').toLowerCase()
   return t.includes('gene') || t.includes('rna') || t.includes('transcript')

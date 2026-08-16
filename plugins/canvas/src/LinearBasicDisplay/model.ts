@@ -234,10 +234,6 @@ export default function stateModelFactory(
           this.geneGlyphIsoformCap !== undefined
         )
       },
-
-      get isGeneLike() {
-        return isGeneLikeType(self.contextMenuInfo?.item.type)
-      },
     }))
     .views(self => {
       const { rpcProps: superRpcProps } = self
@@ -443,7 +439,7 @@ export default function stateModelFactory(
         contextMenuItems() {
           const base = superContextMenuItems()
           const info = self.contextMenuInfo
-          return info && self.isGeneLike
+          return info && isGeneLikeType(info.item.type)
             ? [...base, collapseIntronsMenuItem(self, info)]
             : base
         },
