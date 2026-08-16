@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 import { LoadingEllipses } from '../../ui/index.ts'
 import { getSession } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
+import { panelAssemblyName } from './panelAssemblyName.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
@@ -71,7 +72,11 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
           <SequenceFeatureDetails
             model={model.sequenceFeatureDetails}
             session={getSession(model)}
-            assemblyName={model.view?.assemblyNames?.[0]}
+            assemblyName={panelAssemblyName({
+              feature,
+              viewAssemblyNames: model.view?.assemblyNames,
+              assemblyManager: getSession(model).assemblyManager,
+            })}
             feature={feature}
             hoverTarget={model}
           />
