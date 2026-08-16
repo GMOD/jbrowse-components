@@ -60,19 +60,30 @@ const external = [
 // plain set is the only path that keeps Material out of the bundle rather than
 // merely off the screen. It needs a display component of your own.
 //
-// `seam` — the whole of `@jbrowse/display-ui`, which is what an embedder adds
-// to their app to mount `DisplayUIProvider` over JBrowse's stock displays. The
-// honest figure for the common case, and the one the build-your-own landing page
-// quotes: those displays still carry `DisplayChrome`, so this is what asking for
-// the plain look *adds*, not what it saves.
+// `seam` — what an embedder adds to their app to mount `DisplayUIProvider` over
+// JBrowse's stock displays. The honest figure for the common case, and the one
+// the build-your-own landing page quotes: those displays still carry
+// `DisplayChrome`, so this is what asking for the plain look *adds*, not what it
+// saves.
+//
+// **`DisplayUIProvider` itself, NOT `export *` over the package.** This was the
+// whole barrel until `FloatingLegend` moved in, and that one move nearly doubled
+// the number — from 19 to 37 KB gzip — because the legend reaches `makeStyles`
+// and so drags emotion in, while nothing an embedder mounts touches it. A figure
+// that grows when the package gains a component no consumer of the seam renders
+// is measuring the directory, not the seam, and the landing page would have gone
+// on quoting it. Anything a host reaches for on purpose (`TrackOverlaySlot`,
+// `useTrackControlMenu`) it can measure for itself; this is the default cost.
 const displayUi = path.join(root, 'packages/display-ui/src/index.ts')
+const inDisplayUi = (file: string) =>
+  JSON.stringify(displayUi.replace('index.ts', file))
 const variants = {
   mui: `export { default } from ${JSON.stringify(path.join(chromeDir, 'DisplayChrome.tsx'))}`,
   plain: [
     `export { default as DisplayChromeBase } from ${JSON.stringify(path.join(chromeDir, 'DisplayChromeBase.tsx'))}`,
-    `export { default as plainChromeOverlays } from ${JSON.stringify(displayUi.replace('index.ts', 'plainChromeOverlays.tsx'))}`,
+    `export { default as plainChromeOverlays } from ${inDisplayUi('plainChromeOverlays.tsx')}`,
   ].join('\n'),
-  seam: `export * from ${JSON.stringify(displayUi)}`,
+  seam: `export { default } from ${inDisplayUi('DisplayUIProvider.tsx')}`,
 }
 
 async function measure(source: string) {
@@ -126,7 +137,7 @@ const summary = [
   `stock chrome (MUI overlays):  ${sizes.muiKb} KB  (${sizes.muiGzipKb} KB gzip)`,
   `base + plain overlays:        ${sizes.plainKb} KB  (${sizes.plainGzipKb} KB gzip)`,
   `saved:                        ${kb(sizes.savedBytes)} KB  (${kb(sizes.savedGzipBytes)} KB gzip)`,
-  `@jbrowse/display-ui, whole:   ${sizes.seamKb} KB  (${sizes.seamGzipKb} KB gzip)`,
+  `DisplayUIProvider (the seam): ${sizes.seamKb} KB  (${sizes.seamGzipKb} KB gzip)`,
 ].join('\n')
 
 if (args.has('--check')) {

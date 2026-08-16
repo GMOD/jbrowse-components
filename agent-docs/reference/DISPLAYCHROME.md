@@ -802,14 +802,21 @@ displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
 stays in the bundle. *Weight* is only available to code writing its own display
 component — `DisplayChromeBase` plus a `TrackControlComponent` of its own import
 no toolkit at all. `pnpm measure-chrome-bundle` measures three entry points and
-CI re-checks them: the Material chrome, the base-plus-plain pairing, and the
-whole of `@jbrowse/display-ui`. **Quote the third when describing what mounting
+CI re-checks them: the Material chrome, the base-plus-plain pairing, and
+`DisplayUIProvider` itself. **Quote the third when describing what mounting
 the seam costs**, and quote it from `scripts/chromeBundleSizes.json` rather than
 from prose — that file is what CI gates, so a number written anywhere else is
 one the next commit can falsify. The build-your-own landing page quoted the
 second for a year while every page on it took the first, which reads as a saving
 where the page in fact pays the seam on top of the Material chrome it is not
-removing. `makeStyles` no longer stands in the way of the
+removing.
+
+**That third entry point is the provider, not `export *` over the package**, and
+the difference is not pedantry: while it was the barrel, moving `FloatingLegend`
+into the package nearly doubled it — the legend reaches `makeStyles` and so
+drags emotion in, though nothing an embedder mounts renders it. A figure that
+moves when the package gains a component the seam's consumers never touch is
+measuring the directory. `makeStyles` no longer stands in the way of the
 second, handing a component JBrowse's own plain-data theme
 (`ui/styleTheme.ts`), but that alone did not get MUI out of a host's first
 paint; [EAGER_BUNDLE.md](EAGER_BUNDLE.md)
