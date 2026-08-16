@@ -23,11 +23,13 @@ import {
   getSession,
   isFeature,
   measureText,
+  notifyFeatureDetailsMiss,
   openFeatureWidget,
+  withFeatureDetails,
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   HeightModeMixin,
   MultiRegionDisplayMixin,
@@ -3975,38 +3977,35 @@ export default function stateModelFactory(
         // here on click; opening the menu pre-warms `contextMenuFeature` through
         // the same call, so a click is normally already resolved.
         //
-        // `onMiss` because an empty result means different things to the two
-        // callers: the id came from the hit test, so nothing coming back means
-        // the lookup itself failed (data evicted under it, or a tier whose ids
-        // don't compare). A user-initiated item must say so — silently doing
-        // nothing is the worst answer to a click — while the speculative
-        // pre-warm stays quiet, since the user asked for nothing and the menu
-        // just doesn't grow its feature items.
+        // `onMiss` is passed at every call because an empty result means
+        // different things to the two callers: the id came from the hit test, so
+        // nothing coming back means the lookup itself failed (data evicted under
+        // it, or a tier whose ids don't compare). A user-initiated item must say
+        // so — silently doing nothing is the worst answer to a click — while the
+        // speculative pre-warm stays quiet, since the user asked for nothing and
+        // the menu just doesn't grow its feature items.
+        //
+        // This is `withFeatureDetails` bound to this display's own fetch: what
+        // the pileup adds is only the read's region, resolved off the read
+        // itself rather than a displayed-region index (see fetchFeatureDetails).
+        // The three outcomes and what each does are the shared function's.
         async function withFeature(
           featureId: string,
           onFeat: (feat: Feature) => void,
           onMiss: () => void,
         ) {
-          const session = getSession(self)
-          try {
-            const feat = await fetchFeatureDetails(self, featureId)
-            if (isAlive(self)) {
-              if (feat) {
-                onFeat(feat)
-              } else {
-                onMiss()
-              }
-            }
-          } catch (e) {
-            console.error(e)
-            session.notifyError(`${e}`, e)
-          }
-        }
-        function notifyMiss() {
-          getSession(self).notify(
-            'Could not load details for this feature',
-            'warning',
+          await withFeatureDetails(
+            self,
+            () => fetchFeatureDetails(self, featureId),
+            onFeat,
+            onMiss,
           )
+        }
+        // The default `withFeatureDetails` would apply anyway; named here
+        // because the pre-warm below passes the OTHER answer, and a bare
+        // omission would not read as a decision.
+        function notifyMiss() {
+          notifyFeatureDetailsMiss(self)
         }
         return {
           /**

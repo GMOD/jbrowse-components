@@ -7,9 +7,9 @@ import {
   getContainingView,
   getSession,
   pluralize,
+  withFeatureDetails,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -500,17 +500,14 @@ function copyJsonItem(
     label: `Copy ${scope} attributes (JSON)`,
     icon: ContentCopyIcon,
     onClick: () => {
-      void (async () => {
-        const parent = await self.fetchFullFeature(
-          featureId,
-          displayedRegionIndex,
-        )
-        // isAlive for the same reason selectFeatureById and the collapse-introns
-        // dialog opener take it: the track can be unticked while the fetch is in
-        // flight, and copyText reaches getSession(self), which throws on a
-        // detached node — here as an unhandled rejection, since the whole body
-        // is a floating promise.
-        if (parent && isAlive(self)) {
+      // `withFeatureDetails` owns the isAlive guard and the empty-lookup notice:
+      // the track can be unticked while the fetch is in flight, and `copyText`
+      // reaches `getSession(self)`, which throws on a detached node — here as an
+      // unhandled rejection, since the body is a floating promise.
+      void withFeatureDetails(
+        self,
+        () => self.fetchFullFeature(featureId, displayedRegionIndex),
+        parent => {
           const target = subfeature
             ? findSubfeatureById(parent, subfeature.featureId)
             : parent
@@ -519,13 +516,13 @@ function copyJsonItem(
           // containing feature rather than nothing, but say that's what landed
           // instead of claiming the isoform.
           const { uniqueId: _, ...rest } = (target ?? parent).toJSON()
-          await copyText(
+          void copyText(
             self,
             JSON.stringify(rest, null, 4),
             `${target ? scope : wholeScope} attributes`,
           )
-        }
-      })()
+        },
+      )
     },
   }
 }

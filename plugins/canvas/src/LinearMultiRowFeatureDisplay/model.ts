@@ -11,13 +11,15 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   getSession,
+  notifyFeatureDetailsMiss,
   openFeatureWidget,
+  withFeatureDetails,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
@@ -1075,20 +1077,26 @@ export default function stateModelFactory(
        */
       selectFeatureById(featureId: string, displayedRegionIndex: number) {
         const region = self.loadedRegions.get(displayedRegionIndex)
-        if (region) {
-          void (async () => {
-            const feature = await fetchCanvasFeatureDetails(
+        if (!region) {
+          // The click landed on a region whose data has already gone, which is
+          // the same nothing-to-open the lookup itself reports below.
+          notifyFeatureDetailsMiss(self)
+          return
+        }
+        void withFeatureDetails(
+          self,
+          () =>
+            fetchCanvasFeatureDetails(
               getSession(self),
               getRpcSessionId(self),
               self.adapterConfig,
               featureId,
               region,
-            )
-            if (feature && isAlive(self)) {
-              openFeatureWidget(self, feature.toJSON(), { feature })
-            }
-          })()
-        }
+            ),
+          feature => {
+            openFeatureWidget(self, feature.toJSON(), { feature })
+          },
+        )
       },
       /**
        * #action

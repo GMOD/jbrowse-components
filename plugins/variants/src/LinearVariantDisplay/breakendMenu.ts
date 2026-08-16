@@ -1,4 +1,4 @@
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import { withFeatureDetails } from '@jbrowse/core/util'
 import { hasBreakpointSplitView } from '@jbrowse/sv-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 
@@ -56,15 +56,13 @@ export function breakendMenuItems(self: BreakendMenuSelf): MenuItem[] {
       label: SPLIT_VIEW_MENU_LABEL,
       icon: CompareArrowsIcon,
       onClick: () => {
-        void (async () => {
-          const feature = await self.fetchFullFeature(
-            featureId,
-            displayedRegionIndex,
-          )
-          if (feature && isAlive(self)) {
+        void withFeatureDetails(
+          self,
+          () => self.fetchFullFeature(featureId, displayedRegionIndex),
+          feature => {
             launchFromFeature(self, feature)
-          }
-        })()
+          },
+        )
       },
     },
   ]

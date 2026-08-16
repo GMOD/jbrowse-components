@@ -53,6 +53,12 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       theme: createJBrowseTheme(),
       palette: resolvePalette(),
       queuedDialogs: [] as QueuedDialog[],
+      // What the session was asked to tell the user, in order. Recorded rather
+      // than dropped because "the user was told nothing" is a real assertion —
+      // a click whose lookup comes back empty and says nothing is the failure
+      // `notifyFeatureDetailsMiss` exists for, and a no-op `notify` cannot tell
+      // that apart from a working one.
+      notifications: [] as { message: string; level?: string }[],
     }))
     .views(self => ({
       getTrackById,
@@ -65,8 +71,12 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
         self.view = view
         return view
       },
-      notify() {},
-      notifyError() {},
+      notify(message: string, level?: string) {
+        self.notifications.push({ message, level })
+      },
+      notifyError(message: string) {
+        self.notifications.push({ message, level: 'error' })
+      },
       queueDialog(cb: (handleClose: () => void) => QueuedDialog) {
         self.queuedDialogs.push(cb(() => {}))
       },

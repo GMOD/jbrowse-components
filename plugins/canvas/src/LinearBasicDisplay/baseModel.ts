@@ -21,6 +21,7 @@ import {
   isFeature,
   openFeatureWidget,
   pluralize,
+  withFeatureDetails,
 } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
@@ -2524,20 +2525,17 @@ export default function baseStateModelFactory(
         // from a FlatbushItem — rather than `subfeatureInfo.parentFeatureId`,
         // which names whichever feature the subfeature hangs off.
         // GetCanvasFeatureDetails searches top-level features only, so anything
-        // else answers undefined and this silently opens nothing;
-        // findSubfeatureById below recurses, so the root always reaches the
-        // target.
+        // else answers undefined; findSubfeatureById below recurses, so the root
+        // always reaches the target.
         selectFeatureById(
           featureId: string,
           subfeatureInfo: SubfeatureInfo | undefined,
           displayedRegionIndex: number,
         ) {
-          void (async () => {
-            const parentFeature = await self.fetchFullFeature(
-              featureId,
-              displayedRegionIndex,
-            )
-            if (parentFeature && isAlive(self)) {
+          void withFeatureDetails(
+            self,
+            () => self.fetchFullFeature(featureId, displayedRegionIndex),
+            parentFeature => {
               const target = subfeatureInfo
                 ? (findSubfeatureById(
                     parentFeature,
@@ -2545,8 +2543,8 @@ export default function baseStateModelFactory(
                   ) ?? parentFeature)
                 : parentFeature
               self.selectFeature(target)
-            }
-          })()
+            },
+          )
         },
       }))
       .actions(self => {

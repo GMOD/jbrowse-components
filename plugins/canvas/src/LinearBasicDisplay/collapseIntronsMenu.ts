@@ -1,8 +1,11 @@
 import { lazy } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getContainingTrack, getSession } from '@jbrowse/core/util'
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import {
+  getContainingTrack,
+  getSession,
+  withFeatureDetails,
+} from '@jbrowse/core/util'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 
 import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
@@ -65,65 +68,66 @@ export function collapseIntronsMenuItem(
   } = info
   // `subfeatureId` scopes the collapse to the isoform actually clicked; omitted,
   // the whole gene's transcripts are unioned.
-  const openDialog = async (subfeatureId?: string) => {
-    const session = getSession(self)
-    const fullFeature = await self.fetchFullFeature(
-      featureId,
-      displayedRegionIndex,
-    )
-    // isAlive guards against the display being closed while fetchFullFeature was
-    // in flight; getView/getContainingTrack below would throw on a detached node.
-    if (!fullFeature || !isAlive(self)) {
-      return
-    }
-    const target =
-      subfeatureId === undefined
-        ? fullFeature
-        : findSubfeatureById(fullFeature, subfeatureId)
-    if (!target) {
-      session.notify('Could not find the clicked transcript', 'warning')
-      return
-    }
-    const transcripts = getTranscripts(target)
-    if (!hasIntrons(transcripts)) {
-      session.notify('No introns found in this feature', 'info')
-      return
-    }
-    const view = getView(self)
-    const assemblyName = view.assemblyNames[0]
-    const assembly = assemblyName
-      ? session.assemblyManager.get(assemblyName)
-      : undefined
-    if (!assembly) {
-      // silently doing nothing here reads as a broken menu item
-      session.notify(
-        "Could not resolve this view's assembly, which is needed to clamp the collapsed regions",
-        'warning',
-      )
-      return
-    }
-    session.queueDialog(handleClose => [
-      CollapseIntronsDialog,
-      {
-        view,
-        transcripts,
-        handleClose,
-        assembly,
-        // solo is an exact uniqueId match and a gene-shaped feature draws from
-        // its top-level id, so this stays the gene even when a single transcript
-        // was picked
-        featureId,
-        // names the resulting view; the scope that was chosen, not
-        // transcripts[0], since the gene scope collapses the union of all its
-        // transcripts
-        featureName: getFeatureName(target) ?? 'feature',
-        trackId: readConfObject(
-          getContainingTrack(self).configuration,
-          'trackId',
-        ),
+  // `withFeatureDetails` owns the three ways the lookup itself can end — threw,
+  // found nothing, display gone — so what remains here is the run of early
+  // returns for the ways a feature that WAS found still can't be collapsed. Each
+  // of those already said something; the lookup coming back empty was the one
+  // that said nothing at all.
+  const openDialog = async (subfeatureId?: string) =>
+    withFeatureDetails(
+      self,
+      () => self.fetchFullFeature(featureId, displayedRegionIndex),
+      fullFeature => {
+        const session = getSession(self)
+        const target =
+          subfeatureId === undefined
+            ? fullFeature
+            : findSubfeatureById(fullFeature, subfeatureId)
+        if (!target) {
+          session.notify('Could not find the clicked transcript', 'warning')
+          return
+        }
+        const transcripts = getTranscripts(target)
+        if (!hasIntrons(transcripts)) {
+          session.notify('No introns found in this feature', 'info')
+          return
+        }
+        const view = getView(self)
+        const assemblyName = view.assemblyNames[0]
+        const assembly = assemblyName
+          ? session.assemblyManager.get(assemblyName)
+          : undefined
+        if (!assembly) {
+          // silently doing nothing here reads as a broken menu item
+          session.notify(
+            "Could not resolve this view's assembly, which is needed to clamp the collapsed regions",
+            'warning',
+          )
+          return
+        }
+        session.queueDialog(handleClose => [
+          CollapseIntronsDialog,
+          {
+            view,
+            transcripts,
+            handleClose,
+            assembly,
+            // solo is an exact uniqueId match and a gene-shaped feature draws from
+            // its top-level id, so this stays the gene even when a single transcript
+            // was picked
+            featureId,
+            // names the resulting view; the scope that was chosen, not
+            // transcripts[0], since the gene scope collapses the union of all its
+            // transcripts
+            featureName: getFeatureName(target) ?? 'feature',
+            trackId: readConfObject(
+              getContainingTrack(self).configuration,
+              'trackId',
+            ),
+          },
+        ])
       },
-    ])
-  }
+    )
   const row = { label: 'Collapse introns', icon: CloseFullscreenIcon }
   const transcriptHit: SubfeatureInfo | undefined =
     subfeature && isGeneLikeType(subfeature.type) ? subfeature : undefined

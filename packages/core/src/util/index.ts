@@ -272,8 +272,10 @@ export {
 } from './crypto.ts'
 export {
   type FeatureWidgetTypeRef,
+  notifyFeatureDetailsMiss,
   openFeatureWidget,
 } from './openFeatureWidget.ts'
+export { withFeatureDetails } from './withFeatureDetails.ts'
 export {
   canonicalizeViewRefName,
   findParentThat,

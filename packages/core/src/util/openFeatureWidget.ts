@@ -76,3 +76,27 @@ export function openFeatureWidget(
   session.showWidget(widget)
   return widget
 }
+
+/**
+ * The other half of the flow above: the details lookup came back with nothing,
+ * so there is no widget to open.
+ *
+ * Every display paints from slim render arrays and re-fetches the whole feature
+ * on click, so a lookup can come back empty for reasons the user cannot see —
+ * the data was evicted under them, or the id does not compare in the tier that
+ * answered. **Silently doing nothing is the worst response to a click**, and it
+ * was what three canvas paths did.
+ *
+ * Here rather than per plugin because the sentence is one fact and the two
+ * families would otherwise word it differently for the same event. It is
+ * deliberately NOT what an *error* says: a throw already reaches `notifyError`
+ * with the reason, and a display that notifies both tells the user off twice for
+ * one click.
+ *
+ * A **speculative** lookup must not call this — alignments pre-warms the read
+ * behind a context menu, and the user asked for nothing there, so the menu just
+ * doesn't grow its feature items.
+ */
+export function notifyFeatureDetailsMiss(node: IAnyStateTreeNode) {
+  getSession(node).notify('Could not load details for this feature', 'warning')
+}
