@@ -1,5 +1,6 @@
 import { Suspense, lazy, useLayoutEffect, useRef } from 'react'
 
+import { escapeHTML, looksLikeHTML } from '../util/htmlText.ts'
 import { linkify } from '../util/index.ts'
 import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
 
@@ -9,70 +10,9 @@ declare global {
   }
 }
 
-// source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
-// with some random uncommon ones removed. note: we just use this to run the content
-// through dompurify without escaping if we see an htmlTag from this list
-// otherwise we escape angle brackets and things prematurely because it might be
-// something like <TRA> in VCF. Ref #657
-const htmlTags = [
-  'a',
-  'b',
-  'br',
-  'code',
-  'div',
-  'em',
-  'h1',
-  'h2',
-  'h3',
-  'h4',
-  'h5',
-  'h6',
-  'i',
-  'img',
-  'li',
-  'mark',
-  'p',
-  'pre',
-  'span',
-  'small',
-  'strong',
-  'table',
-  'tbody',
-  'sup',
-  'sub',
-  'td',
-  'tfoot',
-  'th',
-  'thead',
-  'tr',
-  'u',
-  'ul',
-]
-
 const DOMPurifySanitizedHTML = lazy(
   () => import('./DOMPurifySanitizedHTML.tsx'),
 )
-
-// adapted from is-html
-// https://github.com/sindresorhus/is-html/blob/master/index.js
-const full = new RegExp(
-  htmlTags.map(tag => String.raw`<${tag}\b[^>]*>`).join('|'),
-  'i',
-)
-function isHTML(str: string) {
-  return full.test(str)
-}
-
-const htmlEscapes: Record<string, string> = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;',
-}
-function escapeHTML(str: string) {
-  return str.replaceAll(/[&<>"']/g, c => htmlEscapes[c]!)
-}
 
 function needsSanitization(str: string) {
   return str.includes('<') || str.includes('://')
@@ -107,7 +47,7 @@ export default function SanitizedHTML({
   }
 
   const html = linkify(str)
-  const value = isHTML(html) ? html : escapeHTML(html)
+  const value = looksLikeHTML(html) ? html : escapeHTML(html)
 
   if (typeof Element !== 'undefined' && Element.prototype.setHTML) {
     return <SetHTML value={value} className={className} />
