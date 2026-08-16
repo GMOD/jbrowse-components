@@ -7,8 +7,7 @@ import {
 import { pluralize } from '../../../util/index.ts'
 import SequenceLegend from '../SequenceLegend.tsx'
 import { proteinColor, translExceptColor } from '../consts.ts'
-import { coordLabelWidth, splitString } from '../util.ts'
-import SequenceDisplay from './SequenceDisplay.tsx'
+import PlainSequence from './PlainSequence.tsx'
 
 import type { TranslExcept } from '../../../util/geneticCodes.ts'
 import type { Feat } from '../../util.tsx'
@@ -48,7 +47,6 @@ const ProteinSequence = observer(function ProteinSequence({
   starts?: string[]
   translExcept?: TranslExcept[]
 }) {
-  const { charactersPerRow, showCoordinates } = model
   const str = convertCodingSequenceToPeptides({
     cds,
     sequence,
@@ -56,7 +54,6 @@ const ProteinSequence = observer(function ProteinSequence({
     starts,
     translExcept,
   })
-  const { segments } = splitString({ str, charactersPerRow, showCoordinates })
   const note = translExcept ? translExceptNote(translExcept) : undefined
   const highlightPositions = translExcept?.length
     ? translExceptProteinPositions({ cds, translExcept })
@@ -67,17 +64,10 @@ const ProteinSequence = observer(function ProteinSequence({
       {note ? (
         <SequenceLegend items={[{ color: translExceptColor, label: note }]} />
       ) : null}
-      <SequenceDisplay
+      <PlainSequence
         model={model}
         color={proteinColor}
-        chunks={segments}
-        coordStart={0}
-        labelWidth={coordLabelWidth({
-          firstCoord: 0,
-          totalLength: str.length,
-          charactersPerRow,
-          strand: 1,
-        })}
+        str={str}
         highlight={
           highlightPositions?.size
             ? index =>
