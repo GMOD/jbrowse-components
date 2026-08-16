@@ -1,5 +1,6 @@
 import { SingleSlider } from '@jbrowse/core/ui'
 import {
+  MIN_LENGTH_HELP,
   MinLengthSlider,
   OpacitySlider,
   PAN_BUFFER_PX,
@@ -47,10 +48,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
           }}
         />
       </SettingRow>
-      <SettingRow
-        label="Min length:"
-        help="Hides alignments shorter than this many bp. Cuts whole-genome hairball noise from short/spurious chains."
-      >
+      <SettingRow label="Min length:" help={MIN_LENGTH_HELP}>
         <MinLengthSlider
           value={minAlignmentLength}
           onCommit={bp => {

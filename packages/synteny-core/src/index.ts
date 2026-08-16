@@ -172,7 +172,10 @@ export { default as TrackWarningsDialog } from './TrackWarningsDialog.tsx'
 // looks the same in each — see the component for the drift it ends.
 export { default as ComparativeFetchStatus } from './ComparativeFetchStatus.tsx'
 export type { ComparativeStatusModel } from './ComparativeFetchStatus.tsx'
-export { default as MinLengthSlider } from './MinLengthSlider.tsx'
+export {
+  default as MinLengthSlider,
+  MIN_LENGTH_HELP,
+} from './MinLengthSlider.tsx'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {
   connectedEndpoints,

@@ -1,5 +1,6 @@
 import { SingleSlider } from '@jbrowse/core/ui'
 import {
+  MIN_LENGTH_HELP,
   MinLengthSlider,
   OpacitySlider,
   SettingRow,
@@ -49,10 +50,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
           size="small"
         />
       </SettingRow>
-      <SettingRow
-        label="Min length:"
-        help="Hides alignments shorter than this many bp. Cuts whole-genome hairball noise from short/spurious chains."
-      >
+      <SettingRow label="Min length:" help={MIN_LENGTH_HELP}>
         <MinLengthSlider
           value={minAlignmentLength}
           onCommit={bp => {

@@ -135,10 +135,20 @@ No configuration is needed: the "Level of detail" menu defaults to `auto`, and
 `fine`/`coarse` pin a tier.
 
 A coarse row has no CIGAR, so it is drawn as a straight ribbon between its
-endpoints. To keep that honest, a row is split into several coarse rows wherever
-its CIGAR contains an indel of at least `--coarse` bp, so no coarse ribbon spans
-a large gap. Each piece reports the row's identity, and their `num_matches` sum
-back to the row's.
+endpoints. To keep that honest, a row is split wherever its CIGAR contains an
+indel of at least `--coarse` bp, so no coarse ribbon spans a large gap. A gap at
+either END of the row is trimmed the same way, which leaves one coarse row
+tighter than the input's own coordinate columns.
+
+Each piece reports the row's identity — `num_matches` is apportioned by aligned
+length, so every piece implies the same identity as the row and as the `de:f:`
+written beside it. The pieces' `num_matches` do not quite sum back to the row's
+when its `block_len` counts the split gaps, which PAF's does.
+
+The split is used only when the CIGAR walk lands exactly on the row's own far
+corner. A CIGAR that disagrees with its coordinate columns — clipping ops, a
+hand-written `cg`, a `cs` whose spans don't add up — leaves the coarse row on
+the columns verbatim, since the columns are what the fine tier draws.
 
 ```bash
 # coarse tier is on by default, split at indels >= 10kb
