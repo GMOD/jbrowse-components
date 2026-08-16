@@ -13,9 +13,13 @@ import {
   getAssemblyName,
   getAssemblyNameFromFilename,
   getBaseAssemblyConfig,
+  getMissingRequirements,
   initialFormState,
   isBlank,
+  isFormDirty,
   isFormReady,
+  partitionExtraLocations,
+  sequenceLocations,
   urlTextToLocations,
 } from './assemblyConfigUtils.ts'
 
@@ -40,6 +44,10 @@ const gzi = {
 } as FileLocation
 const twobit = {
   uri: 'https://example.com/hg38.2bit',
+  locationType: 'UriLocation',
+} as FileLocation
+const chromSizes = {
+  uri: 'https://example.com/hg38.chrom.sizes',
   locationType: 'UriLocation',
 } as FileLocation
 const aliases = {
@@ -610,6 +618,32 @@ describe('applyClassifiedFiles', () => {
     expect(cleared.faiLocation).toEqual(blank)
     expect(cleared.assemblyName).toBe('')
   })
+
+  // "More options" sets these by hand, so a later file set that says nothing
+  // about them must not answer for them — this is what the recognition card's
+  // "change" link used to walk into, wiping aliases it had promised to keep
+  test('a later file set leaves hand-entered aliases and cytobands alone', () => {
+    const s = applyClassifiedFiles(
+      {
+        ...initialFormState(),
+        refNameAliasesLocation: aliases,
+        cytobandsLocation: cytobands,
+      },
+      [fasta, fai],
+      false,
+    )
+    expect(s.refNameAliasesLocation).toBe(aliases)
+    expect(s.cytobandsLocation).toBe(cytobands)
+  })
+
+  test('but a file set that names one still wins', () => {
+    const s = applyClassifiedFiles(
+      { ...initialFormState(), refNameAliasesLocation: cytobands },
+      [fasta, aliases],
+      false,
+    )
+    expect(s.refNameAliasesLocation).toBe(aliases)
+  })
 })
 
 describe('urlTextToLocations', () => {
@@ -700,6 +734,48 @@ describe('getAssemblyName', () => {
   })
 })
 
+describe('getMissingRequirements', () => {
+  test('nothing for a plain FASTA, which indexes itself', () => {
+    expect(
+      getMissingRequirements({
+        ...initialFormState(),
+        adapterSelection: 'FastaAdapter',
+        fastaLocation: fasta,
+      }),
+    ).toEqual([])
+  })
+
+  test('the fai an indexed FASTA is missing', () => {
+    expect(
+      getMissingRequirements({
+        ...initialFormState(),
+        adapterSelection: 'IndexedFastaAdapter',
+        fastaLocation: fasta,
+      }),
+    ).toEqual(['.fai'])
+  })
+
+  test('both indexes a bgzipped FASTA is missing', () => {
+    expect(
+      getMissingRequirements({
+        ...initialFormState(),
+        adapterSelection: 'BgzipFastaAdapter',
+        fastaLocation: fastaGz,
+      }),
+    ).toEqual(['.fai', '.gzi'])
+  })
+
+  test('nothing for a 2bit', () => {
+    expect(
+      getMissingRequirements({
+        ...initialFormState(),
+        adapterSelection: 'TwoBitAdapter',
+        twoBitLocation: twobit,
+      }),
+    ).toEqual([])
+  })
+})
+
 describe('isFormReady', () => {
   test('false for a fresh form', () => {
     expect(isFormReady(initialFormState())).toBe(false)
@@ -709,6 +785,7 @@ describe('isFormReady', () => {
     expect(
       isFormReady({
         ...initialFormState(),
+        adapterSelection: 'FastaAdapter',
         fastaLocation: fasta,
         assemblyName: '   ',
       }),
@@ -719,10 +796,125 @@ describe('isFormReady', () => {
     expect(
       isFormReady({
         ...initialFormState(),
+        adapterSelection: 'FastaAdapter',
         fastaLocation: fasta,
         assemblyName: 'hg38',
       }),
     ).toBe(true)
+  })
+
+  // getAdapterConfig throws on this form. Reporting it ready would put that
+  // throw behind an enabled submit button.
+  test('false while the chosen format is still missing an index', () => {
+    expect(
+      isFormReady({
+        ...initialFormState(),
+        adapterSelection: 'BgzipFastaAdapter',
+        fastaLocation: fastaGz,
+        assemblyName: 'hg38',
+      }),
+    ).toBe(false)
+  })
+
+  test('true once that index arrives', () => {
+    expect(
+      isFormReady({
+        ...initialFormState(),
+        adapterSelection: 'BgzipFastaAdapter',
+        fastaLocation: fastaGz,
+        faiLocation: fai,
+        gziLocation: gzi,
+        assemblyName: 'hg38',
+      }),
+    ).toBe(true)
+  })
+})
+
+describe('isFormDirty', () => {
+  test('false for a fresh form', () => {
+    expect(isFormDirty(initialFormState())).toBe(false)
+  })
+
+  test('true for a sequence with no name yet', () => {
+    expect(isFormDirty({ ...initialFormState(), fastaLocation: fasta })).toBe(
+      true,
+    )
+  })
+
+  test('true for a name with no sequence yet', () => {
+    expect(isFormDirty({ ...initialFormState(), assemblyName: 'hg38' })).toBe(
+      true,
+    )
+  })
+
+  test('false for a whitespace-only name', () => {
+    expect(isFormDirty({ ...initialFormState(), assemblyName: ' ' })).toBe(
+      false,
+    )
+  })
+})
+
+describe('partitionExtraLocations', () => {
+  test('a bgzipped FASTA uses both its indexes', () => {
+    const { used, unused } = partitionExtraLocations({
+      ...initialFormState(),
+      adapterSelection: 'BgzipFastaAdapter',
+      fastaLocation: fastaGz,
+      faiLocation: fai,
+      gziLocation: gzi,
+    })
+    expect(used).toEqual([fai, gzi])
+    expect(unused).toEqual([])
+  })
+
+  // getAdapterConfig reads chromSizes only for a 2bit, so a FASTA that lists it
+  // as "also loading" is promising a file it drops
+  test('a FASTA does not use chrom.sizes', () => {
+    const { used, unused } = partitionExtraLocations({
+      ...initialFormState(),
+      adapterSelection: 'IndexedFastaAdapter',
+      fastaLocation: fasta,
+      faiLocation: fai,
+      chromSizesLocation: chromSizes,
+    })
+    expect(used).toEqual([fai])
+    expect(unused).toEqual([chromSizes])
+  })
+
+  test('a 2bit does not use a fai', () => {
+    const { used, unused } = partitionExtraLocations({
+      ...initialFormState(),
+      adapterSelection: 'TwoBitAdapter',
+      twoBitLocation: twobit,
+      chromSizesLocation: chromSizes,
+      faiLocation: fai,
+    })
+    expect(used).toEqual([chromSizes])
+    expect(unused).toEqual([fai])
+  })
+
+  test('aliases and cytobands reach every format', () => {
+    const { used } = partitionExtraLocations({
+      ...initialFormState(),
+      adapterSelection: 'FastaAdapter',
+      fastaLocation: fasta,
+      refNameAliasesLocation: aliases,
+      cytobandsLocation: cytobands,
+    })
+    expect(used).toEqual([aliases, cytobands])
+  })
+})
+
+describe('sequenceLocations', () => {
+  test('picks out the sequence files and leaves the sidecars', () => {
+    expect(sequenceLocations([fai, fasta, aliases])).toEqual([fasta])
+  })
+
+  test('two genomes at once, in the order classifyAssemblyFiles reads them', () => {
+    expect(sequenceLocations([fasta, twobit])).toEqual([fasta, twobit])
+    expect(classifyAssemblyFiles([fasta, twobit]).twoBitLocation).toEqual(
+      twobit,
+    )
   })
 })
 

@@ -7,6 +7,7 @@ import {
   clearFormFields,
   getAssemblyName,
   initialFormState,
+  isFormDirty,
   isFormReady,
 } from '@jbrowse/core/util/assemblyConfigUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -32,8 +33,10 @@ const useStyles = makeStyles()(theme => ({
 
 const OpenSequenceDialog = observer(function OpenSequenceDialog({
   onClose,
+  existingAssemblyNames = [],
 }: {
   onClose: (conf?: AssemblyConf[]) => Promise<void>
+  existingAssemblyNames?: string[]
 }) {
   const { classes } = useStyles()
   const [form, setForm] = useState(initialFormState)
@@ -70,6 +73,9 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     }
   }
 
+  // Both name checks happen before buildAssemblyConf, which on a plain FASTA
+  // runs faidx over the whole file — a name that was never going to be accepted
+  // shouldn't cost that first.
   async function stageCurrentAssembly() {
     const name = getAssemblyName(form)
     if (!name) {
@@ -77,6 +83,11 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     }
     if (assemblyConfs.some(conf => conf.name === name)) {
       throw new Error(`Assembly "${name}" is already staged`)
+    }
+    if (existingAssemblyNames.includes(name)) {
+      throw new Error(
+        `An assembly named "${name}" is already open. Give this one a different name.`,
+      )
     }
     return [...assemblyConfs, await buildAssemblyConf(form, indexFasta)]
   }
@@ -102,6 +113,14 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 
   function handleOpen() {
     return runStaging(async () => {
+      // A genome half-entered below the staged list is refused rather than
+      // dropped: submitting the staged ones alone would open something, look
+      // like it worked, and leave the one being typed nowhere.
+      if (!formReady && isFormDirty(form)) {
+        throw new Error(
+          'Finish the genome you are adding — it needs a sequence file, its index and a name — or clear it before opening.',
+        )
+      }
       const confs = formReady ? await stageCurrentAssembly() : assemblyConfs
       if (!confs.length) {
         throw new Error('No assemblies specified')
@@ -121,6 +140,8 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   return (
     <Dialog
       open
+      fullWidth
+      maxWidth="lg"
       onClose={() => {
         handleCancel()
       }}
@@ -138,8 +159,14 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 
         <AddGenomePane
           form={form}
-          setForm={setForm}
           loading={loading}
+          // editing the form is the user acting on whatever the last error
+          // said, so the message goes as soon as they do — it otherwise sits
+          // under a form they have already fixed
+          setForm={update => {
+            setError(undefined)
+            setForm(update)
+          }}
           onStageAnother={() => {
             void addAnotherAssembly()
           }}

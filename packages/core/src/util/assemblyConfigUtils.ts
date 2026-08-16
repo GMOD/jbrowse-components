@@ -261,11 +261,62 @@ export function getAssemblyName(form: FormState) {
   return form.assemblyName.trim()
 }
 
-// Whether the form can be submitted/staged: a primary sequence file is chosen
-// and a (non-whitespace) name is set. Shared so every add-assembly surface gates
-// its submit button the same way.
+// The index files the chosen format requires that the form doesn't have yet,
+// named the way the UI names them. getAdapterConfig throws on the same
+// condition; asking first is what lets a caller disable its submit button
+// instead of letting the user click it and read a stack trace back.
+export function getMissingRequirements(form: FormState) {
+  const { adapterSelection } = form
+  const needsFai =
+    adapterSelection === 'IndexedFastaAdapter' ||
+    adapterSelection === 'BgzipFastaAdapter'
+  return [
+    ...(needsFai && isBlank(form.faiLocation) ? ['.fai'] : []),
+    ...(adapterSelection === 'BgzipFastaAdapter' && isBlank(form.gziLocation)
+      ? ['.gzi']
+      : []),
+  ]
+}
+
+// Whether the form can be submitted/staged: a primary sequence file, everything
+// that file's format requires, and a (non-whitespace) name. Shared so every
+// add-assembly surface gates its submit button the same way.
 export function isFormReady(form: FormState) {
-  return formHasSequence(form) && !!getAssemblyName(form)
+  return (
+    formHasSequence(form) &&
+    !!getAssemblyName(form) &&
+    !getMissingRequirements(form).length
+  )
+}
+
+// Whether the user has put anything in the form. A caller that submits a
+// separate list (desktop stages several genomes) uses this to refuse rather
+// than silently drop a genome the user was halfway through entering.
+export function isFormDirty(form: FormState) {
+  return formHasSequence(form) || !!getAssemblyName(form)
+}
+
+// The non-primary files the built config will actually reference, and the ones
+// it won't. chrom.sizes reaches a TwoBitAdapter and nothing else, so listing it
+// under a FASTA promises a file getAdapterConfig drops on the floor.
+export function partitionExtraLocations(form: FormState) {
+  const { adapterSelection } = form
+  const needsFai =
+    adapterSelection === 'IndexedFastaAdapter' ||
+    adapterSelection === 'BgzipFastaAdapter'
+  const used = [
+    ...(needsFai ? [form.faiLocation] : []),
+    ...(adapterSelection === 'BgzipFastaAdapter' ? [form.gziLocation] : []),
+    ...(adapterSelection === 'TwoBitAdapter' ? [form.chromSizesLocation] : []),
+    form.refNameAliasesLocation,
+    form.cytobandsLocation,
+  ].filter(loc => !isBlank(loc))
+  const unused = [
+    ...(needsFai ? [] : [form.faiLocation]),
+    ...(adapterSelection === 'BgzipFastaAdapter' ? [] : [form.gziLocation]),
+    ...(adapterSelection === 'TwoBitAdapter' ? [] : [form.chromSizesLocation]),
+  ].filter(loc => !isBlank(loc))
+  return { used, unused }
 }
 
 // The FASTA extensions the sequence plugin's adapter guessers accept, so the
@@ -374,11 +425,32 @@ export function classifyAssemblyFiles(
   return result
 }
 
+// The roles that describe the sequence itself. A file set is authoritative over
+// these — one not present in `locations` resets to blank, so removing an input
+// clears its field.
+export const sequenceRoles = [
+  'fasta',
+  'fastaGz',
+  'twoBit',
+] as const satisfies FileRole[]
+
+// The members of a dropped set that are a primary sequence file, in the order
+// classifyAssemblyFiles reads them — so the last is the one it keeps. Two of
+// them means two genomes arrived at once and the form, which holds one at a
+// time, silently kept the second; the caller warns about that.
+export function sequenceLocations(locations: FileLocation[]) {
+  return locations.filter(loc => {
+    const role = classifyFilename(getFileName(loc))
+    return role !== undefined && (sequenceRoles as FileRole[]).includes(role)
+  })
+}
+
 // Rebuild the file-location fields (plus adapter/name) of `state` from a freshly
-// classified set of dropped/pasted files. File fields are authoritative: any not
-// present in `locations` reset to blank, so removing an input clears its field.
-// assemblyName comes from the primary file unless `keepName` is set (the user
-// edited the name themselves).
+// classified set of dropped/pasted files. Sequence fields are authoritative (see
+// sequenceRoles). refName aliases and cytobands only merge, because "More
+// options" sets those by hand too and a later drop would otherwise wipe an entry
+// the file set never had an opinion about. assemblyName comes from the primary
+// file unless `keepName` is set (the user edited the name themselves).
 export function applyClassifiedFiles(
   state: FormState,
   locations: FileLocation[],
@@ -392,8 +464,9 @@ export function applyClassifiedFiles(
     gziLocation: classified.gziLocation ?? blank,
     twoBitLocation: classified.twoBitLocation ?? blank,
     chromSizesLocation: classified.chromSizesLocation ?? blank,
-    refNameAliasesLocation: classified.refNameAliasesLocation ?? blank,
-    cytobandsLocation: classified.cytobandsLocation ?? blank,
+    refNameAliasesLocation:
+      classified.refNameAliasesLocation ?? state.refNameAliasesLocation,
+    cytobandsLocation: classified.cytobandsLocation ?? state.cytobandsLocation,
     adapterSelection: classified.adapterSelection ?? state.adapterSelection,
     assemblyName: keepName
       ? state.assemblyName

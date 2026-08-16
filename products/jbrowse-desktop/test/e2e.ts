@@ -118,8 +118,7 @@ async function runTest(
 
 async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
   // The 2bit, not volvox.fa — the same choice the screenshot flow makes, for the
-  // same reason. Pasting a remote .fa with its .fai does not produce a remote
-  // indexed FASTA: the app downloads the whole FASTA and builds its own index
+  // same reason. A remote .fa the app has to index itself downloads in full
   // through the indexFasta IPC handler, and that step hangs often enough
   // (roughly one run in two, unattended, per agent-docs/reference/
   // DESKTOP_SCREENSHOTS.md) to fail a run. This job is the only Windows coverage

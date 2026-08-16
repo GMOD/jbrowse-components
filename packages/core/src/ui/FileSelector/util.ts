@@ -45,7 +45,16 @@ export function getAccountLabel(account: BaseInternetAccountModel) {
   return truncateLabel(name)
 }
 
-export function getInitialSourceType(location?: FileLocation) {
+// Which toggle a selector opens on. A form's empty slot is spelled as a
+// UriLocation with an empty uri, which isUriLocation rejects, so an untouched
+// field falls to `emptyDefault` rather than reading as a URL. A form that knows
+// how its user is working passes the answer: the add-genome pane's index inputs
+// sit directly under a box of pasted URLs, and offering a local file picker
+// there is a question already answered.
+export function getInitialSourceType(
+  location?: FileLocation,
+  emptyDefault = 'file',
+) {
   if (
     location &&
     'internetAccountId' in location &&
@@ -53,7 +62,14 @@ export function getInitialSourceType(location?: FileLocation) {
   ) {
     return location.internetAccountId
   }
-  return !location || isUriLocation(location) ? 'url' : 'file'
+  if (!location) {
+    return 'url'
+  }
+  return isUriLocation(location)
+    ? 'url'
+    : 'uri' in location
+      ? emptyDefault
+      : 'file'
 }
 
 /**

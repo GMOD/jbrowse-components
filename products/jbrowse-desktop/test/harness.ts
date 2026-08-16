@@ -624,19 +624,19 @@ export async function startStaticServer(
 // Load the volvox assembly through the "Open new genome" dialog, then navigate
 // to a region so the view fully paints.
 //
-// Pass `volvox.2bit`, not `volvox.fa`. Pasting `volvox.fa` plus `volvox.fa.fai`
-// does NOT produce an indexed-FASTA assembly: the pane classifies it as a bare
-// FASTA and the app indexes it itself (`indexFasta` in
-// electron/ipc/fileHandlers.ts, whose output shows up as a `LocalPathLocation`
-// under the profile's `fai/` dir). That index step hangs outright often enough
-// to fail a run, leaving the assembly `initialized: false` with no error and the
-// import form reading "Loading" forever. A 2bit needs no index, so it skips the
-// whole path — see agent-docs/reference/DESKTOP_SCREENSHOTS.md.
+// Pass `volvox.2bit`. A `.fa` with its `.fai` classifies as an indexed FASTA
+// correctly now, but a plain `.fa` on its own routes through `indexFasta`
+// (electron/ipc/fileHandlers.ts, whose output shows up as a `LocalPathLocation`
+// under the profile's `fai/` dir), and that step hangs often enough to fail a
+// run — the assembly sits `initialized: false` with no error and the import form
+// reads "Loading" forever. A 2bit needs no index at all, so it stays clear of
+// the whole path — see agent-docs/reference/DESKTOP_SCREENSHOTS.md.
 //
-// This used to also paste the `.fai` when handed a `.fa`, which was the one
-// caller that still went that way (the e2e test) and the reason its Windows job
-// failed at random. Both callers now pass a 2bit, so the branch is gone rather
-// than sitting here as a working-looking way back into the hang.
+// What made a `.fa` + `.fai` pair land as a bare FASTA anyway, and cost the
+// Windows job a run at random: `sendKeys` types one character at a time, and the
+// URL box unmounted the moment its contents classified as a sequence, so the
+// second line was never typed. AddGenomePane keeps that box mounted now and
+// AddGenomePane.test.tsx holds the line.
 export async function openVolvoxGenome(
   driver: WebDriver,
   sequenceUrl: string,
@@ -652,10 +652,10 @@ export async function openVolvoxGenome(
   await clickButton(driver, 'Open from a URL')
   await delay(500)
 
-  // MUI's multiline TextField renders a hidden shadow textarea for sizing; the
-  // editable one is the non-aria-hidden textarea.
+  // by testid, not by tag: MUI's multiline TextField renders a hidden shadow
+  // textarea for sizing, and the recognition card below adds inputs of its own
   const urlInput = await driver.wait(
-    until.elementLocated(By.css('textarea:not([aria-hidden="true"])')),
+    until.elementLocated(By.css('[data-testid="genome-urls"]')),
     10000,
   )
   await urlInput.click()

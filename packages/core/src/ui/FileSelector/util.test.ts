@@ -153,6 +153,26 @@ describe('getInitialSourceType', () => {
     }
     expect(getInitialSourceType(location)).toBe('file')
   })
+
+  // a form's untouched slot, which says nothing about where the file is coming
+  // from — the surrounding form does
+  const empty = { locationType: 'UriLocation' as const, uri: '' }
+
+  test('returns "file" for an empty location by default', () => {
+    expect(getInitialSourceType(empty)).toBe('file')
+  })
+
+  test('an empty location takes the caller-supplied default instead', () => {
+    expect(getInitialSourceType(empty, 'url')).toBe('url')
+  })
+
+  test('a location that was actually filled in ignores that default', () => {
+    const location = {
+      locationType: 'LocalPathLocation' as const,
+      localPath: '/path/to/file.bam',
+    }
+    expect(getInitialSourceType(location, 'url')).toBe('file')
+  })
 })
 
 describe('dirFromPath', () => {

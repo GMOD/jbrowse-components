@@ -58,6 +58,30 @@ const ExportToWebDialog = lazy(
 )
 const OpenLinkDialog = lazy(() => import('../components/OpenLinkDialog.tsx'))
 
+// Add a whole batch of assemblies, or none of it. Every name is checked before
+// anything is added because jbrowse.addAssemblyConf throws on a duplicate, and a
+// loop that added as it went would open the genomes before the collision, drop
+// the ones after it, and report one error for all three.
+function addAssemblyConfs(
+  jbrowse: {
+    assemblyNames: string[]
+    addAssemblyConf: (conf: AnyConfigurationModel) => unknown
+  },
+  confs: AnyConfigurationModel[],
+) {
+  const taken = confs
+    .map(conf => conf.name as string)
+    .filter(name => jbrowse.assemblyNames.includes(name))
+  if (taken.length) {
+    throw new Error(
+      `An assembly is already open under ${taken.length > 1 ? 'these names' : 'this name'}: ${taken.join(', ')}. Rename and try again.`,
+    )
+  }
+  for (const conf of confs) {
+    jbrowse.addAssemblyConf(conf)
+  }
+}
+
 function getSaveSession(model: BaseRootModel): SessionSnap {
   const snap = getSnapshot(model.jbrowse)
   return {
@@ -325,15 +349,17 @@ export default function rootModelFactory({
                       queueSessionDialog(self.session, (_session, done) => [
                         OpenSequenceDialog,
                         {
+                          existingAssemblyNames: [
+                            ...self.jbrowse.assemblyNames,
+                          ],
+                          // deliberately unguarded: a throw here leaves the
+                          // dialog open showing the reason, with the staged
+                          // genomes still in it. Catching would report the
+                          // failure to a snackbar and close over work that has
+                          // nowhere left to go.
                           onClose: (confs?: AnyConfigurationModel[]) => {
-                            try {
-                              if (confs) {
-                                for (const conf of confs) {
-                                  self.jbrowse.addAssemblyConf(conf)
-                                }
-                              }
-                            } catch (e) {
-                              reportError(self.session, e)
+                            if (confs) {
+                              addAssemblyConfs(self.jbrowse, confs)
                             }
                             done()
                           },

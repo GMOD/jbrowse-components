@@ -13,7 +13,10 @@ import {
   classifyFilename,
   clearSequenceFiles,
   formHasSequence,
+  getAssemblyName,
   isBlank,
+  partitionExtraLocations,
+  sequenceLocations,
   urlTextToLocations,
 } from '../util/assemblyConfigUtils.ts'
 import { getFileName } from '../util/getFileName.ts'
@@ -22,6 +25,7 @@ import { makeStyles } from '../util/tss-react/index.ts'
 import AdvancedOptions from './AdvancedOptions.tsx'
 import FileDropZone from './FileDropZone.tsx'
 import FileSelector from './FileSelector/FileSelector.tsx'
+import { EmptySourceTypeProvider } from './FileSelector/emptySourceType.ts'
 import SequenceAdapterInputs from './SequenceAdapterInputs.tsx'
 
 import type { AdapterType, FormState } from '../util/assemblyConfigUtils.ts'
@@ -175,13 +179,7 @@ const RecognitionCard = observer(function RecognitionCard({
   const primaryLoc = isBlank(form.twoBitLocation)
     ? form.fastaLocation
     : form.twoBitLocation
-  const extras = [
-    form.faiLocation,
-    form.gziLocation,
-    form.chromSizesLocation,
-    form.refNameAliasesLocation,
-    form.cytobandsLocation,
-  ].filter(loc => !isBlank(loc))
+  const { used, unused } = partitionExtraLocations(form)
   const autoIndex = form.adapterSelection === 'FastaAdapter'
   return (
     <div className={classes.recognized}>
@@ -221,13 +219,25 @@ const RecognitionCard = observer(function RecognitionCard({
         slotProps={{ htmlInput: { 'data-testid': 'assembly-name' } }}
       />
 
-      {extras.length ? (
+      {used.length ? (
         <Typography
           variant="caption"
           component="div"
           className={classes.extras}
         >
-          Also loading: {extras.map(loc => getFileName(loc)).join(', ')}
+          Also loading: {used.map(loc => getFileName(loc)).join(', ')}
+        </Typography>
+      ) : null}
+
+      {unused.length ? (
+        <Typography
+          variant="caption"
+          component="div"
+          className={classes.extras}
+        >
+          {shortAdapterLabels[form.adapterSelection]} does not use{' '}
+          {unused.map(loc => getFileName(loc)).join(', ')}, so it will be
+          ignored.
         </Typography>
       ) : null}
 
@@ -316,6 +326,138 @@ const ManualEntry = observer(function ManualEntry({
   )
 })
 
+// Where the files come from: a drop zone or a box of URLs, with a link to swap
+// between them. It stays mounted for the whole flow, including after a sequence
+// is recognized, so that more files can be added to the same genome — and so
+// that the box someone is typing a URL into cannot be unmounted out from under
+// them the moment a prefix of that URL looks like a FASTA.
+const SourceInput = observer(function SourceInput({
+  source,
+  setSource,
+  urls,
+  setUrls,
+  hasSequence,
+  onDropFiles,
+}: {
+  source: Source
+  setSource: (arg: Source) => void
+  urls: string
+  setUrls: (arg: string) => void
+  hasSequence: boolean
+  onDropFiles: (files: File[]) => void
+}) {
+  const { classes } = useStyles()
+  return (
+    <>
+      {source === 'files' ? (
+        <FileDropZone
+          message={
+            hasSequence
+              ? 'Drop any other files for this genome here — index, refName aliases, cytobands'
+              : 'Drop your genome files here — FASTA, .fa.gz, or .2bit, plus any .fai/.gzi index — or click to browse'
+          }
+          onDrop={onDropFiles}
+        />
+      ) : (
+        <>
+          <Typography variant="body2" className={classes.intro}>
+            Paste a URL to a sequence file (FASTA, .fa.gz, or .2bit), plus any
+            index files, one per line. We fill in the rest.
+          </Typography>
+          <TextField
+            variant="outlined"
+            placeholder={[
+              'https://example.com/hg38.fa.gz',
+              'https://example.com/hg38.fa.gz.fai',
+              'https://example.com/hg38.fa.gz.gzi',
+            ].join('\n')}
+            multiline
+            rows={5}
+            fullWidth
+            value={urls}
+            onChange={event => {
+              setUrls(event.target.value)
+            }}
+            slotProps={{ htmlInput: { 'data-testid': 'genome-urls' } }}
+          />
+        </>
+      )}
+      <div className={classes.links}>
+        <Link
+          component="button"
+          type="button"
+          variant="body2"
+          onClick={() => {
+            setSource(source === 'files' ? 'urls' : 'files')
+          }}
+        >
+          {source === 'files' ? 'Open from a URL' : 'Use local files'}
+        </Link>
+      </div>
+    </>
+  )
+})
+
+// What the current file set says about itself: what couldn't be placed, whether
+// it holds more than one genome, and what is still missing. Every file that
+// arrives is accounted for in one of these — a set that silently produces no
+// notice and no recognition card reads as a dead drop zone.
+const FileNotices = observer(function FileNotices({
+  locations,
+  hasSequence,
+  canStageAnother,
+  onEnterManually,
+}: {
+  locations: FileLocation[]
+  hasSequence: boolean
+  canStageAnother: boolean
+  onEnterManually: () => void
+}) {
+  const { classes } = useStyles()
+  const unrecognized = locations.filter(
+    loc => classifyFilename(getFileName(loc)) === undefined,
+  )
+  const placed = locations.filter(
+    loc => classifyFilename(getFileName(loc)) !== undefined,
+  )
+  const sequences = sequenceLocations(locations)
+  const primary = sequences.at(-1)
+  return (
+    <>
+      {unrecognized.length ? (
+        <Alert
+          severity="warning"
+          className={classes.intro}
+          action={
+            <Button color="inherit" size="small" onClick={onEnterManually}>
+              Enter details manually
+            </Button>
+          }
+        >
+          Couldn't place: {unrecognized.map(loc => getFileName(loc)).join(', ')}
+        </Alert>
+      ) : null}
+
+      {sequences.length > 1 && primary ? (
+        <Alert severity="warning" className={classes.intro}>
+          This is more than one genome. The form holds one at a time, so only{' '}
+          {getFileName(primary)} is being read
+          {canStageAnother
+            ? ' — open the rest one at a time with "Add another genome".'
+            : '.'}
+        </Alert>
+      ) : null}
+
+      {!hasSequence && placed.length ? (
+        <Alert severity="info" className={classes.intro}>
+          Got {placed.map(loc => getFileName(loc)).join(', ')}. Add the sequence
+          itself — a FASTA, .fa.gz, or .2bit — to go with it.
+        </Alert>
+      ) : null}
+    </>
+  )
+})
+
 // Drop/paste a genome's files, auto-detect the format, and confirm. Falls back
 // to a manual format picker when filenames don't match our conventions. Produces
 // a FormState the caller turns into an assembly config (desktop indexes plain
@@ -351,9 +493,6 @@ const AddGenomePane = observer(function AddGenomePane({
   }
 
   const all = [...dropped, ...urlTextToLocations(urls)]
-  const unrecognized = all.filter(
-    loc => classifyFilename(getFileName(loc)) === undefined,
-  )
   const hasSequence = formHasSequence(form)
 
   const resetInputs = () => {
@@ -376,7 +515,7 @@ const AddGenomePane = observer(function AddGenomePane({
   }
 
   return (
-    <>
+    <EmptySourceTypeProvider value={source === 'urls' ? 'url' : 'file'}>
       {manual ? (
         <ManualEntry
           form={form}
@@ -388,110 +527,67 @@ const AddGenomePane = observer(function AddGenomePane({
             setShowMore(false)
           }}
         />
-      ) : hasSequence ? (
-        <>
-          <RecognitionCard
-            form={form}
-            setForm={setForm}
-            onNameEdit={() => {
-              setNameTouched(true)
-            }}
-            onChangeFile={() => {
-              changeFile()
-            }}
-            showMore={showMore}
-            setShowMore={setShowMore}
-          />
-          {onStageAnother ? (
-            <div className={classes.links}>
-              <Link
-                component="button"
-                type="button"
-                variant="body2"
-                disabled={!!loading || !form.assemblyName}
-                onClick={() => {
-                  stageAnother()
-                }}
-              >
-                Add another genome
-              </Link>
-            </div>
-          ) : null}
-        </>
       ) : (
         <>
-          {source === 'files' ? (
-            <FileDropZone
-              message="Drop your genome files here — FASTA, .fa.gz, or .2bit, plus any .fai/.gzi index — or click to browse"
-              onDrop={files => {
-                const next = [...dropped, ...files.map(f => fileToLocation(f))]
-                setDropped(next)
-                reclassify(next, urls)
-              }}
-            />
-          ) : (
+          <SourceInput
+            source={source}
+            setSource={setSource}
+            urls={urls}
+            hasSequence={hasSequence}
+            setUrls={value => {
+              setUrls(value)
+              reclassify(dropped, value)
+            }}
+            onDropFiles={files => {
+              const next = [...dropped, ...files.map(f => fileToLocation(f))]
+              setDropped(next)
+              reclassify(next, urls)
+            }}
+          />
+
+          <FileNotices
+            locations={all}
+            hasSequence={hasSequence}
+            canStageAnother={!!onStageAnother}
+            onEnterManually={() => {
+              setManual(true)
+              setShowMore(false)
+            }}
+          />
+
+          {hasSequence ? (
             <>
-              <Typography variant="body2" className={classes.intro}>
-                Paste a URL to a sequence file (FASTA, .fa.gz, or .2bit), plus
-                any index files, one per line. We fill in the rest.
-              </Typography>
-              <TextField
-                variant="outlined"
-                placeholder={[
-                  'https://example.com/hg38.fa.gz',
-                  'https://example.com/hg38.fa.gz.fai',
-                  'https://example.com/hg38.fa.gz.gzi',
-                ].join('\n')}
-                multiline
-                rows={5}
-                fullWidth
-                value={urls}
-                onChange={event => {
-                  const { value } = event.target
-                  setUrls(value)
-                  reclassify(dropped, value)
+              <RecognitionCard
+                form={form}
+                setForm={setForm}
+                onNameEdit={() => {
+                  setNameTouched(true)
                 }}
+                onChangeFile={() => {
+                  changeFile()
+                }}
+                showMore={showMore}
+                setShowMore={setShowMore}
               />
+              {onStageAnother ? (
+                <div className={classes.links}>
+                  <Button
+                    variant="text"
+                    size="small"
+                    disabled={!!loading || !getAssemblyName(form)}
+                    onClick={() => {
+                      stageAnother()
+                    }}
+                  >
+                    Add another genome
+                  </Button>
+                </div>
+              ) : null}
             </>
-          )}
-
-          {unrecognized.length ? (
-            <Alert
-              severity="warning"
-              className={classes.intro}
-              action={
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={() => {
-                    setManual(true)
-                    setShowMore(false)
-                  }}
-                >
-                  Enter details manually
-                </Button>
-              }
-            >
-              Couldn't place:{' '}
-              {unrecognized.map(loc => getFileName(loc)).join(', ')}
-            </Alert>
           ) : null}
-
-          <div className={classes.links}>
-            <Link
-              component="button"
-              type="button"
-              variant="body2"
-              onClick={() => {
-                setSource(source === 'files' ? 'urls' : 'files')
-              }}
-            >
-              {source === 'files' ? 'Open from a URL' : 'Use local files'}
-            </Link>
-          </div>
         </>
       )}
-    </>
+    </EmptySourceTypeProvider>
   )
 })
 

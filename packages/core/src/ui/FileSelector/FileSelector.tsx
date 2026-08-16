@@ -7,6 +7,7 @@ import { notEmpty } from '../../util/index.ts'
 import { isUriLocation } from '../../util/types/index.ts'
 import LocationInput from './LocationInput.tsx'
 import SourceTypeSelector from './SourceTypeSelector.tsx'
+import { useEmptySourceType } from './emptySourceType.ts'
 import useInternetAccounts from './useInternetAccounts.ts'
 import { addAccountToLocation, getInitialSourceType } from './util.ts'
 
@@ -27,8 +28,9 @@ const FileSelector = observer(function FileSelector({
   rootModel?: AbstractRootModel
   setLocation: (param: FileLocation) => void
 }) {
+  const emptySourceType = useEmptySourceType()
   const [sourceType, setSourceType] = useState(() =>
-    getInitialSourceType(location),
+    getInitialSourceType(location, emptySourceType),
   )
 
   const {
