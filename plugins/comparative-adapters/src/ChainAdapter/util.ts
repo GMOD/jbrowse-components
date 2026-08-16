@@ -35,9 +35,27 @@ function generateRecord(
   tname: string,
   tstart: number,
   tend: number,
-  cigar: string,
+  cigarParts: string[],
   numMatches: number,
+  ins: number,
+  del: number,
 ) {
+  // A chain header states the interval; the block list refines it. The two can
+  // disagree — a lossy PAF→chain conversion writes one block of the query
+  // length and drops the target gap entirely, which is 215 of the 278 chains in
+  // the yeast demo track, off by up to 20kb. Padding the shortfall keeps the
+  // CIGAR spanning the coordinates the same record reports, so the synteny
+  // sub-blocks fill the band they are drawn inside. The delta parser asserts
+  // this same invariant; here it is repaired rather than thrown on, because one
+  // bad chain should not cost the file.
+  const padD = tend - tstart - (numMatches + del)
+  const padI = qend - qstart - (numMatches + ins)
+  if (padI > 0) {
+    cigarParts.push(`${padI}I`)
+  }
+  if (padD > 0) {
+    cigarParts.push(`${padD}D`)
+  }
   return {
     qname,
     qstart,
@@ -51,8 +69,12 @@ function generateRecord(
     // ramp and group-by rather than "unavailable".
     extra: {
       numMatches,
-      blockLen: Math.max(qend - qstart, tend - tstart),
-      cg: cigar,
+      // M+I+D, the PAF definition, so identity means the same thing whichever
+      // format an alignment arrived in. `max(qspan, tspan)` undercounted the
+      // denominator by min(I,D) and read as extra identity on a third of the
+      // records in a real liftOver chain, up to +0.17.
+      blockLen: numMatches + ins + del + Math.max(padI, 0) + Math.max(padD, 0),
+      cg: cigarParts.join(''),
     },
   }
 }
@@ -80,7 +102,13 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   let q_start = 0
   let q_end = 0
   let num_matches = 0
+  let ins = 0
+  let del = 0
   let cigarParts: string[] = []
+  // Data lines before the first header belong to no chain. Flushing them
+  // emitted a record with an empty refName and a zero-length span — a phantom
+  // feature on a contig that does not exist.
+  let seenHeader = false
 
   let blockStart = 0
 
@@ -108,7 +136,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
         const line = decoder.decode(buffer.subarray(realStart, realEnd))
         const l_vec = line.split(/[ \t]+/)
         if (l_vec[0] === 'chain') {
-          if (cigarParts.length) {
+          if (seenHeader && cigarParts.length) {
             records.push(
               generateRecord(
                 q_name,
@@ -118,11 +146,14 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
                 t_name,
                 t_start,
                 t_end,
-                cigarParts.join(''),
+                cigarParts,
                 num_matches,
+                ins,
+                del,
               ),
             )
           }
+          seenHeader = true
 
           t_name = l_vec[2]!
           t_start = +l_vec[5]!
@@ -139,6 +170,8 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
           }
 
           num_matches = 0
+          ins = 0
+          del = 0
           cigarParts = []
         }
       } else {
@@ -169,9 +202,11 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
           pos++
         }
         if (dq !== 0) {
+          ins += dq
           cigarParts.push(`${dq}I`)
         }
         if (dt !== 0) {
+          del += dt
           cigarParts.push(`${dt}D`)
         }
       }
@@ -181,7 +216,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
     blockStart = lineEnd + 1
   }
 
-  if (cigarParts.length) {
+  if (seenHeader && cigarParts.length) {
     records.push(
       generateRecord(
         q_name,
@@ -191,8 +226,10 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
         t_name,
         t_start,
         t_end,
-        cigarParts.join(''),
+        cigarParts,
         num_matches,
+        ins,
+        del,
       ),
     )
   }
