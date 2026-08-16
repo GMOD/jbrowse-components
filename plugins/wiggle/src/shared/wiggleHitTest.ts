@@ -2,6 +2,8 @@
 // bp, and the tooltip/feature-widget payloads built from the hit. Shared by
 // single-wiggle and multi-wiggle so hover, the cursor guides and
 // click-to-select can't disagree about what is under the pointer.
+import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
+
 import type { WiggleHoveredFeature, WiggleTooltipRow } from '../util.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { WiggleSourceData } from '@jbrowse/wiggle-core'
@@ -123,28 +125,22 @@ export interface MouseRegion {
   displayedRegionIndex: number
 }
 
-// The 0-based base under a fractional position through a region.
-//
-// Counts bases from the region's left screen edge and flips for `reversed`,
-// rather than flooring a flipped continuous coordinate. Two reasons:
-//   - `floor`, not `round`. Rounding snaps to the nearest base *boundary*, so it
-//     reports the next base across the right half of every base's pixels — an
-//     off-by-one tooltip on base-resolution data at high zoom.
-//   - flooring a *decreasing* coordinate (the `reversed` case) is itself off by
-//     one at exact base boundaries, which at high zoom land on integer pixels
-//     constantly. Indexing from the left keeps both orientations exact.
-// `frac < 1` holds (screenEndPx is exclusive), so the index stays within the
-// region; the clamp is float-rounding insurance only.
-function baseAtFraction(region: MouseRegion, frac: number) {
-  const { start, end, reversed } = region
-  const span = end - start
-  const index = Math.min(span - 1, Math.max(0, Math.floor(frac * span)))
-  return reversed ? end - 1 - index : start + index
-}
-
 // Maps a screen x coordinate to the region containing it, the per-region data
 // keyed by displayedRegionIndex, and the absolute genomic bp under the cursor.
 // Returns undefined if x is outside any region or no data is loaded.
+//
+// `bpAtPx` rather than a local base-from-fraction helper, which is what this
+// carried until it was measured against an exact rational oracle. Both spelled
+// out the reversed pivot at length and both were right about it; the local one
+// then floored `frac * span`, which rounds twice, and named the wrong base at
+// ~0.09% of realistic cursor positions — all of them boundary pixels, which at
+// base-level zoom is where a wiggle tooltip is read. `bpAtPx` multiplies before
+// dividing and is exact; see its JSDoc for why.
+//
+// The clamp that stood around the local floor went with it. It was insurance
+// against exactly the float error that is now gone, and the region lookup below
+// already guarantees `screenStartPx <= offsetX < screenEndPx`, so the offset
+// lands in `[0, span)` by construction.
 export function hitTestMouse<R extends MouseRegion, D>(
   regions: R[],
   rpcDataMap: ReadonlyMap<number, D>,
@@ -160,7 +156,5 @@ export function hitTestMouse<R extends MouseRegion, D>(
   if (!data) {
     return undefined
   }
-  const blockWidth = region.screenEndPx - region.screenStartPx
-  const frac = (offsetX - region.screenStartPx) / blockWidth
-  return { region, data, bp: baseAtFraction(region, frac) }
+  return { region, data, bp: bpAtPx(offsetX, region) }
 }
