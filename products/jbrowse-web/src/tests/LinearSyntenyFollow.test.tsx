@@ -391,6 +391,49 @@ test('a resolve landing after the mode is toggled off and on does not move the r
   expect(windowOf(target!)).toEqual(held)
 }, 60000)
 
+// A zero-width walk means the exact pass holds the row and lights
+// `followUnaligned`. The frame pass steers by whatever the last settle picked,
+// though, and the holding branch returned before replacing it — so the row went
+// on being placed through a block the pass that owns the decision had just
+// disowned, on an affine map measured over a window it had already left. The
+// header said the rows were holding while one of them tracked the anchor.
+test('a row the exact pass holds is not still steered by the frame pass', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  const { rpcManager } = getSession(query!)
+  const inner = rpcManager.call.bind(rpcManager)
+
+  view.setRowSyncMode('follow')
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
+
+  // A block whose axes are not what the plan thought brings both ends of the
+  // walk back onto one coordinate. The shipped way in is a swapped-assembly
+  // track, where EVERY answer collapses and so no pick is ever set — this is
+  // the same collapse arriving after one good answer has set one.
+  jest
+    .spyOn(rpcManager, 'call')
+    .mockImplementation(async (sessionId, functionName, args) => {
+      if (functionName === 'SyntenyResolveMatchingRegion') {
+        return { refName: 'ctgA', start: 40000, end: 40000 }
+      }
+      return inner(sessionId, functionName, args)
+    })
+
+  await query!.navToLocString('ctgA:30500..31500', QUERY_ASM)
+  await waitFor(() => {
+    expect(view.followUnaligned).toBe(true)
+  }, timeout)
+  const held = windowOf(target!)
+
+  await query!.navToLocString('ctgA:31000..32000', QUERY_ASM)
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  expect(windowOf(target!)).toEqual(held)
+}, 60000)
+
 test('anchoring the bottom row reverses which row moves', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views

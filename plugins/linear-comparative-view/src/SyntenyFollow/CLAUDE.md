@@ -108,8 +108,12 @@ numbers is not "already there". `alreadyShowing` takes that floor and accepts
 the displayed regions near a contig end.
 
 And a **zero-width answer is not a place at all**: the caller holds and lights
-`followUnaligned`. A CIGAR walk clamps the window to its block before walking,
-so a block whose axes are not what the plan thought brings both ends back on one
+`followUnaligned`. Holding means **dropping the level's pick as well** — the
+frame pass steers by whatever the last settle chose, so leaving the last good
+one standing kept placing a row this branch had decided to hold, on a transform
+measured over a window it had left, which nothing corrects while the answers go
+on collapsing. A CIGAR walk clamps the window to its block before walking, so a
+block whose axes are not what the plan thought brings both ends back on one
 coordinate — which is what a swapped-assembly track does, and it is a config
 someone can legitimately write. Widening one would fling the row to base-level
 zoom on a coordinate the arithmetic never identified.

@@ -117,6 +117,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // coordinate the arithmetic never identified, so the row holds instead, and
     // says so.
     if (span.end - span.start <= 0) {
+      // and the frame pass has to hold too, which means dropping the pick
+      // rather than leaving the last good one standing. It steers by whatever
+      // the last settle chose, so a row this branch has decided to hold went on
+      // being placed through a block this pass just disowned — on a transform
+      // measured over a window it had already left, which nothing later
+      // corrects while the answers keep collapsing.
+      state.pick = undefined
       self.setFollowUnaligned(true)
       return
     }
