@@ -9,6 +9,7 @@ import {
 } from './syntenyTrackRows.ts'
 
 import type { ImportFormMode } from './ImportFormModeToggle.tsx'
+import type { ImportFormSyntenyModel } from './SelectorTypes.ts'
 import type { SessionAssemblies } from '@jbrowse/core/util/tracks'
 
 /**
@@ -85,5 +86,28 @@ export function useQuickStartState(
     swap: () => {
       setSwapped(prev => !prev)
     },
+  }
+}
+
+/**
+ * Hand the Quick start track to every adjacent pair the form is about to open:
+ * a pairwise track has one pair, an all-vs-all track one per adjacent row, and a
+ * dotplot one however many assemblies the track names.
+ *
+ * `pairCount` rather than a row list, since the two forms count differently. The
+ * clear is what makes it one rule rather than two: this replaces whatever Manual
+ * had configured, and a per-form copy is free to forget that.
+ */
+export function applyQuickStartSelections(
+  model: ImportFormSyntenyModel,
+  trackId: string,
+  pairCount: number,
+) {
+  model.clearImportFormSyntenyTracks()
+  for (let idx = 0; idx < pairCount; idx++) {
+    model.setImportFormSyntenyTrack(idx, {
+      type: 'preConfigured',
+      value: trackId,
+    })
   }
 }

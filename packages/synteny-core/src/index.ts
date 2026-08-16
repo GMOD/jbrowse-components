@@ -193,7 +193,10 @@ export { default as ImportFormModeToggle } from './ImportFormModeToggle.tsx'
 export type { ImportFormMode } from './ImportFormModeToggle.tsx'
 export { default as ImportFormModes } from './ImportFormModes.tsx'
 export { default as QuickStartPanel } from './QuickStartPanel.tsx'
-export { useQuickStartState } from './useQuickStartState.ts'
+export {
+  applyQuickStartSelections,
+  useQuickStartState,
+} from './useQuickStartState.ts'
 export { default as PreConfiguredSyntenyTrackSelect } from './PreConfiguredSyntenyTrackSelect.tsx'
 export { planSyntenyChain } from './planSyntenyChain.ts'
 export {

@@ -46,9 +46,30 @@ export function useChromosomeFilters() {
       )
     },
     remap(from: string[], to: string[]) {
-      setValues(prev =>
-        to.map((asm, i) => (asm === from[i] ? (prev[i] ?? '') : '')),
-      )
+      setValues(prev => {
+        const claimed = from.map(() => false)
+        const claim = (i: number) => {
+          claimed[i] = true
+          return prev[i] ?? ''
+        }
+        // A row that stayed put keeps what was typed for it, whatever moved
+        // around it — first, so retyping one Select into a name another row
+        // already holds cannot pull that row's text over.
+        const next = to.map((asm, i) =>
+          asm === from[i] ? claim(i) : undefined,
+        )
+        // then a row that moved carries its text with it, which is what Remove,
+        // Reverse and Auto-arrange need: they shift every row below the edit,
+        // and matching on position alone dropped all of it. First fit, so two
+        // rows on one assembly take two different entries.
+        for (const [i, value] of next.entries()) {
+          if (value === undefined) {
+            const idx = from.findIndex((asm, j) => !claimed[j] && asm === to[i])
+            next[i] = idx === -1 ? '' : claim(idx)
+          }
+        }
+        return next as string[]
+      })
     },
     reset() {
       setValues([])

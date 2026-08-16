@@ -7,6 +7,7 @@ import {
   ChromosomeFilter,
   ImportFormModes,
   allSessionTracks,
+  applyQuickStartSelections,
   blockedByUnfinishedUpload,
   dotplotAxesFromRows,
   remapImportFormSelections,
@@ -118,13 +119,9 @@ const DotplotImportForm = observer(function DotplotImportForm({
     }),
   )
 
-  // a dotplot is one pair, so the chosen Quick start track is the selection for
-  // the form's single row
+  // a dotplot is one pair however many assemblies the track names
   function applyQuickSelection() {
-    model.setImportFormSyntenyTrack(0, {
-      type: 'preConfigured',
-      value: quick.trackId,
-    })
+    applyQuickStartSelections(model, quick.trackId, 1)
   }
 
   // the model owns the error: doSubmit clears it on the way in, so a re-submit

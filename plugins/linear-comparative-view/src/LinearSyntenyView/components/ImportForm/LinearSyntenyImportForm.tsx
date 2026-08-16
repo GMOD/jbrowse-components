@@ -6,6 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   ImportFormModes,
   allSessionTracks,
+  applyQuickStartSelections,
   blockedByUnfinishedUpload,
   syntenyPairStatuses,
   useChromosomeFilters,
@@ -96,16 +97,9 @@ const LinearSyntenyViewImportForm = observer(
     const blockedPair = statusByPair.indexOf('unfinishedUpload')
     const canLaunch = !blockedByUnfinishedUpload(statusByPair)
 
-    // the chosen track backs every adjacent band: a pairwise track has one pair,
-    // an all-vs-all track has one per adjacent row
+    // one band between each pair of adjacent rows
     function applyQuickSelections() {
-      model.clearImportFormSyntenyTracks()
-      for (let idx = 0; idx < quick.rows.length - 1; idx++) {
-        model.setImportFormSyntenyTrack(idx, {
-          type: 'preConfigured',
-          value: quick.trackId,
-        })
-      }
+      applyQuickStartSelections(model, quick.trackId, quick.rows.length - 1)
     }
 
     // the model owns the error: setViews clears it, so a re-submit after a bad

@@ -644,6 +644,22 @@ test('changing a row assembly drops the chromosomes typed for it', () => {
   expect(chromosomeBox(0)).toHaveValue('ctgA')
 })
 
+test('removing a row carries the rows below it along with their text', () => {
+  // every row below the removal shifts up, so matching on position alone
+  // silently dropped what the user had typed on all of them
+  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  pickAssembly(2, 'rn7')
+  showChromosomeBoxes()
+  fireEvent.change(chromosomeBox(1), { target: { value: 'ctgA' } })
+  fireEvent.change(chromosomeBox(2), { target: { value: 'ctgB' } })
+
+  fireEvent.click(screen.getByRole('button', { name: 'Remove row 1' }))
+  expect(rowSelects().map(s => s.textContent)).toEqual(['mm39', 'rn7'])
+  expect(chromosomeBox(0)).toHaveValue('ctgA')
+  expect(chromosomeBox(1)).toHaveValue('ctgB')
+})
+
 // Hiding has to CLEAR, or a stack comes back restricted by a box that is no
 // longer on screen — the one failure the disclosure can introduce.
 test('hiding the boxes clears what was typed in them', () => {
