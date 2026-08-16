@@ -12,7 +12,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 77 functions
+Scanned 42 shaders with entry points. 79 functions
 are inside the emitter's subset, of which **58 are exported**.
 
 ## Candidates
@@ -32,8 +32,10 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 
 | Function | Signature | Why not |
 | --- | --- | --- |
+| `aaRamp` | `(f32, f32) -> f32` | the stroke antialiasing ramp, measured per fragment; Canvas2D and SVG get their edge AA from the rasterizer. Split from strokeAaRamp for the referee, not for a consumer: check-oracle sweeps by signature, so a scalar core is swept whether or not anything imports it |
 | `arcIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
+| `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already |
 | `discExpand` | `(f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
 | `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | widens about the midpoint in clip space, and has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth). A different rule, not a twin |
 | `extendToMinWidthX` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported extendToMinWidthPx, which is the decision |
@@ -62,8 +64,8 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 20 | `aaHalf`, `arcBandDestY`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `covAreaTop`, … |
 | type 'vec2' is outside the supported scalar subset | 20 | `arcBandClipPos`, `covSegQuad`, `crispSquareCornerPx`, `diagonalCellToClip`, `discAlpha`, `discCoverage`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `aaHalf`, `arcBandDestY`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `covAreaTop`, … |
 | type 'ptr' is outside the supported scalar subset | 10 | `aaHalfPx`, `bpToClipX`, `curveGeometry`, `curveParamAtY`, `fillVsEmit`, `flipX`, … |
 | type 'vec3' is outside the supported scalar subset | 9 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `clipKindColor`, `hueRampHalfSat`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
@@ -73,7 +75,6 @@ noticing in a diff.
 | //! js-export: 'arcYDir' reaches arcsPointDown(), which is outside the supported scalar subset | 1 | `arcYDir` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | //! js-export: 'bpToLinear' reaches hpLinear(), which is outside the supported scalar subset | 1 | `bpToLinear` |
-| //! js-export: 'dashCoverage' reaches strokeAaRamp(), which is outside the supported scalar subset | 1 | `dashCoverage` |
 | //! js-export: 'strokeCoverage' reaches strokeAaRamp(), which is outside the supported scalar subset | 1 | `strokeCoverage` |
 | call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 1 | `glyphEdgeAlpha` |

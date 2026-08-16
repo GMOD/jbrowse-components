@@ -19,6 +19,8 @@
 // resolves through imports, so a constant declared here still reaches it).
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
 //! js-skip: expandMinWidthX — widens about the midpoint in clip space, and has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth). A different rule, not a twin
+//! js-skip: aaRamp — the stroke antialiasing ramp, measured per fragment; Canvas2D and SVG get their edge AA from the rasterizer. Split from strokeAaRamp for the referee, not for a consumer: check-oracle sweeps by signature, so a scalar core is swept whether or not anything imports it
+//! js-skip: dashCoverageAt — same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already
 module alignmentsUniforms;
 
 import colorPack;
@@ -242,9 +244,12 @@ public float strokeCoverage(float d, float halfWidthPx, Uniforms u) {
 // dash pattern below wants the same ramp along the mark that `strokeCoverage`
 // gives across it — the two ends of a dash should be exactly as soft as the two
 // sides of the stroke they interrupt.
+public float aaRamp(float signedInk, float aaPx) {
+  return clamp(signedInk / aaPx + 0.5, 0.0, 1.0);
+}
+
 public float strokeAaRamp(float signedInk, Uniforms u) {
-  float aa = STROKE_AA_PX / max(u.dpr, 1.0);
-  return clamp(signedInk / aa + 0.5, 0.0, 1.0);
+  return aaRamp(signedInk, STROKE_AA_PX / max(u.dpr, 1.0));
 }
 
 // Coverage of a `dashPx` on / `gapPx` off pattern at `coord` CSS px along the
@@ -261,23 +266,35 @@ public float strokeAaRamp(float signedInk, Uniforms u) {
 // same line. Centring the run at half a period puts the wrap deep in the gap
 // where nothing is drawn, and `strokeAaRamp` is the sides' own ramp.
 //
-// Not split into a `//! js-export`able scalar core, and unlike `sdEllipse` the
-// blocker is not the emitter: `frac` IS in wgslToJs.ts's helpers and the split
-// costs four lines. It is that check-oracle cannot referee a `frac` of a large
-// quotient. Splitting it puts `dashCoverageAt(coord, dashPx, gapPx, aaPx)` into
-// the sweep — candidacy is by signature, not by `//! js-export` — and 18 of its
-// 2400 tuples fail the 1e-5 relative. Six are outside anything this draws (aaPx
-// 0, a negative dashPx); the rest are not. `(255, 2.5, 0.5, 0.25)` is a real
-// screen px at dpr=4 and comes back 0.50003 against the twin's 0.5, because
-// float32 holds coord/period to about 2^-14 relative, so a few hundred px along
-// the mark the phase has already lost more than the tolerance. It lands in
-// ALPHA, where 3e-5 is nothing — the oracle is right to refuse it and the
-// shader is right as it stands. Sharing it would take a per-function domain
-// bound, which is a suppression knob in the strongest gate here.
-public float dashCoverage(float coord, float dashPx, float gapPx, Uniforms u) {
+// The reduction is `t - period * floor(t / period)` rather than the obvious
+// `frac(t / period) * period`, which are the same number only in exact
+// arithmetic. `frac` drops the integer part BEFORE multiplying back, so what
+// the quotient lost to rounding survives and gets scaled by the period;
+// subtracting the floored multiple keeps it, because THAT subtraction is exact
+// — its operands are within a period of each other, so nothing falls off the
+// end. Same op count, once `frac`'s own `floor` is counted.
+//
+// This is not a visible fix and don't sell it as one: swept against the old
+// spelling in float32 over both passes' whole coordinate range at dpr 1-4, the
+// two differ by at most 9.8e-4 of alpha and not one 8-bit pixel changes.
+//
+// It is a refereeable one, which the old spelling was not. check-oracle takes
+// every emittable scalar signature, not only the `//! js-export`ed ones, so a
+// scalar core here is swept whether or not anything imports it — and the `frac`
+// spelling missed the 1e-5 relative on 18 of its 2400 tuples, including
+// in-domain ones like `(255, 2.5, 0.5, 0.25)`, a real screen px at dpr=4. The
+// choice was a function nobody can check or a one-line change that costs
+// nothing, so: the dash geometry is now under the CI gate.
+public float dashCoverageAt(
+    float coord, float dashPx, float gapPx, float aaPx) {
   float period = dashPx + gapPx;
-  float phase = frac(coord / period + gapPx / (2.0 * period)) * period;
-  return strokeAaRamp(dashPx * 0.5 - abs(phase - period * 0.5), u);
+  float shifted = coord + gapPx * 0.5;
+  float phase = shifted - period * floor(shifted / period);
+  return aaRamp(dashPx * 0.5 - abs(phase - period * 0.5), aaPx);
+}
+
+public float dashCoverage(float coord, float dashPx, float gapPx, Uniforms u) {
+  return dashCoverageAt(coord, dashPx, gapPx, STROKE_AA_PX / max(u.dpr, 1.0));
 }
 
 // A butt-capped stroked segment, as the two halves of one contract: the quad
