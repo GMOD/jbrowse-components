@@ -41,7 +41,10 @@ export default function TranscriptSelector({
             value={idx}
             data-testid={`transcript_${idx}`}
           >
-            {`${transcript.name ?? transcript.id}`}
+            {/* a subfeature carries no guaranteed name or id, and neither a
+                blank row nor a literal "undefined" names a transcript the user
+                is being asked to choose between */}
+            {transcript.name || transcript.id || `Transcript ${idx + 1}`}
           </MenuItem>
         ))}
       </Select>
