@@ -210,6 +210,21 @@ answer it.
 stores no hit: its body re-runs `mafHitTest` from the live pointer on every
 render, so an observer re-resolves under a moving viewport by construction.
 
+**Whichever it is, publish it as `hoveredFeature`.** That is an overridable
+getter on `BaseDisplay` (default `undefined`), and `LinearGenomeViewContainer`
+reads it off every display of every track to feed `session.hovered`, the
+view-wide "what is the user pointing at" channel. It is a hook for the reason
+`SyntenyFetchStateMixin.fetchInert` is one: a cross-display consumer can only
+read a name the base declares. The container used to read `featureUnderMouse`,
+which only the wiggle, alignments and Manhattan families spelled that way —
+canvas said `hoveredFeature`, variants `hoveredGenotype` — so the channel
+carried a hover from a third of the display types and nothing said which.
+
+One MST constraint shapes the fill: **a volatile cannot instantiate over a base
+computed**, so a display that *stores* its hit stores it under its own name
+(`hoveredWiggleFeature`, `hoveredManhattanHit`, `hoveredMultiRowFeature`) and
+answers the hook with a getter over it.
+
 So there are two correct answers and one wrong one. **Store** a hover when the
 hit is expensive or several components read it (canvas, alignments, Manhattan,
 wiggle, the multi-row painting, the multi-sample variant matrix) — and then
@@ -1308,6 +1323,11 @@ and 12 lines — and both have since been given the sections they wanted.
   is what moved. Either install
   `installClearHoverOnViewportChange` or derive the hit instead; see [a stored
   hover](#a-stored-hover-is-a-volatile-the-viewport-can-invalidate).
+- Don't publish a hover under a name of your own. `hoveredFeature` is
+  `BaseDisplay`'s hook and the view reads it across every display; a display that
+  spells it differently drops out of `session.hovered` in silence. A stored hit
+  goes in a differently-named volatile with a getter over it — MST refuses to
+  instantiate a volatile over a base computed.
 
 ### Backends and generated code
 

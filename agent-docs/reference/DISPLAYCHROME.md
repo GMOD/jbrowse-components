@@ -343,6 +343,9 @@ A report is only useful if something can hear it. Nine `testEnv.ts` harnesses se
 `console.error = jest.fn()` as copied boilerplate, muting every contract check in
 exactly the suites that build real displays. Don't reinstate a blanket silencer;
 capture and assert on the channel, the way `assertDisplayContract.test.ts` does.
+`createDisplayTestEnvironment` now silences `console.warn` and only
+`console.warn`, in one place, which is what stops the boilerplate from coming
+back.
 
 **The non-LGV views owe the same contract by hand, and were not paying it.**
 They render their own banner, and `ErrorBanner`'s `onReset` is optional and

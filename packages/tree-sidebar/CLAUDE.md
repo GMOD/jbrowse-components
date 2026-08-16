@@ -85,6 +85,27 @@ on the filter alone.
 - Whitespace is deliberately outside the quoted set on both sides (variants'
   `NA18536 HP0` rows).
 
+## `RowSource` is the row vocabulary, and the mixin's bound
+
+`TreeSidebarMixin<S extends RowSource>`. Every field this package draws with is
+on `RowSource`, and `TreeSource` / `RowLabelSource` are picks of it rather than
+separate declarations — the bound used to be `{ name: string }`, the weakest
+possible, and the four displays composing the mixin each wrote their own row
+type against it.
+
+**The tint is `labelColor`, always.** `SvgRowLabels` drops to a `labelColor`
+swatch below `MIN_TEXT_ROW_HEIGHT`, and because `RowLabelSource` is satisfied
+structurally, a row type carrying the color under any other name type-checks and
+paints nothing. MAF called it `color` and bridged with a `labelSources`
+computed; that is why three adapter schemas advertised a slot reaching no
+renderer at all.
+
+`treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
+`showBranchLength` / `showRowLabels`), taking only the per-display descriptions,
+so a display cannot ship two of the three. `showRowLabelsMenuItem` is the row;
+`requiresTree` is its one real per-display difference (MAF mounts its label
+overlay only under `showTree`).
+
 ## Two row-height arguments, and neither is the display height
 
 `TreeDrawingModel` takes **`effectiveRowHeight`**, never a raw `rowHeight` —

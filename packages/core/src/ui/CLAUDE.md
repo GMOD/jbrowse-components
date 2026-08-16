@@ -20,7 +20,12 @@ the barrel put ~80 Material components in every host's first paint.
 
 - Each promotable builder is its plain counterpart **plus a pin**, written that
   way so a change to what a settings row _is_ reaches both forms.
-  `SettingRowOptions` is the one bag both kinds take.
+  `SettingRowOptions` is the one bag both kinds take — a builder that
+  hand-narrows it drops fields silently, which is what MAF's local `toggle`
+  wrapper had done to three of the five.
+- **`toggleItem`, not `checkboxItem`, for a checkbox over a setter.** It hands
+  the setter the new value instead of leaving 40 rows to write `!` against the
+  same expression they are `checked` by. Same shape `radioItems` already takes.
 - A menu item **describes** its trailing control (`pin: { control, label }`);
   `menuItemAdornment.tsx` builds it at draw time. `endAdornment` takes a raw
   element and is the last resort — a builder that sets it drags its whole
@@ -43,6 +48,10 @@ silent.
   highlight isn't filtering anything.
 - **Where it doesn't fit**: a display whose filters live in a dialog with no
   menu-level clear (`LinearAlignmentsDisplay`) keeps a plain `activeCount`.
+- **The jexl-filter entry is `jexlFilterNarrowing`**, shared by all three
+  displays with that row. Its count is "the override differs from what the
+  config declared", never a length: a filter an admin declared is not a user
+  narrowing, and "Clear all filters" could not undo it anyway.
 
 ## Design tokens
 

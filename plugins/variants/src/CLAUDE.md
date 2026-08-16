@@ -64,6 +64,12 @@ the anchored haplotype sort.
   removed** — the cluster tree did and silently drew nothing.
 - **`rpcProps()` must not read fetch-derived state** — `sampleFilter` reads
   `sourcesBase`, not `sources`.
+- **Feature filters are the shared two-tier contract**
+  (`@jbrowse/core/util/jexlFilters`): the `jexlFilters` config slot declares the
+  baseline **unprefixed**, `jexlFiltersSetting` is the dialog's already-prefixed
+  override, and `activeFilters()` is the only thing anything reads. The property
+  used to be called `jexlFilters` and shadowed the slot, so a config declaring
+  filters on one of these tracks did nothing and said nothing.
 - **The tier is per display, not per setting**: `referenceDrawingMode` is a
   fetch input for regular and a render input for the matrix, so the base carries
   only what both send.
@@ -97,7 +103,11 @@ the painter filling it read that one function**.
 - **Off spends 0 px, not a clamped minimum**, or every committed figure moves.
 - **The slots live on the display that can paint the band**, not the shared
   schema.
-- A drag-resized height goes on a config slot, clamped via `clampBandHeight`.
+- A drag-resized height goes on a config slot, clamped via `clampBandHeight`
+  (`@jbrowse/core/util/bandHeight`, shared with the alignments and MAF bands).
+  `boundBandHeight` is its read-time twin: a _stated_ height — config, menu,
+  slider — takes the bounds alone, while a resize additionally leaves a band a
+  config declared below the floor where it is.
 
 The lane is deliberately **not** a hosted `LinearVariantDisplay` — a track
 renders one display and a combo would buy a second parse of the same VCF. It

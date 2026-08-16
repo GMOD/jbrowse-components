@@ -80,23 +80,51 @@ Jest, co-located (`*.test.ts`), run with `pnpm test-ci`. Node-based and fast —
 use for logic, config, RPC, and buffer packing; use browser tests for rendering
 and UI.
 
-### A display harness takes its session from `@jbrowse/display-test-utils`
+### A display harness is `createDisplayTestEnvironment`
 
-`displayTestSessionModel` and `testAssembly` / `testAssemblyManager`. A
-`testEnv.ts` registers its own plugin types — that part genuinely differs — and
-composes for an extra prop rather than forking:
+One builder in `@jbrowse/display-test-utils`, over `displayTestSessionModel` and
+`testAssembly` / `testAssemblyManager`. A plugin's `testEnv.ts` names its track
+type, its display type and the two factories, and wraps the result when its own
+tests want a different `createDisplay` signature:
 
 ```ts
-types.compose('X', displayTestSessionModel({…}), types.model({ stack }))
+export function createTestEnvironment() {
+  return createDisplayTestEnvironment<LinearHicDisplayModel>({
+    trackType: 'HicTrack',
+    displayName: 'LinearHicDisplay',
+    configSchema: () => configSchemaF(),
+    stateModel: (_pm, schema) => stateModelFactory(schema),
+    viewModel: linearGenomeViewStateModelFactory,
+  })
+}
 ```
 
-**Don't hand-roll a shim.** Ten did, each stubbing an overlapping subset, and
-both failures the arrangement produced were invisible from inside any one file:
-nine copied `console.error = jest.fn()` and muted every display-contract check,
-and twenty-one of twenty-eight session fakes in the repo lacked
-`getDisplayTypeDefault`. The shared model carries every member a display reaches
-for whether or not the caller's tests touch it — `palette` was in two harnesses
-of ten while every model-side color getter reads it.
+The caller supplies `plugins` and `viewModel` because this package sits above
+`plugins/` in the workspace layering and cannot import one.
+
+**Don't hand-roll one.** Ten did, and every failure the arrangement produced was
+invisible from inside any one file: nine copied `console.error = jest.fn()` and
+muted every display-contract check; twenty-one of twenty-eight session fakes in
+the repo lacked `getDisplayTypeDefault`; `palette` was in two harnesses of ten
+while every model-side color getter reads it; and half of them left `displays[0]`
+un-annotated, so those suites asserted against `any` (folding the last two in
+turned up five assertions that had been doing exactly that).
+
+Three options exist because a display genuinely needs them, and each is a
+question the copies answered by being read rather than by being asked:
+
+- **`rpcCall`** — the body `mockRpcCall` wraps. Bare by default, which resolves
+  `undefined` for every method; a byte-gated display (arc) needs one that answers
+  `CoreGetRegionByteEstimate`, or its fetch never commits and the suite reads as
+  a broken display.
+- **`displayConfig`** — display config **slots**. The builder writes them into
+  the track config's own `displays` entry and references it by id, because a slot
+  name on a display's *session* snapshot is dropped in silence (ARCHITECTURE.md,
+  "where a display's state lives"). `displaySnapshot`, on `createDisplay`, is the
+  other half: MST properties.
+- **`adapter.config`** — omitted it is `{ type: name }`; present-but-`undefined`
+  registers the type and puts **no** adapter on the track, which is how a test
+  asserts what a display falls back to when the adapter declares nothing.
 
 The half not yet delivered: the shim is still not annotated as
 `AbstractSessionModel`, so a member added to that interface is a runtime

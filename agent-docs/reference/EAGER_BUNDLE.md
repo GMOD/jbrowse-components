@@ -129,9 +129,8 @@ gzipped, 218 → 181 chunks**, for three import lines.
 
 Three state models named a dialog at module scope:
 
-- `plugins/variants/src/LDDisplay/shared.ts` → `LDFilterDialog`,
-  `AddFiltersDialog`, and through them `JexlFilterDialog` → `SubmitDialog` →
-  `Dialog`
+- `plugins/variants/src/LDDisplay/shared.ts` → `LDFilterDialog` and
+  `JexlFilterDialog`, and through them `SubmitDialog` → `Dialog`
 - `plugins/authentication`'s `HTTPBasicModel/model.tsx` and
   `ExternalTokenModel/model.tsx` → their token-entry forms
 
