@@ -33,10 +33,10 @@ export interface VisibleLabel {
   y: number
   text: string
   fontSize: number
-  // 0-1 draw opacity. Size labels on large indels ramp this down as their
-  // feature narrows so they fade out instead of popping when zoomed out, and a
-  // SNP letter carries the same per-base quality fade its box does. The rest
-  // (small insertions, clip summaries) stay 1.
+  // 0-1 draw opacity. A deletion's length ramps down as its grey rect narrows,
+  // so back-to-back deletions dissolve instead of popping when zoomed out, and a
+  // SNP letter carries the same per-base quality fade its box does. The rest —
+  // insertion counts, small insertions, clip summaries — stay 1.
   opacity: number
 }
 
@@ -171,17 +171,17 @@ export function computeVisibleLabels(
   // The shortest deletion that could possibly carry a length label at this
   // zoom. Every digit is one table width in `measureText`, so a one-digit
   // string is the narrowest label any deletion can ask for, and a deletion
-  // whose WHOLE span is narrower than that cannot clear MIN_LABEL_OPACITY
-  // however it happens to be placed. Necessary rather than sufficient: a
-  // deletion that passes still runs the exact per-feature test below, against
-  // its visible span and its own digit count.
+  // whose WHOLE span is narrower than that carries no label however it happens
+  // to be placed. Necessary rather than sufficient: a deletion that passes
+  // still runs the exact per-feature test below, against its visible span and
+  // its own digit count.
   const minDeletionBp = minAvailPxForLabel(measureText('0', fontSize)) * bpPerPx
-  // Same bound for the count on a 'large' insertion, which has two gates —
-  // `getInsertionType` calls it 'large' only past LONG_INSERTION_MIN_LENGTH and
-  // LONG_INSERTION_TEXT_THRESHOLD_PX on screen — and then fades from there.
+  // Same bound for the count on a 'large' insertion, which is exactly
+  // `getInsertionType`'s two gates: LONG_INSERTION_MIN_LENGTH, and
+  // LONG_INSERTION_TEXT_THRESHOLD_PX of span on screen.
   const minLargeInsertionBp = Math.max(
     LONG_INSERTION_MIN_LENGTH,
-    minAvailPxForLabel(LONG_INSERTION_TEXT_THRESHOLD_PX) * bpPerPx,
+    LONG_INSERTION_TEXT_THRESHOLD_PX * bpPerPx,
   )
 
   const scroll = makeScroll(sections.length, scrollTop, height)
@@ -263,7 +263,7 @@ export function computeVisibleLabels(
           // instead of all vanishing at once — and so a deletion panned almost
           // off-screen drops its label instead of jamming it against the edge.
           const opacity = labelFadeOpacity(widthPx, gapTextWidth(length))
-          if (opacity < MIN_LABEL_OPACITY) {
+          if (opacity === 0) {
             continue
           }
 
@@ -326,21 +326,24 @@ export function computeVisibleLabels(
               x0: xPx - halfW,
               x1: xPx + halfW,
             })
-            // Fade the count out as the insertion's on-screen span shrinks
-            // toward the 'large' threshold, so a wall of back-to-back insertions
-            // dissolves smoothly when zooming out instead of popping off at once.
-            const opacity = labelFadeOpacity(
-              length * pxPerBp,
-              LONG_INSERTION_TEXT_THRESHOLD_PX,
-            )
-            if (tallEnoughForText && opacity >= MIN_LABEL_OPACITY) {
+            // The count arrives with its box, opaque. 'large' IS
+            // insertion.slang's `isLarge`, the test that widens the marker into
+            // a box sized for exactly these digits, so the room for the text is
+            // never in question and there is nothing to fade against. The fade
+            // this replaces ran on `length * pxPerBp`, which measures how big
+            // the insertion is rather than whether it is legible — an insertion
+            // consumes no reference bases, so that span is notional and the
+            // digits never go there. It also cleared 5% two px of span AFTER
+            // the box widened, so the box drew empty and then filled with 5%
+            // digits.
+            if (tallEnoughForText) {
               labels.push({
                 type: 'insertion',
                 x: xPx,
                 y: yPx,
                 text: String(length),
                 fontSize,
-                opacity,
+                opacity: 1,
               })
             }
           } else if (insertionType === 'small' && canRenderText) {

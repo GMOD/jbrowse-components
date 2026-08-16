@@ -72,17 +72,28 @@ export function computeLabelFontSize(h: number) {
   return Math.max(8, Math.min(h, 10))
 }
 
-// A size label (deletion length / large-insertion count) reaches full opacity
-// once its feature is LABEL_FADE_HI_RATIO times as wide as the space the label
-// needs, and fades linearly to nothing as the feature narrows to exactly that
-// space. This replaces the old hard appear/disappear cutoff with a smooth fade
-// as you zoom out — important when many large indels sit back-to-back (e.g.
-// inter-species comparisons), where a hard cutoff makes every label flicker
-// on/off at once.
+// A deletion's length label rides the fade below: it appears once the grey rect
+// is LABEL_FADE_LO_RATIO times as wide as the digits need, and reaches full
+// opacity at LABEL_FADE_HI_RATIO. That fade is what stops a wall of back-to-back
+// indels (inter-species comparisons) from flickering every label on and off at
+// one zoom, and the rect under it grows continuously, so there is a real
+// dissolve to smooth.
+//
+// LO is the slack the label has always had over an exact fit — it used to be the
+// smoothstep inverse of a 5% cutoff, and is kept to the digit so that flooring
+// the curve retunes opacities without moving which labels exist.
+export const LABEL_FADE_LO_RATIO = 1.135
 export const LABEL_FADE_HI_RATIO = 2
 
-// Below this opacity a label isn't worth drawing (invisible and sub-pixel), so
-// callers drop it entirely.
+// The fade bottoms out here rather than at 0. A fade only reads as a fade while
+// it is moving: a still frame — or an SVG export, which bakes this opacity into
+// the fill — holds whatever value the zoom happened to land on, and 5% digits
+// there are not a fading label, they are broken text.
+export const LABEL_FADE_FLOOR = 0.5
+
+// Below this opacity a label isn't worth a fillText. Its one caller is the SNP
+// letter's per-base quality fade, which is a property of the base rather than of
+// the zoom and so ramps to 0 with no floor.
 export const MIN_LABEL_OPACITY = 0.05
 
 // GLSL/WGSL smoothstep, matching the Canvas2D fades elsewhere in the plugin.
@@ -91,32 +102,30 @@ function smoothstep(edge0: number, edge1: number, x: number) {
   return t * t * (3 - 2 * t)
 }
 
-// Opacity in [0,1] for a size label given how many pixels its feature spans on
-// screen (`availPx`) and the pixel width it needs to be legible (`neededPx`). 0
-// at/below `neededPx` (drop the label), ramping to 1 at LABEL_FADE_HI_RATIO ×
-// `neededPx`.
-export function labelFadeOpacity(availPx: number, neededPx: number) {
-  return smoothstep(neededPx, neededPx * LABEL_FADE_HI_RATIO, availPx)
+// The narrowest a feature can be on screen and still carry a size label.
+//
+// This is the fade's own low edge, and it exists as its own function so a caller
+// can decide it has nothing to draw WITHOUT walking its features.
+// `labelFadeOpacity` answers per feature, which on a deep pileup is hundreds of
+// thousands of calls per frame to emit nothing; this answers the same question
+// once, in the units a feature's own bp length can be tested against.
+export function minAvailPxForLabel(neededPx: number) {
+  return neededPx * LABEL_FADE_LO_RATIO
 }
 
-// The smoothstep parameter at which `labelFadeOpacity` first reaches
-// MIN_LABEL_OPACITY. Closed form of the smoothstep inverse — t²(3-2t) = y
-// solves to 0.5 - sin(asin(1-2y)/3) — rather than a transcribed 0.1354, so it
-// tracks MIN_LABEL_OPACITY if that is ever retuned.
-const MIN_LABEL_FADE_T =
-  0.5 - Math.sin(Math.asin(1 - 2 * MIN_LABEL_OPACITY) / 3)
-
-// The narrowest a feature can be on screen and still carry a legible size
-// label: below this, `labelFadeOpacity` is under MIN_LABEL_OPACITY and every
-// caller drops the label.
-//
-// This is the inverse of the fade, and it exists so a caller can decide it has
-// nothing to draw WITHOUT walking its features. `labelFadeOpacity` answers per
-// feature, which on a deep pileup is hundreds of thousands of calls per frame
-// to emit nothing; this answers the same question once, in the units a
-// feature's own bp length can be tested against.
-export function minAvailPxForLabel(neededPx: number) {
-  return neededPx * (1 + MIN_LABEL_FADE_T)
+// Opacity for a size label, given how many pixels its feature spans on screen
+// (`availPx`) and the pixel width the label needs (`neededPx`). 0 below
+// `minAvailPxForLabel` — drop the label — then LABEL_FADE_FLOOR ramping to
+// 1 at LABEL_FADE_HI_RATIO × `neededPx`.
+export function labelFadeOpacity(availPx: number, neededPx: number) {
+  if (availPx < minAvailPxForLabel(neededPx)) {
+    return 0
+  }
+  return (
+    LABEL_FADE_FLOOR +
+    (1 - LABEL_FADE_FLOOR) *
+      smoothstep(neededPx, neededPx * LABEL_FADE_HI_RATIO, availPx)
+  )
 }
 
 // Width in CSS px of the GPU count-label box, for the count drawn into it.

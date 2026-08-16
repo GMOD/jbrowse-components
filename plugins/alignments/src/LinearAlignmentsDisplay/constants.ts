@@ -14,6 +14,7 @@ import type { ShaderScheme } from '../shared/types.ts'
 
 export {
   INSERTION_SERIF_MIN_PX_PER_BP,
+  LABEL_FADE_FLOOR,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,

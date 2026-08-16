@@ -2,10 +2,12 @@ import { measureText } from '@jbrowse/core/util'
 
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
 import {
+  LABEL_FADE_FLOOR,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
-  MIN_LABEL_OPACITY,
   computeLabelFontSize,
+  insertionBarWidth,
   labelFadeOpacity,
+  textWidthForNumber,
 } from '../constants.ts'
 import { computeVisibleLabels } from './computeVisibleLabels.ts'
 
@@ -207,15 +209,27 @@ test('deletion label is fully opaque when the rect is far wider than its text', 
 })
 
 test('deletion label fades (partial opacity) as the rect narrows toward its text', () => {
-  // width 100/4 = 25px, just above the ~16.6px text width for "100"
+  // width 100/4 = 25px, ~1.5x the ~16.6px text width for "100"
   const opacity = deletionOpacity(4)
-  expect(opacity).toBeGreaterThan(0)
+  expect(opacity).toBeGreaterThan(LABEL_FADE_FLOOR)
   expect(opacity).toBeLessThan(1)
 })
 
 test('deletion label drops out once the rect is no wider than its text', () => {
   // width 100/10 = 10px < text width for "100"
   expect(deletionOpacity(10)).toBeUndefined()
+})
+
+// The fade's low end is a resting value, not a vanishing point. A still frame —
+// or an SVG export, which bakes this opacity into the fill — holds whatever
+// value the zoom happened to land on, so there must be no zoom that leaves a
+// deletion's digits at 5% and reading as broken text rather than as a fade.
+test('no zoom rests a deletion label under the floor', () => {
+  for (let bpPerPx = 0.05; bpPerPx < 100; bpPerPx *= 1.05) {
+    const opacity = deletionOpacity(bpPerPx)
+    const faint = opacity !== undefined && opacity < LABEL_FADE_FLOOR
+    expect({ bpPerPx, faint }).toEqual({ bpPerPx, faint: false })
+  }
 })
 
 // A deletion wider than the view has its own midpoint off-screen, and a label
@@ -284,16 +298,33 @@ describe('a deletion wider than the view labels its visible part', () => {
   })
 })
 
-test('large insertion label fades as its on-screen span shrinks toward the large threshold', () => {
-  // span 20*pxPerBp: opacity 1 at >=30px, partial in (15,30), gone below 15px
+test('the large insertion count is opaque as soon as its box widens', () => {
+  // span 20*pxPerBp: labelled at >=15px, absent below. It used to fade in over
+  // the 15-30px band, resting at 5% on a box built to hold exactly these digits.
   const opacityAt = (bpPerPx: number) =>
     run(makeRpcData(largeInsertionAt10), bpPerPx).find(
       l => l.type === 'insertion',
     )?.opacity
   expect(opacityAt(0.1)).toBe(1) // span 200px
-  const mid = opacityAt(1)
-  expect(mid).toBeGreaterThan(0) // span 20px
-  expect(mid).toBeLessThan(1)
+  expect(opacityAt(1)).toBe(1) // span 20px, just past the threshold
+  expect(opacityAt(2)).toBeUndefined() // span 10px
+})
+
+// An insertion occupies no reference bases, so it has no width of its own to
+// measure and its box is sized to its digits by construction. The count is
+// therefore gated on the box, not on a fade: `insertionBarWidth` returning the
+// label width IS insertion.slang's `isLarge`. When the count lagged it — the
+// fade cleared 5% at 17.03px of span against a box that widened at 15px — a
+// window of zoom drew a wide empty box.
+test('the count appears at exactly the zoom its box widens at', () => {
+  for (let bpPerPx = 0.05; bpPerPx < 20; bpPerPx *= 1.02) {
+    const labelled = run(makeRpcData(largeInsertionAt10), bpPerPx).some(
+      l => l.type === 'insertion',
+    )
+    const boxIsWide =
+      insertionBarWidth(20, 1 / bpPerPx, 10) === textWidthForNumber(20)
+    expect({ bpPerPx, labelled }).toEqual({ bpPerPx, labelled: boxIsWide })
+  }
 })
 
 // 'T' and 'G' clipped bases at pos 30/31 row 2 (show-soft-clipping data).
@@ -390,8 +421,7 @@ describe('the zoom gate agrees with the per-feature fade', () => {
   test.each([9, 10, 100, 5000])('deletion of %i bp, swept across zoom', len => {
     const needed = measureText(String(len), fontSize)
     for (let bpPerPx = 0.05; bpPerPx < len; bpPerPx *= 1.15) {
-      const expected =
-        labelFadeOpacity(len / bpPerPx, needed) >= MIN_LABEL_OPACITY
+      const expected = labelFadeOpacity(len / bpPerPx, needed) > 0
       const labelled = inRegion(deletion(len), bpPerPx, len + 1000).some(
         l => l.type === 'deletion',
       )
@@ -403,11 +433,9 @@ describe('the zoom gate agrees with the per-feature fade', () => {
     for (let bpPerPx = 0.05; bpPerPx < len; bpPerPx *= 1.15) {
       // An insertion is a point, so no clamping applies. Below
       // MIN_PX_PER_BP_FOR_TEXT the only insertion label available is the count
-      // on a 'large' one, which fades against a fixed pixel threshold rather
-      // than against its own text.
-      const expected =
-        labelFadeOpacity(len / bpPerPx, LONG_INSERTION_TEXT_THRESHOLD_PX) >=
-        MIN_LABEL_OPACITY
+      // on a 'large' one, which appears with its box at a fixed pixel threshold
+      // rather than ramping against its own text.
+      const expected = len / bpPerPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
       const labelled = inRegion(
         makeRpcData({
           interbasePositions: new Uint32Array([100]),
