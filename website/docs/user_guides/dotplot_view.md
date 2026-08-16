@@ -11,8 +11,8 @@ off-diagonal blocks.
 
 ## Opening a dotplot view
 
-Launch a new Dotplot view from the Add menu. The import form is the same one the
-linear synteny view uses, so see
+**Add → Dotplot view** opens the import form. It is the same one the linear
+synteny view uses, so see
 [Opening a linear synteny view](/docs/user_guides/linear_synteny_view#opening-a-linear-synteny-view)
 for its Quick start / Manual modes and the file types it accepts. The only
 dotplot-specific thing to know is that both axes come from the chosen track's

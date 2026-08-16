@@ -30,15 +30,22 @@ each, see
 
 ## Opening a linear synteny view
 
-Launch a new Linear synteny view. If your config already has a synteny track,
-the form opens in **Quick start**: pick the track, click **Launch**, and it
-fills in a row per assembly the track names. **Swap** reverses that row order,
-since a synteny track is queryable in either direction and its listed order does
-not claim which genome belongs on top. Switch to **Manual** to select the two
-assemblies yourself and optionally add a .paf, .out (MashMap), .delta (MUMmer),
-.chain, .anchors, or .anchors.simple (MCScan) file. Manual also stacks more than
-two genomes, from an [all-vs-all PAF](/docs/tutorials/allvsall_synteny), an
-[MCScan ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao), or
+**Add → Linear synteny view** opens the import form. If your config already has
+a synteny track, it opens in **Quick start**: pick the track and it fills in a
+row per assembly that track names, however many that is, then click **Launch**.
+**Swap** reverses the row order, since a synteny track is queryable in either
+direction and its listed order does not claim which genome belongs on top.
+
+**Manual** is the same form with the rows exposed: select each row's assembly
+yourself, click the arrow between two rows to give that pair its dataset, and
+add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors, or
+.anchors.simple (MCScan) file there if the session has none. It is the way in
+for a stack whose rows no single track names, and the way to adjust the ones
+Quick start filled in.
+
+Either mode stacks more than two genomes. The worked examples are from an
+[all-vs-all PAF](/docs/tutorials/allvsall_synteny), an
+[MCScan ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao), and
 a [pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
 <Figure caption="The import form synteny and dotplot views share, reached from the Add menu. Its Manual mode, shown here, is where you select two assemblies and can supply an additional file." src="/img/dotplot_add.png" />

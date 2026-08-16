@@ -78,7 +78,7 @@ order: `minimap2 target.fa query.fa` becomes `add-track -a query,target`. Here
 
 ## Reading the whole genome in a dotplot
 
-From the start screen, click **Dotplot view**. The track just added is in the
+**Add → Dotplot view** opens the import form. The track just added is in the
 config, so the form opens in **Quick start**: pick it and click **Launch**.
 **Swap** transposes the axes, since a synteny track is queryable in either
 direction. **Manual** is where you pick each axis, and a synteny file, by hand.
@@ -92,11 +92,13 @@ right-click inside the box and choose **Linear synteny view**.
 
 ## Stacking the three strains
 
-The linear synteny view is not limited to two genomes. Launch it from the start
-screen, pick an assembly per row, use **Add row** for the third, and choose the
-synteny track shown between each adjacent pair. Loading the two adjacent
-alignments (26695 against CHC155, CHC155 against J99) stacks all three strains
-in one view.
+The linear synteny view is not limited to two genomes:
+
+1. **Add → Linear synteny view**, then switch to **Manual**.
+2. Pick an assembly per row, with **Add row** for the third.
+3. Click the arrow between each adjacent pair to choose that band's synteny
+   track: 26695 against CHC155, then CHC155 against J99.
+4. Click **Launch**, and all three strains stack in one view.
 
 Open each strain's gene track from its own track selector to make the alignment
 readable, so that conserved genes line up down the stack ribbon by ribbon.

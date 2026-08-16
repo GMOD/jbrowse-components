@@ -380,8 +380,8 @@ chromosome-scale rearrangements in the assembly.
 
 ### Walkthrough: a chr3-chr13 translocation
 
-From the start screen, launch the SV inspector and use **Open from track** to
-pick the C-GIAB benchmark VCF loaded earlier.
+**Add → SV inspector**, then **Open from track** to pick the C-GIAB benchmark
+VCF loaded earlier.
 
 <Figure caption="The SV inspector showing the benchmark VCF as a circular overview alongside a table of calls." src="/img/sv_cgiab/translocation_sv_inspector_view.png" />
 
@@ -658,9 +658,9 @@ comparing tumor and normal coverage.
 ### Walkthrough: synteny and dotplot views of the tumor assembly
 
 Showing the tumor assembly side-by-side with the reference can make complex SVs
-easier to read than the alignment track alone. Open a dotplot view from the
-start screen, set the de novo assembly as one axis and GRCh38 as the other, and
-pick the matching synteny track.
+easier to read than the alignment track alone. **Add → Dotplot view**, set the
+de novo assembly as one axis and GRCh38 as the other, and pick the matching
+synteny track.
 
 <Figure caption="The dotplot import form, with the HG008-T v3.2 assembly on one axis and GRCh38 on the other." src="/img/sv_cgiab/dotplot_import_form.png" />
 
