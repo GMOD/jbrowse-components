@@ -708,20 +708,6 @@ export default function stateModelFactory(
           /**
            * #volatile
            */
-          /**
-           * Modification type code -> painted color, for every type seen in the
-           * fetched reads. This is what the data CONTAINS; what is actually
-           * drawn is filtered separately by isModificationTypeVisible, so don't
-           * rename this back to "visible".
-           */
-          detectedModifications: observable.map<string, string>({}),
-          /**
-           * #volatile
-           */
-          modificationsReady: false,
-          /**
-           * #volatile
-           */
           overCigarItem: false,
           /**
            * #volatile
@@ -815,9 +801,71 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Modification type code -> painted color, for every type the reads of
+         * the LOADED regions declare. This is what the data CONTAINS; what is
+         * actually drawn is filtered separately by isModificationTypeVisible
+         * and by `presentModifications`, so don't rename this back to
+         * "visible".
+         *
+         * Derived rather than accumulated, which is the whole point: it used to
+         * be a volatile map that `setRpcData` added to and nothing ever
+         * cleared, so it grew for the life of the tab and answered for every
+         * locus the user had ever visited. The legend was narrowed off it after
+         * the fact; the menu was not, and offered 6mA on a region carrying
+         * none.
+         *
+         * Off `rpcDataMap` rather than the laid-out map, on purpose. This one
+         * is about what the DATA holds — a type belonging to a hidden group is
+         * still a type the user can reveal — and the menu is what asks. The
+         * legend, which must not name a color no visible read paints, asks
+         * `presentModifications` instead.
+         *
+         * Cheap despite running per fetch: the MM parse reports a handful of
+         * type codes per group, so this is O(regions x groups) over arrays of
+         * ~1-3 strings, and MobX memoizes it against `rpcDataMap`.
+         */
+        get detectedModifications(): ReadonlyMap<string, string> {
+          const out = new Map<string, string>()
+          for (const { groups } of self.rpcDataMap.values()) {
+            for (const { data } of groups) {
+              for (const type of data.detectedModifications) {
+                if (!out.has(type)) {
+                  out.set(type, getColorForModification(type))
+                }
+              }
+            }
+          }
+          return out
+        },
+
+        /**
+         * #getter
+         * Whether the MM/ML header parse has an answer for what is on screen —
+         * a fetch has landed, so an empty `detectedModifications` means "these
+         * reads carry none" rather than "nothing has arrived yet". The
+         * modifications menu shows "Loading modifications..." until this turns
+         * true, and offers the submenu after.
+         *
+         * Derived, like the map it qualifies. It was a volatile flag that
+         * `fetchNeeded` set true and nothing ever set back, so it outlived the
+         * data it described: after `clearDisplaySpecificData` it still claimed
+         * an answer for reads that were no longer loaded, and the menu skipped
+         * "Loading modifications..." while the replacing fetch was in flight.
+         * Reading the data is what the flag was always trying to say.
+         *
+         * The header parse is ungated (`extractModifications` reads MM headers
+         * for every read whatever the scheme, and only mark PLACEMENT is
+         * scheme-gated), so arrival of any fetch really does settle this.
+         */
+        get modificationsReady() {
+          return self.rpcDataMap.size > 0
+        },
+
+        /**
+         * #getter
          */
         get detectedModificationTypes() {
-          return [...self.detectedModifications.keys()]
+          return [...this.detectedModifications.keys()]
         },
 
         /**
@@ -1483,7 +1531,7 @@ export default function stateModelFactory(
                 ])
               : this.colorLegendCategories,
             palette: this.colorPalette,
-            detectedModifications: self.detectedModifications,
+            detectedModifications: this.detectedModifications,
             colorTagMap: self.colorTagMap,
             presentTagValues: this.presentTagValues,
             presentModifications: this.presentModifications,
@@ -3159,14 +3207,6 @@ export default function stateModelFactory(
       .actions(self => {
         const superSetError = self.setError
         const superSetHeightMode = self.setHeightMode
-        function addModification(modType: string) {
-          if (!self.detectedModifications.has(modType)) {
-            self.detectedModifications.set(
-              modType,
-              getColorForModification(modType),
-            )
-          }
-        }
         function clearMouseoverState() {
           self.featureIdUnderMouse = undefined
           self.mouseoverExtraInformation = undefined
@@ -3225,11 +3265,6 @@ export default function stateModelFactory(
           ) {
             if (data) {
               self.rpcDataMap.set(displayedRegionIndex, data)
-              for (const { data: groupData } of data.groups) {
-                for (const modType of groupData.detectedModifications) {
-                  addModification(modType)
-                }
-              }
             } else {
               self.rpcDataMap.delete(displayedRegionIndex)
             }
@@ -3833,22 +3868,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          updateVisibleModifications(uniqueModifications: string[]) {
-            for (const modType of uniqueModifications) {
-              addModification(modType)
-            }
-          },
-
-          /**
-           * #action
-           */
-          setModificationsReady(flag: boolean) {
-            self.modificationsReady = flag
-          },
-
-          /**
-           * #action
-           */
           setFeatureIdUnderMouse(feature?: string) {
             self.featureIdUnderMouse = feature
           },
@@ -4122,7 +4141,6 @@ export default function stateModelFactory(
               }
 
               const newDataMap = new Map<number, GroupedAlignmentsResult>()
-              self.setModificationsReady(true)
               for (const r of results) {
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }

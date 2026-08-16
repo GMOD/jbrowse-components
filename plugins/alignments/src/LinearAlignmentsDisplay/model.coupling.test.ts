@@ -1056,3 +1056,95 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     expect(region0(display).readYs).not.toBe(before.readYs)
   })
 })
+
+// What the display knows about which base modifications exist, driven through
+// the real model rather than the pure legend builders — those take a set and
+// cannot see whether anything hands them the right one.
+//
+// The property under test is that this is REGION-SCOPED. It used to be a
+// volatile map `setRpcData` added to and nothing ever cleared, so it grew for
+// the life of the tab: every case below would have passed on the accumulating
+// form too, except the ones asserting a type is GONE.
+describe('modification detection follows the loaded regions', () => {
+  const withMods = (...types: string[]) => ({
+    groups: [
+      {
+        key: '',
+        label: '',
+        data: { ...makeEmptyPileupData(), detectedModifications: types },
+      },
+    ],
+  })
+
+  test('nothing is detected, and nothing claims to be ready, before a fetch', () => {
+    const display = createDisplay()
+    expect(display.detectedModificationTypes).toEqual([])
+    expect(display.modificationsReady).toBe(false)
+  })
+
+  test('a landed fetch is what makes the answer ready', () => {
+    const display = createDisplay()
+    display.setRpcData(0, withMods('m'))
+    expect(display.modificationsReady).toBe(true)
+    expect(display.detectedModificationTypes).toEqual(['m'])
+    // the colour the legend and the marks both resolve from the type code
+    expect(display.detectedModifications.get('m')).toBe('rgb(255,0,0)')
+  })
+
+  // The reason for the change: pan off the locus carrying 6mA and the menu
+  // must stop offering it.
+  test('a type the new region does not carry is dropped', () => {
+    const display = createDisplay()
+    display.setRpcData(0, withMods('m', 'a'))
+    expect(display.detectedModificationTypes).toEqual(['m', 'a'])
+    display.setRpcData(0, withMods('m'))
+    expect(display.detectedModificationTypes).toEqual(['m'])
+  })
+
+  test('every loaded region contributes, deduped', () => {
+    const display = createDisplay()
+    display.setRpcData(0, withMods('m'))
+    display.setRpcData(1, withMods('m', 'h'))
+    expect(display.detectedModificationTypes).toEqual(['m', 'h'])
+    // dropping one region takes only what that region alone carried
+    display.setRpcData(1, null)
+    expect(display.detectedModificationTypes).toEqual(['m'])
+  })
+
+  // `modificationsReady` used to be set true by the fetch and never set back,
+  // so it outlived its data: after a clear it still claimed an answer for reads
+  // that were no longer loaded, and the menu skipped "Loading modifications..."
+  // while the replacing fetch was in flight.
+  test('clearing the data un-readies the answer', () => {
+    const display = createDisplay()
+    display.setRpcData(0, withMods('m'))
+    display.clearDisplaySpecificData()
+    expect(display.modificationsReady).toBe(false)
+    expect(display.detectedModificationTypes).toEqual([])
+  })
+
+  // Every group of every loaded region, including one a subclass hides
+  // (`hiddenGroupKeys` is empty on this display and only LGVSyntenyDisplay
+  // fills it, so there is no setter here to drive). That is deliberate: the
+  // menu is what asks, and a type belonging to a hidden lane is still one the
+  // user can reveal. The legend asks `presentModifications` instead, which is
+  // off the laid-out map and so hidden-filtered.
+  test('groups are unioned within a region', () => {
+    const display = createDisplay()
+    display.setRpcData(0, {
+      groups: [
+        {
+          key: 'g1',
+          label: 'g1',
+          data: { ...makeEmptyPileupData(), detectedModifications: ['m'] },
+        },
+        {
+          key: 'g2',
+          label: 'g2',
+          data: { ...makeEmptyPileupData(), detectedModifications: ['a'] },
+        },
+      ],
+    })
+    expect(display.detectedModificationTypes).toEqual(['m', 'a'])
+  })
+})
