@@ -509,12 +509,21 @@ anyway from a synteny or dotplot display.
 
 **One piece of this is fixed and the rest is latent, which is the trap.** The
 loading bar was the only one that rendered without the user doing anything, and
-`StatusProgressBar` is now toolkit-free, so the measured hole is closed: the BYO
-site's `synteny` page reports 0 Material elements at rest **and** 0 during its
-first load. Everything else on that path is Material and simply has not been
-reached yet — the tooltip wants a hover, the context menu a right-click, and
-`LoadingOverlay`'s cancel and retry are `IconButton`s that only appear when a
-caller passes the handlers.
+`StatusProgressBar` is now toolkit-free, so the hole that was measured is closed
+on the axis it was measured on: the BYO site's `synteny` page reports 0 Material
+elements at rest **and** 0 during its first load. Everything else on that path is
+Material and simply has not been reached yet — the tooltip wants a hover, the
+context menu a right-click, and `LoadingOverlay`'s cancel and retry are
+`IconButton`s that only appear when a caller passes the handlers.
+
+**The bundle is a separate question and the answer there is still no.** That same
+page has 105 eager modules importing `@mui/material`, 42 of them first-party, and
+ships 691 KB gzip; `ComparativeFetchStatus` reaches them through the
+`@jbrowse/core/ui` barrel, which `menuItems.purity.test.ts` asserts reaches
+Material as its negative control. A rendered-element census cannot see any of it
+— see "0 Material elements and no Material UI are different claims" in
+EAGER_BUNDLE.md, whose holder table is the real scope. So this entry buys an
+embedder the look, not the bytes, and nothing here changes that on its own.
 
 **So take this together with
 [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry).**

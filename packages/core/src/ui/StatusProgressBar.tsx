@@ -51,6 +51,12 @@ const useStyles = makeStyles()(theme => ({
  * was invisible to the examples site's MUI census for the ordinary reason a
  * loading state is: the census runs once the page has settled.
  *
+ * **What that bought is the look, not the bytes.** `LoadingOverlay` one level up
+ * still imports `IconButton` and `Tooltip`, and the comparative path reaches the
+ * `@jbrowse/core/ui` barrel, so Material UI is in that page's bundle either way
+ * — 42 first-party eager modules hold it on the synteny page. Nothing here is a
+ * step toward getting it out; EAGER_BUNDLE.md owns that and says what it needs.
+ *
  * `makeStyles` hands it `JBrowseStyleTheme`, so it follows the app's palette in
  * both modes exactly as the Material one did. Two guards keep it from drifting
  * back: `muiFree.test.ts` traces its imports, which catches an `alpha()` reached
