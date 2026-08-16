@@ -1,187 +1,124 @@
 ---
 name: handoff-desktop-audit
-description: What a structural audit of jbrowse-desktop found, which fixes landed, and the four workstreams that remain — the contextIsolation finish, the plugin IPC boundary, the BLAT bridge, and export-to-web durability. Read before starting any of the four; each entry names its first move and what is already decided.
+description: What remains of the jbrowse-desktop structural audit — the contextIsolation finish and the plugin bridge — plus the two decisions that are Colin's. The BLAT bridge, export-to-web durability and the quitAndInstall/closeGuard gap have landed; read this before starting either of the two that are left.
 ---
 
 # Handoff: the jbrowse-desktop audit
 
-An end-to-end read of `products/jbrowse-desktop` — main process, renderer, the
-BLAT bridge, the export path. Six fixes landed as one commit. Four things left
-are too large for that, and this file is what keeps them from being re-derived.
+An end-to-end read of `products/jbrowse-desktop`. Most of it has landed. This
+file is what keeps the rest from being re-derived.
 
-## What landed
+## Landed
 
-One commit, `fix(desktop): repair the IPC channel guard and the four gaps it hid`.
-The reasoning is in the message; the short version:
+- **The `INVOKABLE_CHANNELS` guard and the four gaps it hid** —
+  `fix(desktop): repair the IPC channel guard and the four gaps it hid`.
+- **The BLAT bridge is off the app's default cookie jar** — its own partition
+  (`electron/blatSession.ts`), plus http(s)-only, no embedded credentials, a
+  16 MB capped read and a timeout. `electron/ipc/blatHandlers.test.ts`.
+- **Export links say when they will not travel** — `ShareLinkField` separates
+  "may not survive delivery" (8k) from "will not open" (80k, WebKit's ceiling,
+  which Chromium's 2 MB hides from whoever made the link), and the export dialog
+  fills the second tier's action with the short-link mode. The url also carries
+  `exportedFrom=jbrowse-desktop@<version>`.
+- **`quitAndInstall` against `closeGuard`** — Electron closes the windows
+  without emitting `before-quit`, so the guard held that close and never
+  re-issued the quit; on macOS the update silently did not install.
+  `subscribeQuitSignals` names both events.
+- **The bundling spike** — answered, and its answer is in
+  `reference/DESKTOP_CONTEXT_ISOLATION.md` with the two-build table.
 
-- **The `INVOKABLE_CHANNELS` exhaustiveness guard never checked anything.**
-  `const _: UnlistedChannel[] = []` passes for every `UnlistedChannel`, because
-  an empty array literal is assignable to any array type. It is now a `never`
-  constraint, which errors naming the channel.
-- **It was hiding `setSessionOpen` and `sessionFlushed`**, both invoked by the
-  renderer and neither listed. See "the flip is not one flag" below for why that
-  mattered more than it looks.
-- `saveSession` skips a write whose bytes are already on disk, leaves
-  `recent_sessions.json` alone when only a row's `updated` would move, and drops
-  the indent from autosaves.
-- `writeFileAtomic` flushes before the rename.
-- `reset` clears `nameIndicesDir`, which nothing had ever pruned.
-- The OAuth redirect is matched as origin + path rather than by prefix.
+## 1. Finish the contextIsolation migration
 
-## The four that remain
+`reference/DESKTOP_CONTEXT_ISOLATION.md` holds the plan; read that, not this.
+What belongs here is what the spike changed and what is still unprobed.
 
-Ordered by what blocks what. (1) is the one the other three keep running into;
-(2) is a prerequisite for doing (1) without breaking third-party plugins, and is
-worth doing on its own merits either way.
+**Step 1 is an import change, not a resolution change.** Deleting the
+`generic-filehandle2` alias does clear `fs` from the renderer — and from the RPC
+worker, which then holds the stub `LocalFile` that rejects every read. One
+`resolve` config serves both graphs. So: `await import()` the `LocalFile` behind
+the capability check, and let the renderer's graph contain a node build it never
+evaluates.
 
-### 1. Finish the contextIsolation migration
+**`indexJobsModel.ts` wants the worker, not a channel.** The reference doc still
+says its `mkdirSync` "wants a channel". That crosses the wrong boundary — see
+the division below. Creating the text-indexing output directory is processing,
+and the RPC method that follows it already runs where Node lives.
 
-`reference/DESKTOP_CONTEXT_ISOLATION.md` holds the plan and the probe results,
-and is still right about the shape of the work. Two corrections and one addition
-from this audit are folded into it — read that file, not this section, for the
-sequencing. What belongs here is why it has not moved:
+**Unprobed, and worth knowing before step 6:** whether page-thread JS can
+construct its own Web Worker and inherit `nodeIntegrationInWorker`. If Electron
+grants node integration to any worker the renderer creates rather than only to
+same-origin script urls, the flip is worth much less than it looks. Same minimal
+probe-app shape as the three rows already in that doc's table.
 
-**The flip is not one flag, and the failure mode is silence.** Every renderer
-path that reaches the main process has to be an allowlisted `invoke` *before* the
-flag moves, and nothing today reports one that isn't. The two missing channels
-were missing for as long as they have existed; the guard that was supposed to
-catch them was inert; and both call sites are `.catch(console.error)`, so the
-symptom would have been "closing the window sometimes loses the last second of
-work" — a bug nobody would have connected to a security flag.
+## 2. Give plugins a sanctioned way to reach the main process
 
-That is the argument for step 7 of the existing plan (an e2e assertion that the
-lockdown holds) being written *first*, not last. It is also the argument for (2):
-a bridge whose surface is derived from one list cannot drift from it.
+**The division, which decides the shape.** The Web Worker is for processing and
+has Node (`nodeIntegrationInWorker`, independent of the renderer's flag, and
+runtime plugins load into that realm — `product-core/src/rpcWorker.ts`). The
+page thread is for UI. So an analysis-suite plugin that wants to run tools or
+read files registers an `RpcMethodType` and does it in the worker; the flip does
+not touch that. The bridge is only for what the worker structurally cannot have:
+the app's window, identity and OS integration. **No IPC is ever plumbed into the
+worker** — today that is enforced only by accident, since every non-test reach is
+spelled `window.require('electron')` and a worker has no `window`.
 
-**First move:** the spike named in the existing doc — does the renderer bundle
-still contain `require("fs")` once `generic-filehandle2` resolves through its
-browser field? Nothing else is verifiable while the renderer will not boot, and
-if `electron-renderer` turns out to be load-bearing for the workers, the whole
-plan needs rethinking and it is cheap to learn that now.
+**The shape is already in the tree, and it is not invoke-shaped.**
+`fileToLocation` (`packages/core/src/util/index.ts`) wraps
+`webUtils.getPathForFile` as a plain function and is published at
+`@jbrowse/core/util` (`ReExports/publicUtil.ts:100`, alongside `isElectron`).
+Every caller is a React drop zone. That is the pattern the other crossings want:
+**core exports a plain capability function, desktop implements it, the plugin
+never sees `ipcRenderer`** — which also dissolves the old worry that "the bridge
+can't be only `invoke`", since a wrapper does not care what it is built on.
 
-### 2. Give plugins a sanctioned way to reach the main process
+Still hand-rolling `window.require('electron')` and restating `channelTypes.ts`
+with casts:
 
-**The typed IPC boundary is not the boundary.** `src/ipc.ts` types all 23
-channels and stops the `any` — for callers inside the product. Outside it, four
-places hand-roll `window.require('electron')` and restate the contract with
-casts:
+| | reaches |
+| --- | --- |
+| `plugins/blat/src/desktopBlat.ts` | `blatFetch`, `openBlatChallenge` |
+| `plugins/authentication/src/OAuthModel/model.tsx` | `openAuthWindow` |
+| `packages/core/src/ui/FileSelector/LocalFileChooser.tsx` | `promptOpenLocalFile` |
+| `packages/core/src/util/index.ts` (`fileToLocation`) | `webUtils.getPathForFile` |
 
-| | reaches | via |
-| --- | --- | --- |
-| `plugins/blat/src/desktopBlat.ts` | `blatFetch`, `openBlatChallenge` | cast |
-| `plugins/authentication/src/OAuthModel/model.tsx` | `openAuthWindow` | cast |
-| `packages/core/src/ui/FileSelector/LocalFileChooser.tsx` | `promptOpenLocalFile` | cast |
-| `packages/core/src/util/index.ts` (`fileToLocation`) | **`webUtils.getPathForFile`** | `@ts-ignore` |
+A fifth lives outside this repo: Apollo's
+`ApolloInternetAccount/model.ts:209` does `globalThis.require('electron')` and
+hand-builds desktop's `AuthWindowParams` with no types at all.
 
-Three consequences, in increasing order of cost:
+**ReExports is the surface — the ABI objection to it does not hold up.** The
+earlier reading of `PLUGIN_ABI_STABILITY.md` overstated the risk of *adding* a
+name:
 
-- Change a channel's return type in `channelTypes.ts` and all four still
-  compile. They fail at runtime.
-- Two of the 23 channels exist only for a plugin that lives outside the product
-  and cannot import the product's types. That is what forced the cast.
-- **The last row is not a channel at all.** `webUtils` is a distinct Electron
-  API, and `requireShim.ts` exposes `ipcRenderer.invoke` and nothing else — so
-  the shim's central claim, that "everything that crosses to the main process is
-  an `ipcRenderer.invoke`, so that one method is the whole bridge", is false as
-  written. Drag-and-drop opening a local file breaks the moment the flag moves,
-  and it breaks in `@jbrowse/core`, not in desktop.
+- `rollup-plugin-external-globals` inlines `JBrowseExports["@jbrowse/core/util"]
+  .name` at each **use site**. A name an old host lacks reads `undefined` there
+  and throws only when called. `defaultCodonTable` error-paged hosts because the
+  *plugin* called it at module scope, not because of the import mechanism.
+- `PluginLoader.loadSettled` — what the apps use — already degrades a throwing
+  bundle to a reported failure. Its own comment names "a bundle that needs a
+  newer host than the one reading the config" as the case it exists for.
+- The residual is the worker, which uses all-or-nothing `load`. Only a
+  module-scope throw reaches it, and a capability called from an action cannot
+  cause one.
 
-**The design, as far as it is decided:** the type belongs in `@jbrowse/core`
-(where the callers are), the implementation in desktop, and the shim's allowlist
-should be derived from the same declaration rather than restated. A plugin asks
-for the bridge and gets `undefined` off desktop, which is the check
-`isElectron` is standing in for today and doing badly — it is a userAgent sniff
-that stays true after the flip (blocker 3 in the reference doc).
+**The one rule that follows: add to an existing ReExports module, never a new
+module path.** A missing module key makes the member read throw rather than
+yield `undefined`, and it is the only shape that can throw at module scope.
 
-**Open, and worth deciding before writing any of it:** whether the bridge goes
-through `ReExports` or through the plugin manager. `ReExports` is the
-established plugin API surface, but per `reference/PLUGIN_ABI_STABILITY.md` a
-removal there fails quietly — and this surface is one we would be adding to,
-then wanting to constrain later. Weigh that against the plugin manager, which
-plugins already hold.
+`scripts/check-published-plugins.ts` reads every store bundle for the names it
+actually takes off `JBrowseExports`; run it before and after.
 
 **Do not start with `webUtils`.** Decide the shape on `blatFetch`, which has one
 consumer and a test, then move the other three.
 
-### 3. Harden the BLAT bridge
+## Colin's calls, not the implementer's
 
-`electron/ipc/blatHandlers.ts` is not a BLAT client; it is a general-purpose
-authenticated request proxy. Renderer-supplied URL, renderer-supplied body, no
-scheme check, no host allowlist, `credentials: 'include'` on the app's **default**
-session, and the full response body returned. `openBlatChallenge` is the same
-shape one layer up: an arbitrary renderer URL opened in a `BrowserWindow` that
-shares that cookie jar, with no `will-navigate` or `setWindowOpenHandler` guard.
-
-Today this is not an escalation — the renderer already has Node. It becomes the
-boundary the moment (1) lands, which is exactly the trap the reference doc's step
-5 describes: locking the renderer while leaving this reachable changes the
-payload, not the outcome.
-
-**The one design decision that is not obvious.** A host allowlist cannot be
-static: the dialog's server field is how someone runs their own proxy or their
-own `gfServer`, and that is a feature. What *can* be constrained is the cookie
-jar. Give the challenge window and `blatFetch` a named partition
-(`session.fromPartition('blat')`) instead of the default session. The
-`cf_clearance` cookie a solve leaves behind still attaches to the BLAT request —
-which is the entire point of routing through main — while a POST to any other
-host stops carrying the app's OAuth cookies, because they are no longer in the
-same jar. That removes the interesting half of the capability without touching
-what the feature does.
-
-Then the ordinary hygiene, none of it contentious: require http(s), reject
-credentials in the URL, cap the response size, and give it a timeout plus an
-`AbortSignal`. **There is no cancellation anywhere in this path today** — the
-dialog's Cancel closes the UI and the POST keeps running in main with nowhere to
-land.
-
-**First move:** the partition, alone, with `liveBlat.test.ts`'s header read
-first — it explains why that test is skipped unconditionally, which is the
-constraint on how any of this gets verified.
-
-### 4. Export-to-web durability
-
-`planWebExport` itself is sound — the base-config diff, the assembly-collision
-handling, the re-run of portability over the shipped session are all right. The
-problems are around it, and both are about links outliving the moment they were
-made. These are artifacts: papers, supplements, emails.
-
-**No URL length guard anywhere.** Long link is the default mode, and a
-self-contained export carries its own assemblies and tracks. Real autosaves on
-this machine run 1.1–1.6 MB, and deflate + base64 of one is still hundreds of KB
-in a hash fragment that then goes through `window.open` and the clipboard.
-Nothing measures the assembled URL and nothing warns. This is the most likely
-way export-to-web fails in the field, and it fails mutely.
-
-The fix is small and mostly a UI decision: measure the assembled URL in
-`ExportToWebDialog`, and past a threshold say so and steer to the short link,
-which is already the mode that solves it. Pick the threshold deliberately —
-`buildWebExportUrl`'s hash choice already dodges the request-line limit, so what
-is left is the browser's own address-bar and `window.open` ceilings, which are
-what need measuring rather than guessing.
-
-**The link points at `latest`.** `DEFAULT_WEB_BASE_URL` is
-`https://jbrowse.org/code/jb2/latest/`, and nothing records the version that
-produced the link or pins the hosted base config it diffed against. A session
-encoded today opens against an unknown future build, and the recipient can get a
-third state of the base config. The cheap half — stamping the producing version
-into the link so a future loader can at least *say* what it is reading — is worth
-doing even if pinning the deployment is not the maintainers' call to make here.
-
-## Two smaller things, deliberately not done
-
-- **The autosave interval is still 1 s.** The landed fixes cut what each tick
-  costs; they do not change how often it fires, and `autorun`'s `delay` is a
-  throttle rather than a debounce, so it fires for as long as anything changes —
-  panning included. Raising it trades a wider data-loss window for proportionally
-  less IO, and that window is much less load-bearing than it was: `closeGuard`
-  now flushes on window close, and the Exit, return-to-start-screen and
-  session-swap paths all flush too. **It is a judgment call about the user's
-  data, so it is Colin's, not the implementer's.** An interval that scales with
-  the serialized size is the version worth proposing.
-- **`autoUpdater.quitAndInstall` against `closeGuard` is untested.**
-  `quitAndInstall` closes the window; the close guard `preventDefault`s that and
-  re-issues `app.quit()` after the flush. Whether the installer survives being
-  cancelled and re-quit is not covered by `closeGuard.test.ts` or the packaged-app
-  harness. Reason about it as far as electron-updater's source and then test it —
-  the failure mode is "the update silently does not install", which no user would
-  report as a bug.
+- **The autosave interval is still 1 s.** `autorun`'s `delay` is a throttle
+  rather than a debounce, so it fires for as long as anything changes — panning
+  included. The data-loss window is much smaller than when 1 s was chosen:
+  `closeGuard` flushes on window close, and Exit, return-to-start-screen and
+  session-swap all flush too. An interval that scales with the serialized size is
+  the version worth proposing. It is a judgment call about the user's data.
+- **Whether to pin the export deployment.** `DEFAULT_WEB_BASE_URL` is
+  `.../jb2/latest/`, and the hosted base config a link diffed against is fetched
+  fresh on both ends. The link now records what produced it; pinning what it
+  opens against is a deployment decision.

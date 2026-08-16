@@ -156,12 +156,17 @@ rather than a blank window. That is the same move the IPC-backed filehandle in
 step 1 needs anyway.
 
 There is a second one that grep *does* find, and it is not behind `openLocation`:
-`src/indexJobsModel.ts` imports `node:fs` and calls `mkdirSync` on the main
-thread to create the text-indexing output directory before the RPC runs. It is
-one line and wants a channel (the directory name is already shared as
-`NAME_INDICES_DIR` in `ipc/channelTypes.ts`), but it is a renderer Node
-dependency that the `openLocation` funnel does not cover, so fixing the funnel
-does not fix it.
+`src/indexJobsModel.ts` imports `node:fs` and calls `mkdirSync` on the page
+thread to create the text-indexing output directory before the RPC runs. It is a
+renderer Node dependency the `openLocation` funnel does not cover, so fixing the
+funnel does not fix it.
+
+It wants the **worker**, not a channel. Creating an output directory is
+processing, and a channel would push a processing capability across a bridge
+that exists for UI (see the division in
+[handoffs/desktop-audit.md](../handoffs/desktop-audit.md)). The RPC method that
+follows this line already runs where Node lives, and `NAME_INDICES_DIR` is
+already shared through `ipc/channelTypes.ts`.
 
 ### 3. `isElectron` is a userAgent sniff, and it is a landmine
 
