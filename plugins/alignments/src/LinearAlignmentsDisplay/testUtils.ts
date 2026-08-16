@@ -25,7 +25,9 @@ import stateModelFactory from './model.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
+import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { RenderState } from './renderers/rendererTypes.ts'
+import type { MenuDivider, MenuItem, MenuSubHeader } from '@jbrowse/core/ui'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -461,7 +463,16 @@ export function bootAlignmentsDisplay({
         ],
       }),
     )
-    return { session, view, display: view.tracks[0]!.displays[0]! }
+    // `displays` is typed as the registry's loose display union, so every method
+    // read off it comes back untyped — which is why cases used to cast the
+    // result of `contextMenuItems()`/`trackMenuItems()` item by item. The model
+    // itself declares `MenuItem[]`; naming the type once here is what lets a
+    // case read it.
+    return {
+      session,
+      view,
+      display: view.tracks[0]!.displays[0]! as LinearAlignmentsDisplayModel,
+    }
   }
 
   return { pluginManager, LinearGenomeModel, trackConfig, baseSession, mount }
@@ -593,6 +604,71 @@ export function createTestAlignmentsDisplay() {
     { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
   ])
   return { session, view, display, openedWidgets }
+}
+
+/**
+ * A built menu row, minus the two kinds that carry no state and are never what
+ * a lookup by label means. Everything left derives from `BaseMenuItem`, so
+ * `label`, `disabled` and `disabledHelpText` are all readable without narrowing.
+ */
+export type BuiltMenuItem = Exclude<MenuItem, MenuDivider | MenuSubHeader>
+
+/**
+ * Find a row by label, at any depth.
+ *
+ * Typed against the real `MenuItem` union rather than a hand-rolled shim of it:
+ * three suites here had grown their own `MenuNode`, which only type-checked
+ * because the harness handed out an untyped display. `label` is a `ReactNode`
+ * on the union (a row may render an element), so this matches the string rows,
+ * which is what every caller means by a label.
+ */
+export function findMenuItem(
+  items: MenuItem[],
+  label: string,
+): BuiltMenuItem | undefined {
+  for (const item of items) {
+    if (item.type === 'divider' || item.type === 'subHeader') {
+      continue
+    }
+    if (item.label === label) {
+      return item
+    }
+    const found =
+      'subMenu' in item ? findMenuItem(item.subMenu, label) : undefined
+    if (found) {
+      return found
+    }
+  }
+  return undefined
+}
+
+export function hasMenuItem(items: MenuItem[], label: string) {
+  return findMenuItem(items, label) !== undefined
+}
+
+/** The rows nested under `label`, or [] where it isn't a submenu. */
+export function menuSubItems(items: MenuItem[], label: string): MenuItem[] {
+  const found = findMenuItem(items, label)
+  return found && 'subMenu' in found ? found.subMenu : []
+}
+
+/**
+ * Click the row labelled `label`, failing loudly when there isn't one or it
+ * isn't clickable — a `?.onClick?.()` that silently found nothing passes the
+ * assertion after it for the wrong reason.
+ */
+export function clickMenuItem(items: MenuItem[], label: string) {
+  const found = findMenuItem(items, label)
+  if (!found || !('onClick' in found)) {
+    throw new Error(`no clickable menu item labeled ${label}`)
+  }
+  found.onClick()
+}
+
+/** Whether `label` names a row that would do something when clicked. */
+export function isMenuItemClickable(items: MenuItem[], label: string) {
+  const found = findMenuItem(items, label)
+  return found !== undefined && 'onClick' in found
 }
 
 /**

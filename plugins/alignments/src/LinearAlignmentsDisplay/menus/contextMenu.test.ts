@@ -307,6 +307,40 @@ test('an indicator hit sorts by the indicator type', () => {
   expect(model.sortCalls).toEqual([['insertion', 100, 'ctgA']])
 })
 
+// The depth histogram had a left-click widget and no right-click menu at all,
+// so the one sort a reader points at a coverage bar to ask for had nowhere to
+// be asked from.
+describe('a coverage hit', () => {
+  const coverageHit = { type: 'coverage', position: 500 } as const
+
+  test('sorts by base at the bar under the cursor, and opens its details', () => {
+    const model = makeModel({ coverageHit })
+    const sub = findSubMenu(run(model), 'Coverage')
+    expect(sub.map(i => i.label)).toEqual([
+      'Sort by base at position',
+      'Open coverage details',
+    ])
+    sub[0]!.onClick()
+    expect(model.sortCalls).toEqual([['basePair', 500, 'ctgA']])
+  })
+
+  // Zoomed out, hitTestCoverage snaps to a significant SNP inside the bin — the
+  // column a reader pointing at a coloured bar means — so the sort anchors on
+  // the hit rather than on the raw cursor column.
+  test('anchors on the snapped bin position, not the raw column', () => {
+    const model = makeModel({ coverageHit, genomicPos: 512 })
+    firstSubMenuItem(run(model)[0]).onClick()
+    expect(model.sortCalls).toEqual([['basePair', 500, 'ctgA']])
+  })
+
+  test('sort: false leaves the details reachable on its own', () => {
+    const items = getHitMenuItems(makeModel({ coverageHit }), { sort: false })
+    expect(items.map(i => (i as { label?: string }).label)).toEqual([
+      'Open coverage details',
+    ])
+  })
+})
+
 test('a modification hit offers "Open modification details"', () => {
   const model = makeModel({
     modHit: {

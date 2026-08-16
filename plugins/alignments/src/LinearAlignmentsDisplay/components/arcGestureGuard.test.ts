@@ -191,8 +191,9 @@ test('an arc over an interbase bar: the hover names the arc, and so do the other
   t.click(x, y)
   expect(t.openedWidgets).toHaveLength(0)
   // No `preventDefault` either: an arc has nothing to offer, and a mark with
-  // nothing to offer falls through to the browser's own menu here — the same
-  // thing coverage does.
+  // nothing to offer falls through to the browser's own menu here. It is now
+  // the ONLY such mark — coverage used to fall through beside it and no longer
+  // does — so this is the whole of that rule rather than an example of it.
   expect(t.contextMenu(x, y).preventDefault).not.toHaveBeenCalled()
   expect(t.display.contextMenuAnchor).toBeUndefined()
 })

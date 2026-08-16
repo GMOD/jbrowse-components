@@ -90,6 +90,16 @@ function setup() {
       nativeEvent: { offsetX: 100, offsetY: 20 },
     } as never)
   }
+  function contextMenu() {
+    const preventDefault = jest.fn()
+    result.current.handleContextMenu({
+      nativeEvent: { offsetX: 100, offsetY: 20 },
+      clientX: 100,
+      clientY: 50,
+      preventDefault,
+    } as never)
+    return { preventDefault }
+  }
   return {
     view,
     display,
@@ -98,6 +108,7 @@ function setup() {
     dragTo,
     release,
     hover,
+    contextMenu,
     runFrame,
     hook: result,
   }
@@ -171,6 +182,21 @@ test('a pan swallows the click that ends it, but a small wobble does not', () =>
   expect(jitter.view.offsetPx).toBe(START - 2)
   click(jitter)
   expect(jitter.openedWidgets).toHaveLength(1)
+})
+
+// Same pixel the click case above opens a coverage widget from. Right-clicking
+// it used to resolve nothing, so the browser's own menu came up over the depth
+// histogram — the one mark with a widget behind it that offered no menu.
+test('right-clicking a coverage bin opens the pileup menu, not the browser one', () => {
+  const { display, contextMenu } = setup()
+  const { preventDefault } = contextMenu()
+  expect(preventDefault).toHaveBeenCalled()
+  expect(display.contextMenuHit?.coverageHit).toBeDefined()
+  expect(
+    display
+      .contextMenuItems()
+      .map((i: unknown) => (i as { label?: string }).label),
+  ).toContain('Coverage')
 })
 
 test('leaving the canvas drops the hover, unless a context menu is holding it', () => {

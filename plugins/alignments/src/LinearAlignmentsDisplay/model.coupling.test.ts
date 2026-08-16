@@ -5,7 +5,15 @@ import { heightModeLabel } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import { namesToBlock } from '../shared/readNameBlock.ts'
-import { bootAlignmentsDisplay, makeEmptyPileupData } from './testUtils.ts'
+import {
+  bootAlignmentsDisplay,
+  clickMenuItem,
+  findMenuItem,
+  hasMenuItem,
+  isMenuItemClickable,
+  makeEmptyPileupData,
+  menuSubItems,
+} from './testUtils.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ResolvedBlock } from '../shared/hitTestTypes.ts'
@@ -213,52 +221,24 @@ describe('setLinkedReads color scheme preservation', () => {
 // read-connection overlay is active — the caller passes `arcColor: undefined` so
 // arcColorSection drops it, matching every other conditional section in the
 // menu. Guards against reintroducing the always-shown disabled stub.
-interface MenuNode {
-  label?: string
-  // 'checkbox' | 'radio' | 'subMenu' | 'divider' | 'subHeader' | undefined —
-  // read by the specs that assert a submenu holds one kind of row
-  type?: string
-  disabled?: boolean
-  disabledHelpText?: string
-  onClick?: () => void
-  subMenu?: MenuNode[]
-}
-function hasMenuLabel(items: MenuNode[], label: string): boolean {
-  return items.some(
-    i =>
-      i.label === label || (i.subMenu ? hasMenuLabel(i.subMenu, label) : false),
-  )
-}
-function findMenu(items: MenuNode[], label: string): MenuNode | undefined {
-  return items.reduce<MenuNode | undefined>(
-    (acc, i) =>
-      acc ??
-      (i.label === label
-        ? i
-        : i.subMenu
-          ? findMenu(i.subMenu, label)
-          : undefined),
-    undefined,
-  )
-}
 
 describe('Arc color menu visibility', () => {
   test('hidden when no read-connection overlay is active', () => {
     const display = createDisplay()
     display.setReadConnections('off')
-    expect(hasMenuLabel(display.trackMenuItems(), 'Arc color')).toBe(false)
+    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(false)
   })
 
   test('shown for read arcs', () => {
     const display = createDisplay()
     display.setReadConnections('arc')
-    expect(hasMenuLabel(display.trackMenuItems(), 'Arc color')).toBe(true)
+    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
   })
 
   test('shown for read cloud', () => {
     const display = createDisplay()
     display.setReadConnections('cloud')
-    expect(hasMenuLabel(display.trackMenuItems(), 'Arc color')).toBe(true)
+    expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
   })
 })
 
@@ -271,11 +251,11 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     const display = createDisplay()
     display.setShowPileup(true)
     expect(
-      findMenu(display.trackMenuItems(), 'Sort by...')?.disabled,
+      findMenuItem(display.trackMenuItems(), 'Sort by...')?.disabled,
     ).toBeFalsy()
 
     display.setShowPileup(false)
-    const item = findMenu(display.trackMenuItems(), 'Sort by...')
+    const item = findMenuItem(display.trackMenuItems(), 'Sort by...')
     expect(item?.disabled).toBe(true)
     expect(item?.disabledHelpText).toBeTruthy()
   })
@@ -291,8 +271,10 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     display: ReturnType<typeof createDisplay>,
     label: string,
   ) {
-    const menu = findMenu(display.trackMenuItems(), 'Read height')
-    return menu?.subMenu ? findMenu(menu.subMenu, label) : undefined
+    return findMenuItem(
+      menuSubItems(display.trackMenuItems(), 'Read height'),
+      label,
+    )
   }
 
   test.each(['Normal', 'Compact', 'Custom...', 'Set max layout height...'])(
@@ -326,7 +308,7 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     const display = createDisplay()
     display.setShowPileup(false)
     expect(
-      findMenu(display.trackMenuItems(), 'Read height')?.disabled,
+      findMenuItem(display.trackMenuItems(), 'Read height')?.disabled,
     ).toBeFalsy()
   })
 
@@ -335,7 +317,9 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     label => {
       const display = createDisplay()
       display.setShowPileup(false)
-      expect(findMenu(display.trackMenuItems(), label)?.disabled).toBeFalsy()
+      expect(
+        findMenuItem(display.trackMenuItems(), label)?.disabled,
+      ).toBeFalsy()
     },
   )
 })
@@ -349,15 +333,15 @@ describe('the row cap sits with the other sizing controls', () => {
   test('"Read height" offers it and "Show..." does not', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
-    const show = findMenu(items, 'Show...')?.subMenu ?? []
-    const height = findMenu(items, 'Read height')?.subMenu ?? []
-    expect(hasMenuLabel(height, 'Set max layout height...')).toBe(true)
-    expect(hasMenuLabel(show, 'Set max layout height...')).toBe(false)
+    const show = menuSubItems(items, 'Show...')
+    const height = menuSubItems(items, 'Read height')
+    expect(hasMenuItem(height, 'Set max layout height...')).toBe(true)
+    expect(hasMenuItem(show, 'Set max layout height...')).toBe(false)
   })
 
   test('"Show..." is checkboxes end to end', () => {
     const display = createDisplay()
-    const show = findMenu(display.trackMenuItems(), 'Show...')?.subMenu ?? []
+    const show = menuSubItems(display.trackMenuItems(), 'Show...')
     expect(show.length).toBeGreaterThan(0)
     expect(show.map(i => i.type)).toEqual(show.map(() => 'checkbox'))
   })
@@ -400,10 +384,12 @@ describe('sortedBy refName normalization', () => {
     ['pos', { type: 'base', refName: 'ctgA' }],
   ])('a slot naming no %s is no sort, not a throw', (_half, slot) => {
     const display = createDisplay({ withRegions: true })
-    display.setSortSlot({
-      ...slot,
-      assemblyName: 'volvox',
-    })
+    // Cast because this is the one writer the action's signature can't
+    // describe: `sortedBy` is a frozen slot, so a config or session spec can
+    // put half a sort in it, and that is exactly the input under test.
+    display.setSortSlot({ ...slot, assemblyName: 'volvox' } as Parameters<
+      typeof display.setSortSlot
+    >[0])
 
     expect(display.sortedBy).toBeUndefined()
   })
@@ -434,7 +420,7 @@ describe('ordering controls in chain mode', () => {
 
     display.setLinkedReads('normal')
     expect(display.canSortReads).toBe(false)
-    const item = findMenu(display.trackMenuItems(), 'Sort by...')
+    const item = findMenuItem(display.trackMenuItems(), 'Sort by...')
     expect(item?.disabled).toBe(true)
     expect(item?.disabledHelpText).toMatch(/View as pairs/)
   })
@@ -451,7 +437,7 @@ describe('ordering controls in chain mode', () => {
   test('"Supplementary / split reads" greys out until chain mode is on', () => {
     const display = createDisplay()
     display.setLinkedReads('off')
-    const off = findMenu(
+    const off = findMenuItem(
       display.trackMenuItems(),
       'Supplementary / split reads',
     )
@@ -460,7 +446,7 @@ describe('ordering controls in chain mode', () => {
 
     display.setLinkedReads('normal')
     expect(
-      findMenu(display.trackMenuItems(), 'Supplementary / split reads')
+      findMenuItem(display.trackMenuItems(), 'Supplementary / split reads')
         ?.disabled,
     ).toBe(false)
   })
@@ -472,13 +458,13 @@ describe('ordering controls in chain mode', () => {
       hit: { block: makeContextMenuBlock(), genomicPos: 50 },
       featureId: 'read1',
     })
-    expect(hasMenuLabel(display.contextMenuItems(), 'Sort by')).toBe(true)
+    expect(hasMenuItem(display.contextMenuItems(), 'Sort by')).toBe(true)
 
     display.setLinkedReads('normal')
-    expect(hasMenuLabel(display.contextMenuItems(), 'Sort by')).toBe(false)
+    expect(hasMenuItem(display.contextMenuItems(), 'Sort by')).toBe(false)
     // the rest of the menu is untouched — only the ordering rows go
     expect(
-      hasMenuLabel(display.contextMenuItems(), 'Open feature details'),
+      hasMenuItem(display.contextMenuItems(), 'Open feature details'),
     ).toBe(true)
   })
 
@@ -488,7 +474,13 @@ describe('ordering controls in chain mode', () => {
   // be projected the same way here.
   test('the sort tag leaves the fetch key when chain mode drops it', () => {
     const display = createDisplay()
-    display.setSortSlot({ type: 'tag', pos: 50, refName: 'ctgA', tag: 'HP' })
+    display.setSortSlot({
+      type: 'tag',
+      pos: 50,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+      tag: 'HP',
+    })
     expect(display.rpcProps().sortTag).toBe('HP')
 
     display.setLinkedReads('normal')
@@ -543,22 +535,18 @@ describe('read-category toggles + filter submenu', () => {
   test('proper-pairs / mate-less toggles are under "Show...", not "Read connections"', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
-    const show = findMenu(items, 'Show...')
-    expect(hasMenuLabel(show?.subMenu ?? [], 'Show proper pairs')).toBe(true)
-    expect(hasMenuLabel(show?.subMenu ?? [], 'Show reads without a mate')).toBe(
-      true,
-    )
+    const show = menuSubItems(items, 'Show...')
+    expect(hasMenuItem(show, 'Show proper pairs')).toBe(true)
+    expect(hasMenuItem(show, 'Show reads without a mate')).toBe(true)
 
-    const readConnections = findMenu(items, 'Read connections')
-    expect(
-      hasMenuLabel(readConnections?.subMenu ?? [], 'Show proper pairs'),
-    ).toBe(false)
+    const readConnections = menuSubItems(items, 'Read connections')
+    expect(hasMenuItem(readConnections, 'Show proper pairs')).toBe(false)
   })
 
   test('"Show proper pairs" flips the model slot', () => {
     const display = createDisplay()
     display.setDrawProperPairs(true)
-    findMenu(display.trackMenuItems(), 'Show proper pairs')?.onClick?.()
+    clickMenuItem(display.trackMenuItems(), 'Show proper pairs')
     expect(display.drawProperPairs).toBe(false)
   })
 
@@ -566,8 +554,8 @@ describe('read-category toggles + filter submenu', () => {
   // label is the only place the track chrome admits a filter is hiding reads.
   test('"Filter by..." opens the dialog directly and counts active filters', () => {
     const display = createDisplay()
-    expect(findMenu(display.trackMenuItems(), 'Filter by...')?.onClick).toEqual(
-      expect.any(Function),
+    expect(isMenuItemClickable(display.trackMenuItems(), 'Filter by...')).toBe(
+      true,
     )
 
     display.setFilterBy({
@@ -575,7 +563,9 @@ describe('read-category toggles + filter submenu', () => {
       readName: 'readA',
       tagFilters: [{ tag: 'HP', value: '1' }],
     })
-    expect(findMenu(display.trackMenuItems(), 'Filter by... (2)')).toBeDefined()
+    expect(
+      findMenuItem(display.trackMenuItems(), 'Filter by... (2)'),
+    ).toBeDefined()
   })
 })
 

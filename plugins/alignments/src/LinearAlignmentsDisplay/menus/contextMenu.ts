@@ -25,6 +25,7 @@ import {
 import { getCigarTypeLabel, isInterbaseType } from '../../shared/types.ts'
 import {
   openCigarWidget,
+  openCoverageWidget,
   openIndicatorWidget,
   openModificationWidget,
 } from '../components/detailWidgets.ts'
@@ -296,10 +297,10 @@ function getCopySubMenu(self: IStateTreeNode, feat: Feature): MenuItem[] {
 }
 
 // Items for what sits under the cursor — the CIGAR op, the modified base, the
-// coverage interbase indicator — as opposed to the read the cursor is over.
-// Nothing here reads a read/pair field, so LGVSyntenyDisplay (which draws the
-// same mismatch and interbase layers off a PAF cs/CIGAR) reuses them, with
-// `sort: false` since its sort menu offers no position-anchored mode.
+// coverage bar and its interbase indicator — as opposed to the read the cursor
+// is over. Nothing here reads a read/pair field, so LGVSyntenyDisplay (which
+// draws the same mismatch and interbase layers off a PAF cs/CIGAR) reuses them,
+// with `sort: false` since its sort menu offers no position-anchored mode.
 export function getHitMenuItems(
   self: HitMenuModel,
   { sort = true }: { sort?: boolean } = {},
@@ -313,7 +314,8 @@ export function getHitMenuItems(
   const items: MenuItem[] = []
 
   if (menuHit) {
-    const { block, genomicPos, cigarHit, indicatorHit, modHit } = menuHit
+    const { block, genomicPos, cigarHit, indicatorHit, modHit, coverageHit } =
+      menuHit
     if (cigarHit) {
       const typeLabel = getCigarTypeLabel(cigarHit.type)
       const isInterbase = isInterbaseType(cigarHit.type)
@@ -381,6 +383,41 @@ export function getHitMenuItems(
             openIndicatorWidget(
               self,
               indicatorHit,
+              block.refName,
+              block.rpcData,
+            )
+          },
+          sort,
+        }),
+      )
+    }
+
+    // The depth histogram itself, which a left-click has always opened
+    // (`openCoverageWidget`) while a right-click on it fell through to the
+    // browser's menu — the one mark with something to offer that offered
+    // nothing. Sorting the pileup by the base at a coverage column is also the
+    // thing this band is right-clicked FOR, and it had no home: the track
+    // menu's "Sort by ▸ Base pair" anchors on the center line, not on the
+    // column whose bar you are pointing at.
+    //
+    // Anchored on the hit's own position rather than the raw cursor column,
+    // matching the widget the details item opens: zoomed out past 1bp/px
+    // `hitTestCoverage` snaps to a significant SNP inside the bin, which is the
+    // column a reader pointing at a coloured bar means.
+    if (coverageHit) {
+      items.push(
+        sortAndDetailsSubMenu({
+          self,
+          block,
+          label: 'Coverage',
+          sortLabel: 'Sort by base at position',
+          sortType: 'basePair',
+          position: coverageHit.position,
+          detailsLabel: 'Open coverage details',
+          openDetails: () => {
+            openCoverageWidget(
+              self,
+              coverageHit.position,
               block.refName,
               block.rpcData,
             )

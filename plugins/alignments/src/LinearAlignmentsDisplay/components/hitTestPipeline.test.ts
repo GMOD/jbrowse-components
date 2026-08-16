@@ -372,6 +372,19 @@ describe('contextMenuTargetForHit', () => {
     expect(contextMenuTargetForHit({ type: 'none' }, CANVAS_X)).toBeUndefined()
   })
 
+  // The depth histogram has a widget behind it, so it gets a menu like every
+  // other mark that does. Only an arc — whose feed is junctions, with nothing
+  // to open — still falls through.
+  it('a coverage hit carries the coverage hit but no feature', () => {
+    const cov = { type: 'coverage', position: 1 } as const
+    const target = contextMenuTargetForHit(
+      { type: 'coverage', hit: cov, resolved },
+      CANVAS_X,
+    )
+    expect(target?.hit.coverageHit).toBe(cov)
+    expect(target?.featureId).toBeUndefined()
+  })
+
   // Every target carries the block it was resolved in and the column the cursor
   // was on, whatever mark answered — the position sorts anchor on that column.
   it('every hit carries its block and the clicked column', () => {
