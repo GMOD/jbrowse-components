@@ -7,7 +7,13 @@
 // reverse. See README.md.
 
 // Both seams at once, defaulting to the plain sets: what an embedder mounts.
-export { default as DisplayUIProvider } from './DisplayUIProvider.tsx'
+// `resolveOverlays` is the partial-over-plain merge on its own, for code
+// building the context value by hand — it returns one stable object per input,
+// which is what keeps a context value from re-rendering every display.
+export {
+  default as DisplayUIProvider,
+  resolveOverlays,
+} from './DisplayUIProvider.tsx'
 
 // The status states.
 export {

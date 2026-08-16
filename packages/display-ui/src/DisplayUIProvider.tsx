@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { DisplayChromeOverlayProvider } from './chromeOverlayContext.ts'
 import plainChromeOverlays from './plainChromeOverlays.tsx'
 import plainTrackControl from './trackControl/plainTrackControl.tsx'
@@ -8,6 +6,38 @@ import { TrackControlProvider } from './trackControl/trackControlContext.ts'
 import type { DisplayChromeOverlays } from './chromeOverlays.ts'
 import type { TrackControlComponent } from './trackControl/types.ts'
 import type { ReactNode } from 'react'
+
+// One merged set per caller's object, for the life of that object.
+//
+// The value goes into a context, so a fresh identity on each render re-renders
+// every display beneath it — and `observer()` wraps `React.memo`, so a new
+// `overlays` prop defeats the memo on each display's whole chrome. Stability is
+// the point; the allocation is nothing.
+//
+// A `useMemo` would do it and is worse in three small ways: it is per component
+// *instance*, so two providers handed the same set produce two identities and
+// two re-render groups; React may discard the cache; and it makes a plain
+// merge into a hook, unusable from a test or a caller building the value by
+// hand. Keyed weakly, so an inline literal — which misses either way — is
+// collected rather than accumulated.
+const merged = new WeakMap<
+  Partial<DisplayChromeOverlays>,
+  DisplayChromeOverlays
+>()
+
+export function resolveOverlays(overlays?: Partial<DisplayChromeOverlays>) {
+  // the common case allocates nothing: no argument means the plain set itself,
+  // which is already a module constant
+  if (!overlays) {
+    return plainChromeOverlays
+  }
+  let full = merged.get(overlays)
+  if (!full) {
+    full = { ...plainChromeOverlays, ...overlays }
+    merged.set(overlays, full)
+  }
+  return full
+}
 
 /**
  * Both bring-your-own seams at once: what a display draws that is not data.
@@ -41,9 +71,10 @@ import type { ReactNode } from 'react'
  * a compile error if they typecheck, a missing component if they ship JS — while
  * a partial one keeps working and picks up the new plain default.
  *
- * Hold the object still (module scope, or `useMemo`) if you build one: it is a
- * context value, so a fresh identity each render re-renders every display
- * beneath.
+ * Declare that object at module scope if you can. The merge is stable per
+ * object (`resolveOverlays`), so a constant costs one merge for the life of the
+ * app; a literal written inline in JSX is a new object every render, and this
+ * value goes into a context, so every display beneath re-renders with it.
  *
  * **The contexts themselves still default to `undefined`, and that stays true.**
  * A display rendering outside any provider — a unit test, the SVG export,
@@ -58,7 +89,7 @@ import type { ReactNode } from 'react'
  * it arrives through `PaletteProvider` (`@jbrowse/core/ui/PaletteContext`)
  * whatever these are set to. A feature track needs it even with plain chrome.
  *
- * This module reaches no `@mui/*` module, and `muiFreeSeam.test.ts` keeps it
+ * This module reaches no `@mui/*` module, and `muiFree.test.ts` keeps it
  * that way — asking for less Material UI must not download more of it. What it
  * cannot do is unship the Material components a *stock display* imports:
  * `DisplayChrome` and `TrackControl` are in that display's chunk either way,
@@ -75,12 +106,8 @@ export default function DisplayUIProvider({
   trackControl?: TrackControlComponent
   children: ReactNode
 }) {
-  const resolved = useMemo(
-    () => (overlays ? { ...plainChromeOverlays, ...overlays } : undefined),
-    [overlays],
-  )
   return (
-    <DisplayChromeOverlayProvider value={resolved ?? plainChromeOverlays}>
+    <DisplayChromeOverlayProvider value={resolveOverlays(overlays)}>
       <TrackControlProvider value={trackControl}>
         {children}
       </TrackControlProvider>

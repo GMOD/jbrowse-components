@@ -42,6 +42,11 @@ import type {
 //                        toolkit at all, so MUI never enters the graph.
 //                        Available when you write your own display component.
 //
+// `@jbrowse/display-ui` itself depends on no UI toolkit, so taking the first
+// route does not download the toolkit you are declining to render. Until 2026-08
+// it did: the contract lived beside the Material implementations of it, and this
+// page carried twice the Material UI of the page that keeps Material on screen.
+//
 // Self-contained: the parts from the earlier pages are repeated here rather
 // than imported, so this file runs on its own.
 
@@ -409,15 +414,16 @@ const MyLoading = observer(function MyLoading({
   )
 })
 
-// A set is five components, and this replaces the two a user actually meets.
-// Spreading `plainChromeOverlays` supplies the rest -- the too-large banner and
-// the GPU-failure banner, which want a "Force load" and a "Use Canvas2D" button
-// respectively and are worth inheriting until you have a reason not to.
+// A set is five components; `overlays` takes a partial one and merges it over
+// the plain set, so this names only the two a user actually meets. The rest --
+// the too-large banner and the GPU-failure banner, which want a "Force load"
+// and a "Use Canvas2D" button respectively -- are worth inheriting until you
+// have a reason not to, and a state added to JBrowse later arrives with a
+// working default rather than a hole.
 //
 // The `data-testid`s above are kept deliberately: JBrowse's own test suites key
 // on them, so a set that keeps them can be driven by those suites too.
-const myOverlays: DisplayChromeOverlays = {
-  ...plainChromeOverlays,
+const myOverlays: Partial<DisplayChromeOverlays> = {
   ErrorBar: MyErrorBar,
   Loading: MyLoading,
 }
