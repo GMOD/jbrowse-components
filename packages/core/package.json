@@ -150,6 +150,7 @@
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
+    "./util/frameCoalescer": "./src/util/frameCoalescer.ts",
     "./util/freezeDeep": "./src/util/freezeDeep.ts",
     "./util/geneticCodes": "./src/util/geneticCodes.ts",
     "./util/getRelativeX": "./src/util/getRelativeX.ts",
@@ -768,6 +769,10 @@
         "types": "./esm/util/formatFastaStrings.d.ts",
         "import": "./esm/util/formatFastaStrings.js"
       },
+      "./util/frameCoalescer": {
+        "types": "./esm/util/frameCoalescer.d.ts",
+        "import": "./esm/util/frameCoalescer.js"
+      },
       "./util/freezeDeep": {
         "types": "./esm/util/freezeDeep.d.ts",
         "import": "./esm/util/freezeDeep.js"
@@ -1348,6 +1353,9 @@
         ],
         "util/formatFastaStrings": [
           "esm/util/formatFastaStrings.d.ts"
+        ],
+        "util/frameCoalescer": [
+          "esm/util/frameCoalescer.d.ts"
         ],
         "util/freezeDeep": [
           "esm/util/freezeDeep.d.ts"
