@@ -4,6 +4,11 @@ import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/render
 import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { SnpBaseColors } from '@jbrowse/alignments-core'
 
+// Every function here reads exactly these two fields, so a caller holding the
+// palette — the coverage tooltip, which is not on a render path and has no
+// `RenderState` — can reach the same table without building one.
+type BaseColorState = Pick<RenderState, 'colors' | 'showModifications'>
+
 /**
  * The five per-base colors after the modifications-mode mute: when
  * `showModifications` is on they all collapse to `colorMutedSnpBase` so the
@@ -18,7 +23,7 @@ import type { SnpBaseColors } from '@jbrowse/alignments-core'
  * its own colour on one backend and grey on the other, in the one mode whose
  * point is that bases recede.
  */
-export function effectiveBaseColors(state: RenderState) {
+export function effectiveBaseColors(state: BaseColorState) {
   const { colors } = state
   const muted = state.showModifications ? colors.colorMutedSnpBase : undefined
   return {
@@ -35,7 +40,7 @@ export function effectiveBaseColors(state: RenderState) {
 // per-mismatch alpha via rgba255(); softclip-base draws wrap in rgb255(). N
 // (78) has its own color; other non-A/C/G/T/N bytes take `baseColorFallback`.
 export function buildBaseColorTupleMap(
-  state: RenderState,
+  state: BaseColorState,
 ): Record<number, RGBColor> {
   const c = effectiveBaseColors(state)
   return { 65: c.A, 67: c.C, 71: c.G, 84: c.T, 78: c.N }
@@ -51,7 +56,7 @@ export function buildBaseColorTupleMap(
 // `default: colorBaseN`, so the fallback IS whatever N resolved to. Spelling it
 // as its own ternary is what once painted a stray IUPAC base blue on Canvas2D
 // while the GPU painted it grey.
-export function baseColorFallback(state: RenderState): RGBColor {
+export function baseColorFallback(state: BaseColorState): RGBColor {
   return effectiveBaseColors(state).N
 }
 
@@ -81,7 +86,7 @@ let baseCssMemo:
   | { colors: ColorPalette; showModifications: boolean; table: string[] }
   | undefined
 
-export function buildBaseCssMap(state: RenderState): string[] {
+export function buildBaseCssMap(state: BaseColorState): string[] {
   if (
     baseCssMemo?.colors !== state.colors ||
     baseCssMemo.showModifications !== state.showModifications
@@ -101,7 +106,7 @@ export function buildBaseCssMap(state: RenderState): string[] {
 }
 
 // The palette for Canvas2D SNP-coverage segment draws.
-export function buildSnpBaseColors(state: RenderState): SnpBaseColors {
+export function buildSnpBaseColors(state: BaseColorState): SnpBaseColors {
   const c = effectiveBaseColors(state)
   return {
     baseA: rgb255(c.A),

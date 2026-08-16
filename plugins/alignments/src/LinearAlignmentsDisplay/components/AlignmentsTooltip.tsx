@@ -5,11 +5,13 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { observer } from 'mobx-react'
 
+import { buildBaseCssMap } from '../../features/mismatch/baseColors.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
 import { countOfTotal, formatLenRange, supportLabel } from './tooltipUtils.ts'
 
+import type { ColorPalette } from '../../shaders/colors.ts'
 import type {
   CoverageBin,
   InterbaseBin,
@@ -144,12 +146,14 @@ function InterbaseTooltip({
   )
 }
 
-// Which optional columns the coverage table is showing. The swatch and Avg Prob
-// columns exist only with modification data; Strands only when some row reports
-// it. Both the header and every body row derive their cells from this one value,
-// so a row can't fall out of column alignment by forgetting a filler <td>.
+// Which optional columns the coverage table is showing. Swatches whenever some
+// row describes a coloured mark — an allele or a modification; Avg Prob only
+// with modification data; Strands only when some row reports it. Both the header
+// and every body row derive their cells from this one value, so a row can't fall
+// out of column alignment by forgetting a filler <td>.
 interface CoverageColumns {
-  modifications: boolean
+  swatches: boolean
+  avgProb: boolean
   strands: boolean
 }
 
@@ -173,12 +177,12 @@ function CoverageRow({
   const { classes } = useStyles()
   return (
     <tr>
-      {columns.modifications ? (
+      {columns.swatches ? (
         <td>{swatch ? <ColorSwatch color={swatch} /> : null}</td>
       ) : null}
       <td>{label}</td>
       <td className={classes.td}>{reads}</td>
-      {columns.modifications ? <td>{avgProb}</td> : null}
+      {columns.avgProb ? <td>{avgProb}</td> : null}
       {columns.strands ? <td className={classes.td}>{strands}</td> : null}
     </tr>
   )
@@ -189,9 +193,15 @@ function CoverageRow({
 export function CoverageTooltipContents({
   bin,
   refName,
+  baseColors,
 }: {
   bin: CoverageBin
   refName?: string
+  // The 256-entry CSS table `buildBaseCssMap` builds for the mismatch draws, so
+  // a row's swatch is the colour of the bar segment above the cursor by
+  // construction rather than by a second spelling of the palette. Indexed by the
+  // raw base byte, which is what carries the non-ACGTN fallback.
+  baseColors: string[]
 }) {
   const {
     position,
@@ -204,18 +214,48 @@ export function CoverageTooltipContents({
   } = bin
   const location = formatLocation(refName, position)
 
-  const snpEntries = Object.entries(snps)
+  // Descending by count, tie-broken by base. `Object.entries` is insertion
+  // order and `countSnpsAtPosition` inserts in mismatch-array order, so the same
+  // locus listed its alleles differently after a pan. Descending alone still
+  // flips two alleles at equal depth, which is the pair a reader at a het site
+  // is most likely to be staring at.
+  const snpEntries = Object.entries(snps).sort(
+    ([aBase, a], [bBase, b]) => b.count - a.count || aBase.localeCompare(bBase),
+  )
   // Sort modifications by name for consistent display order
   const modEntries = modifications
     ? [...modifications].sort((a, b) => a.name.localeCompare(b.name))
     : []
   const hasTotalStrands = fwdDepth !== undefined && revDepth !== undefined
   const columns: CoverageColumns = {
-    modifications: modEntries.length > 0,
+    swatches: modEntries.length > 0 || snpEntries.length > 0,
+    avgProb: modEntries.length > 0,
     strands:
       modEntries.length > 0 ||
       hasTotalStrands ||
       snpEntries.some(([, d]) => d.fwd > 0 || d.rev > 0),
+  }
+
+  // Reads carrying the reference allele. `depth` counts every read over the
+  // position and `snps` holds mismatches only — a deleted base is in neither, an
+  // insertion is interbase — so the difference is the count a reader at a het
+  // site is after, and the table used to leave them to subtract it. Floored
+  // because the two tallies come from different arrays.
+  //
+  // The BASE is deliberately absent: `regionSequence` is fetched only for
+  // bisulfite colouring and never ships to the main thread, so this row is `Ref`
+  // rather than `Ref (G)`. Only drawn where there is an alt to weigh it against.
+  const altReads = snpEntries.reduce((sum, [, d]) => sum + d.count, 0)
+  const refRow = snpEntries.length > 0 && {
+    reads: Math.max(0, depth - altReads),
+    fwd: Math.max(
+      0,
+      (fwdDepth ?? 0) - snpEntries.reduce((s, [, d]) => s + d.fwd, 0),
+    ),
+    rev: Math.max(
+      0,
+      (revDepth ?? 0) - snpEntries.reduce((s, [, d]) => s + d.rev, 0),
+    ),
   }
 
   return (
@@ -223,10 +263,10 @@ export function CoverageTooltipContents({
       <caption>Coverage - {location}</caption>
       <thead>
         <tr>
-          {columns.modifications ? <th /> : null}
+          {columns.swatches ? <th /> : null}
           <th>Base</th>
           <th>Reads</th>
-          {columns.modifications ? <th>Avg Prob</th> : null}
+          {columns.avgProb ? <th>Avg Prob</th> : null}
           {columns.strands ? <th>Strands</th> : null}
         </tr>
       </thead>
@@ -254,10 +294,21 @@ export function CoverageTooltipContents({
             them: at a CpG the A/C/G/T breakdown and the methylation calls are
             exactly the pair worth disambiguating, which is why the per-read
             modification tooltip carries its snpBase too. */}
+        {refRow ? (
+          <CoverageRow
+            columns={columns}
+            label="Ref"
+            reads={countOfTotal(refRow.reads, depth)}
+            strands={
+              hasTotalStrands ? strandCounts(refRow.fwd, refRow.rev) : undefined
+            }
+          />
+        ) : null}
         {snpEntries.map(([base, data]) => (
           <CoverageRow
             key={base}
             columns={columns}
+            swatch={baseColors[base.toUpperCase().charCodeAt(0)]}
             label={base.toUpperCase()}
             reads={countOfTotal(data.count, depth)}
             strands={strandCounts(data.fwd, data.rev)}
@@ -288,10 +339,17 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
   model: {
     mouseoverExtraInformation: TooltipPayload | undefined
     hoverCoverageBand: { topOffset: number; coverageHeight: number } | undefined
+    colorPalette: ColorPalette
+    showModifications: boolean
   }
   mouseState: MouseState | undefined
 }) {
-  const { mouseoverExtraInformation: tooltipData, hoverCoverageBand } = model
+  const {
+    mouseoverExtraInformation: tooltipData,
+    hoverCoverageBand,
+    colorPalette,
+    showModifications,
+  } = model
   const { classes } = useStyles()
 
   if (tooltipData === undefined || mouseState === undefined) {
@@ -338,6 +396,10 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
               <CoverageTooltipContents
                 bin={tooltipData.bin}
                 refName={tooltipData.refName}
+                baseColors={buildBaseCssMap({
+                  colors: colorPalette,
+                  showModifications,
+                })}
               />
             </div>
           </BaseTooltip>
