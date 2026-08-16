@@ -1,10 +1,13 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { parseSessionSpecUrl } from '../../packages/app-core/src/SessionSpec/parseSessionSpecUrl.ts'
 import { parseProtocolUrl } from '../../products/jbrowse-desktop/electron/launchTarget.ts'
+import { GRAPH_LABELS } from '../src/lib/spec-recipe/fields.ts'
 import { buildRecipe } from '../src/lib/spec-recipe/recipe.ts'
 import { check } from './check-utils.ts'
+import { norm, sourceLabels } from './menu-label-corpus.ts'
+import { pluginCheckout } from './paths.ts'
 import { screenshotLiveUrls } from './screenshot-specs.ts'
 
 // Checks the figure recipes against every real figure link.
@@ -19,6 +22,11 @@ import { screenshotLiveUrls } from './screenshot-specs.ts'
 //    src/lib/spec-recipe/fields.ts. The bare run writes their names to
 //    spec-recipe-unmapped.txt; `--check` fails when the committed list differs,
 //    naming what moved.
+// 3. The graph view's labels are copied out of a plugin this repo does not
+//    build, so a rename there leaves every graph figure's recipe naming a
+//    control that no longer exists, with no commit here to notice it. Checked
+//    against a sibling checkout when one is on disk, and reported as skipped
+//    when it is not.
 //
 // Lives here rather than in a *.test.ts because jest doesn't cover website/,
 // and screenshot-specs.ts pulls puppeteer in through its barrel.
@@ -81,6 +89,31 @@ for (const failure of roundTripFailures) {
 }
 for (const [field, count] of unmapped) {
   console.log(`  ${String(count).padStart(3)}  ${field}`)
+}
+
+const graphSrc = join(pluginCheckout('graphgenomeview'), 'src')
+if (existsSync(graphSrc)) {
+  const rendered = new Set([...sourceLabels([graphSrc])].map(norm))
+  if (rendered.size === 0) {
+    console.error(`  ${graphSrc} exists but yields no label literals.`)
+    process.exit(1)
+  }
+  const missing = Object.entries(GRAPH_LABELS).flatMap(([control, labels]) =>
+    labels
+      .filter(label => !rendered.has(norm(label)))
+      .map(label => `  ${control}: no source renders ${JSON.stringify(label)}`),
+  )
+  if (missing.length) {
+    console.error(
+      `\nGraph view labels in spec-recipe/fields.ts no longer exist in the plugin:\n${missing.join('\n')}\n\nRe-read them off the checkout and update the tables.`,
+    )
+    process.exit(1)
+  }
+  console.log('graph view labels all resolve in the plugin checkout')
+} else {
+  console.log(
+    `graph view labels unchecked (no checkout at ${graphSrc}) — a rename there would go unseen`,
+  )
 }
 
 // A broken desktop link is always an error: it means a figure's "Open in

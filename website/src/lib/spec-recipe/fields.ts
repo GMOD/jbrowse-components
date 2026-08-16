@@ -1355,6 +1355,13 @@ const TRACK_LABELS: Record<string, string> = {
 // menu opens with its `Settings` item, and which is the answer to "where is this
 // in the GUI" for a reader who only has the figure (review, on graph_context:
 // "what the gui is for selecting this, user might not intuitively understand").
+//
+// **Re-read them when that esmUrl hash moves.** The pin is what keeps the labels
+// true, not what keeps them complete: the plugin grew a fourth bubble spread and
+// the figures used it for months while this table knew three, which showed up
+// only as a name in spec-recipe-unmapped.txt. A rename is the half that list
+// cannot see, so check-spec-recipes asserts every label below against a
+// graphgenomeview checkout when one is on disk.
 const GRAPH_LAYOUTS: Record<string, string> = {
   auto: 'Anchored',
   samplerows: 'Sample rows',
@@ -1362,6 +1369,7 @@ const GRAPH_LAYOUTS: Record<string, string> = {
 }
 
 const GRAPH_COLOR_SCHEMES: Record<string, string> = {
+  auto: 'Auto',
   uniform: 'Uniform',
   random: 'Random',
   rainbow: 'Rainbow',
@@ -1400,6 +1408,19 @@ const GRAPH_CONTEXTS: Record<number, string> = {
 }
 
 const GRAPH_SETTINGS = 'Graph view menu → Settings'
+
+// The labels above, plus the two controls that hold them, as one list for
+// check-spec-recipes to assert against the plugin's own source. Grouped by the
+// control they belong to so a failure names where to look rather than only what
+// went missing.
+export const GRAPH_LABELS: Record<string, string[]> = {
+  'Layout select': Object.values(GRAPH_LAYOUTS),
+  'Color select': Object.values(GRAPH_COLOR_SCHEMES),
+  'Bubble spread select': Object.values(GRAPH_BUBBLE_SPREADS),
+  'Layout quality radios': Object.values(GRAPH_LAYOUT_QUALITIES),
+  'Graph context select': Object.values(GRAPH_CONTEXTS),
+  'the settings dialog itself': ['Settings', 'Graph context', 'Layout quality'],
+}
 
 const graphToolbarField = (
   label: string,
@@ -1744,7 +1765,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     typeof value === 'number' && GRAPH_CONTEXTS[value]
       ? {
           path: `${GRAPH_SETTINGS} → Graph context → ${GRAPH_CONTEXTS[value]}`,
-          note: 'How far the cut follows links out of the region. Each hop costs a query per off-reference segment already reached, which is why it defaults to None.',
+          note: 'How far the cut follows links out of the region. Each hop costs a query per off-reference segment already reached, so it stops at one by default.',
         }
       : undefined,
   highlight: value =>
