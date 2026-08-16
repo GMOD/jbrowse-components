@@ -89,8 +89,9 @@ test('calls are recorded with the arguments as given', async () => {
   fetchMock.mockResponse('')
   await fetch('http://example.com/x', { method: 'POST' })
 
-  expect(fetchMock.mock.calls[0]?.[0]).toBe('http://example.com/x')
-  expect(fetchMock.mock.calls[0]?.[1]).toEqual({ method: 'POST' })
+  const [call] = fetchMock.mock.calls
+  expect(call?.[0]).toBe('http://example.com/x')
+  expect(call?.[1]).toEqual({ method: 'POST' })
 })
 
 test('resetMocks clears calls, queue and implementation', async () => {
