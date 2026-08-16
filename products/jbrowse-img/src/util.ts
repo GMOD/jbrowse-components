@@ -23,6 +23,40 @@ export function readTextInput(file: string) {
   return file === STDIN_ARG ? readStdin() : fs.readFileSync(file, 'utf8')
 }
 
+// Write a rendered SVG: to stdout when no `outFile`, else by extension. .png and
+// .pdf route through rsvg-convert (.pdf via `-f pdf`); anything else is the raw
+// SVG. Both raster formats honor `width` so PDF matches PNG.
+//
+// One function for the single render and for each image of a batch, so `--format
+// pdf` means the same thing as `--out fig.pdf` rather than being a second,
+// smaller list of formats that batch happens to know.
+export function writeRendered(
+  result: string,
+  outFile: string | undefined,
+  width: number,
+) {
+  if (!outFile) {
+    console.log(result)
+    return
+  }
+  const lower = outFile.toLowerCase()
+  if (lower.endsWith('.png')) {
+    convert(result, { out: outFile, width: String(width) })
+  } else if (lower.endsWith('.pdf')) {
+    convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])
+  } else {
+    // Only .png/.pdf are converted; everything else gets the raw SVG. Say so for
+    // an extension that asks for something else, since `--out fig.jpg` otherwise
+    // wrote SVG bytes under a name no viewer will open as SVG.
+    if (!lower.endsWith('.svg')) {
+      console.warn(
+        `Warning: writing SVG to "${outFile}"; only .png and .pdf are converted`,
+      )
+    }
+    fs.writeFileSync(outFile, result)
+  }
+}
+
 export function convert(
   result: string,
   args: { out: string; width?: string },

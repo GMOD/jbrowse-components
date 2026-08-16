@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 
 import {
-  convert,
   parseArgv,
   renderRegion,
   setupEnv,
@@ -13,14 +12,17 @@ import { runList } from './list.ts'
 import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
 import {
   DEFAULT_WIDTH,
+  batchDroppedOptions,
   buildBatchHelp,
   buildHelp,
   comparativeOptionNames,
   getBoolean,
   getCigarMode,
   getColorBy,
+  getFormat,
   getNumber,
   getNumberList,
+  getOptionalCount,
   getOptionalNumber,
   getString,
   getThemeName,
@@ -29,38 +31,9 @@ import {
   knownOptions,
 } from './options.ts'
 import { runBatch } from './runBatch.ts'
+import { writeRendered } from './util.ts'
 
 const scriptName = 'jb2export'
-
-// Write the rendered SVG: to stdout when no --out, else by extension. .png/.pdf
-// route through rsvg-convert (.pdf via the `-f pdf` flag); anything else is the
-// raw SVG. Both raster formats honor --width so PDF matches PNG.
-function writeOutput(
-  result: string,
-  outFile: string | undefined,
-  width: number,
-) {
-  if (!outFile) {
-    console.log(result)
-  } else {
-    const lower = outFile.toLowerCase()
-    if (lower.endsWith('.png')) {
-      convert(result, { out: outFile, width: String(width) })
-    } else if (lower.endsWith('.pdf')) {
-      convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])
-    } else {
-      // Only .png/.pdf are converted; everything else gets the raw SVG. Say so
-      // for an extension that asks for something else, since `--out fig.jpg`
-      // otherwise wrote SVG bytes under a name no viewer will open as SVG.
-      if (!lower.endsWith('.svg')) {
-        console.warn(
-          `Warning: writing SVG to "${outFile}"; only .png and .pdf are converted`,
-        )
-      }
-      fs.writeFileSync(outFile, result)
-    }
-  }
-}
 
 async function main() {
   const argv = process.argv.slice(2)
@@ -178,14 +151,26 @@ async function main() {
     }
 
     if (first === 'batch') {
+      // --spec/--session are refused inside runBatch, which is handed them and
+      // so can say so to a library caller too
+      const dropped = batchDroppedOptions.filter(name => name in rest)
+      if (dropped.length) {
+        console.warn(
+          `Warning: batch ignores ${dropped.map(n => `--${n}`).join(', ')}; --outDir names the directory and the junction file says where to look`,
+        )
+      }
       const { failures } = await runBatch({
         ...renderOpts,
         bedpe: getString(rest, 'bedpe'),
         vcf: getString(rest, 'vcf'),
         outDir: getString(rest, 'outDir') ?? 'jb2export-batch',
-        flank: getNumber(rest, 'flank', 500),
-        limit: getOptionalNumber(rest, 'limit'),
-        format: getString(rest, 'format') === 'svg' ? 'svg' : 'png',
+        flank: getOptionalCount(rest, 'flank') ?? 500,
+        limit: getOptionalCount(rest, 'limit'),
+        format: getFormat(rest) ?? 'png',
+        passOnly: getBoolean(rest, 'passOnly'),
+        resume: getBoolean(rest, 'resume'),
+        manifest: getBoolean(rest, 'manifest'),
+        dryRun: getBoolean(rest, 'dryRun'),
       })
       // A partial run is reported as one: the images are still there and worth
       // keeping, but a script that treats this as success would be wrong about
@@ -194,7 +179,11 @@ async function main() {
         process.exitCode = 1
       }
     } else {
-      writeOutput(await renderRegion(renderOpts), getString(rest, 'out'), width)
+      writeRendered(
+        await renderRegion(renderOpts),
+        getString(rest, 'out'),
+        width,
+      )
     }
   }
 }
