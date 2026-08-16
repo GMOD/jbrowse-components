@@ -124,6 +124,29 @@ rather than pedantry: every row left of the badge is a track name, so a pill
 reaching for it covers the list it is about. The button sits below the last row,
 where the panel is empty."
 
+node scripts/flip-review.ts good sv_synteny/dotplot_import \
+  "ALL THREE, in the app rather than in the spec.
+
+THE SEARCH BOXES ARE OPT-IN NOW, behind 'Plot only certain chromosomes', and
+unticking clears both so no filter can be applied from a box nobody can see. You
+were right about why: two empty text fields sitting between the reader and
+Launch read as required, and the case they exist for -- an assembly fragmented
+into hundreds of scaffolds -- is the rare one.
+
+ONE ROW PER AXIS. The four controls were a single flowed row that wrapped
+wherever the window width put it, so on a wide window they read as four
+unrelated fields; the row is the axis now.
+
+OUTLINED. ChromosomeFilter sets it against the theme's 'standard' default, since
+it sits beside an assembly dropdown that draws its own outline and underlined it
+read as page text with a rule under it. On the control rather than on the theme
+-- flipping the theme restyles every TextField in the app and moves every figure
+with a form in it, which wants its own round.
+
+Three figures show this form and all three are regenerated;
+hg002_haplotypes_import_form now clicks the checkbox as part of its path, so the
+outlined boxes are visible there."
+
 # ---------------------------------------------------------------- answered
 
 node scripts/flip-review.ts answered cancer_sv/split_view_from_breakend \
