@@ -260,6 +260,20 @@ public float strokeAaRamp(float signedInk, Uniforms u) {
 // a dpr=2 display is two device px — twice the softness of the sides of the very
 // same line. Centring the run at half a period puts the wrap deep in the gap
 // where nothing is drawn, and `strokeAaRamp` is the sides' own ramp.
+//
+// Not split into a `//! js-export`able scalar core, and unlike `sdEllipse` the
+// blocker is not the emitter: `frac` IS in wgslToJs.ts's helpers and the split
+// costs four lines. It is that check-oracle cannot referee a `frac` of a large
+// quotient. Splitting it puts `dashCoverageAt(coord, dashPx, gapPx, aaPx)` into
+// the sweep — candidacy is by signature, not by `//! js-export` — and 18 of its
+// 2400 tuples fail the 1e-5 relative. Six are outside anything this draws (aaPx
+// 0, a negative dashPx); the rest are not. `(255, 2.5, 0.5, 0.25)` is a real
+// screen px at dpr=4 and comes back 0.50003 against the twin's 0.5, because
+// float32 holds coord/period to about 2^-14 relative, so a few hundred px along
+// the mark the phase has already lost more than the tolerance. It lands in
+// ALPHA, where 3e-5 is nothing — the oracle is right to refuse it and the
+// shader is right as it stands. Sharing it would take a per-function domain
+// bound, which is a suppression knob in the strongest gate here.
 public float dashCoverage(float coord, float dashPx, float gapPx, Uniforms u) {
   float period = dashPx + gapPx;
   float phase = frac(coord / period + gapPx / (2.0 * period)) * period;
