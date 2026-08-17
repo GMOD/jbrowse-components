@@ -44,6 +44,17 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   CpG-only methylation on AT1G12930 beside a silenced tri-context element
   (AT1G12935 + unannotated repeat). The old demo looked blank because that chr1
   euchromatin is globally unmethylated in CHH.
+- **One strain absent, the rest present → K12 `chr:501,500-539,000`** (the
+  pggb `odgi pav` bigWigs). IAI39 reads 0.00 in all 75 windows, NCTC86 holds
+  1.00 in every one, and CFT073 drops to 0 over `chr:523,000-530,000` and
+  nowhere else in the band, which is the rhsD Rhs element; K12 carries ybaL
+  through the allantoin operon across it. This is the band `pangenome/pav`
+  shades, and it beats the two runs that are longer: `chr:1,489,500-1,533,000`
+  (IAI39, 43.5 kb) is speckled, with Sakai and CFT073 each dropping out several
+  times inside it, and `chr:4,496,500-4,536,500` and `chr:262,500-302,500` are
+  the opposite figure, where every row goes white. By window count the genome is
+  40% one-strain absences against 24% all-four, so "most troughs are
+  K12-private" is false and only the DEEPEST ones are.
 - **Strand-split coverage → HSV-1 `NC_001806.2:41,900-45,300` (UL21/UL22).**
   Two neighbouring viral genes on opposite strands at comparable depth: ~150
   reads a strand over its own gene against ~5 over its neighbour's. US9 against
