@@ -1205,13 +1205,18 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether each group draws as a single row, its overlap depth carried by
-         * the tint layer rather than by stacking. Gated on the grouping actually
-         * being honored (`prefersOffset`), so the slot can be a track-config
-         * default without an ungrouped view silently flattening its whole pileup
-         * onto one row.
+         * the tint layer rather than by stacking — "is the collapse IN EFFECT".
+         * Reads `canCollapseGroupRows` rather than the slot alone, because the
+         * slot can be a track-config default (LGVSyntenyDisplay sets one) that
+         * either of that getter's conditions leaves inert: ungrouped it would
+         * flatten the whole pileup onto one row, and chain mode lays true stacks
+         * whatever the slot says (`collapsesRows`). Chain mode is reachable with
+         * the slot already ticked and drops the menu row that would untick it,
+         * so the two have to agree — the label chip words its height button off
+         * this getter.
          */
         get collapseGroupRows(): boolean {
-          return this.prefersOffset && getConf(self, 'collapseGroupRows')
+          return this.canCollapseGroupRows && getConf(self, 'collapseGroupRows')
         },
 
         /**

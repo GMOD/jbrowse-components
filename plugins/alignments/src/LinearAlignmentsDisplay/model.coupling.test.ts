@@ -475,6 +475,33 @@ describe('ordering controls in chain mode', () => {
     expect(display.rpcProps().sortTag).toBeUndefined()
   })
 
+  // The collapse is the same shape of no-op, and the one you can arrive at with
+  // the slot already on: tick it under a chain-consistent grouping, then switch
+  // to linked reads. The menu row goes with `canCollapseGroupRows`, so from
+  // there it can't be unticked — and `collapseGroupRows` has to answer "is the
+  // collapse IN EFFECT", since the layout lays chains out as true stacks
+  // whatever the slot says and the label chip words its height button off this.
+  test('the collapse stops being in effect when chain mode starts', () => {
+    const display = createDisplay()
+    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    display.setCollapseGroupRows(true)
+    expect(display.collapseGroupRows).toBe(true)
+    expect(display.canCollapseGroupRows).toBe(true)
+    expect(
+      hasMenuItem(display.trackMenuItems(), 'Collapse groups to one row'),
+    ).toBe(true)
+
+    display.setLinkedReads('normal')
+    // the grouping survives — `tag` is chain-consistent — so this is the
+    // collapse alone stepping aside, not the whole grouping degrading
+    expect(display.prefersOffset).toBe(true)
+    expect(display.canCollapseGroupRows).toBe(false)
+    expect(display.collapseGroupRows).toBe(false)
+    expect(
+      hasMenuItem(display.trackMenuItems(), 'Collapse groups to one row'),
+    ).toBe(false)
+  })
+
   test('toggling soft clipping in chain mode leaves the fetch key alone', () => {
     const display = createDisplay()
     display.setLinkedReads('normal')
