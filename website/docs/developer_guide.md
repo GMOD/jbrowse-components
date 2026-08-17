@@ -89,6 +89,7 @@ own via pull request.
 
 - [](/docs/developer_guides/configuration_schema)
 - [](/docs/developer_guides/data_fetching)
+- [](/docs/developer_guides/dataflow)
 - [](/docs/developer_guides/imports_and_reexports)
 - [](/docs/developer_guides/extension_points)
 - [](/docs/developer_guides/mst_patterns)
@@ -96,6 +97,7 @@ own via pull request.
 
 ### Advanced topics
 
+- [](/docs/developer_guides/optimizations)
 - [](/docs/developer_guides/pif_format)
 - [](/docs/developer_guides/refname_aliasing)
 - [](/docs/developer_guides/testing_plugins)

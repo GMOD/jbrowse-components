@@ -15,6 +15,7 @@ as SVG.
 
 | Source                           | Used in                                           |
 | -------------------------------- | ------------------------------------------------- |
+| `dataflow.dot`                   | `docs/developer_guides/dataflow.md`               |
 | `products_and_plugins.dot`       | `docs/developer_guide.md` (Products and plugins)  |
 | `product_architecture.dot`       | `docs/developer_guide.md` (state model / React)   |
 | `wolfdog_ancestry_pipeline.dot`  | `docs/tutorials/local_ancestry.md` (The pipeline) |

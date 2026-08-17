@@ -490,6 +490,8 @@ section of the architecture spec is the full quick-scan list.
 
 ## See also
 
+- [](/docs/developer_guides/dataflow)
+- [](/docs/developer_guides/optimizations)
 - [](/docs/developer_guides/data_fetching)
 - [](/docs/developer_guides/rpc_workers)
 - [](/docs/developer_guides/creating_display)

@@ -283,6 +283,8 @@ actions above. `LinearScoreDisplay` in
 ## See also
 
 - [Architecture spec: data fetching pipeline](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#data-fetching-pipeline)
+- [](/docs/developer_guides/dataflow)
+- [](/docs/developer_guides/optimizations)
 - [](/docs/developer_guides/creating_gpu_display)
 - [](/docs/developer_guides/rpc_workers)
 - [](/docs/developer_guides/mst_patterns)

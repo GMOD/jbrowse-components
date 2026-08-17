@@ -308,6 +308,7 @@ shape is still read and hoisted to the flat slot on load.)
 
 ## See also
 
+- [](/docs/developer_guides/dataflow)
 - [](/docs/developer_guides/data_fetching)
 - [](/docs/developer_guides/creating_gpu_display)
 - [](/docs/developer_guides/creating_adapter)

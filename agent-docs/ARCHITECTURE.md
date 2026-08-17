@@ -256,6 +256,22 @@ the same pass. `pnpm check-docs` (which runs
 `website/scripts/check-doc-imports.ts`) validates the cross-links both ways but
 not the prose.
 
+**Two of those pages are public counterparts to this directory rather than to
+this doc**, and they are where a measurement recorded here becomes something an
+outside reader can act on:
+
+- [dataflow.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/dataflow.md)
+  is the [Overview](#overview) ASCII pipeline as one figure, with the worker,
+  the wasm, the three cache layers and the two autoruns located on it.
+  `website/diagrams/dataflow.dot` is the source.
+- [optimizations.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/optimizations.md)
+  is the public digest of the measured work in `reference/` — the three clocks,
+  the number each optimization moved, and the ones measured as losses. **A new
+  measurement lands in its `reference/` doc first**; that doc stays the record,
+  and the public page cites it. Keep the two agreeing, and keep the public page
+  agreeing with the v5 manuscript's strategy table, which states the same set at
+  a higher altitude.
+
 Several tables in those guides are **generated**, and so are their counterparts
 in this doc — `pnpm autogen` rewrites both from the same scan, so there is no
 mirroring step to forget. Don't hand-edit between a `<!-- NAME START -->` /

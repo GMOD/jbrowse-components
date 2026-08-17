@@ -1,0 +1,139 @@
+// Source for /img/dataflow.png, embedded by docs/developer_guides/dataflow.md.
+//
+// THE WHOLE PATH, ONE TRACK, ONE REGION — a viewport change to pixels. Three
+// other diagrams already draw a segment of it in full, and this one exists
+// because none of them says where the segments meet:
+//
+//   fetch_chain.dot          the fetch DECISION, in detail. It is one edge here
+//                            ("region not already loaded"), and that edge's
+//                            debounce, byte gate, staleness check and
+//                            generation counter are its whole figure.
+//   rpc_lifecycle.dot        the worker BOUNDARY, in detail — the serialize and
+//                            deserialize hooks this draws as one crossing.
+//   gpu_display_lifecycle    the two autoruns, in detail. Here they are the two
+//     .dot                   labelled edges out of rpcDataMap.
+//
+// So a node here is a whole figure there, and the rule for what to add is
+// whether it changes where the segments meet.
+//
+// THE ARROWS CARRY THE IDEA, as in gpu_display_tldr.dot. The one edge a reader
+// should leave with is the dashed `view -> gpu`: a pan or a zoom re-enters at
+// the buffers that are already on the card. Every mechanism in the three
+// detailed figures exists to keep that edge available.
+//
+// COLOUR MEANS SOMETHING HERE, which it does not in the site's other diagrams —
+// they use the palette to separate a cluster from its surroundings. A legend
+// buys that back, and the four meanings are the ones a reader of this pipeline
+// asks about: what touches the network, what is wasm, what survives the next
+// gesture, and what is off the UI thread.
+//
+// The four are the same four @gmod/bam's docs/img/dataflow.dot uses, in the
+// site's Material tints rather than its Primer ones, deliberately: the BAM
+// adapter node here IS that figure, so a reader who follows the link should
+// find green still meaning I/O. tabix-js, cram-js and hic share the legend too.
+//
+// MAIN PATH ONLY. Left out, and named in the page instead: the text-search
+// index, the assembly/refName load that precedes any of this, `renderSvg` (an
+// export runs the same Canvas2D function, which is why that node is on the
+// figure while the export is not), and every non-LGV view — synteny and dotplot
+// own their fetch and share one canvas across displays.
+digraph dataflow {
+  rankdir=TB
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="One track, one region: a viewport change to pixels"
+  nodesep=0.35
+  ranksep=0.34
+
+  node [shape=box style="filled,rounded" fillcolor="#ffffff" color="#9e9e9e"
+        fontname="Helvetica" fontsize=12 margin="0.16,0.08"]
+  edge [color="#555555" fontname="Helvetica" fontsize=10]
+
+  view [label="the visible region changes" fillcolor="#e1f5fe" color="#90caf9"]
+
+  // The RPC worker is a box rather than a fill because the boundary is the
+  // subject of half the page under it, and because the pool inside it is then
+  // legibly a pool WITHIN a worker — which is the fact that makes it nested
+  // workers, and the reason it can silently not exist.
+  subgraph cluster_worker {
+    label=<<b>RPC worker</b><br align="left"/><font point-size="10">sticky per track</font><br align="left"/>>
+    labelloc=t
+    labeljust=l
+    fontname="Helvetica"
+    fontsize=12
+    style="filled,rounded"
+    fillcolor="#f3e5f5"
+    color="#ce93d8"
+
+    adapter [label="adapter"]
+    index   [label="read the index" fillcolor="#dcedc8" color="#aed581"]
+    range   [label="read the chunks it named" fillcolor="#dcedc8" color="#aed581"]
+    inflate [label="inflate" fillcolor="#ffe0b2" color="#ffcc80"]
+    pool    [label="inflate pool" fillcolor="#f3e5f5" color="#ce93d8"]
+    parse   [label="build records"]
+    compute [label="lay out, summarize, pack columns"]
+
+    // Two horizontal pairs, which is what keeps a twelve-step pipeline from
+    // rendering as a strip too tall to read at column width. Each pair is a
+    // step and something beside it: the index read and the chunk reads are one
+    // trip to the file, and the pool takes the same blocks `inflate` would have
+    // done itself and hands them back to the same `build records`.
+    //
+    // Safe because both members of each pair are inside this cluster — a
+    // rankset spanning the border EVICTS the member that is inside it (see
+    // rpc_lifecycle.dot).
+    { rank=same; index; range }
+    { rank=same; inflate; pool }
+  }
+
+  data    [label="rpcDataMap" fillcolor="#fff9c4" color="#ffe082"]
+  // Declared (and edged) before `gpu` so dot puts the Canvas2D branch on the
+  // LEFT and the GPU buffers on the right, under the pan/zoom edge's own
+  // descent. The other order costs a crossing right where the reader is trying
+  // to see which of the two boxes that edge arrives at.
+  draw2d  [label="Canvas2D draw fn"]
+  gpu     [label="GPU buffers"]
+  screen  [label="<canvas>" fillcolor="#e1f5fe" color="#90caf9"]
+
+  view -> adapter [label=<  region not already loaded<br align="left"/>  <font face="Courier" color="#6b6b6b">fetch_chain</font><br align="left"/>>]
+  adapter -> index
+  index -> range
+  range -> inflate
+  inflate -> pool [style=dashed label=" 4 workers "]
+  pool -> parse
+  inflate -> parse
+  parse -> compute
+  compute -> data [label=<  transferables<br align="left"/>  absolute genomic uint32<br align="left"/>>]
+
+  // The floor, and the reason it is drawn: an SVG export runs this same
+  // function, so on-screen and exported pixels cannot drift. Dashed because a
+  // display with a working GPU backend does not take it.
+  data -> draw2d [style=dashed label=" no GPU "]
+  draw2d -> screen [style=dashed]
+
+  data -> gpu [label=" upload — when the data changes "]
+  gpu -> screen [label=<  draw<br align="left"/>  when anything visible changes<br align="left"/>>]
+
+  // The edge the figure is for. constraint=false so closing the loop does not
+  // pull `gpu` up a rank and cross the chain it belongs to.
+  view -> gpu [style=dashed constraint=false
+               label=<  pan or zoom<br align="left"/>  no fetch, no upload<br align="left"/>>]
+
+  subgraph cluster_legend {
+    label="Legend"
+    labelloc="t"
+    fontname="Helvetica"
+    fontsize=11
+    fontcolor="#555555"
+    color="#bdbdbd"
+    style="rounded"
+    margin=10
+    node [shape=box style="filled,rounded" fontsize=10 margin="0.1,0.05"]
+    l1 [label="network I/O" fillcolor="#dcedc8" color="#aed581"]
+    l2 [label="wasm" fillcolor="#ffe0b2" color="#ffcc80"]
+    l3 [label="kept across gestures" fillcolor="#fff9c4" color="#ffe082"]
+    l4 [label="off the UI thread" fillcolor="#f3e5f5" color="#ce93d8"]
+    l1 -> l2 -> l3 -> l4 [style=invis]
+  }
+}
