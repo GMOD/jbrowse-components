@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { showAllRegionsWindow } from '@jbrowse/plugin-linear-genome-view'
+import { fitAllRegionsWindow } from '@jbrowse/plugin-linear-genome-view'
 
 import {
   getSubfeatures,
@@ -261,11 +261,14 @@ export function replaceIntrons({
     offsetPx: view.offsetPx,
   }
   view.setDisplayedRegions(mergedRegions)
-  // the view holds the collapsed regions now, so let it frame them itself.
-  // showAllRegions is the canonical fit-all zoom/center — identical to the
-  // precomputed initialState for real inputs, but it also applies the
-  // minBpPerPx floor that a hand-computed setNewView would miss.
-  view.showAllRegions()
+  // The view holds the collapsed regions now, so let it frame them itself —
+  // fitAllRegions rather than showAllRegions, whose 10% margin belongs to "show
+  // me everything" and not to a caller that named the regions it wants. The
+  // window size the dialog asked for is already the context around each exon, so
+  // a second margin on top of it is one nothing asked for; navToLocations and
+  // viewMateRegion frame their named regions the same way. The other half of
+  // agreeing is fitAllRegionsWindow, which is what the new-view button seeds.
+  view.fitAllRegions()
   const restoreSolo =
     soloFeatureId === undefined
       ? undefined
@@ -328,7 +331,7 @@ export function buildCollapsedViewSnapshot({
     displayName: `${label} (introns collapsed)`,
     displayedRegions: mergedRegions,
     // The target view doesn't exist yet, so its viewport is seeded here rather
-    // than by calling showAllRegions on it (which is what replaceIntrons does to
+    // than by calling fitAllRegions on it (which is what replaceIntrons does to
     // the live view) — both to frame the same way and to avoid a first-render
     // flash. It MUST overwrite the window `rest` carries, and must be the window
     // rather than bpPerPx/offsetPx: the view persists its viewport as a genomic
@@ -336,7 +339,7 @@ export function buildCollapsedViewSnapshot({
     // with no window at all. So the pair this used to emit was dropped in
     // silence on every launch, and the new view opened at the SOURCE view's zoom
     // and scroll — the whole gene locus, framing a region set a tenth its width.
-    ...showAllRegionsWindow(
+    ...fitAllRegionsWindow(
       mergedRegions.reduce((sum, r) => sum + (r.end - r.start), 0),
       view.width,
     ),

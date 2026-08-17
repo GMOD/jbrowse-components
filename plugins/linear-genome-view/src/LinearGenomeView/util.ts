@@ -10,7 +10,7 @@ import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { tickLabelsWorthDrawing } from '@jbrowse/core/util/tickLabels'
 
-import { MIN_BP_PER_PX, SHOW_ALL_REGIONS_FILL } from './consts.ts'
+import { MIN_BP_PER_PX } from './consts.ts'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -18,28 +18,25 @@ import type { Region } from '@jbrowse/core/util/types'
 
 /**
  * The stored viewport of a view showing `totalBp` of displayed regions at the
- * `showAllRegions` framing — everything on screen, centered, filling
- * `SHOW_ALL_REGIONS_FILL` of the width.
+ * `fitAllRegions` framing — the regions filling the width edge to edge, and
+ * centered in it only where they are too narrow to fill it.
  *
- * Returns the two properties the viewport actually persists as, so this is for a
- * view that does not exist yet: a caller building a view SNAPSHOT (see
+ * The point of it is the two properties it returns, which are the ones the
+ * viewport actually persists as. A caller building a view SNAPSHOT (see
  * plugin-canvas's collapsed-intron launch) has no model to call
- * `showAllRegions()` on, and one that names `bpPerPx`/`offsetPx` instead is
- * silently ignored whenever the snapshot also carries a `windowWidthBp` — which
- * one copied off an existing view always does. A live view calls
- * `showAllRegions()`; nothing else should reach for this.
+ * `fitAllRegions()` on, and one naming `bpPerPx`/`offsetPx` instead is dropped
+ * whenever the snapshot also carries a `windowWidthBp` — which one copied off an
+ * existing view always does. A live view calls `fitAllRegions()`; nothing else
+ * should reach for this.
  *
  * `width` enters only through the zoom-in floor, which bites for a region set
  * narrower than `width / 50` bp; the window itself is in bp and needs no width,
  * which is why a snapshot can carry it at all.
  */
-export function showAllRegionsWindow(totalBp: number, width: number) {
-  const windowWidthBp = Math.max(
-    MIN_BP_PER_PX * width,
-    totalBp / SHOW_ALL_REGIONS_FILL,
-  )
-  // centering: the margin the content doesn't fill, split between the two edges,
-  // so the left edge sits that far before the first region
+export function fitAllRegionsWindow(totalBp: number, width: number) {
+  const windowWidthBp = Math.max(MIN_BP_PER_PX * width, totalBp)
+  // the same centering as getCenteredOffsetPx: half the width the content leaves
+  // unfilled, which is zero whenever the fit above is exact
   return { windowWidthBp, windowStartBp: (totalBp - windowWidthBp) / 2 }
 }
 

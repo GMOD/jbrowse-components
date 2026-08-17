@@ -67,12 +67,9 @@ test('collapse introns on gene feature', async () => {
   // used to name instead (bpPerPx/offsetPx) was dropped in silence, opening this
   // view at the source view's zoom and scroll.
   expect(newView.totalBp).toBeLessThan(view.totalBp / 2)
-  // showAllRegions' framing: everything on screen, filling 90% of the width
-  expect(newView.bpPerPx * newView.width * 0.9).toBeCloseTo(newView.totalBp, 5)
-  expect(newView.offsetPx).toBeCloseTo(
-    (newView.totalBp / newView.bpPerPx - newView.width) / 2,
-    5,
-  )
+  // fitAllRegions' framing: the regions edge to edge, so nothing is scrolled
+  expect(newView.bpPerPx * newView.width).toBeCloseTo(newView.totalBp, 5)
+  expect(newView.offsetPx).toBe(0)
 }, 60000)
 
 test('collapse introns dialog lists the transcripts to scope to', async () => {

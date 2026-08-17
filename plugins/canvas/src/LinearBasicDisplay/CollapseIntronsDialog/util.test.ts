@@ -5,6 +5,7 @@ import {
   featureHasExonsOrCDS,
   getExonsAndCDS,
   getTranscripts,
+  replaceIntrons,
 } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -226,12 +227,11 @@ describe('CollapseIntrons utilities', () => {
         intronArgs({ transcripts, flip: false }),
       )
 
-      // 260 / 0.9, filling 90% of the width with a 10% margin — the same framing
-      // "Replace current view" gets from showAllRegions. The source view's own
-      // 10,000bp window is what this used to inherit.
-      expect(snap.windowWidthBp).toBeCloseTo(288.89, 2)
-      // half the unfilled margin, so the content lands centered
-      expect(snap.windowStartBp).toBeCloseTo(-14.44, 2)
+      // the regions edge to edge, which is the framing "Replace current view"
+      // gets from fitAllRegions. The source view's own 10,000bp window is what
+      // this used to inherit.
+      expect(snap.windowWidthBp).toBe(260)
+      expect(snap.windowStartBp).toBe(0)
     })
 
     it('names no bpPerPx/offsetPx, which the view would ignore here anyway', () => {
@@ -243,9 +243,25 @@ describe('CollapseIntrons utilities', () => {
       expect(snap.offsetPx).toBeUndefined()
     })
 
-    it('floors the window at the zoom-in limit for a tiny region set', () => {
-      // 10bp of exon at window size 0 wants an 11bp window, past the 1/50
-      // bp-per-px floor the view's own zoom controls clamp to anyway
+    // The dialog's two buttons produce the same view by two different routes —
+    // one navigates the live view, one seeds a snapshot — and nothing pinned them
+    // to the same framing. They disagreed by more than the 11% a mismatched fill
+    // costs: the snapshot's half was dropped entirely.
+    it('frames the same as the in-place button, which takes the other route', () => {
+      const { view } = createTestEnvironment().createDisplay()
+      replaceIntrons({ ...intronArgs({ transcripts, flip: false }), view })
+      const snap = buildCollapsedViewSnapshot(
+        intronArgs({ transcripts, flip: false }),
+      )
+
+      expect(view.windowWidthBp).toBe(snap.windowWidthBp)
+      expect(view.windowStartBp).toBe(snap.windowStartBp)
+    })
+
+    it('floors the window at the zoom-in limit for a tiny region set, and centers it', () => {
+      // 10bp of exon at window size 0 is past the 1/50 bp-per-px floor the view's
+      // own zoom controls clamp to anyway, so the fit can't be exact and the
+      // content is centered in what it doesn't fill
       const snap = buildCollapsedViewSnapshot(
         intronArgs({
           transcripts: [
@@ -260,6 +276,7 @@ describe('CollapseIntrons utilities', () => {
       )
 
       expect(snap.windowWidthBp).toBe(800 / 50)
+      expect(snap.windowStartBp).toBe((10 - 800 / 50) / 2)
     })
   })
 
