@@ -62,6 +62,13 @@ to attribute it to — that is how a renamed Color dropdown label broke
 failure read as a spec bug. Bumping the pin is a one-line reviewable diff;
 regenerate the graph figures in the same commit.
 
-The unversioned url stays current and is what the published figures' live links
-point at. Once the plugin is on npm, point `esmUrl` at a pinned version there
-instead.
+The unversioned url stays current, and it is what the **demo** configs under
+`demos/` name and what the tutorials tell a reader to install. That split is the
+same argument from both ends: a figure must not change without a commit here to
+attribute it to, and a visitor opening a demo wants the build the docs just told
+them to install. Pinning a demo instead buys nothing and costs a bump nobody
+remembers — `demos/hprc/config.json` went stale twice that way, once two builds
+behind and once one, while `demos/ecoli_pangenome/config.json` never has.
+`pnpm check-live-configs` holds both halves.
+
+Once the plugin is on npm, point `esmUrl` at a pinned version there instead.

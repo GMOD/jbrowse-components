@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join, relative } from 'node:path'
 
 import { CODE_BASE } from '../src/lib/code-base.ts'
 import { reportProblems } from './check-utils.ts'
@@ -30,9 +30,81 @@ const network = process.argv.includes('--network')
 // doc can hand a reader ("open the whole thing") without it depending on which
 // build the docs point at. `--network` asserts the copy still matches the file,
 // since nothing else would notice a track added here and not there.
+//
+// THE REPO COPY IS `demos/<name>/config.json`, which is what deploy-demo.sh
+// uploads and therefore the only file the hosted one can be compared with. This
+// named the screenshot FIXTURE for the HPRC entry, and the fixture is a
+// different config on purpose: it carries the CFHR and inversion synteny
+// tracks, their CAT gene slices and an hs1, all of which read files that exist
+// only in this repo, so the demo cannot serve them and is right to be narrower.
+// The check therefore reported a ten-track difference that was never going to
+// close — and under that permanent red, the one-line difference that mattered
+// (a stale plugin pin) was invisible.
 const HOSTED_MIRRORS: Record<string, string> = {
-  'test_data/graphgenomeview/hprc.json':
-    'https://jbrowse.org/demos/hprc/config.json',
+  'demos/hprc/config.json': 'https://jbrowse.org/demos/hprc/config.json',
+}
+
+// A demo names the plugin's UNVERSIONED entry point; a screenshot fixture pins a
+// content-addressed build, and they all pin the same one.
+//
+// The two halves are the same argument from opposite ends. A figure must not
+// change without a commit here to attribute it to, so its fixture pins. A demo
+// is a session a visitor opens, so it wants what the tutorials tell that visitor
+// to install, which is the unversioned url — and pinning one buys nothing and
+// costs a bump nobody remembers: `demos/hprc/config.json` went stale twice this
+// way, once two builds behind (`29402c586a`, which cost visitors a Bandage
+// engine that aborted on every minigraph rGFA and then exhausted the worker's
+// heap) and once one build behind, missing the capped deletion bow the HPRC page
+// is full of. Its sibling `demos/ecoli_pangenome/config.json` has never gone
+// stale, because it names the unversioned url and picks each publish up.
+//
+// `*_local.json` is the GRAPH_PLUGIN_LOCAL switch's output, gitignored and
+// pointed at a local build on purpose.
+const PLUGIN_URL_RE =
+  /https:\/\/jbrowse\.org\/demos\/graphgenomeviewer\/(?:([0-9a-f]+)\/)?jbrowse-plugin-graphgenomeviewer\.esm\.js/g
+
+function pluginUrls(dir: string) {
+  const found: { file: string; hash: string | undefined }[] = []
+  for (const entry of readdirSync(join(repoRoot, dir), {
+    recursive: true,
+    withFileTypes: true,
+  })) {
+    if (!entry.name.endsWith('.json') || entry.name.endsWith('_local.json')) {
+      continue
+    }
+    const file = join(entry.parentPath, entry.name)
+    for (const m of readFileSync(file, 'utf8').matchAll(PLUGIN_URL_RE)) {
+      found.push({ file: relative(repoRoot, file), hash: m[1] })
+    }
+  }
+  return found
+}
+
+function checkPluginPins() {
+  const problems: string[] = []
+  const fixtures = pluginUrls('test_data')
+  const demos = pluginUrls('demos')
+  for (const { file, hash } of fixtures) {
+    if (!hash) {
+      problems.push(
+        `${file} names the plugin's unversioned entry point, so a publish changes its figures with no commit here to attribute it to. Pin it (test_data/graphgenomeview/README.md).`,
+      )
+    }
+  }
+  const pins = new Set(fixtures.map(f => f.hash).filter(Boolean))
+  if (pins.size > 1) {
+    problems.push(
+      `the fixtures pin ${pins.size} different plugin builds (${[...pins].join(', ')}), so the figures were not all rendered against one:\n    ${fixtures.map(f => `${f.file} ${f.hash}`).join('\n    ')}`,
+    )
+  }
+  for (const { file, hash } of demos) {
+    if (hash) {
+      problems.push(
+        `${file} pins the plugin at ${hash}, so a visitor opening it gets whatever build was current when someone last remembered. Name the unversioned entry point, as demos/ecoli_pangenome/config.json does.`,
+      )
+    }
+  }
+  return problems
 }
 
 function configOf(url: string) {
@@ -88,7 +160,7 @@ async function status(url: string) {
   }
 }
 
-const problems: string[] = []
+const problems: string[] = [...checkPluginPins()]
 
 for (const [config, names] of specsByConfig) {
   if (!config.startsWith('http') && !isTracked(config)) {
