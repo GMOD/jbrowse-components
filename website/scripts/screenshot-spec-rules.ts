@@ -263,7 +263,8 @@ export function countDetachableLabels(list: ScreenshotSpec[]) {
       continue
     }
     annotations(spec.name, spec.annotations)
-    for (const [i, stage] of (spec.stages ?? []).entries()) {
+    const stages = spec.mode === 'compose' ? [] : (spec.stages ?? [])
+    for (const [i, stage] of stages.entries()) {
       annotations(`${spec.name} stage ${i}`, stage.annotations)
     }
   }
