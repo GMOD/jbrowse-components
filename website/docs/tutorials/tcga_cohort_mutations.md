@@ -142,8 +142,9 @@ The rows start in barcode order, which encodes nothing.
 names a column of the samples TSV and makes each of its values a contiguous band
 of rows.
 [`colorBy`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-colorby)
-puts the matching color strip in the gutter, so the bands are labeled rather
-than being unexplained row ranges. Both are also in the track menu.
+puts the matching color strip in the gutter, so each band is labeled. `colorBy`
+is also **Color by... → Samples** in the track menu; `groupBy` is config only,
+so the banding below is a setting you write rather than one you click.
 
 ```json
 {
@@ -279,21 +280,16 @@ pin every row to one axis, for the reason the copy-number recurrence rows are
 pinned: left to autoscale each row fits its own maximum and the groups look
 alike. Open it above the matrix and each band has its own rate over it.
 
-The two rows of that bedGraph are each other's control: _TP53_ climbs from the
-HR+/HER2- column to the triple-negative one and _PIK3CA_ falls across the same
-four, from one run of one script, so a number tracking band size rather than
-rate could not produce both.
+The two rows above go opposite ways across the same four columns: _TP53_ climbs
+toward the triple-negative group where _PIK3CA_ falls.
 
-What the track counts is set by
-[`--impact`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py),
-which defaults to the HIGH and MODERATE tiers, the ones the matrix's own
-consequence-impact coloring draws in a color rather than in grey. So a gene's
-rate and the cells beside it agree about what counts as a hit.
+`--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers,
+which are the ones the matrix draws in a color rather than in grey. So a gene's
+rate and the cells beside it are counting the same calls.
 
-Read it as a rate and not as a result. There is no background model and no
-significance test, and gene length enters the count directly: _TTN_ is 100 kb of
-coding sequence and outranks every driver on this page except _TP53_ and
-_PIK3CA_, on passenger mutations alone.
+The rate carries no background model and no significance test, and gene length
+enters the count directly: _TTN_ is 100 kb of coding sequence, so it ranks near
+the top on passenger mutations alone.
 
 ## Cluster the rows instead of grouping them
 
@@ -315,17 +311,11 @@ survive and the private columns go. See
 [filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness)
 for the sliders themselves.
 
-Two things to keep in mind:
-
-- the threshold is an allele frequency over called alleles, and each somatic
-  call here is one alt allele out of two, so a mutation carried by 10% of the
-  cohort sits at 0.05
-- a tumor suppressor is the case where this filter has little to keep. _CDH1_'s
-  truncating mutations are spread along the gene rather than piled on one codon,
-  so a threshold high enough to isolate a hotspot empties the window the
-  histology figure above is built on
-
-Recurrence filtering is for hotspot genes.
+The threshold is an allele frequency over called alleles, and each somatic call
+here is one alt allele out of two, so a mutation carried by 10% of the cohort
+sits at 0.05. On a tumor suppressor there is little for it to keep: _CDH1_'s
+truncating calls are spread along the gene, so a threshold high enough to
+isolate a hotspot empties the window the histology figure is built on.
 
 ## Use your own cohort
 

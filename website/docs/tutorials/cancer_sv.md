@@ -210,7 +210,7 @@ on.
 
 The smallest thing this menu produces is an allele of two segments on one
 chromosome, so that is where to read it first. COLO829 has one on chr9, where
-the tumour reads run out at 28,031,837 and resume inverted from 28,059,142: the
+the tumor reads run out at 28,031,837 and resume inverted from 28,059,142: the
 arm turns around and continues backwards, which is a fold-back. A second call
 anchors 28 bp from the first, the pattern repeated breakage-fusion-bridge cycles
 leave behind.
@@ -329,7 +329,7 @@ and chr12 inserts with chr3 returning inverted.
 
 That last segment is what names the event. It is an interval the allele has
 already carried, read back on the other strand, so the derivative turns around
-on itself — a fold-back. The turn leaves that stretch in the allele twice in
+on itself, a fold-back. The turn leaves that stretch in the allele twice in
 opposite orientations, which is the same thing as an inverted duplication, and
 the two templated inserts are what sits at the turn. Fold-backs are the
 canonical opening move of a breakage-fusion-bridge cycle, which is why a
@@ -340,10 +340,10 @@ the band over it counts the molecules carrying a junction; on the allele it
 draws every read realigned there.
 
 The allele's lane thins by about half partway along, and where it thins is a
-result rather than a blemish. The tumour has two chromosome 3s: the allele
-begins as sequence they share, so reads off the intact homolog align down it and
-stop where the derivative leaves chr3, while reads off the rearranged copy carry
-on. The shaded band marks what only the rearranged copy reaches.
+result rather than a blemish. The tumor has two chromosome 3s: the allele begins
+as sequence they share, so reads off the intact homolog align down it and stop
+where the derivative leaves chr3, while reads off the rearranged copy carry on.
+The shaded band marks what only the rearranged copy reaches.
 
 Between the two, each junction is drawn once as an arc joining its two ends,
 with a short tick at each foot lying over the sequence that end keeps: ticks
@@ -372,7 +372,7 @@ pieces. The hg38 side carries a panel per locus the allele visits, so every
 connector runs between two segments that are both on screen; a dashed connector
 means the read passes through a segment no panel is showing.
 
-<Figure caption="COLO829 tumour ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at chr3:25,359,568 with their tails clipped; realigned to the derivative (right) they cross at flat depth. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
+<Figure caption="COLO829 tumor ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at chr3:25,359,568 with their tails clipped; realigned to the derivative (right) they cross at flat depth. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 
 ## The transcript view
 
@@ -397,8 +397,8 @@ it and the view holds both side by side.
 Then turn on **Read connections → View as pairs**. That merges each molecule's
 two alignments onto one row across the two regions, so the fusion reads as a
 flat line per molecule instead of a fan of curves. Flip the chr22 region as well
-(`[rev]`): XKR3 is on the minus strand, so without it both halves of a molecule
-run opposite ways.
+(`[rev]`): _XKR3_ is on the minus strand, so without it both halves of a
+molecule run opposite ways.
 
 <Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector. The breakpoints are banded green and each line is one Iso-Seq molecule running from NUP214 into XKR3." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
@@ -490,3 +490,15 @@ moves both coordinates of every breakend rather than just the POS column.
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/tutorials/sv_visualization_cgiab)
+
+## References
+
+- Valle-Inclán JE, et al. A multi-platform reference for somatic structural
+  variation detection. _Cell Genomics_ (2022).
+  https://doi.org/10.1016/j.xgen.2022.100139
+- Nattestad M, et al. Complex rearrangements and oncogene amplifications
+  revealed by long-read DNA and RNA sequencing of a breast cancer cell line.
+  _Genome Research_ (2018). https://doi.org/10.1101/gr.231100.117
+- Nattestad M, Aboukhalil R, Chin CS, Schatz MC. Ribbon: intuitive visualization
+  for complex genomic variation. _Bioinformatics_ (2021).
+  https://doi.org/10.1093/bioinformatics/btaa1080

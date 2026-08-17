@@ -109,7 +109,7 @@ these reads also visit chr10, so this junction wants a third panel. The control
 belongs beside it: one render per sample, the same `--loc` list and the same
 `--width`.
 
-<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumour nanopore reads carry a solid curve at every breakend and the matched normal carries none. On the right, the same three loci as one 39.5 kb reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
+<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads carry a solid curve at every breakend and the matched normal carries none. On the right, the same three loci as one 39.5 kb reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
 
 Reads at 1 px apiece (`featureHeight:super-compact`) is what keeps six pileups
 on one screen; at the default height the picture is mostly pileup and the curves

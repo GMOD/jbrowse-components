@@ -115,10 +115,21 @@ unnamed. Rather than editing the file, name them on the adapter with the
 
 The tumor and normal BAMs at the C-GIAB FTP are large and slow to access
 remotely, and lack `MD` tags, which JBrowse uses to display SNP positions
-without re-fetching the reference. The build script pulls each one through
-`samtools view` into a local CRAM against the reference above and runs
-`megadepth --bigwig` over it, so every read-level figure below is a local CRAM
-with a whole-genome coverage bigWig beside it.
+without re-fetching the reference. So each one gets pulled through
+`samtools view` into a local CRAM against the reference above, with a
+whole-genome coverage bigWig beside it:
+
+<!-- from: scripts/build_sv_visualization_cgiab.sh -->
+
+```bash
+# -T names the reference the CRAM is written against, and it has to be the same
+# build the assembly was loaded from or every base reads as a mismatch
+# --write-index saves a second samtools pass for the .crai
+samtools view HG008-T.bam --write-index -o HG008-T.cram -T GRCh38.fa
+
+# one whole-genome coverage bigWig per sample, written beside its CRAM
+megadepth HG008-T.cram --bigwig
+```
 
 ## Add copy-number tracks from a somatic CNV caller
 
@@ -137,7 +148,16 @@ allele depths drive the allele-frequency track, it writes a depth bigWig, a
 minor-allele-frequency (MAF) bigWig, an integer copy-number bedGraph, and a CNV
 VCF.
 
-The `--maf` VCF has to hold the tumor's calls rather than the matched normal's.
+<!-- from: scripts/build_sv_visualization_cgiab.sh -->
+
+```bash
+# --maf must hold the TUMOR's small-variant calls: HiFiCNV reads AD out of this
+# VCF and never looks at --bam for it
+hificnv --bam HG008-T.cram --ref GRCh38.fa --maf tumor_smallvariants.vcf.gz \
+  --output-prefix hificnv
+```
+
+That `--maf` VCF has to hold the tumor's calls rather than the matched normal's.
 HiFiCNV reads the `AD` field out of it and never looks at `--bam`, so a germline
 VCF from the normal produces a track sitting near 0.5 everywhere, including
 across arms that have lost a copy. It affects that track alone: the depth bigWig
@@ -357,17 +377,24 @@ segments the same way.
 The C-GIAB project provides a near-complete telomere-to-telomere de novo
 assembly of HG008-T
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)),
-haplotype-resolved into T2T scaffolds. The build script loads it as a second
-JBrowse assembly and aligns it to GRCh38 with `minimap2 -cx asm5`, giving a PAF
-that JBrowse renders in the synteny and dotplot views. Those are particularly
-helpful for complex SVs that are hard to read off the alignment track.
+haplotype-resolved into T2T scaffolds. Load it as a second JBrowse assembly and
+align it to GRCh38, which gives a PAF that JBrowse renders in the synteny and
+dotplot views:
 
-One argument order is worth stating, because getting it wrong draws an empty
-view: `add-track -a` takes the assemblies as `query,target`, the reverse of
-minimap2's `target query`. An alignment run as
-`minimap2 GRCh38_GIABv3.fa HG008T_v3.2.fasta` therefore loads with
-`-a HG008T_v3.2,GRCh38_GIABv3`. The matched normal assembly
-(`HG008N_v6.3.fasta.gz`, same S3 path) loads the same way. See the
+<!-- from: scripts/build_sv_visualization_cgiab.sh -->
+
+```bash
+# asm5 is the same-species preset; -c emits the base-level CIGAR the synteny
+# view needs to draw a junction at base scale
+minimap2 -cx asm5 GRCh38.fa HG008T_v3.2.fasta > HG008T_v3.2.paf
+
+# -a is query,target, the REVERSE of the target query minimap2 just took: get it
+# backwards and the view opens empty rather than erroring
+jbrowse add-track HG008T_v3.2.paf -a HG008T_v3.2,GRCh38_GIABv3
+```
+
+The matched normal assembly (`HG008N_v6.3.fasta.gz`, same S3 path) loads the
+same way. See the
 [synteny track config guide](/docs/config_guides/synteny_track) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
 
@@ -453,10 +480,10 @@ where the assembly contig carries both. Rebuilding from the full BAM with
 
 ### Which of these calls are drivers
 
-Most somatic calls in a tumour genome are passengers: real events, carried along
+Most somatic calls in a tumor genome are passengers: real events, carried along
 by the cell lineage, with no role in the cancer. A handful are drivers. In
-pancreatic ductal adenocarcinoma the recurrently altered genes are `KRAS`,
-`CDKN2A`, `TP53` and `SMAD4`
+pancreatic ductal adenocarcinoma the recurrently altered genes are _KRAS_,
+_CDKN2A_, _TP53_ and _SMAD4_
 ([Waddell et al. 2015](https://doi.org/10.1038/nature14169),
 [Bailey et al. 2016](https://doi.org/10.1038/nature16965)), and the copy-number
 walkthroughs below visit all four in this genome.
@@ -473,8 +500,8 @@ off the same axis.
 
 For small to medium SVs the linear genome view is usually enough. Use the
 **search** (magnifying glass) button in the SV inspector to find a specific
-call, for example `SV_85`, a heterozygous deletion that affects two exons of the
-CUZD1 gene.
+call, for example `SV_85`, a heterozygous deletion that affects two exons of
+_CUZD1_.
 
 _CUZD1_ is a passenger here: a pancreatic acinar protein predicted to act in
 trypsinogen activation
@@ -601,7 +628,7 @@ deletion as one gap in their alignment.
 Chromosome 17 shows why the BAF track is read alongside depth. Open the whole
 chromosome with the depth track above the BAF:
 
-- the p-arm (covering `TP53`) is a single-copy loss with LOH (`CNA_20`, CN 1,
+- the p-arm (covering _TP53_) is a single-copy loss with LOH (`CNA_20`, CN 1,
   1+0): depth is halved and the BAF splits away from 0.5.
 - the q-arm is copy-neutral LOH (`CNA_21`, CN 2, 2+0): one parental haplotype
   was lost and the other duplicated, so total copy number is still 2 and depth
@@ -609,6 +636,11 @@ chromosome with the depth track above the BAF:
 
 The q-arm event is invisible to depth alone, which is why the two tracks are
 read together.
+
+The copy-ratio lane in the figure fills from a pivot at zero, and on this
+hypodiploid genome the balanced level sits above zero, so the q-arm's
+copy-neutral state fills upward in the gain color. Read that lane for where its
+steps are, not for which side of the midline they land on.
 
 <Figure caption="Chromosome 17: the segmented copy ratio, the HiFiCNV depth, the BAF and the benchmark CNV calls. The p-arm is a single-copy loss with LOH; the q-arm is copy-neutral LOH, flat in both copy-number lanes and still split in the BAF." src="/img/sv_cgiab/cnv_chr17_loh.png" />
 
@@ -630,7 +662,7 @@ BAF track directly.
 
 #### KRAS and SMAD4
 
-The same reading covers the other two loci. `KRAS` on chr12 sits in a gain
+The same reading covers the other two loci. _KRAS_ on chr12 sits in a gain
 (`SV_101`, CN 3, 2+1): the assembly resolves it as a 2 Mb tandem duplication
 carrying the G12V-mutated copy, an event associated with advanced disease
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). Depth is
@@ -641,8 +673,8 @@ whole-chromosome scale it is a handful of pixels wide.
 
 <Figure caption="KRAS on chr12: its MANE Select transcript over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication the copy-ratio edges land on the called boundaries and the BAF separates into two bands." src="/img/sv_cgiab/driver_kras_gain.png" />
 
-`SMAD4` on 18q is lost with LOH (`CNA_48`, CN 1, 0+1), the mirror image of the
-TP53 event. Two controls are in the same picture: the balanced p-arm, and the
+_SMAD4_ on 18q is lost with LOH (`CNA_48`, CN 1, 0+1), the mirror image of the
+_TP53_ event. Two controls are in the same picture: the balanced p-arm, and the
 matched normal on the same axis as the tumor.
 
 The copy ratio is a log2 of tumor over normal, so read it against zero. Leave
