@@ -55,6 +55,15 @@ function anythingLoading(views: ViewLike[]): boolean {
  * to every view's phase without re-rendering the app shell around it, and a
  * marker that is never drawn cannot be mistaken for UI or shift a layout. It is
  * still found by `querySelector`, which is what reads it.
+ *
+ * **What it is silent about**: a display that publishes no `displayPhase`. The
+ * two comparative views are the ones that do not — a dotplot and a synteny level
+ * report paint-complete through their own `settled` getter, which reaches the DOM
+ * as `data-display-drawn` and by no other route — so on those pages this reads
+ * `ready` over a canvas that is finished FETCHING and still blank. A capture
+ * there wants `waitForDisplaysDone` after this, which is what both harnesses do;
+ * `agent-docs/TODO.md` carries the other half, which is to give those two a
+ * phase.
  */
 const AppReadyMarker = observer(function AppReadyMarker({
   session,

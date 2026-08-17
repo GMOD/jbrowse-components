@@ -61,6 +61,12 @@ yourself. The individual stages (`waitForSession`, `waitForLoadingComplete`,
 `waitForDisplaysDone`, `waitForQuiescent`, ...) are exported too, and each one
 documents what it can and cannot tell you.
 
+After you CLICK something, the wait is `waitForAppSettled(page)` instead. A page
+that is loading starts out `loading` and the transition into `ready` is it
+finishing; a page you just clicked is already `ready` and stays that way until
+the click's work registers, so waiting for `ready` there returns on the
+pre-click frame. `waitForAppSettled` requires it to hold.
+
 ## No silent best-effort waits
 
 Puppeteer waits are usually written `.catch(() => {})` so a slow page is not

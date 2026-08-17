@@ -76,6 +76,19 @@ and no display is fetching, `loading` whenever one is. It is **positive**, so it
 cannot be true before the app exists, and it is one element rather than a census
 of every display.
 
+That is the answer for a page that is LOADING. After you click something it is
+not, and the wait is `waitForAppSettled(page)` instead — see
+[Writing your own script](#writing-your-own-script).
+
+A loading page starts at `loading`, so the transition into `ready` is the app
+finishing. An app you have just clicked is already `ready` — it finished a
+moment ago — and stays that way until the click's work registers, which for
+anything that dirties the viewport is up to a debounce later. A wait for `ready`
+posted in that gap returns immediately, on the pre-click frame.
+`waitForAppSettled` requires `ready` to hold for a beat, which covers the gap; a
+fixed sleep in its place is a number that is too short on a loaded machine and
+dead time on every other run.
+
 The rest of this section is why the older signals need more care, and what
 `@jbrowse/capture` does against a deployment that predates the marker.
 
@@ -226,10 +239,22 @@ then returns at 8.3s with both tracks drawn. `appMarker` in the report says
 which of the two ran, and the fallback can be deleted once the oldest build
 anyone points this at has the marker.
 
+One gate outlives that deletion. The marker is computed from every display that
+publishes a phase, and the two comparative views publish none — a dotplot and a
+synteny level report paint-complete through `data-display-drawn` alone — so on
+those pages `ready` is true of a session that has finished fetching with the
+canvas still blank. `waitForJBrowseReady` therefore keeps `waitForDisplaysDone`
+after the marker, where it is free on a page with no such canvas, and `pending`
+in the report names anything that had still not painted.
+
 ## Writing your own script
 
 ```js
-import { openJBrowse, waitForJBrowseReady } from '@jbrowse/capture'
+import {
+  openJBrowse,
+  waitForAppSettled,
+  waitForJBrowseReady,
+} from '@jbrowse/capture'
 
 // launches, navigates, and runs the whole wait chain above
 const { browser, page, pending, paintContract } = await openJBrowse({
@@ -240,8 +265,11 @@ const { browser, page, pending, paintContract } = await openJBrowse({
   height: 900,
 })
 
-// now do the thing a static render could not
+// now do the thing a static render could not. The app is `ready` the instant you
+// click — it was finished a moment ago — so this second wait is the hold, not the
+// selector: it ends once the click's own work has finished and stayed finished.
 await page.click('[data-testid="track_menu_icon"]')
+await waitForAppSettled(page)
 await page.screenshot({ path: 'menu.png' })
 
 // read state back out of the running app

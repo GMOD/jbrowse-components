@@ -30,6 +30,7 @@ import { type RunReport, runReportPath } from './screenshot-run-report.ts'
 import { specs } from './screenshot-specs.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
+import type { ReadyPath } from './screenshot-ready.ts'
 import type { Page } from 'puppeteer'
 
 // Which displays had still not reported their first paint when the frame was
@@ -92,6 +93,21 @@ async function overflowPx(page: Page) {
     ),
   )
 }
+
+// Which gate readied each spec's page — see ReadyPath. Recorded rather than
+// derived, because the answer is a property of the build being served and no
+// other artifact of the run carries it: a figure captured before the app
+// finished is a plausible picture, which is the whole reason the positive marker
+// exists.
+//
+// Keyed per spec, not once per run, because a run can straddle two targets: a
+// spec whose url is absolute reaches the released build while its neighbours are
+// served the local one.
+export function recordReadyPath(name: string, path: ReadyPath) {
+  readyPaths.set(name, path)
+}
+
+const readyPaths = new Map<string, ReadyPath>()
 
 const clippedPx = new Map<string, number>()
 // spec name -> the tooltip text seen at any of that spec's captures. A staged
@@ -164,6 +180,44 @@ export interface RunTotals {
 
 export const pct = (n: number) => `${(n * 100).toFixed(3)}%`
 
+// Which gate readied these pages, said out loud.
+//
+// A run cannot be read for this afterwards. Every wait but the marker is an
+// ASSERTION ABOUT AN ABSENCE — no overlay, no loading phase, no unpainted canvas
+// — and an absence is equally true of an app that has not started, so a page
+// readied that way can be captured mid-load and the frame still looks finished.
+// Which of the two ran is decided by the build on disk, not by anything in the
+// spec or the flags, so the corpus can quietly go back to the old race the day a
+// stale `products/jbrowse-web/build` is served — and it did: the marker landed
+// while the build beside it predated it by a day.
+//
+// The all-marker case gets a line of its own for the reason printUnpublished's
+// does: with nothing printed, a reader cannot tell a run that checked from one
+// that had nothing to say.
+function printReadyPaths() {
+  const withoutMarker = [...readyPaths].filter(([, path]) => path !== 'marker')
+  if (readyPaths.size === 0) {
+    return
+  }
+  if (withoutMarker.length === 0) {
+    console.log(
+      `\nEvery page (${readyPaths.size}) was readied by the app's own [data-app-phase="ready"].`,
+    )
+    return
+  }
+  printReport(
+    `READIED WITHOUT THE APP MARKER (${withoutMarker.length}) — these pages publish no [data-app-phase], so readiness fell back to gates that a half-loaded app also satisfies; rebuild the app with \`pnpm --filter @jbrowse/web build\` unless the target is a released instance`,
+    withoutMarker.map(
+      ([name, path]) =>
+        `• ${name}: ${
+          path === 'phases'
+            ? 'display phases only (build predates AppReadyMarker)'
+            : 'no readiness attributes at all (seen-busy-then-idle)'
+        }`,
+    ),
+  )
+}
+
 export function printSummary(totals: RunTotals) {
   const { passed, failed, kept, skipped } = totals
   const { failures, flaky, changed, suppressed, slacked } = totals
@@ -211,6 +265,7 @@ export function printSummary(totals: RunTotals) {
       ),
     )
   }
+  printReadyPaths()
   const strayTooltips = [...tooltipSeen].filter(
     ([name, texts]) => texts.length > 0 && !tooltipExpected.has(name),
   )

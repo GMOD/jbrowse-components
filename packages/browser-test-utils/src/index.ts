@@ -20,6 +20,7 @@ export {
   readInstrumentation,
   sessionSpecQuery,
   waitForAppReady,
+  waitForAppSettled,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForJBrowseReady,

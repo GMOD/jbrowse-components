@@ -441,7 +441,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // view blurs it and parks the cursor away from any read
           { type: 'click', selector: 'body' },
           PARK_CURSOR,
-          { type: 'delay', ms: 2500 },
+          // the toggle re-lays out and refetches the pileup, and none of the
+          // waits above sees that: they are all about the menu going away
+          { type: 'waitForAppSettled' },
         ],
       },
     ],
@@ -1551,7 +1553,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           { type: 'click', text: 'Show read arcs' },
           { type: 'press', key: 'Escape' },
           { type: 'press', key: 'Escape' },
-          { type: 'delay', ms: 3000 },
+          // the tick swaps the display, which fetches and draws again — the two
+          // Escapes only dismiss the menu it was ticked in
+          { type: 'waitForAppSettled' },
         ],
         // no menu in this frame, so it only has to hold the track
         viewportHeight: 480,

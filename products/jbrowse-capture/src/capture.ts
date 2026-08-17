@@ -159,6 +159,19 @@ export async function waitForJBrowseReady(
     if (!ready) {
       unsettled.push('the app never reported itself ready')
     }
+    // One thing the marker does not answer, so this stage stays even here: it is
+    // computed from every display that publishes a PHASE, and the two
+    // comparative views do not publish one. A dotplot and a synteny level report
+    // paint-complete through their own `settled` getter, which reaches the DOM as
+    // `data-display-drawn` and by no other route — so on those two pages `ready`
+    // is true of a session that is finished FETCHING with the canvas still
+    // blank. Ordered after the marker rather than instead of it, which is what
+    // makes an absence meaningful (see waitForDisplaysDone), and free on a page
+    // that has no such canvas.
+    await stage(
+      'a display never reported its first paint',
+      waitForDisplaysDone(page, timeout),
+    )
     if (settleMs > 0) {
       await delay(settleMs)
     }

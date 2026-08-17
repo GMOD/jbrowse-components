@@ -24,10 +24,20 @@ export interface ScreenshotAction {
     | 'scroll'
     | 'waitForText'
     | 'waitForSelector'
+    | 'waitForAppSettled'
     | 'press'
     | 'delay'
   selector?: string
   text?: string
+  // for 'delay': how long to sleep.
+  //
+  // A sleep waiting on APP WORK — a navigation, a launched view, a re-sort, a
+  // setting that refetches — is `waitForAppSettled` instead. The app publishes
+  // when it is working and when it has stopped, so the number is a guess against
+  // a fact: too short captures the frame before the work, and it does that
+  // silently, since the figure it produces looks finished. What is left for a
+  // sleep is the chrome the app says nothing about — a menu's open animation, a
+  // tooltip's delay, a hover settling.
   ms?: number
   // for 'press': a puppeteer keyboard key name (e.g. 'ArrowDown', 'Enter') — used
   // to drive keyboard-only widgets like the MUI search-autocomplete dropdown,

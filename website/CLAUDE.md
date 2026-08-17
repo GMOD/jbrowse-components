@@ -107,6 +107,24 @@ the tour was filmed in.
   `heightMode: 'grow'` turns that into page height they can see.
 - **`DISPLAYS NOT PAINTED AT CAPTURE` names a frame that may be blank.** Raise
   `settleMs` or fix the display; don't accept a plausible-looking figure.
+- **`READIED WITHOUT THE APP MARKER` means the build is stale, not the spec.**
+  Readiness is one positive selector the session publishes,
+  `[data-app-phase="ready"]`, and a `products/jbrowse-web/build` older than it
+  falls back to gates a half-loaded app also satisfies. That is not theoretical:
+  the marker landed while the build beside it predated it by a day, so the whole
+  corpus was being captured on the old race with nothing saying so. Rebuild.
+- **A sleep that waits on APP WORK is `{ type: 'waitForAppSettled' }`.** A click
+  that navigates, launches, re-sorts or refetches leaves work running that every
+  other wait in the spec is silent about — the menu going away is not the pileup
+  coming back — and a fixed `ms` for it is wrong in both directions, one of them
+  silently. Two conversions are byte-identical to their committed figure
+  (`alignments_soft_clipped_menu`, `alignments/select_arc_display`, saving 0.1s
+  and 2s), and one is not: `search_feature_highlight`'s delay covers no app work
+  at all, and capturing it 200ms earlier moved the antialiasing of every glyph
+  on the page past the diff gate. So **measure before converting** —
+  `PROBE_SPEC=<name> node scripts/probe-app-settled.ts` samples the app's own
+  phase while the wait runs and says which kind of sleep you have. A menu
+  animation, a tooltip delay or a hover settling stays a `delay`.
 - **Every annotation `anchor`s** — by locus, dotplot cell or graph node, never a
   measured pixel. Shapes belong in
   `@jbrowse/browser-test-utils/src/annotationOverlay.ts`. Prefer an in-app

@@ -1233,6 +1233,32 @@ re-attempt without genuinely new data.
 
 ## Tooling, tests and docs
 
+- **Waiting out a screenshot action's work by watching the app go BUSY, then
+  ready** — the obvious shape for the post-interaction gate, measured 2026-08-17
+  and replaced by a hold. `[data-app-phase]` publishes `loading` as well as
+  `ready`, so "seen busy, then ready" reads like the way to tell work that has
+  finished from work that has not begun. Against `search_feature_highlight` the
+  app was never observed busy at all: that spec's own `waitForSelector` on the
+  highlight overlay already outlasted the redraw, so the bounded busy window ran
+  to its 2s cap having watched nothing and the wait cost more than the 1.2s sleep
+  it was replacing. `waitForAppSettled` instead requires `ready` to HOLD for a
+  second — above the ~600ms `FetchVisibleRegions` debounce, which is the window a
+  single read of the selector falls into — so it costs the hold when nothing
+  happens and waits out the work when something does.
+
+- **Converting every post-click `{ type: 'delay' }` in the screenshot specs to
+  that wait** — two of them are byte-identical swaps and the third proves the
+  class is not mechanical. `alignments_soft_clipped_menu` (2.5s sleep, 2.38s wait,
+  and the wait *saw* the toggle's refetch in 2 of 23 samples — i.e. the sleep had
+  ~120ms of margin over real work) and `alignments/select_arc_display` (3s sleep,
+  1.0s wait) both reproduce their committed figure exactly. `search_feature_highlight`
+  does not: its sleep covers no app work, and capturing ~200ms earlier moved the
+  antialiasing of every glyph on the page, 0.68% of pixels, over the 0.5% diff
+  gate and invisible to the eye. A trailing sleep is therefore two different
+  things — app work, which the app can be asked about, and the page's own
+  rendering, which it cannot — and `website/scripts/probe-app-settled.ts` says
+  which one a given spec has before anyone edits it.
+
 - **Letting `generic-filehandle2` resolve through its browser entry, to get
   `fs` out of the desktop renderer** — built both ways 2026-08-16 and declined.
   Deleting the alias in `products/jbrowse-desktop/scripts/config.ts` does clear

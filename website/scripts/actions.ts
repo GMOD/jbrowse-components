@@ -1,4 +1,4 @@
-import { delay } from '@jbrowse/browser-test-utils'
+import { delay, waitForAppSettled } from '@jbrowse/browser-test-utils'
 
 import { graphNodePoint } from './graphAnchor.ts'
 import { locusPoint } from './locusAnchor.ts'
@@ -405,6 +405,23 @@ export async function runAction(page: Page, action: ScreenshotAction) {
       throw new Error(
         `waitForSelector: ${action.hidden ? 'still visible' : 'never found'} "${action.selector}"`,
       )
+    })
+  } else if (action.type === 'waitForAppSettled') {
+    // Wait out the work this action sequence just started, by asking the app.
+    //
+    // The gate an interaction needs, and the one a fixed `delay` was standing in
+    // for: it ends when the session reports itself finished and stays finished,
+    // rather than at a number somebody picked. `ms` overrides how long that hold
+    // is; `timeout` is the ceiling. See waitForAppSettled's own doc for why it is
+    // a hold.
+    //
+    // It cannot be written as a `waitForSelector` on `[data-app-phase="ready"]`
+    // for two separate reasons: that selector is already true on the pre-click
+    // frame, and the marker element is `hidden`, so a visibility-requiring wait
+    // on it can only time out.
+    await waitForAppSettled(page, {
+      ...(action.timeout ? { timeout: action.timeout } : {}),
+      ...(action.ms ? { holdMs: action.ms } : {}),
     })
     // the chain covers every member of the union, so this last comparison is
     // provably true — kept explicit so adding an action type surfaces here

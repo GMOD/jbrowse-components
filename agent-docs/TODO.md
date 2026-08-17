@@ -32,6 +32,7 @@ before anyone noticed.
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
+| [Give the comparative canvases a `displayPhase`](#give-the-comparative-canvases-a-displayphase-so-the-app-marker-covers-them) | dotplot, synteny, capture | `settled` is already the same conjunction; the import-form case is the trap |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
@@ -113,6 +114,31 @@ Worth doing with it: the pointer handler currently clears a selection on any
 click (`useDotplotInteraction`'s `onPointerUp`), so the new behaviour has to
 distinguish "clicked an alignment" from "clicked empty plot to cancel", which the
 hit already answers.
+
+### Give the comparative canvases a `displayPhase`, so the app marker covers them
+
+`AppReadyMarker` computes `[data-app-phase]` from every display that publishes a
+`displayPhase`, and the two comparative views publish none: a dotplot and a
+synteny level answer "canvas painted and nothing still fetching" through their own
+`settled` getter, which reaches the DOM as `data-display-drawn` and by no other
+route. So on those two pages the app reports itself `ready` over a canvas that has
+finished fetching and not drawn, which is exactly the blank-frame race the marker
+was added to close.
+
+Both harnesses paper over it the same way — `waitForDisplaysDone` after the
+marker, keyed on `[data-display-drawn="false"]`, which those canvases do publish —
+and that is correct rather than temporary: a display in a terminal state renders
+no wrapper at all, so the paint gate can never be the whole answer either. What is
+worth changing is the asymmetry underneath it: `settled` is already the same
+conjunction `computeLoadingTerm` builds (`canvasDrawn`, nothing fetching, plus each
+view's own "the init blob has not landed" term), so the two could publish
+`displayPhase` from it and stop being a special case for every reader.
+
+The trap to design around, and the reason a one-line duck-typed `view.settled ===
+false` term in the marker is wrong: a dotplot showing its import form has drawn no
+canvas, so `settled` is false and stays false. Adding that term naively parks the
+whole app at `loading` forever on every import-form figure, of which the corpus has
+several.
 
 ### Group the methylation path's CIGAR walk, the way the marks path now is
 

@@ -57,6 +57,23 @@ const DEFAULT_READY_TIMEOUT_MS = 30000
 const LEGACY_BUSY_WINDOW_MS = 4000
 const LEGACY_QUIET_MS = 2000
 
+/**
+ * Which gate actually readied a page, for the run to report.
+ *
+ * The three are not equivalent, and which one runs is a property of the BUILD
+ * being served rather than of the spec: only `marker` is positive, and it is the
+ * only one that cannot be satisfied over an app that has not started. So a
+ * corpus captured on `phases` is a corpus whose blank-frame race is still open,
+ * and the difference is invisible in every artifact a run produces — the PNG
+ * looks the same either way.
+ *
+ * `phases` is the one to notice. It means a build new enough to publish
+ * `data-display-phase` and older than `AppReadyMarker`, which is what a
+ * `products/jbrowse-web/build` from before that lands is, and what the whole
+ * corpus was captured against for as long as nobody rebuilt.
+ */
+export type ReadyPath = 'marker' | 'phases' | 'quiet'
+
 // The ceiling for every wait a spec is subject to. readyText is only the track
 // label (present well before a slow remote BAM finishes), so a spec that says it
 // needs longer gets that everywhere — the fixed default otherwise cut off slow
@@ -92,11 +109,15 @@ async function settlePass(page: Page, spec: BrowserScreenshotSpec) {
 // Wait out a spec's readiness signals before capture: its readyText/readySelector
 // become visible, the loading overlay clears, any in-track "Loading…"/"Rendering…"
 // indicator quiesces, and canvas displays signal paint-complete.
+//
+// Returns which gate answered, because on this path that is a fact about the
+// build being served and nothing else records it — see ReadyPath.
 export async function waitForReady(
   page: Page,
   spec: SessionUrlSpec | EmbeddedSpec,
-) {
+): Promise<ReadyPath> {
   const readyTimeout = readyTimeoutOf(spec)
+  let path: ReadyPath = 'marker'
   const readySelectors = [
     spec.readyText ? textSelector(spec.readyText) : undefined,
     spec.readySelector,
@@ -126,7 +147,8 @@ export async function waitForReady(
       // An older build publishes no phases at all, so every wait above passed
       // the moment it was asked. Watch it work instead: seen busy, then idle.
       const { displayPhase, displayDrawn } = await readInstrumentation(page)
-      if (!displayPhase && !displayDrawn) {
+      path = displayPhase || displayDrawn ? 'phases' : 'quiet'
+      if (path === 'quiet') {
         await waitForQuietPeriod(page, {
           quietMs: LEGACY_QUIET_MS,
           busyWindowMs: LEGACY_BUSY_WINDOW_MS,
@@ -157,6 +179,7 @@ export async function waitForReady(
     })
     await settlePass(page, spec)
   }
+  return path
 }
 
 /**
@@ -195,6 +218,7 @@ export async function captureUrl(
     timeout: Math.max(60000, spec.readyTimeout ?? 0),
   })
 
-  await waitForReady(page, spec)
+  const path = await waitForReady(page, spec)
   await markPageAlive(page)
+  return path
 }

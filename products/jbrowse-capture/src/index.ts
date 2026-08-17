@@ -32,6 +32,7 @@ export {
   hasAppReadyMarker,
   isPageBusyInPage,
   waitForAppReady,
+  waitForAppSettled,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,

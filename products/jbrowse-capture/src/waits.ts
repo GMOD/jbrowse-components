@@ -48,6 +48,16 @@ export const LOADING_OVERLAY = '[data-testid="loading-overlay"]'
  */
 export const APP_READY = '[data-app-phase="ready"]'
 
+/**
+ * How long `ready` has to HOLD before an interaction's work counts as finished.
+ *
+ * Above the ~600ms `FetchVisibleRegions` debounce, which is the whole reason
+ * this is a hold rather than a single read: a click that dirties the viewport
+ * leaves the app reading `ready` until that autorun fires, so one sample taken
+ * in the gap reports the pre-click frame as finished.
+ */
+const APP_SETTLED_HOLD_MS = 1000
+
 export async function waitForLoadingComplete(
   page: Page,
   {
@@ -401,4 +411,72 @@ export function hasAppReadyMarker(page: Page): Promise<boolean> {
   return page.evaluate(
     () => document.querySelector('[data-app-phase]') !== null,
   )
+}
+
+/**
+ * Wait out work an INTERACTION started: `ready`, and still ready a beat later.
+ *
+ * The gate for after a click, a keystroke or a resize, where `waitForAppReady`
+ * alone is not one. A page that is still LOADING starts at `loading` and the
+ * transition into `ready` is the app finishing, so one read of the selector
+ * answers it. After an interaction the app is already `ready` — it was finished a
+ * moment ago — and stays that way until the click's work registers, so the same
+ * read returns instantly, on the pre-click frame.
+ *
+ * What it replaces is a fixed sleep, which is wrong in both directions and only
+ * ever caught in one: too short captures the work in progress, and the figure it
+ * produces looks finished, while too long is dead time on every run.
+ *
+ * **Not "seen busy, then ready"**, which is the obvious shape and was built and
+ * measured first. Waiting for `loading` to appear before accepting `ready` needs
+ * a cap, since an interaction that only opened a menu never makes the app busy at
+ * all — and on the figure spec it was measured against
+ * (`search_feature_highlight`) the app was never seen busy either, because that
+ * spec's own selector wait had already outlasted the redraw. The busy window then
+ * ran to its 2s cap having watched nothing, costing more than the 1.2s sleep it
+ * replaced. Requiring the idle to HOLD costs the hold and no more, and catches
+ * the same late-starting work.
+ *
+ * Polled from Node rather than by `page.waitForSelector`, for the reason
+ * `waitForQuietPeriod` is: chrome throttles in-page timers and rAF once the tab
+ * is not visible, which is exactly the state a headless capture sits in.
+ *
+ * Falls back to the quiet period on a build too old for the marker, rather than
+ * passing instantly. A no-op that reports success is how a spec that dropped its
+ * sleep for this ends up capturing the frame the sleep was there to avoid.
+ */
+export async function waitForAppSettled(
+  page: Page,
+  {
+    timeout = 30000,
+    holdMs = APP_SETTLED_HOLD_MS,
+    pollMs = 250,
+  }: { timeout?: number; holdMs?: number; pollMs?: number } = {},
+): Promise<boolean> {
+  if (!(await hasAppReadyMarker(page))) {
+    return waitForQuietPeriod(page, { quietMs: holdMs, timeout, pollMs })
+  }
+  const deadline = Date.now() + timeout
+  let readySince: number | undefined
+  while (Date.now() < deadline) {
+    // a page that navigates or closes under us fails the evaluate; treat that as
+    // not-ready and let the deadline decide
+    const ready = await page
+      .evaluate(
+        selector => document.querySelector(selector) !== null,
+        APP_READY,
+      )
+      .catch(() => false)
+    const now = Date.now()
+    if (ready) {
+      readySince ??= now
+      if (now - readySince >= holdMs) {
+        return true
+      }
+    } else {
+      readySince = undefined
+    }
+    await delay(pollMs)
+  }
+  return false
 }
