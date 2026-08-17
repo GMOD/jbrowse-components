@@ -27,12 +27,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // surface while the dialog stays free of menu-only state.
 export type GroupByDialogModel = {
   id: string
-  // Both read by `getUniqueTags`, not here. The driver name is declared even
-  // though that helper takes it optionally: undefined there means "the default
-  // driver", so a model that merely stopped exposing it would move this scan off
-  // the display's own driver in silence.
+  // Read by `getUniqueTags`, not here.
   adapterConfig: Record<string, unknown>
-  effectiveRpcDriverName?: string
   colorBy: ColorBy
   groupBy?: GroupBy
   setGroupBy: (groupBy?: GroupBy) => void
