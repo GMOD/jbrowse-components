@@ -17,11 +17,17 @@ import type {
 //
 // The Orthologs tab shipped in the release after jbrowse-plugin-msaview 2.7.3,
 // and the plugin store `latest/` bundle this config loads now serves it: every
-// label the stages gate on ("Orthologs (fast)", "Query species", "Species to
-// include") is a literal in that bundle. Before that release the store served a
+// label the stages gate on ("Orthologs (fast)", "Query species", "Rows to
+// align") is a literal in that bundle. Before that release the store served a
 // BLAST-only dialog, stage 2 found no such tab, and stage 3 waited out its
 // timeout with no alignment to gate on. A stage that fails that way is the
 // store lagging a release, not a broken spec.
+//
+// "Rows to align" replaced a grid of 23 species checkboxes in 2.10.0, which is
+// also what made these figures dense: the checkbox list was intersected with
+// NCBI's ortholog report and kept 12 of the 165 orthologs NCBI publishes for
+// this gene. A stage still gating on "Species to include" is the store serving
+// something older than 2.10.0.
 //
 // NLRP1 (hg38 chr17:5,501,396-5,584,509, minus strand, per NCBI Datasets), not a
 // housekeeping gene: the overlay only says something when the rows differ.
@@ -31,10 +37,12 @@ import type {
 // the pipeline agree: human NP_127497.1 carries Pyrin_NALPs at residue 9, and
 // mouse NP_001004142.2 starts at NACHT residue 133 with no pyrin call anywhere.
 //
-// It is also honest about the panel. NLRP1 is fast-evolving, so NCBI has
-// orthologs for only part of the species list (human, mouse, dog, cattle, pig
-// on a run of the shipped panel). A conserved gene fills it, which is what the
-// tutorial's last section says.
+// It is also honest about how far the gene reaches. Every one of the 165
+// orthologs NCBI publishes for NLRP1 is a mammal: placentals plus the common
+// wombat and the common brushtail, and no monotreme, bird, reptile, amphibian
+// or fish. So the tree these figures draw stops where the gene does, while CFTR
+// reaches sea lamprey on the same click-path. That is the tutorial's last
+// section.
 const NLRP1_WINDOW = 'chr17:5,495,000-5,591,000'
 
 // The gene track carries an explicit height and longestCoding glyph mode: the
@@ -89,22 +97,42 @@ const OPEN_LAUNCH_DIALOG: ScreenshotAction[] = [
   },
 ]
 
-// Submit, then wait out a live NCBI lookup plus an EBI Clustal Omega job.
-// Seconds rather than minutes, which is the tutorial's whole point, but
-// network-bound: the domain overlay is a second round trip after the alignment
-// itself lands.
+// Submit, then wait out a live NCBI lookup plus an EBI Clustal Omega job. The
+// lookup is instant; the aligner is the wait, and the domain overlay is a second
+// round trip after the alignment itself lands.
 //
 // Gate on the RESULT, not on a timer, and specifically on the entry these
 // figures are OF. The legend lists one row per domain type present anywhere in
-// the alignment, and the human row is the only one with a pyrin, so
-// `Pyrin_NALPs` appears only once NCBI has returned the human protein record. A
-// looser gate on NACHT passes without it: eutils answers a burst of these runs
-// with HTTP 429, the human row silently loses its domain calls, and the frame
-// is an overlay missing the one block the page is about. Which is what it
-// shipped as, once.
+// the alignment, so `Pyrin_NALPs` appears only once NCBI has returned the
+// records that carry a pyrin call. A looser gate on NACHT passes without it:
+// eutils answers a burst of these runs with HTTP 429, those rows silently lose
+// their domain calls, and the frame is an overlay missing the one block the page
+// is about. Which is what it shipped as, once.
+//
+// Measured at the dialog's default row count: about a minute at EBI (half a
+// second a row) and a few seconds more for a hundred GenPept records. The gate
+// is set well past that rather than near it, because it is a queue and the cost
+// of waiting is a slower sweep while the cost of missing is a wrong figure.
+const ALIGNMENT_TIMEOUT = 420000
+
 const SUBMIT_AND_WAIT: ScreenshotAction[] = [
   { type: 'click', selector: 'button::-p-text(Submit)' },
-  { type: 'waitForText', text: 'Pyrin_NALPs', timeout: 180000 },
+  { type: 'waitForText', text: 'Pyrin_NALPs', timeout: ALIGNMENT_TIMEOUT },
+]
+
+// The domain key floats over the top-right of the alignment at 95% opacity and
+// is sized off the view, so on a panel this tall it covers a real block of
+// residues -- at the residue zoom below, some of the columns the frame is OF.
+//
+// Collapsed by CLICKING it rather than by `showDomainLegend: false` in the
+// session, and the ordering is the whole reason: the gate above waits on
+// `Pyrin_NALPs`, which is a legend entry, so a session that opens with the
+// legend already collapsed removes the only text proving the pyrin call
+// arrived and the spec times out on a frame that is otherwise correct.
+// Gate on the legend, then put it away.
+const COLLAPSE_DOMAIN_KEY: ScreenshotAction[] = [
+  { type: 'click', selector: 'button[title="Collapse domain key"]' },
+  { type: 'delay', ms: 500 },
 ]
 
 // What the protein tour films, on the same hosted config the figures above load.
@@ -240,22 +268,19 @@ export const msaSpecs: ScreenshotSpec[] = [
         actions: OPEN_LAUNCH_DIALOG,
         annotations: [
           { type: 'box', anchor: { text: 'Orthologs (fast)' } },
-          { type: 'box', anchor: { text: 'Species to include' } },
+          { type: 'box', anchor: { text: 'Rows to align' } },
         ],
         // Declared, not inherited. A stage without its own height keeps
         // whatever the previous one resized to, so leaving this off gave the
         // dialog the 540 the menu frame above wanted and cut it off below the
-        // species checkboxes: no isoform selector, no Submit, in the frame
-        // whose whole subject is that dialog.
+        // species list: no isoform selector, no Submit, in the frame whose
+        // whole subject is that dialog.
         //
-        // 700, down from 880, and the dialog carries ten more species than it
-        // did: msaview 2.8.0 put the species grid on auto-fitted 130px columns
-        // (five rows for twenty-three where three 160px columns were five rows
-        // for thirteen), cut a seven-line intro to one line, and moved the
-        // query-row note to helper text under the isoform selector. Measured off
-        // the two captures at the same frame width: 735 css px of dialog before,
-        // 616 after.
-        viewportHeight: 700,
+        // Down again, to 580: msaview 2.10.0 replaced the grid of 23 species
+        // checkboxes with one "Rows to align" field, which is the change these
+        // figures are of. The dialog has been 880, then 700 as the grid tightened
+        // (735 css px of dialog, then 616), and is now four fields tall.
+        viewportHeight: 580,
       },
       {
         actions: [
@@ -333,7 +358,11 @@ export const msaSpecs: ScreenshotSpec[] = [
         NLRP1_LGV,
         {
           type: 'MsaView',
-          // `taxa` omitted is every species the dialog offers, and
+          // `taxa` omitted is no species restriction at all, so the rows are a
+          // prefix of NCBI's own ortholog report and `maxSpecies` is how many.
+          // Left at the dialog's default, so this figure is what the click-path
+          // above produces rather than a denser thing only a spec can ask for.
+          //
           // `proteinSequence` omitted is NCBI's representative protein for the
           // gene -- which is also what makes the query row byte-identical to
           // the RefSeq record its accession names, so the CDD overlay the
@@ -343,19 +372,34 @@ export const msaSpecs: ScreenshotSpec[] = [
             geneCandidates: ['NLRP1'],
             msaAlgorithm: 'clustalo',
           },
-          // Hide any column gappier than this, which is the aiming. Measured
-          // on this alignment: the gorilla alone holds columns 0-31 (1 of 12
-          // rows, 91.7% gaps) and the gorilla with the horse holds 32-81 (2 of
-          // 12, 83.3%), while the human M and eight other rows start together
-          // at column 82. 80 drops both runs and keeps everything a third row
-          // reaches (3 of 12 is 75%), so the view opens on the human N
-          // terminus with the pyrin call nine residues into it. The margin is
-          // what makes it robust rather than the exact number: at eleven or
-          // thirteen rows those two quantities are 81.8/72.7 and 84.6/76.9,
-          // still either side of 80.
+          // Hide any column gappier than this, which is the aiming: an
+          // alignment is as long as its longest row, so its leftmost columns
+          // are whichever one or two proteins reach furthest past the rest and
+          // everything else is gap there. Dropping them brings the columns the
+          // panel SHARES, the pyrin among them, to the left edge.
+          //
+          // The threshold got easier rather than harder as the panel widened.
+          // A private N-terminal extension is held by one or two rows whatever
+          // the row count, so at a hundred rows those columns are 98-99% gaps
+          // where at twelve they were 83-92%; anything a real fraction of the
+          // panel reaches is far below 80. The number is unchanged from the
+          // twelve-row version because the margin around it grew.
           //
           // `hideGaps` defaults true, so this one number is the whole setting.
           allowedGappyness: 80,
+          // Sized so the alignment ends on a WHOLE row. An MSA panel scrolls,
+          // so its own height decides where the frame cuts, and neither
+          // `blank below the last content` nor `CONTENT CLIPPED BELOW THE FOLD`
+          // can see it -- both measure the page, and this display overflows
+          // inside a fixed height the page is happy with.
+          //
+          // Measured on this alignment rather than derived: chrome (toolbar,
+          // conservation rows, header) is 94px, so the alignment area is
+          // height - 94, and at the default 550 that was 456 = 28 rows plus an
+          // 8px sliver that reads as a truncated row. 94 + 50*16 shows fifty of
+          // the hundred whole, and viewportHeight follows it exactly, so there
+          // is no blank under the frame either.
+          height: 894,
         },
       ],
     }),
@@ -363,9 +407,14 @@ export const msaSpecs: ScreenshotSpec[] = [
     // the only thing that proves NCBI answered the human record rather than
     // 429ing, and a frame without it is an overlay missing the one block the
     // page is about.
-    actions: [{ type: 'waitForText', text: 'Pyrin_NALPs', timeout: 180000 }],
+    actions: [
+      { type: 'waitForText', text: 'Pyrin_NALPs', timeout: ALIGNMENT_TIMEOUT },
+      ...COLLAPSE_DOMAIN_KEY,
+    ],
     hideTooltip: true,
-    viewportHeight: 878,
+    // the LGV above plus the MsaView's own 894 and nothing else: 878 was this
+    // frame at the view's default height, and the view grew by 344.
+    viewportHeight: 1222,
     readyTimeout: 120000,
   },
 ]

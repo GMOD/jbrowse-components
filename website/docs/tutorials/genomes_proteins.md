@@ -142,16 +142,19 @@ manually** takes a PDB or mmCIF file of yours.
 cross-species protein MSA. The dialog opens on its **Orthologs (fast)** tab, and
 three fields on it matter:
 
-- **Query species** is the species the gene came from.
-- **Species to include** is the panel of rows to build. As its label says,
-  species with no ortholog for this gene are skipped rather than erroring, so
-  leaving them all ticked costs nothing.
+- **Query species** is the species the gene came from. It is free text resolved
+  against NCBI's taxonomy, so a scientific name, a common name or a taxon id all
+  work.
+- **Rows to align** is how many species to build. NCBI orders its ortholog
+  report from the reference organisms outward, so this takes the closest N of
+  however many that gene has.
 - **Choose isoform** picks which transcript becomes the query row. That row is
   the one the genome view stays linked to, so hovering the alignment highlights
   the matching codons back in the linear view.
 
 **MSA Algorithm** is what EBI is asked to run, Clustal Omega by default, and is
-the step the wait is actually in.
+the step the wait is actually in. What it costs scales with the row count, so
+**Rows to align** is the dial between a deeper panel and a shorter wait.
 
 NCBI publishes one ortholog gene per species for most annotated genes, so this
 tab looks up what this gene is in each species. The lookup returns immediately,
@@ -180,16 +183,16 @@ rather than at each protein's own residue positions. That is what makes the rows
 comparable: the same domain lands in the same column in every row that has it,
 however different the proteins are in length.
 
-Human _NLRP1_ carries a pyrin (PYD) death-fold domain at its N terminus, and so
-do the chimpanzee, gorilla and marmoset rows. No other row in the panel does,
-mouse _Nlrp1a_ included, and neither does the rhesus macaque, whose record
-carries plenty of other calls. Everything after the pyrin is shared, so the
-overlay reads as one block on the left that a few rows have, and a matching
-stack of blocks to the right of it that every row has.
+Human _NLRP1_ carries a pyrin (PYD) death-fold domain at its N terminus. Some
+rows have it and some do not, mouse _Nlrp1a_ among those that do not, so the
+overlay reads as a block on the left that comes and goes down the panel against
+a stack to the right of it that every row shares. Because the aligner's tree
+orders the rows, the rows that have it sit together, and the pattern reads as
+clades rather than as a scatter.
 
-The shared core is the control. NACHT, the winged helix, HD2, FIIND and CARD are
-present in every row, so a missing block only means something because the blocks
-around it agree.
+The shared core is the control. NACHT, the winged helix, HD2, FIIND and CARD run
+across every row, so a missing block on the left only means something because
+the blocks around it agree.
 
 The calls ride along on NCBI's own protein records, so they arrive with the
 sequences and cost no extra step. For a protein NCBI has no calls for, the view
@@ -208,14 +211,14 @@ is one or two rows' private N-terminal extensions. **Hide columns w/ >N% gaps**,
 the slider in the alignment's toolbar, brings the columns the panel shares (the
 pyrin among them) to the left edge.
 
-The rows without a pyrin block are not empty there. Sheep, cattle and dog carry
-ordinary residues under the same columns with nothing called over them, which is
-a different statement from the sequence being absent, and the horse and rhesus
-macaque rows carry a death-domain call that is not the pyrin-specific one. Mouse
-and guinea pig are the actual absence: gap right across the frame, because their
-rows begin further right in the alignment.
+The rows without a pyrin block are not all the same. Some carry ordinary
+residues under those columns with nothing called over them, which is a different
+statement from the sequence being absent; some carry a generic death-domain call
+instead of the pyrin-specific one; and some are gap right across the frame,
+because their rows begin further right in the alignment. Only the third is an
+absent sequence, and at whole-protein zoom all three looked alike.
 
-<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 across the species NCBI has an ortholog for, at the residue zoom the view opens on, with the gappiest columns hidden. The pyrin call, in light blue, is on the human, chimpanzee, gorilla and marmoset rows and on no others." />
+<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 orthologs at the residue zoom the view opens on, with the gappiest columns hidden. Under the pyrin columns some rows carry residues with no call over them and others are gap." />
 
 ### The same domains in genome coordinates
 
@@ -238,10 +241,13 @@ rest of the record.
 ### Trying other genes
 
 The same click-path works on any gene in the view whose symbol NCBI recognises.
-What changes between genes is how many species come back: a conserved gene fills
-the whole panel, while a fast-evolving one like _NLRP1_ returns orthologs for
-only part of it. Genes annotated with an Ensembl identifier and no symbol fall
-through to the BLAST tab.
+What changes between genes is how far down the tree the panel reaches, and the
+tree on the left is where you read it. Every _NLRP1_ ortholog NCBI has is a
+mammal, so the panel stops at mammals however high **Rows to align** is set,
+while the same click-path on _CFTR_ reaches birds, amphibians and fish. The rows
+arrive grouped by clade rather than by the order they were fetched, because the
+tree comes from the aligner. Genes annotated with an Ensembl identifier and no
+symbol fall through to the BLAST tab.
 
 ## Where each MSA comes from
 
