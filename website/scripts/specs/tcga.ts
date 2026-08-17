@@ -499,6 +499,26 @@ function mutationFigure({
   })
 }
 
+// What the collapse-introns tour films: the CDH1 figure's own session, opened on
+// the whole transcript, which is the state the figure's `actions` then reshape.
+// So the clip ends on the picture the page prints and the reader has seen how it
+// was made.
+//
+// The route is `collapseIntrons` above, restated with captions and holds rather
+// than reused: a tour needs a `say` per click and a hold long enough to read a
+// menu, and the still's version is deliberately as fast as the app allows.
+export const tcgaMutationVideoFixtures = {
+  gene: 'CDH1',
+  matrixDone: MATRIX_DONE,
+  cdh1WholeTranscript: mutationFigure({
+    loc: '16:68,730,000-68,842,000',
+    groupBy: 'histology',
+    colorBy: 'histology',
+    lineZoneHeight: LINE_ZONE_HEIGHT,
+    height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
+  }),
+}
+
 export const tcgaSpecs: ScreenshotSpec[] = [
   // The cohort view: every TCGA-BRCA primary tumor as one 1px row across the
   // whole genome, clustered so tumors with similar profiles sit together, under

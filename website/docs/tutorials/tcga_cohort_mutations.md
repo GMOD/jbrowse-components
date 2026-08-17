@@ -183,11 +183,18 @@ E-cadherin loss is the defining lesion of lobular breast cancer
 grouping is what turns this window from a scatter of private mutations into that
 result.
 
-Three things in that figure travel to any gene-scale matrix:
+The window that figure is drawn in comes from the gene itself. Right-click
+_CDH1_ in the gene lane, choose **Collapse introns**, and **Replace current
+view** reshapes the frame to its exons (see [](/docs/user_guides/gene_track)):
 
-- Right-clicking the gene and choosing **Collapse introns** reshapes the view to
-  its exons (see [](/docs/user_guides/gene_track)), so every column is an exonic
-  change rather than a private intronic call.
+<Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's own context menu, and the 979-tumor matrix redrawn over the coding sequence." />
+
+Opened on the transcript instead, as the clip starts, most of the frame is
+intron: every private intronic call takes a column of its own and the coding
+ones are spread thin between them.
+
+Two more things in that figure travel to any gene-scale matrix:
+
 - [`lineZoneHeight`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-linezoneheight)
   (or the handle under the band) drags the connector band open, which is what
   says whether a gene's calls pile on one codon or run the length of the
