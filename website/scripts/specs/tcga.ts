@@ -1,6 +1,6 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { kgUrl, lgvSession } from '../screenshot-spec-helpers.ts'
+import { kgUrl } from '../screenshot-spec-helpers.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -15,14 +15,6 @@ const HG38_MAIN_CHROMS = [
   ...Array.from({ length: 22 }, (_, i) => String(i + 1)),
   'X',
 ]
-
-// The binned reading of the same cohort loads through its own config, because
-// the Zarr adapter arrives in a plugin and a plugin can only be declared by a
-// config — `sessionTracks` cannot carry one. That config's hg38 is the
-// chr-prefixed FASTA, matching the store's own refNames, so this is the
-// prefixed spelling of the contig list above rather than a second set.
-const TCGA_CNV_CONFIG = 'test_data/tcga_cnv/config.json'
-const HG38_MAIN_CHROMS_CHR = HG38_MAIN_CHROMS.map(c => `chr${c}`)
 
 // One row per TCGA-BRCA primary tumor (1104 of them), painted from the caller's
 // raw Segment_Mean on a diverging blue/red log2 scale. Built by
@@ -735,46 +727,15 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The whole cohort at whole-genome zoom, out of the binned store: the view
-  // the section is actually about, since this is where the BED has to return
-  // every segment of every tumor (5.8 MB) and the store reads one 1.2 MB level
-  // of its pyramid instead. Same composition as cohort_cnv_genome at the top of
-  // this file, so the two are directly comparable.
-  //
-  // MUST be regenerated headed (`--headed`), on a real GPU. Headless falls back
-  // to swiftshader, and software-rasterizing this density heatmap across 23
-  // blocks pegs the main thread hard enough that puppeteer's own page.evaluate
-  // times out — nothing throws, nothing in JBrowse is slow, and real users on a
-  // GPU never see it. The BED figure above carries the same warning.
-  {
-    mode: 'url',
-    name: 'tcga/cohort_cnv_zarr_genome',
-    headedOnly: true,
-    url: lgvSession(TCGA_CNV_CONFIG, {
-      assembly: 'hg38',
-      displayedRegionNames: HG38_MAIN_CHROMS_CHR,
-      trackLabels: 'offset',
-      tracks: [
-        {
-          trackId: 'tcga_brca_cnv_recurrence',
-          type: 'LinearWiggleDisplay',
-          height: 120,
-        },
-        {
-          trackId: 'tcga_brca_cnv_zarr',
-          type: 'MultiLinearWiggleDisplay',
-          height: 760,
-          runClustering: true,
-          showTree: true,
-        },
-      ],
-    }),
-    readySelector: CLUSTERED,
-    readyTimeout: 900000,
-    viewportWidth: 1900,
-    viewportHeight: 1120,
-    settleMs: 20000,
-  },
+  // tcga/cohort_cnv_zarr_genome WAS HERE and is gone, with the tutorial section
+  // it illustrated ("Read the same calls as a binned matrix"). It drew the same
+  // composition as cohort_cnv_genome above from the Zarr store instead of the
+  // BED, and its own caption said so: the recurrent stripes fall in the same
+  // places. So the picture carried no result of its own, and the prose around it
+  // was a bytes-over-the-wire table for two readers of one dataset. The store,
+  // its build script and test_data/tcga_cnv/config.json all still exist; what
+  // this file no longer does is photograph a second reader of the same calls.
+  // A figure here would need a view where the two readers DISAGREE.
 
   // CDH1 grouped by histology. E-cadherin loss is the defining lesion of lobular
   // breast cancer, and this is that result as a picture: the HIGH-impact

@@ -2534,13 +2534,6 @@
     "reviewedAt": "2026-08-16T03:41:26.394Z",
     "hash": "ee8eadb3cdbb5b070bcd577fd19d25dc6ed2c9f3"
   },
-  "tcga/cohort_cnv_zarr_genome": {
-    "name": "tcga/cohort_cnv_zarr_genome",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-05T03:19:17.781Z",
-    "hash": "222159182712418e103505295419b938be4b8148"
-  },
   "alignments/strand_split_coverage": {
     "name": "alignments/strand_split_coverage",
     "status": "good",

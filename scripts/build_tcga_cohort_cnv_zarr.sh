@@ -22,8 +22,9 @@
 # The locus row is the large one and it is mostly not about binning: TCGA
 # segments average 2.6 Mb, so tabix's linear index scans back to the start of
 # the chromosome and a 200 kb query reads the same bytes a whole-chromosome one
-# does. Against that, the store costs 25 MB on disk to the BED's 5.9 MB. It is a
-# second representation worth having for the zoomed-out views, not a replacement.
+# does. Against that, the store costs 29 MB on disk as du counts it over 1752
+# files, 25 MB as bytes, to the BED's 5.9 MB. It is a second representation
+# worth having for the zoomed-out views, not a replacement.
 #
 # Requires: curl, node >= 22 (for its own TypeScript stripping; no npm install)
 # Output:   tcga_<project>_cnv.zarr/

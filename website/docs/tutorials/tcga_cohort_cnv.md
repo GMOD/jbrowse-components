@@ -26,7 +26,6 @@ vertical stripes down the stack.
 | `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz`            | cohort gain/loss frequencies      |
 | `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz` | the same, split by clinical group |
 | `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                          | per-tumor histology, receptors    |
-| `https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr`                              | the same segments, binned         |
 
 ## What the files hold
 
@@ -184,11 +183,11 @@ deep-loss colors, so the two tracks agree by eye.
 Placed above the stack, as in the figure at the top of this page, each peak sits
 over a stripe and puts a number on it.
 
-This is a frequency plot, not
-[GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41): there is no background
-model, no significance test, and no peak calling, and amplitude enters only
-through the gain/loss cutoff. It answers "in what fraction of the cohort", not
-"more often than chance".
+Each bar is the fraction of the cohort carrying a call past the cutoff, so the
+question it answers is "in what fraction of the cohort". There is no background
+model, no significance test and no peak calling, and amplitude enters only
+through the gain/loss cutoff. For the significance test,
+[GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41) is the tool.
 
 ## Split the recurrence by clinical group
 
@@ -196,6 +195,8 @@ The recurrence track pools every tumor, so a peak is the cohort's average and
 says nothing about which tumors make it up. `cnv_recurrence.py --groups` runs
 the same tally once per value of a clinical column and writes each group its own
 gain and loss column:
+
+<!-- from: scripts/build_tcga_cohort_cnv.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/cnv_recurrence.py
@@ -235,9 +236,9 @@ one row each. No subadapter list and no second file:
 }
 ```
 
-Each subtype gets its own pair of rows, gain in red over loss in blue, with the
-bottom row of each block holding the tumors whose receptor calls do not resolve
-a subtype.
+Row order follows the file's column order, so the four gain rows come first, in
+red, and the four loss rows under them, in blue. The bottom row of each block
+holds the tumors whose receptor calls do not resolve a subtype.
 
 <Figure caption="Gain and loss frequency per 100 kb across the 22 autosomes and chrX, tallied separately for each receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
@@ -250,7 +251,7 @@ each row only ever fills half its axis.
 Gain and loss stay separate columns rather than collapsing to one signed value:
 at the edge of the 17q amplicon the HER2+ group is gained and lost at nearly the
 same rate, and a net value would draw that as roughly nothing right beside
-ERBB2.
+_ERBB2_.
 
 A subtype is plotted only once it holds enough tumors to be worth a percentage,
 which `--min-group` sets: over a handful of tumors the value moves in visible
@@ -260,87 +261,6 @@ was.
 Point `--groups` at any other column for a different split; `histology` and
 `stage` come from harmonized GDC fields and so work for any TCGA project, while
 `subtype` is breast specific.
-
-## Read the same calls as a binned matrix
-
-The stack asks tabix for every segment overlapping the view and rasterizes them
-in the browser. At whole-genome zoom that is the entire file: 379,318 segments
-for a picture a few hundred pixels tall. The same calls binned onto a fixed grid
-answer that view out of one level of a resolution pyramid instead.
-
-`tcga_brca_cnv.zarr` holds the 1104 tumors as a samples-by-bins matrix in a
-[Zarr v3](https://zarr.dev/) store, one array per level from 10 kb bins up to 3
-Mb. `MultiWiggleZarrAdapter` reads the coarsest level whose bins are still no
-wider than a screen pixel, so a screenful costs a chunk or two at any zoom.
-Bytes over the wire for three views, counted through each reader:
-
-| View                   | BED + tabix | Zarr store | Zarr requests |
-| ---------------------- | ----------- | ---------- | ------------- |
-| ERBB2, a 200 kb window | 411 KB      | 14 KB      | 1             |
-| chr17 end to end       | 411 KB      | 237 KB     | 12            |
-| whole genome           | 5843 KB     | 1176 KB    | 4             |
-
-TCGA segments average 2.6 Mb, so a query has to reach back to wherever an
-overlapping segment started, and tabix reads the same 411 KB for a 200 kb window
-as for the whole chromosome. The store is 25 MB on disk to the BED's 5.9 MB.
-
-The plugin is in **beta** and not in the
-[plugin store](/docs/user_guides/plugin_store) yet, but the built bundle is
-hosted, so it loads from any config today (see
-[configuring plugins](/docs/config_guides/plugins)):
-
-```json
-{
-  "plugins": [
-    {
-      "name": "Zarr",
-      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
-    }
-  ],
-  "tracks": [
-    {
-      "type": "MultiQuantitativeTrack",
-      "trackId": "tcga_brca_cnv_zarr",
-      "name": "TCGA-BRCA copy number, binned (1104 primary tumors)",
-      "assemblyNames": ["hg38"],
-      "category": ["TCGA"],
-      "adapter": {
-        "type": "MultiWiggleZarrAdapter",
-        "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr"
-      },
-      "displayDefaults": {
-        "defaultRendering": "multirowdensity",
-        "bicolorPivot": 0,
-        "minScore": -2,
-        "maxScore": 2,
-        "posColor": "#b2182b",
-        "negColor": "#2166ac"
-      }
-    }
-  ]
-}
-```
-
-<Figure caption="The same 1104 primary tumors and cohort recurrence as the figure at the top of this page, read from the binned Zarr store instead of the segment BED and clustered on the whole genome. The recurrent stripes fall in the same places." src="/img/tcga/cohort_cnv_zarr_genome.png" />
-
-The adapter config is the store's location and nothing else: the sample list,
-the bin size and the resolution levels are attributes of the store. Each tumor's
-receptor subtype rides along as its `group`, from the same clinical table the
-recurrence split uses, so the clustering sidebar groups the rows the same way.
-
-Color works differently here. A quantitative track ramps continuously between
-`negColor` and `posColor` about `bicolorPivot`, at 0 because these are log2
-ratios, with `minScore` and `maxScore` clamping the ramp one step outside the
-stack's own cutoffs. Pick round numbers: the scale is `nice()`-rounded, so ±1.5
-quietly becomes the ±2 the color bar draws anyway.
-
-Clustering is scoped to the blocks in view either way, so the row order above is
-genome-wide only because the figure's view is.
-
-Binning is what this representation loses: a focal amplification narrower than
-the base 10 kb bin is averaged with its neighbours, where the stack keeps the
-caller's exact interval at every zoom. For SNP 6.0 segments that costs nothing;
-for exome or WGS callers emitting kilobase segments it would.
 
 ## Use your own cohort
 
@@ -416,26 +336,6 @@ Three of its steps decide whether the resulting track loads correctly:
 - **`Segment_Mean` is carried through unchanged.** Nothing here re-normalizes
   it.
 
-The binned store is a separate script,
-[`build_tcga_cohort_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv_zarr.sh),
-and not a step of the one above: its inputs are the BED and the clinical table,
-so it runs against the hosted copies in well under a minute rather than
-repeating the download. It needs `node` 22 or newer and no `npm install`.
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_cnv_zarr.sh
-bash build_tcga_cohort_cnv_zarr.sh
-# -> tcga_brca_cnv.zarr/ (29 MB, 1752 files)
-```
-
-It reads the cohort BED through
-[`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)'s
-`--bed` mode, naming the sample and value columns, and passes a `name<TAB>group`
-table so each row carries its subtype. The levels are spaced about 3x apart
-rather than 10x: the adapter takes the coarsest level no wider than a screen
-pixel, so a 10x gap leaves a view that lands just under a level's bin size
-reading up to 10x more bins than it can draw.
-
 The recurrence step is separately runnable as
 [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py),
 if you have a cohort BED already and want only the frequency file. It skips bins
@@ -458,7 +358,7 @@ serves both tracks.
 - [](/docs/tutorials/bxd_qtl)
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/population_cnv)
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab)
+- [](/docs/tutorials/sv_visualization_cgiab)
 - [jexl](/docs/config_guides/jexl)
 
 ## References
