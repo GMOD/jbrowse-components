@@ -13,7 +13,7 @@ import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.g
 import { readIdAt } from '../../shared/readIdentity.ts'
 import { connectionLabel, connectionMark, iterLinkedPairs } from './compute.ts'
 
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
@@ -140,7 +140,7 @@ export function bezierConnectionLegendItems(
 // inputs — that is +13% and +5%. So it is real but not the thing to attack in
 // this path, and it did not warrant a cheaper multi-region-name pre-pass.
 export function enumerateBezierPairs(
-  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+  laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
   scope: BezierArcScope = 'all',
 ): LinkedPair[] {
   if (

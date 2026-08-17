@@ -15,7 +15,7 @@ import {
   menuSubItems,
 } from './testUtils.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 import type { ResolvedBlock } from '../shared/hitTestTypes.ts'
 
 // The block a right-click resolves. Only refName is read by the menu items
@@ -671,7 +671,7 @@ describe('the feature-details lookup', () => {
   // One read, id 'read1', spanning 1000-5000 of a loaded ctgA region.
   function seedOneRead(
     display: ReturnType<typeof createDisplay>,
-    overrides: Partial<PileupDataResult> = {},
+    overrides: Partial<WorkerPileupData> = {},
   ) {
     display.setRpcData(0, {
       groups: [
@@ -683,7 +683,6 @@ describe('the feature-details lookup', () => {
             readKeys: ['read1'],
             ...namesToBlock(['readA']),
             readPositions: new Uint32Array([1000, 5000]),
-            readYs: new Uint16Array([0]),
             readFlags: new Uint16Array([0]),
             readMapqs: new Uint8Array([60]),
             ...overrides,
@@ -888,7 +887,7 @@ describe('sashimi score filter releases the reserved band', () => {
     display.setShowSashimiArcs(true)
     display.setSashimiArcsMode('auto')
     display.setMinSashimiScore(0)
-    const junction = (start: number, end: number): PileupDataResult => ({
+    const junction = (start: number, end: number): WorkerPileupData => ({
       ...makeEmptyPileupData(),
       sashimiX1: new Uint32Array([start]),
       sashimiX2: new Uint32Array([end]),
@@ -982,7 +981,6 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
             readKeys: ['r1'],
             ...namesToBlock(['r1']),
             readPositions: new Uint32Array([100, 200]),
-            readYs: new Uint16Array(1),
             readFlags: new Uint16Array(1),
             readMapqs: new Uint8Array(1),
             readInsertSizes: new Float32Array(1),

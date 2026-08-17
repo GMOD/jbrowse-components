@@ -9,7 +9,7 @@ import {
 } from '../testUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 
 // The three gestures this file is about, and the whole rule between them: a
 // mark that resolves as an arc for the HOVER has to resolve as an arc for the
@@ -34,7 +34,7 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 // scan below settles on, `hitTestInterbase`'s tolerance (3px, here 30bp) has a
 // bar to find — the point is to be sure the pileup pipeline has a real answer
 // at the arc's pixel, not to test its own tolerance.
-function coverageUnder(data: PileupDataResult): PileupDataResult {
+function coverageUnder(data: WorkerPileupData): WorkerPileupData {
   const pos: number[] = []
   for (let p = 900; p <= 2100; p += 10) {
     pos.push(p)

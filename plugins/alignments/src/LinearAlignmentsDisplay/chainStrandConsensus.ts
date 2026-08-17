@@ -6,7 +6,7 @@ import {
   CHAIN_FILL_SUPP_PRIMARY_REV,
 } from '../shared/types.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 
 // Sweeps stop as soon as a pass flips nothing, so this only bounds a
 // pathological case. Each sweep is one linear walk of the votes, and every flip
@@ -220,9 +220,10 @@ function solveFrames(
  * one's starting point, and only when `flipStrandLongReadChains` is on and the
  * scheme actually reads the framing (see `framesUnpairedChainStrand`).
  */
-export function consensusChainStrandFrames(
-  map: Map<number, PileupDataResult>,
-): Map<number, PileupDataResult> {
+// Generic in the entry type for the reason `reconcileChainSuppAcrossRegions` is.
+export function consensusChainStrandFrames<T extends WorkerPileupData>(
+  map: Map<number, T>,
+): Map<number, T> {
   const chainIds = new Map<string, number>()
   const byRegion: Seg[][] = []
   let numSegs = 0
@@ -307,7 +308,7 @@ export function consensusChainStrandFrames(
     }
   }
 
-  const out = new Map<number, PileupDataResult>()
+  const out = new Map<number, T>()
   for (const [idx, data] of map) {
     if (!isChainData(data)) {
       out.set(idx, data)

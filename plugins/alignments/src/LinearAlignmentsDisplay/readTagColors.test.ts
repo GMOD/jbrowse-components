@@ -1,21 +1,21 @@
 import { getQueryColor } from '@jbrowse/core/ui/colors'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 import { buildReadTagColors, overlayReadTagColors } from './readTagColors.ts'
-import { makeEmptyPileupData } from './testUtils.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy } from '../shared/types.ts'
 
 const TAG: ColorBy = { type: 'tag', tag: 'HP' }
 
-function pileupWith(readTagValues: string[]): PileupDataResult {
-  return {
-    ...makeEmptyPileupData(),
+// Laid out, because that is what the overlay takes: the tag bake runs after
+// placement and spreads over its result.
+function pileupWith(readTagValues: string[]) {
+  return makePileupDataResult({
     readTagValues,
     readStrands: new Int8Array(readTagValues.length).fill(1),
-  }
+  })
 }
 
 const packed = (color: string) => {
@@ -94,8 +94,8 @@ describe('overlayReadTagColors', () => {
   })
 
   // The worker only fills readTagValues for the baked schemes, so any other
-  // scheme must pass through untouched and leave the shader on its palette path.
-  test('is a no-op for schemes the shader colors itself', () => {
+  // scheme must leave the array empty and the shader on its palette path.
+  test('bakes nothing for schemes the shader colors itself', () => {
     expect(overlay({ type: 'strand' })).toBe(0)
     expect(overlay({ type: 'tag' })).toBe(0)
     expect(overlay(undefined)).toBe(0)

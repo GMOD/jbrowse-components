@@ -21,7 +21,7 @@
 // screen-space assignment would decide, and it doesn't flip an arc between bands
 // as regions scroll in and out of view.
 
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Sashimi placement, owned here because it selects the assignment algorithm
 // below (the display imports it via constants.ts): 'up' draws every arc over the
@@ -57,9 +57,9 @@ export interface MergedJunction {
 
 // The sashimi slice of a worker result. Narrowed to what the merge reads so the
 // tests (and `groupedDataMaps`, which walks `GroupedAlignmentsResult`) don't
-// have to build a whole PileupDataResult.
+// have to build a whole WorkerPileupData.
 export type SashimiFields = Pick<
-  PileupDataResult,
+  WorkerPileupData,
   'sashimiX1' | 'sashimiX2' | 'sashimiCounts' | 'sashimiStrands'
 >
 

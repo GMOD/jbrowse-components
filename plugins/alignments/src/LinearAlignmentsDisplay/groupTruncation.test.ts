@@ -1,7 +1,7 @@
 import { namesToBlock } from '../shared/readNameBlock.ts'
 import { bootAlignmentsDisplay, makeEmptyPileupData } from './testUtils.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 
 // Boots a real LinearAlignmentsDisplay, because which cap clipped a lane is a
 // property of the whole layout chain (`groupOrder` → `layoutGroupsToViewport` →
@@ -35,7 +35,7 @@ function createEnv() {
 
 // n reads all covering one span, so the layout has to stack them n rows deep and
 // any row cap below n truncates.
-function stackedReads(n: number): PileupDataResult {
+function stackedReads(n: number): WorkerPileupData {
   const readPositions = new Uint32Array(n * 2)
   for (let i = 0; i < n; i++) {
     readPositions[i * 2] = 1000
@@ -46,7 +46,6 @@ function stackedReads(n: number): PileupDataResult {
     readKeys: Array.from({ length: n }, (_, i) => `r${i}`),
     ...namesToBlock(Array.from({ length: n }, (_, i) => `read${i}`)),
     readPositions,
-    readYs: new Uint16Array(n),
     readFlags: new Uint16Array(n),
     readMapqs: new Uint8Array(n),
     readStrands: new Int8Array(n).fill(1),

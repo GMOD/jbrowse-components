@@ -1,6 +1,9 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
+import { emptyConnectingLinesUploadData } from '../features/connectingLines/types.ts'
+import { emptyLinkedReadLinesUploadData } from '../features/linkedReads/types.ts'
+import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
 import {
   INTERBASE_HARDCLIP,
@@ -10,7 +13,7 @@ import {
 
 import type { ReadKey, ReadKeys } from '../shared/readIdentity.ts'
 import type { SortedBy } from '../shared/types.ts'
-import type { PileupDataResult } from './types'
+import type { LaidOutPileupData, WorkerPileupData } from './types'
 
 const DELETION_CHAR = 42 // '*'
 
@@ -65,7 +68,7 @@ function sortByMapWithUnknownsLast(
   arr: number[],
   map: Map<number, number>,
   desc: boolean,
-  data: PileupDataResult,
+  data: WorkerPileupData,
 ) {
   const { readPositions, readKeys } = data
   arr.sort((a, b) => {
@@ -84,7 +87,7 @@ function sortByMapWithUnknownsLast(
   })
 }
 
-function buildSoftclipExpansions(data: PileupDataResult) {
+function buildSoftclipExpansions(data: WorkerPileupData) {
   const expansions = new Map<number, { start: number; end: number }>()
   for (let i = 0; i < data.interbasePositions.length; i++) {
     if (data.interbaseTypes[i] !== INTERBASE_SOFTCLIP) {
@@ -127,7 +130,7 @@ interface ReadExtents {
   ends: Float64Array
 }
 function buildReadExtents(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   expansions: Map<number, { start: number; end: number }> | undefined,
   numReads: number,
 ): ReadExtents {
@@ -174,7 +177,7 @@ function remapYs(readIndices: Uint32Array, readYs: Uint16Array) {
 // and false for base calls. Returns undefined for the comparator-based types
 // (position/strand/tag), which don't go through a key map.
 function buildSortKeyMap(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   type: SortedBy['type'],
   sortPos: number,
 ): { map: Map<number, number>; desc: boolean } | undefined {
@@ -225,7 +228,7 @@ function buildSortKeyMap(
 
 function sortOverlappingByIndex(
   overlapping: number[],
-  data: PileupDataResult,
+  data: WorkerPileupData,
   sortedBy: SortedBy,
   sortTagValues: string[] | undefined,
   keyMap: { map: Map<number, number>; desc: boolean } | undefined,
@@ -294,7 +297,7 @@ function sortOverlappingByIndex(
  * spelled the span test separately, and a rule spelled twice is one that drifts.
  */
 function partitionBySort(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   sortedBy: SortedBy,
   sortTagValues: string[] | undefined,
 ) {
@@ -430,7 +433,7 @@ class MinHeap {
  * toggles and resize; sorting only the equal-start runs was slower still
  * (~30ms — many small sorts plus the slicing beat one optimized sort).
  */
-function buildCanonicalOrder(data: PileupDataResult, numReads: number) {
+function buildCanonicalOrder(data: WorkerPileupData, numReads: number) {
   const { readPositions, readKeys } = data
   for (let i = 1; i < numReads; i++) {
     if (compareReadsCanonically(readPositions, readKeys, i - 1, i) > 0) {
@@ -443,7 +446,7 @@ function buildCanonicalOrder(data: PileupDataResult, numReads: number) {
 }
 
 function buildSoftclipOrder(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   ext: ReadExtents,
   numReads: number,
 ) {
@@ -462,7 +465,7 @@ function buildSoftclipOrder(
 // LGVSyntenyDisplay default). Not start-monotone, so the placement loop uses the
 // row-scan rather than the interval-partitioning fast path.
 function buildLargeFirstOrder(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   ext: ReadExtents,
   numReads: number,
 ) {
@@ -489,7 +492,7 @@ function buildLargeFirstOrder(
  * and the same `maxRows` overflow sentinel — verified in sortLayout.test.ts.
  */
 function partitionStartSorted(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   order: number[] | undefined,
   expansions: Map<number, { start: number; end: number }> | undefined,
   maxRows: number,
@@ -544,7 +547,7 @@ function partitionStartSorted(
  * when `maxRows` clipped the stack.
  */
 export function computeLayout(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   showSoftClipping?: boolean,
   maxRows = Number.POSITIVE_INFINITY,
   largeFeaturesFirst?: boolean,
@@ -609,7 +612,7 @@ export function computeLayout(
  * `partitionBySort` decides which reads those are.
  */
 export function computeSortedLayout(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   sortedBy: SortedBy,
   showSoftClipping?: boolean,
   maxRows = Number.POSITIVE_INFINITY,
@@ -776,7 +779,7 @@ export function computeMultiRegionLayout({
   maxRows = Number.POSITIVE_INFINITY,
   largeFeaturesFirst,
 }: {
-  entries: [number, PileupDataResult][]
+  entries: [number, WorkerPileupData][]
   regions?: ReadonlyMap<number, RegionBounds>
   sortedBy?: SortedBy
   showSoftClipping?: boolean
@@ -887,17 +890,23 @@ export function computeMultiRegionLayout({
 }
 
 /**
- * Shallow clone of a PileupDataResult with freshly-computed Y arrays
- * propagated from a per-read readYs. All other typed arrays are shared.
+ * The worker's arrays plus a layout: a shallow clone carrying freshly-computed Y
+ * arrays propagated from a per-read `readYs`. Every other typed array is shared
+ * with the input.
+ *
+ * It returns a different type than it takes, and that is the tier boundary — a
+ * `WorkerPileupData` in, a `LaidOutPileupData` out. The Y arrays exist only here
+ * and in `withoutLayout`, so nothing upstream of a placement pass can pass off a
+ * zero-filled one as a layout.
  *
  * Exported so chain-mode layout can reuse the same Y propagation.
  */
 export function cloneWithLayout(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   readYs: Uint16Array,
   maxY: number,
   truncated = false,
-): PileupDataResult {
+): LaidOutPileupData {
   const modificationYs = remapYs(data.modificationReadIndices, readYs)
   const numModifications = modificationYs.length
   let modFlatbush: Flatbush | undefined
@@ -913,6 +922,13 @@ export function cloneWithLayout(
 
   return {
     ...data,
+    // The three row-derived line/tint passes a plain row placement produces
+    // none of. Their own directories own the empty form; chain layout
+    // (`cloneWithChainLayout`), the collapsed layout and
+    // `attachLinkedReadLines` each spread their real records over it.
+    ...emptyConnectingLinesUploadData(),
+    ...emptyOverlapsUploadData(),
+    ...emptyLinkedReadLinesUploadData(),
     readYs,
     gapYs: remapYs(data.gapReadIndices, readYs),
     mismatchYs: remapYs(data.mismatchReadIndices, readYs),
@@ -927,8 +943,38 @@ export function cloneWithLayout(
   }
 }
 
+/**
+ * The zero-row layout: every feature on row 0, no rows claimed, `maxY` 0.
+ *
+ * Two callers, and neither ran a placement pass. A region with no reads has
+ * nothing to place, and a lane collapsed to its coverage band draws no pileup at
+ * all — for which this is the whole point of the collapsed path, since it skips
+ * `cloneWithLayout`'s per-feature `remapYs` gather and modification Flatbush.
+ *
+ * The arrays are still sized to their features rather than left empty: both
+ * backends pack every pass of every region a section carries, indexing the `*Ys`
+ * by feature, so a short array would be read past its end rather than skipped.
+ */
+export function withoutLayout(data: WorkerPileupData): LaidOutPileupData {
+  return {
+    ...data,
+    ...emptyConnectingLinesUploadData(),
+    ...emptyOverlapsUploadData(),
+    ...emptyLinkedReadLinesUploadData(),
+    readYs: new Uint16Array(data.readKeys.length),
+    gapYs: new Uint16Array(data.gapReadIndices.length),
+    mismatchYs: new Uint16Array(data.mismatchReadIndices.length),
+    interbaseYs: new Uint16Array(data.interbaseReadIndices.length),
+    modificationYs: new Uint16Array(data.modificationReadIndices.length),
+    softclipBaseYs: new Uint16Array(data.softclipBaseReadIndices.length),
+    perBaseQualYs: new Uint16Array(data.perBaseQualReadIndices.length),
+    perBaseLetterYs: new Uint16Array(data.perBaseLetterReadIndices.length),
+    maxY: 0,
+  }
+}
+
 export interface PileupLayoutArgs {
-  dataMap: ReadonlyMap<number, PileupDataResult>
+  dataMap: ReadonlyMap<number, WorkerPileupData>
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean | undefined
   regions?: ReadonlyMap<number, RegionBounds>
@@ -953,13 +999,13 @@ function computePileupRowLayout(
   }: PileupLayoutArgs,
   countOnly: boolean,
 ): {
-  empties: [number, PileupDataResult][]
-  laid: { idx: number; data: PileupDataResult; readYs: Uint16Array }[]
+  empties: [number, WorkerPileupData][]
+  laid: { idx: number; data: WorkerPileupData; readYs: Uint16Array }[]
   maxY: number
   truncated: boolean
 } {
-  const empties: [number, PileupDataResult][] = []
-  const withReads: [number, PileupDataResult][] = []
+  const empties: [number, WorkerPileupData][] = []
+  const withReads: [number, WorkerPileupData][] = []
   for (const [k, v] of dataMap) {
     if (v.readKeys.length === 0) {
       empties.push([k, v])
@@ -1005,20 +1051,19 @@ function computePileupRowLayout(
 }
 
 /**
- * Build a laid-out pileup map from raw fetched data. The raw map's entries
- * keep zero-filled Y arrays (from the worker); this returns a parallel map
- * whose entries have Y arrays and maxY derived from pileup layout.
+ * Build a laid-out pileup map from raw fetched data: one entry per region of the
+ * input, each carrying the Y arrays and `maxY` this pass derived.
  *
  * Intended to be called from a MobX-cached getter so layout recomputes only
  * when `rpcDataMap`, `sortedBy`, or `showSoftClipping` change.
  */
 export function buildLaidOutPileupMap(
   args: PileupLayoutArgs,
-): Map<number, PileupDataResult> {
+): Map<number, LaidOutPileupData> {
   const { empties, laid, maxY, truncated } = computePileupRowLayout(args, false)
-  const out = new Map<number, PileupDataResult>()
+  const out = new Map<number, LaidOutPileupData>()
   for (const [k, v] of empties) {
-    out.set(k, v)
+    out.set(k, withoutLayout(v))
   }
   for (const { idx, data, readYs } of laid) {
     out.set(idx, cloneWithLayout(data, readYs, maxY, truncated))

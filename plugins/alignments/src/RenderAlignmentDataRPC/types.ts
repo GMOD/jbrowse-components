@@ -41,7 +41,7 @@ export interface RenderAlignmentDataArgs {
   // are computed from the full depth sweep regardless). Defaults true.
   showCoverage?: boolean
   // In-track stacked grouping. When set, the worker partitions the single fetch
-  // into N ordered groups and returns one PileupDataResult per group. Honored in
+  // into N ordered groups and returns one WorkerPileupData per group. Honored in
   // chain mode too, but only for the chain-consistent dimensions — `groupByForMode`
   // degrades a per-read one to ungrouped rather than splitting a chain across
   // sections, and `partitionChains` assigns each chain as a unit. Tier-1 refetch
@@ -72,18 +72,26 @@ export interface ModTooltipEntry {
   name: string
 }
 
-// The worker→main transport payload for one group's reads. A wide DTO: the
-// per-feature draw/pack functions depend only on their narrow `features/X/types.ts`
-// contract (which this structurally satisfies), not on the whole struct. Fields
-// group into row-instanced features (carry `*Ys`, packed main-thread post-layout)
-// and position-aggregate features (no `*Ys`, pre-packed in the worker as a
-// `*PackedBuffer`) — see plugins/alignments/src/RenderAlignmentDataRPC/CLAUDE.md §"Row-instanced vs position-aggregate".
-export interface PileupDataResult {
+// The worker→main transport payload for one group's reads: everything that is a
+// function of the FETCH alone. A wide DTO, but not the whole struct a renderer
+// reads — `PileupLayoutArrays` and the two color arrays below are added on the
+// main thread, and each tier is a separate type so the worker cannot ship a
+// placeholder for a field it has no answer for. `PileupDataResult` at the bottom
+// of this file is the fully-tiered value; the tiers themselves are the display's
+// invalidation tiers 1/2/3 (LinearAlignmentsDisplay/CLAUDE.md).
+//
+// The per-feature draw/pack functions depend only on their narrow
+// `features/X/types.ts` contract (which the tiered whole structurally satisfies),
+// not on any of these. Fields group into row-instanced features (carry `*Ys`,
+// packed main-thread post-layout) and position-aggregate features (no `*Ys`,
+// pre-packed in the worker as a `*PackedBuffer`) — see
+// plugins/alignments/src/RenderAlignmentDataRPC/CLAUDE.md §"Row-instanced vs
+// position-aggregate".
+export interface WorkerPileupData {
   // Read data - positions are absolute genomic uint32
   // [start, end] pairs — the read's true alignment span, never clipped to the
   // region. Clipping to the region is the drawn geometry's job (buildSegments).
   readPositions: Uint32Array
-  readYs: Uint16Array // pileup row (0-65535 sufficient)
   readFlags: Uint16Array // BAM flags are 16-bit
   readMapqs: Uint8Array // 0-255
   // |TLEN|, never signed — buildBaseFeatureData abs's it, and 0 means unset
@@ -91,10 +99,6 @@ export interface PileupDataResult {
   // f32. Consumers can classify it directly; no re-abs.
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
-  // RC_* color category per read (read.slang). Empty from the worker; the
-  // main thread bakes it in `overlayReadColorCategories` — see readTagColors
-  // for why classification stays off the worker boundary.
-  readColorCategories: Uint8Array
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
   readChainHasSupp?: Uint8Array // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev, 3=paired split inversion, 4=paired split deletion
   readInterchrom: Uint8Array // 1 = mate on a different chromosome (else 0)
@@ -123,14 +127,12 @@ export interface PileupDataResult {
 
   // Gap data (deletions/skips) - absolute genomic uint32
   gapPositions: Uint32Array // [start, end] pairs
-  gapYs: Uint16Array
   gapTypes: Uint8Array // GAP_DELETION / GAP_SKIP (gap.slang)
   gapReadIndices: Uint32Array // maps each gap to its parent read index
   gapFrequencies: Uint8Array // 0-255 representing 0-100% frequency at start position
 
   // Mismatch data - absolute genomic uint32
   mismatchPositions: Uint32Array
-  mismatchYs: Uint16Array
   mismatchBases: Uint8Array // ASCII character code (e.g. 65='A', 67='C', 71='G', 84='T')
   mismatchStrands: Int8Array // -1=reverse, 1=forward (for tooltip strand counts)
   mismatchReadIndices: Uint32Array // maps each mismatch to its parent read index
@@ -140,7 +142,6 @@ export interface PileupDataResult {
   // Soft clip base data - per-base rendering for showSoftClipping feature
   // Absolute genomic uint32 position for each base
   softclipBasePositions: Uint32Array
-  softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array // ASCII character code
   softclipBaseReadIndices: Uint32Array // maps each softclip base to its parent read index
 
@@ -148,7 +149,6 @@ export interface PileupDataResult {
   // stored sequentially as (insertions, softclips, hardclips). The three
   // counts below let consumers slice subranges without re-scanning types.
   interbasePositions: Uint32Array
-  interbaseYs: Uint16Array
   interbaseLengths: Uint32Array
   interbaseTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
   interbaseReadIndices: Uint32Array // maps each interbase to its parent read index
@@ -231,12 +231,6 @@ export interface PileupDataResult {
   modTooltipLabelIds: Uint16Array
   modTooltipLabels: string[]
 
-  // Tag color per read, packed ABGR u32 (0 = no tag color). The worker leaves
-  // this empty — it is baked on the main thread (overlayReadTagColors) from
-  // `readTagValues` + `colorTagMap` so colorTagMap never crosses the worker
-  // boundary. Only populated (main-thread) when colorBy.type === 'tag'.
-  readTagColors: Uint32Array
-
   // Raw per-read tag value strings (parallel to readKeys), populated by the
   // worker only in tag color mode. The main thread bakes these into
   // readTagColors via colorTagMap.
@@ -244,7 +238,6 @@ export interface PileupDataResult {
 
   // Modification data (MM tag) - absolute genomic uint32
   modificationPositions: Uint32Array
-  modificationYs: Uint16Array
   // Packed ABGR u32 per modification; alpha byte encodes visual opacity (quadratic).
   modificationColors: Uint32Array
   // Raw probability 0-255; separate from alpha to avoid lossy quadratic roundtrip in tooltip.
@@ -261,7 +254,6 @@ export interface PileupDataResult {
   // One entry per ref-aligned base inside the region; main thread paints
   // overlay rects on top of the GPU-rendered read body.
   perBaseQualPositions: Uint32Array // absolute genomic uint32
-  perBaseQualYs: Uint16Array // pileup row, filled by main-thread layout
   perBaseQualScores: Uint8Array // raw 0-255 quality score
   perBaseQualReadIndices: Uint32Array // maps to parent read index
 
@@ -269,7 +261,6 @@ export interface PileupDataResult {
   // colorBy.type === 'perBaseLetter'. One entry per ref-aligned base; every
   // base is drawn in its nucleotide color via the shared mismatch pass.
   perBaseLetterPositions: Uint32Array // absolute genomic uint32
-  perBaseLetterYs: Uint16Array // pileup row, filled by main-thread layout
   perBaseLetterBases: Uint8Array // uppercase ASCII base code
   perBaseLetterReadIndices: Uint32Array // maps to parent read index
 
@@ -285,13 +276,6 @@ export interface PileupDataResult {
   sashimiStrands: Int8Array // dominant strand: +1 forward, -1 reverse, 0 unknown
   sashimiCounts: Uint32Array // supporting reads per junction, all strands
 
-  // Layout info
-  maxY: number
-
-  // Set by main-thread layout when the pileup stack was clipped at the
-  // configured maxHeight (reads beyond the cap collapse to the bottom row).
-  truncated?: boolean
-
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]
 
@@ -305,45 +289,7 @@ export interface PileupDataResult {
   chainNames?: string[] // chain identity key: QNAME, or a unique synthetic key
   // for secondary alignments (see chainGroupingKey); for cross-region dedup
   chainHasMultiple?: Uint8Array // 1 if chain has ≥2 reads (draw connecting line)
-
-  // Connecting line data for chain modes (cloud/linkedRead).
-  // One line per chain, drawn at chain Y between min(start) and max(end).
-  // Populated by main-thread layout after chain layout is computed.
-  connectingLinePositions: Uint32Array // [start, end] absolute genomic uint32 pairs
-  connectingLineYs: Uint16Array // row for each line
-
-  // Chain-mode read overlaps: genomic intervals where two reads in the same
-  // chain (and thus the same row) overlap. Drawn as a mild semi-transparent
-  // dark tint so the overlapped span is visible despite the upper read painting
-  // over the lower one. Absolute genomic uint32 like all worker output; populated by
-  // main-thread layout (overlaps are per-region, so no cross-region pass).
-  overlapPositions: Uint32Array // [start, end] absolute genomic uint32 pairs
-  overlapYs: Uint16Array // shared chain row for each overlap
-
-  // Linked-read straight-line connections for `linkedReadBezier` mode. Sibling
-  // pass to `connectingLine*` because the bezier overlay's GPU pass differs:
-  // per-endpoint Y (mates can sit on different rows when `sortedBy` is in
-  // effect), and a per-line palette index instead of a hard-coded color.
-  // Cross-region pairs are excluded — those keep being drawn as SVG straight
-  // paths via PileupBezierOverlay (the GPU pass is one region per buffer).
-  // Absolute genomic uint32 like all worker output (per ARCHITECTURE.md
-  // coordinate convention).
-  linkedReadLinePositions: Uint32Array // [bp1, bp2] pairs
-  linkedReadLineYs: Uint16Array // [y1, y2] paired per line
-  linkedReadLineColorTypes: Uint8Array // see LINKED_READ_COLOR_* constants
-  numLinkedReadLines: number
-
-  // Flatbush R-tree over chain bounding boxes for spatial hit testing.
-  // Populated by main-thread layout after chain layout is computed.
-  // Stored as the live Flatbush instance (not an ArrayBuffer) — chain
-  // layout runs on the main thread, so there is no transfer boundary
-  // requiring serialization.
-  chainFlatbush?: Flatbush
-  chainFirstReadIndices?: Uint32Array // maps Flatbush item index → first read index
-
-  // Flatbush R-tree over modification points for spatial hit testing.
-  // Built by cloneWithLayout after Y assignment; Flatbush item index == modification index.
-  modFlatbush?: Flatbush
+  chainFirstReadIndices?: Uint32Array // maps chain index → its first read index
 
   // The short/normal/long |TLEN| thresholds for insert-size coloring: robust
   // median ± 3·1.4826·MAD over the fetch's primary proper pairs, pooled across
@@ -372,26 +318,121 @@ export interface PileupDataResult {
   readClipAtStart?: Uint32Array
 }
 
+// What main-thread layout adds (tier 2): a row per feature, and everything that
+// can only be derived once rows are placed. Every field here is a function of the
+// worker arrays AND the placement pass, so no producer of `WorkerPileupData` can
+// state one — which is the whole reason this is a separate interface rather than
+// eleven placeholders in the worker's return.
+//
+// `cloneWithLayout` is the one place that builds the set; `withoutLayout` is the
+// zero-row answer for data no placement ran on (an empty region, a lane drawing
+// only its coverage band).
+export interface PileupLayoutArrays {
+  readYs: Uint16Array // pileup row (0-65535 sufficient)
+  gapYs: Uint16Array
+  mismatchYs: Uint16Array
+  softclipBaseYs: Uint16Array
+  interbaseYs: Uint16Array
+  modificationYs: Uint16Array
+  perBaseQualYs: Uint16Array
+  perBaseLetterYs: Uint16Array
+
+  // Rows this region's stack occupies. Shared across the regions laid out
+  // together, so it is the group's height, not this region's.
+  maxY: number
+
+  // Set when the row cap clipped the stack (reads beyond it collapse onto the
+  // bottom row). `groupClippedBy` says which cap, and only one of the two offers
+  // an expand.
+  truncated?: boolean
+
+  // Connecting line data for chain modes (cloud/linkedRead).
+  // One line per chain, drawn at chain Y between min(start) and max(end).
+  connectingLinePositions: Uint32Array // [start, end] absolute genomic uint32 pairs
+  connectingLineYs: Uint16Array // row for each line
+
+  // Chain-mode read overlaps: genomic intervals where two reads in the same
+  // chain (and thus the same row) overlap. Drawn as a mild semi-transparent
+  // dark tint so the overlapped span is visible despite the upper read painting
+  // over the lower one. Absolute genomic uint32 like all worker output; per
+  // region, so no cross-region pass.
+  overlapPositions: Uint32Array // [start, end] absolute genomic uint32 pairs
+  overlapYs: Uint16Array // shared chain row for each overlap
+
+  // Linked-read straight-line connections. Sibling pass to `connectingLine*`
+  // because the bezier overlay's GPU pass differs: per-endpoint Y (mates can sit
+  // on different rows when `sortedBy` is in effect), and a per-line palette index
+  // instead of a hard-coded color. Cross-region pairs are excluded — those keep
+  // being drawn as SVG straight paths via PileupBezierOverlay (the GPU pass is
+  // one region per buffer). Absolute genomic uint32 like all worker output (per
+  // ARCHITECTURE.md coordinate convention).
+  linkedReadLinePositions: Uint32Array // [bp1, bp2] pairs
+  linkedReadLineYs: Uint16Array // [y1, y2] paired per line
+  linkedReadLineColorTypes: Uint8Array // see LINKED_READ_COLOR_* constants
+  numLinkedReadLines: number
+
+  // Flatbush R-tree over chain bounding boxes for spatial hit testing. Stored as
+  // the live Flatbush instance (not an ArrayBuffer) — chain layout runs on the
+  // main thread, so there is no transfer boundary requiring serialization.
+  chainFlatbush?: Flatbush
+
+  // Flatbush R-tree over modification points for spatial hit testing. Flatbush
+  // item index == modification index.
+  modFlatbush?: Flatbush
+}
+
+// Rows placed, colors not yet baked. Only the layout pipeline names this: it is
+// the input `applyReadColorsByGroup` takes and nothing else reads, so a consumer
+// asking for `PileupDataResult` cannot be handed a half-baked one.
+export interface LaidOutPileupData
+  extends WorkerPileupData, PileupLayoutArrays {}
+
+// Tag colors, packed ABGR u32 per read (0 = no tag color). Baked on the main
+// thread by `overlayReadTagColors` from `readTagValues`, so no color table
+// crosses the worker boundary — the discover→assign→refetch loop that made
+// `colorTagMap` a tier-1 trap is structurally impossible. Empty under the schemes
+// that bake no per-read color, which leaves the shader on its palette fallback.
+export interface TagColoredPileupData extends LaidOutPileupData {
+  readTagColors: Uint32Array
+}
+
+// The whole tiered value: worker arrays + layout + both color bakes. What every
+// renderer, hit test and overlay reads.
+//
+// `readColorCategories` is one RC_* index per read (read.slang), baked by
+// `overlayReadColorCategories` — which takes `TagColoredPileupData` because the
+// `noTagValue` bucket is decided from the baked `readTagColors`. That ordering
+// used to be a comment; it is now the signature.
+export interface PileupDataResult extends TagColoredPileupData {
+  readColorCategories: Uint8Array
+}
+
 // The chain-only fields are emitted as a group by `buildChainResultFields`
 // (chain mode) and entirely absent in pileup mode — they always co-vary. A
 // single guard narrows the whole set, so consumers never have to re-assert
 // that the siblings of the field they checked are also present.
-export type ChainPileupData = PileupDataResult &
-  Required<
-    Pick<
-      PileupDataResult,
-      | 'readChainIndices'
-      | 'readChainHasSupp'
-      | 'chainAbsMinStarts'
-      | 'chainAbsMaxEnds'
-      | 'chainDistances'
-      | 'chainNames'
-      | 'chainHasMultiple'
-      | 'chainFirstReadIndices'
-    >
+export type ChainFields = Required<
+  Pick<
+    WorkerPileupData,
+    | 'readChainIndices'
+    | 'readChainHasSupp'
+    | 'chainAbsMinStarts'
+    | 'chainAbsMaxEnds'
+    | 'chainDistances'
+    | 'chainNames'
+    | 'chainHasMultiple'
+    | 'chainFirstReadIndices'
   >
+>
 
-export function isChainData(data: PileupDataResult): data is ChainPileupData {
+export type ChainPileupData = WorkerPileupData & ChainFields
+
+// Generic in the input so the guard keeps whichever tier it was handed: narrowing
+// a laid-out result must not lose its rows, and a plain `data is ChainPileupData`
+// would have widened one back to the worker's set.
+export function isChainData<T extends WorkerPileupData>(
+  data: T,
+): data is T & ChainFields {
   return data.readChainIndices !== undefined
 }
 
@@ -401,7 +442,7 @@ export function isChainData(data: PileupDataResult): data is ChainPileupData {
 export interface AlignmentGroup {
   key: string
   label: string
-  data: PileupDataResult
+  data: WorkerPileupData
 }
 
 // The RenderAlignmentData RPC return. Always at least one group.

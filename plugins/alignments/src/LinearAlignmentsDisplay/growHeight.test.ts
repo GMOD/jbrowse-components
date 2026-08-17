@@ -55,7 +55,6 @@ function createEnvWithPileup(depth: number) {
           readKeys: Array.from({ length: depth }, (_, i) => `r${i}`),
           ...namesToBlock(Array.from({ length: depth }, (_, i) => `r${i}`)),
           readPositions,
-          readYs: new Uint16Array(depth),
           readFlags: new Uint16Array(depth),
           readMapqs: new Uint8Array(depth),
           readStrands: new Int8Array(depth),

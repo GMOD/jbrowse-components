@@ -5,16 +5,17 @@ import {
 
 import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
+import { withoutLayout } from './sortLayout.ts'
 
-import type { PileupDataResult } from './types.ts'
+import type { PileupDataResult, WorkerPileupData } from './types.ts'
 
 /**
- * A `PileupDataResult` satisfying the whole contract: every REQUIRED field
+ * A `WorkerPileupData` satisfying the whole contract: every REQUIRED field
  * present, per-read arrays sized to `numReads`, everything else empty. Spread it
  * as the base of a fixture and override the handful of fields the test is about.
  *
- * It exists so a fixture never needs `as unknown as PileupDataResult`, and that
- * cast is the point. The DTO has 103 required fields, so no test sets them all,
+ * It exists so a fixture never needs `as unknown as WorkerPileupData`, and that
+ * cast is the point. The DTO has ~80 required fields, so no test sets them all,
  * and the cast let a fixture omit one silently — which stayed harmless exactly
  * until production code started reading it. `readInterchrom` is the worked
  * example: the connection classifier began reading it, and two fixtures that had
@@ -27,7 +28,7 @@ import type { PileupDataResult } from './types.ts'
  * tests onto the other branch. A fixture that wants chain mode says so.
  *
  * Lives beside the type rather than in a test-utils bucket: adding a required
- * field to `PileupDataResult` is what makes this file wrong, and this is where
+ * field to `WorkerPileupData` is what makes this file wrong, and this is where
  * whoever adds it will be looking.
  */
 /**
@@ -54,11 +55,28 @@ export function makePileupDataResult(
   return { ...basePileupDataResult(n), ...overrides }
 }
 
+/**
+ * The same fixture carried through both main-thread tiers: rows placed at 0 by
+ * `withoutLayout` — the production zero-row layout, so the fixture cannot state a
+ * layout the layout pass wouldn't — and the two color arrays empty, which is what
+ * the bakes leave under a scheme that colors no read.
+ *
+ * Most fixtures want this one: it is what a renderer, hit test or overlay reads.
+ * A test about the worker's own output, or about a layout pass's input, takes
+ * `baseWorkerPileupData`.
+ */
 export function basePileupDataResult(numReads: number): PileupDataResult {
+  return {
+    ...withoutLayout(baseWorkerPileupData(numReads)),
+    readTagColors: new Uint32Array(0),
+    readColorCategories: new Uint8Array(0),
+  }
+}
+
+export function baseWorkerPileupData(numReads: number): WorkerPileupData {
   const n = numReads
   return {
     readPositions: new Uint32Array(n * 2),
-    readYs: new Uint16Array(n),
     readFlags: new Uint16Array(n),
     readMapqs: new Uint8Array(n),
     readInsertSizes: new Float32Array(n),
@@ -79,30 +97,24 @@ export function basePileupDataResult(numReads: number): PileupDataResult {
     // interchromosomal reads sets `readNextRefIds` and `nextRefNames` together.
     readNextRefIds: new Int32Array(n).fill(-1),
     nextRefNames: [],
-    readTagColors: new Uint32Array(0),
-    readColorCategories: new Uint8Array(0),
     segmentPositions: new Uint32Array(n * 2),
     segmentReadIndices: new Uint32Array(n),
     segmentEdgeFlags: new Uint8Array(n),
     numSegments: n,
     gapPositions: new Uint32Array(0),
-    gapYs: new Uint16Array(0),
     gapTypes: new Uint8Array(0),
     gapReadIndices: new Uint32Array(0),
     gapFrequencies: new Uint8Array(0),
     mismatchPositions: new Uint32Array(0),
-    mismatchYs: new Uint16Array(0),
     mismatchBases: new Uint8Array(0),
     mismatchStrands: new Int8Array(0),
     mismatchReadIndices: new Uint32Array(0),
     mismatchFrequencies: new Uint8Array(0),
     mismatchQuals: new Uint8Array(0),
     softclipBasePositions: new Uint32Array(0),
-    softclipBaseYs: new Uint16Array(0),
     softclipBaseBases: new Uint8Array(0),
     softclipBaseReadIndices: new Uint32Array(0),
     interbasePositions: new Uint32Array(0),
-    interbaseYs: new Uint16Array(0),
     interbaseLengths: new Uint32Array(0),
     interbaseTypes: new Uint8Array(0),
     interbaseReadIndices: new Uint32Array(0),
@@ -126,16 +138,13 @@ export function basePileupDataResult(numReads: number): PileupDataResult {
     interbasePackedBuffer: new ArrayBuffer(0),
     indicatorPackedBuffer: new ArrayBuffer(0),
     modificationPositions: new Uint32Array(0),
-    modificationYs: new Uint16Array(0),
     modificationColors: new Uint32Array(0),
     modificationReadIndices: new Uint32Array(0),
     ...emptyModTooltipIndex(),
     perBaseQualPositions: new Uint32Array(0),
-    perBaseQualYs: new Uint16Array(0),
     perBaseQualScores: new Uint8Array(0),
     perBaseQualReadIndices: new Uint32Array(0),
     perBaseLetterPositions: new Uint32Array(0),
-    perBaseLetterYs: new Uint16Array(0),
     perBaseLetterBases: new Uint8Array(0),
     perBaseLetterReadIndices: new Uint32Array(0),
     modCovPackedBuffer: new ArrayBuffer(0),
@@ -143,19 +152,10 @@ export function basePileupDataResult(numReads: number): PileupDataResult {
     sashimiX2: new Uint32Array(0),
     sashimiStrands: new Int8Array(0),
     sashimiCounts: new Uint32Array(0),
-    maxY: 0,
     numInsertions: 0,
     numSoftclips: 0,
     numHardclips: 0,
     detectedModifications: [],
-    connectingLinePositions: new Uint32Array(0),
-    connectingLineYs: new Uint16Array(0),
-    overlapPositions: new Uint32Array(0),
-    overlapYs: new Uint16Array(0),
-    linkedReadLinePositions: new Uint32Array(0),
-    linkedReadLineYs: new Uint16Array(0),
-    linkedReadLineColorTypes: new Uint8Array(0),
-    numLinkedReadLines: 0,
   }
 }
 

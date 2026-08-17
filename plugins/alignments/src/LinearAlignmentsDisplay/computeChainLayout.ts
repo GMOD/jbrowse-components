@@ -5,6 +5,7 @@ import {
   extendRefNameSpan,
   placeRectCapped,
   refNameAxisShift,
+  withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
@@ -18,7 +19,8 @@ import type {
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type {
   ChainPileupData,
-  PileupDataResult,
+  LaidOutPileupData,
+  WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
 import type { Span } from './spanOverlaps.ts'
 
@@ -84,7 +86,7 @@ interface MergedChain {
 // ungrouped iteration would fold that refName twice, each time with a partial
 // span. Few groups (one per refName in view), so this is cheap.
 function chainEntriesByRefName(
-  entries: [number, PileupDataResult][],
+  entries: [number, WorkerPileupData][],
   refNameOf: (idx: number) => string | undefined,
 ) {
   const byRef = new Map<string | undefined, ChainPileupData[]>()
@@ -115,7 +117,7 @@ function chainEntriesByRefName(
 // single-refName views, so the common case is untouched. `distance` is a span,
 // not a coordinate, so it never shifts.
 function mergeChains(
-  entries: [number, PileupDataResult][],
+  entries: [number, WorkerPileupData][],
   regions: ReadonlyMap<number, RegionBounds> | undefined,
 ) {
   const refNameOf = (idx: number) => regions?.get(idx)?.refName
@@ -220,7 +222,7 @@ function mergeChains(
 }
 
 export function readYsFromRowMap(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   rowMap: Map<string, number>,
 ) {
   const numReads = data.readKeys.length
@@ -241,7 +243,7 @@ export function readYsFromRowMap(
  * pack first.
  */
 export function computeChainLayout(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   maxRows = Number.POSITIVE_INFINITY,
 ) {
   const chains = mergeChains([[0, data]], undefined)
@@ -257,7 +259,7 @@ export function computeChainLayout(
  * axis (`regions`, omitted only by single-region callers/tests).
  */
 export function computeMultiRegionChainLayout(
-  entries: [number, PileupDataResult][],
+  entries: [number, WorkerPileupData][],
   regions?: ReadonlyMap<number, RegionBounds>,
   maxRows = Number.POSITIVE_INFINITY,
 ) {
@@ -275,7 +277,7 @@ export function chainLayoutMaxY({
   regions,
   maxRows = Number.POSITIVE_INFINITY,
 }: {
-  dataMap: ReadonlyMap<number, PileupDataResult>
+  dataMap: ReadonlyMap<number, WorkerPileupData>
   regions?: ReadonlyMap<number, RegionBounds>
   maxRows?: number
 }) {
@@ -312,9 +314,9 @@ function groupMultiReadChains(
 // on top of each other and the overlap is invisible. For each chain, find the
 // intervals where its reads overlap; the tint overlay (GPU + Canvas2D)
 // marks them. Reads are grouped per-region because rendering is per-region; a
-// chain's mates in other regions live in their own PileupDataResult and never
+// chain's mates in other regions live in their own WorkerPileupData and never
 // visually overlap these.
-function buildChainOverlaps(data: PileupDataResult, readYs: Uint16Array) {
+function buildChainOverlaps(data: WorkerPileupData, readYs: Uint16Array) {
   if (!isChainData(data)) {
     return emptyOverlapsUploadData()
   }
@@ -374,7 +376,7 @@ function buildChainOverlaps(data: PileupDataResult, readYs: Uint16Array) {
  * index and draws that case instead (`bezierArcScope`, `crossRegion`).
  */
 export function buildChainConnectingData(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   readYs: Uint16Array,
 ) {
   if (!isChainData(data)) {
@@ -429,11 +431,11 @@ export function buildChainConnectingData(
 
 // Pileup clone + chain connecting-line / Flatbush data layered on top.
 function cloneWithChainLayout(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   readYs: Uint16Array,
   maxY: number,
   truncated: boolean,
-): PileupDataResult {
+): LaidOutPileupData {
   return {
     ...cloneWithLayout(data, readYs, maxY, truncated),
     ...buildChainConnectingData(data, readYs),
@@ -445,13 +447,13 @@ function cloneWithChainLayout(
 // readName across regions to classify pairs, so this runs as a post-pass over
 // the whole map. Driven by `showBezierConnections`, orthogonal to layout.
 export function attachLinkedReadLines(
-  laidOutMap: Map<number, PileupDataResult>,
-): Map<number, PileupDataResult> {
+  laidOutMap: Map<number, LaidOutPileupData>,
+): Map<number, LaidOutPileupData> {
   const linesByIdx = computeLinkedReadLinesByRegion(laidOutMap)
   if (linesByIdx.size === 0) {
     return laidOutMap
   }
-  const out = new Map<number, PileupDataResult>()
+  const out = new Map<number, LaidOutPileupData>()
   for (const [idx, data] of laidOutMap) {
     const lines = linesByIdx.get(idx)
     if (!lines) {
@@ -475,15 +477,15 @@ export function buildLaidOutChainMap({
   regions,
   maxRows = Number.POSITIVE_INFINITY,
 }: {
-  dataMap: ReadonlyMap<number, PileupDataResult>
+  dataMap: ReadonlyMap<number, WorkerPileupData>
   regions?: ReadonlyMap<number, RegionBounds>
   maxRows?: number
-}): Map<number, PileupDataResult> {
-  const out = new Map<number, PileupDataResult>()
-  const withReads: [number, PileupDataResult][] = []
+}): Map<number, LaidOutPileupData> {
+  const out = new Map<number, LaidOutPileupData>()
+  const withReads: [number, WorkerPileupData][] = []
   for (const [k, v] of dataMap) {
     if (v.readKeys.length === 0) {
-      out.set(k, v)
+      out.set(k, withoutLayout(v))
     } else {
       withReads.push([k, v])
     }

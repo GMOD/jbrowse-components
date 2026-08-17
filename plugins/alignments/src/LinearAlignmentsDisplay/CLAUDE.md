@@ -12,6 +12,11 @@ rebakes read colors, `arcsByGroup` rebuilds arcs, `renderState` repaints. Tiers
 2-5 are auto-wired by MobX; **tier 1 is manual**, the worker boundary defeating
 tracking.
 
+The first three tiers are also three TYPES — `WorkerPileupData` →
+`LaidOutPileupData` → `PileupDataResult` — so a pass that reads a row cannot be
+handed unlaid data and the worker cannot state a field it has no answer for
+(RenderAlignmentDataRPC/CLAUDE.md §"One value, three types").
+
 - **Never put a fetch-result derivative in `rpcProps()`** — infinite loop.
   `colorTagMap` is the canonical trap.
 - **A color input in `groupLayoutContext` costs a full relayout** and loses the

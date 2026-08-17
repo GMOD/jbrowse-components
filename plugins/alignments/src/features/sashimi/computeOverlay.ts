@@ -8,7 +8,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import { mergeJunctions } from './junctions.ts'
 
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { SashimiSide } from './junctions.ts'
 
 // Single source of truth for sashimi arc geometry, color, and stroke width.
@@ -37,7 +37,7 @@ export interface SashimiArc {
 }
 
 export interface ComputeSashimiArcsOpts {
-  rpcDataMap: ReadonlyMap<number, PileupDataResult>
+  rpcDataMap: ReadonlyMap<number, WorkerPileupData>
   visibleRegions: {
     refName: string
     displayedRegionIndex: number

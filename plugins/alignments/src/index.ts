@@ -97,7 +97,10 @@ export type {
   SashimiArcsMode,
 } from './LinearAlignmentsDisplay/constants.ts'
 export type { GroupId } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
-export type { LaidOutByGroup } from './LinearAlignmentsDisplay/groupLayout.ts'
+export type {
+  ColoredByGroup,
+  LaidOutByGroup,
+} from './LinearAlignmentsDisplay/groupLayout.ts'
 export type {
   AlignmentsRenderingBackend,
   SectionRender,
@@ -106,7 +109,9 @@ export type { SectionsLayout } from './LinearAlignmentsDisplay/sectionLayout.ts'
 export type { ColorPalette } from './shaders/colors.ts'
 export type {
   GroupedAlignmentsResult,
+  LaidOutPileupData,
   PileupDataResult,
+  WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
 export type { CigarHitResult, ResolvedBlock } from './shared/hitTestTypes.ts'
 export type {

@@ -21,7 +21,7 @@ import { readNameAt } from '../../shared/readNameBlock.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type {
   ArcChainContext,
@@ -53,7 +53,7 @@ import type {
 // twin's: a PAF/synteny block carries no QNAME, and one '' bucket made every
 // block in view a segment of one enormous read.
 export function groupReadsByName(
-  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+  rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   regions: RegionInfo[],
 ) {
   const readsByName = new Map<string, ReadEntry[]>()
@@ -77,7 +77,7 @@ export function groupReadsByName(
 }
 
 export function computePairingInfo(
-  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+  rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
 ) {
   let hasPaired = false
   let stats: InsertSizeBand | undefined
@@ -215,7 +215,7 @@ export function unpairedReadChain(
  * rearrangement.
  */
 export function computeReadChains(
-  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+  rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   regions: RegionInfo[],
   canonicalRefName: CanonicalRefName = refName => refName,
 ): SegAln[][] {

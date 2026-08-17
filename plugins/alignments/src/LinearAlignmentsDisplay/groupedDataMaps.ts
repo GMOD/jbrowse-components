@@ -8,7 +8,7 @@ import { getOrCreate } from '../shared/util.ts'
 
 import type {
   GroupedAlignmentsResult,
-  PileupDataResult,
+  WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { RegionJunctions } from '../features/sashimi/junctions.ts'
 import type { SashimiArcsMode } from './constants.ts'
@@ -214,13 +214,18 @@ export function buildReadIdsByChainName(
 export function buildRawDataByGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden?: ReadonlySet<string>,
-): Map<string, Map<number, PileupDataResult>> {
-  const out = new Map<string, Map<number, PileupDataResult>>()
+): Map<string, Map<number, WorkerPileupData>> {
+  const out = new Map<string, Map<number, WorkerPileupData>>()
   for (const { displayedRegionIndex, key, data } of eachGroup(
     rpcDataMap,
     hidden,
   )) {
-    getOrCreate(out, key, () => new Map()).set(displayedRegionIndex, data)
+    // Spelled out rather than `new Map()`, whose `Map<any, any>` would infer
+    // through `getOrCreate` and turn every `.set` below into an unchecked write.
+    getOrCreate(out, key, () => new Map<number, WorkerPileupData>()).set(
+      displayedRegionIndex,
+      data,
+    )
   }
   return out
 }

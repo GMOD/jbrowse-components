@@ -17,13 +17,13 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
-import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
+import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { RenderState } from './renderers/rendererTypes.ts'
@@ -140,104 +140,15 @@ export function makeTestRenderState(
   }
 }
 
-// A full PileupDataResult with every array empty — the shape a fetch returns for
-// a region with no reads. Tests that only care about a few fields spread this
-// and override them, so seeding `setRpcData` exercises the real layout getters
-// instead of throwing on a missing array. Like `makeTestPalette`, it stays an
-// explicit literal (no cast) so it fails to compile when the result type grows.
-export function makeEmptyPileupData(): PileupDataResult {
-  return {
-    readPositions: new Uint32Array(0),
-    readYs: new Uint16Array(0),
-    readFlags: new Uint16Array(0),
-    readMapqs: new Uint8Array(0),
-    readInsertSizes: new Float32Array(0),
-    readPairOrientations: new Uint8Array(0),
-    readStrands: new Int8Array(0),
-    readInterchrom: new Uint8Array(0),
-    readKeys: [],
-    readIdPrefix: undefined,
-    ...namesToBlock([]),
-    readNextRefIds: new Int32Array(0),
-    nextRefNames: [],
-    segmentPositions: new Uint32Array(0),
-    segmentReadIndices: new Uint32Array(0),
-    segmentEdgeFlags: new Uint8Array(0),
-    numSegments: 0,
-    gapPositions: new Uint32Array(0),
-    gapYs: new Uint16Array(0),
-    gapTypes: new Uint8Array(0),
-    gapReadIndices: new Uint32Array(0),
-    gapFrequencies: new Uint8Array(0),
-    mismatchPositions: new Uint32Array(0),
-    mismatchYs: new Uint16Array(0),
-    mismatchBases: new Uint8Array(0),
-    mismatchStrands: new Int8Array(0),
-    mismatchReadIndices: new Uint32Array(0),
-    mismatchFrequencies: new Uint8Array(0),
-    mismatchQuals: new Uint8Array(0),
-    softclipBasePositions: new Uint32Array(0),
-    softclipBaseYs: new Uint16Array(0),
-    softclipBaseBases: new Uint8Array(0),
-    softclipBaseReadIndices: new Uint32Array(0),
-    interbasePositions: new Uint32Array(0),
-    interbaseYs: new Uint16Array(0),
-    interbaseLengths: new Uint32Array(0),
-    interbaseTypes: new Uint8Array(0),
-    interbaseReadIndices: new Uint32Array(0),
-    interbaseSequences: [],
-    interbaseFrequencies: new Uint8Array(0),
-    coverageDepths: new Float32Array(0),
-    coverageFwdDepths: new Float32Array(0),
-    coverageRevDepths: new Float32Array(0),
-    coverageMaxDepth: 0,
-    coverageStartPos: 0,
-    coverageStatsBinSize: 1,
-    coverageStatsMins: new Float32Array(0),
-    coverageStatsMaxs: new Float32Array(0),
-    coverageStatsSums: new Float64Array(0),
-    coverageStatsSumSqs: new Float64Array(0),
-    coverageBinSize: 1,
-    coverageGpuBinCount: 0,
-    coveragePackedBuffer: new ArrayBuffer(0),
-    snpPackedBuffer: new ArrayBuffer(0),
-    interbaseMaxCount: 0,
-    interbasePackedBuffer: new ArrayBuffer(0),
-    indicatorPackedBuffer: new ArrayBuffer(0),
-    readTagColors: new Uint32Array(0),
-    readColorCategories: new Uint8Array(0),
-    modificationPositions: new Uint32Array(0),
-    modificationYs: new Uint16Array(0),
-    modificationColors: new Uint32Array(0),
-    modificationReadIndices: new Uint32Array(0),
-    ...emptyModTooltipIndex(),
-    perBaseQualPositions: new Uint32Array(0),
-    perBaseQualYs: new Uint16Array(0),
-    perBaseQualScores: new Uint8Array(0),
-    perBaseQualReadIndices: new Uint32Array(0),
-    perBaseLetterPositions: new Uint32Array(0),
-    perBaseLetterYs: new Uint16Array(0),
-    perBaseLetterBases: new Uint8Array(0),
-    perBaseLetterReadIndices: new Uint32Array(0),
-    modCovPackedBuffer: new ArrayBuffer(0),
-    sashimiX1: new Uint32Array(0),
-    sashimiX2: new Uint32Array(0),
-    sashimiStrands: new Int8Array(0),
-    sashimiCounts: new Uint32Array(0),
-    maxY: 0,
-    numInsertions: 0,
-    numSoftclips: 0,
-    numHardclips: 0,
-    detectedModifications: [],
-    connectingLinePositions: new Uint32Array(0),
-    connectingLineYs: new Uint16Array(0),
-    overlapPositions: new Uint32Array(0),
-    overlapYs: new Uint16Array(0),
-    linkedReadLinePositions: new Uint32Array(0),
-    linkedReadLineYs: new Uint16Array(0),
-    linkedReadLineColorTypes: new Uint8Array(0),
-    numLinkedReadLines: 0,
-  }
+// The shape a fetch returns for a region with no reads. Tests that only care
+// about a few fields spread this and override them, so seeding `setRpcData`
+// exercises the real layout getters instead of throwing on a missing array.
+//
+// `baseWorkerPileupData` rather than a second empty literal of its own: adding a
+// required field to the worker's payload should break in one place, and that
+// place is next to the type.
+export function makeEmptyPileupData(): WorkerPileupData {
+  return baseWorkerPileupData(0)
 }
 
 /**
@@ -270,7 +181,7 @@ export interface SamRecordFixture {
  */
 export function pileupDataFromSamRecords(
   records: SamRecordFixture[],
-): PileupDataResult {
+): WorkerPileupData {
   const n = records.length
   const readPositions = new Uint32Array(n * 2)
   const readFlags = new Uint16Array(n)
@@ -696,13 +607,12 @@ export function applyView(
  * is what `computeArcsFromPileupData` turns into an arc; without it the lane has
  * reads but no arc — the 'Not split' lane of a split-read grouping.
  */
-export function oneReadWithMate(mateBp?: number): PileupDataResult {
+export function oneReadWithMate(mateBp?: number): WorkerPileupData {
   return {
     ...makeEmptyPileupData(),
     readKeys: ['r0'],
     ...namesToBlock(['readA']),
     readPositions: new Uint32Array([1000, 1100]),
-    readYs: new Uint16Array(1),
     readFlags: new Uint16Array([mateBp === undefined ? 0 : SAM_FLAG_PAIRED]),
     readMapqs: new Uint8Array(1),
     readStrands: new Int8Array([1]),
@@ -737,7 +647,7 @@ export function oneReadWithInterchromMate({
   mateBp: number
   strand?: number
   mateReverse?: boolean
-}): PileupDataResult {
+}): WorkerPileupData {
   return {
     ...oneReadWithMate(mateBp),
     readStrands: new Int8Array([strand]),

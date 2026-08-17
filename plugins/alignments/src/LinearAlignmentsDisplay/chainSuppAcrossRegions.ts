@@ -8,7 +8,7 @@ import {
 } from '../shared/types.ts'
 import { getOrCreate } from '../shared/util.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 
 /**
  * Re-answer each chain's supplementary marker (`readChainHasSupp`) from every
@@ -42,9 +42,11 @@ import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
  * A no-op for the single-region case (returns the input map untouched), which is
  * almost every view.
  */
-export function reconcileChainSuppAcrossRegions(
-  map: Map<number, PileupDataResult>,
-): Map<number, PileupDataResult> {
+// Generic in the entry type: it rewrites one worker field and passes everything
+// else through, so it must not decide which tier its caller is holding.
+export function reconcileChainSuppAcrossRegions<T extends WorkerPileupData>(
+  map: Map<number, T>,
+): Map<number, T> {
   if (map.size < 2) {
     return map
   }
@@ -76,7 +78,7 @@ export function reconcileChainSuppAcrossRegions(
     return map
   }
 
-  const out = new Map<number, PileupDataResult>()
+  const out = new Map<number, T>()
   for (const [idx, data] of map) {
     if (!isChainData(data)) {
       out.set(idx, data)

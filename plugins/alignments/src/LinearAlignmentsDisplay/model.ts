@@ -136,6 +136,7 @@ import {
 import type {
   GroupedAlignmentsResult,
   PileupDataResult,
+  WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
@@ -1244,7 +1245,7 @@ export default function stateModelFactory(
           const covBlocks: {
             start: number
             end: number
-            cov: PileupDataResult
+            cov: WorkerPileupData
           }[] = []
           for (const b of view.coarseDynamicBlocks) {
             const grouped =
@@ -2448,7 +2449,7 @@ export default function stateModelFactory(
             return []
           }
           const byGroup = self.rawDataByGroup
-          const empty = new Map<number, PileupDataResult>()
+          const empty = new Map<number, WorkerPileupData>()
           const noDownKeys: ReadonlySet<string> = new Set()
           const downKeys = self.sashimiDownKeysByGroup
           const bpToScreenX = makeBpToScreenX(view)
@@ -2723,7 +2724,7 @@ export default function stateModelFactory(
          * read isn't part of a chain. Shared by hover-highlight and click-select
          * so the two paths can't drift.
          */
-        readIdsSharingChain(rpcData: PileupDataResult, index: number) {
+        readIdsSharingChain(rpcData: WorkerPileupData, index: number) {
           const { readChainIndices, chainNames } = rpcData
           const chainIdx = readChainIndices?.[index]
           const name =

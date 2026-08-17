@@ -1,7 +1,13 @@
-import { cloneWithLayout } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import {
+  cloneWithLayout,
+  withoutLayout,
+} from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { overlapIntervals } from './spanOverlaps.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type {
+  LaidOutPileupData,
+  WorkerPileupData,
+} from '../RenderAlignmentDataRPC/types.ts'
 import type { Span } from './spanOverlaps.ts'
 
 // Lay a group out as a single row: every feature sits on row 0 and paints over
@@ -23,7 +29,7 @@ import type { Span } from './spanOverlaps.ts'
 // by the map builder and the count-only fit-height pass so the two can't
 // disagree on a group's height.
 export function collapsedLayoutMaxY(
-  dataMap: ReadonlyMap<number, PileupDataResult>,
+  dataMap: ReadonlyMap<number, WorkerPileupData>,
 ) {
   for (const data of dataMap.values()) {
     if (data.readKeys.length > 0) {
@@ -42,7 +48,7 @@ export function collapsedLayoutMaxY(
 function readSpans({
   segmentPositions,
   numSegments,
-}: PileupDataResult): Span[] {
+}: WorkerPileupData): Span[] {
   return Array.from({ length: numSegments }, (_, i) => ({
     start: segmentPositions[i * 2]!,
     end: segmentPositions[i * 2 + 1]!,
@@ -52,7 +58,7 @@ function readSpans({
 // The tint instances for one region: one per (depth - 1) at each position, all
 // on row 0. Packed straight into the `overlap*` arrays the existing chain-mode
 // tint pass already renders on both backends.
-function collapsedOverlaps(data: PileupDataResult) {
+function collapsedOverlaps(data: WorkerPileupData) {
   const overlaps = overlapIntervals(readSpans(data))
   const overlapPositions = new Uint32Array(overlaps.length * 2)
   for (const [i, { start, end }] of overlaps.entries()) {
@@ -63,13 +69,13 @@ function collapsedOverlaps(data: PileupDataResult) {
 }
 
 export function buildCollapsedPileupMap(
-  dataMap: ReadonlyMap<number, PileupDataResult>,
-): Map<number, PileupDataResult> {
+  dataMap: ReadonlyMap<number, WorkerPileupData>,
+): Map<number, LaidOutPileupData> {
   const maxY = collapsedLayoutMaxY(dataMap)
-  const out = new Map<number, PileupDataResult>()
+  const out = new Map<number, LaidOutPileupData>()
   for (const [idx, data] of dataMap) {
     if (data.readKeys.length === 0) {
-      out.set(idx, data)
+      out.set(idx, withoutLayout(data))
     } else {
       const overlaps = collapsedOverlaps(data)
       out.set(idx, {

@@ -40,13 +40,39 @@ read likewise.
 - Chain numbering is **per worker call**, so anything unioning chains across
   calls keys by chain **name**, not chainIdx.
 
+## One value, three types, one per invalidation tier
+
+`WorkerPileupData` is what this RPC returns. `PileupLayoutArrays` is what
+main-thread layout adds, `readTagColors`/`readColorCategories` what the two
+color bakes add, and `PileupDataResult` is the whole of it — the value a
+renderer, hit test or overlay reads. The display's tier rule
+(LinearAlignmentsDisplay/CLAUDE.md §"Which getter decides what a setting
+invalidates") is therefore type-checked rather than remembered:
+
+- **The worker cannot ship a placeholder** for a row it doesn't know. It used to
+  ship eleven — a zero `maxY`, empty color arrays, three empty line/tint passes
+  — and each one was a field whose real producer lived elsewhere.
+- **`cloneWithLayout` returns a different type than it takes**, so a pass that
+  reads `readYs` cannot be handed raw data. `withoutLayout` is the zero-row
+  answer for the two cases that place nothing (an empty region, a lane collapsed
+  to its coverage band) — a real layout, not a gap.
+- **`overlayReadColorCategories` takes `TagColoredPileupData`**, which is how
+  the "tag colors first, the `noTagValue` bucket is read off them" ordering
+  stopped being a comment.
+
+A pass that only reads fetched arrays (arcs, sashimi, the coverage domain) says
+`WorkerPileupData` and can then be fed either. That direction is the safe one,
+so prefer the narrowest tier a function actually reads.
+
 ## A fixture builds on `testPileupData`, never `as unknown as`
 
-`PileupDataResult` has 103 required fields, so the cast looked free. It turns
+`WorkerPileupData` has ~80 required fields, so the cast looked free. It turns
 off excess-property checking, so a misspelled field is accepted in silence, and
 it lets a fixture omit a field production code later starts reading.
-`basePileupDataResult(n)` supplies the required set; `makePileupDataResult`
-sizes it from whichever per-read array you pass.
+`baseWorkerPileupData(n)` supplies the worker's required set and
+`basePileupDataResult(n)` carries it through both main-thread tiers with the
+production functions; `makePileupDataResult` sizes either from whichever
+per-read array you pass.
 
 The optional fields are left out **on purpose** — they are what `isChainData`
 narrows on, so a base that filled them would move tests to the other branch

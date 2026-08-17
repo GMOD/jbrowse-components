@@ -15,7 +15,7 @@ import {
 import { readNameAt } from '../../shared/readNameBlock.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 
 // Color type indices for linked-read connecting lines + bezier curves.
@@ -120,7 +120,7 @@ export function connectionMark(colorType: number): 'line' | 'curve' {
 export interface ReadEntry {
   displayedRegionIndex: number
   readIdx: number
-  data: PileupDataResult
+  data: LaidOutPileupData
 }
 
 // Normal LR pairs — and unknown orientations, which code 0 and are not worth
@@ -176,7 +176,7 @@ export function splitColorType(s1: number, s2: number) {
 // of fabricated junctions between features that share nothing. `chainGroupingKey`
 // gives the layout the same answer from the other side.
 export function groupReadsByName(
-  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+  laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
 ): Map<string, ReadEntry[]> {
   const readsByName = new Map<string, ReadEntry[]>()
   for (const [idx, data] of laidOutPileupMap) {
@@ -264,7 +264,7 @@ export interface LinkedPair {
 // and the bezier-curve emitter (computePileupBezierArcs) iterate this, so the
 // rules that define "a linked pair" live in one place.
 export function* iterLinkedPairs(
-  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+  laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
 ): Generator<LinkedPair> {
   for (const [, entries] of groupReadsByName(laidOutPileupMap)) {
     // Pure fast path, NOT a correctness gate — a singleton group yields no
@@ -286,14 +286,14 @@ export function* iterLinkedPairs(
 // mates are wholly contained in a single displayedRegion. Returns one map
 // entry per region that has at least one line, in the same
 // `LinkedReadLinesUploadData` shape the GPU/Canvas2D renderers consume so the
-// chain-layout post-pass can spread it straight onto `PileupDataResult` with no
+// chain-layout post-pass can spread it straight onto `LaidOutPileupData` with no
 // field renaming. Cross-region pairs are excluded — those keep flowing through
 // the SVG bezier overlay's straight fallback path.
 //
 // Output positions are absolute genomic uint32 (worker contract); per-endpoint
 // Y is needed because mates can sit on different rows when sorting is on.
 export function computeLinkedReadLinesByRegion(
-  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+  laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
 ): Map<number, LinkedReadLinesUploadData> {
   // Collect raw records first by region, then materialize typed arrays.
   const acc = new Map<

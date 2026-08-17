@@ -5,7 +5,10 @@ import {
   framesUnpairedChainStrand,
 } from './colorUtils.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type {
+  PileupDataResult,
+  TagColoredPileupData,
+} from '../RenderAlignmentDataRPC/types.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 
 // Bake one RC_* index per read (see colorUtils `buildReadColorCategories`).
@@ -32,7 +35,7 @@ import type { ReadColorOpts } from './colorUtils.ts'
 // each other. Gated on the framing actually being read, since it rewrites only
 // the field that framing consumes.
 export function overlayReadColorCategories(
-  map: Map<number, PileupDataResult>,
+  map: Map<number, TagColoredPileupData>,
   colorScheme: number,
   opts: ReadColorOpts,
 ): Map<number, PileupDataResult> {

@@ -1,6 +1,7 @@
 import {
   buildLaidOutPileupMap,
   pileupLayoutMaxY,
+  withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import {
   buildCollapsedPileupMap,
@@ -15,13 +16,23 @@ import { overlayReadColorCategories } from './readColorCategories.ts'
 import { overlayReadTagColors } from './readTagColors.ts'
 
 import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type {
+  LaidOutPileupData,
+  PileupDataResult,
+  PileupLayoutArrays,
+  WorkerPileupData,
+} from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy, SortedBy } from '../shared/types.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 import type { GroupId } from './groupedDataMaps.ts'
 
-// Per group key: region index → laid-out data (Y arrays filled).
-export type LaidOutByGroup = Map<string, Map<number, PileupDataResult>>
+// Per group key: region index → laid-out data (Y arrays filled), colors not yet
+// baked. `applyReadColorsByGroup` turns one of these into a `ColoredByGroup`,
+// which is what every consumer outside this file reads.
+export type LaidOutByGroup = Map<string, Map<number, LaidOutPileupData>>
+
+// The same shape with both color bakes applied — the fully-tiered value.
+export type ColoredByGroup = Map<string, Map<number, PileupDataResult>>
 
 /**
  * Every value `pick` yields across every laid-out region of every group.
@@ -41,7 +52,7 @@ export type LaidOutByGroup = Map<string, Map<number, PileupDataResult>>
  * sometimes ships needs no guard at the call site.
  */
 export function collectAcrossGroups<T>(
-  byGroup: LaidOutByGroup,
+  byGroup: ColoredByGroup,
   pick: (data: PileupDataResult) => Iterable<T> | undefined,
 ): Set<T> {
   const present = new Set<T>()
@@ -64,7 +75,7 @@ export function collectAcrossGroups<T>(
  * the first yes — which `collectAcrossGroups` cannot do.
  */
 export function someAcrossGroups(
-  byGroup: LaidOutByGroup,
+  byGroup: ColoredByGroup,
   pred: (data: PileupDataResult) => boolean,
 ): boolean {
   for (const map of byGroup.values()) {
@@ -95,7 +106,7 @@ export interface GroupLayoutContext {
   // Pre-grouped raw data (group key → region idx → data) from
   // `buildRawDataByGroup`; reused so the per-key region map is an O(1) lookup
   // instead of re-partitioning `rpcDataMap` with a nested `.find`.
-  rawByGroup: ReadonlyMap<string, Map<number, PileupDataResult>>
+  rawByGroup: ReadonlyMap<string, Map<number, WorkerPileupData>>
   isChainMode: boolean
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean
@@ -123,23 +134,23 @@ export interface GroupLayoutContext {
 // cap changed instead of rebuilding every group.
 //
 // `coverageOnly` is the label chip's chevron: that lane draws its coverage band
-// and no pileup at all, so there is no placement to do and the worker's own
-// zero-filled Y arrays are already the answer — `sections` reads its maxY as 0
-// (`groupMaxYFor`) whatever this returns. Handing the raw map straight back skips
-// both the packing pass and `cloneWithLayout`'s per-base Y arrays, which is the
-// dominant cost here and the one `layoutGroupRowCounts` exists to avoid; every
-// other consumer of a group's map reads fields layout doesn't touch
-// (`readPositions`, the color arrays) or asks for `maxY`.
+// and no pileup at all, so there is no placement to do and every row is 0 —
+// `sections` reads its maxY as 0 (`groupMaxYFor`) whatever this returns. The
+// zero-row layout is what skips the dominant cost, `cloneWithLayout`'s per-feature
+// `remapYs` gather and modification Flatbush (the same cost
+// `layoutGroupRowCounts` exists to avoid); every other consumer of a group's map
+// reads fields layout doesn't touch (`readPositions`, the color arrays) or asks
+// for `maxY`.
 function layoutOneGroup(
   ctx: GroupLayoutContext,
   key: string,
   cap: number,
   collapse = false,
   coverageOnly = false,
-): Map<number, PileupDataResult> {
-  const dataMap = ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
+): Map<number, LaidOutPileupData> {
+  const dataMap = ctx.rawByGroup.get(key) ?? new Map<number, WorkerPileupData>()
   if (coverageOnly) {
-    return new Map(dataMap)
+    return new Map([...dataMap].map(([idx, d]) => [idx, withoutLayout(d)]))
   }
   if (collapse) {
     return buildCollapsedPileupMap(dataMap)
@@ -186,8 +197,8 @@ export interface ReadColorContext {
 export function applyReadColorsByGroup(
   byGroup: LaidOutByGroup,
   ctx: ReadColorContext,
-): LaidOutByGroup {
-  const out: LaidOutByGroup = new Map()
+): ColoredByGroup {
+  const out: ColoredByGroup = new Map()
   for (const [key, map] of byGroup) {
     out.set(
       key,
@@ -261,7 +272,7 @@ export function layoutGroupRowCounts(
   const counts = new Map<string, number>()
   for (const { key } of ctx.order) {
     const dataMap =
-      ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
+      ctx.rawByGroup.get(key) ?? new Map<number, WorkerPileupData>()
     counts.set(
       key,
       // No per-group sizes here: this pass answers "how many rows would each
@@ -358,7 +369,7 @@ export function layoutGroupsToViewport(
         !collapsesRows(ctx, g.key, overrideCaps),
     )
     .map(({ key }) => {
-      const map = pass.get(key) ?? new Map<number, PileupDataResult>()
+      const map = pass.get(key) ?? new Map<number, LaidOutPileupData>()
       return {
         key,
         usedRows: groupMaxY(map),
@@ -465,7 +476,7 @@ export function reclaimFitRows({
 }
 
 // Max row count for a group's laid-out region map (sections stack by this).
-export function groupMaxY(map: Map<number, PileupDataResult>) {
+export function groupMaxY(map: ReadonlyMap<number, PileupLayoutArrays>) {
   let max = 0
   for (const data of map.values()) {
     if (data.maxY > max) {
@@ -478,7 +489,9 @@ export function groupMaxY(map: Map<number, PileupDataResult>) {
 // True when the row cap clipped any region of a group's laid-out map, i.e.
 // reads were collapsed to the overflow sentinel. Drives the per-group "show
 // all" affordance and the ungrouped truncation banner.
-export function anyRegionTruncated(map: Map<number, PileupDataResult>) {
+export function anyRegionTruncated(
+  map: ReadonlyMap<number, PileupLayoutArrays>,
+) {
   for (const data of map.values()) {
     if (data.truncated) {
       return true

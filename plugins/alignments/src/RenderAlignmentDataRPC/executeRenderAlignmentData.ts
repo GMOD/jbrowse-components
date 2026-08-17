@@ -58,7 +58,7 @@ import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKey } from '../shared/readIdentity.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
-import type { AlignmentGroup, PileupDataResult } from './types.ts'
+import type { AlignmentGroup, WorkerPileupData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
@@ -196,7 +196,7 @@ export function filterChainFeatures(
 function buildChainResultFields(
   features: ChainFeatureData[],
   readPairOrientations: Uint8Array,
-): Partial<PileupDataResult> {
+): Partial<WorkerPileupData> {
   const {
     chainAbsMinStarts,
     chainAbsMaxEnds,
@@ -289,7 +289,7 @@ async function buildGroupResult(
   // positions (the reference-free mod-coverage denominator).
   rawFeatures: Feature[],
   ctx: GroupContext,
-): Promise<PileupDataResult> {
+): Promise<WorkerPileupData> {
   const {
     features,
     gaps,
@@ -337,7 +337,7 @@ async function buildGroupResult(
   const nextRefs = buildReadNextRefs(rawFeatures)
 
   // `isChain` implies the chain builder ran, so `features` are ChainFeatureData.
-  const chainFields: Partial<PileupDataResult> = isChain
+  const chainFields: Partial<WorkerPileupData> = isChain
     ? buildChainResultFields(
         features as ChainFeatureData[],
         readArrays.readPairOrientations,
@@ -428,17 +428,13 @@ async function buildGroupResult(
     ...perBaseQualityArrays,
     ...perBaseLetterArrays,
 
-    // Worker leaves readTagColors empty; the main thread bakes it from
-    // readTagValues + colorTagMap (see overlayReadTagColors).
-    readTagColors: new Uint32Array(0),
-    // Also main-thread baked (overlayReadColorCategories), and necessarily
-    // after readTagColors — the `noTagValue` bucket is read off it.
-    readColorCategories: new Uint8Array(0),
+    // The raw per-read strings the main thread bakes `readTagColors` from
+    // (`overlayReadTagColors`), so no color table crosses this boundary. The
+    // baked arrays themselves are not this tier's to state — see
+    // `WorkerPileupData`.
     readTagValues: tagColorValues,
 
     ...buildCoverageResultFields(pipeline),
-
-    maxY: 0,
 
     detectedModifications: Array.from(detectedModifications),
 
@@ -451,17 +447,6 @@ async function buildGroupResult(
     insertSizeStats,
 
     ...chainFields,
-
-    connectingLinePositions: new Uint32Array(0),
-    connectingLineYs: new Uint16Array(0),
-
-    overlapPositions: new Uint32Array(0),
-    overlapYs: new Uint16Array(0),
-
-    linkedReadLinePositions: new Uint32Array(0),
-    linkedReadLineYs: new Uint16Array(0),
-    linkedReadLineColorTypes: new Uint8Array(0),
-    numLinkedReadLines: 0,
   }
 }
 
@@ -472,7 +457,7 @@ async function buildGroupResult(
 // reference sequence for modification coloring and computes sort-tag values.
 //
 // When `groupBy` is set, the single fetch is partitioned into N ordered groups
-// and the spine runs once per group, returning one PileupDataResult per group.
+// and the spine runs once per group, returning one WorkerPileupData per group.
 // Pileup partitions per read (partitionFeatures); chain partitions per chain
 // (partitionChains) so a chain stays whole, and is restricted to
 // chain-consistent dimensions. Ungrouped fetches return a single group.

@@ -1,4 +1,4 @@
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 
 // The shared vocabulary of the arc pass: the region lists it runs against, the
@@ -255,7 +255,7 @@ export interface ReadEntry {
   displayedRegionIndex: number
   refName: string
   readIdx: number
-  data: PileupDataResult
+  data: WorkerPileupData
 }
 // Maps a raw BAM refName (SA tag / RNEXT — the file's own naming, e.g. `chr1`)
 // to the assembly-canonical name the fetched reads carry (e.g. `1`). Keeping

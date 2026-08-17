@@ -6,7 +6,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 import type { ReadKey } from './readIdentity.ts'
 
 // Minimal entry shape both the arc and bezier paths satisfy: a per-read array
@@ -14,7 +14,7 @@ import type { ReadKey } from './readIdentity.ts'
 // exported — each consumer's own entry type satisfies it by having those two
 // fields, so nothing has to import a shape to be accepted here.
 interface MinEntry {
-  data: PileupDataResult
+  data: WorkerPileupData
   readIdx: number
 }
 

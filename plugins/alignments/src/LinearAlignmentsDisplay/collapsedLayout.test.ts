@@ -124,10 +124,15 @@ test('a read spliced over a mate does not tint its own intron', () => {
   expect(out.truncated).toBe(false)
 })
 
-test('an empty region passes through untouched', () => {
+test('an empty region gets the zero-row layout, its arrays untouched', () => {
   const empty = makeEmptyPileupData()
   const map = new Map([[0, empty]])
-  expect(buildCollapsedPileupMap(map).get(0)).toBe(empty)
+  const out = buildCollapsedPileupMap(map).get(0)!
+  expect(out.maxY).toBe(0)
+  expect(out.overlapPositions.length).toBe(0)
+  // The worker's arrays are shared, not rebuilt — the collapse pass adds a
+  // layout and touches nothing else.
+  expect(out.readPositions).toBe(empty.readPositions)
   expect(collapsedLayoutMaxY(map)).toBe(0)
 })
 

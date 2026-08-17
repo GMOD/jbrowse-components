@@ -10,7 +10,11 @@ import {
   someAcrossGroups,
 } from './groupLayout.ts'
 
-import type { GroupLayoutContext, LaidOutByGroup } from './groupLayout.ts'
+import type {
+  ColoredByGroup,
+  GroupLayoutContext,
+  LaidOutByGroup,
+} from './groupLayout.ts'
 
 // Two reads at the same position, so any real layout pass stacks them on rows 0
 // and 1. One region, one group.
@@ -286,7 +290,7 @@ function byGroup(
         ]),
       ),
     ]),
-  ) as unknown as LaidOutByGroup
+  ) as unknown as ColoredByGroup
 }
 
 test('collectAcrossGroups: unions every region of every group', () => {

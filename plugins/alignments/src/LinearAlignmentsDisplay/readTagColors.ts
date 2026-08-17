@@ -7,7 +7,11 @@ import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { bakedValueColor } from './colorTagUtils.ts'
 
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type {
+  LaidOutPileupData,
+  TagColoredPileupData,
+  WorkerPileupData,
+} from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy } from '../shared/types.ts'
 
 type ColorRgbTuple = [number, number, number]
@@ -25,6 +29,12 @@ const noStrand = packRgb(cssColorToRgb(colorNeutralRead))
 // Resolve one read's per-read string (+ its strand, for the `ts` orientation
 // tag) to a packed ABGR u32; 0 means "no color" (shader palette fallback).
 type ColorResolver = (val: string, strand: number) => number
+
+// One array for every region of every scheme that bakes nothing, because the
+// renderer's upload memo compares `readTagColors` by IDENTITY to decide whether
+// the read pass needs rewriting — a fresh empty array per region would report a
+// recolor that didn't happen.
+const NO_TAG_COLORS = new Uint32Array(0)
 
 // Build the per-read color resolver once for a given scheme. The scheme
 // dispatch and the value→pack cache happen here, so both leave the per-read hot
@@ -85,7 +95,7 @@ function makeColorResolver(colorBy: ColorBy): ColorResolver {
 }
 
 function applyResolver(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   resolve: ColorResolver,
 ): Uint32Array {
   const tagValues = data.readTagValues ?? []
@@ -104,33 +114,36 @@ function applyResolver(
 // discover→assign→refetch feedback loop structurally impossible. The shader
 // reads `uint tagColor` and unpacks; 0 means "no color" (palette fallback).
 export function buildReadTagColors(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   colorBy: ColorBy,
 ): Uint32Array {
   return applyResolver(data, makeColorResolver(colorBy))
 }
 
-// Overlay freshly-baked `readTagColors` onto each laid-out region. No-op outside
-// the CPU-baked color schemes, where the worker's empty array leaves the shader
-// on its palette fallback. Baking here rather than in the worker is what makes
-// tag coloring a tier-2 (main-thread recompute) setting rather than a tier-1
-// refetch. The resolver is built once and shared across regions.
+// Overlay freshly-baked `readTagColors` onto each laid-out region. Baking here
+// rather than in the worker is what makes tag coloring a tier-2 (main-thread
+// recompute) setting rather than a tier-1 refetch. The resolver is built once and
+// shared across regions.
+//
+// The schemes that bake no per-read color get the empty array, which leaves the
+// shader on its palette fallback. Stating it here rather than in the worker is
+// the point of the tier: this pass owns the field, so "this scheme colors no
+// read" is its answer to give, and `overlayReadColorCategories` — which reads the
+// baked array to decide the `noTagValue` bucket — cannot be handed a region that
+// never went through here.
 export function overlayReadTagColors(
-  map: Map<number, PileupDataResult>,
+  map: Map<number, LaidOutPileupData>,
   colorBy: ColorBy | undefined,
-): Map<number, PileupDataResult> {
+): Map<number, TagColoredPileupData> {
   const baked =
     colorBy?.type === 'mateRefName' ||
     (colorBy?.type === 'tag' && !!colorBy.tag)
-  if (!colorBy || !baked) {
-    return map
-  }
-  const resolve = makeColorResolver(colorBy)
-  const out = new Map<number, PileupDataResult>()
+  const resolve = colorBy && baked ? makeColorResolver(colorBy) : undefined
+  const out = new Map<number, TagColoredPileupData>()
   for (const [idx, data] of map) {
     out.set(idx, {
       ...data,
-      readTagColors: applyResolver(data, resolve),
+      readTagColors: resolve ? applyResolver(data, resolve) : NO_TAG_COLORS,
     })
   }
   return out

@@ -27,7 +27,7 @@ import {
 } from './shapes.ts'
 import { hasArcBandInk } from './types.ts'
 
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type {
   ArcRegions,
@@ -138,7 +138,7 @@ interface ArcInputs {
 }
 
 function collectArcInputs(
-  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+  rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   regions: RegionInfo[],
   settings: ArcSettings,
 ): ArcInputs {
@@ -607,7 +607,7 @@ function resolveArcs(
  * two genuinely differ and why the difference matters.
  */
 export function computeArcsFromPileupData(
-  rpcDataMap: ReadonlyMap<number, PileupDataResult>,
+  rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   regions: RegionInfo[],
   settings: ArcSettings,
   displayedRegions: RegionInfo[] = regions,
@@ -676,7 +676,7 @@ export interface ArcsByGroupResult {
  * to re-apply the rule.
  */
 export function computeArcsByGroup(
-  rawDataByGroup: ReadonlyMap<string, Map<number, PileupDataResult>>,
+  rawDataByGroup: ReadonlyMap<string, Map<number, WorkerPileupData>>,
   regions: ArcRegions,
   settings: ArcSettings,
 ): ArcsByGroupResult {
