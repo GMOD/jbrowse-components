@@ -27,7 +27,10 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
   a detached-and-alive tree leaks silently. ADR-069.
 - **An `autorun` must do its own reads** — MST actions run untracked, and a
   direct observable write inside an autorun body silently fails.
-- **`interface X extends Instance<…> {}`**, never a type alias. ADR-055.
+- **A NEW MST model exports `interface X extends Instance<…> {}`**, not a type
+  alias. ADR-055 decided against retrofitting the ~107 existing aliases, so one
+  in a file you are reading is not a finding — convert it when that model grows
+  a mutual reference, which is the case the alias form cannot compile.
 - Duck-typed `interface XSelf` extends `IStateTreeNode`, never
   `IAnyStateTreeNode` (which is `any`). **Duck-type across a lazy boundary too**
   — importing an MST model type across a lazy import is a circular-reference

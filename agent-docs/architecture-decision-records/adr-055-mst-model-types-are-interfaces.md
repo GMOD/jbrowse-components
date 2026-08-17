@@ -124,5 +124,20 @@ the compiler already refuses to compile.
   (none is).
 - Not retrofitted repo-wide. The two comparative pairs and alignments cover the
   models with live mutual references; the rest are converted when they grow one.
+  A codemod over all 114 remaining aliases was run once to price it: 107 are
+  exported and convert cleanly (whole repo typechecks, `pnpm lint` clean), but it
+  touches 110 files across every plugin and both linters, so it collides with any
+  concurrent work for no compile-time gain. Cost measured, decision unchanged.
+- **The seven that are NOT exported must stay aliases**, and a codemod that does
+  not skip them breaks the build. A function-local `type Conf = Instance<…>`
+  (`assemblyManager.ts`, `DrawerWidgets.ts`) is inlined by declaration emit while
+  it is an alias; as an interface it becomes a named type the emit must reference
+  and cannot, giving TS4060 at the declaration and TS4058 at ~30 downstream
+  re-exports. The rule is about EXPORTED model instance types only.
+- Converting also makes some `as unknown as X` casts look unnecessary to
+  `typescript/no-unnecessary-type-assertion`, and at least one is not:
+  `HtsgetBamAdapter` needs its cast for `readConfObject`'s slot-name lookup, even
+  though the two config Instance types are mutually assignable (which is all the
+  rule checks). Autofixing that one stops the file compiling.
 - `LinearComparativeView`'s `IAnyModelType` erasure is now removable in
   principle — it predates this and is a separate, riskier change.
