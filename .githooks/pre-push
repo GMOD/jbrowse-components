@@ -10,16 +10,29 @@
 # commit" only to have the person run the exact command the hook already knew
 # was ~2min of waiting to be told to wait ~2min more.
 #
-# WHICH MEANS IT BLOCKS THE PUSH WHEN IT FIXES SOMETHING. The fixes land in the
-# working tree, not in the commits on their way out, so a push that went ahead
-# would push exactly the state that just failed. When the tree changes the hook
-# says which files and exits nonzero; commit them and push again, and the second
-# run is clean. Nothing is auto-committed — what to commit, and in which of the
-# several commits being pushed it belongs, is not the hook's call.
+# AND IT COMMITS AND PUSHES WHAT IT FIXED. The fixes land in the working tree,
+# not in the commits on their way out, so the push git is holding would send
+# exactly the state that just failed. Rather than hand that back as a chore, the
+# hook commits the fixed paths itself and pushes the refs on its stdin — the
+# same refs the outer push was going to send. One `git push` therefore lands the
+# work plus its regeneration, with no second command to run.
+#
+# THE OUTER PUSH THEN REPORTS FAILURE, AND THAT REPORT IS STALE. git resolved
+# which commit to send before this hook ran, so once the hook's own push has
+# landed a newer commit on the same ref, nothing the outer push can do is a
+# fast-forward. It exits nonzero having already got its way. The hook says so in
+# as many words before exiting; `git status` is the check — "up to date with
+# origin/<branch>" means it landed.
+#
+# WHAT IT WILL NOT COMMIT: a path that was ALREADY dirty when the run started.
+# That is someone else's work in progress on the shared checkout, or a
+# half-finished edit here that a fixer happened to rewrite, and neither belongs
+# in a commit nobody wrote. Those still block with the old message. Same for a
+# push of anything but the current branch, where there is no HEAD to commit onto.
 #
 # WHAT STILL ONLY REPORTS: `check-docs` and `build:esm` have no fixer, and
 # `--fix` on either linter leaves whatever rule has no autofix. Those are still
-# yours to fix by hand.
+# yours to fix by hand, and nothing gets pushed until they pass.
 #
 # CI's `Format` job has no counterpart here and does not need one: the format
 # step below runs over the whole tree, so `pnpm check-format` is satisfied by
@@ -71,15 +84,23 @@
 # your work. There is no cheap fix: checking the pushed commits instead means
 # materialising them somewhere clean, which costs more than the check.
 #
-# NOW THAT IT WRITES, that same property has teeth: from the shared checkout the
-# fixers rewrite whatever else is uncommitted there, and the "these files
-# changed" list at the end will name another agent's work alongside yours. One
-# more reason to push from your own worktree.
+# NOW THAT IT WRITES AND COMMITS, that same property has teeth: from the shared
+# checkout the fixers rewrite whatever else is uncommitted there, and the lists
+# at the end will name another agent's work alongside yours. What keeps that out
+# of a commit is the already-dirty rule above — a path someone else was midway
+# through is dirty when the run starts, so it reports instead. A path they had
+# left clean is regeneration, and committing that is the point. One more reason
+# to push from your own worktree all the same.
 set -eu
 
 if [ "${SKIP_DOCS_CHECK:-}" = 1 ]; then
   exit 0
 fi
+
+# git passes the remote's name (or its url, for an unnamed one) as $1. The
+# hook's own push reuses it so the autoheal goes exactly where the push it
+# interrupted was going.
+remote=${1:-origin}
 
 root=$(git rev-parse --show-toplevel)
 cd "$root"
@@ -95,10 +116,13 @@ fi
 # already has rather than walking to the root commit.
 zero=0000000000000000000000000000000000000000
 range_files=
+refspecs=
 found=
-while read -r _localref localsha _remoteref remotesha; do
+while read -r localref localsha remoteref remotesha; do
   [ "$localsha" = "$zero" ] && continue
   found=1
+  refspecs=$refspecs$localref:$remoteref'
+'
   if [ "$remotesha" = "$zero" ]; then
     files=$(git diff --name-only "$(git merge-base "$localsha" HEAD@{upstream} 2>/dev/null || echo "$localsha^")" "$localsha" 2>/dev/null || true)
   else
@@ -140,6 +164,12 @@ tree_state() {
   git diff HEAD --numstat
 }
 tree_state >"$tmp/before" 2>/dev/null || true
+
+# The paths already dirty at this point, which the autoheal at the end refuses
+# to commit. Rename entries arrive as `R  old -> new`; the destination is the
+# path a fixer would have rewritten.
+git status --porcelain -uall 2>/dev/null | sed 's/^...//; s/.* -> //' \
+  >"$tmp/dirty-before" || : >"$tmp/dirty-before"
 
 # The two files a REVIEW APP writes, which no fixer here writes. The comparison
 # above is a before/after over a ~2min window, so anything that changes during
@@ -217,6 +247,32 @@ if [ "$astatus" != 0 ]; then
   cat "$tmp/autogen.log" >&2
   status=$astatus
 fi
+
+# The two ratcheted lists inside check-docs that DO have a write mode, run as
+# writers before check-docs reads them with --check. A grown list is still a
+# regression and the banner below says which line grew — but the news is in the
+# diff either way, and the version that blocked here only made someone run the
+# writer by hand and push again. ~0.1s each.
+#
+# The rest of check-docs has no writer at all, so this is the whole of what can
+# be healed there.
+for ratchet in \
+  check-remote-hosts:website/scripts/third-party-hosts.txt \
+  check-captions:website/scripts/long-captions.txt; do
+  script=website/scripts/${ratchet%%:*}.ts
+  list=${ratchet#*:}
+  cp "$list" "$tmp/ratchet.before" 2>/dev/null || : >"$tmp/ratchet.before"
+  node "$script" >/dev/null 2>&1 || true
+  added=$(diff "$tmp/ratchet.before" "$list" 2>/dev/null |
+    sed -n 's/^> \([^#]\)/  \1/p' || true)
+  if [ -n "$added" ]; then
+    echo >&2
+    echo "pre-push: $list grew — recorded, not blocked:" >&2
+    printf '%s\n' "$added" >&2
+    echo "Removing a line is the win; $script says what that takes." >&2
+    echo >&2
+  fi
+done
 
 # check-docs has no fixer and reads only what autogen has now finished writing,
 # so it is the one thing that can overlap the linters.
@@ -304,17 +360,62 @@ if [ "$bstatus" != 0 ]; then
   status=$bstatus
 fi
 
-# --- did the fixers change anything? ----------------------------------------
+# --- commit and push what the fixers changed --------------------------------
 
 changed=$(changed_since "$tmp/before")
 
-if [ -n "$changed" ]; then
+# Split it: what the fixers wrote over a clean path is theirs to commit, what
+# they wrote over an already-dirty one belongs to whoever was editing it.
+auto=
+manual=
+oldifs=$IFS
+IFS='
+'
+for f in $changed; do
+  if grep -Fxq -- "$f" "$tmp/dirty-before" 2>/dev/null; then
+    manual=$manual$f'
+'
+  else
+    auto=$auto$f'
+'
+  fi
+done
+IFS=$oldifs
+
+# Committing needs somewhere to commit to: the autoheal writes onto HEAD, which
+# is only the right place when HEAD is what is being pushed. A push of some
+# other branch, a detached HEAD, or several refs at once falls back to
+# reporting.
+branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)
+one_ref=$(printf '%s' "$refspecs" | grep -c . || true)
+if [ -z "$branch" ] || [ "$one_ref" != 1 ] ||
+  [ "$refspecs" != "refs/heads/$branch:refs/heads/$branch
+" ]; then
+  manual=$manual$auto
+  auto=
+fi
+
+if [ -n "$auto" ]; then
+  printf 'chore: pre-push autofix\n\nRegenerated by .githooks/pre-push while pushing:\n\n' \
+    >"$tmp/msg"
+  printf '%s' "$auto" | sed 's/^/  /' >>"$tmp/msg"
+  # Pathspec commit: the index may hold someone else's staged work, and this
+  # commit is about these paths only. --no-verify because pre-commit's formatter
+  # has already run over everything here, via `pnpm format` above.
+  printf '%s' "$auto" | tr '\n' '\0' |
+    xargs -0 git commit --quiet --no-verify -F "$tmp/msg" -- >&2
   echo >&2
-  echo "pre-push: the fixers changed these files:" >&2
-  printf '%s\n' "$changed" | sed 's/^/  /' >&2
+  echo "pre-push: committed what the fixers changed:" >&2
+  printf '%s' "$auto" | sed 's/^/  /' >&2
+fi
+
+if [ -n "$manual" ]; then
   echo >&2
-  echo "Push blocked — the fixes are in the working tree, not in the commits" >&2
-  echo "being pushed. Commit them and push again." >&2
+  echo "pre-push: the fixers also rewrote files that were already modified:" >&2
+  printf '%s' "$manual" | sed 's/^/  /' >&2
+  echo >&2
+  echo "Those are left alone — a fixer rewriting your unfinished edit is not a" >&2
+  echo "commit this hook gets to write. Sort them out and push again." >&2
   exit 1
 fi
 
@@ -323,3 +424,26 @@ if [ "$status" != 0 ]; then
   echo "Push blocked. Fix the above, or push anyway with SKIP_DOCS_CHECK=1." >&2
   exit "$status"
 fi
+
+# Nothing was fixed, so the commits on their way out are already clean and the
+# push git is holding is the right one. Let it go.
+if [ -z "$auto" ]; then
+  exit 0
+fi
+
+# Something was fixed and is now committed, which the outer push cannot know —
+# it resolved its commit before this hook started. Push the new tip here.
+pstatus=0
+git push --no-verify "$remote" "refs/heads/$branch:refs/heads/$branch" >&2 || pstatus=$?
+
+echo >&2
+if [ "$pstatus" = 0 ]; then
+  echo "pre-push: pushed that commit to $remote/$branch, so your work HAS landed." >&2
+  echo "The 'failed to push some refs' git prints next is the push it was already" >&2
+  echo "holding, which now points at an older commit than the remote does. Nothing" >&2
+  echo "to do — 'git status' will say you are up to date." >&2
+else
+  echo "pre-push: the fixes are committed, but pushing them failed (above)." >&2
+  echo "Push again once that is sorted." >&2
+fi
+exit 1
