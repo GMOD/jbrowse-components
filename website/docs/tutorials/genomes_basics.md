@@ -21,9 +21,11 @@ those tracks is a checkbox away, with nothing to download, index or configure.
 
 ## Opening a genome
 
-[genomes.jbrowse.org](https://genomes.jbrowse.org) indexes every UCSC database
-plus the GenArk assemblies, each with a link into JBrowse and one to its page at
-UCSC.
+In 2025 we created [genomes.jbrowse.org](https://genomes.jbrowse.org) which
+hosts JBrowse 2 instances for all the main UCSC database browsers (e.g. hg19,
+hg38, hs1, mm39 etc) plus the UCSC GenArk project assemblies (which are
+trackhubs created for over 50,000 NCBI plants, animals, fungi, bacteria,
+viruses, etc). This guide will briefly show you how to use the site
 
 <Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page. The top table is the short list of main genomes; the GenArk half below it is the bulk catalog, split by clade and by project." />
 
