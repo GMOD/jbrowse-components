@@ -47,6 +47,11 @@ And its catalog is seven species: human genes arrive with all three views, while
 mouse, zebrafish, fly, worm, plant and yeast arrive as a genome view and a
 structure. The right-click route works on every genome the site hosts.
 
+<Video src="/media/proteins/gene_explorer.mp4" caption="TP53 from the Gene Explorer's examples row: the session it builds opens the collapsed coding exons, the vertebrate alignment and the AlphaFold model in one window, and a hover in the genome answers in all three at once." />
+
+The three views are connected in every direction, so a hover in the alignment or
+a click on the structure highlights the codon it belongs to back in the genome.
+
 ## Launching a structure
 
 Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org) and type `TP53`

@@ -72,6 +72,13 @@ the tour was filmed in.
 - **What it pastes has to be the page's own fence, and `check-paste-configs` is
   the gate.** A film is the half nobody re-reads, so a reworded slot drifts one
   way silently.
+- **`opensTab` follows a launcher into a new tab**, and the camera moves with
+  it. For a route that leaves the app: another site hands the reader a session
+  through a `target="_blank"` link, so the result is a second page rather than a
+  navigation. It implies a cut. A label rendered in caps by CSS is not the
+  string a `text` step matches — read the DOM, and put the caps in the `say`.
+- **`posterAt` is clamped to the clip**, so a stale one no longer throws away a
+  finished film; the run says which second it used instead.
 - **Re-navigate after the drawer closes.** A widget takes ~400 px off the linear
   view while it is open and an LGV keeps its bp-per-pixel across a resize, so
   the window standing afterwards is wider than the one the session opened at.

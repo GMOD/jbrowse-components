@@ -142,7 +142,10 @@ const UNHELD = new Set(['delay', 'waitForText', 'waitForSelector'])
 // `page.screencast` writes through ffmpeg's stdin, so the file is only complete
 // once stop() has closed that pipe — which is why every stop is awaited and
 // bounded rather than left to the process exiting.
-function camera(page: Page, stem: string) {
+// The page is read per segment rather than captured once: a tour that follows a
+// launcher into a new tab films two pages, and `page.screencast` is bound to the
+// one it was started on.
+function camera(currentPage: () => Page, stem: string) {
   const segments: string[] = []
   let recorder: Awaited<ReturnType<Page['screencast']>> | undefined
   return {
@@ -153,7 +156,7 @@ function camera(page: Page, stem: string) {
     async start() {
       const file: `${string}.webm` = `${stem}.seg${segments.length}.webm`
       segments.push(file)
-      recorder = await page.screencast({ path: file, fps: FPS })
+      recorder = await currentPage().screencast({ path: file, fps: FPS })
     },
     async stop() {
       const active = recorder
@@ -209,9 +212,30 @@ async function filmStep(page: Page, step: VideoStep) {
   await delay(step.hold ?? (UNHELD.has(step.type) ? 0 : HOLD_MS))
 }
 
+// The tab a step opened, once it exists. Armed BEFORE the click that opens it,
+// since the target can arrive before the click's own promise settles.
+function pendingTab(page: Page) {
+  return new Promise<Page>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error('opensTab: no new tab appeared within 30s'))
+    }, 30000)
+    page.once('popup', target => {
+      clearTimeout(timer)
+      if (target) {
+        resolve(target)
+      } else {
+        reject(new Error('opensTab: the new tab arrived as null'))
+      }
+    })
+  })
+}
+
 async function film(page: Page, spec: VideoSpec, stem: string) {
   const height = spec.viewportHeight ?? DEFAULT_VIEWPORT.height
-  const cam = camera(page, stem)
+  const width = spec.viewportWidth ?? DEFAULT_VIEWPORT.width
+  // The page being filmed, which an `opensTab` step replaces.
+  let stage = page
+  const cam = camera(() => stage, stem)
   // What the app actually fills, at the start and at the end. A tour grows the
   // app (a launch adds a whole view), so one viewport has to serve both states
   // and neither number is guessable from the spec: too short clips the graph the
@@ -224,7 +248,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
   // visibly cut in half. Same measurement, and the same reason, as the
   // screenshot run's below-the-fold report.
   const contentHeight = () =>
-    page.evaluate(() =>
+    stage.evaluate(() =>
       Math.round(
         Math.max(
           0,
@@ -241,8 +265,8 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
   // reports the frame as roomy while the state the tour was filmed for is cut
   // off the bottom.
   let tallest = openedAt
-  await injectOverlay(page)
-  await moveCursor(page, (spec.viewportWidth ?? DEFAULT_VIEWPORT.width) / 2, 90)
+  await injectOverlay(stage)
+  await moveCursor(stage, width / 2, 90)
   await delay(500)
   try {
     for (const step of spec.steps) {
@@ -256,14 +280,33 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       } else if (!cam.recording) {
         await cam.start()
       }
-      await filmStep(page, step)
+      // Armed before the click, since chrome can hand the target over before
+      // the click's own promise settles.
+      const tab = step.opensTab ? pendingTab(stage) : undefined
+      await filmStep(stage, step)
+      if (tab) {
+        // The new tab loads off camera, the way a `cut` step's wait does: what
+        // it opens with is a blank tab and then an app booting, and the reader
+        // has already seen the click that asked for it.
+        await delay(PRE_CUT_MS)
+        await cam.stop()
+        stage = await tab
+        await stage.setViewport({
+          width,
+          height,
+          deviceScaleFactor: DEVICE_SCALE,
+        })
+        await stage.bringToFront()
+        await injectOverlay(stage)
+        await moveCursor(stage, width / 2, 90)
+      }
       tallest = Math.max(tallest, await contentHeight())
     }
     if (!cam.recording) {
       await cam.start()
     }
-    await setCaption(page, '')
-    await parkCursor(page, height)
+    await setCaption(stage, '')
+    await parkCursor(stage, height)
     await delay(spec.tailMs ?? TAIL_MS)
     const endedAt = await contentHeight()
     log(
@@ -274,7 +317,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
     // The frame the tour died on, which for a step that could not find its
     // target is the whole diagnosis: a menu that opened somewhere else, an item
     // this plugin build spells differently, a modal over the app.
-    await debugDump(page, spec.name)
+    await debugDump(stage, spec.name)
     throw err
   } finally {
     await cam.stop()
@@ -371,9 +414,31 @@ function encode(segments: string[], stem: string) {
 // The still a reader sees before pressing play, and the image a card would use.
 // The end of the clip by default: a tour's last frame is the state it was filmed
 // to reach, where its first is the app before anything has happened.
-function poster(mp4: string, stem: string, at: number) {
+//
+// A `posterAt` past the end is CLAMPED rather than passed through, and it is
+// worth the three lines: seeking past the last frame writes no packets, ffmpeg
+// exits non-zero, and the run fails there — after the filming, throwing away a
+// clip that was already encoded. Which is a spec edit away at all times, since
+// the number is seconds into a clip whose length no one knows until it exists.
+function poster(mp4: string, stem: string, at: number, duration: number) {
   const jpg = `${stem}.jpg`
-  ffmpeg(['-ss', at.toFixed(2), '-i', mp4, '-frames:v', '1', '-q:v', '3', jpg])
+  const last = Math.max(0, duration - 0.2)
+  if (at > last) {
+    log(
+      `  posterAt ${at}s is past the ${duration.toFixed(1)}s clip; using ${last.toFixed(1)}s`,
+    )
+  }
+  ffmpeg([
+    '-ss',
+    Math.min(at, last).toFixed(2),
+    '-i',
+    mp4,
+    '-frames:v',
+    '1',
+    '-q:v',
+    '3',
+    jpg,
+  ])
   return jpg
 }
 
@@ -452,7 +517,7 @@ async function main() {
           log(`${spec.name}: filming`)
           segments = await film(page, spec, stem)
           const { mp4, duration } = encode(segments, stem)
-          const jpg = poster(mp4, stem, spec.posterAt ?? duration - 0.2)
+          const jpg = poster(mp4, stem, spec.posterAt ?? duration, duration)
           const mb = (f: string) =>
             `${(fs.statSync(f).size / 1e6).toFixed(2)} MB`
           log(

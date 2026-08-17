@@ -52,7 +52,7 @@ import {
   hprcClusterFixtures,
   hprcTourSession,
 } from './specs/graph-hprc.ts'
-import { proteinTourFixtures } from './specs/msa.ts'
+import { geneExplorerTourFixtures, proteinTourFixtures } from './specs/msa.ts'
 import { tcgaMutationVideoFixtures, tcgaVideoFixtures } from './specs/tcga.ts'
 
 import type { ScreenshotAction } from './screenshot-spec-types.ts'
@@ -86,6 +86,14 @@ export interface VideoStep extends ScreenshotAction {
   // The camera stays on for PRE_CUT_MS first, so the click is seen to start work
   // rather than teleporting to its result.
   cut?: boolean
+  // Follow the tab this step opens, and film that from here on.
+  //
+  // For the one route that leaves the app: a launcher on another site hands the
+  // reader a JBrowse session through a `target="_blank"` link, so the result
+  // arrives as a second tab rather than as a navigation, and `page.screencast`
+  // is bound to the page it was started on. Implies a cut, since what the new
+  // tab opens with is a blank frame and then an app booting.
+  opensTab?: boolean
 }
 
 export interface VideoSpec {
@@ -917,6 +925,74 @@ export const videoSpecs: VideoSpec[] = [
       { type: 'delay', ms: 2500 },
     ],
     tailMs: 3500,
+  },
+  // THREE VIEWS ANSWERING ONE HOVER, which is the thing no still and no pair of
+  // stills can state: a figure can show a genome, an alignment and a structure
+  // in one frame, and it cannot show that the residue lit in the third is the
+  // codon under the cursor in the first.
+  //
+  // It is also the only tour that leaves JBrowse to get where it is going. The
+  // JBrowseMSA Gene Explorer is a launcher, so the route is: pick a gene, press
+  // its button, and read the session that arrives in the tab it opens. The
+  // `opensTab` step is what lets the camera follow.
+  {
+    name: 'proteins/gene_explorer',
+    description:
+      'A gene symbol to three connected views on the JBrowseMSA Gene Explorer: pick TP53, open the session it builds, and hover the collapsed coding exons to walk one residue through the alignment and the structure',
+    url: geneExplorerTourFixtures.url,
+    viewportWidth: 1280,
+    // Sized to the SESSION, which is three stacked views: the run reports the
+    // launcher page at 689px and the session at 1755px. So the clip opens with
+    // page background under a short page, which is the same trade every launch
+    // tour here makes and the same way round — a frame sized to the launcher
+    // would cut the structure the launcher exists to produce.
+    viewportHeight: 1790,
+    readySelector: geneExplorerTourFixtures.geneInput,
+    settleMs: 4000,
+    steps: [
+      {
+        type: 'click',
+        text: geneExplorerTourFixtures.exampleGene,
+        say: `Examples: ${geneExplorerTourFixtures.exampleGene}`,
+        hold: 1200,
+      },
+      { type: 'waitForText', text: geneExplorerTourFixtures.launchLink },
+      // held on the card, which names what the session will carry before it
+      // carries it: the transcript, the collapsed CDS, the alignment, the model
+      { type: 'delay', ms: 3000 },
+      {
+        type: 'click',
+        text: geneExplorerTourFixtures.launchLink,
+        // The caption carries the label as the page paints it, which its own
+        // text-transform makes different from the string above.
+        say: 'OPEN IN JBROWSE',
+        opensTab: true,
+      },
+      // Everything the session fetches happens here: the gene track, the indexed
+      // multiz alignment, the tree, and the AlphaFold model. The protein view's
+      // own ready flag is the last of them to flip.
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="protein-view-ready"]',
+        timeout: 300000,
+        cut: true,
+      },
+      { type: 'delay', ms: 3500 },
+      ...geneExplorerTourFixtures.hoverLoci.map((locus, i) => ({
+        type: 'hover' as const,
+        anchor: { track: geneExplorerTourFixtures.geneTrack, locus },
+        // One caption for the first hover, and none after: the second and third
+        // say the same thing, and a caption that reappears unchanged reads as a
+        // new instruction.
+        ...(i === 0 ? { say: 'Hover a codon' } : {}),
+        hold: 3200,
+      })),
+    ],
+    // A hover, for the reason the other protein tour's poster is one: filming
+    // ends by parking the cursor, so the last frame is the session with nothing
+    // asked of it.
+    posterAt: 23,
+    tailMs: 1200,
   },
 ]
 
