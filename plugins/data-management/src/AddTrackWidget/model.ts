@@ -272,8 +272,14 @@ export default function f(pluginManager: PluginManager) {
       // flow. An OAuth account opens a popup to get its token, and this one
       // would open it from a promise chain while the user is still filling in
       // the form — outside the click gesture browsers require, so as likely to
-      // be blocked as answered. Detection resumes on its own once the account
-      // holds a token, which submitting the track is what gets it.
+      // be blocked as answered.
+      //
+      // Skipping is final for the file on screen, not deferred: the token lives
+      // in sessionStorage, which nothing observes, so a token arriving later
+      // re-runs no autorun. The NEXT file entered against that account is
+      // probed. Not worth an observable flag on the account model — what the
+      // skipped file falls back to is the conventional guess, which is what it
+      // had before any of this existed.
       function wouldPromptForAuth(location: FileLocation) {
         const { rootModel } = pluginManager
         if (
