@@ -305,7 +305,7 @@ done
 assembly, so it rides along with that strain's row in the stacked view.
 
 With genes loaded the gaps become readable. Navigate Sakai's row to
-`chr:1,267,000-1,268,400` and the gap holds `stx2A` and `stx2B`, the Shiga-toxin
+`chr:1,267,000-1,268,400` and the gap holds _stx2A_ and _stx2B_, the Shiga-toxin
 subunits, in a region with no alignment to K-12.
 
 <Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary, and everything right of it, stx2B included, has no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
@@ -428,7 +428,7 @@ awk -F'\t' -v OFS='\t' '
 
 The block on the second line is the shared backbone the ribbon in the figure
 draws, and it ends at 1,246,166. Past a short scrap nothing aligns again until
-1,274,685, so `stx2A` and `stx2B` fall in a stretch of Sakai with no K-12
+1,274,685, so _stx2A_ and _stx2B_ fall in a stretch of Sakai with no K-12
 counterpart at all. The gap in the figure is the gap in the file.
 
 ## Reproduce it end to end

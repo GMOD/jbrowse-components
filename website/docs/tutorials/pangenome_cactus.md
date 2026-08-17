@@ -25,12 +25,12 @@ welcome your [feedback](/contact).
 
 - `docker` or `singularity`, for the cactus image (which carries odgi,
   halSynteny, hal2maf, `vg` and `samtools`)
-- the NCBI
+- htslib (`bgzip`, `tabix`), `python3`, and `node` for the
+  [JBrowse CLI](/docs/cli), which the fences below run directly
+- to take the [whole build](#reproduce-it-end-to-end) rather than the steps on
+  this page: the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI
-- `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `samtools`,
-  `python3`, `unzip`, `wget`
-- `node`, for the [JBrowse CLI](/docs/cli)
+  CLI, `bedGraphToBigWig` (UCSC kentUtils), `samtools`, `unzip` and `wget`
 - the GraphGenomeView plugin, for
   [drawing the graph as a graph](#installing-the-plugin); every other track here
   is a built-in type
@@ -342,9 +342,8 @@ reference-first graph keeps them apart.
 The two were asked different questions: seqwish merges identical sequence
 wherever it occurs, while a reference-anchored build keeps each copy at its own
 coordinate. A collapsed repeat is where to look for variation _within_ an array;
-a reference-anchored one is where to ask which copy a read came from. For this
-projection it means `odgi depth` is a strain tally on the Minigraph-Cactus graph
-and not on the pggb one.
+a reference-anchored one is where to ask which copy a read came from. On the
+Minigraph-Cactus graph the depth curve is therefore a strain tally.
 
 Drawn under the aggregate curve, the pav rows say which strain accounts for each
 dip. The picture is the one the pggb tutorial already shows
@@ -534,7 +533,7 @@ Node ids in a Cactus graph run `1..N` in node order, so walking K12's `P` line
 turns a K12 offset into a pangenome offset. `build_ecoli_pangenome_cactus.sh`
 does that walk, so both bands come from the same arithmetic.
 
-The band contains Sakai's stx2 prophage and a second Sakai-only stretch, so
+The band contains Sakai's _stx2_ prophage and a second Sakai-only stretch, so
 crossing this 100 kb of K12 costs the other strains substantially more of their
 own sequence. The
 [all-vs-all tutorial's stx2 figure](/docs/tutorials/allvsall_synteny) opens the

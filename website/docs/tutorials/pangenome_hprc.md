@@ -514,16 +514,17 @@ the same way `hg38` asks for `GRCh38#0#chr17`. This replaces the track
 
 With both assemblies loaded a CHM13 node opens on either one, and on hs1 its
 coordinates are the donor's own rather than the GRCh38 interval it attaches
-across. The node in the figure below is 180 kb of chr17 that GRCh38 does not
+across. The node in the figure below is 142 kb of chr17 that GRCh38 does not
 carry, near the end of the chromosome, and RepeatMasker tiles it with long L1
 elements.
 
-A 180 kb window has only its own surroundings to be dense against, so the panel
-beside it is the same measurement at a scale that can say whether the L1 density
-means anything. Open the LINE row alone over the last 3 Mb of the chromosome and
-set the track's **Resolution** low, so each drawn value averages about 100 kb
-rather than 3 kb: at 5 kb the allele is invisible inside the spikes, and at its
-own scale it is a block.
+The hs1 pane holding that node is barely wider than the node itself, so the
+allele has only its own surroundings to be dense against. The panel beside it is
+the same measurement at a scale that can say whether the L1 density means
+anything. Open the LINE row alone over the last 3 Mb of the chromosome and set
+the track's **Resolution** low, so each drawn value averages about 100 kb rather
+than 3 kb: at 5 kb the allele is invisible inside the spikes, and at its own
+scale it is a block.
 
 <Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Beside them ①, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean." src="/img/pangenome/hprc_chm13_allele.png" />
 
@@ -912,10 +913,10 @@ a quiet stretch of genome. A parent record sits at one position and its children
 spread over the span it covers, so the filter collapses that whole span onto one
 column. At C4 the effect is the width of the figure:
 `chr6:32,000,000-32,020,000` holds hundreds of records and not one of them is
-`LV==0`, so the filter alone empties 20 kb across CYP21A1P and TNXA, which is
-where that locus varies most. Pair it with a size filter, as above, or drop it
-and read the duplicates; a blank column under it is a statement about the snarl
-tree rather than about the cohort.
+`LV==0`, so the filter alone empties 20 kb across _CYP21A1P_ and _TNXA_, which
+is where that locus varies most. Pair it with a size filter, as above, or drop
+it and read the duplicates; a blank column under it is a statement about the
+snarl tree rather than about the cohort.
 
 Read a column as a site that holds a structural allele rather than as a
 guarantee about every cell in it. The filter admits a record on its longest
@@ -1060,10 +1061,6 @@ haplotype is there, at whatever height it fits in.
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra
 files.
-
-This is the level the graph and the callset both lose. The graph collapses these
-haplotypes into segments and the callset reduces them to genotypes; here each
-one is still its own row of sequence.
 
 ## Structure, not sequence
 

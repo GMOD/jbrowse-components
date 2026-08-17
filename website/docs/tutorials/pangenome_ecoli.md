@@ -23,12 +23,13 @@ welcome your [feedback](/contact).
 ## Prerequisites
 
 - `docker` or `singularity`, for the pggb image, which also carries odgi
-- the NCBI
-  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI
 - `samtools`, `bedGraphToBigWig` (UCSC kentUtils)
-- `python3`, htslib (`bgzip`, `tabix`), `unzip`
+- `python3`, htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
+- to take the [whole build](#reproduce-it-end-to-end) rather than the steps on
+  this page: the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI and `unzip`, which fetch and unpack the RefSeq genomes
 - the GraphGenomeView plugin, for [the graph itself](#installing-the-plugin);
   every other track here is a built-in type
 
@@ -400,12 +401,11 @@ block and its gap in the alignment are the same event twice.
 
 ### Why the reference path takes a length
 
-A graph VCF is a snarl **tree**, which an ordinary callset is not.
-`vg deconstruct` emits a record per snarl at every level, each carrying `LV`
-(its level, `0` at the top) and `PS` (its parent), so the file holds both a
-bubble and the variants nested inside it. Those wide records draw over the fine
-layer they were decomposed from, painting a flat block across the rows that
-carry them and hiding every SNP underneath.
+A graph VCF is a snarl **tree**. `vg deconstruct` emits a record per snarl at
+every level, each carrying `LV` (its level, `0` at the top) and `PS` (its
+parent), so the file holds both a bubble and the variants nested inside it.
+Those wide records draw over the fine layer they were decomposed from, painting
+a flat block across the rows that carry them and hiding every SNP underneath.
 
 That is why the `-V` spec takes `REF:LEN` rather than a bare `REF`. With a
 length, pggb also runs [`vcfbub`](https://github.com/pangenome/vcfbub)
@@ -996,10 +996,10 @@ gene track.
 That is the deletion read from the donor's side, and it is checkable against
 annotation neither the graph nor the index has seen. The two links bridge
 `K12:997,574` to `K12:1,004,667`, and seven K12 genes sit inside that span
-(`elfA`, `elfD`, `elfC`, `elfG`, `ycbU`, `ycbV`, `ycbF`, the _elf_ fimbrial
-operon and its neighbours), with `ssuE` ending just before it and `pyrD`
-starting just after. So if the graph is right, CFT073 should run `ssuE` straight
-into `pyrD`. It does.
+(_elfA_, _elfD_, _elfC_, _elfG_, _ycbU_, _ycbV_, _ycbF_, the _elf_ fimbrial
+operon and its neighbours), with _ssuE_ ending just before it and _pyrD_
+starting just after. So if the graph is right, CFT073 should run _ssuE_ straight
+into _pyrD_. It does.
 
 <Figure caption="The 75 bp CFT073 segment ringed in the graph, and the linear view its menu entry opens: CFT073 on its own coordinates, where ssuE runs into pyrD with nothing between them." src="/img/pangenome/pggb_strain_launch.png" />
 
@@ -1109,15 +1109,15 @@ tabix https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph.links.bed.gz \
 ```
 
 `s378 → s379 → s380` is K12 through the deletion and `s378 → s2025 → s380` is
-CFT073 around it, where `s2025` is this same CFT073 sequence. Which resolution
-holds an event is a property of the graph, not of the window you asked for.
+CFT073 around it, where `s2025` is this same CFT073 sequence. The resolution an
+event arrives at is fixed by the graph that holds it.
 
 <Figure caption="The extracted file beside a linear view of the same locus, anchored on the graph's K12 path so both share an axis and the Depth colors. The ringed 93 bp node's second link falls outside the extracted window." src="/img/pangenome/local_subgraph.png" />
 
 A collapsed repeat is where `-E` fails outright rather than merely growing, and
 there `-d` is the answer. The graph folds a repeat's copies onto one run of
 segments, so `-E` walks out of the window to every copy on every chromosome: at
-the 16S rRNA gene `rrsB` it returns tens of thousands of segments for a 500 bp
+the 16S rRNA gene _rrsB_ it returns tens of thousands of segments for a 500 bp
 cut, where `-d 500` returns six.
 
 ```bash
@@ -1159,7 +1159,7 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1299400-1300800 -E -o - 
 ```
 
 The figure keeps the same interval in K12 coordinates above the graph, because a
-force drawing has no axis of its own. The gene lane names the element (`insH21`,
+force drawing has no axis of its own. The gene lane names the element (_insH21_,
 the IS5 transposase) and the whole-genome alignment states the same carriage
 through an alignment the graph had no part in.
 
