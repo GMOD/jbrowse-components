@@ -228,8 +228,16 @@ export function buildRawDataByGroup(
 // read id → where that read lives (which region, which group, row index),
 // letting hit-test/detail lookups resolve a feature back to its raw arrays.
 //
+// Read id → which lane, which region, and which slot in that region's per-read
+// arrays. `findRead` (readLookup.ts) is what turns one of these entries into the
+// read's data.
+export type ReadIdIndexMap = Map<
+  string,
+  { displayedRegionIndex: number; groupKey: string; idx: number }
+>
+
 // Hidden lanes are dropped here for the reason `buildRawDataByGroup` gives, plus
-// one of its own: `findFeatureInRpcData` resolves an entry through
+// one of its own: `findRead` resolves an entry through
 // `laidOutByGroup`, which is built from the already-filtered `groupOrder`, so a
 // hidden lane's read matched a key that then resolved to nothing. Its entries
 // were unreachable by construction — and each one cost a `readIdAt` string for a
@@ -237,14 +245,8 @@ export function buildRawDataByGroup(
 export function buildReadIdIndexMap(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden?: ReadonlySet<string>,
-): Map<
-  string,
-  { displayedRegionIndex: number; groupKey: string; idx: number }
-> {
-  const map = new Map<
-    string,
-    { displayedRegionIndex: number; groupKey: string; idx: number }
-  >()
+): ReadIdIndexMap {
+  const map: ReadIdIndexMap = new Map()
   for (const { displayedRegionIndex, key, data } of eachGroup(
     rpcDataMap,
     hidden,

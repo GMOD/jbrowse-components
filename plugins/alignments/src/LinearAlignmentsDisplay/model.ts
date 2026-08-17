@@ -5,7 +5,6 @@ import {
   coverageDepthDomain,
   computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
-import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   ConfigurationReference,
   getConf,
@@ -19,7 +18,6 @@ import {
   canonicalizeViewRefName,
   getContainingTrack,
   getContainingView,
-  getRpcSessionId,
   getSession,
   isFeature,
   measureText,
@@ -69,7 +67,6 @@ import {
   readCategoryLabelOverrides,
   readColorCategoryLabel,
 } from '../shared/legendUtils.ts'
-import { readNameAt } from '../shared/readNameBlock.ts'
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
   normalizeFilterBy,
@@ -129,7 +126,9 @@ import {
   computeInsertSizeTickSections,
   computeSashimiArcSections,
 } from './overlaySections.ts'
+import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
+import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
   belowCoverageBandsGeometry,
   buildSectionRenders,
@@ -169,91 +168,13 @@ import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { SectionsLayout } from './sectionLayout.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
   HeightMode,
 } from '@jbrowse/plugin-linear-genome-view'
-
-function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
-  return getSequenceAdapterConfig(
-    region.assemblyName
-      ? session.assemblyManager.get(region.assemblyName)
-      : undefined,
-  )
-}
-
-interface FetchFeatureDetailsSelf {
-  adapterConfig: Record<string, unknown>
-  rpcProps: () => { lodMode?: BaseOptions['lodMode'] }
-  getFeatureInfoById: (id: string) =>
-    | {
-        refName: string
-        assemblyName: string
-        start: number
-        end: number
-      }
-    | undefined
-}
-
-async function fetchFeatureDetails(
-  self: FetchFeatureDetailsSelf,
-  featureId: string,
-) {
-  const session = getSession(self)
-  const info = self.getFeatureInfoById(featureId)
-  if (!info) {
-    return undefined
-  }
-  // refName + assemblyName come from the loaded region the read was fetched
-  // from (see getFeatureInfoById), so there's nothing to look up here. The old
-  // refName scan over loadedRegions could pick a different region's assembly and
-  // threw on the one it couldn't resolve.
-  //
-  // A single base at the feature's start, not its full extent: the adapter
-  // returns everything overlapping the region and we keep the one matching id,
-  // so the extent only ever made the query bigger. It is the read's own length
-  // for a BAM, but the whole block for a synteny alignment — right-clicking a
-  // megabase PAF block re-read the entire block just to name it, so the menu's
-  // feature items landed seconds after it opened.
-  const region = {
-    refName: info.refName,
-    assemblyName: info.assemblyName,
-    start: info.start,
-    end: info.start + 1,
-  }
-  const sequenceAdapter = getSequenceAdapter(session, region)
-  const sessionId = getRpcSessionId(self)
-  const { feature } = await session.rpcManager.call(
-    sessionId,
-    'GetPileupFeatureDetails',
-    // Nothing to report and nothing worth stopping: the region is a single base
-    // (see above), the adapter's index is already resident by the time a read is
-    // on screen to right-click, and the widget this feeds opens on the result.
-    // eslint-disable-next-line no-restricted-syntax
-    {
-      adapterConfig: self.adapterConfig,
-      sequenceAdapter,
-      regions: [region],
-      featureId,
-      // The tier the pileup was fetched at. A tiered PIF adapter numbers its
-      // coarse and fine rows from different file offsets, so ids only match
-      // within one tier — querying the default (fine) tier for a feature drawn
-      // from the coarse one found nothing, and the details silently never came.
-      // Read live rather than recorded with the data because the two can't
-      // drift: `lodMode` is part of `rpcProps`, so a tier flip trips
-      // SettingsInvalidate, which drops every fetched region. Data on screen was
-      // always fetched at the tier `rpcProps` names right now.
-      lodMode: self.rpcProps().lodMode,
-    },
-  )
-  if (!feature) {
-    return undefined
-  }
-  return new SimpleFeature(feature)
-}
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
 // dependency onto the startup path; the consumer renders it inside a Suspense
@@ -2097,30 +2018,7 @@ export default function stateModelFactory(
          * #method
          */
         findFeatureInRpcData(featureId: string) {
-          const entry = self.readIdIndexMap.get(featureId)
-          if (!entry) {
-            return undefined
-          }
-          const { displayedRegionIndex, groupKey, idx } = entry
-          const rpcData = self.laidOutByGroup
-            .get(groupKey)
-            ?.get(displayedRegionIndex)
-          if (!rpcData) {
-            return undefined
-          }
-          const start = rpcData.readPositions[idx * 2]
-          const end = rpcData.readPositions[idx * 2 + 1]
-          if (start !== undefined && end !== undefined) {
-            return {
-              displayedRegionIndex,
-              groupKey,
-              idx,
-              rpcData,
-              start,
-              end,
-            }
-          }
-          return undefined
+          return findRead(self.readIdIndexMap, self.laidOutByGroup, featureId)
         },
       }))
       .views(self => ({
@@ -2674,43 +2572,13 @@ export default function stateModelFactory(
          * so the two paths can't drift.
          */
         readIdsSharingChain(rpcData: WorkerPileupData, index: number) {
-          const { readChainIndices, chainNames } = rpcData
-          const chainIdx = readChainIndices?.[index]
-          const name =
-            chainIdx === undefined ? undefined : chainNames?.[chainIdx]
-          return name === undefined
-            ? []
-            : (self.readIdsByChainName.get(name) ?? [])
+          return chainReadIdsAt(rpcData, index, self.readIdsByChainName)
         },
 
-        // refName/assemblyName come from `loadedRegions` (the region this read
-        // was actually fetched from) rather than from `view.displayedRegions`,
-        // which needs a sentinel for a since-changed index and carries no
-        // assembly, leaving `fetchFeatureDetails` to re-find one by refName.
         getFeatureInfoById(featureId: string) {
           const hit = self.findFeatureInRpcData(featureId)
           const region = hit && self.loadedRegions.get(hit.displayedRegionIndex)
-          if (!hit || !region) {
-            return undefined
-          }
-          const { idx, rpcData, start, end } = hit
-          return {
-            id: featureId,
-            name: readNameAt(rpcData, idx),
-            start,
-            end,
-            flags: rpcData.readFlags[idx],
-            mapq: rpcData.readMapqs[idx],
-            // The worker's own normalized strand, not a re-derivation from
-            // SAM_FLAG_REVERSE. Identical for BAM/CRAM (whose `strand` IS that
-            // flag), but a PAF/synteny block carries a real strand and no flags
-            // at all — so the flag read reported every reverse-strand block as
-            // `(+)` in the hover tooltip and in `hoveredFeature`. Same
-            // reasoning as `strandKey` in shared/groupFeatures.ts.
-            strand: rpcData.readStrands[idx] ?? 1,
-            refName: region.refName,
-            assemblyName: region.assemblyName,
-          }
+          return hit && region ? readInfo(hit, region, featureId) : undefined
         },
 
         /**
@@ -3918,29 +3786,6 @@ export default function stateModelFactory(
         }
       })
       .actions(self => {
-        // One RPC for both pileup and chain modes; the worker branches on
-        // `linkedReads` (passed via rpcProps).
-        function fetchFeaturesForRegion(
-          adapterConfig: Record<string, unknown>,
-          region: Region,
-          ctx: FetchContext,
-        ) {
-          const session = getSession(self)
-          const sequenceAdapter = getSequenceAdapter(session, region)
-          const sessionId = getRpcSessionId(self)
-          return session.rpcManager.call(sessionId, 'RenderAlignmentData', {
-            adapterConfig,
-            sequenceAdapter,
-            regions: [region],
-            ...self.rpcProps(),
-            stopToken: ctx.stopToken,
-            // this region's slot on the fetch's fan-out, so the N parallel
-            // collapsed-intron fetches aggregate into one bar instead of
-            // clobbering each other's progress text
-            statusCallback: ctx.statusCallback,
-          })
-        }
-
         return {
           /**
            * #action
@@ -3953,7 +3798,7 @@ export default function stateModelFactory(
               // union below is a cross-region decision, so this guards once
               // around the whole batch instead of per region.
               const results = await callEachRegion(needed, ctx, (region, c) =>
-                fetchFeaturesForRegion(self.adapterConfig, region, c),
+                fetchFeaturesForRegion(self, self.adapterConfig, region, c),
               )
               if (ctx.isStale()) {
                 return

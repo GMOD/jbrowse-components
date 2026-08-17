@@ -5,6 +5,13 @@ band: [reference/ARC_BAND.md](../../../../agent-docs/reference/ARC_BAND.md).
 Layout stays main-thread per
 [ADR-053](../../../../agent-docs/architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md).
 
+**A getter here that computes rather than reads belongs in a sibling module**,
+with the getter left as the memoized adapter — `groupedDataMaps.ts`,
+`groupLayout.ts`, `lanes.ts`, `overlaySections.ts`, `readLookup.ts`,
+`sectionLayout.ts`. That is what lets each pass be unit-tested without booting
+an MST tree, and it is why model.ts is a chain of thin getters rather than a
+chain of algorithms. The MST rule constrains the composed TYPES, not every view.
+
 ## Which getter decides what a setting invalidates
 
 `rpcProps()` refetches, `groupLayoutContext` relayouts, `readColorContext`
@@ -48,13 +55,13 @@ statement of when framing is live.
 
 ## A lane, not a group key
 
-**`lanes` is where a group key becomes data** — the raw map, the laid-out map,
-the two arc feeds, the sashimi sides, and the collapse/override state, per lane,
-in stacking order. A `renderSections` entry IS its lane plus band geometry, so a
-consumer walking sections has every per-lane answer in hand and none of them are
-optional. Don't reach back into a by-key collection from a call site that
-already has a lane; don't add a twelfth keyed collection when a lane field will
-do.
+**`buildLanes` (lanes.ts) is where a group key becomes data** — the raw map, the
+laid-out map, the two arc feeds, the sashimi sides, and the collapse/override
+state, per lane, in stacking order. A `renderSections` entry IS its lane plus
+band geometry, so a consumer walking sections has every per-lane answer in hand
+and none of them are optional. Don't reach back into a by-key collection from a
+call site that already has a lane; don't add a twelfth keyed collection when a
+lane field will do.
 
 **Ungrouped is the one-lane case** (key `''`), and no-data is the one SYNTHETIC
 lane (`drawnLanes`) — that is why `sections` has no ungrouped branch.
