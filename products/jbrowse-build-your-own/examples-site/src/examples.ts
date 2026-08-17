@@ -242,6 +242,20 @@ export const pages: ExamplePage[] = [
       { slug: 'synteny-ribbons', title: 'Two linear views and a ribbon band' },
     ],
   },
+  {
+    slug: 'svg-figures',
+    title: 'SVG figures',
+    description:
+      "JBrowse's SVG export is React components, so they mount in your page: a figure of the current view in DOM nodes, redrawn as the reader navigates.",
+    group: 'Going further',
+    // Last, because it assumes the rest: it draws a pan/zoom track stack of its
+    // own and puts the figure underneath, so a reader can compare the two
+    // renderings of one view.
+    //
+    // no section description: a single-section page draws no "On this page"
+    // card, so it would render nowhere
+    sections: [{ slug: 'svg-figure', title: 'A figure that follows the view' }],
+  },
 ]
 
 export const examples = flattenExamples(pages)

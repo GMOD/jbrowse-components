@@ -73,6 +73,14 @@ const MUI_BUDGET = {
   'web-workers': 0,
   // measured, not chosen -- see the note below the budget
   synteny: 0,
+  // Two renderings of the same two tracks on one page -- the canvas stack behind
+  // `DisplayUIProvider`, and the SVG figure under it -- and the figure's half of
+  // this zero is free rather than installed: an SVG body draws no chrome, and the
+  // one thing it draws that a display would (a colour key) is vector. The page
+  // does mount a Material `ThemeProvider`, which is what JBrowse's SVG chrome
+  // reads its colours from; a provider is not an element, and this number is what
+  // says so.
+  'svg-figures': 0,
 }
 
 // Record every MUI-classed element that is ever inserted, from before the

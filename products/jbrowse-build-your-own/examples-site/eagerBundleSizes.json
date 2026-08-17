@@ -1,50 +1,54 @@
 {
   "index": {
-    "chunks": 257,
-    "gzipKb": 528
-  },
-  "controlling-the-view": {
-    "chunks": 259,
+    "chunks": 261,
     "gzipKb": 533
   },
+  "controlling-the-view": {
+    "chunks": 263,
+    "gzipKb": 539
+  },
   "highlight-a-region": {
-    "chunks": 256,
-    "gzipKb": 527
+    "chunks": 260,
+    "gzipKb": 532
   },
   "loading-and-errors": {
-    "chunks": 256,
-    "gzipKb": 527
+    "chunks": 260,
+    "gzipKb": 533
   },
   "multiple-tracks": {
-    "chunks": 251,
-    "gzipKb": 521
+    "chunks": 254,
+    "gzipKb": 526
   },
   "removing-material-ui": {
-    "chunks": 256,
-    "gzipKb": 527
+    "chunks": 260,
+    "gzipKb": 533
   },
   "scalebar-and-labels": {
-    "chunks": 260,
-    "gzipKb": 530
+    "chunks": 264,
+    "gzipKb": 536
   },
   "search-by-name": {
-    "chunks": 257,
-    "gzipKb": 529
+    "chunks": 261,
+    "gzipKb": 535
+  },
+  "svg-figures": {
+    "chunks": 262,
+    "gzipKb": 534
   },
   "synteny": {
-    "chunks": 334,
-    "gzipKb": 680
+    "chunks": 341,
+    "gzipKb": 689
   },
   "track-settings": {
-    "chunks": 258,
-    "gzipKb": 527
+    "chunks": 260,
+    "gzipKb": 532
   },
   "ultraminimal": {
-    "chunks": 252,
-    "gzipKb": 522
+    "chunks": 255,
+    "gzipKb": 527
   },
   "web-workers": {
-    "chunks": 256,
-    "gzipKb": 527
+    "chunks": 260,
+    "gzipKb": 532
   }
 }
