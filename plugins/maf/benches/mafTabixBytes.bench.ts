@@ -50,19 +50,19 @@
 import { TabixIndexedFile } from '@gmod/tabix-pr'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { DEFAULT_SPEC, ensureMafTabixFixture } from './mafTabixFixture.ts'
 import { featureData, makeParser } from '../../bed/src/util.ts'
 import { MafWirePacker } from '../src/LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
-import {
-  columnRange,
-  makeByteSourceResolver,
-  scanMafTabixEntryBytes,
-} from './mafTabixBytes.ts'
 import {
   makeSourceResolver,
   scanMafTabixEntry,
   selectReferenceSequenceString,
 } from '../src/util/parseAssemblyName.ts'
+import {
+  columnRange,
+  makeByteSourceResolver,
+  scanMafTabixEntryBytes,
+} from './mafTabixBytes.ts'
+import { DEFAULT_SPEC, ensureMafTabixFixture } from './mafTabixFixture.ts'
 
 import type { MafWirePacked } from '../src/LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
 
@@ -178,7 +178,7 @@ async function runBedString(file: TabixFile): Promise<MafWirePacked> {
         reserve.bytes += alignments[id]!.seq.length
       }
       rawBlocks.push({
-        startBp: feature.get('start') as number,
+        startBp: feature.get('start'),
         refSeq,
         alignments,
       })
