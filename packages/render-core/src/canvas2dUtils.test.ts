@@ -298,6 +298,20 @@ describe('bpAtPx', () => {
       expect(bpAtPx(left, frac)).toBe(14480)
       expect(bpAtPx(left + (toX(14481) - left) / 2, frac)).toBe(14480)
     })
+
+    // Splitting the anchor is what the tests above ask for, but returning an
+    // integer is not: `Math.floor(start + offset)` passes every one of them and
+    // is a whole base out here. `start + offset` is 8.006433823529411 past
+    // 14468.99356617647, which is BELOW 14477 exactly and rounds to it — the
+    // sum's ULP at genome scale is coarser than the gap it has to resolve, so
+    // the boundary the anchor's own fraction puts near this pixel swallows it.
+    // Adding only the sub-base remainder keeps the sum at 8.999999999999678,
+    // which floors where the exact value does. That is the whole reason for the
+    // split rather than the one-line spelling, so it gets a case of its own.
+    test('the genome-scale addend stays out of the rounded sum', () => {
+      expect(bpAtPx(281, frac)).toBe(14476)
+      expect(14468.99356617647 + (281 * 31) / 1088).toBe(14477)
+    })
   })
 
   // A pixel that lands EXACTLY on a base boundary must name the base starting

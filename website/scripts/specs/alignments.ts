@@ -841,11 +841,19 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // Right-click the SNP column itself, resolved from the locus rather
           // than written down: the previous fixed x was computed for a 107bp
           // window and this spec's is 31bp, so it had drifted onto a plain read
-          // two columns over. The menu then offered no "SNP/Mismatch" item at
-          // all — intermittently, since which read sits under a fixed y depends
-          // on how the pileup packed that run. fracY lands in the pileup below
-          // the coverage subtrack; every read row in this column carries the
-          // mismatch, so anywhere in the band works.
+          // two columns over. fracY lands in the pileup below the coverage
+          // subtrack; every read row in this column carries the mismatch, so
+          // anywhere in the band works.
+          //
+          // "The menu offers no SNP/Mismatch item" then came back with the
+          // anchor already right, and the second cause was not in this file:
+          // `bpAtPx` floored the offset and added a block start that carries a
+          // fraction, so the base under the cursor came back fractional and the
+          // pileup could not match a mismatch column it was drawing (29c7651d9f).
+          // Both causes present as this cascade timing out, and the second one
+          // moves with the view's offsetPx rather than with anything the spec
+          // says — so before re-anchoring, check that a right-click anywhere in
+          // the track offers the item at all.
           { type: 'rightclick', anchor: SORT_COLUMN },
           ...menuCascade(['SNP/Mismatch', 'Sort by base at position']),
         ],
