@@ -950,6 +950,8 @@ clustering** in the track menu reorders the 464 rows by genotype similarity and
 draws a dendrogram beside them. The next section's figure is that matrix, beside
 the graph the same alleles came out of.
 
+<Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The 464-haplotype lane clustered from the track menu: Clustering, Cluster rows by genotype, Run clustering, and the rows arriving in their new order with a dendrogram beside them." />
+
 ## Carriage at the graph's own granularity
 
 The callset above is decomposed, so one graph bubble arrives as many records and

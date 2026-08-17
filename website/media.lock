@@ -8,9 +8,13 @@
 # dist/.
 #
 # <path> <width>x<height> <bytes> <sha256>
+website/static/media/pangenome/hprc_cluster_callset.jpg 1280x750 131342 84bd958dae1037ff003e523690d3a5dadaa6bb80ca63a851aad6f3bb2ab13d20
+website/static/media/pangenome/hprc_cluster_callset.mp4 - 602043 1159b195ebeb6a5d80394f8cc286434438bcd0738f0d53e3bbfa0ec5251a6d92
 website/static/media/pangenome/hprc_end_to_end.jpg 1280x1120 150644 01ad380763205dfd4713eafe05339e8d8c420de36134cfcefa5bd0fdc43d183b
 website/static/media/pangenome/hprc_end_to_end.mp4 - 861011 3442a91693fb15b952b1be3a25c3f0e1d86cccb276f271dc47fe638f40e3c2c4
 website/static/media/pangenome/pggb_layout_switch.jpg 1280x1250 147616 9958dc5ee4b4b6a65059ce2f6e51de883ef5b3fbb3c01c88c5de5aa7c3189560
 website/static/media/pangenome/pggb_layout_switch.mp4 - 271698 c48f437cc966c8713a0328619d8249184d334b7580ec5c355399b826b5a71b8d
+website/static/media/pangenome/pggb_out_to_strain.jpg 1280x1000 100102 e3d43de6b36f1ebc65f9aa43712cf482e1dda5d04d65f5e51914cd25ed39cc65
+website/static/media/pangenome/pggb_out_to_strain.mp4 - 172276 7c4122f8c7b22b5b7ffe2e05f1a59e018d854ae3c95bf98d02e0849f299ba1ee
 website/static/media/pangenome/pggb_subgraph_launch.jpg 1280x1060 135658 c3d98b02e62206be69f10eaaf3b612ad7a8daa44b517b705e56300d41cfac522
 website/static/media/pangenome/pggb_subgraph_launch.mp4 - 249712 7d2f5e83f7169ec39eb1bb7706a6ac3b20892e1b6f254383fafcb20dc891b864

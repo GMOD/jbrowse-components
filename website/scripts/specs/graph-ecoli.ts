@@ -1340,6 +1340,13 @@ export const pggbVideoFixtures = {
   rowsLocus: PGGB_ROWS_LOCUS,
   rowsWindow: PGGB_ROWS_WINDOW,
   locusSession: pggbLocusSession,
+  // The five-assembly config, which the outbound launch needs and CONFIG cannot
+  // serve: the node menu offers only assemblies the session has, so on a
+  // K12-only fixture the CFT073 entry the tour clicks is not in the menu at all.
+  pangenomeConfig: ECOLI_PANGENOME_CONFIG,
+  // The CFT073 allele pangenome/pggb_strain_launch rings, so the tour and the
+  // still open the same node's menu.
+  strainLaunchNode: '118465-',
 }
 
 export const ecoliGraphSpecs: ScreenshotSpec[] = [

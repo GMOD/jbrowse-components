@@ -799,6 +799,43 @@ export function hprcTourSession() {
   })
 }
 
+// The callset lane the clustering tour drives, and the session it sits in.
+//
+// The SV filter is already applied, where the tour's own move is the clustering.
+// Driving the filter too would mean driving the Edit filters dialog, and no spec
+// here does that yet, so a tour that tried would be guessing at labels rather
+// than repeating a route something already proves.
+//
+// `runClustering` is deliberately ABSENT: it is what the tour clicks, so a
+// session that arrives already clustered has nothing left to film.
+export const hprcClusterFixtures = {
+  session: sessionSpec(HPRC_CONFIG, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: 'chr6:32,510,000-32,600,000',
+        tracks: [
+          hg38GeneLane(60),
+          hprcSegmentsLane(MHC_CLASSII_REGION),
+          {
+            trackId: 'hprc2_wave_grch38',
+            type: 'LinearMultiSampleVariantDisplay',
+            height: 340,
+            jexlFilters: SV_FILTER,
+          },
+        ],
+      },
+    ],
+  }),
+  trackId: 'hprc2_wave_grch38',
+  // the callset's own fetch finished, rather than first paint, which an empty
+  // canvas flips on its own
+  ready: `${displayPainted('variant-display')}[data-display-phase="ready"]`,
+  // the clustering RPC landed: its dendrogram exists beside the rows
+  clustered: '[data-testid="tree_sidebar_dendrogram"]',
+}
+
 export const hprcGraphSpecs: ScreenshotSpec[] = [
   // A WHOLE HUMAN CHROMOSOME AS A GRAPH. This is the scale claim, and the two
   // numbers that make it are in the header: 249 Mb of GRCh38 chr1, drawn from

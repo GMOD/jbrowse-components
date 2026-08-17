@@ -30,7 +30,7 @@
 // A tour whose track config had drifted from the figures' would document a route
 // through an app the rest of the page is not showing.
 import { CODE_BASE } from '../src/lib/code-base.ts'
-import { sessionSpec } from './screenshot-spec-helpers.ts'
+import { menuCascade, sessionSpec } from './screenshot-spec-helpers.ts'
 import { pggbVideoFixtures } from './specs/graph-ecoli.ts'
 import {
   TOOLBAR_READY,
@@ -40,6 +40,7 @@ import {
   HPRC_SEGMENTS_TRACK_JSON,
   TOUR_MHC_LOCUS,
   TOUR_NODE,
+  hprcClusterFixtures,
   hprcTourSession,
 } from './specs/graph-hprc.ts'
 
@@ -114,7 +115,27 @@ const {
   rowsLocus,
   rowsWindow,
   locusSession,
+  pangenomeConfig: PGGB_PANGENOME_CONFIG,
+  strainLaunchNode: PGGB_STRAIN_NODE,
 } = pggbVideoFixtures
+
+// The graph alone, on the five-assembly config, which is the state a reader is
+// in when they have a subgraph open and want the donor rather than a projection
+// of it. Pinned by id so the menu clicks scope to the graph rather than to the
+// linear view the launch adds under it.
+const pggbGraphOnly = sessionSpec(PGGB_PANGENOME_CONFIG, {
+  sessionTracks: [segmentsTrack],
+  views: [
+    {
+      id: 'pggb_launch_graph',
+      type: 'GraphGenomeView',
+      loadedTrackId: segmentsTrackId,
+      loadedRegion: rowsLocus,
+      layoutMode: 'force',
+      colorScheme: 'stable-rank',
+    },
+  ],
+})
 
 // A linear view of the pggb graph's own segments over the IS5 element, with no
 // graph pane: the state a reader is in before they cut one, which is what makes
@@ -411,6 +432,106 @@ export const videoSpecs: VideoSpec[] = [
     // seconds between the launch landing and the Layout dropdown opening.
     posterAt: 30,
     tailMs: 3500,
+  },
+  // OUT OF THE GRAPH AND INTO THE STRAIN, which is the one route on the pggb
+  // page whose result is a different assembly. pangenome/pggb_strain_launch is
+  // the still, and it can only put the before and the after side by side; what
+  // it cannot show is that the second view came out of the first one's node.
+  //
+  // The node menu is FLAT — `Node details`, then one `Open in <assembly>` row
+  // per assembly the session carries. There is no `Launch view` cascade on a
+  // node, which is the thing the page used to say and the reason this tour is
+  // worth more than the sentence it replaces: a reader hunting for a submenu
+  // that is not there gives up on the route entirely.
+  {
+    name: 'pangenome/pggb_out_to_strain',
+    description:
+      "A CFT073 allele opened on CFT073's own coordinates: right-click the node, take its Open in entry, and read the deletion from the donor's side",
+    url: pggbGraphOnly,
+    viewportWidth: 1280,
+    // Sized to the state the tour ENDS in: the graph pane plus the linear view
+    // the launch adds under it. The run reports 736px of app at the first frame
+    // and 994px at the last, so the opening state carries page background under
+    // it — the cost of filming a launch, the same trade pggb_subgraph_launch
+    // takes and for the same reason.
+    viewportHeight: 1000,
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    settleMs: 8000,
+    steps: [
+      {
+        type: 'rightclick',
+        anchor: { view: 0, graphNode: PGGB_STRAIN_NODE },
+        say: 'Right-click the CFT073 allele',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Open in CFT073' },
+      { type: 'click', text: 'Open in CFT073', say: 'Open in CFT073' },
+      // Gate on the launched view's own gene lane, not on a delay: the launch
+      // carries the session's annotation for the assembly it opens, and the
+      // whole point of the clip is that CFT073 arrives carrying its own genes.
+      {
+        type: 'waitForText',
+        text: 'CFT073 genes',
+        timeout: 120000,
+        cut: true,
+      },
+      { type: 'delay', ms: 3000 },
+    ],
+    tailMs: 3500,
+  },
+  // THE CALLSET REORDERING ITSELF. `## The variant callset` ends by saying that
+  // clustering gathers the haplotypes carrying an allele into a block, and the
+  // page has no picture of the move — the figure that shows the result
+  // (maf_hprc_pangenome) arrives already clustered, so the block reads as a
+  // property of the data rather than as something the reader asks for.
+  //
+  // 464 rows through an RPC is the heaviest thing filmed here, which is what the
+  // long timeouts and the `cut` are for. The filter is already on the lane: the
+  // tour's move is the clustering, and driving Edit filters too would mean
+  // guessing at a dialog no spec drives yet.
+  {
+    name: 'pangenome/hprc_cluster_callset',
+    description:
+      "HPRC's 464 haplotypes clustered by genotype from the track menu, so the carriers of the MHC class II deletion gather into one block",
+    url: hprcClusterFixtures.session,
+    viewportWidth: 1280,
+    // The lane is a fixed 340 px and clustering adds a dendrogram beside it
+    // rather than under it, so this tour is the rare one whose app height does
+    // not move: the run reports 739px at the first frame, the last and its
+    // tallest alike. 700 clipped the callset's bottom rows.
+    viewportHeight: 750,
+    readySelector: hprcClusterFixtures.ready,
+    readyTimeout: 360000,
+    settleMs: 8000,
+    steps: [
+      {
+        type: 'click',
+        selector: `[data-testid="track_menu_icon"][data-trackid="${hprcClusterFixtures.trackId}"]`,
+        say: 'Track menu',
+        hold: 700,
+      },
+      ...menuCascade(['Clustering', 'Cluster rows by genotype...']),
+      {
+        type: 'click',
+        text: 'Cluster rows by genotype...',
+        say: 'Clustering → Cluster rows by genotype...',
+      },
+      { type: 'waitForText', text: 'Run clustering' },
+      { type: 'delay', ms: 1500 },
+      { type: 'click', text: 'Run clustering', say: 'Run clustering' },
+      // The dialog closing says the run started; the dendrogram says it landed.
+      // Waiting on the first alone would put the camera back on a lane that has
+      // not reordered yet.
+      {
+        type: 'waitForSelector',
+        selector: hprcClusterFixtures.clustered,
+        timeout: 360000,
+        cut: true,
+      },
+      { type: 'delay', ms: 3000 },
+    ],
+    tailMs: 4000,
   },
 ]
 
