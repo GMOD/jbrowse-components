@@ -196,29 +196,46 @@ lands, which is a visibly missing layer on the frame that first needs it. WebGL2
 has neither problem: linking is synchronous there anyway.
 
 **The set is also shared across displays**, which is what keeps the 22 ms from
-multiplying. `hal/deviceGpuCache.ts` memoizes pipelines and the two bind group
-layouts per device, keyed on the `PipelineDescriptor` object itself. Measured on
-one page load per row, cycling real alignments tracks:
+multiplying — `hal/deviceGpuCache.ts` memoizes pipelines and the two bind group
+layouts per device, keyed on the `PipelineDescriptor` object itself. A/B'd by
+bypassing the pipeline memo and nothing else, one page load per row, cycling
+real alignments tracks:
 
 <!-- prettier-ignore -->
-| alignments tracks | pipelines built | bind group layouts | to all-displays-drawn |
-| --- | --- | --- | --- |
-| 1 | 23 | 2 | 4064 ms (cold) |
-| 2 | 23 | 2 | 1940 ms |
-| 3 | 23 | 2 | 1951 ms |
-| 4 | 23 | 2 | 2587 ms |
+| tracks | pipelines + WGSL parses | | summed resolve | | slowest one | | to all-drawn | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| | **cached** | *bypassed* | **cached** | *bypassed* | **cached** | *bypassed* | **cached** | *bypassed* |
+| 1 | 23 | 23 | 445 ms | 406 ms | 24.8 ms | 21.5 ms | 4874 | 3985 |
+| 2 | 23 | 46 | 416 ms | 4421 ms | 22.2 ms | 158.8 ms | 2429 | 3595 |
+| 3 | 23 | 69 | 452 ms | 3831 ms | 23.7 ms | 71.2 ms | — | 2087 |
+| 4 | 23 | 92 | 439 ms | 6292 ms | 21.6 ms | 88.4 ms | 2598 | 1982 |
 
-Flat, where before the cache it was 23 per display — 92 at the bottom row, and
-230 for the ten-track case. It stays flat because those tracks share a display
-type and therefore the same module-const pass array; a session of four
-*different* display types builds four sets, correctly. The cache is exact
-rather than approximate because `slangPass` reads `wgslSource` off a generated
-const, so descriptor identity already means "same shader, same layout, same
-blend, same topology" — and two passes sharing a `.slang` shape module get
-separate entries, because `slangPass` built them separate objects. It holds the
-in-flight promise rather than the resolved pipeline, which is the half that
-matters: many tracks mount in one tick, so a memo of finished compiles would
-miss on all of them.
+**The one-track row is the control**: with nothing to share the two arms agree,
+so the rest of the table is the cache and not build-to-build noise.
+
+Read it as two findings, and the second is the one that keeps this entry
+Accepted rather than closed as a win. The cache removes real work — 4x fewer
+pipelines and, because `createShaderModule` is synchronous, 4x fewer
+main-thread WGSL parses, with summed compile time 14x lower and the slowest
+single compile flat at ~22 ms instead of degrading to 88 ms as compiles contend.
+**And none of it reaches the user**: to-all-displays-drawn does not improve, and
+the bypassed arm is nominally faster on three rows of four. Startup here is
+fetch and parse bound, the same answer ["a region arrival draws
+twice"](#a-region-arrival-draws-twice-wherever-the-render-autorun-observes-the-data)
+reached about draws. What the cache buys is headroom and memory — 92 pipeline
+objects and 92 shader modules held for the page's life against 23 — not a
+number anyone feels at four tracks. Seventeen would be 391.
+
+It stays flat because those tracks share a display type and therefore the same
+module-const pass array. A session of four *different* display types builds four
+sets, correctly — that half is reasoned from descriptor identity and pinned in
+`deviceGpuCache.test.ts`, not measured here. The cache is exact rather than
+approximate because `slangPass` reads `wgslSource` off a generated const, so
+descriptor identity already means "same shader, same layout, same blend, same
+topology" — and two passes sharing a `.slang` shape module get separate entries,
+because `slangPass` built them separate objects. It holds the in-flight promise
+rather than the resolved pipeline, which is the half that matters: many tracks
+mount in one tick, so a memo of finished compiles would miss on all of them.
 
 **Retire when** never, unless a machine turns up where the batch is not
 concurrent. Re-run the probe there before building anything; the numbers above
