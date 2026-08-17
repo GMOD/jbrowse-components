@@ -64,7 +64,6 @@ function extracted(colorBy: ColorBy | undefined) {
     perBaseQualities: out.perBaseQualities,
     perBaseLetters: out.perBaseLetters,
     tagColorValues: out.tagColorValues,
-    uniqueTagValues: out.uniqueTagValues,
   }
 }
 

@@ -94,30 +94,6 @@ describe('mateRefName extraction', () => {
         .tagColorValues,
     ).toEqual([])
   })
-
-  // The main thread turns uniqueTagValues into colorTagMap, which is the
-  // legend's swatch list — reporting them only for tag coloring left chromosome
-  // painting with no legend at all.
-  test('distinct names are reported for the legend, skipping the mateless ones', () => {
-    expect(
-      extract(
-        [
-          syntenyFeature('ctgA', 'ctgB'),
-          syntenyFeature('ctgA', 'ctgB'),
-          syntenyFeature('ctgA', 'ctgC'),
-          bamRead(''),
-        ],
-        { type: 'mateRefName' },
-      ).uniqueTagValues,
-    ).toEqual(['ctgB', 'ctgC'])
-  })
-
-  test('no names are reported under other color schemes', () => {
-    expect(
-      extract([syntenyFeature('ctgA', 'ctgB')], { type: 'strand' })
-        .uniqueTagValues,
-    ).toBeUndefined()
-  })
 })
 
 // The SA tag walk is UNCONDITIONAL, and this is the test that says so.

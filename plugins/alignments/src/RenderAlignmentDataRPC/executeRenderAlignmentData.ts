@@ -302,7 +302,6 @@ async function buildGroupResult(
     perBaseLetters,
     tagColorValues,
     sortTagValues,
-    uniqueTagValues,
     nextPositions,
     suppAlignments,
     clipAtStart,
@@ -443,7 +442,6 @@ async function buildGroupResult(
 
     detectedModifications: Array.from(detectedModifications),
 
-    newTagValues: uniqueTagValues,
     readNextPositions: new Uint32Array(nextPositions),
     readSuppAlignments: suppAlignments,
     readClipAtStart: new Uint32Array(clipAtStart),

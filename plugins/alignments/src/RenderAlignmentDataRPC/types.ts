@@ -352,9 +352,6 @@ export interface PileupDataResult {
   // as "everything normal".
   insertSizeStats?: InsertSizeBand
 
-  // Unique tag values discovered during feature iteration (for colorBy tag mode)
-  newTagValues?: string[]
-
   // Per-read tag values for tag sort, parallel to readKeys (only populated when sortedBy.type === 'tag').
   // Main thread uses these to compute sorted layout without needing a re-fetch.
   sortTagValues?: string[]

@@ -723,9 +723,9 @@ function modificationLegend(
 // reason to exist and what is ON SCREEN is the whole answer.
 //
 // The empty string is what the worker reports for a read the scheme resolved no
-// value for (no mate, or the tag absent). It is dropped here for the same
-// reason `uniqueTagValues` drops it worker-side: it paints the neutral
-// fallback, which `noTagValue` keys under a name.
+// value for (no mate, or the tag absent). Dropped, because it paints the
+// neutral fallback rather than a value's color, and `noTagValue` is what keys
+// that neutral — under a name.
 function bakedValueLegend(
   colorBy: ColorBy,
   present: ReadonlySet<string> | undefined,
