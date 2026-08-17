@@ -2,6 +2,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
   buildCollapsedViewSnapshot,
+  collapsedRegionsFor,
   seedSoloInTracks,
 } from './CollapseIntronsDialog/util.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -33,10 +34,13 @@ const transcripts = [
   }),
 ]
 
+const CONTIGS = [{ refName: 'ctgA', start: 0, end: 50_000 }]
+
 const assembly = {
   name: 'volvox',
   getCanonicalRefName2: (r: string) => r,
-  regions: [{ refName: 'ctgA', start: 0, end: 50_000 }],
+  regions: CONTIGS,
+  getRegionForRefName: (r: string) => CONTIGS.find(c => c.refName === r),
 } as unknown as Assembly
 
 // These tests pin the behavior that makes solo/hidden a declarative prop:
@@ -178,12 +182,18 @@ describe('seedSoloInTracks', () => {
 describe('buildCollapsedViewSnapshot', () => {
   function args(soloFeatureId?: string) {
     const { view } = createTestEnvironment().createDisplay()
-    return {
-      view,
+    const result = collapsedRegionsFor({
       transcripts,
       assembly,
       padding: 20,
       flip: false,
+    })
+    if ('error' in result) {
+      throw new Error(result.error)
+    }
+    return {
+      view,
+      regions: result.regions,
       trackId: 'test_track',
       soloFeatureId,
       label: 'myGene',

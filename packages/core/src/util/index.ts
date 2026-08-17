@@ -214,6 +214,7 @@ export {
   gatherOverlaps,
   mergeIntervals,
 } from './intervals.ts'
+export { clampToContig } from './clampToContig.ts'
 export { springAnimate } from './springAnimate.ts'
 export {
   localStorageAvailable,

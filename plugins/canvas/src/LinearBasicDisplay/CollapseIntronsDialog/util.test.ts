@@ -2,6 +2,7 @@ import { createTestEnvironment } from '../testEnv.ts'
 import {
   buildCollapsedRegions,
   buildCollapsedViewSnapshot,
+  collapsedRegionsFor,
   featureHasExonsOrCDS,
   getExonsAndCDS,
   getTranscripts,
@@ -25,37 +26,49 @@ function feat(fields: FeatFields = {}): Feature {
   } as unknown as Feature
 }
 
+// contigs at their real lengths, since clampToContig is what reads them: ctgA is
+// 50kb and ctgB is short enough for a padded exon to run off the end of it
+const CONTIGS = [
+  { refName: 'ctgA', start: 0, end: 50_000 },
+  { refName: 'ctgB', start: 0, end: 120 },
+]
+
 const assembly = {
   name: 'volvox',
   getCanonicalRefName2: (r: string) => r,
-  regions: [{ refName: 'ctgA', start: 0, end: 50_000 }],
+  regions: CONTIGS,
+  getRegionForRefName: (r: string) => CONTIGS.find(c => c.refName === r),
 } as unknown as Assembly
 
-function intronArgs({
-  transcripts,
-  flip,
-  padding = 20,
-}: {
+// The regions a collapse produces, unwrapped — a test naming regions has already
+// said it expects some, so the error arm is a test failure rather than a branch
+// every caller repeats.
+function collapsedRegionsOf(opts: {
+  transcripts: Feature[]
+  flip: boolean
+  padding?: number
+}) {
+  const result = collapsedRegionsFor({ assembly, padding: 20, ...opts })
+  if ('error' in result) {
+    throw new Error(result.error)
+  }
+  return result.regions
+}
+
+// The two intron actions take the regions the dialog built, so a test driving one
+// builds them the same way.
+function intronArgs(opts: {
   transcripts: Feature[]
   flip: boolean
   padding?: number
 }) {
   return {
     view: createTestEnvironment().createDisplay().view,
-    transcripts,
-    assembly,
-    padding,
-    flip,
+    regions: collapsedRegionsOf(opts),
     trackId: 'test_track',
     soloFeatureId: undefined,
     label: 'myGene',
   }
-}
-
-// buildMergedRegions is private, so the regions it produces are read back off
-// the snapshot the "Open in new view" action builds from them.
-function collapsedRegionsOf(opts: { transcripts: Feature[]; flip: boolean }) {
-  return buildCollapsedViewSnapshot(intronArgs(opts)).displayedRegions
 }
 
 describe('CollapseIntrons utilities', () => {
@@ -134,7 +147,8 @@ describe('CollapseIntrons utilities', () => {
   })
 
   describe('buildCollapsedRegions', () => {
-    const args = { refName: 'chr1', assemblyName: 'hg19' }
+    // on the 50kb ctgA, so nothing clamps unless a test means it to
+    const args = { refName: 'ctgA', assembly }
 
     it('pads each exon by the window size', () => {
       const regions = buildCollapsedRegions({
@@ -143,7 +157,7 @@ describe('CollapseIntrons utilities', () => {
         ...args,
       })
       expect(regions).toEqual([
-        { refName: 'chr1', assemblyName: 'hg19', start: 950, end: 1150 },
+        { refName: 'ctgA', assemblyName: 'volvox', start: 950, end: 1150 },
       ])
     })
 
@@ -162,8 +176,7 @@ describe('CollapseIntrons utilities', () => {
 
     it('merges exons whose padded windows overlap (intron < 2*padding)', () => {
       // gap = 150, 2*padding = 200, so 150 < 200 -> windows overlap, merge.
-      // The padded low end (0 - 100 = -100) is floored at 0 (interbase min)
-      // even though no chromosome bounds are passed here.
+      // The padded low end (0 - 100 = -100) is floored at the contig start.
       const regions = buildCollapsedRegions({
         intervals: [
           { start: 0, end: 100 },
@@ -199,11 +212,11 @@ describe('CollapseIntrons utilities', () => {
           { start: 500, end: 600 },
         ],
         padding: 5,
-        bounds: { start: 0, end: 120 },
-        ...args,
+        refName: 'ctgB',
+        assembly,
       })
       expect(regions).toEqual([
-        { refName: 'chr1', assemblyName: 'hg19', start: 5, end: 95 },
+        { refName: 'ctgB', assemblyName: 'volvox', start: 5, end: 95 },
       ])
     })
 
@@ -213,11 +226,11 @@ describe('CollapseIntrons utilities', () => {
       const regions = buildCollapsedRegions({
         intervals: [{ start: 10, end: 90 }],
         padding: 50,
-        bounds: { start: 0, end: 120 },
-        ...args,
+        refName: 'ctgB',
+        assembly,
       })
       expect(regions).toEqual([
-        { refName: 'chr1', assemblyName: 'hg19', start: 0, end: 120 },
+        { refName: 'ctgB', assemblyName: 'volvox', start: 0, end: 120 },
       ])
     })
   })
@@ -300,34 +313,39 @@ describe('CollapseIntrons utilities', () => {
 
   // Every downstream consumer assumes at least one region: the in-place path
   // would blank the view back to the import form, and the new-view path would
-  // divide by a zero-length span.
+  // divide by a zero-length span. So these come back as errors the dialog can
+  // show before either button is clicked, rather than as exceptions out of the
+  // click — which is where they used to surface, after it had closed.
   describe('no collapsible intervals', () => {
-    it('throws rather than building an empty region set', () => {
-      expect(() => {
-        collapsedRegionsOf({
-          transcripts: [feat({ refName: 'ctgA', type: 'tRNA' })],
-          flip: false,
-        })
-      }).toThrow(/No exons or CDS/)
+    const errorFor = (transcripts: Feature[]) =>
+      collapsedRegionsFor({ transcripts, assembly, padding: 20, flip: false })
+
+    it('reports having found no exons, rather than an empty region set', () => {
+      expect(errorFor([feat({ refName: 'ctgA', type: 'tRNA' })])).toEqual({
+        error: expect.stringMatching(/No exons or CDS/),
+      })
+    })
+
+    it('reports a missing refName rather than guessing one', () => {
+      expect(
+        errorFor([feat({ subfeatures: [feat({ type: 'exon' })] })]),
+      ).toEqual({ error: expect.stringMatching(/refName/) })
     })
 
     it('names the contig when every exon was past the end of it', () => {
-      // the test assembly's ctgA runs to 50,000. A reader looking at exons is not
-      // helped by being told there are none.
-      expect(() => {
-        collapsedRegionsOf({
-          transcripts: [
-            feat({
-              refName: 'ctgA',
-              subfeatures: [
-                feat({ type: 'exon', start: 60_000, end: 60_100 }),
-                feat({ type: 'exon', start: 70_000, end: 70_100 }),
-              ],
-            }),
-          ],
-          flip: false,
-        })
-      }).toThrow(/past the end of ctgA/)
+      // ctgA runs to 50,000. A reader looking at exons is not helped by being
+      // told there are none.
+      expect(
+        errorFor([
+          feat({
+            refName: 'ctgA',
+            subfeatures: [
+              feat({ type: 'exon', start: 60_000, end: 60_100 }),
+              feat({ type: 'exon', start: 70_000, end: 70_100 }),
+            ],
+          }),
+        ]),
+      ).toEqual({ error: expect.stringMatching(/past the end of ctgA/) })
     })
   })
 

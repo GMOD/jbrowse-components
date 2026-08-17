@@ -1352,10 +1352,34 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Place the viewport by the pair of PIXEL quantities it used to be stored
+       * as. Prefer `setWindow`: pixels mean nothing without the width they were
+       * measured at, so a round trip through here is only exact while the width
+       * holds still. Kept for callers that genuinely have pixels — a wheel
+       * gesture, a rubberband — and for reading old snapshots.
        */
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)
         this.scrollTo(offsetPx)
+      },
+
+      /**
+       * #action
+       * Place the viewport by the pair it is actually STORED as: the window's
+       * width and left edge, both in bp. `setNewView`'s bp-space twin, and the
+       * right one for anything that captures a viewport and puts it back later
+       * (an Undo, a saved location) — those two moments can be a window resize
+       * apart, and this pair survives one where a pixel pair does not.
+       *
+       * Still clamped, by the same zoom and scroll limits as every other mover:
+       * the regions may have changed under it, and a window the new set can't
+       * hold is not restorable however it was spelled.
+       */
+      setWindow(windowWidthBp: number, windowStartBp: number) {
+        // via zoomTo (not a bare assignment) for its clamp; `width` cancels, so
+        // the bp width in is the bp width out at whatever width is current
+        this.zoomTo(windowWidthBp / self.width)
+        this.scrollToBp(windowStartBp)
       },
 
       /**

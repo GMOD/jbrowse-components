@@ -518,6 +518,21 @@ export default function assemblyFactory(
       },
       /**
        * #method
+       * The whole-contig region for a CANONICAL refName — its extents, and so
+       * the bounds anything placing a span on it has to clamp into. Undefined
+       * before `regions` loads, and for a refName this assembly doesn't have.
+       *
+       * Reads the `refNameToIndex` memo, which is why this exists rather than
+       * each caller writing `assembly.regions?.find(r => r.refName === name)`:
+       * five of them did, and that scan is O(contigs) per call on an assembly
+       * whose whole point is that it may have thousands.
+       */
+      getRegionForRefName(refName: string) {
+        const idx = self.refNameToIndex?.get(refName)
+        return idx === undefined ? undefined : self.regions?.[idx]
+      },
+      /**
+       * #method
        * NCBI genetic-code (translation table) id for a refName, from the
        * assembly's `geneticCodes` config map (e.g. a mitochondrial contig = 2).
        * Falls back to the standard code (1) for unlisted refNames.

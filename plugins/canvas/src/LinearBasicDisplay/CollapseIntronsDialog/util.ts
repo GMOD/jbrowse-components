@@ -1,7 +1,17 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
+import {
+  clampToContig,
+  getSession,
+  mergeIntervals,
+  notEmpty,
+  stripTrackIds,
+  sum,
+} from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { fitAllRegionsWindow } from '@jbrowse/plugin-linear-genome-view'
+import {
+  fitAllRegionsWindow,
+  showRegionsWithUndo,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import {
   getSubfeatures,
@@ -12,6 +22,7 @@ import {
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { TrackSnapshot } from '@jbrowse/core/util/tracks'
+import type { Region } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const isExonOrCDS = (f: Feature) => isExon(f) || isCDS(f)
@@ -59,52 +70,33 @@ export function hasIntrons(transcripts: Feature[]) {
  * expanded by `padding` on both sides (the visible window around each splice
  * boundary), then overlapping padded intervals are merged. Merging uses w=0
  * because the padding is already baked into start/end; an intron is collapsed
- * whenever its gap exceeds 2*padding. Regions are clamped to `bounds` (the
- * chromosome extents) so padding near a contig edge can't run past it.
+ * whenever its gap exceeds 2*padding.
+ *
+ * `clampToContig` keeps the padding from running off either end of the contig,
+ * and drops a window the contig doesn't reach at all rather than handing back an
+ * inverted one — see it for why that matters and how it happens.
  */
 export function buildCollapsedRegions({
   intervals,
   padding,
   refName,
-  assemblyName,
-  bounds,
+  assembly,
 }: {
   intervals: { start: number; end: number }[]
   padding: number
   refName: string
-  assemblyName: string
-  bounds?: { start: number; end: number }
+  assembly: Assembly
 }) {
-  const merged = mergeIntervals(
+  return mergeIntervals(
     intervals.map(f => ({
       refName,
-      assemblyName,
       start: f.start - padding,
       end: f.end + padding,
     })),
     0,
   )
-  return (
-    merged
-      // Interbase min is always 0, so clamp the low end even when the contig
-      // bounds are unknown (assembly.regions lazy/unpopulated, or a refName
-      // miss) — otherwise a gene within `padding` bp of position 0 gets a
-      // negative start. The high end is only clamped when we actually know the
-      // contig length.
-      .map(r => ({
-        ...r,
-        start: Math.max(bounds?.start ?? 0, r.start),
-        end: bounds ? Math.min(bounds.end, r.end) : r.end,
-      }))
-      // An exon lying wholly past the contig end — a GFF3 annotated against a
-      // longer assembly than the FASTA in use, which JBrowse otherwise just
-      // draws past the end of — leaves the high clamp BELOW the low one. Every
-      // consumer sums region lengths, so one inverted region subtracts from the
-      // view's total bp: enough of them and the window goes negative, and with
-      // it bpPerPx, silently. Dropping it shows the exons that do exist; where
-      // that leaves nothing, buildMergedRegions' emptiness check is what speaks.
-      .filter(r => r.end > r.start)
-  )
+    .map(r => clampToContig(assembly, r))
+    .filter(notEmpty)
 }
 
 // The canvas displays expose a solo set ("show only these features"); other
@@ -193,66 +185,72 @@ export function seedSoloInTracks(
       }))
 }
 
-function buildMergedRegions({
+/**
+ * The regions a collapse would show, or the reason it would show none.
+ *
+ * A RESULT rather than a throw because the dialog calls this while rendering — to
+ * say how many regions the current window size produces, and to disable its
+ * buttons when the answer is none. A throw there takes the dialog down with it,
+ * and the reader finding out on click was the worse half of the shape this
+ * replaces: both of these cases were exceptions raised out of a button handler
+ * into a snackbar, after the dialog had already closed.
+ */
+export type CollapseResult = { regions: Region[] } | { error: string }
+
+export interface CollapseSpec {
+  transcripts: Feature[]
+  assembly: Assembly
+  padding: number
+  flip: boolean
+}
+
+export function collapsedRegionsFor({
   transcripts,
   assembly,
   padding,
   flip,
-}: {
-  transcripts: Feature[]
-  assembly: Assembly
-  padding: number
-  flip: boolean
-}) {
-  const r0 = transcripts[0]?.get('refName')
-  if (!r0) {
-    // Surfaced by runIntronAction's catch, which keeps the dialog open — a
-    // silent return here would close it as if the collapse had succeeded.
-    throw new Error('Could not determine the feature refName')
+}: CollapseSpec): CollapseResult {
+  const rawRefName = transcripts[0]?.get('refName')
+  if (!rawRefName) {
+    return { error: 'Could not determine the feature refName' }
   }
   const intervals = exonIntervals(transcripts)
   if (intervals.length === 0) {
-    // An empty region set would blank the target view: the in-place path drops
-    // it back to the import form, and the new-view path mints bpPerPx=0. Also
-    // surfaced by runIntronAction, which keeps the dialog open.
-    throw new Error('No exons or CDS found to collapse')
+    return { error: 'No exons or CDS found to collapse' }
   }
-  const refName = assembly.getCanonicalRefName2(r0)
-  const bounds = assembly.regions?.find(r => r.refName === refName)
-  const genomicRegions = buildCollapsedRegions({
+  const refName = assembly.getCanonicalRefName2(rawRefName)
+  const regions = buildCollapsedRegions({
     intervals,
     padding,
     refName,
-    assemblyName: assembly.name,
-    bounds: bounds ? { start: bounds.start, end: bounds.end } : undefined,
+    assembly,
   })
-  if (genomicRegions.length === 0) {
-    // Exons exist but the contig doesn't reach them, so every one was dropped as
-    // inverted (see buildCollapsedRegions). Same empty region set as the check
-    // above and the same consequences, but naming the cause rather than
-    // repeating "no exons" at a reader looking straight at some.
-    throw new Error(
-      `Every exon of this feature lies past the end of ${refName}, so there is nothing on this assembly to collapse`,
-    )
+  if (regions.length === 0) {
+    // Exons exist but the contig doesn't reach them, so clampToContig dropped
+    // every one. Naming the cause, rather than repeating "no exons" at a reader
+    // looking straight at some.
+    return {
+      error: `Every exon of this feature lies past the end of ${refName}, so there is nothing on this assembly to collapse`,
+    }
   }
-  // flip declaratively: reverse region order and mark each reversed so a
-  // minus-strand gene reads 5'->3' left-to-right
-  return flip
-    ? genomicRegions.map(r => ({ ...r, reversed: true })).reverse()
-    : genomicRegions
+  return {
+    // flip declaratively: reverse region order and mark each reversed so a
+    // minus-strand gene reads 5'->3' left-to-right
+    regions: flip
+      ? regions.map(r => ({ ...r, reversed: true })).reverse()
+      : regions,
+  }
 }
 
-// Shared args for the two intron actions. `soloFeatureId` (set when the dialog's
-// "Show only this feature" box is checked) isolates the resulting view's track
-// to that feature; `trackId` locates the display to isolate. `label` names the
-// new view — the clicked feature for the whole-gene action, the row's transcript
-// for a single-transcript action.
-interface IntronActionArgs {
+// What the two intron actions need beyond the regions themselves, which the
+// dialog has already built (see collapsedRegionsFor). `soloFeatureId` (set when
+// the dialog's "Show only this feature" box is checked) isolates the resulting
+// view's track to that feature; `trackId` locates the display to isolate.
+// `label` names the new view — the clicked feature for the whole-gene action, the
+// row's transcript for a single-transcript action.
+export interface IntronActionArgs {
   view: LinearGenomeViewModel
-  transcripts: Feature[]
-  assembly: Assembly
-  padding: number
-  flip: boolean
+  regions: Region[]
   trackId: string
   soloFeatureId: string | undefined
   label: string
@@ -260,87 +258,37 @@ interface IntronActionArgs {
 
 export function replaceIntrons({
   view,
-  transcripts,
-  assembly,
-  padding,
-  flip,
+  regions,
   trackId,
   soloFeatureId,
 }: IntronActionArgs) {
-  const mergedRegions = buildMergedRegions({
-    transcripts,
-    assembly,
-    padding,
-    flip,
-  })
-  // snapshot the prior location so "Undo" can restore the original view.
-  // displayedRegions is a types.frozen (plain immutable array), so it's kept
-  // by reference rather than via getSnapshot (which only accepts MST nodes)
-  const previous = {
-    displayedRegions: view.displayedRegions,
-    bpPerPx: view.bpPerPx,
-    offsetPx: view.offsetPx,
-  }
-  view.setDisplayedRegions(mergedRegions)
-  // The view holds the collapsed regions now, so let it frame them itself —
-  // fitAllRegions rather than showAllRegions, whose 10% margin belongs to "show
-  // me everything" and not to a caller that named the regions it wants. The
-  // window size the dialog asked for is already the context around each exon, so
-  // a second margin on top of it is one nothing asked for; navToLocations and
-  // viewMateRegion frame their named regions the same way. The other half of
-  // agreeing is fitAllRegionsWindow, which is what the new-view button seeds.
-  view.fitAllRegions()
+  // Isolate BEFORE handing the Undo over, so the undo callback closes over the
+  // restore. showRegionsWithUndo owns the framing, the viewport capture and the
+  // notification — shared with plugin-alignments' "view mate region", which is
+  // the other launcher that navigates the view you are looking at.
   const restoreSolo =
     soloFeatureId === undefined
       ? undefined
       : soloFeatureInView(view, trackId, soloFeatureId)
-  getSession(view).notify('Introns collapsed', 'info', {
-    name: 'Undo',
-    onClick: () => {
-      view.setDisplayedRegions(previous.displayedRegions)
-      view.setNewView(previous.bpPerPx, previous.offsetPx)
-      restoreSolo?.()
-    },
+  showRegionsWithUndo({
+    view,
+    regions,
+    message: 'Introns collapsed',
+    alsoUndo: restoreSolo,
   })
 }
 
-// Run a collapse/replace action, close the dialog on success, and surface any
-// failure through the session notifier. Shared by both intron buttons
-// ("Replace", "Open in new view").
-export function runIntronAction(
-  view: LinearGenomeViewModel,
-  action: () => void,
-  handleClose: () => void,
-) {
-  try {
-    action()
-    handleClose()
-  } catch (e) {
-    getSession(view).notifyError(`${e}`, e)
-    console.error(e)
-  }
-}
-
-// Pure view snapshot for the collapsed-intron "Open in new view" action: merged
+// Pure view snapshot for the collapsed-intron "Open in new view" action: the
 // regions, the viewport framing them, stripped track ids, and — when a solo
 // feature is requested — the display seeded to open already isolated. Returns
 // data only; collapseIntrons is the imperative sink that hands it to addView.
 export function buildCollapsedViewSnapshot({
   view,
-  transcripts,
-  assembly,
-  padding,
-  flip,
+  regions,
   trackId,
   soloFeatureId,
   label,
 }: IntronActionArgs) {
-  const mergedRegions = buildMergedRegions({
-    transcripts,
-    assembly,
-    padding,
-    flip,
-  })
   const { id, ...rest } = getSnapshot(view)
   const tracks =
     soloFeatureId === undefined
@@ -350,10 +298,10 @@ export function buildCollapsedViewSnapshot({
     ...rest,
     tracks: stripTrackIds(tracks),
     displayName: `${label} (introns collapsed)`,
-    displayedRegions: mergedRegions,
+    displayedRegions: regions,
     // The target view doesn't exist yet, so its viewport is seeded here rather
-    // than by calling fitAllRegions on it (which is what replaceIntrons does to
-    // the live view) — both to frame the same way and to avoid a first-render
+    // than by calling fitAllRegions on it (which is what showRegionsWithUndo does
+    // to the live view) — both to frame the same way and to avoid a first-render
     // flash. It MUST overwrite the window `rest` carries, and must be the window
     // rather than bpPerPx/offsetPx: the view persists its viewport as a genomic
     // window, and its snapshot migration converts a bpPerPx only for a snapshot
@@ -361,7 +309,7 @@ export function buildCollapsedViewSnapshot({
     // silence on every launch, and the new view opened at the SOURCE view's zoom
     // and scroll — the whole gene locus, framing a region set a tenth its width.
     ...fitAllRegionsWindow(
-      mergedRegions.reduce((sum, r) => sum + (r.end - r.start), 0),
+      sum(regions.map(r => r.end - r.start)),
       view.width,
       // the new view inherits this one's zoom floor, being the same view type
       view.minBpPerPx,
@@ -374,4 +322,33 @@ export function collapseIntrons(args: IntronActionArgs) {
     'LinearGenomeView',
     buildCollapsedViewSnapshot(args),
   )
+}
+
+/**
+ * Run one of the two intron actions on a click, close the dialog, and surface an
+ * unexpected failure rather than leaving the dialog open saying nothing.
+ *
+ * `args` is undefined while the dialog has nothing valid to act on, which is also
+ * when both buttons are disabled — taking it here rather than at each call site
+ * is what lets the handlers be one line each. The EXPECTED failures no longer
+ * reach this: `collapsedRegionsFor` returns them and the dialog shows them before
+ * anything is clicked. What is left is the genuinely unforeseen — a snapshot that
+ * won't build, an addView that rejects — where closing the dialog as if it had
+ * worked is the wrong half to get right.
+ */
+export function runIntronAction(
+  args: IntronActionArgs | undefined,
+  action: (args: IntronActionArgs) => void,
+  handleClose: () => void,
+) {
+  if (!args) {
+    return
+  }
+  try {
+    action(args)
+    handleClose()
+  } catch (e) {
+    getSession(args.view).notifyError(`${e}`, e)
+    console.error(e)
+  }
 }

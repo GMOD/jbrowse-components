@@ -4,33 +4,38 @@ import type { MateFields } from '../shared/mateFeature.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// A view that records what it was asked to display, plus the assembly the
-// clamping reads bounds from.
+const CONTIGS = [
+  { refName: 'ctgA', start: 0, end: 50_000 },
+  { refName: 'ctgB', start: 0, end: 50_000 },
+]
+
+// A view that records what it was asked to display, plus the assembly
+// `clampToContig` reads bounds from.
 function makeView() {
   const displayed: Region[][] = []
   const notifications: string[] = []
   const view = {
     assemblyNames: ['volvox'],
     displayedRegions: [] as Region[],
-    bpPerPx: 1,
-    offsetPx: 0,
+    windowWidthBp: 1000,
+    windowStartBp: 0,
     setDisplayedRegions(regions: Region[]) {
       displayed.push(regions)
       view.displayedRegions = regions
     },
     fitAllRegions() {},
-    setNewView() {},
+    setWindow() {},
     session: {
       notify(message: string) {
         notifications.push(message)
       },
       assemblyManager: {
         get: () => ({
+          name: 'volvox',
           getCanonicalRefName2: (refName: string) => refName,
-          regions: [
-            { refName: 'ctgA', start: 0, end: 50_000 },
-            { refName: 'ctgB', start: 0, end: 50_000 },
-          ],
+          regions: CONTIGS,
+          getRegionForRefName: (r: string) =>
+            CONTIGS.find(c => c.refName === r),
         }),
       },
     },

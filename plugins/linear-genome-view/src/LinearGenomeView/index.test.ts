@@ -1906,6 +1906,35 @@ test('showAllRegions centers correctly with multiple regions', () => {
 // plugin-canvas's collapsed-intron tests, in a package that merely consumes it.
 // These two are the pair — the exact fit, and the floor that is the one thing
 // that can stop it being exact.
+// setNewView's bp-space twin, and the whole reason to prefer it: a viewport
+// captured and put back is exact across a resize, where the pixel pair is not.
+test('setWindow restores the same genomic window at a different width', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 },
+      ],
+    }),
+  )
+
+  model.setWidth(800)
+  model.setWindow(9000, 12_000)
+  expect(model.windowWidthBp).toBe(9000)
+  expect(model.windowStartBp).toBe(12_000)
+
+  // the same pair, re-applied after the window narrowed: still the same bases on
+  // screen, now at half the bp per pixel. setNewView's pixels would have been
+  // reinterpreted against 400 and shown half as much.
+  model.setWidth(400)
+  model.setWindow(9000, 12_000)
+  expect(model.windowWidthBp).toBe(9000)
+  expect(model.windowStartBp).toBe(12_000)
+  expect(model.bpPerPx).toBe(9000 / 400)
+})
+
 test('fitAllRegions fills the width edge to edge, unlike showAllRegions', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({ configuration: {} })
