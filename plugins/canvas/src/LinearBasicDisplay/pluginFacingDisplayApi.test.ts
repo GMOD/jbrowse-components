@@ -48,6 +48,32 @@ test('the display keeps every member a published plugin reaches for', () => {
   expect(missing).toEqual([])
 })
 
+// A plugin extends the display by capturing the base method and calling it
+// DETACHED:
+//
+//     const superContextMenuItems = self.contextMenuItems
+//     ...
+//     return [...superContextMenuItems(), ourItem]
+//
+// so `this` inside it is undefined, where every test that calls
+// `display.contextMenuItems()` supplies the instance and never notices. An
+// earlier pass at restoring `isGeneLike` read it as `this.isGeneLike` from
+// inside `contextMenuItems`; the unit tests stayed green and the real app threw
+// `Cannot read properties of undefined (reading 'isGeneLike')` on right-click,
+// error-boundarying the track.
+test('contextMenuItems survives being called detached, the way a plugin wraps it', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  const superContextMenuItems = display.contextMenuItems
+
+  expect(() => superContextMenuItems()).not.toThrow()
+  rightClick(display, gene)
+  expect(() => superContextMenuItems()).not.toThrow()
+  expect(
+    superContextMenuItems().map(i => ('label' in i ? i.label : undefined)),
+  ).toContain('Collapse introns')
+})
+
 // Presence is only half of it: `isGeneLike` is a getter over the clicked item,
 // so a version that is always undefined would pass the list above and still cost
 // the plugin its menu item. This performs the read the way msaview performs it,
