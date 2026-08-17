@@ -8,8 +8,9 @@
 # and CNV (BED) calls, converts the tumor/normal PacBio HiFi BAMs to CRAM,
 # computes whole-genome coverage (megadepth), calls somatic copy number with
 # HiFiCNV (depth/copy-number/VCF tracks), builds an unfolded B-allele-frequency
-# bigWig over germline het sites, loads C-GIAB's published Wakhan
-# haplotype-specific segments, and aligns the T2T tumor assembly (v3.2) to GRCh38
+# bigWig over germline het sites, loads the CNV callsets C-GIAB publishes for this
+# pair (Wakhan per-haplotype segments, NYGC BIC-seq2, DRAGEN), and aligns the T2T
+# tumor assembly (v3.2) to GRCh38
 # with minimap2 for the synteny/dotplot views. All of these are added to a
 # JBrowse config.
 #
@@ -86,6 +87,8 @@ PB_RUN=PacBio_Revio_20240125                                     # HiFi tumor/no
 NORMAL_DEPTH=35x
 TUMOR_DEPTH=116x
 WAKHAN_RUN=NIH_HiFi_Wakhan-CNA_20240308                          # published CNA segments
+NYGC_RUN='NYGC-somatic-pipeline_20240412'                        # published short-read somatic run
+DRAGEN_RUN='DRAGEN-v4.2.4_ILMN-WGS_20240312'                     # published short-read CNV calls
 ASM_VER=v3.2                                                     # T2T tumor assembly
 REF_BUILD=GRCh38_GIABv3                                          # C-GIAB reference build
 HIFICNV_VER=1.0.1                                                # HiFiCNV release
@@ -212,7 +215,7 @@ done
 # the figures read, and each lands where the V0.5 benchmark says it should.
 BICSEQ_BG=HG008-T_bicseq2_log2ratio.bedgraph
 if [ ! -f "$BICSEQ_BG" ]; then
-  NYGC=$FTP/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3
+  NYGC=$FTP/data_somatic/HG008/Liss_lab/analysis/$NYGC_RUN/GRCh38-GIABv3
   [ -f HG008-T--HG008-N.bicseq2.txt ] || curl -fL -O "$NYGC/HG008-T--HG008-N.bicseq2.txt"
   # col 9 is log2.copyRatio; the file is 1-based and bedGraph is not
   awk 'NR>1 {printf "%s\t%d\t%d\t%.4f\n", $1, $2-1, $3, $9}' \
@@ -319,6 +322,46 @@ JSON
 jb add-track-json wakhan_track.json --update --out "$APP"
 jb add-track "$WAKHAN/HG008_HiFi_loh_segments.bed" --category "CNV" --force --out "$APP"
 
+# ── CNV: the two published short-read callsets on the same pair ───────────────
+# Both load from their FTP URLs with nothing downloaded and nothing computed, so
+# the four callsets in this config (benchmark, Wakhan, NYGC, DRAGEN) can be read
+# against each other in one view. DRAGEN's record IDs name the class it assigned
+# (LOSS/GAIN/CNLOH/REF) and its FORMAT carries CN, the minor-haplotype copy
+# number MCN, and the MAF behind both.
+ANALYSIS=$FTP/data_somatic/HG008/Liss_lab/analysis
+jb add-track "$ANALYSIS/$DRAGEN_RUN/standard/dragen_4.2.4_HG008-mosaic_tumor.cnv.vcf.gz" \
+  --category "CNV" --force --out "$APP"
+
+# NYGC's annotated form of the same BIC-seq2 segmentation the bedGraph above
+# carries. Its #-header is tab-separated, so BedAdapter names the columns and
+# each segment arrives with its call, log2 ratio, focal flag, cytoband and the
+# Cancer Gene Census genes it covers. Color on the call, which is the `type`
+# column: a BED feature has no type of its own, so the column reaches
+# feature.type unopposed.
+cat > nygc_cnv_track.json <<JSON
+{
+  "type": "FeatureTrack",
+  "trackId": "hg008t_nygc_cnv",
+  "name": "HG008-T NYGC CNV calls, annotated (BIC-seq2)",
+  "category": ["CNV"],
+  "assemblyNames": ["$REF_BUILD"],
+  "adapter": {
+    "type": "BedAdapter",
+    "uri": "$ANALYSIS/$NYGC_RUN/GRCh38-GIABv3/HG008-T--HG008-N.cnv.annotated.v7.final.bed"
+  },
+  "displayDefaults": {
+    "color": "jexl:feature.type=='DEL'?'#2166ac':'#b2182b'",
+    "labels": { "name": "jexl:feature.type+' '+feature.cytoband" },
+    "displayMode": "compact",
+    "legend": [
+      { "label": "Loss (DEL)", "color": "#2166ac" },
+      { "label": "Gain (DUP)", "color": "#b2182b" }
+    ]
+  }
+}
+JSON
+jb add-track-json nygc_cnv_track.json --update --out "$APP"
+
 # ── T2T tumor assembly (v3.2) -> GRCh38 (minimap2), for synteny/dotplot ───────
 ASM_NAME=HG008T_$ASM_VER
 ASM=$ASM_NAME.fasta
@@ -336,8 +379,8 @@ jb add-track "$ASM_NAME.paf" -a "$ASM_NAME,$REF_BUILD" --load copy --force --out
 echo
 echo "Built $APP/config.json with the C-GIAB GRCh38 assembly, RefSeq genes, the"
 echo "V0.5 benchmark SV/CNV calls, tumor/normal CRAM + coverage, the HiFiCNV"
-echo "copy-number tracks, the published Wakhan segments, and the T2T"
-echo "tumor-assembly synteny track. Serve it and open in a browser, e.g.:"
+echo "depth track, the published Wakhan, NYGC and DRAGEN CNV callsets, and the"
+echo "T2T tumor-assembly synteny track. Serve it and open in a browser, e.g.:"
 echo "  npx --yes serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
 echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
