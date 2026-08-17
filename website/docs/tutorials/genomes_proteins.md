@@ -2,8 +2,8 @@
 title: Proteins on genomes.jbrowse.org
 sidebar_label: genomes.jbrowse.org (proteins)
 description:
-  Take any gene to its AlphaFold structure and its cross-species protein
-  alignment, launched from the genome view and linked back to it
+  Take any gene to its AlphaFold structure and its cross-species protein MSA,
+  launched from the genome view and linked back to it
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 data: hosted
@@ -11,9 +11,8 @@ data: hosted
 
 **TL;DR:** genomes.jbrowse.org loads the protein3d and msaview plugins, so any
 gene in a linear genome view can be taken to a 3D structure or to a
-cross-species protein alignment with nothing prepared beforehand. Both views
-stay linked to the genome, so hovering a variant highlights the residue it lands
-on.
+cross-species protein MSA with nothing prepared beforehand. Both views stay
+linked to the genome, so hovering a variant highlights the residue it lands on.
 
 ## Prerequisites
 
@@ -41,14 +40,12 @@ built and connected. It takes a `gene` and a `taxon` in its own URL, so
 [?gene=TP53&taxon=9606](https://gmod.org/JBrowseMSA/gene-explorer/?gene=TP53&taxon=9606)
 arrives with the gene resolved and one button left to press.
 
-What the Gene Explorer builds differs from the click-path below in three ways
-worth knowing before you pick one. Its genome view collapses the introns, so the
+The Gene Explorer's session differs from the click-path below in two ways worth
+knowing before you pick one. Its genome view collapses the introns, so the
 coding exons sit side by side and the whole CDS is on screen at residue zoom.
-Its alignment is UCSC's precomputed multiz alignment across a hundred
-vertebrates, read out of an indexed file, and human genes are the ones that have
-it: the other species it offers (mouse, zebrafish, fly, worm, plant and yeast)
-arrive as a genome view and a structure. And those seven species are its whole
-catalog, where the right-click route works on every genome the site hosts.
+And its catalog is seven species: human genes arrive with all three views, while
+mouse, zebrafish, fly, worm, plant and yeast arrive as a genome view and a
+structure. The right-click route works on every genome the site hosts.
 
 ## Launching a structure
 
@@ -58,8 +55,7 @@ work with no setup.
 
 Right-click the gene. The menu carries one launcher from each plugin: **Launch
 protein view** from protein3d, and **Launch MSA view** from msaview, which
-[the next section](#launching-an-alignment) takes. Choose **Launch protein
-view**.
+[the next section](#launching-an-msa) takes. Choose **Launch protein view**.
 
 The dialog opens on its **AlphaFoldDB search** tab with **Auto-detect using
 UniProt ID mapping API** selected, and fills itself in from the transcript you
@@ -69,6 +65,17 @@ picks which transcript becomes the query, tagging the isoforms whose translation
 matches the structure's own residues. **Launch** renders the structure with
 [Mol\*](https://molstar.org/).
 
+The structure the dialog resolves carries its own sequence, and it is often not
+the translation of the transcript you clicked: an AlphaFold model covers one
+UniProt isoform, and a PDB entry can be a construct, a fragment or another
+species. When the two differ the dialog says so and aligns them in the browser
+before mapping any position. The gear beside that notice opens **Alignment
+settings**, which switches between **Smith-Waterman (local alignment)**, the
+default and the one to keep for a structure covering part of the protein, and
+**Needleman-Wunsch (global alignment)**; **Import manual alignment...** takes a
+pairwise alignment in Clustal format instead. The same options sit under
+**Advanced...** in the view menu afterwards.
+
 <Video src="/media/proteins/genomes_protein_launch.mp4" caption="TP53 on the hosted hg38 with NCBI RefSeq and ClinVar loaded: the right-click launcher, the dialog resolving a UniProt entry and an isoform, and the structure Launch renders. Hovering a coding position afterwards picks out its residue on the structure and in the alignment above it; the intron between the two exons picks out nothing." />
 
 The structure arrives with the genome view still above it, and the two are
@@ -77,6 +84,16 @@ structure, on the pairwise alignment above it, and in the per-residue tracks
 beside them; hovering the structure highlights the genomic position. That is
 what makes a variant track worth having in the same session: the residue a
 variant lands on is a click away from the variant itself.
+
+Both views map a genomic position to a residue through the transcript's CDS with
+[g2p_mapper](https://github.com/cmdcolin/g2p_mapper), so a hover highlights
+nothing when the position has no residue to land on. Introns and UTRs have none,
+and neither does a residue the structure is missing, which shows up as a gap in
+the **Pairwise alignment** panel below the structure. That panel shows the
+transcript row against the structure row with a consensus line, so it is where
+to check a mapping before trusting a highlight. For exact correspondence, fold
+the transcript's own sequence with AlphaFold instead of taking a database
+structure.
 
 The lookup needs a gene feature carrying a recognizable protein or transcript
 ID. The RefSeq gene tracks on the hosted configs have them, so a feature track
@@ -114,11 +131,11 @@ The dialog's other two tabs take a structure from somewhere else: **Foldseek
 search** finds structures resembling the protein's own, and **Open file
 manually** takes a PDB or mmCIF file of yours.
 
-## Launching an alignment
+## Launching an MSA
 
 **Launch MSA view**, the msaview item on the same right-click menu, builds a
-cross-species protein alignment. The dialog opens on its **Orthologs (fast)**
-tab, and three fields on it matter:
+cross-species protein MSA. The dialog opens on its **Orthologs (fast)** tab, and
+three fields on it matter:
 
 - **Query species** is the species the gene came from.
 - **Species to include** is the panel of rows to build. As its label says,
@@ -164,11 +181,6 @@ mouse _Nlrp1a_ included, and neither does the rhesus macaque, whose record
 carries plenty of other calls. Everything after the pyrin is shared, so the
 overlay reads as one block on the left that a few rows have, and a matching
 stack of blocks to the right of it that every row has.
-
-That is a clade-level pattern rather than a quirk of one row. It is also a
-statement about annotation: the block is drawn where NCBI's conserved-domain
-database has called one, and a species missing the call is not the same as a
-species missing the sequence, which is what the residue check below is for.
 
 The shared core is the control. NACHT, the winged helix, HD2, FIIND and CARD are
 present in every row, so a missing block only means something because the blocks
@@ -226,67 +238,20 @@ the whole panel, while a fast-evolving one like _NLRP1_ returns orthologs for
 only part of it. Genes annotated with an Ensembl identifier and no symbol fall
 through to the BLAST tab.
 
-## Where each alignment comes from
+## Where each MSA comes from
 
-Three routes on this page open the same view type over three different
-alignments, and which one you want depends on what the rows are for.
+Three routes on this page open the same view type over three different MSAs, and
+which one you want depends on what the rows are for.
 
-| Route                                     | Alignment                                                        | Rows                   |
-| ----------------------------------------- | ---------------------------------------------------------------- | ---------------------- |
-| **Launch MSA view** on the gene menu      | built per gene from NCBI's ortholog records, aligned at EBI      | one per species, named |
-| The Gene Explorer                         | UCSC's precomputed multiz alignment across a hundred vertebrates | one per species, named |
-| **Launch MSA view** in the protein dialog | the input alignment AlphaFold folded from                        | deep, unlabelled       |
+| Route                                     | MSA                                                              | Rows                                |
+| ----------------------------------------- | ---------------------------------------------------------------- | ----------------------------------- |
+| **Launch MSA view** on the gene menu      | built per gene from NCBI's ortholog records, aligned at EBI      | one per species, named              |
+| The Gene Explorer                         | UCSC's precomputed multiz alignment across a hundred vertebrates | one per species, named; human genes |
+| **Launch MSA view** in the protein dialog | the input alignment AlphaFold folded from                        | deep, unlabelled                    |
 
 The named panels are the ones to read a present-or-absent domain call across,
 since a row means a species. AlphaFold's is the one to read depth from, and it
 is the largest download of the three.
-
-## How positions are mapped
-
-Both views map positions the same way, and linking a genome position to a
-residue takes two steps.
-
-Genome to protein position comes from
-[g2p_mapper](https://github.com/cmdcolin/g2p_mapper), which the plugins run over
-the transcript's CDS subfeatures to build the `g2p`/`p2g` lookups, handling
-strand and CDS phase. Intronic and UTR positions are skipped, and each codon
-maps to one residue, which is why hovering an intron highlights nothing. Codons
-that straddle an exon boundary have several genomic pieces, so highlighting uses
-their enclosing span.
-
-Protein position to structure residue is the harder half. A structure file
-carries its own sequence, which frequently is not the translation of the
-transcript you launched from: PDB entries are often a construct, a fragment, a
-different isoform, or a different species, and residues can be missing or
-modified. When the two sequences are identical the positions map one to one.
-
-When they differ, the launch dialog says so ("Transcript and structure sequences
-differ, will run Smith-Waterman alignment") and the plugin aligns them in the
-browser with BLOSUM62 and EMBOSS-style gap penalties. Residue positions are then
-mapped through the alignment columns, and positions falling in a gap are left
-unmapped, which is what you are seeing when hovering a variant highlights
-nothing. The gear beside that notice opens **Alignment settings**, which
-switches between **Smith-Waterman (local alignment)** (the default, good for a
-structure covering only part of the protein) and **Needleman-Wunsch (global
-alignment)**; **Import manual alignment...** beside them takes a precomputed
-pairwise alignment pasted in Clustal format instead. The same options are
-available afterwards under **Advanced...** in the view menu.
-
-You can inspect the mapping yourself: the **Pairwise alignment** panel below the
-structure shows the transcript row against the structure row with a consensus
-line, so you can check it is sane before trusting a residue highlight. If you
-need exact correspondence, fold the transcript's own sequence with AlphaFold
-instead of using a database structure.
-
-When you open a structure of your own, **Choose transcript isoform** uses this
-same comparison: isoforms whose translation exactly matches the structure
-sequence are listed first and tagged **(matches structure residues)**, then
-those that do not, then any with no protein sequence at all, greyed out.
-
-In the MSA view the second step is a column lookup rather than an alignment:
-genome to protein position with g2p_mapper, then that position to a column of
-the matching alignment row, which is where the row's gaps get taken into
-account.
 
 ## Sharing a connected view as a URL
 
@@ -313,12 +278,12 @@ locus with NCBI RefSeq and ClinVar loaded.
 }
 ```
 
-That is the short form: a UniProt accession plus a transcript ID, and the plugin
-derives the AlphaFold structure, finds the transcript in the `connectedView`
-tracks at `loc`, and translates its CDS to align against the structure. The
-explicit form takes a structure `url`, feature, and protein sequence instead,
-for a transcript no loaded track serves. See the parameters and further example
-URLs in the
+The fence above is the short form: a UniProt accession plus a transcript ID, and
+the plugin derives the AlphaFold structure, finds the transcript in the
+`connectedView` tracks at `loc`, and translates its CDS to align against the
+structure. The explicit form takes a structure `url`, feature, and protein
+sequence instead, for a transcript no loaded track serves. See the parameters
+and further example URLs in the
 [protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view).
 
 A `ProteinView` with only a structure `url` and no `connectedView` opens as a
@@ -351,12 +316,7 @@ The approach is described in
 
 - [](/docs/tutorials/genomes_basics)
 - [](/docs/tutorials/genomes_synteny)
-- [](/docs/user_guides/gene_track)
-- [](/docs/user_guides/variant_track)
-- [](/docs/user_guides/plugin_store)
-- [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/)
 - [JBrowseMSA user guide](https://github.com/GMOD/JBrowseMSA/blob/main/docs/user_guide.md)
-- [Ortholog search on genomes.jbrowse.org](https://genomes.jbrowse.org/orthologs)
 - [jbrowse-plugin-protein3d](https://github.com/GMOD/jbrowse-plugin-protein3d)
 - [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview)
 - [g2p_mapper](https://github.com/cmdcolin/g2p_mapper)
