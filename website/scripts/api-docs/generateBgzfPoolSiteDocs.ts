@@ -25,10 +25,16 @@ import type { SourceCorpus } from './util.ts'
 
 const CALL = /\bsharedBgzfWorkerPool\(\)/
 
-// The plugin a call site belongs to. Everything that wires the pool is a reader
-// in some plugin; `packages/core`'s own definition is the only other file that
-// spells the name, and it is excluded by not matching.
-const PLUGIN_PATH = /^plugins\/([^/]+)\//
+// The workspace a call site belongs to. Every reader that wires the pool today
+// is a plugin, but the row is derived rather than assumed — see the throw below.
+// `getAllFiles` already limits the corpus to these three trees, so what this has
+// to place is the workspace NAME, and what the throw catches is a shape it
+// cannot: a source file sitting directly in one of them rather than in a
+// package under it.
+const WORKSPACE_PATH = /^(?:plugins|products|packages)\/([^/]+)\//
+
+// `packages/core` DEFINES the helper rather than wiring it, so it is not a site.
+const DEFINITION = 'packages/core/src/util/bgzfWorkerPool.ts'
 
 interface Site {
   plugin: string
@@ -39,19 +45,29 @@ interface Site {
 export function collectBgzfPoolSites(corpus: SourceCorpus): Site[] {
   const out: Site[] = []
   for (const file of corpus.files) {
-    if (file.includes('.test.') || !CALL.test(corpus.read(file))) {
+    if (
+      file.includes('.test.') ||
+      file.endsWith(DEFINITION) ||
+      !CALL.test(corpus.read(file))
+    ) {
       continue
     }
-    const m = PLUGIN_PATH.exec(file)
+    const m = WORKSPACE_PATH.exec(file)
     if (!m) {
-      continue
+      // Never `continue`. A call site this pattern cannot place is a row
+      // missing from a list whose whole job is to be complete, and a coverage
+      // list that is quietly short reads exactly like a complete one — which is
+      // this generator's own history twice over. Keying off the containing
+      // directory dropped `PifFile.ts` on the first run because it sits straight
+      // in `src/`; keying the workspace off `plugins/` alone dropped a call site
+      // added anywhere else, silently, while the table reported "up to date".
+      throw new Error(
+        `sharedBgzfWorkerPool() called from ${file}, which is outside plugins/, products/ and packages/ — widen WORKSPACE_PATH rather than letting the row vanish`,
+      )
     }
     // The BASENAME, not the containing directory. Most readers live in
     // `plugins/x/src/<Name>Adapter/<Name>Adapter.ts` where the two agree, and
-    // `PifFile.ts` sits straight in `src/` — matching on the directory dropped
-    // it silently, which is this generator's own failure mode arriving on its
-    // first run: a coverage list that is quietly short reads exactly like a
-    // coverage list that is complete.
+    // `PifFile.ts` sits straight in `src/`.
     out.push({
       plugin: m[1]!,
       reader: file
