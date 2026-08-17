@@ -121,13 +121,26 @@ export interface GroupLayoutContext {
 // Lay out one group's reads (Y arrays filled + linked-read lines) at a given row
 // cap. Extracted so the fit reclaim pass can re-lay-out just the groups whose
 // cap changed instead of rebuilding every group.
+//
+// `coverageOnly` is the label chip's chevron: that lane draws its coverage band
+// and no pileup at all, so there is no placement to do and the worker's own
+// zero-filled Y arrays are already the answer — `sections` reads its maxY as 0
+// (`groupMaxYFor`) whatever this returns. Handing the raw map straight back skips
+// both the packing pass and `cloneWithLayout`'s per-base Y arrays, which is the
+// dominant cost here and the one `layoutGroupRowCounts` exists to avoid; every
+// other consumer of a group's map reads fields layout doesn't touch
+// (`readPositions`, the color arrays) or asks for `maxY`.
 function layoutOneGroup(
   ctx: GroupLayoutContext,
   key: string,
   cap: number,
   collapse = false,
+  coverageOnly = false,
 ): Map<number, PileupDataResult> {
   const dataMap = ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
+  if (coverageOnly) {
+    return new Map(dataMap)
+  }
   if (collapse) {
     return buildCollapsedPileupMap(dataMap)
   }
@@ -198,6 +211,7 @@ export function buildLaidOutByGroup(
   ctx: GroupLayoutContext,
   maxRows: number,
   maxRowsOverrides: ReadonlyMap<string, number> = NO_OVERRIDES,
+  coverageOnlyKeys: ReadonlySet<string> = NOTHING_COLLAPSED,
 ): LaidOutByGroup {
   const byGroup: LaidOutByGroup = new Map()
   for (const { key } of ctx.order) {
@@ -208,11 +222,14 @@ export function buildLaidOutByGroup(
         key,
         maxRowsOverrides.get(key) ?? maxRows,
         collapsesRows(ctx, key, maxRowsOverrides),
+        coverageOnlyKeys.has(key),
       ),
     )
   }
   return byGroup
 }
+
+const NOTHING_COLLAPSED: ReadonlySet<string> = new Set()
 
 // Every caller passing no per-group sizes shares this, so `collapsesRows` can
 // take a required map and never has to treat "no overrides" as a missing
@@ -321,7 +338,12 @@ export function layoutGroupsToViewport(
   for (const [key, px] of heightOverridesPx) {
     overrideCaps.set(key, maxRowsFor(px, rowHeight))
   }
-  const pass = buildLaidOutByGroup(ctx, defaultMaxRows, overrideCaps)
+  const pass = buildLaidOutByGroup(
+    ctx,
+    defaultMaxRows,
+    overrideCaps,
+    collapsedKeys,
+  )
   if (!grouped) {
     return pass
   }

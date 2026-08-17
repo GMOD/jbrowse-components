@@ -1,13 +1,69 @@
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   MIN_FIT_ROWS,
+  buildLaidOutByGroup,
   collectAcrossGroups,
   fitGroupMaxRows,
+  groupMaxY,
   nextGroupHeightOverride,
   reclaimFitRows,
   someAcrossGroups,
 } from './groupLayout.ts'
 
-import type { LaidOutByGroup } from './groupLayout.ts'
+import type { GroupLayoutContext, LaidOutByGroup } from './groupLayout.ts'
+
+// Two reads at the same position, so any real layout pass stacks them on rows 0
+// and 1. One region, one group.
+function overlappingReadsContext(): GroupLayoutContext {
+  return {
+    order: [{ key: 'g', label: 'g' }],
+    rawByGroup: new Map([
+      [
+        'g',
+        new Map([
+          [
+            0,
+            makePileupDataResult({
+              readPositions: new Uint32Array([100, 200, 100, 200]),
+            }),
+          ],
+        ]),
+      ],
+    ]),
+    isChainMode: false,
+    sortedBy: undefined,
+    showSoftClipping: false,
+    largeFeaturesFirst: false,
+    regions: new Map([[0, { refName: 'ctgA', start: 0, end: 1000 }]]),
+    showLinkedReadLines: false,
+    collapseGroupRows: false,
+  }
+}
+
+function readYsOf(byGroup: LaidOutByGroup) {
+  return [...(byGroup.get('g')?.get(0)?.readYs ?? [])]
+}
+
+test('buildLaidOutByGroup: places overlapping reads on their own rows', () => {
+  const laid = buildLaidOutByGroup(overlappingReadsContext(), 100)
+  expect(readYsOf(laid)).toEqual([0, 1])
+  expect(groupMaxY(laid.get('g')!)).toBe(2)
+})
+
+// The label chip's chevron leaves a lane drawing its coverage band and no pileup,
+// so `sections` reads its maxY as 0 however it was laid out. Placing the rows
+// anyway spent a packing pass and `cloneWithLayout`'s per-base Y arrays on a band
+// 0px tall — the same work `layoutGroupRowCounts` exists to skip.
+test('buildLaidOutByGroup: a coverage-only lane is not laid out at all', () => {
+  const laid = buildLaidOutByGroup(
+    overlappingReadsContext(),
+    100,
+    undefined,
+    new Set(['g']),
+  )
+  expect(readYsOf(laid)).toEqual([0, 0])
+  expect(groupMaxY(laid.get('g')!)).toBe(0)
+})
 
 test('fitGroupMaxRows: splits the post-overhead height evenly across groups', () => {
   // 1000px height, 2 groups, 50px overhead each => (1000 - 100)/2 = 450px per
