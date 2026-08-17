@@ -5,6 +5,7 @@ import {
   buildAssemblyConf,
   classifyAssemblyFiles,
   classifyFilename,
+  classifyLocations,
   clearFormFields,
   clearSequenceFiles,
   detectAdapterType,
@@ -13,17 +14,20 @@ import {
   getAssemblyName,
   getAssemblyNameFromFilename,
   getBaseAssemblyConfig,
-  getMissingRequirements,
+  getMissingSidecars,
   initialFormState,
   isBlank,
   isFormDirty,
   isFormReady,
+  isSequenceRole,
   partitionExtraLocations,
-  sequenceLocations,
   urlTextToLocations,
 } from './assemblyConfigUtils.ts'
 
+import type { FormState } from './assemblyConfigUtils.ts'
 import type { FileLocation } from './types/index.ts'
+
+const noEdits: ReadonlySet<keyof FormState> = new Set()
 
 const blank = { uri: '', locationType: 'UriLocation' } as FileLocation
 const fasta = {
@@ -479,6 +483,24 @@ describe('classifyFilename', () => {
   test('a fasta named like an alias is still a fasta', () => {
     expect(classifyFilename('myalias.fa')).toBe('fasta')
   })
+
+  // every pattern here is anchored to the end of the name, so a presigned S3 or
+  // GCS link — one of the two normal ways to share a genome — could not be
+  // placed at all and the pane answered "Couldn't place"
+  test.each([
+    ['hg38.fa?X-Amz-Signature=deadbeef', 'fasta'],
+    ['hg38.fa.gz?token=abc&x=1', 'fastaGz'],
+    ['hg38.fa.gz.fai?token=abc', 'fai'],
+    ['hg38.2bit#frag', 'twoBit'],
+  ])('places %s despite what the URL appends', (filename, role) => {
+    expect(classifyFilename(filename)).toBe(role)
+  })
+
+  test('and the name comes off the path, not the query', () => {
+    expect(
+      getAssemblyNameFromFilename('hg38.fa?X-Amz-Signature=deadbeef'),
+    ).toBe('hg38')
+  })
 })
 
 describe('classifyAssemblyFiles', () => {
@@ -580,11 +602,38 @@ describe('classifyAssemblyFiles', () => {
       classifyAssemblyFiles([{ uri: 'x.bam', locationType: 'UriLocation' }]),
     ).toEqual({})
   })
+
+  // The adapter and the name were picked by two separate last-wins rules, and
+  // only the .2bit branch could overwrite the adapter. So this order took the
+  // sequence from one genome and the name from the other, and the pane's "more
+  // than one genome" notice named the file it was not reading.
+  describe('two genomes at once', () => {
+    const mm39TwoBit = {
+      uri: 'https://example.com/mm39.2bit',
+      locationType: 'UriLocation',
+    } as FileLocation
+
+    test('a 2bit ahead of a fasta: the fasta answers for adapter and name', () => {
+      expect(classifyAssemblyFiles([mm39TwoBit, fasta])).toEqual({
+        fastaLocation: fasta,
+        adapterSelection: 'FastaAdapter',
+        assemblyName: 'hg38',
+      })
+    })
+
+    test('a fasta ahead of a 2bit: the 2bit does', () => {
+      expect(classifyAssemblyFiles([fasta, mm39TwoBit])).toEqual({
+        twoBitLocation: mm39TwoBit,
+        adapterSelection: 'TwoBitAdapter',
+        assemblyName: 'mm39',
+      })
+    })
+  })
 })
 
 describe('applyClassifiedFiles', () => {
   test('fills fields, adapter, and name from the file set', () => {
-    const s = applyClassifiedFiles(initialFormState(), [fasta, fai], false)
+    const s = applyClassifiedFiles(initialFormState(), [fasta, fai], noEdits)
     expect(s.fastaLocation).toBe(fasta)
     expect(s.faiLocation).toBe(fai)
     expect(s.adapterSelection).toBe('IndexedFastaAdapter')
@@ -595,9 +644,9 @@ describe('applyClassifiedFiles', () => {
     const withBoth = applyClassifiedFiles(
       initialFormState(),
       [fasta, fai],
-      false,
+      noEdits,
     )
-    const withoutFai = applyClassifiedFiles(withBoth, [fasta], false)
+    const withoutFai = applyClassifiedFiles(withBoth, [fasta], noEdits)
     expect(withoutFai.faiLocation).toEqual(blank)
     expect(withoutFai.fastaLocation).toBe(fasta)
   })
@@ -606,14 +655,18 @@ describe('applyClassifiedFiles', () => {
     const s = applyClassifiedFiles(
       { ...initialFormState(), assemblyName: 'custom' },
       [fasta],
-      true,
+      new Set(['assemblyName' as const]),
     )
     expect(s.assemblyName).toBe('custom')
   })
 
   test('clears to blank for an empty set', () => {
-    const filled = applyClassifiedFiles(initialFormState(), [fasta, fai], false)
-    const cleared = applyClassifiedFiles(filled, [], false)
+    const filled = applyClassifiedFiles(
+      initialFormState(),
+      [fasta, fai],
+      noEdits,
+    )
+    const cleared = applyClassifiedFiles(filled, [], noEdits)
     expect(cleared.fastaLocation).toEqual(blank)
     expect(cleared.faiLocation).toEqual(blank)
     expect(cleared.assemblyName).toBe('')
@@ -630,17 +683,39 @@ describe('applyClassifiedFiles', () => {
         cytobandsLocation: cytobands,
       },
       [fasta, fai],
-      false,
+      noEdits,
     )
     expect(s.refNameAliasesLocation).toBe(aliases)
     expect(s.cytobandsLocation).toBe(cytobands)
+  })
+
+  // the pane's "this format needs its index" input writes faiLocation directly,
+  // which the next paste into the URL box used to reset to blank — so the pane
+  // re-asked for a file it already had
+  test('a hand-entered sidecar survives a later file set', () => {
+    const s = applyClassifiedFiles(
+      { ...initialFormState(), faiLocation: fai },
+      [fastaGz, gzi],
+      new Set(['faiLocation' as const]),
+    )
+    expect(s.faiLocation).toBe(fai)
+    expect(s.gziLocation).toBe(gzi)
+  })
+
+  test('but an unmarked one is still the file set to answer for', () => {
+    const s = applyClassifiedFiles(
+      { ...initialFormState(), faiLocation: fai },
+      [fastaGz, gzi],
+      noEdits,
+    )
+    expect(s.faiLocation).toEqual(blank)
   })
 
   test('but a file set that names one still wins', () => {
     const s = applyClassifiedFiles(
       { ...initialFormState(), refNameAliasesLocation: cytobands },
       [fasta, aliases],
-      false,
+      noEdits,
     )
     expect(s.refNameAliasesLocation).toBe(aliases)
   })
@@ -734,10 +809,10 @@ describe('getAssemblyName', () => {
   })
 })
 
-describe('getMissingRequirements', () => {
+describe('getMissingSidecars', () => {
   test('nothing for a plain FASTA, which indexes itself', () => {
     expect(
-      getMissingRequirements({
+      getMissingSidecars({
         ...initialFormState(),
         adapterSelection: 'FastaAdapter',
         fastaLocation: fasta,
@@ -747,27 +822,27 @@ describe('getMissingRequirements', () => {
 
   test('the fai an indexed FASTA is missing', () => {
     expect(
-      getMissingRequirements({
+      getMissingSidecars({
         ...initialFormState(),
         adapterSelection: 'IndexedFastaAdapter',
         fastaLocation: fasta,
-      }),
+      }).map(s => s.ext),
     ).toEqual(['.fai'])
   })
 
   test('both indexes a bgzipped FASTA is missing', () => {
     expect(
-      getMissingRequirements({
+      getMissingSidecars({
         ...initialFormState(),
         adapterSelection: 'BgzipFastaAdapter',
         fastaLocation: fastaGz,
-      }),
+      }).map(s => s.ext),
     ).toEqual(['.fai', '.gzi'])
   })
 
   test('nothing for a 2bit', () => {
     expect(
-      getMissingRequirements({
+      getMissingSidecars({
         ...initialFormState(),
         adapterSelection: 'TwoBitAdapter',
         twoBitLocation: twobit,
@@ -905,16 +980,25 @@ describe('partitionExtraLocations', () => {
   })
 })
 
-describe('sequenceLocations', () => {
-  test('picks out the sequence files and leaves the sidecars', () => {
-    expect(sequenceLocations([fai, fasta, aliases])).toEqual([fasta])
+describe('classifyLocations', () => {
+  test('pairs each file with its role, undefined for one it cannot place', () => {
+    const bam = {
+      uri: 'https://example.com/x.bam',
+      locationType: 'UriLocation',
+    } as FileLocation
+    expect(classifyLocations([fai, fasta, bam])).toEqual([
+      { location: fai, role: 'fai' },
+      { location: fasta, role: 'fasta' },
+      { location: bam, role: undefined },
+    ])
   })
 
-  test('two genomes at once, in the order classifyAssemblyFiles reads them', () => {
-    expect(sequenceLocations([fasta, twobit])).toEqual([fasta, twobit])
-    expect(classifyAssemblyFiles([fasta, twobit]).twoBitLocation).toEqual(
-      twobit,
-    )
+  test('isSequenceRole picks out the sequences and leaves the sidecars', () => {
+    expect(
+      classifyLocations([fai, fasta, aliases])
+        .filter(f => isSequenceRole(f.role))
+        .map(f => f.location),
+    ).toEqual([fasta])
   })
 })
 

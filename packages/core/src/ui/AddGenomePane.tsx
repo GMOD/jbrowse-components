@@ -10,13 +10,14 @@ import {
   applyClassifiedFiles,
   applyPrimaryFile,
   applyTwoBitFile,
-  classifyFilename,
+  classifyLocations,
   clearSequenceFiles,
   formHasSequence,
-  getAssemblyName,
+  getMissingSidecars,
   isBlank,
+  isFormReady,
+  isSequenceRole,
   partitionExtraLocations,
-  sequenceLocations,
   urlTextToLocations,
 } from '../util/assemblyConfigUtils.ts'
 import { getFileName } from '../util/getFileName.ts'
@@ -116,43 +117,31 @@ const MoreOptions = observer(function MoreOptions({
 const RequiredIndexInputs = observer(function RequiredIndexInputs({
   form,
   setForm,
+  onEdit,
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
+  onEdit: (field: keyof FormState) => void
 }) {
   const { classes } = useStyles()
-  const { adapterSelection } = form
-  const needsFai =
-    (adapterSelection === 'IndexedFastaAdapter' ||
-      adapterSelection === 'BgzipFastaAdapter') &&
-    isBlank(form.faiLocation)
-  const needsGzi =
-    adapterSelection === 'BgzipFastaAdapter' && isBlank(form.gziLocation)
-  return needsFai || needsGzi ? (
+  const missing = getMissingSidecars(form)
+  return missing.length ? (
     <div className={classes.advanced}>
       <Alert severity="warning">
         This format needs its index file(s). Add them below.
       </Alert>
-      {needsFai ? (
+      {missing.map(({ field, label }) => (
         <FileSelector
+          key={field}
           inline
-          name="FASTA index (.fai) file"
-          location={form.faiLocation}
+          name={label}
+          location={form[field]}
           setLocation={(loc: FileLocation) => {
-            setForm(f => ({ ...f, faiLocation: loc }))
+            onEdit(field)
+            setForm(f => ({ ...f, [field]: loc }))
           }}
         />
-      ) : null}
-      {needsGzi ? (
-        <FileSelector
-          inline
-          name="FASTA gzip index (.gzi) file"
-          location={form.gziLocation}
-          setLocation={(loc: FileLocation) => {
-            setForm(f => ({ ...f, gziLocation: loc }))
-          }}
-        />
-      ) : null}
+      ))}
     </div>
   ) : null
 })
@@ -163,14 +152,14 @@ const RequiredIndexInputs = observer(function RequiredIndexInputs({
 const RecognitionCard = observer(function RecognitionCard({
   form,
   setForm,
-  onNameEdit,
+  onEdit,
   onChangeFile,
   showMore,
   setShowMore,
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
-  onNameEdit: () => void
+  onEdit: (field: keyof FormState) => void
   onChangeFile: () => void
   showMore: boolean
   setShowMore: (arg: boolean) => void
@@ -212,7 +201,7 @@ const RecognitionCard = observer(function RecognitionCard({
         fullWidth
         value={form.assemblyName}
         onChange={event => {
-          onNameEdit()
+          onEdit('assemblyName')
           const { value } = event.target
           setForm(f => ({ ...f, assemblyName: value }))
         }}
@@ -252,7 +241,7 @@ const RecognitionCard = observer(function RecognitionCard({
         </Typography>
       ) : null}
 
-      <RequiredIndexInputs form={form} setForm={setForm} />
+      <RequiredIndexInputs form={form} setForm={setForm} onEdit={onEdit} />
 
       <MoreOptions
         form={form}
@@ -414,14 +403,11 @@ const FileNotices = observer(function FileNotices({
   onEnterManually: () => void
 }) {
   const { classes } = useStyles()
-  const unrecognized = locations.filter(
-    loc => classifyFilename(getFileName(loc)) === undefined,
-  )
-  const placed = locations.filter(
-    loc => classifyFilename(getFileName(loc)) !== undefined,
-  )
-  const sequences = sequenceLocations(locations)
-  const primary = sequences.at(-1)
+  const classified = classifyLocations(locations)
+  const placed = classified.filter(f => f.role).map(f => f.location)
+  const unrecognized = classified.filter(f => !f.role).map(f => f.location)
+  const sequences = classified.filter(f => isSequenceRole(f.role))
+  const primary = sequences.at(-1)?.location
   return (
     <>
       {unrecognized.length ? (
@@ -472,22 +458,28 @@ const AddGenomePane = observer(function AddGenomePane({
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
   loading?: string
-  onStageAnother?: () => void
+  onStageAnother?: () => Promise<boolean>
 }) {
   const { classes } = useStyles()
   const [source, setSource] = useState<Source>('files')
   const [manual, setManual] = useState(false)
   const [dropped, setDropped] = useState<FileLocation[]>([])
   const [urls, setUrls] = useState('')
-  const [nameTouched, setNameTouched] = useState(false)
   const [showMore, setShowMore] = useState(false)
+  // fields the user filled in themselves, which the file set does not overwrite
+  const [edited, setEdited] = useState<ReadonlySet<keyof FormState>>(
+    () => new Set(),
+  )
 
+  const markEdited = (field: keyof FormState) => {
+    setEdited(prev => new Set(prev).add(field))
+  }
   const reclassify = (next: FileLocation[], nextUrls: string) => {
     setForm(f =>
       applyClassifiedFiles(
         f,
         [...next, ...urlTextToLocations(nextUrls)],
-        nameTouched,
+        edited,
       ),
     )
   }
@@ -498,20 +490,29 @@ const AddGenomePane = observer(function AddGenomePane({
   const resetInputs = () => {
     setDropped([])
     setUrls('')
-    setNameTouched(false)
+    setEdited(new Set())
     setShowMore(false)
   }
   // Swap the sequence file but keep the name/advanced fields the user entered.
-  // nameTouched is preserved so a hand-edited name survives the next drop.
+  // A hand-edited name stays marked so it survives the next drop; the sidecars
+  // do not, because clearSequenceFiles just blanked them and a mark would stop
+  // the replacement file set from filling them back in.
   const changeFile = () => {
     setForm(clearSequenceFiles)
     setDropped([])
     setUrls('')
     setShowMore(false)
+    setEdited(prev => new Set([...prev].filter(f => f === 'assemblyName')))
   }
-  const stageAnother = () => {
-    onStageAnother?.()
-    resetInputs()
+  // The pane's inputs are cleared by the staging actually landing, not by the
+  // click: on desktop a plain FASTA is indexed first, which takes as long as it
+  // takes and can still fail on a name already in use. Clearing up front left
+  // the recognition card describing a genome whose files had vanished from the
+  // box, and erased anything typed while the index ran.
+  const stageAnother = async () => {
+    if (await onStageAnother?.()) {
+      resetInputs()
+    }
   }
 
   return (
@@ -560,9 +561,7 @@ const AddGenomePane = observer(function AddGenomePane({
               <RecognitionCard
                 form={form}
                 setForm={setForm}
-                onNameEdit={() => {
-                  setNameTouched(true)
-                }}
+                onEdit={markEdited}
                 onChangeFile={() => {
                   changeFile()
                 }}
@@ -574,9 +573,12 @@ const AddGenomePane = observer(function AddGenomePane({
                   <Button
                     variant="text"
                     size="small"
-                    disabled={!!loading || !getAssemblyName(form)}
+                    // the same gate the caller's submit button uses: staging a
+                    // form the config builder will refuse only reports its
+                    // internal "FASTA, FAI, and GZI locations are all required"
+                    disabled={!!loading || !isFormReady(form)}
                     onClick={() => {
-                      stageAnother()
+                      void stageAnother()
                     }}
                   >
                     Add another genome

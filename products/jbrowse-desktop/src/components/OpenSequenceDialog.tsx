@@ -50,7 +50,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   // Both name checks happen before buildAssemblyConf, which on a plain FASTA
   // runs faidx over the whole file — a name that was never going to be accepted
   // shouldn't cost that first.
-  async function stageCurrentAssembly() {
+  async function buildCurrentAssembly() {
     const name = getAssemblyName(form)
     if (!name) {
       throw new Error('No assembly name set')
@@ -63,25 +63,29 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         `An assembly named "${name}" is already open. Give this one a different name.`,
       )
     }
-    const conf = await buildAssemblyConf(form, fastaLocation =>
+    return buildAssemblyConf(form, fastaLocation =>
       indexFasta(name, fastaLocation),
     )
-    return [...assemblyConfs, conf]
   }
 
+  // Reports whether the action got through, which is what the pane below waits
+  // on before clearing the inputs it staged from.
   async function runStaging(action: () => Promise<void>) {
     try {
       setError(undefined)
       await action()
+      return true
     } catch (e) {
       setError(e)
       console.error(e)
+      return false
     }
   }
 
   function addAnotherAssembly() {
     return runStaging(async () => {
-      setAssemblyConfs(await stageCurrentAssembly())
+      const conf = await buildCurrentAssembly()
+      setAssemblyConfs(prev => [...prev, conf])
       setForm(clearFormFields)
     })
   }
@@ -96,7 +100,9 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           'Finish the genome you are adding — it needs a sequence file, its index and a name — or clear it before opening.',
         )
       }
-      const confs = formReady ? await stageCurrentAssembly() : assemblyConfs
+      const confs = formReady
+        ? [...assemblyConfs, await buildCurrentAssembly()]
+        : assemblyConfs
       if (!confs.length) {
         throw new Error('No assemblies specified')
       }
@@ -119,8 +125,12 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
       open
       fullWidth
       maxWidth="md"
-      onClose={() => {
-        handleCancel()
+      // a click that lands outside is not an answer to "throw all this away":
+      // the staged list can be several genomes and a completed faidx pass each
+      onClose={(_, reason) => {
+        if (reason !== 'backdropClick') {
+          handleCancel()
+        }
       }}
       title="Open genome(s)"
     >
@@ -144,9 +154,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             setError(undefined)
             setForm(update)
           }}
-          onStageAnother={() => {
-            void addAnotherAssembly()
-          }}
+          onStageAnother={addAnotherAssembly}
         />
 
         {loading ? (

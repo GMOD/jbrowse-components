@@ -39,6 +39,44 @@ export interface FormState {
   cytobandsLocation: FileLocation
 }
 
+// The form fields that hold a file rather than text.
+export type LocationField = {
+  [K in keyof FormState]: FormState[K] extends FileLocation ? K : never
+}[keyof FormState]
+
+export const sidecarRoles = ['fai', 'gzi'] as const
+
+export type SidecarRole = (typeof sidecarRoles)[number]
+
+// What each index sidecar is called, where it lives on the form, and the
+// extension it takes next to its sequence file.
+export const sidecars = {
+  fai: {
+    field: 'faiLocation',
+    ext: '.fai',
+    label: 'FASTA index (.fai) file',
+  },
+  gzi: {
+    field: 'gziLocation',
+    ext: '.gzi',
+    label: 'FASTA gzip index (.gzi) file',
+  },
+} as const satisfies Record<
+  SidecarRole,
+  { field: LocationField; ext: string; label: string }
+>
+
+// The sidecars each format cannot load without. One table because the same
+// condition was written out at four sites and they drifted: the staging button
+// gated on a copy that let a .fa.gz through with neither index, straight into
+// getAdapterConfig's "FASTA, FAI, and GZI locations are all required".
+const requiredSidecars: Record<AdapterType, SidecarRole[]> = {
+  IndexedFastaAdapter: ['fai'],
+  BgzipFastaAdapter: ['fai', 'gzi'],
+  FastaAdapter: [],
+  TwoBitAdapter: [],
+}
+
 // Curried field setter for the add-assembly form:
 // makeSetField(setForm)('faiLocation') returns a value setter that merges just
 // that field. Shared by AdvancedOptions and SequenceAdapterInputs so the
@@ -105,22 +143,15 @@ function guessSidecarLocations(
   location: FileLocation,
   adapterSelection: AdapterType,
 ): Partial<FormState> {
-  const wantsFai =
-    adapterSelection === 'IndexedFastaAdapter' ||
-    adapterSelection === 'BgzipFastaAdapter'
-  const wantsGzi = adapterSelection === 'BgzipFastaAdapter'
-  const fai =
-    wantsFai && isBlank(state.faiLocation)
-      ? sidecar(location, '.fai')
-      : undefined
-  const gzi =
-    wantsGzi && isBlank(state.gziLocation)
-      ? sidecar(location, '.gzi')
-      : undefined
-  return {
-    ...(fai ? { faiLocation: fai } : {}),
-    ...(gzi ? { gziLocation: gzi } : {}),
+  const guesses: Partial<FormState> = {}
+  for (const role of requiredSidecars[adapterSelection]) {
+    const { field, ext } = sidecars[role]
+    const guess = isBlank(state[field]) ? sidecar(location, ext) : undefined
+    if (guess) {
+      guesses[field] = guess
+    }
   }
+  return guesses
 }
 
 function sidecar(
@@ -148,19 +179,11 @@ export function applyTwoBitFile(
   return { ...state, twoBitLocation: location, assemblyName }
 }
 
+// Everything about the genome just staged, gone, so the next one starts clean.
+// The chosen format survives on purpose: in the manual form it is what the user
+// picked, and the guided path overwrites it from the next file set anyway.
 export function clearFormFields(state: FormState): FormState {
-  return {
-    ...state,
-    fastaLocation: blank,
-    faiLocation: blank,
-    gziLocation: blank,
-    twoBitLocation: blank,
-    chromSizesLocation: blank,
-    refNameAliasesLocation: blank,
-    cytobandsLocation: blank,
-    assemblyName: '',
-    assemblyDisplayName: '',
-  }
+  return { ...initialFormState(), adapterSelection: state.adapterSelection }
 }
 
 // Clear only the sequence-file fields (and their required index sidecars),
@@ -261,21 +284,14 @@ export function getAssemblyName(form: FormState) {
   return form.assemblyName.trim()
 }
 
-// The index files the chosen format requires that the form doesn't have yet,
-// named the way the UI names them. getAdapterConfig throws on the same
-// condition; asking first is what lets a caller disable its submit button
-// instead of letting the user click it and read a stack trace back.
-export function getMissingRequirements(form: FormState) {
-  const { adapterSelection } = form
-  const needsFai =
-    adapterSelection === 'IndexedFastaAdapter' ||
-    adapterSelection === 'BgzipFastaAdapter'
-  return [
-    ...(needsFai && isBlank(form.faiLocation) ? ['.fai'] : []),
-    ...(adapterSelection === 'BgzipFastaAdapter' && isBlank(form.gziLocation)
-      ? ['.gzi']
-      : []),
-  ]
+// The index files the chosen format requires that the form doesn't have yet.
+// getAdapterConfig throws on the same condition; asking first is what lets a
+// caller disable its submit button instead of letting the user click it and
+// read a stack trace back, and lets the pane offer an input for each one.
+export function getMissingSidecars(form: FormState) {
+  return requiredSidecars[form.adapterSelection]
+    .map(role => sidecars[role])
+    .filter(({ field }) => isBlank(form[field]))
 }
 
 // Whether the form can be submitted/staged: a primary sequence file, everything
@@ -285,7 +301,7 @@ export function isFormReady(form: FormState) {
   return (
     formHasSequence(form) &&
     !!getAssemblyName(form) &&
-    !getMissingRequirements(form).length
+    !getMissingSidecars(form).length
   )
 }
 
@@ -301,20 +317,20 @@ export function isFormDirty(form: FormState) {
 // under a FASTA promises a file getAdapterConfig drops on the floor.
 export function partitionExtraLocations(form: FormState) {
   const { adapterSelection } = form
-  const needsFai =
-    adapterSelection === 'IndexedFastaAdapter' ||
-    adapterSelection === 'BgzipFastaAdapter'
+  const required = requiredSidecars[adapterSelection]
+  const twoBit = adapterSelection === 'TwoBitAdapter'
+  const sidecarLocation = (role: SidecarRole) => form[sidecars[role].field]
   const used = [
-    ...(needsFai ? [form.faiLocation] : []),
-    ...(adapterSelection === 'BgzipFastaAdapter' ? [form.gziLocation] : []),
-    ...(adapterSelection === 'TwoBitAdapter' ? [form.chromSizesLocation] : []),
+    ...required.map(sidecarLocation),
+    ...(twoBit ? [form.chromSizesLocation] : []),
     form.refNameAliasesLocation,
     form.cytobandsLocation,
   ].filter(loc => !isBlank(loc))
   const unused = [
-    ...(needsFai ? [] : [form.faiLocation]),
-    ...(adapterSelection === 'BgzipFastaAdapter' ? [] : [form.gziLocation]),
-    ...(adapterSelection === 'TwoBitAdapter' ? [] : [form.chromSizesLocation]),
+    ...sidecarRoles
+      .filter(role => !required.includes(role))
+      .map(sidecarLocation),
+    ...(twoBit ? [] : [form.chromSizesLocation]),
   ].filter(loc => !isBlank(loc))
   return { used, unused }
 }
@@ -327,17 +343,27 @@ const FASTA_EXT = /\.(fa|fasta|fas|fna|mfa)$/i
 const FASTA_GZ_EXT = /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i
 const TWOBIT_EXT = /\.2bit$/i
 
+// Every extension test below is anchored to the end of the name, and a filename
+// taken off a URL carries whatever follows it: a presigned S3 or GCS link ends
+// in `?X-Amz-Signature=...`, which is one of the two normal ways to hand someone
+// a genome. getFileName keeps the query because that is the name to show;
+// placing the file wants the path part on its own.
+function baseFilename(filename: string) {
+  return filename.split(/[?#]/)[0]!
+}
+
 export function getAssemblyNameFromFilename(filename: string) {
-  return filename
+  return baseFilename(filename)
     .replace(FASTA_GZ_EXT, '')
     .replace(FASTA_EXT, '')
     .replace(TWOBIT_EXT, '')
 }
 
 export function detectAdapterType(filename: string): AdapterType | undefined {
-  return FASTA_GZ_EXT.test(filename)
+  const name = baseFilename(filename)
+  return FASTA_GZ_EXT.test(name)
     ? 'BgzipFastaAdapter'
-    : TWOBIT_EXT.test(filename)
+    : TWOBIT_EXT.test(name)
       ? 'TwoBitAdapter'
       : undefined
 }
@@ -357,120 +383,149 @@ export type FileRole =
 // sidecars (.fai/.gzi) are checked before the fasta patterns they share a stem
 // with, and the fasta patterns before the looser cytoband/alias name matches.
 export function classifyFilename(filename: string): FileRole | undefined {
-  return /\.fai$/i.test(filename)
+  const name = baseFilename(filename)
+  return /\.fai$/i.test(name)
     ? 'fai'
-    : /\.gzi$/i.test(filename)
+    : /\.gzi$/i.test(name)
       ? 'gzi'
-      : TWOBIT_EXT.test(filename)
+      : TWOBIT_EXT.test(name)
         ? 'twoBit'
-        : FASTA_GZ_EXT.test(filename)
+        : FASTA_GZ_EXT.test(name)
           ? 'fastaGz'
-          : FASTA_EXT.test(filename)
+          : FASTA_EXT.test(name)
             ? 'fasta'
-            : /\.chrom\.sizes$/i.test(filename)
+            : /\.chrom\.sizes$/i.test(name)
               ? 'chromSizes'
-              : /cytoband/i.test(filename)
+              : /cytoband/i.test(name)
                 ? 'cytobands'
-                : /alias/i.test(filename)
+                : /alias/i.test(name)
                   ? 'refNameAliases'
                   : undefined
 }
 
 // Sort a dropped/pasted set of files into the assembly form fields, picking the
 // adapter and assembly name from whichever file is the primary sequence.
+//
+// The primary is chosen once, up front, and then answers for the adapter, the
+// sequence field and the name together. Letting each branch overwrite as it went
+// ran two independent last-wins rules that could disagree: a .2bit ahead of a .fa
+// took the adapter while the .fa took the name, so the form opened one genome's
+// sequence under the other genome's name, and the "more than one genome" notice
+// named the file it was not reading.
 export function classifyAssemblyFiles(
   locations: FileLocation[],
 ): Partial<FormState> {
   const result: Partial<FormState> = {}
-  let primaryFilename: string | undefined
-  for (const location of locations) {
-    const filename = getFileName(location)
-    const role = classifyFilename(filename)
-    if (role === 'fai') {
-      result.faiLocation = location
-    } else if (role === 'gzi') {
-      result.gziLocation = location
-    } else if (role === 'twoBit') {
-      result.twoBitLocation = location
-      result.adapterSelection = 'TwoBitAdapter'
-      primaryFilename = filename
-    } else if (role === 'fastaGz') {
-      result.fastaLocation = location
-      result.adapterSelection = 'BgzipFastaAdapter'
-      primaryFilename = filename
-    } else if (role === 'fasta') {
-      result.fastaLocation = location
-      if (result.adapterSelection === undefined) {
-        result.adapterSelection = 'IndexedFastaAdapter'
-      }
-      primaryFilename = filename
-    } else if (role === 'chromSizes') {
-      result.chromSizesLocation = location
-    } else if (role === 'cytobands') {
-      result.cytobandsLocation = location
-    } else if (role === 'refNameAliases') {
-      result.refNameAliasesLocation = location
+  const classified = classifyLocations(locations)
+  for (const { location, role } of classified) {
+    const field = role && extraFields[role]
+    if (field) {
+      result[field] = location
     }
   }
-  if (primaryFilename) {
-    result.assemblyName = getAssemblyNameFromFilename(primaryFilename)
-  }
-  // a plain FASTA with no .fai in the set indexes itself on submit
-  if (
-    result.adapterSelection === 'IndexedFastaAdapter' &&
-    result.faiLocation === undefined
-  ) {
-    result.adapterSelection = 'FastaAdapter'
+  const primary = classified.filter(f => isSequenceRole(f.role)).at(-1)
+  if (primary) {
+    result.assemblyName = getAssemblyNameFromFilename(
+      getFileName(primary.location),
+    )
+    if (primary.role === 'twoBit') {
+      result.twoBitLocation = primary.location
+      result.adapterSelection = 'TwoBitAdapter'
+    } else {
+      result.fastaLocation = primary.location
+      result.adapterSelection =
+        primary.role === 'fastaGz'
+          ? 'BgzipFastaAdapter'
+          : // a plain FASTA with no .fai in the set indexes itself on submit
+            result.faiLocation
+            ? 'IndexedFastaAdapter'
+            : 'FastaAdapter'
+    }
   }
   return result
 }
 
-// The roles that describe the sequence itself. A file set is authoritative over
-// these — one not present in `locations` resets to blank, so removing an input
-// clears its field.
+// The roles that describe the sequence itself. Exactly one of these is the
+// genome being added, so a set holding two holds two genomes and the caller
+// warns about it.
 const sequenceRoles: ReadonlySet<FileRole> = new Set([
   'fasta',
   'fastaGz',
   'twoBit',
 ])
 
-// The members of a dropped set that are a primary sequence file, in the order
-// classifyAssemblyFiles reads them — so the last is the one it keeps. Two of
-// them means two genomes arrived at once and the form, which holds one at a
-// time, silently kept the second; the caller warns about that.
-export function sequenceLocations(locations: FileLocation[]) {
-  return locations.filter(loc => {
-    const role = classifyFilename(getFileName(loc))
-    return role !== undefined && sequenceRoles.has(role)
-  })
+export function isSequenceRole(role: FileRole | undefined) {
+  return role !== undefined && sequenceRoles.has(role)
 }
 
-// Rebuild the file-location fields (plus adapter/name) of `state` from a freshly
-// classified set of dropped/pasted files. Sequence fields are authoritative (see
-// sequenceRoles). refName aliases and cytobands only merge, because "More
-// options" sets those by hand too and a later drop would otherwise wipe an entry
-// the file set never had an opinion about. assemblyName comes from the primary
-// file unless `keepName` is set (the user edited the name themselves).
+// Where each non-sequence role lands on the form. The sequence roles map to
+// nothing on purpose: which field they fill depends on which one is the primary,
+// so classifyAssemblyFiles decides that in one place rather than per file.
+const extraFields: Record<FileRole, LocationField | undefined> = {
+  fai: 'faiLocation',
+  gzi: 'gziLocation',
+  chromSizes: 'chromSizesLocation',
+  cytobands: 'cytobandsLocation',
+  refNameAliases: 'refNameAliasesLocation',
+  fasta: undefined,
+  fastaGz: undefined,
+  twoBit: undefined,
+}
+
+export interface ClassifiedLocation {
+  location: FileLocation
+  role: FileRole | undefined
+}
+
+// Every location paired with the slot it belongs in, `undefined` for the ones
+// that could not be placed. Callers needing more than one answer about the same
+// set — what was placed, what wasn't, which files are sequences — get all of
+// them out of this one pass.
+export function classifyLocations(
+  locations: FileLocation[],
+): ClassifiedLocation[] {
+  return locations.map(location => ({
+    location,
+    role: classifyFilename(getFileName(location)),
+  }))
+}
+
+/**
+ * Rebuild the file-location fields (plus adapter/name) of `state` from a freshly
+ * classified set of dropped/pasted files.
+ *
+ * The file set is authoritative: a field it says nothing about resets, so
+ * deleting a URL from the box clears the slot it filled. `edited` is the way out
+ * — the fields the user set by hand, which the classifier never gets to answer
+ * for. Without it, typing a .fai into the "this format needs its index" input
+ * and then adding one more URL wiped the .fai and the pane re-asked for it.
+ *
+ * refName aliases and cytobands merge instead of resetting even when untouched:
+ * they are the two slots "More options" also fills, and no file set that omits
+ * them is making a claim about them.
+ */
 export function applyClassifiedFiles(
   state: FormState,
   locations: FileLocation[],
-  keepName: boolean,
+  edited: ReadonlySet<keyof FormState>,
 ): FormState {
   const classified = classifyAssemblyFiles(locations)
+  const pick = <K extends keyof FormState>(key: K, reset: FormState[K]) =>
+    edited.has(key) ? state[key] : (classified[key] ?? reset)
   return {
     ...state,
-    fastaLocation: classified.fastaLocation ?? blank,
-    faiLocation: classified.faiLocation ?? blank,
-    gziLocation: classified.gziLocation ?? blank,
-    twoBitLocation: classified.twoBitLocation ?? blank,
-    chromSizesLocation: classified.chromSizesLocation ?? blank,
-    refNameAliasesLocation:
-      classified.refNameAliasesLocation ?? state.refNameAliasesLocation,
-    cytobandsLocation: classified.cytobandsLocation ?? state.cytobandsLocation,
-    adapterSelection: classified.adapterSelection ?? state.adapterSelection,
-    assemblyName: keepName
-      ? state.assemblyName
-      : (classified.assemblyName ?? ''),
+    fastaLocation: pick('fastaLocation', blank),
+    faiLocation: pick('faiLocation', blank),
+    gziLocation: pick('gziLocation', blank),
+    twoBitLocation: pick('twoBitLocation', blank),
+    chromSizesLocation: pick('chromSizesLocation', blank),
+    refNameAliasesLocation: pick(
+      'refNameAliasesLocation',
+      state.refNameAliasesLocation,
+    ),
+    cytobandsLocation: pick('cytobandsLocation', state.cytobandsLocation),
+    adapterSelection: pick('adapterSelection', state.adapterSelection),
+    assemblyName: pick('assemblyName', ''),
   }
 }
 

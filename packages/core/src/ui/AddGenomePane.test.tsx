@@ -5,12 +5,14 @@ import { useState } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { initialFormState } from '../util/assemblyConfigUtils.ts'
+import { initialFormState, isBlank } from '../util/assemblyConfigUtils.ts'
 import AddGenomePane from './AddGenomePane.tsx'
 
 // The pane is uncontrolled from its own point of view — the caller owns the
 // FormState — so each test drives a host that owns it and reports the latest.
-function setup({ onStageAnother }: { onStageAnother?: () => void } = {}) {
+function setup({
+  onStageAnother,
+}: { onStageAnother?: () => Promise<boolean> } = {}) {
   const user = userEvent.setup()
   let latest = initialFormState()
   function Host() {
@@ -143,15 +145,89 @@ test('and on File for someone picking local files', async () => {
   expect(sourceToggles()).toEqual(['local file=true', 'url=false'])
 })
 
+const stageButton = () =>
+  screen.getByRole('button', { name: 'Add another genome' })
+
 test('staging is offered only once the genome has a name', async () => {
-  const { user } = setup({ onStageAnother: () => {} })
+  const { user } = setup({ onStageAnother: async () => true })
   await pasteUrls(user, 'https://example.com/hg38.fa')
-  expect(
-    screen.getByRole('button', { name: 'Add another genome' }),
-  ).toBeEnabled()
+  expect(stageButton()).toBeEnabled()
 
   await user.clear(screen.getByTestId('assembly-name'))
-  expect(
-    screen.getByRole('button', { name: 'Add another genome' }),
-  ).toBeDisabled()
+  expect(stageButton()).toBeDisabled()
+})
+
+// it gated on the name alone, so a format still missing its index staged
+// straight into getAdapterConfig's own "FASTA, FAI, and GZI locations are all
+// required" — while the caller's submit button, on isFormReady, was disabled
+test('nor before the format has the indexes it needs', async () => {
+  const { user } = setup({ onStageAnother: async () => true })
+  await pasteUrls(user, 'https://example.com/hg38.fa.gz')
+
+  expect(stageButton()).toBeDisabled()
+})
+
+// the inputs used to clear on the click rather than on the result, which left
+// the card describing a genome whose files had gone from the box
+test('a refused staging leaves the inputs where they were', async () => {
+  const { user } = setup({ onStageAnother: async () => false })
+  await pasteUrls(user, 'https://example.com/hg38.2bit')
+  await user.click(stageButton())
+
+  expect(urlBox()).toHaveValue('https://example.com/hg38.2bit')
+  expect(screen.getByTestId('assembly-name')).toHaveValue('hg38')
+})
+
+test('and a staging that lands clears them', async () => {
+  const { user } = setup({ onStageAnother: async () => true })
+  await pasteUrls(user, 'https://example.com/hg38.2bit')
+  await user.click(stageButton())
+
+  expect(urlBox()).toHaveValue('')
+})
+
+// the notice and the recognition card disagreed: the .2bit took the adapter and
+// the .fa took the name, so the form opened one genome under the other's name
+test('two genomes at once: the notice names the file the card shows', async () => {
+  const { user, form } = setup()
+  await pasteUrls(
+    user,
+    ['https://example.com/mm39.2bit', 'https://example.com/hg38.fa'].join('\n'),
+  )
+
+  expect(screen.getByText(/only hg38\.fa is being read/)).toBeInTheDocument()
+  expect(screen.getByText('hg38.fa')).toBeInTheDocument()
+  expect(form().assemblyName).toBe('hg38')
+  expect(form().adapterSelection).toBe('FastaAdapter')
+  expect(isBlank(form().twoBitLocation)).toBe(true)
+})
+
+// a presigned S3/GCS link is one of the two normal ways to share a genome, and
+// the pane answered "Couldn't place" because its patterns end-anchor the name
+test('a presigned url is placed like any other', async () => {
+  const { user, form } = setup()
+  await pasteUrls(user, 'https://example.com/hg38.fa.gz?X-Amz-Signature=abc')
+
+  expect(form().adapterSelection).toBe('BgzipFastaAdapter')
+  expect(screen.getByTestId('assembly-name')).toHaveValue('hg38')
+  expect(screen.queryByText(/Couldn't place/)).not.toBeInTheDocument()
+})
+
+// the missing-index input writes the field directly, and the file set used to
+// be authoritative over it, so the next paste blanked what had just been typed
+test('an index entered inline survives adding one more url', async () => {
+  const { user, form } = setup()
+  await pasteUrls(user, 'https://example.com/hg38.fa.gz')
+  await user.click(screen.getAllByLabelText(/Enter URL/i)[0]!)
+  await user.paste('https://example.com/hg38.fa.gz.fai')
+
+  await user.click(urlBox())
+  await user.paste('\nhttps://example.com/hg38.fa.gz.gzi')
+
+  expect(form().faiLocation).toEqual({
+    uri: 'https://example.com/hg38.fa.gz.fai',
+    locationType: 'UriLocation',
+  })
+  expect(form().adapterSelection).toBe('BgzipFastaAdapter')
+  expect(screen.queryByText(/needs its index file/)).not.toBeInTheDocument()
 })

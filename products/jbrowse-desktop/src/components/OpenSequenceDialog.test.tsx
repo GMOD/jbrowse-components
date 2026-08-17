@@ -137,6 +137,37 @@ test('cancelling mid-index stops the index, not just the dialog', async () => {
   expect(onClose).toHaveBeenCalledWith()
 })
 
+// staging is what clears the inputs, so a name it refuses has to leave them —
+// the dialog used to clear on the click and strand the card over an empty box
+test('a genome refused for its name stays in the form to be renamed', async () => {
+  const { user } = setup({ existingAssemblyNames: ['hg38'] })
+  await enterUrls(user, 'https://example.com/hg38.2bit')
+  await user.click(screen.getByRole('button', { name: 'Add another genome' }))
+
+  expect(await screen.findByText(/already open/)).toBeInTheDocument()
+  expect(screen.getByTestId('genome-urls')).toHaveValue(
+    'https://example.com/hg38.2bit',
+  )
+  await user.clear(screen.getByTestId('assembly-name'))
+  await user.type(screen.getByTestId('assembly-name'), 'hg38-copy')
+  await user.click(screen.getByRole('button', { name: 'Add another genome' }))
+  expect(screen.getByText('hg38-copy')).toBeInTheDocument()
+})
+
+// the staged list is a completed faidx pass per genome, and a click that lands
+// outside the dialog is not an answer to throwing it away
+test('a click on the backdrop does not discard the staged list', async () => {
+  const { user, onClose } = setup()
+  await enterUrls(user, 'https://example.com/hg38.2bit')
+  await user.click(screen.getByRole('button', { name: 'Add another genome' }))
+  expect(screen.getByText('hg38')).toBeInTheDocument()
+
+  await user.click(document.querySelector('.MuiBackdrop-root')!)
+
+  expect(onClose).not.toHaveBeenCalled()
+  expect(screen.getByText('hg38')).toBeInTheDocument()
+})
+
 test('both staged genomes are handed over together', async () => {
   const { user, onClose } = setup()
   await enterUrls(user, 'https://example.com/hg38.2bit')
