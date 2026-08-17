@@ -336,6 +336,50 @@ const FST_SIGNIFICANCE = { significanceLine: 0.295 }
 // figure slices. One 200 kb bin of the scan.
 const IGF1_PEAK_WINDOW = 'chr15:41,400,000-41,600,000'
 
+// The 140 kb of differentiated sites the row order is computed over, and the
+// window the figure is drawn at. dog10k-igf1-haplotype states the pair
+// declaratively (`clusterRegion` + `runClustering`); the tour in video-specs.ts
+// performs it, so both read these two constants and neither can drift from the
+// other's window.
+const IGF1_CLUSTER_CORE = 'chr15:41,440,000-41,580,000'
+const IGF1_DRAWN_WINDOW = 'chr15:41,348,000-41,752,000'
+
+// What the clustering tour opens: the figure's own matrix with its row order NOT
+// yet computed, so the reorder is something the clip does rather than something
+// its session already carries.
+//
+// The Fst lane the figure carries is deliberately absent. Nothing in it moves
+// during the route, and a video pays for every row of height twice -- once in the
+// frame that has to serve the whole tour, once in a docs column at playback --
+// where a still pays once. The figure directly above the clip on the page is
+// where the lane belongs.
+export const dog10kVideoFixtures = {
+  config: DOG_CONFIG,
+  clusterCore: IGF1_CLUSTER_CORE,
+  drawnWindow: IGF1_DRAWN_WINDOW,
+  matrixTrackId: 'dog10k_igf1_haplotype',
+  unclusteredSession: (loc: string) =>
+    lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      loc,
+      tracks: [
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
+          height: 80,
+        },
+        {
+          trackId: 'dog10k_igf1_haplotype',
+          type: 'LinearMultiSampleVariantMatrixDisplay',
+          height: 620,
+          lineZoneHeight: 34,
+          colorBy: 'size',
+        },
+      ],
+    }),
+}
+
 // What a retrocopy row carries: the submitters' own annotation of the deposited
 // record, which is the figure's claim restated in the form a reader already knows
 // how to read -- the parent's CDS is three boxes and this is one. It is GenBank's
@@ -1382,11 +1426,13 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           showVariantLane: true,
           height: 500,
           layout: CYP_LAYOUT,
-          // Only the stop-gained site. Two neighbours are in frame otherwise --
-          // 38,261,636 (the same codon's second base) and 38,261,650, which a
-          // wolf carries -- and with three anonymous columns the wolf row reads
-          // as a counterexample to the very claim the figure makes. `start` is
-          // POS-1.
+          // Only the stop-gained site. THREE neighbours are in frame otherwise
+          // and the middle one is why this filter exists: 38,261,636 (the same
+          // codon's second base) and 38,261,662 are reference in every animal of
+          // the panel, so they cost an empty column each, but EVERY wolf here
+          // carries 38,261,650. Unfiltered, four anonymous columns put a full
+          // wolf row beside the claim that no wolf carries the stop, which is the
+          // counterexample reading. `start` is POS-1.
           jexlFilters: ["jexl:get(feature,'start') == 38261634"],
         },
       ],
@@ -1661,7 +1707,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       // the callset's own extent (41,350,031-41,749,214) with a hair of margin,
       // so every site the build produced is on screen and no empty flank is
       // painted past them
-      loc: 'chr15:41,348,000-41,752,000',
+      loc: IGF1_DRAWN_WINDOW,
       tracks: [
         {
           trackId: 'canFam4_ncbi_refseq',
@@ -1700,7 +1746,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // the 140 kb differentiated core, not the 320 kb on screen: the rows
           // are ordered on the columns that separate the panels, then drawn
           // against the flank that shows where the signal stops
-          clusterRegion: 'chr15:41,440,000-41,580,000',
+          clusterRegion: IGF1_CLUSTER_CORE,
           colorBy: 'size',
         },
       ],

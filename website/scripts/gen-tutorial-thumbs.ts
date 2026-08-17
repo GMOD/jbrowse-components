@@ -79,27 +79,43 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.51, 0.94],
     position: 'left',
   },
+  // All three Dog10K cards come off the DENSE figure on their page rather than
+  // the single-variant one, which is the same call gallery.ts made for the
+  // gallery tile and for the same measured reason: a genotype column is a thin
+  // band in a mostly empty frame, and at card size the empty frame is what a
+  // reader sees. The lof card used to crop dog10k-cyp1a2-nonsense through its
+  // callout ("Arg37…", "metabol…") and the svs card kept the 85% of the NHEJ1
+  // window that is grey, because the deletion sits at the right edge of a
+  // whole-gene view and no 5:3 crop holds both the row labels and the blocks.
   dog10k_lof: {
-    // the genotype column at the stop codon, breed labels kept
-    src: 'dog10k-cyp1a2-nonsense.png',
-    band: [0.26, 1],
-    xband: [0, 0.62],
-    position: 'left',
+    // the two copy-number lanes, named animals over the collection: a red
+    // expansion block against grey diploid, which is legible at card size where
+    // the nonsense variant's single column is not
+    src: 'dog10k-cyp1a2-cohort-copy-number.png',
+    band: [0.34, 1],
+    xband: [0.05, 1],
   },
   dog10k_selection: {
-    // the clustered matrix and the dendrogram/swatch column that reads it, past
-    // the app header and the gene track
-    src: 'dog10k-igf1-haplotype.png',
-    band: [0.3, 1],
-    position: 'left',
+    // the Manhattan scan rather than the IGF1 matrix. gallery.ts:311 rejected the
+    // matrix for this exact surface ("looks cool but is not a very clear
+    // message") and the tutorial card should not disagree with the gallery tile
+    // about the page's own picture.
+    // the scan half on its own, not the composed two-panel figure: cropping that
+    // one to 5:3 leaves the Manhattan a sliver above a second full app window.
+    // band drops the chrome, and center keeps the two labelled peaks.
+    src: 'dog10k-size-fst-scan-genome.png',
+    band: [0.34, 1],
+    position: 'center',
   },
   dog10k_svs: {
-    // the Collie rows carrying the deletion: the breed labels on the left and
-    // the genotype blocks, dropping the empty right margin past them
-    src: 'dog10k-nhej1-cea-deletion.png',
-    band: [0.28, 1],
-    xband: [0.005, 0.83],
-    position: 'left',
+    // the FGF4 retrocopy stack: two pink synteny ribbons with the parent gene's
+    // genotype blocks between them. The amylase and NHEJ1 panels both carry a
+    // callout arrow across the middle of the frame, so no crop of either clears
+    // the paint without also cutting the blocks; this figure keeps its callouts
+    // in the left margin, which xband drops.
+    src: 'dog10k-fgf4-retrogene-synteny.png',
+    band: [0.16, 0.95],
+    xband: [0.22, 1],
   },
   local_ancestry: {
     // the haplotype rows and their breed labels, past the app header

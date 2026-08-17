@@ -23,12 +23,11 @@ multi-sample variant track with a sample-metadata TSV, and cluster the rows.
   [assemblies guide](/docs/config_guides/assemblies))
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
 
-On Debian/Ubuntu, `apt install bcftools tabix curl python3` covers it. The
+On Debian/Ubuntu, `apt install bcftools tabix curl python3` covers it; the
 packaged `bcftools` is linked against libcurl, so it can read the remote
-callset. Everything the scripts write is a local file, so
-[JBrowse Desktop](/docs/quickstart_desktop) opens the result by path with no web
-server, and on JBrowse Web the same files go in through **Add track** or a
-`config.json`.
+callset. The scripts write local files, which
+[JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
+through **Add track**.
 
 ## Scanning for a locus
 
@@ -130,6 +129,8 @@ the pattern one animal at a time.
 The SNV callset is a single 397 GB VCF over 1,987 canids with a tabix index
 beside it. `bcftools` reads only the window:
 
+<!-- from: scripts/build_dog10k_igf1.sh -->
+
 ```bash
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 bcftools view -r chr15:41350000-41750000 -S igf1.samples --force-samples \
@@ -210,6 +211,8 @@ name rather than re-deriving from what is in view. A session can say that
 instead of performing it, since the display takes `clusterRegion` beside
 `runClustering`, which is what the figure below does.
 
+<Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the 140 kb core: rows in the panel's build order, the track menu's clustering run, and the same order held when the window widens to the figure below. The size swatch starts as three breed blocks and ends interleaved." />
+
 ## Reading it
 
 <Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
@@ -221,13 +224,14 @@ than two clean bands: the two panels differ here by a shift in allele frequency
 rather than by carrying different alleles, so the block is a run of columns
 where one class is enriched rather than a solid slab.
 
-The lane between them says which columns are doing the work. It is the same
-Hudson Fst as the genome scan, between the same two panels, but computed one
-site at a time over this VCF rather than in 200 kb windows, so each point is one
-column of the matrix below. The scan reads the phased imputation panel and this
-lane reads the SNV callset, so the peak is recovered twice off different files
-rather than redrawn. The differentiated sites are a run rather than a scatter,
-and the run is the block the clustering found.
+The lane between them says which columns are doing the work: the same Hudson Fst
+as the genome scan, between the same two panels, computed one site at a time
+over this VCF rather than in 200 kb windows. Every point is one column of the
+matrix, though not the column directly beneath it, since the matrix gives each
+record equal width and the Fst lane keeps genomic spacing. The sloped lines
+between the two are the display tying each column back to its coordinate. The
+scan reads the phased imputation panel and this lane reads the SNV callset, so
+the peak is recovered twice off different files rather than redrawn.
 
 Rows depart from their swatch in both directions: single orange rows sit within
 the giant cluster and single blue rows within the small one. The build script

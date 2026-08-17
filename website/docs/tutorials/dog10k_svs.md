@@ -22,13 +22,13 @@ recipe, a different class of variant each time.
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
 - `minimap2` and `samtools`, for the
   [FGF4 synteny half](#the-retrocopy-itself-as-sequence)
+- the UCSC `liftOver` binary for the OMIA lane, which the build script fetches
+  itself
 
 On Debian/Ubuntu, `apt install bcftools samtools minimap2 tabix curl python3`
-covers it. The packaged `bcftools` is linked against libcurl, so it can read the
-remote callsets. Everything the scripts write is a local file, so
-[JBrowse Desktop](/docs/quickstart_desktop) opens the result by path with no web
-server; on JBrowse Web the same files go in through **Add track** or a
-`config.json`.
+covers the rest. The scripts write local files, which
+[JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
+through **Add track**.
 
 ## The variant
 
@@ -38,16 +38,17 @@ One is a 7.8 kb deletion in an intron of _NHEJ1_, the variant
 [Parker et al. (2007)](https://doi.org/10.1101/gr.6772807) tied to Collie eye
 anomaly. If it is what the literature says, it should be common in Collies and
 their relatives and absent from unrelated breeds and from wolves. The anomaly is
-recessive, so the darker cells in the figure below are affected animals and the
-lighter ones unaffected carriers.
+recessive, so the darker cells below are affected animals and the lighter ones
+unaffected carriers.
 
 ## Slicing one locus out of the callset
 
 The genotype VCF is 5.9 GB across 1,879 dogs and wolves, published on
-[Zenodo](https://doi.org/10.5281/zenodo.14968873) with a tabix index. Nothing
-needs downloading in full: `bcftools` fetches only the locus. Zenodo serves the
-data and index from separate content URLs, so the index is named explicitly
-rather than guessed from the data URL:
+[Zenodo](https://doi.org/10.5281/zenodo.14968873) with a tabix index, and
+`bcftools` fetches only the locus. Zenodo serves the data and index from
+separate content URLs, so the index is named explicitly rather than guessed:
+
+<!-- from: scripts/build_dog10k_nhej1_sv.sh -->
 
 ```bash
 Z=https://zenodo.org/api/records/14968874/files
@@ -76,10 +77,9 @@ set carries a copy.
 
 ## Loading it with breed labels
 
-An SV VCF loads as an ordinary `VariantTrack`; what makes it readable is the
-multi-sample variant display, which draws one row per sample across the
-variant's real genomic span, so a 7.8 kb deletion is a 7.8 kb block rather than
-a tick.
+An SV VCF loads as an ordinary `VariantTrack`. The multi-sample variant display
+draws one row per sample across the variant's real genomic span, so a 7.8 kb
+deletion is a 7.8 kb block.
 
 ```json addtrack
 {
@@ -94,14 +94,14 @@ a tick.
 }
 ```
 
-The sample rows keep the Dog10K IDs, which are the data's identity but say
-nothing to a reader. `layout` renames them for the sidebar and gives each group
-a swatch, without touching the VCF.
+The sample rows keep the Dog10K IDs, which say nothing to a reader. `layout`
+renames them for the sidebar and gives each group a swatch without touching the
+VCF.
 
-It is display **state**, not track configuration, the same thing the tree
-sidebar writes when you rearrange rows by hand, so it goes on the track entry of
-a session, not in the track's `displays`. Put in a `displays` array it is
-silently ignored, since a display config accepts only its declared slots:
+`layout` is display **state** rather than track configuration, the same thing
+the tree sidebar writes when you rearrange rows by hand, so it belongs on a
+session's track entry. A display config accepts only its declared slots, so a
+`layout` put in `displays` is ignored with no error:
 
 ```json session config=test_data/dog10k/config.json
 {
@@ -138,27 +138,25 @@ silently ignored, since a display config accepts only its declared slots:
 }
 ```
 
-Add the assembly's gene annotation above it. The deletion has to be read against
-_NHEJ1_'s exons to be identified as intronic rather than coding.
+Add the assembly's gene annotation above it, since calling the deletion intronic
+means reading it against _NHEJ1_'s exons.
 
 ## Reading it
 
 <Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every carrier is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The lane between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
 
-The deletion is common in the Collie clade, homozygous in several animals, and
-absent everywhere else in this set including the wolves. It removes intronic
-sequence rather than coding exons, which is why one this size can segregate at
-this frequency.
+The deletion falls inside an intron and clears no exon, which is why a variant
+this large can be common in a breed at all: losing 7.8 kb of coding sequence
+would be selected against.
 
 ### Checking the call against a curated source
 
 The middle lane is not from the callset. [OMIA](https://omia.org) curates the
 published causal variants of Mendelian traits in animals, one record per variant
-with its phenotype, mode of inheritance and the coordinates the paper reported,
-and its Collie eye anomaly record (OMIA 000218-9615) is this deletion. Its span
-was published on CanFam3.1 and lifted to this assembly with UCSC's chain, so the
-bar and the genotype column below it come from two different publications by two
-different routes:
+with its phenotype, mode of inheritance and reported coordinates, and its Collie
+eye anomaly record (OMIA 000218-9615) is this deletion. Its span was published
+on CanFam3.1 and lifted here with UCSC's chain, so the bar and the genotype
+column below it come from two publications by two routes:
 
 <!-- from: scripts/build_omia_dog_variants.sh -->
 
@@ -168,9 +166,9 @@ curl -fO https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/liftOver/canFam3ToCa
 wc -l < unmapped.bed   # records the chain could not place
 ```
 
-An interval lifts as a unit here, so a plain `liftOver` is enough. A breakend
-callset is the case where it is not, since a BND carries its partner coordinate
-inside `ALT`; the [cancer SV tutorial](/docs/tutorials/cancer_sv) covers that.
+An interval lifts as a unit, so a plain `liftOver` is enough. A BND carries its
+partner coordinate inside `ALT` and needs more; the
+[cancer SV tutorial](/docs/tutorials/cancer_sv) covers that.
 
 ```json addtrack
 {
@@ -192,9 +190,9 @@ The mode of inheritance is drawn as the feature's description: recessive means
 the homozygotes are the affected dogs and the heterozygotes unaffected carriers,
 which the genotype legend cannot say.
 
-Click the bar for the rest of the record, including whether the feature reached
-canFam4 through a chain. A lifted record can be right about the locus and wrong
-about the base.
+Click the bar for the rest of the record, including whether it reached canFam4
+through a chain. A lifted record can be right about the locus and wrong about
+the base.
 
 ### Why the lane shows one record
 
@@ -220,10 +218,10 @@ The window holds nine SV records, and the figure filters to this one:
 }
 ```
 
-Unfiltered, a second deletion nested inside the 7.8 kb one paints a band of
-yellow no-calls against the darkest blue, and the two records read as one
-striped block. Those no-calls are structural: the nested deletion is missing in
-exactly the four dogs homozygous for the larger one:
+Unfiltered, a second deletion nested inside the 7.8 kb one paints yellow
+no-calls against the darkest blue and the two records read as one striped block.
+Those no-calls are structural: the nested deletion is missing in exactly the
+four dogs homozygous for the larger one:
 
 ```bash
 # -i POS=… because -r is END-aware and would also return the deletion this one
@@ -240,7 +238,7 @@ nested call from, so the genotyper returns missing.
 
 Lancashire Heelers are among the breeds Collie eye anomaly is reported in, and
 none of the four sampled here carry the deletion; four dogs is not a frequency
-estimate. The variant was picked because it was already characterized, and the
+estimate. This variant was picked because it was already characterized, and the
 same track scrolled anywhere else in the callset is a screen of variants nobody
 has interpreted yet.
 
@@ -295,10 +293,10 @@ every gray wolf in the analysis set labelled by country.
 }
 ```
 
-Too many rows for a `layout` entry each, so the labels come from a TSV instead:
-first column the sample name, every other column an attribute, and `colorBy`
-naming the one that paints the swatch. The RNASE1 track is that same config with
-the other slice's `uri`.
+Too many rows for a `layout` entry each, so the labels come from a TSV: first
+column the sample name, every other column an attribute, and `colorBy` naming
+the one that paints the swatch. The _RNASE1_ track is that same config with the
+other slice's `uri`.
 
 <Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. Same 86 animals in the same order in both, so a row reads straight across: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 
@@ -335,16 +333,17 @@ spliced mRNA, so it has no introns: short reads from the retrocopy map to the
 parent's exons and stop at each splice site, and a short-read caller reads that
 pileup as a deletion of each intron.
 
-Nothing is deleted. That reading comes from Parker et al. rather than from the
-callset, which cannot tell a retrocopy's footprint from a real deletion.
+Nothing is actually deleted. The retrocopy interpretation comes from Parker et
+al., not from the callset, which cannot tell a retrocopy's footprint from a real
+deletion.
 
 ### The records are the introns
 
 _FGF4_ has two introns, so a retrocopy should leave two records, each spanning
-one intron end to end. That is checkable rather than assumed, so
+one intron end to end.
 [`build_dog10k_fgf4_retrogene.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_fgf4_retrogene.sh)
 derives the introns from the RefSeq annotation and asserts each record against
-them before it writes any track, allowing one base of slack at each breakpoint:
+them, allowing one base of slack at each breakpoint, before it writes any track:
 
 ```
 FGF4 RefSeq exons:  48869443-48869782, 48870315-48870418, 48870953-48873311
@@ -364,6 +363,8 @@ Zenodo Paragraph set the deletions above use. It is 1.08 GB over the same
 collection, and unlike the Paragraph set it carries `DUP` and `INV` records.
 Selecting on `POS` keeps the two intron records and drops everything else called
 nearby:
+
+<!-- from: scripts/build_dog10k_fgf4_retrogene.sh -->
 
 ```bash
 SHARE=https://kiddlabshare.med.umich.edu/dog10K

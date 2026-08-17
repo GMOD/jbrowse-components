@@ -21,12 +21,11 @@ and read the genotypes across breeds with the wild canids as the control.
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
 - `samtools` built with libcurl, for the copy-number section
 
-On Debian/Ubuntu, `apt install bcftools samtools tabix curl python3` covers it.
-The packaged `bcftools` and `samtools` are linked against libcurl, so both can
-read the remote callset and CRAMs. Everything the scripts write is a local file,
-so [JBrowse Desktop](/docs/quickstart_desktop) opens the result by path with no
-web server; on JBrowse Web the same files go in through **Add track** or a
-`config.json`.
+On Debian/Ubuntu, `apt install bcftools samtools tabix curl python3` covers it;
+the packaged builds are linked against libcurl, so both can read the remote
+callset and CRAMs. The scripts write local files, which
+[JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
+through **Add track**.
 
 ## The gene and the question
 
@@ -76,6 +75,8 @@ bcftools query -r chr30:38261635-38261636 -f '%POS\t%REF\t%ALT\t%FILTER\t%AC\t%A
 The Dog10K SNV callset is a single 397 GB VCF over 1,987 canids, with a tabix
 index beside it. That size is irrelevant to reading one gene:
 
+<!-- from: scripts/build_dog10k_cyp1a2.sh -->
+
 ```bash
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 bcftools view -r chr30:38258000-38265000 -S cyp.samples --force-samples \
@@ -121,13 +122,13 @@ block, and the gene track still shows which exon it sits in.
 
 <Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant lane, then one row per dog. Five breeds carry it; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
-The build script genotypes the same site over every canid in the callset. The
-allele is carried by 74 of the collection's 324 breeds and reaches homozygosity
-in several: among the dogs sampled here, no German Hound and no Shetland
-Sheepdog is homozygous reference. It is absent from all 63 wolves and all four
-coyotes, which is the answer to the second question. The allele arose in dogs.
+The build script genotypes the same site over every canid in the callset. Dozens
+of breeds carry the allele and it reaches homozygosity in several: among the
+dogs sampled here, no German Hound and no Shetland Sheepdog is homozygous
+reference. It is absent from every wolf and every coyote in the collection,
+which is the answer to the second question. The allele arose in dogs.
 
-Two neighbours sit inside the same 101 bp, and the display filters them out:
+Three neighbours sit inside the same 101 bp, and the display filters them out:
 
 ```json
 {
@@ -149,10 +150,10 @@ Two neighbours sit inside the same 101 bp, and the display filters them out:
 }
 ```
 
-Drop the filter to see them. One is the same codon's second base; the other has
-its own distribution across these breeds, with one of the wolves carrying it, so
-tracking breed structure is a property of a particular variant rather than of
-the locus.
+Drop the filter to see them. Two are reference in every animal of this panel,
+including the one at the same codon's second base, so each draws an empty
+column. The third sits 15 bp along, and every wolf here carries it: breed
+structure is a property of a particular variant rather than of the locus.
 
 ## The gene is also copy-number variable
 
@@ -173,10 +174,6 @@ bcftools view -r chr30:38205000-38400000 -Ou "$SNVS" |
 bcftools query -l dp.vcf.gz > cohort.samples
 bcftools query -f '%POS[\t%DP]\n' dp.vcf.gz > cohort.dp
 ```
-
-Dropping everything but `FORMAT/DP` is what keeps this to a slice rather than a
-download: the source VCF is 397 GB, and `-r` reads only the locus out of it over
-HTTP.
 
 Depth is converted to copy number by comparison within each dog. The sequence
 around the element in that same dog is copy number two, so it serves as the
@@ -221,11 +218,11 @@ means low read depth in every canid, and a 5 kb window carries that over the
 blocks around it.
 
 The lower lane is the same estimate over every canid, clustered on the profile
-each one carries across the window rather than sorted on one column: **Cluster
-rows by similarity** in the track menu, or `runClustering`. What that groups is
-extents, so animals whose expansion starts and ends in the same place land
-together, and the blocks either side of the gene are the deletion polymorphisms
-there.
+each one carries across the window rather than sorted on one column:
+**Clustering → Cluster rows by similarity** in the track menu, or
+`runClustering`. What that groups is extents, so animals whose expansion starts
+and ends in the same place land together, and the blocks either side of the gene
+are the deletion polymorphisms there.
 
 One number does not reproduce: this estimate puts far more of the collection at
 three or more copies than the paper reports, and the two depth sources agree too
