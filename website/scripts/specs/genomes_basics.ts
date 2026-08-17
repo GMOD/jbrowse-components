@@ -485,8 +485,10 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
 
   // The isoform control, which the next figure's session sets declaratively and
   // a reader reaches by clicking. It has two looks one dismissal apart: while
-  // transcripts are collapsed it is the loud "One isoform" chip, and its (x)
-  // shrinks it to the quiet icon that is always in that corner afterwards.
+  // transcripts are collapsed it is the loud chip naming the rule that picked
+  // them — "Longest isoform" here, since UCSC's bed2gff conversion of RefSeq
+  // carries none of the `tag=MANE Select` that NCBI's own GFF3 does — and its
+  // (x) shrinks it to the quiet icon that is always in that corner afterwards.
   //
   // THE ICON IS WHAT THE FIGURE SHOWS (review: "i want the circle on the small
   // icon that launches the popover. also, i dont want it to be showing the

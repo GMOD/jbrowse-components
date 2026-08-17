@@ -149,7 +149,9 @@ const geneTrack = (height: number, showOnlyGenes: boolean) => ({
   showOnlyGenes,
   // ONE TRANSCRIPT PER GENE (reviewer, on two of the three figures here: "use
   // longestisoform on the gene track"). Collapsing raises the display's loud
-  // "One isoform" chip at the right edge of the lane, and in a 2.5 Mb frame
+  // chip at the right edge of the lane — "Longest isoform" on this track, whose
+  // UCSC bed2gff conversion drops the `tag=MANE Select` that NCBI's own GFF3
+  // carries, so protein length is what picks — and in a 2.5 Mb frame
   // it lands on a gene label; that is why an earlier round named 'all' instead
   // and paid a stacked row per multi-transcript gene. The chip is chrome, so
   // HIDE_ISOFORM_CHIP takes it out of the capture rather than the collapsing

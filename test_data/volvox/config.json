@@ -1356,6 +1356,20 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "gff3tabix_canonical_tags",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix canonical transcript tags",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "volvox.canonical_tags.gff3.gz"
+      },
+      "displayDefaults": {
+        "geneGlyphMode": "longestCoding"
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "gff3tabix_genes_contigA_alias",
       "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes (contigA alias)",

@@ -114,6 +114,7 @@ import {
   rowGeometrySignature,
 } from './yMorph.ts'
 
+import type { IsoformPicks } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
@@ -188,6 +189,9 @@ export interface GeneGlyphNotice {
   // the per-gene isoform cap, when a cap is what `collapsed` is about. Absent
   // for the `longestCoding` collapse, which is a mode rather than a number.
   maxIsoforms?: number
+  // what chose the transcript the collapsed genes are showing, which is what the
+  // chip names — a curated tag where the annotation carries one, else length
+  picks?: IsoformPicks
   dismissed: boolean
   mode: GeneGlyphMode
   setMode: (mode: GeneGlyphMode) => void

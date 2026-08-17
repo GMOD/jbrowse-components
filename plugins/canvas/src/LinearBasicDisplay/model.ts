@@ -15,6 +15,10 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import SegmentIcon from '@mui/icons-material/Segment'
 import { autorun } from 'mobx'
 
+import {
+  anyIsoformsHidden,
+  mergeIsoformPicks,
+} from '../RenderFeatureDataRPC/isoformPicks.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
 import {
   collapseIntronsMenuItem,
@@ -97,7 +101,7 @@ export default function stateModelFactory(
       configuration: ConfigurationReference(configSchema),
     })
     .volatile(() => ({
-      // Session-only acknowledgement of the "showing longest isoform" chip.
+      // Session-only acknowledgement of the isoform-collapse chip.
       // Dismissing collapses the loud text chip down to the quiet icon button
       // for the session (the button stays, so re-opening the menu is always one
       // click away); it never changes the collapse itself. Volatile, so a
@@ -214,6 +218,18 @@ export default function stateModelFactory(
 
       /**
        * #getter
+       * What picked the transcript each collapsed gene in the loaded view is
+       * showing, summed over its regions: the chip names the commonest rule
+       * (`RefSeq Select`) instead of only saying that transcripts are hidden.
+       */
+      get geneGlyphIsoformPicks() {
+        return mergeIsoformPicks(
+          [...self.rpcDataMap.values()].map(data => data.isoformPicks),
+        )
+      },
+
+      /**
+       * #getter
        * The height cap, only when the cap is what is hiding transcripts — so
        * `undefined` also covers a cap every gene in view fits inside, which the
        * control must not announce.
@@ -221,7 +237,7 @@ export default function stateModelFactory(
       get geneGlyphIsoformCap(): number | undefined {
         const cap = this.effectiveMaxIsoforms
         return cap !== undefined &&
-          [...self.rpcDataMap.values()].some(data => data.isoformsHidden)
+          anyIsoformsHidden(this.geneGlyphIsoformPicks)
           ? cap
           : undefined
       },
@@ -332,6 +348,7 @@ export default function stateModelFactory(
           ? {
               collapsed: self.geneGlyphCollapsed,
               maxIsoforms: self.geneGlyphIsoformCap,
+              picks: self.geneGlyphIsoformPicks,
               dismissed: self.geneGlyphNoticeDismissed,
               mode: self.geneGlyphMode,
               setMode: self.setGeneGlyphMode,

@@ -173,26 +173,43 @@ function rankIsoforms(isoforms: Feature[], scores: Scores): Feature[] {
     .map(s => s.feature)
 }
 
-// The isoforms to keep under a height cap, or undefined when the gene fits.
-// The survivors keep the caller's order, so a gene under the cap lays out
-// identically with it on and off.
-function isoformsWithinCap(
-  isoforms: Feature[],
-  maxIsoforms: number | undefined,
-  scores: Scores,
-) {
-  return maxIsoforms !== undefined && isoforms.length > maxIsoforms
-    ? new Set(
-        rankIsoforms(isoforms, scores)
-          .slice(0, Math.max(1, maxIsoforms))
-          .map(f => f.id()),
-      )
+// How many isoforms this gene keeps, or undefined when it keeps all of them.
+// The two modes differ only in the count: `longestCoding` is the cap at one,
+// taking the head of the same ranking, so the two agree by construction.
+function isoformsKept(count: number, config: DisplayConfig) {
+  const { geneGlyphMode, maxIsoforms } = config
+  if (geneGlyphMode === 'longestCoding') {
+    return count > 1 ? 1 : undefined
+  }
+  return maxIsoforms !== undefined && count > maxIsoforms
+    ? Math.max(1, maxIsoforms)
     : undefined
+}
+
+// Which isoforms a collapsing gene keeps, and the curated tag that put the best
+// of them first — the chip names that tag rather than only saying that
+// transcripts are hidden, and `tags[Infinity]` is the annotation that named
+// none, which leaves the pick to protein length.
+//
+// The survivors are a Set, so the caller's filter keeps them in the caller's
+// order and a gene under the cap lays out identically with it on and off.
+function collapseIsoforms(
+  isoforms: Feature[],
+  scores: Scores,
+  kept: number,
+  config: DisplayConfig,
+) {
+  const ranked = rankIsoforms(isoforms, scores)
+  return {
+    keep: new Set(ranked.slice(0, kept).map(f => f.id())),
+    canonicalTag:
+      config.canonicalTranscriptTags[scores.get(ranked[0]!.id())!.canonical],
+  }
 }
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
-  const { geneGlyphMode, maxIsoforms, transcriptTypes } = config
+  const { geneGlyphMode, transcriptTypes } = config
 
   // the gene's own resolved height, used only for the inter-transcript gap below
   // — each stacked child carries whatever height its own glyph resolved
@@ -210,32 +227,28 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const isoforms = getIsoforms(subfeatures, transcriptTypeSet)
   const hasMultipleIsoforms = isoforms.length > 1
 
-  // Which isoforms survive, or undefined when none are being dropped. The two
-  // modes differ only in the count: `longestCoding` is the cap at one, taking
-  // the head of the same ranking, so the two agree by construction.
+  // Which isoforms survive, or undefined when none are being dropped.
   //
   // Ranked BEFORE the stack sort below, which is in place and over an array
   // `isoforms` can BE — getIsoforms falls back to the raw subfeatures for a
   // gene with no isoform-shaped children. Ranking after it would rank a
   // reordered list, and rankIsoforms breaks a tie by index, so the cap at n = 1
   // would have kept a different isoform than the longestCoding collapse does.
-  const keep =
-    geneGlyphMode === 'longestCoding'
-      ? hasMultipleIsoforms
-        ? new Set([rankIsoforms(isoforms, scores)[0]!.id()])
-        : undefined
-      : isoformsWithinCap(isoforms, maxIsoforms, scores)
+  const kept = isoformsKept(isoforms.length, config)
+  const collapsed =
+    kept === undefined
+      ? undefined
+      : collapseIsoforms(isoforms, scores, kept, config)
 
   // Drop the isoforms that lost, leaving the decorations alongside them alone —
   // an NCBI source record, a `biological_region`. `longestCoding` used to
   // replace the child list with the isoform list outright, so those went with
   // them, and for a gene with a single isoform beside one it did that while
   // reporting nothing collapsed at all.
-  const isoformsCollapsed = keep !== undefined
-  if (keep) {
+  if (collapsed) {
     const isoformIds = new Set(isoforms.map(f => f.id()))
     subfeatures = subfeatures.filter(
-      f => !isoformIds.has(f.id()) || keep.has(f.id()),
+      f => !isoformIds.has(f.id()) || collapsed.keep.has(f.id()),
     )
   }
 
@@ -313,7 +326,8 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     // thread spends them in bodyHeightPx, which is the one place both the fit
     // probe and the committed pack read
     labelRows,
-    isoformsCollapsed,
+    isoformsCollapsed: collapsed !== undefined,
+    canonicalTag: collapsed?.canonicalTag,
     hasMultipleIsoforms,
   }
 }

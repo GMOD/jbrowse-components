@@ -1,3 +1,4 @@
+import type { IsoformPicks } from './isoformPicks.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
@@ -177,10 +178,12 @@ export interface FeatureDataResult {
   // that mode is zoom-dependent and would otherwise lag a region behind.
   hasMultiIsoformGenes?: boolean
 
-  // True when some gene here was drawn with isoforms missing. The main thread
-  // resolves the `longestCoding` collapse itself, but the height cap fires on
-  // the gene's own isoform count, which only the worker has seen.
-  isoformsHidden?: boolean
+  // What picked the transcript each collapsed gene here is showing, counted per
+  // rule (see IsoformPicks). Empty when nothing was collapsed, which is also how
+  // the main thread knows: it resolves the `longestCoding` collapse itself, but
+  // the height cap fires on the gene's own isoform count, which only the worker
+  // has seen. Undefined in fixtures that predate this field.
+  isoformPicks?: IsoformPicks
 
   // Index-estimated compressed bytes for this region (when the adapter offers a
   // cheap estimate), so the display's byte gate reflects what was actually

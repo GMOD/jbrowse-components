@@ -39,6 +39,11 @@ export interface FeatureLayout {
   // set when geneGlyphMode === 'longestCoding' collapsed a multi-isoform gene
   // down to its single representative transcript (layoutSubfeatures)
   isoformsCollapsed?: boolean
+  // on a collapsed gene, the `canonicalTranscriptTags` entry that put the
+  // surviving transcript first — absent when the annotation tagged none of them
+  // and protein length decided it. Summarized per region into `isoformPicks`,
+  // which is what the on-canvas chip names.
+  canonicalTag?: string
   // set when this gene has >1 isoform, independent of the current glyph mode —
   // drives the always-visible gene-glyph control (which only makes sense when
   // there's actually a choice among isoforms to make)

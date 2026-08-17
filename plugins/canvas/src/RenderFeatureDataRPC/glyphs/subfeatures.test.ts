@@ -573,6 +573,51 @@ describe('layoutSubfeatures layout', () => {
         'short',
       ])
     })
+
+    // The on-canvas chip names this tag rather than the count of what is
+    // hidden, so a collapsed gene has to report which rule kept the transcript
+    // it kept — see isoformPicks.ts, which counts these across a region.
+    describe('the tag reported to the chip', () => {
+      const tagOf = (
+        attributes: Record<string, unknown>,
+        overrides: Parameters<typeof mockDisplayConfig>[0] = {},
+      ) =>
+        layoutSubfeatures({
+          feature: geneWithTag(attributes),
+          config: mockDisplayConfig({
+            geneGlyphMode: 'longestCoding',
+            ...overrides,
+          }),
+        }).canonicalTag
+
+      // the config's spelling, not the file's, so two spellings of one tag are
+      // counted as one rule rather than splitting the chip's majority
+      it('is the config spelling of the tag that won', () => {
+        expect(tagOf({ tag: 'refseq select' })).toBe('RefSeq Select')
+        expect(tagOf({ tag: ['MANE Select', 'RefSeq Select'] })).toBe(
+          'MANE Select',
+        )
+      })
+
+      it('is absent when protein length decided it', () => {
+        expect(tagOf({})).toBeUndefined()
+        expect(tagOf({ tag: 'basic' })).toBeUndefined()
+      })
+
+      it('names the tag under the height cap too', () => {
+        expect(
+          tagOf(
+            { tag: 'RefSeq Select' },
+            { geneGlyphMode: 'all', maxIsoforms: 1 },
+          ),
+        ).toBe('RefSeq Select')
+      })
+
+      it('is absent on a gene that kept every isoform', () => {
+        expect(tagOf({ tag: 'RefSeq Select' }, { geneGlyphMode: 'all' })) //
+          .toBeUndefined()
+      })
+    })
   })
 
   describe('hasMultipleIsoforms flag (drives the gene-glyph control)', () => {

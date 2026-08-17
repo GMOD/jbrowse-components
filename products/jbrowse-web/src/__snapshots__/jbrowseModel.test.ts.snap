@@ -1742,6 +1742,24 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "volvox.canonical_tags.gff3.gz",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displayDefaults": {
+        "geneGlyphMode": "longestCoding",
+      },
+      "name": "GFF3Tabix canonical transcript tags",
+      "trackId": "gff3tabix_canonical_tags",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
         "gffGzLocation": {
           "locationType": "UriLocation",
           "uri": "volvox.sort.contigA.gff3.gz",

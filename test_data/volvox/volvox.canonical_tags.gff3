@@ -1,0 +1,50 @@
+##gff-version 3
+# Four genes whose isoforms differ only in how the annotation says which one
+# represents the gene, written in the spellings real files use. Every gene's
+# TAGGED transcript is the SHORTER protein, so a collapse that kept it can only
+# have read the tag.
+#
+#   MANEG    tag=MANE Select                       NCBI's GFF3: one value, a space in it
+#   GENCG    tag=basic,...,MANE_Select,...         GENCODE's: a comma list, an underscore in it
+#   ENSG     tag=basic,Ensembl_canonical           a canonical with no MANE beside it
+#   PLAING   (none)                                nothing to read; protein length decides
+ctgA	NCBI	CDS	1000	1600	.	+	0	ID=cds-NM_000001.1;Parent=rna-NM_000001.1
+ctgA	NCBI	CDS	1000	3000	.	+	0	ID=cds-NM_000002.1-1;Parent=rna-NM_000002.1
+ctgA	NCBI	exon	1000	1600	.	+	.	ID=exon-NM_000001.1-1;Parent=rna-NM_000001.1
+ctgA	NCBI	exon	1000	3000	.	+	.	ID=exon-NM_000002.1-1;Parent=rna-NM_000002.1
+ctgA	NCBI	gene	1000	9000	.	+	.	ID=gene-MANEG;Name=MANEG;gene_id=MANEG
+ctgA	NCBI	mRNA	1000	9000	.	+	.	ID=rna-NM_000001.1;Parent=gene-MANEG;Name=NM_000001.1;transcript_id=NM_000001.1;tag=MANE Select
+ctgA	NCBI	mRNA	1000	9000	.	+	.	ID=rna-NM_000002.1;Parent=gene-MANEG;Name=NM_000002.1;transcript_id=NM_000002.1
+ctgA	NCBI	CDS	6000	9000	.	+	0	ID=cds-NM_000002.1-2;Parent=rna-NM_000002.1
+ctgA	NCBI	exon	6000	9000	.	+	.	ID=exon-NM_000002.1-2;Parent=rna-NM_000002.1
+ctgA	NCBI	exon	8400	9000	.	+	.	ID=exon-NM_000001.1-2;Parent=rna-NM_000001.1
+ctgA	HAVANA	CDS	11000	11600	.	-	0	ID=cds-ENST00000001.1;Parent=rna-ENST00000001.1
+ctgA	HAVANA	CDS	11000	13000	.	-	0	ID=cds-ENST00000002.1-1;Parent=rna-ENST00000002.1
+ctgA	HAVANA	exon	11000	11600	.	-	.	ID=exon-ENST00000001.1-1;Parent=rna-ENST00000001.1
+ctgA	HAVANA	exon	11000	13000	.	-	.	ID=exon-ENST00000002.1-1;Parent=rna-ENST00000002.1
+ctgA	HAVANA	gene	11000	19000	.	-	.	ID=gene-GENCG;Name=GENCG;gene_id=GENCG
+ctgA	HAVANA	mRNA	11000	19000	.	-	.	ID=rna-ENST00000001.1;Parent=gene-GENCG;Name=ENST00000001.1;transcript_id=ENST00000001.1;tag=alternative_5_UTR,basic,Ensembl_canonical,GENCODE_Primary,MANE_Select,appris_principal_3,CCDS
+ctgA	HAVANA	mRNA	11000	19000	.	-	.	ID=rna-ENST00000002.1;Parent=gene-GENCG;Name=ENST00000002.1;transcript_id=ENST00000002.1;tag=basic
+ctgA	HAVANA	CDS	16000	19000	.	-	0	ID=cds-ENST00000002.1-2;Parent=rna-ENST00000002.1
+ctgA	HAVANA	exon	16000	19000	.	-	.	ID=exon-ENST00000002.1-2;Parent=rna-ENST00000002.1
+ctgA	HAVANA	exon	18400	19000	.	-	.	ID=exon-ENST00000001.1-2;Parent=rna-ENST00000001.1
+ctgA	HAVANA	CDS	21000	21600	.	+	0	ID=cds-ENST00000003.1;Parent=rna-ENST00000003.1
+ctgA	HAVANA	CDS	21000	23000	.	+	0	ID=cds-ENST00000004.1-1;Parent=rna-ENST00000004.1
+ctgA	HAVANA	exon	21000	21600	.	+	.	ID=exon-ENST00000003.1-1;Parent=rna-ENST00000003.1
+ctgA	HAVANA	exon	21000	23000	.	+	.	ID=exon-ENST00000004.1-1;Parent=rna-ENST00000004.1
+ctgA	HAVANA	gene	21000	29000	.	+	.	ID=gene-ENSG;Name=ENSG;gene_id=ENSG
+ctgA	HAVANA	mRNA	21000	29000	.	+	.	ID=rna-ENST00000003.1;Parent=gene-ENSG;Name=ENST00000003.1;transcript_id=ENST00000003.1;tag=basic,Ensembl_canonical
+ctgA	HAVANA	mRNA	21000	29000	.	+	.	ID=rna-ENST00000004.1;Parent=gene-ENSG;Name=ENST00000004.1;transcript_id=ENST00000004.1;tag=basic
+ctgA	HAVANA	CDS	26000	29000	.	+	0	ID=cds-ENST00000004.1-2;Parent=rna-ENST00000004.1
+ctgA	HAVANA	exon	26000	29000	.	+	.	ID=exon-ENST00000004.1-2;Parent=rna-ENST00000004.1
+ctgA	HAVANA	exon	28400	29000	.	+	.	ID=exon-ENST00000003.1-2;Parent=rna-ENST00000003.1
+ctgA	NCBI	CDS	31000	31600	.	+	0	ID=cds-NM_000003.1;Parent=rna-NM_000003.1
+ctgA	NCBI	CDS	31000	33000	.	+	0	ID=cds-NM_000004.1-1;Parent=rna-NM_000004.1
+ctgA	NCBI	exon	31000	31600	.	+	.	ID=exon-NM_000003.1-1;Parent=rna-NM_000003.1
+ctgA	NCBI	exon	31000	33000	.	+	.	ID=exon-NM_000004.1-1;Parent=rna-NM_000004.1
+ctgA	NCBI	gene	31000	39000	.	+	.	ID=gene-PLAING;Name=PLAING;gene_id=PLAING
+ctgA	NCBI	mRNA	31000	39000	.	+	.	ID=rna-NM_000003.1;Parent=gene-PLAING;Name=NM_000003.1;transcript_id=NM_000003.1
+ctgA	NCBI	mRNA	31000	39000	.	+	.	ID=rna-NM_000004.1;Parent=gene-PLAING;Name=NM_000004.1;transcript_id=NM_000004.1
+ctgA	NCBI	CDS	36000	39000	.	+	0	ID=cds-NM_000004.1-2;Parent=rna-NM_000004.1
+ctgA	NCBI	exon	36000	39000	.	+	.	ID=exon-NM_000004.1-2;Parent=rna-NM_000004.1
+ctgA	NCBI	exon	38400	39000	.	+	.	ID=exon-NM_000003.1-2;Parent=rna-NM_000003.1

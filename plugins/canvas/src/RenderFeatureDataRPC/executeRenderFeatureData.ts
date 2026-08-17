@@ -16,6 +16,7 @@ import {
 } from './densityGate.ts'
 import { buildFeatureAdmission } from './featureAdmission.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
+import { summarizeIsoformPicks } from './isoformPicks.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
@@ -231,7 +232,7 @@ export async function executeRenderFeatureData({
     ...packed,
     featureCount: features.size,
     hasMultiIsoformGenes: layouts.some(layout => layout.hasMultipleIsoforms),
-    isoformsHidden: layouts.some(layout => layout.isoformsCollapsed),
+    isoformPicks: summarizeIsoformPicks(layouts),
     bytes,
   }
 

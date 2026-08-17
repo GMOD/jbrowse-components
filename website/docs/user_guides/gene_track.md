@@ -34,6 +34,14 @@ length — or, for a gene with no coding isoform at all, the one with the widest
 genomic span. The attribute read and the tags that count are the
 `canonicalTranscriptField` and `canonicalTranscriptTags` config slots.
 
+While transcripts are being left out, the track's bottom-right corner says so
+with a chip naming the tag that picked most of the genes on screen —
+`RefSeq Select`, `MANE Select`, or `Longest isoform` for an annotation that tags
+nothing. Its tooltip counts the genes under each rule when a window holds a mix,
+which is usual: NCBI tags its protein-coding genes and leaves most non-coding
+ones alone. Clicking the chip opens the same three modes, and its (×) shrinks it
+to the small icon that stays in that corner.
+
 ## Collapsing introns
 
 Genes often span far more intronic than exonic sequence, so the coding parts are

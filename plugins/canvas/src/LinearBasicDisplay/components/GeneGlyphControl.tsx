@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import { GENE_GLYPH_MODE_OPTIONS } from '../geneGlyphMode.ts'
 import { geneGlyphChipLabel, geneGlyphTooltip } from './geneGlyphTooltip.ts'
 
+import type { IsoformPicks } from '../../RenderFeatureDataRPC/isoformPicks.ts'
 import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 
 // Bottom-right control for isoform collapse, shown (see showGeneGlyphNotice)
@@ -13,14 +14,16 @@ import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 // have no cue for.
 //
 // Two looks for the same control, and the only difference between them is
-// whether it carries a label. Until dismissed it's a loud text chip ("One
-// isoform") whose (×) is a passive acknowledgement; dismissing shrinks it to the
-// quiet always-there icon (it never removes the control, so re-opening the menu
-// is one click away). Both open the same Auto / All / Representative options as
-// the track menu's "Gene glyph" radio.
+// whether it carries a label. Until dismissed it's a loud text chip naming the
+// rule that picked the transcripts on screen ("RefSeq Select"), whose (×) is a
+// passive acknowledgement; dismissing shrinks it to the quiet always-there icon
+// (it never removes the control, so re-opening the menu is one click away). Both
+// open the same Auto / All / Representative options as the track menu's "Gene
+// glyph" radio.
 const GeneGlyphControl = observer(function GeneGlyphControl({
   collapsed,
   maxIsoforms,
+  picks,
   dismissed,
   geneGlyphMode,
   onSetGeneGlyphMode,
@@ -28,6 +31,7 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
 }: {
   collapsed: boolean
   maxIsoforms?: number
+  picks?: IsoformPicks
   dismissed: boolean
   geneGlyphMode: GeneGlyphMode
   onSetGeneGlyphMode: (value: GeneGlyphMode) => void
@@ -45,9 +49,10 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
         mode: geneGlyphMode,
         collapsed,
         maxIsoforms,
+        picks,
         noticeShowing,
       })}
-      label={noticeShowing ? geneGlyphChipLabel(maxIsoforms) : undefined}
+      label={noticeShowing ? geneGlyphChipLabel(maxIsoforms, picks) : undefined}
       onDelete={noticeShowing ? onDismiss : undefined}
       options={GENE_GLYPH_MODE_OPTIONS.map(option => ({
         label: option.label,
