@@ -2,10 +2,15 @@ import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
 import type { GroupByType } from '@jbrowse/plugin-alignments'
 
-function makeModel(type?: GroupByType, hideSelfAlignments = false) {
+function makeModel(
+  type?: GroupByType,
+  hideSelfAlignments = false,
+  isChainMode = false,
+) {
   return {
     groupBy: type ? { type } : undefined,
     setGroupBy: jest.fn(),
+    isChainMode,
     hideSelfAlignments,
     setHideSelfAlignments: jest.fn(),
   }
@@ -27,6 +32,24 @@ test('offers None plus the synteny-applicable dimensions, then the self lane', (
     'Mapping quality',
     'Hide self-alignment lane',
   ])
+})
+
+// Strand and mapping quality vary read by read within a chain, so chain layout
+// can't honor them and the worker degrades them to ungrouped. This menu passes a
+// fixed option list and had no filter of its own, so both stayed on offer and
+// ticked while changing nothing; the shared builder applies the rule now.
+test('chain mode drops the dimensions the worker would degrade', () => {
+  expect(
+    items(makeModel('mateAssembly', false, true)).map(i => i.label),
+  ).toEqual(['None', 'Mate assembly', 'Hide self-alignment lane'])
+})
+
+test('a stored per-read dimension falls back to None in chain mode', () => {
+  expect(
+    items(makeModel('mapq', false, true))
+      .filter(i => i.checked)
+      .map(i => i.label),
+  ).toEqual(['None'])
 })
 
 test('ungrouped checks None', () => {

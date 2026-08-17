@@ -149,16 +149,14 @@ export function getSortByMenuItem(
   }
 }
 
-// Dimensions this display offers: non-hidden ones in registry order, and in chain
-// mode only the chain-consistent ones (every read of a chain shares one key),
-// matching the worker guard (`groupByForMode`). `tag` is dropped because it needs
-// a tag name, so it is added back below as a dialog-opener rather than a direct
-// select.
-function offeredGroupByTypes(isChainMode: boolean) {
+// Dimensions this display offers: the non-hidden ones, in registry order. `tag`
+// is dropped because it needs a tag name, so it is added back below as a
+// dialog-opener rather than a direct select. Chain mode's narrowing is not here —
+// `groupByRadioMenuItem` applies it to whatever it is handed, so this display and
+// LGVSyntenyDisplay can't answer it differently.
+function offeredGroupByTypes() {
   return Object.values(GROUP_BY_DIMENSIONS)
-    .filter(
-      d => !d.hidden && d.type !== 'tag' && (!isChainMode || d.chainConsistent),
-    )
+    .filter(d => !d.hidden && d.type !== 'tag')
     .map(d => d.type)
 }
 
@@ -179,7 +177,8 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
   const groupTag = groupBy?.type === 'tag' ? groupBy.tag : undefined
   return groupByRadioMenuItem({
     current: groupBy?.type,
-    options: pickGroupByOptions(...offeredGroupByTypes(model.isChainMode)),
+    options: pickGroupByOptions(...offeredGroupByTypes()),
+    isChainMode: model.isChainMode,
     onSelect: type => {
       model.setGroupBy({ type })
     },

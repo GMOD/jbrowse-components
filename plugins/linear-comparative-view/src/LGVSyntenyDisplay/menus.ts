@@ -16,6 +16,11 @@ import type {
 interface GroupByModel {
   groupBy?: { type: GroupByType }
   setGroupBy: (groupBy?: { type: GroupByType }) => void
+  // A synteny track carries the inherited `linkedReads` slot, so chain layout is
+  // reachable here from a config or session even though this menu offers no way
+  // in. `groupByRadioMenuItem` needs it to drop the per-read dimensions the
+  // worker would degrade to ungrouped.
+  isChainMode: boolean
   hideSelfAlignments: boolean
   setHideSelfAlignments: (flag: boolean) => void
 }
@@ -32,6 +37,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   const item = groupByRadioMenuItem({
     current: model.groupBy?.type,
     options: GROUP_OPTIONS,
+    isChainMode: model.isChainMode,
     onSelect: type => {
       model.setGroupBy({ type })
     },

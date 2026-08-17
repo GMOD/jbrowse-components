@@ -1,6 +1,8 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
+import { isChainGroupableType } from '../../shared/groupFeatures.ts'
+
 import type { GroupByType } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -33,6 +35,22 @@ function checkedType(
   return offered.some(o => o.type === current) ? current : undefined
 }
 
+// The chain-mode rule, applied HERE rather than by each caller: chain layout can
+// only honor a dimension where every read of a chain resolves to one key, and the
+// worker degrades any other to ungrouped (`groupByForMode`). A menu offering one
+// anyway ticks a radio that changes nothing — which is what LGVSyntenyDisplay's
+// menu did, since it passes a fixed option list and so had no filter of its own.
+// Alongside `checkedType`, this is the second rule no call site should have to
+// remember, and both belong to the shape this builder exists to keep identical.
+function offered<T extends GroupByRadioOption>(
+  options: T[],
+  isChainMode: boolean,
+) {
+  return isChainMode
+    ? options.filter(o => isChainGroupableType(o.type))
+    : options
+}
+
 // The shared "Group by..." radio submenu for the alignments track menu and
 // LGVSyntenyDisplay. Grouping is one dimension at a time, so it's a single radio
 // group: "None" (ungroup) plus one radio per offered dimension, the active one
@@ -51,14 +69,18 @@ export function groupByRadioMenuItem({
   onSelect,
   onNone,
   extra = [],
+  isChainMode = false,
 }: {
   current: GroupByType | undefined
   options: GroupByRadioOption[]
   onSelect: (type: GroupByType) => void
   onNone: () => void
   extra?: GroupByRadioItem[]
+  isChainMode?: boolean
 }) {
-  const checked = checkedType(current, [...options, ...extra])
+  const dimensions = offered(options, isChainMode)
+  const extras = offered(extra, isChainMode)
+  const checked = checkedType(current, [...dimensions, ...extras])
   // Direct selects keep the menu open; `extra` radios open a dialog, so they
   // dismiss it — same rule the sort and color menus' tag rows follow.
   const radio = (
@@ -78,7 +100,7 @@ export function groupByRadioMenuItem({
     type: 'subMenu' as const,
     subMenu: [
       radio({ label: 'None' }, onNone, true),
-      ...options.map(o =>
+      ...dimensions.map(o =>
         radio(
           o,
           () => {
@@ -90,7 +112,7 @@ export function groupByRadioMenuItem({
       // `false`, not omitted: `staysOpenOnClick` defaults a radio to staying
       // open, so leaving it unset left the track menu and this submenu standing
       // over the dialog the row had just opened.
-      ...extra.map(e => radio(e, e.onClick, false)),
+      ...extras.map(e => radio(e, e.onClick, false)),
     ] satisfies MenuItem[],
   }
 }
