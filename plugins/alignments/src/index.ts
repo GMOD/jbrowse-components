@@ -40,8 +40,10 @@ export {
 } from './LinearAlignmentsDisplay/index.ts'
 export type {
   AlignmentLane,
-  LinearAlignmentsDisplayModel,
-} from './LinearAlignmentsDisplay/model.ts'
+  LaneSection,
+} from './LinearAlignmentsDisplay/lanes.ts'
+export type { LinearAlignmentsDisplayModel } from './LinearAlignmentsDisplay/model.ts'
+export type { ReadHit } from './LinearAlignmentsDisplay/readLookup.ts'
 // The fixed read-height presets, exported so a caller that writes `featureHeight`
 // without going through the menu can use the same three numbers. @jbrowse/img
 // pins its own copy against this one's literal types, so the two cannot drift.
@@ -99,7 +101,10 @@ export type {
   ReadConnectionsMode,
   SashimiArcsMode,
 } from './LinearAlignmentsDisplay/constants.ts'
-export type { GroupId } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
+export type {
+  GroupId,
+  ReadIdIndexMap,
+} from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 export type {
   ColoredByGroup,
   LaidOutByGroup,
