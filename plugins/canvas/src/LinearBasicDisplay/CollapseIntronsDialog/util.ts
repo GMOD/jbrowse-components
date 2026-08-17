@@ -363,6 +363,8 @@ export function buildCollapsedViewSnapshot({
     ...fitAllRegionsWindow(
       mergedRegions.reduce((sum, r) => sum + (r.end - r.start), 0),
       view.width,
+      // the new view inherits this one's zoom floor, being the same view type
+      view.minBpPerPx,
     ),
   }
 }

@@ -1902,6 +1902,54 @@ test('showAllRegions centers correctly with multiple regions', () => {
   expect(model.offsetPx).toBe(-45)
 })
 
+// fitAllRegions had no test of its own at all: mutating the fit rule failed only
+// plugin-canvas's collapsed-intron tests, in a package that merely consumes it.
+// These two are the pair — the exact fit, and the floor that is the one thing
+// that can stop it being exact.
+test('fitAllRegions fills the width edge to edge, unlike showAllRegions', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 2000, end: 3000 },
+        { assemblyName: 'volvox', refName: 'ctgA', start: 4000, end: 5000 },
+      ],
+    }),
+  )
+
+  model.setWidth(900)
+  model.fitAllRegions()
+
+  // the same 3000bp the showAllRegions test above frames at 3.704 with a 10%
+  // margin: 3000 / 900 exactly, and nothing left to scroll
+  expect(model.bpPerPx).toBeCloseTo(3000 / 900, 5)
+  expect(model.offsetPx).toBe(0)
+})
+
+test('fitAllRegions stops at the zoom-in floor and centers what cannot fill', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10 },
+      ],
+    }),
+  )
+
+  model.setWidth(900)
+  model.fitAllRegions()
+
+  // 10bp across 900px wants 1/90 bp/px, past the 1/50 floor. So the content is
+  // 500px in a 900px viewport and the centering is what frames it.
+  expect(model.bpPerPx).toBe(model.minBpPerPx)
+  expect(model.offsetPx).toBe((10 / model.minBpPerPx - 900) / 2)
+})
+
 test('showAllRegions with single region has no padding adjustment', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({ configuration: {} })

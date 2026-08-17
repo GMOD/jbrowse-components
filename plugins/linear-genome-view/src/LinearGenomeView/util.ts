@@ -10,31 +10,39 @@ import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { tickLabelsWorthDrawing } from '@jbrowse/core/util/tickLabels'
 
-import { MIN_BP_PER_PX } from './consts.ts'
-
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
 
 /**
- * The stored viewport of a view showing `totalBp` of displayed regions at the
- * `fitAllRegions` framing — the regions filling the width edge to edge, and
- * centered in it only where they are too narrow to fill it.
+ * The stored viewport of a view showing `totalBp` of displayed regions fitted to
+ * `width` — the regions filling it edge to edge, and centered in it only where
+ * they are too narrow to fill it.
  *
- * The point of it is the two properties it returns, which are the ones the
- * viewport actually persists as. A caller building a view SNAPSHOT (see
- * plugin-canvas's collapsed-intron launch) has no model to call
- * `fitAllRegions()` on, and one naming `bpPerPx`/`offsetPx` instead is dropped
+ * **This is where the fit-to-width rule is written.** `fitAllRegions` takes its
+ * scale from here rather than restating it, so the two cannot drift; a second
+ * spelling of `max(minBpPerPx * width, totalBp)` reading `MIN_BP_PER_PX` where
+ * the action reads the `minBpPerPx` GETTER would agree only for as long as
+ * nothing overrides it.
+ *
+ * The reason it is a function at all is `windowStartBp`, which `fitAllRegions`
+ * does not need (it centers in pixels, through `scrollTo`, which also clamps).
+ * A caller building a view SNAPSHOT does: it has no model to call
+ * `fitAllRegions()` on, and naming `bpPerPx`/`offsetPx` instead is dropped
  * whenever the snapshot also carries a `windowWidthBp` — which one copied off an
- * existing view always does. A live view calls `fitAllRegions()`; nothing else
- * should reach for this.
+ * existing view always does. plugin-canvas's collapsed-intron launch is that
+ * caller. A live view calls `fitAllRegions()`.
  *
  * `width` enters only through the zoom-in floor, which bites for a region set
- * narrower than `width / 50` bp; the window itself is in bp and needs no width,
- * which is why a snapshot can carry it at all.
+ * narrower than `width * minBpPerPx`; the window itself is in bp and needs no
+ * width, which is why a snapshot can carry it at all.
  */
-export function fitAllRegionsWindow(totalBp: number, width: number) {
-  const windowWidthBp = Math.max(MIN_BP_PER_PX * width, totalBp)
+export function fitAllRegionsWindow(
+  totalBp: number,
+  width: number,
+  minBpPerPx: number,
+) {
+  const windowWidthBp = Math.max(minBpPerPx * width, totalBp)
   // the same centering as getCenteredOffsetPx: half the width the content leaves
   // unfilled, which is zero whenever the fit above is exact
   return { windowWidthBp, windowStartBp: (totalBp - windowWidthBp) / 2 }

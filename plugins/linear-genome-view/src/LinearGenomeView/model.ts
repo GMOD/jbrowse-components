@@ -70,6 +70,7 @@ import {
   calculateVisibleLocStrings,
   cytobandLabelGutterWidth,
   expandRegion,
+  fitAllRegionsWindow,
   generateLocations,
   getScalebarRefNameLabels,
   groupContiguousBlocks,
@@ -1592,22 +1593,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * single-region path (`moveTo`, span/width) reached through the same
        * location box.
        *
-       * The scale itself is `fitBpPerPx`, so it has one definition and reads as
-       * the sibling of `showAllRegions`' `maxBpPerPx` rather than as arithmetic
-       * repeated here. Where that clamps up to `minBpPerPx` the content is
-       * narrower than the view, and the centering is what frames it.
+       * The scale comes from `fitAllRegionsWindow`, which is where the rule is
+       * written — a snapshot builder that cannot call an action needs the same
+       * answer, and the two agreeing matters more than either being local. Where
+       * it clamps up to `minBpPerPx` the content is narrower than the view, and
+       * the centering is what frames it.
        */
       fitAllRegions() {
-        // `max(minBpPerPx, totalBp/width) * width` — the window IS the
-        // displayed regions, which is what fitting them means, with the
-        // base-level zoom floor expressed in the same units. Nothing is fitted
-        // into a width of zero, where the pixel form was equally meaningless.
+        // The window IS the displayed regions, which is what fitting them means.
+        // Nothing is fitted into a width of zero, where the pixel form was
+        // equally meaningless.
         if (self.width) {
-          self.windowWidthBp = Math.max(
-            self.minBpPerPx * self.width,
+          self.windowWidthBp = fitAllRegionsWindow(
             self.totalBp,
-          )
+            self.width,
+            self.minBpPerPx,
+          ).windowWidthBp
         }
+        // Deliberately not the helper's `windowStartBp`: this is the same
+        // centering, but going through scrollTo gets the scroll clamp with it,
+        // and getCenteredOffsetPx is already the one definition of it in pixels.
         self.scrollTo(
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )
