@@ -20,10 +20,9 @@ import type { MismatchData } from '../../shared/webglRpcTypes.ts'
  * over that span would allocate hundreds of megabytes to sort a handful of
  * entries.
  *
- * `mismatchYs` is left zero-filled and later assigned by `remapYs` from
- * `mismatchReadIndices` (layout is main-thread, ADR-053), so it inherits this
- * permutation through the array it derives from and must not be permuted
- * separately.
+ * No `mismatchYs`: rows are `PileupLayoutArrays`, built main-thread (ADR-053) by
+ * `remapYs` from `mismatchReadIndices`. It therefore inherits this permutation
+ * through the array it derives from, and must never be permuted separately.
  */
 export function buildMismatchArrays(
   mismatches: MismatchData[],
@@ -38,7 +37,6 @@ export function buildMismatchArrays(
   // `sorted` IS the shipped positions array — the sort already produced it, so
   // permuting positions a second time would be redundant work.
   const { order, sorted: mismatchPositions } = positionOrder(raw)
-  const mismatchYs = new Uint16Array(n)
   const mismatchBases = new Uint8Array(n)
   const mismatchStrands = new Int8Array(n)
   const mismatchReadIndices = new Uint32Array(n)
@@ -54,7 +52,6 @@ export function buildMismatchArrays(
   }
   return {
     mismatchPositions,
-    mismatchYs,
     mismatchBases,
     mismatchStrands,
     mismatchReadIndices,

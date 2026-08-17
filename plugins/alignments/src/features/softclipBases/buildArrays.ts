@@ -10,7 +10,6 @@ export function buildSoftclipBaseArrays(softclips: SoftclipData[]) {
     0,
   )
   const softclipBasePositions = new Uint32Array(count)
-  const softclipBaseYs = new Uint16Array(count)
   const softclipBaseBases = new Uint8Array(count)
   const softclipBaseReadIndices = new Uint32Array(count)
   let i = 0
@@ -30,7 +29,6 @@ export function buildSoftclipBaseArrays(softclips: SoftclipData[]) {
   }
   return {
     softclipBasePositions,
-    softclipBaseYs,
     softclipBaseBases,
     softclipBaseReadIndices,
   }

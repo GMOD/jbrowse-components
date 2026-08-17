@@ -53,7 +53,6 @@ export function buildInterbaseArrays(
     filteredHardclips.length
 
   const interbasePositions = new Uint32Array(totalInterbases)
-  const interbaseYs = new Uint16Array(totalInterbases)
   // 32 bits because an insertion is not bounded by the read's reference span:
   // an assembly-to-reference BAM (dipcall, `minimap2 -a` on contigs, a pangenome
   // graph path) carries insertions of 100 kb and up, and the length here is what
@@ -93,7 +92,6 @@ export function buildInterbaseArrays(
 
   return {
     interbasePositions,
-    interbaseYs,
     interbaseLengths,
     interbaseTypes,
     interbaseReadIndices,

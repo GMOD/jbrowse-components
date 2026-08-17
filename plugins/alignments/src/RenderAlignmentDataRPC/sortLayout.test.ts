@@ -1,6 +1,4 @@
-import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
-import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -12,9 +10,10 @@ import {
   computeMultiRegionLayout,
   computeSortedLayout,
 } from './sortLayout.ts'
+import { baseWorkerPileupData } from './testPileupData.ts'
 
 import type { SortedBy } from '../shared/types.ts'
-import type { PileupDataResult } from './types.ts'
+import type { WorkerPileupData } from './types.ts'
 
 interface Read {
   start: number
@@ -38,7 +37,7 @@ function makePileupData(opts: {
   // Distinguishes reads across regions in multi-region tests; the same prefix+i
   // in two regions is treated as one boundary-spanning read (dedup by id).
   idPrefix?: string
-}): PileupDataResult {
+}): WorkerPileupData {
   const { reads, sortPos, idPrefix = 'id' } = opts
   const numReads = reads.length
   const hasAnyTagValue = reads.some(r => r.tagValue !== undefined)
@@ -97,96 +96,24 @@ function makePileupData(opts: {
   }
 
   return {
+    ...baseWorkerPileupData(numReads),
     readKeys,
-    readIdPrefix: undefined,
-    ...emptyModTooltipIndex(),
-    ...nextRefsToTable(reads.map(() => '')),
     ...namesToBlock(readNames),
     readPositions,
-    readYs: new Uint16Array(numReads),
-    readFlags: new Uint16Array(numReads),
-    readMapqs: new Uint8Array(numReads),
-    readInsertSizes: new Float32Array(numReads),
-    readPairOrientations: new Uint8Array(numReads),
     readStrands: Int8Array.from(reads.map(r => r.strand ?? 0)),
-    readInterchrom: new Uint8Array(numReads),
-    readTagColors: new Uint32Array(0),
-    readColorCategories: new Uint8Array(0),
-    segmentPositions: new Uint32Array(0),
-    segmentReadIndices: new Uint32Array(0),
-    segmentEdgeFlags: new Uint8Array(0),
-    numSegments: 0,
-    gapPositions: new Uint32Array(0),
-    gapYs: new Uint16Array(0),
-    gapTypes: new Uint8Array(0),
-    gapReadIndices: new Uint32Array(0),
-    gapFrequencies: new Uint8Array(0),
     mismatchPositions,
-    mismatchYs: new Uint16Array(numMismatches),
     mismatchBases,
     mismatchStrands: new Int8Array(numMismatches),
     mismatchReadIndices,
     mismatchFrequencies: new Uint8Array(numMismatches),
     mismatchQuals: new Uint8Array(numMismatches),
-    softclipBasePositions: new Uint32Array(0),
-    softclipBaseYs: new Uint16Array(0),
-    softclipBaseBases: new Uint8Array(0),
-    softclipBaseReadIndices: new Uint32Array(0),
     interbasePositions,
-    interbaseYs: new Uint16Array(numSoftclips),
     interbaseLengths,
     interbaseTypes,
     interbaseReadIndices,
-    interbaseSequences: [],
     interbaseFrequencies: new Uint8Array(numSoftclips),
-    coverageDepths: new Float32Array(0),
-    coverageFwdDepths: new Float32Array(0),
-    coverageRevDepths: new Float32Array(0),
-    coverageMaxDepth: 0,
-    coverageStartPos: 0,
-    coverageStatsBinSize: 1,
-    coverageStatsMins: new Float32Array(0),
-    coverageStatsMaxs: new Float32Array(0),
-    coverageStatsSums: new Float64Array(0),
-    coverageStatsSumSqs: new Float64Array(0),
-    coverageBinSize: 1,
-    coverageGpuBinCount: 0,
-    coveragePackedBuffer: new ArrayBuffer(0),
-    snpPackedBuffer: new ArrayBuffer(0),
-    interbaseMaxCount: 0,
-    interbasePackedBuffer: new ArrayBuffer(0),
-    indicatorPackedBuffer: new ArrayBuffer(0),
-    modificationPositions: new Uint32Array(0),
-    modificationYs: new Uint16Array(0),
-    modificationColors: new Uint32Array(0),
-    modificationReadIndices: new Uint32Array(0),
-    perBaseQualPositions: new Uint32Array(0),
-    perBaseQualYs: new Uint16Array(0),
-    perBaseQualScores: new Uint8Array(0),
-    perBaseQualReadIndices: new Uint32Array(0),
-    perBaseLetterPositions: new Uint32Array(0),
-    perBaseLetterYs: new Uint16Array(0),
-    perBaseLetterBases: new Uint8Array(0),
-    perBaseLetterReadIndices: new Uint32Array(0),
-    modCovPackedBuffer: new ArrayBuffer(0),
-    sashimiX1: new Uint32Array(0),
-    sashimiX2: new Uint32Array(0),
-    sashimiStrands: new Int8Array(0),
-    sashimiCounts: new Uint32Array(0),
-    numInsertions: 0,
     numSoftclips,
-    numHardclips: 0,
-    detectedModifications: [],
-    maxY: 0,
     sortTagValues,
-    connectingLinePositions: new Uint32Array(0),
-    connectingLineYs: new Uint16Array(0),
-    overlapPositions: new Uint32Array(0),
-    overlapYs: new Uint16Array(0),
-    linkedReadLinePositions: new Uint32Array(0),
-    linkedReadLineYs: new Uint16Array(0),
-    linkedReadLineColorTypes: new Uint8Array(0),
-    numLinkedReadLines: 0,
   }
 }
 
@@ -199,7 +126,7 @@ function makeSortedBy(pos: number, type = 'basePair', tag?: string): SortedBy {
  * in the same row have overlapping [start,end] extents.
  */
 function assertNonOverlappingLayout(
-  data: PileupDataResult,
+  data: WorkerPileupData,
   readYs: Uint16Array,
 ) {
   const { readPositions } = data
@@ -402,7 +329,7 @@ describe('computeLayout fast path (interval partitioning)', () => {
   // peak count of reads whose padded [start, end+2) intervals overlap a point;
   // an end frees its row when paddedEnd <= start, so process ends before starts
   // at an equal coordinate (delta -1 sorts before +1).
-  function peakPaddedDepth(data: PileupDataResult) {
+  function peakPaddedDepth(data: WorkerPileupData) {
     const n = data.readKeys.length
     const events: [number, number][] = []
     for (let i = 0; i < n; i++) {
@@ -478,7 +405,7 @@ describe('computeLayout fast path (interval partitioning)', () => {
   // can't hide the divergence — this is the spec the heap path must match.
   // Placement order is part of the spec: a plain pileup places reads by genomic
   // span then read id, never by array position (see compareReadsCanonically).
-  function canonicalOrder(data: PileupDataResult) {
+  function canonicalOrder(data: WorkerPileupData) {
     const { readPositions, readKeys } = data
     return Array.from({ length: readKeys.length }, (_, i) => i).sort(
       (a, b) =>
@@ -492,7 +419,7 @@ describe('computeLayout fast path (interval partitioning)', () => {
     )
   }
 
-  function refFirstFit(data: PileupDataResult, maxRows: number) {
+  function refFirstFit(data: WorkerPileupData, maxRows: number) {
     const { readPositions } = data
     const n = data.readKeys.length
     const rowEnds: number[] = [] // rowEnds[r] = last padded end placed in row r
@@ -1315,7 +1242,7 @@ describe('layout is independent of read arrival order', () => {
   // in the ORIGINAL array so two different presentation orders are comparable.
   function rowsByOriginalIndex(
     order: number[],
-    layout: (data: PileupDataResult) => Uint16Array,
+    layout: (data: WorkerPileupData) => Uint16Array,
     sortPos?: number,
   ) {
     const data = makePileupData({
@@ -1333,14 +1260,14 @@ describe('layout is independent of read arrival order', () => {
   const identity = [...tiedReads.keys()]
 
   it('plain pileup places tied-start reads the same either way', () => {
-    const layout = (d: PileupDataResult) => computeLayout(d).readYs
+    const layout = (d: WorkerPileupData) => computeLayout(d).readYs
     expect(rowsByOriginalIndex(reversed, layout)).toEqual(
       rowsByOriginalIndex(identity, layout),
     )
   })
 
   it('largest-features-first is order-independent', () => {
-    const layout = (d: PileupDataResult) =>
+    const layout = (d: WorkerPileupData) =>
       computeLayout(d, false, Number.POSITIVE_INFINITY, true).readYs
     expect(rowsByOriginalIndex(reversed, layout)).toEqual(
       rowsByOriginalIndex(identity, layout),
@@ -1348,7 +1275,7 @@ describe('layout is independent of read arrival order', () => {
   })
 
   it('soft-clip order is order-independent', () => {
-    const layout = (d: PileupDataResult) => computeLayout(d, true).readYs
+    const layout = (d: WorkerPileupData) => computeLayout(d, true).readYs
     expect(rowsByOriginalIndex(reversed, layout)).toEqual(
       rowsByOriginalIndex(identity, layout),
     )
@@ -1386,7 +1313,7 @@ describe('layout is independent of read arrival order', () => {
   ] as [string, SortedBy][])(
     'sort by %s is order-independent',
     (_name, sortedBy) => {
-      const layout = (d: PileupDataResult) =>
+      const layout = (d: WorkerPileupData) =>
         computeSortedLayout(d, sortedBy).readYs
       expect(rowsByOriginalIndex(reversed, layout, sortedBy.pos)).toEqual(
         rowsByOriginalIndex(identity, layout, sortedBy.pos),

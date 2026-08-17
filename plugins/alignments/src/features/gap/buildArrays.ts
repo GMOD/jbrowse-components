@@ -8,7 +8,6 @@ import type { GapData } from '../../shared/webglRpcTypes.ts'
 export function buildGapArrays(gaps: GapData[], regionStart: number) {
   const filtered = gaps.filter(g => g.end > regionStart)
   const gapPositions = new Uint32Array(filtered.length * 2)
-  const gapYs = new Uint16Array(filtered.length)
   const gapTypes = new Uint8Array(filtered.length)
   const gapReadIndices = new Uint32Array(filtered.length)
   for (let i = 0; i < filtered.length; i++) {
@@ -21,5 +20,5 @@ export function buildGapArrays(gaps: GapData[], regionStart: number) {
     gapTypes[i] = g.type === 'deletion' ? GAP_DELETION : GAP_SKIP
     gapReadIndices[i] = g.readIndex
   }
-  return { gapPositions, gapYs, gapTypes, gapReadIndices }
+  return { gapPositions, gapTypes, gapReadIndices }
 }

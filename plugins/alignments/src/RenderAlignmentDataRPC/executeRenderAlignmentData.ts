@@ -322,8 +322,8 @@ async function buildGroupResult(
   } = ctx
 
   // Layout (readYs/gapYs/mismatchYs/etc.) is computed on the main thread via
-  // `laidOutPileupMap` (pileup) / `computeChainLayout` (chain) — the worker
-  // emits zero-filled Y arrays.
+  // `laidOutPileupMap` (pileup) / `computeChainLayout` (chain), which is also
+  // where those arrays are allocated — see `PileupLayoutArrays`.
   const { readArrays } = buildBaseReadArrays(features, readIdPrefix)
 
   // From the RAW features, not the extracted ones: BAM hands over its QNAME

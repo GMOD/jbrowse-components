@@ -57,12 +57,14 @@ describe('buildMismatchArrays ordering', () => {
     expect([...arrays.mismatchBases]).toEqual([84, 65])
   })
 
-  it('sizes mismatchYs with the rest and leaves it for remapYs', () => {
-    // Ys is derived from the permuted readIndices on the main thread, so it must
-    // be present, zeroed, and NOT separately permuted here.
+  it("emits no Y array — rows are the layout tier's", () => {
+    // `cloneWithLayout` derives `mismatchYs` from the permuted
+    // `mismatchReadIndices`, so it inherits this sort and must never be
+    // permuted separately. Shipping a zeroed one from here made that look like
+    // a field the worker owns.
     const arrays = buildMismatchArrays([mm(300, 65, 0), mm(100, 67, 1)], 0)
-    expect(arrays.mismatchYs.length).toBe(2)
-    expect([...arrays.mismatchYs]).toEqual([0, 0])
+    expect(arrays).not.toHaveProperty('mismatchYs')
+    expect([...arrays.mismatchReadIndices]).toEqual([1, 0])
   })
 
   it('handles the empty and single cases', () => {

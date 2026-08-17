@@ -70,11 +70,14 @@ describe('buildBaseReadArrays', () => {
     expect(readArrays.readMapqs[0]).toBe(255)
   })
 
-  test('leaves Y values for the main-thread layout to fill', () => {
+  // Rows are the layout's to state, not this builder's — `readYs` is a
+  // `PileupLayoutArrays` field and nothing here can answer it, so the worker
+  // ships no array for it at all.
+  test('emits no Y array', () => {
     const { readArrays } = buildBaseReadArrays(
       [feat({}), feat({ id: 'f2' })],
       undefined,
     )
-    expect([...readArrays.readYs]).toEqual([0, 0])
+    expect(readArrays).not.toHaveProperty('readYs')
   })
 })

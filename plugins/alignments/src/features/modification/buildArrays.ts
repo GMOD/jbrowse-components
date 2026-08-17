@@ -11,7 +11,6 @@ export function buildModificationArrays(
 ) {
   const filtered = modifications.filter(m => m.position >= regionStart)
   const modificationPositions = new Uint32Array(filtered.length)
-  const modificationYs = new Uint16Array(filtered.length)
   // Pre-pack each modification's RGB + probability-as-alpha into ABGR u32 so
   // both the GPU vertex buffer and the Canvas2D shader path can read one
   // slot instead of four shifted bytes.
@@ -46,7 +45,6 @@ export function buildModificationArrays(
   }
   return {
     modificationPositions,
-    modificationYs,
     modificationColors,
     modificationProbabilities,
     modificationReadIndices,

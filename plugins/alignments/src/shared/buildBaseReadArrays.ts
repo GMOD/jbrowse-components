@@ -40,8 +40,9 @@ function buildReadKeys(
 }
 
 /**
- * Build the per-read TypedArrays that pileup and chain executors share. Y
- * values are zero-filled — main-thread layout populates them.
+ * Build the per-read TypedArrays that pileup and chain executors share. No row:
+ * `readYs` is a `PileupLayoutArrays` field, allocated by the main-thread layout
+ * that can answer it.
  *
  * Read index is the feature's position in `features`; detail builders carry
  * that integer on each primitive (no id→index map needed).
@@ -69,7 +70,6 @@ export function buildBaseReadArrays(
 ) {
   const n = features.length
   const readPositions = new Uint32Array(n * 2)
-  const readYs = new Uint16Array(n)
   const readFlags = new Uint16Array(n)
   const readMapqs = new Uint8Array(n)
   const readInsertSizes = new Float32Array(n)
@@ -90,7 +90,6 @@ export function buildBaseReadArrays(
   return {
     readArrays: {
       readPositions,
-      readYs,
       readFlags,
       readMapqs,
       readInsertSizes,
