@@ -53,16 +53,17 @@ The main thread does no parsing. It holds the result, uploads it, and draws it.
 
 Everything orange is BGZF decompression, in
 [`@gmod/bgzf-filehandle`](https://github.com/GMOD/bgzf-filehandle), and it is
-there because that is where a cold query's time is: 70-90% of it, against a
+there because that is where a cold query's time is — most of it, against a
 fraction of a millisecond to a few milliseconds building records. Reading the
 index and decoding records both stay in JavaScript.
 
 The dashed branch beside it is a further pool of four workers, one per JS
 context. Where nested workers are unavailable the pool resolves to `undefined`
 and the same code inflates in process, which is what makes the option safe to
-pass unconditionally. It is also a degradation with no error attached, so
-[how a cold query spends its time](/docs/developer_guides/optimizations#decompression-is-where-a-cold-querys-time-goes)
-records the way to check the pool is engaged.
+pass unconditionally. It is also a degradation with no error attached. The
+share, what the pool is worth per format, and how to check it is engaged at all
+are
+[the fetch clock](/docs/developer_guides/optimizations#decompression-is-where-a-cold-querys-time-goes).
 
 ## Where the caches sit
 
