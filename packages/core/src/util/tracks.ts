@@ -387,6 +387,29 @@ export function makeIndexType(
   return name?.toUpperCase().endsWith(typeA) ? typeA : typeB
 }
 
+/**
+ * The `index` block a tabix-indexed adapter's guess writes: where the index is,
+ * and which of the two kinds it is.
+ *
+ * Eight guessers spelled this pair out by hand, which is the crossed-pair hazard
+ * `tabixIndexSnapshot` was extracted for on the config side: a `.csi` location
+ * filed under `indexType: 'TBI'` is a valid-looking config that opens no index
+ * at all, and nothing downstream can tell it from a correct one.
+ *
+ * BAM is deliberately not here, for the reason `tabixIndexFields` gives: BAI/CSI
+ * is a different enumeration over a different default, and folding the two would
+ * mean a slot whose vocabulary depends on its adapter.
+ */
+export function guessTabixIndex(
+  file: FileLocation,
+  index: FileLocation | undefined,
+) {
+  return {
+    location: index ?? makeIndex(file, '.tbi'),
+    indexType: makeIndexType(index && getFileName(index), 'CSI', 'TBI'),
+  }
+}
+
 export interface AdapterConfig {
   type: string
   [key: string]: unknown

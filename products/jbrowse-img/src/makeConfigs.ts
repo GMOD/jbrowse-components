@@ -35,13 +35,17 @@ function siblingIndex(file: string, conventional: 'tbi' | 'bai' | 'crai') {
   return candidates.find(c => fs.existsSync(c)) ?? primary
 }
 
+// Case-insensitive, like core's makeIndexType: a `--index` the user typed can
+// be spelled `.CSI`, and reading that as TBI opens no index at all.
+const isCsi = (name: string) => /\.csi$/i.test(name)
+
 // The index type follows the file that was CHOSEN, not the one the user typed,
 // so an autodetected `.csi` is opened as one.
 function makeTabixIndex(file: string, index: string | undefined) {
   const chosen = index || siblingIndex(file, 'tbi')
   return {
     location: makeLocation(chosen),
-    indexType: chosen.endsWith('.csi') ? 'CSI' : 'TBI',
+    indexType: isCsi(chosen) ? 'CSI' : 'TBI',
   }
 }
 
@@ -69,7 +73,7 @@ const fileTypes: Record<string, FileType> = {
         bamLocation: makeLocation(file),
         index: {
           location: makeLocation(chosen),
-          indexType: chosen.endsWith('.csi') ? 'CSI' : 'BAI',
+          indexType: isCsi(chosen) ? 'CSI' : 'BAI',
         },
         sequenceAdapter,
       }

@@ -3,11 +3,7 @@ import {
   addTrackTypeGuesser,
   testAdapter,
 } from '@jbrowse/core/util'
-import {
-  getFileName,
-  makeIndex,
-  makeIndexType,
-} from '@jbrowse/core/util/tracks'
+import { getFileName, guessTabixIndex } from '@jbrowse/core/util/tracks'
 
 import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
 
@@ -16,17 +12,13 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function VcfExtensionPointsF(pluginManager: PluginManager) {
   addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
     const fileName = getFileName(file)
-    const indexName = index && getFileName(index)
     if (
       testAdapter(fileName, /\.vcf\.b?gz$/i, adapterHint, 'VcfTabixAdapter')
     ) {
       return {
         type: 'VcfTabixAdapter',
         vcfGzLocation: file,
-        index: {
-          location: index ?? makeIndex(file, '.tbi'),
-          indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-        },
+        index: guessTabixIndex(file, index),
       }
     } else if (
       testAdapter(fileName, /\.vcf(\.gz)?$/i, adapterHint, 'VcfAdapter')
@@ -42,10 +34,7 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
       return {
         type: 'PlinkLDTabixAdapter',
         ldLocation: file,
-        index: {
-          location: index ?? makeIndex(file, '.tbi'),
-          indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-        },
+        index: guessTabixIndex(file, index),
       }
     } else if (testAdapter(fileName, /\.ld$/i, adapterHint, 'PlinkLDAdapter')) {
       // Plain .ld files use in-memory adapter

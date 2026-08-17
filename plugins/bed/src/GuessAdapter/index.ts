@@ -3,18 +3,13 @@ import {
   addTrackTypeGuesser,
   testAdapter,
 } from '@jbrowse/core/util'
-import {
-  getFileName,
-  makeIndex,
-  makeIndexType,
-} from '@jbrowse/core/util/tracks'
+import { getFileName, guessTabixIndex } from '@jbrowse/core/util/tracks'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function GuessAdapterF(pluginManager: PluginManager) {
   addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
     const fileName = getFileName(file)
-    const indexName = index && getFileName(index)
     if (
       testAdapter(fileName, /\.bedpe(\.gz)?$/i, adapterHint, 'BedpeAdapter')
     ) {
@@ -58,10 +53,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
       return {
         type: 'BedGraphTabixAdapter',
         bedGraphGzLocation: file,
-        index: {
-          location: index ?? makeIndex(file, '.tbi'),
-          indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-        },
+        index: guessTabixIndex(file, index),
       }
     } else if (
       testAdapter(
@@ -75,10 +67,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
       return {
         type: 'BedTabixAdapter',
         bedGzLocation: file,
-        index: {
-          location: index ?? makeIndex(file, '.tbi'),
-          indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-        },
+        index: guessTabixIndex(file, index),
       }
     } else {
       return undefined

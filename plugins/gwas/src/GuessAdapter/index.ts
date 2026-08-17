@@ -3,18 +3,13 @@ import {
   addTrackTypeGuesser,
   testAdapter,
 } from '@jbrowse/core/util'
-import {
-  getFileName,
-  makeIndex,
-  makeIndexType,
-} from '@jbrowse/core/util/tracks'
+import { getFileName, guessTabixIndex } from '@jbrowse/core/util/tracks'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function GuessAdapterF(pluginManager: PluginManager) {
   addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
     const fileName = getFileName(file)
-    const indexName = index && getFileName(index)
     // Only `.txt.gz` (the Pan-UKBB GWAS flat-file convention) auto-guesses to
     // GWASAdapter. `.bed.gz` is intentionally left to BedTabixAdapter —
     // distinguishing a GWAS BED from a generic BED would need column-level
@@ -24,10 +19,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
       ? {
           type: 'GWASAdapter',
           bedGzLocation: file,
-          index: {
-            location: index ?? makeIndex(file, '.tbi'),
-            indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-          },
+          index: guessTabixIndex(file, index),
         }
       : undefined
   })

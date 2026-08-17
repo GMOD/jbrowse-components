@@ -3,11 +3,7 @@ import {
   addTrackTypeGuesser,
   testAdapter,
 } from '@jbrowse/core/util'
-import {
-  getFileName,
-  makeIndex,
-  makeIndexType,
-} from '@jbrowse/core/util/tracks'
+import { getFileName, guessTabixIndex } from '@jbrowse/core/util/tracks'
 import { syntenyTypes } from '@jbrowse/synteny-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -15,7 +11,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 export default function GuessAdapterF(pluginManager: PluginManager) {
   addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
     const fileName = getFileName(file)
-    const indexName = index && getFileName(index)
     if (testAdapter(fileName, /\.paf(.gz)?$/i, adapterHint, 'PAFAdapter')) {
       return {
         type: 'PAFAdapter',
@@ -36,10 +31,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
       return {
         type: 'AllVsAllIndexedPAFAdapter',
         pifGzLocation: file,
-        index: {
-          location: index ?? makeIndex(file, '.tbi'),
-          indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-        },
+        index: guessTabixIndex(file, index),
       }
     } else if (adapterHint === 'MCScanBlocksAdapter') {
       // the extra per-genome BED files and blockAssemblies come from the
@@ -109,10 +101,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
       return {
         type: 'PairwiseIndexedPAFAdapter',
         pifGzLocation: file,
-        index: {
-          location: index ?? makeIndex(file, '.tbi'),
-          indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-        },
+        index: guessTabixIndex(file, index),
       }
     } else {
       return undefined
