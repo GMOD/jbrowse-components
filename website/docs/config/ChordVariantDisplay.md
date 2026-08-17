@@ -12,9 +12,9 @@ plugin.
 ## Example usage
 
 The circular-view display for a `VariantTrack` of structural variants;
-translocations are drawn as chords across the circle. `bezierRadiusRatio` sets
-the deepest bow toward the center, which a chord straight across the circle
-reaches; a shorter-range one bows in proportion to its span:
+translocations are drawn as chords across the circle. The three stroke slots are
+the chord's resting, hovered and selected colors, and each takes a `jexl:`
+expression over the `feature` so a chord can be colored by what it is:
 
 ```js
 {
@@ -30,11 +30,16 @@ reaches; a shorter-range one bows in proportion to its span:
     {
       type: 'ChordVariantDisplay',
       displayId: 'sv-ChordVariantDisplay',
-      bezierRadiusRatio: 0.1,
+      strokeColor: "jexl:get(feature,'INFO').SVTYPE=='BND'?'#d95f02':'rgba(255,133,0,0.32)'",
+      strokeColorHover: '#555',
     },
   ],
 }
 ```
+
+How deep a chord bows toward the center is `bezierRadiusRatio`, a display
+state-model property rather than a config slot — a saved session carries it, a
+track config drops it.
 
 _See the **Config slots** section below for all available configuration fields._
 

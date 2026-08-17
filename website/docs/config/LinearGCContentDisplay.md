@@ -11,14 +11,14 @@ plugin.
 
 ## Example usage
 
-`gcMode` is `content` for GC percentage or `skew` for (G-C)/(G+C):
+Added to the assembly's `sequence` track, which is where a
+`ReferenceSequenceTrack` is authored. `gcMode` is `content` for GC percentage or
+`skew` for (G-C)/(G+C):
 
 ```js
-{
+sequence: {
   type: 'ReferenceSequenceTrack',
   trackId: 'refseq',
-  name: 'Reference sequence',
-  assemblyNames: ['hg38'],
   adapter: {
     type: 'IndexedFastaAdapter',
     uri: 'https://example.com/genome.fa',

@@ -61,9 +61,10 @@ the matrix rows on load (same metadata mechanism as the regular
 }
 ```
 
-Taller matrix filtering rare variants (MAF < 5 %), with pre-declared sample
-colors and groups. `layout` seeds the initial row order, color, and group labels
-inline instead of from a `samplesTsvLocation`:
+Taller matrix filtering rare variants (MAF < 5 %). Row order, per-row color and
+group labels come from the adapter's `samplesTsvLocation` above — the display's
+own `layout` holds the arrangement the user then drags into place, so it is
+session state rather than a config slot:
 
 ```js
 {
@@ -80,11 +81,6 @@ inline instead of from a `samplesTsvLocation`:
       type: 'LinearMultiSampleVariantMatrixDisplay',
       height: 400,
       minorAlleleFrequencyFilter: 0.05,
-      layout: [
-        { name: 'HG001', color: '#e41a1c', group: 'case' },
-        { name: 'HG002', color: '#377eb8', group: 'control' },
-        { name: 'HG003', color: '#4daf4a', group: 'control' },
-      ],
     },
   ],
 }

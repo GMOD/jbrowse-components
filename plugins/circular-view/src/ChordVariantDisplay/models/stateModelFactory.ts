@@ -37,9 +37,9 @@ const ErrorMessageStackTraceDialog = lazy(
  *
  * #example
  * The circular-view display for a `VariantTrack` of structural variants;
- * translocations are drawn as chords across the circle. `bezierRadiusRatio`
- * sets the deepest bow toward the center, which a chord straight across the
- * circle reaches; a shorter-range one bows in proportion to its span:
+ * translocations are drawn as chords across the circle. The track config below
+ * is what creates it; its colors are the config slots on
+ * [](/docs/config/chordvariantdisplay):
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -54,11 +54,15 @@ const ErrorMessageStackTraceDialog = lazy(
  *     {
  *       type: 'ChordVariantDisplay',
  *       displayId: 'sv-ChordVariantDisplay',
- *       bezierRadiusRatio: 0.1,
  *     },
  *   ],
  * }
  * ```
+ * `bezierRadiusRatio` below is a property of this model rather than a config
+ * slot: it sets the deepest bow toward the center, which a chord straight across
+ * the circle reaches, and a shorter-range one bows in proportion to its span.
+ * Nothing in the UI sets it and a track config drops it, so today only a
+ * hand-edited session carries a value other than the default.
  */
 const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
   return types

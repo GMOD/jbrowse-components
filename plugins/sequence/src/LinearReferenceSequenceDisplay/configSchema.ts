@@ -4,15 +4,14 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config LinearReferenceSequenceDisplay
  *
  * #example
- * A complete `ReferenceSequenceTrack` config to paste into `tracks` (an
- * assembly's `sequence` track takes the same shape). `showForward`,
- * `showReverse`, and `showTranslation` toggle the strand/translation rows:
+ * The display goes in the `displays` array of the assembly's `sequence` track,
+ * which is where a `ReferenceSequenceTrack` is authored — it names no assembly
+ * of its own. `showForward`, `showReverse`, and `showTranslation` toggle the
+ * strand and translation rows:
  * ```js
- * {
+ * sequence: {
  *   type: 'ReferenceSequenceTrack',
  *   trackId: 'refseq',
- *   name: 'Reference sequence',
- *   assemblyNames: ['hg38'],
  *   adapter: {
  *     type: 'IndexedFastaAdapter',
  *     uri: 'https://example.com/genome.fa',
