@@ -60,28 +60,23 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
       },
       /**
        * #method
-       * Raw `ThemeOptions` for the active theme: the shape every view's
-       * `renderToSvg` threads into each display's `renderSvg`, where it is
-       * treated as a `configTheme` and rebuilt with
-       * `resolvePalette`/`createJBrowseTheme` outside any React context.
-       *
-       * The config slot is the whole answer here, because it is the whole of an
-       * embedded product's theming — no picker, no `allThemes`, and
-       * `setThemeMode` writes that slot, which is also what `palette` above
-       * resolves from. So `name` is accepted and ignored, where the app
-       * session's counterpart looks a named preset up in `allThemes()`.
-       *
-       * **Its absence did not read as an unthemed export, it read as a light
-       * one.** Every view's export calls this optionally
-       * (`session.getActiveThemeOptions?.(themeName)`), so a session without it
-       * hands `undefined` down the whole path, and `undefined` resolves to the
-       * default light palette at every step: light SVG chrome, light-baked
-       * feature labels, an opaque white background rect. An embedded host in
-       * dark mode got a light figure out of `view.exportSvg()` with nothing
-       * anywhere saying why, which is why this is a method on the mixin rather
-       * than something each product's export could pass for itself.
+       * Raw `ThemeOptions` for the active theme, which every view's SVG export
+       * threads into each display's `renderSvg` as a `configTheme` and rebuilds
+       * outside React. The config slot is the whole answer here because it is
+       * the whole of an embedded product's theming: no picker, no `allThemes`,
+       * and it is what `setThemeMode` writes and `palette` resolves from. `name`
+       * is accepted and ignored — the app session's counterpart looks a named
+       * preset up in `allThemes()`.
        */
       getActiveThemeOptions(_name?: string) {
+        // Its absence did not read as an unthemed export, it read as a *light*
+        // one. Every view's export calls this optionally
+        // (`session.getActiveThemeOptions?.(themeName)`), so a session without
+        // it handed `undefined` down the whole path — and undefined resolves to
+        // the default light palette at every step of it: the SVG chrome, the
+        // colors each display bakes into its own bodies, the background rect. A
+        // host following its own dark mode got a light figure out of
+        // `view.exportSvg()` with nothing anywhere saying why.
         return this.themeOptions.configTheme
       },
     }))
