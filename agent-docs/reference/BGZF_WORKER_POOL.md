@@ -21,6 +21,8 @@ lines. Headless Chrome, real HTTP with range requests, 4 workers, arms
 interleaved, **min of 6**, machine on AC. Both arms asserted to return the same
 record count on every run.
 
+<!-- measurement: bgzf-pool-tabix -->
+
 | workload | records | unpooled | pooled | speedup |
 | --- | --- | --- | --- | --- |
 | 50kb window | 2,732 | 803ms | 562ms | 1.43x |

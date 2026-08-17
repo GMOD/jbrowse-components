@@ -33,7 +33,9 @@ The churn was `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../Scaleb
 
 **Fixed 2026-08-15 by keying the list positionally**, which makes it a pool: same nodes, patched transform and text. Measured A/B on one machine and toolchain, two builds of the same commit differing only in the key:
 
-| during a 5× zoom | identity keys | positional |
+<!-- measurement: scalebar-zoom-churn -->
+
+| during a 5× zoom | identity keys | positional keys |
 | --- | --- | --- |
 | structural (mount/unmount), scalebar | 535 | **248** |
 | attribute patches, scalebar | 323 | 499 |

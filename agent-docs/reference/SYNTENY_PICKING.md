@@ -43,6 +43,8 @@ either axis) and therefore enter the tree.
 
 ### Collinear — the index works
 
+<!-- measurement: synteny-pick-collinear -->
+
 | zoom | kept | candidates @0 skew | warm pick | rebuild |
 | --- | --- | --- | --- | --- |
 | whole-genome | **0** / 300k | — (no tree) | — | 1.0ms |
@@ -53,6 +55,8 @@ Candidate counts stay in the tens at every zoom, because a hull is about as wide
 as its alignment and only a handful cover any given pixel.
 
 ### Random pairing — the index does not
+
+<!-- measurement: synteny-pick-random -->
 
 | zoom | kept | candidates @0 skew | warm pick | rebuild |
 | --- | --- | --- | --- | --- |

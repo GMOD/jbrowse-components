@@ -165,14 +165,20 @@ export function spliceGeneratedBlock({
   path,
   marker,
   body,
+  text,
 }: {
   path: string
   marker: string
   body: string[]
+  // The file's current content, when the caller is mid-way through splicing
+  // several blocks into one page and the previous splice is not on disk yet.
+  // Defaults to reading `path`, which is every single-block caller. `path` is
+  // still required either way: every error below names it.
+  text?: string
 }): string {
   const begin = `<!-- BEGIN GENERATED ${marker} -->`
   const end = `<!-- END GENERATED ${marker} -->`
-  const existing = readFileSync(path, 'utf8')
+  const existing = text ?? readFileSync(path, 'utf8')
   const from = existing.indexOf(begin)
   const to = existing.indexOf(end)
   if (from === -1 || to === -1) {

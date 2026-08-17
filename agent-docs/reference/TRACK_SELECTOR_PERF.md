@@ -23,6 +23,8 @@ Dropping `FormControlLabel` from the row, so a track renders a plain `<label>`
 instead of mounting `FormControlLabel` + its `Typography` wrapper. Continues the
 `CheckboxLite`/`IconButtonLite` work in 2f6bcd18d0.
 
+<!-- measurement: track-selector-row-cost -->
+
 | n=1000 tracks | before | after |
 | --- | --- | --- |
 | mount, min of 9 | 1656 / 1631 ms | 1460 / 1401 ms |

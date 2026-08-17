@@ -172,6 +172,14 @@ const GENERATORS: Generator[] = [
   },
   { name: 'doc snippets', argv: web('sync-doc-snippets.ts') },
   {
+    // The measurement tables the public optimizations page shows, lifted from
+    // the `agent-docs/reference/` doc that owns each one. Same failure as the
+    // doc snippets above, one content type over: a re-measurement updates the
+    // reference doc and the published number keeps quoting the old one.
+    name: 'measurement tables',
+    argv: web('sync-measurements.ts'),
+  },
+  {
     // The ten `<!-- TABLE START -->` blocks spliced into the hand-written
     // guides and agent-docs. One entry, not ten: each was its own `node`
     // process paying ~2.5s to load TypeScript before scanning, and gendocs

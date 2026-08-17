@@ -50,6 +50,7 @@
     "diagrams": "node website/scripts/diagrams.ts",
     "diagrams:check": "node website/scripts/diagrams.ts --check",
     "sync-doc-snippets": "node website/scripts/sync-doc-snippets.ts",
+    "sync-measurements": "node website/scripts/sync-measurements.ts",
     "sync-img-readme": "node website/scripts/sync-img-readme.ts",
     "sync-skills-repo": "node --experimental-strip-types scripts/sync-skills-repo.ts",
     "check-docs": "node --experimental-strip-types scripts/check-docs.ts",

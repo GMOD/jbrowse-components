@@ -199,6 +199,8 @@ entirely a function of **CIGAR weight per row**, because a coarse row passes
 through every optional tag and drops only the CIGAR. So the tier's value is
 `coarse_bytes / fine_bytes` at the zoom it is served:
 
+<!-- measurement: pif-coarse-tier-bytes -->
+
 | block len | CIGAR bytes/row | coarse/fine bytes | file vs `--no-coarse` |
 | --------- | --------------- | ----------------- | --------------------- |
 | 1.5 kb    | 12              | **0.89**          | 1.89×                 |

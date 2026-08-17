@@ -59,6 +59,8 @@ on another genotype's key and paint the wrong cell.
 
 ## The two measured together, and why that matters
 
+<!-- measurement: genotype-codes-speedup -->
+
 | corpus | speedup |
 | --- | ---: |
 | 1000G phase 3 (2504 samples) | **1.87x** |
@@ -94,6 +96,8 @@ same callback and so needs the same translation.
 
 `feature.get('samples')` parses every FORMAT field of every sample — an object
 and an array apiece — to reach one:
+
+<!-- measurement: format-fields-vs-samples -->
 
 | callset | `samples` | `processFormatFields` |
 | --- | --- | --- |

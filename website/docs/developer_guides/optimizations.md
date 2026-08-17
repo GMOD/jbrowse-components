@@ -40,22 +40,33 @@ through libdeflate compiled to wasm, which sits at parity with native `zlib` and
 beats a per-block JavaScript inflate by 2.6-3.5x. That leaves running blocks in
 parallel as the remaining lever, which is `sharedBgzfWorkerPool()` — four
 workers, one pool per JS context, wired into `BamAdapter` and every
-`TabixIndexedFile` site.
+`TabixIndexedFile` site. On BAM that is worth **1.95x** end to end, measured
+over a 22-view pan and zoom across 1000x long-read data with both arms returning
+the same 38,246 records.
 
-| workload                                          | unpooled | pooled  | speedup   |
-| ------------------------------------------------- | -------- | ------- | --------- |
-| BAM, a 22-view pan and zoom over 1000x long reads | —        | —       | **1.95x** |
-| 1000 Genomes VCF, 50 kb window                    | 803 ms   | 562 ms  | 1.43x     |
-| same file, 200 kb window                          | 1880 ms  | 1289 ms | 1.46x     |
-| same file, a 12-step pan                          | 2446 ms  | 1822 ms | 1.34x     |
+Tabix is worth appreciably less. Same pool, a 213 MB slice of 1000 Genomes over
+`chr1`, headless Chrome, real HTTP with range requests, arms interleaved, min of
+six:
 
-Tabix gets less than BAM, and the reason is structural. Running a second pan
-over the same file answers from the decompressed chunk cache and so inflates
-nothing, which separates the two halves: line scanning alone is 28% of the cold
-query, and the pool reaches the other 72% at 1.83x. Amdahl puts the end-to-end
-figure at 1.49x against 1.45x measured. A 1000 Genomes line carries a genotype
-field per sample, so that floor is per-line byte scanning on enormous lines —
-anyone wanting more than 1.5x on multi-sample VCF should attack the scan.
+<!-- BEGIN GENERATED MEASUREMENT bgzf-pool-tabix -->
+
+| workload      | records | unpooled | pooled | speedup |
+| ------------- | ------- | -------- | ------ | ------- |
+| 50kb window   | 2,732   | 803ms    | 562ms  | 1.43x   |
+| 100kb window  | 4,878   | 1222ms   | 887ms  | 1.38x   |
+| 200kb window  | 7,627   | 1880ms   | 1289ms | 1.46x   |
+| 400kb window  | 8,503   | 2025ms   | 1390ms | 1.46x   |
+| 12 x 20kb pan | 7,627   | 2446ms   | 1822ms | 1.34x   |
+
+<!-- END GENERATED MEASUREMENT bgzf-pool-tabix -->
+
+The gap to BAM is structural. Running a second pan over the same file answers
+from the decompressed chunk cache and so inflates nothing, which separates the
+two halves: line scanning alone is 28% of the cold query, and the pool reaches
+the other 72% at 1.83x. Amdahl puts the end-to-end figure at 1.49x against 1.45x
+measured. A 1000 Genomes line carries a genotype field per sample, so that floor
+is per-line byte scanning on enormous lines — anyone wanting more than 1.5x on
+multi-sample VCF should attack the scan.
 
 **The pool degrades silently, so verify it engages.** jbrowse-web runs adapters
 under `WebWorkerRpcDriver`, so the pool is a worker spawning workers. Where
@@ -85,16 +96,17 @@ them independently costs a round trip each.
 call, which walks every region's index concurrently, dedupes blocks by file
 offset and coalesces the union — so a block two windows share is read once, and
 blocks from different regions merge into one read when they are adjacent on
-disk:
-
-| twenty adjacent 100 kb windows | blocks | reads | bytes   |
-| ------------------------------ | ------ | ----- | ------- |
-| one multi-region call          | 22     | **1** | 107,073 |
-| twenty separate calls          | 42     | 21    | 206,810 |
+disk. A row of adjacent windows collapses to a single read that way, and the
+byte count falls with it, because the boundary blocks were being downloaded and
+inflated by both of the windows touching them; the numbers are in
+[`@gmod/bbi`'s own optimizations doc](https://github.com/GMOD/bbi-js/blob/main/docs/optimizations.md),
+which owns that measurement.
 
 What it gives up is progressive drawing: per-region fetching fills a
 whole-genome view in as regions arrive, and a batched reader answers all of them
-at once. Both modes exist for that reason.
+at once. Both modes exist for that reason, and
+[ADR-022](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/architecture-decision-records/adr-022-no-batched-wiggle-rpc.md)
+is the reversal that added the batched one.
 
 ### Level of detail is a precomputed tier, chosen on the main thread
 
@@ -107,17 +119,24 @@ so a zoom is a request for different data.
 The tier's value is entirely a function of CIGAR weight per row, because a
 coarse row passes through every other tag:
 
-| block length | CIGAR bytes/row | coarse ÷ fine bytes |
-| ------------ | --------------- | ------------------- |
-| 1.5 kb       | 12              | 0.89                |
-| 50 kb        | 360             | 0.30                |
-| 5 Mb         | 36 K            | 0.005               |
+<!-- BEGIN GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
-At the top of that table the switch gives up indel wedges to read 11% fewer
-bytes, and at the bottom it cuts the read by 200x. **The coarse tier cuts
-per-alignment cost and does not cut alignment count**, so it is the right tool
-for a few huge alignments with megabase CIGARs and marginal for a dense
-all-vs-all pangenome, where the bottleneck is N.
+| block len | CIGAR bytes/row | coarse/fine bytes | file vs `--no-coarse` |
+| --------- | --------------- | ----------------- | --------------------- |
+| 1.5 kb    | 12              | **0.89**          | 1.89×                 |
+| 10 kb     | 72              | 0.66              | 1.66×                 |
+| 50 kb     | 360             | 0.30              | 1.30×                 |
+| 200 kb    | 1.4 K           | 0.10              | 1.10×                 |
+| 5 Mb      | 36 K            | **0.005**         | 1.00×                 |
+
+<!-- END GENERATED MEASUREMENT pif-coarse-tier-bytes -->
+
+The last column is what carrying both tiers costs the file. At the top of that
+table the switch gives up indel wedges to read 11% fewer bytes, and at the
+bottom it cuts the read by 200x. **The coarse tier cuts per-alignment cost and
+does not cut alignment count**, so it is the right tool for a few huge
+alignments with megabase CIGARs and marginal for a dense all-vs-all pangenome,
+where the bottleneck is N.
 
 Read-time binning is the obvious answer to that N, and it is capped. Profiling a
 whole-genome fetch of a human-vs-mouse-scale PIF splits the cost 66% reading and
@@ -170,10 +189,14 @@ folds the legend flags. The cell loops then index those codes and key their
 style memos by code, so a genotype string is materialized once per site per
 distinct genotype.
 
-| corpus                            | speedup |
-| --------------------------------- | ------: |
-| 1000G phase 3, 2504 samples       |   1.87x |
-| 1000G high coverage, 3202 samples |   2.47x |
+<!-- BEGIN GENERATED MEASUREMENT genotype-codes-speedup -->
+
+| corpus                                                          |   speedup |
+| --------------------------------------------------------------- | --------: |
+| 1000G phase 3 (2504 samples)                                    | **1.87x** |
+| 1000G high-coverage (3202 samples, `GT:AB:AD:DP:GQ:PGT:PID:PL`) | **2.47x** |
+
+<!-- END GENERATED MEASUREMENT genotype-codes-speedup -->
 
 Codes, dictionary, sample order, ploidy, phasing and legend flags are all
 byte-identical across the change. **The two halves of it do not measure
@@ -186,10 +209,14 @@ Reading one FORMAT field is the same lesson one layer up.
 `feature.get('samples')` parses every FORMAT field of every sample — an object
 and an array apiece — to reach the one field a phase-set color needs:
 
-| callset                  | via `samples`     | via `processFormatFields` |
-| ------------------------ | ----------------- | ------------------------- |
-| 100 samples, 2k variants | 343 ms / 239 MB   | 33 ms / 4 MB              |
-| 500 samples, 2k variants | 1686 ms / 1.17 GB | 113 ms / 4 MB             |
+<!-- BEGIN GENERATED MEASUREMENT format-fields-vs-samples -->
+
+| callset                  | `samples`       | `processFormatFields` |
+| ------------------------ | --------------- | --------------------- |
+| 100 samples, 2k variants | 343ms / 239MB   | 33ms / 4MB            |
+| 500 samples, 2k variants | 1686ms / 1.17GB | 113ms / 4MB           |
+
+<!-- END GENERATED MEASUREMENT format-fields-vs-samples -->
 
 ### Two kernels that look like wins and are not
 
@@ -266,10 +293,15 @@ tick `<div>`s per zoom, because keying by base reuses nodes during a pan — whe
 the labels do not move at all — and rebuilds the list on a zoom, where every key
 changes.
 
-| during a 5x zoom                   | identity keys | positional keys |
-| ---------------------------------- | ------------- | --------------- |
-| structural mount/unmount, scalebar | 535           | **248**         |
-| attribute patches, scalebar        | 323           | 499             |
+<!-- BEGIN GENERATED MEASUREMENT scalebar-zoom-churn -->
+
+| during a 5× zoom                     | identity keys | positional keys |
+| ------------------------------------ | ------------- | --------------- |
+| structural (mount/unmount), scalebar | 535           | **248**         |
+| attribute patches, scalebar          | 323           | 499             |
+| total mutations                      | 1523          | 1369            |
+
+<!-- END GENERATED MEASUREMENT scalebar-zoom-churn -->
 
 Read the trade rather than the total: structural churn is the expensive class,
 since each new node pays styling, layout and paint, and the rise in attribute
@@ -280,8 +312,19 @@ patches is the same work done the cheap way on nodes that survived.
 The hierarchical track selector looks model-bound — it rebuilds on every filter
 keystroke, re-reads configs, re-sorts, re-flattens. A keystroke over 2000 tracks
 costs well under a millisecond of model work; mounting the rows costs about 1.4
-ms each. Dropping one MUI wrapper per row took a 1000-track mount from 1656 to
-1460 ms and removed exactly one DOM node per row.
+ms each. So dropping one MUI wrapper per row pays, and caching the tree does
+not. Two alternating A/B rounds, min and median agreeing, one DOM node per row
+removed:
+
+<!-- BEGIN GENERATED MEASUREMENT track-selector-row-cost -->
+
+| n=1000 tracks               | before         | after          |
+| --------------------------- | -------------- | -------------- |
+| mount, min of 9             | 1656 / 1631 ms | 1460 / 1401 ms |
+| toggle re-render, min of 18 | 80.6 / 73.6 ms | 63.3 / 66.1 ms |
+| DOM nodes                   | 21506          | 20505          |
+
+<!-- END GENERATED MEASUREMENT track-selector-row-cost -->
 
 Three model-side optimizations measured null and are recorded so nobody spends a
 second session on them: caching the unfiltered hierarchy and pruning per
@@ -293,12 +336,36 @@ each track's name and categories once instead of per keystroke.
 Synteny picking stabs a `flatbush` index of per-instance x-hulls and tests what
 comes back exactly. The index is 1D — a ribbon spans the whole track height, so
 horizontal extent is the only discriminator — and a ribbon's hull spans both of
-its endpoints. Together those decide the whole performance story:
+its endpoints. Together those decide the whole performance story.
 
-| 300k instances, mid-genome   | candidates per stab | warm pick |
-| ---------------------------- | ------------------: | --------: |
-| collinear, zoomed 1/10k      |                  19 |   <0.1 ms |
-| random pairing, zoomed 1/10k |             149,307 |   12.5 ms |
+Both tables are 300k instances with the viewport parked mid-genome, differing
+only in how query and target are paired. `kept` is how many instances survive
+the pickable-width exclusion and therefore enter the tree; `candidates` is how
+many the stab returns for one hover.
+
+Two related genomes, where the index works:
+
+<!-- BEGIN GENERATED MEASUREMENT synteny-pick-collinear -->
+
+| zoom         | kept         | candidates @0 skew | warm pick | rebuild |
+| ------------ | ------------ | ------------------ | --------- | ------- |
+| whole-genome | **0** / 300k | — (no tree)        | —         | 1.0ms   |
+| 1/100        | 143k         | 16                 | <0.1ms    | 33ms    |
+| 1/10k        | 299k         | 19                 | <0.1ms    | 58ms    |
+
+<!-- END GENERATED MEASUREMENT synteny-pick-collinear -->
+
+An all-vs-all PAF, where it does not:
+
+<!-- BEGIN GENERATED MEASUREMENT synteny-pick-random -->
+
+| zoom         | kept         | candidates @0 skew | warm pick  | rebuild |
+| ------------ | ------------ | ------------------ | ---------- | ------- |
+| whole-genome | **0** / 300k | — (no tree)        | —          | 1.2ms   |
+| 1/100        | 143k         | **71,342**         | **5.8ms**  | 42ms    |
+| 1/10k        | 299k         | **149,307**        | **12.5ms** | 77ms    |
+
+<!-- END GENERATED MEASUREMENT synteny-pick-random -->
 
 On two related genomes a hull is about as wide as its alignment and a handful
 cover any pixel. On an all-vs-all PAF half the hulls span the canvas, the stab
@@ -315,10 +382,19 @@ register a plugin, and plugin registration makes most of that unavoidable. What
 was making it pay for far more was six pins, all the same mistake at different
 scales: **a module that must be evaluated eagerly names a React component.**
 
-| the sparsest examples-site page | eager chunks | gzipped |
-| ------------------------------- | ------------ | ------- |
-| before                          | 347          | 667 KB  |
-| after five of the six           | 181          | 464 KB  |
+Measured on the build-your-own examples site, whose sparsest page is a measured
+div, one wiggle track and no JBrowse chrome at all:
+
+<!-- BEGIN GENERATED MEASUREMENT eager-bundle-chunks -->
+
+|                | eager chunks | gzipped |
+| -------------- | ------------ | ------- |
+| before         | 347          | 667 KB  |
+| after pins 1-3 | 219          | 523 KB  |
+| after pin 4    | 218          | 514 KB  |
+| after pin 5    | 181          | 464 KB  |
+
+<!-- END GENERATED MEASUREMENT eager-bundle-chunks -->
 
 Same page throughout, rendering the same thing; the sixth pin was measured on a
 different host and in different units. A `lazy()` at a registration site only

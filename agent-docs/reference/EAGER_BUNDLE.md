@@ -12,6 +12,8 @@ Measured 2026-08-05 on the build-your-own examples site, whose sparsest page
 wiggle track, and no
 JBrowse chrome at all:
 
+<!-- measurement: eager-bundle-chunks -->
+
 | | eager chunks | gzipped |
 | --- | --- | --- |
 | before | 347 | 667 KB |
