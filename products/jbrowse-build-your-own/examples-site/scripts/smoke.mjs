@@ -350,12 +350,6 @@ async function highlightSurvivesAOneBaseRegion(page, slug) {
   }
 }
 
-// `SCALEBAR_HEIGHT` in src/examples/Scalebar.tsx. Restated rather than imported
-// — that file is a React island, and this is a node script. It only has to pick
-// the row out of the other gesture owners on the page, so a drift here reports
-// as "no scalebar row", which names itself.
-const SCALEBAR_HEIGHT = 20
-
 // Drag-to-zoom on the scalebar, which is the one thing on this site that is
 // only a gesture. Every other check censuses a page or clicks one control, and
 // a rubberband that stopped working would leave a page that loads, paints and
@@ -375,21 +369,13 @@ async function dragToZoomFramesTheSpan(page, slug) {
   if (slug !== 'scalebar-and-labels') {
     return []
   }
-  // the scalebar row is the gesture owner carrying the coordinate labels; the
-  // display overlay slots carry the same attribute, so it is picked by height
-  const row = await page.evaluateHandle(
-    h =>
-      [...document.querySelectorAll('[data-gesture-owner="true"]')].find(
-        el => Math.round(el.getBoundingClientRect().height) === h,
-      ),
-    SCALEBAR_HEIGHT,
-  )
-  const el = row.asElement()
+  // The row names itself. It used to be picked out of the page's
+  // `data-gesture-owner` elements by matching a pixel height restated from the
+  // example — which every display's overlay slot is now also a candidate for,
+  // and which reports a changed row height as "no scalebar".
+  const el = await page.$('[data-testid="scalebar"]')
   if (!el) {
-    return [
-      `no ${SCALEBAR_HEIGHT}px scalebar row on the page — the row is not being ` +
-        'drawn, or it lost the data-gesture-owner that keeps usePanZoom off it',
-    ]
+    return ['no scalebar row on the page']
   }
   await el.evaluate(e => {
     e.scrollIntoView({ block: 'center', behavior: 'instant' })

@@ -452,6 +452,10 @@ const ScalebarRow = observer(function ScalebarRow({
   return (
     <div
       data-gesture-owner="true"
+      // this site's smoke test drags across this row to prove the rubberband
+      // still reaches the model. Keep or drop it in your own app -- the check
+      // needs it, the technique does not
+      data-testid="scalebar"
       style={{
         position: 'relative',
         height: SCALEBAR_HEIGHT,
