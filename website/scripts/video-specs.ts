@@ -29,7 +29,7 @@
 // The sessions come from the spec modules rather than being written again here.
 // A tour whose track config had drifted from the figures' would document a route
 // through an app the rest of the page is not showing.
-import { CODE_BASE } from '../src/lib/code-base.ts'
+import { CODE_BASE, RELEASED_CODE_BASE } from '../src/lib/code-base.ts'
 import { menuCascade, sessionSpec } from './screenshot-spec-helpers.ts'
 import { pggbVideoFixtures } from './specs/graph-ecoli.ts'
 import {
@@ -43,6 +43,7 @@ import {
   hprcClusterFixtures,
   hprcTourSession,
 } from './specs/graph-hprc.ts'
+import { proteinTourFixtures } from './specs/msa.ts'
 
 import type { ScreenshotAction } from './screenshot-spec-types.ts'
 
@@ -532,6 +533,149 @@ export const videoSpecs: VideoSpec[] = [
       { type: 'delay', ms: 3000 },
     ],
     tailMs: 4000,
+  },
+  // A ROUTE, and then the thing the route was for. The launch is four clicks
+  // that every protein page describes in prose; what follows it is the half a
+  // still cannot hold at all, because the connection between the two views is
+  // only visible while something moves through it.
+  //
+  // Filmed on genomes.jbrowse.org's own hg38 config, so the menu, the dialog and
+  // the plugin version are the ones a reader gets on the real site. Nothing here
+  // is prepared: the config already loads protein3d, and AlphaFold and UniProt
+  // are queried live during the clip.
+  //
+  // THE ONE TOUR THAT FILMS THE RELEASED APP rather than the local build, and
+  // the layout is why. protein3d asks the session to split the new view off to
+  // the right (`maybeLaunchSideBySide`), which needs two workspaces actions the
+  // released session does not have, so the release stacks the two views full
+  // width and main sits them side by side in half-width panes. Both are the
+  // plugin working as written; only one is what a reader on genomes.jbrowse.org
+  // gets. The stacked frame is also the one the clip's second half needs — the
+  // residue a hover lands on is off the right edge of a half-width alignment
+  // panel, so filming the local build shows the launch and then hides the thing
+  // the launch was for.
+  {
+    name: 'proteins/genomes_protein_launch',
+    description:
+      'From a gene to its AlphaFold structure on genomes.jbrowse.org: the right-click launcher, the dialog resolving a UniProt entry, and the connected view answering a hover with a residue',
+    url: `${RELEASED_CODE_BASE}${proteinTourFixtures.session}`,
+    viewportWidth: 1280,
+    // Provisional: sized from the run's own content report on the first film.
+    viewportHeight: 1400,
+    readyTimeout: 120000,
+    // Long, because the readiness stack cannot see this app. Every display-level
+    // gate in it keys on `data-display-phase` / `data-display-drawn`, and the
+    // released build publishes neither attribute — so `waitForReady` returns
+    // once the loading overlay clears and the tracks may still be fetching. The
+    // first take that raced it right-clicked a gene lane that had not drawn and
+    // failed on the launcher that never appeared.
+    settleMs: 12000,
+    steps: [
+      // What the settle above cannot assert, asserted: no lane still says it is
+      // loading. Cheap when it is already true, and when it is not, the run
+      // fails here rather than on a right-click that lands in empty canvas.
+      { type: 'waitForText', text: 'Loading', hidden: true, timeout: 90000 },
+      {
+        type: 'rightclick',
+        anchor: {
+          track: proteinTourFixtures.geneTrack,
+          locus: 'chr17:7,676,000',
+          // near the top of the band: `longestCoding` draws one gene row, so a
+          // centered right-click lands on empty canvas and opens the view's own
+          // menu with no feature items in it
+          fracY: 0.2,
+        },
+        say: 'Right-click the gene',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Launch protein view' },
+      {
+        type: 'click',
+        text: 'Launch protein view',
+        say: 'Launch protein view',
+      },
+      // OFF CAMERA. The dialog opens empty and fills itself from three round
+      // trips — UniProt ID mapping, the isoform's protein sequences, AlphaFold's
+      // structure URL — and a film of a form filling in is a film of a spinner.
+      // It comes back on the resolved dialog, which is what there is to read.
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="protein-launch-button"]:not([disabled])',
+        timeout: 180000,
+        cut: true,
+      },
+      // held long enough to read the UniProt entry it picked and the isoform it
+      // matched against the structure's own residues
+      { type: 'delay', ms: 3500 },
+      {
+        type: 'click',
+        selector: '[data-testid="protein-launch-button"]',
+        say: 'Launch',
+      },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="protein-view-ready"]',
+        timeout: 300000,
+        cut: true,
+      },
+      { type: 'delay', ms: 3000 },
+      // In to the coding exons, so the hovers below are spread across the frame
+      // instead of crowded into eighty pixels of it. Typed into the linear
+      // view's own location box, which is what a reader zooming in would do.
+      {
+        type: 'type',
+        selector: LOCATION_BOX,
+        value: proteinTourFixtures.hoverWindow,
+        clear: true,
+        say: proteinTourFixtures.hoverWindow,
+      },
+      { type: 'press', key: 'Enter' },
+      { type: 'delay', ms: 3000 },
+      // THE PAYOFF. Each hover is a genomic position, and the protein view
+      // answers with the residue it maps to: the readout above the alignment,
+      // the column in it, and the residue picked out on the structure itself.
+      {
+        type: 'hover',
+        anchor: {
+          track: proteinTourFixtures.geneTrack,
+          locus: proteinTourFixtures.codingLocus,
+        },
+        say: 'Hover a coding position',
+        hold: 3000,
+      },
+      // The negative, and the one step whose caption names what is NOT
+      // happening: an intron has no residue to map to, so the readout empties
+      // instead of moving.
+      //
+      // Between the two coding hovers rather than after them, because "nothing
+      // is highlighted" and "the tour has stopped" are the same frame. Coming
+      // back to a coding position is what makes the empty one legible as an
+      // answer.
+      {
+        type: 'hover',
+        anchor: {
+          track: proteinTourFixtures.geneTrack,
+          locus: proteinTourFixtures.intronicLocus,
+        },
+        say: 'An intronic position maps to no residue',
+        hold: 3000,
+      },
+      {
+        type: 'hover',
+        anchor: {
+          track: proteinTourFixtures.geneTrack,
+          locus: proteinTourFixtures.secondCodingLocus,
+        },
+        say: 'Back on the exon, and the residue is back',
+        hold: 3500,
+      },
+    ],
+    // Short, and a poster taken off a hover. Filming ends by clearing the
+    // caption and parking the cursor, which un-hovers whatever the tour was
+    // holding — so every frame after the last step is a connected view being
+    // asked nothing, and both of these keep that out of the reader's way.
+    posterAt: 36,
+    tailMs: 1200,
   },
 ]
 

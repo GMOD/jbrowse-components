@@ -184,7 +184,7 @@ options.
 
 ## Using gene tracks with the Protein3d plugin
 
-The [Protein3d plugin](/docs/tutorials/protein_structure) builds on the same
+The [Protein3d plugin](/docs/tutorials/genomes_proteins) builds on the same
 transcript-to-protein mapping. Right click a gene and launch the protein
 structure viewer to open an interactive 3D structure (from AlphaFold DB or
 UniProt) linked to the genome view: hovering a position in the genome highlights
@@ -192,9 +192,8 @@ the corresponding residue on the structure, and vice versa. Color-by-CDS and the
 peptide lettering give you the protein in the linear track; Protein3d shows
 where each residue sits in the folded structure.
 
-See the
-[Protein structures and multiple sequence alignments tutorial](/docs/tutorials/protein_structure)
-for installation and connected-view examples.
+See the [proteins tutorial](/docs/tutorials/genomes_proteins) for the launch
+routes, installation and connected-view examples.
 
 ## See also
 

@@ -248,7 +248,7 @@ largest sequenced, and this locus covers a few hundred kb of it.
 
 - [](/docs/user_guides/gene_track)
 - [](/docs/tutorials/genomes_synteny)
-- [](/docs/tutorials/genomes_msa)
+- [](/docs/tutorials/genomes_proteins)
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/repeatmasker_classes)
 - [](/docs/user_guides/quantitative_track)

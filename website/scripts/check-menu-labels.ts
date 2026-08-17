@@ -53,12 +53,19 @@ const SUPPRESS = '<!-- menu-path-ok -->'
 // of names rather than a count.
 const PLUGIN_SRC = (name: string) => join(pluginCheckout(name), 'src')
 
+// A page can name labels from more than one plugin — the proteins page walks
+// one right-click menu that protein3d and msaview each contribute a launcher
+// to — so this maps a page to every checkout its labels live in, and a page is
+// checked against the union.
 const EXTERNAL_PLUGIN_PAGES = new Map([
-  ['user_guides/graph_genome_view.md', PLUGIN_SRC('graphgenomeview')],
-  ['tutorials/pangenome_ecoli.md', PLUGIN_SRC('graphgenomeview')],
-  ['tutorials/pangenome_hprc.md', PLUGIN_SRC('graphgenomeview')],
-  ['tutorials/pangenome_cactus.md', PLUGIN_SRC('graphgenomeview')],
-  ['tutorials/protein_structure.md', PLUGIN_SRC('protein3d')],
+  ['user_guides/graph_genome_view.md', [PLUGIN_SRC('graphgenomeview')]],
+  ['tutorials/pangenome_ecoli.md', [PLUGIN_SRC('graphgenomeview')]],
+  ['tutorials/pangenome_hprc.md', [PLUGIN_SRC('graphgenomeview')]],
+  ['tutorials/pangenome_cactus.md', [PLUGIN_SRC('graphgenomeview')]],
+  [
+    'tutorials/genomes_proteins.md',
+    [PLUGIN_SRC('protein3d'), PLUGIN_SRC('msaview')],
+  ],
 ])
 
 // Prose names for an affordance rather than labels the app renders: the docs
@@ -101,7 +108,7 @@ const REPO_LABELS = new Set(
 const errorLines: string[] = []
 const skippedPages: string[] = []
 const externalLabels = new Map<string, Set<string>>()
-for (const root of new Set(EXTERNAL_PLUGIN_PAGES.values())) {
+for (const root of new Set([...EXTERNAL_PLUGIN_PAGES.values()].flat())) {
   if (!existsSync(root)) {
     continue
   }
@@ -126,13 +133,20 @@ for (const file of docFiles(docsDir)) {
     continue
   }
   const external = EXTERNAL_PLUGIN_PAGES.get(rel)
+  // Every named checkout has to be here, not just one: a page whose labels come
+  // from two plugins and can only see one would report the other's as renames.
+  const missingRoots = external?.filter(root => !externalLabels.has(root))
   const normSet =
-    external === undefined ? REPO_LABELS : externalLabels.get(external)
+    external === undefined
+      ? REPO_LABELS
+      : missingRoots?.length === 0
+        ? new Set(external.flatMap(root => [...externalLabels.get(root)!]))
+        : undefined
   if (normSet === undefined) {
     // The checkout this page's labels live in is not here. Skipped rather than
     // passed, and counted, because a check that quietly covers less than it did
     // yesterday is the failure mode this whole file exists to avoid.
-    skippedPages.push(`${rel} (needs ${external})`)
+    skippedPages.push(`${rel} (needs ${missingRoots?.join(', ')})`)
     continue
   }
   const resolves = (segment: string) => {

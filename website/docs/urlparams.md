@@ -1301,7 +1301,7 @@ spec fields are documented by each plugin, not here:
   `uniprotId`, `transcriptId`, `url`, and `connectedView` are documented in the
   plugin's
   [DEVELOPERS.md](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md).
-  See also the [protein structures tutorial](/docs/tutorials/protein_structure).
+  See also the [proteins tutorial](/docs/tutorials/genomes_proteins).
 - `MsaView` (multiple sequence alignments) from `jbrowse-plugin-msaview`. Fields
   such as `msaFileLocation`, `treeFileLocation`, and `connectedViewId` are
   documented in the plugin's

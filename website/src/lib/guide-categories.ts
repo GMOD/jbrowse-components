@@ -146,7 +146,7 @@ export const TUTORIAL_ORDER = [
   // reader looking at real data in a real browser.
   'genomes_basics',
   'genomes_synteny',
-  'genomes_msa',
+  'genomes_proteins',
   'repeatmasker_classes',
   'quickstart_web',
   'quickstart_desktop',
@@ -169,7 +169,6 @@ export const TUTORIAL_ORDER = [
   'chromhmm',
   'scatac_pseudobulk',
   'rnaseq',
-  'protein_structure',
   'cookbook',
   'display_settings',
   'embed_linear_genome_view',

@@ -61,7 +61,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/tutorials/genomes_basics)
 - [](/docs/tutorials/genomes_synteny)
-- [](/docs/tutorials/genomes_msa)
+- [](/docs/tutorials/genomes_proteins)
 - [](/docs/tutorials/repeatmasker_classes)
 
 ### Synteny & comparative genomics
@@ -116,7 +116,6 @@ How to drive JBrowse once it is running. New here? Start with the
 ### Transcriptomics & proteins
 
 - [](/docs/tutorials/rnaseq)
-- [](/docs/tutorials/protein_structure)
 - [](/docs/tutorials/dtu)
 
 ### Configuration & embedding

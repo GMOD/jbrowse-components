@@ -457,7 +457,7 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Genome linked to a 3D structure',
         spec: 'protein/connected',
-        guide: 'tutorials/protein_structure',
+        guide: 'tutorials/genomes_proteins',
         description:
           'TP53 with RefSeq models and ClinVar variants beside its AlphaFold structure, connected through the genome-to-structure alignment. Hovering a variant in the genome highlights the residue it hits on the structure.',
       },
@@ -469,7 +469,7 @@ export const gallerySections: readonly GallerySection[] = [
         // dialog, so the card's live link opens the alignment directly.
         label: 'Cross-species protein alignment',
         spec: 'genomes_msa/pyrin_residues',
-        guide: 'tutorials/genomes_msa',
+        guide: 'tutorials/genomes_proteins',
         description:
           "NLRP1 aligned across the species NCBI has an ortholog gene for, built from the gene symbol rather than from an alignment file, with NCBI's conserved-domain calls drawn in alignment columns. The pyrin domain is called on the human, chimpanzee, gorilla and marmoset rows.",
       },

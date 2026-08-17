@@ -253,10 +253,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // what the red is, and a centred crop cuts them off mid-word.
     position: 'left',
   },
-  protein_structure: {
+  genomes_proteins: {
     // The structure itself, in the right-hand panel. Framing the whole panel
     // lands on its sequence-alignment table and a hover tooltip; the folded
     // ribbon is the one card in the set that isn't a genome browser.
+    //
+    // The page covers the alignment half too, and the alignment's own figure
+    // (genomes_msa/launch_sequence) is the weaker card of the two: cropped to
+    // 5:3 it is a strip of domain blocks over empty canvas, where this one is
+    // the only card in the set a reader can identify at thumbnail size.
     src: 'protein/connected.png',
     band: [0.48, 1],
     xband: [0.56, 0.9],
@@ -362,20 +367,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // the 3' UTR and one lone exon, which is the page's control rather than its
     // picture
     xband: [0.45, 1],
-  },
-  genomes_msa: {
-    // The last of the click-path figure's three frames: the ortholog alignment
-    // with NCBI's domain blocks over it. The two frames above it are a context
-    // menu and a dialog, which read as app chrome on a card.
-    src: 'genomes_msa/launch_sequence.png',
-    // The gene in the linear view AND the alignment under it, which is the
-    // pairing the page is about; the MSA panel alone is a short wide strip of
-    // domain blocks over a tall empty canvas, and cover-cropping that to 5:3
-    // keeps only the species tree. Starts below the app header, ends just past
-    // the domain rows. `position: 'left'` drops the right edge, which is the
-    // floating domain legend, unreadable at card size.
-    band: [0.655, 0.86],
-    position: 'left',
   },
   pangenome_hprc: {
     // The classic Bandage force-directed picture of the C4 subgraph, past the
