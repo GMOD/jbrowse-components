@@ -66,6 +66,8 @@ it loads by URL. In JBrowse Web that is a `plugins` array at the top level of
 `config.json`, beside `assemblies` and `tracks` (see
 [configuring plugins](/docs/config_guides/plugins)):
 
+<!-- GRAPH_PLUGIN_CONFIG START -->
+
 ```json
 {
   "plugins": [
@@ -76,6 +78,8 @@ it loads by URL. In JBrowse Web that is a `plugins` array at the top level of
   ]
 }
 ```
+
+<!-- GRAPH_PLUGIN_CONFIG END -->
 
 On [JBrowse Desktop](/docs/quickstart_desktop) there is no config file to edit:
 install it once from the start screen at **Global plugins... → Add custom

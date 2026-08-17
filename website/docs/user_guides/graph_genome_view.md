@@ -29,6 +29,8 @@ GPL-licensed [Bandage](https://github.com/rrwick/Bandage) engine (its
 and loads from any config today (see
 [configuring plugins](/docs/config_guides/plugins)):
 
+<!-- GRAPH_PLUGIN_CONFIG START -->
+
 ```json
 {
   "plugins": [
@@ -39,6 +41,8 @@ and loads from any config today (see
   ]
 }
 ```
+
+<!-- GRAPH_PLUGIN_CONFIG END -->
 
 `RgfaTabixAdapter` and `MinigraphBubbleAdapter` ship in the same plugin.
 

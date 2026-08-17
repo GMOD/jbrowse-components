@@ -423,6 +423,8 @@ yet, so it loads by URL. In JBrowse Web that means a `plugins` array at the top
 level of `config.json`, beside `assemblies` and `tracks` (see
 [configuring plugins](/docs/config_guides/plugins)):
 
+<!-- GRAPH_PLUGIN_CONFIG START -->
+
 ```json
 {
   "plugins": [
@@ -433,6 +435,8 @@ level of `config.json`, beside `assemblies` and `tracks` (see
   ]
 }
 ```
+
+<!-- GRAPH_PLUGIN_CONFIG END -->
 
 `RgfaTabixAdapter` ships in the same plugin, so the segments track below needs
 it as much as the view does. On [JBrowse Desktop](/docs/quickstart_desktop)

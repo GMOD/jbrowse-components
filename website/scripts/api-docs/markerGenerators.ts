@@ -8,6 +8,7 @@ import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
 import { writeFileTypeDocs } from './generateFileTypeDocs.ts'
 import { writeGatedBudgetDocs } from './generateGatedBudgetDocs.ts'
+import { writeGraphPluginDocs } from './generateGraphPluginDocs.ts'
 import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { writeLaunchViewDocs } from './generateLaunchViewDocs.ts'
@@ -128,5 +129,12 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
     // owns, and nothing connected the two.
     label: 'OrthoFinder set tables',
     write: (_corpus, opts) => writeOrthofinderSetDocs(opts),
+  },
+  {
+    // Source is a deployed demo config rather than TypeScript, for the same
+    // reason again: four pages hand-carried the plugin URL a reader pastes,
+    // and the configs serving it are tracked in this repo.
+    label: 'Graph plugin config fence',
+    write: (_corpus, opts) => writeGraphPluginDocs(opts),
   },
 ]
