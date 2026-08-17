@@ -541,31 +541,28 @@ async function legendIsPlainAndAboveTheSeams(page, slug) {
   // The other half, and the reason this page draws seams at all: the legend has
   // to paint ABOVE them. Not `elementFromPoint`, which would pass whatever the
   // z-order is — the seams are `pointer-events: none`, so hit testing skips
-  // them and the check would be about nothing. So the mechanism is tested
-  // instead: the legend escaped the display's `contain: strict` sandbox into
-  // `TrackOverlaySlot`'s node, and that node outranks the seam layer.
+  // them and the check would be about nothing. The mechanism is asked instead:
+  // did the legend land in the slot's overlay node, and does that node outrank
+  // the seam layer?
+  //
+  // Both ends are named by a marker rather than found by shape.
+  // `data-track-overlay-node` is the node itself and `data-region-seams` is
+  // what the example draws over the stack — the walk up the tree sniffing for
+  // `contain: strict` and the `.demo div[aria-hidden]` that stood in for the
+  // seams were each one refactor away from silently matching nothing.
   const order = await page.evaluate(() => {
-    const legend = document.querySelector('[data-testid="floating-legend"]')
-    const seams = document.querySelector('.demo div[aria-hidden="true"]')
     const z = el => Number.parseInt(getComputedStyle(el).zIndex, 10)
-    let sandboxed = false
-    let node
-    for (let el = legend; el; el = el.parentElement) {
-      if (getComputedStyle(el).contain.includes('strict')) {
-        sandboxed = true
-      }
-      if (!node && el.dataset?.gestureOwner) {
-        node = el
-      }
-    }
+    const node = document
+      .querySelector('[data-testid="floating-legend"]')
+      ?.closest('[data-track-overlay-node]')
+    const seams = document.querySelector('[data-region-seams]')
     return {
-      sandboxed,
       escaped: !!node,
-      legendZ: node ? z(node) : undefined,
-      seamZ: seams ? z(seams) : undefined,
+      legendZ: node && z(node),
+      seamZ: seams && z(seams),
     }
   })
-  if (order.sandboxed || !order.escaped) {
+  if (!order.escaped) {
     out.push(
       'the legend is still inside the display sandbox — TrackOverlaySlot is ' +
         'not wrapping the display, or TrackOverlayPortal fell back to inline. ' +
@@ -579,6 +576,56 @@ async function legendIsPlainAndAboveTheSeams(page, slug) {
     )
   }
   return out
+}
+
+// The generalisation of the check above, to every page and every piece of
+// floating chrome rather than to the one page that happens to raise a legend.
+//
+// A display floats its chrome — the bottom-right controls, the colour key, the
+// loading scrim, the error bar — out of its `contain: strict` sandbox through
+// `TrackOverlayPortal`, and the host mounts the node it lands in
+// (`TrackOverlaySlot`). Leave the slot out and the portal falls back to
+// rendering **in place**, back inside the sandbox, where anything the page
+// paints over the track stack buries it and no z-index inside the box can win.
+//
+// Fourteen of this site's fifteen demos did exactly that, and every check here
+// stayed green, because nothing about a page at rest looks wrong: the corner
+// control is in a corner, the seams are two pixels wide, and the state that
+// would show it — a fetch in flight over a two-region view, a legend on,
+// whole-genome zoom where most spans elide — is not a state a census reaches.
+//
+// **Two markers, one selector, no list of chrome.** `data-display-id` is on the
+// display root and `data-track-overlay-slot` on the slot, so the whole contract
+// is "every display is inside a slot" — which is also the floor, since a demo
+// page that mounted no display at all fails on the count rather than passing by
+// having nothing to look at. Enumerating the chrome instead (`track-control-*`,
+// `floating-legend`, …) would need editing every time a display grows a piece,
+// and a stale list reads as a clean run.
+async function everyDisplayIsInAnOverlaySlot(page) {
+  const found = await page.evaluate(() => {
+    const displays = [...document.querySelectorAll('[data-display-id]')]
+    return {
+      total: displays.length,
+      orphans: displays
+        .filter(el => !el.closest('[data-track-overlay-slot]'))
+        .map(el => el.dataset.displayId),
+    }
+  })
+  if (found.total === 0) {
+    return [
+      'no display mounted on this page — every demo here mounts at least one, ' +
+        'so this is a page that failed to hydrate rather than a page with ' +
+        'nothing to check.',
+    ]
+  }
+  return found.orphans.length > 0
+    ? [
+        `${found.orphans.length} of ${found.total} display(s) are not inside a ` +
+          `TrackOverlaySlot: ${found.orphans.join(', ')}. Their floating chrome ` +
+          'stays sealed in the `contain: strict` sandbox, where anything the ' +
+          'page paints over the stack buries it with nothing to say so.',
+      ]
+    : []
 }
 
 // The one page whose subject is a state you cannot see by loading it.
@@ -841,6 +888,7 @@ const failures = await smokeExamplesSite({
     ...(await dragToZoomFramesTheSpan(page, slug)),
     ...(await searchByNameResolvesNames(page, slug)),
     ...(await legendIsPlainAndAboveTheSeams(page, slug)),
+    ...(await everyDisplayIsInAnOverlaySlot(page)),
     // last: this one replaces the engine on the page it runs on
     ...(await viewStatusStatesAreDrawn(page, slug)),
   ],

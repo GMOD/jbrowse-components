@@ -65,12 +65,26 @@ export function TrackOverlaySlot({
   // target mounts and the context value flips from null to the node
   const [overlayEl, setOverlayEl] = useState<HTMLDivElement | null>(null)
   return (
-    <div style={{ position: 'relative', ...style }}>
+    // `data-track-overlay-slot` is how a test says "this display is in a slot"
+    // in one selector, against `data-display-id` on the display root. Forgetting
+    // the slot is invisible on a page at rest — the portal falls back to
+    // rendering inline and the chrome only disappears once something is painted
+    // over it — so the mechanism has to be checkable rather than the symptom.
+    // A plain marker rather than a `data-testid`, like `data-display-id`: it is
+    // a structural fact about the layout, not a hook for one suite.
+    <div
+      data-track-overlay-slot="true"
+      style={{ position: 'relative', ...style }}
+    >
       <TrackOverlayContext value={overlayEl}>{children}</TrackOverlayContext>
       {/* outside the display's sandbox, and after it in paint order */}
       <div
         ref={setOverlayEl}
         data-gesture-owner="true"
+        // the escape hatch itself, so a test can ask "did this chrome land in
+        // the overlay node" with one `closest()` rather than walking the tree
+        // looking for a `contain: strict` it hopes is the sandbox
+        data-track-overlay-node="true"
         style={{
           position: 'absolute',
           top: 0,

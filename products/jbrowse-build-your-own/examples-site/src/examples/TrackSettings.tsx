@@ -35,8 +35,9 @@ import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 // That chrome is drawn inside the display's own stacking context, so it cannot
 // paint above the region seams this page draws over the stack -- there are two
 // regions below, so there is a seam to be buried under. `TrackOverlaySlot` in
-// `TrackRowWithOverlay` is what lifts it clear, and it is the same component
-// JBrowse's own track container mounts.
+// `TrackRow` is what lifts it clear, and it is the same component JBrowse's own
+// track container mounts. Every page here mounts it; this is the only one where
+// you can watch what it is for.
 //
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
@@ -133,10 +134,8 @@ const ViewStatus = observer(function ViewStatus({
 })
 
 /**
- * `TrackRow` from every other page, plus the one thing a track with **floating
- * chrome over region seams** needs. Named differently because it does more, not
- * because the other pages are wrong: a page whose displays draw no floating
- * chrome, or that paints nothing over its tracks, wants the shorter one.
+ * The same `TrackRow` every page here writes, and this is the page where the
+ * one part of it that looks like ceremony stops being invisible.
  *
  * The problem is a stacking context. `contain: strict` is what stops a display
  * painting over its neighbours, and it seals the display's React tree into its
@@ -145,13 +144,19 @@ const ViewStatus = observer(function ViewStatus({
  * `zIndex: 2`. Nothing errors. The legend is simply under a grey bar, and at
  * whole-genome zoom, where most spans are elided, under a grey wall.
  *
- * `TrackOverlaySlot` is the fix and it is the same component JBrowse's own
+ * `TrackOverlaySlot` is the way out and it is the same component JBrowse's own
  * track container mounts: the display's box, plus an overlay node *beside* the
  * sandbox rather than inside it, published to the display through
  * `TrackOverlayContext`. Chrome that calls `TrackOverlayPortal` -- the colour
- * key, hi-c's overlay panel, maf's row labels -- lands in that node and paints
- * at the `zIndex` you give it. With no slot the context is null and the portal
- * falls back to rendering in place, which is what every page here did before.
+ * key, hi-c's overlay panel, maf's row labels, and the loading and error states
+ * every display has -- lands in that node and paints at the `zIndex` you give
+ * it. With no slot the context is null, the portal falls back to rendering in
+ * place, and the chrome is back inside the sandbox with nothing to say so.
+ *
+ * So it goes on every page rather than on this one, which is the only page that
+ * can *show* it: nothing else here turns on a colouring that has a key. A host
+ * whose displays are quiet today and whose layout grows a mask tomorrow gets no
+ * warning either way.
  *
  * **`zIndex` has no default, and that is deliberate.** It is the answer to
  * "above what?", which is a fact about your layout: 3 here, because the seams
@@ -159,11 +164,11 @@ const ViewStatus = observer(function ViewStatus({
  * stacking, and inheriting that number would be right once and quietly wrong
  * everywhere else.
  *
- * The inner `contain: strict` box is now `position: absolute; inset: 0` inside
- * the slot's box rather than being the sized box itself, because the slot owns
- * the height -- exactly what `TrackRenderingContainer` does inside JBrowse.
+ * The `contain: strict` box is `position: absolute; inset: 0` inside the slot's
+ * box rather than being the sized box itself, because the slot owns the height
+ * -- exactly what `TrackRenderingContainer` does inside JBrowse.
  */
-const TrackRowWithOverlay = observer(function TrackRowWithOverlay({
+const TrackRow = observer(function TrackRow({
   view,
   trackId,
 }: {
@@ -219,6 +224,11 @@ const RegionBoundaries = observer(function RegionBoundaries({
   return (
     <div
       aria-hidden
+      // this site's smoke test checks that a display's own chrome paints above
+      // this layer rather than under it, and needs to be able to find the layer.
+      // Keep or drop it in your own app -- the check needs it, the technique
+      // does not
+      data-region-seams
       style={{
         position: 'absolute',
         top: 0,
@@ -496,10 +506,7 @@ const TrackSettings = observer(function TrackSettings() {
            * gate as the track. See the Drive it from your app page. */}
           {view.ready ? (
             <>
-              <TrackRowWithOverlay
-                view={view}
-                trackId={alignmentsTrack.trackId}
-              />
+              <TrackRow view={view} trackId={alignmentsTrack.trackId} />
               <RegionBoundaries view={view} />
             </>
           ) : (

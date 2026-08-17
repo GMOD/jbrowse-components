@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import { DisplayUIProvider } from '@jbrowse/display-ui'
+import { DisplayUIProvider, TrackOverlaySlot } from '@jbrowse/display-ui'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -164,21 +164,23 @@ const TrackRow = observer(function TrackRow({
   }
   const display = track.activeDisplay
   const { RenderingComponent } = display
+  // `TrackOverlaySlot`, not a plain sized div. A display draws floating chrome
+  // of its own -- a colour key, a corner control, the loading and error states
+  // -- and `contain: strict` seals that into its own stacking context, where
+  // nothing you paint over the stack can be out-z-indexed. The slot is the node
+  // it portals into, mounted beside the sandbox, and it is what JBrowse's own
+  // track container mounts. See the Track settings page.
   return (
-    <div
-      style={{
-        position: 'relative',
-        height: display.height,
-        contain: 'strict',
-      }}
-    >
-      <Suspense fallback={null}>
-        <RenderingComponent
-          model={display}
-          onHorizontalScroll={view.horizontalScroll}
-        />
-      </Suspense>
-    </div>
+    <TrackOverlaySlot zIndex={3} style={{ height: display.height }}>
+      <div style={{ position: 'absolute', inset: 0, contain: 'strict' }}>
+        <Suspense fallback={null}>
+          <RenderingComponent
+            model={display}
+            onHorizontalScroll={view.horizontalScroll}
+          />
+        </Suspense>
+      </div>
+    </TrackOverlaySlot>
   )
 })
 
@@ -223,16 +225,16 @@ const SPAN_FILL = {
  * than the viewport it slides as you scroll), and the flag is set on elided
  * blocks too, where a bar per region at whole-genome zoom is a solid grey wall.
  *
- * **One thing this layer is over that you may not want it over.** Some displays
- * float their own chrome -- a colour key, hic's overlay panel -- and JBrowse's
- * own track container lifts that clear of these spans by giving the display an
- * overlay node mounted above them. A host mounting `RenderingComponent`
- * directly supplies no such node, so that chrome renders inside the display's
- * `contain: strict` box and this layer paints over it. Nothing on this site
- * raises one (no page sets a `colorBy` that produces a key), so you will not
- * see it here; if you turn one on, that is what happened. `TrackOverlayContext`
- * is the seam, and agent-docs/TODO.md carries the work to make it something a
- * host can reasonably use.
+ * **The one thing this layer must not end up over is the display's own
+ * chrome.** A display floats things of its own -- a colour key, hi-c's overlay
+ * panel, the loading and error states -- inside a `contain: strict` box, which
+ * is its own stacking context, so a layer painted over the stack buries them
+ * and no z-index inside that box can win. `TrackRow` above mounts the node they
+ * escape into (`TrackOverlaySlot`, at `zIndex: 3`, over these spans at 2), which
+ * is what JBrowse's own track container does. Leave it out and nothing errors:
+ * the chrome is simply under a grey bar, and at whole-genome zoom, where most
+ * spans are elided, under a grey wall. The Track settings page turns a legend on
+ * and shows it.
  */
 const RegionBoundaries = observer(function RegionBoundaries({
   view,
@@ -243,6 +245,11 @@ const RegionBoundaries = observer(function RegionBoundaries({
   return (
     <div
       aria-hidden
+      // this site's smoke test checks that a display's own chrome paints above
+      // this layer rather than under it, and needs to be able to find the layer.
+      // Keep or drop it in your own app -- the check needs it, the technique
+      // does not
+      data-region-seams
       style={{
         position: 'absolute',
         top: 0,

@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
+import { TrackOverlaySlot } from '@jbrowse/display-ui'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -129,21 +130,23 @@ const TrackRow = observer(function TrackRow({
   }
   const display = track.activeDisplay
   const { RenderingComponent } = display
+  // `TrackOverlaySlot`, not a plain sized div. A display draws floating chrome
+  // of its own -- a colour key, a corner control, the loading and error states
+  // -- and `contain: strict` seals that into its own stacking context, where
+  // nothing you paint over the stack can be out-z-indexed. The slot is the node
+  // it portals into, mounted beside the sandbox, and it is what JBrowse's own
+  // track container mounts. See the Track settings page.
   return (
-    <div
-      style={{
-        position: 'relative',
-        height: display.height,
-        contain: 'strict',
-      }}
-    >
-      <Suspense fallback={null}>
-        <RenderingComponent
-          model={display}
-          onHorizontalScroll={view.horizontalScroll}
-        />
-      </Suspense>
-    </div>
+    <TrackOverlaySlot zIndex={3} style={{ height: display.height }}>
+      <div style={{ position: 'absolute', inset: 0, contain: 'strict' }}>
+        <Suspense fallback={null}>
+          <RenderingComponent
+            model={display}
+            onHorizontalScroll={view.horizontalScroll}
+          />
+        </Suspense>
+      </div>
+    </TrackOverlaySlot>
   )
 })
 
@@ -167,7 +170,10 @@ function ZoomHint({ show }: { show: boolean }) {
       style={{
         position: 'absolute',
         inset: 0,
-        zIndex: 3,
+        // over the track's own overlay layer, which `TrackRow` mounts at 3 --
+        // the prompt is a caption over the whole box, so nothing the display
+        // floats in its corner should sit on top of it
+        zIndex: 5,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
