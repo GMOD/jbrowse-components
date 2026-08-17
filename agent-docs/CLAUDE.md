@@ -22,10 +22,24 @@ re-proposing it.
 **A perf measurement has a public reader as well as this one.**
 `website/docs/developer_guides/optimizations.md` digests what is in `reference/`
 — including the results that came out negative, which is most of its value. The
-`reference/` doc stays the record and the public page cites it, so a new number
-lands here first and gets a line there in the same pass. Same for the v5
-manuscript's strategy table, which states the same set at a higher altitude:
-three copies of a number is two chances to be the stale one.
+`reference/` doc stays the record, so a new number lands here first.
+
+**Publish the table, don't retype it.** Tag it `<!-- measurement: <id> -->` and
+put `<!-- BEGIN GENERATED MEASUREMENT <id> -->` / `END` on the public page;
+`pnpm autogen` fills it and `--check` fails on drift. The table travels whole —
+there is no row or column filter, deliberately, so where one reads badly in
+public fix the header here. Both directions are errors: a block naming no
+measurement, and a tagged table no page publishes.
+
+The prose around those tables is checked too, by `check-quoted-figures.ts`:
+every `<number><unit>` a public measurement page writes has to appear in an
+agent-doc **that page links**, or in source. So a figure quoted from here needs
+the link to here, and an unlinked one fails.
+
+Same discipline for the v5 manuscript's strategy table, which states the same
+set at a higher altitude and has no generator reaching it: three copies of a
+number is two chances to be the stale one, and it was — the CRAM arena figure
+sat at a pre-ADR-0010 value there while `cram-js` had moved on.
 
 ## Frontmatter and generated tables
 

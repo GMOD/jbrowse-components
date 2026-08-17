@@ -40,6 +40,14 @@ check by fixing the manifest, not by removing a skip.
   tested source. `sync-doc-snippets --check` ratchets un-included fences, so
   convert one and lower `DOC_FENCE_BASELINE`. The marker fills an existing
   fence, so write an empty one under it first.
+- **Never retype a measurement table out of `agent-docs`** — tag the source
+  `<!-- measurement: <id> -->` and bracket the copy with
+  `<!-- BEGIN GENERATED MEASUREMENT <id> -->` / `END` (`sync-measurements.ts`).
+  The whole table comes across; a page wanting fewer rows is a page arguing with
+  the doc that owns the number. Having such a block also opts the page into
+  `check-quoted-figures`, which requires every `<number><unit>` in its prose to
+  appear in an agent-doc **the page links**, or in source — so cite the doc you
+  took the figure from.
 - **Write `displayDefaults`, not a `displays` array**, unless the example
   selects a non-default display type or needs real `displayId`s.
 - **Show a whole track config, not a fragment**, tagged ```json addtrack —
