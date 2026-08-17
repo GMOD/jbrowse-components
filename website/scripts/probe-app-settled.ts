@@ -78,9 +78,8 @@ try {
     void page
       .evaluate(
         () =>
-          document
-            .querySelector('[data-app-phase]')
-            ?.getAttribute('data-app-phase') ?? 'absent',
+          document.querySelector('[data-app-phase]')?.dataset.appPhase ??
+          'absent',
       )
       .then(phase => seen.push(phase))
       .catch(() => {

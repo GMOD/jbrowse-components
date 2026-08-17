@@ -99,7 +99,15 @@ const stale: string[] = []
 // example — captureJBrowse/openJBrowse usage — for the same reason the
 // "Writing your own script" example above is exempt: nothing in the repo
 // compiles that exact shape, so there is no source to point an include at.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '19')
+//
+// 19 -> 20 on 2026-08-17: `agents_capture.md` leads with the one-line readiness
+// wait, `await page.waitForSelector('[data-app-phase="ready"]')`. The selector
+// itself IS source — `APP_READY` in products/jbrowse-capture/src/waits.ts — but
+// the fence teaches the puppeteer call around it, and nothing in the repo
+// compiles that call: `@jbrowse/capture` wraps it in `waitForAppReady`, which
+// is the thing the page is telling a reader they can do without. An include
+// pointing at the const would put a declaration where the page needs a call.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '20')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {
