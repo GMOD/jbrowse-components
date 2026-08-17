@@ -953,9 +953,25 @@ export const mafSpecs: ScreenshotSpec[] = [
     //
     // The pill used to head with the file name, because a review asked what the
     // picture is of and one track's sidebar label did not answer it. The frame
-    // now holds five lanes off four files, so a filename at the top of a pill
+    // now holds four lanes off three files, so a filename at the top of a pill
     // sitting inside one of them would name the wrong thing; the sidebar names
     // each lane and the tutorial's fence a few lines above prints the URL.
+    //
+    // AND THE BAND HAS TO REACH THE GRAPH. The in-app `highlight` is a band on a
+    // coordinate axis, so it stops at the bottom of the linear view, and the
+    // force drawing has no axis for it to continue onto -- which left the pane
+    // as the one panel the figure's own "read down the column" claim did not
+    // cover. Same answer pangenome/hprc_graph_vs_callset reached: a ring on the
+    // node, and an arrow from the band to it.
+    //
+    // s101039+ is the node, and it is the marked span almost exactly: rank 0,
+    // 5,140 bp at GRCh38#0#chr6:32,005,828-32,010,968, against the band's
+    // 32,005,691-32,011,057. Read out of `probe-graph-nodes.ts`, which also
+    // names the two alleles hanging across it (s442199+ at rank 16 and s511121+
+    // at rank 68, both about 6.4 kb) -- ONE ring, not three, because a previous
+    // round of this on the MHC figure was reviewed as "why are there three
+    // circles". The reference node is the right survivor: the haplotypes that go
+    // white in the alignment above are the ones that do not walk it.
     annotations: [
       {
         type: 'text' as const,
@@ -973,6 +989,38 @@ export const mafSpecs: ScreenshotSpec[] = [
           locus: 'chr6:32,053,500',
           fracY: 0.12,
         },
+      },
+      {
+        type: 'circle' as const,
+        anchor: { view: 1, graphNode: 's101039+' },
+        radius: 26,
+        strokeWidth: 3,
+        // The default red, and near-black was rendered against it before this
+        // was settled. The argument for moving off red is that the pane already
+        // holds some: the reference-position ramp starts at hue 0, so the 52 kb
+        // backbone node at the window's left edge is red too. Drawn, that turns
+        // out not to matter -- the node is a tube 400 px away and the mark is a
+        // thin line with a head -- while near-black loses against what is
+        // ACTUALLY next to the ring, which is the charcoal an off-reference node
+        // paints (ALT_ALLELE_COLOR, rgb(60,65,72)) and the small dark circle the
+        // graph puts on its own deletion edge. A ring has to beat its
+        // neighbourhood rather than the whole palette.
+      },
+      {
+        type: 'arrow' as const,
+        // the bottom of the banded span in the LAST lane of the linear view, so
+        // the tail leaves the band at the band's own x rather than beside it
+        fromAnchor: {
+          view: 0,
+          track: 'hprc_v2_0_mc_grch38',
+          locus: HPRC_C4_MARKED,
+          fracY: 1,
+          dy: -8,
+        },
+        // stopped short of the ring by its own radius: an anchored head resolves
+        // to the node's CENTRE, which would put the triangle inside the circle
+        anchor: { view: 1, graphNode: 's101039+', dx: -30, dy: -30 },
+        strokeWidth: 3,
       },
     ],
   },

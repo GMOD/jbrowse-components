@@ -186,6 +186,36 @@ the tail — and it is fine.
 lacked the flag and ignored unknown arguments, so the documented command exited 0
 and wrote nothing. v0.6.0 is on crates.io.
 
+## What the `LV==0` filter costs, measured
+
+The wave VCF is vcfwave-decomposed, so the tutorial teaches `LV==0` to keep the
+top-level record and not paint one event at two positions. Both halves of that
+are true and the clause is doing real work — over `chr6:32,450,000-32,650,000`
+it drops 22 records on the >=50 bp tier and 18 of them name an `ORIGIN` inside
+the same window, which is the de-duplication it is for.
+
+**The cost is a span collapsing onto a column.** A parent sits at one position
+while its children spread over the span it covers, so a window can lose all its
+records to a parent drawn elsewhere. Counted off the file:
+
+| window | records | `LV==0` |
+| --- | --- | --- |
+| `chr6:32,000,000-32,005,690` | 76 | 0 |
+| `chr6:32,005,690-32,011,057` | 170 | 0 |
+| `chr6:32,011,057-32,020,000` | 103 | 0 |
+
+That is 20 kb across CYP21A1P and TNXA — the most variable part of C4 — blank
+under the filter, which is why `maf_hprc_pangenome`'s callset lane runs
+unfiltered. A blank column under `LV==0` is a statement about the snarl tree.
+
+**What this is NOT.** The sparse right third of
+`pangenome/hprc_graph_vs_callset` was read as the same artifact and is not: over
+its window the >=50 bp tier really is thin there (20, 4 and 10 records in the
+last three 10 kb bins against 42, 39, 20, 25, 29 and 14 in the first six), and
+the LV clause removes 24 of those whose parents are in view. Dropping it there
+would double-paint 18 events to recover a texture that is mostly absent anyway.
+Checked before changing it; do not re-derive.
+
 ## Short-read copy number at C4 agrees with the alignment, and is out of the figure anyway
 
 `maf_hprc_pangenome` carried a lane of 1000 Genomes QuicK-mer2 copy number for

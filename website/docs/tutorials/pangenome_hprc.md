@@ -905,6 +905,16 @@ Both halves are load-bearing:
   this file writes a nested child as its own record beside its parent, with `PS`
   naming that parent.
 
+What `LV==0` costs is worth knowing before reading a gap in a filtered panel as
+a quiet stretch of genome. A parent record sits at one position and its children
+spread over the span it covers, so the filter collapses that whole span onto one
+column. At C4 the effect is the width of the figure:
+`chr6:32,000,000-32,020,000` holds hundreds of records and not one of them is
+`LV==0`, so the filter alone empties 20 kb across CYP21A1P and TNXA, which is
+where that locus varies most. Pair it with a size filter, as above, or drop it
+and read the duplicates; a blank column under it is a statement about the snarl
+tree rather than about the cohort.
+
 Read a column as a site that holds a structural allele rather than as a
 guarantee about every cell in it. The filter admits a record on its longest
 allele and most records it admits here are multi-allelic, so a site can enter
