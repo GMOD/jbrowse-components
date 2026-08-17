@@ -342,11 +342,10 @@ function chainRepresentative(chain: Feature[]): Feature {
 
 export interface GroupByDimension {
   type: GroupByType
-  // True iff chain mode can honor this dimension, which means one chain resolves
-  // to one key — either because every read of the chain yields the same one, or
-  // because the dimension supplies `chainKey` below. Dimensions that would split
-  // a chain across sections (breaking its connecting lines) are false, and are
-  // both dropped from the menu and degraded to ungrouped by the worker.
+  // True iff every read of a chain yields the same key, so `partitionChains` can
+  // key the chain off its representative read. A plain fact about the key
+  // generator — whether chain mode HONORS the dimension is
+  // `isChainGroupableType`, which also accepts a `chainKey` below.
   chainConsistent: boolean
   // True for dimensions that don't apply to ordinary alignment reads and so are
   // not offered in the general "Group by..." radios; a display that supports them
@@ -360,19 +359,26 @@ export interface GroupByDimension {
   // Key for a whole chain, for a dimension whose per-read key is a property of
   // the chain rather than of the read. Without it `partitionChains` keys off the
   // chain's representative read, which answers "is the primary read1 like this",
-  // not "is any read of this fragment".
+  // not "is any read of this fragment". Supplying one is also what makes a
+  // chain-inconsistent dimension groupable in chain mode
+  // (`isChainGroupableType`).
   chainKey?: (chain: Feature[], groupBy: GroupBy) => GroupKey
 }
 
-// The single registry of group-by dimensions. Typed as a Record keyed by
-// GroupByType, so adding a member to the union is a compile error until it is
-// classified here — a new dimension can't be silently half-wired (missing a
-// chain-mode classification or a key generator). Insertion order is the menu
-// order (Object.values preserves it). Labels live in the React-free
+// The single registry of group-by dimensions. Keyed by GroupByType, so adding a
+// member to the union is a compile error until it is classified here — a new
+// dimension can't be silently half-wired (missing a chain-mode classification or
+// a key generator). Each entry's `type` is pinned to its own key rather than to
+// the union at large: it is the field `offeredGroupByTypes` maps to, so a
+// copy-paste that left it naming a sibling dimension would have offered a radio
+// selecting something else, and a plain Record accepts that. Insertion order is
+// the menu order (Object.values preserves it). Labels live in the React-free
 // groupByLabels.ts, keyed by the same union, so the website's figure recipes can
 // name a menu path without importing this module (see its header) —
 // `pickGroupByOptions` is the one place that joins the two.
-export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
+export const GROUP_BY_DIMENSIONS: {
+  [K in GroupByType]: GroupByDimension & { type: K }
+} = {
   strand: {
     type: 'strand',
     chainConsistent: false,
@@ -396,11 +402,13 @@ export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
   // Chain mode is where this dimension earns its keep — long-read SV viewing is
   // linked reads plus split-read evidence — so it defines the chain's key rather
   // than being dropped there. A chain is keyed by read name and so holds both
-  // mates, and one mate can be split where the other is not; the fragment has
-  // split evidence if either does, which the representative read cannot answer.
+  // mates, and one mate can be split where the other is not: the per-read key
+  // therefore varies within a chain (hence `chainConsistent: false`), and the
+  // fragment has split evidence if either mate does, which the representative
+  // read cannot answer.
   splitRead: {
     type: 'splitRead',
-    chainConsistent: true,
+    chainConsistent: false,
     key: splitReadKey,
     chainKey: chain =>
       chain.some(hasSplitAlignment) ? SPLIT_GROUP : UNSPLIT_GROUP,
@@ -418,8 +426,18 @@ export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
   },
 }
 
+// Whether chain mode can honor a dimension: one chain has to resolve to one key,
+// which holds when every read of the chain yields the same one OR when the
+// dimension states the chain's key itself. Derived from the two facts rather than
+// asserted as a third field — a `chainKey` written without a matching flag would
+// otherwise never run, and the dimension would degrade to ungrouped with the code
+// meant to prevent that sitting right there.
 export function isChainGroupableType(type: GroupByType | undefined) {
-  return type !== undefined && GROUP_BY_DIMENSIONS[type].chainConsistent
+  if (type === undefined) {
+    return false
+  }
+  const { chainConsistent, chainKey } = GROUP_BY_DIMENSIONS[type]
+  return chainConsistent || chainKey !== undefined
 }
 
 // The grouping a fetch can actually honor. Chain mode allows only chain-consistent

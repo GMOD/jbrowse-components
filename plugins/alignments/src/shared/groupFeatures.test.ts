@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
+  GROUP_BY_DIMENSIONS,
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   groupByForMode,
@@ -267,15 +268,31 @@ test('mate-assembly grouping pins features with no mate assembly last', () => {
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b', 'c'])
 })
 
-test('isChainGroupableType allows only chain-consistent dimensions', () => {
+// Two ways a dimension resolves one chain to one key: every read yields the same
+// key, or the dimension states the chain's key itself. `splitRead` is the second
+// — its per-read key differs between a split mate and its unsplit partner — so a
+// reading of `chainConsistent` alone would drop it from chain mode, where it
+// matters most.
+test('isChainGroupableType allows a chain-consistent key or a chainKey', () => {
   expect(isChainGroupableType('tag')).toBe(true)
   expect(isChainGroupableType('firstOfPairStrand')).toBe(true)
   expect(isChainGroupableType('pairOrientation')).toBe(true)
   expect(isChainGroupableType('mateAssembly')).toBe(true)
   expect(isChainGroupableType('strand')).toBe(false)
   expect(isChainGroupableType('splitRead')).toBe(true)
+  expect(GROUP_BY_DIMENSIONS.splitRead.chainConsistent).toBe(false)
   expect(isChainGroupableType('mapq')).toBe(false)
   expect(isChainGroupableType(undefined)).toBe(false)
+})
+
+// Each entry names its own registry key, which is the field the alignments menu
+// maps to radio options — a copy-paste naming a sibling would offer a radio that
+// selects something else. Pinned at runtime as well as in the type because the
+// type is the part a future edit can widen.
+test('every dimension states its own registry key as its type', () => {
+  for (const [key, dimension] of Object.entries(GROUP_BY_DIMENSIONS)) {
+    expect(dimension.type).toBe(key)
+  }
 })
 
 // A fragment has split evidence if either mate does, which the chain's

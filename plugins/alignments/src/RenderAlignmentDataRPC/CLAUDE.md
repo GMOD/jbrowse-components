@@ -32,9 +32,12 @@ read likewise.
 - `tag` is the one the data decides, so the dialog blocks Submit and names the
   count. The `''` untagged group is held out of the overflow merge — reads
   _lacking_ the tag are a distinct answer users look for.
-- Chain mode allows only dimensions where every read of a chain yields the same
-  key (`chainConsistent`). A new `GroupByType` member is a compile error until
-  it's classified.
+- Chain mode allows only dimensions that resolve one chain to one key —
+  `chainConsistent` (every read yields the same key) **or** a `chainKey` that
+  answers for the whole chain, which is why `isChainGroupableType` derives the
+  answer instead of reading a third field. A new `GroupByType` member is a
+  compile error until it's classified, and each entry's `type` is pinned to its
+  own registry key.
 - Key generators must cover **both** worlds this pipeline serves — hence
   `strand` over `SAM_FLAG_REVERSE`, and `getMappingQuality`.
 - Chain numbering is **per worker call**, so anything unioning chains across
