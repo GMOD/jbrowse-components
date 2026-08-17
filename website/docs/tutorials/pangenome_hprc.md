@@ -34,6 +34,17 @@ Both UCSC binaries are
 [single-binary downloads](https://hgdownload.soe.ucsc.edu/admin/exe/), and
 `build_repeat_density.sh`'s header carries the curl line for each.
 
+## The route, end to end
+
+Everything this page does to the graph, in one session: hg38 with its genes and
+nothing else, the track config from [Load the graph](#load-the-graph) pasted
+into the app, a window [cut as a graph](#open-a-locus-as-a-graph), and one node
+[taken back to its coordinates](#from-a-node-back-to-a-coordinate). The link
+under the clip opens the session it starts in, so pasting a config for your own
+graph walks the same route on it.
+
+<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph moved onto the reference axis, and one allele's GRCh38 interval marked in the linear view above it." />
+
 ## The dataset
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
@@ -47,15 +58,6 @@ Every track below is a URL you can paste. The callset ships tabix-indexed, so
 JBrowse reads the slice in view straight off HPRC's S3. The graph route reads
 projections we prebuilt and host, with the build script in
 [Reproduce it end to end](#reproduce-it-end-to-end).
-
-The clip below runs the graph route end to end in one session: hg38 with its
-genes and nothing else, the track config from [Load the graph](#load-the-graph)
-pasted into the app, a window [cut as a graph](#open-a-locus-as-a-graph), and
-one node [taken back to its coordinates](#from-a-node-back-to-a-coordinate). The
-link under the clip opens the session it starts in, so pasting a config for your
-own graph walks the same route on it.
-
-<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph moved onto the reference axis, and one allele's GRCh38 interval marked in the linear view above it." />
 
 ## The GraphGenomeView plugin
 
