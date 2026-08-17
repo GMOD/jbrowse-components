@@ -80,4 +80,6 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [068](adr-068-workspace-layout-is-an-mst-tree.md) | Accepted | The workspace layout is one MST tree that React renders; dockview is gone. Supersedes ADR-057, whose ~8-9k-line estimate against this was about four times too high and was the thing holding the decision |
 | [069](adr-069-detach-do-not-destroy-what-react-may-hold.md) | Accepted | An MST node React may still be rendering is detached, never destroyed in place. Destroying it is what turned a plugin install into a white page, and no deferral is provably long enough |
 | [070](adr-070-viewport-is-a-stored-window.md) | Accepted | The LGV viewport persists as a bp window, not as offsetPx/bpPerPx |
+| [071](adr-071-a-status-phase-must-outlive-the-window.md) | Accepted | Every RPC status write goes through the one throttle window, the phase-end clear included, so a phase shorter than the window never paints |
+| [072](adr-072-only-one-phase-at-a-time-is-summable.md) | Accepted | aggregateStatus sums only the concurrent operations in the same phase; the rest are charged as unmeasured |
 <!-- END GENERATED ADR INDEX -->

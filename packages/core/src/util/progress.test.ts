@@ -224,10 +224,11 @@ describe('createStatusThrottle', () => {
   })
 })
 
-// `''` is how every phase helper says "this phase is over". It has to land, and
-// it has to cancel the progress value queued behind it — a trailing timer that
-// put a percentage back on screen after the work ended is the regression the
-// trailing edge would otherwise have introduced.
+// `''` is how every phase helper says "this phase is over", and it is throttled
+// like every other status. What has to hold is that it CANCELS the progress
+// value queued behind it, so a finished phase's percentage can never come back
+// on screen; landing on the leading edge was never part of that, and exempting
+// it is what left every phase boundary unthrottled.
 describe('createGuardedStatusSink', () => {
   let clock = 1_000_000
   beforeEach(() => {
@@ -252,16 +253,51 @@ describe('createGuardedStatusSink', () => {
       report({ message: 'Downloading', current: 1, total: 10 })
       report({ message: 'Downloading', current: 9, total: 10 })
       report('')
-      expect(seen).toEqual([
-        { message: 'Downloading', current: 1, total: 10 },
-        '',
-      ])
+      // the 9/10 and the '' both fell inside the first write's window, and the
+      // throttle holds exactly one pending write — so the '' displaced the
+      // percentage rather than queueing behind it
+      expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 10 }])
       clock += 100
       jest.advanceTimersByTime(100)
       expect(seen).toEqual([
         { message: 'Downloading', current: 1, total: 10 },
         '',
       ])
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  // The reason the clear is throttled with everything else. A phase boundary is
+  // a close immediately followed by the next phase's open, so a clear on the
+  // leading edge handed every boundary a free pass and the window applied to
+  // nothing that mattered. `executeRenderFeatureData` closes three phases in the
+  // last few ms of a warm fetch: the overlay repainted five times inside those
+  // ms — label, blank, a 0% bar, blank, label — and none of the five was up long
+  // enough to read.
+  it('paints nothing for phases that open and close inside one window', () => {
+    jest.useFakeTimers()
+    try {
+      const seen: RpcStatus[] = []
+      const report = createGuardedStatusSink({
+        isCurrent: () => true,
+        sink: s => {
+          seen.push(s)
+        },
+        throttle: createStatusThrottle(),
+      })
+      report('Downloading features')
+      // the tail of a warm fetch, all of it inside the first write's window
+      report('')
+      report({ message: 'Computing layout', current: 0, total: 300 })
+      report('')
+      report('Collecting render data')
+      report('')
+      expect(seen).toEqual(['Downloading features'])
+      clock += 100
+      jest.advanceTimersByTime(100)
+      // one trailing write, and it is the newest — never the 0% bar
+      expect(seen).toEqual(['Downloading features', ''])
     } finally {
       jest.useRealTimers()
     }
@@ -635,6 +671,62 @@ describe('aggregateStatus', () => {
     ])
     expect(statusFraction(agg)).toBeCloseTo(0.455)
   })
+
+  // ADR-072. The regions of one fan-out cross phase boundaries at different
+  // times, and the phases do not measure the same thing: the canvas RPC
+  // downloads bytes and then lays out features, so a summed bar was scaled by
+  // whichever slot happened to hold the bigger raw total. 400kb of bytes beside
+  // 300 features put the layout region's real progress three orders of magnitude
+  // below the noise floor.
+  it('does not sum across phases that measure different things', () => {
+    const downloading = {
+      message: 'Downloading features',
+      current: 0,
+      total: 400_000,
+    }
+    const layingOut = { message: 'Computing layout', current: 150, total: 300 }
+    // one of each: the tie breaks to the earliest, and the other is charged as
+    // unmeasured rather than summed — 0 of 400000 doubled, not 150/400300
+    expect(aggregateStatus([downloading, layingOut])).toEqual({
+      message: 'Downloading features',
+      current: 0,
+      total: 800_000,
+    })
+    // the majority phase wins, so three downloading regions are not repriced by
+    // the one that has moved on
+    expect(
+      statusFraction(
+        aggregateStatus([
+          { ...downloading, current: 200_000 },
+          { ...downloading, current: 200_000 },
+          { ...downloading, current: 200_000 },
+          layingOut,
+        ]),
+      ),
+    ).toBeCloseTo(0.375)
+  })
+
+  // The same defect from the other side. Summed, the pair below read 99.7%
+  // complete — a bar almost full because the byte slot's total dwarfed the
+  // feature slot's, not because the work was nearly done. It now reads half,
+  // which is what one of two regions finished actually means.
+  //
+  // The drop to 0% when that slot retires is NOT the defect and does not go
+  // away: a bar over in-flight work alone loses its denominator as operations
+  // finish. See the `''` note on aggregateStatus — charging a retired slot is
+  // the alternative, and it makes the bar run backwards instead.
+  it('is not scaled by the largest unit in another phase', () => {
+    const layingOut = { message: 'Computing layout', current: 0, total: 300 }
+    const nearlyDownloaded = {
+      message: 'Downloading features',
+      current: 399_000,
+      total: 400_000,
+    }
+    expect(
+      statusFraction(aggregateStatus([nearlyDownloaded, layingOut])),
+    ).toBeCloseTo(0.499)
+    expect(statusFraction(aggregateStatus(['', layingOut]))).toBeCloseTo(0)
+  })
 })
 
 describe('createStatusFanOut', () => {
@@ -703,19 +795,23 @@ describe('a fan-out behind one guarded sink', () => {
     jest.restoreAllMocks()
   })
 
-  // A `''` reaching the sink is routed through `runNow`, so the retire lands
-  // even though every write after the first fell inside the same window. Sent
-  // through `throttle.run` instead it is queued, and the last "Downloading …"
-  // is what stays on screen until something else writes.
-  it('lands the final clear even inside a closed window', () => {
+  // The owner's `finally` is what lands the final clear, not the slots retiring:
+  // every write after the first falls inside the same window, so the slots' `''`
+  // is queued behind the throttle like any other status. `loadPre` closes its
+  // guard and then writes through `runNow`, which both lands and drops the
+  // queued write — a bare `setStatus(undefined)` beside a `throttle.run` fan-out
+  // had neither half and neither fault was visible in the passing state.
+  it('lands the final clear through the owner, not the retiring slots', () => {
+    const throttle = createStatusThrottle()
     const seen: RpcStatus[] = []
+    let loading = true
     const slot = createStatusFanOut(
       createGuardedStatusSink({
-        isCurrent: () => true,
+        isCurrent: () => loading,
         sink: s => {
           seen.push(s)
         },
-        throttle: createStatusThrottle(),
+        throttle,
       }),
     )
     const a = slot()
@@ -724,7 +820,14 @@ describe('a fan-out behind one guarded sink', () => {
     b({ message: 'Downloading', current: 1, total: 2 })
     a('')
     b('')
-    expect(seen.at(-1)).toBe('')
+    // still inside the first write's window, so nothing since it has painted
+    expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 2 }])
+    // the shape of `loadPre`'s finally
+    loading = false
+    throttle.runNow(() => {
+      seen.push(undefined as unknown as RpcStatus)
+    })
+    expect(seen.at(-1)).toBeUndefined()
   })
 
   // `Promise.all` rejects on the first of the concurrent loads to fail while

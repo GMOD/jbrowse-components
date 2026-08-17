@@ -263,13 +263,13 @@ export default function FetchMixin() {
           sink: status => {
             self.setStatusMessage(status)
           },
-          // the model-wide window, so N of these thin to one stream between them
+          // the model-wide window, so N of these thin to one stream between them.
+          // `run` only: the sink throttles every status now, `''` included, so
+          // it has no use for `flushStatus` — that stays for the hand-written
+          // clears (`createStopTokenRotation`).
           throttle: {
             run: apply => {
               self.throttleStatus(apply)
-            },
-            runNow: apply => {
-              self.flushStatus(apply)
             },
           },
         })

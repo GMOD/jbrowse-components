@@ -27,7 +27,11 @@ export interface StatusReporter {
    * synteny) compose no fetch mixin and have only the window below.
    */
   makeStatusCallback?: (isCurrent: () => boolean) => (status: RpcStatus) => void
-  /** `FetchMixin`'s `throttle.runNow`, paired with `makeStatusCallback` */
+  /**
+   * `FetchMixin`'s `throttle.runNow` — the hand-written clear at a fetch
+   * boundary, so it lands on the same window `makeStatusCallback` reports
+   * through instead of racing it. Not a path the guarded sink uses; ADR-071.
+   */
   flushStatus?: (apply: () => void) => void
 }
 

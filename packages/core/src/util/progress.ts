@@ -213,17 +213,19 @@ export function createStatusThrottle() {
     },
     /**
      * Write now, dropping anything queued behind it, and reopen the window. For
-     * a write that must land AND that supersedes what it was queued behind —
-     * the `''` closing a phase is both. Without this the trailing timer restores
-     * a percentage after the work it measured has ended.
+     * the **hand-written** clear an owner runs at the ends of its stream —
+     * `createStopTokenRotation`'s `clearStatus`, `assembly.loadPre`'s `finally`.
+     * Such a clear must land, because nothing else is coming to displace the last
+     * label of a fetch that is over, and must supersede whatever the throttle
+     * still holds from it.
      *
-     * Reopening is the half that is easy to leave out, and closing the window
-     * here is worse than not throttling the clear at all: a phase boundary is
-     * immediately followed by the *next* phase's label, so charging the clear a
-     * full window delays every label by up to one, and drops outright the label
-     * of any phase shorter than one (its own clear cancels the queued label
-     * behind it). Same reasoning as {@link reset}, which reopens for the same
-     * reason at a fetch boundary.
+     * **Not for the `''` a phase helper closes with** — that goes through
+     * {@link run} like every other status, so a phase shorter than the window
+     * paints nothing. ADR-071.
+     *
+     * Reopening is the half that is easy to leave out: an owner clears at the
+     * *start* of a fetch too, and charging that clear a full window would delay
+     * the new fetch's first real status by one. Same reasoning as {@link reset}.
      */
     runNow(apply: () => void) {
       clearPending()
@@ -254,10 +256,12 @@ export function createStatusThrottle() {
  * it belongs to can be gone by then. That second read is the load-bearing one —
  * without it a trailing status lands on a destroyed MST node.
  *
- * A `''` is not throttled. It is how every phase helper says "this phase is
- * over", so it has to land, and it has to cancel whatever progress value was
- * queued behind it — otherwise the trailing timer puts a percentage back on
- * screen after the work it measured has ended.
+ * **Every status goes through the one window, the `''` closing a phase
+ * included** — so a phase that opens and closes inside the window paints
+ * nothing. ADR-071. The `''` still displaces the percentage queued behind it,
+ * because the throttle holds one pending write, so a finished phase's progress
+ * cannot reappear; it just lands on the trailing edge. Every owner ends its
+ * stream with a `runNow` clear of its own, so nothing waits on that write.
  *
  * `throttle` is required, with no default, because whose window this is is the
  * decision the caller has to make and a default makes it silently. One window
@@ -275,25 +279,17 @@ export function createGuardedStatusSink({
 }: {
   isCurrent: () => boolean
   sink: (status: RpcStatus) => void
-  throttle: {
-    run: (apply: () => void) => void
-    runNow: (apply: () => void) => void
-  }
+  throttle: { run: (apply: () => void) => void }
 }): StatusCallback {
   return status => {
     if (isCurrent()) {
       // re-read inside, because a trailing write fires on a timer and the
       // operation it belongs to can be gone by then
-      const write = () => {
+      throttle.run(() => {
         if (isCurrent()) {
           sink(status)
         }
-      }
-      if (status === '') {
-        throttle.runNow(write)
-      } else {
-        throttle.run(write)
-      }
+      })
     }
   }
 }
@@ -372,18 +368,24 @@ export async function downloadStatus<T>(
 
 /**
  * Combine the in-flight statuses of several concurrent operations (one RPC per
- * visible region, say) into the single status the loading UI shows. Because
- * `current`/`total` are unit-agnostic and additive, determinate statuses are
- * summed into one Σcurrent/Σtotal bar — so N regions downloading in parallel
- * read as one honest bar instead of each clobbering the shared field. The
- * message is borrowed from a determinate status when any is present (regions
- * downloading at once share the same phase label), else the first status.
- * Returns undefined when nothing is in flight.
+ * visible region, say) into the single status the loading UI shows, so N regions
+ * read as one bar instead of each clobbering the shared field. Returns undefined
+ * when nothing is in flight.
  *
- * An operation reporting no total is still an operation in flight, so it is
- * charged the mean of the totals we do know, with nothing completed against it.
- * Dropping those outright is what let a fan-out where one region's response
- * carried no Content-Length read 100% with that region still downloading.
+ * **Only operations in the same phase are summed.** `current`/`total` are
+ * additive within a phase — bytes with bytes, features with features — and
+ * incommensurable across one, so the phase the most operations are in wins and
+ * the rest are charged as unmeasured below. ADR-072; a plain Σcurrent/Σtotal put
+ * a bar under whichever slot had the largest raw total. A tie breaks to the
+ * earliest, so a fan-out whose slots share one phase — the common case, and what
+ * the sum was written for — is summed exactly as before.
+ *
+ * An operation with no comparable measurement is still an operation in flight, so
+ * it is charged the mean of the totals we do know, with nothing completed against
+ * it. That covers both an operation reporting no total at all and one measuring a
+ * different phase. Dropping the first outright is what let a fan-out where one
+ * region's response carried no Content-Length read 100% with that region still
+ * downloading.
  *
  * `''` is not one of those. It is how every phase helper says "this phase is
  * over", so an operation reporting it is not in flight and must not be charged
@@ -402,19 +404,26 @@ export function aggregateStatus(
   const determinate = present.filter(
     (s): s is StatusWithProgress => typeof s === 'object',
   )
-  if (determinate.length > 0) {
-    let current = 0
-    let measured = 0
-    for (const s of determinate) {
-      current += s.current
-      measured += s.total
-    }
-    const indeterminate = present.length - determinate.length
-    const total = measured + (indeterminate * measured) / determinate.length
-    return { message: determinate[0]!.message, current, total }
-  } else {
+  if (determinate.length === 0) {
     return present[0]
   }
+  const perPhase = new Map<string, number>()
+  for (const s of determinate) {
+    perPhase.set(s.message, (perPhase.get(s.message) ?? 0) + 1)
+  }
+  const { message } = determinate.reduce((best, s) =>
+    perPhase.get(s.message)! > perPhase.get(best.message)! ? s : best,
+  )
+  const summable = determinate.filter(s => s.message === message)
+  let current = 0
+  let measured = 0
+  for (const s of summable) {
+    current += s.current
+    measured += s.total
+  }
+  const unmeasured = present.length - summable.length
+  const total = measured + (unmeasured * measured) / summable.length
+  return { message, current, total }
 }
 
 /**

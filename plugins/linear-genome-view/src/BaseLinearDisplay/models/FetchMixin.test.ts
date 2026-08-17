@@ -374,18 +374,29 @@ describe('FetchMixin: progress reporting', () => {
     expect(m.statusProgress).toBeUndefined()
   })
 
-  // A phase clear must land whatever the window says — it is how every phase
-  // helper ends — and must cancel the progress value queued behind it, or the
-  // trailing timer puts a percentage back after the work it measured has ended.
-  it('a phase clear lands unthrottled and cancels what was queued', () => {
-    const { m, ctxs } = twoRegions()
-    const [a] = ctxs
-    a!.statusCallback({ message: 'Downloading', current: 1, total: 2 })
-    // same tick, so this one is queued rather than written
-    a!.statusCallback({ message: 'Downloading', current: 9, total: 10 })
-    a!.statusCallback('')
-    expect(m.statusMessage).toBeUndefined()
-    expect(m.statusProgress).toBeUndefined()
+  // A phase clear is throttled like every other status (ADR-071), so a phase
+  // that opens and closes inside one window moves the bar not at all. What still
+  // has to hold is that the clear CANCELS the progress value queued behind it: a
+  // percentage must never come back after the work it measured has ended.
+  it('a phase clear cancels the progress value queued behind it', () => {
+    jest.useFakeTimers()
+    try {
+      const { m, ctxs } = twoRegions()
+      const [a] = ctxs
+      a!.statusCallback({ message: 'Downloading', current: 1, total: 2 })
+      expect(m.statusProgress).toBeCloseTo(0.5)
+      // both land in the same window, so both are queued and only the newest
+      // survives — the 9/10 is gone, not merely deferred
+      a!.statusCallback({ message: 'Downloading', current: 9, total: 10 })
+      a!.statusCallback('')
+      expect(m.statusProgress).toBeCloseTo(0.5)
+      step()
+      jest.advanceTimersByTime(100)
+      expect(m.statusMessage).toBeUndefined()
+      expect(m.statusProgress).toBeUndefined()
+    } finally {
+      jest.useRealTimers()
+    }
   })
 
   it('a superseded fetch cannot repaint the bar', () => {
