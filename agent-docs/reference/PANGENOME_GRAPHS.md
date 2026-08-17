@@ -176,6 +176,14 @@ The launch menus keep the constant deliberately.
 `scoresToStats` — only the track *type* changes, since a `FeatureTrack` offers
 no wiggle display. chr1 is 9,444 bubbles, scores into the hundreds.
 
+**The curve narrows a chromosome to a few dozen candidates, not to three.**
+Ranked by segment count over those 9,444 chr1 bubbles, the three loci
+`pangenome_hprc.md` opens on chr1 come 50th (amylase), 77th (the 1q21.1
+inversion) and 155th (the CFHR3/CFHR1 deletion), and the chromosome's largest
+bubble by an order of magnitude is at 2.65 Mb, which no figure opens. The page
+states the direction and lets the lane carry how far; these ranks live here
+because they are the measurement behind that sentence.
+
 **`gfatools bubble` returns 0 bubbles on a pggb GFA** — it needs rGFA
 `SN`/`SO`/`SR` to place a bubble on a reference. That used to mean the graph most
 needing coarsening could not be coarsened; **it can now, and from a file the
