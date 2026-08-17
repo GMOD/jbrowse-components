@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2026-08-01T18:01:07.649Z",
+  "dateCreated": "2026-08-17T21:52:10.213Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -75,6 +75,15 @@
             "locationType": "UriLocation"
           }
         }
+      }
+    },
+    {
+      "trackId": "gff3tabix_canonical_tags",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "uri": "volvox.canonical_tags.gff3.gz"
       }
     },
     {

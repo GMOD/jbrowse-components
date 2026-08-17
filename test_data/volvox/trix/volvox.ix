@@ -42,6 +42,11 @@ eden.1 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.1"|"EDEN.1"|"Eden%20splice%2
 eden.2 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],1
 eden.3 ["ctgA%3A1300..9000"|"gff3tabix_genes"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],1
 end ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],1 ["ctgB%3A1000..2000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2
+ensg ["ctgA%3A21000..29000"|"gff3tabix_canonical_tags"|"ENSG"|"gene-ENSG"],1
+enst00000001.1 ["ctgA%3A11000..19000"|"gff3tabix_canonical_tags"|"ENST00000001.1"|"rna-ENST00000001.1"],1
+enst00000002.1 ["ctgA%3A11000..19000"|"gff3tabix_canonical_tags"|"ENST00000002.1"|"rna-ENST00000002.1"],1
+enst00000003.1 ["ctgA%3A21000..29000"|"gff3tabix_canonical_tags"|"ENST00000003.1"|"rna-ENST00000003.1"],1
+enst00000004.1 ["ctgA%3A21000..29000"|"gff3tabix_canonical_tags"|"ENST00000004.1"|"rna-ENST00000004.1"],1
 example ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],1 ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],2 ["ctgB%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],3 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],4
 f01 ["ctgA%3A44705..47713"|"gff3tabix_genes"|"f01"],1
 f02 ["ctgA%3A24562..28338"|"gff3tabix_genes"|"f02"],1
@@ -64,7 +69,12 @@ fakesnp1 ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%
 finger ["ctgA%3A15396..16159"|"gff3tabix_genes"|"m03"|"zinc%20finger"],1
 fingerprinted ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],1 ["ctgB%3A1000..2000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2
 form ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],1 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],2 ["ctgA%3A1300..9000"|"gff3tabix_genes"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],3
+gencg ["ctgA%3A11000..19000"|"gff3tabix_canonical_tags"|"GENCG"|"gene-GENCG"],1
 gene ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],1
+gene-ensg ["ctgA%3A21000..29000"|"gff3tabix_canonical_tags"|"ENSG"|"gene-ENSG"],1
+gene-gencg ["ctgA%3A11000..19000"|"gff3tabix_canonical_tags"|"GENCG"|"gene-GENCG"],1
+gene-maneg ["ctgA%3A1000..9000"|"gff3tabix_canonical_tags"|"MANEG"|"gene-MANEG"],1
+gene-plaing ["ctgA%3A31000..39000"|"gff3tabix_canonical_tags"|"PLAING"|"gene-PLAING"],1
 gene1 ["ctgA%3A1201..1500"|"single_exon_gene"|"gene1"],1
 gene2 ["ctgA%3A1201..3902"|"single_exon_gene"|"gene2"],1
 gene3 ["ctgA%3A2201..2500"|"single_exon_gene"|"gene3"],1
@@ -99,6 +109,7 @@ m12 ["ctgA%3A21748..25612"|"gff3tabix_genes"|"m12"|"kinase"],1
 m13 ["ctgA%3A17667..17690"|"gff3tabix_genes"|"m13"|"DEAD%20box"],1
 m14 ["ctgA%3A14731..17239"|"gff3tabix_genes"|"m14"|"kinase"],1
 m15 ["ctgA%3A37497..40559"|"gff3tabix_genes"|"m15"|"7-transmembrane"],1
+maneg ["ctgA%3A1000..9000"|"gff3tabix_canonical_tags"|"MANEG"|"gene-MANEG"],1
 match ["ctgA%3A1..10000"|"test"|"match"],1
 match1 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],1
 match2 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],1
@@ -110,8 +121,13 @@ message. ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the
 mrna ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],1 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],2
 mrna1 ["ctgA%3A1201..1500"|"single_exon_gene"|"mRNA1"],1
 mrna2 ["ctgA%3A1201..3902"|"single_exon_gene"|"mRNA2"],1
+nm_000001.1 ["ctgA%3A1000..9000"|"gff3tabix_canonical_tags"|"NM_000001.1"|"rna-NM_000001.1"],1
+nm_000002.1 ["ctgA%3A1000..9000"|"gff3tabix_canonical_tags"|"NM_000002.1"|"rna-NM_000002.1"],1
+nm_000003.1 ["ctgA%3A31000..39000"|"gff3tabix_canonical_tags"|"NM_000003.1"|"rna-NM_000003.1"],1
+nm_000004.1 ["ctgA%3A31000..39000"|"gff3tabix_canonical_tags"|"NM_000004.1"|"rna-NM_000004.1"],1
 no ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],1 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],2
 ok! ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
+plaing ["ctgA%3A31000..39000"|"gff3tabix_canonical_tags"|"PLAING"|"gene-PLAING"],1
 protein ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"|"protein%20kinase"],1
 protein:hga ["ctgA%3A1200..1900"|"gff3tabix_genes"|"Protein%3AHGA"],1
 protein:hgb ["ctgA%3A1800..2900"|"gff3tabix_genes"|"Protein%3AHGB"],1
@@ -119,6 +135,14 @@ reads ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%2
 remark:hga ["ctgA%3A1000..2000"|"gff3tabix_genes"|"Remark%3Ahga"],1
 repeat ["ctgA%3A30578..31748"|"gff3tabix_genes"|"m06"|"SUSHI%20repeat"],1
 rna-apple3 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],1
+rna-enst00000001.1 ["ctgA%3A11000..19000"|"gff3tabix_canonical_tags"|"ENST00000001.1"|"rna-ENST00000001.1"],1
+rna-enst00000002.1 ["ctgA%3A11000..19000"|"gff3tabix_canonical_tags"|"ENST00000002.1"|"rna-ENST00000002.1"],1
+rna-enst00000003.1 ["ctgA%3A21000..29000"|"gff3tabix_canonical_tags"|"ENST00000003.1"|"rna-ENST00000003.1"],1
+rna-enst00000004.1 ["ctgA%3A21000..29000"|"gff3tabix_canonical_tags"|"ENST00000004.1"|"rna-ENST00000004.1"],1
+rna-nm_000001.1 ["ctgA%3A1000..9000"|"gff3tabix_canonical_tags"|"NM_000001.1"|"rna-NM_000001.1"],1
+rna-nm_000002.1 ["ctgA%3A1000..9000"|"gff3tabix_canonical_tags"|"NM_000002.1"|"rna-NM_000002.1"],1
+rna-nm_000003.1 ["ctgA%3A31000..39000"|"gff3tabix_canonical_tags"|"NM_000003.1"|"rna-NM_000003.1"],1
+rna-nm_000004.1 ["ctgA%3A31000..39000"|"gff3tabix_canonical_tags"|"NM_000004.1"|"rna-NM_000004.1"],1
 rs1041740 ["contigA%3A11340..11341"|"volvox_test_vcf"|"rs1041740"],1 ["contigA%3A11340..11341"|"volvox_test_vcf_jexl"|"rs1041740"],2
 rs10432782 ["contigA%3A7569..7570"|"volvox_test_vcf"|"rs10432782"],1 ["contigA%3A7569..7570"|"volvox_test_vcf_jexl"|"rs10432782"],2
 rs112989936 ["contigA%3A10684..10685"|"volvox_test_vcf"|"rs112989936"],1 ["contigA%3A10684..10685"|"volvox_test_vcf_jexl"|"rs112989936"],2
