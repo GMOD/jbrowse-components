@@ -359,6 +359,21 @@ export default function stateModelFactory(
       const superContextMenuItems = self.contextMenuItems
       const superFeatureNarrowings = self.featureNarrowings
       return {
+        // A getter rather than the inline `isGeneLikeType(info.item.type)` the
+        // one caller in this file would need, because jbrowse-plugin-msaview
+        // reads it off the display. Inlining it (684142b329) took "Launch MSA
+        // view" out of the right-click menu on every gene track and nothing
+        // failed: the plugin still had contextMenuInfo and fetchFullFeature, its
+        // gate simply read undefined, and the menu still opened with the host's
+        // own items in it. pluginFacingDisplayApi.test.ts is the guard.
+        /**
+         * #getter
+         * whether the right-clicked feature is a gene, transcript or RNA
+         */
+        get isGeneLike() {
+          return isGeneLikeType(self.contextMenuInfo?.item.type)
+        },
+
         // "Show only genes" is a worker-side admission filter (see
         // featureAdmission.ts), so it is one of this display's narrowings —
         // otherwise a track showing only genes reports nothing is filtering it
@@ -439,7 +454,7 @@ export default function stateModelFactory(
         contextMenuItems() {
           const base = superContextMenuItems()
           const info = self.contextMenuInfo
-          return info && isGeneLikeType(info.item.type)
+          return info && this.isGeneLike
             ? [...base, collapseIntronsMenuItem(self, info)]
             : base
         },
