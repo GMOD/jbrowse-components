@@ -1,4 +1,8 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
+
 import createViewState from './createViewState.ts'
+
+import type { ThemeOptions } from '@mui/material'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
@@ -35,6 +39,7 @@ function makeSession(theme?: unknown) {
     setThemeName: (name: string) => void
     themeName: string
     themeOptions: { configTheme?: { palette?: Record<string, unknown> } }
+    getActiveThemeOptions: (name?: string) => ThemeOptions | undefined
     palette: { mode: string; primary: { main: string } }
   }
 }
@@ -75,4 +80,25 @@ test('setThemeMode returns to the default theme from a named one', () => {
   session.setThemeMode('dark')
   expect(session.themeName).toBe('default')
   expect(session.palette.mode).toBe('dark')
+})
+
+// The SVG export's half of the same slot. Every view's `renderToSvg` asks the
+// session for this and hands it to `wrapSvgExport` and to each display, both of
+// which treat it as a `configTheme` — so it has to carry the whole of what the
+// active theme is, and for `default` that includes the config slot the picker
+// entry is named after ("Default (from config)").
+//
+// Asserted as a whole-palette equality rather than a spot check: the claim is
+// that a figure is a picture of what is on screen, so the export must resolve
+// the colors the screen resolved. Before this, a host configuring
+// `primary.main` drew #123456 and exported the stock #0D233F.
+test('getActiveThemeOptions resolves to the palette the screen is drawing', () => {
+  const session = makeSession(customTheme)
+
+  for (const mode of ['light', 'dark'] as const) {
+    session.setThemeMode(mode)
+    expect(
+      resolvePalette({ configTheme: session.getActiveThemeOptions() }),
+    ).toEqual(session.palette)
+  }
 })

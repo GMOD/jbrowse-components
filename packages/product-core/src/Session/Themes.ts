@@ -13,6 +13,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui'
 import type { PaletteInput } from '@jbrowse/core/ui/palette'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel ThemeManagerSessionMixin
@@ -94,9 +95,32 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * non-serializable MUI theme), this is the plain options object every
          * view's SVG export threads into each display's `renderSvg`, which
          * rebuilds the theme via `createJBrowseTheme` outside React context.
+         *
+         * The `default` entry is spliced with the config `theme` slot, because
+         * the preset is only half of what that entry means — the picker calls it
+         * "Default (from config)" and `resolvePalette` merges the two for every
+         * other consumer. Returning the bare preset made `view.exportSvg()`
+         * silently drop a host's configured palette: a config setting
+         * `primary.main` drew `#123456` on screen and exported the stock
+         * `#0D233F`, with the export dialog reporting the theme it had not used.
+         * Every other named theme is a fixed preset that ignores config, which is
+         * the distinction this ternary keeps.
          */
         getActiveThemeOptions(name?: string) {
-          return this.allThemes()[name ?? this.themeName]
+          const themeName = name ?? this.themeName
+          const theme = this.allThemes()[themeName]
+          if (themeName !== 'default') {
+            return theme
+          }
+          // shallow over the palette, which is how `resolvePalette` spreads the
+          // same two — `mode` and `primary` are siblings there, so both levels
+          // have to survive
+          const configTheme = getConf(self.jbrowse, 'theme') as ThemeOptions
+          return {
+            ...theme,
+            ...configTheme,
+            palette: { ...theme?.palette, ...configTheme.palette },
+          }
         },
       }
     })
