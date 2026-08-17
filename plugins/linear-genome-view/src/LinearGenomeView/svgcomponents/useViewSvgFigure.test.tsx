@@ -267,22 +267,38 @@ test('draws the tracks, the header and the ruler at the reserved size', async ()
   expect(text('size')).toBe(`${width}x${svg.getAttribute('height')}`)
 })
 
-// The invariant that has no other way of being noticed: a figure's track bodies
-// are frozen at a moment in the past, while SVGView and SVGRowHeader re-derive
-// the ruler, the scalebar and the seams from the live model on any render they
-// get. A host re-rendering for its own reasons — this one draws a position
-// readout, as every example does — must not advance one half past the other.
+// A figure's track bodies are frozen at a moment in the past, while SVGView and
+// SVGRowHeader re-derive the ruler, the scalebar and the seams from the live
+// model on any render they get, so a host re-rendering for its own reasons —
+// this one draws a position readout, as every example does — must not advance
+// one half past the other.
+//
+// **This pins the property, not the mechanism, and the difference is worth
+// knowing before trusting it.** Two things hold the figure still: the `memo` in
+// `useViewSvgFigure`, and React Compiler, which `babel.config.cjs` runs over
+// every component in this repo and which memoizes the same tree on the same
+// unchanged props. So this passes with the `memo` deleted — while a consumer,
+// who gets `build:esm`'s plain tsc output with no compiler pass, would see the
+// ruler slide off its own features. What this catches is the other direction:
+// chrome that starts re-rendering on its own (an `observer` added to SVGRuler,
+// a prop that changes identity per render) defeats both at once.
 test('the drawn figure does not move when the host re-renders', async () => {
   const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
   const { svg, text } = await renderFigure(view)
   const before = svg().innerHTML
+  const offsetBefore = view.offsetPx
 
-  act(() => {
+  // `await act`, not a bare one: the re-render a mobx write provokes here is
+  // scheduled rather than synchronous, and asserting before it lands passes for
+  // no reason at all
+  await act(async () => {
     view.scrollTo(view.offsetPx + 137)
+    await Promise.resolve()
   })
 
-  // the host really did re-render against the new position...
-  expect(text('offset')).toBe(String(Math.round(view.offsetPx)))
+  // the view really moved, and the host really did re-render against it...
+  expect(view.offsetPx).toBe(offsetBefore + 137)
+  expect(text('offset')).toBe(String(view.offsetPx))
   // ...and the figure did not, so its ruler still describes its own bodies
   expect(svg().innerHTML).toBe(before)
 })

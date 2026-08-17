@@ -195,10 +195,18 @@ async function renderFigure(
 /**
  * The figure, frozen.
  *
- * `memo` is the whole point of this component existing rather than the JSX
- * living in the hook: it is what keeps the live half of the drawing (the ruler,
- * the scalebar, the seams, all of which re-read the model) from advancing past
- * the frozen half while a redraw is in flight.
+ * `memo` is what keeps the live half of the drawing (the ruler, the scalebar,
+ * the seams, all of which re-read the model) from advancing past the frozen half
+ * while a redraw is in flight — the snapshot is the only thing that may move it.
+ *
+ * **It looks redundant in this repo and is not, and the difference is the
+ * build.** `babel.config.cjs` runs React Compiler over every component here, so
+ * a re-render of this one with an unchanged `snapshot` reuses its whole memoized
+ * element tree and the chrome never re-runs — which is why taking the `memo` out
+ * fails no test in this repo. What ships is `build:esm`, plain `tsc` with no
+ * compiler pass, so a consumer's app re-renders this component on every parent
+ * render. Where it matters, this line is the only thing holding the two halves
+ * together.
  *
  * Both providers, as `wrapSvgExport` mounts for the file path, and for the same
  * reason: the chrome takes its colors from the Material UI theme and a
