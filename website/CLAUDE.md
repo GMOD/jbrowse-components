@@ -46,7 +46,22 @@ the tour was filmed in.
   height at the first frame, the last and its tallest in between. A tour grows
   the app and one frame has to serve every state.
 - **`cut` on a step takes the camera off for its wait.** Put it on the wait, not
-  on the click that starts it, or the click is off camera too.
+  on the click that starts it, or the click is off camera too. It is also how a
+  paste is filmed: `type` sends a config a keystroke at a time, and cutting it
+  leaves the box empty, then full.
+- **A tour that films a track being ADDED needs a config without that track.**
+  `doPasteConfigSubmit` rejects a `trackId` the session already holds rather
+  than merging it, so a tour filmed against the figures' config cannot add the
+  track the figures use. Its live link is then the better one of the two kinds:
+  a figure's opens the state it shows, a tour's opens the state it starts in.
+- **What it pastes has to be the page's own fence, and `check-paste-configs` is
+  the gate.** A film is the half nobody re-reads, so a reworded slot drifts one
+  way silently.
+- **Re-navigate after the drawer closes.** A widget takes ~400 px off the linear
+  view while it is open and an LGV keeps its bp-per-pixel across a resize, so
+  the window standing afterwards is wider than the one the session opened at.
+  Anything reading `dynamicBlocks` (a subgraph launch) then cuts a region the
+  spec never named, and it fails late, at whatever the next step anchors by id.
 - The tours stay on light tracks. A pileup under swiftshader blocks the main
   thread per animated frame until the click's own round trip throws.
 

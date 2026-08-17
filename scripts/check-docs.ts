@@ -98,6 +98,13 @@ const VALIDATORS: Validator[] = [
     argv: web('check-figure-refs.ts'),
   },
   {
+    // A tour that films a config being pasted is documenting the page only
+    // while its string and the page's fence are one text, and the film is the
+    // half nobody re-reads.
+    name: 'tour paste configs match a fence on their page',
+    argv: web('check-paste-configs.ts'),
+  },
+  {
     // Round-trips every `json addtrack`/`json addassembly` doc block through
     // the real `jbrowse add-track`/`add-assembly`.
     name: 'addtrack config/CLI blocks round-trip',

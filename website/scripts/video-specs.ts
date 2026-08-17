@@ -414,6 +414,26 @@ export const videoSpecs: VideoSpec[] = [
   },
 ]
 
+// The track configs a tour TYPES into the app, paired with the page that prints
+// them, for `check-paste-configs`.
+//
+// A tour that films a config being pasted documents the page only while the two
+// texts are one text, and nothing about either makes them so: the tour's is a
+// template literal in a spec module and the page's is a fence in markdown. A
+// reworded `name`, a rehosted `uri`, one slot added to the block a reader
+// copies — any of those moves one copy and leaves the other filming a config
+// the page no longer prints, and the film is the half nobody re-reads.
+//
+// A tour reading its config through ECOLI_DEMO_BASE would need the check to
+// know that; none does yet, and the check says so rather than guessing.
+export const pastedTrackConfigs = [
+  {
+    video: 'pangenome/hprc_end_to_end',
+    doc: 'tutorials/pangenome_hprc.md',
+    json: HPRC_SEGMENTS_TRACK_JSON,
+  },
+]
+
 // video name -> the live session the tour was filmed in, so a reader who has
 // just watched the route taken can take it themselves.
 //

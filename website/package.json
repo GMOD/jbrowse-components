@@ -40,6 +40,7 @@
     "check-specs": "node scripts/check-specs.ts",
     "check-live-configs": "node scripts/check-live-configs.ts",
     "check-figure-refs": "node scripts/check-figure-refs.ts",
+    "check-paste-configs": "node scripts/check-paste-configs.ts",
     "check-config-cli": "node scripts/check-config-cli.ts",
     "check-config-blocks": "node scripts/check-config-blocks.ts",
     "check-session-urls": "node scripts/check-session-urls.ts",
