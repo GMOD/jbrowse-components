@@ -24,13 +24,33 @@ re-proposing it.
 — including the results that came out negative, which is most of its value. The
 `reference/` doc stays the record, so a new number lands here first.
 
-**Publish the table, don't retype it.** Tag it `<!-- measurement: <id> -->` and
-put `<!-- BEGIN GENERATED MEASUREMENT <id> -->` / `END` on the public page;
-`pnpm autogen` fills it and `--check` fails on drift. The table travels whole —
-there is no row or column filter, deliberately, so where one reads badly in
-public fix the header here. Both directions are errors: a block naming no
-measurement, and a tagged table no page publishes. **The publishing page must
-also link this doc**, or the reader gets a table and no measurement.
+**A measurement is a record, and every table showing it is generated.** Write
+`agent-docs/measurements/<id>.json` — the values, the `measured` date and the
+`source.repro` that takes them again, none of them optional — then bracket
+`<!-- BEGIN GENERATED MEASUREMENT <id> -->` / `END` here AND on the public page.
+`pnpm autogen` fills both and `--check` fails on drift. Don't hand-edit between
+the markers; edit the record.
+
+- **A column that is arithmetic over other columns is `derived`**, not typed:
+  `"derived": "unpooledMs / pooledMs"`. Re-measuring one arm then moves the
+  ratio beside it, which is what five typed-out speedups could not do.
+- **`source.kind` is `bench`, `jb2bench` or `hand`.** `hand` says only a human
+  can refresh these values; `pnpm measurement-tables` prints how many are still
+  in that state, and the number should go down. A `jb2bench` record names the
+  file under `~/src/jb2bench` it came from.
+- The table travels whole — no row or column filter, deliberately — so where one
+  reads badly in public, fix the record.
+- Both directions are errors: a block naming no record, and a record no doc
+  publishes. **The publishing page must also link this doc**, or the reader gets
+  a table and no measurement.
+
+**Quote a cell instead of retyping it**:
+`<!--m:bgzf-pool-tabix.speedup.range-->1.34-1.46x<!--/m-->`, either
+`<id>.<row>.<column>` or `<id>.<column>.<min|max|span|range|first|last>`. Prose
+restating a figure from the table above it is the one staleness no checker can
+see — the old value is still in the doc it was copied from, so
+`check-quoted-figures` passes. All three conversions were live, and the range
+above already disagreed with its own column.
 
 The prose around those tables is checked too, by `check-quoted-figures.ts`:
 every `<number><unit>` a public measurement page writes has to appear in an

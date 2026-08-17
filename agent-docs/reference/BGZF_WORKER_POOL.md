@@ -53,7 +53,8 @@ record count on every run.
 
 <!-- END GENERATED MEASUREMENT bgzf-pool-tabix -->
 
-So **1.35-1.45x on a big multi-sample VCF**, against 1.95x for BAM.
+So **<!--m:bgzf-pool-tabix.speedup.range-->1.34-1.46x<!--/m--> on a big
+multi-sample VCF**, against 1.95x for BAM.
 
 ## Why tabix gets less than BAM
 

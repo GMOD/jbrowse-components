@@ -5,6 +5,7 @@ import {
   loadMeasurements,
   parseMeasurement,
   renderTable,
+  resolveReference,
   resolveRow,
 } from './measurements.ts'
 
@@ -293,6 +294,79 @@ describe('rendering', () => {
       '21,506',
       '20,505',
     ])
+  })
+})
+
+describe('quoting one value from prose', () => {
+  const records = new Map([
+    [
+      'demo',
+      parse({
+        columns: [
+          { key: 'case', label: 'case' },
+          { key: 'before', label: 'before', format: 'ms' },
+          { key: 'after', label: 'after', format: 'ms' },
+          {
+            key: 'speedup',
+            label: 'speedup',
+            format: 'x',
+            derived: 'before/after',
+          },
+        ],
+        rows: [
+          { values: { case: '50kb window', before: 800, after: 400 } },
+          { values: { case: '12 x 20kb pan', before: 900, after: 600 } },
+        ],
+      }),
+    ],
+  ])
+  const ref = (r: string) => resolveReference(records, r)
+
+  it('quotes one cell by row and column', () => {
+    expect(ref('demo.50kb-window.before')).toBe('800ms')
+  })
+
+  it('slugifies a row name the way a reader would write it', () => {
+    expect(ref('demo.12-x-20kb-pan.after')).toBe('600ms')
+  })
+
+  it('quotes a derived cell at the column precision', () => {
+    expect(ref('demo.12-x-20kb-pan.speedup')).toBe('1.50x')
+  })
+
+  it.each([
+    ['demo.speedup.min', '1.50x'],
+    ['demo.speedup.max', '2.00x'],
+    ['demo.before.first', '800ms'],
+    ['demo.before.last', '900ms'],
+    ['demo.before.span', '100ms'],
+  ])('aggregates %s', (r, want) => {
+    expect(ref(r)).toBe(want)
+  })
+
+  // One unit, shared, so the result is the single range `quotedFigures` parses
+  // — `1.50-2.00x`, never `1.50x-2.00x`.
+  it('renders a range with the unit written once', () => {
+    expect(ref('demo.speedup.range')).toBe('1.50-2.00x')
+  })
+
+  it.each([
+    ['demo.nope.before', /has no row "nope"/],
+    ['demo.50kb-window.nope', /has no column "nope"/],
+    ['nothing.a.b', /names no measurement "nothing"/],
+    ['demo.before', /is not <id>/],
+    ['demo.nope.min', /has no column "nope"/],
+  ])('reports %s', (r, pattern) => {
+    expect(() => ref(r)).toThrow(pattern)
+  })
+
+  it('refuses to quote an absent cell', () => {
+    const withGap = new Map([
+      ['demo', parse({ rows: [{ values: { case: 'a', before: null } }] })],
+    ])
+    expect(() => resolveReference(withGap, 'demo.a.before')).toThrow(
+      /absent cell/,
+    )
   })
 })
 

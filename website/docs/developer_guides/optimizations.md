@@ -404,8 +404,9 @@ Between two related genomes an alignment joins nearby coordinates, so its extent
 is about as wide as the alignment itself and a handful of them cover any pixel.
 In an all-vs-all comparison an alignment can join anything to anything, half the
 extents span the canvas, the index returns all of them, and each one costs a
-projection and a test. 12.5 ms fits inside a 16 ms frame and leaves nothing for
-anything else, so the hover feels sluggish. The
+projection and a test.
+<!--m:synteny-pick-random.1-10k.warmPickMs-->12.5ms<!--/m--> fits inside a 16 ms
+frame and leaves nothing for anything else, so the hover feels sluggish. The
 [measurement page](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_PICKING.md)
 also records what is not worth trying against it.
 

@@ -40,17 +40,22 @@ check by fixing the manifest, not by removing a skip.
   tested source. `sync-doc-snippets --check` ratchets un-included fences, so
   convert one and lower `DOC_FENCE_BASELINE`. The marker fills an existing
   fence, so write an empty one under it first.
-- **Never retype a measurement table out of `agent-docs`** — tag the source
-  `<!-- measurement: <id> -->` and bracket the copy with
-  `<!-- BEGIN GENERATED MEASUREMENT <id> -->` / `END` (`sync-measurements.ts`).
-  The whole table comes across; a page wanting fewer rows is a page arguing with
-  the doc that owns the number. **Link the doc you published the table from** —
-  `sync-measurements` requires it, because a table with no link back hands the
-  reader a figure and no measurement.
-- **Don't restate a number the page already carries.** `72%` beside a published
-  `28%`, or `200x` off a `0.005` in the table above it, is arithmetic that goes
-  stale the next time the table is regenerated and nothing will say so. Say what
-  the table cannot.
+- **Never retype a measurement table out of `agent-docs`** — bracket the copy
+  with `<!-- BEGIN GENERATED MEASUREMENT <id> -->` / `END`
+  (`sync-measurements.ts`). It comes from `agent-docs/measurements/<id>.json`
+  through the doc that owns it, so a number here is three generators away from
+  the run that produced it and typed nowhere. The whole table comes across; a
+  page wanting fewer rows is a page arguing with the doc that owns the number.
+  **Link the doc you published the table from** — `sync-measurements` requires
+  it, because a table with no link back hands the reader a figure and no
+  measurement.
+- **Don't restate a number the page already carries** — quote the cell:
+  `<!--m:synteny-pick-random.1-10k.warmPickMs-->12.5ms<!--/m-->`, resolved by
+  `sync-inline-figures`. `72%` beside a published `28%`, or `200x` off a `0.005`
+  in the table above it, is arithmetic that goes stale the next time the table
+  is regenerated, and `check-quoted-figures` cannot catch it because the old
+  value is still in the doc it was copied from. Better still, say what the table
+  cannot.
 - Having a measurement block opts the page into `check-quoted-figures`, which
   requires every `<number><unit>` in its prose to appear in an agent-doc **the
   page links** or in the JSDoc of an **exported symbol the page names**. Both

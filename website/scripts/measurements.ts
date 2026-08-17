@@ -442,6 +442,113 @@ export function resolveRow(
   return out
 }
 
+// ## Referencing one value from prose
+//
+// `bgzf-pool-tabix.speedup.range`, `synteny-pick-random.1-10k.warmPickMs`.
+// `sync-inline-figures` splices these into the docs; this resolves one.
+//
+// The failure they exist for is prose restating a cell from the table directly
+// above it — "12.5ms is inside a 16ms frame", "203 KB gzipped and 166 chunks
+// were reachable and never used". Both were true when written, neither moves
+// when the table is regenerated, and `check-quoted-figures` cannot see it: the
+// stale figure still occurs in a doc the page links, because it is still in
+// last run's copy of the same number somewhere else.
+const AGGREGATES = new Set(['min', 'max', 'span', 'range', 'first', 'last'])
+
+function aggregate(
+  measurement: Measurement,
+  column: Column,
+  kind: string,
+): string {
+  const values = measurement.rows
+    .map(row => resolveRow(measurement, row)[column.key])
+    .filter(v => typeof v === 'number')
+  if (values.length === 0) {
+    throw new Error(
+      `${measurement.id}.${column.key} has no numeric values to take a ${kind} of`,
+    )
+  }
+  const derived = !!column.derived
+  const one = (v: number) => formatValue(v, column, { derived })
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  switch (kind) {
+    case 'min': {
+      return one(min)
+    }
+    case 'max': {
+      return one(max)
+    }
+    case 'first': {
+      return one(values[0]!)
+    }
+    case 'last': {
+      return one(values.at(-1)!)
+    }
+    case 'span': {
+      return one(max - min)
+    }
+    default: {
+      // One unit, shared, so the result parses as the single range
+      // `check-quoted-figures` reads — `1.34-1.46x`, not `1.34x-1.46x`.
+      const hi = one(max)
+      const lo = one(min)
+      const unit = hi.slice(hi.search(/[^\d,.]/))
+      return `${lo.slice(0, lo.length - unit.length)}-${hi}`
+    }
+  }
+}
+
+/**
+ * The rendered text for a `<id>.<…>` reference.
+ *
+ * Two shapes, told apart by whether the last segment names an aggregate:
+ * `<id>.<column>.<min|max|span|range|first|last>` over a whole column, and
+ * `<id>.<row>.<column>` for one cell.
+ */
+export function resolveReference(
+  records: Map<string, Measurement>,
+  ref: string,
+): string {
+  const [id, second, third] = ref.split('.')
+  if (!id || !second || !third || ref.split('.').length !== 3) {
+    throw new Error(
+      `"${ref}" is not <id>.<row>.<column> or <id>.<column>.<aggregate>`,
+    )
+  }
+  const measurement = records.get(id)
+  if (!measurement) {
+    throw new Error(`"${ref}" names no measurement "${id}"`)
+  }
+  const column = measurement.columns.find(c => c.key === third)
+  if (AGGREGATES.has(third)) {
+    const over = measurement.columns.find(c => c.key === second)
+    if (!over) {
+      throw new Error(`"${ref}": ${id} has no column "${second}"`)
+    }
+    return aggregate(measurement, over, third)
+  }
+  if (!column) {
+    throw new Error(
+      `"${ref}": ${id} has no column "${third}" (and "${third}" is not one of ${[...AGGREGATES].join(', ')})`,
+    )
+  }
+  const row = measurement.rows.find(r => rowKey(measurement, r) === second)
+  if (!row) {
+    throw new Error(
+      `"${ref}": ${id} has no row "${second}" — its rows are ${measurement.rows
+        .map(r => rowKey(measurement, r))
+        .join(', ')}`,
+    )
+  }
+  const value = resolveRow(measurement, row)[column.key]
+  if (value === null || value === undefined) {
+    throw new Error(`"${ref}" is an absent cell — there is no figure to quote`)
+  }
+  const format = row.format ? { ...column, format: row.format } : column
+  return formatValue(value, format, { derived: !!column.derived })
+}
+
 /** The row addressed by `key`: its first column's value, slugified. */
 export function rowKey(measurement: Measurement, row: Row): string {
   const first = measurement.columns[0]!

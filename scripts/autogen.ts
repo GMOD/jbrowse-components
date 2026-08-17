@@ -196,6 +196,15 @@ const GENERATORS: Generator[] = [
     argv: web('sync-measurements.ts'),
   },
   {
+    // The single values a sentence quotes out of one of those tables, spliced
+    // in place. The table generators above cannot see this failure: prose
+    // restating a cell goes stale when the table is regenerated, and
+    // `check-quoted-figures` still finds the old figure in the doc it was
+    // copied from. One of the three was already wrong when converted.
+    name: 'inline figures',
+    argv: web('sync-inline-figures.ts'),
+  },
+  {
     // The ten `<!-- TABLE START -->` blocks spliced into the hand-written
     // guides and agent-docs. One entry, not ten: each was its own `node`
     // process paying ~2.5s to load TypeScript before scanning, and gendocs
