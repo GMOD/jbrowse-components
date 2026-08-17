@@ -1444,9 +1444,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // 870 (pre-sequence-track) cut the last wolf row's block against the frame.
     // The variant lane is a band inside the matrix rather than the separate 60px
     // track it replaced, so the stack lost that track's height and the rows
-    // divide what is left — the run has room to spare here rather than the 13.5
-    // css px it used to report.
-    viewportHeight: 1024,
+    // divide what is left. 1024 then left 73 css px of blank below the app, which
+    // the card cropped through as well while it came off this figure; this is
+    // that number taken off, and the run reports 0.
+    viewportHeight: 951,
     // The sequence track puts CGA and its Arg on screen; `colorByCDS` above is
     // what says which of the three forward frames it is read in (the third,
     // codons beginning at positions == 1 mod 3 here from the exon's phase-2
