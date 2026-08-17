@@ -1,3 +1,4 @@
+import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import {
   getAlignmentsLegendSections,
@@ -15,7 +16,6 @@ function legendFor(
   categories: ReadColorCategory[],
   rest?: {
     detectedModifications?: Map<string, string>
-    colorTagMap?: Record<string, string>
     presentTagValues?: ReadonlySet<string>
     presentModifications?: ReadonlySet<string>
     chainFramed?: boolean
@@ -41,12 +41,9 @@ function labels(
 
 function tagLabels(
   colorBy: { type: 'tag'; tag: string },
-  colorTagMap?: Record<string, string>,
   presentTagValues?: ReadonlySet<string>,
 ) {
-  return legendFor(colorBy, ['tag'], { colorTagMap, presentTagValues }).map(
-    i => i.label,
-  )
+  return legendFor(colorBy, ['tag'], { presentTagValues }).map(i => i.label)
 }
 
 describe('getReadDisplayLegendItems', () => {
@@ -235,32 +232,44 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('value tag scheme lists discovered tag values sorted, colored from the map', () => {
-    expect(
-      tagLabels({ type: 'tag', tag: 'HP' }, { '2': 'blue', '1': 'red' }),
-    ).toEqual(['1', '2'])
-    // empty until reads with the tag load
-    expect(tagLabels({ type: 'tag', tag: 'HP' }, {})).toEqual([])
+  test('value tag scheme lists the values on screen, sorted', () => {
+    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set(['2', '1']))).toEqual([
+      '1',
+      '2',
+    ])
+    // empty until reads carrying the tag are laid out
+    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set())).toEqual([])
     expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
   })
 
-  test('value tag swatch colors come straight from colorTagMap', () => {
+  // The swatch resolves through the same `bakedValueColor` the paint path runs
+  // per read, so it is the color drawn rather than a second table agreeing with
+  // it. There used to be that second table (`colorTagMap`).
+  test('value tag swatches are the color the reads are painted', () => {
     const items = legendFor({ type: 'tag', tag: 'HP' }, ['tag'], {
-      colorTagMap: { '1': 'red', '2': 'blue' },
+      presentTagValues: new Set(['1', '2']),
     })
     expect(items).toEqual([
-      { color: 'red', label: '1' },
-      { color: 'blue', label: '2' },
+      { color: bakedValueColor({ type: 'tag', tag: 'HP' }, '1'), label: '1' },
+      { color: bakedValueColor({ type: 'tag', tag: 'HP' }, '2'), label: '2' },
+    ])
+  })
+
+  // The worker reports the empty string for a read the tag is absent from, so
+  // it rides in on `presentTagValues` — and must not become a nameless swatch.
+  // `noTagValue` is what keys that neutral, under a name.
+  test('the no-value reads do not open a blank row', () => {
+    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set(['1', '']))).toEqual([
+      '1',
     ])
   })
 
   test('strand-encoding tags (XS/TS/ts) show the strand key, not a value list', () => {
-    // just the two strand keys; untagged reads fall back to the neutral color
-    // with no legend swatch of its own
-    expect(tagLabels({ type: 'tag', tag: 'ts' }, { foo: 'red' })).toEqual([
-      'Forward strand',
-      'Reverse strand',
-    ])
+    // A value these tags do not encode opens no row of its own — the pair IS
+    // the key. It does count as unstranded, which is the neutral row below.
+    expect(
+      tagLabels({ type: 'tag', tag: 'ts' }, new Set(['foo'])),
+    ).not.toContain('foo')
     expect(tagLabels({ type: 'tag', tag: 'XS' })).toEqual([
       'Forward strand',
       'Reverse strand',
@@ -290,9 +299,10 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('…and omits it when every read on screen carries a strand', () => {
-    expect(
-      tagLabels({ type: 'tag', tag: 'XS' }, {}, new Set(['+', '-'])),
-    ).toEqual(['Forward strand', 'Reverse strand'])
+    expect(tagLabels({ type: 'tag', tag: 'XS' }, new Set(['+', '-']))).toEqual([
+      'Forward strand',
+      'Reverse strand',
+    ])
     // undefined is "the caller can't tell", which stays silent rather than
     // guessing a row on
     expect(tagLabels({ type: 'tag', tag: 'XS' })).toEqual([
@@ -319,51 +329,55 @@ describe('getReadDisplayLegendItems', () => {
   test('the unvalued bucket is named for the scheme that produced it', () => {
     expect(
       legendFor({ type: 'tag', tag: 'HP' }, ['tag', 'noTagValue'], {
-        colorTagMap: { '1': 'red' },
+        presentTagValues: new Set(['1']),
       }).map(i => i.label),
     ).toEqual(['1', 'No HP value'])
     expect(
       legendFor({ type: 'mateRefName' }, ['tag', 'noTagValue'], {
-        colorTagMap: { ctgA: 'red' },
+        presentTagValues: new Set(['ctgA']),
       }).map(i => i.label),
     ).toEqual(['ctgA', 'No mate'])
   })
 
   test('the unvalued bucket is omitted when every read resolved a color', () => {
-    expect(tagLabels({ type: 'tag', tag: 'HP' }, { '1': 'red' })).not.toContain(
+    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set(['1']))).not.toContain(
       'No HP value',
     )
   })
 
   // Chromosome painting rides the same CPU-baked color path as tag coloring, so
-  // it keys the discovered mate refNames. It listed nothing at all before.
-  test('chromosome painting keys each discovered mate refName', () => {
+  // it keys the mate refNames on screen. It listed nothing at all before.
+  test('chromosome painting keys each mate refName in view', () => {
     expect(
       legendFor({ type: 'mateRefName' }, ['tag'], {
-        colorTagMap: { ctgB: 'blue', ctgA: 'red' },
+        presentTagValues: new Set(['ctgB', 'ctgA']),
       }),
     ).toEqual([
-      { color: 'red', label: 'ctgA' },
-      { color: 'blue', label: 'ctgB' },
+      {
+        color: bakedValueColor({ type: 'mateRefName' }, 'ctgA'),
+        label: 'ctgA',
+      },
+      {
+        color: bakedValueColor({ type: 'mateRefName' }, 'ctgB'),
+        label: 'ctgB',
+      },
     ])
   })
 
-  // colorTagMap only ever grows — cleared when the scheme changes, never on
-  // navigation — so on its own it keyed every value the track had ever seen.
-  // Panning to a region whose reads all mate to ctgA still listed ctgB.
-  test('baked-value swatches are narrowed to the values on screen', () => {
+  // The values on screen are the whole list now. They used to be intersected
+  // with `colorTagMap`, which only ever grew — cleared when the scheme changed,
+  // never on navigation — so panning to a region whose reads all mate to ctgA
+  // still listed ctgB until the narrowing was bolted on.
+  test('baked-value swatches are exactly the values on screen', () => {
     expect(
       legendFor({ type: 'mateRefName' }, ['tag'], {
-        colorTagMap: { ctgA: 'red', ctgB: 'blue' },
         presentTagValues: new Set(['ctgA']),
-      }),
-    ).toEqual([{ color: 'red', label: 'ctgA' }])
+      }).map(i => i.label),
+    ).toEqual(['ctgA'])
     // the empty set is a real state: the scheme has values, none are drawn
-    expect(
-      tagLabels({ type: 'tag', tag: 'HP' }, { '1': 'red' }, new Set()),
-    ).toEqual([])
-    // undefined is "the caller can't tell" and leaves the list alone
-    expect(tagLabels({ type: 'tag', tag: 'HP' }, { '1': 'red' })).toEqual(['1'])
+    expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set())).toEqual([])
+    // undefined is "the caller can't tell", which keys none
+    expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
   })
 
   test('mapping quality is a fixed ramp regardless of present buckets', () => {

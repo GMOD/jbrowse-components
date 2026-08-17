@@ -1,10 +1,14 @@
 import { getQueryColor } from '@jbrowse/core/ui/colors'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
+import { bakedValueColor } from './colorTagUtils.ts'
 import { buildReadTagColors, overlayReadTagColors } from './readTagColors.ts'
 import { makeEmptyPileupData } from './testUtils.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { ColorBy } from '../shared/types.ts'
+
+const TAG: ColorBy = { type: 'tag', tag: 'HP' }
 
 function pileupWith(readTagValues: string[]): PileupDataResult {
   return {
@@ -21,7 +25,7 @@ const packed = (color: string) => {
 
 describe('mateRefName (chromosome painting) colors', () => {
   const build = (names: string[]) =>
-    buildReadTagColors(pileupWith(names), { type: 'mateRefName' }, {})
+    buildReadTagColors(pileupWith(names), { type: 'mateRefName' })
 
   test('hashes each mate refName to its category10 color', () => {
     expect([...build(['chr1', 'chr2'])]).toEqual([
@@ -47,14 +51,24 @@ describe('mateRefName (chromosome painting) colors', () => {
 })
 
 describe('categorical tag colors', () => {
-  const build = (values: string[], map: Record<string, string>) =>
-    buildReadTagColors(pileupWith(values), { type: 'tag', tag: 'HP' }, map)
+  const build = (values: string[]) =>
+    buildReadTagColors(pileupWith(values), { type: 'tag', tag: 'HP' })
 
-  test('paints each value the color the map assigned', () => {
-    expect([...build(['1', '2'], { '1': 'red', '2': 'blue' })]).toEqual([
-      packed('red'),
-      packed('blue'),
+  // The color comes from the value itself (`bakedValueColor`), so a read paints
+  // the moment its value is known rather than once some earlier fetch had
+  // discovered it into a table.
+  test('paints each value the color its own value resolves', () => {
+    expect([...build(['1', '2'])]).toEqual([
+      packed(bakedValueColor(TAG, '1')),
+      packed(bakedValueColor(TAG, '2')),
     ])
+  })
+
+  // Nothing has to have seen the value before. Under the discovered-value map
+  // this packed 0 and the read painted the neutral fallback until the fetch
+  // that found it had assigned a color.
+  test('a value no earlier fetch saw still paints', () => {
+    expect([...build(['3'])]).toEqual([packed(bakedValueColor(TAG, '3'))])
   })
 
   // "No color", so the shader and the Canvas2D twin both fall back to
@@ -62,16 +76,14 @@ describe('categorical tag colors', () => {
   // fixed colorNeutralRead this used to pack) one that darkens with the theme
   // instead of leaving untagged reads brighter than their neighbours.
   test('a read the tag is absent from packs the palette fallback, not a strand color', () => {
-    expect([...build([''], { '1': 'red' })]).toEqual([0])
-    expect([...build(['3'], { '1': 'red' })]).toEqual([0])
+    expect([...build([''])]).toEqual([0])
   })
 })
 
 describe('overlayReadTagColors', () => {
   const overlay = (colorBy: Parameters<typeof overlayReadTagColors>[1]) =>
-    overlayReadTagColors(new Map([[0, pileupWith(['chr1'])]]), colorBy, {}).get(
-      0,
-    )!.readTagColors.length
+    overlayReadTagColors(new Map([[0, pileupWith(['chr1'])]]), colorBy).get(0)!
+      .readTagColors.length
 
   test('bakes colors for mateRefName', () => {
     expect(overlay({ type: 'mateRefName' })).toBe(1)

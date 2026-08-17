@@ -1,36 +1,9 @@
 import { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 import { tagColorPalette } from '@jbrowse/core/ui/palette'
 
-export const TAG_COLOR_PALETTE = tagColorPalette
+import type { ColorBy } from '../shared/types.ts'
 
-// Add any not-yet-seen value to the discovered value -> painted color map.
-// Object.hasOwn, not `!map[value]`: a tag value like 'toString' or 'constructor'
-// inherits a truthy value off Object.prototype, so the truthiness check would
-// skip assigning it a color and leave the read on the no-tag fallback.
-//
-// The clone is deferred to the first genuine addition. Callers only assign when
-// `added` is true (a no-op assignment would rebake every read's color), so an
-// eager `{ ...currentMap }` copied the whole map on every fetch that turned up
-// nothing new — which, once a track has been panned around a while, is most of
-// them.
-function addValues(
-  currentMap: Record<string, string>,
-  values: string[],
-  colorFor: (value: string) => string,
-) {
-  let map = currentMap
-  let added = false
-  for (const value of values) {
-    if (!Object.hasOwn(map, value)) {
-      if (!added) {
-        map = { ...currentMap }
-        added = true
-      }
-      map[value] = colorFor(value)
-    }
-  }
-  return { map, added }
-}
+export const TAG_COLOR_PALETTE = tagColorPalette
 
 // Palette slot for a tag value, derived from the VALUE rather than from the
 // order it was discovered in. Values stream in as regions load, so
@@ -56,22 +29,27 @@ function tagValueColor(value: string) {
   return TAG_COLOR_PALETTE[idx % n]!
 }
 
-// Color by tag: each value's color is a pure function of the value, so the same
-// tag paints the same way every session.
-export function updateColorTagMap(
-  currentMap: Record<string, string>,
-  tags: string[],
-) {
-  return addValues(currentMap, tags, tagValueColor)
-}
-
-// Chromosome painting (colorBy 'mateRefName'): each name hashes to its own
-// stable color through the same `getQueryColor` that `buildReadTagColors` bakes
-// into the reads and the synteny view uses for its Query mode, so the legend
-// swatch is the color painted.
-export function updateQueryNameColorMap(
-  currentMap: Record<string, string>,
-  names: string[],
-) {
-  return addValues(currentMap, names, getQueryColor)
+/**
+ * The color one CPU-baked value paints, for whichever scheme is active. The
+ * paint path (`buildReadTagColors`) and the legend's swatch list both resolve
+ * through this, so a swatch is the color drawn by construction.
+ *
+ * A pure function of the value, which is what lets the display hold no
+ * discovered-value map at all. There used to be one — `colorTagMap`, a volatile
+ * the fetch added to — and every rule around it existed to manage the cache
+ * rather than to decide a color: clear it when the scheme changes, do NOT clear
+ * it when the scheme is merely re-picked, assign only when a value was actually
+ * added or every already-loaded region rebakes, and narrow it at the legend
+ * because it never shrank on navigation. All four are gone with the map. The
+ * colors are unchanged: this is the same pair of functions the map's entries
+ * were filled from.
+ *
+ * Chromosome painting hashes through `getQueryColor` — the same one the synteny
+ * view's Query mode uses — and a tag value takes a palette slot. Both are
+ * stable across sessions, so a figure is reproducible from its session file.
+ */
+export function bakedValueColor(colorBy: ColorBy, value: string) {
+  return colorBy.type === 'mateRefName'
+    ? getQueryColor(value)
+    : tagValueColor(value)
 }

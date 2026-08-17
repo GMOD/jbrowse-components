@@ -9,6 +9,7 @@ import {
   unmethylated5mC,
 } from '@jbrowse/core/ui/palette'
 
+import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import {
   categorySwatchColor,
   rgb255,
@@ -707,28 +708,32 @@ function modificationLegend(
   ]
 }
 
-// One swatch per value of a CPU-baked scheme (tag values, or mate refNames under
-// chromosome painting) that the rendered reads actually carry, colored exactly
-// as painted — colorTagMap holds the same color buildReadTagColors bakes into
-// readTagColors. Sorted by value so the legend order stays stable as reads
-// stream in rather than reordering by discovery. Empty until reads carrying a
-// value load.
+// One swatch per value of a CPU-baked scheme (tag values, or mate refNames
+// under chromosome painting) that the rendered reads actually carry, colored
+// through the same `bakedValueColor` the paint path resolves each read with —
+// so a swatch is the color drawn by construction, rather than by a table both
+// sides agree to read. Sorted by value, so the order is a property of the
+// vocabulary rather than of which region streamed in first.
 //
-// `present` is what keeps this honest. colorTagMap only ever grows — it is
-// cleared when the scheme changes and never on navigation — so listing it whole
-// keyed every value the track had ever seen: pan to chr1 under chromosome
-// painting and the key still named chr7 and every scaffold visited on the way,
-// none of them on screen. Undefined means the caller can't tell (tests, and any
-// consumer without a laid-out map), in which case the unfiltered list is still
-// the best available answer.
+// The values are `presentTagValues` and nothing else. There used to be a second
+// source — `colorTagMap`, the display's discovered-value map — which this
+// intersected with, because that map only ever grew: pan to chr1 under
+// chromosome painting and the key still named chr7 and every scaffold visited
+// on the way. With the color a pure function of the value, the map has no
+// reason to exist and what is ON SCREEN is the whole answer.
+//
+// The empty string is what the worker reports for a read the scheme resolved no
+// value for (no mate, or the tag absent). It is dropped here for the same
+// reason `uniqueTagValues` drops it worker-side: it paints the neutral
+// fallback, which `noTagValue` keys under a name.
 function bakedValueLegend(
-  colorTagMap: Record<string, string>,
+  colorBy: ColorBy,
   present: ReadonlySet<string> | undefined,
 ): LegendItem[] {
-  return Object.entries(colorTagMap)
-    .filter(([value]) => present === undefined || present.has(value))
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([value, color]) => ({ color, label: value }))
+  return [...(present ?? [])]
+    .filter(value => value !== '')
+    .sort((a, b) => a.localeCompare(b))
+    .map(value => ({ color: bakedValueColor(colorBy, value), label: value }))
 }
 
 // XS/TS/ts encode strand rather than a categorical value, so they are keyed by
@@ -763,7 +768,6 @@ function schemeLegend(
   colorBy: ColorBy | undefined,
   palette: ColorPalette,
   detectedModifications: ReadonlyMap<string, string> | undefined,
-  colorTagMap: Record<string, string>,
   presentTagValues: ReadonlySet<string> | undefined,
   presentModifications: ReadonlySet<string> | undefined,
 ): LegendItem[] {
@@ -789,7 +793,7 @@ function schemeLegend(
     ]
   }
   if (colorType === 'tag' || colorType === 'mateRefName') {
-    return bakedValueLegend(colorTagMap, presentTagValues)
+    return bakedValueLegend(colorBy, presentTagValues)
   }
   if (colorType === 'mappingQuality') {
     // Ramp stops, not buckets: hue IS the score in degrees (categoryColor /
@@ -839,19 +843,17 @@ function schemeLegend(
  * set of read buckets seen in the rendered reads (from readColorCategory), so
  * only relevant swatches are listed, and `palette` is the live render palette so
  * swatch colors match the painted reads exactly. Modification swatches come from
- * `detectedModifications` (type code -> painted color); tag / chromosome-painting
- * swatches from `colorTagMap` (value -> painted color). Both of those maps only
- * ever grow, so both are narrowed to what the rendered reads carry —
- * `presentTagValues` and `presentModifications` — the way the fixed swatches
- * are narrowed by `presentCategories`; mapping/per-base quality are fixed hue
- * ramps.
+ * `detectedModifications` (type code -> painted color), narrowed by
+ * `presentModifications` because that map only ever grows. Tag /
+ * chromosome-painting swatches are `presentTagValues` itself, colored through
+ * the same pure function the reads are painted with; mapping/per-base quality
+ * are fixed hue ramps.
  */
 export function getReadDisplayLegendItems({
   colorBy,
   presentCategories,
   palette,
   detectedModifications,
-  colorTagMap = {},
   presentTagValues,
   presentModifications,
   chainFramed = false,
@@ -861,7 +863,6 @@ export function getReadDisplayLegendItems({
   presentCategories: ReadonlySet<ReadColorCategory>
   palette: ColorPalette
   detectedModifications?: ReadonlyMap<string, string>
-  colorTagMap?: Record<string, string>
   // Which overlap tint is on screen, or undefined for none — the display's
   // `overlapLegendKind`, which is the draw gate and a real overlap interval,
   // not just the layout. Last in the list because it modifies the colors above
@@ -872,9 +873,10 @@ export function getReadDisplayLegendItems({
   // Only the `strand` scheme's wording turns on it; every other scheme already
   // words fwd/rev as something other than the read's own strand.
   chainFramed?: boolean
-  // Values the rendered reads carry, for the CPU-baked schemes. Undefined means
-  // "not known here" and leaves colorTagMap unfiltered; the empty set means the
-  // scheme has values and none are on screen.
+  // Values the rendered reads carry, for the CPU-baked schemes — the display's
+  // `presentTagValues`, and the whole swatch list for those schemes. Undefined
+  // means "not known here" and keys none; the empty set means the scheme has
+  // values and none are on screen, which lists none either.
   presentTagValues?: ReadonlySet<string>
   // The same, for the modification types drawn on screen — the display's
   // `presentModifications`, off the marks rather than off the MM/ML parse.
@@ -895,7 +897,6 @@ export function getReadDisplayLegendItems({
       colorBy,
       palette,
       detectedModifications,
-      colorTagMap,
       presentTagValues,
       presentModifications,
     ),

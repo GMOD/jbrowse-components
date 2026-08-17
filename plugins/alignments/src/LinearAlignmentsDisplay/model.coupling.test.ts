@@ -133,43 +133,31 @@ describe('alignments display cross-feature coupling', () => {
   })
 })
 
-// colorTagMap holds the values discovered for whichever CPU-baked scheme is
-// active, and is both the paint source and the legend's swatch list. It only
-// goes stale when that scheme changes.
-describe('setColorScheme and the discovered-value map', () => {
-  test('a different scheme clears the map', () => {
+// `setColorScheme` used to also manage a discovered-value map: clear it when
+// the scheme changed, and — a second rule patching the first — NOT clear it
+// when the radio already showing was re-picked, since that refetches nothing
+// and an emptied map left the legend blank until the next pan. Both rules went
+// with the map, the value's colour being a pure function of the value
+// (`colorTagUtils.test.ts` pins that, including the one thing that is not: the
+// scheme picks which function runs). What has to survive is that re-picking the
+// scheme in use is still inert.
+describe('setColorScheme', () => {
+  test('re-picking the scheme in use changes nothing', () => {
+    const display = createDisplay()
+    display.setColorScheme({ type: 'mateRefName' })
+    const before = display.readColorContext
+
+    display.setColorScheme({ type: 'mateRefName' })
+    expect(display.readColorContext).toStrictEqual(before)
+  })
+
+  test('a different scheme reaches the bake', () => {
     const display = createDisplay()
     display.setColorScheme({ type: 'tag', tag: 'HP' })
-    display.updateColorTagMap(['1', '2'])
-    expect(Object.keys(display.colorTagMap)).toEqual(['1', '2'])
+    const before = display.readColorContext
 
     display.setColorScheme({ type: 'tag', tag: 'RG' })
-    expect(display.colorTagMap).toEqual({})
-  })
-
-  // Re-picking the radio already showing writes the same value, so nothing
-  // refetches — clearing the map here left the legend blank until the next pan.
-  test('re-picking the scheme in use keeps the map', () => {
-    const display = createDisplay()
-    display.setColorScheme({ type: 'mateRefName' })
-    display.updateColorTagMap(['ctgA'])
-    expect(Object.keys(display.colorTagMap)).toEqual(['ctgA'])
-
-    display.setColorScheme({ type: 'mateRefName' })
-    expect(Object.keys(display.colorTagMap)).toEqual(['ctgA'])
-  })
-
-  // Chromosome painting hashes names through getQueryColor rather than taking
-  // the next palette slot, so the legend swatch matches the painted read.
-  test('chromosome painting colors names by hash, tag values by palette slot', () => {
-    const display = createDisplay()
-    display.setColorScheme({ type: 'mateRefName' })
-    display.updateColorTagMap(['ctgA'])
-    const hashed = display.colorTagMap.ctgA
-
-    display.setColorScheme({ type: 'tag', tag: 'RG' })
-    display.updateColorTagMap(['ctgA'])
-    expect(display.colorTagMap.ctgA).not.toBe(hashed)
+    expect(display.readColorContext).not.toStrictEqual(before)
   })
 })
 
@@ -1033,7 +1021,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const beforeLayout = display.laidOutByGroupUncolored
     const before = region0(display)
 
-    display.updateColorTagMap(['1'])
+    display.setColorScheme({ type: 'tag', tag: 'HP' })
 
     const after = region0(display)
     // Layout memoized across the recolor…

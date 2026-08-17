@@ -152,7 +152,7 @@ function layoutOneGroup(
 // classification.
 export interface ReadColorContext {
   colorBy: ColorBy | undefined
-  colorTagMap: Record<string, string>
+
   colorScheme: number
   readColorOpts: ReadColorOpts
 }
@@ -179,7 +179,7 @@ export function applyReadColorsByGroup(
     out.set(
       key,
       overlayReadColorCategories(
-        overlayReadTagColors(map, ctx.colorBy, ctx.colorTagMap),
+        overlayReadTagColors(map, ctx.colorBy),
         ctx.colorScheme,
         ctx.readColorOpts,
       ),

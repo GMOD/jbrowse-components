@@ -79,10 +79,6 @@ import {
 } from '../shared/types.ts'
 import { getColorForModification } from '../util.ts'
 import {
-  updateColorTagMap as updateColorTagMapPure,
-  updateQueryNameColorMap,
-} from './colorTagUtils.ts'
-import {
   READ_COLOR_CATEGORY_BY_INDEX,
   framesUnpairedChainStrand,
 } from './colorUtils.ts'
@@ -597,9 +593,6 @@ export default function stateModelFactory(
         },
       }))
       .volatile(() => {
-        // typed local so the empty record isn't inferred as `{}` (a type assertion
-        // here gets stripped by no-unnecessary-type-assertion)
-        const colorTagMap: Record<string, string> = {}
         return {
           /**
            * #volatile
@@ -704,7 +697,6 @@ export default function stateModelFactory(
            * #volatile
            */
 
-          colorTagMap,
           /**
            * #volatile
            */
@@ -1350,13 +1342,12 @@ export default function stateModelFactory(
          * #getter
          * The per-read values the CPU-baked schemes actually painted in the
          * rendered reads — tag values, or mate refNames under chromosome
-         * painting. `colorTagMap` cannot answer this: it only ever grows (it is
-         * cleared solely when the scheme changes), so after panning it holds
-         * every value the track has ever seen, and keying the legend straight
-         * off it listed swatches for a chromosome the user navigated away from.
-         * The presence filter every other scheme gets through
-         * `colorLegendCategories`, for the one vocabulary that isn't a fixed
-         * category set.
+         * painting. The whole swatch list for those schemes, since their color
+         * is a pure function of the value (`bakedValueColor`) and so needs no
+         * discovered-value table to look up. It replaced one: `colorTagMap`
+         * only ever grew, so after panning it held every value the track had
+         * ever seen and keyed swatches for a chromosome the user had navigated
+         * away from.
          *
          * `undefined` for schemes with no such values, which is what tells the
          * legend not to filter — distinct from the empty set, which means the
@@ -1532,7 +1523,6 @@ export default function stateModelFactory(
               : this.colorLegendCategories,
             palette: this.colorPalette,
             detectedModifications: this.detectedModifications,
-            colorTagMap: self.colorTagMap,
             presentTagValues: this.presentTagValues,
             presentModifications: this.presentModifications,
             chainFramed: framesUnpairedChainStrand(
@@ -1702,7 +1692,7 @@ export default function stateModelFactory(
          * recolor, and because the overlay spreads its input, `readYs` survives
          * with it — which is the token the GPU renderer's upload memo reads to
          * rewrite only the read pass. Tag colors are baked here rather than in
-         * the worker so `colorTagMap` stays a main-thread tier-2 setting (see
+         * the worker so tag coloring stays a main-thread tier-2 setting (see
          * readTagColors).
          */
         get laidOutByGroup() {
@@ -1742,7 +1732,6 @@ export default function stateModelFactory(
         get readColorContext() {
           return {
             colorBy: this.colorBy,
-            colorTagMap: self.colorTagMap,
             colorScheme: colorSchemeIndexFor(this.colorBy.type),
             readColorOpts: this.readColorOpts,
           }
@@ -3100,9 +3089,9 @@ export default function stateModelFactory(
         // NOT here — they are tracked by the arcsRpcDataMap computed
         // getter and do not require a refetch. Non-tag sort changes are
         // handled main-thread by laidOutPileupMap, as is tag coloring
-        // (colorTagMap is baked into readTagColors in laidOutPileupMap, so it
-        // is intentionally NOT in rpcProps — putting it here would re-create
-        // the discover→assign→refetch feedback loop).
+        // (readTagColors is baked in laidOutPileupMap from the per-read value
+        // strings the worker already ships, so no discovered-value state exists
+        // to put here and re-create the discover→assign→refetch loop with).
         //
         // Lives in its own views block, after every field it reads, so it can
         // read them off `self`: a subclass overriding it captures the base as a
@@ -3302,36 +3291,7 @@ export default function stateModelFactory(
            * #action
            */
           setColorScheme(colorBy: ColorBy) {
-            const current = self.colorBy
-            // colorTagMap holds discovered values for whichever CPU-baked
-            // scheme is active, so it only goes stale when that scheme (or the
-            // tag it reads) changes. Re-picking the scheme already showing must
-            // not clear it: setConf writes the same value, so nothing refetches
-            // and the emptied map would leave the legend blank until the next
-            // pan.
-            const sameValues =
-              colorBy.type === current.type &&
-              (colorBy.type !== 'tag' || colorBy.tag === current.tag)
-            if (!sameValues) {
-              self.colorTagMap = {}
-            }
             setConf(self, 'colorBy', colorBy)
-          },
-
-          /**
-           * #action
-           */
-          updateColorTagMap(uniqueTag: string[]) {
-            const { map, added } =
-              self.colorBy.type === 'mateRefName'
-                ? updateQueryNameColorMap(self.colorTagMap, uniqueTag)
-                : updateColorTagMapPure(self.colorTagMap, uniqueTag)
-            // Only assign when a value was actually added: colorTagMap is read
-            // by laidOutPileupMap, so a no-op assignment would needlessly
-            // re-bake readTagColors.
-            if (added) {
-              self.colorTagMap = map
-            }
           },
 
           /**
@@ -4144,23 +4104,6 @@ export default function stateModelFactory(
               for (const r of results) {
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
-              // newTagValues are discovered per group; union across every group
-              // of every region so colorTagMap covers each section's reads —
-              // and so this is ONE action. Called per region it was one action
-              // per region, and each one assigns colorTagMap, which invalidates
-              // laidOutByGroup and rebakes the read colors of every region
-              // already loaded. A pan that turned up new values in three
-              // regions paid that three times.
-              const tagValues = results.flatMap(r =>
-                r.result.groups.flatMap(g => g.data.newTagValues ?? []),
-              )
-              if (tagValues.length > 0) {
-                self.updateColorTagMap(tagValues)
-              }
-              // Assigning colorTagMap (above) re-runs laidOutByGroup, which
-              // bakes readTagColors on the main thread — no refetch needed, so
-              // there is no feedback loop. Order vs setRpcData no longer
-              // matters: the layout getter recomputes on either.
               for (const [displayedRegionIndex, data] of newDataMap) {
                 self.setRpcData(displayedRegionIndex, data)
               }

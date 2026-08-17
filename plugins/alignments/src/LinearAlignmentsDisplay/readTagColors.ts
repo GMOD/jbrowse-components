@@ -1,10 +1,11 @@
-import { getQueryColor } from '@jbrowse/core/ui/colors'
 import {
   colorFwdStrand,
   colorNeutralRead,
   colorRevStrand,
 } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
+
+import { bakedValueColor } from './colorTagUtils.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy } from '../shared/types.ts'
@@ -25,34 +26,15 @@ const noStrand = packRgb(cssColorToRgb(colorNeutralRead))
 // tag) to a packed ABGR u32; 0 means "no color" (shader palette fallback).
 type ColorResolver = (val: string, strand: number) => number
 
-// Build the per-read color resolver once for a given scheme. All the
-// scheme-invariant setup — the color-table parse (categorical tag), the
-// name→color cache (mateRefName) — happens here, so it's paid once and reused
-// across every region rather than rebuilt per region, and the scheme dispatch
-// leaves the per-read hot loop entirely.
-function makeColorResolver(
-  colorBy: ColorBy,
-  colorTagMap: Record<string, string>,
-): ColorResolver {
-  // Chromosome painting: hash each read's mate refName to its stable category10
-  // color. A read with no mate (empty string) packs 0 rather than a hash of ''.
-  // Names repeat across every read of a contig (and across regions), so the pack
-  // is cached per distinct name.
-  if (colorBy.type === 'mateRefName') {
-    const cache = new Map<string, number>()
-    return name => {
-      if (name === '') {
-        return 0
-      }
-      let color = cache.get(name)
-      if (color === undefined) {
-        color = packRgb(cssColorToRgb(getQueryColor(name)))
-        cache.set(name, color)
-      }
-      return color
-    }
-  }
-  const tag = colorBy.tag
+// Build the per-read color resolver once for a given scheme. The scheme
+// dispatch and the value→pack cache happen here, so both leave the per-read hot
+// loop and the cache is reused across every region rather than rebuilt per
+// region.
+function makeColorResolver(colorBy: ColorBy): ColorResolver {
+  // The strand tags first, and they have to be: they are `type: 'tag'` like any
+  // other, but encode a strand rather than a categorical value, so they take
+  // the fixed strand colors instead of a per-value one.
+  const tag = colorBy.type === 'tag' ? colorBy.tag : undefined
   if (tag === 'XS' || tag === 'TS') {
     return val => (val === '-' ? revStrand : val === '+' ? fwdStrand : noStrand)
   }
@@ -68,19 +50,38 @@ function makeColorResolver(
             : fwdStrand
           : noStrand
   }
-  // Categorical tag: parse+pack the color table once. A read the tag is absent
-  // from packs 0 — "no color", the shader's palette fallback (colorPairLR, the
-  // same neutral an uncolored read paints) — rather than colorNeutralRead. The tag
-  // encodes no strand, so "no strand" was never the right neutral for it, and
-  // being a fixed light grey it painted untagged reads BRIGHTER than ordinary
-  // reads under the dark theme, where colorPairLR darkens and colorNeutralRead
-  // does not. The strand tags above keep colorNeutralRead: there, absent genuinely
-  // means "strand unknown".
-  const packedByValue = new Map<string, number>()
-  for (const [k, v] of Object.entries(colorTagMap)) {
-    packedByValue.set(k, packRgb(cssColorToRgb(v)))
+  // Chromosome painting and categorical tags alike: the color is a pure
+  // function of the value (`bakedValueColor`), so nothing has to have
+  // discovered it first.
+  //
+  // A read the scheme resolved no value for — no mate, or the tag absent, both
+  // arriving as the empty string — packs 0. That is "no color", the shader's
+  // palette fallback (colorPairLR, the same neutral an uncolored read paints)
+  // rather than colorNeutralRead, and it is also what `readColorCategory` reads
+  // to file the read under `noTagValue`. The tag encodes no strand, so "no
+  // strand" was never the right neutral for it, and being a fixed light grey it
+  // painted untagged reads BRIGHTER than ordinary reads under the dark theme,
+  // where colorPairLR darkens and colorNeutralRead does not. The strand tags
+  // above keep colorNeutralRead: there, absent genuinely means "strand
+  // unknown".
+  //
+  // Values repeat across every read carrying them, and across regions, so the
+  // pack is cached per distinct value. That cache is the ONLY thing the old
+  // `colorTagMap` bought on this path — and it bought it in model state, where
+  // a newly discovered value invalidated `readColorContext` and rebaked every
+  // region already loaded.
+  const cache = new Map<string, number>()
+  return value => {
+    if (value === '') {
+      return 0
+    }
+    let color = cache.get(value)
+    if (color === undefined) {
+      color = packRgb(cssColorToRgb(bakedValueColor(colorBy, value)))
+      cache.set(value, color)
+    }
+    return color
   }
-  return val => packedByValue.get(val) ?? 0
 }
 
 function applyResolver(
@@ -98,27 +99,25 @@ function applyResolver(
 }
 
 // Bake one ABGR u32 per read from the worker-reported per-read strings
-// (`readTagValues`). Runs on the main thread so `colorTagMap` never crosses the
-// worker boundary — keeping it out of `rpcProps()` makes the old
+// (`readTagValues`). Runs on the main thread, so the color table never crosses
+// the worker boundary — keeping it out of `rpcProps()` makes the old
 // discover→assign→refetch feedback loop structurally impossible. The shader
 // reads `uint tagColor` and unpacks; 0 means "no color" (palette fallback).
 export function buildReadTagColors(
   data: PileupDataResult,
   colorBy: ColorBy,
-  colorTagMap: Record<string, string>,
 ): Uint32Array {
-  return applyResolver(data, makeColorResolver(colorBy, colorTagMap))
+  return applyResolver(data, makeColorResolver(colorBy))
 }
 
 // Overlay freshly-baked `readTagColors` onto each laid-out region. No-op outside
 // the CPU-baked color schemes, where the worker's empty array leaves the shader
-// on its palette fallback. Reading `colorTagMap` here is what makes tag coloring
-// a tier-2 (main-thread recompute) setting rather than a tier-1 refetch. The
-// resolver is built once and shared across regions.
+// on its palette fallback. Baking here rather than in the worker is what makes
+// tag coloring a tier-2 (main-thread recompute) setting rather than a tier-1
+// refetch. The resolver is built once and shared across regions.
 export function overlayReadTagColors(
   map: Map<number, PileupDataResult>,
   colorBy: ColorBy | undefined,
-  colorTagMap: Record<string, string>,
 ): Map<number, PileupDataResult> {
   const baked =
     colorBy?.type === 'mateRefName' ||
@@ -126,7 +125,7 @@ export function overlayReadTagColors(
   if (!colorBy || !baked) {
     return map
   }
-  const resolve = makeColorResolver(colorBy, colorTagMap)
+  const resolve = makeColorResolver(colorBy)
   const out = new Map<number, PileupDataResult>()
   for (const [idx, data] of map) {
     out.set(idx, {
