@@ -1020,10 +1020,10 @@ drops out has not diverged past alignment, it belongs to a person who does not
 carry that segment. Read down a column for who carries what, across for where
 each segment starts and stops.
 
-The figure draws a subset of the samples rather than all 232, because a row
-needs enough height for its name to fit beside it and the whole cohort named is
-a track several screens tall. Drop `subtreeFilter` from the session and every
-haplotype is there, at whatever height it fits in.
+The figure draws sixteen samples rather than all 232, because a row needs enough
+height for its name to fit beside it and the whole cohort named is a track
+several screens tall. Drop `subtreeFilter` from the session and every haplotype
+is there, at whatever height it fits in.
 
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra

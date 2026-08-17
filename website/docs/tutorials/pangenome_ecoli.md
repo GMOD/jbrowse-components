@@ -848,8 +848,7 @@ The third argument is the threshold, in bp of content, and it decides what the
 picture is about. At 0 every single-base alternative is its own node, which over
 20 kb is hundreds of them and reads worse than the fine tier. At 50 those are
 absorbed into the backbone and every indel is kept, taking the whole 4.64 Mb
-graph to about a thousand nodes against 606k segments in the fine tier, so a far
-wider window becomes drawable:
+graph to about a thousand nodes, so a far wider window becomes drawable:
 
 ```json
 {
