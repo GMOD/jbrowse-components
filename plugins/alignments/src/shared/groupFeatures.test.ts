@@ -184,6 +184,64 @@ test('split-read grouping keeps both pieces of a split read together', () => {
   expect(groups[1]!.features.map(f => f.id())).toEqual(['c'])
 })
 
+// F1R2 and F2R1 are the SAME pair orientation — the normal LR — differing only
+// in which mate the record is. Keying the raw `pair_orientation` string opened a
+// section per permutation, so a plain FR library drew two "normal" sections, both
+// painted the identical LR grey by the color scheme, plus a cryptic label neither
+// the legend nor the tooltip uses.
+test('pair-orientation grouping keys the IGV category, not the raw string', () => {
+  const features = [
+    feat('a', { pair_orientation: 'F1R2' }),
+    feat('b', { pair_orientation: 'F2R1' }),
+    feat('c', { pair_orientation: 'R1F2' }),
+  ]
+  const groups = partitionFeatures(features, { type: 'pairOrientation' })
+  expect(groups.map(g => g.label)).toEqual([
+    'LR - Normal pair orientation',
+    'RL - Mates point outward',
+  ])
+  expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'b'])
+})
+
+// The sections stack in the order the legend lists its pair-orientation swatches
+// (PAIR_DIRECTION_NUM), which is why the keys are ordinals: the category letters
+// sort LL, LR, RL, RR, stranding the normal lane between the aberrant ones.
+test('pair-orientation stacks sections in the legend swatch order', () => {
+  const features = [
+    feat('ll', { pair_orientation: 'F1F2' }),
+    feat('lr', { pair_orientation: 'F1R2' }),
+    feat('rr', { pair_orientation: 'R1R2' }),
+    feat('rl', { pair_orientation: 'R1F2' }),
+    feat('none', {}),
+  ]
+  const groups = partitionFeatures(features, { type: 'pairOrientation' })
+  expect(groups.map(g => g.features[0]!.id())).toEqual([
+    'lr',
+    'rl',
+    'rr',
+    'll',
+    'none',
+  ])
+  expect(groups.at(-1)!.label).toBe('No orientation')
+})
+
+// An orientation string the classifier doesn't recognize is not a category, so it
+// files with the reads that have no orientation at all rather than opening a
+// section named after a value nothing else in the app will show.
+test('pair-orientation files an unrecognized orientation as no-orientation', () => {
+  const features = [
+    feat('a', { pair_orientation: 'bogus' }),
+    feat('b', {}),
+    feat('c', { pair_orientation: 'F1R2' }),
+  ]
+  const groups = partitionFeatures(features, { type: 'pairOrientation' })
+  expect(groups.map(g => g.label)).toEqual([
+    'LR - Normal pair orientation',
+    'No orientation',
+  ])
+  expect(groups[1]!.features.map(f => f.id())).toEqual(['a', 'b'])
+})
+
 test('mate-assembly grouping splits synteny features by mate assembly', () => {
   const features = [
     feat('a', { mate: { assemblyName: 'peach' } }),

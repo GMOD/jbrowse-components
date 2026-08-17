@@ -39,6 +39,7 @@ export { buildSyntheticAssembly } from './buildSyntheticAssembly.ts'
 export type { SyntheticAssembly } from './buildSyntheticAssembly.ts'
 export { buildReadVsRefNames } from './readVsRefNaming.ts'
 export {
+  PAIR_DIRECTION_LABELS,
   isAbnormalPairDirection,
   pairDirection,
   splitInversion,

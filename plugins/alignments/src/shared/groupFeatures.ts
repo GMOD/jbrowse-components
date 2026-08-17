@@ -1,9 +1,11 @@
+import { PAIR_DIRECTION_LABELS, pairDirection } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
+import { PAIR_DIRECTION_NUM } from './buildBaseFeatureData.ts'
 import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { GROUP_BY_LABELS } from './groupByLabels.ts'
@@ -68,11 +70,32 @@ function tagKey(feature: Feature, tag: string): GroupKey {
     : { key: value, label: `${tag}: ${value}` }
 }
 
+// Keyed by the shared IGV category (LR/RL/RR/LL), never by the raw
+// `pair_orientation` string. F1R2 and F2R1 are the same normal LR pair — they
+// differ only in which mate the record is — so the raw string opened a section
+// per permutation, up to eight of them, two of which were "normal". Every other
+// consumer collapses them through `pairDirection` (the color scheme, the read
+// tooltip, the arc palette, the concordant-pair filter), so those two sections
+// carried cryptic labels the rest of the app never shows and were painted the
+// identical LR grey.
+//
+// Digit keys, not the letters, purely for ordering — the same move mapqKey makes.
+// Reusing `PAIR_DIRECTION_NUM` stacks the sections in the order the legend
+// already lists its swatches, where the letters' own code-point order (LL, LR,
+// RL, RR) would strand the normal lane between the aberrant ones. An orientation
+// string the classifier doesn't recognize is not a category, so it files with the
+// reads that have no orientation at all rather than opening a section named after
+// a value nothing else in the app will name.
 function pairOrientationKey(feature: Feature): GroupKey {
-  const value = feature.get('pair_orientation') as string | undefined
-  return value
-    ? { key: value, label: value }
-    : { key: '', label: 'No orientation' }
+  const dir = pairDirection(
+    feature.get('pair_orientation') as string | undefined,
+  )
+  return dir === undefined
+    ? { key: '', label: 'No orientation' }
+    : {
+        key: `${PAIR_DIRECTION_NUM[dir]}`,
+        label: PAIR_DIRECTION_LABELS[dir],
+      }
 }
 
 const SPLIT_GROUP: GroupKey = { key: 'split', label: 'Split (SA)' }

@@ -23,6 +23,18 @@ const FR_ORIENTATION: Record<string, PairDirection> = {
   F2F1: 'LL',
 }
 
+// What each category means, in words. Here rather than in either consumer
+// because both of them show these to a reader and they must say the same thing:
+// the legend's swatch rows (CATEGORY_LEGEND) and the group-by section chips
+// (`pairOrientationKey`). The letters lead, since that is the vocabulary IGV
+// users arrive with and the tooltip prints.
+export const PAIR_DIRECTION_LABELS: Record<PairDirection, string> = {
+  LR: 'LR - Normal pair orientation',
+  RL: 'RL - Mates point outward',
+  RR: 'RR - Both mates reverse strand',
+  LL: 'LL - Both mates forward strand',
+}
+
 // Classify a pair-orientation string (e.g. "F1R2") into its FR-library category,
 // or undefined when unknown/unset.
 export function pairDirection(

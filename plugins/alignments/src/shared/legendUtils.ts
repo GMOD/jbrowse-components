@@ -2,6 +2,7 @@
 // file is reached from the display's state model, which a plugin evaluates at
 // install time, and a value import of the barrel would put ~80 Material
 // components on every host's first paint (see EAGER_BUNDLE.md)
+import { PAIR_DIRECTION_LABELS } from '@jbrowse/alignments-core'
 import { legendSwatches } from '@jbrowse/core/ui/legendSpec'
 import {
   methylated5hmC,
@@ -273,10 +274,13 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   revStrand: 'Reverse strand',
   noStrand: 'Unstranded',
   nonSplit: 'Unsplit read',
-  pairLR: 'LR - Normal pair orientation',
-  pairRL: 'RL - Mates point outward',
-  pairLL: 'LL - Both mates forward strand',
-  pairRR: 'RR - Both mates reverse strand',
+  // From the shared table, because the group-by section chips name the same four
+  // buckets (`pairOrientationKey`) and a swatch row and the section it labels
+  // reading differently is the drift PAIR_DIRECTION_LABELS exists to stop.
+  pairLR: PAIR_DIRECTION_LABELS.LR,
+  pairRL: PAIR_DIRECTION_LABELS.RL,
+  pairLL: PAIR_DIRECTION_LABELS.LL,
+  pairRR: PAIR_DIRECTION_LABELS.RR,
   normalInsert: 'Normal',
   longInsert: 'Long insert',
   shortInsert: 'Short insert',
