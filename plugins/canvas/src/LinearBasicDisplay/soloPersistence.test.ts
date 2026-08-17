@@ -190,13 +190,13 @@ describe('buildCollapsedViewSnapshot', () => {
     }
   }
 
-  it('builds merged regions and precomputed zoom/offset', () => {
+  it('builds merged regions and the window framing them', () => {
     const snap = buildCollapsedViewSnapshot(args())
 
     // Two exons with a wide intron collapse to two padded regions.
     expect(snap.displayedRegions).toHaveLength(2)
     expect(snap.displayedRegions[0]).toMatchObject({ refName: 'ctgA' })
-    expect(snap.bpPerPx).toBeGreaterThan(0)
+    expect(snap.windowWidthBp).toBeGreaterThan(0)
     expect(snap.displayName).toBe('myGene (introns collapsed)')
   })
 
