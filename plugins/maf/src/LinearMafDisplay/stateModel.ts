@@ -30,6 +30,7 @@ import {
   computeClusterHierarchy,
   filterRowsBySubtree,
   reconcileLayout,
+  setupRunClusteringAutorun,
   setupTreeDrawingAutorun,
 } from '@jbrowse/tree-sidebar'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
@@ -2425,13 +2426,38 @@ export default function stateModelFactory(
           // deferred one 4KB module and dragged the rest of the barrel into an
           // async chunk, +69KB. See packages/tree-sidebar/CLAUDE.md.
           setupTreeDrawingAutorun(self)
+          // The declarative half of "Cluster rows by identity": a session or a
+          // figure spec sets `runClustering: true` and the run happens once the
+          // rows have arrived. Two rows minimum, matching the menu's gate --
+          // one row has no structure to find and hclust has nothing to merge.
+          //
+          // Installed synchronously; the heavy half is code-split inside `run`,
+          // so the clustering module loads on a run rather than on every attach.
+          setupRunClusteringAutorun(self, {
+            name: 'AutoRunMafClustering',
+            ready: () => self.sources.length > 1,
+            run: async args => {
+              const { runMafClustering } = await import('./runMafClustering.ts')
+              await runMafClustering({ model: self, ...args })
+            },
+          })
         },
       }))
       .postProcessSnapshot(snap => {
-        // The active clusterTree is derived (rebuilt from worker output on fetch,
-        // or restored from treeNewickVolatile on clear), so it's dropped rather
-        // than persisted. `layout` IS persisted — it's the user's custom row
-        // arrangement; stripDefault omits it when empty (the common case).
+        // A GUIDE tree is derived — rebuilt from worker output on fetch, or
+        // restored from treeNewickVolatile on clear — so persisting it would
+        // store a copy of something the adapter re-supplies. A CLUSTERED tree is
+        // not: nothing recomputes it, and a session that dropped it would come
+        // back with the clustered row order and no dendrogram beside it.
+        //
+        // `clusterProvenance` is what tells the two apart, and it is the same
+        // distinction it was introduced for: set only for a tree this app
+        // computed, absent for a supplied phylogeny. `layout` is persisted
+        // either way — it is the user's own row arrangement; stripDefault omits
+        // it when empty, which is the common case.
+        if (snap.clusterProvenance) {
+          return snap
+        }
         const { clusterTree: _clusterTree, ...rest } = snap
         return rest
       })

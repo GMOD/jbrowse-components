@@ -60,6 +60,14 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       model={model}
       factory={MafRendererFactory}
       testid="maf-display"
+      // Whether a tree is positioned against the drawn rows, published the same
+      // way the multi-wiggle display publishes it and for the same reason: the
+      // only other DOM evidence is the dendrogram canvas, which the sidebar
+      // toggle removes, and a figure that clusters with the sidebar off would
+      // have nothing to wait on but a guessed delay. On this display it also
+      // distinguishes a clustering run from the adapter's guide tree only by
+      // being present at all -- a track with neither publishes 'false'.
+      data-clustered={model.hierarchy ? 'true' : 'false'}
       ref={ref}
       style={{ height: model.height }}
       onMouseDown={drag.handleMouseDown}

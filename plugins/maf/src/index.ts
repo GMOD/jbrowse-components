@@ -3,6 +3,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import BgzipMafAdapterF from './BgzipMafAdapter/index.ts'
 import BgzipTaffyAdapterF from './BgzipTaffyAdapter/index.ts'
 import BigMafAdapterF from './BigMafAdapter/index.ts'
+import LinearMafClusterIdentityMatrixF from './LinearMafClusterIdentityRpc/index.ts'
 import LinearMafDisplayF from './LinearMafDisplay/index.ts'
 import LinearMafGetAlignmentDataF from './LinearMafGetAlignmentDataRpc/index.ts'
 import LinearMafGetAnnotationDataF from './LinearMafGetAnnotationDataRpc/index.ts'
@@ -24,6 +25,7 @@ export default class MafPlugin extends Plugin {
     BigMafAdapterF(pluginManager)
     MafTrackF(pluginManager)
     LinearMafDisplayF(pluginManager)
+    LinearMafClusterIdentityMatrixF(pluginManager)
     LinearMafGetAlignmentDataF(pluginManager)
     LinearMafGetAnnotationDataF(pluginManager)
     LinearMafGetSummaryDataF(pluginManager)

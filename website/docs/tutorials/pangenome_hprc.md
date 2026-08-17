@@ -1011,15 +1011,12 @@ shorthand. The v2.0 file is the one this page uses because it is the build the
 graph and the callset above come from; being far smaller to store and cheaper to
 read a locus out of is the second reason rather than the first.
 
-Every product this page has opened states something different about the same
+Each product this page has opened states something different about the same
 sequence, so the figure below puts them on one axis: the graph as its segments
 and again as a subgraph, the callset as a genotype matrix over all 464
-haplotypes, the alignment as rows, and one measurement from outside the
-pangenome, [QuicK-mer2 copy number](/docs/tutorials/population_cnv) from 1000
-Genomes short reads for the individuals the alignment rows belong to. The band
-runs down all of them.
+haplotypes, and the alignment as rows. The band runs down all of them.
 
-<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's 464 haplotypes clustered by genotype, thirty-two of those haplotypes as alignment rows, short-read copy number for the same individuals, and the window as an anchored subgraph. The band marks the pseudogene pair between C4A and C4B, where rows go white and the depth lane splits the cohort." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's 464 haplotypes clustered by genotype, thirty-two of those haplotypes as alignment rows clustered by identity, and the same window as a force-directed subgraph. The band marks the pseudogene pair between C4A and C4B, where the haplotypes that carry nothing there gather into a block." src="/img/maf_hprc_pangenome.png" />
 
 The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
 itself opens with. Every alignment row is a human haplotype, so the rows say
@@ -1028,19 +1025,25 @@ row that drops out has not diverged past alignment, it belongs to a person who
 does not carry that segment. Read down a column for who carries what, across for
 where each segment starts and stops.
 
-The four lanes disagree about what a row is, and none of them can be relabelled
-into another's. The graph credits a segment to whichever assembly first
-contributed it; a genotype names every haplotype that carries an allele; the
-alignment orders its rows by discovery; and copy number is per individual where
-the three above it are per haplotype. What lines up is the span, which is what
-the band is for.
+Both matrices are clustered, and over different measurements: the callset by
+genotype, the alignment by how much of each bin a haplotype aligns and matches
+at, where a bin it does not reach scores zero. So the two dendrograms are not
+each other's, and neither is the graph's attribution — that credits a segment to
+whichever assembly first contributed it, where a genotype names every haplotype
+that carries the allele. What lines up across all of them is the span, which is
+what the band is for.
+
+Clustering the alignment is a run rather than a supplied phylogeny. A MAF
+usually orders its rows by a guide tree the file ships, and HPRC's ships none; a
+cohort of one species has no fixed tree to ship, since how the haplotypes group
+is a property of the locus. **Cluster rows by identity...** under the track
+menu's **Clustering** submenu computes it over the window in view, and **Reset
+row order** puts back whatever the file supplied.
 
 The alignment draws sixteen samples rather than all 232, because a row needs
 enough height for its name to fit beside it and the whole cohort named is a
 track several screens tall. Drop `subtreeFilter` from the session and every
-haplotype is there, at whatever height it fits in. The depth lane follows the
-same list: fourteen of those sixteen are 1000 Genomes individuals, and
-[the CNV tutorial](/docs/tutorials/population_cnv) has the whole panel.
+haplotype is there, at whatever height it fits in.
 
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra
@@ -1162,7 +1165,6 @@ each haplotype's CAT annotation to the same window.
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/mappability_qc)
-- [](/docs/tutorials/population_cnv)
 - [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/maf_track)

@@ -194,80 +194,12 @@ const HPRC_C4_REGION = {
 }
 
 // CYP21A1P and TNXA, the pseudogene pair of the second RCCX module. Marked
-// because it is the span the depth lane disagrees about across these
-// individuals, and a band there crosses every lane in the frame at once.
+// because it is the span the alignment rows disagree about: read off the drawn
+// figure, seven of the thirty-two haplotypes have no aligned sequence there,
+// one each of HG00099, HG00280, HG00290, HG00320 and HG00321 and both of
+// HG00146. A band there crosses the genes, the segments and the callset in one
+// column.
 const HPRC_C4_MARKED = 'chr6:32,005,691-32,011,057'
-
-// QuicK-mer2 1 kb copy number for the 1000 Genomes panel (Kidd lab), the same
-// mirror the CNV tutorial's figures read. Copy number is the one statement in
-// this figure that comes from outside the pangenome: short-read k-mer depth,
-// per individual, against an alignment, a graph and a callset all built from
-// the same assemblies.
-//
-// SHORT READS IN A SEGMENTAL DUPLICATION IS THE OBVIOUS OBJECTION, since a
-// unique-k-mer estimator has fewest unique k-mers exactly where RCCX repeats
-// itself. Checked against the alignment in the frame beside it rather than
-// argued, over the marked span, by reading the drawn rows: seven haplotypes have
-// no aligned sequence there, and they belong to HG00099, HG00280, HG00290,
-// HG00320 and HG00321 one each, HG00146 both. The depth call for each of those
-// six is 2 minus that count -- five at 1 copy, HG00146 at 0 -- and every sample
-// with two aligned haplotypes is called 2 or 3. Thirteen of the fourteen agree
-// exactly.
-//
-// HG00140 is the fourteenth: depth says 1 copy and both its haplotypes align. It
-// is one sample at one span, and this is a check of this locus rather than a
-// property of the method.
-//
-// The two called at 3 are why the lane earns its place: an extra tandem module
-// collapses onto the same reference span, so a haplotype carrying two draws one
-// grey row exactly like a haplotype carrying one. Gains are the half of C4 the
-// alignment cannot report, and the depth lane is where they show.
-const KIDD_LAB_BASE = 'https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv'
-
-// The population is a directory in that mirror's path, so the sample list
-// cannot be derived from the alignment's row names alone. Fourteen of the
-// sixteen samples the rows draw are 1000 Genomes individuals; HG002 is GIAB's
-// and CHM13 is a cell line, so neither has a profile here.
-const KIDD_LAB_POPULATION: Record<string, string> = {
-  HG00097: 'GBR',
-  HG00099: 'GBR',
-  HG00126: 'GBR',
-  HG00128: 'GBR',
-  HG00133: 'GBR',
-  HG00140: 'GBR',
-  HG00146: 'GBR',
-  HG00232: 'GBR',
-  HG00235: 'GBR',
-  HG00253: 'GBR',
-  HG00280: 'FIN',
-  HG00290: 'FIN',
-  HG00320: 'FIN',
-  HG00321: 'FIN',
-}
-
-// Read off the alignment's own row list rather than typed a second time, so the
-// two lanes name one cohort: change `subtreeFilter` and the depth lane follows.
-const HPRC_CN_SAMPLES = [
-  ...new Set(HPRC_MAF_ROWS.map(row => row.split('.')[0]!)),
-].filter(sample => sample in KIDD_LAB_POPULATION)
-
-const HPRC_COPY_NUMBER_TRACK = {
-  type: 'MultiQuantitativeTrack',
-  trackId: 'hprc_cohort_copynumber_1000g',
-  name: 'Copy number from short reads (1000 Genomes, QuicK-mer2)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'MultiWiggleAdapter',
-    subadapters: HPRC_CN_SAMPLES.map(name => ({
-      type: 'BigWigAdapter',
-      name,
-      bigWigLocation: {
-        uri: `${KIDD_LAB_BASE}/${KIDD_LAB_POPULATION[name]}/${name}.qm2.CN.1k.bw`,
-        locationType: 'UriLocation',
-      },
-    })),
-  },
-}
 
 // The alignment itself, as a session track over the graph config: the fixture
 // the graph figures load carries the graph, the callset and the genes, and the
@@ -298,8 +230,8 @@ const HPRC_MAF_TRACK = {
 // 32,020,000 holds 349 records and not one of them is LV=0 — the whole span is
 // nested inside a top-level bubble that starts before it, so a filter on the
 // parent flag removes every record the window contains. The blank ran across
-// CYP21A1P and TNXA, which is exactly where the depth lane below says the
-// cohort disagrees.
+// CYP21A1P and TNXA, which is exactly where the alignment rows below it drop
+// out.
 //
 // What the lane is for here is the base-level variation the alignment rows are
 // made of, and every record is that.
@@ -833,43 +765,44 @@ export const mafSpecs: ScreenshotSpec[] = [
   // hg38_aliases.txt, whose chr6 row lists NC_000006.12, so a `chr6:` locus and
   // the track's own contig resolve to the same thing.
   //
-  // FIVE STATEMENTS ABOUT ONE 83 KB, which is the whole reason this session is
+  // FOUR STATEMENTS ABOUT ONE 83 KB, which is the whole reason this session is
   // built on the graph fixture rather than on the two-track `hprc_maf.json` it
   // used to load. The alignment on its own draws grey rows with white in them
   // and cannot say what the white IS: reviewed as "the maf alone doesnt tell
   // whole story ... need multiple complementary visualizations". So the lanes
-  // above and below it are the other three products of the same release plus
-  // one measurement from outside it, all on one axis:
+  // around it are the other products of the same release, on one axis:
   //
-  //   genes        C4A, CYP21A1P, TNXA, C4B, CYP21A2 -- the RCCX module
+  //   genes          C4A, CYP21A1P, TNXA, C4B, CYP21A2 -- the RCCX module
   //   rGFA segments  the graph, projected onto the reference
-  //   callset      464 haplotypes, structural tier, clustered by genotype
-  //   alignment    32 of those haplotypes as rows of sequence
-  //   copy number  short-read depth per individual, 1000 Genomes
-  //   graph        the same window cut as a subgraph, anchored on the axis
+  //   callset        464 haplotypes clustered by genotype
+  //   alignment      32 of those haplotypes as rows of sequence, clustered
+  //   graph          the same window cut as a Bandage drawing
   //
-  // The correspondence between them is an EVENT rather than a row, and that is
-  // settled rather than a preference: the graph credits a segment to whichever
-  // assembly first contributed it, the callset names every haplotype that
-  // carries one, the alignment orders its rows by discovery, and the depth lane
-  // is per individual where the three above it are per haplotype. Four row
-  // orders, no two of which can be made to agree. So one band marks one span in
-  // all of them (HPRC_C4_MARKED) and the reader reads down the column.
+  // A 1000 Genomes copy-number lane was here for one round and came out
+  // (review: "the copy number can likely be removed, it is confusing, small
+  // number of samples"). Fourteen rows of QuicK-mer2 depth beside 464 of
+  // genotype and 32 of alignment read as a third cohort rather than as a
+  // measurement of the same one. What it could say and nothing else here can --
+  // an extra tandem module collapses onto its own reference span, so a
+  // haplotype carrying two draws the same grey row as one, and gains show only
+  // in depth -- is in agent-docs/reference/HPRC_RELEASE2.md with the check that
+  // was run on it.
+  //
+  // The correspondence between what is left is an EVENT rather than a row: the
+  // graph credits a segment to whichever assembly first contributed it, the
+  // callset names every haplotype that carries one, and the two clusterings are
+  // over different matrices, so their row orders are not each other's. One band
+  // marks one span in all of them (HPRC_C4_MARKED) and the reader reads down the
+  // column.
   //
   // The band is on CYP21A1P/TNXA rather than on C4A or C4B, which are the genes
-  // the caption names: the depth lane runs 0 to 3 copies across these
-  // individuals over that pair and flat diploid on either side of the module, so
-  // it is the span where all five lanes have something different to say. C4A and
-  // C4B are already labelled by the gene lane.
+  // the caption names: it is the span the alignment rows drop out over, and C4A
+  // and C4B are already labelled by the gene lane.
   {
     mode: 'url' as const,
     name: 'maf_hprc_pangenome',
     url: sessionSpec(local('test_data/graphgenomeview/hprc.json'), {
-      sessionTracks: [
-        HG38_NCBI_GENE_TRACK,
-        HPRC_MAF_TRACK,
-        HPRC_COPY_NUMBER_TRACK,
-      ],
+      sessionTracks: [HG38_NCBI_GENE_TRACK, HPRC_MAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -931,59 +864,76 @@ export const mafSpecs: ScreenshotSpec[] = [
               //
               // GRCh38 first, because it is the row everything else is a
               // difference from and subtreeFilter drops any row it does not
-              // name -- including the reference. The filter selects; it does
-              // NOT order. Rows come out in the alignment's own discovery
-              // order, so a sample's two haplotypes are not adjacent, and
-              // CHM13 is listed but never drawn (its rows are not named that
-              // way in this file), which is why the label is what identifies a
-              // row rather than its position.
+              // name -- including the reference. CHM13 is listed but never
+              // drawn (its rows are not named that way in this file).
+              //
+              // The filter SELECTS; ordering is `runClustering`'s, below.
               subtreeFilter: HPRC_MAF_ROWS,
+              // CLUSTERED, so the rows read like the callset lane above them
+              // (review: "it would be useful to cluster the hprc samples, so it
+              // looks similar to the multi-sample variant display").
+              //
+              // This display had no clustering until this round -- its tree was
+              // always the adapter's guide phylogeny, and HPRC's TAF ships none
+              // -- so the rows came out in the alignment's own discovery order,
+              // which put a sample's two haplotypes in unrelated places and
+              // scattered the dropouts through the stack. The run is
+              // `LinearMafClusterIdentityMatrix`: per-bin identity to GRCh38
+              // over the window, where an unaligned bin scores zero, so the
+              // haplotypes that carry nothing at CYP21A1P/TNXA gather instead of
+              // being spread over 32 rows.
+              //
+              // Declarative rather than driven, the same transient launch spec
+              // the callset lane uses: the flag clears itself after the run.
+              runClustering: true,
+              // A CLADOGRAM for the run's tree, where the guide-tree default is
+              // a phylogram. The distances here are mostly zero -- most of these
+              // haplotypes align and match the reference across every bin, so
+              // hclust merges them at a height of nothing -- and drawn to scale
+              // that collapses their branches against the rows and leaves the
+              // sidebar reading as two brackets over a blank column. Topology
+              // only, and the block of dropouts gets a bracket that says so.
+              showBranchLength: false,
               rowProportion: 1,
               // grow: the filtered rows all fit, so this is the track sizing
               // to its own content rather than the cohort being scrolled
               heightMode: 'grow',
             },
-            {
-              // A heatmap rather than fourteen stacked plots: the lane is here
-              // to be read against the rows above it, and a plot per individual
-              // is 400 px of the frame for a step function with three levels in
-              // it. Pinned 0..4 around a diploid pivot, the settings the CNV
-              // tutorial's own figures use — copy number is an absolute
-              // quantity, so autoscale would make a block mean a different
-              // number in every window.
-              trackId: 'hprc_cohort_copynumber_1000g',
-              type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multirowdensity',
-              bicolorPivot: 2,
-              minScore: 0,
-              maxScore: 4,
-              posColor: '#b2182b',
-              negColor: '#2166ac',
-              height: 220,
-            },
           ],
         },
         {
-          // ANCHORED, which is what `auto` picks for an rGFA, and not the force
-          // drawing pangenome/hprc_c4_subgraph puts on the same window. Force is
-          // the right layout for a figure whose subject is the graph's shape;
-          // here the graph is the sixth statement about one axis, and the
-          // anchored layout is the one that keeps it on that axis — every node
-          // under the reference coordinate it attaches at, so the marked band's
-          // column runs through the pane too.
+          // FORCE, the Bandage drawing. The anchored layout was here first,
+          // on the argument that it shares the linear view's x axis and so
+          // carries the band's column into the pane. Reviewed down, and the
+          // reason is about what a reader gets out of the picture rather than
+          // about the axis: "the backbone thing confuses me more often than the
+          // force directed. people like force directed, it embodies the
+          // complexity of graph better than backbone frequently."
+          //
+          // The reference-position ramp is what carries the correspondence
+          // instead, and it is why the segments lane above is colored by the
+          // same function: a node here and a block there are the same color for
+          // the same bp, which is the one coloring both panels can compute.
           type: 'GraphGenomeView',
           loadedTrackId: 'hprc_minigraph_segments',
           loadedRegion: HPRC_C4_REGION,
-          layoutMode: 'auto',
+          layoutMode: 'force',
           colorScheme: 'reference-position',
         },
       ],
     }),
-    viewportHeight: 1960,
-    // Four signals ANDed: the graph drawn, its toolbar painted, the clustering
-    // RPC landed (its dendrogram exists) and the alignment's own rows drawn. A
-    // bare comma list would be a CSS OR and fire on whichever landed first.
-    readySelector: `body:has(${GRAPH_DRAWN}):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) ${displayPainted('maf-display')}`,
+    viewportHeight: 2000,
+    // Four signals ANDed: the graph drawn, its toolbar painted, the callset's
+    // clustering landed (its dendrogram exists) and the alignment drawn WITH a
+    // tree positioned against its rows. A bare comma list would be a CSS OR and
+    // fire on whichever landed first.
+    //
+    // The last one is `data-clustered` rather than a second dendrogram, and it
+    // has to be: `:has([data-testid="tree_sidebar_dendrogram"])` on the body is
+    // satisfied by the callset's canvas alone, so with only that gate the
+    // capture could land before the alignment's own run finished and commit the
+    // unclustered order. CSS cannot ask for two of a thing.
+    readySelector: `body:has(${GRAPH_DRAWN}):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) ${displayPainted('maf-display')}[data-clustered="true"]`,
     readyTimeout: 360000,
     // the .tai alone is 4.98 MB and the first block read follows it
     actions: [{ type: 'delay' as const, ms: 25000 }],

@@ -4,7 +4,7 @@ import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import {
-  clearSubtreeFilterMenuItems,
+  clusteringMenuItem,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowHeightMenuItem,
@@ -19,6 +19,7 @@ import { CODON_ROW_RENDERING, ROW_RENDERINGS } from './rowRenderings.ts'
 
 import type { ConservationMode } from './conservationModes.ts'
 import type { RowRendering } from './rowRenderings.ts'
+import type { MafClusterSelf } from './runMafClustering.ts'
 import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -26,6 +27,8 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
 )
+
+const MafClusterDialog = lazy(() => import('./components/MafClusterDialog.tsx'))
 
 // Compact row for the plain show/hide toggles, which are otherwise a dozen
 // near-identical four-line literals. Reads the current value and hands the
@@ -46,7 +49,7 @@ const HEIGHT_PRESETS = [
   { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },
 ]
 
-interface MafMenuSelf extends IStateTreeNode {
+interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   showAllLetters: boolean
   mismatchRendering: boolean
   showAsUpperCase: boolean
@@ -81,7 +84,7 @@ interface MafMenuSelf extends IStateTreeNode {
   rowHeight: number
   rowProportion: number
   subtreeFilter?: readonly string[]
-  editableSources?: MafSource[]
+  editableSources: MafSource[] | undefined
   setRowHeight: (n: number) => void
   setFitToHeight: () => void
   setRowProportion: (n: number) => void
@@ -270,12 +273,35 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         ])
       },
     }),
-    // maf has no "Clustering" submenu to file these under (its tree is the
-    // adapter's guide tree, not a run), so it takes the shared items directly.
-    // The reset is the way back from a drag-reorder in the dialog above, which
-    // until now was undoable only from inside that dialog — `clearLayout` was
-    // declared on this menu's model and called by nothing.
+    // maf used to have no "Clustering" submenu, on the grounds that its tree is
+    // the adapter's guide phylogeny rather than a run, and it took the shared
+    // subtree-filter item flat instead. There is a run now — per-bin identity to
+    // the reference over the drawn rows — so the submenu is where it and the
+    // "Clustered on <locus>" provenance belong, and the filter item moves inside
+    // with them.
+    //
+    // `showTreeToggle`/`treeApplies` off: the sidebar toggle and the
+    // branch-length radio are already in this display's Show submenu, where they
+    // were before a run existed and where they still belong, since a supplied
+    // guide tree draws with no clustering at all.
+    clusteringMenuItem(
+      self,
+      {
+        label: 'Cluster rows by identity...',
+        disabled: self.sources.length < 2,
+        disabledHelpText: 'Loading rows...',
+        onClick: () => {
+          getSession(self).queueDialog(handleClose => [
+            MafClusterDialog,
+            { model: self, handleClose },
+          ])
+        },
+      },
+      { showTreeToggle: false, treeApplies: false },
+    ),
+    // The way back from a drag-reorder in the arrangement dialog and from a
+    // clustering run alike: both write `layout`, and `clearLayout` also restores
+    // the guide tree the run replaced.
     ...resetRowOrderMenuItems(self),
-    ...clearSubtreeFilterMenuItems(self),
   ]
 }

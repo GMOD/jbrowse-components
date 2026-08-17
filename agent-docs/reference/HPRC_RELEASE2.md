@@ -186,6 +186,33 @@ the tail — and it is fine.
 lacked the flag and ignored unknown arguments, so the documented command exited 0
 and wrote nothing. v0.6.0 is on crates.io.
 
+## Short-read copy number at C4 agrees with the alignment, and is out of the figure anyway
+
+`maf_hprc_pangenome` carried a lane of 1000 Genomes QuicK-mer2 copy number for
+one round (`genomes/GRCh38/1000g/kidd_lab_cnv/<POP>/<SAMPLE>.qm2.CN.1k.bw`,
+fourteen of the sixteen samples the alignment rows draw; HG002 is GIAB's and
+CHM13 is a cell line, so neither is in the panel). It came out on review — "the
+copy number can likely be removed, it is confusing, small number of samples" —
+and fourteen rows of depth beside 464 of genotype and 32 of alignment do read as
+a third cohort rather than as a measurement of the same one.
+
+The measurement is worth keeping even though the lane is not, because the obvious
+objection to it is wrong here. A unique-k-mer estimator has fewest unique k-mers
+exactly where RCCX repeats itself, so the calls could have been noise. Checked
+against the alignment over chr6:32,005,691-32,011,057 (CYP21A1P and TNXA), by
+reading the drawn rows: seven haplotypes have no aligned sequence there, one each
+of HG00099, HG00280, HG00290, HG00320 and HG00321 and both of HG00146. Each of
+those six samples' depth call is exactly `2 - (unaligned haplotypes)` — five at 1
+copy, HG00146 at 0 — and every sample with both haplotypes aligned is called 2 or
+3. Thirteen of the fourteen agree. HG00140 is the fourteenth: depth says 1 copy
+and both its haplotypes align.
+
+**What only depth can say** is the gain side. An extra tandem module collapses
+onto its own reference span, so a haplotype carrying two draws the same grey row
+as one carrying one — HG00128 and HG00232 are called 3 and the alignment cannot
+show it. If a figure ever needs the gains, this is the lane; the losses it does
+not need it for.
+
 ## Cached test data
 
 Re-downloading these is slow and the HPRC slices took scattered BGZF range reads
