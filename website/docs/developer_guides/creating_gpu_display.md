@@ -466,6 +466,29 @@ In your plugin's `install()`, register the display type pointing at your model
 factory and React component (see [](/docs/developer_guides/creating_display) for
 the full registration pattern).
 
+## The WebGL2 context ceiling
+
+One display owns one backend canvas, and `WebGL2Hal` takes its own WebGL2
+context with no pooling. Browsers cap how many a page may hold — 16 on Chrome —
+and past that, eviction and re-acquisition cascade and wedge the main thread
+rather than degrading. **A single ordinary view reaches it**: 17 GPU tracks on
+one linear genome view. So budget contexts as one per open GPU track.
+
+Chromosomes are free on this axis — a whole-genome view of one track is still
+one canvas, with one GPU buffer per `displayedRegionIndex`.
+
+View-level lazy mount and bounded auto-recovery in `useRenderingBackend` both
+bound the problem rather than fixing it; tracks inside a mounted view are not
+virtualized, so the ceiling stays reachable.
+
+WebGPU has no per-canvas cap, because `gpuDevice.ts` shares one device across
+displays. The trade is its mirror image: one `device.lost` takes down every
+display at once. That makes triage easy — **one track broke points at WebGL2,
+every track broke at once points at WebGPU**.
+
+What each backend refuses to allocate is
+[](/docs/developer_guides/memory#gpu-memory-is-guarded-per-object-not-per-session).
+
 ## Key invariants
 
 - All worker output uses absolute genomic uint32 coordinates, not
@@ -492,6 +515,7 @@ section of the architecture spec is the full quick-scan list.
 
 - [](/docs/developer_guides/dataflow)
 - [](/docs/developer_guides/optimizations)
+- [](/docs/developer_guides/memory)
 - [](/docs/developer_guides/data_fetching)
 - [](/docs/developer_guides/rpc_workers)
 - [](/docs/developer_guides/creating_display)

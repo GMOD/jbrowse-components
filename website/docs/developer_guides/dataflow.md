@@ -80,6 +80,8 @@ Only the last is on the figure, because it is the one a gesture interacts with.
 A pan back over a region the display still holds does no work at all; a pan onto
 a new region re-enters at the top.
 
+What bounds each of them is [](/docs/developer_guides/memory).
+
 ## Where the GPU sits
 
 The two edges out of `rpcDataMap` run at different rates, and that difference is

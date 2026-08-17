@@ -97,6 +97,7 @@ own via pull request.
 
 ### Advanced topics
 
+- [](/docs/developer_guides/memory)
 - [](/docs/developer_guides/optimizations)
 - [](/docs/developer_guides/pif_format)
 - [](/docs/developer_guides/refname_aliasing)

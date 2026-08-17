@@ -24,7 +24,9 @@ than they need the wins.
 | a frame      | React re-render, a uniform write, one draw call per pass                | main-thread JavaScript |
 | first paint  | the modules every host evaluates before a plugin can register           | plugin registration    |
 
-[](/docs/developer_guides/dataflow) draws the path these sit on.
+[](/docs/developer_guides/dataflow) draws the path these sit on. What a session
+_retains_ is a fourth axis none of these clocks measures, and is
+[](/docs/developer_guides/memory).
 
 ## The fetch clock
 
