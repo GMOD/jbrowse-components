@@ -37,6 +37,11 @@ export const indexSpellings = [
  *
  * Empty for a file type that carries no sibling index (BigWig, BigBed, hic),
  * which is how a caller knows not to go looking.
+ *
+ * `jbrowse-cli` answers the same question in `siblingSidecar`
+ * (`commands/add-track-utils/adapter-utils.ts`) rather than calling this: it
+ * carries no `@jbrowse/core` dependency, so `npm i -g @jbrowse/cli` stays a CLI
+ * rather than a copy of the app. Change one, change the other.
  */
 export function indexCandidateNames(fileName: string) {
   const lower = fileName.toLowerCase()
