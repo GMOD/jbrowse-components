@@ -69,8 +69,9 @@ export const MANIFEST_HEADER = `\
 # otherwise delete.
 #
 # One line per file, sorted by path. A clip is two of them: the mp4 and its
-# poster frame. \`pnpm media\` is the CLI; \`pnpm build\` pulls what this file
-# names before astro copies static/ into dist/.
+# poster frame. \`pnpm figures\` drives this store beside the figure one, and
+# \`pnpm build\` pulls what this file names before astro copies static/ into
+# dist/.
 #
 # <path> <width>x<height> <bytes> <sha256>
 `

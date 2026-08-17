@@ -4,9 +4,9 @@
   "//": "private, like every other unpublished workspace package: it is in pnpm-workspace.yaml, so `pnpm publish -r` in publish.yml walks it. It survives today only because it carries no version and pnpm skips it for that reason rather than on purpose.",
   "private": true,
   "scripts": {
-    "dev": "pnpm figures:pull && pnpm media:pull && pnpm gen:derived-figures && astro dev",
-    "build": "pnpm figures:pull && pnpm media:pull && pnpm gen:derived-figures && astro build && pagefind --site dist",
-    "index": "pnpm figures:pull && pnpm media:pull && pnpm gen:derived-figures && astro build && pagefind --site dist --output-path static/pagefind",
+    "dev": "pnpm figures:pull && pnpm gen:derived-figures && astro dev",
+    "build": "pnpm figures:pull && pnpm gen:derived-figures && astro build && pagefind --site dist",
+    "index": "pnpm figures:pull && pnpm gen:derived-figures && astro build && pagefind --site dist --output-path static/pagefind",
     "preview": "astro preview",
     "typecheck": "astro check && node ../node_modules/typescript7/bin/tsc --noEmit -p scripts/api-docs",
     "lint-docs": "node scripts/generate-guide-indexes.ts",

@@ -10,10 +10,17 @@ staging deploy. Buckets and hosted assets: `agent-docs/reference/HOSTING.md`.
 `s3://jbrowse.org/jb2-figures/` and git tracks `figures.lock`.
 `website/scripts/figure-store.ts` explains why, `pnpm figures` is the CLI.
 
+- **`pnpm figures` drives BOTH stores** — figures and the videos below — for
+  `status`, `pull`, `push` and `check`, so one push publishes what one regen
+  produced. `--filter` reaches both. `pnpm media` is the media-only door.
 - `pnpm figures:pull` needs no credentials; `dev` and `build` run it.
-- `pnpm figures:push` after a regen, then commit `figures.lock`. **Pass
-  `--filter` in a shared worktree** — a bare push rewrites the lock from every
-  figure on disk, including another agent's.
+- `pnpm figures:push` after a regen, then commit `figures.lock` **and
+  `media.lock`**. **Pass `--filter` in a shared worktree** — a bare push
+  rewrites each lock from what is on disk, including another agent's.
+- **A store with nothing on disk is skipped, not emptied.** An unfiltered merge
+  over an empty selection writes an empty manifest, so a push from a checkout
+  that pulled neither corpus would unpublish everything and nothing downstream
+  would report it. The run fails only when BOTH stores had nothing to do.
 - **A figure cropped from another figure is never stored** — cards, homepage
   images and gallery thumbs come from `pnpm gen:derived-figures`, so
   republishing cannot leave a stale crop. A new one must be named in
@@ -37,9 +44,10 @@ the tour was filmed in.
 - **A video is for a ROUTE or a RE-LAYOUT**, and everything else is a figure. A
   still is searchable, diffable, annotatable and readable at a glance, and none
   of that survives being filmed.
-- `static/media/` is gitignored; bytes live in the store (`pnpm media`,
-  `media.lock`), which `pnpm build` pulls **because `rclone sync` deletes** what
-  dist/ does not carry. Push before committing a `<Video>` or the embed 404s;
+- `static/media/` is gitignored; bytes live in the store (`media.lock`), which
+  `pnpm build` pulls through `figures:pull` **because `rclone sync` deletes**
+  what dist/ does not carry. `pnpm figures:push` publishes it beside the
+  figures; push before committing a `<Video>` or the embed 404s, and
   `check-figure-refs` is the gate. The store is media rather than video because
   a clip already ships a poster, and a caption track is next.
 - **Size the viewport from the run's own content report**, which names the app's

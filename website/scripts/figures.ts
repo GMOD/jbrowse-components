@@ -7,6 +7,18 @@
 //   pnpm figures:check               CI gate: manifest and worktree agree
 //   pnpm figures:report              what moved, with before/after images
 //
+// IT DRIVES THE MEDIA STORE TOO, for status/pull/push/check. The two corpora are
+// produced by the same act — a regen renders stills, a tour is filmed beside
+// them — and a second command to remember is a command that gets remembered
+// until it doesn't: a `<Video>` whose bytes were never pushed 404s for every
+// reader, and only `check-figure-refs` says so. `--filter` reaches both, so
+// `figures:push --filter hprc` publishes the HPRC figures and the HPRC tour
+// together. `pnpm media` is still the media-only door (scripts/media.ts).
+//
+// The specialized commands stay figures-only: `report` diffs images, `mirror`
+// replicates the figure bucket, and neither has a media counterpart worth
+// inventing before something asks for it.
+//
 // Order matters in exactly one place: `push` uploads bytes BEFORE it rewrites
 // the manifest, because a manifest line whose blob was never pushed breaks
 // `pull` for everyone else. `check --remote` is the backstop for that.
@@ -52,8 +64,14 @@ import {
   storeUrl,
 } from './figure-store.ts'
 import { matchesFilterTokens, parseFilterTokens } from './filter-tokens.ts'
+import {
+  mediaCheck,
+  mediaPull,
+  mediaPush,
+  mediaStatus,
+} from './media-commands.ts'
 
-const usage = `figures — the S3-backed figure store
+const usage = `figures — the S3-backed figure and media stores
 
   status              compare the worktree against figures.lock
   pull [--force]      install every figure figures.lock names
@@ -292,24 +310,34 @@ function readStoreKeys(): Set<string> | undefined {
 // figure and the website's mirror of it share a name), so a filter selects BOTH
 // paths. That is what you want here — the pair are copies and must move together
 // — and it is the opposite of what `figurePath` exists for elsewhere.
-function push() {
+/**
+ * Returns how many figures the selection matched, so the caller can decide what
+ * "matched nothing" means now that a push also drives the media store: a
+ * `--filter` naming a tour legitimately matches no figure. `-1` says the corpus
+ * was skipped for having nothing on disk at all.
+ */
+function push(): number {
   const dryRun = values['dry-run']
   const tokens = parseFilterTokens(values.filter)
   const before = readManifest()
   const paths = listFigureFiles()
   if (!paths.length) {
-    console.error(
-      'no figures on disk — refusing to write an empty manifest.\n' +
-        'Run `pnpm figures:pull` first if you meant to update one.',
+    // Skipped rather than fatal, for the same reason the media half skips: with
+    // two corpora behind one command, "this one is empty" is a fact about one
+    // store and not about the run. The protection is unchanged — an unfiltered
+    // merge over an empty selection writes an empty manifest, so it must not
+    // run — and the caller below still fails when BOTH stores had nothing.
+    console.log(
+      'no figures on disk — skipping the figure store.\n' +
+        '  `pnpm figures:pull` first if you meant to update one.',
     )
-    process.exit(1)
+    return -1
   }
   const selected = paths.filter(p =>
     matchesFilterTokens(figureName(p), tokens, values.exact),
   )
   if (!selected.length) {
-    console.error(`no figures on disk match --filter ${tokens.join(',')}`)
-    process.exit(1)
+    return 0
   }
 
   // Only the selection is hashed. Hashing every figure is 62 MB of reads and the
@@ -375,7 +403,7 @@ function push() {
   console.log(formatTextReport(changes, { base: 'figures.lock' }))
   if (dryRun) {
     console.log('\n--dry-run: nothing uploaded, manifest not written')
-    return
+    return selected.length
   }
 
   if (toUpload.size) {
@@ -437,13 +465,14 @@ function push() {
   const next = formatManifest([...after.values()])
   if (readFileSync(manifestPath, 'utf8') === next) {
     console.log(`figures.lock already matches (${after.size} figures)`)
-    return
+    return selected.length
   }
   writeFileSync(manifestPath, next)
   console.log(
     `wrote figures.lock (${after.size} figures)\n` +
       'Commit it — that diff is the record of what moved.',
   )
+  return selected.length
 }
 
 // ---------------------------------------------------------------------------
@@ -600,21 +629,56 @@ if (values.help) {
   process.exit(0)
 }
 
+// The media half of each shared command runs after the figure half, under a
+// heading, so a combined run reads as two stores rather than as one with
+// surprising counts in it.
+function mediaSection() {
+  console.log('\n--- media ---')
+}
+
+const mediaOptions = {
+  filter: values.filter,
+  dryRun: values['dry-run'],
+  force: values.force,
+  allowDeletions: values['allow-deletions'],
+}
+
 switch (command) {
   case 'status': {
     reportWorktree(inspectWorktree())
+    mediaSection()
+    mediaStatus()
     break
   }
   case 'pull': {
     await pull()
+    mediaSection()
+    await mediaPull(mediaOptions)
     break
   }
   case 'push': {
-    push()
+    const figures = push()
+    mediaSection()
+    const media = mediaPush(mediaOptions)
+    // Fatal only when NEITHER store had anything to do, which is the state the
+    // figure store used to exit on by itself. Split apart, the two answers mean
+    // different things and only the pair is actionable: `--filter hprc_end_to_end`
+    // matching no figure is correct (it names a tour), and an empty figure
+    // directory is correct in a checkout that only pulled media.
+    if (figures <= 0 && media <= 0) {
+      console.error(
+        values.filter?.length
+          ? `\nnothing in either store matches --filter ${parseFilterTokens(values.filter).join(',')}`
+          : '\nnothing on disk in either store — `pnpm figures:pull` first',
+      )
+      process.exit(1)
+    }
     break
   }
   case 'check': {
     check()
+    mediaSection()
+    mediaCheck()
     break
   }
   case 'mirror': {

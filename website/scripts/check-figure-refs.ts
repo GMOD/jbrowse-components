@@ -53,7 +53,7 @@ const figureRe = /<Figure\b[^>]*?\bsrc="([^"]*)"[^>]*?>/g
 const IMG_PREFIX = '/img/'
 
 // A <Video> is the same hazard as a <Figure>, reached by the same route: the
-// bytes are gitignored, `media:pull` installs what media.lock names, and astro
+// bytes are gitignored, `figures:pull` installs what media.lock names, and astro
 // copies static/ verbatim — so a clip that was filmed but never pushed builds
 // green, deploys green, and 404s in the reader's browser. Checked here rather
 // than in a script of its own because it is one question asked of two manifests.
@@ -95,7 +95,7 @@ for (const file of docFiles(docsDir)) {
         const kind = want.endsWith('.jpg') ? 'poster' : 'clip'
         problems.push(
           `${docRelative(file)}: <Video src="${src}"> names no ${kind} in media.lock (${path})` +
-            '\n    Film it, then `pnpm media:push` and commit media.lock.',
+            '\n    Film it, then `pnpm figures:push` and commit media.lock.',
         )
       }
     }
