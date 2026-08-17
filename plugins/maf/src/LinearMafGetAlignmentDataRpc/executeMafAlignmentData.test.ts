@@ -54,7 +54,7 @@ async function run(features: Feature[], subtreeFilter?: string[]) {
       sessionId: 'session-1',
       subtreeFilter,
     },
-  } as unknown as Parameters<typeof executeMafAlignmentData>[0])
+  })
   return unwrapRpcResult(result)
 }
 

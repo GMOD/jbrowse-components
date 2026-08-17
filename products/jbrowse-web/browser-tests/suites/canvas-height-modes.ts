@@ -39,6 +39,69 @@ async function overlayLabels(page: Page) {
   )
 }
 
+/**
+ * Wait until the label overlay has rendered at all, which is the signal this
+ * suite depends on and `waitForDataLoaded` does not give.
+ *
+ * That helper settles on the loading overlay clearing; the labels are a React
+ * subtree that lands a tick later. On the Chrome backends the gap is invisible
+ * because `navigateToUrl` waits for `networkidle0` and the slack absorbs it —
+ * but the webgpu arm runs Firefox, where `networkidle0` stalls, so
+ * `gotoWaitUntil` uses `load` and the read lands on an empty overlay. Measured:
+ * three runs in a row read **0** elements with no tick between the wait and the
+ * read, and 62 with a single `setTimeout(0)`.
+ *
+ * **Only the grow arm can use this**, and finding out why is what turned a
+ * flaky-test fix into the note at the squeeze arm below. The obvious move is to
+ * settle both arms on "some label exists" — but the squeeze legitimately
+ * renders none at all, so the wait would hang there. The squeeze arm has no
+ * positive signal to settle on, which is the same fact that makes its assertion
+ * vacuous.
+ */
+async function waitForOverlayLabels(page: Page, timeout = 30000) {
+  await page
+    .waitForFunction(
+      () =>
+        [
+          ...document.querySelectorAll('[data-testid="feature-display"] div'),
+        ].some(el => el.childElementCount === 0 && !!el.textContent.trim()),
+      // `mutation`, never the default `raf`. The webgpu backend is a HEADED
+      // Firefox, and a headed window that loses the foreground has its animation
+      // frames throttled — so an rAF-polled wait stops evaluating and burns its
+      // whole timeout while the page underneath is perfectly fine. React schedules
+      // through MessageChannel rather than rAF, so the labels still land; it is
+      // only the observer that stalls. A DOM mutation is also exactly the event
+      // being waited on, which is what makes this the right poll rather than
+      // merely the safe one.
+      { timeout, polling: 'mutation' },
+    )
+    .catch(async (e: unknown) => {
+      // A bare "30000ms exceeded" says which line gave up and nothing about why,
+      // and the three candidates here look identical from the outside: the
+      // display never painted, it painted with no labels, or the overlay root is
+      // not where the selector looks. Ask the page.
+      const state = await page.evaluate(() => {
+        const root = document.querySelector('[data-testid="feature-display"]')
+        const d = (window as any).JBrowseSession?.views?.[0]?.tracks?.[0]
+          ?.displays?.[0]
+        return {
+          roots: document.querySelectorAll('[data-testid="feature-display"]')
+            .length,
+          divs: root ? root.querySelectorAll('div').length : -1,
+          drawn: document.querySelectorAll('[data-display-drawn="true"]')
+            .length,
+          phase: d?.displayPhase,
+          height: d?.height,
+          regions: d?.rpcDataMap?.size,
+          hidden: document.hidden,
+        }
+      })
+      throw new Error(
+        `no overlay label appeared in ${timeout}ms — ${JSON.stringify(state)} (${e})`,
+      )
+    })
+}
+
 // What the fit ladder does to the label OVERLAY, which is the half of it that
 // jsdom cannot reach end to end: `subfeatureLabels` is a config slot the worker
 // bakes into its output, so whether a transcript name exists at all is decided
@@ -71,6 +134,7 @@ const suite: TestSuite = {
           genesTrack({ heightMode: 'grow', subfeatureLabels: 'below' }),
         )
         await waitForDataLoaded(page, 60000)
+        await waitForOverlayLabels(page)
         const grown = await overlayLabels(page)
         if (!grown.some(t => t.startsWith('EDEN.'))) {
           throw new Error(
@@ -88,6 +152,25 @@ const suite: TestSuite = {
           }),
         )
         await waitForDataLoaded(page, 60000)
+        // NO settle signal here, and that is a known hole rather than an
+        // oversight — there is nothing to wait FOR. Measured on both backends
+        // with `probe-canvas-fit-labels.ts` (grow settles at height 486):
+        //
+        //   fit  100/150/200 -> 0 labels of any kind
+        //   fit  300 -> 6 labels, 3 of them EDEN.n
+        //   fit  400/500/700 -> 41-59 labels, 3 of them EDEN.n
+        //
+        // So at the 150 this test picks, the overlay is entirely empty and the
+        // assertion below passes over nothing: it would pass with the guard
+        // deleted. And there is no height that rescues it, because every height
+        // that renders labels at all renders all three EDEN.n — including 300
+        // and 400, which are under grow's natural 486 and therefore squeezing.
+        //
+        // That is either a guard that stopped working or a premise that was
+        // never true, and telling those apart means reading the fit ladder
+        // rather than picking a new number. Left failing-open deliberately;
+        // re-tuning the height to get a green tick is the one move that would
+        // bury it.
         const squeezed = await overlayLabels(page)
         const leaked = squeezed.filter(t => t.startsWith('EDEN.'))
         if (leaked.length > 0) {

@@ -95,6 +95,20 @@ to Firefox profile creation** (`Alignments Read Identity` was the case seen);
 they pass on the second. Judge a webgpu run by whether the failures are on that
 list, not by the tally.
 
+**The webgpu window has to stay in the FOREGROUND, and a run that loses it
+produces failures that look like bugs.** It is a headed Firefox, so another
+window taking focus throttles its animation frames — and the failure mode is
+nastier than "slow", because `page.waitForFunction` polls on **rAF by default**.
+An rAF-polled wait in a backgrounded window stops evaluating entirely and burns
+its whole timeout while the page underneath is fine, so the symptom is a clean
+`Waiting failed: Nms exceeded` on a test that is not broken. Two defences, and
+prefer the first: pass `polling: 'mutation'` (React schedules through
+MessageChannel, not rAF, so the DOM still changes — only the observer stalls),
+and give a wait an explicit failure dump rather than letting a bare timeout
+stand as the diagnosis. The same throttling makes wall-clock numbers from a
+probe untrustworthy; a run whose timings are wildly out of line with its
+neighbours was probably backgrounded rather than slow.
+
 ## Unit tests
 
 Jest, co-located (`*.test.ts`), run with `pnpm test-ci`. Node-based and fast —
