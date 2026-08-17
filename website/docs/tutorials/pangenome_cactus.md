@@ -60,10 +60,12 @@ is the same builder at human scale and nothing to run.
 
 The [pggb tutorial](/docs/tutorials/pangenome_ecoli) uses the same five strains
 and the same projections onto K12, so the two pages compare the builders on
-identical input. That one explains what each projection means; this one covers
-producing them from Cactus, and
-[one figure](#pangenome-depth-and-per-strain-presence) puts the two graphs'
-depth curves in a single frame. Here is what changes between the two:
+identical input.
+[What each projection is](/docs/tutorials/pangenome_ecoli#the-linear-projections)
+is written up there and holds for any builder; this one covers producing them
+from Cactus, and [one figure](#pangenome-depth-and-per-strain-presence) puts the
+two graphs' depth curves in a single frame. Here is what changes between the
+two:
 
 | Step             | pggb                                        | Minigraph-Cactus                                                 |
 | ---------------- | ------------------------------------------- | ---------------------------------------------------------------- |
