@@ -84,15 +84,27 @@ export function buildCollapsedRegions({
     })),
     0,
   )
-  // Interbase min is always 0, so clamp the low end even when the contig
-  // bounds are unknown (assembly.regions lazy/unpopulated, or a refName miss) —
-  // otherwise a gene within `padding` bp of position 0 gets a negative start.
-  // The high end is only clamped when we actually know the contig length.
-  return merged.map(r => ({
-    ...r,
-    start: Math.max(bounds?.start ?? 0, r.start),
-    end: bounds ? Math.min(bounds.end, r.end) : r.end,
-  }))
+  return (
+    merged
+      // Interbase min is always 0, so clamp the low end even when the contig
+      // bounds are unknown (assembly.regions lazy/unpopulated, or a refName
+      // miss) — otherwise a gene within `padding` bp of position 0 gets a
+      // negative start. The high end is only clamped when we actually know the
+      // contig length.
+      .map(r => ({
+        ...r,
+        start: Math.max(bounds?.start ?? 0, r.start),
+        end: bounds ? Math.min(bounds.end, r.end) : r.end,
+      }))
+      // An exon lying wholly past the contig end — a GFF3 annotated against a
+      // longer assembly than the FASTA in use, which JBrowse otherwise just
+      // draws past the end of — leaves the high clamp BELOW the low one. Every
+      // consumer sums region lengths, so one inverted region subtracts from the
+      // view's total bp: enough of them and the window goes negative, and with
+      // it bpPerPx, silently. Dropping it shows the exons that do exist; where
+      // that leaves nothing, buildMergedRegions' emptiness check is what speaks.
+      .filter(r => r.end > r.start)
+  )
 }
 
 // The canvas displays expose a solo set ("show only these features"); other
@@ -214,6 +226,15 @@ function buildMergedRegions({
     assemblyName: assembly.name,
     bounds: bounds ? { start: bounds.start, end: bounds.end } : undefined,
   })
+  if (genomicRegions.length === 0) {
+    // Exons exist but the contig doesn't reach them, so every one was dropped as
+    // inverted (see buildCollapsedRegions). Same empty region set as the check
+    // above and the same consequences, but naming the cause rather than
+    // repeating "no exons" at a reader looking straight at some.
+    throw new Error(
+      `Every exon of this feature lies past the end of ${refName}, so there is nothing on this assembly to collapse`,
+    )
+  }
   // flip declaratively: reverse region order and mark each reversed so a
   // minus-strand gene reads 5'->3' left-to-right
   return flip

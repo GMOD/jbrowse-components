@@ -189,6 +189,24 @@ describe('CollapseIntrons utilities', () => {
       expect(regions).toHaveLength(2)
     })
 
+    it('drops an exon the contig does not reach, rather than inverting it', () => {
+      // A GFF3 annotated against a longer assembly than the FASTA in use. The
+      // clamp puts this region's end below its start, and every consumer sums
+      // region lengths, so keeping it subtracts from the view's total bp.
+      const regions = buildCollapsedRegions({
+        intervals: [
+          { start: 10, end: 90 },
+          { start: 500, end: 600 },
+        ],
+        padding: 5,
+        bounds: { start: 0, end: 120 },
+        ...args,
+      })
+      expect(regions).toEqual([
+        { refName: 'chr1', assemblyName: 'hg19', start: 5, end: 95 },
+      ])
+    })
+
     it('clamps padded regions to the chromosome bounds', () => {
       // exon near coordinate 0 + padding would go negative; end would run past
       // the contig length without clamping
@@ -291,6 +309,25 @@ describe('CollapseIntrons utilities', () => {
           flip: false,
         })
       }).toThrow(/No exons or CDS/)
+    })
+
+    it('names the contig when every exon was past the end of it', () => {
+      // the test assembly's ctgA runs to 50,000. A reader looking at exons is not
+      // helped by being told there are none.
+      expect(() => {
+        collapsedRegionsOf({
+          transcripts: [
+            feat({
+              refName: 'ctgA',
+              subfeatures: [
+                feat({ type: 'exon', start: 60_000, end: 60_100 }),
+                feat({ type: 'exon', start: 70_000, end: 70_100 }),
+              ],
+            }),
+          ],
+          flip: false,
+        })
+      }).toThrow(/past the end of ctgA/)
     })
   })
 
