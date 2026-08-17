@@ -135,8 +135,9 @@ export async function executeMafAlignmentData({
   // buffered version is nominally ahead. Real MAFs are the first shape — ce11's
   // 26-way has a 7bp median block — and that stage is 83% of the worker there,
   // so this is ~13% of the whole fetch. The bench is
-  // `plugins/maf/benches/mafTabixBytes.bench.ts`; agent-docs
-  // reference/MAF_WORKER_PIPELINE.md has the table and the profile behind it.
+  // `mafTabixBytes.bench.ts`, which lived in `92bea4941d` and needed a checkout
+  // of a since-closed tabix PR to run; agent-docs reference/
+  // MAF_WORKER_PIPELINE.md has the table it produced and the profile behind it.
   //
   // Growth costs a transient copy at each doubling — the last one holds the old
   // arena beside the new — which is bounded at ~1.5x the final arena, against

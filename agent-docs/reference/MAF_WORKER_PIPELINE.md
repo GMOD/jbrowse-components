@@ -86,9 +86,14 @@ it costs a second and gives the same bytes.
 
 `GMOD/tabix-js#156` proposes `lineBytesCallback` — the decompressed bgzf buffer
 and the line's range within it, instead of a decoded string — and MAF is the
-consumer its description argues from. `plugins/maf/benches/mafTabixBytes.bench.ts`
-measures it end to end, from the bgzf block to a finished `MafWirePacked`,
-against the tabix branch with the PR applied.
+consumer its description argues from. A five-arm bench measured it end to end,
+from the bgzf block to a finished `MafWirePacked`, against a checkout of the
+tabix branch with the PR applied.
+
+**That bench is not in the tree.** It could not run without a checkout of a PR
+that is now closed, so it went once the question was settled. `git show
+92bea4941d` is the whole harness if anyone reopens this; its fixture generator
+stayed, since this doc's "Reproducing it" recipe points at it.
 
 The result is that "byte-native" is **two** changes, and the one that pays is not
 the one the PR enables. Handing over a buffer instead of a string means the
