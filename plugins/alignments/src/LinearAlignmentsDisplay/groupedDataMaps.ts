@@ -172,10 +172,11 @@ export function orderedGroups(
 export function buildReadIdsByChainName(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   chainMode: boolean,
+  hidden?: ReadonlySet<string>,
 ): Map<string, string[]> {
   const map = new Map<string, string[]>()
   if (chainMode) {
-    for (const { data } of eachGroup(rpcDataMap)) {
+    for (const { data } of eachGroup(rpcDataMap, hidden)) {
       if (data.readChainIndices && data.chainNames) {
         for (let i = 0; i < data.readKeys.length; i++) {
           const name = data.chainNames[data.readChainIndices[i]!]
@@ -226,8 +227,16 @@ export function buildRawDataByGroup(
 
 // read id → where that read lives (which region, which group, row index),
 // letting hit-test/detail lookups resolve a feature back to its raw arrays.
+//
+// Hidden lanes are dropped here for the reason `buildRawDataByGroup` gives, plus
+// one of its own: `findFeatureInRpcData` resolves an entry through
+// `laidOutByGroup`, which is built from the already-filtered `groupOrder`, so a
+// hidden lane's read matched a key that then resolved to nothing. Its entries
+// were unreachable by construction — and each one cost a `readIdAt` string for a
+// read no lookup can reach.
 export function buildReadIdIndexMap(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  hidden?: ReadonlySet<string>,
 ): Map<
   string,
   { displayedRegionIndex: number; groupKey: string; idx: number }
@@ -236,7 +245,10 @@ export function buildReadIdIndexMap(
     string,
     { displayedRegionIndex: number; groupKey: string; idx: number }
   >()
-  for (const { displayedRegionIndex, key, data } of eachGroup(rpcDataMap)) {
+  for (const { displayedRegionIndex, key, data } of eachGroup(
+    rpcDataMap,
+    hidden,
+  )) {
     for (let i = 0; i < data.readKeys.length; i++) {
       const id = readIdAt(data, i)
       if (id !== undefined) {

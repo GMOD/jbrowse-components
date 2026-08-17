@@ -985,7 +985,11 @@ export default function stateModelFactory(
          * — `highlightedChainReadIds`, `selectedChainReadIds`.
          */
         get readIdsByChainName() {
-          return buildReadIdsByChainName(self.rpcDataMap, self.isChainMode)
+          return buildReadIdsByChainName(
+            self.rpcDataMap,
+            self.isChainMode,
+            self.hiddenGroupKeys,
+          )
         },
 
         /**
@@ -2127,7 +2131,7 @@ export default function stateModelFactory(
          * #getter
          */
         get readIdIndexMap() {
-          return buildReadIdIndexMap(self.rpcDataMap)
+          return buildReadIdIndexMap(self.rpcDataMap, self.hiddenGroupKeys)
         },
 
         /**

@@ -218,6 +218,26 @@ test('buildReadIdIndexMap locates each read by region + group + row', () => {
   expect(map.get('missing')).toBeUndefined()
 })
 
+// A hidden lane's entries were unreachable anyway — `findFeatureInRpcData`
+// resolves them through `laidOutByGroup`, which is built from the filtered
+// `groupOrder` — and each one spelled a `readIdAt` string to get there.
+test('buildReadIdIndexMap drops the reads of a hidden lane', () => {
+  const map = buildReadIdIndexMap(
+    new Map([
+      [
+        0,
+        grouped([
+          { key: 'peach', data: data(['a']) },
+          { key: 'self', data: data(['b']) },
+        ]),
+      ],
+    ]),
+    new Set(['self']),
+  )
+  expect(map.get('a')?.groupKey).toBe('peach')
+  expect(map.get('b')).toBeUndefined()
+})
+
 // This map is what `findFeatureInRpcData` resolves a hover or a click through,
 // so it is keyed by the id STRING even though the result ships numeric keys —
 // `featureIdUnderMouse` is a string, and MST saves and restores it. Deferred
@@ -358,6 +378,25 @@ test('buildReadIdsByChainName keyed by name never collides across groups', () =>
   )
   expect(m.get('hp1chain')).toEqual(['a', 'b'])
   expect(m.get('hp2chain')).toEqual(['c', 'd'])
+})
+
+// The read ids here are resolved through `readIdIndexMap`, which drops the same
+// lanes, so a hidden lane's chain could only ever have highlighted nothing.
+test('buildReadIdsByChainName drops the chains of a hidden lane', () => {
+  const m = buildReadIdsByChainName(
+    new Map([
+      [
+        0,
+        grouped([
+          { key: 'peach', data: data(['a'], [0], ['peachchain']) },
+          { key: 'self', data: data(['b'], [0], ['selfchain']) },
+        ]),
+      ],
+    ]),
+    true,
+    new Set(['self']),
+  )
+  expect([...m.keys()]).toEqual(['peachchain'])
 })
 
 // [start, end, count] per junction.
