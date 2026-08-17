@@ -49,6 +49,7 @@
     "figures:report": "node website/scripts/figures.ts report",
     "diagrams": "node website/scripts/diagrams.ts",
     "diagrams:check": "node website/scripts/diagrams.ts --check",
+    "gen-diagram-usage": "node website/scripts/gen-diagram-usage.ts",
     "sync-doc-snippets": "node website/scripts/sync-doc-snippets.ts",
     "sync-measurements": "node website/scripts/sync-measurements.ts",
     "sync-img-readme": "node website/scripts/sync-img-readme.ts",

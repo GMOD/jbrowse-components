@@ -13,18 +13,26 @@ along one axis has nothing for a solver to decide, and writing it as a digraph
 means fighting the layout for coordinates you already knew — hand-author those
 as SVG.
 
-| Source                           | Used in                                           |
-| -------------------------------- | ------------------------------------------------- |
-| `dataflow.dot`                   | `docs/developer_guides/dataflow.md`               |
-| `products_and_plugins.dot`       | `docs/developer_guide.md` (Products and plugins)  |
-| `product_architecture.dot`       | `docs/developer_guide.md` (state model / React)   |
-| `wolfdog_ancestry_pipeline.dot`  | `docs/tutorials/local_ancestry.md` (The pipeline) |
-| `feature_plotting_threads.dot`   | `docs/developer_guides/plotting_features.md`      |
-| `fetch_chain.dot`                | `docs/developer_guides/data_fetching.md`          |
-| `rpc_lifecycle.dot`              | `docs/developer_guides/rpc_workers.md`            |
-| `gpu_display_lifecycle.dot`      | `docs/developer_guides/creating_gpu_display.md`   |
-| `gpu_display_tldr.dot`           | same page, the simplified version above it        |
-| `inversion_pair_orientation.svg` | `docs/user_guides/sv_visualization.md`            |
+Where each one is embedded, and under which heading — read off the docs
+themselves by `pnpm gen-diagram-usage`, which fails when a source here has no
+reader:
+
+<!-- BEGIN GENERATED DIAGRAM USAGE -->
+
+| Source                           | Used in                                                                                                                     |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `dataflow.dot`                   | [`docs/developer_guides/dataflow.md`](../docs/developer_guides/dataflow.md)                                                 |
+| `feature_plotting_threads.dot`   | [`docs/developer_guides/plotting_features.md`](../docs/developer_guides/plotting_features.md) — The mental model            |
+| `fetch_chain.dot`                | [`docs/developer_guides/data_fetching.md`](../docs/developer_guides/data_fetching.md) — The whole chain                     |
+| `gpu_display_lifecycle.dot`      | [`docs/developer_guides/creating_gpu_display.md`](../docs/developer_guides/creating_gpu_display.md) — Architecture overview |
+| `gpu_display_tldr.dot`           | [`docs/developer_guides/creating_gpu_display.md`](../docs/developer_guides/creating_gpu_display.md) — Architecture overview |
+| `inversion_pair_orientation.svg` | [`docs/user_guides/sv_visualization.md`](../docs/user_guides/sv_visualization.md) — Pair orientation color scheme           |
+| `product_architecture.dot`       | [`docs/developer_guide.md`](../docs/developer_guide.md) — Products and plugins                                              |
+| `products_and_plugins.dot`       | [`docs/developer_guide.md`](../docs/developer_guide.md) — Products and plugins                                              |
+| `rpc_lifecycle.dot`              | [`docs/developer_guides/rpc_workers.md`](../docs/developer_guides/rpc_workers.md) — The RPC lifecycle                       |
+| `wolfdog_ancestry_pipeline.dot`  | [`docs/tutorials/local_ancestry.md`](../docs/tutorials/local_ancestry.md) — The pipeline                                    |
+
+<!-- END GENERATED DIAGRAM USAGE -->
 
 ## Editing one
 

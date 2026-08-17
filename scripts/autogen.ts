@@ -107,6 +107,14 @@ const GENERATORS: Generator[] = [
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
   {
+    // Which doc embeds which diagram, off the docs themselves. diagrams.ts ties
+    // a source to the figure it rendered and check-figure-refs.ts ties a doc to
+    // the store, so between them a diagram can lose its last reader with every
+    // gate green — this is the one that notices.
+    name: 'diagram usage table',
+    argv: web('gen-diagram-usage.ts'),
+  },
+  {
     // agent-docs/CLAUDE.md makes reading a directory's `description:` lines the
     // way to find the right doc, which meant opening all of them. This renders
     // them into one page per directory (reference/ and ideas/) and, more to the
