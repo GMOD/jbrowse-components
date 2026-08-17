@@ -243,7 +243,8 @@ async function renderFigure(view: LinearGenomeViewModel) {
     container,
     svg: () => container.querySelector('svg')!,
     text: (testid: string) =>
-      container.querySelector(`[data-testid="${testid}"]`)?.textContent,
+      container.querySelector(`[data-testid="${CSS.escape(testid)}"]`)
+        ?.textContent,
   }
 }
 
