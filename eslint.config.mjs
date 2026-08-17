@@ -66,6 +66,27 @@ const noTrackWidthPx = {
   message:
     'Read `model.canvasWidthPx`, not `view.trackWidthPx`. Four view getters answer plausibly and MAF drifted onto the wrong one; the two agree today, so a second spelling is silent until one of them moves. See MultiRegionDisplayMixin.canvasWidthPx.',
 }
+// plugins/alignments/src/CLAUDE.md states this one and also states why it needs a
+// linter rather than a reviewer: the flag agrees with `strand` on every BAM under
+// test and disagrees only on the flagless PAF/synteny blocks the same pipeline
+// serves, so a conversion written anywhere else "survives review and ships".
+// Every strand bug this plugin has had was that.
+const noSamFlagReverse = {
+  selector: "Identifier[name='SAM_FLAG_REVERSE']",
+  message:
+    'SAM_FLAG_REVERSE may only become a strand inside an adapter feature class (SamRecordFeature.strand). Everywhere downstream reads `getStrand(feature)` / `readStrands[i]` / `FeatureData.strand`, which is universal — `getFlags` returns 0 for a PAF/synteny block, so a flag-derived strand reports every one of them forward. Rules needing a strand AND a flag live in shared/util.ts (firstOfPairStrand). See plugins/alignments/src/CLAUDE.md.',
+}
+// The mutation `withRegionRef` exists to prevent. Nothing does it today; the rule
+// is here so nothing starts, because the failure is a wrong picture rather than a
+// crash — regionRefAliasing.test.ts is the regression test.
+// `computed=false` matters: `best[ref] = …` is a MemberExpression whose property
+// is the identifier `ref`, and 38 of those exist in the mod-probability walks.
+const noRecordRefMutation = {
+  selector:
+    "AssignmentExpression[left.type='MemberExpression'][left.computed=false][left.property.name='ref']",
+  message:
+    "Do not assign `record.ref = …`. @gmod/bam memoizes decoded records in a per-file chunk LRU, so two queries can be handed the identical objects and the last fetch to resolve rebinds the reference for every other region — resolving one region's mismatches against another region's sequence. Use `record.withRegionRef(packedRef)`, which returns a bound view. See plugins/alignments/src/CLAUDE.md and regionRefAliasing.test.ts.",
+}
 
 // `rpcManager.call` reached two ways — off a binding, and off `getSession(…)` /
 // `session` — and a payload built as an object literal rather than spread from
@@ -119,6 +140,23 @@ const restrictedSyntax = [
   noExportStar,
   noNamedObserver,
   noAnyStateTreeNode,
+]
+
+// The set every non-test file gets. Named because the drift the comment above
+// warns about had already happened to it twice: the two blocks that carve out one
+// file each (`MultiRegionDisplayMixin`, `renderSvg.tsx`) re-listed `restrictedSyntax`
+// by hand and so silently turned OFF the four source-only rules there — including
+// both RPC-handle guards, in the two places most likely to call an RPC. Neither
+// scope violates them today, so nothing was reported; that is the point. A block
+// carving out one rule filters this list rather than rebuilding it.
+const sourceRestrictedSyntax = [
+  ...restrictedSyntax,
+  noSetSlot,
+  noTrackWidthPx,
+  noSamFlagReverse,
+  noRecordRefMutation,
+  noUnreportedRpcCall,
+  noUncancellableRpcCall,
 ]
 
 export default defineConfig(
@@ -563,14 +601,7 @@ export default defineConfig(
     // itself.
     ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        ...restrictedSyntax,
-        noSetSlot,
-        noTrackWidthPx,
-        noUnreportedRpcCall,
-        noUncancellableRpcCall,
-      ],
+      'no-restricted-syntax': ['error', ...sourceRestrictedSyntax],
     },
   },
   // The one file allowed to read `trackWidthPx`: the getter that answers the
@@ -581,7 +612,28 @@ export default defineConfig(
       'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
     ],
     rules: {
-      'no-restricted-syntax': ['error', ...restrictedSyntax, noSetSlot],
+      'no-restricted-syntax': [
+        'error',
+        ...sourceRestrictedSyntax.filter(s => s !== noTrackWidthPx),
+      ],
+    },
+  },
+  // The sanctioned home of the SAM_FLAG_REVERSE → strand conversion, plus the
+  // package that defines and re-exports the constant. Everything else reads
+  // `getStrand`.
+  {
+    files: [
+      'plugins/alignments/src/SamAdapter/**/*.{ts,tsx}',
+      'packages/cigar-utils/src/**/*.{ts,tsx}',
+    ],
+    // Same carve-out as the source block this overrides, or a test under either
+    // path would get the source-only rules switched back on.
+    ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...sourceRestrictedSyntax.filter(s => s !== noSamFlagReverse),
+      ],
     },
   },
   // Shader codegen emits `export *` and must not be hand-edited (run
@@ -619,7 +671,7 @@ export default defineConfig(
     rules: {
       'no-restricted-syntax': [
         'error',
-        ...restrictedSyntax,
+        ...sourceRestrictedSyntax,
         {
           selector: "NewExpression[callee.name='SvgCanvas']",
           message:

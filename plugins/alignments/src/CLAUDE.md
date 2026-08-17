@@ -51,8 +51,10 @@ renderers). `getFlags` returns **0** for the latter, so:
 **`SAM_FLAG_REVERSE` may only be converted to a strand inside an adapter's
 feature class** (`SamRecordFeature.strand`). Every strand bug this plugin has
 had was that conversion done elsewhere: it agrees with `strand` on every BAM
-under test and disagrees on synteny, so it survives review and ships. Rules
-needing a strand AND a flag (`firstOfPairStrand`) live in `shared/util.ts`.
+under test and disagrees on synteny, so it survives review and ships. Which is
+why it is a lint rule (`noSamFlagReverse`) and not only this paragraph —
+`SamAdapter/` and `packages/cigar-utils/` are the allowlist. Rules needing a
+strand AND a flag (`firstOfPairStrand`) live in `shared/util.ts`.
 
 ## A read's identity is `readKeys`; `readIdAt` builds the string
 
@@ -128,7 +130,9 @@ alongside the ratio, and the real fix is a library change (seam 5).
 **`withRegionRef`, never `record.ref = …`** — `@gmod/bam` memoizes decoded
 records in a per-file chunk LRU, so two queries can get the identical objects
 back and the last fetch to resolve rebinds it for every other region, resolving
-one region's mismatches against another's sequence. `regionRefAliasing.test.ts`.
+one region's mismatches against another's sequence. `regionRefAliasing.test.ts`
+is the regression test, `noRecordRefMutation` the lint rule that stops the
+assignment coming back.
 
 ## CRAM read-feature walks
 
