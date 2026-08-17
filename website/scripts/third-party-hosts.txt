@@ -13,6 +13,7 @@
 # configs on jbrowse.org name tracks that resolve back to hgdownload, so a spec
 # loading one pulls from UCSC without naming it here.
 ftp.1000genomes.ebi.ac.uk
+gmod.org
 hgdownload.soe.ucsc.edu
 s3-us-west-2.amazonaws.com
 s3.amazonaws.com
