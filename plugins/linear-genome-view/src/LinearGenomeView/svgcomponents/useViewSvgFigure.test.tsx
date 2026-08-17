@@ -279,15 +279,19 @@ test('draws the tracks, the header and the ruler at the reserved size', async ()
 // this one draws a position readout, as every example does — must not advance
 // one half past the other.
 //
-// **This pins the property, not the mechanism, and the difference is worth
-// knowing before trusting it.** Two things hold the figure still: the `memo` in
-// `useViewSvgFigure`, and React Compiler, which `babel.config.cjs` runs over
-// every component in this repo and which memoizes the same tree on the same
-// unchanged props. So this passes with the `memo` deleted — while a consumer,
-// who gets `build:esm`'s plain tsc output with no compiler pass, would see the
-// ruler slide off its own features. What this catches is the other direction:
-// chrome that starts re-rendering on its own (an `observer` added to SVGRuler,
-// a prop that changes identity per render) defeats both at once.
+// **Under `pnpm test` this cannot fail, and the run that makes it mean
+// something is `pnpm test-ci-no-react-compiler`.** Two things hold the figure
+// still: the `memo` in `useViewSvgFigure`, and React Compiler, which
+// `babel.config.cjs` runs over every component here. Delete the `memo` and this
+// still passes compiled; delete it under `NO_RC=1` and it fails with the ruler
+// ticks at 62 while the track body stays at the snapshot's 199 — the two clocks.
+// A consumer gets `build:esm`'s plain tsc output with no compiler pass, so the
+// uncompiled run is the one that describes them.
+//
+// `'use no memo'` is not a substitute for that switch. The compiler memoizes the
+// whole chrome chain (`SVGRuler.tsx` alone compiles to caches in `Ruler`,
+// `SVGRefNameLabels`, `SVGRefNameLabel` and `SVGRuler`), so opting out one
+// function just moves the absorption one level down and this test stays green.
 test('the drawn figure does not move when the host re-renders', async () => {
   const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
   const { svg, text } = await renderFigure(view)

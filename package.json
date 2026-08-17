@@ -36,6 +36,7 @@
     "typecheck:web": "node --experimental-strip-types scripts/typecheck.ts",
     "typecheck:node": "node --experimental-strip-types scripts/typecheck.ts products/jbrowse-desktop/electron products/jbrowse-desktop/test products/jbrowse-cli",
     "test-ci": "NODE_OPTIONS='--max-old-space-size=7000' jest --ci",
+    "test-ci-no-react-compiler": "NO_RC=1 NODE_OPTIONS='--max-old-space-size=7000' jest --ci --cacheDirectory node_modules/.cache/jest-no-rc plugins packages",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
     "gendocs": "node website/scripts/api-docs/generate.ts",

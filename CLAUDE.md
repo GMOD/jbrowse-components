@@ -49,6 +49,10 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 ## Tooling
 
 - `pnpm test <directory>`, in your own worktree. Lint `--fix`.
+- **A memoization sabotage that stays green under `pnpm test` proves nothing** —
+  React Compiler stands in for the `memo` you deleted.
+  `pnpm test-ci-no-react-compiler` is the run that sees it, and the only one
+  covering what `build:esm` publishes. `reference/COMPILER_TERNARY_FINDING.md`.
 - Bare `pnpm format` is fine; never name `agent-docs` (`.prettierignore`).
 - `pnpm autogen` answers any "X is out of date". Shaders: `pnpm gen:shaders`,
   and **check its exit code** — a failed compile leaves the stale

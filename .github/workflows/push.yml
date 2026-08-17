@@ -104,6 +104,45 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
 
+  # The Test job above compiles everything with babel-plugin-react-compiler, and
+  # so does every app bundle. The packages we *publish* do not: `build:esm` is
+  # plain tsc, so an npm consumer of `@jbrowse/plugin-*` runs code no compiler
+  # ever saw. This job is the only one that exercises that artifact.
+  #
+  # It is not a duplicate of Test. The compiler memoizes far more than the
+  # explicit `memo`/`useMemo` calls in the source, so it stands in for a missing
+  # one and a sabotage check stays green — which is how a load-bearing `memo` in
+  # `useViewSvgFigure` came to be unverifiable by any run in the repo.
+  #
+  # Scoped to `plugins packages`, which is what gets published; `products` ship
+  # bundled and compiled, so the uncompiled path is not an artifact they have.
+  test-no-react-compiler:
+    name: Test (no React Compiler)
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update && sudo apt-get -y install tabix
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # Its own cache path and key prefix, not the Test job's. Jest keys entries
+      # on file content + transformer config, and `NO_RC` is neither, so a shared
+      # directory would serve compiled output to this job and silently make it a
+      # second copy of Test.
+      - name: Restore jest transform cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules/.cache/jest-no-rc
+          key:
+            jest-no-rc-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml',
+            'babel.config.cjs', 'jest.config.js') }}-${{ github.sha }}
+          restore-keys: |
+            jest-no-rc-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'babel.config.cjs', 'jest.config.js') }}-
+            jest-no-rc-${{ runner.os }}-
+      - name: Test the uncompiled build
+        run: pnpm test-ci-no-react-compiler
+
   typecheck:
     name: Typecheck
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}

@@ -100,3 +100,23 @@ babel.transformSync(src, { filename, presets: [['@babel/preset-react',{runtime:'
 
 Unit tests do run the compiler, but only catch this if they re-render after
 mutating the observable.
+
+## The uncompiled half, and the job that runs it
+
+`pnpm test` and every app bundle compile. The **published packages do not** —
+`build:esm` is plain tsc, so an npm consumer of `@jbrowse/plugin-*` executes code
+no compiler ever saw. `pnpm test-ci-no-react-compiler` (`NO_RC=1`, scoped to
+`plugins packages`, its own `--cacheDirectory` because jest keys entries on file
+content and transformer config and an env var is neither) is the only run that
+exercises that artifact, and CI runs it as "Test (no React Compiler)".
+
+The gap it closes is the opposite of the staleness above: the compiler memoizes
+far more than the source's explicit `memo`/`useMemo`, so it **stands in for one
+that is missing** and a sabotage check stays green. `useViewSvgFigure`'s `memo`
+was load-bearing and unverifiable by any run in the repo for exactly this
+reason — deleting it failed nothing compiled, and fails the figure's freeze test
+immediately under `NO_RC=1`.
+
+Reaching for `'use no memo'` instead does not work: the compiler memoizes the
+whole chain, so opting out the one component under test moves the absorption a
+level down and the check stays green. Switch the plugin off for the run.

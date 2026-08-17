@@ -1,6 +1,8 @@
 // eslint-disable-next-line no-undef
 module.exports = function babelConfig(api) {
-  api.cache(true)
+  // keyed on NO_RC rather than `api.cache(true)`, which would pin whichever
+  // plugin list the first compile in a process happened to resolve
+  api.cache.using(() => process.env.NO_RC)
   return {
     // WARNING: babel-plugin-react-compiler runs on EVERY component, including
     // mobx `observer`s. It can silently drop a mobx in-place update when an
@@ -13,7 +15,18 @@ module.exports = function babelConfig(api) {
     // early-`return`). Full analysis + minimal repro + why it's not upstreamable:
     // agent-docs/COMPILER_TERNARY_FINDING.md (kept in sync with DisplayChrome.tsx
     // and ARCHITECTURE.md §1a).
-    plugins: ['babel-plugin-react-compiler'],
+    //
+    // `NO_RC=1` switches it off for one run. That is not a debugging convenience
+    // — it is how the published packages are built. `build:esm` is plain tsc, so
+    // an npm consumer of `@jbrowse/plugin-*` executes code no compiler ever saw,
+    // while jest and every app bundle (babel-loader, `rootMode: 'upward'`) run
+    // it compiled. The Push workflow's "Test (no React Compiler)" job closes
+    // that gap; `pnpm test` alone cannot, and a memoization sabotage that stays
+    // green under it proves nothing. Jest keys its transform cache on file
+    // content and transformer config, and an env var is neither, so a NO_RC run
+    // needs its own `--cacheDirectory` (or `--no-cache`) to avoid reusing the
+    // compiled entries.
+    plugins: process.env.NO_RC ? [] : ['babel-plugin-react-compiler'],
     presets: [
       [
         '@babel/preset-react',
