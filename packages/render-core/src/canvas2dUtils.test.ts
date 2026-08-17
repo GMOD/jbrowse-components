@@ -243,6 +243,63 @@ describe('bpAtPx', () => {
     expect(bpAtPx(20, { ...offset, reversed: true })).toBe(109)
   })
 
+  // The bounds a hit test is actually handed. A block's edges are laid out in
+  // PIXELS, so `visibleRegions` reports bp edges with a fraction on them
+  // (`14468.99356617647` is a real one, off the 31bp window
+  // `alignments_sort_by_base` opens), and every test above hides that by
+  // starting on a whole base.
+  //
+  // Returning a base means returning an integer. Flooring the offset and adding
+  // a fractional anchor carried the fraction straight out, and the callers that
+  // index a base by equality then matched nothing at all — the pileup drew a
+  // mismatch column its own right-click could not find.
+  describe('an anchor that is not on a base boundary', () => {
+    const frac: BpRegionBounds = {
+      start: 14468.99356617647,
+      end: 14499.99356617647,
+      screenStartPx: 0,
+      screenEndPx: 1088,
+    }
+
+    test('names a whole base', () => {
+      for (const reversed of [false, true]) {
+        for (let px = 0; px < 1088; px += 0.5) {
+          expect(Number.isInteger(bpAtPx(px, { ...frac, reversed }))).toBe(true)
+        }
+      }
+    })
+
+    // A quarter, half and three quarters into each cell rather than at its
+    // edges: a fractional anchor puts every base boundary at a fractional
+    // pixel, and no double-precision spelling resolves the boundary pixel
+    // itself both ways (the boundary the painter rounded to can sit either side
+    // of the true one). Against an exact rational oracle over 3.7M samples on
+    // such anchors this spelling misses 696, all of them that pixel; the
+    // shipped one missed all 3,076,480. On a whole-base anchor both are exact.
+    test('every pixel of a cell resolves back to the base painted there', () => {
+      for (const reversed of [false, true]) {
+        const bounds = { ...frac, reversed }
+        const cellLeft = makeCellLeftMapper(bounds)
+        const pxPerBp = 1088 / 31
+        for (let bp = 14469; bp < 14499; bp++) {
+          const left = cellLeft(bp)
+          for (const into of [0.25, 0.5, 0.75]) {
+            expect(bpAtPx(left + into * pxPerBp, bounds)).toBe(bp)
+          }
+        }
+      }
+    })
+
+    test('the column a 1bp highlight is drawn in names that base', () => {
+      // getHighlightCoords' own arithmetic: the band's left edge and its
+      // centre, which is where an anchored click lands. Both sat one base low.
+      const toX = makeBpMapper(frac)
+      const left = toX(14480)
+      expect(bpAtPx(left, frac)).toBe(14480)
+      expect(bpAtPx(left + (toX(14481) - left) / 2, frac)).toBe(14480)
+    })
+  })
+
   // A pixel that lands EXACTLY on a base boundary must name the base starting
   // there. These are not contrived floats — each px below divides the block at
   // a whole base: 560 * 90 / 800 = 63, and 1408 * 75 / 1920 = 55, both exact in

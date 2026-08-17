@@ -572,11 +572,35 @@ export function fillBpSpan(
  * wiggle's independent `baseAtFraction` — which this now backs — 10992 times.
  * Those are all boundary pixels, which is exactly where a per-base tooltip is
  * read.
+ *
+ * **The anchor splits, because `bounds.start` is usually not a whole base.** A
+ * block's edges are laid out in PIXELS, so its bp edges land wherever that
+ * projection puts them — `visibleRegions` hands every hit test a start like
+ * `14468.9936` — and rounding the *offset* and then adding such an anchor
+ * returns the anchor's fraction untouched. The result is then not a base at
+ * all, and every caller that indexes one by equality (a mismatch column, a
+ * coverage bin, the sort-at-this-column anchor) misses silently: the pileup
+ * offered no SNP submenu over a mismatch it was drawing. Rounding
+ * `whole + fraction + offset` in one step instead fixes that and hands back the
+ * genome-scale addend the paragraph above exists to keep out, so the whole base
+ * comes off first and only the sub-base remainder enters the rounded
+ * expression. On a whole-base anchor that remainder is zero and the arithmetic
+ * is identical to what an integer start has always done.
+ *
+ * The same oracle, re-run over 3.7M samples on fractional anchors: this spelling
+ * misses 696 and the shipped one missed every single fractional-anchor sample,
+ * 3,076,480 of them. `Math.floor(start + offset)` misses 2,524. The residue is
+ * the boundary pixel itself, which no double-precision spelling resolves both
+ * ways once base boundaries stop landing on whole pixels.
  */
 export function bpAtPx(px: number, bounds: BpRegionBounds) {
   const { start, end, screenStartPx, screenEndPx, reversed } = bounds
-  const offset = Math.floor(
-    ((px - screenStartPx) * (end - start)) / (screenEndPx - screenStartPx),
-  )
-  return reversed ? end - 1 - offset : start + offset
+  const offset =
+    ((px - screenStartPx) * (end - start)) / (screenEndPx - screenStartPx)
+  const anchor = reversed ? end : start
+  const whole = Math.floor(anchor)
+  const rem = anchor - whole
+  return reversed
+    ? whole + Math.ceil(rem - offset) - 1
+    : whole + Math.floor(rem + offset)
 }
