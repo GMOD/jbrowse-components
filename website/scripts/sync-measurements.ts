@@ -42,6 +42,20 @@
 // layering test and `ReExports/abi.test.ts`: the tag exists only to be
 // published, so one left behind after a page drops its block is a claim that
 // something is being kept in step when nothing is.
+//
+// ## Publishing a table means linking the doc
+//
+// A page that consumes a measurement must also LINK the doc it came from. A
+// table without that link hands the reader a figure and no way to reach what
+// produced it, and the prose around such a table quotes the same doc's other
+// numbers — which then trace only by coincidence, since `check-quoted-figures`
+// searches the docs a page links. Three of the nine blocks were in that state:
+// MULTI_SAMPLE_VARIANTS, INTERACTION_PERF and EAGER_BUNDLE.
+//
+// It belongs here rather than in `check-quoted-figures` because here it is
+// exact. This page consumes THIS file, so the missing link is a fact about the
+// page; over there it could only ever be inferred from a number that failed to
+// match, which is the same evidence a typo produces.
 import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
@@ -142,6 +156,17 @@ const generated = docFiles(docsDir)
         continue
       }
       consumed.add(id)
+      if (!text.includes(source.file)) {
+        // A page that publishes a doc's table and never links the doc leaves the
+        // reader with a figure and no way to reach what produced it. The check
+        // is here rather than in `check-quoted-figures` because here it is
+        // exact: this page consumes THIS file, so the link is a fact, not a
+        // guess from a matching number. Three pages-worth of prose figures were
+        // traceable only by coincidence for want of it.
+        problems.push(
+          `${relative(repoRoot, path)}: publishes "${id}" but links no ${source.file} — a reader gets the table and no route to the measurement`,
+        )
+      }
       content = spliceGeneratedBlock({
         path,
         marker: `MEASUREMENT ${id}`,

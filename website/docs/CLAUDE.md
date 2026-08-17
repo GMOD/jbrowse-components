@@ -44,10 +44,18 @@ check by fixing the manifest, not by removing a skip.
   `<!-- measurement: <id> -->` and bracket the copy with
   `<!-- BEGIN GENERATED MEASUREMENT <id> -->` / `END` (`sync-measurements.ts`).
   The whole table comes across; a page wanting fewer rows is a page arguing with
-  the doc that owns the number. Having such a block also opts the page into
-  `check-quoted-figures`, which requires every `<number><unit>` in its prose to
-  appear in an agent-doc **the page links**, or in source — so cite the doc you
-  took the figure from.
+  the doc that owns the number. **Link the doc you published the table from** —
+  `sync-measurements` requires it, because a table with no link back hands the
+  reader a figure and no measurement.
+- **Don't restate a number the page already carries.** `72%` beside a published
+  `28%`, or `200x` off a `0.005` in the table above it, is arithmetic that goes
+  stale the next time the table is regenerated and nothing will say so. Say what
+  the table cannot.
+- Having a measurement block opts the page into `check-quoted-figures`, which
+  requires every `<number><unit>` in its prose to appear in an agent-doc **the
+  page links** or in the JSDoc of an **exported symbol the page names**. Both
+  haystacks are what the page points a reader at, so cite the doc or name the
+  symbol you took the figure from.
 - **Write `displayDefaults`, not a `displays` array**, unless the example
   selects a non-default display type or needs real `displayId`s.
 - **Show a whole track config, not a fragment**, tagged ```json addtrack —

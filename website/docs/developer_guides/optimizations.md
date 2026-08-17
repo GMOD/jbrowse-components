@@ -314,6 +314,8 @@ changes.
 Read the trade rather than the total: structural churn is the expensive class,
 since each new node pays styling, layout and paint, and the rise in attribute
 patches is the same work done the cheap way on nodes that survived.
+[INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md)
+has the mutation-attribution harness this came off.
 
 ### A long list costs per row
 
@@ -407,7 +409,9 @@ div, one wiggle track and no JBrowse chrome at all:
 <!-- END GENERATED MEASUREMENT eager-bundle-chunks -->
 
 Same page throughout, rendering the same thing; the sixth pin was measured on a
-different host and in different units. A `lazy()` at a registration site only
+different host and in different units.
+[EAGER_BUNDLE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/EAGER_BUNDLE.md)
+names all six and how each was found. A `lazy()` at a registration site only
 holds if nothing else in an eagerly evaluated module names the same component,
 and a plugin `exports` object is the easiest place to name one by accident — it
 is evaluated when the class is defined.

@@ -29,12 +29,20 @@ put `<!-- BEGIN GENERATED MEASUREMENT <id> -->` / `END` on the public page;
 `pnpm autogen` fills it and `--check` fails on drift. The table travels whole —
 there is no row or column filter, deliberately, so where one reads badly in
 public fix the header here. Both directions are errors: a block naming no
-measurement, and a tagged table no page publishes.
+measurement, and a tagged table no page publishes. **The publishing page must
+also link this doc**, or the reader gets a table and no measurement.
 
 The prose around those tables is checked too, by `check-quoted-figures.ts`:
 every `<number><unit>` a public measurement page writes has to appear in an
-agent-doc **that page links**, or in source. So a figure quoted from here needs
-the link to here, and an unlinked one fails.
+agent-doc **that page links**, or in the JSDoc of an **exported symbol it
+names**. So a figure quoted from here needs the link to here, and an unlinked
+one fails. Scoping to what the page cites is what makes that worth running —
+against all of source the check admitted 73 of the 101 integer percentages,
+which is most typos.
+
+**Both ends of a range are checked**, so re-measuring `70-90%` means updating
+both. That was silently false until 2026-08-17; `quotedFigures.test.ts` pins it
+now.
 
 Same discipline for the v5 manuscript's strategy table, which states the same
 set at a higher altitude and has no generator reaching it: three copies of a
