@@ -287,6 +287,14 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   of a figure's window, which drew a coverage collapse over a breakend the full
   BAM shows a GAIN over; the fix was a wider region, not a narrower window. A
   slice whose regions match its windows exactly is already wrong at both edges.
+
+  **A sliced track cannot back a genome-wide run**, which is worth knowing
+  before reaching for one. `jb2export batch` over the HG008 benchmark SV callset
+  renders ~150 junctions, and the reads track in `demos/cgiab/config.json` is
+  this slice — so all but the handful on chr3, chr13 and chr9 come out as empty
+  pileups, one per image, with the run reporting success. Point such a run at
+  the full NCBI BAM instead: it is 118 GB but each junction is a range request,
+  and rendering one is seconds.
 - **Hi-C translocation** — GM12878 vs K562 BCR-ABL1, two windows (chr9 ABL1,
   chr22 BCR) in one LGV so JBrowse fetches the chr9×chr22 block: empty in a
   normal karyotype, solid in K562. Replaced an orphaned loops-arc config.

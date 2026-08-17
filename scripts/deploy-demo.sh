@@ -9,6 +9,15 @@
 # identifier <newTrackId>" because the cached config predates the new track.
 # Invalidating the exact path right after upload avoids that footgun.
 #
+# Replacing an object whose SIZE changed is broken for about a minute after the
+# invalidation, rather than merely stale: edges serve byte ranges of the old
+# object against the new one, so a range-requested format tears. samtools calls
+# that "[E::bgzf_read] Read block operation failed", which reads like a corrupt
+# upload and is not one -- re-check before re-uploading. Wait for a real query
+# to succeed:
+#
+#   until samtools view -c <url> <region> >/dev/null 2>&1; do sleep 20; done
+#
 # A config that has a checked-in copy under demos/ must be deployed FROM that
 # copy. Uploading a config assembled in a scratch directory is how
 # ecoli_pangenome lost its `ecoli_ava` track: nothing in review saw the
