@@ -180,10 +180,12 @@ function insetY(fraction: number, sizeY: number) {
   return TREE_LEFT_PAD + fraction * (sizeY - TREE_LEFT_PAD)
 }
 
-// Largest merge height in the subtree. For an hclust dendrogram the `length`
-// field on an internal node is its absolute merge height (the `(A,B)1.5` Newick
-// form), so the root usually holds the max — but a subtree-filtered root does
-// not, hence the full traversal.
+// Largest `length` in the subtree, which is the tree's overall scale under
+// either encoding below: the root's merge height in the absolute form, the
+// longest single branch in the incremental one. Only ever compared against 0
+// (does this tree carry lengths at all) or used to normalize the absolute form,
+// so the two readings do not need telling apart here. A subtree-filtered root
+// need not hold the max, hence the full traversal.
 export function maxNodeHeight<T extends { length?: number }>(
   node: HierarchyNode<T>,
 ): number {
@@ -197,13 +199,18 @@ export function maxNodeHeight<T extends { length?: number }>(
 // Newick's `length` field means two different things depending on who wrote the
 // tree, and the two need opposite layouts:
 //
-//   hclust  `(A,B)1.5`      — absolute merge height, counted down from the root
-//   phylo   `(A:0.1,B:0.2)` — incremental branch length, summed from the root
+//   incremental  `(A:0.1,B:0.2)` — branch length, summed from the root
+//   absolute     `(A,B)1.5`      — merge height, counted down from the root
 //
-// `toNewick` serializes leaves bare (name only, no number), so a leaf carrying a
-// length can only have come from a `:` token — i.e. a real phylogeny such as a
-// MAF guide tree. Reading one form as the other inverts the tree (the root, with
-// no length of its own, lands at the leaf edge).
+// The absolute form is a bare number in the internal node's *label* slot, which
+// only a dendrogram writer produces: `@gmod/hclust` wrote it through v4, and a
+// session saved back then still holds one. Everything else — a MAF guide tree,
+// and hclust from v5 on — writes `:` lengths.
+//
+// A leaf carrying a length is the tell, because the absolute form has no slot
+// to give one: its numbers sit after a `)`, and a leaf has no `)`. Reading
+// either form as the other inverts the tree, landing the root (which carries no
+// length of its own) at the leaf edge.
 export function hasIncrementalBranchLengths<T extends { length?: number }>(
   node: HierarchyNode<T>,
 ): boolean {
@@ -222,9 +229,13 @@ export function assignBranchLengthY<T extends { length?: number }>(
   }
 }
 
-// Absolute-merge-height form (hclust): root (max height) at 0, every leaf
-// (height 0) at sizeY, internal nodes proportional to where their cluster
-// merged. Matches R's `plot.hclust` node placement exactly.
+// Absolute-merge-height form (hclust v4 and earlier): root (max height) at 0,
+// every leaf (height 0) at sizeY, internal nodes proportional to where their
+// cluster merged. Matches R's `plot.hclust` node placement exactly.
+//
+// A dendrogram written as `:` lengths takes the cumulative path below instead
+// and lands on the same picture, because every leaf of one sits at the same
+// distance from the root — the two are the same ruler read from opposite ends.
 function assignMergeHeightY<T extends { length?: number }>(
   node: HierarchyNode<T>,
   sizeY: number,

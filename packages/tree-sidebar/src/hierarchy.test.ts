@@ -138,14 +138,33 @@ test('assignDepthY positions by depth-to-leaf, aligning leaves at the edge', () 
   expect(root.children![1]!.children![0]!.y).toBe(100)
 })
 
-// hclust dendrogram shape: internal nodes carry an absolute merge height in
-// `length` (the `(A,(C,D)0.5)2` Newick form); leaves carry none.
+// absolute-merge-height dendrogram, as hclust wrote through v4 and as saved
+// sessions still hold: internal nodes carry the height in `length` (the
+// `(A,(C,D)0.5)2` Newick form), leaves carry nothing.
 const dendro = (): Node => ({
   name: 'root',
   length: 2,
   children: [
     { name: 'A' },
     { name: 'inner', length: 0.5, children: [{ name: 'C' }, { name: 'D' }] },
+  ],
+})
+
+// the same dendrogram as hclust v5 writes it, `((A:2,(C:0.5,D:0.5):1.5))`: each
+// length is the drop from a node's height to its child's, so the root carries
+// none and every root-to-leaf path sums to the root's height of 2.
+const dendroWithBranchLengths = (): Node => ({
+  name: 'root',
+  children: [
+    { name: 'A', length: 2 },
+    {
+      name: 'inner',
+      length: 1.5,
+      children: [
+        { name: 'C', length: 0.5 },
+        { name: 'D', length: 0.5 },
+      ],
+    },
   ],
 })
 
@@ -169,6 +188,26 @@ test('assignBranchLengthY positions nodes by absolute merge height', () => {
   expect(root.children![0]!.y).toBe(100)
   expect(root.children![1]!.y).toBe(75.5)
   expect(root.children![1]!.children![0]!.y).toBe(100)
+})
+
+test('both encodings of one dendrogram lay out identically', () => {
+  // hclust v5 writes `:` lengths where v4 wrote merge heights, so this is the
+  // guarantee that a re-clustered tree draws exactly like the saved session it
+  // replaces. It holds because every leaf of a dendrogram sits at the same
+  // distance from the root, which makes cumulative depth and height-below-root
+  // the same measurement.
+  const legacy = hierarchy(dendro(), childrenOf)
+  const current = hierarchy(dendroWithBranchLengths(), childrenOf)
+  assignBranchLengthY(legacy, 100)
+  assignBranchLengthY(current, 100)
+
+  expect(hasIncrementalBranchLengths(legacy)).toBe(false)
+  expect(hasIncrementalBranchLengths(current)).toBe(true)
+  expect(descendants(current).map(n => n.y)).toEqual(
+    descendants(legacy).map(n => n.y),
+  )
+  expect(current.y).toBe(2)
+  expect(current.children![1]!.y).toBe(75.5)
 })
 
 test('clusterLayout uses branch-length layout when enabled', () => {

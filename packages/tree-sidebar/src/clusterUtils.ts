@@ -71,11 +71,11 @@ export function buildTree(newick: string): HierarchyNode<ClusterNodeData> {
 // back to the full tree.
 //
 // `incrementalLengths` says which of the two `length` encodings the tree uses
-// (see `hasIncrementalBranchLengths`). Only a phylo tree's incremental lengths
-// add up when a node collapses; an hclust node's `length` is an absolute merge
-// height, so summing it both invents a depth the child never had and — because
-// hclust leaves are bare — gives a leaf a `length`, which flips the whole tree
-// onto the cumulative phylogram layout.
+// (see `hasIncrementalBranchLengths`). Only incremental lengths add up when a
+// node collapses. In the absolute form — a merge height, from hclust v4 and the
+// saved sessions that still carry it — summing invents a depth the child never
+// had, and because that form leaves leaves bare, handing one a `length` flips
+// the whole tree onto the cumulative phylogram layout.
 export function pruneNewickToLeaves(
   node: ClusterNodeData,
   keep: Set<string>,
