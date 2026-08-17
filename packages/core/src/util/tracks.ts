@@ -956,11 +956,14 @@ export function showTrackGeneric(
   }
 }
 
-interface DisplaySnapshot {
+// The shape stripTrackIds walks, exported because a caller that TRANSFORMS the
+// same track snapshots before handing them over needs to name it too (the
+// collapsed-intron launch seeds a display's solo set on the way past).
+export interface DisplaySnapshot {
   id: string
   [key: string]: unknown
 }
-interface TrackSnapshot {
+export interface TrackSnapshot {
   id: string
   displays: DisplaySnapshot[]
   [key: string]: unknown

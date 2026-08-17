@@ -221,12 +221,19 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * #action
          * swap `view` for a new view of `typeName`, in the slot it occupied.
          *
-         * The launchers that build a view out of one you are already looking at
-         * — collapse introns, launch synteny view — otherwise append, leaving
-         * the source view above the thing it produced and a stack of two views
-         * showing the same locus. This is the "replace" half of that offer, and
-         * a slot swap rather than remove-then-add so the new view lands where
-         * the reader was looking instead of at the bottom of the session.
+         * The launchers that build a view of a DIFFERENT type out of one you are
+         * already looking at — launch synteny view, read-vs-ref, split view —
+         * otherwise append, leaving the source view above the thing it produced
+         * and a stack of two views showing the same locus. This is the "replace"
+         * half of that offer, and a slot swap rather than remove-then-add so the
+         * new view lands where the reader was looking instead of at the bottom of
+         * the session.
+         *
+         * A launcher whose result is the SAME type as its source does not come
+         * here and should not: collapse introns offers "Replace current view" by
+         * navigating the view it was invoked on, which keeps the view's identity
+         * and so lets its snackbar offer an Undo. Swapping in a new node would
+         * leave nothing to undo onto.
          *
          * The slot is `session.views`, which is the order views render in under
          * both layout modes (a tab's `viewIds` says which tab a view is in, not

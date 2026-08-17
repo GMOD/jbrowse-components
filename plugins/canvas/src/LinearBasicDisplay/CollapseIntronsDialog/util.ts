@@ -11,6 +11,7 @@ import {
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
+import type { TrackSnapshot } from '@jbrowse/core/util/tracks'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const isExonOrCDS = (f: Feature) => isExon(f) || isCDS(f)
@@ -123,16 +124,6 @@ function findSoloDisplay(view: LinearGenomeViewModel, trackId: string) {
     t => readConfObject(t.configuration, 'trackId') === trackId,
   )
   return track?.displays.find(isSoloCapable)
-}
-
-interface DisplaySnapshot {
-  id: string
-  [key: string]: unknown
-}
-interface TrackSnapshot {
-  id: string
-  displays: DisplaySnapshot[]
-  [key: string]: unknown
 }
 
 // Isolate the track (matched by trackId) in `view` to a single feature via the
