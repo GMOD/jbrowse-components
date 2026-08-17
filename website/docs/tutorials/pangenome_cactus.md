@@ -54,7 +54,9 @@ the result into a graph.
 This tutorial builds a graph from five _E. coli_ strains and loads it in JBrowse
 as synteny, variants, a whole-genome alignment, depth and presence, then maps a
 new isolate's reads through the finished graph. The graph is built here, not
-downloaded.
+downloaded; the [HPRC tutorial](/docs/tutorials/pangenome_hprc) opens the
+Minigraph-Cactus graph the Human Pangenome Reference Consortium publishes, which
+is the same builder at human scale and nothing to run.
 
 The [pggb tutorial](/docs/tutorials/pangenome_ecoli) uses the same five strains
 and the same projections onto K12, so the two pages compare the builders on
@@ -293,14 +295,13 @@ and streams while it does it, which matters at whole-genome scale; see
 }
 ```
 
-<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. All five align continuously across this window." src="/img/pangenome_cactus/maf.png" />
+<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. The four non-K12 rows stop at the edges of the cryptic prophage CPZ-55, which K12 alone carries." src="/img/pangenome_cactus/maf.png" />
 
-A row can be blank for two reasons: no colored columns is sequence that strain
-shares with K12, while a row that stops entirely is a strain with no alignment
-to K12 there, as on the
-[pggb page's 60 kb window](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection).
-The coverage band separates them, dropping where rows drop out and holding where
-they match.
+A row can be blank for two reasons, and both are in that frame. No colored
+columns is sequence the strain shares with K12, which is most of the flanks; a
+row that stops entirely is a strain with no alignment to K12 there, which is
+what the four do across the prophage. The coverage band separates them, dropping
+where rows drop out and holding where they match.
 
 `samples` both names the rows and fixes their order. To order them by how much
 of the graph each pair of strains shares instead, run

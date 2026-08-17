@@ -441,8 +441,21 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
 
   // Projection 3: the graph's whole-genome alignment (the HAL) projected onto K12
   // as a MAF. Coverage band on top, one row per strain (K12 first), colored where
-  // each differs from K12. A shared-backbone window, so mismatches read as SNP
-  // divergence.
+  // each differs from K12.
+  //
+  // THE WINDOW CARRIES THE NEGATIVE, which is why it is not the shared-backbone
+  // 6 kb it used to be. There every row aligned across the whole frame, so the
+  // caption said "all five align continuously" and the paragraph under it had to
+  // send the reader to the PGGB PAGE for the case a row drops out — the one
+  // thing the coverage band exists to separate, documented on a different page
+  // from the figure that should show it.
+  //
+  // This is the K12 cryptic prophage CPZ-55, the same element pangenome/long_reads
+  // opens on the pggb build: K12 carries it and the other four skip it, so the
+  // four rows stop dead at its edges while K12's runs through, and the coverage
+  // band steps down over exactly that span. Both readings of a blank row are then
+  // in one frame — uncolored where a strain matches K12, absent where it has no
+  // alignment at all.
   {
     mode: 'url',
     name: 'pangenome_cactus/maf',
@@ -451,7 +464,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: 'chr:800,000-806,000',
+          loc: 'chr:2,554,007-2,570,007',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             { trackId: 'ecoli_cactus_maf', type: 'LinearMafDisplay' },
@@ -459,7 +472,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: '806,000',
+    readyText: '2,570,007',
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 480,

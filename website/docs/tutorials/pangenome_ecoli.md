@@ -283,7 +283,7 @@ different question: how the two genomes are arranged relative to each other. A
 stretch the strain traverses backwards descends instead of climbing, so every
 inversion is visible at once without knowing where to look.
 
-<Figure caption="The untangle projection as a dotplot, K12 against IAI39. The descending segments are inversions, and the boxed one is the 594 kb arm boxed again in the per-strain figure below." src="/img/pangenome/pggb_untangle_dotplot.png" />
+<Figure caption="The untangle projection as a dotplot, K12 against IAI39. The descending segments are inversions, and the boxed one is boxed again in the per-strain figure below." src="/img/pangenome/pggb_untangle_dotplot.png" />
 
 Untangle is much the slower of the two, since it indexes every step of every
 path rather than reading an alignment off disk. On a base-level graph, budget
@@ -1025,7 +1025,10 @@ limits:
   past that. pggb itself is run that way at scale, via
   [`partition-before-pggb`](https://github.com/pangenome/pggb#partitioning), so
   index a community or a chromosome at a time and prefer the SV-resolution
-  minigraph graph for whole-genome browsing.
+  minigraph graph for whole-genome browsing. The
+  [HPRC tutorial](/docs/tutorials/pangenome_hprc) takes that route on the Human
+  Pangenome Reference Consortium's graph, which publishes an SV-resolution rGFA
+  beside its base-level graph for exactly this reason.
 - **The drawable window is small**, because of the graph rather than the index.
   At 17 bp per segment, 1 kb is around 150 nodes and 3 kb is a solid braid, and
   the view declines past its node budget rather than drawing something
@@ -1116,7 +1119,7 @@ tabix https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph.links.bed.gz \
 CFT073 around it, where `s2025` is this same CFT073 sequence. The resolution an
 event arrives at is fixed by the graph that holds it.
 
-<Figure caption="The extracted file beside a linear view of the same locus, anchored on the graph's K12 path so both share an axis and the Depth colors. The ringed 93 bp node's second link falls outside the extracted window." src="/img/pangenome/local_subgraph.png" />
+<Figure caption="The extracted file beside a linear view of the same locus, anchored on the graph's K12 path so both share an axis and the Depth colors. The ringed node is the one left with an open end." src="/img/pangenome/local_subgraph.png" />
 
 A collapsed repeat is where `-E` fails outright rather than merely growing, and
 there `-d` is the answer. The graph folds a repeat's copies onto one run of

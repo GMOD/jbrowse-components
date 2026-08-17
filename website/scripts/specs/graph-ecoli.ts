@@ -1052,27 +1052,26 @@ function localSubgraphSpec(): ScreenshotSpec {
         // lands on the rows it is annotating (tried: below the ring it fell
         // through the pane's own border into the composite's padding). The size
         // beside the ring is what the note asked that half for anyway.
+        // WHY THE NODE HAS A LOOSE END, which is the one thing here a reader
+        // cannot get from the frame: every other end in the drawing joins
+        // something, and this one stops because the window stops, not because
+        // the graph does. It used to read a bare "93 bp" — a specific value, and
+        // one the surrounding prose and the caption both already give, so the
+        // pill spent its space saying the size a third time.
+        //
         // "the cut" was denied as jargon (reviewer: "a person not familiar with
         // graphs might not understand what is meant by 'the cut', use precise
-        // language please"), so the sentence names neither the cut nor the
-        // extraction: it states the event. 93 bp against K12's 7.1 kb IS the
-        // deletion, and the open end is the side of it that the window does not
-        // reach. Shorter than the sentence it replaces, so it cannot wrap past
-        // the three lines the pill has room for.
-        text:
-          layoutMode === 'force'
-            ? '93 bp of CFT073 where K12 has 7.1 kb. Its open end rejoins K12 7 kb outside this window'
-            : '93 bp',
+        // language please"), so this says the extracted window instead.
+        text: 'one end open: its partner falls outside the extracted window',
         anchor: { view: 1, graphNode: '20+' },
-        // pulled left in the force pane, where the node sits near the right
-        // edge and the pill would otherwise run off it
-        dx: layoutMode === 'force' ? -200 : 0,
-        dy: layoutMode === 'force' ? -70 : -34,
-        // 330 and three lines is a constraint, not a default: a fourth line
-        // grows the pill down over the ring it points at (measured, both at 330
-        // and widened to 380). The reworded sentence is kept to the length that
-        // wraps to three.
-        maxWidth: 330,
+        // -34 put the pill's own row across the backbone's node labels, which
+        // the shorter "93 bp" cleared by being narrow rather than by being
+        // placed. Raised into the empty band the anchored layout leaves between
+        // the toolbar and the chain, which is where a two-line pill fits.
+        dy: -72,
+        // Narrower than the 330 the old three-line sentence needed, so the pill
+        // ends well left of the backbone's own "158 bp" label.
+        maxWidth: 260,
         fontSize: 17,
       },
     ],
@@ -1491,7 +1490,10 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'IS5, one node (1.2 kb allele)',
+        // A NAME, which is all a label pointing at a node should be. It used to
+        // read "IS5, one node (1.2 kb allele)": the allele size is a specific
+        // value, and "one node" is what the arrow already lands on.
+        text: 'IS5 element',
         fontSize: 16,
         maxWidth: 220,
         anchor: {
@@ -2013,8 +2015,11 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         },
         {
           type: 'GraphGenomeView',
-          displayName:
-            'The graph over that interval, coloured by which strain walks each edge',
+          // Kept short enough not to truncate: the pane title ellipsised at
+          // "...by which strain ...", which reads as a bug rather than as a
+          // title. The path legend beside the drawing names the strains, so the
+          // title does not have to say what the coloring is keyed on twice.
+          displayName: 'The graph over that interval, colored by strain',
           gfaLocation: { uri: `${DATA}/ecoli_pggb_is5.gfa` },
           layoutMode: 'force',
           layoutQuality: 4,

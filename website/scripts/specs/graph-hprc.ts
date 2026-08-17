@@ -2285,7 +2285,16 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'KIV-2 copy number varies between people and sets Lp(a), an inherited heart-disease risk factor.',
+        // HOW TO READ THE CHAIN, which is what turns it from a tangle into an
+        // object (review: the figure "read as an arbitrary tangle"). The pill
+        // used to carry the clinical significance instead — that answered the
+        // same review, but the page's own paragraph directly above the figure
+        // now says it in nearly the same words, so the pill was spending the
+        // frame's largest annotation on a sentence the reader had just read.
+        // What neither the prose nor the box below states is that the loops ARE
+        // the copies, which is the whole reason a graph is the right picture
+        // here.
+        text: 'each loop is a copy of the repeat, and haplotypes differ in how many they walk',
         fontSize: 22,
         // wrapped rather than hard-broken: a newline is a paragraph break that
         // still wraps at maxWidth on its own, so authored line ends land in the
