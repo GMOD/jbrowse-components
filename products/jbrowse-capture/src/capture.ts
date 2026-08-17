@@ -6,18 +6,26 @@ import {
   isBrowserConsoleNoise,
 } from './browser.ts'
 import { assemblyFromSession, trackIdsFromSession } from './session.ts'
-import { hasPaintContract, waitForSession } from './sessionGate.ts'
+import {
+  hasPaintContract,
+  readInstrumentation,
+  readSessionSummary,
+  waitForSession,
+} from './sessionGate.ts'
 import { jbrowseUrl } from './url.ts'
 import {
   delay,
+  hasAppReadyMarker,
+  waitForAppReady,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
+  waitForQuietPeriod,
   waitForViewPhases,
 } from './waits.ts'
 
-import type { SessionExpectations } from './sessionGate.ts'
+import type { Instrumentation, SessionExpectations } from './sessionGate.ts'
 import type { JBrowseUrlOptions } from './url.ts'
 import type { Browser, Page } from 'puppeteer'
 
@@ -26,6 +34,19 @@ import type { Browser, Page } from 'puppeteer'
 // to wait. Sized from the measured gap on jbrowse.org/code/jb2/latest between
 // the overlay clearing and the tracks being fully drawn.
 const LEGACY_PAINT_SETTLE_MS = 1500
+// ...and the gap at the OTHER end, which is the one that lands a capture on an
+// app that has drawn nothing at all. Measured on the same instance with two
+// remote tracks: the session gate is satisfied at ~2.5s, and the loading overlay
+// — the only remaining signal there — does not go up until ~3.5s. An
+// instrumented build has no such window: `data-display-phase` appears in the
+// same frame as the display it belongs to.
+//
+// So on an uninstrumented build the app has to be seen to START working, and
+// then hold still, before it counts as finished. The window is how long the
+// first indicator gets to appear before "nothing to wait for" is the better
+// reading; the quiet is how long the idle then has to hold.
+const LEGACY_BUSY_WINDOW_MS = 4000
+const LEGACY_QUIET_MS = 2000
 
 export interface ReadyOptions extends SessionExpectations {
   /** Budget for each individual wait stage. */
@@ -62,6 +83,18 @@ export interface ReadyReport {
   paintContract: boolean
   /** Wait stages that hit their timeout instead of being satisfied. */
   unsettled: string[]
+  /**
+   * Which readiness attributes the build published, read once the session was
+   * up. Every `false` here is a wait that could not fail rather than one that
+   * passed, and the chain compensates for it — see LEGACY_QUIET_MS.
+   */
+  instrumentation: Instrumentation
+  /**
+   * Whether the page published `[data-app-phase]`, the one positive readiness
+   * selector. True means the wait was that selector and nothing else; false
+   * means the build predates it and the fallback chain ran.
+   */
+  appMarker: boolean
 }
 
 /**
@@ -112,7 +145,52 @@ export async function waitForJBrowseReady(
   if (expectSession) {
     await waitForSession(page, { assembly, trackIds, timeout })
   }
-  // 1. the view has an assembly and its React component has arrived. Also not
+  // 1. THE WHOLE ANSWER, on any build that has it: the session renders
+  //    `[data-app-phase="ready"]` when no view is resolving an assembly and no
+  //    display is fetching. It is positive, so unlike everything below it
+  //    cannot be satisfied by an app that has not started, and there is nothing
+  //    to assemble — wait for the selector and stop.
+  //
+  //    Everything after this point is the fallback for a deployment older than
+  //    the marker, and can be deleted the day the oldest supported build has
+  //    it.
+  if (await hasAppReadyMarker(page)) {
+    const ready = await waitForAppReady(page, { timeout })
+    if (!ready) {
+      unsettled.push('the app never reported itself ready')
+    }
+    if (settleMs > 0) {
+      await delay(settleMs)
+    }
+    const report = {
+      pending: await pendingDisplays(page),
+      paintContract: await hasPaintContract(page),
+      unsettled,
+      instrumentation: await readInstrumentation(page),
+      appMarker: true,
+    }
+    if (!allowUnsettled && unsettled.length > 0) {
+      throw new Error(
+        `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ` +
+          'Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ' +
+          'capture the frame as it stands.',
+      )
+    }
+    return report
+  }
+
+  // 1b. what an older build can be asked instead. On one that publishes none of
+  //     these, the stages below are not gates at all: they are assertions about
+  //     absent attributes that no page can fail.
+  const instrumentation = await readInstrumentation(page)
+  const instrumented =
+    instrumentation.displayPhase || instrumentation.displayDrawn
+  // A page with no tracks open has nothing to load, so the quiet gate below
+  // would be a fixed sleep for an import form or a menu shot.
+  const summary = await readSessionSummary(page)
+  const needsQuietGate = !instrumented && (summary?.trackIds.length ?? 0) > 0
+
+  // 2. the view has an assembly and its React component has arrived. Also not
   //    best-effort: a view stuck here has no content to fall through to.
   await required(
     'a view never left its loading phase (still resolving its assembly, or its ' +
@@ -145,6 +223,23 @@ export async function waitForJBrowseReady(
     'a "Loading…/Rendering…" label was still on screen',
     waitForQuiescent(page, { timeout }),
   )
+  // 5. and on a build that answered none of the above, the one gate that does
+  //    not depend on an attribute existing: the app has to hold still. Every
+  //    stage before this one passed the moment it was asked, so without it the
+  //    chain returns while the first fetch is still being set up.
+  if (needsQuietGate) {
+    await stage(
+      'the app never went quiet for ' +
+        `${LEGACY_QUIET_MS}ms (this build publishes no readiness attributes, ` +
+        'so being seen to work and then stop is the only finished signal there ' +
+        'is)',
+      waitForQuietPeriod(page, {
+        quietMs: LEGACY_QUIET_MS,
+        busyWindowMs: LEGACY_BUSY_WINDOW_MS,
+        timeout,
+      }),
+    )
+  }
 
   const paintContract = await hasPaintContract(page)
   if (!paintContract) {
@@ -157,6 +252,8 @@ export async function waitForJBrowseReady(
     pending: await pendingDisplays(page),
     paintContract,
     unsettled,
+    instrumentation,
+    appMarker: false,
   }
   if (!allowUnsettled && unsettled.length > 0) {
     // Throwing is the point. Each of these stages swallows its own timeout so a

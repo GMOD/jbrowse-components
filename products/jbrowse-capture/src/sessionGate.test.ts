@@ -1,4 +1,7 @@
-import { readSessionSummaryInPage } from './sessionGate.ts'
+import {
+  readInstrumentationInPage,
+  readSessionSummaryInPage,
+} from './sessionGate.ts'
 
 const stub = (session: unknown) => {
   ;(globalThis as { JBrowseSession?: unknown }).JBrowseSession = session
@@ -75,4 +78,42 @@ test('a container view reports the tracks open on its rows', () => {
 test('a track with no configuration is named rather than dropped', () => {
   stub({ views: [{ tracks: [{}] }] })
   expect(readSessionSummaryInPage()?.trackIds).toEqual(['(unnamed)'])
+})
+
+// The other half of "what can this build be asked". Every wait keyed on these
+// attributes passes when the selector is ABSENT, so a build publishing none of
+// them satisfies all of them while it has drawn nothing — measured on
+// jbrowse.org/code/jb2/latest, which publishes none of the three. This probe is
+// what lets a caller tell that apart from "everything finished".
+test('an instrumented page reports each attribute family it publishes', () => {
+  document.body.innerHTML = `
+    <div data-view-phase="ready">
+      <div data-display-phase="ready" data-display-drawn="true"></div>
+    </div>`
+  expect(readInstrumentationInPage()).toEqual({
+    viewPhase: true,
+    displayPhase: true,
+    displayDrawn: true,
+  })
+})
+
+test('a released build publishing none of them reports all three false', () => {
+  // what the hosted app's DOM looks like: an app, a display, no contract
+  document.body.innerHTML = `
+    <div data-testid="view-container-lgv">
+      <div data-testid="pileup-display"></div>
+    </div>`
+  expect(readInstrumentationInPage()).toEqual({
+    viewPhase: false,
+    displayPhase: false,
+    displayDrawn: false,
+  })
+})
+
+// Presence is the question, never the value: `data-display-phase="loading"` is a
+// build that CAN be asked, answering "not yet". That is the opposite of a build
+// that cannot be asked at all, and reading the value here would conflate them.
+test('an attribute mid-flight still counts as published', () => {
+  document.body.innerHTML = '<div data-display-phase="loading"></div>'
+  expect(readInstrumentationInPage().displayPhase).toBe(true)
 })

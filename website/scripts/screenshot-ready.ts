@@ -5,10 +5,14 @@
 // browser-test suites and the desktop harness); what is here is the ORDER they
 // have to run in, which is the part that took the bugs to learn.
 import {
+  hasAppReadyMarker,
+  readInstrumentation,
+  waitForAppReady,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
+  waitForQuietPeriod,
   waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 
@@ -35,6 +39,23 @@ const DEFAULT_SETTLE_MS = 2500
 // Default ceiling for the ready-selector / loading-overlay / quiescent waits.
 // Slow remote-data specs raise it via spec.readyTimeout.
 const DEFAULT_READY_TIMEOUT_MS = 30000
+// How long an uninstrumented build has to hold still before it counts as
+// finished.
+//
+// A spec whose url is absolute reaches jbrowse.org/code/jb2/latest, and the
+// released build publishes none of `data-view-phase`, `data-display-phase` or
+// `data-display-drawn` (measured 2026-08-17). Against that instance
+// `waitForViewPhases` and both display waits below are assertions about
+// attributes that do not exist — they pass the moment they are asked — and the
+// loading overlay does not go up until a second AFTER the session reports its
+// tracks open. So every gate in this file could be satisfied by an app that had
+// drawn nothing, which is what a tour filmed there right-clicked into.
+//
+// Holding still is the one signal that does not depend on an attribute
+// existing. Paid only on those targets; `@jbrowse/capture` carries the same
+// constant for the same reason.
+const LEGACY_BUSY_WINDOW_MS = 4000
+const LEGACY_QUIET_MS = 2000
 
 // The ceiling for every wait a spec is subject to. readyText is only the track
 // label (present well before a slow remote BAM finishes), so a spec that says it
@@ -96,6 +117,23 @@ export async function waitForReady(
       waitForDownloads: true,
       timeout: readyTimeout,
     })
+    // ...and then the one selector that answers the whole question, on a build
+    // that has it: the session renders `[data-app-phase="ready"]` when nothing
+    // is loading, so it cannot be true before the app starts.
+    if (await hasAppReadyMarker(page)) {
+      await waitForAppReady(page, { timeout: readyTimeout })
+    } else {
+      // An older build publishes no phases at all, so every wait above passed
+      // the moment it was asked. Watch it work instead: seen busy, then idle.
+      const { displayPhase, displayDrawn } = await readInstrumentation(page)
+      if (!displayPhase && !displayDrawn) {
+        await waitForQuietPeriod(page, {
+          quietMs: LEGACY_QUIET_MS,
+          busyWindowMs: LEGACY_BUSY_WINDOW_MS,
+          timeout: readyTimeout,
+        })
+      }
+    }
   } catch (e) {
     await debugDump(page, spec.name)
     throw e

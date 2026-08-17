@@ -7,6 +7,7 @@ export {
 export {
   PAINT_CONTRACT_NOTE,
   hasPaintContract,
+  readInstrumentation,
   readSessionSummary,
   waitForSession,
 } from './sessionGate.ts'
@@ -20,15 +21,22 @@ export {
   trackIdsFromSession,
 } from './session.ts'
 export {
+  APP_READY,
+  BUSY_SELECTOR,
+  LOADING_OVERLAY,
   PENDING_DISPLAYS,
   delay,
   displayById,
   displayPainted,
   displaySettled,
+  hasAppReadyMarker,
+  isPageBusyInPage,
+  waitForAppReady,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
+  waitForQuietPeriod,
   waitForViewPhases,
 } from './waits.ts'
 export {
@@ -46,5 +54,9 @@ export type {
   ReadyOptions,
   ReadyReport,
 } from './capture.ts'
-export type { SessionExpectations, SessionSummary } from './sessionGate.ts'
+export type {
+  Instrumentation,
+  SessionExpectations,
+  SessionSummary,
+} from './sessionGate.ts'
 export type { JBrowseUrlOptions } from './url.ts'

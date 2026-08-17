@@ -65,10 +65,24 @@ track, and then draws to a canvas. A screenshot taken at any point before the
 last step is a picture of an empty browser — and it is a _plausible_ picture, so
 nothing downstream flags it.
 
-The trap is that **every readiness signal JBrowse publishes is negative**: no
-loading overlay, no display in its loading phase, no unpainted canvas. Each is
-the right thing to wait on once the app is running, and each is trivially true
-before it starts. The events run in this order:
+On a current build the answer is one selector:
+
+```js
+await page.waitForSelector('[data-app-phase="ready"]')
+```
+
+The session renders that itself — `ready` when no view is resolving an assembly
+and no display is fetching, `loading` whenever one is. It is **positive**, so it
+cannot be true before the app exists, and it is one element rather than a census
+of every display.
+
+The rest of this section is why the older signals need more care, and what
+`@jbrowse/capture` does against a deployment that predates the marker.
+
+The trap is that **every OTHER readiness signal JBrowse publishes is negative**:
+no loading overlay, no display in its loading phase, no unpainted canvas. Each
+is the right thing to wait on once the app is running, and each is trivially
+true before it starts. The events run in this order:
 
 ```
 navigation resolves  ->  session exists  ->  assembly and tracks land  ->  loading overlay goes up  ->  displays draw
@@ -184,19 +198,33 @@ Older builds appended `-done` to `data-testid` on first paint (and `_done` on
 the synteny/dotplot canvases). That is gone: the id no longer changes, so a
 selector written against it keeps matching after the display paints.
 
-Plus one that is text rather than an attribute: some views paint their own
-`Loading…` / `Rendering…` / `Computing…` banner that no test id covers. Waiting
-on that text needs a visibility check, because the loading overlay keeps the
-literal word "Loading" in the DOM hidden behind `opacity: 0` and a plain text
-search never clears.
+Plus `data-busy="true"`, which `LoadingEllipses` sets — the component the app
+renders wherever it tells a user it is working, including the banners no
+display-level attribute covers. It is an attribute rather than the label's text
+on purpose: a wait that scans for `Loading…` is a wait that a reworded message
+or a translation can break, and it then needs a computed-style check on top,
+because the loading overlay keeps the literal word in the DOM behind
+`opacity: 0`. `BUSY_SELECTOR` is all four of these together.
 
-**These attributes are not on every build.** They come from `ViewContainer` and
-`DisplayChrome` in current code; a JBrowse deployment predating them publishes
-only the loading overlay, and the display-level waits are then unfalsifiable
-rather than satisfied. `@jbrowse/capture` detects which one it got, falls back
-to a bounded settle, and says so on stderr — because "no display is pending" and
-"pending cannot be measured here" look identical in a result and very different
-in a figure.
+**None of these are on every build**, which is the whole reason
+`waitForJBrowseReady` is more than one line. `[data-app-phase]` and the
+per-element attributes come from current code; a deployment predating them
+publishes only the loading overlay, and the display-level waits are then
+unfalsifiable rather than satisfied.
+
+That matters more than a missing measurement, because absence answers "is it
+working now" and a capture needs "has it finished". Measured on
+`jbrowse.org/code/jb2/latest` with two remote tracks: the session reports both
+tracks open at ~2.5s, and the loading overlay does not go up until ~3.5s. In
+that second every absence-based gate passes over an app that has drawn nothing —
+the old chain returned at 3.9s with `Downloading features.` still on screen.
+
+So against such a build the wait watches the app WORK instead: it has to be seen
+busy and then idle for an unbroken stretch, read from the published attributes
+plus each display's own status message on `window.JBrowseSession`. The same run
+then returns at 8.3s with both tracks drawn. `appMarker` in the report says
+which of the two ran, and the fallback can be deleted once the oldest build
+anyone points this at has the marker.
 
 ## Writing your own script
 

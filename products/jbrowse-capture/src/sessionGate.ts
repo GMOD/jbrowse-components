@@ -231,3 +231,35 @@ export async function hasPaintContract(page: Page): Promise<boolean> {
     () => document.querySelector('[data-display-drawn]') !== null,
   )
 }
+
+/**
+ * Which readiness attributes this build publishes at all.
+ *
+ * `hasPaintContract` answers the same question for one attribute and folds in
+ * "there was nothing to measure"; this is the raw read of all three, so the
+ * chain can adapt to the build BEFORE it starts waiting rather than reporting
+ * afterwards what it could not see.
+ *
+ * Every wait keyed on one of these is NEGATIVE — it passes when the selector is
+ * absent — so on a build that publishes none of them all three are satisfied by
+ * a page that has not begun to draw. Read this after the session gate and treat
+ * `false` as "this signal is unavailable", never as "this signal says done".
+ */
+export interface Instrumentation {
+  viewPhase: boolean
+  displayPhase: boolean
+  displayDrawn: boolean
+}
+
+/** Serialized into the page; exported so a test can call the real function. */
+export function readInstrumentationInPage(): Instrumentation {
+  return {
+    viewPhase: document.querySelector('[data-view-phase]') !== null,
+    displayPhase: document.querySelector('[data-display-phase]') !== null,
+    displayDrawn: document.querySelector('[data-display-drawn]') !== null,
+  }
+}
+
+export function readInstrumentation(page: Page): Promise<Instrumentation> {
+  return page.evaluate(readInstrumentationInPage)
+}

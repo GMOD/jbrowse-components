@@ -7,6 +7,7 @@ import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AppFab from './AppFab.tsx'
+import AppReadyMarker from './AppReadyMarker.tsx'
 import AppToolbar from './AppToolbar.tsx'
 import DialogQueue from './DialogQueue.tsx'
 import ViewsContainer from './ViewsContainer.tsx'
@@ -94,6 +95,7 @@ const App = observer(function App(props: Props) {
         <ViewsContainer {...props} />
       </div>
       <AppFab session={session} />
+      <AppReadyMarker session={session} />
       {drawerPosition === 'right' ? drawerWidget : null}
       <Snackbar session={session} />
     </div>

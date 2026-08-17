@@ -29,6 +29,25 @@ async function settled(work: Promise<unknown>): Promise<boolean> {
   }
 }
 
+export const LOADING_OVERLAY = '[data-testid="loading-overlay"]'
+
+/**
+ * The whole readiness contract, in one selector.
+ *
+ * `AppReadyMarker` renders it from the session: it reads `ready` when no view
+ * is resolving an assembly and no display is fetching, and `loading` whenever
+ * one is. Waiting for it is the entire job — everything else in this module is
+ * either a narrower question (has THIS display painted) or a fallback for a
+ * deployment too old to publish it.
+ *
+ * It is POSITIVE, which is the property that matters. Every other signal here
+ * is an absence, and an absence is equally true of an app that has not started:
+ * measured on a two-track session, the gap between "the session holds the
+ * tracks" and "the first loading indicator appears" is about a second, and a
+ * capture taken in it is a picture of an empty browser.
+ */
+export const APP_READY = '[data-app-phase="ready"]'
+
 export async function waitForLoadingComplete(
   page: Page,
   {
@@ -39,122 +58,47 @@ export async function waitForLoadingComplete(
   // NOT best-effort: an overlay that never clears means a fetch that never
   // finished, and there is no content behind it to fall through to.
   await page.waitForFunction(
-    () =>
-      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
+    (selector: string) => document.querySelectorAll(selector).length === 0,
     { timeout },
+    LOADING_OVERLAY,
   )
+  // The download half asks the app what it is doing, through the attributes it
+  // publishes and each display's own status on the session model. It used to be
+  // `document.body.innerText.includes('Downloading')`, a string search over the
+  // whole rendered page: it matched a track NAMED "Downloading…", it matched
+  // documentation text, and it stopped matching the moment a message was
+  // reworded or translated.
+  //
+  // `quietMs: 0` because this is the "nothing is in flight right now" question;
+  // the one that needs the idle to hold is waitForQuietPeriod's own caller.
   return waitForDownloads
-    ? settled(
-        page.waitForFunction(
-          () => !document.body.innerText.includes('Downloading'),
-          { timeout },
-        ),
-      )
+    ? waitForQuietPeriod(page, { quietMs: 0, timeout })
     : true
 }
 
-// Wait until no element with a *visible* "Loading…/Rendering…/Computing…" label
-// remains on screen. Complements waitForLoadingComplete (which keys off the
-// loading-overlay test-id and "Downloading" text): some views — e.g. the
-// Protein3d ProteinView's "Loading pairwise alignment" banner — paint their own
-// transient status text that no test-id covers, and a screenshot taken while it
-// shows captures a half-loaded view.
-//
-// The match is visibility-aware on purpose. The LoadingOverlay keeps the literal
-// word "Loading" in the DOM hidden via opacity:0, so a plain text search would
-// never clear; here we ignore any element that (or whose ancestor) is
-// display:none / visibility:hidden / opacity:0 / zero-size. We compare each
-// element's OWN text nodes (not descendant text) so a large container that
-// merely wraps a loading child doesn't count.
-//
-// Best-effort: a view that is genuinely stuck loading (rather than slow) would
-// otherwise burn the whole timeout, so we swallow the rejection and let the
-// caller proceed — no worse than not waiting, and slow-but-finishing views now
-// get captured at the right moment instead of relying on a fixed settle.
-//
-// The candidate set comes from a text-node TreeWalker rather than from
-// `body *`. This is the only wait here that is O(DOM) instead of one
-// querySelector, and puppeteer polls it every animation frame: walking every
-// element to build its own-text string, on a page with thousands of them,
-// competed for main-thread time with the render it was waiting on. Only
-// elements that HAVE own text can ever match, and only a matching element needs
-// its style resolved, so both the string building and `getComputedStyle` now run
-// on a few hundred nodes instead of all of them. Same answer — an element with
-// no own text could never pass `t.length > 0` — so this is a cost change, not a
-// semantic one.
-export async function waitForQuiescent(
+/**
+ * Wait until nothing on the page is in flight.
+ *
+ * Every signal it reads is one the app publishes deliberately — the loading
+ * overlay, `data-busy`, the display and view phases, and each display's own
+ * status message on the session model. See `isPageBusyInPage`.
+ *
+ * It used to scan rendered text for /^(loading|rendering|computing)/ and resolve
+ * `getComputedStyle` on each match to decide whether it was on screen. That is a
+ * heuristic over a rendering: it broke on a reworded or translated message, it
+ * needed the visibility check only because the loading overlay keeps the word
+ * "Loading" in the DOM at `opacity: 0`, and an unset opacity parses to zero
+ * outside a full layout engine, which reads every ordinary element as hidden. A
+ * component that wants to be waited for now says so with an attribute.
+ *
+ * Best-effort: a view genuinely stuck loading would otherwise burn the whole
+ * timeout, so this reports false rather than throwing and the caller decides.
+ */
+export function waitForQuiescent(
   page: Page,
-  {
-    timeout = 30000,
-    pattern = /^(loading|rendering|computing|aligning)\b/i,
-  }: { timeout?: number; pattern?: RegExp } = {},
+  { timeout = 30000 }: { timeout?: number } = {},
 ): Promise<boolean> {
-  return settled(
-    page.waitForFunction(
-      (source: string, flags: string) => {
-        const re = new RegExp(source, flags)
-        const visible = (el: Element) => {
-          let cur: Element | null = el
-          while (cur) {
-            const s = getComputedStyle(cur)
-            if (
-              s.display === 'none' ||
-              s.visibility === 'hidden' ||
-              Number(s.opacity) === 0
-            ) {
-              return false
-            }
-            cur = cur.parentElement
-          }
-          const r = el.getBoundingClientRect()
-          return r.width > 0 && r.height > 0
-        }
-        const ownText = (el: Element) =>
-          Array.from(el.childNodes)
-            .filter(n => n.nodeType === Node.TEXT_NODE)
-            .map(n => n.textContent ?? '')
-            .join('')
-            .trim()
-        // every element with at least one non-whitespace text child, which is
-        // exactly the set that can pass the `t.length > 0` test below. Inlined
-        // rather than shared with the identical walk in the website generator's
-        // assertRenderSettled: this whole function is serialized into the page,
-        // so it can only call what it declares.
-        // querySelector, not `document.body`, because lib.dom types the latter
-        // as a non-null HTMLElement — it is null while the document is still
-        // parsing, but a `const` annotated `HTMLElement | null` narrows straight
-        // back to non-null off its initializer, so the guard below read as
-        // always-false to the type-aware lint. The check has to stay: without
-        // it createTreeWalker(null) throws, waitForQuiescent's own
-        // `.catch(() => {})` swallows it, and a still-parsing page comes back
-        // quiescent — the exact inversion this is here to prevent.
-        const body = document.querySelector('body')
-        if (!body) {
-          // still parsing: not quiescent, rather than trivially quiescent
-          return false
-        }
-        const candidates = new Set<Element>()
-        const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT)
-        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
-          const parent = n.parentElement
-          const text = n.textContent ?? ''
-          if (parent && parent !== body && text.trim()) {
-            candidates.add(parent)
-          }
-        }
-        for (const el of candidates) {
-          const t = ownText(el)
-          if (t.length > 0 && t.length < 80 && re.test(t) && visible(el)) {
-            return false
-          }
-        }
-        return true
-      },
-      { timeout },
-      pattern.source,
-      pattern.flags,
-    ),
-  )
+  return waitForQuietPeriod(page, { quietMs: 0, timeout })
 }
 
 // "Every display has painted" = no display is still reporting
@@ -285,5 +229,176 @@ export function waitForViewPhases(page: Page, timeoutMs: number) {
       document.querySelector('[data-view-phase="loading"]') === null &&
       document.querySelector('[data-view-component-pending]') === null,
     { timeout: timeoutMs, polling: 500 },
+  )
+}
+
+/**
+ * Everything the app publishes to say it is working, as one selector.
+ *
+ * All four are attributes a component sets deliberately, which is the whole
+ * point: the alternative — scanning rendered text for /^loading/ and resolving
+ * `getComputedStyle` to decide whether each match is on screen — makes a
+ * reworded message, a translation or an opacity animation change the answer.
+ *
+ *   `loading-overlay`      the view-level scrim, present in every build
+ *   `data-busy`            LoadingEllipses, which is what the app renders
+ *                          wherever it tells a user it is working
+ *   `data-display-phase`   one display's own fetch, newer builds
+ *   `data-view-phase`      a view still resolving its assembly, newer builds
+ */
+export const BUSY_SELECTOR = [
+  '[data-testid="loading-overlay"]',
+  '[data-busy="true"]',
+  '[data-display-phase="loading"]',
+  '[data-view-phase="loading"]',
+].join(', ')
+
+/**
+ * Is the app doing anything right now?
+ *
+ * Serialized into the page, so it declares everything it uses. Two sources: the
+ * selector above, and the live session model's own per-display status, which is
+ * the only PER-DISPLAY signal a build with no readiness attributes has left.
+ * Both are contracts rather than renderings — a model field and a set of data
+ * attributes — so neither moves when the UI is restyled.
+ *
+ * Exported so a test can call the real function rather than a copy of it.
+ */
+export function isPageBusyInPage(): boolean {
+  const busySelector = [
+    '[data-testid="loading-overlay"]',
+    '[data-busy="true"]',
+    '[data-display-phase="loading"]',
+    '[data-view-phase="loading"]',
+  ].join(', ')
+  if (document.querySelector(busySelector)) {
+    return true
+  }
+  interface DisplayState {
+    message?: string
+    statusMessage?: string
+  }
+  interface TrackState {
+    displays?: DisplayState[]
+  }
+  interface ViewState {
+    tracks?: TrackState[]
+    views?: ViewState[]
+  }
+  const session = (globalThis as { JBrowseSession?: { views?: ViewState[] } })
+    .JBrowseSession
+  const displaysOf = (v: ViewState): DisplayState[] => [
+    ...(v.tracks ?? []).flatMap(t => t.displays ?? []),
+    ...(v.views ?? []).flatMap(displaysOf),
+  ]
+  return (session?.views ?? [])
+    .flatMap(displaysOf)
+    .some(d => (d.message ?? d.statusMessage ?? '').trim() !== '')
+}
+
+/**
+ * Wait until the app has been idle for an unbroken stretch.
+ *
+ * The gate for a build that publishes no readiness attributes, where every
+ * other wait in this module is an assertion about an absent selector and so
+ * cannot fail. Absence answers "is it working NOW"; a capture needs "has it
+ * finished", and the two differ in both directions:
+ *
+ *   BEFORE the work starts. Measured on jbrowse.org/code/jb2/latest with two
+ *   remote tracks: the session reports both tracks open at ~2.5s and the
+ *   loading overlay does not go up until ~3.5s. Every absence-based gate passes
+ *   during that second, over an app that has drawn nothing.
+ *
+ *   BETWEEN two pieces of work. A track that finishes one fetch and starts the
+ *   next is momentarily idle, and a single-sample gate takes it.
+ *
+ * Requiring the idle to HOLD closes both without needing to know which signals
+ * a given build has. Polled from node rather than in-page: chrome throttles
+ * in-page timers and rAF once the tab is not visible, which is the state a
+ * headless capture sits in.
+ *
+ * Returns false on timeout rather than throwing, like its neighbours — the
+ * caller decides whether a page that never went quiet is a failure or a slow
+ * page worth capturing anyway.
+ */
+export async function waitForQuietPeriod(
+  page: Page,
+  {
+    quietMs = 1500,
+    timeout = 30000,
+    pollMs = 250,
+    busyWindowMs = 0,
+  }: {
+    quietMs?: number
+    timeout?: number
+    pollMs?: number
+    /**
+     * Wait for the app to be seen BUSY before any idle counts, giving up on
+     * that after this long. Zero (the default) accepts idle immediately.
+     *
+     * This is what turns the wait positive. Idle is still an absence, so an app
+     * that has not begun looks exactly like one that has finished — measured on
+     * jbrowse.org/code/jb2/latest, where a chain starting at the session gate
+     * saw an idle page at 1.6s and the tracks did not draw until past 10s.
+     * Seeing the transition INTO work and back out of it is an observation of
+     * the work itself.
+     *
+     * The window is bounded because a page with nothing to fetch never goes
+     * busy at all, and hanging on that would be worse than the race it closes.
+     * Size it above the gap between the session gate passing and the first
+     * indicator appearing, measured at ~1s on that instance.
+     */
+    busyWindowMs?: number
+  } = {},
+): Promise<boolean> {
+  const start = Date.now()
+  const deadline = start + timeout
+  let quietSince: number | undefined
+  let seenBusy = busyWindowMs === 0
+  while (Date.now() < deadline) {
+    // A page that navigates or closes under us fails the evaluate; treat that
+    // as busy and let the deadline decide, rather than reporting quiet.
+    const busy = await page.evaluate(isPageBusyInPage).catch(() => true)
+    const now = Date.now()
+    if (busy) {
+      seenBusy = true
+      quietSince = undefined
+    } else {
+      if (!seenBusy && now - start >= busyWindowMs) {
+        // never went busy within the window: nothing to wait out
+        seenBusy = true
+        quietSince = now
+      }
+      if (seenBusy) {
+        quietSince ??= now
+        if (now - quietSince >= quietMs) {
+          return true
+        }
+      }
+    }
+    await delay(pollMs)
+  }
+  return false
+}
+
+/**
+ * Wait for the app to say it has finished.
+ *
+ * One selector, no chain: `[data-app-phase="ready"]` is rendered by the session
+ * itself, so it cannot be satisfied before the app exists. Returns false if the
+ * page never publishes it, which is how a caller tells "not ready yet" from "a
+ * build too old to have the marker" and falls back.
+ */
+export function waitForAppReady(
+  page: Page,
+  { timeout = 30000 }: { timeout?: number } = {},
+): Promise<boolean> {
+  return settled(page.waitForSelector(APP_READY, { timeout, visible: false }))
+}
+
+/** Whether this build publishes the app-level readiness marker at all. */
+export function hasAppReadyMarker(page: Page): Promise<boolean> {
+  return page.evaluate(
+    () => document.querySelector('[data-app-phase]') !== null,
   )
 }
