@@ -73,6 +73,15 @@ function show(m: MateFields) {
   return displayed[0]!
 }
 
+function run(m: MateFields) {
+  const { view, displayed, notifications } = makeView()
+  viewMateRegionInCurrentView({
+    view: view as unknown as LinearGenomeViewModel,
+    mate: m,
+  })
+  return { regions: displayed[0], notifications }
+}
+
 // The commonest case by far, and the one this used to get wrong: each locus is
 // padded by a read length, so for a normal insert the two windows overlap and
 // the same reads were drawn twice with a region boundary through the middle of
@@ -120,4 +129,37 @@ test('the merged region stays inside the assembly bounds', () => {
   const regions = show(mate({ start: 10, end: 60, nextPos: 30 }))
   expect(regions).toHaveLength(1)
   expect(regions[0]!.start).toBe(0)
+})
+
+// The reason this routes through clampToContig at all. A BAM aligned against a
+// longer assembly than the FASTA in use puts a mate past the end of its contig,
+// and the one-sided clamp this used to write returned end < start there — which
+// setDisplayedRegions accepts and every sum of region lengths then subtracts.
+test('a mate past the end of its contig is dropped, not inverted', () => {
+  const { regions } = run(mate({ nextPos: 80_000 }))
+
+  expect(regions).toHaveLength(1)
+  expect(regions![0]).toMatchObject({ refName: 'ctgA', start: 850, end: 1300 })
+  expect(regions!.every(r => r.end > r.start)).toBe(true)
+})
+
+// One region is also what a proper pair merges to, so the view cannot show that
+// the mate went missing and the message has to.
+test('says so when the mate is the half that was dropped', () => {
+  const { notifications } = run(mate({ nextRef: 'ctgB', nextPos: 80_000 }))
+
+  expect(notifications).toEqual([
+    'Showing this read only — its mate lies past the end of ctgB',
+  ])
+})
+
+test('warns and displays nothing when neither locus lands on a contig', () => {
+  const { regions, notifications } = run(
+    mate({ start: 80_000, end: 80_150, nextPos: 90_000 }),
+  )
+
+  expect(regions).toBeUndefined()
+  expect(notifications).toEqual([
+    'Neither this read nor its mate lands inside a contig of volvox',
+  ])
 })

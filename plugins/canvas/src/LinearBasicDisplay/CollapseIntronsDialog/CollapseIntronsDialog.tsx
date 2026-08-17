@@ -98,9 +98,10 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   trackId: string
 }) {
   const { classes } = useStyles()
-  // '' = the union of every transcript's exons; otherwise a single isoform's id.
-  // The context menu already narrows to a clicked transcript, so this is the
-  // way to reach an isoform that isn't drawn (gene-glyph mode 'longestCoding').
+  // ALL_TRANSCRIPTS = the union of every transcript's exons; otherwise a single
+  // isoform's id. The context menu already narrows to a clicked transcript, so
+  // this is the way to reach an isoform that isn't drawn (gene-glyph mode
+  // 'longestCoding').
   const [selectedId, setSelectedId] = useState(ALL_TRANSCRIPTS)
   // default to flipping for a minus-strand gene so it reads 5'->3'
   const [flip, setFlip] = useState(transcripts[0]?.get('strand') === -1)

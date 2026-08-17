@@ -1906,10 +1906,6 @@ test('showAllRegions centers correctly with multiple regions', () => {
   expect(model.offsetPx).toBe(-45)
 })
 
-// fitAllRegions had no test of its own at all: mutating the fit rule failed only
-// plugin-canvas's collapsed-intron tests, in a package that merely consumes it.
-// These two are the pair — the exact fit, and the floor that is the one thing
-// that can stop it being exact.
 // setNewView's bp-space twin, and the whole reason to prefer it: a viewport
 // captured and put back is exact across a resize, where the pixel pair is not.
 test('setWindow restores the same genomic window at a different width', () => {
@@ -1939,6 +1935,12 @@ test('setWindow restores the same genomic window at a different width', () => {
   expect(model.bpPerPx).toBe(9000 / 400)
 })
 
+// The two halves of the fit rule, tested where it lives rather than through a
+// consumer. They are not equally load-bearing, and a mutation check says which:
+// scaling the whole fit also fails `navToLocations with multiple locations`
+// above, which reaches fitAllRegions incidentally, so the exact fit had cover
+// already. Dropping the floor — `max(minBpPerPx * width, totalBp)` down to bare
+// `totalBp` — failed nothing in this package. That is the hole.
 test('fitAllRegions fills the width edge to edge, unlike showAllRegions', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({ configuration: {} })

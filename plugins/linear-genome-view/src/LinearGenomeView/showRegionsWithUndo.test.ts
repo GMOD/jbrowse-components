@@ -15,8 +15,12 @@ const AFTER: Region[] = [
   { ...CTG_A, start: 900, end: 1000 },
 ]
 
-// Records what it was asked to do, and models the one behavior that matters here:
-// the window is stored in bp, and `width` is what turns it into pixels.
+// Records what it was asked to do, and models the one behavior that matters
+// here: the window is stored in bp, and `width` is what turns it into pixels.
+// Both movers route through that width the way the model's do — `setWindow`
+// via zoomTo, `setNewView` via a bpPerPx it was handed — so the resize test
+// below can actually fail. A fake whose setWindow just assigns its arguments
+// passes whatever it is given.
 function makeView(width = 800) {
   const view = {
     displayedRegions: BEFORE,
@@ -36,9 +40,21 @@ function makeView(width = 800) {
       )
       view.windowStartBp = 0
     },
+    get bpPerPx() {
+      return view.windowWidthBp / view.width
+    },
+    get offsetPx() {
+      return view.windowStartBp / view.bpPerPx
+    },
     setWindow(windowWidthBp: number, windowStartBp: number) {
-      view.windowWidthBp = windowWidthBp
+      // the model spells this zoomTo(windowWidthBp / width) then
+      // scrollToBp(windowStartBp), so the width divides out and back
+      view.windowWidthBp = (windowWidthBp / view.width) * view.width
       view.windowStartBp = windowStartBp
+    },
+    setNewView(bpPerPx: number, offsetPx: number) {
+      view.windowWidthBp = bpPerPx * view.width
+      view.windowStartBp = offsetPx * bpPerPx
     },
     session: {
       notify(message: string, _level: string, action: { onClick: () => void }) {
@@ -90,6 +106,21 @@ test('Undo restores the same window after a resize', () => {
 
   expect(view.windowWidthBp).toBe(50_000)
   expect(view.windowStartBp).toBe(12_000)
+})
+
+// What the test above is worth depends on the fake being able to fail it, so:
+// the same capture and the same resize through the pair this used to store,
+// which comes back at double the window it was taken at.
+test('the pixel pair this replaced does not survive that resize', () => {
+  const view = makeView(800)
+  view.windowStartBp = 12_000
+  const captured = { bpPerPx: view.bpPerPx, offsetPx: view.offsetPx }
+  run(view)
+
+  view.width = 1600
+  view.setNewView(captured.bpPerPx, captured.offsetPx)
+
+  expect(view.windowWidthBp).toBe(100_000)
 })
 
 test('Undo also reverses what the caller changed beyond the location', () => {

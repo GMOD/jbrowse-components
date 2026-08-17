@@ -54,16 +54,17 @@ export function viewMateRegionInCurrentView({
   // A locus the contig does not reach comes back undefined rather than inverted
   // (see clampToContig). Keeping the other one is still the more useful half of
   // what was asked for.
-  const regions = [
-    { refName, start: start - pad, end: end + pad },
-    {
-      refName: nextRef,
-      start: nextPos - pad,
-      end: nextPos + (end - start) + pad,
-    },
-  ]
-    .map(r => clampToContig(assembly, r))
-    .filter(notEmpty)
+  const readLocus = clampToContig(assembly, {
+    refName,
+    start: start - pad,
+    end: end + pad,
+  })
+  const mateLocus = clampToContig(assembly, {
+    refName: nextRef,
+    start: nextPos - pad,
+    end: nextPos + (end - start) + pad,
+  })
+  const regions = [readLocus, mateLocus].filter(notEmpty)
   if (regions.length === 0) {
     session.notify(
       `Neither this read nor its mate lands inside a contig of ${assembly.name}`,
@@ -74,6 +75,12 @@ export function viewMateRegionInCurrentView({
   showRegionsWithUndo({
     view,
     regions: gatherOverlaps(regions, 0),
-    message: 'Showing mate region',
+    // Naming the dropped half, because the view alone cannot show it was
+    // dropped: one region is also what a proper pair merges to, so "Showing
+    // mate region" over a view with no mate in it reads as success. A dropped
+    // READ locus needs no such line — what is left IS the mate region.
+    message: mateLocus
+      ? 'Showing mate region'
+      : `Showing this read only — its mate lies past the end of ${nextRef}`,
   })
 }
