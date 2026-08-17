@@ -24,8 +24,7 @@ import {
   formatMarkdown,
   spliceGeneratedBlock,
 } from './check-utils.ts'
-import { loadMeasurements } from './measurements.ts'
-import { renderTable } from './measurements.ts'
+import { loadMeasurements, renderTable } from './measurements.ts'
 import { repoRoot } from './paths.ts'
 
 const BLOCK = /^<!--\s*BEGIN GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/

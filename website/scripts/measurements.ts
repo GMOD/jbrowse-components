@@ -345,7 +345,7 @@ const DEFAULT_PRECISION: Partial<Record<Format, number>> = {
   GB: 2,
 }
 
-const group = (n: string) => n.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+const group = (n: string) => n.replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',')
 
 const writtenDecimals = (value: number) =>
   (value.toString().split('.')[1] ?? '').length
@@ -581,7 +581,7 @@ export function rowKey(measurement: Measurement, row: Row): string {
   return String(raw ?? '')
     .toLowerCase()
     .replaceAll(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
+    .replaceAll(/^-|-$/g, '')
 }
 
 /** The markdown table for a measurement, ready to splice into a doc. */
@@ -620,7 +620,7 @@ export function renderTable(measurement: Measurement): string[] {
     `| ${row.map((c, i) => pad(c, i)).join(' | ')} |`
   const delimiters = measurement.columns.map((c, i) =>
     c.align === 'right'
-      ? '-'.repeat(widths[i]! - 1) + ':'
+      ? `${'-'.repeat(widths[i]! - 1)}:`
       : '-'.repeat(widths[i]!),
   )
   return [
