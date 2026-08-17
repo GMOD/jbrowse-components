@@ -185,6 +185,20 @@ test('split-read grouping keeps both pieces of a split read together', () => {
   expect(groups[1]!.features.map(f => f.id())).toEqual(['c'])
 })
 
+// The supplementary flag is a conformance backstop on top of SA, and it is the
+// half "Show only split alignments" already counted: a supplementary record IS a
+// piece of a split, so one whose SA the source dropped used to survive that filter
+// and then group as "Not split". Both surfaces read one predicate now.
+test('split-read grouping counts a supplementary record with no SA tag', () => {
+  const features = [
+    feat('supp', { flags: 0x800, tags: {} }),
+    feat('plain', { flags: 0, tags: {} }),
+  ]
+  const groups = partitionFeatures(features, { type: 'splitRead' })
+  expect(groups.map(g => g.label)).toEqual(['Split (SA)', 'Not split'])
+  expect(groups[0]!.features.map(f => f.id())).toEqual(['supp'])
+})
+
 // F1R2 and F2R1 are the SAME pair orientation — the normal LR — differing only
 // in which mate the record is. Keying the raw `pair_orientation` string opened a
 // section per permutation, so a plain FR library drew two "normal" sections, both

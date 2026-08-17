@@ -9,10 +9,7 @@ import {
 } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
-import {
-  detectSimplexModifications,
-  getTag,
-} from '@jbrowse/modifications-utils'
+import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
@@ -48,6 +45,7 @@ import {
   buildReadNextRefs,
 } from '../shared/readNextRefs.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
+import { chainIsSplit } from '../shared/splitAlignment.ts'
 import {
   CHAIN_FILL_SPLIT_DELETION,
   CHAIN_FILL_SPLIT_INVERSION,
@@ -126,19 +124,6 @@ function dedupeById(features: Feature[]) {
   return out
 }
 
-// A chain is "split" when any of its members is a chimeric/split segment —
-// either it carries the supplementary flag, or its SA tag names a segment mapped
-// elsewhere. The SA check keeps a split read visible under "show only split
-// alignments" even when only its primary is in view and the supplementary maps
-// outside the fetched region (the arc path already draws that off-screen
-// junction); without it, such a read would be dropped as if it weren't split.
-function isSplitChain(chain: Feature[]) {
-  return chain.some((f: Feature) => {
-    const flags = getFlags(f)
-    return !!(flags & SAM_FLAG_SUPPLEMENTARY) || getTag(f, 'SA') !== undefined
-  })
-}
-
 // Chain mode groups reads into chains by name, then optionally drops
 // singletons (chains of one), proper pairs, and/or non-split chains.
 //
@@ -148,7 +133,7 @@ function isSplitChain(chain: Feature[]) {
 // both. `drawSingletons` defaults on, so this only bites a user who turns it
 // off; the menu's help text names the scope for that reason. `showOnlySplitAlignments`
 // is the one that already routes around it, by reading the SA tag rather than
-// counting what this call happened to fetch (`isSplitChain`) — the same move is
+// counting what this call happened to fetch (`chainIsSplit`) — the same move is
 // not available for the other two, which are about what is on screen. Making
 // them view-wide means moving the filter to the main thread, where the coverage
 // histogram these also thin is no longer being computed.
@@ -171,7 +156,7 @@ export function filterChainFeatures(
     rawChains = rawChains.filter(c => !isProperPairChain(c))
   }
   if (showOnlySplitAlignments) {
-    rawChains = rawChains.filter(c => isSplitChain(c))
+    rawChains = rawChains.filter(c => chainIsSplit(c))
   }
   // same key as the dedupe above, for the same reason: this is identity within
   // one fetch, which is the thing `readKeyOf` is cheap at

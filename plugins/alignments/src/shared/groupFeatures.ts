@@ -9,6 +9,7 @@ import { PAIR_DIRECTION_NUM } from './buildBaseFeatureData.ts'
 import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { GROUP_BY_LABELS } from './groupByLabels.ts'
+import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
 import {
   MAPQ_UNAVAILABLE,
   firstOfPairStrand,
@@ -130,21 +131,12 @@ function pairOrientationKey(feature: Feature): GroupKey {
 const SPLIT_GROUP: GroupKey = { key: 'split', label: 'Split (SA)' }
 const UNSPLIT_GROUP: GroupKey = { key: 'unsplit', label: 'Not split' }
 
-function hasSplitAlignment(feature: Feature) {
-  return extractFeatureTagValue(feature, 'SA') !== ''
-}
-
-// Whether the read is part of a split alignment, which is what SA records: the
-// aligner writes it on every segment of the split, the primary included. So the
-// two sections are "reads that cross a breakpoint" and "reads that don't", which
-// at an SV locus is the evidence and the background.
-//
-// This replaced a grouping on the SUPPLEMENTARY flag, which looks similar and
-// isn't: the flag marks the pieces after the first, so a split read's own first
-// piece filed with the reads that never split at all, and the sections cut
-// through the evidence instead of around it.
+// The two sections are "reads that cross a breakpoint" and "reads that don't",
+// which at an SV locus is the evidence and the background. `isSplitAlignment`
+// carries why that is an SA question rather than a supplementary-flag one, and is
+// shared with the "Show only split alignments" filter.
 function splitReadKey(feature: Feature): GroupKey {
-  return hasSplitAlignment(feature) ? SPLIT_GROUP : UNSPLIT_GROUP
+  return isSplitAlignment(feature) ? SPLIT_GROUP : UNSPLIT_GROUP
 }
 
 // Synteny features (PAF/all-vs-all) carry a `mate` referencing the other side's
@@ -410,8 +402,7 @@ export const GROUP_BY_DIMENSIONS: {
     type: 'splitRead',
     chainConsistent: false,
     key: splitReadKey,
-    chainKey: chain =>
-      chain.some(hasSplitAlignment) ? SPLIT_GROUP : UNSPLIT_GROUP,
+    chainKey: chain => (chainIsSplit(chain) ? SPLIT_GROUP : UNSPLIT_GROUP),
   },
   mapq: {
     type: 'mapq',
