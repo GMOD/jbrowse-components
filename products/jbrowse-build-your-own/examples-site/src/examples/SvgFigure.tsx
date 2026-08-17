@@ -1,22 +1,11 @@
-import { Suspense, memo, useSyncExternalStore } from 'react'
+import { Suspense, useSyncExternalStore } from 'react'
 
-import { exportMargin } from '@jbrowse/core/svg/constants'
-import { svgTrackName } from '@jbrowse/core/svg/trackNames'
 import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
-import { useFetch } from '@jbrowse/core/util/useFetch'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { DisplayUIProvider, TrackOverlaySlot } from '@jbrowse/display-ui'
-import {
-  SVGRowHeader,
-  SVGView,
-  defaultTextHeight,
-  getRowHeaderLayout,
-  renderViewTracks,
-  totalHeight,
-} from '@jbrowse/plugin-linear-genome-view'
+import { useViewSvgFigure } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
-import { ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // The same components JBrowse's "Export SVG" is built from, mounted in the page
@@ -24,15 +13,24 @@ import { observer } from 'mobx-react'
 // top; below it is a figure of the same view, in SVG, in the same document --
 // every glyph a DOM node, every gene name selectable text.
 //
-// Two things make that possible and are worth knowing before you copy this:
+// `useViewSvgFigure` is the whole of it. What it is doing that a hand-rolled
+// version would not:
 //
-// - a display's `renderSvg` is **async and returns a ReactNode**. It waits for
-//   the display's data, then hands back an element -- so the only thing standing
-//   between the export path and your JSX is somewhere to await it and somewhere
-//   to keep the result. That is `useSvgFigure` below.
-// - it draws from data the display has already fetched for the screen, so this
-//   figure costs no requests. What it costs is DOM: a few thousand nodes per
-//   redraw, which is why the redraw is on a settle rather than per frame.
+// - a display's `renderSvg` is async and returns a ReactNode, so something has
+//   to await it, discard a render the next pan overtook, and hold the result.
+// - the ruler, the scalebar and the region seams re-read the model on any React
+//   render, while the track bodies are frozen at the moment they were built. The
+//   hook renders them as one memoized unit so a host re-rendering (this page
+//   draws a position readout, which re-renders on every pan frame) cannot slide
+//   one half off the other.
+// - the header band, the label gutter, the legend gutter and the 50px export
+//   margin are geometry, and a figure that reserves the last one wrong clips the
+//   wiggle's y-axis, which is drawn left of zero.
+//
+// It redraws when the view *settles* -- the same 500ms-coarse signal the
+// displays refetch on -- because a redraw builds a few thousand DOM nodes, and
+// that is the honest trade this page is about: the canvas above is what pans at
+// 60fps.
 //
 // Self-contained, like every page here: the engine, mounting and dark-mode parts
 // introduced on earlier pages are repeated rather than imported.
@@ -91,264 +89,39 @@ function makeView() {
 }
 
 type BrowserView = ReturnType<typeof makeView>['view']
-type BrowserSession = ReturnType<typeof makeView>['session']
-
-// Everything about the figure's shape that is yours rather than JBrowse's. The
-// export dialog collects these as options; here they are just constants.
-//
-// Two of them should not be numbers of your own. `defaultTextHeight` is the band
-// an 'offset' track label needs at this font size, descenders included, and
-// guessing it is how a label lands on the first pixel row of the track under it.
-// `exportMargin` is the 50px gutter every JBrowse image export leaves on each
-// side, and it is not decoration: a wiggle draws its y-axis *left* of zero and a
-// ruler tick label at the edge overhangs, so a smaller gutter cuts the axis
-// numbers off -- which is exactly what a hand-picked 12 did here.
-const fontSize = 12
-const rulerHeight = 30
-const trackLabels = 'offset'
-const textHeight = defaultTextHeight(fontSize)
-
-// What the figure will come out at, reserved by the box that holds it so the
-// prose below stays put while a redraw is in flight. Both tracks are
-// fixed-height, so this is arithmetic rather than a measurement -- and it is
-// `totalHeight`, the same helper the render uses, rather than a second opinion
-// about what a stack of tracks is tall.
-const figureBoxHeight =
-  getRowHeaderLayout({ fontSize, showScalebar: true }).bandHeight +
-  rulerHeight +
-  totalHeight(
-    [wiggleTrack, featureTrack].map(track => ({
-      displays: [{ height: track.displayDefaults.height }],
-    })),
-    textHeight,
-    trackLabels,
-  ) +
-  exportMargin
 
 /**
- * One figure: every visible track rendered to SVG elements, plus the geometry
- * that lays them out.
+ * The figure, plus the caption that says what it is a picture of.
  *
- * `renderViewTracks` is the published half of a view's `renderToSvg`, and using
- * it rather than a loop over `display.renderSvg` is not a convenience. It owns
- * two orderings whose absence is invisible at a call site that merely lists the
- * same statements: the legend gutter is measured *before* the renders, because a
- * display decides whether to draw its key beside the plot or floating over it by
- * whether the container reserved room; the stack height is measured *after*
- * them, because a display whose height follows its data only reaches its final
- * height once its readiness wait resolves. Measure up front and the taller
- * bodies run off the bottom of the figure.
+ * Everything above the caption line is the hook's; everything in it is this
+ * page's own. `skipped` is the one to copy rather than leave out: a display type
+ * that implements no `renderSvg` is dropped from the figure rather than failing
+ * it, so a figure can be quietly one track short and nothing in the file says
+ * so. JBrowse's own exports report that through `session.snackbarMessages`,
+ * which a host drawing its own chrome renders nowhere -- see the Loading and
+ * error states page.
  *
- * The geometry below is read after the awaits for the same reason.
- *
- * `rasterizeLayers` is the one option worth stating rather than defaulting: off,
- * a display's heavy draw path emits vector elements; on, it paints to a canvas
- * and embeds a PNG. The whole point of this page is off, and a figure of a
- * hundred-thousand-read pileup is the case for on.
- */
-async function renderFigure(view: BrowserView, session: BrowserSession) {
-  const { displayResults, tracksHeight, legendWidth, skippedTracks } =
-    await renderViewTracks({
-      view,
-      opts: { fontSize, trackLabels, rasterizeLayers: false },
-      // The theme each display bakes its *own* colours from -- the alignments
-      // and MAF bodies rebuild a palette from it rather than reading the
-      // provider, so an export can be a different theme from the screen. This is
-      // the call every view's `renderToSvg` makes, and it resolves from the same
-      // config slot `SessionPaletteProvider` writes below, so the figure follows
-      // the page's light/dark mode with nothing here to keep in sync.
-      theme: session.getActiveThemeOptions(),
-      textHeight,
-      trackLabels,
-      reserveLegendWidth: true,
-    })
-  // `bandHeight` is the room the row header needs *above* its own origin: it
-  // draws the assembly name and the scalebar at negative y, so the caller
-  // reserves the space and translates the view down into it.
-  const { bandHeight } = getRowHeaderLayout({ fontSize, showScalebar: true })
-  return {
-    displayResults,
-    tracksHeight,
-    legendWidth,
-    bandHeight,
-    width: view.width + exportMargin * 2 + legendWidth,
-    height: bandHeight + rulerHeight + tracksHeight + exportMargin,
-    // What the figure is a picture of, kept beside it: the caption reads these
-    // rather than the live view, so it always describes the pixels on screen.
-    locstring: view.visibleLocStrings,
-    // The other half of the render's answer, and the half it is easy to drop.
-    // SVG export is a substantial extra implementation per display type, so a
-    // display that has none is left out of the figure rather than failing it --
-    // which means a figure can be quietly short a track, and afterwards nothing
-    // in the file says so. Every one of JBrowse's own view exports reports these
-    // (`notifySkippedSvgTracks`, into `session.snackbarMessages`); a page that
-    // draws its own chrome renders no snackbar, so this one says it in the
-    // caption instead. Nothing is skipped with the two tracks below -- it is
-    // wired up for the day you add a third.
-    skipped: skippedTracks.map(track => svgTrackName(track, session)),
-  }
-}
-
-type Figure = Awaited<ReturnType<typeof renderFigure>>
-
-/**
- * The figure, redrawn whenever the view settles somewhere new.
- *
- * `useFetch` rather than an effect of your own, and the awaiting is the small
- * half of what that saves. A redraw in flight is abandoned when the key changes,
- * so a slow one that lands after the pan which overtook it cannot put a figure of
- * the wrong locus on screen; `error` and `isLoading` are states of one fetch
- * rather than two more `useState`s to keep in step with it; and the whole of the
- * hook's contract is a key, which is where the interesting decisions go.
- *
- * **Every part of the key is one of those decisions.**
- *
- * `coarseVisibleLocStrings` and `coarseBpPerPx` are the view's *settled* frame: a
- * 500ms-delayed copy of `dynamicBlocks`, and the same signal the wiggle and
- * alignments displays refetch on. Keying on the live `offsetPx` instead would
- * redraw per frame, walking every feature and building a few thousand DOM nodes
- * each time, which is the trade the canvas browser above exists for.
- *
- * The **mode** is in there because the track bodies carry the colours they were
- * baked with, and a key change clears `data` where a same-key `mutate()` would
- * leave it up. That asymmetry is what you want here: a figure the reader panned
- * away from is still a legible picture of somewhere, while one baked in the other
- * mode is light-grey feature labels on a white page -- 2.89:1, which this site's
- * contrast check measures and failed on before the mode was part of the key.
- *
- * The **track list** is in there because `ready` answers a question about
- * regions, not about tracks: at first paint the view is ready with `tracks` still
- * empty, and the figure that draws is a header over nothing. Nothing else in the
- * key changes when the tracks arrive, so without this it stays that way -- which
- * is what a key is for. An app that lets the reader resize a track wants
- * `display.height` here for the same reason.
- *
- * Strings and numbers only. A `false` (or null, or undefined) anywhere in a key
- * means "don't fetch", so a boolean in one is a redraw that silently never
- * happens.
- */
-function useSvgFigure(
-  view: BrowserView,
-  session: BrowserSession,
-  mode: 'light' | 'dark',
-) {
-  return useFetch(
-    // `view.width`, which renderFigure reads, throws by design before the view
-    // has been measured -- `ready` is the gate that says it has been, and that
-    // there are regions to draw, which is the second async step `initialized`
-    // does not cover. A null key is `useFetch`'s own "not yet".
-    view.ready
-      ? ([
-          'svg-figure',
-          mode,
-          view.coarseVisibleLocStrings,
-          view.coarseBpPerPx,
-          view.tracks.map(track => track.configuration.trackId).join(','),
-        ] as const)
-      : null,
-    () => renderFigure(view, session),
-  )
-}
-
-/**
- * The figure itself: a plain `<svg>`, JBrowse's own view chrome inside it, and
- * the track bodies the render pass produced.
- *
- * **`memo`, and it is load-bearing rather than an optimisation.** Half of what
- * is drawn here is frozen -- `displayResults` are elements built at a moment in
- * the past -- and the other half is live: `SVGView` and `SVGRowHeader` re-derive
- * the ruler, the scalebar and the region seams from the model on every React
- * render they get. Let the parent re-render this mid-pan and the ruler slides
- * while the features stay put, which reads as a rendering bug and is really two
- * clocks. In an export they cannot disagree, because `wrapSvgExport` renders the
- * whole document in one synchronous pass; inline, freezing them together is your
- * job, and `figure` changing identity is the moment they agree again.
- *
- * No background rect, unlike an exported file: a file has nothing behind it, so
- * the export paints the theme's background. A figure in a page has the page.
- */
-const FrozenFigure = memo(function FrozenFigure({
-  view,
-  figure,
-}: {
-  view: BrowserView
-  figure: Figure
-}) {
-  return (
-    <svg
-      width={figure.width}
-      height={figure.height}
-      viewBox={`0 0 ${figure.width} ${figure.height}`}
-      // It is a vector, so a container narrower than the drawing scales it down
-      // instead of clipping or scrolling it. The height attribute stays, so the
-      // box the page reserved does not change size when it does.
-      style={{ display: 'block', maxWidth: '100%' }}
-    >
-      <g transform={`translate(${exportMargin} ${figure.bandHeight})`}>
-        <SVGView
-          view={view}
-          displayResults={figure.displayResults}
-          // What sits above the tracks is a slot, not a flag, and this is the
-          // compact one JBrowse's stacked exports use: assembly name, a capped
-          // bar labelled with the span, then the ruler. Draw your own here if a
-          // figure of yours wants a title instead.
-          header={
-            <SVGRowHeader
-              view={view}
-              fontSize={fontSize}
-              rulerHeight={rulerHeight}
-              showScalebar
-            />
-          }
-          fontSize={fontSize}
-          textHeight={textHeight}
-          trackLabels={trackLabels}
-          trackLabelOffset={0}
-          contentTop={rulerHeight}
-          tracksHeight={figure.tracksHeight}
-          showGridlines
-          // the left gutter the per-track clip may bleed into, so content drawn
-          // left of zero -- a wiggle's y-axis at whole-genome zoom -- survives
-          leftBuffer={exportMargin}
-          legendWidth={figure.legendWidth}
-        />
-      </g>
-    </svg>
-  )
-})
-
-/**
- * The figure plus its caption, and the two states a redraw has.
- *
- * `ThemeProvider` because JBrowse's SVG chrome is JBrowse's *chrome*: the ruler,
- * the scalebar and the track labels take their colours from Material UI's theme,
- * the way their on-screen counterparts do. `wrapSvgExport` mounts one for you on
- * the export path; inline, this is that line, and `session.theme` is the theme
- * the session already resolved from the mode set below. Leave it out and the
- * chrome renders from Material UI's *default* (light) theme -- black-on-black
- * text on a dark page, with nothing in the console. It costs no Material UI
- * element: everything under it is `<text>` and `<path>`.
+ * `height` is the size of the figure being drawn *or the last one*, so the box
+ * keeps its height between redraws instead of letting the prose below it walk up
+ * the page.
  */
 const SvgFigurePanel = observer(function SvgFigurePanel({
   view,
-  session,
-  mode,
 }: {
   view: BrowserView
-  session: BrowserSession
-  mode: 'light' | 'dark'
 }) {
-  const { data: figure, error, isLoading } = useSvgFigure(view, session, mode)
+  const { figure, height, locstring, skipped, error, isLoading } =
+    useViewSvgFigure(view)
   return (
-    <ThemeProvider theme={session.theme}>
+    <div>
       <div style={{ fontSize: '0.8rem', opacity: 0.7, padding: '6px 0' }}>
         {error
           ? `Could not draw the figure: ${error instanceof Error ? error.message : String(error)}`
-          : figure
+          : locstring
             ? [
-                `SVG of ${figure.locstring}`,
-                figure.skipped.length > 0
-                  ? `no SVG renderer for ${figure.skipped.join(', ')}`
+                `SVG of ${locstring}`,
+                skipped.length > 0
+                  ? `no SVG renderer for ${skipped.join(', ')}`
                   : undefined,
               ]
                 .filter(Boolean)
@@ -357,12 +130,8 @@ const SvgFigurePanel = observer(function SvgFigurePanel({
               ? 'Drawing'
               : 'Nothing to draw'}
       </div>
-      {/* the box keeps the height of the figure it is drawing, so the prose
-       * below does not walk up the page between one redraw and the next */}
-      <div style={{ minHeight: figureBoxHeight }}>
-        {figure ? <FrozenFigure view={view} figure={figure} /> : null}
-      </div>
-    </ThemeProvider>
+      <div style={{ minHeight: height }}>{figure}</div>
+    </div>
   )
 })
 
@@ -529,7 +298,7 @@ const SvgFigure = observer(function SvgFigure() {
       <DisplayUIProvider>
         <TrackStack view={view} />
       </DisplayUIProvider>
-      <SvgFigurePanel view={view} session={session} mode={mode} />
+      <SvgFigurePanel view={view} />
     </SessionPaletteProvider>
   )
 })

@@ -1,4 +1,10 @@
-import { memo, useCallback, useSyncExternalStore } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from 'react'
 
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { svgTrackName } from '@jbrowse/core/svg/trackNames'
@@ -78,7 +84,11 @@ export interface ViewSvgFigureResult {
    * make its chrome disagree with its track bodies.
    */
   figure: React.ReactNode
-  /** dimensions of that figure, for a host reserving its space */
+  /**
+   * Dimensions of the figure, for a host reserving its space — of the *last*
+   * one drawn while a redraw is in flight, since a reservation that went
+   * undefined between figures would collapse the box and walk the page.
+   */
   width: number | undefined
   height: number | undefined
   /** the locus it is a picture of, for a caption */
@@ -407,12 +417,23 @@ export function useViewSvgFigure(
         themeName,
       }),
   )
+  // Written in an effect and read during render, which is the order that makes
+  // it work: a key change clears `data` on the render where the ref still holds
+  // the previous commit's size, so the host's box keeps the height it had rather
+  // than collapsing to nothing while the next figure draws.
+  const lastSize = useRef<{ width: number; height: number }>(undefined)
+  useEffect(() => {
+    if (snapshot) {
+      lastSize.current = { width: snapshot.width, height: snapshot.height }
+    }
+  }, [snapshot])
+  const size = snapshot ?? lastSize.current
   return {
     figure: snapshot ? (
       <FrozenSvgFigure view={view} snapshot={snapshot} />
     ) : undefined,
-    width: snapshot?.width,
-    height: snapshot?.height,
+    width: size?.width,
+    height: size?.height,
     locstring: snapshot?.locstring,
     skipped: snapshot?.skipped ?? [],
     error,
