@@ -566,31 +566,28 @@ export interface ManifestSlot {
 interface ManifestEntry {
   slots: ManifestSlot[]
   shorthandKeys?: string[]
+  // Displays only: the MST properties of the display's STATE model, which a
+  // session snapshot sets and a track config cannot. Lets the example gate say
+  // which wrong place a key is in rather than only that it is wrong.
+  stateModelProps?: string[]
 }
 type ManifestCategories = Record<string, Record<string, ManifestEntry>>
-type TypedManifestEntry = ManifestEntry & { category: string }
+export type TypedManifestEntry = ManifestEntry & { category: string }
 
-// Categories whose `#example` is a bare object of the type itself, so its keys
-// can be checked against the type's own slot list (assertExampleKeysAreSlots).
+// Categories whose objects an `#example` can be checked against
+// (assertExampleKeysAreSlots).
 //
-// A DISPLAY's example is by convention a whole track config carrying the
-// display (the same rule the hand-written guides follow — show something a
-// reader can paste), so its keys are the track's and checking them against the
-// display's slot list reports every one of them as unknown. Validating that
-// shape means wrapping and running the real `validateConfig`, which is what
-// `check-config-blocks` does for the guides; displays are left to it.
-//
-// TEXT SEARCH adapters are left out for a different reason: the manifest
-// computes `shorthandKeys` only for `group === 'adapter'`
-// (`generateConfigManifest`), so a text search adapter that does accept a
-// shorthand records none — TrixTextSearchAdapter's `preProcessSnapshot` expands
-// `uri` into its three file paths, and checking against its slot list alone
-// reports that `uri` as unknown. A gate that rejects correct documentation is
-// worse than a narrower one.
+// TEXT SEARCH adapters are the one type table left out: the manifest computes
+// `shorthandKeys` only for `group === 'adapter'` (`generateConfigManifest`), so
+// a text search adapter that does accept a shorthand records none —
+// TrixTextSearchAdapter's `preProcessSnapshot` expands `uri` into its three file
+// paths, and checking against its slot list alone reports that `uri` as unknown.
+// A gate that rejects correct documentation is worse than a narrower one.
 const EXAMPLE_CHECKED_CATEGORIES = new Set([
   'adapters',
   'connections',
   'tracks',
+  'displays',
 ])
 
 let manifestByType: Record<string, TypedManifestEntry> | undefined
@@ -1349,48 +1346,99 @@ function assertNoBlankSlotDescriptions(gaps: { file: string; name: string }[]) {
   }
 }
 
-// Top-level property names of the first object literal in an `#example` fence.
-// Parsed rather than regexed because an example is JS, not JSON — unquoted
-// keys, single quotes, nested objects whose keys must not be mistaken for the
-// outer ones.
-function exampleKeysForType(code: string, typeName: string) {
+export interface ExampleObject {
+  // the `type` the object claims, when the manifest carries that type
+  typeName: string
+  entry: TypedManifestEntry
+  keys: string[]
+  // keys of this object's `displayDefaults` block, which route by the TRACK's
+  // display types rather than by any one display's slots
+  displayDefaultKeys?: string[]
+}
+
+// Every object literal an `#example` writes, paired with the manifest entry its
+// own `type` names. Parsed rather than regexed because an example is JS, not
+// JSON — unquoted keys, single quotes, nested objects whose keys must not be
+// mistaken for the outer ones.
+//
+// Keyed on each object's own `type`, not on the page's. An example is written in
+// whatever shape a reader can paste, so the object a page is ABOUT is rarely the
+// outer one: a display's example is a whole track config carrying the display
+// two levels down, a sequence adapter is shown inside its ReferenceSequenceTrack,
+// an alias adapter inside the whole assembly. Checking only the page's own type
+// left every display example unchecked, which is how three of them came to
+// document a key JBrowse drops.
+//
+// The walk stops at a `frozen` slot. Its value passes through no
+// ConfigurationSchema, so nothing inside it is a slot of anything and whatever
+// reads it picks its own shape — MultiWiggleAdapter reads `name`/`group`/`color`
+// off each `subadapters` entry, none of which the subadapter type declares.
+export function exampleObjects(
+  code: string,
+  manifest: Record<string, TypedManifestEntry>,
+) {
+  const body = code.trim()
+  // One example is a fragment naming its parent key (`sequence: {…}`), which is
+  // not an expression. Braces make it an object whose outer level carries no
+  // `type` and so is checked against nothing, while the object it holds is.
   const source = ts.createSourceFile(
     'example.ts',
-    `const __example = ${code.trim()}`,
+    `const __example = ${body.startsWith('{') ? body : `{${body}}`}`,
     ts.ScriptTarget.Latest,
     true,
   )
   const keyOf = (p: ts.ObjectLiteralElementLike) =>
     p.name?.getText().replaceAll(/['"]/g, '')
+  const propNamed = (obj: ts.ObjectLiteralExpression, name: string) =>
+    obj.properties.find(p => keyOf(p) === name)
+  const out: ExampleObject[] = []
 
-  // The object this example is ABOUT is the one whose `type` is the documented
-  // type — wherever it sits. An example is written in whatever shape a reader
-  // can paste, and that is rarely the bare object: a sequence adapter is shown
-  // inside its ReferenceSequenceTrack, an alias adapter inside the whole
-  // assembly that carries it, a track as itself. Keying on `type` covers all
-  // of those with one rule, where matching on an `adapter` property meant
-  // knowing in advance how deep the wrapper was — and got the assembly case
-  // wrong, reporting `name`/`sequence`/`refNameAliases` as unknown slots of the
-  // adapter three levels down.
-  let match: ts.ObjectLiteralExpression | undefined
-  const visit = (node: ts.Node) => {
-    if (!match && ts.isObjectLiteralExpression(node)) {
-      const type = node.properties.find(p => keyOf(p) === 'type')
-      if (
-        type &&
-        ts.isPropertyAssignment(type) &&
-        ts.isStringLiteralLike(type.initializer) &&
-        type.initializer.text === typeName
-      ) {
-        match = node
+  const walkObject = (obj: ts.ObjectLiteralExpression) => {
+    const type = propNamed(obj, 'type')
+    const typeName =
+      type &&
+      ts.isPropertyAssignment(type) &&
+      ts.isStringLiteralLike(type.initializer)
+        ? type.initializer.text
+        : undefined
+    const entry = typeName ? manifest[typeName] : undefined
+    const defaults = propNamed(obj, 'displayDefaults')
+    if (entry) {
+      out.push({
+        typeName: typeName!,
+        entry,
+        keys: obj.properties.map(keyOf).filter((n): n is string => !!n),
+        displayDefaultKeys:
+          defaults &&
+          ts.isPropertyAssignment(defaults) &&
+          ts.isObjectLiteralExpression(defaults.initializer)
+            ? defaults.initializer.properties
+                .map(keyOf)
+                .filter((n): n is string => !!n)
+            : undefined,
+      })
+    }
+    const frozen = new Set(
+      (entry?.slots ?? [])
+        .filter(s => s.type.includes('frozen'))
+        .map(s => s.name),
+    )
+    for (const p of obj.properties) {
+      const name = keyOf(p)
+      if (ts.isPropertyAssignment(p) && !(name && frozen.has(name))) {
+        descend(p.initializer)
       }
     }
-    if (!match) {
-      ts.forEachChild(node, visit)
+  }
+  const descend = (node: ts.Node) => {
+    if (ts.isObjectLiteralExpression(node)) {
+      walkObject(node)
+    } else {
+      ts.forEachChild(node, descend)
     }
   }
-  ts.forEachChild(source, visit)
-  return match?.properties.map(keyOf).filter((n): n is string => !!n)
+  descend(source)
+  return out
 }
 
 // Every key an `#example` writes must be one the type declares, or a shorthand
@@ -1407,49 +1455,81 @@ function exampleKeysForType(code: string, typeName: string) {
 // Keys come from the same manifest the shorthand line above reads, so a type
 // the manifest does not carry (internet accounts, the root config schemas) is
 // skipped rather than guessed at — checking against an empty slot list would
-// report every key as unknown. The categories whose examples are checkable at
-// all are EXAMPLE_CHECKED_CATEGORIES.
-function assertExampleKeysAreSlots(configs: ConfigWithHeader[]) {
+// report every key as unknown. The type tables checkable at all are
+// EXAMPLE_CHECKED_CATEGORIES.
+function assertExampleKeysAreSlots(
+  configs: ConfigWithHeader[],
+  displayTypesByTrack: Map<string, string[]>,
+) {
   const manifest = configManifest()
+  const checkable = Object.fromEntries(
+    Object.entries(manifest).filter(([, entry]) =>
+      EXAMPLE_CHECKED_CATEGORIES.has(entry.category),
+    ),
+  )
   const problems: string[] = []
   for (const config of configs) {
-    const entry = manifest[config.header.name]
-    if (!entry || !EXAMPLE_CHECKED_CATEGORIES.has(entry.category)) {
-      continue
-    }
-    const known = new Set([
-      ...entry.slots.map(s => s.name),
-      ...(entry.shorthandKeys ?? []),
-      // A track's per-display shorthand. Not a declared slot — the track config
-      // schema's preProcessSnapshot folds it into `displays` — so the manifest
-      // does not carry it, and it is the form the guides tell readers to write.
-      'displayDefaults',
-    ])
     for (const ex of config.header.examples) {
       const code = /```[\w]*\n([\s\S]*?)```/.exec(ex.content)?.[1]
-      // undefined when the example never names the type — nothing to check
-      // against, and an example that omits its own `type` is a separate
-      // authoring question from a wrong key.
-      const keys = code
-        ? exampleKeysForType(code, config.header.name)
-        : undefined
-      const unknown = keys?.filter(k => !known.has(k)) ?? []
-      if (unknown.length) {
-        problems.push(
-          `  ${config.filename}: ${config.header.name} #example writes ${unknown
-            .map(k => `\`${k}\``)
-            .join(
-              ', ',
-            )} — not ${unknown.length > 1 ? 'slots' : 'a slot'} it declares`,
-        )
+      for (const obj of code ? exampleObjects(code, checkable) : []) {
+        const unknown = unknownExampleKeys(obj, checkable, displayTypesByTrack)
+        for (const [key, why] of unknown) {
+          problems.push(
+            `  ${config.filename}: ${config.header.name} #example writes \`${key}\` on its ${obj.typeName} — ${why}`,
+          )
+        }
       }
     }
   }
   if (problems.length) {
     throw new Error(
-      `${problems.length} #example block(s) name a key the type does not declare. JBrowse ignores an undeclared key, so such an example loads and silently does nothing — which is worse than no example. Fix the key, or add the slot:\n${problems.join('\n')}`,
+      `${problems.length} #example key(s) name something the type does not declare. JBrowse ignores an undeclared key, so such an example loads and silently does nothing — which is worse than no example. Fix the key, or add the slot:\n${problems.join('\n')}`,
     )
   }
+}
+
+// The keys of one example object that reach no slot, each with why — the two
+// wrong places differ in what the reader should do, so the message does too.
+export function unknownExampleKeys(
+  obj: ExampleObject,
+  manifest: Record<string, TypedManifestEntry>,
+  displayTypesByTrack: Map<string, string[]>,
+): [string, string][] {
+  const known = new Set([
+    ...obj.entry.slots.map(s => s.name),
+    ...(obj.entry.shorthandKeys ?? []),
+    // A track's per-display shorthand. Not a declared slot — the track config
+    // schema's preProcessSnapshot folds it into `displays` — so the manifest
+    // does not carry it, and it is the form the guides tell readers to write.
+    ...(obj.entry.category === 'tracks' ? ['displayDefaults'] : []),
+  ])
+  const out = obj.keys
+    .filter(k => !known.has(k))
+    .map((key): [string, string] => [
+      key,
+      obj.entry.stateModelProps?.includes(key)
+        ? 'a display state-model property, which a saved session sets and a track config drops'
+        : 'not a slot it declares',
+    ])
+  // `displayDefaults` routes each setting to every display type of the track
+  // that declares that slot (`collectDisplayOverrides`), so the union is the
+  // rule — asking any one display would reject a key another display of the
+  // same track owns. A key no display declares only warns at runtime, in a
+  // console nobody is reading when they paste an example.
+  const displaySlots = new Set(
+    (displayTypesByTrack.get(obj.typeName) ?? []).flatMap(
+      name => manifest[name]?.slots.map(s => s.name) ?? [],
+    ),
+  )
+  out.push(
+    ...(obj.displayDefaultKeys ?? [])
+      .filter(k => !displaySlots.has(k))
+      .map((key): [string, string] => [
+        key,
+        `in displayDefaults, and no display of a ${obj.typeName} declares it`,
+      ]),
+  )
+  return out
 }
 
 // Every slot the live schema carries has to reach the type's page as a row.
@@ -1616,7 +1696,7 @@ export function writeConfigDocs(
   // slot, or write one page for two types fails without having rewritten
   // anything.
   assertNoBlankSlotDescriptions(slotsMissingDescription(withHeader))
-  assertExampleKeysAreSlots(withHeader)
+  assertExampleKeysAreSlots(withHeader, displayTypesByTrack)
   assertManifestSlotsAreDocumented(withHeader, index)
   assertUniquePages(
     '#config',
