@@ -17,8 +17,7 @@ import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
 
-import type { ColorBy, FilterBy, GroupBy } from '../../shared/types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ColorBy, GroupBy } from '../../shared/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -28,10 +27,13 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // surface while the dialog stays free of menu-only state.
 export type GroupByDialogModel = {
   id: string
+  // Both read by `getUniqueTags`, not here. The driver name is declared even
+  // though that helper takes it optionally: undefined there means "the default
+  // driver", so a model that merely stopped exposing it would move this scan off
+  // the display's own driver in silence.
   adapterConfig: Record<string, unknown>
-  configuration: AnyConfigurationModel
+  effectiveRpcDriverName?: string
   colorBy: ColorBy
-  filterBy: FilterBy
   groupBy?: GroupBy
   setGroupBy: (groupBy?: GroupBy) => void
   setColorScheme: (colorBy: ColorBy) => void
@@ -121,7 +123,14 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   // one that can flood the track with sections. The values are already in hand
   // here, so refuse at the point of choice — the worker's MAX_GROUPS cap would
   // silently return 39 sections plus an opaque "N more values" one.
-  const tooManyValues = values !== undefined && values.length > MAX_GROUPS
+  //
+  // `>=`, not `>`: the scan reports only the values reads actually carry (it
+  // drops the '' sentinel), and reads LACKING the tag take a section of their own
+  // besides. So exactly MAX_GROUPS distinct values is already over the cap the
+  // moment one read is untagged, which is the overflow merge this exists to
+  // prevent. One value of headroom is the price of not knowing whether any read
+  // is untagged without a second scan.
+  const tooManyValues = values !== undefined && values.length >= MAX_GROUPS
 
   const handleSubmit = () => {
     model.setGroupBy({ type: 'tag', tag: groupByTag })
@@ -171,7 +180,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
           this tag instead, or group by a low-cardinality one (HP, RG).
         </Typography>
       ) : values?.length ? (
-        // At most MAX_GROUPS of them, since more than that blocks Submit above.
+        // Fewer than MAX_GROUPS of them, since that many blocks Submit above.
         <Typography variant="caption" color="text.secondary">
           Found values: {values.join(', ')}
         </Typography>
