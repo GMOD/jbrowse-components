@@ -217,6 +217,11 @@ export type { ScalebarRefNameLabel } from './LinearGenomeView/util.ts'
 // leak the source path — see the note above.
 export { makeTicks } from './LinearGenomeView/util.ts'
 export type { Tick } from './LinearGenomeView/util.ts'
+// Published for the one thing that needs it: building a view snapshot framed the
+// way showAllRegions frames a live view. The two constants behind it are this
+// view's own, so a caller deriving the arithmetic itself lands on a viewport
+// property the model no longer reads.
+export { showAllRegionsWindow } from './LinearGenomeView/util.ts'
 export { renderToSvg } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks.tsx'
 export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'

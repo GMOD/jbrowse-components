@@ -60,6 +60,19 @@ test('collapse introns on gene feature', async () => {
   for (const region of newView.displayedRegions) {
     expect(region.refName).toBe('ctgA')
   }
+
+  // The new view frames the regions it was built with, not the window it was
+  // launched from — collapsing EDEN's introns is most of the 9kb the source view
+  // shows. The snapshot names that framing as a genomic window, and the pair it
+  // used to name instead (bpPerPx/offsetPx) was dropped in silence, opening this
+  // view at the source view's zoom and scroll.
+  expect(newView.totalBp).toBeLessThan(view.totalBp / 2)
+  // showAllRegions' framing: everything on screen, filling 90% of the width
+  expect(newView.bpPerPx * newView.width * 0.9).toBeCloseTo(newView.totalBp, 5)
+  expect(newView.offsetPx).toBeCloseTo(
+    (newView.totalBp / newView.bpPerPx - newView.width) / 2,
+    5,
+  )
 }, 60000)
 
 test('collapse introns dialog lists the transcripts to scope to', async () => {

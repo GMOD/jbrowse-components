@@ -51,9 +51,11 @@ import { shouldSwapTracks } from './components/util.ts'
 import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
+  MIN_BP_PER_PX,
   MINIMIZED_TRACK_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
+  SHOW_ALL_REGIONS_FILL,
 } from './consts.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
 // lazy, and deliberately so — see lazyChromeComponents.tsx. A view model is
@@ -123,13 +125,6 @@ function resolveCanonicalRefName(
     : undefined
   return asm?.getCanonicalRefName2(region.refName) ?? region.refName
 }
-
-// most zoomed-in level: 50px per bp
-const MIN_BP_PER_PX = 1 / 50
-
-// fraction of the view width the whole genome fills at the most zoomed-out
-// level, leaving a 10% margin
-const SHOW_ALL_REGIONS_FILL = 0.9
 
 // bpPerPx deltas smaller than this are treated as no zoom change, avoiding
 // pointless offset re-anchoring on micro-steps

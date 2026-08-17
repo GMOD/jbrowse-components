@@ -2,7 +2,6 @@ import { createTestEnvironment } from '../testEnv.ts'
 import {
   buildCollapsedRegions,
   buildCollapsedViewSnapshot,
-  calculateInitialViewState,
   featureHasExonsOrCDS,
   getExonsAndCDS,
   getTranscripts,
@@ -34,15 +33,17 @@ const assembly = {
 function intronArgs({
   transcripts,
   flip,
+  padding = 20,
 }: {
   transcripts: Feature[]
   flip: boolean
+  padding?: number
 }) {
   return {
     view: createTestEnvironment().createDisplay().view,
     transcripts,
     assembly,
-    padding: 20,
+    padding,
     flip,
     trackId: 'test_track',
     soloFeatureId: undefined,
@@ -202,73 +203,63 @@ describe('CollapseIntrons utilities', () => {
     })
   })
 
-  describe('calculateInitialViewState', () => {
-    const minBpPerPx = 1 / 50
-
-    it('calculates zoom to fit all regions in 90% of viewport', () => {
-      const result = calculateInitialViewState(
-        [
-          { start: 0, end: 1000 },
-          { start: 2000, end: 3000 },
+  // The view persists its viewport as a genomic window, so that is what the
+  // snapshot has to name. A `bpPerPx`/`offsetPx` pair alongside an inherited
+  // `windowWidthBp` is dropped by the view's own snapshot migration, which is
+  // how the launch came to open at the source view's zoom instead of this one.
+  describe('the framing the snapshot carries', () => {
+    // exons 0..100 and 5000..5100 padded by 20 -> 0..120 (the low pad is clamped
+    // at the contig start) and 4980..5120, so 260bp collapsed — against a source
+    // view showing 10,000bp at 800px (see testEnv)
+    const transcripts = [
+      feat({
+        refName: 'ctgA',
+        subfeatures: [
+          feat({ type: 'exon', start: 0, end: 100 }),
+          feat({ type: 'exon', start: 5000, end: 5100 }),
         ],
-        900,
-        minBpPerPx,
+      }),
+    ]
+
+    it('frames the collapsed regions, not the window it was launched from', () => {
+      const snap = buildCollapsedViewSnapshot(
+        intronArgs({ transcripts, flip: false }),
       )
 
-      // totalBp 2000 / (900 * 0.9) ≈ 2.469
-      expect(result.bpPerPx).toBeCloseTo(2.469, 2)
+      // 260 / 0.9, filling 90% of the width with a 10% margin — the same framing
+      // "Replace current view" gets from showAllRegions. The source view's own
+      // 10,000bp window is what this used to inherit.
+      expect(snap.windowWidthBp).toBeCloseTo(288.89, 2)
+      // half the unfilled margin, so the content lands centered
+      expect(snap.windowStartBp).toBeCloseTo(-14.44, 2)
     })
 
-    it('centers the content in the viewport', () => {
-      const result = calculateInitialViewState(
-        [
-          { start: 0, end: 100 },
-          { start: 200, end: 300 },
-          { start: 400, end: 500 },
-        ],
-        1000,
-        minBpPerPx,
+    it('names no bpPerPx/offsetPx, which the view would ignore here anyway', () => {
+      const snap: Record<string, unknown> = buildCollapsedViewSnapshot(
+        intronArgs({ transcripts, flip: false }),
       )
 
-      // totalBp 300 / 900 = 0.333..., content 900px wide in a 1000px viewport
-      // -> centered at (900 - 1000) / 2
-      expect(result.bpPerPx).toBeCloseTo(0.333, 2)
-      expect(result.offsetPx).toBe(-50)
+      expect(snap.bpPerPx).toBeUndefined()
+      expect(snap.offsetPx).toBeUndefined()
     })
 
-    it('handles single region', () => {
-      const result = calculateInitialViewState(
-        [{ start: 0, end: 1000 }],
-        900,
-        minBpPerPx,
+    it('floors the window at the zoom-in limit for a tiny region set', () => {
+      // 10bp of exon at window size 0 wants an 11bp window, past the 1/50
+      // bp-per-px floor the view's own zoom controls clamp to anyway
+      const snap = buildCollapsedViewSnapshot(
+        intronArgs({
+          transcripts: [
+            feat({
+              refName: 'ctgA',
+              subfeatures: [feat({ type: 'exon', start: 0, end: 10 })],
+            }),
+          ],
+          flip: false,
+          padding: 0,
+        }),
       )
 
-      expect(result.bpPerPx).toBeCloseTo(1.234, 2)
-      expect(result.offsetPx).toBe(-45)
-    })
-
-    it('handles very small viewport', () => {
-      const result = calculateInitialViewState(
-        [{ start: 0, end: 1000 }],
-        100,
-        minBpPerPx,
-      )
-
-      expect(result.bpPerPx).toBeCloseTo(11.111, 2)
-      expect(result.offsetPx).toBe(-5)
-    })
-
-    it('floors at the view zoom minimum and still centers', () => {
-      // 10bp of exon at window size 0 wants bpPerPx 0.0139, below the floor.
-      // Content is then 500px, centered in an 800px viewport.
-      const result = calculateInitialViewState(
-        [{ start: 0, end: 10 }],
-        800,
-        minBpPerPx,
-      )
-
-      expect(result.bpPerPx).toBe(minBpPerPx)
-      expect(result.offsetPx).toBe(-150)
+      expect(snap.windowWidthBp).toBe(800 / 50)
     })
   })
 
@@ -334,8 +325,8 @@ describe('CollapseIntrons utilities', () => {
         intronArgs({ transcripts, flip: true }),
       )
 
-      expect(flipped.bpPerPx).toBe(plain.bpPerPx)
-      expect(flipped.offsetPx).toBe(plain.offsetPx)
+      expect(flipped.windowWidthBp).toBe(plain.windowWidthBp)
+      expect(flipped.windowStartBp).toBe(plain.windowStartBp)
     })
   })
 })

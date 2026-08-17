@@ -2,7 +2,12 @@ import { soloFeatureInView } from './util.ts'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+// Only `readConfObject` is stubbed, so the plain-object tracks below answer
+// `trackId`. The rest of the module has to stay real: this file's import of
+// util.ts reaches the linear-genome-view plugin, whose config schemas are built
+// at module scope, and a wholesale replacement leaves them calling undefined.
 jest.mock('@jbrowse/core/configuration', () => ({
+  ...jest.requireActual('@jbrowse/core/configuration'),
   readConfObject: (config: { trackId: string }) => config.trackId,
 }))
 

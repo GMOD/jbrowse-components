@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { showAllRegionsWindow } from '@jbrowse/plugin-linear-genome-view'
 
 import {
   getSubfeatures,
@@ -189,35 +190,6 @@ export function seedSoloInTracks(
       }))
 }
 
-interface ViewState {
-  bpPerPx: number
-  offsetPx: number
-}
-
-/**
- * Calculate the initial view state (zoom and offset) to show all regions
- * centered and filling ~90% of the viewport width. Mirrors the view's
- * `showAllRegions` action (SHOW_ALL_REGIONS_FILL=0.9), but is computed up front
- * so a freshly-created view renders at the right zoom without a flash.
- * `minBpPerPx` is the target view's zoom floor, applied here for the same
- * reason maxBpPerPx applies it: a few tiny exons at window size 0 would
- * otherwise seed a bpPerPx the view's own zoom controls can't reproduce.
- */
-export function calculateInitialViewState(
-  regions: { start: number; end: number }[],
-  viewWidth: number,
-  minBpPerPx: number,
-): ViewState {
-  const totalBp = regions.reduce((sum, r) => sum + (r.end - r.start), 0)
-  const bpPerPx = Math.max(minBpPerPx, totalBp / (viewWidth * 0.9))
-  return {
-    bpPerPx,
-    // same centering as the view's getCenteredOffsetPx: half the content width
-    // minus half the viewport
-    offsetPx: Math.round(totalBp / bpPerPx / 2 - viewWidth / 2),
-  }
-}
-
 function buildMergedRegions({
   transcripts,
   assembly,
@@ -334,9 +306,8 @@ export function runIntronAction(
   }
 }
 
-// Pure view snapshot for the collapsed-intron "Open in new view" action:
-// merged regions, precomputed zoom/offset (bpPerPx/offsetPx upfront to avoid
-// layout thrashing on the new view), stripped track ids, and — when a solo
+// Pure view snapshot for the collapsed-intron "Open in new view" action: merged
+// regions, the viewport framing them, stripped track ids, and — when a solo
 // feature is requested — the display seeded to open already isolated. Returns
 // data only; collapseIntrons is the imperative sink that hands it to addView.
 export function buildCollapsedViewSnapshot({
@@ -355,15 +326,6 @@ export function buildCollapsedViewSnapshot({
     padding,
     flip,
   })
-  // the target view doesn't exist yet, so its zoom/offset must be precomputed
-  // into the snapshot (unlike replaceIntrons, which calls showAllRegions on the
-  // live view) to avoid a layout flash on first render. The new view inherits
-  // this one's width and zoom floor.
-  const initialState = calculateInitialViewState(
-    mergedRegions,
-    view.width,
-    view.minBpPerPx,
-  )
   const { id, ...rest } = getSnapshot(view)
   const tracks =
     soloFeatureId === undefined
@@ -374,8 +336,19 @@ export function buildCollapsedViewSnapshot({
     tracks: stripTrackIds(tracks),
     displayName: `${label} (introns collapsed)`,
     displayedRegions: mergedRegions,
-    bpPerPx: initialState.bpPerPx,
-    offsetPx: initialState.offsetPx,
+    // The target view doesn't exist yet, so its viewport is seeded here rather
+    // than by calling showAllRegions on it (which is what replaceIntrons does to
+    // the live view) — both to frame the same way and to avoid a first-render
+    // flash. It MUST overwrite the window `rest` carries, and must be the window
+    // rather than bpPerPx/offsetPx: the view persists its viewport as a genomic
+    // window, and its snapshot migration converts a bpPerPx only for a snapshot
+    // with no window at all. So the pair this used to emit was dropped in
+    // silence on every launch, and the new view opened at the SOURCE view's zoom
+    // and scroll — the whole gene locus, framing a region set a tenth its width.
+    ...showAllRegionsWindow(
+      mergedRegions.reduce((sum, r) => sum + (r.end - r.start), 0),
+      view.width,
+    ),
   }
 }
 
