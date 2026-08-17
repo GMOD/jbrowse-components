@@ -1255,6 +1255,186 @@ export const svSpecs: ScreenshotSpec[] = [
     settleMs: 25000,
   },
 
+  // Five somatic SV callsets over one locus, with the depth that explains them.
+  // Four of the five are C-GIAB FTP URLs and nothing here was computed (see the
+  // tutorial's "Structural variants from the published callsets").
+  //
+  // The window holds the two chr3 breakends the benchmark files under
+  // EVENT=cluster_3: SV_20 at chr3:139,976,414, whose mate is on chr13, and
+  // SV_21 at chr3:139,998,694, whose mate is 54 Mb down the same arm. Every
+  // callset marks both, which is the concordance the figure is about, and the
+  // HiFiCNV depth halves between them: 120x either side against ~50x inside, by
+  // the bigWig's own 2 kb bins, with both steps landing on a marked breakend.
+  //
+  // The benchmark CNV lane is the negative in the frame. Its only segment here
+  // spans 101.7-182.5 Mb as CN 2 (1|1), named noCNV, so the 22 kb the SV lanes
+  // bound and the depth halves over is inside a call of no change: the CNV
+  // benchmark is arm-scale and clonal by construction (its README excludes
+  // subclonal segments and uncertain breakpoints), and this is neither.
+  //
+  // The READS are deliberately not in this frame, though they were at first. The
+  // hosted demo slice is cut around SV_20, so its depth tapers from ~50x at
+  // 139,990,000 to ~9x at 140,005,000 while the full BAM holds ~50x and then
+  // ~105x. A pileup here paints that taper as a coverage collapse over SV_21,
+  // which is slicing rather than biology. The reads' own account of this junction
+  // is two figures down the page (the breakpoint split view, then the derivative
+  // reconstruction), both windowed inside the slice.
+  //
+  // What differs between the callsets is how the second junction is written:
+  //   - benchmark and minda: a BND, so a mark at the breakend.
+  //   - Severus and DRAGEN: symbolic <INV> with SVLEN 53.9 Mb, so the lane draws
+  //     a span from the breakend off the right edge of the window.
+  //   - NYGC: a BEDPE record, whose near end lands at the same base.
+  // Both readings are of one event, so the caption says representation rather
+  // than disagreement.
+  //
+  // Labels stay on the benchmark lane alone. The walkthroughs name SV_20 and
+  // SV_21, so that lane has to read them out; the four caller lanes carry ids
+  // like DRAGEN:BND:38401:1:8:0:0:0:1 that would overlap at this width and say
+  // nothing the track name does not.
+  //
+  // minda's is the unindexed VCF (VcfAdapter, 38 kB read whole). Its SUPP_VEC
+  // names the caller runs behind each record, 9 for SV_20 and 11 for SV_21
+  // across PacBio, ONT and Illumina, which is a click rather than a picture and
+  // is why the tutorial carries that field in prose.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/sv_callset_comparison',
+    url: cgiabUrl({
+      sessionTracks: [
+        HG008_DEPTH_TRACK,
+        {
+          type: 'VariantTrack',
+          trackId: 'hg008t_severus_sv',
+          name: 'Severus somatic SVs (HiFi)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            vcfGzLocation: {
+              uri: `${CGIAB_FTP_ANALYSIS}/NIH_HiFi_Severus-SV_20240308/somatic_SVs/severus_somatic.vcf.gz`,
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'TBI',
+              location: {
+                uri: `${CGIAB_FTP_ANALYSIS}/NIH_HiFi_Severus-SV_20240308/somatic_SVs/severus_somatic.vcf.gz.tbi`,
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+        {
+          type: 'VariantTrack',
+          trackId: 'hg008t_minda_sv',
+          name: 'minda ensemble SVs (HiFi, ONT, Illumina)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'VcfAdapter',
+            vcfLocation: {
+              uri: `${CGIAB_FTP_ANALYSIS}/NIH-NCI_minda-ensemble_20240710/HG008_minda_ensemble.vcf`,
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'VariantTrack',
+          trackId: 'hg008t_dragen_sv',
+          name: 'DRAGEN somatic SVs (Illumina)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            vcfGzLocation: {
+              uri: `${CGIAB_FTP_ANALYSIS}/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.sv.vcf.gz`,
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'TBI',
+              location: {
+                uri: `${CGIAB_FTP_ANALYSIS}/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.sv.vcf.gz.tbi`,
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+        {
+          type: 'VariantTrack',
+          trackId: 'hg008t_nygc_sv',
+          name: 'NYGC somatic SVs (Manta, GRIDSS)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BedpeAdapter',
+            bedpeLocation: {
+              uri: `${CGIAB_FTP_ANALYSIS}/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/HG008-T--HG008-N.sv.annotated.v7.somatic.high_confidence.final.bedpe`,
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          // both cluster_3 breakends on chr3, 22 kb apart, with flanking room
+          loc: 'chr3:139,970,000-140,005,000',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId:
+                'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+              type: 'LinearVariantDisplay',
+              height: 55,
+            },
+            {
+              trackId: 'hg008t_severus_sv',
+              type: 'LinearVariantDisplay',
+              showLabels: 'none',
+              height: 45,
+            },
+            {
+              trackId: 'hg008t_minda_sv',
+              type: 'LinearVariantDisplay',
+              showLabels: 'none',
+              height: 45,
+            },
+            {
+              trackId: 'hg008t_dragen_sv',
+              type: 'LinearVariantDisplay',
+              showLabels: 'none',
+              height: 45,
+            },
+            {
+              trackId: 'hg008t_nygc_sv',
+              type: 'LinearVariantDisplay',
+              showLabels: 'none',
+              height: 45,
+            },
+            {
+              // xyplot over a fixed range, not scatter: 2 kb bins put ~17 points
+              // across this window, and the halving is a level to read off an
+              // axis that does not move with the view
+              trackId: 'hg008_depth',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'xyplot',
+              useBicolor: false,
+              summaryScoreMode: 'avg',
+              minScore: 0,
+              maxScore: 140,
+              displayCrossHatches: true,
+              height: 180,
+            },
+            'hg008_cnv_calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr3',
+    readyTimeout: 180000,
+    viewportWidth: 1500,
+    // 760 cut the CNV lane off, 196 css px of it by the run's own report
+    viewportHeight: 956,
+    settleMs: 20000,
+  },
+
   // The reconstruction picker over the same junction the split view above
   // draws, for the "three ways" walkthrough. The two other witnesses are
   // already on the page (the benchmark BND in the SV inspector figure, the

@@ -89,7 +89,9 @@ TUMOR_DEPTH=116x
 WAKHAN_RUN=NIH_HiFi_Wakhan-CNA_20240308                          # HiFi run, source of the Clair3 tumor VCF
 WAKHAN_CNA_RUN='NIH_HiFi-HiC_Wakhan-CNA_20240424'                # later run, phased with HiFi + Hi-C
 NYGC_RUN='NYGC-somatic-pipeline_20240412'                        # published short-read somatic run
-DRAGEN_RUN='DRAGEN-v4.2.4_ILMN-WGS_20240312'                     # published short-read CNV calls
+DRAGEN_RUN='DRAGEN-v4.2.4_ILMN-WGS_20240312'                     # published short-read CNV/SV calls
+SEVERUS_RUN='NIH_HiFi_Severus-SV_20240308'                       # published HiFi somatic SVs
+MINDA_RUN='NIH-NCI_minda-ensemble_20240710'                      # published ensemble SV callset
 ASM_VER=v3.2                                                     # T2T tumor assembly
 REF_BUILD=GRCh38_GIABv3                                          # C-GIAB reference build
 HIFICNV_VER=1.0.1                                                # HiFiCNV release
@@ -134,6 +136,22 @@ if [ ! -f "$CNV_BED" ]; then
     && curl -L "$BENCH/$CNV_BED") > "$CNV_BED"
 fi
 jb add-track "$CNV_BED" --category "Variant calls" --load copy --force --out "$APP"
+
+# ── SV: the four other published somatic SV callsets on the same pair ─────────
+# All remote URLs, nothing computed. Severus is HiFi, DRAGEN is short-read, minda
+# is an ensemble over eleven caller runs across HiFi/ONT/Illumina, and NYGC's is
+# a BEDPE whose evidence column carries Manta's and GRIDSS's own split-read and
+# paired-end counts. add-track infers VcfTabixAdapter, VcfAdapter (the ensemble
+# VCF is not indexed) and BedpeAdapter from the extensions.
+ANALYSIS=$FTP/data_somatic/HG008/Liss_lab/analysis
+jb add-track "$ANALYSIS/$SEVERUS_RUN/somatic_SVs/severus_somatic.vcf.gz" \
+  --category "Variant calls" --force --out "$APP"
+jb add-track "$ANALYSIS/$MINDA_RUN/HG008_minda_ensemble.vcf" \
+  --category "Variant calls" --force --out "$APP"
+jb add-track "$ANALYSIS/$DRAGEN_RUN/standard/dragen_4.2.4_HG008-mosaic_tumor.sv.vcf.gz" \
+  --category "Variant calls" --force --out "$APP"
+jb add-track "$ANALYSIS/$NYGC_RUN/GRCh38-GIABv3/HG008-T--HG008-N.sv.annotated.v7.somatic.high_confidence.final.bedpe" \
+  --category "Variant calls" --force --out "$APP"
 
 # ── Tumor/normal PacBio HiFi: remote BAM -> local CRAM, + coverage bigWig ─────
 # CRAM adds MD-tag-free SNP display and is far faster to serve than the remote
@@ -332,7 +350,6 @@ jb add-track "$WAKHAN/HG008_HiFi_HiC_loh_segments.bed" --category "CNV" --force 
 # against each other in one view. DRAGEN's record IDs name the class it assigned
 # (LOSS/GAIN/CNLOH/REF) and its FORMAT carries CN, the minor-haplotype copy
 # number MCN, and the MAF behind both.
-ANALYSIS=$FTP/data_somatic/HG008/Liss_lab/analysis
 jb add-track "$ANALYSIS/$DRAGEN_RUN/standard/dragen_4.2.4_HG008-mosaic_tumor.cnv.vcf.gz" \
   --category "CNV" --force --out "$APP"
 

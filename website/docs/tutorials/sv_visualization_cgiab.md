@@ -131,6 +131,121 @@ samtools view HG008-T.bam --write-index -o HG008-T.cram -T GRCh38.fa
 megadepth HG008-T.cram --bigwig
 ```
 
+## Structural variants from the published callsets
+
+The benchmark is one of five somatic SV callsets on this pair, and C-GIAB
+publishes the other four. They load the way the CNV ones do, a URL each with
+nothing downloaded:
+
+| Callset                                                                                                                 | Called from                                    |
+| ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| NIST V0.5 draft benchmark                                                                                               | assembly comparison plus read support          |
+| [Severus](https://github.com/KolmogorovLab/Severus)                                                                     | PacBio HiFi                                    |
+| [minda](https://github.com/KolmogorovLab/minda) ensemble                                                                | eleven caller runs over HiFi, ONT and Illumina |
+| DRAGEN                                                                                                                  | Illumina WGS                                   |
+| NYGC somatic pipeline ([Manta](https://github.com/Illumina/manta) and [GRIDSS](https://github.com/PapenfussLab/gridss)) | Illumina WGS                                   |
+
+<Figure caption="The chr3 breakends of the benchmark's cluster_3 in five SV callsets, over the HiFiCNV depth and the benchmark's CNV lane: the V0.5 benchmark, Severus, the minda ensemble, DRAGEN and NYGC's BEDPE. Every callset marks both breakends, the depth between them sits at half its flanking level, and the CNV lane crosses the whole window as one balanced segment." src="/img/sv_cgiab/sv_callset_comparison.png" />
+
+The benchmark files those two breakends under one `EVENT`, and the depth says
+what they bound: the interval between them carries half the copies its flanks
+do, with both steps landing where the callsets put a breakend. The benchmark CNV
+BED covers the same window with a single CN 2 segment named `noCNV`, which is
+the scale that callset works at, so an event this size is the SV lanes' to
+carry.
+
+The second junction is written two ways. The benchmark and minda place a
+breakend; Severus and DRAGEN write a symbolic inversion whose `SVLEN` runs 54 Mb
+down the arm, so those two lanes draw a span leaving the window where the others
+draw a mark.
+
+### Severus and DRAGEN
+
+Both are one indexed VCF, and both are records at a breakend rather than spans,
+so they load with no display settings:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "hg008t_severus_sv",
+  "name": "HG008-T Severus somatic SVs (HiFi)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Severus-SV_20240308/somatic_SVs/severus_somatic.vcf.gz"
+  }
+}
+```
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "hg008t_dragen_sv",
+  "name": "HG008-T DRAGEN somatic SVs (Illumina)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.sv.vcf.gz"
+  }
+}
+```
+
+DRAGEN's record over the chr3-chr13 junction is one to click rather than to read
+off the lane: it places the breakend where the others do and then carries
+`MaxDepth` in its own `FILTER` column, the depth cap a caller applies where a
+pileup runs far above the genome average.
+
+### minda: the caller runs behind each junction
+
+The ensemble callset is a plain VCF, so [`VcfAdapter`](/docs/config/vcfadapter)
+loads it whole rather than by index:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "hg008t_minda_sv",
+  "name": "HG008-T minda ensemble SVs (HiFi, ONT, Illumina)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "VcfAdapter",
+    "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH-NCI_minda-ensemble_20240710/HG008_minda_ensemble.vcf"
+  }
+}
+```
+
+Each record's `SUPP_VEC` names the individual caller runs that supported it,
+prefixed by the technology they ran on: `PB_severus_BND1941_1`,
+`ONT_Sniffles2.INV.30AM2`, `ILL_gridss63ff_2860h`. Clicking a junction is then
+how many independent runs saw it, and on which reads, and it is the field that
+says whether a call rests on one technology.
+
+### NYGC: a BEDPE, and the arcs it can be drawn as
+
+[`BedpeAdapter`](/docs/config/bedpeadapter) reads a paired-end BED whole, with
+no index, and serves it to a variant track. The `#` header names the columns, so
+each record arrives with the pipeline's call, the strands, the CNV changepoints
+it was linked to, and an `evidence` column holding each tool's split-read and
+paired-end counts:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "hg008t_nygc_sv",
+  "name": "HG008-T NYGC somatic SVs (Manta, GRIDSS)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "BedpeAdapter",
+    "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/HG008-T--HG008-N.sv.annotated.v7.somatic.high_confidence.final.bedpe"
+  }
+}
+```
+
+Each record holds both ends, so the whole callset reads as arcs at chromosome
+scale: **Display types → Variant display arcs** on the track menu draws one arc
+per record between its two breakends. At the base-level zoom the figure above
+uses, an arc leaves the window at both ends, and the default display's marks are
+what line up against the other callsets.
+
 ## Copy number from the published callsets
 
 Four groups have called copy number on this tumor/normal pair, and the
