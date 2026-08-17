@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Read-pair curved links, coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), large-region viewing for dense BAM, SBX duplex `yc` coloring, and why CRAM decode parallelism is not the lever the profile points at.
+description: Read-pair curved links, coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), large-region viewing for dense BAM, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`.
 ---
 
 # Alignments
@@ -211,3 +211,31 @@ Example data: Roche's GIAB SBX-D BAMs (HG001/HG002) at `sequencing.roche.com/SBX
 (`github.com/Roche-AXELIOS/XOOS`) ships the demux source but no small BAM fixtures,
 so a region-sliced GIAB BAM is the path to a test fixture. Docs:
 `roche-axelios.gitbook.io/xoos` (SBX-D read-interpretation + yc-tag guide).
+
+**Lifting `MAX_GROUPS` needs the depth sweep binned, not merely coalesced.** The
+cap and everything hanging off it — `capGroups`, `OVERFLOW_GROUP_KEY`,
+`groupKeyRank`'s three-way rank, GroupByDialog's cardinality refusal, and the
+"keep every dimension a closed set" rule — exist for one stated reason: each group
+runs the whole worker spine, and its coverage pipeline allocates per-bp depth
+arrays sized to the REGION. So the tempting move is "one lane×bp buffer instead of
+40 separate ones, and the cap can rise or vanish".
+
+Measured against the code, the coalescing alone buys nothing that matters.
+`sweepDepths` (alignments-core `coverageCompute.ts`) allocates `numBins = end -
+start` — a Float32Array per lane, times three when `trackStrands` is on (the
+default with the band). One lane×bp buffer of 40 lanes is the same byte total:
+40 × 3 × 4 × regionWidth, or 48 MB over a 100 kb window. Fewer allocations and
+one upload, not less memory.
+
+The GPU half of the reason is already solved and worth not re-solving: the packed
+coverage buffer is downsampled to a fixed bin cap, so `coverageGpuBinCount` tracks
+screen pixels rather than region width (that is why chromosome-scale grouping
+doesn't overflow the device limit today).
+
+So the real prerequisite for a higher cap is a per-lane depth representation that
+is not region-width — the same downsampling the GPU buffer already uses, applied
+to the sweep the hit test and the stats read. Do that first and the cap becomes a
+policy number instead of a memory ceiling; coalesce the buffers after, if the
+allocation count still shows up. Roughly 150 lines of ceiling machinery come out
+only at the end of that, and `MAX_GROUPS = 40` is still worth keeping as a
+cardinality sanity check on `tag`, which is the one dimension the data decides.

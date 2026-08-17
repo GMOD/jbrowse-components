@@ -220,12 +220,7 @@ export function buildRawDataByGroup(
     rpcDataMap,
     hidden,
   )) {
-    // Spelled out rather than `new Map()`, whose `Map<any, any>` would infer
-    // through `getOrCreate` and turn every `.set` below into an unchecked write.
-    getOrCreate(out, key, () => new Map<number, WorkerPileupData>()).set(
-      displayedRegionIndex,
-      data,
-    )
+    getOrCreate(out, key, () => new Map()).set(displayedRegionIndex, data)
   }
   return out
 }

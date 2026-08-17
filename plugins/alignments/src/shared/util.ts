@@ -84,7 +84,18 @@ export function getMappingQuality(feature: Feature) {
 // `Map.prototype.getOrInsertComputed` upsert proposal would fold this into one
 // lookup, but it isn't in shipping runtimes yet and the second lookup is noise
 // next to the per-read work — swap it in here once it lands, if ever.)
-export function getOrCreate<K, V>(map: Map<K, V>, key: K, make: () => V): V {
+//
+// `make`'s return is `NoInfer` so the VALUE TYPE comes from the map alone. It
+// used to be inferred from both, and a bare `() => new Map()` / `() => []`
+// contributes `Map<any, any>` / `any[]` — which wins, so every `.set`/`.push` on
+// the result was unchecked whatever the map's own annotation said, at all ten
+// call sites. `buildRawDataByGroup` was writing the wrong tier of pileup data
+// through exactly that hole, invisibly.
+export function getOrCreate<K, V>(
+  map: Map<K, V>,
+  key: K,
+  make: () => NoInfer<V>,
+): V {
   let value = map.get(key)
   if (value === undefined) {
     value = make()
