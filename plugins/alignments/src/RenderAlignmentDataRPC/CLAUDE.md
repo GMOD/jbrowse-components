@@ -46,8 +46,8 @@ read likewise.
 main-thread layout adds, `readTagColors`/`readColorCategories` what the two
 color bakes add, and `PileupDataResult` is the whole of it — the value a
 renderer, hit test or overlay reads. The display's tier rule
-(LinearAlignmentsDisplay/CLAUDE.md §"Which getter decides what a setting
-invalidates") is therefore type-checked rather than remembered:
+(plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md §"Which getter decides
+what a setting invalidates") is therefore type-checked rather than remembered:
 
 - **The worker cannot ship a placeholder** for a row it doesn't know. It used to
   ship eleven — a zero `maxY`, empty color arrays, three empty line/tint passes

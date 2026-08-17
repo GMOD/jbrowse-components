@@ -15,7 +15,8 @@ tracking.
 The first three tiers are also three TYPES — `WorkerPileupData` →
 `LaidOutPileupData` → `PileupDataResult` — so a pass that reads a row cannot be
 handed unlaid data and the worker cannot state a field it has no answer for
-(RenderAlignmentDataRPC/CLAUDE.md §"One value, three types").
+(plugins/alignments/src/RenderAlignmentDataRPC/CLAUDE.md §"One value, three
+types").
 
 - **Never put a fetch-result derivative in `rpcProps()`** — infinite loop.
   `colorTagMap` is the canonical trap.
