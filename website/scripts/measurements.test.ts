@@ -126,11 +126,11 @@ describe('derived columns', () => {
       ...base,
       columns: [
         ...base.columns,
-        { key: 'r', label: 'r', derived: 'befor/after' },
+        { key: 'r', label: 'r', derived: 'nope/after' },
       ],
     } as unknown as Measurement
     expect(() => resolveRow(bad, bad.rows[0]!)).toThrow(
-      /"befor" in "befor\/after" is not a column/,
+      /"nope" in "nope\/after" is not a column/,
     )
   })
 })

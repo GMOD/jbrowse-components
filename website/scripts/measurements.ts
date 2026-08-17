@@ -154,7 +154,7 @@ export function parseMeasurement(id: string, text: string): Measurement {
   } catch (e) {
     throw new Error(`measurement ${id}: ${(e as Error).message}`, { cause: e })
   }
-  const fail = (msg: string): never => {
+  const fail: (msg: string) => never = msg => {
     throw new Error(`measurement ${id}: ${msg}`)
   }
   if (raw.id !== id) {
@@ -190,10 +190,10 @@ export function parseMeasurement(id: string, text: string): Measurement {
     if (!c.key || typeof c.label !== 'string') {
       fail(`every column needs a "key" and a "label" (see "${c.key ?? '?'}")`)
     }
-    if (keys.has(c.key!)) {
+    if (keys.has(c.key)) {
       fail(`two columns share the key "${c.key}"`)
     }
-    keys.add(c.key!)
+    keys.add(c.key)
   }
   for (const [i, row] of (raw.rows as Partial<Row>[]).entries()) {
     if (!row.values || typeof row.values !== 'object') {
