@@ -1,0 +1,85 @@
+{
+  "id": "zoom-in-refetch",
+  "measured": "2026-08-05",
+  "published": false,
+  "source": {
+    "kind": "jb2bench",
+    "from": "results/interaction.json",
+    "repro": "make interaction, in ~/src/jb2bench, then `node website/scripts/import-jb2bench.ts` here",
+    "notes": "chr22_mask:124000-143000, current against release-4.3.0. time-to-content is the median wall clock a loading indicator is shown after a zoom before correct content returns; redraw is the longest frame of the GPU redraw. Every cell drew, and none was censored at MAX_WAIT — the importer refuses the file otherwise."
+  },
+  "columns": [
+    {
+      "key": "case",
+      "label": "case"
+    },
+    {
+      "key": "currentMs",
+      "label": "current",
+      "format": "ms",
+      "align": "right"
+    },
+    {
+      "key": "baselineMs",
+      "label": "release-4.3.0",
+      "format": "ms",
+      "align": "right"
+    },
+    {
+      "key": "redrawMs",
+      "label": "longest redraw frame",
+      "format": "ms",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "case": "20x-shortread",
+        "currentMs": 0,
+        "baselineMs": 1059,
+        "redrawMs": 17
+      }
+    },
+    {
+      "values": {
+        "case": "200x-shortread",
+        "currentMs": 0,
+        "baselineMs": 1085,
+        "redrawMs": 17
+      }
+    },
+    {
+      "values": {
+        "case": "1000x-shortread",
+        "currentMs": 0,
+        "baselineMs": 1717,
+        "redrawMs": 17
+      }
+    },
+    {
+      "values": {
+        "case": "20x-longread",
+        "currentMs": 0,
+        "baselineMs": 1178,
+        "redrawMs": 17
+      }
+    },
+    {
+      "values": {
+        "case": "200x-longread",
+        "currentMs": 0,
+        "baselineMs": 2984,
+        "redrawMs": 17
+      }
+    },
+    {
+      "values": {
+        "case": "1000x-longread",
+        "currentMs": 0,
+        "baselineMs": 15321,
+        "redrawMs": 50
+      }
+    }
+  ]
+}

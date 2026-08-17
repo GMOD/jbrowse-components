@@ -131,6 +131,18 @@ export interface Measurement {
   source: Source
   columns: Column[]
   rows: Row[]
+  /**
+   * Whether a public page is expected to publish this table. Defaults to true.
+   *
+   * `sync-measurements` treats an agent-doc table nothing publishes as an
+   * error, on the reasoning that a table kept in step for no reader is a claim
+   * nothing backs. Records make that reasoning conditional rather than wrong:
+   * the doc's table is now generated whether a page consumes it or not, so a
+   * measurement can legitimately be internal. Saying so here keeps the check
+   * for every measurement that does not — the alternative is dropping it, and
+   * then a page quietly losing its block reads exactly like this.
+   */
+  published?: boolean
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/

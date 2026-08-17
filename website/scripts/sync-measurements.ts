@@ -70,6 +70,7 @@ import {
   linkedAgentDocs,
   spliceGeneratedBlock,
 } from './check-utils.ts'
+import { loadMeasurements } from './measurements.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
 const BEGIN = /^<!--\s*BEGIN GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/
@@ -204,12 +205,19 @@ const generated = docFiles(docsDir)
   })
   .filter(g => g !== undefined)
 
+// A doc table no page publishes. Still an error by default — a page quietly
+// losing its block looks exactly like this — but no longer necessarily one: the
+// doc's table is generated from its record either way, so a measurement can be
+// internal on purpose. The record says which, and `"published": false` is that
+// decision written down rather than inferred from an absence.
+const records = loadMeasurements()
 for (const [id, source] of sources) {
-  if (!consumed.has(id)) {
-    problems.push(
-      `${source.file}: <!-- measurement: ${id} --> is published by no page — delete the tag or add a block for it`,
-    )
+  if (consumed.has(id) || records.get(id)?.published === false) {
+    continue
   }
+  problems.push(
+    `${source.file}: "${id}" is published by no page — add a block to the page that should carry it, or set "published": false on agent-docs/measurements/${id}.json`,
+  )
 }
 
 if (problems.length > 0) {

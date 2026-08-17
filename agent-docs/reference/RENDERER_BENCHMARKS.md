@@ -1,0 +1,86 @@
+---
+name: renderer-benchmarks
+description: What the whole-app benchmarks in the sibling jb2bench checkout measure, which of their tables are publishable, and the zoom-in result imported from them. Read before quoting a render or interaction figure against a released JBrowse.
+---
+
+# Whole-app renderer benchmarks
+
+Everything else under `reference/` measures a function, a bundle or a worker
+inside this repo. The numbers here compare the **whole application** against
+released versions of itself, and they are measured somewhere else:
+[jb2bench](https://github.com/cmdcolin/jb2bench), a sibling checkout at
+`~/src/jb2bench`.
+
+It stays a sibling because its corpus is roughly 750 MB of simulated alignments
+— 20x/200x/1000x short and long reads against a 250 kb slice of hg19 chr22 —
+and none of that can live in this repo or in CI. So a table here is **imported**
+rather than measured: `website/scripts/import-jb2bench.ts` reads that
+checkout's result JSON, writes `agent-docs/measurements/<id>.json`, and the
+record is committed. Every generator downstream then treats it like any other,
+and CI gates the committed artifact instead of a checkout it does not have.
+
+Refresh with `make interaction` over there, then `pnpm import-jb2bench` here.
+Run with `--check` on a machine that has the checkout and it reports a re-run
+nobody imported; run it anywhere else and it says the checkout is absent and
+exits clean, which is the strongest honest claim it can make.
+
+## Zoom in: the current renderer does not refetch
+
+The new view is a strict subset of reads already on the GPU, so the renderer
+re-projects what it holds and never goes to the network. The old block renderer
+refetches, and the gap is the whole fetch.
+
+<!-- BEGIN GENERATED MEASUREMENT zoom-in-refetch -->
+
+| case            | current | release-4.3.0 | longest redraw frame |
+| --------------- | ------: | ------------: | -------------------: |
+| 20x-shortread   |     0ms |        1059ms |                 17ms |
+| 200x-shortread  |     0ms |        1085ms |                 17ms |
+| 1000x-shortread |     0ms |        1717ms |                 17ms |
+| 20x-longread    |     0ms |        1178ms |                 17ms |
+| 200x-longread   |     0ms |        2984ms |                 17ms |
+| 1000x-longread  |     0ms |       15321ms |                 50ms |
+
+<!-- END GENERATED MEASUREMENT zoom-in-refetch -->
+
+`0ms` is a measurement and not a placeholder: it is how long a loading
+indicator was shown, and no indicator appeared. The redraw column is what
+replaced the fetch, and it stays inside a frame everywhere except the deepest
+long-read case.
+
+**This is the renderer's best case, and quoting it as the speedup overstates
+it.** Zoom in is the one gesture where the architecture skips work entirely.
+
+## The two tables in that file that are NOT here, and why
+
+**Zoom out is mostly not a measurement.** It was meant to be the case where both
+builds refetch. Past a byte threshold JBrowse declines the fetch and paints
+"Requested too much data" instead of reads — a path that is fast and draws
+nothing, so it scored as a success and produced the best-looking number in the
+table. The importer refuses any cell whose steps bailed or that was censored at
+`MAX_WAIT`, which is what keeps a refusal to draw from arriving here as a win.
+
+**Pan is the honest hard case**, and it is the one to import next. Both builds
+refetch, so any remaining gap is render cost rather than avoided network. It is
+not here yet because it wants its own prose about read-depth taper at the contig
+ends — panning right put two of five windows on thinned long-read data, which
+reads as a speedup in both arms at once.
+
+**The cold-load table is unusable as measured.** Its rows were taken on a box
+under heavy external load and jb2bench reports `unusable` in place of a speedup
+rather than a number that looks like a result. Re-run it on an idle machine
+before quoting anything from it, and judge idleness from `uptime` before
+starting — one run began at load 3.15 and finished at 35.
+
+## Before quoting any of this
+
+- **A comparison within a section is same-run; across sections it may not be.**
+  jb2bench records a separate `measured` date per section for that reason.
+- **The machine is shared.** A magnitude measured under load is a property of
+  the box, not the code. The period of a repeating stall can still be the
+  code's — see [INTERACTION_PERF.md](INTERACTION_PERF.md), where the interval
+  was JBrowse's and the size was descheduling.
+- **Nothing here is published on the website.** The public digest is
+  `website/docs/developer_guides/optimizations.md`, and putting a
+  released-version comparison on it is an editorial decision rather than a
+  regeneration.

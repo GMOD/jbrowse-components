@@ -51,6 +51,7 @@
     "diagrams:check": "node website/scripts/diagrams.ts --check",
     "gen-diagram-usage": "node website/scripts/gen-diagram-usage.ts",
     "sync-doc-snippets": "node website/scripts/sync-doc-snippets.ts",
+    "import-jb2bench": "node website/scripts/import-jb2bench.ts",
     "inline-figures": "node website/scripts/sync-inline-figures.ts",
     "measurement-tables": "node website/scripts/generate-measurement-tables.ts",
     "sync-measurements": "node website/scripts/sync-measurements.ts",

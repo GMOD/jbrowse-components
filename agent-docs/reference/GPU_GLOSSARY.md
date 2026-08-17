@@ -77,9 +77,13 @@ it. Four moves, each a phrase worth saying out loud:
 
 ### The payoff (what users feel)
 
-- Dramatically smoother pan/zoom and far higher feature density on the *same*
-  laptop — _[drop in jb2bench numbers: e.g. "X× faster render, Y× more features
-  before stutter, webgl-poc vs. prior release"]_.
+- Zooming in costs a redraw instead of a refetch, because the new view is a
+  subset of what is already on the GPU. The deepest long-read case waits
+  <!--m:zoom-in-refetch.1000x-longread.baselineMs-->15321ms<!--/m--> on
+  release-4.3.0 and redraws in
+  <!--m:zoom-in-refetch.1000x-longread.redrawMs-->50ms<!--/m--> here.
+  [RENDERER_BENCHMARKS.md](RENDERER_BENCHMARKS.md) carries the table, and says
+  why zoom in is the architecture's best case rather than its speedup.
 - Base-accurate positioning even zoomed across a 3-billion-base genome, which the
   old precision could not guarantee.
 
