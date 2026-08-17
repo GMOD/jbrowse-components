@@ -932,7 +932,8 @@ export const configManifest: ConfigManifest = {
       ],
       "shorthandKeys": [
         "uri",
-        "baseUri"
+        "baseUri",
+        "csi"
       ]
     },
     "MultiWiggleAdapter": {

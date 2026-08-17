@@ -1,7 +1,12 @@
 import {
   ConfigurationSchema,
+  expandTabixShorthand,
   tabixIndexFields,
 } from '@jbrowse/core/configuration'
+
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return expandTabixShorthand(snap, 'ldLocation')
+}
 
 /**
  * #config PlinkLDTabixAdapter
@@ -86,24 +91,10 @@ const PlinkLDTabixAdapter = ConfigurationSchema(
      *   "uri": "plink.ld.gz"
      * }
      * ```
+     *
+     * Add `"csi": true` for a `.csi` index, as on every other tabix adapter.
      */
-    preProcessSnapshot: snap => {
-      return snap.uri
-        ? {
-            ...snap,
-            ldLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-            index: {
-              location: {
-                uri: `${snap.uri}.tbi`,
-                baseUri: snap.baseUri,
-              },
-            },
-          }
-        : snap
-    },
+    preProcessSnapshot: normalizeSnapshot,
   },
 )
 

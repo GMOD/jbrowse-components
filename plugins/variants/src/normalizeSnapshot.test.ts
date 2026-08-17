@@ -1,3 +1,4 @@
+import { normalizeSnapshot as normalizeLdTabixSnapshot } from './PlinkLDAdapter/configSchemaTabix.ts'
 import { normalizeSnapshot as normalizeVcfSnapshot } from './VcfAdapter/configSchema.ts'
 import { normalizeSnapshot as normalizeVcfTabixSnapshot } from './VcfTabixAdapter/configSchema.ts'
 
@@ -50,5 +51,34 @@ describe('VcfTabixAdapter normalizeSnapshot', () => {
       vcfGzLocation: { uri: 'my.vcf.gz', locationType: 'UriLocation' },
     }
     expect(normalizeVcfTabixSnapshot(snap)).toBe(snap)
+  })
+})
+
+describe('PlinkLDTabixAdapter normalizeSnapshot', () => {
+  test('expands uri shorthand to ldLocation + tbi index', () => {
+    expect(
+      normalizeLdTabixSnapshot({
+        type: 'PlinkLDTabixAdapter',
+        uri: 'my.ld.gz',
+      }),
+    ).toMatchObject({
+      ldLocation: { uri: 'my.ld.gz' },
+      index: { indexType: 'TBI', location: { uri: 'my.ld.gz.tbi' } },
+    })
+  })
+
+  // this adapter wrote its own expansion and left `csi` out of it, so the flag
+  // every other tabix adapter honors resolved a .tbi here and said nothing
+  test('expands uri shorthand with csi:true to csi index', () => {
+    expect(
+      normalizeLdTabixSnapshot({
+        type: 'PlinkLDTabixAdapter',
+        uri: 'my.ld.gz',
+        csi: true,
+      }),
+    ).toMatchObject({
+      ldLocation: { uri: 'my.ld.gz' },
+      index: { indexType: 'CSI', location: { uri: 'my.ld.gz.csi' } },
+    })
   })
 })

@@ -131,7 +131,7 @@ explicit location slot, and derive the index location from it.
 - [PlinkLDAdapter](https://jbrowse.org/jb2/docs/config/plinkldadapter.md) —
   shorthands: uri, baseUri
 - [PlinkLDTabixAdapter](https://jbrowse.org/jb2/docs/config/plinkldtabixadapter.md)
-  — shorthands: uri, baseUri
+  — shorthands: uri, baseUri, csi
 - [MultiWiggleAdapter](https://jbrowse.org/jb2/docs/config/multiwiggleadapter.md)
 - [BigWigAdapter](https://jbrowse.org/jb2/docs/config/bigwigadapter.md) —
   shorthands: uri, baseUri
