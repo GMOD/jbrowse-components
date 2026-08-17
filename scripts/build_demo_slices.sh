@@ -61,10 +61,23 @@ slice() { # slice <out> <src> <region>...
 slice HG002.ONTrel2.HP.hs37d5.demo_slices.bam "$ONT_SRC" "${HG002_REGIONS[@]}"
 slice HG002.hs37d5.2x250.demo_slices.bam "$ILL_SRC" "${HG002_REGIONS[@]}"
 
-# HG008 tumour, GRCh38. chr9 is the widest of the three because the somatic
-# figures need the whole CDKN2A neighbourhood rather than a single call.
+# HG008 tumour, GRCh38.
+#
+# A REGION MUST CONTAIN EVERY WINDOW THAT DISPLAYS ITS READS, with room to
+# spare. Depth inside a region is exact -- a read covering a position inside
+# [S,E] overlaps [S,E], so it survives the cut -- but outside one it decays over
+# a read length, because only reads reaching back into the region are kept. That
+# decay is smooth, it looks like coverage, and nothing in the app marks it. The
+# first chr3 cut was 139966414-139986414, which stopped 18 kb short of the
+# callset figure's window: real depth DOUBLES over the second breakend there
+# (57x -> 107x) and the slice fell to 9x, so a pileup drew a collapse where the
+# data has a gain. Widen the region rather than trusting a window's edge.
+#
+# chr3 spans the derivative-reconstruction window (139,936,789-) through the
+# callset comparison's (-140,005,000); chr13 spans the reconstruction's other
+# arm; chr9 is the CDKN2A neighbourhood.
 slice HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam "$HG008_SRC" \
-  chr3:139966414-139986414 chr13:114343244-114363244 chr9:21920000-22000000
+  chr3:139930000-140010000 chr13:114310000-114365000 chr9:21920000-22000000
 
 echo
 echo "Built in $PWD. Upload alongside the configs in demos/ -- see"

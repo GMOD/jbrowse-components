@@ -277,6 +277,16 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   The two HG002 slices share one region set because the figures compare
   platforms at one locus; HG008 is GRCh38 and the others hs37d5, so the `chr`
   prefix differs by assembly rather than by mistake.
+
+  **Cut each region wider than every window that displays its reads.** Depth
+  inside a region is the source BAM's exactly, because a read covering a
+  position inside the cut necessarily overlaps the cut and survives it. Outside
+  one, depth decays over a read length — only the reads reaching back into the
+  region are kept — and that decay is smooth, looks like coverage, and nothing
+  in the app marks it as an edge. The HG008 chr3 region was once cut 18 kb short
+  of a figure's window, which drew a coverage collapse over a breakend the full
+  BAM shows a GAIN over; the fix was a wider region, not a narrower window. A
+  slice whose regions match its windows exactly is already wrong at both edges.
 - **Hi-C translocation** — GM12878 vs K562 BCR-ABL1, two windows (chr9 ABL1,
   chr22 BCR) in one LGV so JBrowse fetches the chr9×chr22 block: empty in a
   normal karyotype, solid in K562. Replaced an orphaned loops-arc config.

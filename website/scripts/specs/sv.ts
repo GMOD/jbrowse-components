@@ -21,7 +21,9 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // cgiab config's own reads track points at. Same reasoning as
 // HG002_NANOPORE_BAM: the NCBI original is 118 GB with a ~26 MB BAI that
 // downloaded on every fresh-tab capture. The slice covers the SV_20
-// translocation windows (chr3 / chr13) and CDKN2A (chr9) and nothing else.
+// translocation windows (chr3 / chr13) and CDKN2A (chr9) and nothing else, each
+// cut wider than the widest window that draws it so depth inside them is the
+// full BAM's — build_demo_slices.sh says what a too-narrow cut looks like.
 export const HG008_T_PACBIO_BAM =
   'https://jbrowse.org/demos/cgiab/HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam'
 
@@ -1263,8 +1265,9 @@ export const svSpecs: ScreenshotSpec[] = [
   // EVENT=cluster_3: SV_20 at chr3:139,976,414, whose mate is on chr13, and
   // SV_21 at chr3:139,998,694, whose mate is 54 Mb down the same arm. Every
   // callset marks both, which is the concordance the figure is about, and the
-  // HiFiCNV depth halves between them: 120x either side against ~50x inside, by
-  // the bigWig's own 2 kb bins, with both steps landing on a marked breakend.
+  // HiFiCNV depth halves between them: ~120x left of SV_20 and ~105x right of
+  // SV_21 against ~50x inside, by the bigWig's own 2 kb bins, with both steps
+  // landing on a marked breakend.
   //
   // The benchmark CNV lane is the negative in the frame. Its only segment here
   // spans 101.7-182.5 Mb as CN 2 (1|1), named noCNV, so the 22 kb the SV lanes
@@ -1272,13 +1275,19 @@ export const svSpecs: ScreenshotSpec[] = [
   // benchmark is arm-scale and clonal by construction (its README excludes
   // subclonal segments and uncertain breakpoints), and this is neither.
   //
-  // The READS are deliberately not in this frame, though they were at first. The
-  // hosted demo slice is cut around SV_20, so its depth tapers from ~50x at
-  // 139,990,000 to ~9x at 140,005,000 while the full BAM holds ~50x and then
-  // ~105x. A pileup here paints that taper as a coverage collapse over SV_21,
-  // which is slicing rather than biology. The reads' own account of this junction
-  // is two figures down the page (the breakpoint split view, then the derivative
-  // reconstruction), both windowed inside the slice.
+  // The READS are not in this frame, and the reason is now editorial rather
+  // than forced. A level is what this lane is for -- 2 kb bins against a fixed
+  // axis, which is what makes "half" readable -- and the reads' own account of
+  // the junction is two figures down the page, in the breakpoint split view and
+  // the derivative reconstruction.
+  //
+  // It was forced once, and the record is worth keeping. The demo slice used to
+  // be cut at 139,986,414, 18 kb short of this window, so a pileup drew the
+  // right half of the frame tapering to ~9x where the full BAM holds ~105x --
+  // reading as a coverage collapse over SV_21 while the data has a GAIN there
+  // (57x -> 107x). The slice now spans chr3:139,930,000-140,010,000 and its
+  // depth over this window is the full BAM's, position for position, so a
+  // pileup added here would be honest. build_demo_slices.sh holds the rule.
   //
   // What differs between the callsets is how the second junction is written:
   //   - benchmark and minda: a BND, so a mark at the breakend.
@@ -1456,10 +1465,13 @@ export const svSpecs: ScreenshotSpec[] = [
   // region, so a region that is not on screen contributes no chain, however
   // fully its reads' SA tags describe one.
   //
-  // The two `loc` regions are the demo's own slice bounds, which are also the
-  // exact windows `realReads.cgiab.test.ts` builds its fixture from — so the
-  // figure and the test read the same records, and the ranked list here is the
-  // one those three `it`s assert against.
+  // The two `loc` regions are the exact windows `realReads.cgiab.test.ts`
+  // builds its fixture from — so the figure and the test read the same records,
+  // and the ranked list here is the one those three `it`s assert against. They
+  // sit inside the demo slice's own cut with room to spare, which is what makes
+  // the read counts in the list the full BAM's; when the slice was narrower
+  // than these windows the chr13 arm lost routes off its left edge and the
+  // ranking was partly an artifact of the cut.
   {
     mode: 'url',
     name: 'sv_cgiab/three_ways',
