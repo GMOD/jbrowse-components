@@ -659,6 +659,9 @@ export async function generateLocations({
       if (!canonicalRefName) {
         throw new Error(`Could not find refName ${refName} in ${asm.name}`)
       }
+      // scans rather than calling getRegionForRefName: this runs once per typed
+      // locstring, not per frame, and the assembly here is duck-typed by several
+      // navigation tests that would each have to grow the method
       const parentRegion = regions.find(r => r.refName === canonicalRefName)
       if (!parentRegion) {
         throw new Error(`Could not find refName ${refName} in ${asmName}`)

@@ -1841,7 +1841,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const full = region
           ? getSession(self)
               .assemblyManager.get(region.assemblyName)
-              ?.regions?.find(r => r.refName === region.refName)
+              ?.getRegionForRefName(region.refName)
           : undefined
         return region && full
           ? region.start === full.start && region.end === full.end

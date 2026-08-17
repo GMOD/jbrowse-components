@@ -75,7 +75,7 @@ export async function navToMultiLevelBreak({
   // `getBreakendAssemblyRegions` found those by this exact lookup against this
   // exact assembly, so special-casing them here only said the same thing twice.
   const panels = chain.map(stop => {
-    const region = assembly.regions?.find(r => r.refName === stop.refName)
+    const region = assembly.getRegionForRefName(stop.refName)
     if (!region) {
       throw new Error(
         `region ${stop.refName} not found in assembly ${assemblyName}`,

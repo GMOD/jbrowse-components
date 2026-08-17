@@ -34,6 +34,10 @@ export function locStringsToRegions(
         assembly.isValidRefName(refName),
       )
       const refName = assembly.getCanonicalRefName2(parsed.refName)
+      // scans rather than calling the assembly's getRegionForRefName, because
+      // `RefNameSource` is a narrow duck type several fakes satisfy — growing it
+      // a method to save a scan over a list this reads once per typed locstring
+      // is the wrong trade
       const refLength = assembly.regions?.find(r => r.refName === refName)?.end
       if (refLength === undefined) {
         throw new Error(`no length on record for "${refName}"`)

@@ -226,8 +226,8 @@ export async function getBreakendAssemblyRegions({
   }
   const coverage = getBreakendCoveringRegions({ feature, assembly })
   const { refName, mateRefName } = coverage
-  const region = assembly.regions.find(r => r.refName === refName)
-  const mateRegion = assembly.regions.find(r => r.refName === mateRefName)
+  const region = assembly.getRegionForRefName(refName)
+  const mateRegion = assembly.getRegionForRefName(mateRefName)
   if (!region || !mateRegion) {
     throw new Error(
       `regions ${refName}, ${mateRefName} not found in assembly ${assemblyName}`,

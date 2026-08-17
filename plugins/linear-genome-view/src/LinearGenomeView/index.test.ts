@@ -122,6 +122,10 @@ function initialize() {
       getCanonicalRefName2(refName: string) {
         return self.getCanonicalRefName(refName) ?? refName
       },
+      // the real one reads a memo; a scan is the same answer at stub scale
+      getRegionForRefName(refName: string) {
+        return self.regions.find(r => r.refName === refName)
+      },
     }))
     .actions(self => ({
       async load() {},
