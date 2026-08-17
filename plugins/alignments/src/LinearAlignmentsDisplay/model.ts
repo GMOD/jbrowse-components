@@ -46,19 +46,16 @@ import {
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, observable } from 'mobx'
 
-import { arcAvailH, arcYScale } from '../features/arcs/arcYScale.ts'
 import {
   arcColorLegendCategory,
   computeArcsByGroup,
   computeReadChains,
 } from '../features/arcs/compute.ts'
-import { computeCrossRegionArcs } from '../features/arcs/crossRegionOverlay.ts'
 import { computeDerivativePaths } from '../features/derivativePaths/computePaths.ts'
 import {
   bezierConnectionLegendItems,
   enumerateBezierPairs,
 } from '../features/linkedReads/computeOverlay.ts'
-import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 import {
   COLOR_SCHEMES,
   isModificationScheme,
@@ -88,17 +85,13 @@ import {
 } from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { splitArcsBySide } from './components/sashimiArcs.ts'
 import { ColorScheme } from './constants.ts'
 import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
 import {
   applyReadColorsByGroup,
   collectAcrossGroups,
-  groupClipSource,
-  groupMaxY,
-  layoutGroupRowCounts,
+  fittedReadPitch,
   layoutGroupsToViewport,
-  maxRowsFor,
   nextGroupHeightOverride,
   someAcrossGroups,
 } from './groupLayout.ts'
@@ -110,9 +103,14 @@ import {
   hasNamedGroups,
   orderedGroups,
 } from './groupedDataMaps.ts'
-import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
-  NORMAL_PITCH,
+  buildLanes,
+  drawnLanesOf,
+  laneExpandable,
+  toSectionGroupInputs,
+  zipLaneSections,
+} from './lanes.ts'
+import {
   featureSpacingForHeight,
   getColorByMenuItem,
   getContextMenuItems,
@@ -126,6 +124,11 @@ import {
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
+import {
+  computeCrossRegionArcSections,
+  computeInsertSizeTickSections,
+  computeSashimiArcSections,
+} from './overlaySections.ts'
 import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
 import {
   belowCoverageBandsGeometry,
@@ -135,13 +138,9 @@ import {
 
 import type {
   GroupedAlignmentsResult,
-  PileupDataResult,
-  RowCapSource,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
-import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
-import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type {
@@ -164,6 +163,7 @@ import type {
   ReadConnectionsMode,
   SashimiArcsMode,
 } from './constants.ts'
+import type { AlignmentLane } from './lanes.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { SectionsLayout } from './sectionLayout.ts'
@@ -263,79 +263,14 @@ const AlignmentsTooltip = lazy(
 )
 
 export { ColorScheme } from './constants.ts'
+// Re-exported for the consumers that reach for a lane through the model — the
+// group-label overlay, and the plugin's public surface.
+export { laneExpandable }
+export type { AlignmentLane }
 
 // Shared by every display that hides no group, so `groupOrder` compares against
 // a stable identity rather than allocating a set per read.
 const EMPTY_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
-
-/**
- * One stacked lane: its identity, every per-lane collection the section pipeline
- * and the overlays read, and the per-lane state the label chip acts on.
- *
- * A PROJECTION over the tiered computeds, never a store — each field is read from
- * the computed that owns it, so the fetch/layout/recolor split upstream is
- * untouched and a lane is rebuilt rather than mutated. Ungrouped is the one-lane
- * case (key `''`), which is what makes "grouped" a length question at every
- * consumer instead of a branch.
- *
- * The collections are non-optional, and that is the point: a lane's key comes
- * from `groupOrder` and every collection is keyed by the same filtered set, so a
- * miss was unreachable — but nothing said so, and each consumer carried its own
- * `?? new Map()` for it.
- */
-export interface AlignmentLane {
-  groupKey: string
-  label: string
-  rawPileupMap: ReadonlyMap<number, WorkerPileupData>
-  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
-  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
-  crossRegionArcs: readonly CrossRegionArc[]
-  hasArcs: boolean
-  sashimiDownKeys: ReadonlySet<string>
-  hasSashimiDownArcs: boolean
-  maxY: number
-  collapsed: boolean
-  hasHeightOverride: boolean
-  clippedBy: RowCapSource | undefined
-  // `clippedBy === 'ceiling'` with the display-wide suppressions already
-  // applied, i.e. whether THIS lane draws `PileupTruncationRule`. Resolved on
-  // the lane for the same reason `maxY` folds in `showPileup`: the overlay walks
-  // sections and would otherwise ask the model per section, by key.
-  ceilingClipped: boolean
-}
-
-// Whether the label chip's expand can do anything for this lane: two of the
-// caps can be raised out of, and an absent lane has nothing to raise. One
-// function so the chip and `isGroupTruncated` cannot answer it differently.
-export function laneExpandable(lane: AlignmentLane | undefined) {
-  return lane?.clippedBy === 'budget' || lane?.clippedBy === 'collapse'
-}
-
-const EMPTY_RAW: ReadonlyMap<number, WorkerPileupData> = new Map()
-const EMPTY_LAID_OUT: ReadonlyMap<number, PileupDataResult> = new Map()
-const EMPTY_ARCS: ReadonlyMap<number, ArcsUploadData> = new Map()
-const EMPTY_ARC_LIST: readonly CrossRegionArc[] = []
-const EMPTY_KEYS: ReadonlySet<string> = new Set()
-
-// The lane `sections` is handed before any fetch lands, and on a grouped fetch
-// over a region with no reads — where the partition yields zero lanes and the
-// pipeline below still has to produce one section (see `drawnLanes`).
-const SYNTHETIC_LANE: AlignmentLane = {
-  groupKey: '',
-  label: '',
-  rawPileupMap: EMPTY_RAW,
-  laidOutPileupMap: EMPTY_LAID_OUT,
-  arcsRpcDataMap: EMPTY_ARCS,
-  crossRegionArcs: EMPTY_ARC_LIST,
-  hasArcs: false,
-  sashimiDownKeys: EMPTY_KEYS,
-  hasSashimiDownArcs: false,
-  maxY: 0,
-  collapsed: false,
-  hasHeightOverride: false,
-  clippedBy: undefined,
-  ceilingClipped: false,
-}
 
 // colorBy.type → shader colorScheme index, resolved through the shared
 // COLOR_SCHEMES registry (each scheme names a shader path) and ColorScheme (the
@@ -2231,54 +2166,23 @@ export default function stateModelFactory(
           // split-read grouping has no arc), and those carried an empty strip.
           // Empty when read-connections are off, so this costs nothing there.
           //
-          // The band is reserved for INK, and a lane's ink can live entirely in
-          // the cross-region overlay: an arc whose two feet are in different
-          // displayed regions is held out of `arcsByGroup` on purpose
-          // (`CrossRegionArc`), so a lane whose every arc crosses a seam — two
-          // windows either side of a breakpoint, which is the view read
-          // connections exist for — would reserve nothing and then have nowhere
-          // to draw. `inkGroupKeys` is that question asked of the pass holding
-          // both halves, which is this directory's `hasArcBandInk`-not-`numArcs`
-          // rule met one level up. The two feeds come through their own named
-          // getters, which is where the reason they ARE two lists lives.
-          const perRegionArcs = self.arcsByGroup
-          const crossRegionArcs = self.crossRegionArcsByGroup
-          const arcInkLanes = self.arcsResult.inkGroupKeys
-          const raw = self.rawDataByGroup
-          const laid = self.laidOutByGroup
-          const sashimiDown = self.sashimiDownKeysByGroup
-          // The two display-wide suppressions on the ceiling notice, hoisted:
-          // they are the same for every lane, so `ceilingClipped` below is the
-          // per-lane half alone. Fit mode already clamps reads to a 1px floor
-          // and flags the scroll instead; with the pileup hidden nothing is
-          // drawn for the ceiling to clip.
-          const drawsCeilingNotice = self.showPileup && !self.fitHeightToDisplay
-          return self.groupOrder.map(({ key, label }) => {
-            const laidOutPileupMap = laid.get(key) ?? EMPTY_LAID_OUT
-            const sashimiDownKeys = sashimiDown.get(key) ?? EMPTY_KEYS
-            const clippedBy = groupClipSource(laidOutPileupMap)
-            return {
-              groupKey: key,
-              label,
-              rawPileupMap: raw.get(key) ?? EMPTY_RAW,
-              laidOutPileupMap,
-              arcsRpcDataMap: perRegionArcs.get(key) ?? EMPTY_ARCS,
-              crossRegionArcs: crossRegionArcs.get(key) ?? EMPTY_ARC_LIST,
-              hasArcs: arcInkLanes.has(key),
-              sashimiDownKeys,
-              hasSashimiDownArcs: sashimiDownKeys.size > 0,
-              // showPileup off collapses every pileup band to zero height
-              // (coverage + arcs only), the same height-0 path a collapsed lane
-              // takes.
-              maxY:
-                !self.showPileup || self.collapsedGroups.has(key)
-                  ? 0
-                  : groupMaxY(laidOutPileupMap),
-              collapsed: self.collapsedGroups.has(key),
-              hasHeightOverride: self.groupMaxHeightOverrides.has(key),
-              clippedBy,
-              ceilingClipped: drawsCeilingNotice && clippedBy === 'ceiling',
-            }
+          // The two arc feeds come through their own named getters, which is
+          // where the reason they ARE two lists lives, and the band-reservation
+          // question is asked of the pass holding both halves
+          // (`inkGroupKeys`) — this directory's `hasArcBandInk`-not-`numArcs`
+          // rule met one level up.
+          return buildLanes({
+            order: self.groupOrder,
+            rawByGroup: self.rawDataByGroup,
+            laidOutByGroup: self.laidOutByGroup,
+            arcsByGroup: self.arcsByGroup,
+            crossRegionArcsByGroup: self.crossRegionArcsByGroup,
+            arcInkKeys: self.arcsResult.inkGroupKeys,
+            sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
+            collapsedKeys: self.collapsedGroups,
+            heightOverrideKeys: self.groupMaxHeightOverrides,
+            showPileup: self.showPileup,
+            fitHeightToDisplay: self.fitHeightToDisplay,
           })
         },
 
@@ -2291,7 +2195,7 @@ export default function stateModelFactory(
          * construction, `maxY` included.
          */
         get drawnLanes(): AlignmentLane[] {
-          return this.lanes.length > 0 ? this.lanes : [SYNTHETIC_LANE]
+          return drawnLanesOf(this.lanes)
         },
 
         /**
@@ -2382,24 +2286,15 @@ export default function stateModelFactory(
          * count.
          */
         get sections(): SectionsLayout {
-          return computeStackedSections(
-            this.drawnLanes.map(({ groupKey, label, ...lane }) => ({
-              key: groupKey,
-              label,
-              maxY: lane.maxY,
-              hasArcs: lane.hasArcs,
-              hasSashimiDownArcs: lane.hasSashimiDownArcs,
-            })),
-            {
-              ...self.arcBandInput,
-              rowHeight: self.rowHeight,
-              showSashimiArcs: self.showSashimiArcs,
-              sashimiHeight: self.sashimiArcsHeight,
-              // Only when the chips are actually drawn — an ungrouped display
-              // reserves nothing, so its geometry is untouched.
-              minSectionHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
-            },
-          )
+          return computeStackedSections(toSectionGroupInputs(this.drawnLanes), {
+            ...self.arcBandInput,
+            rowHeight: self.rowHeight,
+            showSashimiArcs: self.showSashimiArcs,
+            sashimiHeight: self.sashimiArcsHeight,
+            // Only when the chips are actually drawn — an ungrouped display
+            // reserves nothing, so its geometry is untouched.
+            minSectionHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
+          })
         },
 
         /**
@@ -2417,33 +2312,7 @@ export default function stateModelFactory(
          * structurally cannot be missing, spelled once per consumer).
          */
         get renderSections() {
-          const lanes = this.drawnLanes
-          return this.sections.sections.map((sec, i) => ({
-            ...lanes[i]!,
-            topOffset: sec.pileupTop,
-            coverageTop: sec.coverageTop,
-            coverageHeight: sec.coverageHeight,
-            // Bottom of this section's arc band (== top of its sashimi band), so
-            // the arc-resize handle can anchor per group like coverage/pileup —
-            // and whether this lane reserved that band at all, since a lane with
-            // no arcs has none to resize.
-            sashimiBandTop: sec.sashimiBandTop,
-            hasArcsBand: sec.hasArcsBand,
-            // The arcs' DRAW band, which is not the same question as
-            // `hasArcsBand` (whether a strip was reserved): up-mode arcs
-            // reserve nothing and draw over the coverage histogram. This is the
-            // rect `buildSectionRenders` hands the renderers, in content space,
-            // so the hover hit test measures against the band the arcs were
-            // actually plotted into.
-            arcBandTop: sec.arcBandTop,
-            arcBandHeight: sec.arcBandHeight,
-            arcDown: sec.arcDown,
-            hasSashimiBand: sec.hasSashimiBand,
-            pileupHeight: sec.pileupHeight,
-            // The strip down to the next section, which is what the label chip
-            // heads — see `Section.height`.
-            height: sec.height,
-          }))
+          return zipLaneSections(this.drawnLanes, this.sections.sections)
         },
 
         /**
@@ -2552,12 +2421,7 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Per-section sashimi arcs, in stacking order: each group's junction
-         * geometry (sashimi counts live per-group) already split into the two
-         * sub-bands, paired with their content-space tops — `coverageOverlayTop`
-         * for `up` arcs drawn over the coverage histogram, `sashimiBandTop` for
-         * `down` arcs in the reserved strip below it. In 'auto' both are
-         * populated; 'up'/'down' leave the other empty. The overlay and SVG
+         * Per-section sashimi arcs, in stacking order. The overlay and the SVG
          * export both map over this, so it is the single source for sashimi
          * geometry and neither path can drift; ungrouped is the single-section
          * case (sticky band below sticky coverage). Empty when sashimi is off.
@@ -2577,38 +2441,16 @@ export default function stateModelFactory(
           ) {
             return []
           }
-          const bpToScreenX = makeBpToScreenX(view)
-          return this.renderSections.map(sec => {
-            const arcs = computeSashimiArcs({
-              rpcDataMap: sec.rawPileupMap,
-              visibleRegions: view.visibleRegions,
-              bpToScreenX,
-              // Safe past the `view.initialized` gate above, which is the same
-              // thing that makes the hosts' own `view.width` read safe — and it
-              // is THEIR width: the overlay sizes its `<svg>` with it and the
-              // export paints at `canvasWidth`, which `renderDisplaySvg`
-              // resolves to `view.width` for every LGV display.
-              viewWidthPx: view.width,
-              coverageHeight: self.coverageHeight,
-              sashimiArcsHeight: self.sashimiArcsHeight,
-              minSashimiScore: self.minSashimiScore,
-              downJunctionKeys: sec.sashimiDownKeys,
-            })
-            // Already ascending by score — `computeSashimiArcs` emits them that
-            // way, and `computeOverlay.test.ts` pins it. The sort used to be
-            // here, one call up from the array's producer, which is why it read
-            // as missing to anyone looking at the producer.
-            return {
-              groupKey: sec.groupKey,
-              ...splitArcsBySide(arcs),
-              // Content-space band tops. Both consumers project them through
-              // `bandScreenTop` — sticky when ungrouped, scrolled with the
-              // section when grouped. That includes the SVG export, which since
-              // it started honoring the display's scroll no longer reads them
-              // as-is at scrollTop 0.
-              coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
-              sashimiBandTop: sec.sashimiBandTop,
-            }
+          return computeSashimiArcSections({
+            sections: this.renderSections,
+            visibleRegions: view.visibleRegions,
+            bpToScreenX: makeBpToScreenX(view),
+            // Safe past the `view.initialized` gate above, which is the same
+            // thing that makes the hosts' own `view.width` read safe.
+            viewWidthPx: view.width,
+            coverageHeight: self.coverageHeight,
+            sashimiArcsHeight: self.sashimiArcsHeight,
+            minSashimiScore: self.minSashimiScore,
           })
         },
 
@@ -2923,55 +2765,25 @@ export default function stateModelFactory(
         /**
          * #getter
          * The read height that makes every uncollapsed group's reads fill the
-         * display without scrolling. Row count is fixed by read overlaps, so we
-         * lay the groups out uncapped (a fixed maxHeight-row cap, independent of
-         * the current featureHeight — so the fit autorun that writes featureHeight
-         * can't feed back into this) and divide the pileup space by it.
+         * display without scrolling — the fractional pitch, the 1px floor and the
+         * Normal-pitch cap all being `fittedReadPitch`'s.
          *
-         * Fractional (not floored): the pileup then fills the display exactly
-         * rather than leaving up to a row of slack at the bottom. Clamped up to a
-         * 1px floor — below 1px the reads can't all fit, so the stack scrolls
-         * instead. 0 when there's nothing to fit (no data / no room), signalling
-         * "leave the configured height as-is".
-         *
-         * Also clamped down to the NORMAL read pitch — not the currently
-         * configured height — because fit OVERRIDES the compactness preset: a
-         * handful of reads in a tall display would otherwise stretch to fill it,
-         * e.g. one read blown up to 100px. Capping at the configured height would
-         * instead let a Compact/Super-compact selection clamp the fit expansion
-         * (compact overriding fit), so a fit under Compact could never grow past
-         * 3px. Fit should only ever squeeze reads smaller than normal, never grow
-         * them past it; once there's more room than reads need, the extra space is
-         * left blank (`laidOutByGroup` already scrolls/pads for the shortfall).
-         *
-         * Reads the `fitTargetHeight` slot, NOT the reactive `height` getter — the
-         * same anti-cycle rule `laidOutByGroup` follows. Fit mode only, where the
-         * two are equal, but the slot can never chain back through
+         * The uncapped row count is taken against a fixed `maxHeight`-row cap,
+         * independent of the current `featureHeight`, so the fit autorun that
+         * writes `featureHeight` can't feed back into this. `fitTargetHeight` is
+         * the slot, NOT the reactive `height` getter — the same anti-cycle rule
+         * `laidOutByGroup` follows. Fit mode only, where the two are equal, but
+         * the slot can never chain back through
          * height->grownHeight->layout->featureHeight if this ever moves.
          */
         get fittedFeatureHeight() {
-          const counts = layoutGroupRowCounts(
-            self.groupLayoutContext,
-            maxRowsFor(self.maxHeight, 1),
-          )
-          const rows = self.groupOrder
-            .filter(g => !self.collapsedGroups.has(g.key))
-            .reduce((sum, { key }) => sum + (counts.get(key) ?? 0), 0)
-          // rows === 0 (no groups) already short-circuits to 0 below, so
-          // groupOrder.length is >= 1 whenever this product matters — matching the
-          // layout's `groupCount * overhead`.
-          const pileupSpace =
-            self.fitTargetHeight -
-            self.groupOrder.length * self.coverageDisplayHeight
-          // Cap at the pitch a NORMAL read renders at (body + its derived gap),
-          // never the configured Compact/Super-compact size: choosing "fit"
-          // overrides the compactness preset, so a small configured height must
-          // not clamp the fit — otherwise Compact would override fit instead of
-          // the reverse. The cap only stops a handful of reads ballooning past
-          // normal in a tall display; below normal, fit squeezes freely.
-          return rows > 0 && pileupSpace > 0
-            ? Math.min(NORMAL_PITCH, Math.max(1, pileupSpace / rows))
-            : 0
+          return fittedReadPitch({
+            ctx: self.groupLayoutContext,
+            maxHeight: self.maxHeight,
+            collapsedKeys: self.collapsedGroups,
+            fitTargetHeight: self.fitTargetHeight,
+            coverageDisplayHeight: self.coverageDisplayHeight,
+          })
         },
 
         /**
@@ -3077,118 +2889,46 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The read cloud's insert-size ruler, ONE PER SECTION that reserves an
-         * arc band, in stacking order. Empty outside read-cloud mode, which is
-         * the only mode that puts |TLEN| on the band's Y axis.
-         *
-         * Per section for the same reason `CoverageScaleBars` is: arc strips are
-         * reserved per section, so a grouped read cloud has N bands and a single
-         * ruler can only sit beside one of them. It sat beside the first — the
-         * values were right for every lane, since `arcsYDomainBp` is pooled
-         * across groups, but every lane below the first had a plotted axis and
-         * nothing labelling it.
-         *
-         * The band comes off `renderSections`, which carries `computeArcBand`'s
-         * answer already placed at the section's own `coverageTop`, rather than
-         * from a second `computeArcBand(self.arcBandInput)` call that could only
-         * describe a section-relative band. So the tick `y`s are absolute CONTENT
-         * y, and the one `bandScreenTop(0, …)` shift both hosts already apply
-         * completes the projection — `bandScreenTop` being linear in its
-         * argument, that is exactly `bandScreenTop(sec.arcBandTop, …)`.
+         * The read cloud's insert-size ruler, per section — see
+         * `computeInsertSizeTickSections`. Empty outside read-cloud mode, which
+         * is the only mode that puts |TLEN| on the band's Y axis.
          */
         get insertSizeTickSections() {
           const arcsYDomainBp = this.arcsYDomainBp
-          if (arcsYDomainBp === undefined) {
-            return []
-          }
-          return self.renderSections.flatMap(sec => {
-            // A lane whose reads produced no arc reserves no band, so it gets no
-            // ruler — the same gate the renderers use to skip the pass.
-            const ticks =
-              sec.arcBandHeight > 0
-                ? computeInsertSizeTicks({
-                    band: {
-                      top: sec.arcBandTop,
-                      height: sec.arcBandHeight,
-                      down: sec.arcDown,
-                    },
-                    arcsYDomainBp,
-                  })
-                : undefined
-            return ticks ? [{ groupKey: sec.groupKey, ticks }] : []
-          })
+          return arcsYDomainBp === undefined
+            ? []
+            : computeInsertSizeTickSections(self.renderSections, arcsYDomainBp)
         },
 
         /**
          * #getter
-         * Per-section geometry for the arcs no per-region pass can draw — the
-         * ones whose two feet are in different displayed regions
-         * (`CrossRegionArc`). Band-local, like sashimi's: the overlay and the
-         * SVG export each place the box at `bandScreenTop(bandTop, …)`, so this
-         * does not depend on `scrollTop` and MobX replays it while a grouped
-         * track scrolls.
-         *
-         * Empty in the single-region view, which is almost every view — the
-         * partition upstream returns nothing there, so this costs one Map lookup
-         * per section.
+         * Per-section geometry for the arcs no per-region pass can draw — see
+         * `computeCrossRegionArcSections`, which owns the band-local contract
+         * this shares with the sashimi and ruler walks.
          */
         get crossRegionArcSections() {
           const view = self.lgv
           if (self.readConnections === 'off' || !view.initialized) {
             return []
           }
-          const bpToScreenX = makeBpToScreenX(view)
           // Read once per resolve rather than per foot: the breakend feet need
           // it for both of their endpoints and this getter re-runs on every pan
           // frame, where `displayedRegions[i]` is a MobX array read.
           const reversedByRegion = view.displayedRegions.map(r => !!r.reversed)
-          const pxPerBp = view.bpPerPx > 0 ? 1 / view.bpPerPx : 0
-          return self.renderSections.flatMap(sec => {
-            const arcs = sec.crossRegionArcs
-            // A lane with no cross-region arcs reserves nothing and renders
-            // nothing — the same gate the per-region passes use to skip.
-            if (arcs.length === 0 || sec.arcBandHeight <= 0) {
-              return []
-            }
-            const { domainBp, log } = arcYScale(
-              this.arcsYDomainBp,
-              arcAvailH(sec.arcBandHeight),
-              pxPerBp,
-            )
-            return [
-              {
-                groupKey: sec.groupKey,
-                bandTop: sec.arcBandTop,
-                bandHeight: sec.arcBandHeight,
-                arcs: computeCrossRegionArcs({
-                  arcs,
-                  bpToScreenX,
-                  frame: {
-                    arcsYDomainBp: domainBp,
-                    arcsYLog: log,
-                    // Band-local, so the host places the box rather than the
-                    // path carrying the section's offset.
-                    arcsTop: 0,
-                    arcsH: sec.arcBandHeight,
-                    pairedArcsDown: sec.arcDown,
-                    // The VIEW's width — see `ComputeCrossRegionArcsOpts`, which
-                    // says why this is the one consumer that must not use a
-                    // block's.
-                    screenWidthPx: view.width,
-                  },
-                  regionReversed: i => reversedByRegion[i] ?? false,
-                  lineWidth: self.readConnectionsLineWidth,
-                  colors: self.colorPalette,
-                  // Said out loud rather than dropped silently, which is this
-                  // repo's rule for a cap — but once per NUMBER, not once per
-                  // evaluation: this getter re-runs on every pan frame, so see
-                  // `reportArcCap`.
-                  onCapped: (dropped, kept) => {
-                    self.reportArcCap(sec.groupKey, dropped, kept)
-                  },
-                }),
-              },
-            ]
+          return computeCrossRegionArcSections({
+            sections: self.renderSections,
+            bpToScreenX: makeBpToScreenX(view),
+            arcsYDomainBp: this.arcsYDomainBp,
+            pxPerBp: view.bpPerPx > 0 ? 1 / view.bpPerPx : 0,
+            regionReversed: i => reversedByRegion[i] ?? false,
+            lineWidth: self.readConnectionsLineWidth,
+            colors: self.colorPalette,
+            screenWidthPx: view.width,
+            // Once per NUMBER, not once per evaluation, since this getter
+            // re-runs on every pan frame — see `reportArcCap`.
+            onCapped: (groupKey, dropped, kept) => {
+              self.reportArcCap(groupKey, dropped, kept)
+            },
           })
         },
       }))

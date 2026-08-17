@@ -12,6 +12,7 @@ import {
   buildLaidOutChainMap,
   chainLayoutMaxY,
 } from './computeChainLayout.ts'
+import { NORMAL_PITCH } from './menus/compactnessPresets.ts'
 import { overlayReadColorCategories } from './readColorCategories.ts'
 import { overlayReadTagColors } from './readTagColors.ts'
 
@@ -334,6 +335,58 @@ export function layoutGroupRowCounts(
     )
   }
   return counts
+}
+
+export interface FittedReadPitchInput {
+  ctx: GroupLayoutContext
+  // The display-wide ceiling, used only to bound the counting pass — NOT the
+  // current read height, so the fit autorun that writes `featureHeight` can't
+  // feed back into the count it is derived from.
+  maxHeight: number
+  collapsedKeys: ReadonlySet<string>
+  // The fit slot, never the reactive `height` getter: the same anti-cycle rule
+  // `layoutGroupsToViewport`'s caller follows.
+  fitTargetHeight: number
+  // One section's reserved coverage + band stack. Every section reserves its
+  // own, so the space left for reads is the target minus one per section.
+  coverageDisplayHeight: number
+}
+
+/**
+ * The row pitch that makes every uncollapsed group's reads fill the display
+ * without scrolling. Row count is fixed by read overlaps, so the groups are laid
+ * out uncapped and the pileup space divided by the total.
+ *
+ * Fractional (not floored): the pileup then fills the display exactly rather
+ * than leaving up to a row of slack at the bottom. Clamped up to a 1px floor —
+ * below 1px the reads can't all fit, so the stack scrolls instead. 0 when
+ * there's nothing to fit (no data / no room), signalling "leave the configured
+ * height as-is".
+ *
+ * Also clamped down to the NORMAL read pitch — not the currently configured
+ * height — because fit OVERRIDES the compactness preset: a handful of reads in a
+ * tall display would otherwise stretch to fill it, e.g. one read blown up to
+ * 100px. Capping at the configured height would instead let a Compact /
+ * Super-compact selection clamp the fit expansion (compact overriding fit), so a
+ * fit under Compact could never grow past 3px. Fit should only ever squeeze
+ * reads smaller than normal, never grow them past it; once there's more room
+ * than reads need, the extra space is left blank (the layout already
+ * scrolls/pads for the shortfall).
+ */
+export function fittedReadPitch(input: FittedReadPitchInput) {
+  const { ctx, maxHeight, collapsedKeys, fitTargetHeight } = input
+  const counts = layoutGroupRowCounts(ctx, maxRowsFor(maxHeight, 1))
+  const rows = ctx.order
+    .filter(g => !collapsedKeys.has(g.key))
+    .reduce((sum, { key }) => sum + (counts.get(key) ?? 0), 0)
+  // rows === 0 (no groups) already short-circuits to 0 below, so order.length is
+  // >= 1 whenever this product matters — matching the layout's
+  // `groupCount * overhead`.
+  const pileupSpace =
+    fitTargetHeight - ctx.order.length * input.coverageDisplayHeight
+  return rows > 0 && pileupSpace > 0
+    ? Math.min(NORMAL_PITCH, Math.max(1, pileupSpace / rows))
+    : 0
 }
 
 // Fit-to-viewport policy inputs, in px, plus the per-group user overrides. Kept
