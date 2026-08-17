@@ -38,6 +38,77 @@ const releaseArray = [
   },
 ]
 
+// GitHub's anonymous API allows 60 requests an hour PER IP and CI runners share
+// addresses, so a pinned-tag setup step fails on somebody else's traffic --
+// mid-run, on nobody's diff. Actions already puts GITHUB_TOKEN in the
+// environment; spend it. Asserted on the header rather than on a rate-limit
+// response because the header is the fix and the 403 is only its symptom.
+test('authenticates to the GitHub API when the environment offers a token', async () => {
+  await runInTmpDir(async () => {
+    const before = process.env.GITHUB_TOKEN
+    process.env.GITHUB_TOKEN = 'test-token'
+    try {
+      const fetchMock = mockFetch(url =>
+        new URL(url).host === 'api.github.com'
+          ? { json: releaseArray[0] }
+          : {
+              headers: { 'content-type': 'application/zip' },
+              arrayBuffer: readZipAsArrayBuffer(),
+            },
+      )
+      // the mock is module-level, so calls survive from earlier tests
+      fetchMock.mockClear()
+      await runCommand(['create', 'jbrowse', '--tag', 'v0.0.1'])
+      const apiCall = fetchMock.mock.calls.find(
+        ([url]) => new URL(url.toString()).host === 'api.github.com',
+      )
+      expect(apiCall?.[1]?.headers).toEqual({
+        authorization: 'Bearer test-token',
+      })
+    } finally {
+      if (before === undefined) {
+        delete process.env.GITHUB_TOKEN
+      } else {
+        process.env.GITHUB_TOKEN = before
+      }
+    }
+  })
+})
+
+test('sends no authorization header when the environment has no token', async () => {
+  await runInTmpDir(async () => {
+    const before = { gh: process.env.GITHUB_TOKEN, alt: process.env.GH_TOKEN }
+    delete process.env.GITHUB_TOKEN
+    delete process.env.GH_TOKEN
+    try {
+      const fetchMock = mockFetch(url =>
+        new URL(url).host === 'api.github.com'
+          ? { json: releaseArray[0] }
+          : {
+              headers: { 'content-type': 'application/zip' },
+              arrayBuffer: readZipAsArrayBuffer(),
+            },
+      )
+      // the mock is module-level, so calls survive from earlier tests
+      fetchMock.mockClear()
+      await runCommand(['create', 'jbrowse', '--tag', 'v0.0.1'])
+      const apiCall = fetchMock.mock.calls.find(
+        ([url]) => new URL(url.toString()).host === 'api.github.com',
+      )
+      expect(apiCall?.[1]?.headers).toBeUndefined()
+    } finally {
+      process.env.GITHUB_TOKEN = before.gh
+      process.env.GH_TOKEN = before.alt
+      if (before.gh === undefined) {
+        delete process.env.GITHUB_TOKEN
+      }
+      if (before.alt === undefined) {
+        delete process.env.GH_TOKEN
+      }
+    }
+  })
+})
+
 test('fails if no path is provided to the command', async () => {
   await runInTmpDir(async () => {
     const { error } = await runCommand(['create'])

@@ -144,12 +144,35 @@ async function fetchGithubVersions() {
   return versions
 }
 
+// Authenticated when the environment offers a token, because GitHub's anonymous
+// API allows 60 requests an hour PER IP and CI runners share addresses: a
+// `jbrowse create --tag v4.3.0` step fails partway through an otherwise green
+// run, on nobody's diff, at whatever hour someone else's job exhausted the
+// budget. jbrowse-plugin-protein3d and -msaview both lost a pinned-host e2e leg
+// to it within a minute of each other on 2026-08-17. GITHUB_TOKEN is already in
+// the environment of every Actions job, and raises the ceiling to 5000.
+function githubToken() {
+  return process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN
+}
+
 // fetch + parse JSON from the GitHub API, throwing on a non-ok response. The
 // lone cast localizes the unavoidable response.json(): Promise<unknown>
 async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url)
+  const token = githubToken()
+  const response = await fetch(
+    url,
+    token ? { headers: { authorization: `Bearer ${token}` } } : {},
+  )
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status} fetching ${url}`)
+    // 403 unauthenticated is nearly always the rate limit rather than anything
+    // about this url, and the caller above turns a throw into "could not find
+    // version", which sends the reader looking for a version that is right
+    // there. Say which it is.
+    throw new Error(
+      response.status === 403 && !token
+        ? `HTTP 403 fetching ${url} -- probably GitHub's 60/hour anonymous rate limit. Set GITHUB_TOKEN to raise it.`
+        : `HTTP ${response.status} fetching ${url}`,
+    )
   }
   return response.json() as Promise<T>
 }
