@@ -111,6 +111,10 @@ export async function releaseAdapterSession(
   }
   counts.delete(sessionId)
   try {
+    /* eslint-disable-next-line no-restricted-syntax -- nothing to report and
+       nothing to stop: this drops a worker-side cache entry after the last
+       claim on it is gone, with no UI left to show a phase and no caller that
+       could still want the result. */
     await rpcManager.call(sessionId, 'CoreFreeResources', { sessionId })
   } catch {
     // teardown; see above
