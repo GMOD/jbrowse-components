@@ -42,12 +42,14 @@
 // cleverness: both haystacks are the ones the page itself points a reader at.
 //
 // Scope is worth stating in numbers, since "narrow" is the kind of claim that
-// rots. Against the whole repo the source side admitted **73 of the 101 integer
-// percentages**, i.e. most typos; the page's own cited docs and exported symbols
-// admit 23. So a mistyped `28%` is likelier to fail than not, and a distinctive
-// figure — `12.5ms`, `149,307`, `1.17GB` — is effectively pinned. A figure that
-// collides anyway is one a reader could at least trace, which is the property
-// this file is really defending.
+// rots. Measured on the optimizations page, 2026-08-17: searching all of source
+// admitted **73 of the 101 integer percentages**, i.e. most typos; the page's
+// own cited docs and exported symbols admit **24**. So a mistyped `28%` is
+// likelier to fail than not, and a distinctive figure — `12.5ms`, `149,307`,
+// `1.17GB` — is effectively pinned. A figure that collides anyway is one a
+// reader could at least trace, which is the property this file is really
+// defending. All three counts drift with the repo — it is the gap between them
+// that carries the argument, not the digits.
 //
 // The failure it catches best is the one the first real run found: three
 // sections quoting figures from `agent-docs` docs the page never linked, and two
@@ -124,8 +126,8 @@ function proseOf(text: string) {
 // page saying "the pool spends 70% here" names `data`, `size`, `time` and `to`
 // somewhere in its own code spans, and each of those is a local `const` in a
 // hundred files, so the index hands back every figure in the repo under a name
-// no reader would follow. Measured on this page, local bindings admitted 50 of
-// the 101 integer percentages against 23 for exports alone.
+// no reader would follow. Measured 2026-08-17, local bindings admitted 51 of the
+// 101 integer percentages against 24 for exports alone.
 const DECLARATION =
   /\bexport\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var|interface|type|enum)\s+([A-Za-z_$][\w$]*)/g
 
@@ -139,8 +141,8 @@ const DECLARATION =
  * consider a static import reads that comment and not a doc.
  *
  * Indexed by symbol rather than pooled repo-wide, for the reason the doc side is
- * scoped to the docs a page links. Pooled, this side accepted **73 of the 101
- * integer percentages** — a mistyped `28%` finds a `29%` in an unrelated sashimi
+ * scoped to the docs a page links. Pooled, this side accepted 73 of the 101
+ * integer percentages — a mistyped `28%` finds a `29%` in an unrelated sashimi
  * comment and passes, and so does almost any other typo. "A page cites source by
  * symbol and not by path" was the stated reason for going wide; indexing by the
  * declared symbol is that sentence implemented, and it gives a reader the same

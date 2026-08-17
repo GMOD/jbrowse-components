@@ -37,8 +37,8 @@ every `<number><unit>` a public measurement page writes has to appear in an
 agent-doc **that page links**, or in the JSDoc of an **exported symbol it
 names**. So a figure quoted from here needs the link to here, and an unlinked
 one fails. Scoping to what the page cites is what makes that worth running —
-against all of source the check admitted 73 of the 101 integer percentages,
-which is most typos.
+searching all of source instead admitted 73 of the 101 integer percentages
+(2026-08-17), which is most typos.
 
 **Both ends of a range are checked**, so re-measuring `70-90%` means updating
 both. That was silently false until 2026-08-17; `quotedFigures.test.ts` pins it
