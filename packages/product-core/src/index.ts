@@ -25,6 +25,7 @@ export {
 export type {
   BaseRootModel,
   BaseRootModelType,
+  RootConfigurationSnapshot,
   RootModelWithInternetAccounts,
   RootModelWithInternetAccountsType,
 } from './RootModel/index.ts'

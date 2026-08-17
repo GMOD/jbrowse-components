@@ -23,6 +23,7 @@ import type {
   LocalFileInput,
   PluginInput,
   SessionSnapshot as RestoredSessionSnapshot,
+  RootConfigurationSnapshot,
 } from '@jbrowse/product-core'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
@@ -39,7 +40,18 @@ export interface CreateViewStateBaseOptions {
   tracks?: Tracks
   internetAccounts?: InternetAccounts
   aggregateTextSearchAdapters?: AggregateTextSearchAdapters
-  configuration?: Record<string, unknown>
+  /**
+   * The root config schema's slots — `preferences`, `theme`, `rpc`,
+   * `formatDetails`. The declarative half of the engine's settings, and the
+   * place a host puts something it would otherwise reach into the view to set
+   * after construction (`preferences: { scrollZoom: true }` rather than a
+   * `view.setScrollZoom(true)` on the next line).
+   *
+   * Typed off the config model rather than left open: JBrowse drops a slot it
+   * does not declare without a word, so a misspelling here is a setting that
+   * silently never applies.
+   */
+  configuration?: RootConfigurationSnapshot
   /**
    * Plugin classes, or the `{ plugin, definition }` records `loadPlugins`
    * returns — pass those through unchanged, since the definition is what lets

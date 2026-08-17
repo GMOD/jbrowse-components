@@ -12,6 +12,7 @@ import type { IConfigurationReference } from './configurationSchema.ts'
 import type {
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
+  ConfigurationSnapshot,
 } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -335,6 +336,52 @@ describe('getConf slot-value type narrowing', () => {
       assertType<Equal<typeof plain, number>>()
     }
     void check
+    expect(true).toBe(true)
+  })
+
+  // `ConfigurationSnapshot` is what an embedder's `configuration` option is
+  // typed as. A key the schema does not declare is dropped on the way in with
+  // nothing said, so rejecting the misspelling is the entire value of the type
+  // — including inside a sub-schema, which is where the settings an embedder
+  // reaches for actually live (`preferences.scrollZoom`).
+  test('a config snapshot rejects a name the schema does not declare', () => {
+    const base = ConfigurationSchema('ConfigSnapshotBase', {
+      inherited: { type: 'number', defaultValue: 0 },
+    })
+    const schemaWithSub = ConfigurationSchema(
+      'ConfigSnapshotOuter',
+      {
+        sub: ConfigurationSchema('ConfigSnapshotInner', {
+          limit: { type: 'number', defaultValue: 5 },
+        }),
+        plain: { type: 'number', defaultValue: 1 },
+      },
+      { baseConfiguration: base, explicitIdentifier: 'outerId' },
+    )
+    type Snapshot = ConfigurationSnapshot<typeof schemaWithSub>
+
+    // own slots, a sub-schema's slots, the identifier and the base's slots
+    const ok: Snapshot = {
+      plain: 2,
+      sub: { limit: 10 },
+      outerId: 'one',
+      inherited: 3,
+    }
+    void ok
+
+    const topLevelTypo: Snapshot = {
+      // @ts-expect-error -- 'plane' is not a slot on the schema
+      plane: 2,
+    }
+    void topLevelTypo
+
+    const subSchemaTypo: Snapshot = {
+      sub: {
+        // @ts-expect-error -- 'limt' is not a slot on the sub-schema
+        limt: 10,
+      },
+    }
+    void subSchemaTypo
     expect(true).toBe(true)
   })
 })

@@ -13,6 +13,7 @@ export type {
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotValue,
+  ConfigurationSnapshot,
 } from './types.ts'
 
 export { getConfigurationSchemaDefinition } from './schemaRegistry.ts'

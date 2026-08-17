@@ -71,6 +71,32 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
             : never)
     : never
 
+/**
+ * The names a config snapshot for `SCHEMA` may use — its own slots, its
+ * sub-schemas recursively, its identifier and everything it inherits — with
+ * every value left `unknown`.
+ *
+ * Names are the whole point of it. A slot value can be its own type, a `jexl:`
+ * callback string, or (for a promotable slot) absent, and nothing here tries to
+ * check that; a *name* the schema does not declare is dropped on the way in
+ * without a word, so `preferance` is a setting that reads as applied and never
+ * applies. Against an object literal — which is how an embedder writes one —
+ * TypeScript's excess-property check turns that into a compile error.
+ */
+export type ConfigurationSnapshot<SCHEMA> = SCHEMA extends undefined
+  ? never
+  : SCHEMA extends ConfigurationSchemaType<infer D, any>
+    ? {
+        [K in keyof D]?: D[K] extends ConfigurationSchemaType<any, any>
+          ? ConfigurationSnapshot<D[K]>
+          : unknown
+      } & {
+        [K in GetExplicitIdentifier<SCHEMA>]?: string
+      } & (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
+          ? ConfigurationSnapshot<GetBase<SCHEMA>>
+          : unknown)
+    : unknown
+
 // Value type of a single slot, keyed on the slot's literal `type` — which the
 // `const DEFINITION` param on `ConfigurationSchema` is what preserves through
 // inference. `SlotValueRawFromDef` and `SlotValueByType` below are the mapping;
