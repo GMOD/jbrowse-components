@@ -693,9 +693,12 @@ out because it is present over its own windows by construction.
 Draw it under the aggregate curve rather than beside it. Where that curve dips,
 these rows say which strain is missing: one falls to 0 over its own accessory
 stretch while the others hold at 1. The windows where all four are absent at
-once are the K12-private islands the depth curve bottoms out over.
+once are the K12-private islands the depth curve bottoms out over. The shaded
+span is the other case: K12 carries _ybaL_ through the allantoin operon across
+it, one row goes white for its full width, and a second goes white part-way
+along over the _rhsD_ Rhs element alone.
 
-<Figure caption="The aggregate depth curve over all of K12, with odgi pav on the same windows below it, one row per non-K12 strain, so each dip resolves into the strain that accounts for it." src="/img/pangenome/pav.png" />
+<Figure caption="The aggregate depth curve over all of K12, with odgi pav on the same windows below it, one row per non-K12 strain. Under the shaded span a single row goes white; the deepest troughs in the curve above are where all four do." src="/img/pangenome/pav.png" />
 
 ## Compared to `odgi viz`
 

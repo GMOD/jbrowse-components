@@ -396,6 +396,26 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // eye. The Minigraph-Cactus page already draws it this way
   // (pangenome_cactus/pav) for exactly this reason; this is that fix
   // back-ported, at the same two heights so the builders stay comparable.
+  //
+  // ONE TROUGH IS SHADED, because on 4.64 Mb of axis a single strain's island
+  // is eight pixels wide and nothing said which eight. Before the band the
+  // caption claimed "each dip resolves into the strain that accounts for it"
+  // and no reader could check it.
+  //
+  // The span is read off the pav bigWigs this figure loads, not chosen. Over
+  // chr:501,500-539,000 IAI39 is 0.00 in all 75 windows while NCTC86 holds
+  // 1.00 across every one and Sakai stays near 1, and K12 carries ybaL through
+  // the allantoin operon there. It also holds a second reading for free: CFT073
+  // drops to 0 over chr:523,000-530,000 and nowhere else in the band, which is
+  // the rhsD Rhs element.
+  //
+  // Two longer runs have one strain absent throughout and were rejected.
+  // chr:1,489,500-1,533,000 (IAI39, 43.5 kb) is speckled -- Sakai and CFT073
+  // each drop out in several places inside it, so the band would have shown
+  // four ragged rows rather than one clean absence. chr:4,496,500-4,536,500 and
+  // chr:262,500-302,500 are longer still and are the opposite figure: every row
+  // goes white over them. Those are the negative, and the frame keeps plenty of
+  // them either side of the band.
   {
     mode: 'url',
     name: 'pangenome/pav',
@@ -405,6 +425,19 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'K12',
           loc: 'chr:1-4,641,652',
+          // Gold, alpha'd low: getHighlightColor takes a supplied color as-is,
+          // and the band has to stay transparent to the white notch it points
+          // at. The Minigraph-Cactus correspondence figure marks a region with
+          // the same gold at 0.60, where covering what is under it costs
+          // nothing.
+          highlight: [
+            {
+              refName: 'chr',
+              start: 501500,
+              end: 539000,
+              color: 'rgba(255,193,7,0.30)',
+            },
+          ],
           tracks: [
             {
               trackId: 'ecoli_pggb_depth',
