@@ -513,13 +513,16 @@ function mirror() {
 // check
 // ---------------------------------------------------------------------------
 
-function check() {
+// Reports rather than exits, so a run that gates on both stores says what both
+// think. Exiting here made a CI failure a two-round-trip affair: fix the
+// figures, re-run, and only then find out about the media.
+function check(): boolean {
   const manifest = readManifest()
   const problems: string[] = []
 
   if (!manifest.size) {
     console.error('figures.lock is empty or missing')
-    process.exit(1)
+    return false
   }
 
   const canonical = formatManifest([...manifest.values()])
@@ -566,9 +569,10 @@ function check() {
     for (const p of problems) {
       console.error(`  ${p}`)
     }
-    process.exit(1)
+    return false
   }
   console.log(`figures.lock is consistent (${manifest.size} figures)`)
+  return true
 }
 
 // ---------------------------------------------------------------------------
@@ -638,6 +642,7 @@ function mediaSection() {
 
 const mediaOptions = {
   filter: values.filter,
+  exact: values.exact,
   dryRun: values['dry-run'],
   force: values.force,
   allowDeletions: values['allow-deletions'],
@@ -676,9 +681,12 @@ switch (command) {
     break
   }
   case 'check': {
-    check()
+    const figuresOk = check()
     mediaSection()
-    mediaCheck()
+    const mediaOk = mediaCheck()
+    if (!figuresOk || !mediaOk) {
+      process.exit(1)
+    }
     break
   }
   case 'mirror': {

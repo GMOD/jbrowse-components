@@ -21,6 +21,13 @@ staging deploy. Buckets and hosted assets: `agent-docs/reference/HOSTING.md`.
   over an empty selection writes an empty manifest, so a push from a checkout
   that pulled neither corpus would unpublish everything and nothing downstream
   would report it. The run fails only when BOTH stores had nothing to do.
+  `--allow-deletions` does not open this: the flag scopes per-file removals
+  inside a corpus you have, so retiring a figure cannot empty a media store this
+  checkout never pulled.
+- **`pull` installs, it never prunes.** A file the manifest stopped naming — a
+  renamed clip, a retired figure — stays on disk, so `status` reports it as "not
+  in the manifest (push)" and a bare push would publish it back. Delete it; its
+  bytes stay fetchable at their own store URL.
 - **A figure cropped from another figure is never stored** — cards, homepage
   images and gallery thumbs come from `pnpm gen:derived-figures`, so
   republishing cannot leave a stale crop. A new one must be named in

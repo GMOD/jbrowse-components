@@ -43,11 +43,10 @@ import type { BlobEntry } from '@jbrowse/browser-test-utils/blobStore'
 const CACHE_CONTROL = 'public, max-age=31536000, immutable'
 
 const name = (p: string) => mediaCorpus.name(p)
-const matches = (n: string, tokens: string[]) =>
-  matchesFilterTokens(n, tokens, false)
 
 export interface MediaOptions {
   filter?: string[]
+  exact?: boolean
   dryRun?: boolean
   force?: boolean
   allowDeletions?: boolean
@@ -167,9 +166,16 @@ function readStoreKeys(): Set<string> | undefined {
  */
 export function mediaPush({
   filter,
+  exact,
   dryRun,
   allowDeletions,
 }: MediaOptions = {}): number {
+  // --exact has to reach here as well. One command drives both stores, so a
+  // filter tightened for the figure half but left substring-wide here selects
+  // clips the run never named, and tightening the filter is exactly what a
+  // shared worktree is told to do.
+  const matches = (n: string, tokens: string[]) =>
+    matchesFilterTokens(n, tokens, !!exact)
   const before = readManifest()
   const tokens = parseFilterTokens(filter)
   const onDisk = listMediaFiles()
@@ -185,11 +191,16 @@ export function mediaPush({
   // The figure store has had this guard since it was written; this one is the
   // same hole in the smaller corpus, reachable today by `pnpm media:push` in a
   // checkout that never pulled.
-  if (!onDisk.length && !allowDeletions) {
+  //
+  // --allow-deletions does NOT open it, which is the figure half's posture too.
+  // The flag scopes per-file removals inside a corpus you actually have, and one
+  // command now drives two stores — so `figures:push --allow-deletions` to
+  // retire one figure must not empty a media store this checkout never pulled.
+  // Unpublishing every clip at once is a manifest edit, not a flag.
+  if (!onDisk.length) {
     console.log(
       'no media on disk — skipping the media store.\n' +
-        '  `pnpm figures:pull` first if you meant to update a clip, or pass' +
-        ' --allow-deletions to unpublish every one of them.',
+        '  `pnpm figures:pull` first if you meant to update a clip.',
     )
     return -1
   }
@@ -206,6 +217,15 @@ export function mediaPush({
   // The one change this cannot undo, so it is the one that has to be asked for
   // — the same rule, and the same reasoning, as the figure store's.
   const removals = changes.filter(c => c.kind === 'removed')
+  // Named, not counted. The figure half prints a report of what moved; this one
+  // printed "N media.lock change(s)", so an unpublish read the same as an
+  // upload and the one irreversible change was the invisible one.
+  if (removals.length && allowDeletions) {
+    console.log(`dropping ${removals.length} media file(s) from media.lock:`)
+    for (const c of removals) {
+      console.log(`  - ${shortName(c.path)}`)
+    }
+  }
   if (removals.length && !allowDeletions) {
     console.error(
       `refusing to drop ${removals.length} media file(s) from media.lock:\n` +
@@ -258,7 +278,8 @@ export function mediaPush({
   return selected.length
 }
 
-export function mediaCheck() {
+/** Reports rather than exits, so a combined run says what BOTH stores think. */
+export function mediaCheck(): boolean {
   const manifest = readManifest()
   const state = inspect(manifest)
   const problems = [
@@ -271,7 +292,8 @@ export function mediaCheck() {
     for (const p of problems) {
       console.error(`  ${p}`)
     }
-    process.exit(1)
+    return false
   }
   console.log(`${state.ok.length} media file(s) match media.lock`)
+  return true
 }

@@ -78,14 +78,22 @@ if (values.help) {
 } else if (command === 'pull') {
   await mediaPull(options)
 } else if (command === 'push') {
-  if (mediaPush(options) === 0) {
+  // Both "matched nothing" answers are failures at THIS door, which asked for
+  // one store. Only the combined `pnpm figures push` can treat an empty corpus
+  // as a fact about one half of a run that still did something.
+  const matched = mediaPush(options)
+  if (matched === 0) {
     console.error(
       `no media on disk matches --filter ${values.filter?.join(',')}`,
     )
     process.exit(1)
+  } else if (matched < 0) {
+    process.exit(1)
   }
 } else if (command === 'check') {
-  mediaCheck()
+  if (!mediaCheck()) {
+    process.exit(1)
+  }
 } else {
   console.error(`unknown command: ${command}\n\n${usage}`)
   process.exit(1)
