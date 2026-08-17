@@ -159,6 +159,10 @@ in full and discarded.
 The saving is `range size − (rate × time-to-cancel)`, so it shrinks on a fast
 link. The range size is large regardless of link speed, which is what makes this
 real bandwidth on any connection slow enough for a user to out-pace a read.
+[NETWORK_ABORT.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/NETWORK_ABORT.md)
+records which adapters are wired to a stop token, the two that cannot be, and
+the shared-fetch coalescing trap that comes with cancelling a read two callers
+are waiting on.
 
 ## The boundary between them
 
@@ -326,10 +330,12 @@ removed:
 
 <!-- END GENERATED MEASUREMENT track-selector-row-cost -->
 
-Three model-side optimizations measured null and are recorded so nobody spends a
-second session on them: caching the unfiltered hierarchy and pruning per
-keystroke, preserving node identity so memoized items bail out, and resolving
-each track's name and categories once instead of per keystroke.
+Three model-side optimizations measured null, and
+[TRACK_SELECTOR_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/TRACK_SELECTOR_PERF.md)
+records them so nobody spends a second session on them: caching the unfiltered
+hierarchy and pruning per keystroke, preserving node identity so memoized items
+bail out, and resolving each track's name and categories once instead of per
+keystroke.
 
 ### An index helps a hover when the hulls are narrow
 

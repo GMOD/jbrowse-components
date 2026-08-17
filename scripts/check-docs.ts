@@ -45,6 +45,15 @@ const VALIDATORS: Validator[] = [
     argv: web('check-sidebar.ts'),
   },
   {
+    // `sync-measurements` gates the measurement TABLES on a public page; this
+    // is the prose around them, which is where most of the figures are. An
+    // existence check, so it pins a distinctive figure and not a round one —
+    // its own header says which. It earned the slot by finding two sections
+    // quoting a doc the page never linked.
+    name: 'quoted figures trace to a recorded measurement',
+    argv: web('check-quoted-figures.ts'),
+  },
+  {
     name: 'no link duplicates its target title',
     argv: web('check-wiki-titles.ts'),
   },
