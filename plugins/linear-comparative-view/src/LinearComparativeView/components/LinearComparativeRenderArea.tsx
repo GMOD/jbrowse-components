@@ -8,17 +8,9 @@ import { Fragment } from 'react/jsx-runtime'
 import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 
+import type { LinearSyntenyViewHelperModel } from '../../LinearSyntenyViewHelper/stateModelFactory.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// The structural surface of the display objects this file consumes. We
-// don't depend on the full BaseDisplayModel typing because `levels` is an
-// MST array of pluggable types late-resolved at runtime.
-interface TrackDisplay {
-  id: string
-  height: number
-  RenderingComponent: React.FC<{ model: TrackDisplay }>
-}
 
 const useStyles = makeStyles()({
   container: {
@@ -122,7 +114,12 @@ const Overlays = observer(function Overlays({
   level: number
 }) {
   const { classes } = useStyles()
-  const levelImpl = model.levels[level]!
+  // Annotated, not asserted. `levels` is declared `IAnyModelType` to break a
+  // type cycle (see the view's model), so an element off it is `any` and
+  // everything read from one is too — silently. Naming the type here is what
+  // gets `linearSyntenyDisplays` back as the `LinearSyntenyDisplayModel[]` its
+  // getter already declares, with no cast on the read.
+  const levelImpl: LinearSyntenyViewHelperModel = model.levels[level]
 
   // The same list the level uploads and renders geometry for, rather than a
   // second walk over `tracks` taking `displays[0]`: those two disagree the
@@ -131,7 +128,7 @@ const Overlays = observer(function Overlays({
   // right-click it (or the reverse). Keyed by display id for the same reason.
   return (
     <>
-      {(levelImpl.linearSyntenyDisplays as TrackDisplay[]).map(display => (
+      {levelImpl.linearSyntenyDisplays.map(display => (
         <div
           className={classes.overlay}
           key={display.id}

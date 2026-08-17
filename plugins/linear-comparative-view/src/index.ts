@@ -32,6 +32,12 @@ export type { LinearSyntenyViewModel } from './LinearSyntenyView/model.ts'
 // argument as `usePanZoom`: an embedder would *have to* rebuild it, so it is a
 // missing export rather than something the reader owns.
 export { default as LevelSyntenyCanvas } from './LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
+// `levels[i]` is declared `IAnyModelType` to break a type cycle (see
+// LinearComparativeView's model), so a host that reaches a level off the view
+// holds `any` and everything it reads from one — `linearSyntenyDisplays` and
+// the `RenderingComponent` on each — is `any` too, silently. Naming this on the
+// value is what gets those back, and it is what JBrowse's own comparative
+// render area does with it.
 export type { LinearSyntenyViewHelperModel } from './LinearSyntenyViewHelper/stateModelFactory.ts'
 // The view's `init` snapshot contract, so a programmatic caller (jbrowse-img,
 // an embedded host) builds it against the same type applyInitSettings reads
