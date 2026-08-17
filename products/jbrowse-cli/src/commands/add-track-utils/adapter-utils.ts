@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+
 interface UriLocation {
   uri: string
   locationType: 'UriLocation'
@@ -309,6 +311,53 @@ function indexType(index: string | undefined, fallback: 'BAI' | 'TBI'): string {
   return index?.toUpperCase().endsWith('CSI') ? 'CSI' : fallback
 }
 
+// What else the sidecar with this suffix can be named. `.csi` is htslib's
+// alternative for a BAI or a TBI — required for a reference over 512 Mb, and
+// written on request at any size. `stripped` is the form Picard and GATK write:
+// `reads.bai` beside `reads.bam`, where samtools writes `reads.bam.bai`.
+//
+// Per-suffix because the alternatives are: a `.crai` has no CSI form, and
+// stripping the extension off `calls.vcf.gz` would name `calls.vcf.tbi`, which
+// nothing writes. A `.fai`/`.gzi` has neither and so is absent here.
+//
+// This is `indexCandidateNames` in `@jbrowse/core/util/indexCandidates`, which
+// the add-track widget and jbrowse-img share and this CLI cannot import — it
+// carries no `@jbrowse/core` dependency, so `npm i -g @jbrowse/cli` stays a CLI
+// rather than a copy of the app. Change one, change the other.
+const ALTERNATE_SPELLINGS: Record<
+  string,
+  { csi?: boolean; stripped?: boolean }
+> = {
+  '.bai': { csi: true, stripped: true },
+  '.crai': { stripped: true },
+  '.tbi': { csi: true },
+}
+
+/**
+ * The sidecar actually sitting beside `location`, or the conventional name when
+ * none of the spellings is there — so a missing index still reports the file
+ * that was expected, and `--load` still names it.
+ *
+ * Probed with `existsSync`, which is false for every candidate of a URL and so
+ * leaves a remote track with exactly the conventional guess it had before this
+ * existed. A remote `.csi` still wants `--indexFile`.
+ *
+ * The guard on the stripped spelling is load-bearing: `replace` hands back the
+ * subject unchanged when the pattern does not match, so `--adapterType
+ * BamAdapter` on a file named with no extension at all would offer the data
+ * file as its own index — and that file certainly exists.
+ */
+export function siblingSidecar(location: string, suffix: string) {
+  const { csi, stripped } = ALTERNATE_SPELLINGS[suffix] ?? {}
+  const strippedName = location.replace(/\.[^./\\]+$/, suffix)
+  const candidates = [
+    `${location}${suffix}`,
+    ...(csi ? [`${location}.csi`] : []),
+    ...(stripped && strippedName !== location ? [strippedName] : []),
+  ]
+  return candidates.find(c => fs.existsSync(c)) ?? candidates[0]!
+}
+
 interface SpecContext {
   location: string
   index?: string
@@ -333,14 +382,16 @@ function buildFromSpec(
         files: [location],
       }
     case 'indexed': {
-      const idx = index || `${location}${spec.suffix}`
+      const idx = index || siblingSidecar(location, spec.suffix)
       return {
         adapter: {
           type: spec.adapterType,
           [spec.locField]: makeLocation(location),
           index: {
             location: makeLocation(idx),
-            indexType: indexType(index, spec.indexType),
+            // the type follows the file that was CHOSEN, not the one the user
+            // typed, so a detected `.csi` is opened as one
+            indexType: indexType(idx, spec.indexType),
           },
         },
         files: [location, idx],
@@ -349,7 +400,7 @@ function buildFromSpec(
     case 'sidecar': {
       const sidecars = spec.sidecars.map(s => ({
         field: s.field,
-        path: s.fromIndex && index ? index : `${location}${s.suffix}`,
+        path: s.fromIndex && index ? index : siblingSidecar(location, s.suffix),
       }))
       return {
         adapter: {

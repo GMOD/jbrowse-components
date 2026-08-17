@@ -152,8 +152,11 @@ export async function run(args?: string[]) {
     '--load controls how the data file is placed relative to config.json: ' +
     'copy, move, or symlink it into the install directory, or inPlace to ' +
     'reference a pre-staged local file where it already sits. Omit --load ' +
-    'entirely for URLs. The matching index (.bai/.csi/.tbi/.fai) is inferred from the ' +
-    'data file name; pass --indexFile when it differs.\n\n' +
+    'entirely for URLs. For a local file the matching index is whichever ' +
+    'conventional spelling is actually beside it — <file>.bai/.crai/.tbi, a ' +
+    '<file>.csi, or the reads.bai form Picard writes beside reads.bam. A URL ' +
+    'cannot be checked, so it gets <file>.bai/.tbi; pass --indexFile for ' +
+    'anything else.\n\n' +
     '--config takes inline JSON (not a file path) that is merged into the ' +
     'generated track config, so you can set fields the dedicated flags do not ' +
     'cover, e.g. --config \'{"metadata":{"skipTextIndex":true}}\' to exclude ' +
