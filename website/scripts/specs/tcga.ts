@@ -1,4 +1,4 @@
-import { displayPainted } from '@jbrowse/browser-test-utils'
+import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { kgUrl } from '../screenshot-spec-helpers.ts'
 
@@ -207,6 +207,49 @@ const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = {
 // (TreeSidebar returns null on `!hierarchy`), so waiting on its canvas gates the
 // capture on real completion rather than on a duration guess.
 const CLUSTERED = '[data-testid="tree_sidebar_dendrogram"]'
+
+// What the clustering tour films, out of the same track config the figures use so
+// the route cannot document an app the page is not showing.
+//
+// The ERBB2 window rather than the whole genome, which is where the tutorial's
+// own instruction points: at whole-genome zoom the stack is the heaviest spec in
+// this file and software-rasterizing 1104 rows across 23 blocks per animated
+// frame is the one thing the tours are told to stay off.
+//
+// `runClustering` is deliberately ABSENT. The figures arrive clustered; a tour of
+// the menu item that clusters them has to start in the state a reader is in, so
+// this session is the same window unsorted, which is a state no figure on the
+// page carries.
+export const tcgaVideoFixtures = {
+  trackId: 'tcga_brca_cnv',
+  // The chrome div, not `multirow_canvas`. The inner canvas carries a static
+  // selector for a pixel lookup and no readiness attributes at all
+  // (DisplayChromeBase spells this out), so pairing it with `data-display-drawn`
+  // builds a selector that can never match — which is how this tour's first film
+  // spent 300s waiting on a stack that had already painted.
+  painted: displaySettled('multirow-display'),
+  unclusteredErbb2: kgUrl({
+    sessionTracks: [TCGA_BRCA_CNV_TRACK],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: '17:39,000,000-40,500,000',
+        highlight: ['17:39,688,094-39,728,658'],
+        trackLabels: 'offset',
+        tracks: [
+          {
+            trackId: 'tcga_brca_cnv',
+            type: 'LinearMultiRowFeatureDisplay',
+            // the ERBB2 figure's own height. Left at the default the 1104 rows
+            // auto-fit into ~100px and the sort has nowhere to be visible.
+            height: 700,
+          },
+        ],
+      },
+    ],
+  }),
+}
 
 // The four recurrent stripes to name in the genome-wide figure. Each callout
 // anchors to the gene's own coordinates in the live view — the app resolves

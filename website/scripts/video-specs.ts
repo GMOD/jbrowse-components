@@ -2,7 +2,7 @@
 // screenshot-specs.ts uses for the stills.
 //
 // A video earns its place only where the STILL CANNOT SAY IT. Three shapes
-// qualify on the pangenome pages and nothing else so far:
+// qualify, and they first earned it on the pangenome pages:
 //
 //   A ROUTE. `Track menu -> Launch view -> Graph genome view (this region)` is
 //   how every graph on those pages was made, and the tutorials describe it in
@@ -26,6 +26,12 @@
 // searchable, diffable, annotatable and readable at a glance, and none of that
 // survives being turned into a video.
 //
+// The cancer pages then took the RE-LAYOUT, for the same reason the dog10k
+// clustering tour did: each of their figures arrives in a state some menu item
+// put it in, so the figure is the end of a route the page could only describe.
+// A clip there is an OVERVIEW and the still stays -- the film carries how the
+// frame was reached, the figure carries what is in it.
+//
 // The sessions come from the spec modules rather than being written again here.
 // A tour whose track config had drifted from the figures' would document a route
 // through an app the rest of the page is not showing.
@@ -47,6 +53,7 @@ import {
   hprcTourSession,
 } from './specs/graph-hprc.ts'
 import { proteinTourFixtures } from './specs/msa.ts'
+import { tcgaVideoFixtures } from './specs/tcga.ts'
 
 import type { ScreenshotAction } from './screenshot-spec-types.ts'
 
@@ -778,6 +785,65 @@ export const videoSpecs: VideoSpec[] = [
         timeout: 180000,
         cut: true,
       },
+    ],
+    tailMs: 3500,
+  },
+  // A RE-LAYOUT on the cancer pages, and the one instruction tcga_cohort_cnv.md
+  // gives that its figures cannot show. Both of that page's stack figures arrive
+  // already clustered, so the reader never sees what the menu item did: 1104
+  // tumors in barcode order, which encodes nothing, becoming blocks of shared
+  // copy-number profile. Which row moved where is exactly what a before/after
+  // still pair cannot state and what watching them sort states for free.
+  //
+  // Ends on the sorted stack with the dendrogram beside it, so the last frame is
+  // the figure the page already prints.
+  {
+    name: 'tcga/cohort_cnv_clustering',
+    description:
+      "Sorting a TCGA-BRCA copy-number stack by profile: 1104 tumors in barcode order, the track menu's Clustering item, and the bands that come back",
+    url: tcgaVideoFixtures.unclusteredErbb2,
+    viewportWidth: 1280,
+    // 906px of app at the first frame, the last and its tallest, per the run's
+    // own content report, which is the whole clip: nothing here grows the app the
+    // way a launch does, because a re-layout reorders the rows it already has.
+    viewportHeight: 910,
+    // The rows have to carry DATA before the camera starts, not just a first
+    // paint: a tour that films clustering an empty canvas films nothing. The
+    // stack is 1104 rows of a 5.7MB BED even at this window.
+    readySelector: tcgaVideoFixtures.painted,
+    readyTimeout: 300000,
+    settleMs: 12000,
+    steps: [
+      // The holds are long by the pangenome tours' standard, and deliberately.
+      // This clip exists to be FOLLOWED, so each state has to stay up long
+      // enough to read: the track menu is a dozen items and the reader has to
+      // find one in it, where those tours only had to show that a cascade
+      // happened. At 700ms the open menu was on screen for about a second.
+      {
+        type: 'click',
+        selector: `[data-testid="track_menu_icon"][data-trackid="${tcgaVideoFixtures.trackId}"]`,
+        say: 'Track menu',
+        hold: 1800,
+      },
+      { type: 'waitForText', text: 'Clustering' },
+      { type: 'click', text: 'Clustering', say: 'Clustering', hold: 1600 },
+      { type: 'waitForText', text: 'Cluster rows by similarity' },
+      {
+        type: 'click',
+        text: 'Cluster rows by similarity',
+        say: 'Cluster rows by similarity',
+        hold: 1200,
+      },
+      // The camera comes off for the run itself. Clustering ships the matrix to
+      // an RPC worker and then repaints 1104 rows in one pass, which under
+      // swiftshader is seconds of a frozen frame rather than an animation.
+      {
+        type: 'waitForSelector',
+        selector: DENDROGRAM,
+        timeout: 300000,
+        cut: true,
+      },
+      { type: 'delay', ms: 2500 },
     ],
     tailMs: 3500,
   },

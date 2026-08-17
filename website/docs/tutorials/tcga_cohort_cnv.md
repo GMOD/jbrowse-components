@@ -126,6 +126,11 @@ band. Zooming to a single locus turns the stripe back into per-tumor calls, and
 clustering on that window alone sorts the cohort into its copy-number classes
 there.
 
+<Video src="/media/tcga/cohort_cnv_clustering.mp4" caption="The ERBB2 window, clustered from the track menu: 1104 tumors in barcode order, the Clustering item, and the bands the run leaves behind." />
+
+The stack starts in barcode order, which encodes nothing, so the sorted state is
+the one every figure below is in.
+
 <Figure caption="chr17:39.0-40.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure above." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 Do not read proportions off this display. At 1104 rows in a few hundred pixels
