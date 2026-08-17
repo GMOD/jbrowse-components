@@ -25,6 +25,13 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 export const HG008_T_PACBIO_BAM =
   'https://jbrowse.org/demos/cgiab/HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam'
 
+// Where C-GIAB publishes every analysis run on HG008, each in its own dated
+// directory. The CNV callsets the comparison figure loads are a few KB each and
+// are read from here rather than rehosted, so the figure shows the project's own
+// files and a newer run is a path edit.
+const CGIAB_FTP_ANALYSIS =
+  'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis'
+
 // HG008-T (CGIAB) copy-number session tracks reused across the sv_cgiab CNV
 // figures: HiFiCNV's depth track, and B-allele frequency. Both hosted BigWigs on
 // jbrowse.org/demos/cgiab (see the tutorial's "Add copy-number tracks" section /
@@ -1781,6 +1788,177 @@ export const svSpecs: ScreenshotSpec[] = [
     // 830 left 23.6 css px under the fold, by the run's own report
     viewportHeight: 895,
     settleMs: 15000,
+  },
+
+  // Four published CNV callsets over one locus, with the signal that explains
+  // them. Everything in the four call lanes is a C-GIAB FTP URL and nothing in
+  // them was computed here (see the tutorial's "Copy number from the published
+  // callsets"), so the figure is what a reader gets from the project's own files.
+  //
+  // chr9p21.3 is the window where the four can be told apart. Inside a CN 1 arm
+  // the benchmark calls two events: a ~20 kb homozygous deletion over CDKN2A
+  // (SV_75, CN 0) and a ~310 kb CN 2 segment 700 kb to its right (SV_76, 0+2).
+  //   - benchmark (hg008_cnv_calls, from the cgiab config): both, CN-labeled.
+  //   - NYGC BIC-seq2, annotated: both, on the same breakpoints, DEL then DUP.
+  //   - DRAGEN: the 310 kb one as CNLOH, and nothing over the deletion. Its own
+  //     command line in the VCF header sets --cnv-filter-length=50000, so a
+  //     20 kb segment cannot come out of that run at all. The lane's label is
+  //     split() off the record ID, which is where DRAGEN writes the class.
+  //   - Wakhan per haplotype: a 50 kb segmentation, so neither event is in it and
+  //     the two rows hold the arm's state across the whole window. Its scale is
+  //     the arm, which is what the tutorial reaches for it at.
+  // The evidence lanes are the two the page builds: HiFiCNV's binned depth, which
+  // goes to the floor over the deletion and steps up over the CN 2 segment, and
+  // the unfolded BAF, which has no point to draw where no copy remains.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/cnv_callset_comparison',
+    url: cgiabUrl({
+      sessionTracks: [
+        HG008_DEPTH_TRACK,
+        HG008_BAF_TRACK,
+        {
+          type: 'FeatureTrack',
+          trackId: 'hg008t_nygc_cnv',
+          name: 'NYGC CNV calls, annotated (BIC-seq2)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BedAdapter',
+            bedLocation: {
+              uri: `${CGIAB_FTP_ANALYSIS}/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/HG008-T--HG008-N.cnv.annotated.v7.final.bed`,
+              locationType: 'UriLocation',
+            },
+          },
+          displays: [
+            {
+              type: 'LinearBasicDisplay',
+              displayId: 'hg008t_nygc_cnv-LinearBasicDisplay',
+              // the call is the file's own `type` column, which reaches
+              // feature.type because a BED feature has no type of its own
+              color: "jexl:feature.type=='DEL'?'#2166ac':'#b2182b'",
+              labels: { name: "jexl:feature.type+' '+feature.cytoband" },
+            },
+          ],
+        },
+        {
+          type: 'VariantTrack',
+          trackId: 'hg008t_dragen_cnv',
+          name: 'DRAGEN somatic CNV (Illumina)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            vcfGzLocation: {
+              uri: `${CGIAB_FTP_ANALYSIS}/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.cnv.vcf.gz`,
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'TBI',
+              location: {
+                uri: `${CGIAB_FTP_ANALYSIS}/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.cnv.vcf.gz.tbi`,
+                locationType: 'UriLocation',
+              },
+            },
+          },
+          displays: [
+            {
+              type: 'LinearVariantDisplay',
+              displayId: 'hg008t_dragen_cnv-LinearVariantDisplay',
+              // DRAGEN:CNLOH:chr9:22631070-22939213 -> CNLOH, the class it
+              // assigned; the whole id under a 300 kb box is unreadable
+              labels: { name: "jexl:split(feature.name,':')[1]" },
+              showLabels: 'name',
+            },
+          ],
+        },
+        {
+          // the later of the two published Wakhan runs, phased with Hi-C. Its
+          // column-name line carries no leading '#', so the names come from
+          // columnNames or partitionField has nothing to partition on
+          type: 'FeatureTrack',
+          trackId: 'hg008t_wakhan_hifi_hic',
+          name: 'Wakhan copy number per haplotype (HiFi + Hi-C)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BedAdapter',
+            columnNames: [
+              'chrom',
+              'start',
+              'end',
+              'copynumber_state',
+              'coverage',
+              'haplotype',
+            ],
+            bedLocation: {
+              uri: `${CGIAB_FTP_ANALYSIS}/NIH_HiFi-HiC_Wakhan-CNA_20240424/bed_output/HG008_HiFi_HiC_copynumbers_segments.bed`,
+              locationType: 'UriLocation',
+            },
+          },
+          displays: [
+            {
+              type: 'LinearMultiRowFeatureDisplay',
+              displayId: 'hg008t_wakhan_hifi_hic-LinearMultiRowFeatureDisplay',
+              partitionField: 'haplotype',
+              color:
+                "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
+              legend: [
+                { label: 'Haplotype lost (0)', color: '#2166ac' },
+                { label: 'One copy', color: '#bdbdbd' },
+                { label: 'Two or more copies', color: '#f4a582' },
+              ],
+            },
+          ],
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          // CDKN2A at the left, the CN 2 segment at the right, and CN 1 arm
+          // between and either side of them
+          loc: 'chr9:21,850,000-23,050,000',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 90,
+            },
+            {
+              trackId: 'hg008_depth',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              useBicolor: false,
+              summaryScoreMode: 'avg',
+              scatterPointSize: 1,
+              resolution: 10,
+              height: 140,
+            },
+            {
+              trackId: 'hg008_baf',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              scatterPointSize: 1,
+              minScore: 0,
+              maxScore: 1,
+              height: 120,
+            },
+            'hg008_cnv_calls',
+            'hg008t_nygc_cnv',
+            'hg008t_dragen_cnv',
+            'hg008t_wakhan_hifi_hic',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr9',
+    readyTimeout: 120000,
+    viewportWidth: 1500,
+    // seven lanes: 1000 left the Wakhan rows 191 css px below the fold, by the
+    // run's own report
+    viewportHeight: 1191,
+    settleMs: 25000,
   },
 
   // The two-panel somatic-CNV view over chromosome 3: the HiFiCNV depth track

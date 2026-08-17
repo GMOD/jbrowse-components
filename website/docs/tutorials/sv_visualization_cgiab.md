@@ -152,6 +152,8 @@ GRCh38, so a gap in that lane is a gap in the benchmark and not a call of no
 change. Depth per bin is the one signal no callset publishes, and the end of
 this section computes it from the tumor reads.
 
+<Figure caption="Four published CNV callsets over chr9p21.3, with the HiFiCNV depth and B-allele frequency above them: the V0.5 benchmark, NYGC's annotated BIC-seq2 segments, DRAGEN's somatic CNV VCF, and Wakhan's two haplotype rows. Depth drops out over CDKN2A, where the benchmark and NYGC both carry a focal call and the two coarser segmentations run straight through." src="/img/sv_cgiab/cnv_callset_comparison.png" />
+
 ### DRAGEN: integer copy number from short reads
 
 Each record in DRAGEN's somatic CNV VCF is one segment, and its ID names the
