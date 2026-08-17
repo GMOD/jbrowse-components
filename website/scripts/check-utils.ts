@@ -58,6 +58,27 @@ export function isFile(path: string): boolean {
   }
 }
 
+/**
+ * The `agent-docs/` pages a website page LINKS, in either of the two forms a
+ * page can write one — a GitHub blob URL, or a repo-root-relative markdown
+ * target.
+ *
+ * Shared by `sync-measurements` (a page publishing a doc's table has to link
+ * that doc) and `check-quoted-figures` (a figure has to appear in a doc the page
+ * links). One definition because the two must agree: a bare path in prose
+ * satisfying one and not the other leaves a page that publishes a table, names
+ * its source, and still gives the reader nothing to click.
+ */
+export function linkedAgentDocs(text: string) {
+  const found = new Set<string>()
+  for (const m of text.matchAll(
+    /(?:blob\/main\/|\]\(\/?)(agent-docs\/[\w./-]+\.md)/g,
+  )) {
+    found.add(m[1]!)
+  }
+  return found
+}
+
 // Build output, which is never an input to any of these. Gitignored, so a
 // developer with a stale local build and a CI runner with none at all would
 // otherwise disagree about what exists.

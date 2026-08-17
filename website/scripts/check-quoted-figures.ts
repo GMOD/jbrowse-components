@@ -59,6 +59,7 @@ import { join, relative } from 'node:path'
 import {
   BUILD_DIRS,
   docFiles,
+  linkedAgentDocs,
   reportProblems,
   walkFiles,
 } from './check-utils.ts'
@@ -198,10 +199,6 @@ function citedSourceFigures(text: string, bySymbol: Map<string, Set<string>>) {
   return set
 }
 
-// An agent-doc the page links to, in either of the two forms a website page can
-// write one.
-const AGENT_DOC_LINK = /(?:blob\/main\/|\]\(\/?)(agent-docs\/[\w./-]+\.md)/g
-
 /**
  * Figures recorded in the agent-docs this page itself cites.
  *
@@ -217,10 +214,10 @@ const AGENT_DOC_LINK = /(?:blob\/main\/|\]\(\/?)(agent-docs\/[\w./-]+\.md)/g
  */
 function citedDocFigures(text: string) {
   const set = new Set<string>()
-  for (const m of text.matchAll(AGENT_DOC_LINK)) {
+  for (const doc of linkedAgentDocs(text)) {
     let contents
     try {
-      contents = readFileSync(join(repoRoot, m[1]!), 'utf8')
+      contents = readFileSync(join(repoRoot, doc), 'utf8')
     } catch {
       // check-doc-imports owns "this link resolves"; reporting it here too
       // would put the same broken link in two failures.

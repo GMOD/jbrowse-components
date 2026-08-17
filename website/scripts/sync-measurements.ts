@@ -64,6 +64,7 @@ import {
   checkOrWriteAll,
   docFiles,
   formatMarkdown,
+  linkedAgentDocs,
   spliceGeneratedBlock,
 } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
@@ -147,6 +148,7 @@ const generated = docFiles(docsDir)
       return undefined
     }
     let content = text
+    const linked = linkedAgentDocs(text)
     for (const id of ids) {
       const source = sources.get(id)
       if (!source) {
@@ -156,13 +158,18 @@ const generated = docFiles(docsDir)
         continue
       }
       consumed.add(id)
-      if (!text.includes(source.file)) {
+      if (!linked.has(source.file)) {
         // A page that publishes a doc's table and never links the doc leaves the
         // reader with a figure and no way to reach what produced it. The check
         // is here rather than in `check-quoted-figures` because here it is
         // exact: this page consumes THIS file, so the link is a fact, not a
         // guess from a matching number. Three pages-worth of prose figures were
         // traceable only by coincidence for want of it.
+        //
+        // A LINK, via the same helper `check-quoted-figures` scopes its doc
+        // haystack with — not a bare mention of the path. The two have to agree,
+        // or a page satisfies this one by naming the file in prose and still
+        // gives the other no cited doc to search.
         problems.push(
           `${relative(repoRoot, path)}: publishes "${id}" but links no ${source.file} — a reader gets the table and no route to the measurement`,
         )
