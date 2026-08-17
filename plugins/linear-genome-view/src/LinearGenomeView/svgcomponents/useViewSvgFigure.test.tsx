@@ -12,7 +12,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
-import { act, render, waitFor } from '@testing-library/react'
+import { act, render, waitFor, within } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import TrackHeightMixin from '../../BaseLinearDisplay/models/TrackHeightMixin.tsx'
@@ -234,6 +234,13 @@ const Host = observer(function Host({ view }: { view: LinearGenomeViewModel }) {
 
 // Queries scoped to this render's own container, not to the document: two
 // figures live side by side in the skipped-track test below.
+//
+// `within` rather than an interpolated `[data-testid="..."]` selector, which is
+// not a style preference: `unicorn/require-css-escape` autofixes one of those
+// into `CSS.escape(testid)`, and jsdom implements no `CSS` object at all, so the
+// helper throws a ReferenceError and takes every test in the file with it. The
+// pre-push hook lands its own `lint --fix`, so a disable comment is the only
+// other thing that holds — several elsewhere in the repo do exactly that.
 async function renderFigure(view: LinearGenomeViewModel) {
   const { container } = render(<Host view={view} />)
   await waitFor(() => {
@@ -242,9 +249,7 @@ async function renderFigure(view: LinearGenomeViewModel) {
   return {
     container,
     svg: () => container.querySelector('svg')!,
-    text: (testid: string) =>
-      container.querySelector(`[data-testid="${CSS.escape(testid)}"]`)
-        ?.textContent,
+    text: (testid: string) => within(container).getByTestId(testid).textContent,
   }
 }
 
