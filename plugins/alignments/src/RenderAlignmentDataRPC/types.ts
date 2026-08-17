@@ -319,7 +319,9 @@ export interface WorkerPileupData {
 }
 
 // Which policy set the row cap a layout pass ran under. Not a severity ranking —
-// the four are different answers, and the UI reads them for different reasons:
+// each is a different answer, and the UI reads them for different reasons. Four
+// can surface as a `clippedBy`; `'uncapped'` is a cap source that by definition
+// never becomes one, which is why the affordance rules only name four.
 //
 //   'ceiling'  the display-wide `maxHeight`. Draws `PileupTruncationRule`; the
 //              per-lane expand is deliberately NOT offered, because it banks an

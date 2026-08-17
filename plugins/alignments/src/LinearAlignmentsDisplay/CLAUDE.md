@@ -103,7 +103,9 @@ read: `'budget'` (the lane's slice of the viewport), `'ceiling'` (display-wide
 - `'budget'` and `'collapse'` offer the chip's expand, which banks an override
   OF `maxHeight` — and an override opts the lane out of both.
 - `'ceiling'` draws `PileupTruncationRule`, deliberately inert and not an alert
-  — reads collapsing onto the bottom row is the cap working.
+  — reads collapsing onto the bottom row is the cap working. Read that one as
+  the lane's `ceilingClipped`, which folds in the two display-wide suppressions
+  (`showPileup`, `fitHeightToDisplay`) so the overlay never asks by key.
 - `'override'` fires neither: what a user's own cap hides is their own doing.
 
 **Don't reconstruct which cap it was.** That answer used to come from comparing

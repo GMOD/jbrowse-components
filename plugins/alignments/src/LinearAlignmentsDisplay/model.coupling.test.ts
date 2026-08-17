@@ -954,10 +954,11 @@ describe('sashimi score filter releases the reserved band', () => {
   })
 })
 
-// `renderState.sections` is built from `sections`, which reads `groupOrder` and
-// `groupLaidOutMap` — both derived from `rpcDataMap`. So the render autorun
-// observes a data arrival through the render state itself, with no help from
-// the `rpcDataMap.size === 0` first-paint gate in the render callback. Deleting
+// `renderState.sections` is built from `sections`, which reads `lanes` — and a
+// lane is `groupOrder` plus the maps, all derived from `rpcDataMap`. So the
+// render autorun observes a data arrival through the render state itself, with
+// no help from the `rpcDataMap.size === 0` first-paint gate in the render
+// callback. Deleting
 // that gate would therefore NOT stop this display double-drawing on arrival
 // (agent-docs/reference/ARCHITECTURAL_LIMITS.md "A region arrival draws twice
 // if the render callback reads `rpcDataMap`"). Band geometry has to follow the

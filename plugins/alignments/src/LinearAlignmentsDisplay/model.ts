@@ -2307,7 +2307,7 @@ export default function stateModelFactory(
          * #method
          * Which cap hid reads from a lane's pileup, or `undefined` when nothing
          * was hidden — including for a key that isn't drawn. A read of what the
-         * layout pass recorded (`RowCapSource` names the five), not a
+         * layout pass recorded (`RowCapSource` names them), not a
          * re-derivation: the pass is handed its cap with the policy attached, so
          * the answer comes back out of the layout instead of being reconstructed
          * from a row count afterwards.
