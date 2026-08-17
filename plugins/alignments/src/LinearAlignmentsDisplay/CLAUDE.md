@@ -45,18 +45,51 @@ Panning can change a frame, and that is accepted. **Don't re-derive a frame at a
 call site** — read `readChainHasSupp`. `framesUnpairedChainStrand` is the single
 statement of when framing is live.
 
-## Three different "is it grouped?" questions
+## A lane, not a group key
 
-`isGrouped` (>1 section) is the scroll model. `showsGroupLabels` is the chips,
-and is what anything dodging them must ask — one section still draws a chip
-while `scalebarOverlapLeft` is 0. `rpcDataMap.size === 0` is whether data
-arrived — **never gate first paint on a laid-out map**, since a grouped fetch
-over an empty region partitions to zero groups and the overlay never clears.
+**`lanes` is where a group key becomes data** — the raw map, the laid-out map,
+the two arc feeds, the sashimi sides, and the collapse/override state, per lane,
+in stacking order. A `renderSections` entry IS its lane plus band geometry, so a
+consumer walking sections has every per-lane answer in hand and none of them are
+optional. Don't reach back into a by-key collection from a call site that
+already has a lane; don't add a twelfth keyed collection when a lane field will
+do.
+
+**Ungrouped is the one-lane case** (key `''`), and no-data is the one SYNTHETIC
+lane (`drawnLanes`) — that is why `sections` has no ungrouped branch.
+
+## Six grouping questions, and they are not one object
+
+They read as near-duplicates and are not. Pick from this list rather than adding
+a seventh, and note **which side of the fetch each answers on** — that is also
+why they stay separate getters: bundling them into one computed would put every
+reader of one on all the others' inputs, across three invalidation tiers.
+
+Answerable from settings alone, before any data:
+
+- **`prefersOffset`** — will the grouping be HONORED? Positions the track label,
+  which is placed before data lands and must not jump afterwards. Chain mode
+  degrades a per-read dimension (`groupByForMode`), so this is not "is `groupBy`
+  set".
+- **`canCollapseGroupRows`** / **`canSizeGroupHeights`** / **`canSortReads`** —
+  may the control be OFFERED? Each is absent rather than disabled where it would
+  write a slot no getter reads.
+- **`collapseGroupRows`** — is the collapse in effect (and it puts depth in the
+  overlap tint, so the collapsed path must **not** run `mergeSpans`).
+
+Answerable only from the fetched lanes:
+
+- **`showsGroupLabels`** — are the chips and dividers drawn? What anything
+  dodging a chip must ask: one lane still draws a chip while
+  `scalebarOverlapLeft` is 0.
+- **`isGrouped`** (>1 lane) — the scroll model, and nothing else. Ungrouped
+  keeps coverage sticky; grouped scrolls the whole stack.
+- **`rpcDataMap.size === 0`** — has data arrived? **Never gate first paint on a
+  laid-out map**, since a grouped fetch over an empty region partitions to zero
+  lanes and the overlay never clears.
 
 `hiddenGroupKeys` must be filtered out of the **cross-group** derivations too
 (coverage stats, legend, sashimi, arcs) — for arcs, before `poolArcScale`.
-`collapseGroupRows` puts depth in the overlap tint, so the collapsed path must
-**not** run `mergeSpans`.
 
 ## Four row caps, and only two are an affordance
 
