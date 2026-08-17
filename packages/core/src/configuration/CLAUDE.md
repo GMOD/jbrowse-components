@@ -72,6 +72,22 @@ _own_ slots. Import the base schema directly.
 fails only when the count grows. **The signal is the read's return type, not the
 config node's.**
 
+## Checking a config snapshot going in: `ConfigurationSnapshot`
+
+**`SnapshotIn` of a config schema checks nothing, and looks like it does.**
+`makeConfigurationSchemaModel` assembles its MST props as a
+`Record<string, any>`, so the snapshot type is `Partial<Record<string, any>>`
+and every key is spellable. Typing an embedder's `configuration` option "off the
+config model" — which reads as the obvious fix, and is what `assembly` and
+`tracks` do — accepts `preferance: {…}` in silence.
+
+`ConfigurationSnapshot<SCHEMA>` reads the names off the schema's DEFINITION
+instead, the same `const` generic `ConfigurationSlotName` keys on, recursing
+into sub-schemas and the base. Values stay `unknown`: a slot takes its own type,
+a `jexl:` string, or nothing. **The check is TypeScript's excess-property rule,
+so it only fires on an object literal** — which is how a config is written, and
+is not how one arrives from a variable or a `JSON.parse`.
+
 ## Frozen tracks + hydration
 
 The hydration cache on `PluginManager` is load-bearing, not an optimization —
