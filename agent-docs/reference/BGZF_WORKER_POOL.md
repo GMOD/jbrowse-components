@@ -7,7 +7,27 @@ description: What the BGZF inflate pool is worth, measured per format, and the b
 
 `sharedBgzfWorkerPool()` (`packages/core/src/util/bgzfWorkerPool.ts`) spreads
 BGZF block inflation across four workers instead of doing it on the thread that
-asked. It is wired into `BamAdapter` and the nine `TabixIndexedFile` sites.
+asked. Where it is wired, from the call sites:
+
+<!-- BGZF_POOL_SITES START -->
+
+<!-- prettier-ignore -->
+| Reader | Plugin |
+| --- | --- |
+| `BamAdapter` | `alignments` |
+| `BedGraphTabixAdapter` | `bed` |
+| `BedTabixAdapter` | `bed` |
+| `Gff3TabixAdapter` | `gff3` |
+| `GtfTabixAdapter` | `gtf` |
+| `PifFile` | `comparative-adapters` |
+| `PlinkLDTabixAdapter` | `variants` |
+| `SplitVcfTabixAdapter` | `variants` |
+| `VcfTabixAdapter` | `variants` |
+
+<!-- BGZF_POOL_SITES END -->
+
+`CramAdapter` is absent on purpose and names the helper in a comment anyway: its
+own codec pool is a different pool, and the comment is there to say so.
 
 The headline number people remember is **1.95x, and that is BAM's**. Tabix is
 worth appreciably less, for a structural reason, and quoting the BAM figure for

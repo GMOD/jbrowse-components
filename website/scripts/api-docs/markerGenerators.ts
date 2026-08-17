@@ -1,4 +1,5 @@
 import { writeAdapterBaseDocs } from './generateAdapterBaseDocs.ts'
+import { writeBgzfPoolSiteDocs } from './generateBgzfPoolSiteDocs.ts'
 import { writeColorDocs } from './generateColorDocs.ts'
 import { writeCrossCuttingMixinDocs } from './generateCrossCuttingMixinDocs.ts'
 import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
@@ -58,6 +59,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'Adapter base table',
     write: (_corpus, opts) => writeAdapterBaseDocs(opts),
+  },
+  {
+    label: 'BGZF pool sites',
+    write: (corpus, opts) => writeBgzfPoolSiteDocs(corpus, opts),
   },
   {
     label: 'Example plugin tree',
