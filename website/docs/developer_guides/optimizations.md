@@ -65,7 +65,7 @@ six:
 The gap to BAM is structural. Running a second pan over the same file answers
 from the decompressed chunk cache and so inflates nothing, which separates the
 two halves: line scanning alone is 28% of the cold query, and the pool reaches
-the other 72% at 1.83x. Amdahl puts the end-to-end figure at 1.49x against 1.45x
+the rest at 1.83x. Amdahl puts the end-to-end figure at 1.49x against 1.45x
 measured. A 1000 Genomes line carries a genotype field per sample, so that floor
 is per-line byte scanning on enormous lines — anyone wanting more than 1.5x on
 multi-sample VCF should attack the scan.
@@ -133,12 +133,13 @@ coarse row passes through every other tag:
 
 <!-- END GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
-The last column is what carrying both tiers costs the file. At the top of that
-table the switch gives up indel wedges to read 11% fewer bytes, and at the
-bottom it cuts the read by 200x. **The coarse tier cuts per-alignment cost and
-does not cut alignment count**, so it is the right tool for a few huge
-alignments with megabase CIGARs and marginal for a dense all-vs-all pangenome,
-where the bottleneck is N.
+The last column is what carrying both tiers costs the file, and the
+`coarse/fine bytes` column beside it is what the switch buys. At 1.5 kb blocks
+it gives up indel wedges for a saving barely worth having; at 5 Mb the coarse
+tier is the difference between reading the CIGARs and not. **The coarse tier
+cuts per-alignment cost and does not cut alignment count**, so it is the right
+tool for a few huge alignments with megabase CIGARs and marginal for a dense
+all-vs-all pangenome, where the bottleneck is N.
 
 Read-time binning is the obvious answer to that N, and it is capped. Profiling a
 whole-genome fetch of a human-vs-mouse-scale PIF splits the cost 66% reading and
@@ -208,8 +209,9 @@ Codes, dictionary, sample order, ploidy, phasing and legend flags are all
 byte-identical across the change. **The two halves of it do not measure
 separately**: packing a short genotype into one int read as 1.02x on its own and
 not worth having, because the name-keyed lookup beside it was masking it, and it
-was worth another 1.15x once that lookup went. That pairing is the trap the
-measurement exists to record.
+was worth another 1.15x once that lookup went. That pairing is the trap
+[MULTI_SAMPLE_VARIANTS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MULTI_SAMPLE_VARIANTS.md)
+exists to record.
 
 Reading one FORMAT field is the same lesson one layer up.
 `feature.get('samples')` parses every FORMAT field of every sample — an object

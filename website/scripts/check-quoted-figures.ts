@@ -8,11 +8,11 @@
 // one direction — the source gets re-measured, the published page does not.
 //
 // So: pull every `<number><unit>` out of a page's prose and require the same
-// figure to appear somewhere in `agent-docs/` or in source. That is a weaker
-// claim than "this number is right" and it is the strongest one a checker can
-// make cheaply, because it catches the two failures that actually happen — a
-// figure invented or fat-fingered on the way in, and a figure left behind when
-// its source moved.
+// figure to appear in something the page CITES — an `agent-docs/` doc it links,
+// or the JSDoc of a symbol it names. That is a weaker claim than "this number is
+// right" and it is the strongest one a checker can make cheaply, because it
+// catches the two failures that actually happen — a figure invented or
+// fat-fingered on the way in, and a figure left behind when its source moved.
 //
 // ## Scope is self-declaring
 //
@@ -28,25 +28,31 @@
 // language. Version numbers, dates and anchor fragments are excluded by the
 // same rule, since none of them carries one of these units.
 //
-// Ranges (`70-90%`, `1.13-1.24x`) are matched end by end and both ends checked
-// separately, so `2.6-3.5x` needs the source to spell both — which it does,
-// because a range in a doc is a range in the measurement.
+// Ranges (`70-90%`, `1.13-1.24x`) are two figures sharing a unit, and both ends
+// are checked. `quotedFigures.test.ts` pins that, because it was false
+// for as long as this comment claimed it: the first number of a range is
+// followed by `-` rather than a unit, so the original pattern silently matched
+// only the upper end and `17-90%` passed.
 //
 // ## What it does not catch, stated plainly
 //
 // This is an existence check, so a figure passes when its VALUE occurs in a
-// searched file, whatever that file was talking about. Distinctive figures —
-// `1.83x`, `12.5ms`, `149,307`, `1.17GB` — are effectively pinned, and they are
-// most of what a page like this quotes. Round ones are not: mistyping `28%` as
-// `29%` still passes here, because a comment in an unrelated sashimi file
-// happens to say `29%`. Narrowing the doc side to the docs the page links (see
-// `citedDocFigures`) closed most of that window; the source side stays
-// repo-wide because a page cites source by symbol and not by path.
+// cited file, whatever that file was talking about. Two figures that collide by
+// coincidence are indistinguishable here, and the defence is scope, not
+// cleverness: both haystacks are the ones the page itself points a reader at.
 //
-// The two failures it does catch are the two that happen. Sabotaging the page
-// found both, and the first real run found something better than either: two
-// sections quoting figures from `agent-docs` docs the page never linked, which
-// is a figure a reader has no route back to.
+// Scope is worth stating in numbers, since "narrow" is the kind of claim that
+// rots. Against the whole repo the source side admitted **73 of the 101 integer
+// percentages**, i.e. most typos; the page's own cited docs and exported symbols
+// admit 23. So a mistyped `28%` is likelier to fail than not, and a distinctive
+// figure — `12.5ms`, `149,307`, `1.17GB` — is effectively pinned. A figure that
+// collides anyway is one a reader could at least trace, which is the property
+// this file is really defending.
+//
+// The failure it catches best is the one the first real run found: three
+// sections quoting figures from `agent-docs` docs the page never linked, and two
+// more restating a number derived from a table on the page — a published figure
+// with no route back to a measurement, which is worse than a stale one.
 import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
@@ -58,54 +64,11 @@ import {
 } from './check-utils.ts'
 import { FENCE } from './docFenceRegions.ts'
 import { docsDir, repoRoot } from './paths.ts'
+import { figuresIn } from './quotedFigures.ts'
 
 const MEASUREMENT_PAGE = /<!--\s*BEGIN GENERATED MEASUREMENT\s+[\w-]+\s*-->/
 const GENERATED_START = /^<!--\s*BEGIN GENERATED\b[^>]*-->$/
 const GENERATED_END = /^<!--\s*END GENERATED\b[^>]*-->$/
-
-// A number, optionally with thousands separators or a decimal, followed by a
-// unit. The unit list is deliberately closed: an open one ("any word") matches
-// "5 workers" and "3 rows", which are counts the prose owns rather than figures
-// it quotes.
-const UNITS = [
-  'x',
-  '%',
-  'ms',
-  's',
-  'KB',
-  'MB',
-  'GB',
-  'KiB',
-  'MiB',
-  'GiB',
-  'kb',
-  'Mb',
-  'Gb',
-  'bp',
-  'Gbp',
-  'Mbp',
-  'kbp',
-]
-const FIGURE = new RegExp(
-  String.raw`(?<![\w.])(\d[\d,]*(?:\.\d+)?)\s?(${UNITS.join('|')})(?![\w])`,
-  'g',
-)
-
-/** `1,234.5 MB` and `1234.5MB` are the same figure written twice. */
-function normalize(value: string, unit: string) {
-  return `${value.replaceAll(',', '')}${unit.toLowerCase()}`
-}
-
-function figuresIn(text: string) {
-  const found = new Map<string, string>()
-  for (const m of text.matchAll(FIGURE)) {
-    // The `\s?` between number and unit matches the newline a wrapped
-    // paragraph puts there, so the text as written can span two lines. Collapse
-    // it for the report — a failure quoting `"80\nKiB"` reads as a checker bug.
-    found.set(normalize(m[1]!, m[2]!), m[0].replaceAll(/\s+/g, ' '))
-  }
-  return found
-}
 
 /**
  * A page's prose: no frontmatter, no code fences, no generated blocks, no link
@@ -153,24 +116,81 @@ function proseOf(text: string) {
   return out.join('\n')
 }
 
+// What a file declares that a page could cite: its EXPORTS, plus the basename,
+// since a page names `bgzfWorkerPool.ts` as often as the function inside it.
+//
+// Exported only. Indexing every top-level binding sounds stricter and is not: a
+// page saying "the pool spends 70% here" names `data`, `size`, `time` and `to`
+// somewhere in its own code spans, and each of those is a local `const` in a
+// hundred files, so the index hands back every figure in the repo under a name
+// no reader would follow. Measured on this page, local bindings admitted 50 of
+// the 101 integer percentages against 23 for exports alone.
+const DECLARATION =
+  /\bexport\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var|interface|type|enum)\s+([A-Za-z_$][\w$]*)/g
+
 /**
- * Figures recorded in source.
+ * Figures recorded in a JSDoc, indexed by the symbol whose definition carries
+ * them.
  *
- * A handful live in a JSDoc at the definition site instead of in a doc —
+ * A handful of figures live at the definition site instead of in a doc —
  * `bgzfWorkerPool.ts` carries the 1.95x and the bundle numbers behind its own
  * dynamic import, and that is the right home for them, since the next person to
  * consider a static import reads that comment and not a doc.
+ *
+ * Indexed by symbol rather than pooled repo-wide, for the reason the doc side is
+ * scoped to the docs a page links. Pooled, this side accepted **73 of the 101
+ * integer percentages** — a mistyped `28%` finds a `29%` in an unrelated sashimi
+ * comment and passes, and so does almost any other typo. "A page cites source by
+ * symbol and not by path" was the stated reason for going wide; indexing by the
+ * declared symbol is that sentence implemented, and it gives a reader the same
+ * route back a linked doc does.
  */
-function sourceFigures() {
-  const set = new Set<string>()
+function sourceFiguresBySymbol() {
+  const bySymbol = new Map<string, Set<string>>()
   const isSource = (name: string) => /\.(tsx?|jsx?|mjs|cjs|slang)$/.test(name)
   // Not `scripts/` or `website/scripts/`. A build script is thick with
   // incidental numbers — sample output pasted into a comment, DPI constants,
   // percentages in a worked example — and none of it is a measurement anyone
-  // would quote, so including it only widens the coincidence window below.
+  // would quote.
   for (const base of ['packages', 'plugins', 'products']) {
     for (const file of walkFiles(join(repoRoot, base), isSource, BUILD_DIRS)) {
-      for (const key of figuresIn(readFileSync(file, 'utf8')).keys()) {
+      const text = readFileSync(file, 'utf8')
+      const keys = new Set(figuresIn(text).keys())
+      if (keys.size === 0) {
+        continue
+      }
+      const names = [...text.matchAll(DECLARATION)].map(m => m[1]!)
+      names.push(
+        file
+          .split('/')
+          .pop()!
+          .replace(/\.\w+$/, ''),
+      )
+      for (const name of names) {
+        let set = bySymbol.get(name)
+        if (!set) {
+          set = new Set()
+          bySymbol.set(name, set)
+        }
+        for (const key of keys) {
+          set.add(key)
+        }
+      }
+    }
+  }
+  return bySymbol
+}
+
+// A symbol the page names in backticks. `proseOf` strips code spans before the
+// figures are pulled, so this reads the page as written, not the prose.
+const CODE_SPAN = /`([^`]+)`/g
+const IDENTIFIER = /[A-Za-z_$][\w$]*/g
+
+function citedSourceFigures(text: string, bySymbol: Map<string, Set<string>>) {
+  const set = new Set<string>()
+  for (const span of text.matchAll(CODE_SPAN)) {
+    for (const id of span[1]!.matchAll(IDENTIFIER)) {
+      for (const key of bySymbol.get(id[0]) ?? []) {
         set.add(key)
       }
     }
@@ -224,7 +244,7 @@ const OWNED_ELSEWHERE = new Map([
   ['3.5x', '@gmod/bgzf-filehandle'],
 ])
 
-const inSource = sourceFigures()
+const bySymbol = sourceFiguresBySymbol()
 const problems: string[] = []
 let pages = 0
 let checked = 0
@@ -236,14 +256,16 @@ for (const path of docFiles(docsDir)) {
   }
   pages++
   const cited = citedDocFigures(text)
+  const citedSource = citedSourceFigures(text, bySymbol)
   for (const [key, written] of figuresIn(proseOf(text))) {
     checked++
-    if (cited.has(key) || inSource.has(key) || OWNED_ELSEWHERE.has(key)) {
+    if (cited.has(key) || citedSource.has(key) || OWNED_ELSEWHERE.has(key)) {
       continue
     }
     problems.push(
-      `  ${relative(repoRoot, path)}: "${written}" is in none of the agent-docs this page links, ` +
-        'and in no source — quote the figure its source records, or record the measurement first',
+      `  ${relative(repoRoot, path)}: "${written}" is in no agent-doc this page links ` +
+        'and in no symbol it names — link the doc that records the figure, name the ' +
+        'symbol whose JSDoc does, or record the measurement first',
     )
   }
 }
