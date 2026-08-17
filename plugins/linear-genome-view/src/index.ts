@@ -222,6 +222,14 @@ export type { Tick } from './LinearGenomeView/util.ts'
 // lands on a viewport property the model no longer reads.
 export { fitAllRegionsWindow } from './LinearGenomeView/util.ts'
 export { renderToSvg } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
+// The third form of the same export: not a file, not a markup string, but the
+// components mounted in a host's own page. See the file for the three pieces
+// between `renderToSvg` and inline JSX that each fail quietly.
+export { useViewSvgFigure } from './LinearGenomeView/svgcomponents/useViewSvgFigure.tsx'
+export type {
+  ViewSvgFigureOptions,
+  ViewSvgFigureResult,
+} from './LinearGenomeView/svgcomponents/useViewSvgFigure.tsx'
 export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks.tsx'
 export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'
 export { default as SVGRowHeader } from './LinearGenomeView/svgcomponents/SVGRowHeader.tsx'
