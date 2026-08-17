@@ -32,13 +32,14 @@ export async function getStaticPaths() {
 
 const { post, prev, next } = Astro.props
 const { slug } = Astro.params
-const { html } = await renderMarkdown(post.body ?? '')
+const { html, toc } = await renderMarkdown(post.body ?? '')
 ---
 
 <BlogLayout
   title={post.data.title}
   currentSlug={slug}
   description={post.data.description}
+  toc={toc}
 >
   <article class="post">
     <header>
