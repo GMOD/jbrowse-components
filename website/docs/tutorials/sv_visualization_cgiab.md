@@ -135,8 +135,8 @@ megadepth HG008-T.cram --bigwig
 
 Four groups have called copy number on this tumor/normal pair, and the
 [NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
-publishes each one's output. The files are a few kilobytes each and load from
-their FTP URLs, so all four callsets can share one view:
+publishes each one's output. Every file is small and loads from its FTP URL, so
+all four callsets can share one view:
 
 | Callset                                                                                                                                  | Called from                           | Each segment carries                                                        |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------- |

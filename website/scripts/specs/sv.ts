@@ -1797,7 +1797,7 @@ export const svSpecs: ScreenshotSpec[] = [
   //
   // chr9p21.3 is the window where the four can be told apart. Inside a CN 1 arm
   // the benchmark calls two events: a ~20 kb homozygous deletion over CDKN2A
-  // (SV_75, CN 0) and a ~310 kb CN 2 segment 700 kb to its right (SV_76, 0+2).
+  // (SV_75, CN 0) and a ~310 kb CN 2 segment 650 kb to its right (SV_76, 0+2).
   //   - benchmark (hg008_cnv_calls, from the cgiab config): both, CN-labeled.
   //   - NYGC BIC-seq2, annotated: both, on the same breakpoints, DEL then DUP.
   //   - DRAGEN: the 310 kb one as CNLOH, and nothing over the deletion. Its own
