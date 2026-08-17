@@ -44,8 +44,13 @@ export function StyleThemeProvider({
 
 /**
  * Supply colors only, leaving JBrowse's default sizing in place. The narrower
- * of the two and the one an embedding app wants: a host mounting this is saying
+ * of the two, and what a host that already holds a palette mounts: it is saying
  * what JBrowse should draw *with*, not restating its type scale.
+ *
+ * **A host following its own light/dark state wants
+ * {@link SessionPaletteProvider} instead**, which is this plus the session
+ * write that the worker-side half of the rendering derives from. This one
+ * colors React and nothing else.
  */
 export function PaletteProvider({
   palette,
@@ -74,25 +79,22 @@ export interface ThemeModeSession {
 
 /**
  * Point a session at light or dark and get back the palette it resolves to,
- * for a host following its own dark-mode state. Feed the result to
- * `PaletteProvider`:
- *
- * ```tsx
- * const palette = useSessionPalette(session, myAppIsDark ? 'dark' : 'light')
- * return <PaletteProvider palette={palette}>{tracks}</PaletteProvider>
- * ```
+ * for a host that wants the palette itself — to read a color out of, or to
+ * hand somewhere other than a provider. A host that only wants JBrowse to
+ * follow its dark mode mounts {@link SessionPaletteProvider}, which is this
+ * hook and the provider in one.
  *
  * How the host knows its own mode is the host's business — an attribute on
  * `<html>`, a `prefers-color-scheme` media query, a design-system context —
  * and deliberately not this hook's.
  *
- * **Reaching for `PaletteProvider` alone is the trap this exists to close.**
- * The palette is what *React* draws with; the config `theme` slot is also what
- * ships to the RPC worker, where feature labels are baked into the rendered
- * image. Supply only the first and those labels stay in the old mode — light
- * text on a light image, and no error anywhere. `setThemeMode` writes the one
- * slot both are derived from, which is why this returns the palette rather
- * than taking one.
+ * **Both halves are load-bearing, which is why the pairing is published as a
+ * component.** The palette is what *React* draws with; the config `theme` slot
+ * this writes is also what ships to the RPC worker, where feature labels are
+ * baked into the rendered image. Mount `PaletteProvider` on a palette from
+ * somewhere else and those labels stay in the old mode — light text on a light
+ * image, and no error anywhere. `setThemeMode` writes the one slot both are
+ * derived from, which is why this returns the palette rather than taking one.
  *
  * The write lands in an effect, so the first paint after a mode change uses
  * the previous palette. That is a frame on a canvas that is about to be
@@ -106,4 +108,39 @@ export function useSessionPalette(
     session.setThemeMode(mode)
   }, [session, mode])
   return session.palette
+}
+
+/**
+ * #api
+ * Make JBrowse follow the host's light/dark state — the whole of it, in one
+ * mount:
+ *
+ * ```tsx
+ * <SessionPaletteProvider session={session} mode={myAppIsDark ? 'dark' : 'light'}>
+ *   {tracks}
+ * </SessionPaletteProvider>
+ * ```
+ *
+ * A component rather than a documented pair of calls because the pair has a
+ * half that can be left out with nothing to show for it. `PaletteProvider` is
+ * the name a host reaches for, and it colors the React side alone; the session
+ * write is what reaches the RPC worker, which bakes feature labels into the
+ * rendered image. So a host that mounts only the provider gets light-mode
+ * labels on a dark page, from a canvas whose every other pixel is right, and
+ * nothing errors. See {@link useSessionPalette} for the mechanism.
+ *
+ * The session is the only thing that resolves a palette here, so a host
+ * supplying colors of its own mounts `PaletteProvider` directly instead.
+ */
+export function SessionPaletteProvider({
+  session,
+  mode,
+  children,
+}: {
+  session: ThemeModeSession
+  mode: 'light' | 'dark'
+  children: ReactNode
+}) {
+  const palette = useSessionPalette(session, mode)
+  return <PaletteProvider palette={palette}>{children}</PaletteProvider>
 }

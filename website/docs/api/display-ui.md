@@ -102,7 +102,7 @@ someone having asked.
 
 Colors are not a seam and are not here. A display reads `usePalette()` for its
 own content colors, which is a palette of strings rather than a UI toolkit, so
-it arrives through `PaletteProvider` (`@jbrowse/core/ui/PaletteContext`)
+it arrives through `SessionPaletteProvider` (`@jbrowse/core/ui/PaletteContext`)
 whatever these are set to. A feature track needs it even with plain chrome.
 
 This module reaches no `@mui/*` module, and `muiFree.test.ts` keeps it that way

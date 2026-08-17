@@ -33,3 +33,31 @@ has to read as one tone across the whole palette or it reads as noise.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/color/index.ts)
+
+## SessionPaletteProvider
+
+Make JBrowse follow the host's light/dark state — the whole of it, in one mount:
+
+```tsx
+<SessionPaletteProvider session={session} mode={myAppIsDark ? 'dark' : 'light'}>
+  {tracks}
+</SessionPaletteProvider>
+```
+
+A component rather than a documented pair of calls because the pair has a half
+that can be left out with nothing to show for it. `PaletteProvider` is the name
+a host reaches for, and it colors the React side alone; the session write is
+what reaches the RPC worker, which bakes feature labels into the rendered image.
+So a host that mounts only the provider gets light-mode labels on a dark page,
+from a canvas whose every other pixel is right, and nothing errors. See
+useSessionPalette for the mechanism.
+
+The session is the only thing that resolves a palette here, so a host supplying
+colors of its own mounts `PaletteProvider` directly instead.
+
+```js
+// type signature
+({ session, mode, children, }: { session: ThemeModeSession; mode: "dark" | "light"; children: ReactNode; }) => Element
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/PaletteContext.tsx)

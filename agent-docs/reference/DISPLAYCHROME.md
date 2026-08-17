@@ -761,13 +761,16 @@ drawing its own chrome is still on its own**, by construction.
 
 **Colors are not a seam and are not in it.** A display reads `usePalette()` for
 its own content colors, which is a palette of strings rather than a toolkit, so
-it arrives through `PaletteProvider` whatever the two seams are set to — a
-feature track needs it even with plain chrome. `useSessionPalette(session, mode)`
+it arrives through a palette provider whatever the two seams are set to — a
+feature track needs it even with plain chrome. `SessionPaletteProvider`
 (`@jbrowse/core/ui/PaletteContext`) is how a host follows its own dark mode:
 it writes the config `theme` slot, which is what *both* halves of the rendering
 derive from — the palette React draws with, and the theme shipped to the worker
-that bakes feature labels into the image. Mounting `PaletteProvider` alone
-leaves those baked labels in the old mode.
+that bakes feature labels into the image. It is a component rather than the
+documented `useSessionPalette` + `PaletteProvider` pair because the pair has a
+half that can be left out with nothing to show for it: `PaletteProvider` is the
+discoverable name, colors React alone, and leaves those baked labels in the old
+mode.
 
 **A set is written against exported types, not inferred ones.** The four model
 shapes the overlays are handed (`DisplayErrorBarModel`,

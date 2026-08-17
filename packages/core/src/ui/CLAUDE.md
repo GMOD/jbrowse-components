@@ -58,10 +58,12 @@ silent.
 `makeStyles` hands a component **`JBrowseStyleTheme`** — palette, spacing,
 shape, type scale — not MUI's `Theme`. Deliberately a subset, so `theme.zIndex`
 or `theme.shadows` is a compile error; layering is `zIndexes.ts`.
-`PaletteProvider` (colors alone) is what an embedding app mounts;
-`StyleThemeProvider` (the whole thing, from `session.styleTheme`) is what our
-products mount. `util/tss-react/muiFree.test.ts` fails if `makeStyles` reaches
-`@mui/*`.
+`SessionPaletteProvider` (colors, plus the `setThemeMode` write the worker's
+baked labels derive from) is what an embedding app mounts — `PaletteProvider`
+alone is the near miss it exists to close, and stays for a host supplying its
+own palette. `StyleThemeProvider` (the whole thing, from `session.styleTheme`)
+is what our products mount. `util/tss-react/muiFree.test.ts` fails if
+`makeStyles` reaches `@mui/*`.
 
 **`palette.ts` is the single source of truth for colors**; `theme.ts` builds the
 MUI theme over it and holds none of its own. Colors shared with RPC workers are
