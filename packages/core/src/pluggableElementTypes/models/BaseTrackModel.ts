@@ -354,7 +354,6 @@ export function createBaseTrackModel(
         // under a live track, and releasing an id we never retained would free
         // an adapter another track is still using.
         const { rpcManager } = getSession(self)
-        const driver = getConf(self, 'rpcDriverName')
         let retained = self.rpcSessionId
         retainAdapterSession(rpcManager, retained)
         addDisposer(
@@ -366,13 +365,13 @@ export function createBaseTrackModel(
                 const previous = retained
                 retained = next
                 retainAdapterSession(rpcManager, next)
-                void releaseAdapterSession(rpcManager, previous, driver)
+                void releaseAdapterSession(rpcManager, previous)
               }
             },
           ),
         )
         addDisposer(self, () => {
-          void releaseAdapterSession(rpcManager, retained, driver)
+          void releaseAdapterSession(rpcManager, retained)
         })
       },
     }))

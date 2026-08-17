@@ -213,21 +213,18 @@ describe('RpcManager: the handles are args, and every method takes them', () => 
     expect(entry?.args?.stopToken).toBe(stopToken)
   })
 
-  // `rpcDriverName` was the last field with two spellings: read off `opts` as a
-  // fallback, and read off `args` by everything downstream. Nothing ever passed
-  // the opts one, and a hic status callback passed alongside it went to a
-  // position MainThreadRpcDriver drops on the floor.
-  test('routes on the rpcDriverName in args, and forwards it as payload', async () => {
+  // The config's driver is the only thing that decides where a call runs. A
+  // per-call `rpcDriverName` used to override it and one call site in the app
+  // ever passed one, so a track pinned elsewhere ran its tag scan there and
+  // every data fetch on the default anyway.
+  test('runs every call on the configured driver, whatever else is registered', async () => {
     const { manager, driver } = makeManager()
     const other = new StubDriver({ config: manager.mainConfiguration })
     manager.registerDriverFactory('OtherDriver', () => other)
 
-    await manager.call('s', 'CoreGetRegions', {
-      adapterConfig: {},
-      rpcDriverName: 'OtherDriver',
-    })
+    await manager.call('s', 'CoreGetRegions', { adapterConfig: {} })
 
-    expect(driver.callLog).toEqual([])
-    expect(other.callLog[0]?.args?.rpcDriverName).toBe('OtherDriver')
+    expect(driver.callLog).toHaveLength(1)
+    expect(other.callLog).toEqual([])
   })
 })

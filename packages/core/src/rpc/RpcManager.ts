@@ -93,31 +93,37 @@ export default class RpcManager {
     return newDriver
   }
 
-  private getDriverForCall(args: { rpcDriverName?: string }) {
-    const backendName =
-      args.rpcDriverName ||
+  /**
+   * The driver every call in this session runs on: the config's `defaultDriver`
+   * if set, otherwise the host application's default.
+   *
+   * There is no per-call, per-track or per-display override. One existed, and
+   * one call site in the app ever passed it — a tag-value scan in the alignments
+   * plugin — so a track pinned to the main thread had its tag scan run there and
+   * every one of its data fetches go to the worker pool anyway. Routing a single
+   * call somewhere else is only meaningful with a backend that differs in what it
+   * can do, which is the tabled server-side-driver idea; add it back with that,
+   * not before.
+   */
+  private getDriverForCall() {
+    return this.getDriver(
       readConfObject(this.mainConfiguration, 'defaultDriver') ||
-      this.defaultDriverName
-
-    return this.getDriver(backendName)
+        this.defaultDriverName,
+    )
   }
 
   /**
-   * `args` carries the method's data, the caller's handles on the operation —
-   * the stop token and the status callback — and the `rpcDriverName` that picks
-   * where it runs. All of them are always accepted, for every method, because
-   * {@link RpcHandles} and {@link RpcRouting} are part of `RpcCallArgs` rather
+   * `args` carries the method's data and the caller's handles on the operation —
+   * the stop token and the status callback. Both handles are always accepted,
+   * for every method, because {@link RpcHandles} is part of `RpcCallArgs` rather
    * than of any registry entry.
    *
-   * There is deliberately no second position for any of them. The handles were
+   * There is deliberately no second position for either. The handles were
    * accepted in an `opts` parameter as well, and the two disagreed:
    * `WorkerPoolRpcDriver` honored a `statusCallback` there and
    * `MainThreadRpcDriver` ignored `opts` entirely, so the same call had a
    * working progress bar under a worker and a silent one under the driver every
-   * embedded component defaults to. `rpcDriverName` was the last field left with
-   * two spellings, read from `opts` only as a fallback and passed there by
-   * nobody, while the bag it also rode in went on to the driver and the worker.
-   * One position.
+   * embedded component defaults to. One position.
    *
    * The cast on the way out is at the driver boundary, where the method is an
    * unparameterized {@link RpcMethodType} and `deserializeReturn` is therefore
@@ -135,9 +141,8 @@ export default class RpcManager {
     }
     const a = { ...args, sessionId } as Record<string, unknown> & {
       sessionId: string
-      rpcDriverName?: string
     }
-    const driverForCall = this.getDriverForCall(a)
+    const driverForCall = this.getDriverForCall()
     try {
       return (await this.withAuthRetry(() =>
         driverForCall.call(this.pluginManager, sessionId, functionName, a),

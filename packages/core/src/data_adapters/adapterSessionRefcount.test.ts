@@ -84,14 +84,11 @@ test('counts do not leak between sessions', async () => {
   expect(one.calls).toEqual([])
 })
 
-test('forwards a pinned rpcDriverName so the free reaches that driver', async () => {
+test('the free carries only the session it is freeing', async () => {
   const rpc = makeRpcManager()
   retainAdapterSession(rpc, 'adapterA')
-  await releaseAdapterSession(rpc, 'adapterA', 'MainThreadRpcDriver')
-  expect(rpc.calls[0]!.args).toEqual({
-    sessionId: 'adapterA',
-    rpcDriverName: 'MainThreadRpcDriver',
-  })
+  await releaseAdapterSession(rpc, 'adapterA')
+  expect(rpc.calls[0]!.args).toEqual({ sessionId: 'adapterA' })
 })
 
 test('a failing free does not reject into the teardown path', async () => {

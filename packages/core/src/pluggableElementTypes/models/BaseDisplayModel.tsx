@@ -1,4 +1,4 @@
-import { getParent, hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
 import {
@@ -30,10 +30,6 @@ function stateModelFactory() {
        * #property
        */
       type: types.string,
-      /**
-       * #property
-       */
-      rpcDriverName: types.maybe(types.string),
     })
     .volatile(() => ({
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -59,27 +55,6 @@ function stateModelFactory() {
           )
         }
         return getContainingTrack(self)
-      },
-
-      /**
-       * #getter
-       * Returns the parent display if this display is nested within another display
-       * (e.g., PileupDisplay inside LinearAlignmentsDisplay)
-       */
-      get parentDisplay() {
-        if (hasParent(self)) {
-          const parent = getParent<{
-            type?: string
-            effectiveRpcDriverName?: string
-          }>(self)
-          if (
-            typeof parent.type === 'string' &&
-            parent.type.endsWith('Display')
-          ) {
-            return parent
-          }
-        }
-        return undefined
       },
     }))
     .views(self => ({
@@ -209,23 +184,6 @@ function stateModelFactory() {
           id: 'baseFeature',
         }
       },
-
-      /**
-       * #getter
-       * Returns the effective RPC driver name with hierarchical fallback:
-       * 1. This display's explicit rpcDriverName
-       * 2. Parent display's effectiveRpcDriverName (for nested displays)
-       * 3. Track config's rpcDriverName
-       */
-      get effectiveRpcDriverName() {
-        if (self.rpcDriverName) {
-          return self.rpcDriverName
-        }
-        if (self.parentDisplay?.effectiveRpcDriverName) {
-          return self.parentDisplay.effectiveRpcDriverName
-        }
-        return getConf(self.parentTrack, 'rpcDriverName')
-      },
     }))
     .views(self => ({
       /**
@@ -278,12 +236,6 @@ function stateModelFactory() {
        */
       clearHoveredFeature() {},
 
-      /**
-       * #action
-       */
-      setRpcDriverName(rpcDriverName: string) {
-        self.rpcDriverName = rpcDriverName
-      },
       /**
        * #action
        * base display reload does nothing, see specialized displays for details

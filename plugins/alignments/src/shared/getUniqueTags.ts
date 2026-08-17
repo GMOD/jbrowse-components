@@ -13,7 +13,6 @@ export async function getUniqueTags({
 }: {
   self: {
     adapterConfig: Record<string, unknown>
-    effectiveRpcDriverName?: string
   }
   tag: string
   blocks: BlockSet
@@ -25,7 +24,7 @@ export async function getUniqueTags({
   }
 }) {
   const { rpcManager } = getSession(self)
-  const { adapterConfig, effectiveRpcDriverName } = self
+  const { adapterConfig } = self
   const sessionId = getRpcSessionId(self)
   const values = await rpcManager.call(
     sessionId,
@@ -33,7 +32,6 @@ export async function getUniqueTags({
     {
       adapterConfig,
       tag,
-      rpcDriverName: effectiveRpcDriverName,
       regions: blocks.contentBlocks,
       ...opts,
     },

@@ -9,15 +9,15 @@ export default ConfigurationSchema(
   {
     /**
      * #slot
-     * which RPC backend to use by default. Empty means "use the host
-     * application's default" (web/desktop default to the web worker driver,
-     * embedded/headless to the main thread). A per-track or per-call
-     * `rpcDriverName` still overrides this.
+     * which RPC backend to use. Empty means "use the host application's
+     * default" (web/desktop default to the web worker driver, embedded/headless
+     * to the main thread). Every call in the session runs on the driver this
+     * names; there is no per-track or per-call override.
      */
     defaultDriver: {
       type: 'string',
       description:
-        'the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend',
+        'the RPC driver to run data fetching on: MainThreadRpcDriver or WebWorkerRpcDriver. Leave empty to use the default for this application',
       defaultValue: '',
       advanced: true,
     },

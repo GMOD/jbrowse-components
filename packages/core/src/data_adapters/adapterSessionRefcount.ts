@@ -79,11 +79,9 @@ export function retainAdapterSession(
  * them collectable, since the cache is a strong reference rooted in module
  * scope.
  *
- * `rpcDriverName` routes the free to the driver the track's queries actually
- * ran on, for a track whose config pins one. A display that overrides its
- * track's driver individually is not covered: its adapter stays cached in that
- * other worker. That is a stale cache entry rather than a correctness problem,
- * and no track config in the wild has been seen to do it.
+ * The free lands on the same driver the track's queries ran on, because every
+ * call in the app runs on the one the session resolved — see
+ * `RpcManager.getDriver`.
  *
  * Errors are swallowed on purpose. This runs on teardown, where a worker
  * already terminated by a session switch is the expected case rather than a
@@ -99,7 +97,6 @@ export function retainAdapterSession(
 export async function releaseAdapterSession(
   rpcManager: RpcCaller | undefined,
   sessionId: string,
-  rpcDriverName?: string,
 ) {
   if (!isUsable(rpcManager)) {
     return
@@ -114,10 +111,7 @@ export async function releaseAdapterSession(
   }
   counts.delete(sessionId)
   try {
-    await rpcManager.call(sessionId, 'CoreFreeResources', {
-      sessionId,
-      ...(rpcDriverName ? { rpcDriverName } : {}),
-    })
+    await rpcManager.call(sessionId, 'CoreFreeResources', { sessionId })
   } catch {
     // teardown; see above
   }

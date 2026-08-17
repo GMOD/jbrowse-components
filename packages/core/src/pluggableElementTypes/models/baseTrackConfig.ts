@@ -190,16 +190,6 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       */
-      rpcDriverName: {
-        type: 'string',
-        description:
-          'RPC driver to use for this track. Leave empty to use the display-level or global default.',
-        defaultValue: '',
-        advanced: true,
-      },
-      /**
-       * #slot
        * where this track's data comes from. Its `type` names the adapter for
        * the file format (`BamAdapter`, `Gff3TabixAdapter`, ...) and the rest of
        * the object is that adapter's own slots — see the adapter pages for

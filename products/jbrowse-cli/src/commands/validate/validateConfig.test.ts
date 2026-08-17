@@ -247,9 +247,9 @@ describe('validateConfig', () => {
     expect(
       errorsOf(
         sessionDisplay({
-          type: 'LinearAlignmentsDisplay',
-          configuration: 'sample_bam-LinearAlignmentsDisplay',
-          rpcDriverName: 'MainThreadRpcDriver',
+          type: 'LinearBasicDisplay',
+          configuration: 'sample_bam-LinearBasicDisplay',
+          pinnedFeatureIds: ['feat1'],
         }),
       ),
     ).toEqual([])

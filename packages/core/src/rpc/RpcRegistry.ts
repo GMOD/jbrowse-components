@@ -175,29 +175,9 @@ export type RpcExecuteArgs<M extends string> = M extends RpcMethodName
     : NotInRpcRegistry<M>
 
 /**
- * Where this one call runs. Like {@link RpcHandles} and for the same reason: a
- * property of the call rather than of the payload, so it belongs to every method
- * and to no registry entry.
- *
- * It was per-entry, and had got exactly as far as the handles had — declared by
- * two of the forty-one (`GetConsensusSequence`, `PileupGetGlobalValueForTag`,
- * both because a caller needed to pin one), which left pinning a driver a
- * type error on the other thirty-nine. `RpcManager.getDriverForCall` has read it
- * off the args bag the whole time, so the fix is to say so once here.
- *
- * Caller-side only: it picks the driver and is not payload, so it stays out of
- * {@link RpcExecuteArgs}. A worker seeing the extra field ignores it, the way it
- * ignores the `blobMap` that `serializeArguments` adds.
- */
-export type RpcRouting = {
-  rpcDriverName?: string
-}
-
-/**
  * What a CALLER passes to `rpcManager.call`: the method's own data, plus the
- * {@link RpcHandles} every method takes and the {@link RpcRouting} that decides
- * where it runs. No {@link RpcSession} — that one is the call's first
- * parameter, not part of the bag a caller builds.
+ * {@link RpcHandles} every method takes. No {@link RpcSession} — that one is
+ * the call's first parameter, not part of the bag a caller builds.
  *
  * Exported and used by everything that types a `call` — `RpcManager` itself and
  * the structural `RpcMethodCaller` the clustering helpers take — because there
@@ -210,9 +190,9 @@ export type RpcRouting = {
  * a caller dispatching on a variable.
  */
 export type RpcCallArgs<M extends string> = M extends RpcMethodName
-  ? RpcArgs<M & RpcMethodName> & RpcHandles & RpcRouting
+  ? RpcArgs<M & RpcMethodName> & RpcHandles
   : string extends M
-    ? Record<string, unknown> & RpcHandles & RpcRouting
+    ? Record<string, unknown> & RpcHandles
     : NotInRpcRegistry<M>
 
 /**
@@ -301,17 +281,16 @@ export type RpcCallReturn<M extends string> = M extends RpcMethodName
  * the payload. Should always be `never`; {@link AssertNoCallLevelFields} below
  * is what makes a non-empty one a compile error naming the entry.
  *
- * Checked rather than written down because it went wrong three times the same
- * way: a caller needs the field on one method, it goes into that method's
- * `args`, and the other forty can no longer be passed it. The handles went that
- * way (CoreGetExportData shipped uncancellable), then `rpcDriverName`, and
- * `sessionId` spread to 22 of 41 entries because `RpcCallArgs` had been
- * subtracting it back off.
+ * Checked rather than written down because it went wrong the same way twice: a
+ * caller needs the field on one method, it goes into that method's `args`, and
+ * the other forty can no longer be passed it. The handles went that way
+ * (CoreGetExportData shipped uncancellable), and `sessionId` spread to 22 of 41
+ * entries because `RpcCallArgs` had been subtracting it back off.
  */
 export type EntriesDeclaringCallLevelFields = {
   [K in RpcMethodName]: Extract<
     keyof RpcArgs<K>,
-    keyof RpcCallContext | keyof RpcRouting
+    keyof RpcCallContext
   > extends never
     ? never
     : K

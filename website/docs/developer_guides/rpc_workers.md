@@ -195,14 +195,13 @@ export default class ScoreExamplePlugin extends Plugin {
 `getSession(self).rpcManager` dispatches. Note that `sessionId` is **not**
 repeated inside the args object — `call` injects it from its first parameter.
 
-Three fields work that way, and none of them belongs in a registry entry:
-`sessionId` (`RpcSession`), the `stopToken`/`statusCallback` pair
-(`RpcHandles`), and `rpcDriverName` (`RpcRouting`). They are properties of the
-_call_, so every method accepts them and no entry gets to require or refuse one.
-`EntriesDeclaringCallLevelFields` in `RpcRegistry.ts` fails compilation, naming
-the entry, if one declares any of them — each of the three had spread through
-the registry before it existed, and the handles reached production that way:
-`CoreGetExportData` shipped with a Cancel button that did nothing.
+Two fields work that way, and neither belongs in a registry entry: `sessionId`
+(`RpcSession`) and the `stopToken`/`statusCallback` pair (`RpcHandles`). They
+are properties of the _call_, so every method accepts them and no entry gets to
+require or refuse one. `EntriesDeclaringCallLevelFields` in `RpcRegistry.ts`
+fails compilation, naming the entry, if one declares either — both had spread
+through the registry before it existed, and the handles reached production that
+way: `CoreGetExportData` shipped with a Cancel button that did nothing.
 
 A per-region display does not `await` the call itself. `fetchEachRegion` owns
 cancellation, stop tokens and staleness, so `LinearScoreDisplay` hands it the

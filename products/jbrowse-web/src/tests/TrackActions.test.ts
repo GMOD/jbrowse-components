@@ -35,13 +35,9 @@ test('showTrack with unknown id returns undefined', async () => {
 
 test('showTrack passes displayInitialSnapshot state to the display', () => {
   const view = getView()
-  const track = view.showTrack(
-    TRACK_ID,
-    {},
-    { rpcDriverName: 'MainThreadRpcDriver' },
-  )
+  const track = view.showTrack(TRACK_ID, {}, { resolution: 5 })
   expect(track).toBeDefined()
-  expect(track!.displays[0]!.rpcDriverName).toBe('MainThreadRpcDriver')
+  expect(track!.displays[0]!.resolution).toBe(5)
 })
 
 test('hideTrack returns true and removes the track when shown', () => {
