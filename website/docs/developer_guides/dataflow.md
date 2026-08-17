@@ -40,12 +40,13 @@ this path is built on.
 
 ## Where the worker sits
 
-Everything inside the box runs off the UI thread, in a pool sized from
-`hardwareConcurrency` and capped at five. A track's queries are **sticky** to
-one worker, so a second query from the same track queues behind the first. That
-stickiness is what makes the inflate pool inside the worker worth having, and it
-is also a ceiling: one track's parse is single-threaded however many cores the
-machine has.
+Everything inside the box runs off the UI thread, in a pool that leaves one core
+for the UI and is capped at five —
+[`workerCount`](/docs/config/rpcoptions#slot-workercount) overrides that. A
+track's queries are **sticky** to one worker, so a second query from the same
+track queues behind the first. That stickiness is what makes the inflate pool
+inside the worker worth having, and it is also a ceiling: one track's parse is
+single-threaded however many cores the machine has.
 
 The main thread does no parsing. It holds the result, uploads it, and draws it.
 
@@ -57,12 +58,12 @@ there because that is where a cold query's time is — most of it, against a
 fraction of a millisecond to a few milliseconds building records. Reading the
 index and decoding records both stay in JavaScript.
 
-The dashed branch beside it is a further pool of four workers, one per JS
-context. Where nested workers are unavailable the pool resolves to `undefined`
-and the same code inflates in process, which is what makes the option safe to
-pass unconditionally. It is also a degradation with no error attached. The
-share, what the pool is worth per format, and how to check it is engaged at all
-are
+The dashed branch beside it is a further pool of four workers, one pool per JS
+context — so a full RPC pool nests twenty inflate workers under its five. Where
+nested workers are unavailable the pool resolves to `undefined` and the same
+code inflates in process, which is what makes the option safe to pass
+unconditionally. It is also a degradation with no error attached. The share,
+what the pool is worth per format, and how to check it is engaged at all are
 [the fetch clock](/docs/developer_guides/optimizations#decompression-is-where-a-cold-querys-time-goes).
 
 ## Where the caches sit

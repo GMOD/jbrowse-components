@@ -167,25 +167,6 @@ records which adapters are wired to a stop token, the two that cannot be, and
 the shared-fetch coalescing trap that comes with cancelling a read two callers
 are waiting on.
 
-## The boundary between them
-
-The worker boundary belongs to neither clock, which is why it is its own
-section: what crosses it is decided by the decoder and paid for by the frame.
-
-### One shape, parsed and moved and drawn
-
-A decoded block is one typed array per attribute, and a record is an index
-shared across them. The same buffers cross the worker boundary as
-[transferables](/docs/developer_guides/rpc_workers#returning-arraybuffers-zero-copy),
-so ownership moves in constant time, and the same buffers upload to the graphics
-card. The shape a decoder produces is the shape the shader reads, and nothing on
-the path translates between representations.
-
-That property is what the individual wins below compound into, and it is worth
-more than any of them. The MAF worker is the clearest single measurement of the
-boundary itself: moving its payload to a columnar wire rehydrated at placement
-took `postMessage` from 3.3 s to 0.03 ms on one region.
-
 ### A string per sample per site is the thing to remove
 
 `computeSampleInfo` makes one pass per feature over
@@ -249,6 +230,23 @@ eight shapes.
 [MAF_WORKER_PIPELINE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_WORKER_PIPELINE.md)
 has the method — measure the bare loop against the loop-plus-output, sweep the
 working set, peel the body one operation at a time.
+
+## The worker boundary
+
+The boundary belongs to neither clock: what crosses it is decided by the decoder
+and paid for by the frame.
+
+A decoded block is one typed array per attribute, and a record is an index
+shared across them. The same buffers cross the worker boundary as
+[transferables](/docs/developer_guides/rpc_workers#returning-arraybuffers-zero-copy),
+so ownership moves in constant time, and the same buffers upload to the graphics
+card. The shape a decoder produces is the shape the shader reads, and nothing on
+the path translates between representations.
+
+That one shape is what every individual win on this page compounds into, and it
+is worth more than any of them. The MAF worker is the clearest measurement of
+the boundary itself: moving its payload to a columnar wire rehydrated at
+placement took `postMessage` from 3.3 s to 0.03 ms on one region.
 
 ## The frame clock
 
