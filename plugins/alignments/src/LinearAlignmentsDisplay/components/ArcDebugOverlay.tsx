@@ -100,7 +100,7 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
   const bands = model.renderSections.flatMap(sec =>
     view.visibleRegions.flatMap(region => {
       const geom = resolveArcBandDebug(
-        model.arcsByGroup.get(sec.groupKey)?.get(region.displayedRegionIndex),
+        sec.arcsRpcDataMap.get(region.displayedRegionIndex),
         {
           region,
           band: sec,

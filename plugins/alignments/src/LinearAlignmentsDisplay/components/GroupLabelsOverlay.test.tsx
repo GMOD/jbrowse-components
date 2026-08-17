@@ -25,6 +25,8 @@ function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
     featureNoun: 'read',
     scrollModel: { isGrouped: true, scrollTop: 0, canvasHeight: CANVAS_HEIGHT },
     sections: { contentHeight: CONTENT_HEIGHT },
+    // A section IS its lane, chip state included — the overlay reads these
+    // fields rather than looking each one back up by `groupKey`.
     renderSections: [0, 1].map(i => ({
       groupKey: `g${i}`,
       label: `HP: ${i + 1}`,
@@ -33,10 +35,12 @@ function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
       topOffset: i * SECTION_HEIGHT + 40,
       pileupHeight: 80,
       height: SECTION_HEIGHT,
+      collapsed: false,
+      hasHeightOverride: false,
+      // Clipped by the lane's viewport slice, which is the cap the chip's expand
+      // can raise.
+      clippedBy: 'budget',
     })),
-    isGroupCollapsed: () => false,
-    hasGroupHeightOverride: () => false,
-    isGroupTruncated: () => true,
     toggleGroupCollapsed: jest.fn(),
     toggleGroupExpanded: jest.fn(),
     ...overrides,

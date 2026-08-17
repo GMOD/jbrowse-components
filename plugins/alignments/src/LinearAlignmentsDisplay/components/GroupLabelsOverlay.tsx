@@ -15,6 +15,7 @@ import {
   GROUP_LABEL_RADIUS,
   groupSectionLabel,
 } from '../groupLabelStyle.ts'
+import { laneExpandable } from '../model.ts'
 import { bandOnScreen, bandScreenTop, sectionKey } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
@@ -151,8 +152,9 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
           return null
         }
         const label = groupSectionLabel(section.label)
-        const collapsed = model.isGroupCollapsed(section.groupKey)
-        const hasOverride = model.hasGroupHeightOverride(section.groupKey)
+        // Off the section, not looked back up by its key: a `renderSections`
+        // entry IS its lane, chip state included.
+        const { collapsed, hasHeightOverride: hasOverride } = section
         // Sticky: hold the chip at the top of the canvas while its section
         // scrolls past, then let it go with the section's own bottom edge, so a
         // group on its way off the top doesn't park its name over the next
@@ -165,7 +167,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         const heightButton =
           canSizeGroupHeights &&
           !collapsed &&
-          (hasOverride || model.isGroupTruncated(section.groupKey))
+          (hasOverride || laneExpandable(section))
             ? groupHeightAffordance({
                 collapseGroupRows,
                 hasOverride,

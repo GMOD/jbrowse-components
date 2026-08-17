@@ -325,7 +325,7 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
   return (
     <>
       {model.renderSections.map(section => {
-        if (model.isGroupCollapsed(section.groupKey)) {
+        if (section.collapsed) {
           return null
         }
         const bottom = contentScreenY(

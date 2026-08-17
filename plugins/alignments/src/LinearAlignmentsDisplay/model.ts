@@ -92,7 +92,6 @@ import { splitArcsBySide } from './components/sashimiArcs.ts'
 import { ColorScheme } from './constants.ts'
 import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
 import {
-  anyRegionTruncated,
   applyReadColorsByGroup,
   collectAcrossGroups,
   groupClipSource,
@@ -137,8 +136,10 @@ import {
 import type {
   GroupedAlignmentsResult,
   PileupDataResult,
+  RowCapSource,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
+import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
@@ -266,6 +267,69 @@ export { ColorScheme } from './constants.ts'
 // Shared by every display that hides no group, so `groupOrder` compares against
 // a stable identity rather than allocating a set per read.
 const EMPTY_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
+
+/**
+ * One stacked lane: its identity, every per-lane collection the section pipeline
+ * and the overlays read, and the per-lane state the label chip acts on.
+ *
+ * A PROJECTION over the tiered computeds, never a store — each field is read from
+ * the computed that owns it, so the fetch/layout/recolor split upstream is
+ * untouched and a lane is rebuilt rather than mutated. Ungrouped is the one-lane
+ * case (key `''`), which is what makes "grouped" a length question at every
+ * consumer instead of a branch.
+ *
+ * The collections are non-optional, and that is the point: a lane's key comes
+ * from `groupOrder` and every collection is keyed by the same filtered set, so a
+ * miss was unreachable — but nothing said so, and each consumer carried its own
+ * `?? new Map()` for it.
+ */
+export interface AlignmentLane {
+  groupKey: string
+  label: string
+  rawPileupMap: ReadonlyMap<number, WorkerPileupData>
+  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
+  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
+  crossRegionArcs: readonly CrossRegionArc[]
+  hasArcs: boolean
+  sashimiDownKeys: ReadonlySet<string>
+  hasSashimiDownArcs: boolean
+  maxY: number
+  collapsed: boolean
+  hasHeightOverride: boolean
+  clippedBy: RowCapSource | undefined
+}
+
+// Whether the label chip's expand can do anything for this lane: two of the
+// caps can be raised out of, and an absent lane has nothing to raise. One
+// function so the chip and `isGroupTruncated` cannot answer it differently.
+export function laneExpandable(lane: AlignmentLane | undefined) {
+  return lane?.clippedBy === 'budget' || lane?.clippedBy === 'collapse'
+}
+
+const EMPTY_RAW: ReadonlyMap<number, WorkerPileupData> = new Map()
+const EMPTY_LAID_OUT: ReadonlyMap<number, PileupDataResult> = new Map()
+const EMPTY_ARCS: ReadonlyMap<number, ArcsUploadData> = new Map()
+const EMPTY_ARC_LIST: readonly CrossRegionArc[] = []
+const EMPTY_KEYS: ReadonlySet<string> = new Set()
+
+// The lane `sections` is handed before any fetch lands, and on a grouped fetch
+// over a region with no reads — where the partition yields zero lanes and the
+// pipeline below still has to produce one section (see `drawnLanes`).
+const SYNTHETIC_LANE: AlignmentLane = {
+  groupKey: '',
+  label: '',
+  rawPileupMap: EMPTY_RAW,
+  laidOutPileupMap: EMPTY_LAID_OUT,
+  arcsRpcDataMap: EMPTY_ARCS,
+  crossRegionArcs: EMPTY_ARC_LIST,
+  hasArcs: false,
+  sashimiDownKeys: EMPTY_KEYS,
+  hasSashimiDownArcs: false,
+  maxY: 0,
+  collapsed: false,
+  hasHeightOverride: false,
+  clippedBy: undefined,
+}
 
 // colorBy.type → shader colorScheme index, resolved through the shared
 // COLOR_SCHEMES registry (each scheme names a shader path) and ColorScheme (the
@@ -1769,87 +1833,19 @@ export default function stateModelFactory(
         },
 
         /**
-         * #method
-         * Laid-out region map for one group key, or an empty map for a key with
-         * no data. Centralizes the empty-map fallback shared by the section
-         * getters so they never have to branch on a missing group.
-         */
-        groupLaidOutMap(key: string) {
-          return (
-            this.laidOutByGroup.get(key) ?? new Map<number, PileupDataResult>()
-          )
-        },
-
-        /**
-         * #method
-         * Which cap hid reads from a group's pileup, or `undefined` when nothing
-         * was hidden. A read of what the layout pass recorded (`RowCapSource`
-         * names the five), not a re-derivation: it is handed its cap with the
-         * policy attached, so the answer comes back out of the layout rather than
-         * being reconstructed from a row count afterwards.
-         *
-         * Which cap it was decides what may be offered, and only one answer can
-         * be right: expanding a lane banks an override of `maxHeight` px, so a
-         * lane already clipped at that ceiling gets the identical cap back — not
-         * one extra read appears, while the override silences the flag. The
-         * reconstruction this replaced compared a lane's rows against the
-         * ceiling, which is true whenever the two caps merely differ; a
-         * single-section grouping sat wholly in that hole, since one group takes
-         * the ungrouped cap and never a slice.
-         */
-        groupClippedBy(key: string) {
-          return groupClipSource(this.groupLaidOutMap(key))
-        },
-
-        /**
-         * #method
-         * True when a group's pileup was clipped by a cap the per-group expand
-         * can actually raise. Drives the "show all" affordance on the section
-         * label, which must not appear where it would do nothing.
-         *
-         * Two of the five caps qualify: a lane's viewport slice, and the single
-         * row `collapseGroupRows` gives it. Both expand into a true stack because
-         * banking an override opts the lane out of each.
-         */
-        isGroupTruncated(key: string) {
-          const clippedBy = this.groupClippedBy(key)
-          return clippedBy === 'budget' || clippedBy === 'collapse'
-        },
-
-        /**
-         * #method
-         * True when THIS group's pileup was clipped by the display-wide
-         * `maxHeight` and its overflow reads were collapsed. Drives the rule
-         * drawn across the bottom of the clipped rows — see
-         * `PileupTruncationRule`, which is per section because the notice marks
-         * the place where the reads stop rather than a state of the whole track.
-         *
-         * The two suppressions are `pileupTruncated`'s, which is now this over
-         * every group. In fit-to-display mode reads are already clamped to a 1px
-         * floor and the overflow indicator flags the scroll instead; with the
-         * pileup hidden nothing is drawn for the ceiling to clip.
-         */
-        isGroupCeilingClipped(key: string) {
-          return (
-            self.showPileup &&
-            !self.fitHeightToDisplay &&
-            this.groupClippedBy(key) === 'ceiling'
-          )
-        },
-
-        /**
          * #getter
-         * True when any pileup hit the display-wide `maxHeight` and overflow
-         * reads were collapsed. Reads every group, not just an ungrouped one:
-         * the ceiling is display-wide, so a stacked lane clipped by it is
-         * exactly as unreachable as an ungrouped pileup would be, and the
-         * per-label affordance deliberately steps aside for it.
-         *
-         * The display-wide answer; what is DRAWN is the per-section
-         * `isGroupCeilingClipped`, which carries the suppressions this composes.
+         * Whether the stacked section labels + dividers are drawn. Deliberately
+         * NOT `isGrouped`: grouping that happens to yield one section (a region
+         * with reads on one strand, a tag with a single value) still reserves the
+         * label offset (`prefersOffset`) and still wants its section named and
+         * collapsible — otherwise it reads as an ungrouped track with mysterious
+         * blank space above it. `isGrouped` stays about the scroll model (>1
+         * section scrolls coverage with its section), which one section doesn't
+         * change. Reads the fetched sections rather than `groupBy` — see
+         * `hasNamedGroups` for why the setting is the wrong signal.
          */
-        get pileupTruncated() {
-          return this.groupOrder.some(g => this.isGroupCeilingClipped(g.key))
+        get showsGroupLabels() {
+          return hasNamedGroups(this.groupOrder)
         },
 
         /**
@@ -2204,22 +2200,21 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Single source of all vertical band geometry, one entry per stacked
-         * group. `computeStackedSections` reproduces the prior ungrouped reserved
-         * layout exactly for its single-section (N==1) case, so ungrouped is not a
-         * special branch here — it is the one-group call, with a synthetic group
-         * when no data has arrived yet (so `laidOutPileupMap`/`renderState` still
-         * see one section). The sticky-coverage-vs-scroll distinction lives
-         * downstream in `buildSectionRenders`, keyed off section count.
+         * The stacked lanes, in stacking order: one `AlignmentLane` per drawn
+         * group, ungrouped being the one-lane case.
+         *
+         * The single place a lane's key is turned into its data. Every per-lane
+         * collection used to be looked up separately by each consumer — the raw
+         * map, the laid-out map, the two arc feeds, the sashimi sides, the
+         * collapse/override volatiles — so a lane's identity was a bare string
+         * indexed into as many keyed collections as there were questions, each
+         * with its own `?? empty` for a key that structurally cannot be missing.
+         *
+         * A projection, not a store: every field is read from the computed that
+         * owns it, so the fetch/layout/recolor tiers upstream are untouched and
+         * this adds no state to keep in step.
          */
-        get sections(): SectionsLayout {
-          const order = self.groupOrder
-          // showPileup off collapses every pileup band to zero height (coverage
-          // + arcs only), the same height-0 path collapsed groups use.
-          const groupMaxYFor = (key: string) =>
-            !self.showPileup || self.isGroupCollapsed(key)
-              ? 0
-              : groupMaxY(self.groupLaidOutMap(key))
+        get lanes(): AlignmentLane[] {
           // Both below-coverage strips are reserved per lane: grouping routinely
           // leaves lanes with nothing bound for one (the 'Not split' lane of a
           // split-read grouping has no arc), and those carried an empty strip.
@@ -2233,60 +2228,182 @@ export default function stateModelFactory(
           // connections exist for — would reserve nothing and then have nowhere
           // to draw. `inkGroupKeys` is that question asked of the pass holding
           // both halves, which is this directory's `hasArcBandInk`-not-`numArcs`
-          // rule met one level up.
+          // rule met one level up. The two feeds come through their own named
+          // getters, which is where the reason they ARE two lists lives.
+          const perRegionArcs = self.arcsByGroup
+          const crossRegionArcs = self.crossRegionArcsByGroup
           const arcInkLanes = self.arcsResult.inkGroupKeys
-          const sashimiLanes = self.sashimiDownArcLanes
-          const groups =
-            order.length === 0
-              ? // No data (or a grouped fetch over an empty region): the synthetic
-                // section exists only so downstream getters see one section. It has
-                // no laid-out rows by construction, hence maxY 0.
-                [
-                  {
-                    key: '',
-                    label: '',
-                    maxY: 0,
-                    hasArcs: false,
-                    hasSashimiDownArcs: false,
-                  },
-                ]
-              : order.map(({ key, label }) => ({
-                  key,
-                  label,
-                  maxY: groupMaxYFor(key),
-                  hasArcs: arcInkLanes.has(key),
-                  hasSashimiDownArcs: sashimiLanes.has(key),
-                }))
-          return computeStackedSections(groups, {
-            ...self.arcBandInput,
-            rowHeight: self.rowHeight,
-            showSashimiArcs: self.showSashimiArcs,
-            sashimiHeight: self.sashimiArcsHeight,
-            // Only when the chips are actually drawn — an ungrouped display
-            // reserves nothing, so its geometry is untouched. `hasNamedGroups`
-            // rather than the `showsGroupLabels` getter, which lives in a later
-            // .views block; both read the same predicate so they can't drift.
-            minSectionHeight: hasNamedGroups(self.groupOrder)
-              ? GROUP_LABEL_HEIGHT
-              : 0,
+          const raw = self.rawDataByGroup
+          const laid = self.laidOutByGroup
+          const sashimiDown = self.sashimiDownKeysByGroup
+          return self.groupOrder.map(({ key, label }) => {
+            const laidOutPileupMap = laid.get(key) ?? EMPTY_LAID_OUT
+            return {
+              groupKey: key,
+              label,
+              rawPileupMap: raw.get(key) ?? EMPTY_RAW,
+              laidOutPileupMap,
+              arcsRpcDataMap: perRegionArcs.get(key) ?? EMPTY_ARCS,
+              crossRegionArcs: crossRegionArcs.get(key) ?? EMPTY_ARC_LIST,
+              hasArcs: arcInkLanes.has(key),
+              sashimiDownKeys: sashimiDown.get(key) ?? EMPTY_KEYS,
+              hasSashimiDownArcs: (sashimiDown.get(key)?.size ?? 0) > 0,
+              // showPileup off collapses every pileup band to zero height
+              // (coverage + arcs only), the same height-0 path a collapsed lane
+              // takes.
+              maxY:
+                !self.showPileup || self.collapsedGroups.has(key)
+                  ? 0
+                  : groupMaxY(laidOutPileupMap),
+              collapsed: self.collapsedGroups.has(key),
+              hasHeightOverride: self.groupMaxHeightOverrides.has(key),
+              clippedBy: groupClipSource(laidOutPileupMap),
+            }
           })
         },
 
         /**
          * #getter
-         * Per-section data + content-space band tops for the overlay/hit-test
-         * pipeline (labels, highlights, hit-test). Pairs each section's group
-         * data map with its `pileupTop` (used as the row `topOffset`) and
-         * coverage band so a screen-y can be mapped to the right section and its
-         * group. Reads straight off `sections` (every field already lives on the
-         * `Section`); ungrouped is the single section, so the pipeline reduces to
-         * pre-grouping.
+         * The lanes actually laid out, or the one SYNTHETIC lane. `sections` has
+         * to produce a section before any fetch lands — and a grouped fetch over
+         * an empty region partitions to zero lanes — so the section pipeline is
+         * never handed an empty list. Every collection on it is empty by
+         * construction, `maxY` included.
+         */
+        get drawnLanes(): AlignmentLane[] {
+          return this.lanes.length > 0 ? this.lanes : [SYNTHETIC_LANE]
+        },
+
+        /**
+         * #method
+         * One lane by group key, for the per-key questions a component asks with
+         * a `groupKey` in hand. `undefined` for a key that isn't drawn.
+         */
+        laneFor(key: string) {
+          return this.lanes.find(l => l.groupKey === key)
+        },
+
+        /**
+         * #method
+         * Which cap hid reads from a lane's pileup, or `undefined` when nothing
+         * was hidden — including for a key that isn't drawn. A read of what the
+         * layout pass recorded (`RowCapSource` names the five), not a
+         * re-derivation: the pass is handed its cap with the policy attached, so
+         * the answer comes back out of the layout instead of being reconstructed
+         * from a row count afterwards.
+         *
+         * Which cap it was decides what may be offered, and only one answer can
+         * be right: expanding a lane banks an override of `maxHeight` px, so a
+         * lane already clipped at that ceiling gets the identical cap back — not
+         * one extra read appears, while the override silences the flag. The
+         * reconstruction this replaced compared a lane's rows against the
+         * ceiling, which is true whenever the two caps merely differ; a
+         * single-section grouping sat wholly in that hole, since one lane takes
+         * the ungrouped cap and never a slice.
+         */
+        groupClippedBy(key: string) {
+          return this.laneFor(key)?.clippedBy
+        },
+
+        /**
+         * #method
+         * True when a lane's pileup was clipped by a cap the per-lane expand can
+         * actually raise. Drives the "show all" affordance on the section label,
+         * which must not appear where it would do nothing.
+         *
+         * Two of the caps qualify: a lane's viewport slice, and the single row
+         * `collapseGroupRows` gives it. Both expand into a true stack, because
+         * banking an override opts the lane out of each.
+         */
+        isGroupTruncated(key: string) {
+          return laneExpandable(this.laneFor(key))
+        },
+
+        /**
+         * #method
+         * True when THIS lane's pileup was clipped by the display-wide
+         * `maxHeight` and its overflow reads were collapsed. Drives the rule
+         * drawn across the bottom of the clipped rows — see
+         * `PileupTruncationRule`, which is per section because the notice marks
+         * the place where the reads stop rather than a state of the whole track.
+         *
+         * The two suppressions are `pileupTruncated`'s, which is now this over
+         * every lane. In fit-to-display mode reads are already clamped to a 1px
+         * floor and the overflow indicator flags the scroll instead; with the
+         * pileup hidden nothing is drawn for the ceiling to clip.
+         */
+        isGroupCeilingClipped(key: string) {
+          return (
+            self.showPileup &&
+            !self.fitHeightToDisplay &&
+            this.groupClippedBy(key) === 'ceiling'
+          )
+        },
+
+        /**
+         * #getter
+         * True when any pileup hit the display-wide `maxHeight` and overflow
+         * reads were collapsed. Reads every lane, not just an ungrouped one: the
+         * ceiling is display-wide, so a stacked lane clipped by it is exactly as
+         * unreachable as an ungrouped pileup would be, and the per-label
+         * affordance deliberately steps aside for it.
+         *
+         * The display-wide answer; what is DRAWN is the per-section
+         * `isGroupCeilingClipped`, which carries the suppressions this composes.
+         */
+        get pileupTruncated() {
+          return this.lanes.some(l => this.isGroupCeilingClipped(l.groupKey))
+        },
+
+        /**
+         * #getter
+         * Single source of all vertical band geometry, one entry per lane.
+         * `computeStackedSections` reproduces the prior ungrouped reserved layout
+         * exactly for its single-section (N==1) case, so ungrouped is not a
+         * special branch here — it is the one-lane call, over `drawnLanes` so a
+         * display with no data still has a section. The sticky-coverage-vs-scroll
+         * distinction lives downstream in `buildSectionRenders`, keyed off section
+         * count.
+         */
+        get sections(): SectionsLayout {
+          return computeStackedSections(
+            this.drawnLanes.map(({ groupKey, label, ...lane }) => ({
+              key: groupKey,
+              label,
+              maxY: lane.maxY,
+              hasArcs: lane.hasArcs,
+              hasSashimiDownArcs: lane.hasSashimiDownArcs,
+            })),
+            {
+              ...self.arcBandInput,
+              rowHeight: self.rowHeight,
+              showSashimiArcs: self.showSashimiArcs,
+              sashimiHeight: self.sashimiArcsHeight,
+              // Only when the chips are actually drawn — an ungrouped display
+              // reserves nothing, so its geometry is untouched.
+              minSectionHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
+            },
+          )
+        },
+
+        /**
+         * #getter
+         * Every lane paired with its band geometry, in stacking order: the list
+         * the overlays, the hit-test pipeline and both renderers all walk.
+         *
+         * The pairing is by INDEX and that is structural, not a coincidence —
+         * `computeStackedSections` emits one section per lane in order, and both
+         * lists come from `drawnLanes`. Deriving the two from different sources is
+         * what used to let them disagree whenever a section was synthesized.
+         *
+         * Carrying the lane's own collections here is what retires the by-key
+         * lookup every downstream pass used to do (`?? new Map()` for a key that
+         * structurally cannot be missing, spelled once per consumer).
          */
         get renderSections() {
-          return this.sections.sections.map(sec => ({
-            groupKey: sec.groupKey,
-            label: sec.label,
-            laidOutPileupMap: self.groupLaidOutMap(sec.groupKey),
+          const lanes = this.drawnLanes
+          return this.sections.sections.map((sec, i) => ({
+            ...lanes[i]!,
             topOffset: sec.pileupTop,
             coverageTop: sec.coverageTop,
             coverageHeight: sec.coverageHeight,
@@ -2322,20 +2439,20 @@ export default function stateModelFactory(
          * Both renderers pair the uploaded section `s` with the drawn section `s`
          * by INDEX (`sectionRegionKey(s, regionIdx)`), so this list and
          * `renderState.sections` must have the same length and order. Both now
-         * derive from `sections`, making that structural — deriving this one from
-         * `groupOrder` instead let the two disagree whenever `sections` synthesized
-         * its no-data section (0 uploaded vs 1 drawn), which happens on an empty
-         * grouped fetch. That mismatch was benign only because the per-section
-         * region lookup missed and the draw skipped.
+         * derive from `renderSections`, making that structural — deriving this one
+         * from `groupOrder` instead let the two disagree whenever the section
+         * pipeline synthesized its no-data lane (0 uploaded vs 1 drawn), which
+         * happens on an empty grouped fetch. That mismatch was benign only because
+         * the per-section region lookup missed and the draw skipped.
          */
         get sourceSections() {
-          const arcsByGroup = self.arcsByGroup
-          return this.renderSections.map(({ groupKey, laidOutPileupMap }) => ({
-            groupKey,
-            laidOutPileupMap,
-            arcsRpcDataMap:
-              arcsByGroup.get(groupKey) ?? new Map<number, ArcsUploadData>(),
-          }))
+          return this.renderSections.map(
+            ({ groupKey, laidOutPileupMap, arcsRpcDataMap }) => ({
+              groupKey,
+              laidOutPileupMap,
+              arcsRpcDataMap,
+            }),
+          )
         },
 
         /**
@@ -2444,14 +2561,10 @@ export default function stateModelFactory(
           ) {
             return []
           }
-          const byGroup = self.rawDataByGroup
-          const empty = new Map<number, WorkerPileupData>()
-          const noDownKeys: ReadonlySet<string> = new Set()
-          const downKeys = self.sashimiDownKeysByGroup
           const bpToScreenX = makeBpToScreenX(view)
-          return this.sections.sections.map(sec => {
+          return this.renderSections.map(sec => {
             const arcs = computeSashimiArcs({
-              rpcDataMap: byGroup.get(sec.groupKey) ?? empty,
+              rpcDataMap: sec.rawPileupMap,
               visibleRegions: view.visibleRegions,
               bpToScreenX,
               // Safe past the `view.initialized` gate above, which is the same
@@ -2463,7 +2576,7 @@ export default function stateModelFactory(
               coverageHeight: self.coverageHeight,
               sashimiArcsHeight: self.sashimiArcsHeight,
               minSashimiScore: self.minSashimiScore,
-              downJunctionKeys: downKeys.get(sec.groupKey) ?? noDownKeys,
+              downJunctionKeys: sec.sashimiDownKeys,
             })
             // Already ascending by score — `computeSashimiArcs` emits them that
             // way, and `computeOverlay.test.ts` pins it. The sort used to be
@@ -2503,22 +2616,6 @@ export default function stateModelFactory(
          */
         get isGrouped() {
           return self.groupOrder.length > 1
-        },
-
-        /**
-         * #getter
-         * Whether the stacked section labels + dividers are drawn. Deliberately
-         * NOT `isGrouped`: grouping that happens to yield one section (a region
-         * with reads on one strand, a tag with a single value) still reserves the
-         * label offset (`prefersOffset`) and still wants its section named and
-         * collapsible — otherwise it reads as an ungrouped track with mysterious
-         * blank space above it. `isGrouped` stays about the scroll model (>1
-         * section scrolls coverage with its section), which one section doesn't
-         * change. Reads the fetched sections rather than `groupBy` — see
-         * `hasNamedGroups` for why the setting is the wrong signal.
-         */
-        get showsGroupLabels() {
-          return hasNamedGroups(self.groupOrder)
         },
 
         /**
@@ -2680,12 +2777,10 @@ export default function stateModelFactory(
          * the sum is the section's real `pileupTop` either way.
          */
         groupPileupOffset(groupKey: string) {
-          const section = this.sections.sections.find(
-            s => s.groupKey === groupKey,
-          )
+          const section = this.renderSections.find(s => s.groupKey === groupKey)
           return section === undefined
             ? 0
-            : section.pileupTop - self.coverageDisplayHeight
+            : section.topOffset - self.coverageDisplayHeight
         },
 
         /**
@@ -3026,7 +3121,6 @@ export default function stateModelFactory(
           if (self.readConnections === 'off' || !view.initialized) {
             return []
           }
-          const byGroup = self.crossRegionArcsByGroup
           const bpToScreenX = makeBpToScreenX(view)
           // Read once per resolve rather than per foot: the breakend feet need
           // it for both of their endpoints and this getter re-runs on every pan
@@ -3034,10 +3128,10 @@ export default function stateModelFactory(
           const reversedByRegion = view.displayedRegions.map(r => !!r.reversed)
           const pxPerBp = view.bpPerPx > 0 ? 1 / view.bpPerPx : 0
           return self.renderSections.flatMap(sec => {
-            const arcs = byGroup.get(sec.groupKey)
+            const arcs = sec.crossRegionArcs
             // A lane with no cross-region arcs reserves nothing and renders
             // nothing — the same gate the per-region passes use to skip.
-            if (!arcs?.length || sec.arcBandHeight <= 0) {
+            if (arcs.length === 0 || sec.arcBandHeight <= 0) {
               return []
             }
             const { domainBp, log } = arcYScale(
@@ -3492,7 +3586,7 @@ export default function stateModelFactory(
                 self.sections.sections.find(s => s.groupKey === key)
                   ?.pileupHeight ?? 0,
               existingPx: self.groupMaxHeightOverrides.get(key),
-              fullyShown: !anyRegionTruncated(self.groupLaidOutMap(key)),
+              fullyShown: self.laneFor(key)?.clippedBy === undefined,
             })
             if (next !== undefined) {
               self.groupMaxHeightOverrides.set(key, next)

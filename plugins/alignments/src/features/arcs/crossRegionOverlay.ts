@@ -110,7 +110,7 @@ export interface CrossRegionArcShape {
 const CROSS_REGION_ARC_CAP = 600
 
 export interface ComputeCrossRegionArcsOpts {
-  arcs: CrossRegionArc[]
+  arcs: readonly CrossRegionArc[]
   // Resolves each foot through ITS OWN displayed region, which is the entire
   // difference from the per-region passes. Returns undefined for a coordinate
   // that projects nowhere, and that arc is dropped rather than clamped to an
