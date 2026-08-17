@@ -19,6 +19,14 @@ That last one applies to `CLAUDE.md` files too and is the rule they break most.
 `TODO.md` vs `ideas/` is commitment, not size. Read a parked proposal before
 re-proposing it.
 
+**A perf measurement has a public reader as well as this one.**
+`website/docs/developer_guides/optimizations.md` digests what is in `reference/`
+— including the results that came out negative, which is most of its value. The
+`reference/` doc stays the record and the public page cites it, so a new number
+lands here first and gets a line there in the same pass. Same for the v5
+manuscript's strategy table, which states the same set at a higher altitude:
+three copies of a number is two chances to be the stale one.
+
 ## Frontmatter and generated tables
 
 - **Every doc outside `architecture-decision-records/` carries `name:` /
