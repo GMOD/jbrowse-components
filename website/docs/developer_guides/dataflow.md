@@ -10,7 +10,7 @@ guide_category: Core concepts
 absolute genomic coordinates, and everything after that point is a redraw. A pan
 or a zoom therefore costs a frame and not a fetch.
 
-<Figure caption="A pan or a zoom takes the dashed edge down the right: it re-enters at buffers the GPU already holds, and nothing above that point runs again. Three segments of this path have detailed figures of their own — the fetch decision, the worker boundary, and the two autoruns." src="/img/dataflow.png" />
+<Figure caption="A pan or a zoom takes the dashed edge down the right: it re-enters at buffers the GPU already holds, and nothing above that point runs again. The three crossings carry the name of the figure that draws them in full." src="/img/dataflow.png" />
 
 A viewport change asks one question first: is this region already loaded? Where
 it is, nothing below the top of the figure runs. Where it is not, the display
@@ -20,13 +20,14 @@ reduces those records to what the screen needs — a layout, a coverage summary,
 set of packed columns. The result crosses back as transferable typed arrays in
 absolute genomic coordinates, and the main thread uploads it once.
 
-Three other pages draw one segment of this path in full.
+Three other pages draw one segment of this path in full, and the figure names
+each one on the edge it details.
 [Data fetching](/docs/developer_guides/data_fetching) owns the decision the top
-edge carries, with its debounce, byte gate, staleness check and generation
-counter. [RPC workers](/docs/developer_guides/rpc_workers) owns the crossing,
-with the serialize and deserialize hooks on it.
+edge carries (`fetch_chain`), with its debounce, byte gate, staleness check and
+generation counter. [RPC workers](/docs/developer_guides/rpc_workers) owns the
+crossing (`rpc_lifecycle`), with the serialize and deserialize hooks on it.
 [Creating a GPU display](/docs/developer_guides/creating_gpu_display) owns the
-two autoruns at the bottom.
+two autoruns at the bottom (`gpu_display_lifecycle`).
 
 Why each step looks the way it does, and what measured it, is
 [](/docs/developer_guides/optimizations).
@@ -53,17 +54,20 @@ The main thread does no parsing. It holds the result, uploads it, and draws it.
 ## Where wasm sits
 
 Everything orange is BGZF decompression, in
-[`@gmod/bgzf-filehandle`](https://github.com/GMOD/bgzf-filehandle), and it is
-there because that is where a cold query's time is — most of it, against a
-fraction of a millisecond to a few milliseconds building records. Reading the
-index and decoding records both stay in JavaScript.
+[`@gmod/bgzf-filehandle`](https://github.com/GMOD/bgzf-filehandle). It is wasm
+because that is where a cold query's time goes: most of the wall clock inflating
+blocks, against a fraction of a millisecond to a few milliseconds building
+records out of them. Reading the index and decoding records both stay in
+JavaScript.
 
-The dashed branch beside it is a further pool of four workers, one pool per JS
-context — so a full RPC pool nests twenty inflate workers under its five. Where
-nested workers are unavailable the pool resolves to `undefined` and the same
-code inflates in process, which is what makes the option safe to pass
-unconditionally. It is also a degradation with no error attached. The share,
-what the pool is worth per format, and how to check it is engaged at all are
+The dashed branch beside the inflate step is a further pool of
+[four workers](https://github.com/GMOD/bgzf-filehandle/blob/main/docs/worker-pool.md#four-workers-is-not-the-ceiling),
+one pool per JS context — so a full RPC pool nests twenty inflate workers under
+its five. Where nested workers are unavailable the pool resolves to `undefined`
+and the same code inflates in process, which is what makes the option safe to
+pass unconditionally, and is also a degradation with no error attached. How
+large that share is, what the pool is worth per format, and how to check it
+engaged are
 [the fetch clock](/docs/developer_guides/optimizations#decompression-is-where-a-cold-querys-time-goes).
 
 ## Where the caches sit
@@ -87,8 +91,9 @@ What bounds each of them is [](/docs/developer_guides/memory).
 
 The two edges out of `rpcDataMap` run at different rates, and that difference is
 what the whole path is arranged around. Data crosses to the GPU when the region
-changes. Frames after that are redraws of buffers that are already there, driven
-by a uniform write — a pan, a zoom, a recolor, a re-sort, a resize.
+changes. Frames after that redraw buffers that are already there, and all a
+frame writes is a shader parameter — a pan, a zoom, a recolor, a re-sort, a
+resize.
 
 A display with no working GPU backend takes the dashed branch and draws the same
 data with a Canvas2D function. [](/docs/developer_guides/svg_export) runs that

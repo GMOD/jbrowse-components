@@ -14,7 +14,9 @@
 //     .dot                   labelled edges out of rpcDataMap.
 //
 // So a node here is a whole figure there, and the rule for what to add is
-// whether it changes where the segments meet.
+// whether it changes where the segments meet. Each of the three is NAMED in
+// courier on the edge it details, so a reader who wants the detail of a
+// crossing can read the figure's name off the crossing.
 //
 // THE ARROWS CARRY THE IDEA, as in gpu_display_tldr.dot. The one edge a reader
 // should leave with is the dashed `view -> gpu`: a pan or a zoom re-enters at
@@ -104,7 +106,7 @@ digraph dataflow {
   pool -> parse
   inflate -> parse
   parse -> compute
-  compute -> data [label=<  transferables<br align="left"/>  absolute genomic uint32<br align="left"/>>]
+  compute -> data [label=<  transferables<br align="left"/>  absolute genomic uint32<br align="left"/>  <font face="Courier" color="#6b6b6b">rpc_lifecycle</font><br align="left"/>>]
 
   // The floor, and the reason it is drawn: an SVG export runs this same
   // function, so on-screen and exported pixels cannot drift. Dashed because a
@@ -112,7 +114,7 @@ digraph dataflow {
   data -> draw2d [style=dashed label=" no GPU "]
   draw2d -> screen [style=dashed]
 
-  data -> gpu [label=" upload — when the data changes "]
+  data -> gpu [label=<  upload — when the data changes<br align="left"/>  <font face="Courier" color="#6b6b6b">gpu_display_lifecycle</font><br align="left"/>>]
   gpu -> screen [label=<  draw<br align="left"/>  when anything visible changes<br align="left"/>>]
 
   // The edge the figure is for. constraint=false so closing the loop does not
@@ -120,20 +122,34 @@ digraph dataflow {
   view -> gpu [style=dashed constraint=false
                label=<  pan or zoom<br align="left"/>  no fetch, no upload<br align="left"/>>]
 
-  subgraph cluster_legend {
-    label="Legend"
-    labelloc="t"
-    fontname="Helvetica"
-    fontsize=11
-    fontcolor="#555555"
-    color="#bdbdbd"
-    style="rounded"
-    margin=10
-    node [shape=box style="filled,rounded" fontsize=10 margin="0.1,0.05"]
-    l1 [label="network I/O" fillcolor="#dcedc8" color="#aed581"]
-    l2 [label="wasm" fillcolor="#ffe0b2" color="#ffcc80"]
-    l3 [label="kept across gestures" fillcolor="#fff9c4" color="#ffe082"]
-    l4 [label="off the UI thread" fillcolor="#f3e5f5" color="#ce93d8"]
-    l1 -> l2 -> l3 -> l4 [style=invis]
-  }
+  // One node holding a table, and the table is a ROW.
+  //
+  // Four nodes chained by invisible edges — the shape this was — take four
+  // RANKS, and dot aligns those with the pipeline's own, so the legend stretched
+  // down the full height of the figure with the gaps between its swatches set by
+  // whatever node happened to sit beside each one.
+  //
+  // A table is laid out inside its node, which fixes that, but a column of four
+  // rows is then one tall node in one rank and adds its whole height to the
+  // figure (+150px, measured). Laid out as a row it sits beside the entry point
+  // in a rank that was mostly empty, and costs nothing in either direction.
+  //
+  // `pack=true` is the other standard answer for a legend as a disconnected
+  // component, and it is wrong here: it lays each component out separately and
+  // drops every edge label on the way, which is most of this figure's content.
+  legend [shape=plaintext margin=0 label=<
+    <table border="1" style="rounded" cellborder="0" cellspacing="6" cellpadding="3" color="#bdbdbd">
+      <tr>
+        <td><font point-size="11" color="#555555">Legend</font></td>
+        <td bgcolor="#dcedc8" width="16"></td><td align="left"><font point-size="10">network I/O</font></td>
+        <td bgcolor="#ffe0b2" width="16"></td><td align="left"><font point-size="10">wasm</font></td>
+        <td bgcolor="#fff9c4" width="16"></td><td align="left"><font point-size="10">kept across gestures</font></td>
+        <td bgcolor="#f3e5f5" width="16"></td><td align="left"><font point-size="10">off the UI thread</font></td>
+      </tr>
+    </table>>]
+
+  // Beside the entry point, which is where a reader first meets a colour. Safe
+  // as a rankset because neither member is inside a cluster.
+  { rank=same; view; legend }
+
 }
