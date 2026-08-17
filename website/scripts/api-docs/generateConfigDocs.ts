@@ -556,12 +556,42 @@ const MANIFEST =
 // generate.ts reaches `accumulateConfig`, and an eager read made the import
 // itself throw when the manifest was absent — a failure attributed to whatever
 // happened to be running, rather than to the generator that needs the file.
+export interface ManifestSlot {
+  name: string
+  // MST's name for the slot type. `identifier` marks the trackId/displayId
+  // family, which no page carries a row for.
+  type: string
+  subSlots?: ManifestSlot[]
+}
 interface ManifestEntry {
-  slots: { name: string }[]
+  slots: ManifestSlot[]
   shorthandKeys?: string[]
 }
 type ManifestCategories = Record<string, Record<string, ManifestEntry>>
 type TypedManifestEntry = ManifestEntry & { category: string }
+
+// Categories whose `#example` is a bare object of the type itself, so its keys
+// can be checked against the type's own slot list (assertExampleKeysAreSlots).
+//
+// A DISPLAY's example is by convention a whole track config carrying the
+// display (the same rule the hand-written guides follow — show something a
+// reader can paste), so its keys are the track's and checking them against the
+// display's slot list reports every one of them as unknown. Validating that
+// shape means wrapping and running the real `validateConfig`, which is what
+// `check-config-blocks` does for the guides; displays are left to it.
+//
+// TEXT SEARCH adapters are left out for a different reason: the manifest
+// computes `shorthandKeys` only for `group === 'adapter'`
+// (`generateConfigManifest`), so a text search adapter that does accept a
+// shorthand records none — TrixTextSearchAdapter's `preProcessSnapshot` expands
+// `uri` into its three file paths, and checking against its slot list alone
+// reports that `uri` as unknown. A gate that rejects correct documentation is
+// worse than a narrower one.
+const EXAMPLE_CHECKED_CATEGORIES = new Set([
+  'adapters',
+  'connections',
+  'tracks',
+])
 
 let manifestByType: Record<string, TypedManifestEntry> | undefined
 let adapterShorthands: Record<string, ManifestEntry> | undefined
@@ -580,26 +610,21 @@ function readManifest() {
       throw new Error(`could not read adapter shorthands from ${MANIFEST}`)
     }
     adapterShorthands = parsed.adapters
-    // Only the categories whose `#example` is a bare object of the type itself.
-    // A DISPLAY's example is by convention a whole track config carrying the
-    // display (the same rule the hand-written guides follow — show something a
-    // reader can paste), so its keys are the track's and checking them against
-    // the display's slot list reports every one of them as unknown. Validating
-    // that shape means wrapping and running the real `validateConfig`, which is
-    // what `check-config-blocks` does for the guides; displays are left to it.
-    //
-    // TEXT SEARCH adapters are left out for a different reason: the manifest
-    // computes `shorthandKeys` only for `group === 'adapter'`
-    // (`generateConfigManifest`), so a text search adapter that does accept a
-    // shorthand records none — TrixTextSearchAdapter's `preProcessSnapshot`
-    // expands `uri` into its three file paths, and checking against its slot
-    // list alone reports that `uri` as unknown. A gate that rejects correct
-    // documentation is worse than a narrower one.
-    //
+    // Every type table, each entry tagged with the category it came from — the
+    // two gates that read this want different subsets, and a gate that widened
+    // the table would otherwise silently widen the other one too.
     // `migratedDisplayKeys` is not a type table and is dropped by the shape
     // guard.
     manifestByType = Object.fromEntries(
-      (['adapters', 'connections', 'tracks'] as const)
+      (
+        [
+          'adapters',
+          'connections',
+          'tracks',
+          'displays',
+          'textSearchAdapters',
+        ] as const
+      )
         .flatMap(category =>
           Object.entries(parsed[category] ?? {}).map(
             ([name, entry]) => [name, { ...entry, category }] as const,
@@ -1382,13 +1407,14 @@ function exampleKeysForType(code: string, typeName: string) {
 // Keys come from the same manifest the shorthand line above reads, so a type
 // the manifest does not carry (internet accounts, the root config schemas) is
 // skipped rather than guessed at — checking against an empty slot list would
-// report every key as unknown.
+// report every key as unknown. The categories whose examples are checkable at
+// all are EXAMPLE_CHECKED_CATEGORIES.
 function assertExampleKeysAreSlots(configs: ConfigWithHeader[]) {
   const manifest = configManifest()
   const problems: string[] = []
   for (const config of configs) {
     const entry = manifest[config.header.name]
-    if (!entry) {
+    if (!entry || !EXAMPLE_CHECKED_CATEGORIES.has(entry.category)) {
       continue
     }
     const known = new Set([
@@ -1424,6 +1450,80 @@ function assertExampleKeysAreSlots(configs: ConfigWithHeader[]) {
       `${problems.length} #example block(s) name a key the type does not declare. JBrowse ignores an undeclared key, so such an example loads and silently does nothing — which is worse than no example. Fix the key, or add the slot:\n${problems.join('\n')}`,
     )
   }
+}
+
+// Every slot the live schema carries has to reach the type's page as a row.
+//
+// The repo enumerates config slots twice and nothing compared the two. This
+// generator reads source ASTs and so can only see what a JSDoc tag points it
+// at; `configManifest.generated.ts` instantiates the real ConfigurationSchema
+// objects and reads their MST properties, which cannot miss a slot because the
+// slot is on the object. Every gap between them is the docs' — and every one of
+// them fails silently in the direction that reads as a fact: a page listing
+// fewer settings than the type accepts looks like a type with fewer settings.
+//
+// A `baseConfiguration:` with no `#baseConfiguration` tag is the shape that
+// motivated this. It drops the config's whole inherited chain, and the existing
+// unresolved-base gap list cannot report it — that list holds bases that failed
+// to RESOLVE, and an untagged one is never looked up at all.
+//
+// Three shapes are absent from a page by design, each exempt by a property of
+// the manifest entry rather than by name:
+//   - `type`, the discriminator. Not a setting anyone tunes, and `slotNesting`
+//     plus every `#example` already show it in place.
+//   - `identifier`-typed slots (trackId, displayId, connectionId,
+//     textSearchAdapterId), which carry an `#identifier` tag rather than
+//     `#slot` and render as the page's identity, not a row.
+//   - a container sub-schema, whose own row `slotsTable` hides (isContainerSlot)
+//     and whose children render as `index.*` rows.
+function assertManifestSlotsAreDocumented(
+  configs: ConfigWithHeader[],
+  index: ConfigIndex,
+) {
+  const manifest = configManifest()
+  const problems = configs.flatMap(cfg => {
+    const entry = manifest[cfg.header.name]
+    if (!entry) {
+      return []
+    }
+    const documented = new Set(
+      [cfg, ...collectBaseConfigs(cfg, index)].flatMap(c =>
+        c.slots.map(s => s.name),
+      ),
+    )
+    const missing = entry.slots.flatMap(slot =>
+      missingSlotNames(slot, documented),
+    )
+    return missing.length
+      ? [
+          `  ${cfg.filename}: ${cfg.header.name} renders no row for ${missing
+            .map(name => `\`${name}\``)
+            .join(', ')}`,
+        ]
+      : []
+  })
+  if (problems.length) {
+    throw new Error(
+      `${problems.length} config page(s) leave out a slot the live schema carries. The commonest cause is a \`baseConfiguration:\` with no \`#baseConfiguration\` JSDoc tag above it, which drops every inherited slot from the page at once; otherwise the slot needs a \`#slot\` tag of its own:\n${problems.join('\n')}`,
+    )
+  }
+}
+
+// Which of one manifest slot's names the page owes a row for. A container is
+// covered by its own row OR by every child, so a container documented as a
+// single row (`formatDetails`, whose sub-schema has a page of its own) passes
+// while one missing half its children names the halves it is missing.
+export function missingSlotNames(slot: ManifestSlot, documented: Set<string>) {
+  if (slot.name === 'type' || slot.type === 'identifier') {
+    return []
+  }
+  if (slot.subSlots?.length) {
+    const missing = slot.subSlots
+      .map(child => `${slot.name}.${child.name}`)
+      .filter(name => !documented.has(name))
+    return documented.has(slot.name) ? [] : missing
+  }
+  return documented.has(slot.name) ? [] : [slot.name]
 }
 
 // Group every documented adapter by the track type it declares via #trackType,
@@ -1512,10 +1612,12 @@ export function writeConfigDocs(
   const byName = mapByKey(withHeader, c => c.header.name)
   const index: ConfigIndex = { byDeclId, byName }
   resolveInheritedSlotMeta(withHeader, index)
-  // Both before the write loop, so a run that would emit a blank cell — or
-  // write one page for two types — fails without having rewritten anything.
+  // All before the write loop, so a run that would emit a blank cell, drop a
+  // slot, or write one page for two types fails without having rewritten
+  // anything.
   assertNoBlankSlotDescriptions(slotsMissingDescription(withHeader))
   assertExampleKeysAreSlots(withHeader)
+  assertManifestSlotsAreDocumented(withHeader, index)
   assertUniquePages(
     '#config',
     withHeader.map(c => ({
