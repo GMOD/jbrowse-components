@@ -159,6 +159,15 @@ export interface GroupLayoutContext {
   collapseGroupRows: boolean
 }
 
+// One group's regions. `ctx.order` and `rawByGroup` are two views of one
+// `rpcDataMap`, so a key present in the first is present in the second — the
+// empty map keeps both passes below total for a miss they cannot see, spelled
+// here rather than once each.
+const NO_REGIONS: ReadonlyMap<number, WorkerPileupData> = new Map()
+function regionsOf(ctx: GroupLayoutContext, key: string) {
+  return ctx.rawByGroup.get(key) ?? NO_REGIONS
+}
+
 // Lay out one group's reads (Y arrays filled + linked-read lines) at a given row
 // cap. Extracted so the fit reclaim pass can re-lay-out just the groups whose
 // cap changed instead of rebuilding every group.
@@ -178,7 +187,7 @@ function layoutOneGroup(
   collapse = false,
   coverageOnly = false,
 ): Map<number, LaidOutPileupData> {
-  const dataMap = ctx.rawByGroup.get(key) ?? new Map<number, WorkerPileupData>()
+  const dataMap = regionsOf(ctx, key)
   if (coverageOnly) {
     return new Map([...dataMap].map(([idx, d]) => [idx, withoutLayout(d)]))
   }
@@ -304,8 +313,7 @@ export function layoutGroupRowCounts(
 ): Map<string, number> {
   const counts = new Map<string, number>()
   for (const { key } of ctx.order) {
-    const dataMap =
-      ctx.rawByGroup.get(key) ?? new Map<number, WorkerPileupData>()
+    const dataMap = regionsOf(ctx, key)
     counts.set(
       key,
       // No per-group sizes here: this pass answers "how many rows would each
@@ -391,21 +399,25 @@ export function layoutGroupsToViewport(
   // Only fit-budget groups take part in reclaim — collapsed groups draw no
   // pileup, overridden groups opt out, and a single-row group's height is fixed
   // at one row whatever cap it is handed.
-  const outcomes = ctx.order
-    .filter(
-      g =>
-        !collapsedKeys.has(g.key) &&
-        !heightOverridesPx.has(g.key) &&
-        !collapsesRows(ctx, g.key, overrideCaps),
-    )
-    .map(({ key }) => {
-      const map = pass.get(key) ?? new Map<number, LaidOutPileupData>()
-      return {
-        key,
-        usedRows: groupMaxY(map),
-        truncated: anyRegionTruncated(map),
-      }
+  //
+  // Walking `pass` rather than `ctx.order` and looking each key back up: it was
+  // just built one entry per `ctx.order` key, in that order, so the map already
+  // pairs each key with the layout this reads.
+  const outcomes: FitGroupOutcome[] = []
+  for (const [key, map] of pass) {
+    if (
+      collapsedKeys.has(key) ||
+      heightOverridesPx.has(key) ||
+      collapsesRows(ctx, key, overrideCaps)
+    ) {
+      continue
+    }
+    outcomes.push({
+      key,
+      usedRows: groupMaxY(map),
+      truncated: anyRegionTruncated(map),
     })
+  }
   const bonusCaps = reclaimFitRows({
     outcomes,
     defaultMaxRows: defaultCap.rows,

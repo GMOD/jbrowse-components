@@ -23,7 +23,13 @@ const CAPTION = /Max height reached/
 const ruleTops = () =>
   screen.getAllByTestId('pileup-truncation-rule').map(r => r.style.top)
 
-function renderRule(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
+// `clipped` is per section, because that is where the component reads it: a
+// `renderSections` entry IS its lane, `ceilingClipped` included, and the
+// display-wide suppressions are folded in when the lane is built.
+function renderRule(
+  overrides: Partial<LinearAlignmentsDisplayModel> = {},
+  clipped: (groupKey: string) => boolean = () => true,
+) {
   const model = {
     scrollModel: { isGrouped: true, scrollTop: 0, canvasHeight: CANVAS_HEIGHT },
     renderSections: [0, 1].map(i => ({
@@ -34,8 +40,8 @@ function renderRule(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
       topOffset: i * SECTION_HEIGHT + 40,
       pileupHeight: 80,
       height: SECTION_HEIGHT,
+      ceilingClipped: clipped(`g${i}`),
     })),
-    isGroupCeilingClipped: () => true,
     ...overrides,
   } as unknown as LinearAlignmentsDisplayModel
   render(
@@ -78,6 +84,8 @@ test('a boundary below the viewport is not drawn until scrolled to', () => {
         coverageTop: 0,
         coverageHeight: 40,
         height: 440,
+        // clipped, so the culling below is what keeps it off screen
+        ceilingClipped: true,
       },
     ] as unknown as LinearAlignmentsDisplayModel['renderSections'],
   })
@@ -87,7 +95,7 @@ test('a boundary below the viewport is not drawn until scrolled to', () => {
 // The ceiling is display-wide but the boundary is not: a stacked grouping can
 // have one lane clipped by it and the next sized comfortably.
 test('only the clipped sections get a rule', () => {
-  renderRule({ isGroupCeilingClipped: (key: string) => key === 'g1' })
+  renderRule({}, key => key === 'g1')
   expect(ruleTops()).toEqual(['240px'])
 })
 

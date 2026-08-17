@@ -297,6 +297,11 @@ export interface AlignmentLane {
   collapsed: boolean
   hasHeightOverride: boolean
   clippedBy: RowCapSource | undefined
+  // `clippedBy === 'ceiling'` with the display-wide suppressions already
+  // applied, i.e. whether THIS lane draws `PileupTruncationRule`. Resolved on
+  // the lane for the same reason `maxY` folds in `showPileup`: the overlay walks
+  // sections and would otherwise ask the model per section, by key.
+  ceilingClipped: boolean
 }
 
 // Whether the label chip's expand can do anything for this lane: two of the
@@ -329,6 +334,7 @@ const SYNTHETIC_LANE: AlignmentLane = {
   collapsed: false,
   hasHeightOverride: false,
   clippedBy: undefined,
+  ceilingClipped: false,
 }
 
 // colorBy.type → shader colorScheme index, resolved through the shared
@@ -2241,8 +2247,16 @@ export default function stateModelFactory(
           const raw = self.rawDataByGroup
           const laid = self.laidOutByGroup
           const sashimiDown = self.sashimiDownKeysByGroup
+          // The two display-wide suppressions on the ceiling notice, hoisted:
+          // they are the same for every lane, so `ceilingClipped` below is the
+          // per-lane half alone. Fit mode already clamps reads to a 1px floor
+          // and flags the scroll instead; with the pileup hidden nothing is
+          // drawn for the ceiling to clip.
+          const drawsCeilingNotice = self.showPileup && !self.fitHeightToDisplay
           return self.groupOrder.map(({ key, label }) => {
             const laidOutPileupMap = laid.get(key) ?? EMPTY_LAID_OUT
+            const sashimiDownKeys = sashimiDown.get(key) ?? EMPTY_KEYS
+            const clippedBy = groupClipSource(laidOutPileupMap)
             return {
               groupKey: key,
               label,
@@ -2251,8 +2265,8 @@ export default function stateModelFactory(
               arcsRpcDataMap: perRegionArcs.get(key) ?? EMPTY_ARCS,
               crossRegionArcs: crossRegionArcs.get(key) ?? EMPTY_ARC_LIST,
               hasArcs: arcInkLanes.has(key),
-              sashimiDownKeys: sashimiDown.get(key) ?? EMPTY_KEYS,
-              hasSashimiDownArcs: (sashimiDown.get(key)?.size ?? 0) > 0,
+              sashimiDownKeys,
+              hasSashimiDownArcs: sashimiDownKeys.size > 0,
               // showPileup off collapses every pileup band to zero height
               // (coverage + arcs only), the same height-0 path a collapsed lane
               // takes.
@@ -2262,7 +2276,8 @@ export default function stateModelFactory(
                   : groupMaxY(laidOutPileupMap),
               collapsed: self.collapsedGroups.has(key),
               hasHeightOverride: self.groupMaxHeightOverrides.has(key),
-              clippedBy: groupClipSource(laidOutPileupMap),
+              clippedBy,
+              ceilingClipped: drawsCeilingNotice && clippedBy === 'ceiling',
             }
           })
         },
@@ -2332,17 +2347,13 @@ export default function stateModelFactory(
          * `PileupTruncationRule`, which is per section because the notice marks
          * the place where the reads stop rather than a state of the whole track.
          *
-         * The two suppressions are `pileupTruncated`'s, which is now this over
-         * every lane. In fit-to-display mode reads are already clamped to a 1px
-         * floor and the overflow indicator flags the scroll instead; with the
-         * pileup hidden nothing is drawn for the ceiling to clip.
+         * A lane field (`ceilingClipped`), so the overlay that walks sections
+         * reads it off the section it already holds; this exists for the callers
+         * that have only a key. The two display-wide suppressions live where the
+         * field is built.
          */
         isGroupCeilingClipped(key: string) {
-          return (
-            self.showPileup &&
-            !self.fitHeightToDisplay &&
-            this.groupClippedBy(key) === 'ceiling'
-          )
+          return this.laneFor(key)?.ceilingClipped ?? false
         },
 
         /**
@@ -2357,7 +2368,7 @@ export default function stateModelFactory(
          * `isGroupCeilingClipped`, which carries the suppressions this composes.
          */
         get pileupTruncated() {
-          return this.lanes.some(l => this.isGroupCeilingClipped(l.groupKey))
+          return this.lanes.some(l => l.ceilingClipped)
         },
 
         /**
@@ -3584,14 +3595,22 @@ export default function stateModelFactory(
            * budget). Pairs with `hasGroupHeightOverride` / `toggleGroupExpanded`.
            */
           resizeGroupHeight(key: string, dy: number) {
+            // One lookup: a `renderSections` entry is its lane plus its band
+            // geometry, so the drawn height and the clip come off the same
+            // object rather than out of two collections found by the same key.
+            // A key that isn't drawn has no band to resize — the handle only
+            // exists per drawn section — and the two zero-ish fallbacks this
+            // replaces let a shrink-drag bank a one-row override on it.
+            const section = self.renderSections.find(s => s.groupKey === key)
+            if (!section) {
+              return
+            }
             const next = nextGroupHeightOverride({
               dy,
               rowHeight: self.rowHeight,
-              displayedPx:
-                self.sections.sections.find(s => s.groupKey === key)
-                  ?.pileupHeight ?? 0,
+              displayedPx: section.pileupHeight,
               existingPx: self.groupMaxHeightOverrides.get(key),
-              fullyShown: self.laneFor(key)?.clippedBy === undefined,
+              fullyShown: section.clippedBy === undefined,
             })
             if (next !== undefined) {
               self.groupMaxHeightOverrides.set(key, next)

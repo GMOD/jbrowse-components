@@ -94,7 +94,10 @@ const PileupTruncationRule = observer(function PileupTruncationRule({
   return (
     <>
       {renderSections.map(section => {
-        if (!model.isGroupCeilingClipped(section.groupKey)) {
+        // Off the section, not looked back up by its key: a `renderSections`
+        // entry IS its lane, and the display-wide suppressions are already in
+        // the field.
+        if (!section.ceilingClipped) {
           return null
         }
         // The always-scrolling tier: `topOffset` is the section's `pileupTop`
