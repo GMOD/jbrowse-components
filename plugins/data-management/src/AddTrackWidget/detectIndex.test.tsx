@@ -1,5 +1,9 @@
+import '@testing-library/jest-dom'
+
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
+
+import TrackSourceSelect from './components/TrackSourceSelect.tsx'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -84,4 +88,20 @@ test('a new main file drops the index the last one detected', async () => {
   w.setTrackData(uri('https://x.test/other.bam'))
   expect(w.indexTrackData).toBeUndefined()
   expect(w.detectedIndexName).toBeUndefined()
+})
+
+// The point of detecting it is that the user can see and correct it. The URL box
+// read its location once at mount, so this passed at the model level while the
+// form showed an empty field under a note saying it had been filled in.
+test('the detected index shows in the index field', async () => {
+  const w = widget(['https://x.test/calls.vcf.gz.csi'])
+  const { getAllByTestId } = render(<TrackSourceSelect model={w} />)
+  w.setTrackData(uri('https://x.test/calls.vcf.gz'))
+
+  await waitFor(() => {
+    // [main file, index file]
+    expect(getAllByTestId('urlInput')[1]).toHaveValue(
+      'https://x.test/calls.vcf.gz.csi',
+    )
+  })
 })

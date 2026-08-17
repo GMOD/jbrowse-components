@@ -9,7 +9,11 @@ import LocationInput from './LocationInput.tsx'
 import SourceTypeSelector from './SourceTypeSelector.tsx'
 import { useEmptySourceType } from './emptySourceType.ts'
 import useInternetAccounts from './useInternetAccounts.ts'
-import { addAccountToLocation, getInitialSourceType } from './util.ts'
+import {
+  addAccountToLocation,
+  getInitialSourceType,
+  sourceTypeForLocation,
+} from './util.ts'
 
 import type { AbstractRootModel, FileLocation } from '../../util/types/index.ts'
 
@@ -34,6 +38,21 @@ const FileSelector = observer(function FileSelector({
   const [sourceType, setSourceType] = useState(() =>
     getInitialSourceType(location, emptySourceType),
   )
+
+  // A location the form filled in for the user has to be able to show itself.
+  // The toggle is picked once, at mount, from a slot that is usually still
+  // empty, so an index detected beside the main file went into the model and
+  // rendered as a blank box — under a note saying it had been filled in. Only a
+  // location the showing toggle CANNOT render moves it, so this never overrides
+  // a toggle the user picked for a slot they are still filling.
+  const [lastLocation, setLastLocation] = useState(location)
+  if (location !== lastLocation) {
+    setLastLocation(location)
+    const needed = sourceTypeForLocation(location, sourceType)
+    if (needed) {
+      setSourceType(needed)
+    }
+  }
 
   const {
     accountMap,

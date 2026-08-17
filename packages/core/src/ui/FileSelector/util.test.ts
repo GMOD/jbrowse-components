@@ -5,6 +5,7 @@ import {
   getAccountLabel,
   getInitialSourceType,
   isAdminMode,
+  sourceTypeForLocation,
   truncateLabel,
 } from './util.ts'
 
@@ -172,6 +173,52 @@ describe('getInitialSourceType', () => {
       localPath: '/path/to/file.bam',
     }
     expect(getInitialSourceType(location, 'url')).toBe('file')
+  })
+})
+
+describe('sourceTypeForLocation', () => {
+  const localPath = {
+    locationType: 'LocalPathLocation' as const,
+    localPath: '/data/reads.bam.bai',
+  }
+  const url = {
+    locationType: 'UriLocation' as const,
+    uri: 'https://x.test/reads.bam.bai',
+  }
+
+  // the desktop shape of an index found beside the main file: the URL box shows
+  // a local path as nothing at all
+  test('a local path moves a URL toggle to the file picker', () => {
+    expect(sourceTypeForLocation(localPath, 'url')).toBe('file')
+  })
+
+  test('a URL moves a file toggle to the URL box', () => {
+    expect(sourceTypeForLocation(url, 'file')).toBe('url')
+  })
+
+  test('a stamped URL moves a file toggle to that account', () => {
+    expect(
+      sourceTypeForLocation({ ...url, internetAccountId: 'dropbox' }, 'file'),
+    ).toBe('dropbox')
+  })
+
+  // an account toggle renders the same URL box, so a plain URL is already
+  // visible there and yanking the toggle would drop the account's stamp
+  test('leaves an account toggle alone for a URL it can already show', () => {
+    expect(sourceTypeForLocation(url, 'dropbox')).toBeUndefined()
+  })
+
+  test('says nothing about a toggle that can already show the location', () => {
+    expect(sourceTypeForLocation(url, 'url')).toBeUndefined()
+    expect(sourceTypeForLocation(localPath, 'file')).toBeUndefined()
+  })
+
+  // clearing a box must not move the toggle out from under the user
+  test('says nothing about an empty or unset slot', () => {
+    expect(sourceTypeForLocation(undefined, 'file')).toBeUndefined()
+    expect(
+      sourceTypeForLocation({ locationType: 'UriLocation', uri: '' }, 'file'),
+    ).toBeUndefined()
   })
 })
 

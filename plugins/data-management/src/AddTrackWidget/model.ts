@@ -1,6 +1,11 @@
-import { getSession, isUriLocation, makeTrackId } from '@jbrowse/core/util'
+import {
+  getSession,
+  isRootModelWithInternetAccounts,
+  isUriLocation,
+  makeTrackId,
+} from '@jbrowse/core/util'
 import { detectIndexLocation } from '@jbrowse/core/util/indexCandidates'
-import { openLocation } from '@jbrowse/core/util/io'
+import { openLocation, resolveUriLocation } from '@jbrowse/core/util/io'
 import {
   UNKNOWN,
   getFileName,
@@ -259,6 +264,30 @@ export default function f(pluginManager: PluginManager) {
       function targetKey() {
         return `${self.view?.id}-${self.trackContainerId}`
       }
+
+      // Whether opening this location could put a login in front of the user: a
+      // configured internet account handles it and has no token yet.
+      //
+      // The index probe is speculative, so it must never be what starts an auth
+      // flow. An OAuth account opens a popup to get its token, and this one
+      // would open it from a promise chain while the user is still filling in
+      // the form — outside the click gesture browsers require, so as likely to
+      // be blocked as answered. Detection resumes on its own once the account
+      // holds a token, which submitting the track is what gets it.
+      function wouldPromptForAuth(location: FileLocation) {
+        const { rootModel } = pluginManager
+        if (
+          !isUriLocation(location) ||
+          !isRootModelWithInternetAccounts(rootModel)
+        ) {
+          return false
+        }
+        const account = rootModel.findAppropriateInternetAccount(
+          resolveUriLocation(location),
+        )
+        return !!account && !account.retrieveToken()
+      }
+
       return {
         afterAttach() {
           // The widget instance is reused (reconciled) across opens because it
@@ -298,7 +327,11 @@ export default function f(pluginManager: PluginManager) {
               // read inside the autorun body, not through an action, or the
               // dependency is never recorded
               const { trackData, indexTrackData } = self
-              if (!trackData || indexTrackData) {
+              if (
+                !trackData ||
+                indexTrackData ||
+                wouldPromptForAuth(trackData)
+              ) {
                 return
               }
               // captured so a probe that resolves after the user has moved to

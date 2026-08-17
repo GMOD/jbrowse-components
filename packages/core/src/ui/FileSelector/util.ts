@@ -73,6 +73,36 @@ export function getInitialSourceType(
 }
 
 /**
+ * The toggle `location` needs in order to be visible, or undefined when the one
+ * already showing can render it.
+ *
+ * `getInitialSourceType` answers this once, at mount, when a form's slot is
+ * usually still empty. This is the same question asked of a location that
+ * arrived later — the index a form found sitting beside the main file, say,
+ * which on desktop is a local path and would render as a blank URL box.
+ *
+ * Undefined for an empty slot (spelled as a UriLocation with no uri) as well as
+ * for a match: an emptied field says nothing about how the user wants to work,
+ * and switching the toggle out from under them as they clear a box is worse than
+ * leaving it.
+ */
+export function sourceTypeForLocation(
+  location: FileLocation | undefined,
+  current: string,
+) {
+  if (!location) {
+    return undefined
+  }
+  if (isUriLocation(location)) {
+    // 'file' is the only toggle that cannot show a URL; the account toggles
+    // render the same box, and one carrying a stamp is already on its own
+    const wanted = location.internetAccountId ?? 'url'
+    return current === 'file' ? wanted : undefined
+  }
+  return 'uri' in location || current === 'file' ? undefined : 'file'
+}
+
+/**
  * The directory containing `filePath`, for remembering where the user last
  * picked a file. Undefined when there is no directory to remember.
  *

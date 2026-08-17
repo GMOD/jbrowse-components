@@ -99,6 +99,48 @@ test('the toggle and input are one group carrying the field name', () => {
   expect(group).toContainElement(getByRole('button', { name: 'url' }))
 })
 
+// A form that fills a field in for the user has to be able to SHOW it filled
+// in. The box read its location once at mount, so the add-track widget's
+// detected index went into the model and left an empty box under a note saying
+// it had been filled in.
+test('a location set from outside shows up in the box', () => {
+  const { getByTestId, rerender } = render(
+    <FileSelector
+      location={{
+        uri: 'https://x.test/calls.vcf.gz',
+        locationType: 'UriLocation',
+      }}
+      setLocation={() => {}}
+    />,
+  )
+  rerender(
+    <FileSelector
+      location={{
+        uri: 'https://x.test/calls.vcf.gz.csi',
+        locationType: 'UriLocation',
+      }}
+      setLocation={() => {}}
+    />,
+  )
+  expect(getByTestId('urlInput')).toHaveValue('https://x.test/calls.vcf.gz.csi')
+})
+
+// The location is trimmed and what is on screen is not, or a space typed
+// mid-URL would be deleted as fast as it was typed.
+test('a trailing space stays on screen and off the location', () => {
+  const onChange = jest.fn()
+  const { getByTestId } = render(<Harness onChange={onChange} />)
+
+  fireEvent.change(getByTestId('urlInput'), {
+    target: { value: 'https://x/f ' },
+  })
+  expect(onChange).toHaveBeenLastCalledWith({
+    uri: 'https://x/f',
+    locationType: 'UriLocation',
+  })
+  expect(getByTestId('urlInput')).toHaveValue('https://x/f ')
+})
+
 test('an unnamed selector claims no name rather than an empty one', () => {
   const { getAllByRole } = render(
     <FileSelector
