@@ -182,11 +182,33 @@ submenu offers squeeze-to-fit, normal, compact, and custom row heights.
 
 ### Selecting a subtree
 
-Click an internal node of the guide tree to filter the track to that clade, or
-pick a set of species from **Edit row arrangement...**. The guide tree then
-redraws as the pruned dendrogram of the kept species, so it matches the visible
-rows rather than the full species tree, including for a selection that is not a
-single clade. **Clear subtree filter** restores all species.
+Click an internal node of the tree to filter the track to that clade, or pick a
+set of species from **Edit row arrangement...**. The tree then redraws as the
+pruned dendrogram of the kept species, so it matches the visible rows rather
+than the full set, including for a selection that is not a single clade.
+**Clustering → Clear subtree filter** restores all species.
+
+### Clustering rows by identity
+
+A guide tree states how the genomes are related in general. **Clustering →
+Cluster rows by identity...** states how they differ over the window in view:
+each row is scored by how much of the window it both aligns and matches the
+reference at, where a stretch it does not reach at all scores zero, and
+hierarchical clustering over those scores gives the row order and the
+dendrogram.
+
+That is the ordering a cohort alignment wants. A file of one species carries no
+guide tree to ship, since which haplotypes group together is a property of the
+locus rather than of the samples, so without a run the rows come out in the
+order the file happens to name them. Under an active subtree filter the run
+covers the visible rows only, so it resolves the structure inside the clade.
+
+The submenu names the locus a tree was computed over, since clustering reads the
+region in view and a tree carried to another window describes neither. **Reset
+row order** restores the file's own order and the guide tree with it.
+
+The dialog's manual tab exports the same scores as a TSV with an R script, for
+clustering elsewhere and pasting the order back.
 
 ## See also
 
