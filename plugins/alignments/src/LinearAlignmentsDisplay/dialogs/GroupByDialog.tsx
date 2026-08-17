@@ -17,7 +17,7 @@ import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
 
-import type { ColorBy, GroupBy } from '../../shared/types.ts'
+import type { ColorBy, FilterBy, GroupBy } from '../../shared/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -27,8 +27,12 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // surface while the dialog stays free of menu-only state.
 export type GroupByDialogModel = {
   id: string
-  // Read by `getUniqueTags`, not here.
+  // Both read by `getUniqueTags`, not here: they describe the fetch its tag scan
+  // runs, and it has to be the same read set the worker will partition — the
+  // display's filter is in `rpcProps`, so a value only filtered-out reads carry
+  // never becomes a section.
   adapterConfig: Record<string, unknown>
+  filterBy: FilterBy
   colorBy: ColorBy
   groupBy?: GroupBy
   setGroupBy: (groupBy?: GroupBy) => void
