@@ -95,6 +95,15 @@ const GENERATORS: Generator[] = [
       'scripts/gen-component-test-pins.ts',
     ],
   },
+  {
+    // Writes spec-recipe-unmapped.txt, and on the way round-trips every
+    // figure's jbrowse:// link through Desktop's parseProtocolUrl and
+    // app-core's parseSessionSpecUrl. A broken link fails either way; the list
+    // regenerates here so a new unmapped field is a one-file commit rather
+    // than a docs check telling you which command to run.
+    name: 'spec recipe unmapped list',
+    argv: web('check-spec-recipes.ts'),
+  },
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
   {

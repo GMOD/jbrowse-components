@@ -69,12 +69,9 @@ const VALIDATORS: Validator[] = [
     name: 'tutorial commands still run in their build script',
     argv: web('check-script-commands.ts'),
   },
-  {
-    // Round-trips every figure's jbrowse:// link through Desktop's
-    // parseProtocolUrl and app-core's parseSessionSpecUrl.
-    name: 'figure recipes round-trip',
-    argv: web('check-spec-recipes.ts', '--check'),
-  },
+  // The figure recipes' round-trip lives in `pnpm autogen` instead, because the
+  // other half of that script WRITES spec-recipe-unmapped.txt. Reporting the
+  // list stale here only sent people to run the regeneration by hand.
   {
     // The spec-list mistakes that render a plausible figure instead of failing:
     // a duplicate name (one PNG, two specs), a compose part that names no spec
