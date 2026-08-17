@@ -1,0 +1,57 @@
+{
+  "id": "synteny-pick-collinear",
+  "measured": "2026-08-14",
+  "source": {
+    "kind": "hand",
+    "repro": "esbuild the pick path with `--bundle` and run it under Chrome, not jest — see agent-docs/reference/BENCHMARKING.md, which measures jest inflating this code by 6-30x and not uniformly.",
+    "notes": "300k instances, two related genomes, so a hull is about as wide as its alignment. `kept` is how many survive the pickable-width exclusion and enter the tree."
+  },
+  "columns": [
+    { "key": "zoom", "label": "zoom" },
+    {
+      "key": "kept",
+      "label": "kept (of 300k)",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "candidates",
+      "label": "candidates @0 skew",
+      "format": "int",
+      "align": "right",
+      "absent": "— (no tree)"
+    },
+    { "key": "warmPick", "label": "warm pick", "align": "right" },
+    { "key": "rebuildMs", "label": "rebuild", "format": "ms", "align": "right" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "zoom": "whole-genome",
+        "kept": 0,
+        "candidates": null,
+        "warmPick": null,
+        "rebuildMs": 1.0
+      },
+      "emphasize": ["kept"]
+    },
+    {
+      "values": {
+        "zoom": "1/100",
+        "kept": 143000,
+        "candidates": 16,
+        "warmPick": "<0.1ms",
+        "rebuildMs": 33
+      }
+    },
+    {
+      "values": {
+        "zoom": "1/10k",
+        "kept": 299000,
+        "candidates": 19,
+        "warmPick": "<0.1ms",
+        "rebuildMs": 58
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "scalebar-zoom-churn",
+  "measured": "2026-08-15",
+  "source": {
+    "kind": "bench",
+    "repro": "node website/scripts/measure-zoom-churn.ts",
+    "notes": "Needs products/jbrowse-web/build current — it serves the built bundle, so rebuild between arms or you measure the old one twice. One machine and toolchain, two builds of the same commit differing only in the tick list's key."
+  },
+  "columns": [
+    { "key": "metric", "label": "during a 5× zoom" },
+    { "key": "identity", "label": "identity keys", "align": "right" },
+    { "key": "positional", "label": "positional keys", "align": "right" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "metric": "structural (mount/unmount), scalebar",
+        "identity": 535,
+        "positional": 248
+      },
+      "emphasize": ["positional"]
+    },
+    {
+      "values": {
+        "metric": "attribute patches, scalebar",
+        "identity": 323,
+        "positional": 499
+      }
+    },
+    {
+      "values": {
+        "metric": "total mutations",
+        "identity": 1523,
+        "positional": 1369
+      }
+    }
+  ]
+}

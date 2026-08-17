@@ -12,14 +12,16 @@ Measured 2026-08-05 on the build-your-own examples site, whose sparsest page
 wiggle track, and no
 JBrowse chrome at all:
 
-<!-- measurement: eager-bundle-chunks -->
+<!-- BEGIN GENERATED MEASUREMENT eager-bundle-chunks -->
 
-| | eager chunks | gzipped |
-| --- | --- | --- |
-| before | 347 | 667 KB |
-| after pins 1-3 | 219 | 523 KB |
-| after pin 4 | 218 | 514 KB |
-| after pin 5 | 181 | 464 KB |
+|                | eager chunks | gzipped |
+| -------------- | -----------: | ------: |
+| before         |          347 |  667 KB |
+| after pins 1-3 |          219 |  523 KB |
+| after pin 4    |          218 |  514 KB |
+| after pin 5    |          181 |  464 KB |
+
+<!-- END GENERATED MEASUREMENT eager-bundle-chunks -->
 
 Same page throughout, rendering the same thing. 203 KB gzipped and 166 chunks
 were reachable and never used.

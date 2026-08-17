@@ -24,13 +24,15 @@ three-minute idle sweep. Those budgets were sized against a single track panning
 track. Nothing multiplied that out. Measured (`@gmod/bam` ADR 0018), three
 moderately deep alignments tracks browsing eight 50 kb windows:
 
-<!-- measurement: cache-budget-retention-climb -->
+<!-- BEGIN GENERATED MEASUREMENT cache-budget-retention-climb -->
 
 | window (of 8) | aggregate held |         RSS |
 | ------------: | -------------: | ----------: |
 |             0 |         303 MB |      567 MB |
 |             3 |         610 MB |      994 MB |
 |             7 |    **1109 MB** | **1665 MB** |
+
+<!-- END GENERATED MEASUREMENT cache-budget-retention-climb -->
 
 Still climbing at the end, and **every cache was well under its own 1 GB
 ceiling** — so the ceiling was not what held the line, and nothing else was
@@ -62,7 +64,7 @@ size. One budget spanning them would add records to bytes and bound neither, and
 The obvious fix, and worse than doing nothing. Three tracks, browse then pan
 back, counting refills on the revisit:
 
-<!-- measurement: cache-budget-per-file-split -->
+<!-- BEGIN GENERATED MEASUREMENT cache-budget-per-file-split -->
 
 | per-file budget | aggregate held | revisit refills |
 | --------------- | -------------: | --------------: |
@@ -70,6 +72,8 @@ back, counting refills on the revisit:
 | 256 MB          |         609 MB |              30 |
 | 512 MB          |         918 MB |               8 |
 | 1024 MB         |        1109 MB |               0 |
+
+<!-- END GENERATED MEASUREMENT cache-budget-per-file-split -->
 
 The cold pass was 98 refills, so 128 MB — what eight tracks under a gigabyte
 would each get — is worse than having no cache at all. The divisor is the thing

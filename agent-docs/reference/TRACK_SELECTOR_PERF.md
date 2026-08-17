@@ -23,13 +23,15 @@ Dropping `FormControlLabel` from the row, so a track renders a plain `<label>`
 instead of mounting `FormControlLabel` + its `Typography` wrapper. Continues the
 `CheckboxLite`/`IconButtonLite` work in 2f6bcd18d0.
 
-<!-- measurement: track-selector-row-cost -->
+<!-- BEGIN GENERATED MEASUREMENT track-selector-row-cost -->
 
-| n=1000 tracks | before | after |
-| --- | --- | --- |
-| mount, min of 9 | 1656 / 1631 ms | 1460 / 1401 ms |
-| toggle re-render, min of 18 | 80.6 / 73.6 ms | 63.3 / 66.1 ms |
-| DOM nodes | 21506 | 20505 |
+| n=1000 tracks               | before min | before median | after min | after median |
+| --------------------------- | ---------: | ------------: | --------: | -----------: |
+| mount, min of 9             |     1656ms |        1631ms |    1460ms |       1401ms |
+| toggle re-render, min of 18 |     80.6ms |        73.6ms |    63.3ms |       66.1ms |
+| DOM nodes                   |     21,506 |             — |    20,505 |            — |
+
+<!-- END GENERATED MEASUREMENT track-selector-row-cost -->
 
 Two alternating A/B rounds, min and median agreeing. The node count is exact:
 one fewer per row.

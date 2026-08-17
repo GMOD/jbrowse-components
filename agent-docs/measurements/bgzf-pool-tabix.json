@@ -1,0 +1,63 @@
+{
+  "id": "bgzf-pool-tabix",
+  "measured": "2026-08-11",
+  "source": {
+    "kind": "hand",
+    "repro": "Headless Chrome against ~/src/gmod/tabix-js/test/data/1kg.chr1.subset.vcf.gz over real HTTP range requests, 4 workers, arms interleaved, min of 6, machine on AC. Both arms assert the same record count on every run.",
+    "notes": "213MB of 1000 Genomes over chr1:10,109-622,047 — thousands of samples and ~60KB lines. The speedup column is computed from the two arms, so re-measuring one of them moves it."
+  },
+  "columns": [
+    { "key": "workload", "label": "workload" },
+    { "key": "records", "label": "records", "format": "int" },
+    { "key": "unpooledMs", "label": "unpooled", "format": "ms" },
+    { "key": "pooledMs", "label": "pooled", "format": "ms" },
+    {
+      "key": "speedup",
+      "label": "speedup",
+      "format": "x",
+      "derived": "unpooledMs / pooledMs"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "workload": "50kb window",
+        "records": 2732,
+        "unpooledMs": 803,
+        "pooledMs": 562
+      }
+    },
+    {
+      "values": {
+        "workload": "100kb window",
+        "records": 4878,
+        "unpooledMs": 1222,
+        "pooledMs": 887
+      }
+    },
+    {
+      "values": {
+        "workload": "200kb window",
+        "records": 7627,
+        "unpooledMs": 1880,
+        "pooledMs": 1289
+      }
+    },
+    {
+      "values": {
+        "workload": "400kb window",
+        "records": 8503,
+        "unpooledMs": 2025,
+        "pooledMs": 1390
+      }
+    },
+    {
+      "values": {
+        "workload": "12 x 20kb pan",
+        "records": 7627,
+        "unpooledMs": 2446,
+        "pooledMs": 1822
+      }
+    }
+  ]
+}

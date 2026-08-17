@@ -199,15 +199,17 @@ entirely a function of **CIGAR weight per row**, because a coarse row passes
 through every optional tag and drops only the CIGAR. So the tier's value is
 `coarse_bytes / fine_bytes` at the zoom it is served:
 
-<!-- measurement: pif-coarse-tier-bytes -->
+<!-- BEGIN GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
 | block len | CIGAR bytes/row | coarse/fine bytes | file vs `--no-coarse` |
 | --------- | --------------- | ----------------- | --------------------- |
-| 1.5 kb    | 12              | **0.89**          | 1.89×                 |
-| 10 kb     | 72              | 0.66              | 1.66×                 |
-| 50 kb     | 360             | 0.30              | 1.30×                 |
-| 200 kb    | 1.4 K           | 0.10              | 1.10×                 |
-| 5 Mb      | 36 K            | **0.005**         | 1.00×                 |
+| 1.5 kb    | 12              | **0.89**          | 1.89x                 |
+| 10 kb     | 72              | 0.66              | 1.66x                 |
+| 50 kb     | 360             | 0.30              | 1.30x                 |
+| 200 kb    | 1.4 K           | 0.10              | 1.10x                 |
+| 5 Mb      | 36 K            | **0.005**         | 1.00x                 |
+
+<!-- END GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
 At the top of that table `auto` gives up the indel wedges to read 11% fewer
 bytes — a bad trade in *fidelity*, independent of whether the file size is

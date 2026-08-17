@@ -1,0 +1,64 @@
+{
+  "id": "synteny-pick-random",
+  "measured": "2026-08-14",
+  "source": {
+    "kind": "hand",
+    "repro": "esbuild the pick path with `--bundle` and run it under Chrome, not jest — see agent-docs/reference/BENCHMARKING.md, which measures jest inflating this code by 6-30x and not uniformly.",
+    "notes": "The same 300k instances as synteny-pick-collinear, paired at random, so half the hulls span the canvas and the stab returns them."
+  },
+  "columns": [
+    { "key": "zoom", "label": "zoom" },
+    {
+      "key": "kept",
+      "label": "kept (of 300k)",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "candidates",
+      "label": "candidates @0 skew",
+      "format": "int",
+      "align": "right",
+      "absent": "— (no tree)"
+    },
+    {
+      "key": "warmPickMs",
+      "label": "warm pick",
+      "format": "ms",
+      "align": "right"
+    },
+    { "key": "rebuildMs", "label": "rebuild", "format": "ms", "align": "right" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "zoom": "whole-genome",
+        "kept": 0,
+        "candidates": null,
+        "warmPickMs": null,
+        "rebuildMs": 1.2
+      },
+      "emphasize": ["kept"]
+    },
+    {
+      "values": {
+        "zoom": "1/100",
+        "kept": 143000,
+        "candidates": 71342,
+        "warmPickMs": 5.8,
+        "rebuildMs": 42
+      },
+      "emphasize": ["candidates", "warmPickMs"]
+    },
+    {
+      "values": {
+        "zoom": "1/10k",
+        "kept": 299000,
+        "candidates": 149307,
+        "warmPickMs": 12.5,
+        "rebuildMs": 77
+      },
+      "emphasize": ["candidates", "warmPickMs"]
+    }
+  ]
+}

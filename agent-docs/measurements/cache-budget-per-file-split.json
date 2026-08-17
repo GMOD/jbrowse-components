@@ -1,0 +1,55 @@
+{
+  "id": "cache-budget-per-file-split",
+  "measured": "2026-08-10",
+  "source": {
+    "kind": "hand",
+    "repro": "The same eight-track pan as cache-budget-retention-climb, re-run with the parsed-chunk budget divided per file at each of these sizes, counting refills on the revisit pass.",
+    "notes": "The cold pass was 98 refills, so 128 MB — what eight tracks under a gigabyte would each get — is worse than having no cache at all."
+  },
+  "columns": [
+    { "key": "perFileBudgetMB", "label": "per-file budget", "format": "MB" },
+    {
+      "key": "aggregateHeldMB",
+      "label": "aggregate held",
+      "format": "MB",
+      "align": "right"
+    },
+    {
+      "key": "revisitRefills",
+      "label": "revisit refills",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "perFileBudgetMB": 128,
+        "aggregateHeldMB": 348,
+        "revisitRefills": 101
+      },
+      "emphasize": ["revisitRefills"]
+    },
+    {
+      "values": {
+        "perFileBudgetMB": 256,
+        "aggregateHeldMB": 609,
+        "revisitRefills": 30
+      }
+    },
+    {
+      "values": {
+        "perFileBudgetMB": 512,
+        "aggregateHeldMB": 918,
+        "revisitRefills": 8
+      }
+    },
+    {
+      "values": {
+        "perFileBudgetMB": 1024,
+        "aggregateHeldMB": 1109,
+        "revisitRefills": 0
+      }
+    }
+  ]
+}

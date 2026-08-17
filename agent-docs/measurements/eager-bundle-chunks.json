@@ -1,0 +1,27 @@
+{
+  "id": "eager-bundle-chunks",
+  "measured": "2026-08-05",
+  "source": {
+    "kind": "hand",
+    "repro": "Build the build-your-own examples site at each pin and read the eager chunk count and gzipped total off the bundle report.",
+    "notes": "Same page throughout, rendering the same thing — its sparsest, a measured div with one wiggle track and no JBrowse chrome. Pin 6 is measured separately, on a different host and in different units."
+  },
+  "columns": [
+    { "key": "stage", "label": "" },
+    {
+      "key": "eagerChunks",
+      "label": "eager chunks",
+      "format": "int",
+      "align": "right"
+    },
+    { "key": "gzippedKB", "label": "gzipped", "format": "KB", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "stage": "before", "eagerChunks": 347, "gzippedKB": 667 } },
+    {
+      "values": { "stage": "after pins 1-3", "eagerChunks": 219, "gzippedKB": 523 }
+    },
+    { "values": { "stage": "after pin 4", "eagerChunks": 218, "gzippedKB": 514 } },
+    { "values": { "stage": "after pin 5", "eagerChunks": 181, "gzippedKB": 464 } }
+  ]
+}

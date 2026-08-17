@@ -33,13 +33,15 @@ The churn was `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../Scaleb
 
 **Fixed 2026-08-15 by keying the list positionally**, which makes it a pool: same nodes, patched transform and text. Measured A/B on one machine and toolchain, two builds of the same commit differing only in the key:
 
-<!-- measurement: scalebar-zoom-churn -->
+<!-- BEGIN GENERATED MEASUREMENT scalebar-zoom-churn -->
 
-| during a 5× zoom | identity keys | positional keys |
-| --- | --- | --- |
-| structural (mount/unmount), scalebar | 535 | **248** |
-| attribute patches, scalebar | 323 | 499 |
-| total mutations | 1523 | 1369 |
+| during a 5× zoom                     | identity keys | positional keys |
+| ------------------------------------ | ------------: | --------------: |
+| structural (mount/unmount), scalebar |           535 |         **248** |
+| attribute patches, scalebar          |           323 |             499 |
+| total mutations                      |         1,523 |           1,369 |
+
+<!-- END GENERATED MEASUREMENT scalebar-zoom-churn -->
 
 Read the trade, not the total: structural churn is the expensive class (each new node pays styling, layout and paint) and it halves, while the rise in attribute patches is the same work done the cheap way on nodes that survived.
 

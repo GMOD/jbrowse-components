@@ -8,21 +8,24 @@
 // quoting the old figure, and nothing in CI reads either. This is the same
 // failure `sync-doc-snippets` fixes for code fences, one content type over.
 //
-// Tag the source table in the agent doc:
+// This is the SECOND hop of the chain:
 //
-//   <!-- measurement: bgzf-pool-tabix -->
-//   | workload | records | unpooled | pooled | speedup |
-//   | --- | --- | --- | --- | --- |
-//   …
+//   agent-docs/measurements/<id>.json     the record — values and provenance
+//     │  generate-measurement-tables
+//     ▼
+//   agent-docs/…/DOC.md                   the doc that owns the measurement
+//     │  this file
+//     ▼
+//   website/docs/…/page.md                the public copy
 //
-// and bracket the copy on the public page the way every other generated block
-// in this repo is bracketed:
+// Both ends carry the same marker pair, so there is one spelling to know:
 //
 //   <!-- BEGIN GENERATED MEASUREMENT bgzf-pool-tabix -->
-//   …generated: replaced with that table…
+//   …generated…
 //   <!-- END GENERATED MEASUREMENT bgzf-pool-tabix -->
 //
-// Run `pnpm sync-measurements` to update, `--check` to fail on drift (CI).
+// Run `pnpm sync-measurements` to update, `--check` to fail on drift (CI). It
+// runs AFTER `measurement-tables` in autogen — this reads what that one wrote.
 //
 // ## Why the table travels whole
 //
@@ -69,8 +72,8 @@ import {
 } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
-const SOURCE_TAG = /^<!--\s*measurement:\s*([\w-]+)\s*-->$/
-const CONSUMER_BEGIN = /^<!--\s*BEGIN GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/
+const BEGIN = /^<!--\s*BEGIN GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/
+const END = /^<!--\s*END GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/
 
 const agentDocsDir = join(repoRoot, 'agent-docs')
 
@@ -83,38 +86,43 @@ interface Source {
 const TABLE_ROW = /^\s*\|.*\|\s*$/
 
 /**
- * Every `<!-- measurement: id -->`-tagged table under `agent-docs/`.
+ * Every generated measurement table under `agent-docs/`.
  *
- * The table is the run of `|`-delimited lines starting at the first non-blank
- * line below the tag. A tag with prose under it is an error rather than an
- * empty block: an empty generated block reads on the page as "there is nothing
- * to measure here", which is the opposite of what the tag was put there to say.
+ * The doc's block is itself generated, from `agent-docs/measurements/<id>.json`
+ * by `generate-measurement-tables` — so this reads the middle of the chain, not
+ * its head, and the rows below are already normalized. Reading the rendered
+ * table rather than re-rendering the record is deliberate: what the website
+ * publishes should be what the doc shows, and going back to the record would
+ * let the two disagree while both looked generated.
  */
 function collectSources(problems: string[]) {
   const byId = new Map<string, Source>()
   for (const file of docFiles(agentDocsDir)) {
     const lines = readFileSync(file, 'utf8').split('\n')
+    const rel = relative(repoRoot, file)
     lines.forEach((line, i) => {
-      const tag = SOURCE_TAG.exec(line.trim())
-      if (!tag) {
+      const begin = BEGIN.exec(line.trim())
+      if (!begin) {
         return
       }
-      const id = tag[1]!
-      const rel = relative(repoRoot, file)
-      let start = i + 1
-      while (start < lines.length && lines[start]!.trim() === '') {
-        start++
-      }
+      const id = begin[1]!
       const rows: string[] = []
-      for (let k = start; k < lines.length && TABLE_ROW.test(lines[k]!); k++) {
-        rows.push(lines[k]!.trimEnd())
+      let k = i + 1
+      for (; k < lines.length && !END.test(lines[k]!.trim()); k++) {
+        if (TABLE_ROW.test(lines[k]!)) {
+          rows.push(lines[k]!.trimEnd())
+        }
+      }
+      if (k === lines.length) {
+        problems.push(
+          `${rel}: BEGIN GENERATED MEASUREMENT ${id} has no END — the block would swallow the rest of the doc`,
+        )
+        return
       }
       // Two rows is a header and its delimiter with no data under it, which is
-      // what a tag placed one table too high produces.
+      // what a block placed one table too high produces.
       if (rows.length < 3) {
-        problems.push(
-          `${rel}: <!-- measurement: ${id} --> is not above a markdown table`,
-        )
+        problems.push(`${rel}: the "${id}" block holds no markdown table`)
         return
       }
       const seen = byId.get(id)
@@ -142,7 +150,7 @@ const generated = docFiles(docsDir)
     const text = readFileSync(path, 'utf8')
     const ids = text
       .split('\n')
-      .map(l => CONSUMER_BEGIN.exec(l.trim())?.[1])
+      .map(l => BEGIN.exec(l.trim())?.[1])
       .filter(id => id !== undefined)
     if (ids.length === 0) {
       return undefined

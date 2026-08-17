@@ -41,15 +41,17 @@ lines. Headless Chrome, real HTTP with range requests, 4 workers, arms
 interleaved, **min of 6**, machine on AC. Both arms asserted to return the same
 record count on every run.
 
-<!-- measurement: bgzf-pool-tabix -->
+<!-- BEGIN GENERATED MEASUREMENT bgzf-pool-tabix -->
 
-| workload | records | unpooled | pooled | speedup |
-| --- | --- | --- | --- | --- |
-| 50kb window | 2,732 | 803ms | 562ms | 1.43x |
-| 100kb window | 4,878 | 1222ms | 887ms | 1.38x |
-| 200kb window | 7,627 | 1880ms | 1289ms | 1.46x |
-| 400kb window | 8,503 | 2025ms | 1390ms | 1.46x |
-| 12 x 20kb pan | 7,627 | 2446ms | 1822ms | 1.34x |
+| workload      | records | unpooled | pooled | speedup |
+| ------------- | ------- | -------- | ------ | ------- |
+| 50kb window   | 2,732   | 803ms    | 562ms  | 1.43x   |
+| 100kb window  | 4,878   | 1222ms   | 887ms  | 1.38x   |
+| 200kb window  | 7,627   | 1880ms   | 1289ms | 1.46x   |
+| 400kb window  | 8,503   | 2025ms   | 1390ms | 1.46x   |
+| 12 x 20kb pan | 7,627   | 2446ms   | 1822ms | 1.34x   |
+
+<!-- END GENERATED MEASUREMENT bgzf-pool-tabix -->
 
 So **1.35-1.45x on a big multi-sample VCF**, against 1.95x for BAM.
 

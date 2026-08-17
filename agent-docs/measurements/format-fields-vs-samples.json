@@ -1,0 +1,50 @@
+{
+  "id": "format-fields-vs-samples",
+  "measured": "2026-08-13",
+  "source": {
+    "kind": "hand",
+    "repro": "Parse each callset through `SAMPLES()` and through `processFormatFields`, recording wall clock and peak heap for each.",
+    "notes": "Split into four columns during the move to a record. The doc wrote each arm as `343ms / 239MB` in one cell, which reads fine and cannot be compared down a column or referenced from prose."
+  },
+  "columns": [
+    { "key": "callset", "label": "callset" },
+    { "key": "samplesMs", "label": "`samples` time", "format": "ms" },
+    {
+      "key": "samplesPeakMB",
+      "label": "`samples` peak",
+      "format": "MB",
+      "escalate": true
+    },
+    {
+      "key": "formatFieldsMs",
+      "label": "`processFormatFields` time",
+      "format": "ms"
+    },
+    {
+      "key": "formatFieldsPeakMB",
+      "label": "`processFormatFields` peak",
+      "format": "MB",
+      "escalate": true
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "callset": "100 samples, 2k variants",
+        "samplesMs": 343,
+        "samplesPeakMB": 239,
+        "formatFieldsMs": 33,
+        "formatFieldsPeakMB": 4
+      }
+    },
+    {
+      "values": {
+        "callset": "500 samples, 2k variants",
+        "samplesMs": 1686,
+        "samplesPeakMB": 1170,
+        "formatFieldsMs": 113,
+        "formatFieldsPeakMB": 4
+      }
+    }
+  ]
+}

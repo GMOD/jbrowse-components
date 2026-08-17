@@ -59,12 +59,14 @@ on another genotype's key and paint the wrong cell.
 
 ## The two measured together, and why that matters
 
-<!-- measurement: genotype-codes-speedup -->
+<!-- BEGIN GENERATED MEASUREMENT genotype-codes-speedup -->
 
-| corpus | speedup |
-| --- | ---: |
-| 1000G phase 3 (2504 samples) | **1.87x** |
+| corpus                                                          |   speedup |
+| --------------------------------------------------------------- | --------: |
+| 1000G phase 3 (2504 samples)                                    | **1.87x** |
 | 1000G high-coverage (3202 samples, `GT:AB:AD:DP:GQ:PGT:PID:PL`) | **2.47x** |
+
+<!-- END GENERATED MEASUREMENT genotype-codes-speedup -->
 
 Byte-identical codes, dictionary, sample order, ploidy/phasing and legend flags
 across the change.
@@ -97,12 +99,14 @@ same callback and so needs the same translation.
 `feature.get('samples')` parses every FORMAT field of every sample — an object
 and an array apiece — to reach one:
 
-<!-- measurement: format-fields-vs-samples -->
+<!-- BEGIN GENERATED MEASUREMENT format-fields-vs-samples -->
 
-| callset | `samples` | `processFormatFields` |
-| --- | --- | --- |
-| 100 samples, 2k variants | 343ms / 239MB | 33ms / 4MB |
-| 500 samples, 2k variants | 1686ms / 1.17GB | 113ms / 4MB |
+| callset                  | `samples` time | `samples` peak | `processFormatFields` time | `processFormatFields` peak |
+| ------------------------ | -------------- | -------------- | -------------------------- | -------------------------- |
+| 100 samples, 2k variants | 343ms          | 239 MB         | 33ms                       | 4 MB                       |
+| 500 samples, 2k variants | 1686ms         | 1.17 GB        | 113ms                      | 4 MB                       |
+
+<!-- END GENERATED MEASUREMENT format-fields-vs-samples -->
 
 `makePhaseSetReader` is shared by both cell loops rather than written twice,
 because the two displays paint the same phase sets and a second copy of the

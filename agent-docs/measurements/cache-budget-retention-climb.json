@@ -1,0 +1,27 @@
+{
+  "id": "cache-budget-retention-climb",
+  "measured": "2026-08-10",
+  "source": {
+    "kind": "hand",
+    "repro": "Open eight tracks over test_data/jb2bench_link/mem_config.json and pan through eight windows, reading aggregate held bytes and process RSS at each. See ADR 059 for the link setup.",
+    "notes": "Still climbing at the last window, and every cache was well under its own 1 GB ceiling. Deliberately NOT escalated to GB — the column is read down its length for the shape of the climb."
+  },
+  "columns": [
+    { "key": "window", "label": "window (of 8)", "align": "right" },
+    {
+      "key": "aggregateHeldMB",
+      "label": "aggregate held",
+      "format": "MB",
+      "align": "right"
+    },
+    { "key": "rssMB", "label": "RSS", "format": "MB", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "window": 0, "aggregateHeldMB": 303, "rssMB": 567 } },
+    { "values": { "window": 3, "aggregateHeldMB": 610, "rssMB": 994 } },
+    {
+      "values": { "window": 7, "aggregateHeldMB": 1109, "rssMB": 1665 },
+      "emphasize": ["aggregateHeldMB", "rssMB"]
+    }
+  ]
+}

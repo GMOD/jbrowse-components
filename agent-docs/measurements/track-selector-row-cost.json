@@ -1,0 +1,48 @@
+{
+  "id": "track-selector-row-cost",
+  "measured": "2026-07-29",
+  "source": {
+    "kind": "hand",
+    "repro": "Two alternating A/B rounds over a 1000-track selector, taking min and median of each; DOM nodes counted once, since the count is exact.",
+    "notes": "Split into min and median columns during the move to a record; the doc wrote each arm as `1656 / 1631 ms` in one cell. DOM nodes carries no median because it does not vary — one fewer node per row."
+  },
+  "columns": [
+    { "key": "metric", "label": "n=1000 tracks" },
+    { "key": "beforeMin", "label": "before min", "align": "right" },
+    { "key": "beforeMedian", "label": "before median", "align": "right" },
+    { "key": "afterMin", "label": "after min", "align": "right" },
+    { "key": "afterMedian", "label": "after median", "align": "right" }
+  ],
+  "rows": [
+    {
+      "format": "ms",
+      "values": {
+        "metric": "mount, min of 9",
+        "beforeMin": 1656,
+        "beforeMedian": 1631,
+        "afterMin": 1460,
+        "afterMedian": 1401
+      }
+    },
+    {
+      "format": "ms",
+      "values": {
+        "metric": "toggle re-render, min of 18",
+        "beforeMin": 80.6,
+        "beforeMedian": 73.6,
+        "afterMin": 63.3,
+        "afterMedian": 66.1
+      }
+    },
+    {
+      "format": "int",
+      "values": {
+        "metric": "DOM nodes",
+        "beforeMin": 21506,
+        "beforeMedian": null,
+        "afterMin": 20505,
+        "afterMedian": null
+      }
+    }
+  ]
+}

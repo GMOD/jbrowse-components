@@ -180,11 +180,19 @@ const GENERATORS: Generator[] = [
   },
   { name: 'doc snippets', argv: web('sync-doc-snippets.ts') },
   {
-    // The measurement tables the public optimizations page shows, lifted from
-    // the `agent-docs/reference/` doc that owns each one. Same failure as the
-    // doc snippets above, one content type over: a re-measurement updates the
-    // reference doc and the published number keeps quoting the old one.
+    // The tables in the `agent-docs/` docs that own each measurement, rendered
+    // from `agent-docs/measurements/<id>.json`. The head of the chain: before
+    // this, a benchmark's numbers were typed into a doc by hand and no check
+    // read them, so a re-measured arm left the ratio beside it describing the
+    // previous run.
     name: 'measurement tables',
+    argv: web('generate-measurement-tables.ts'),
+  },
+  {
+    // The public optimizations page's copy of those tables. BELOW the entry
+    // above, and the order is load-bearing: this one reads the doc tables that
+    // one writes, so running it first publishes the previous render.
+    name: 'published measurement tables',
     argv: web('sync-measurements.ts'),
   },
   {

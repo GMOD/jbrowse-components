@@ -1,0 +1,26 @@
+{
+  "id": "genotype-codes-speedup",
+  "measured": "2026-08-13",
+  "source": {
+    "kind": "hand",
+    "repro": "Parse each callset through the genotype-code path before and after the change, asserting byte-identical codes, dictionary, sample order, ploidy/phasing and legend flags across the two arms.",
+    "notes": "The packed key measured 1.02x alone and the name lookup was masking it — don't re-evaluate either half in isolation."
+  },
+  "columns": [
+    { "key": "corpus", "label": "corpus" },
+    { "key": "speedup", "label": "speedup", "format": "x", "align": "right" }
+  ],
+  "rows": [
+    {
+      "values": { "corpus": "1000G phase 3 (2504 samples)", "speedup": 1.87 },
+      "emphasize": ["speedup"]
+    },
+    {
+      "values": {
+        "corpus": "1000G high-coverage (3202 samples, `GT:AB:AD:DP:GQ:PGT:PID:PL`)",
+        "speedup": 2.47
+      },
+      "emphasize": ["speedup"]
+    }
+  ]
+}

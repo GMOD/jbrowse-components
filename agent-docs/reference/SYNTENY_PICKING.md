@@ -43,26 +43,30 @@ either axis) and therefore enter the tree.
 
 ### Collinear — the index works
 
-<!-- measurement: synteny-pick-collinear -->
+<!-- BEGIN GENERATED MEASUREMENT synteny-pick-collinear -->
 
-| zoom | kept | candidates @0 skew | warm pick | rebuild |
-| --- | --- | --- | --- | --- |
-| whole-genome | **0** / 300k | — (no tree) | — | 1.0ms |
-| 1/100 | 143k | 16 | <0.1ms | 33ms |
-| 1/10k | 299k | 19 | <0.1ms | 58ms |
+| zoom         | kept (of 300k) | candidates @0 skew | warm pick | rebuild |
+| ------------ | -------------: | -----------------: | --------: | ------: |
+| whole-genome |          **0** |        — (no tree) |         — |     1ms |
+| 1/100        |           143k |                 16 |    <0.1ms |    33ms |
+| 1/10k        |           299k |                 19 |    <0.1ms |    58ms |
+
+<!-- END GENERATED MEASUREMENT synteny-pick-collinear -->
 
 Candidate counts stay in the tens at every zoom, because a hull is about as wide
 as its alignment and only a handful cover any given pixel.
 
 ### Random pairing — the index does not
 
-<!-- measurement: synteny-pick-random -->
+<!-- BEGIN GENERATED MEASUREMENT synteny-pick-random -->
 
-| zoom | kept | candidates @0 skew | warm pick | rebuild |
-| --- | --- | --- | --- | --- |
-| whole-genome | **0** / 300k | — (no tree) | — | 1.2ms |
-| 1/100 | 143k | **71,342** | **5.8ms** | 42ms |
-| 1/10k | 299k | **149,307** | **12.5ms** | 77ms |
+| zoom         | kept (of 300k) | candidates @0 skew |  warm pick | rebuild |
+| ------------ | -------------: | -----------------: | ---------: | ------: |
+| whole-genome |          **0** |        — (no tree) |          — |   1.2ms |
+| 1/100        |           143k |         **71,342** |  **5.8ms** |    42ms |
+| 1/10k        |           299k |        **149,307** | **12.5ms** |    77ms |
+
+<!-- END GENERATED MEASUREMENT synteny-pick-random -->
 
 **At zero skew.** Roughly half of everything in the tree covers any given x,
 because half the hulls span the canvas. The stab returns them, and each one then

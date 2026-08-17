@@ -133,11 +133,11 @@ carries, since it keeps every other field:
 
 | block len | CIGAR bytes/row | coarse/fine bytes | file vs `--no-coarse` |
 | --------- | --------------- | ----------------- | --------------------- |
-| 1.5 kb    | 12              | **0.89**          | 1.89×                 |
-| 10 kb     | 72              | 0.66              | 1.66×                 |
-| 50 kb     | 360             | 0.30              | 1.30×                 |
-| 200 kb    | 1.4 K           | 0.10              | 1.10×                 |
-| 5 Mb      | 36 K            | **0.005**         | 1.00×                 |
+| 1.5 kb    | 12              | **0.89**          | 1.89x                 |
+| 10 kb     | 72              | 0.66              | 1.66x                 |
+| 50 kb     | 360             | 0.30              | 1.30x                 |
+| 200 kb    | 1.4 K           | 0.10              | 1.10x                 |
+| 5 Mb      | 36 K            | **0.005**         | 1.00x                 |
 
 <!-- END GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
@@ -214,10 +214,10 @@ reads that field alone:
 
 <!-- BEGIN GENERATED MEASUREMENT format-fields-vs-samples -->
 
-| callset                  | `samples`       | `processFormatFields` |
-| ------------------------ | --------------- | --------------------- |
-| 100 samples, 2k variants | 343ms / 239MB   | 33ms / 4MB            |
-| 500 samples, 2k variants | 1686ms / 1.17GB | 113ms / 4MB           |
+| callset                  | `samples` time | `samples` peak | `processFormatFields` time | `processFormatFields` peak |
+| ------------------------ | -------------- | -------------- | -------------------------- | -------------------------- |
+| 100 samples, 2k variants | 343ms          | 239 MB         | 33ms                       | 4 MB                       |
+| 500 samples, 2k variants | 1686ms         | 1.17 GB        | 113ms                      | 4 MB                       |
 
 <!-- END GENERATED MEASUREMENT format-fields-vs-samples -->
 
@@ -321,10 +321,10 @@ changes.
 <!-- BEGIN GENERATED MEASUREMENT scalebar-zoom-churn -->
 
 | during a 5× zoom                     | identity keys | positional keys |
-| ------------------------------------ | ------------- | --------------- |
-| structural (mount/unmount), scalebar | 535           | **248**         |
-| attribute patches, scalebar          | 323           | 499             |
-| total mutations                      | 1523          | 1369            |
+| ------------------------------------ | ------------: | --------------: |
+| structural (mount/unmount), scalebar |           535 |         **248** |
+| attribute patches, scalebar          |           323 |             499 |
+| total mutations                      |         1,523 |           1,369 |
 
 <!-- END GENERATED MEASUREMENT scalebar-zoom-churn -->
 
@@ -346,11 +346,11 @@ removed:
 
 <!-- BEGIN GENERATED MEASUREMENT track-selector-row-cost -->
 
-| n=1000 tracks               | before         | after          |
-| --------------------------- | -------------- | -------------- |
-| mount, min of 9             | 1656 / 1631 ms | 1460 / 1401 ms |
-| toggle re-render, min of 18 | 80.6 / 73.6 ms | 63.3 / 66.1 ms |
-| DOM nodes                   | 21506          | 20505          |
+| n=1000 tracks               | before min | before median | after min | after median |
+| --------------------------- | ---------: | ------------: | --------: | -----------: |
+| mount, min of 9             |     1656ms |        1631ms |    1460ms |       1401ms |
+| toggle re-render, min of 18 |     80.6ms |        73.6ms |    63.3ms |       66.1ms |
+| DOM nodes                   |     21,506 |             — |    20,505 |            — |
 
 <!-- END GENERATED MEASUREMENT track-selector-row-cost -->
 
@@ -379,11 +379,11 @@ Two related genomes, where the index works:
 
 <!-- BEGIN GENERATED MEASUREMENT synteny-pick-collinear -->
 
-| zoom         | kept         | candidates @0 skew | warm pick | rebuild |
-| ------------ | ------------ | ------------------ | --------- | ------- |
-| whole-genome | **0** / 300k | — (no tree)        | —         | 1.0ms   |
-| 1/100        | 143k         | 16                 | <0.1ms    | 33ms    |
-| 1/10k        | 299k         | 19                 | <0.1ms    | 58ms    |
+| zoom         | kept (of 300k) | candidates @0 skew | warm pick | rebuild |
+| ------------ | -------------: | -----------------: | --------: | ------: |
+| whole-genome |          **0** |        — (no tree) |         — |     1ms |
+| 1/100        |           143k |                 16 |    <0.1ms |    33ms |
+| 1/10k        |           299k |                 19 |    <0.1ms |    58ms |
 
 <!-- END GENERATED MEASUREMENT synteny-pick-collinear -->
 
@@ -392,11 +392,11 @@ and where it does not:
 
 <!-- BEGIN GENERATED MEASUREMENT synteny-pick-random -->
 
-| zoom         | kept         | candidates @0 skew | warm pick  | rebuild |
-| ------------ | ------------ | ------------------ | ---------- | ------- |
-| whole-genome | **0** / 300k | — (no tree)        | —          | 1.2ms   |
-| 1/100        | 143k         | **71,342**         | **5.8ms**  | 42ms    |
-| 1/10k        | 299k         | **149,307**        | **12.5ms** | 77ms    |
+| zoom         | kept (of 300k) | candidates @0 skew |  warm pick | rebuild |
+| ------------ | -------------: | -----------------: | ---------: | ------: |
+| whole-genome |          **0** |        — (no tree) |          — |   1.2ms |
+| 1/100        |           143k |         **71,342** |  **5.8ms** |    42ms |
+| 1/10k        |           299k |        **149,307** | **12.5ms** |    77ms |
 
 <!-- END GENERATED MEASUREMENT synteny-pick-random -->
 
@@ -423,11 +423,11 @@ div, one wiggle track and no JBrowse chrome at all:
 <!-- BEGIN GENERATED MEASUREMENT eager-bundle-chunks -->
 
 |                | eager chunks | gzipped |
-| -------------- | ------------ | ------- |
-| before         | 347          | 667 KB  |
-| after pins 1-3 | 219          | 523 KB  |
-| after pin 4    | 218          | 514 KB  |
-| after pin 5    | 181          | 464 KB  |
+| -------------- | -----------: | ------: |
+| before         |          347 |  667 KB |
+| after pins 1-3 |          219 |  523 KB |
+| after pin 4    |          218 |  514 KB |
+| after pin 5    |          181 |  464 KB |
 
 <!-- END GENERATED MEASUREMENT eager-bundle-chunks -->
 

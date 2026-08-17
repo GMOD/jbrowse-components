@@ -1,0 +1,68 @@
+{
+  "id": "pif-coarse-tier-bytes",
+  "measured": "2026-08-04",
+  "source": {
+    "kind": "hand",
+    "repro": "Build a PIF both ways and compare file sizes: `jbrowse make-pif <paf>` against `jbrowse make-pif --no-coarse <paf>`, at each block length.",
+    "notes": "The last column is what the coarse tier costs on disk, so it is computed from the ratio beside it rather than divided out by hand."
+  },
+  "columns": [
+    { "key": "blockLen", "label": "block len" },
+    {
+      "key": "cigarBytesPerRow",
+      "label": "CIGAR bytes/row",
+      "format": "compact",
+      "suffix": " K"
+    },
+    {
+      "key": "coarseOverFine",
+      "label": "coarse/fine bytes",
+      "format": "ratio"
+    },
+    {
+      "key": "fileVsNoCoarse",
+      "label": "file vs `--no-coarse`",
+      "format": "x",
+      "derived": "1 + coarseOverFine"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "blockLen": "1.5 kb",
+        "cigarBytesPerRow": 12,
+        "coarseOverFine": 0.89
+      },
+      "emphasize": ["coarseOverFine"]
+    },
+    {
+      "values": {
+        "blockLen": "10 kb",
+        "cigarBytesPerRow": 72,
+        "coarseOverFine": 0.66
+      }
+    },
+    {
+      "values": {
+        "blockLen": "50 kb",
+        "cigarBytesPerRow": 360,
+        "coarseOverFine": 0.3
+      }
+    },
+    {
+      "values": {
+        "blockLen": "200 kb",
+        "cigarBytesPerRow": 1400,
+        "coarseOverFine": 0.1
+      }
+    },
+    {
+      "values": {
+        "blockLen": "5 Mb",
+        "cigarBytesPerRow": 36000,
+        "coarseOverFine": 0.005
+      },
+      "emphasize": ["coarseOverFine"]
+    }
+  ]
+}
