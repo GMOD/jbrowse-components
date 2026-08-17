@@ -100,6 +100,37 @@ asks whether copies should exist rather than whether they should be an export.
 `CLAUDE.md` for the `COPIED` list, where a block copied into three or more files
 has to carry the reason it is the reader's own to write.
 
+### The mirror-image failure: a copy that drops half of a published contract
+
+Every case above is a block the examples wrote that JBrowse should have
+published. The other direction happens too, and nothing here was looking for
+it: JBrowse publishes both halves, and the copies use one.
+
+`TrackOverlaySlot` is the host half of `TrackOverlayPortal` — the node a
+display's corner controls, colour key, loading scrim and error bar escape into,
+out of the `contain: strict` box that is the display's own stacking context.
+`TrackContainer` mounts it, its own doc names an embedder mounting
+`RenderingComponent` directly as the case it was added for, and fourteen of
+BYO's fifteen `TrackRow`s left it out — so all that chrome rendered back inside
+the sandbox, under whatever the page painted over the stack.
+
+Three things kept it invisible for as long as it lasted, and each is worth
+recognising on the next one:
+
+- **the copies agreed**, so the drift check was silent. Identical says nothing
+  about correct.
+- **the one page that hit it renamed its version** (`TrackRowWithOverlay`)
+  rather than fixing the shape, and a second name reads as a page doing more
+  rather than as fourteen pages doing less.
+- **the symptom is data-dependent.** Whether a seam is over the corner control
+  right now depends on the demo's regions and its zoom, so a census of a page at
+  rest reports a healthy page. The check that catches it asks the mechanism —
+  is every display inside a slot — not whether anything is covered today.
+
+So the question to add when a block repeats: not only "would the reader have to
+write this", but "does this omit a half JBrowse already publishes". The second
+one is not answered by reading the copies, since they all read the same.
+
 **It stays the only site with that check, and porting it to the other three was
 measured and rejected.** The rule applies to all four, but only this site
 repeats *behaviour*: it is the one whose pages draw their own chrome, so a

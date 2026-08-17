@@ -39,7 +39,22 @@ there rather than reading a green run as coverage.
 Keep both lists short. If either grows, the shared surface has outgrown
 copy-paste and the answer is a different rule argued here, not more entries.
 
-## Two measured claims, and both are ratchets
+**A green run says the copies agree, never that they are right.** Fourteen of
+fifteen `TrackRow`s mounted `RenderingComponent` in a bare `contain: strict`
+box, which is the display's own stacking context — so `TrackOverlayPortal` found
+no host node, fell back to rendering inline, and left every display's corner
+controls, colour key, loading scrim and error bar under whatever the page
+painted over the stack. All fourteen were character-identical, so this file was
+silent; the fifteenth, `TrackSettings`, hit it and worked around it under a
+second name, and that name is what kept the rest from reading as wrong. When a
+block is renamed rather than fixed, the drift check stops being able to see the
+question.
+
+So the third question to ask of a copied block is whether it omits half of a
+contract JBrowse publishes. `everyDisplayIsInAnOverlaySlot` in `smoke.mjs` is
+that one, made measurable.
+
+## Three measured claims, and the first two are ratchets
 
 **`smoke.mjs` holds the evidence for this site's central claim**: `MUI_BUDGET`
 counts `Mui*`-classed elements and `muiThemedStyling` counts elements whose font
@@ -59,6 +74,20 @@ drawing a `MuiLinearProgress` on every visit, from `ComparativeFetchStatus`,
 which was then behind neither provider. **So a failure naming only the "ever"
 number is the interesting one** — it means the page is clean by the time you
 look at it, which is exactly why nobody had.
+
+**`everyDisplayIsInAnOverlaySlot` is the third, and it is a contract rather than
+a number.** Every `[data-display-id]` must sit inside a
+`[data-track-overlay-slot]`, because a display's floating chrome escapes its
+`contain: strict` sandbox through `TrackOverlayPortal` and the host mounts the
+node it lands in. Two markers and one `closest()`, deliberately, rather than a
+list of the chrome to look for: such a list goes stale the next time a display
+grows a piece, and a stale list reads as a clean run. The display count is the
+floor — a page that mounted nothing fails rather than passing by having nothing
+to examine.
+
+Ask the mechanism here, not the symptom. Whether a seam happens to be over the
+corner control right now depends on the demo's data and its zoom, which is why
+this shipped broken on fourteen pages under a full green board.
 
 **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
 re-checked by `pnpm smoke`. Going **under** a budget fails as well as over —
