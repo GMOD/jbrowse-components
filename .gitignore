@@ -83,6 +83,13 @@ products/jbrowse-web/src/buildInfo.ts
 # Graph test data - generated and large
 test_data/chr20_region.gfa
 test_data/chr20_region*.bed.gz
+# A tabix index fetched into the repo root, which is what `tabix <url> <region>`
+# leaves behind when it is run from here to probe a remote file. None belongs at
+# the root, and one 2.2 MB index reached a commit through a `git add -A` before
+# this rule existed.
+/*.tbi
+/*.csi
+
 test_data/chr20_region*.bed.gz.tbi
 test_data/chr20_region.seglens.bin
 test_data/chr20_region.gfa.truth-cache/
