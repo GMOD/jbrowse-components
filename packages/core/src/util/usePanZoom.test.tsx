@@ -309,3 +309,27 @@ test('a horizontal wheel with scroll-zoom off pans, and raises no hint', () => {
   expect(view.horizontalScroll).toHaveBeenCalledWith(40)
   expect(el.textContent).toBe('')
 })
+
+// The half of a touch drag that is not an event listener. Without it a browser
+// claims the touch as a page scroll and every handler above is bound and dead —
+// on a touchscreen only, so a desktop demo and a jsdom suite both pass. That is
+// why the hook writes it instead of documenting it.
+test('touch-action is written onto the element, and restored on unmount', () => {
+  const { getByTestId, unmount } = render(<Harness view={makeView()} />)
+  const el = getByTestId('c')
+  expect(el.style.touchAction).toBe('none')
+
+  unmount()
+  expect(el.style.touchAction).toBe('')
+})
+
+test('a host can name its own touch-action, or keep the hook off it', () => {
+  const panY = { current: document.createElement('div') }
+  renderHook(() => usePanZoom(panY, makeView(), { touchAction: 'pan-y' }))
+  expect(panY.current.style.touchAction).toBe('pan-y')
+
+  const untouched = { current: document.createElement('div') }
+  untouched.current.style.touchAction = 'manipulation'
+  renderHook(() => usePanZoom(untouched, makeView(), { touchAction: false }))
+  expect(untouched.current.style.touchAction).toBe('manipulation')
+})

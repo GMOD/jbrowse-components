@@ -35,10 +35,11 @@ import type React from 'react'
  * )
  * ```
  *
- * `touchAction: 'none'` is the caller's half of the deal, the same split
- * `usePanZoom` makes: without it the browser claims a touch drag as a page
- * scroll and the pointer stream never arrives. It stays a style rather than
- * riding in the returned props because a caller's own `style` would silently
+ * `touchAction: 'none'` is the caller's half of the deal: without it the browser
+ * claims a touch drag as a page scroll and the pointer stream never arrives.
+ * `usePanZoom` writes the same property itself and this cannot — that one is
+ * handed the element as a ref, while this returns props and never sees a node.
+ * It stays out of those props because a caller's own `style` would silently
  * replace it.
  *
  * Three things a hand-rolled version gets wrong, none of which fails loudly:

@@ -478,14 +478,26 @@ export function useScrollZoomHint(
  * const ref = useWidthSetter(view)
  * const { containerProps, showZoomHint } = usePanZoom(ref, view)
  * return (
- *   <div ref={ref} {...containerProps} style={{ touchAction: 'none' }}>
+ *   <div ref={ref} {...containerProps}>
  *     …tracks…
  *   </div>
  * )
  * ```
  *
- * `touchAction: 'none'` is the host's half of the deal — without it the browser
- * claims a touch-drag as a page scroll and the pointer stream never arrives.
+ * **`touch-action: none` comes with it**, written onto `ref`'s element. Without
+ * it a browser claims a touch drag as a page scroll, the pointer stream never
+ * arrives, and the gestures below are bound and dead — on a phone only, so a
+ * demo written and tested on a desktop is inert with nothing in the console.
+ * Asking the host for it was one line of documentation against a silent failure
+ * on half the devices there are.
+ *
+ * Set imperatively rather than handed back as a style, because a host that
+ * spreads its own `style` on the same element would drop it. React writes only
+ * the style properties its own `style` prop names, so this survives every
+ * render that does not mention `touchAction` — and a host that does name one
+ * wins, which is the escape hatch. `touchAction` here is the other:
+ * `'pan-y'` for a view inside a long document that should still scroll the
+ * page vertically, or `false` to leave the property alone entirely.
  *
  * JBrowse's own view splits these across two elements (the wheel on the whole
  * view, the drag on the tracks area, so a drag over the header does nothing) and
@@ -495,6 +507,12 @@ export function useScrollZoomHint(
 export function usePanZoom(
   ref: React.RefObject<HTMLElement | null>,
   view: PanZoomView,
+  {
+    touchAction = 'none',
+  }: {
+    /** what to write as the element's `touch-action`, or false to write none */
+    touchAction?: React.CSSProperties['touchAction'] | false
+  } = {},
 ) {
   // `x` is the last position a pan was applied from; `panning` is whether the
   // press has travelled far enough to be a drag at all
@@ -502,6 +520,24 @@ export function usePanZoom(
   // binds the wheel half, and reports the wheel that meant "zoom" and moved
   // nothing at all
   const { showZoomHint } = useScrollZoomHint(ref, view)
+
+  // restores rather than clears on the way out: the element may outlive this
+  // hook (a host that stops binding gestures without unmounting its container),
+  // and clearing would take a `touch-action` the host set for itself
+  useEffect(() => {
+    const element = ref.current
+    if (!element || touchAction === false) {
+      return
+    }
+    // `|| ''` because a CSSOM that does not implement `touch-action` answers
+    // `undefined` (jsdom does), and writing that back is a write of the string
+    // "undefined" rather than a clear
+    const previous = element.style.touchAction || ''
+    element.style.touchAction = touchAction
+    return () => {
+      element.style.touchAction = previous
+    }
+  }, [ref, touchAction])
 
   function endDrag(event: React.PointerEvent<HTMLElement>) {
     dragRef.current = undefined
