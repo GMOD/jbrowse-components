@@ -11,15 +11,16 @@ paints over the track below.
 ## The palette
 
 Displays colour their own content from a palette: plain colour strings through
-`PaletteProvider`, no UI toolkit. **Every display needs it, including a wiggle
-track** — its y-axis is React, not canvas, and with no provider `usePalette()`
-falls back to JBrowse's light default whatever your page is.
+`SessionPaletteProvider`, no UI toolkit. **Every display needs it, including a
+wiggle track** — its y-axis is React, not canvas, and with no provider
+`usePalette()` falls back to JBrowse's light default whatever your page is.
 
-**Mounting `PaletteProvider` alone is the trap it exists to close.** The palette
-is what _React_ draws with. The config `theme` slot also ships to the worker,
-where feature labels are baked into the image. Supply only the first and those
-labels stay in the old mode, silently. `useSessionPalette(session, mode)` writes
-the one slot both derive from.
+**`PaletteProvider` is the near miss, and why the pairing ships as one
+component.** The palette is what _React_ draws with. The config `theme` slot
+also ships to the worker, where feature labels are baked into the image. Colour
+React alone and those labels stay in the old mode, silently.
+`SessionPaletteProvider` writes the one slot both derive from and provides the
+palette that comes back.
 
 Hovering still gets you Material UI in the bottom-right corner, deliberately:
 this is the one page left stock for

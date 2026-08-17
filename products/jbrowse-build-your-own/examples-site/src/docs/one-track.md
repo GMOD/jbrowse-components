@@ -9,9 +9,9 @@ picture:
 2. Mount a display once `view.ready`. Every track carries an `activeDisplay`
    exposing a `RenderingComponent`. Give it a box with a height and a
    positioning context.
-3. Tell it which colours to draw with. `useSessionPalette(session, mode)` +
-   `PaletteProvider` is the pair; skip it and the parts a display draws in React
-   — here, the y-axis — stay on JBrowse's light default on a dark page.
+3. Tell it which colours to draw with. `SessionPaletteProvider` takes the
+   session and your own light/dark state; skip it and the parts a display draws
+   in React — here, the y-axis — stay on JBrowse's light default on a dark page.
 
 **`view.ready`, not `view.initialized`.** `initialized` covers only the first of
 two async steps, loading the assembly's regions. Navigating then populates

@@ -1,10 +1,7 @@
 import { Suspense, useState, useSyncExternalStore } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  PaletteProvider,
-  useSessionPalette,
-} from '@jbrowse/core/ui/PaletteContext'
+import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { DisplayUIProvider, TrackOverlaySlot } from '@jbrowse/display-ui'
@@ -285,11 +282,10 @@ function byCategory(entries: CatalogueEntry[]) {
 }
 
 // The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
-// each property is doing and which half of it the hook cannot do for you.
+// each property is doing, and for the one the hook writes itself.
 const viewport: React.CSSProperties = {
   position: 'relative',
   overflow: 'hidden',
-  touchAction: 'none',
   cursor: 'grab',
 }
 
@@ -519,11 +515,11 @@ function watchSiteMode(onChange: () => void) {
  * correcting it a paint later. The third argument is the server snapshot, for
  * a reader pasting this into a framework that prerenders.
  *
- * JBrowse's half is one call, `useSessionPalette` below. It writes the config
- * slot that *both* halves of the rendering derive from -- the palette React
- * draws with, and the theme shipped to the worker that bakes feature labels
- * into the image -- and hands back the palette. Mounting `PaletteProvider`
- * alone would leave those baked labels in the old mode.
+ * JBrowse's half is one mount, `SessionPaletteProvider` below. It writes the
+ * config slot that *both* halves of the rendering derive from -- the palette
+ * React draws with, and the theme shipped to the worker that bakes feature
+ * labels into the image. `PaletteProvider` on its own is the near miss: it
+ * colours React and leaves those baked labels in the old mode.
  */
 function useSiteMode() {
   return useSyncExternalStore(
@@ -535,10 +531,10 @@ function useSiteMode() {
 
 const TrackSelectorSidebar = observer(function TrackSelectorSidebar() {
   const { view, session } = useCreateOnce(makeView)
-  const palette = useSessionPalette(session, useSiteMode())
+  const mode = useSiteMode()
 
   return (
-    <PaletteProvider palette={palette}>
+    <SessionPaletteProvider session={session} mode={mode}>
       <DisplayUIProvider>
         {/* minHeight, not height: the sidebar is taller than two tracks and
          * shorter than seven, so the row has to be able to grow past it. A
@@ -549,7 +545,7 @@ const TrackSelectorSidebar = observer(function TrackSelectorSidebar() {
           <TrackColumn view={view} session={session} />
         </div>
       </DisplayUIProvider>
-    </PaletteProvider>
+    </SessionPaletteProvider>
   )
 })
 

@@ -73,8 +73,8 @@ also puts it under a real test, where a site-local helper never is. If no, it
 stays copied.
 
 **The tell is that the copies are worse than what JBrowse already runs**, and it
-has now held five times, and in each case the published version knew something
-the copies did not:
+has now held six times; in five of them the published version knew something the
+copies did not:
 
 | the copies                        | what they were missing                                    | became                                  |
 | --------------------------------- | --------------------------------------------------------- | --------------------------------------- |
@@ -83,11 +83,22 @@ the copies did not:
 | a region-seam filter, ×3          | elided and past-the-end blocks; and it drew a seam per elided region, which at whole-genome zoom is a grey wall | `view.paddingSpans`      |
 | sticky refName labels, ×2         | the same-refName run dedup, the whole-name fit test        | `view.scalebarRefNameLabels`            |
 | a rubberband's pointer-capture drag, ×1 | a primary-button guard, so a right-press started a drag under its own context menu and released capture it never took; and one-pointer ownership, so a second finger re-anchored a drag in progress | `usePointerDrag`      |
+| `useSessionPalette(session, mode)` + `<PaletteProvider palette={…}>`, ×17 | nothing — every copy was right | `SessionPaletteProvider` |
 
 That is the argument for treating "the examples all write X" as a missing export
 rather than a duplication problem: the reader is not merely repeating himself,
 he is shipping a worse version of something that already exists, and the site is
 teaching him to.
+
+**The last row is the one where the copies were correct, and publishing was
+still right.** Two published calls, seventeen faithful copies, no drift. What
+made it an export is that the pair has a half a reader can drop and see nothing:
+`PaletteProvider` is the discoverable name and colors React alone, while the
+hook's `setThemeMode` is what reaches the worker that bakes feature labels into
+the image — so a host that mounts the provider by itself gets light-mode labels
+on a dark page and no error. A block whose halves fail separately and silently
+is a component even when every copy in the repo has both halves, because the
+copies are not the population at risk.
 
 **The count is evidence, not the trigger.** The last row is a single copy: the
 test is whether an embedder would *have* to write the block, and one hand-rolled

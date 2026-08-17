@@ -8,9 +8,12 @@ const ref = useWidthSetter(view)
 const { containerProps, showZoomHint } = usePanZoom(ref, view)
 ```
 
-Spread `containerProps` on the element you measured, with `touchAction: 'none'`.
-Without it the browser claims a touch-drag as a page scroll and the pointer
-stream never arrives.
+Spread `containerProps` on the element you measured. `touch-action: none` comes
+with the hook, written onto that element — without it the browser claims a
+touch-drag as a page scroll and the pointer stream never arrives, on a phone
+only. Name `touchAction` in your own `style` to override it, or pass the hook a
+`touchAction` of `'pan-y'` when the view sits in a long document that should
+still scroll.
 
 ## A bare wheel is a session preference
 

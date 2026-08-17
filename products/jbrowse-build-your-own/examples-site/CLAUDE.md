@@ -32,9 +32,11 @@ is the rule working. The line total is printed for the trend and gates nothing.
 **It only sees named top-level declarations, so behaviour that repeats has to be
 given a name.** Repeated inline JSX is invisible to both halves — the
 most-repeated thing here was a pan/zoom container div in 13 files, one of whose
-four style properties is `touchAction: 'none'`, whose absence makes the demo
-inert on a phone, silently. When a styled div reaches a fifth example, name it
-there rather than reading a green run as coverage.
+four style properties was `touchAction: 'none'`, whose absence makes the demo
+inert on a phone, silently. Naming it as `viewport` is what made it visible;
+`usePanZoom` writes that property itself now, so the constant is down to three.
+When a styled div reaches a fifth example, name it there rather than reading a
+green run as coverage.
 
 Keep both lists short. If either grows, the shared surface has outgrown
 copy-paste and the answer is a different rule argued here, not more entries.

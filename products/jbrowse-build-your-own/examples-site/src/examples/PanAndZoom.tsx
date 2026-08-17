@@ -1,9 +1,6 @@
 import { Suspense, useSyncExternalStore } from 'react'
 
-import {
-  PaletteProvider,
-  useSessionPalette,
-} from '@jbrowse/core/ui/PaletteContext'
+import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { TrackOverlaySlot } from '@jbrowse/display-ui'
@@ -231,11 +228,11 @@ function watchSiteMode(onChange: () => void) {
  * correcting it a paint later. The third argument is the server snapshot, for
  * a reader pasting this into a framework that prerenders.
  *
- * JBrowse's half is one call, `useSessionPalette` below. It writes the config
- * slot that *both* halves of the rendering derive from -- the palette React
- * draws with, and the theme shipped to the worker that bakes feature labels
- * into the image -- and hands back the palette. Mounting `PaletteProvider`
- * alone would leave those baked labels in the old mode.
+ * JBrowse's half is one mount, `SessionPaletteProvider` below. It writes the
+ * config slot that *both* halves of the rendering derive from -- the palette
+ * React draws with, and the theme shipped to the worker that bakes feature
+ * labels into the image. `PaletteProvider` on its own is the near miss: it
+ * colours React and leaves those baked labels in the old mode.
  */
 function useSiteMode() {
   return useSyncExternalStore(
@@ -247,12 +244,15 @@ function useSiteMode() {
 
 /**
  * The box `usePanZoom`'s handlers go on, and every page here spreads the same
- * four properties onto it.
+ * three properties onto it.
  *
- * `touchAction: 'none'` is the one thing the hook cannot do for you, because
- * your own `style` would overwrite it. Without it the browser claims a touch
- * drag as a page scroll and the pointer stream never arrives -- so a demo that
- * works on a desktop is inert on a phone, with nothing in the console.
+ * `touchAction: 'none'` is NOT among them, and used to be: the hook writes it
+ * onto the element itself. Without it the browser claims a touch drag as a page
+ * scroll and the pointer stream never arrives, so a demo that works on a
+ * desktop is inert on a phone with nothing in the console -- which is a bad
+ * thing to leave to a line of documentation. Name `touchAction` in your own
+ * `style` and yours wins, or pass `usePanZoom` a `touchAction` of `'pan-y'` if
+ * this sits in a long document that should still scroll.
  *
  * `position: relative` is the frame everything a host draws over the data is
  * placed against: seams, bands, gridlines, a scalebar. `overflow: hidden`
@@ -262,7 +262,6 @@ function useSiteMode() {
 const viewport: React.CSSProperties = {
   position: 'relative',
   overflow: 'hidden',
-  touchAction: 'none',
   cursor: 'grab',
 }
 
@@ -276,10 +275,10 @@ const PanAndZoom = observer(function PanAndZoom({
   const { view, session } = useCreateOnce(() => makeView(scrollZoom))
   const ref = useWidthSetter(view)
   const { containerProps, showZoomHint } = usePanZoom(ref, view)
-  const palette = useSessionPalette(session, useSiteMode())
+  const mode = useSiteMode()
 
   return (
-    <PaletteProvider palette={palette}>
+    <SessionPaletteProvider session={session} mode={mode}>
       <div>
         <label
           style={{
@@ -319,7 +318,7 @@ const PanAndZoom = observer(function PanAndZoom({
         </div>
         <Position view={view} />
       </div>
-    </PaletteProvider>
+    </SessionPaletteProvider>
   )
 })
 

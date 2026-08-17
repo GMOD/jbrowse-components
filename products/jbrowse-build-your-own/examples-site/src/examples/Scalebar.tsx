@@ -1,9 +1,8 @@
 import { Suspense, useRef, useState, useSyncExternalStore } from 'react'
 
 import {
-  PaletteProvider,
+  SessionPaletteProvider,
   usePalette,
-  useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
@@ -573,11 +572,11 @@ function watchSiteMode(onChange: () => void) {
  * correcting it a paint later. The third argument is the server snapshot, for
  * a reader pasting this into a framework that prerenders.
  *
- * JBrowse's half is one call, `useSessionPalette` below. It writes the config
- * slot that *both* halves of the rendering derive from -- the palette React
- * draws with, and the theme shipped to the worker that bakes feature labels
- * into the image -- and hands back the palette. Mounting `PaletteProvider`
- * alone would leave those baked labels in the old mode.
+ * JBrowse's half is one mount, `SessionPaletteProvider` below. It writes the
+ * config slot that *both* halves of the rendering derive from -- the palette
+ * React draws with, and the theme shipped to the worker that bakes feature
+ * labels into the image. `PaletteProvider` on its own is the near miss: it
+ * colours React and leaves those baked labels in the old mode.
  */
 function useSiteMode() {
   return useSyncExternalStore(
@@ -588,11 +587,10 @@ function useSiteMode() {
 }
 
 // The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
-// each property is doing and which half of it the hook cannot do for you.
+// each property is doing, and for the one the hook writes itself.
 const viewport: React.CSSProperties = {
   position: 'relative',
   overflow: 'hidden',
-  touchAction: 'none',
   cursor: 'grab',
 }
 
@@ -604,10 +602,10 @@ const Scalebar = observer(function Scalebar() {
   // scroll-to-zoom on. The Pan and zoom example has the toggle, and draws it.
   const { containerProps } = usePanZoom(ref, view)
   const rubberband = useRubberband(view)
-  const palette = useSessionPalette(session, useSiteMode())
+  const mode = useSiteMode()
 
   return (
-    <PaletteProvider palette={palette}>
+    <SessionPaletteProvider session={session} mode={mode}>
       <DisplayUIProvider>
         <div ref={ref} {...containerProps} style={viewport}>
           {/* every piece below reads block geometry, and `staticBlocks`
@@ -631,7 +629,7 @@ const Scalebar = observer(function Scalebar() {
           )}
         </div>
       </DisplayUIProvider>
-    </PaletteProvider>
+    </SessionPaletteProvider>
   )
 })
 

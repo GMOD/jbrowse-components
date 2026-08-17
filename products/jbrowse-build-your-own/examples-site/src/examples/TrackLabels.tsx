@@ -1,9 +1,6 @@
 import { Suspense, useSyncExternalStore } from 'react'
 
-import {
-  PaletteProvider,
-  useSessionPalette,
-} from '@jbrowse/core/ui/PaletteContext'
+import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
@@ -217,9 +214,10 @@ const RESIZE_HANDLE_HEIGHT = 4
  *   use this to sit an expensive layer out of the drag. Skipping it costs you
  *   correctness nowhere and frames somewhere.
  *
- * The one thing the hook can't do for you is `touchAction: 'none'`, because your
- * own `style` would overwrite it. Without it the browser claims a touch drag as
- * a page scroll and the pointer stream never arrives.
+ * `touchAction: 'none'` is yours to write here, unlike on the viewport below:
+ * `usePanZoom` is handed the element as a ref and sets it itself, while this
+ * hook returns props and never sees a node. Without it the browser claims a
+ * touch drag as a page scroll and the pointer stream never arrives.
  */
 const TrackResizeHandle = observer(function TrackResizeHandle({
   view,
@@ -294,11 +292,11 @@ function watchSiteMode(onChange: () => void) {
  * correcting it a paint later. The third argument is the server snapshot, for
  * a reader pasting this into a framework that prerenders.
  *
- * JBrowse's half is one call, `useSessionPalette` below. It writes the config
- * slot that *both* halves of the rendering derive from -- the palette React
- * draws with, and the theme shipped to the worker that bakes feature labels
- * into the image -- and hands back the palette. Mounting `PaletteProvider`
- * alone would leave those baked labels in the old mode.
+ * JBrowse's half is one mount, `SessionPaletteProvider` below. It writes the
+ * config slot that *both* halves of the rendering derive from -- the palette
+ * React draws with, and the theme shipped to the worker that bakes feature
+ * labels into the image. `PaletteProvider` on its own is the near miss: it
+ * colours React and leaves those baked labels in the old mode.
  */
 function useSiteMode() {
   return useSyncExternalStore(
@@ -313,11 +311,10 @@ function useSiteMode() {
 // two pages.
 
 // The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
-// each property is doing and which half of it the hook cannot do for you.
+// each property is doing, and for the one the hook writes itself.
 const viewport: React.CSSProperties = {
   position: 'relative',
   overflow: 'hidden',
-  touchAction: 'none',
   cursor: 'grab',
 }
 
@@ -325,10 +322,10 @@ const TrackLabels = observer(function TrackLabels() {
   const { view, session } = useCreateOnce(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
-  const palette = useSessionPalette(session, useSiteMode())
+  const mode = useSiteMode()
 
   return (
-    <PaletteProvider palette={palette}>
+    <SessionPaletteProvider session={session} mode={mode}>
       <DisplayUIProvider>
         <div style={{ display: 'flex' }}>
           <div style={{ width: LABEL_WIDTH, flex: 'none' }}>
@@ -357,7 +354,7 @@ const TrackLabels = observer(function TrackLabels() {
           </div>
         </div>
       </DisplayUIProvider>
-    </PaletteProvider>
+    </SessionPaletteProvider>
   )
 })
 

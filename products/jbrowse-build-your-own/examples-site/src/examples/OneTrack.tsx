@@ -1,9 +1,6 @@
 import { Suspense, useSyncExternalStore } from 'react'
 
-import {
-  PaletteProvider,
-  useSessionPalette,
-} from '@jbrowse/core/ui/PaletteContext'
+import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { TrackOverlaySlot } from '@jbrowse/display-ui'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
@@ -193,11 +190,11 @@ function watchSiteMode(onChange: () => void) {
  * correcting it a paint later. The third argument is the server snapshot, for
  * a reader pasting this into a framework that prerenders.
  *
- * JBrowse's half is one call, `useSessionPalette` below. It writes the config
- * slot that *both* halves of the rendering derive from -- the palette React
- * draws with, and the theme shipped to the worker that bakes feature labels
- * into the image -- and hands back the palette. Mounting `PaletteProvider`
- * alone would leave those baked labels in the old mode.
+ * JBrowse's half is one mount, `SessionPaletteProvider` below. It writes the
+ * config slot that *both* halves of the rendering derive from -- the palette
+ * React draws with, and the theme shipped to the worker that bakes feature
+ * labels into the image. `PaletteProvider` on its own is the near miss: it
+ * colours React and leaves those baked labels in the old mode.
  */
 function useSiteMode() {
   return useSyncExternalStore(
@@ -209,7 +206,7 @@ function useSiteMode() {
 
 const OneTrack = observer(function OneTrack() {
   const { view, session } = useCreateOnce(makeView)
-  const palette = useSessionPalette(session, useSiteMode())
+  const mode = useSiteMode()
   // A view renders nothing until it knows its width in pixels, and it has to be
   // told again whenever that changes. This is the one piece of wiring with no
   // alternative: everything downstream (block layout, what to fetch, bpPerPx on
@@ -220,7 +217,7 @@ const OneTrack = observer(function OneTrack() {
   const ref = useWidthSetter(view)
 
   return (
-    <PaletteProvider palette={palette}>
+    <SessionPaletteProvider session={session} mode={mode}>
       <div ref={ref} style={{ overflow: 'hidden' }}>
         {/* `null` for the other branch is the one thing on this page that is
          * not what you should ship. `view.ready` is false in TWO states --
@@ -234,7 +231,7 @@ const OneTrack = observer(function OneTrack() {
           <TrackRow view={view} trackId="volvox_microarray" />
         ) : null}
       </div>
-    </PaletteProvider>
+    </SessionPaletteProvider>
   )
 })
 

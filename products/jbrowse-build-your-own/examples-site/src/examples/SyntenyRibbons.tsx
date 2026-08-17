@@ -1,14 +1,12 @@
 import { Suspense, useRef, useSyncExternalStore } from 'react'
 
-import {
-  PaletteProvider,
-  useSessionPalette,
-} from '@jbrowse/core/ui/PaletteContext'
+import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { DisplayUIProvider, TrackOverlaySlot } from '@jbrowse/display-ui'
 import {
   LevelSyntenyCanvas,
+  type LinearSyntenyViewHelperModel,
   type LinearSyntenyViewModel,
 } from '@jbrowse/plugin-linear-comparative-view'
 import { createViewState } from '@jbrowse/react-app2'
@@ -211,16 +209,6 @@ function makeView() {
 type SyntenyView = ReturnType<typeof makeView>['view']
 type BrowserView = SyntenyView['views'][number]
 
-// The shape this file uses off a band's displays, written out rather than
-// imported. A level's displays are an MST array of pluggable types resolved at
-// runtime, so there is no static element type to name -- JBrowse's own
-// comparative render area declares the same little interface for the same
-// reason.
-interface SyntenyDisplay {
-  id: string
-  RenderingComponent: React.FC<{ model: SyntenyDisplay }>
-}
-
 const TrackRow = observer(function TrackRow({
   view,
   trackId,
@@ -259,12 +247,11 @@ const TrackRow = observer(function TrackRow({
 })
 
 // The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
-// each property is doing and which half of it the hook cannot do for you. One
-// per row here, which is what lets the rows move independently.
+// each property is doing, and for the one the hook writes itself. One per row
+// here, which is what lets the rows move independently.
 const viewport: React.CSSProperties = {
   position: 'relative',
   overflow: 'hidden',
-  touchAction: 'none',
   cursor: 'grab',
 }
 
@@ -325,16 +312,23 @@ const SyntenyRow = observer(function SyntenyRow({
  * tooltip, the right-click menu and the fetch status. It comes off the display
  * model rather than an import, exactly like a track's does. Its layer takes no
  * pointer events except where those states put them back.
+ *
+ * `LinearSyntenyViewHelperModel` on the prop rather than `view.levels[number]`.
+ * That array is declared loosely inside the plugin to break a type cycle
+ * between the view, the level and the display, so an element off it is `any` --
+ * and so is everything you then read from one, including the displays below.
+ * Naming the published type here is what gets them back; JBrowse's own
+ * comparative render area does the same on the same value.
  */
 const Ribbons = observer(function Ribbons({
   level,
 }: {
-  level: SyntenyView['levels'][number]
+  level: LinearSyntenyViewHelperModel
 }) {
   return (
     <div style={{ position: 'relative', height: level.height }}>
       <LevelSyntenyCanvas model={level} />
-      {(level.linearSyntenyDisplays as SyntenyDisplay[]).map(display => (
+      {level.linearSyntenyDisplays.map(display => (
         <div
           key={display.id}
           style={{
@@ -394,11 +388,11 @@ function watchSiteMode(onChange: () => void) {
  * correcting it a paint later. The third argument is the server snapshot, for
  * a reader pasting this into a framework that prerenders.
  *
- * JBrowse's half is one call, `useSessionPalette` below. It writes the config
- * slot that *both* halves of the rendering derive from -- the palette React
- * draws with, and the theme shipped to the worker that bakes feature labels
- * into the image -- and hands back the palette. Mounting `PaletteProvider`
- * alone would leave those baked labels in the old mode.
+ * JBrowse's half is one mount, `SessionPaletteProvider` below. It writes the
+ * config slot that *both* halves of the rendering derive from -- the palette
+ * React draws with, and the theme shipped to the worker that bakes feature
+ * labels into the image. `PaletteProvider` on its own is the near miss: it
+ * colours React and leaves those baked labels in the old mode.
  */
 function useSiteMode() {
   return useSyncExternalStore(
@@ -411,21 +405,21 @@ function useSiteMode() {
 // JBrowse's stock displays read a palette to colour their own *content*: the
 // feature display wants a highlight colour, the synteny display wants its
 // ribbon fills. That is a palette of colour strings, not a UI toolkit, so it
-// arrives through `PaletteProvider` and Material UI is not involved.
+// arrives through `SessionPaletteProvider` and Material UI is not involved.
 //
-// One call covers both rows and the band between them. The palette is
+// One mount covers both rows and the band between them. The palette is
 // session-wide, and a synteny view's rows are ordinary linear genome views
 // sharing this session -- not separately themed browsers.
 
 const SyntenyRibbons = observer(function SyntenyRibbons() {
   const { view, session } = useCreateOnce(makeView)
-  const palette = useSessionPalette(session, useSiteMode())
+  const mode = useSiteMode()
   // One measurement for the whole stack: `setWidth` on the synteny view assigns
   // it to every row, so the rows cannot disagree about how wide they are.
   const ref = useWidthSetter(view)
 
   return (
-    <PaletteProvider palette={palette}>
+    <SessionPaletteProvider session={session} mode={mode}>
       <DisplayUIProvider>
         <div ref={ref}>
           {view.initialized ? (
@@ -453,7 +447,7 @@ const SyntenyRibbons = observer(function SyntenyRibbons() {
           )}
         </div>
       </DisplayUIProvider>
-    </PaletteProvider>
+    </SessionPaletteProvider>
   )
 })
 
