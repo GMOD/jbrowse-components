@@ -1,4 +1,5 @@
 import { isUriLocation } from '@jbrowse/core/util'
+import { siblingLocation } from '@jbrowse/core/util/indexCandidates'
 import { getFileName, makeIndexType } from '@jbrowse/core/util/tracks'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -18,33 +19,21 @@ export function locationName(loc: FileLocation): string {
   return ''
 }
 
-// bgzip-compressed (tabix) vs plain file, sniffed from the .gz extension —
-// picks the tabix adapter and, for tabix files, means an index is needed.
+// bgzip-compressed (tabix) vs plain file, sniffed from the extension — picks the
+// tabix adapter and, for tabix files, means an index is needed. `.bgz` counts:
+// it is the same file under the name htslib's own tools give it, and the `.ld`
+// adapter guesser matches `\.ld\.b?gz$`, so sniffing only `.gz` sent a
+// bgzip-spelled file to the in-memory adapter this form's own guess rejects.
 export function isTabixLocation(loc: FileLocation): boolean {
-  return locationName(loc).endsWith('.gz')
+  return /\.b?gz$/.test(locationName(loc))
 }
 
-// Sibling `.tbi` for a location we can derive one for — a URL or a localPath
-// (matching core's makeIndex, which appends the suffix to both). A blob /
-// file-handle upload has no derivable sibling path, so it returns undefined and
-// its index must be supplied explicitly.
+// Sibling `.tbi` for a location we can derive one for — a URL or a localPath.
+// A blob / file-handle upload has no directory around it, so it returns
+// undefined and its index must be supplied explicitly, which is what
+// `needsExplicitIndex` reports.
 export function deriveTbiLocation(loc: FileLocation): FileLocation | undefined {
-  if (isUriLocation(loc)) {
-    return {
-      uri: `${loc.uri}.tbi`,
-      locationType: 'UriLocation',
-      // carry baseUri so the derived sibling resolves against the same config
-      // location as the file it indexes (matches core makeIndex)
-      ...(loc.baseUri ? { baseUri: loc.baseUri } : {}),
-    }
-  } else if ('localPath' in loc) {
-    return {
-      localPath: `${loc.localPath}.tbi`,
-      locationType: 'LocalPathLocation',
-    }
-  } else {
-    return undefined
-  }
+  return siblingLocation(loc, `${getFileName(loc)}.tbi`)
 }
 
 // A tabix file needs its index supplied by hand exactly when we can't derive a

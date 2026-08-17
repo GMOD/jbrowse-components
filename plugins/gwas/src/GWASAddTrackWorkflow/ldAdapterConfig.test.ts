@@ -16,6 +16,16 @@ test('.gz URL → tabix adapter uri shorthand (preProcessSnapshot derives .tbi)'
   })
 })
 
+// `.bgz` is the same file under the name htslib's own tools give it, and this
+// form's own adapter guess matches `\.ld\.b?gz$` — sniffing only `.gz` sent it
+// to the in-memory adapter, which cannot read a bgzipped file at all
+test('.bgz URL → tabix adapter, same as .gz', () => {
+  expect(buildLdAdapterConfig(uri('http://host/plink.ld.bgz'))).toEqual({
+    type: 'PlinkLDTabixAdapter',
+    uri: 'http://host/plink.ld.bgz',
+  })
+})
+
 test('explicit .csi index location wins and is typed CSI', () => {
   const ld = uri('http://host/plink.ld.gz')
   const idx = uri('http://host/custom.csi')

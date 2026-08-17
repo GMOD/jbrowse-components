@@ -51,8 +51,11 @@ export function indexCandidateNames(fileName: string) {
     return [`${fileName}.crai`, fileName.replace(/\.cram$/i, '.crai')]
   }
   // the tabix family is spelled by its compression, not its content: a .gz here
-  // is a bgzipped VCF/GFF/BED/SAM, all of which index the same two ways
-  if (lower.endsWith('.gz')) {
+  // is a bgzipped VCF/GFF/BED/SAM, all of which index the same two ways. `.bgz`
+  // is the same file under the name htslib's own tools give it, so it takes the
+  // same candidates — every format guesser accepts `\.b?gz$`, and matching only
+  // `.gz` left a `calls.vcf.bgz` with no detection at all
+  if (/\.b?gz$/.test(lower)) {
     return [`${fileName}.tbi`, `${fileName}.csi`]
   }
   return []

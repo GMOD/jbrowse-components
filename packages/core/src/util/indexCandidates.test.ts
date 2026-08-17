@@ -35,6 +35,15 @@ describe('indexCandidateNames', () => {
     }
   })
 
+  it('takes .bgz as the same file under another name', () => {
+    // every format guesser accepts `\.b?gz$`, so matching only `.gz` left a
+    // whole spelling of bgzip output with no detection
+    expect(indexCandidateNames('calls.vcf.bgz')).toEqual([
+      'calls.vcf.bgz.tbi',
+      'calls.vcf.bgz.csi',
+    ])
+  })
+
   it('offers nothing for a file type that carries no sibling index', () => {
     // so a caller knows not to go looking, rather than probing for a .tbi that
     // a BigWig was never going to have
