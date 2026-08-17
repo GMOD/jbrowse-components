@@ -10,6 +10,7 @@ import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { GROUP_BY_LABELS } from './groupByLabels.ts'
 import {
+  MAPQ_UNAVAILABLE,
   firstOfPairStrand,
   getFlags,
   getMappingQuality,
@@ -18,6 +19,7 @@ import {
 } from './util.ts'
 
 import type { GroupBy, GroupByType } from './types.ts'
+import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface FeatureGroup {
@@ -35,11 +37,30 @@ interface GroupKey {
   label: string
 }
 
+// Every closed-set dimension returns one of these interned GroupKeys rather than
+// building one per read, the way SPLIT_GROUP below always has. Two things follow
+// from that, and both are why they are spelled out one by one: a grouped fetch
+// walks every read, so the per-read allocation is the only one this pass makes;
+// and a dimension's sections are countable HERE, which is the "keep every
+// dimension a closed set" rule ../RenderAlignmentDataRPC/CLAUDE.md states — the
+// only two that can't be listed like this, `tag` and `mateAssembly`, are exactly
+// the two whose cardinality the data decides and that MAX_GROUPS guards.
+const FWD_STRAND_GROUP: GroupKey = { key: '+', label: 'Forward strand' }
+const REV_STRAND_GROUP: GroupKey = { key: '-', label: 'Reverse strand' }
+const FWD_FIRST_OF_PAIR_GROUP: GroupKey = {
+  key: '+',
+  label: 'First-of-pair forward',
+}
+const REV_FIRST_OF_PAIR_GROUP: GroupKey = {
+  key: '-',
+  label: 'First-of-pair reverse',
+}
+
 // The two buckets every strand-flavoured dimension splits into. `-1` is reverse
 // and everything else (including the unstranded 0) is forward, so a feature with
 // no strand lands in an existing section rather than opening a third.
-function strandGroup(strand: number, fwd: string, rev: string): GroupKey {
-  return strand === -1 ? { key: '-', label: rev } : { key: '+', label: fwd }
+function strandGroup(strand: number, fwd: GroupKey, rev: GroupKey): GroupKey {
+  return strand === -1 ? rev : fwd
 }
 
 // Keyed off `strand`, not SAM_FLAG_REVERSE — see getStrand. BAM/CRAM features
@@ -47,7 +68,7 @@ function strandGroup(strand: number, fwd: string, rev: string): GroupKey {
 // (PAF) features carry a real `strand` and no flags at all; reading the flag
 // collapsed every synteny block into one "Forward strand" section.
 function strandKey(feature: Feature): GroupKey {
-  return strandGroup(getStrand(feature), 'Forward strand', 'Reverse strand')
+  return strandGroup(getStrand(feature), FWD_STRAND_GROUP, REV_STRAND_GROUP)
 }
 
 // Strand of the fragment as inferred from the first-of-pair read, via the shared
@@ -58,8 +79,8 @@ function strandKey(feature: Feature): GroupKey {
 function firstOfPairStrandKey(feature: Feature): GroupKey {
   return strandGroup(
     firstOfPairStrand(getStrand(feature), getFlags(feature)),
-    'First-of-pair forward',
-    'First-of-pair reverse',
+    FWD_FIRST_OF_PAIR_GROUP,
+    REV_FIRST_OF_PAIR_GROUP,
   )
 }
 
@@ -86,16 +107,24 @@ function tagKey(feature: Feature, tag: string): GroupKey {
 // string the classifier doesn't recognize is not a category, so it files with the
 // reads that have no orientation at all rather than opening a section named after
 // a value nothing else in the app will name.
+const NO_PAIR_ORIENTATION_GROUP: GroupKey = {
+  key: '',
+  label: 'No orientation',
+}
+const PAIR_ORIENTATION_GROUPS: Record<PairDirection, GroupKey> = {
+  LR: { key: `${PAIR_DIRECTION_NUM.LR}`, label: PAIR_DIRECTION_LABELS.LR },
+  RL: { key: `${PAIR_DIRECTION_NUM.RL}`, label: PAIR_DIRECTION_LABELS.RL },
+  RR: { key: `${PAIR_DIRECTION_NUM.RR}`, label: PAIR_DIRECTION_LABELS.RR },
+  LL: { key: `${PAIR_DIRECTION_NUM.LL}`, label: PAIR_DIRECTION_LABELS.LL },
+}
+
 function pairOrientationKey(feature: Feature): GroupKey {
   const dir = pairDirection(
     feature.get('pair_orientation') as string | undefined,
   )
   return dir === undefined
-    ? { key: '', label: 'No orientation' }
-    : {
-        key: `${PAIR_DIRECTION_NUM[dir]}`,
-        label: PAIR_DIRECTION_LABELS[dir],
-      }
+    ? NO_PAIR_ORIENTATION_GROUP
+    : PAIR_ORIENTATION_GROUPS[dir]
 }
 
 const SPLIT_GROUP: GroupKey = { key: 'split', label: 'Split (SA)' }
@@ -141,17 +170,26 @@ function mateAssemblyKey(feature: Feature): GroupKey {
 // so ordinals put the confident reads at the head of the stack where the labels
 // would not. Five buckets by construction, so this dimension can't approach
 // MAX_GROUPS.
+const MAPQ_HIGH_GROUP: GroupKey = {
+  key: '0',
+  label: 'MAPQ 30+ (high confidence)',
+}
+const MAPQ_MID_GROUP: GroupKey = { key: '1', label: 'MAPQ 10-29' }
+const MAPQ_LOW_GROUP: GroupKey = { key: '2', label: 'MAPQ 1-9 (low)' }
+const MAPQ_ZERO_GROUP: GroupKey = { key: '3', label: 'MAPQ 0 (multi-mapping)' }
+const MAPQ_UNAVAILABLE_GROUP: GroupKey = { key: '4', label: 'MAPQ unavailable' }
+
 function mapqKey(feature: Feature): GroupKey {
   const mapq = getMappingQuality(feature)
-  return mapq === 255
-    ? { key: '4', label: 'MAPQ unavailable' }
+  return mapq === MAPQ_UNAVAILABLE
+    ? MAPQ_UNAVAILABLE_GROUP
     : mapq >= 30
-      ? { key: '0', label: 'MAPQ 30+ (high confidence)' }
+      ? MAPQ_HIGH_GROUP
       : mapq >= 10
-        ? { key: '1', label: 'MAPQ 10-29' }
+        ? MAPQ_MID_GROUP
         : mapq >= 1
-          ? { key: '2', label: 'MAPQ 1-9 (low)' }
-          : { key: '3', label: 'MAPQ 0 (multi-mapping)' }
+          ? MAPQ_LOW_GROUP
+          : MAPQ_ZERO_GROUP
 }
 
 // All-digit key: numeric tag values (a numeric RG, a count-based tag) and mapq's
@@ -244,8 +282,8 @@ function orderGroups(groups: FeatureGroup[]) {
 }
 
 // Append a single feature into its group, creating the group (seeded with the
-// feature) on first sight. A single push per read keeps the pileup path
-// allocation-free over thousands of reads.
+// feature) on first sight — one push per read, and no per-read array or group
+// object beyond the first sighting of a key.
 function appendFeature(
   groups: Map<string, FeatureGroup>,
   feature: Feature,
