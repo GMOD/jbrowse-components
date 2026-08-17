@@ -86,7 +86,8 @@ BENCH_DIR=NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318
 PB_RUN=PacBio_Revio_20240125                                     # HiFi tumor/normal run
 NORMAL_DEPTH=35x
 TUMOR_DEPTH=116x
-WAKHAN_RUN=NIH_HiFi_Wakhan-CNA_20240308                          # published CNA segments
+WAKHAN_RUN=NIH_HiFi_Wakhan-CNA_20240308                          # HiFi run, source of the Clair3 tumor VCF
+WAKHAN_CNA_RUN='NIH_HiFi-HiC_Wakhan-CNA_20240424'                # later run, phased with HiFi + Hi-C
 NYGC_RUN='NYGC-somatic-pipeline_20240412'                        # published short-read somatic run
 DRAGEN_RUN='DRAGEN-v4.2.4_ILMN-WGS_20240312'                     # published short-read CNV calls
 ASM_VER=v3.2                                                     # T2T tumor assembly
@@ -283,16 +284,18 @@ JSON
 jb add-track-json baf_track.json --update --out "$APP"
 
 # ── CNV: published Wakhan haplotype-specific copy-number/LOH segments ─────────
-# copynumbers_segments.bed is long format, one row per haplotype
-# (chr/start/end/copynumber_state/coverage/haplotype). Its last #-header line is
-# tab-separated, so BedAdapter names those columns with no columnNames slot, and
-# partitioning on haplotype paints one row per parental copy. That is the same
-# allelic state the BAF track carries but as segments, so it reads identically at
-# every zoom. copynumber_state is one parental copy rather than the total, so 1 is
-# the expected state and a 0 row is the lost haplotype that makes an arm LOH.
-# Three color buckets, not four: the published file tops out at 2 per haplotype
-# and also carries fractional (subclonal) states, so bucket rather than match.
-WAKHAN=$FTP/data_somatic/HG008/Liss_lab/analysis/$WAKHAN_RUN/bed_output
+# The later of the two published Wakhan runs, whose germline phasing uses Arima
+# Hi-C alongside the HiFi reads. copynumbers_segments.bed is long format, one row
+# per haplotype (chr/start/end/copynumber_state/coverage/haplotype), and unlike
+# the March HiFi-only run its column-name line carries no leading '#', so
+# BedAdapter cannot name the columns from the header and columnNames does it here.
+# Partitioning on haplotype paints one row per parental copy: the same allelic
+# state the BAF track carries but as segments, so it reads identically at every
+# zoom. copynumber_state is one parental copy rather than the total, so 1 is the
+# expected state and a 0 row is the lost haplotype that makes an arm LOH. Three
+# color buckets, not four: the published file tops out at 2 per haplotype and also
+# carries fractional (subclonal) states, so bucket rather than match.
+WAKHAN=$FTP/data_somatic/HG008/Liss_lab/analysis/$WAKHAN_CNA_RUN/bed_output
 cat > wakhan_track.json <<JSON
 {
   "type": "FeatureTrack",
@@ -302,7 +305,8 @@ cat > wakhan_track.json <<JSON
   "assemblyNames": ["$REF_BUILD"],
   "adapter": {
     "type": "BedAdapter",
-    "uri": "$WAKHAN/HG008_HiFi_copynumbers_segments.bed"
+    "uri": "$WAKHAN/HG008_HiFi_HiC_copynumbers_segments.bed",
+    "columnNames": ["chrom", "start", "end", "copynumber_state", "coverage", "haplotype"]
   },
   "displays": [
     {
@@ -320,7 +324,7 @@ cat > wakhan_track.json <<JSON
 }
 JSON
 jb add-track-json wakhan_track.json --update --out "$APP"
-jb add-track "$WAKHAN/HG008_HiFi_loh_segments.bed" --category "CNV" --force --out "$APP"
+jb add-track "$WAKHAN/HG008_HiFi_HiC_loh_segments.bed" --category "CNV" --force --out "$APP"
 
 # ── CNV: the two published short-read callsets on the same pair ───────────────
 # Both load from their FTP URLs with nothing downloaded and nothing computed, so

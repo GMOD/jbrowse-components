@@ -141,7 +141,7 @@ their FTP URLs, so all four callsets can share one view:
 | Callset                                                                                                                                  | Called from                           | Each segment carries                                                        |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------- |
 | NIST V0.5 draft benchmark                                                                                                                | assembly comparison plus read support | absolute total and per-haplotype copy number                                |
-| [Wakhan](https://github.com/KolmogorovLab/Wakhan)                                                                                        | PacBio HiFi                           | copy number per parental haplotype, with LOH intervals in a second file     |
+| [Wakhan](https://github.com/KolmogorovLab/Wakhan)                                                                                        | PacBio HiFi, phased with Hi-C         | copy number per parental haplotype, with LOH intervals in a second file     |
 | NYGC somatic pipeline, [BIC-seq2](https://doi.org/10.1073/pnas.1110574108)                                                               | Illumina WGS                          | log2 tumor-versus-normal copy ratio, and the genes the segment covers       |
 | [DRAGEN](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/DRAGEN-v4.2.4_ILMN-WGS_20240312/) | Illumina WGS                          | integer copy number, minor-haplotype copy number and minor allele frequency |
 
@@ -226,17 +226,24 @@ A log2 ratio and a folded allele frequency both average the two parental alleles
 together, so at whole-genome zoom an LOH block reads as balanced.
 [Wakhan](https://github.com/KolmogorovLab/Wakhan) phases the germline
 heterozygous SNPs and reports copy number _per haplotype_ instead, which keeps
-the LOH signal at every zoom. Both `HG008_HiFi_loh_segments.bed` and
-`HG008_HiFi_copynumbers_segments.bed` load from their FTP URLs.
+the LOH signal at every zoom. C-GIAB publishes two Wakhan runs on this tumor,
+and the later one phases the normal with Arima Hi-C alongside the HiFi reads:
+`HG008_HiFi_HiC_copynumbers_segments.bed` and `HG008_HiFi_HiC_loh_segments.bed`,
+both of them URL tracks.
 
 The copy-number file is worth a few more lines of config than `add-track`
-writes. It is long format, one row per haplotype:
+writes. It is long format, one row per haplotype, and its column-name line
+carries no `#`:
 
 ```
-#chr	start	end	copynumber_state	coverage	haplotype
-chr1	50001	23300000	2	108.025	1
-chr1	23300001	121600000	1	55.025	1
+chr	start	end	copynumber_state	coverage	haplotype
+chr1	0	23750000	2	106.025	1
+chr1	23750001	119650000	0.72	58.025	1
 ```
+
+so the names go on the adapter through
+[`columnNames`](/docs/config/bedadapter/#slot-columnnames). That header line
+loads as a feature on a refName no assembly has, where nothing draws it.
 
 Because a haplotype column already assigns each segment to a row, this is a
 [`LinearMultiRowFeatureDisplay`](/docs/config/linearmultirowfeaturedisplay)
@@ -252,7 +259,15 @@ to `haplotype` and it paints one row per parental copy.
   "assemblyNames": ["GRCh38_GIABv3"],
   "adapter": {
     "type": "BedAdapter",
-    "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/bed_output/HG008_HiFi_copynumbers_segments.bed"
+    "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi-HiC_Wakhan-CNA_20240424/bed_output/HG008_HiFi_HiC_copynumbers_segments.bed",
+    "columnNames": [
+      "chrom",
+      "start",
+      "end",
+      "copynumber_state",
+      "coverage",
+      "haplotype"
+    ]
   },
   "displays": [
     {
