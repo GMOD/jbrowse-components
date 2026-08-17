@@ -456,9 +456,8 @@ synteny view. See the
 On this graph exactly one contributor can be loaded as an assembly: CHM13. The
 464 haplotypes name their contigs by GenBank accession (`CM102524.1`); CHM13
 spells its contigs `chr17` and is a published reference, T2T-CHM13v2.0, which
-UCSC serves as `hs1`. Its coordinates are that assembly's: the graph's largest
-CHM13 segment on chr17 ends at 84,141,510, past the end of GRCh38's chr17 and
-inside hs1's.
+UCSC serves as `hs1`. Its coordinates are that assembly's: CHM13 segments on
+chr17 run past the end of GRCh38's chr17 and inside hs1's.
 
 Load it under its own name, with the graph's spelling as an alias. The view
 resolves a donor through `assemblyManager`, which is keyed by name and aliases
@@ -526,12 +525,11 @@ own scale it is a block.
 
 <Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Beside them ①, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean." src="/img/pangenome/hprc_chm13_allele.png" />
 
-CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
-carries was already there and little is credited to it:
-`tabix hprc-v2.0-mc-grch38.segs.bed.gz 'CHM13#0#chr1'` returns 60 segments for
-the whole of chr1, most attaching only to other donors. Finding one that touches
-GRCh38, like the node above, means scanning the links index for CHM13 rows with
-a GRCh38 endpoint:
+CHM13 entered this graph late, after most of the other haplotypes, so little is
+credited to it: `tabix hprc-v2.0-mc-grch38.segs.bed.gz 'CHM13#0#chr1'` returns a
+short list for the whole of chr1, most of it attaching only to other donors.
+Finding one that touches GRCh38, like the node above, means scanning the links
+index for CHM13 rows with a GRCh38 endpoint:
 
 ```bash
 tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
@@ -636,9 +634,8 @@ this one is ours too, built with `gfatools bubble`.
 
 ### A whole chromosome as a graph
 
-The graph track above draws one node per **segment**, so a window past a few
-hundred kilobases is more nodes than anything can lay out: the graph holds about
-751,000 segments, and a 5 Mb window of chr1 already runs to thousands.
+The graph track above draws one node per **segment**, and a window past a few
+hundred kilobases is more nodes than anything can lay out.
 
 The bubble file is also a level of detail. Collapsing each bubble to a single
 node, with the invariant reference between bubbles as backbone, turns the same
@@ -713,10 +710,9 @@ bubbles are called across it.
 The lane above the curve is what this view is for. Every locus this page has
 opened on chr1 is in it (the amylase bubble, the 1q21.1 inversion, the
 _CFHR3_/_CFHR1_ deletion), and the curve is high at each. None of them is the
-highest: ranked by segment count they sit inside the chromosome's top few dozen
-bubbles, and the tallest peak on the lane is at 2.65 Mb, which this page never
-opens. Scanning here and expanding what stands out is the working order, and
-each detailed figure above is one pass of it.
+tallest peak on the lane, and the tallest sits at a locus this page never opens.
+Scanning here and expanding what stands out is the working order, and each
+detailed figure above is one pass of it.
 
 This is the coarse end of a ladder: a tier node is a bubble, so it says where
 the graph varies and by how much, and nothing about the alleles inside it. The
@@ -737,9 +733,9 @@ jexl:feature.inversion
 
 The _AMY1_ bubble row printed
 [earlier](#what-the-graph-shows-that-a-linear-view-cannot) carries a `1` in that
-column, which few of the graph's 130,510 bubbles do. Their breakpoints are in
-the links index, stated as an orientation disagreement between two backbone
-segments, which makes them readable without the graph:
+column, which few bubbles do. Their breakpoints are in the links index, stated
+as an orientation disagreement between two backbone segments, which makes them
+readable without the graph:
 
 - columns 4 and 5 name the two endpoints, each id ending in the `+` or `-` it is
   entered on
@@ -1006,9 +1002,8 @@ addressable, so a locus is a ranged read rather than a download:
 }
 ```
 
-The `uri` shorthand resolves the sibling `.tai`. That index is 4.98 MB and
-downloads once; after it, a 10 kb locus is a range request of a few hundred
-kilobytes.
+The `uri` shorthand resolves the sibling `.tai`. That index downloads once, and
+after it a locus is a range request rather than a download.
 
 TAF is taffy's own column-oriented format, and the same alignment is published
 as a 53 GB MAF under `v2.1/`, which `BgzipMafAdapter` reads with the same `uri`
@@ -1025,10 +1020,10 @@ drops out has not diverged past alignment, it belongs to a person who does not
 carry that segment. Read down a column for who carries what, across for where
 each segment starts and stops.
 
-The figure draws sixteen samples rather than all 232, because a row needs about
-six pixels of height before its name fits beside it and 464 named rows is a
-track several screens tall. Drop `subtreeFilter` from the session and the whole
-cohort is there, at whatever height it fits in.
+The figure draws a subset of the samples rather than all 232, because a row
+needs enough height for its name to fit beside it and the whole cohort named is
+a track several screens tall. Drop `subtreeFilter` from the session and every
+haplotype is there, at whatever height it fits in.
 
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra
@@ -1118,8 +1113,8 @@ lane, at the cost of a 464-assembly download and a mapping run.
 
 `build_rgfa_tabix.sh` takes an optional third argument, the reference's PanSN
 sample, and writes a second index pair keyed only under that sample's sequences
-(`hprc-v2.0-mc-grch38.ref.*`, also hosted). It is 0.48 MB of tabix index against
-9.18 MB, returns byte-identical rows, and is for a segments track drawn on
+(`hprc-v2.0-mc-grch38.ref.*`, also hosted). It is a fraction of the full pair's
+index size, returns byte-identical rows, and is for a segments track drawn on
 GRCh38. Do not point the graph cut at it: **Graph context** defaults to 1 hop, a
 hop follows an allele's interior segments, and those are indexed under the donor
 contig the small pair drops, so the graph comes back as though the setting were
