@@ -470,8 +470,8 @@ day HiC's behaviour changes, something says so.
 the old `BaseRpcDriver.transport` spread an `options` bag into `worker.call`,
 which destructured `statusCallback` and nothing else, so there was no timeout
 mechanism anywhere in `packages/core/src/rpc/`. That bag has since been removed
-outright — the handles and `rpcDriverName` all ride `args`, one position each —
-so there is no longer even a place to pass an inert option. The entry earned a
+outright — the handles ride `args`, one position each — so there is no longer
+even a place to pass an inert option. The entry earned a
 line because the option sat next to a carefully argued comment about
 deliberately *not* passing a stop token, which made the surrounding code read as
 though a bound existed.
@@ -485,11 +485,11 @@ replacing it.
 
 **It goes in `RpcHandles`, beside the stop token, not in any registry entry.** A
 timeout is a property of the call — every method can be bounded — which is the
-same test `stopToken`, `statusCallback` and `rpcDriverName` each failed on their
-first attempt, each by landing in one method's `args` and thereby being
-unpassable to the other forty. `EntriesDeclaringCallLevelFields` in
-`RpcRegistry.ts` now fails compilation naming the entry that tries it, so the
-wrong version of this is a build error rather than a fourth repetition.
+same test `stopToken` and `statusCallback` each failed on their first attempt,
+each by landing in one method's `args` and thereby being unpassable to the other
+forty. `EntriesDeclaringCallLevelFields` in `RpcRegistry.ts` now fails
+compilation naming the entry that tries it, so the wrong version of this is a
+build error rather than a third repetition.
 
 ### The comparative displays sit behind neither bring-your-own seam
 

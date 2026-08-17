@@ -1611,10 +1611,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "adapter",
           "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipMafAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
         },
@@ -1714,10 +1710,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "adapter",
           "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipMafAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
         },
@@ -1813,10 +1805,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "metadata",
           "type": "(JexlString | frozen)"
-        },
-        {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
         },
         {
           "name": "adapter",
@@ -1972,10 +1960,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "adapter",
           "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipMafAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
         },
@@ -2078,10 +2062,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "adapter",
           "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipMafAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
         },
@@ -2177,10 +2157,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "metadata",
           "type": "(JexlString | frozen)"
-        },
-        {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
         },
         {
           "name": "adapter",
@@ -2280,10 +2256,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "adapter",
           "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipMafAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
         },
@@ -2379,10 +2351,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "metadata",
           "type": "(JexlString | frozen)"
-        },
-        {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
         },
         {
           "name": "adapter",
@@ -2482,10 +2450,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "adapter",
           "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipMafAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
         },
@@ -2583,10 +2547,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | frozen)"
         },
         {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "adapter",
           "type": "(CytobandAdapterConfigurationSchema | CramAdapterConfigurationSchema | BamAdapterConfigurationSchema | SamAdapterConfigurationSchema | HtsgetBamAdapterConfigurationSchema | BigBedAdapterConfigurationSchema | BedAdapterConfigurationSchema | BedpeAdapterConfigurationSchema | StarFusionAdapterConfigurationSchema | BedTabixAdapterConfigurationSchema | BedGraphAdapterConfigurationSchema | BedGraphTabixAdapterConfigurationSchema | FromConfigAdapterConfigurationSchema | FromConfigRegionsAdapterConfigurationSchema | FromConfigSequenceAdapterConfigurationSchema | RefNameAliasAdapterConfigurationSchema | NcbiSequenceReportAliasAdapterConfigurationSchema | GtfAdapterConfigurationSchema | GtfTabixAdapterConfigurationSchema | Gff3TabixAdapterConfigurationSchema | Gff3AdapterConfigurationSchema | NCListAdapterConfigurationSchema | SPARQLAdapterConfigurationSchema | TwoBitAdapterConfigurationSchema | BgzipFastaAdapterConfigurationSchema | ChromSizesAdapterConfigurationSchema | IndexedFastaAdapterConfigurationSchema | UnindexedFastaAdapterConfigurationSchema | SequenceSearchAdapterConfigurationSchema | CrisprGuideAdapterConfigurationSchema | MotifListAdapterConfigurationSchema | VcfAdapterConfigurationSchema | VcfTabixAdapterConfigurationSchema | SplitVcfTabixAdapterConfigurationSchema | PlinkLDAdapterConfigurationSchema | PlinkLDTabixAdapterConfigurationSchema | MultiWiggleAdapterConfigurationSchema | BigWigAdapterConfigurationSchema | GCContentAdapterConfigurationSchema | BgzipMafAdapterConfigurationSchema | BgzipTaffyAdapterConfigurationSchema | BigMafAdapterConfigurationSchema | MafTabixAdapterConfigurationSchema | HicAdapterConfigurationSchema | AllVsAllPAFAdapterConfigurationSchema | AllVsAllIndexedPAFAdapterConfigurationSchema | PAFAdapterConfigurationSchema | PairwiseIndexedPAFAdapterConfigurationSchema | DeltaAdapterConfigurationSchema | ChainAdapterConfigurationSchema | MCScanAnchorsAdapterConfigurationSchema | MCScanBlocksAdapterConfigurationSchema | MCScanSimpleAnchorsAdapterConfigurationSchema | MashMapAdapterConfigurationSchema | BlastTabularAdapterConfigurationSchema | GWASAdapterConfigurationSchema)"
         },
@@ -2682,10 +2642,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "metadata",
           "type": "(JexlString | frozen)"
-        },
-        {
-          "name": "rpcDriverName",
-          "type": "(JexlString | string)"
         },
         {
           "name": "adapter",
@@ -2916,7 +2872,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration",
         "jexlFiltersSetting",
         "pinnedFeatureIds",
@@ -3020,7 +2975,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "layout",
         "clusterTree",
         "clusterProvenance",
@@ -3265,7 +3219,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration"
       ]
     },
@@ -3302,7 +3255,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "bezierRadiusRatio",
         "configuration"
       ]
@@ -3321,7 +3273,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration"
       ]
     },
@@ -3339,7 +3290,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration"
       ]
     },
@@ -3573,7 +3523,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration",
         "lodMode"
       ]
@@ -3608,7 +3557,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration"
       ]
     },
@@ -3761,7 +3709,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration",
         "jexlFiltersSetting",
         "pinnedFeatureIds",
@@ -3884,7 +3831,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "layout",
         "clusterTree",
         "clusterProvenance",
@@ -3993,7 +3939,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "layout",
         "clusterTree",
         "clusterProvenance",
@@ -4099,7 +4044,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration",
         "jexlFiltersSetting"
       ]
@@ -4198,7 +4142,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration",
         "jexlFiltersSetting"
       ]
@@ -4293,7 +4236,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "resolution",
         "configuration"
       ]
@@ -4400,7 +4342,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "resolution",
         "layout",
         "clusterTree",
@@ -4515,7 +4456,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "resolution",
         "configuration"
       ]
@@ -4622,7 +4562,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "resolution",
         "configuration"
       ]
@@ -4745,7 +4684,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "layout",
         "clusterTree",
         "clusterProvenance",
@@ -4826,7 +4764,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration"
       ]
     },
@@ -4895,7 +4832,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration"
       ]
     },
@@ -4945,7 +4881,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration"
       ]
     },
@@ -5035,7 +4970,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "rpcDriverName",
         "configuration",
         "indexSnp",
         "indexSnpPinned"

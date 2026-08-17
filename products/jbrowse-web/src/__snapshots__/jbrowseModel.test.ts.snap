@@ -3505,38 +3505,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
-        "type": "CramAdapter",
-        "uri": "volvox-sorted-altname.cram",
-      },
-      "assemblyNames": [
-        "volvox",
-      ],
-      "category": [
-        "RPC Driver Test",
-      ],
-      "name": "volvox-sorted.cram (MainThreadRpcDriver)",
-      "rpcDriverName": "MainThreadRpcDriver",
-      "trackId": "volvox_cram_mainthread",
-      "type": "AlignmentsTrack",
-    },
-    {
-      "adapter": {
-        "type": "CramAdapter",
-        "uri": "volvox-sorted-altname.cram",
-      },
-      "assemblyNames": [
-        "volvox",
-      ],
-      "category": [
-        "RPC Driver Test",
-      ],
-      "name": "volvox-sorted.cram (WebWorkerRpcDriver)",
-      "rpcDriverName": "WebWorkerRpcDriver",
-      "trackId": "volvox_cram_webworker",
-      "type": "AlignmentsTrack",
-    },
-    {
-      "adapter": {
         "gffGzLocation": {
           "locationType": "UriLocation",
           "uri": "volvox.sort.gff3.gz",

@@ -341,15 +341,16 @@ author who lands on a behavior change can find the sentence that explains it.
   `RpcManager.call(sessionId, functionName, args)` lost its fourth parameter,
   and with it `BaseRpcDriver.call`'s and `transport`'s `options`. Only
   `rpcDriverName` was ever read from it, as a *fallback* behind the same field in
-  `args`, and nothing in the tree passed it there. Everything else put in it went
+  `args` (that field has since gone too, further down this ledger), and nothing
+  in the tree passed it there. Everything else put in it went
   to a position `MainThreadRpcDriver` drops on the floor and
   `WorkerPoolRpcDriver` spread over its own — which is the same two-positions
   disagreement that made `CoreGetExportData` silent under a worker and cancelable
   under neither, and one in-tree call site was still shaped by it: the hic
   header read passed a `statusCallback` there, so its "walking the norm-vector
   index" labels appeared under a web worker and nowhere else. **Opt-out: move
-  the field into `args`**, which is where `RpcHandles` and `RpcRouting` say it
-  belongs and where every driver reads it. Subclassing `BaseRpcDriver` is the
+  the field into `args`**, which is where `RpcHandles` says it belongs and where
+  every driver reads it. Subclassing `BaseRpcDriver` is the
   breaking half — an override declaring `options` is no longer assignable, per
   the parameter-count rule above.
 
@@ -438,6 +439,28 @@ author who lands on a behavior change can find the sentence that explains it.
   version floor for the next build of any plugin already reaching that path.**
   Weigh it against what bundling actually costs — here a silent unbounded leak,
   which wins; for a stateless helper it usually would not.
+
+- **An RPC call can no longer be pinned to a driver.** `BaseDisplay` lost
+  `rpcDriverName`, `effectiveRpcDriverName`, `setRpcDriverName` and
+  `parentDisplay`; `baseTrackConfig` lost its `rpcDriverName` slot; and
+  `RpcRouting` is gone from `RpcCallArgs`, so an `args` bag naming a driver is an
+  excess property rather than a route. Every call runs on `rpc.defaultDriver`, or
+  on the host default when that is empty.
+
+  It could go because it had never really worked. One call site in the tree
+  passed the field — a tag-value scan in the alignments plugin — so a track
+  configured onto `MainThreadRpcDriver` ran that one scan there and sent every
+  block fetch, render and details query to the worker pool anyway. The four
+  display members are the quiet half: a plugin display reading
+  `self.effectiveRpcDriverName` now reads `undefined` and its call goes where it
+  was already going, and a plugin config carrying `rpcDriverName` becomes an
+  unknown slot, which JBrowse ignores. Neither says anything.
+
+  **Opt-out: none, and per-call routing is not the thing to restore.** Sending
+  one call elsewhere only means something with a backend that differs in what it
+  *can* do, which is the tabled server-side-driver work.
+  `RpcManager.registerDriverFactory` is still there and still how a plugin adds a
+  driver; point `rpc.defaultDriver` at it and the whole session runs there.
 
 ## Follow-ups
 
