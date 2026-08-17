@@ -110,7 +110,16 @@ the tour was filmed in.
 - **Every annotation `anchor`s** — by locus, dotplot cell or graph node, never a
   measured pixel. Shapes belong in
   `@jbrowse/browser-test-utils/src/annotationOverlay.ts`. Prefer an in-app
-  `highlight` to an overlay.
+  `highlight` to an overlay. A band under 24 CSS px carries no chip and clips
+  any `label` to nothing (`CHIP_MIN_WIDTH`, and the band is `overflow: clip`),
+  so at whole-chromosome scale the caption does the naming. Alpha it for what it
+  sits over: a wash marking a REGION can be opaque, one pointing at a feature
+  inside itself cannot.
+- **A spec edit staleness `galleryLinks.generated.ts`, and no figure check says
+  so.** The regen writes the PNG and the store takes it, while the gallery
+  card's live link keeps opening the window, height or label the spec used to
+  have. `pnpm autogen` regenerates it; two links sat wrong on main for a day
+  because a pass that reframed a figure never ran it.
 - **A label that points at something is `leader: true` on the text**, never a
   pill plus its own `arrow`: the tail belongs at the pill's edge and only the
   page knows how wide the pill is.

@@ -116,6 +116,15 @@ own `img`. Miss the second and `pnpm autogen` **dies** on the jbrowse-img
 generator rather than reporting it stale, so every later generator silently
 never runs.
 
+**Regenerating a figure needs no web build of your own** when the change is to a
+spec rather than to app code. `pnpm screenshots:build` runs `@jbrowse/web`'s
+build first, which is minutes; symlinking the primary checkout's
+`products/jbrowse-web/build` beside `static/img` and running
+`node website/scripts/generate-screenshots.ts --filter <spec>` is seconds, and
+the generator serves that build's `test_data` the same way. Check its
+`version.txt` date first — it is whatever the primary checkout last built, which
+is the wrong app to shoot a plugin or display change against.
+
 `website/scripts/*.ts` needs `puppeteer`, which is not hoisted to the root —
 resolve it from `packages/browser-test-utils/`.
 
