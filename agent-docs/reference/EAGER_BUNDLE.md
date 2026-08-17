@@ -24,8 +24,8 @@ JBrowse chrome at all:
 <!-- END GENERATED MEASUREMENT eager-bundle-chunks -->
 
 Same page throughout, rendering the same thing.
-<!--m:eager-bundle-chunks.gzippedKB.span-->203 KB<!--/m--> gzipped and
-<!--m:eager-bundle-chunks.eagerChunks.span-->166<!--/m--> chunks were reachable
+203KB<!--m:eager-bundle-chunks.gzippedKB.span--> gzipped and
+166<!--m:eager-bundle-chunks.eagerChunks.span--> chunks were reachable
 and never used.
 
 Pin 6 is measured separately, on a different host and in different units — see

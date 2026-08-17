@@ -350,6 +350,26 @@ describe('quoting one value from prose', () => {
     expect(ref('demo.speedup.range')).toBe('1.50-2.00x')
   })
 
+  // The marker follows the value with no space between, so the pair is one
+  // token. A space would let a rewrap put `<!--` at the start of a line, where
+  // markdown reads it as an HTML block and ends the paragraph.
+  it('returns a value with no internal space', () => {
+    const sized = new Map([
+      [
+        'demo',
+        parse({
+          columns: [
+            { key: 'case', label: 'case' },
+            { key: 'peak', label: 'peak', format: 'MB' },
+          ],
+          rows: [{ values: { case: 'a', peak: 203 } }],
+        }),
+      ],
+    ])
+    expect(resolveReference(sized, 'demo.a.peak')).toBe('203MB')
+    expect(resolveReference(sized, 'demo.peak.max')).toBe('203MB')
+  })
+
   it.each([
     ['demo.nope.before', /has no row "nope"/],
     ['demo.50kb-window.nope', /has no column "nope"/],

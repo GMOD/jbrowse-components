@@ -459,6 +459,14 @@ export function resolveRow(
 // `bgzf-pool-tabix.speedup.range`, `synteny-pick-random.1-10k.warmPickMs`.
 // `sync-inline-figures` splices these into the docs; this resolves one.
 //
+// The result carries NO internal space — `203KB`, not `203 KB` — because the
+// marker follows the value immediately and the pair has to survive a paragraph
+// rewrap as one token. A space would let a formatter put a line break between
+// the figure and its reference, and a line beginning `<!--` is an HTML *block*
+// in CommonMark, which ends the paragraph around it. That is not hypothetical:
+// the first spelling of this bracketed the value between two markers, and the
+// first `pnpm format` after a rebase split a sentence in half.
+//
 // The failure they exist for is prose restating a cell from the table directly
 // above it — "12.5ms is inside a 16ms frame", "203 KB gzipped and 166 chunks
 // were reachable and never used". Both were true when written, neither moves
@@ -538,7 +546,7 @@ export function resolveReference(
     if (!over) {
       throw new Error(`"${ref}": ${id} has no column "${second}"`)
     }
-    return aggregate(measurement, over, third)
+    return oneToken(aggregate(measurement, over, third))
   }
   if (!column) {
     throw new Error(
@@ -558,7 +566,12 @@ export function resolveReference(
     throw new Error(`"${ref}" is an absent cell — there is no figure to quote`)
   }
   const format = row.format ? { ...column, format: row.format } : column
-  return formatValue(value, format, { derived: !!column.derived })
+  return oneToken(formatValue(value, format, { derived: !!column.derived }))
+}
+
+/** `203 KB` as `203KB`. See the note above `AGGREGATES`. */
+function oneToken(text: string) {
+  return text.replaceAll(' ', '')
 }
 
 /** The row addressed by `key`: its first column's value, slugified. */

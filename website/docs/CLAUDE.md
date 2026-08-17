@@ -50,12 +50,13 @@ check by fixing the manifest, not by removing a skip.
   it, because a table with no link back hands the reader a figure and no
   measurement.
 - **Don't restate a number the page already carries** — quote the cell:
-  `<!--m:synteny-pick-random.1-10k.warmPickMs-->12.5ms<!--/m-->`, resolved by
-  `sync-inline-figures`. `72%` beside a published `28%`, or `200x` off a `0.005`
-  in the table above it, is arithmetic that goes stale the next time the table
-  is regenerated, and `check-quoted-figures` cannot catch it because the old
-  value is still in the doc it was copied from. Better still, say what the table
-  cannot.
+  `12.5ms<!--m:synteny-pick-random.1-10k.warmPickMs-->`, resolved by
+  `sync-inline-figures` — marker after the value, no space in the pair, since a
+  line starting `<!--` is an HTML block that ends its paragraph. `72%` beside a
+  published `28%`, or `200x` off a `0.005` in the table above it, is arithmetic
+  that goes stale the next time the table is regenerated, and
+  `check-quoted-figures` cannot catch it because the old value is still in the
+  doc it was copied from. Better still, say what the table cannot.
 - Having a measurement block opts the page into `check-quoted-figures`, which
   requires every `<number><unit>` in its prose to appear in an agent-doc **the
   page links** or in the JSDoc of an **exported symbol the page names**. Both

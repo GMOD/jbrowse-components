@@ -45,12 +45,17 @@ the markers; edit the record.
   a table and no measurement.
 
 **Quote a cell instead of retyping it**:
-`<!--m:bgzf-pool-tabix.speedup.range-->1.34-1.46x<!--/m-->`, either
+`1.34-1.46x<!--m:bgzf-pool-tabix.speedup.range-->`, either
 `<id>.<row>.<column>` or `<id>.<column>.<min|max|span|range|first|last>`. Prose
 restating a figure from the table above it is the one staleness no checker can
 see — the old value is still in the doc it was copied from, so
 `check-quoted-figures` passes. All three conversions were live, and the range
 above already disagreed with its own column.
+
+**The marker goes after the value with no space in the pair**, which is why an
+inline figure reads `203KB` and the table reads `203 KB`. A markdown line that
+begins `<!--` is an HTML block and ends the paragraph around it, so the figure
+and its reference have to be one token no rewrap can split.
 
 The prose around those tables is checked too, by `check-quoted-figures.ts`:
 every `<number><unit>` a public measurement page writes has to appear in an

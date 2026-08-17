@@ -71,7 +71,7 @@ as its alignment and only a handful cover any given pixel.
 **At zero skew.** Roughly half of everything in the tree covers any given x,
 because half the hulls span the canvas. The stab returns them, and each one then
 pays `projectCorners` + `isRibbonCulled` (which rejects it) at ~80ns.
-<!--m:synteny-pick-random.1-10k.warmPickMs-->12.5ms<!--/m--> is inside a 16ms
+12.5ms<!--m:synteny-pick-random.1-10k.warmPickMs--> is inside a 16ms
 frame but leaves nothing for anything else, so a hover over an all-vs-all PAF
 reads as sluggish rather than broken.
 

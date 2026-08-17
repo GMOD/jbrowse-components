@@ -18,12 +18,21 @@
 //
 // ## The spelling
 //
-//   <!--m:bgzf-pool-tabix.speedup.range-->1.34-1.46x<!--/m-->
+//   1.34-1.46x<!--m:bgzf-pool-tabix.speedup.range-->
 //
 // The reference is in a comment so it survives regeneration, and the value is
 // plain text so a reader — on the site, on GitHub, in an editor — sees a figure
-// rather than a template. Same trade as the BEGIN/END blocks around a table,
-// written small enough to sit inside a sentence.
+// rather than a template.
+//
+// **The marker FOLLOWS the value, with no space anywhere in the pair**, and
+// that is load-bearing rather than a style choice. A markdown line beginning
+// `<!--` is an HTML *block* in CommonMark, not an inline comment, so it ends
+// the paragraph it lands in. The first spelling here bracketed the value
+// between an opening and closing marker, and the first reflow after a rebase
+// put the opening one at the start of a line and split a sentence in half.
+// Written this way the figure and its reference are a single unbreakable token,
+// so no rewrap can separate them or move the comment to a line start — which is
+// also why `resolveReference` returns `203KB` rather than `203 KB`.
 //
 // Two shapes:
 //
@@ -40,10 +49,16 @@ import { check, checkOrWriteAll, docFiles } from './check-utils.ts'
 import { loadMeasurements, resolveReference } from './measurements.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
-// The value is anything up to the closing marker EXCEPT another marker, so an
-// unclosed reference fails here rather than swallowing the rest of the
-// paragraph into the next one's value.
-const INLINE = /<!--m:([\w.-]+)-->((?:(?!<!--)[\s\S])*?)<!--\/m-->/g
+// The value is the figure-shaped token immediately before the marker: a digit
+// and then anything that is not a space or a `<`. Deliberately narrower than
+// `\S+`, which would swallow an opening bracket or quote sitting against the
+// figure and then delete it on the next regeneration.
+const INLINE = /(\d[^\s<]*)<!--m:([\w.-]+)-->/g
+
+// A marker with no figure in front of it — a reference written by hand, or one
+// whose value somebody deleted. It resolves to nothing and reads like a comment
+// that is doing something.
+const ORPHAN = /(^|[\s<])<!--m:([\w.-]+)-->/gm
 
 const records = loadMeasurements()
 const problems: string[] = []
@@ -59,10 +74,15 @@ const generated = trees
       return undefined
     }
     const rel = relative(repoRoot, path)
-    const content = text.replaceAll(INLINE, (whole, ref: string) => {
+    for (const orphan of text.matchAll(ORPHAN)) {
+      problems.push(
+        `${rel}: <!--m:${orphan[2]}--> has no figure in front of it — write the value, then the marker, with no space between`,
+      )
+    }
+    const content = text.replaceAll(INLINE, (whole, _value, ref: string) => {
       try {
         spliced++
-        return `<!--m:${ref}-->${resolveReference(records, ref)}<!--/m-->`
+        return `${resolveReference(records, ref)}<!--m:${ref}-->`
       } catch (e) {
         problems.push(`${rel}: ${(e as Error).message}`)
         return whole
@@ -74,19 +94,6 @@ const generated = trees
     return { path, content, label: `${rel} inline figures` }
   })
   .filter(g => g !== undefined)
-
-// An unclosed or misspelled marker leaves the reference in the file doing
-// nothing, which reads exactly like one that resolved.
-for (const path of trees.flatMap(tree => docFiles(tree))) {
-  const text = readFileSync(path, 'utf8')
-  const opens = (text.match(/<!--m:/g) ?? []).length
-  const closes = (text.match(/<!--\/m-->/g) ?? []).length
-  if (opens !== closes) {
-    problems.push(
-      `${relative(repoRoot, path)}: ${opens} <!--m:…--> against ${closes} <!--/m-->`,
-    )
-  }
-}
 
 if (problems.length > 0) {
   console.error(`${problems.length} inline figure problem(s):`)
