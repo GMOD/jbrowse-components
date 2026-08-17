@@ -151,14 +151,13 @@ async function renderFigure(view: BrowserView, session: BrowserSession) {
     await renderViewTracks({
       view,
       opts: { fontSize, trackLabels, rasterizeLayers: false },
-      // The theme each display bakes its *own* colours from -- the alignments and
-      // MAF bodies rebuild a palette from it rather than reading the provider, so
-      // an export can be a different theme from the screen. `themeOptions` is the
-      // session's serializable theme description and `configTheme` is the half
-      // that means "what the host asked for", which is the same slot
-      // `SessionPaletteProvider` writes below: pass it and the figure follows the
-      // page's light/dark mode with nothing here to keep in sync.
-      theme: session.themeOptions.configTheme,
+      // The theme each display bakes its *own* colours from -- the alignments
+      // and MAF bodies rebuild a palette from it rather than reading the
+      // provider, so an export can be a different theme from the screen. This is
+      // the call every view's `renderToSvg` makes, and it resolves from the same
+      // config slot `SessionPaletteProvider` writes below, so the figure follows
+      // the page's light/dark mode with nothing here to keep in sync.
+      theme: session.getActiveThemeOptions(),
       textHeight,
       trackLabels,
       reserveLegendWidth: true,
