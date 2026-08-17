@@ -343,27 +343,20 @@ const FASTA_EXT = /\.(fa|fasta|fas|fna|mfa)$/i
 const FASTA_GZ_EXT = /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i
 const TWOBIT_EXT = /\.2bit$/i
 
-// Every extension test below is anchored to the end of the name, and a filename
-// taken off a URL carries whatever follows it: a presigned S3 or GCS link ends
-// in `?X-Amz-Signature=...`, which is one of the two normal ways to hand someone
-// a genome. getFileName keeps the query because that is the name to show;
-// placing the file wants the path part on its own.
-function baseFilename(filename: string) {
-  return filename.split(/[?#]/)[0]!
-}
-
+// Every pattern here anchors to the end of the name, which is why getFileName
+// drops a URI's query string — a presigned link's few hundred characters of
+// signature would otherwise be what these match against.
 export function getAssemblyNameFromFilename(filename: string) {
-  return baseFilename(filename)
+  return filename
     .replace(FASTA_GZ_EXT, '')
     .replace(FASTA_EXT, '')
     .replace(TWOBIT_EXT, '')
 }
 
 export function detectAdapterType(filename: string): AdapterType | undefined {
-  const name = baseFilename(filename)
-  return FASTA_GZ_EXT.test(name)
+  return FASTA_GZ_EXT.test(filename)
     ? 'BgzipFastaAdapter'
-    : TWOBIT_EXT.test(name)
+    : TWOBIT_EXT.test(filename)
       ? 'TwoBitAdapter'
       : undefined
 }
@@ -383,22 +376,21 @@ export type FileRole =
 // sidecars (.fai/.gzi) are checked before the fasta patterns they share a stem
 // with, and the fasta patterns before the looser cytoband/alias name matches.
 export function classifyFilename(filename: string): FileRole | undefined {
-  const name = baseFilename(filename)
-  return /\.fai$/i.test(name)
+  return /\.fai$/i.test(filename)
     ? 'fai'
-    : /\.gzi$/i.test(name)
+    : /\.gzi$/i.test(filename)
       ? 'gzi'
-      : TWOBIT_EXT.test(name)
+      : TWOBIT_EXT.test(filename)
         ? 'twoBit'
-        : FASTA_GZ_EXT.test(name)
+        : FASTA_GZ_EXT.test(filename)
           ? 'fastaGz'
-          : FASTA_EXT.test(name)
+          : FASTA_EXT.test(filename)
             ? 'fasta'
-            : /\.chrom\.sizes$/i.test(name)
+            : /\.chrom\.sizes$/i.test(filename)
               ? 'chromSizes'
-              : /cytoband/i.test(name)
+              : /cytoband/i.test(filename)
                 ? 'cytobands'
-                : /alias/i.test(name)
+                : /alias/i.test(filename)
                   ? 'refNameAliases'
                   : undefined
 }

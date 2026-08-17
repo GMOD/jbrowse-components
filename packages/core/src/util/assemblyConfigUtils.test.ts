@@ -484,22 +484,11 @@ describe('classifyFilename', () => {
     expect(classifyFilename('myalias.fa')).toBe('fasta')
   })
 
-  // every pattern here is anchored to the end of the name, so a presigned S3 or
-  // GCS link — one of the two normal ways to share a genome — could not be
-  // placed at all and the pane answered "Couldn't place"
-  test.each([
-    ['hg38.fa?X-Amz-Signature=deadbeef', 'fasta'],
-    ['hg38.fa.gz?token=abc&x=1', 'fastaGz'],
-    ['hg38.fa.gz.fai?token=abc', 'fai'],
-    ['hg38.2bit#frag', 'twoBit'],
-  ])('places %s despite what the URL appends', (filename, role) => {
-    expect(classifyFilename(filename)).toBe(role)
-  })
-
-  test('and the name comes off the path, not the query', () => {
-    expect(
-      getAssemblyNameFromFilename('hg38.fa?X-Amz-Signature=deadbeef'),
-    ).toBe('hg38')
+  // every pattern here anchors to the end of the name, which is what getFileName
+  // dropping a URI's query buys — a presigned link is covered by its test
+  test('matches at the end of the name', () => {
+    expect(classifyFilename('hg38.fa.gz.fai')).toBe('fai')
+    expect(classifyFilename('hg38.fa.fai.bak')).toBeUndefined()
   })
 })
 
