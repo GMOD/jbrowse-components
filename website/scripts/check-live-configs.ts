@@ -6,6 +6,7 @@ import { CODE_BASE } from '../src/lib/code-base.ts'
 import { reportProblems } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 import { screenshotLiveUrls } from './screenshot-specs.ts'
+import { videoLiveUrls } from './video-specs.ts'
 
 // Every figure's "Open this view in JBrowse" link is `<CODE_BASE>?config=…`, and
 // a relative config is served by the hosted build out of its own bundled
@@ -43,8 +44,18 @@ function configOf(url: string) {
 
 // Grouped by config so the report names the file once with its figures under it,
 // which is also the unit a fix is applied in.
+//
+// THE TOURS ARE IN HERE TOO. A video's caption carries the same kind of link a
+// figure's does, and for a tour it is the more load-bearing of the two: a
+// figure's link opens the state the figure already shows, where a tour's opens
+// the state it STARTS in, so a reader who watched the route can walk it. That
+// link had nothing checking it, and `pangenome/hprc_end_to_end` is the first one
+// pointed at a config no figure names.
 const specsByConfig = new Map<string, string[]>()
-for (const [name, url] of Object.entries(screenshotLiveUrls)) {
+for (const [name, url] of [
+  ...Object.entries(screenshotLiveUrls),
+  ...Object.entries(videoLiveUrls),
+]) {
   const config = configOf(url)
   if (config && config !== 'none') {
     const existing = specsByConfig.get(config)
@@ -128,6 +139,7 @@ if (network) {
 }
 
 const figures = Object.keys(screenshotLiveUrls).length
+const tours = Object.keys(videoLiveUrls).length
 reportProblems(
   problems.length > 0
     ? [
@@ -135,5 +147,5 @@ reportProblems(
         ...problems.map(problem => `  ${problem}\n`),
       ]
     : [],
-  `\n${specsByConfig.size} configs across ${figures} figure links${network ? ` all load from ${CODE_BASE}` : ' are all tracked'}`,
+  `\n${specsByConfig.size} configs across ${figures} figure and ${tours} tour links${network ? ` all load from ${CODE_BASE}` : ' are all tracked'}`,
 )

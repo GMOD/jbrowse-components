@@ -48,6 +48,15 @@ JBrowse reads the slice in view straight off HPRC's S3. The graph route reads
 projections we prebuilt and host, with the build script in
 [Reproduce it end to end](#reproduce-it-end-to-end).
 
+The clip below runs the graph route end to end in one session: hg38 with its
+genes and nothing else, the track config from [Load the graph](#load-the-graph)
+pasted into the app, a window [cut as a graph](#open-a-locus-as-a-graph), and
+one node [taken back to its coordinates](#from-a-node-back-to-a-coordinate). The
+link under the clip opens the session it starts in, so pasting a config for your
+own graph walks the same route on it.
+
+<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph moved onto the reference axis, and one allele's GRCh38 interval marked in the linear view above it." />
+
 ## The GraphGenomeView plugin
 
 It is beta and not in the [plugin store](/docs/user_guides/plugin_store) yet, so
@@ -334,9 +343,8 @@ across the reference it replaces, never over its own length.
 <Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: nothing in the drawing lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so each allele hangs below where it attaches." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Taking the dropdown from one to the other says which node in the tangle is which
-node on the axis:
-
-<Video src="/media/pangenome/hprc_layout_anchored.mp4" caption="The same subgraph through Layout, force-directed to anchored. The tangle resolves into ranked rows under the segments lane, and every node lands under the GRCh38 coordinates it holds." />
+node on the axis, and the tour under [The dataset](#the-dataset) makes that move
+on this subgraph.
 
 Each locus below is a window small enough to draw:
 

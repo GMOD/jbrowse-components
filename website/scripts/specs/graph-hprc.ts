@@ -719,32 +719,81 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
   ]
 }
 
-// What website/scripts/video-specs.ts films on this dataset: the MHC class II
-// window, in the layout the still pair (pangenome/hprc_mhc_anchored) draws it
-// in twice. Shared rather than copied for the same reason the E. coli tours
-// share theirs — a tour through a session that had drifted from the figures'
-// walks a reader into an app the rest of the page is not showing.
+// ---------------------------------------------------------------------------
+// What website/scripts/video-specs.ts films on this dataset
+// ---------------------------------------------------------------------------
 //
-// `paneHeight` is the force half's, and it is doing the same job here as there:
-// this drawing is tall and narrow, so left to size itself the pane takes the
-// whole frame and the linear view the anchored layout is about to line up with
-// goes off the top.
-export function hprcMhcVideoSession(layoutMode: 'auto' | 'force') {
-  return sessionSpec(HPRC_CONFIG, {
+// THE TOUR STARTS WITH NO HPRC TRACK IN THE SESSION, which is the whole reason
+// it has a config of its own. `hprc.json` already carries
+// `hprc_minigraph_segments`, and `doPasteConfigSubmit` rejects a pasted config
+// whose `trackId` is taken rather than merging it — so a tour filmed against
+// the figures' config could not add the track the figures use. `hprc_tour.json`
+// is that config with the HPRC tracks removed: hg38, its genes, and the plugin.
+//
+// It is also the tour's live link (videoLiveUrls), and that is the stronger
+// half of the trade. A figure's link opens the state the figure shows; a tour's
+// opens the state the tour STARTS in, so a reader who has just watched the
+// route can take it, paste the same block, and end up where the clip ended.
+const HPRC_TOUR_CONFIG = local('test_data/graphgenomeview/hprc_tour.json')
+
+// The reader's window before they cut anything: wide enough that narrowing to
+// the class II locus is a visible move, narrow enough that the fine segments
+// index draws (it is one feature per graph SEGMENT, so a megabase is a mat).
+const TOUR_OPENING_WINDOW = 'chr6:32,400,000-32,700,000'
+
+// WHAT THE TOUR TYPES INTO THE PASTE BOX, and it is `pangenome_hprc.md`'s own
+// "Load the graph" fence character for character. A reader watching the clip is
+// meant to recognise the block above it on the page, so the two are one text:
+// change the fence and change this in the same commit.
+//
+// It carries `assemblyNameToPanSN`, which is the reason this track cannot be
+// added the ordinary way. `Add a track from file or URL` guesses an adapter
+// from a file extension and offers no adapter options, so a graph whose
+// segments are named `GRCh38#0#chr6` has nowhere to say which loaded assembly
+// that prefix means. Pasting the config is the route, which is what makes it
+// worth filming rather than describing.
+export const HPRC_SEGMENTS_TRACK_JSON = `{
+  "type": "FeatureTrack",
+  "trackId": "hprc_minigraph_segments",
+  "name": "HPRC release 2 graph (rGFA segments)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
+    "assemblyNameToPanSN": { "hg38": "GRCh38" }
+  },
+  "displayDefaults": {
+    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
+  }
+}`
+
+// The locus the tour navigates to before it launches a graph, and the window
+// every MHC figure on the page is cut from. Typed into the location box rather
+// than opened at: the drawer that carries the paste box takes ~400 px off the
+// linear view while it is open, and an LGV keeps its bp-per-pixel across a
+// resize, so the window a session opened at is not the window standing when the
+// drawer closes. The launch reads `dynamicBlocks`, so without this step the cut
+// is whatever the drawer left behind — and TOUR_NODE, which the tour
+// right-clicks by id, is an id THIS window's cut returns.
+export const TOUR_MHC_LOCUS = 'chr6:32,500,000-32,560,000'
+
+// The node the tour right-clicks, which is the node the force half of
+// pangenome/hprc_mhc_anchored opens its menu on: the 1.8 kb HG01433.2 allele
+// over HLA-DRB5. HPRC_ALLELE above carries the whole account, including why
+// `Highlight in hg38` marks a different node than the one clicked.
+export const TOUR_NODE = HPRC_ALLELE
+
+// The state the tour opens in: hg38 and its genes, nothing of the pangenome
+// yet. The gene lane is the figures' own, so the track that arrives mid-tour
+// lands under the same annotation the rest of the page draws it under.
+export function hprcTourSession() {
+  return sessionSpec(HPRC_TOUR_CONFIG, {
     views: [
       {
         type: 'LinearGenomeView',
         assembly: 'hg38',
-        loc: 'chr6:32,500,000-32,560,000',
-        tracks: [hg38GeneLane(70), hprcSegmentsLane(MHC_REGION)],
-      },
-      {
-        type: 'GraphGenomeView',
-        loadedTrackId: SEGMENTS_TRACK,
-        loadedRegion: MHC_REGION,
-        layoutMode,
-        colorScheme: 'reference-position',
-        paneHeight: 420,
+        loc: TOUR_OPENING_WINDOW,
+        tracks: [hg38GeneLane(70)],
       },
     ],
   })

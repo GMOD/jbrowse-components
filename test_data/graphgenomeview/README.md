@@ -5,11 +5,19 @@ Backs the `pangenome/graph_rgfa` screenshot spec
 [jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer)
 (view type `GraphGenomeView`) — not bundled in JBrowse Web.
 
-Three configs live here, all data-free:
+Four configs live here, all data-free:
 
 - `config.json` — K12 only, the minimal graph fixture.
 - `hprc.json` — hg38 plus the HPRC release 2 graph, bubble, allele and callset
   tracks.
+- `hprc_tour.json` — the same hg38 and the same plugin with **none** of those
+  tracks, which is the state a reader of `pangenome_hprc` is in before the page
+  adds its first one. `pangenome/hprc_end_to_end` films the track being added
+  from here through **Open track... → Add track from pasted JSON**, so the
+  fixture must not already carry `hprc_minigraph_segments`: a pasted config
+  whose `trackId` is taken is rejected rather than merged
+  (`doPasteConfigSubmit`). It is also the tour's live link, so a reader who
+  watched the route opens the session it started in and can walk it.
 - `ecoli_pangenome.json` — all five E. coli strains as assemblies, their gene
   tracks, the all-vs-all synteny track, and the rGFA segments track. This is the
   only fixture where a contributing assembly of the graph is also a loaded
@@ -45,7 +53,7 @@ plugin's own `pnpm betabuild`, never by hand: it gates on lint, typecheck and
 tests, sets Cache-Control, invalidates the edge, and then verifies what the CDN
 actually serves.
 
-**These three configs pin `esmUrl` to a content-addressed prefix**
+**Every config here pins `esmUrl` to a content-addressed prefix**
 (`demos/graphgenomeviewer/<hash>/`), which every betabuild writes alongside the
 unversioned entry point and prints at the end. The plugin lives in another repo,
 so an unpinned url means a deploy changes every graph figure with no commit here

@@ -1,8 +1,8 @@
 // The motion tours: what generate-video.ts films, in the same declarative shape
 // screenshot-specs.ts uses for the stills.
 //
-// A video earns its place only where the STILL CANNOT SAY IT. Two shapes qualify
-// on the pangenome pages and nothing else so far:
+// A video earns its place only where the STILL CANNOT SAY IT. Three shapes
+// qualify on the pangenome pages and nothing else so far:
 //
 //   A ROUTE. `Track menu -> Launch view -> Graph genome view (this region)` is
 //   how every graph on those pages was made, and the tutorials describe it in
@@ -14,6 +14,13 @@
 //   drawings side by side. Which node in the left panel is which node in the
 //   right is exactly what a pair of stills cannot state, and what watching them
 //   move states for free.
+//
+//   A WHOLE SESSION. `hprc_end_to_end` opens on an hg38 with one gene track and
+//   ends holding an allele's coordinates. What it carries that the two above do
+//   not is where a page's JSON fences GO: a config block says what to paste and
+//   nothing about the form it is pasted into, so a reader working out whether
+//   any of this reaches their own graph is reading about an app they have never
+//   seen.
 //
 // Everything else those pages need is a still and should stay one: a figure is
 // searchable, diffable, annotatable and readable at a glance, and none of that
@@ -29,7 +36,12 @@ import {
   TOOLBAR_READY,
   referencePositionColor,
 } from './specs/graph-fixtures.ts'
-import { hprcMhcVideoSession } from './specs/graph-hprc.ts'
+import {
+  HPRC_SEGMENTS_TRACK_JSON,
+  TOUR_MHC_LOCUS,
+  TOUR_NODE,
+  hprcTourSession,
+} from './specs/graph-hprc.ts'
 
 import type { ScreenshotAction } from './screenshot-spec-types.ts'
 
@@ -132,6 +144,24 @@ const pggbLinearOnly = sessionSpec(PGGB_CONFIG, {
 
 // The layout dropdown's own row, which is the same element in every graph view.
 const LAYOUT_SELECT = '[data-testid="graph-layout-select"]'
+
+// What the HPRC tour drives, named here because a menu label and a testid read
+// as noise inline and each has a reason to be the one it is.
+const SEGMENTS_TRACK = 'hprc_minigraph_segments'
+const PASTE_WORKFLOW = 'Add track from pasted JSON'
+const PASTE_BOX = 'textarea[placeholder^="Paste track config"]'
+const LOCATION_BOX = 'input[placeholder="Search for location"]'
+const HIGHLIGHT_ITEM = 'Highlight in hg38'
+// A display by its own id rather than by type: `feature-display` is the testid
+// every canvas feature lane shares, so the gene lane already standing would
+// satisfy it and the tour would carry on before the segments it just added had
+// fetched anything. `<trackId>-<displayType>` is what a config with no explicit
+// `displayId` gets (packages/core/src/util/tracks.ts), which is exactly the
+// case here — the pasted block declares no display.
+const displayReady = (displayId: string) =>
+  `[data-display-id="${displayId}"][data-display-phase="ready"]`
+const GENES_READY = displayReady('hg38_ncbiRefSeq_ucsc-LinearBasicDisplay')
+const SEGMENTS_READY = displayReady(`${SEGMENTS_TRACK}-LinearBasicDisplay`)
 // Sample rows have arrived: the labels, not just the toolbar, since the layout
 // runs after the graph loads and the toolbar is up before there is a row to
 // label.
@@ -232,26 +262,122 @@ export const videoSpecs: VideoSpec[] = [
     ],
     tailMs: 3000,
   },
-  // The human half of the same re-layout, where the anchored mode has the
-  // stronger claim: every x becomes a GRCh38 coordinate, so each allele drops
-  // under the place it attaches and the drawing lines up with the linear view
-  // above it. The still pair (pangenome/hprc_mhc_anchored) states that in a
-  // caption; here the nodes are watched going there, which is the one reading a
-  // caption cannot give.
+  // THE WHOLE PAGE IN ONE SESSION. Every other tour here starts in an app that
+  // already has the data; this one starts in hg38 with its genes and nothing
+  // else, and the first thing it does is put HPRC's graph into the session
+  // through the form a reader would use.
+  //
+  // It opens pangenome_hprc rather than sitting in the section it illustrates,
+  // and it is the only clip on that page: the sections it walks through are
+  // "Load the graph", "Open a locus as a graph", "The Layout dropdown" and
+  // "From a node back to a coordinate", which is most of the page's working
+  // route. A second clip of the Layout dropdown alone stood in that third
+  // section until this one existed, and it was the same subgraph making the
+  // same move a screen further down.
   {
-    name: 'pangenome/hprc_layout_anchored',
+    name: 'pangenome/hprc_end_to_end',
     description:
-      'One MHC class II subgraph moving from the force drawing onto the reference axis it shares with the linear view',
-    url: hprcMhcVideoSession('force'),
+      "HPRC release 2's graph from a pasted track config to an allele read off the drawing: paste, navigate, cut a subgraph, anchor it, and take one node back to its GRCh38 interval",
+    url: hprcTourSession(),
     viewportWidth: 1280,
-    // The linear view and a `paneHeight: 420` graph pane, the same pane the
-    // still's force half is measured at. Confirmed against the run's own
-    // content report rather than guessed.
-    viewportHeight: 900,
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 180000,
-    settleMs: 6000,
+    // Sized to the FORCE drawing, which is the tour's tallest state and neither
+    // of its ends. The run reports 276px of app at the first frame (one gene
+    // lane), 1103px at its tallest, and 723px at the last, because the anchored
+    // layout the tour finishes in is seven rank rows where the force pane takes
+    // the plugin's whole MAX_CANVAS_HEIGHT.
+    //
+    // The pane is not a free parameter here the way it is in a figure: the
+    // graph view is created by the menu item, so nothing in this spec can write
+    // the `paneHeight` a session snapshot can. So the choice is a frame with
+    // page background under its short states or a frame that clips the force
+    // drawing, and the drawing is what the launch was filmed for.
+    viewportHeight: 1120,
+    readySelector: GENES_READY,
+    readyTimeout: 120000,
+    settleMs: 4000,
     steps: [
+      { type: 'click', text: 'File', say: 'File', hold: 700 },
+      { type: 'waitForText', text: 'Open track...' },
+      { type: 'click', text: 'Open track...', say: 'Open track...' },
+      { type: 'waitForText', text: 'Enter track data' },
+      // The workflow select, by the option it is showing. Only one element
+      // carries that text until the menu opens, and by then the item this
+      // clicks next is the only one carrying its own.
+      {
+        type: 'click',
+        text: 'Add a track from file or URL',
+        say: 'Choose how to add a track',
+        hold: 700,
+      },
+      { type: 'waitForText', text: PASTE_WORKFLOW },
+      { type: 'click', text: PASTE_WORKFLOW, say: PASTE_WORKFLOW },
+      { type: 'waitForSelector', selector: PASTE_BOX },
+      // OFF CAMERA, because what a reader does here is paste. `type` sends the
+      // config a keystroke at a time through a controlled MUI field, which is
+      // both slower than a paste and a different action from the one being
+      // documented; cutting it leaves the box empty, then full, which is what
+      // pasting looks like. The caption from the step above stands through it.
+      {
+        type: 'type',
+        selector: PASTE_BOX,
+        value: HPRC_SEGMENTS_TRACK_JSON,
+        cut: true,
+      },
+      // the filled box, held long enough to be read as the page's own block
+      { type: 'delay', ms: 2600 },
+      { type: 'click', text: 'Submit', say: 'Submit' },
+      // Submit dismisses the widget itself (finishAddTrack), so the drawer
+      // closing is the app's answer rather than a step.
+      {
+        type: 'waitForSelector',
+        selector: SEGMENTS_READY,
+        timeout: 180000,
+        cut: true,
+      },
+      { type: 'delay', ms: 2600 },
+      // The locus. Also the step that makes the launch below deterministic —
+      // the drawer took ~400 px off the view while it was open, and an LGV
+      // keeps its bp-per-pixel across a resize, so the window standing now is
+      // wider than the one the session opened at.
+      {
+        type: 'type',
+        selector: LOCATION_BOX,
+        value: TOUR_MHC_LOCUS,
+        clear: true,
+        say: TOUR_MHC_LOCUS,
+      },
+      { type: 'press', key: 'Enter' },
+      { type: 'delay', ms: 1500 },
+      {
+        type: 'waitForSelector',
+        selector: SEGMENTS_READY,
+        timeout: 180000,
+      },
+      { type: 'delay', ms: 1800 },
+      {
+        type: 'click',
+        selector: `[data-testid="track_menu_icon"][data-trackid="${SEGMENTS_TRACK}"]`,
+        say: 'Track menu',
+        hold: 700,
+      },
+      { type: 'waitForText', text: 'Launch view' },
+      { type: 'click', text: 'Launch view', say: 'Launch view', hold: 700 },
+      { type: 'waitForText', text: 'Graph genome view (this region)' },
+      {
+        type: 'click',
+        text: 'Graph genome view (this region)',
+        say: 'Graph genome view (this region)',
+      },
+      {
+        type: 'waitForSelector',
+        selector: TOOLBAR_READY,
+        timeout: 180000,
+        cut: true,
+      },
+      { type: 'delay', ms: 2500 },
+      // The re-layout, on the human graph: every x becomes a GRCh38 coordinate,
+      // so each allele drops under the place it attaches and the drawing lines
+      // up with the segments lane above it.
       { type: 'click', selector: LAYOUT_SELECT, say: 'Layout', hold: 800 },
       { type: 'waitForText', text: 'Anchored' },
       { type: 'click', text: 'Anchored', say: 'Anchored' },
@@ -262,8 +388,29 @@ export const videoSpecs: VideoSpec[] = [
         cut: true,
       },
       { type: 'delay', ms: 2500 },
+      // And back to a coordinate. The node is NAMED rather than pointed at, so
+      // a cut that comes back different fails the run instead of right-clicking
+      // empty canvas. What the item writes into the linear view is the
+      // reference segment this allele attaches across, not the allele's own
+      // length — which is why the clip ends holding both panes.
+      {
+        type: 'rightclick',
+        anchor: { view: 1, graphNode: TOUR_NODE },
+        say: 'Right-click a node',
+        hold: 900,
+      },
+      { type: 'waitForText', text: HIGHLIGHT_ITEM },
+      { type: 'click', text: HIGHLIGHT_ITEM, say: HIGHLIGHT_ITEM },
+      { type: 'delay', ms: 2000 },
     ],
-    tailMs: 3000,
+    // THE FORCE DRAWING, not the last frame. A poster is what a reader sees
+    // before pressing play, and the default (the state the tour ends in) is the
+    // anchored layout, which fills two thirds of a frame sized for the pane
+    // above it — so the still standing in for the whole tour would be a strip
+    // of app over page background. This is the clip's own fullest frame, in the
+    // seconds between the launch landing and the Layout dropdown opening.
+    posterAt: 30,
+    tailMs: 3500,
   },
 ]
 
