@@ -180,8 +180,8 @@ what goes wrong when the read being cancelled is one
 
 ### Don't cut a genotype string out of the line for every sample
 
-A row of a 3000-sample VCF carries one genotype per sample, and drawing that row
-used to mean cutting one substring out of the line per sample.
+A row of a multi-sample VCF carries one genotype per sample, and drawing that
+row used to mean cutting one substring out of the line per sample.
 [`@gmod/vcf`](https://github.com/GMOD/vcf-js/blob/main/docs/optimizations.md#one-pass-per-sample-however-many-keys-you-ask-for)
 reports each genotype as a pair of offsets into the line it already holds, and
 `computeSampleInfo` walks those in a single pass per row: each distinct genotype
@@ -252,18 +252,17 @@ working set, peel the body one operation at a time.
 ## The worker boundary
 
 A track's data is built in a worker and drawn on the main thread, so all of it
-crosses one `postMessage`.
-
-What crosses is one typed array per attribute — every record's start position in
-one array, every record's color in another — and a record is an index shared
-across them. Arrays in that shape cross as
+crosses one `postMessage`. What crosses is
+[one typed array per attribute](https://github.com/GMOD/cram-js/blob/main/docs/optimizations.md#columns-not-objects)
+— every record's start position in one array, every record's color in another —
+and a record is an index shared across them. Arrays in that shape cross as
 [transferables](/docs/developer_guides/rpc_workers#returning-arraybuffers-zero-copy),
 so handing a block over costs the same whether it holds ten records or a
 million, and they are the buffers the graphics card takes, so the main thread
 uploads them without reading them. The decoder writes the arrays the shader
 reads, and no step in between converts between representations.
 
-That is the largest single win on the page, and the rest of the page compounds
+That is the largest single win here, and everything else on this page compounds
 on top of it. The MAF worker is where it was measured: sending typed arrays
 instead of objects took its `postMessage` from 3.3 s to 0.03 ms on one region.
 
@@ -313,7 +312,7 @@ frame.
 
 Attributing every DOM mutation during a 5x zoom to its nearest `data-testid`
 subtree put the churn in the coordinate ruler: the scalebar accounted for most
-of the mutation count, and the alignments overlays for two of it.
+of the mutation count and the alignments overlays for two mutations.
 `ScalebarCoordinateLabels` created and destroyed a `<div>` per tick label per
 zoom, because keying the list by base position reuses nodes during a pan — where
 the labels do not move at all — and rebuilds it on a zoom, where every key
