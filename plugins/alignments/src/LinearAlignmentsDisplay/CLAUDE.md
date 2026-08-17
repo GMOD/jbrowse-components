@@ -58,13 +58,25 @@ over an empty region partitions to zero groups and the overlay never clears.
 `collapseGroupRows` puts depth in the overlap tint, so the collapsed path must
 **not** run `mergeSpans`.
 
-## Two row caps, and only one is an affordance
+## Four row caps, and only two are an affordance
 
-`groupClippedBy` classifies a clip as `'budget'` (the group's slice of the
-viewport) or `'ceiling'` (display-wide `maxHeight`). Only `'budget'` offers the
-chip's expand, which banks an override OF `maxHeight`. `'ceiling'` draws
-`PileupTruncationRule`, deliberately inert and not an alert — reads collapsing
-onto the bottom row is the cap working.
+**A layout pass is handed its cap WITH the policy that set it** (`RowCap`), and
+records that label when the cap actually clips. So `groupClippedBy` is a field
+read: `'budget'` (the lane's slice of the viewport), `'ceiling'` (display-wide
+`maxHeight`), `'override'` (a cap the user set) or `'collapse'`
+(`collapseGroupRows`).
+
+- `'budget'` and `'collapse'` offer the chip's expand, which banks an override
+  OF `maxHeight` — and an override opts the lane out of both.
+- `'ceiling'` draws `PileupTruncationRule`, deliberately inert and not an alert
+  — reads collapsing onto the bottom row is the cap working.
+- `'override'` fires neither: what a user's own cap hides is their own doing.
+
+**Don't reconstruct which cap it was.** That answer used to come from comparing
+a lane's row count back against the ceiling, which is true whenever the two caps
+merely differ — a single-section grouping sat wholly in that hole. `tighterCap`
+is the one place the budget and the ceiling are compared, and a tie is the
+ceiling, since expanding there hands back the identical cap.
 
 ## Read height vs track height
 

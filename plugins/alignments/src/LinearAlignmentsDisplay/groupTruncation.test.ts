@@ -51,11 +51,30 @@ function stackedReads(n: number): WorkerPileupData {
     readStrands: new Int8Array(n).fill(1),
     readInsertSizes: new Float32Array(n),
     readPairOrientations: new Uint8Array(n),
+    // One segment per read, spanning it. The collapsed layout tints DEPTH, and
+    // it measures depth off the segments (a spliced read must not tint its own
+    // intron), so a fixture with no segments collapses to a lane with no overlap
+    // at all.
+    segmentPositions: readPositions,
+    segmentReadIndices: Uint32Array.from({ length: n }, (_, i) => i),
+    segmentEdgeFlags: new Uint8Array(n).fill(3),
+    numSegments: n,
   }
 }
 
-function seed(groups: { key: string; label: string; n: number }[]) {
+// `groupBy` is set BEFORE the data, because it is a tier-1 setting: setting it
+// afterwards re-partitions the fetch and clears what was just seeded.
+function seed(
+  groups: { key: string; label: string; n: number }[],
+  opts: { grouped?: boolean; collapseRows?: boolean } = {},
+) {
   const display = createEnv()
+  if (opts.grouped || opts.collapseRows) {
+    display.setGroupBy({ type: 'strand' })
+  }
+  if (opts.collapseRows) {
+    display.setCollapseGroupRows(true)
+  }
   display.setRpcData(0, {
     groups: groups.map(g => ({
       key: g.key,
@@ -164,4 +183,49 @@ test('the per-group height affordances are gated together', () => {
   display.setHeightMode('fixed')
   display.setShowPileup(false)
   expect(display.canSizeGroupHeights).toBe(false)
+})
+
+// A collapsed-to-one-row lane hides depth, and the chip expands it into a true
+// stack — so it is a cap like the other three, and it says which one it is. The
+// row-count reconstruction this replaced could only infer `'budget'` from the
+// arithmetic (one row is below the ceiling), and would have said `'ceiling'`
+// instead on a display whose ceiling was itself one row.
+test('a lane collapsed to one row names the collapse as its cap', () => {
+  const display = seed(
+    [
+      { key: '1', label: 'HP: 1', n: 40 },
+      { key: '2', label: 'HP: 2', n: 40 },
+    ],
+    { collapseRows: true },
+  )
+
+  expect(display.collapseGroupRows).toBe(true)
+  expect(rowsIn(display, 0)).toBe(1)
+  expect(display.groupClippedBy('1')).toBe('collapse')
+  // The chip's expand, because banking an override opts the lane out of the
+  // collapse; the banner stays away, since no ceiling did this.
+  expect(display.isGroupTruncated('1')).toBe(true)
+  expect(display.isGroupCeilingClipped('1')).toBe(false)
+})
+
+// A lane the user sized themselves still clips, and neither signal fires: what
+// their own cap hides is their own doing. That used to be a second read of
+// `groupMaxHeightOverrides` beside the classification; now the layout records
+// whose cap it ran under, so the two cannot disagree about which lanes are
+// overridden.
+test('a lane clipped by its own override raises nothing', () => {
+  const display = seed([
+    { key: '1', label: 'HP: 1', n: 400 },
+    { key: '2', label: 'HP: 2', n: 400 },
+  ])
+  display.setMaxHeight(40)
+  expect(display.groupClippedBy('1')).toBe('ceiling')
+
+  display.toggleGroupExpanded('1')
+  expect(display.hasGroupHeightOverride('1')).toBe(true)
+  expect(display.groupClippedBy('1')).toBe('override')
+  expect(display.isGroupTruncated('1')).toBe(false)
+  expect(display.isGroupCeilingClipped('1')).toBe(false)
+  // and its sibling, still on the shared budget, is unaffected
+  expect(display.groupClippedBy('2')).toBe('ceiling')
 })

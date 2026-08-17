@@ -7,7 +7,7 @@ import {
   refNameAxisShift,
   withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
-import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
+import { UNCAPPED, isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { getOrCreate } from '../shared/util.ts'
@@ -20,6 +20,8 @@ import type {
 import type {
   ChainPileupData,
   LaidOutPileupData,
+  RowCap,
+  RowCapSource,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
 import type { Span } from './spanOverlaps.ts'
@@ -434,10 +436,10 @@ function cloneWithChainLayout(
   data: WorkerPileupData,
   readYs: Uint16Array,
   maxY: number,
-  truncated: boolean,
+  clippedBy: RowCapSource | undefined,
 ): LaidOutPileupData {
   return {
-    ...cloneWithLayout(data, readYs, maxY, truncated),
+    ...cloneWithLayout(data, readYs, maxY, clippedBy),
     ...buildChainConnectingData(data, readYs),
   }
 }
@@ -475,11 +477,12 @@ export function attachLinkedReadLines(
 export function buildLaidOutChainMap({
   dataMap,
   regions,
-  maxRows = Number.POSITIVE_INFINITY,
+  rowCap = UNCAPPED,
 }: {
   dataMap: ReadonlyMap<number, WorkerPileupData>
   regions?: ReadonlyMap<number, RegionBounds>
-  maxRows?: number
+  // The cap and the policy that set it — see `PileupLayoutArgs.rowCap`.
+  rowCap?: RowCap
 }): Map<number, LaidOutPileupData> {
   const out = new Map<number, LaidOutPileupData>()
   const withReads: [number, WorkerPileupData][] = []
@@ -496,11 +499,12 @@ export function buildLaidOutChainMap({
   const { rowMap, maxY, truncated } = computeMultiRegionChainLayout(
     withReads,
     regions,
-    maxRows,
+    rowCap.rows,
   )
+  const clippedBy = truncated ? rowCap.source : undefined
   for (const [idx, data] of withReads) {
     const readYs = readYsFromRowMap(data, rowMap)
-    out.set(idx, cloneWithChainLayout(data, readYs, maxY, truncated))
+    out.set(idx, cloneWithChainLayout(data, readYs, maxY, clippedBy))
   }
   return out
 }

@@ -20,6 +20,7 @@ import type {
   LaidOutPileupData,
   PileupDataResult,
   PileupLayoutArrays,
+  RowCap,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy, SortedBy } from '../shared/types.ts'
@@ -98,6 +99,35 @@ export function maxRowsFor(maxHeight: number, rowHeight: number) {
   )
 }
 
+// The display-wide `maxHeight` cap, and the cap a lane's own height override
+// sets. Two names rather than one `{rows, source}` literal per call site, so the
+// policy is stated where the cap is built and the layout only has to carry it.
+export function ceilingCap(rows: number): RowCap {
+  return { rows, source: 'ceiling' }
+}
+export function overrideCap(rows: number): RowCap {
+  return { rows, source: 'override' }
+}
+
+/**
+ * The tighter of a lane's viewport slice and the display-wide ceiling, carrying
+ * which of the two it turned out to be.
+ *
+ * The one place those two numbers meet, and the reason a clipped lane can name
+ * what clipped it. `groupClippedBy` used to answer that afterwards by comparing a
+ * lane's ROW COUNT back against the ceiling — true whenever the two caps differ,
+ * and it read as arithmetic rather than as the question it was asking.
+ *
+ * A tie is the ceiling, because the expand the `'budget'` answer offers banks an
+ * override OF `maxHeight`: where the slice already equals the ceiling, expanding
+ * hands back the identical cap and not one extra read appears.
+ */
+export function tighterCap(budgetRows: number, ceilingRows: number): RowCap {
+  return budgetRows < ceilingRows
+    ? { rows: budgetRows, source: 'budget' }
+    : ceilingCap(ceilingRows)
+}
+
 // Everything needed to lay one group's reads out, minus the per-group row cap.
 // The stacking `order` and this bundle stay constant across the fit passes; only
 // the caps vary, so they're threaded separately.
@@ -144,7 +174,7 @@ export interface GroupLayoutContext {
 function layoutOneGroup(
   ctx: GroupLayoutContext,
   key: string,
-  cap: number,
+  cap: RowCap,
   collapse = false,
   coverageOnly = false,
 ): Map<number, LaidOutPileupData> {
@@ -156,13 +186,13 @@ function layoutOneGroup(
     return buildCollapsedPileupMap(dataMap)
   }
   const base = ctx.isChainMode
-    ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, maxRows: cap })
+    ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, rowCap: cap })
     : buildLaidOutPileupMap({
         dataMap,
         sortedBy: ctx.sortedBy,
         showSoftClipping: ctx.showSoftClipping,
         regions: ctx.regions,
-        maxRows: cap,
+        rowCap: cap,
         largeFeaturesFirst: ctx.largeFeaturesFirst,
       })
   return ctx.showLinkedReadLines ? attachLinkedReadLines(base) : base
@@ -214,14 +244,14 @@ export function applyReadColorsByGroup(
 
 // Lay out each group independently so one dense group can't starve the rest:
 // every group runs the existing single/multi-region layout over just its own
-// reads, capped at `maxRowsOverrides.get(key) ?? maxRows`. Ungrouped fetches are
+// reads, capped at `capOverrides.get(key) ?? cap`. Ungrouped fetches are
 // the one-group case, so this reduces exactly to the previous `laidOutPileupMap`.
 // Stacking order is `ctx.order` (see `orderedGroups`), so this stays purely a
 // layout pass — it doesn't re-derive group identity.
 export function buildLaidOutByGroup(
   ctx: GroupLayoutContext,
-  maxRows: number,
-  maxRowsOverrides: ReadonlyMap<string, number> = NO_OVERRIDES,
+  cap: RowCap,
+  capOverrides: ReadonlyMap<string, RowCap> = NO_OVERRIDES,
   coverageOnlyKeys: ReadonlySet<string> = NOTHING_COLLAPSED,
 ): LaidOutByGroup {
   const byGroup: LaidOutByGroup = new Map()
@@ -231,8 +261,8 @@ export function buildLaidOutByGroup(
       layoutOneGroup(
         ctx,
         key,
-        maxRowsOverrides.get(key) ?? maxRows,
-        collapsesRows(ctx, key, maxRowsOverrides),
+        capOverrides.get(key) ?? cap,
+        collapsesRows(ctx, key, capOverrides),
         coverageOnlyKeys.has(key),
       ),
     )
@@ -245,7 +275,7 @@ const NOTHING_COLLAPSED: ReadonlySet<string> = new Set()
 // Every caller passing no per-group sizes shares this, so `collapsesRows` can
 // take a required map and never has to treat "no overrides" as a missing
 // argument.
-const NO_OVERRIDES: ReadonlyMap<string, number> = new Map()
+const NO_OVERRIDES: ReadonlyMap<string, RowCap> = new Map()
 
 // Whether a group draws as one row. An explicitly-sized group (the label chip's
 // expand, or a height drag) opts out, so that affordance reads as "expand this
@@ -255,9 +285,9 @@ const NO_OVERRIDES: ReadonlyMap<string, number> = new Map()
 function collapsesRows(
   ctx: GroupLayoutContext,
   key: string,
-  maxRowsOverrides: ReadonlyMap<string, number>,
+  capOverrides: ReadonlyMap<string, RowCap>,
 ) {
-  return ctx.collapseGroupRows && !ctx.isChainMode && !maxRowsOverrides.has(key)
+  return ctx.collapseGroupRows && !ctx.isChainMode && !capOverrides.has(key)
 }
 
 // Per-group row counts (maxY) only — no laid-out clones. The fit-height pass
@@ -265,6 +295,9 @@ function collapsesRows(
 // `cloneWithLayout` cost (per-base *Ys arrays) that `buildLaidOutByGroup` pays.
 // Row counts match `groupMaxY(buildLaidOutByGroup(...).get(key))` exactly:
 // `attachLinkedReadLines`/`overlayReadTagColors` never change `maxY`.
+// A plain row count in, because no entry comes out: `rowCap`'s source labels a
+// clip on a laid-out region and there are none here. The caller's cap is the
+// display ceiling.
 export function layoutGroupRowCounts(
   ctx: GroupLayoutContext,
   maxRows: number,
@@ -287,7 +320,7 @@ export function layoutGroupRowCounts(
               sortedBy: ctx.sortedBy,
               showSoftClipping: ctx.showSoftClipping,
               regions: ctx.regions,
-              maxRows,
+              rowCap: ceilingCap(maxRows),
               largeFeaturesFirst: ctx.largeFeaturesFirst,
             }),
     )
@@ -334,7 +367,9 @@ export function layoutGroupsToViewport(
   const visibleGroupCount = ctx.order.filter(
     g => !collapsedKeys.has(g.key),
   ).length
-  const defaultMaxRows = grouped
+  // Ungrouped takes the ceiling and never a slice: there is nothing to split the
+  // viewport with, which is why its clip is always the one the banner speaks for.
+  const defaultCap = grouped
     ? fitGroupMaxRows({
         height: fit.height,
         groupCount: ctx.order.length,
@@ -343,18 +378,13 @@ export function layoutGroupsToViewport(
         overhead: fit.overhead(),
         maxRows: maxHeightRows,
       })
-    : maxHeightRows
+    : ceilingCap(maxHeightRows)
 
-  const overrideCaps = new Map<string, number>()
+  const overrideCaps = new Map<string, RowCap>()
   for (const [key, px] of heightOverridesPx) {
-    overrideCaps.set(key, maxRowsFor(px, rowHeight))
+    overrideCaps.set(key, overrideCap(maxRowsFor(px, rowHeight)))
   }
-  const pass = buildLaidOutByGroup(
-    ctx,
-    defaultMaxRows,
-    overrideCaps,
-    collapsedKeys,
-  )
+  const pass = buildLaidOutByGroup(ctx, defaultCap, overrideCaps, collapsedKeys)
   if (!grouped) {
     return pass
   }
@@ -378,7 +408,7 @@ export function layoutGroupsToViewport(
     })
   const bonusCaps = reclaimFitRows({
     outcomes,
-    defaultMaxRows,
+    defaultMaxRows: defaultCap.rows,
     maxRows: maxHeightRows,
   })
   // Only the truncated groups get a raised cap; every other group's layout is
@@ -424,7 +454,7 @@ export function fitGroupMaxRows({
   const pileupBudget = height - groupCount * overhead
   const slice = pileupBudget / Math.max(1, visibleGroupCount)
   const rows = Math.max(MIN_FIT_ROWS, Math.floor(slice / rowHeight))
-  return Math.min(maxRows, rows)
+  return tighterCap(rows, maxRows)
 }
 
 // One group's outcome after the equal-split layout pass, for the spare-row
@@ -458,7 +488,7 @@ export function reclaimFitRows({
   outcomes: FitGroupOutcome[]
   defaultMaxRows: number
   maxRows: number
-}): Map<string, number> | undefined {
+}): Map<string, RowCap> | undefined {
   const truncated = outcomes.filter(o => o.truncated)
   const spare = outcomes.reduce(
     (sum, o) => sum + (o.truncated ? 0 : defaultMaxRows - o.usedRows),
@@ -468,9 +498,11 @@ export function reclaimFitRows({
   if (bonus <= 0) {
     return undefined
   }
-  const caps = new Map<string, number>()
+  const caps = new Map<string, RowCap>()
   for (const o of truncated) {
-    caps.set(o.key, Math.min(maxRows, defaultMaxRows + bonus))
+    // A raised slice is still a slice — unless the raise reaches the ceiling,
+    // where the lane has run out of anything an expand could give it.
+    caps.set(o.key, tighterCap(defaultMaxRows + bonus, maxRows))
   }
   return caps
 }
@@ -486,18 +518,29 @@ export function groupMaxY(map: ReadonlyMap<number, PileupLayoutArrays>) {
   return max
 }
 
-// True when the row cap clipped any region of a group's laid-out map, i.e.
-// reads were collapsed to the overflow sentinel. Drives the per-group "show
-// all" affordance and the ungrouped truncation banner.
+/**
+ * Which cap hid reads from a group's laid-out map, or `undefined` when nothing
+ * was hidden.
+ *
+ * A field read: the layout pass recorded what bound it. The lane is one layout
+ * over several regions, so any clipped region answers for the lane — a region
+ * whose own reads all fit still shares the cap.
+ */
+export function groupClipSource(map: ReadonlyMap<number, PileupLayoutArrays>) {
+  for (const data of map.values()) {
+    if (data.clippedBy) {
+      return data.clippedBy
+    }
+  }
+  return undefined
+}
+
+// Whether any of a group's rows were hidden, whichever cap did it. Drives the
+// fit-budget reclaim and the height drag's "is there anything to grow into".
 export function anyRegionTruncated(
   map: ReadonlyMap<number, PileupLayoutArrays>,
 ) {
-  for (const data of map.values()) {
-    if (data.truncated) {
-      return true
-    }
-  }
-  return false
+  return groupClipSource(map) !== undefined
 }
 
 // The per-group pileup-height override (px) after one drag frame, or `undefined`

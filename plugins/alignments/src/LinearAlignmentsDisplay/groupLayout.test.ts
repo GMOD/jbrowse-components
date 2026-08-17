@@ -2,6 +2,7 @@ import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.t
 import {
   MIN_FIT_ROWS,
   buildLaidOutByGroup,
+  ceilingCap,
   collectAcrossGroups,
   fitGroupMaxRows,
   groupMaxY,
@@ -44,12 +45,16 @@ function overlappingReadsContext(): GroupLayoutContext {
   }
 }
 
+// These two exercise the placement, not the cap policy, so any cap will do —
+// `ceilingCap` because an ungrouped lane's is the one it would really get.
+const cap = ceilingCap
+
 function readYsOf(byGroup: LaidOutByGroup) {
   return [...(byGroup.get('g')?.get(0)?.readYs ?? [])]
 }
 
 test('buildLaidOutByGroup: places overlapping reads on their own rows', () => {
-  const laid = buildLaidOutByGroup(overlappingReadsContext(), 100)
+  const laid = buildLaidOutByGroup(overlappingReadsContext(), cap(100))
   expect(readYsOf(laid)).toEqual([0, 1])
   expect(groupMaxY(laid.get('g')!)).toBe(2)
 })
@@ -61,7 +66,7 @@ test('buildLaidOutByGroup: places overlapping reads on their own rows', () => {
 test('buildLaidOutByGroup: a coverage-only lane is not laid out at all', () => {
   const laid = buildLaidOutByGroup(
     overlappingReadsContext(),
-    100,
+    cap(100),
     undefined,
     new Set(['g']),
   )
@@ -81,7 +86,7 @@ test('fitGroupMaxRows: splits the post-overhead height evenly across groups', ()
       overhead: 50,
       maxRows: 1000,
     }),
-  ).toBe(45)
+  ).toEqual({ rows: 45, source: 'budget' })
 })
 
 test('fitGroupMaxRows: never exceeds the display-wide cap', () => {
@@ -94,7 +99,9 @@ test('fitGroupMaxRows: never exceeds the display-wide cap', () => {
       overhead: 0,
       maxRows: 30,
     }),
-  ).toBe(30)
+    // and says so, which is what stops the label chip offering an expand that
+    // would bank the very cap that clipped the lane
+  ).toEqual({ rows: 30, source: 'ceiling' })
 })
 
 test('fitGroupMaxRows: floors to MIN_FIT_ROWS when the slice is tiny', () => {
@@ -109,7 +116,7 @@ test('fitGroupMaxRows: floors to MIN_FIT_ROWS when the slice is tiny', () => {
       overhead: 45,
       maxRows: 1000,
     }),
-  ).toBe(MIN_FIT_ROWS)
+  ).toEqual({ rows: MIN_FIT_ROWS, source: 'budget' })
 })
 
 test('fitGroupMaxRows: a collapsed group hands its pileup slice to the rest', () => {
@@ -126,7 +133,7 @@ test('fitGroupMaxRows: a collapsed group hands its pileup slice to the rest', ()
       overhead: 50,
       maxRows: 1000,
     }),
-  ).toBe(28)
+  ).toEqual({ rows: 28, source: 'budget' })
   expect(
     fitGroupMaxRows({
       height: 1000,
@@ -136,7 +143,7 @@ test('fitGroupMaxRows: a collapsed group hands its pileup slice to the rest', ()
       overhead: 50,
       maxRows: 1000,
     }),
-  ).toBe(42)
+  ).toEqual({ rows: 42, source: 'budget' })
 })
 
 test('fitGroupMaxRows: all groups collapsed never divides by zero', () => {
@@ -150,7 +157,7 @@ test('fitGroupMaxRows: all groups collapsed never divides by zero', () => {
       overhead: 50,
       maxRows: 60,
     }),
-  ).toBe(60)
+  ).toEqual({ rows: 60, source: 'ceiling' })
 })
 
 test('reclaimFitRows: sparse groups donate unused rows to truncated ones', () => {
@@ -166,7 +173,7 @@ test('reclaimFitRows: sparse groups donate unused rows to truncated ones', () =>
       defaultMaxRows: 45,
       maxRows: 1000,
     }),
-  ).toEqual(new Map([['c', 115]]))
+  ).toEqual(new Map([['c', { rows: 115, source: 'budget' }]]))
 })
 
 test('reclaimFitRows: spare splits evenly across multiple truncated groups', () => {
@@ -183,8 +190,8 @@ test('reclaimFitRows: spare splits evenly across multiple truncated groups', () 
     }),
   ).toEqual(
     new Map([
-      ['b', 130],
-      ['c', 130],
+      ['b', { rows: 130, source: 'budget' }],
+      ['c', { rows: 130, source: 'budget' }],
     ]),
   )
 })
@@ -199,7 +206,9 @@ test('reclaimFitRows: never raises a recipient past the global cap', () => {
       defaultMaxRows: 45,
       maxRows: 50,
     }),
-  ).toEqual(new Map([['b', 50]]))
+    // Raised as far as the ceiling, and now labelled by it: a lane pinned there
+    // has nothing left for an expand to give it.
+  ).toEqual(new Map([['b', { rows: 50, source: 'ceiling' }]]))
 })
 
 test('reclaimFitRows: no second pass when nothing can move', () => {

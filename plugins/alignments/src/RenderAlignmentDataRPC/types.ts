@@ -318,6 +318,40 @@ export interface WorkerPileupData {
   readClipAtStart?: Uint32Array
 }
 
+// Which policy set the row cap a layout pass ran under. Not a severity ranking —
+// the four are different answers, and the UI reads them for different reasons:
+//
+//   'ceiling'  the display-wide `maxHeight`. Draws `PileupTruncationRule`; the
+//              per-lane expand is deliberately NOT offered, because it banks an
+//              override OF `maxHeight` and would hand back the identical cap.
+//   'budget'   this lane's slice of the fit-to-viewport split. The one the label
+//              chip's expand can actually raise.
+//   'override' a cap the user set themselves (chip expand, or a height drag), so
+//              anything it hides is their own doing and neither signal fires.
+//   'collapse' `collapseGroupRows` — one row, depth in the tint layer. Clipped
+//              whenever features overlap, and the chip expands it to a stack.
+//   'uncapped' no cap; can never clip.
+export type RowCapSource =
+  | 'ceiling'
+  | 'budget'
+  | 'override'
+  | 'collapse'
+  | 'uncapped'
+
+// A row cap and the policy that set it, travelling together: a layout pass that
+// is handed one can record what clipped it (`clippedBy`) without the caller
+// having to work it back out. `groupLayout.ts` builds every instance — see
+// `tighterCap`, which is the one place the budget and the ceiling are compared.
+export interface RowCap {
+  rows: number
+  source: RowCapSource
+}
+
+export const UNCAPPED: RowCap = {
+  rows: Number.POSITIVE_INFINITY,
+  source: 'uncapped',
+}
+
 // What main-thread layout adds (tier 2): a row per feature, and everything that
 // can only be derived once rows are placed. Every field here is a function of the
 // worker arrays AND the placement pass, so no producer of `WorkerPileupData` can
@@ -341,10 +375,14 @@ export interface PileupLayoutArrays {
   // together, so it is the group's height, not this region's.
   maxY: number
 
-  // Set when the row cap clipped the stack (reads beyond it collapse onto the
-  // bottom row). `groupClippedBy` says which cap, and only one of the two offers
-  // an expand.
-  truncated?: boolean
+  // WHICH cap clipped the stack, or absent when nothing was hidden. Reads beyond
+  // the cap collapse onto the bottom row, and which cap did it decides what the
+  // UI may offer: only `'budget'` and `'collapse'` can be expanded out of.
+  //
+  // The layout pass is handed its cap with this label attached (`RowCap`), so it
+  // records what bound it rather than leaving the answer to be reconstructed
+  // afterwards from a row count.
+  clippedBy?: RowCapSource
 
   // Connecting line data for chain modes (cloud/linkedRead).
   // One line per chain, drawn at chain Y between min(start) and max(end).

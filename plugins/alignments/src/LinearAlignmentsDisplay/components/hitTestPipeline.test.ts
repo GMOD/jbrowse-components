@@ -606,7 +606,7 @@ describe('chain mode resolves the read under the cursor, not the chain first rea
       chainFirstReadIndices: new Uint32Array([0, 2]),
       chainFlatbush,
       maxY: 2,
-      truncated: true,
+      clippedBy: 'ceiling',
     })
     const result = performHitTest(100, 80, resolved, CHAIN_OPTS)
     expect(result.type).toBe('feature')

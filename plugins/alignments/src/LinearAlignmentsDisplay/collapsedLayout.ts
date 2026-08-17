@@ -82,15 +82,16 @@ export function buildCollapsedPileupMap(
         // Row 0 for every feature, by construction: an all-zero readYs is the
         // layout, so there is no placement step that could disagree with maxY.
         //
-        // `truncated` is the "there is more here than one row shows" signal the
-        // group label reads to offer its expand affordance — true exactly when
-        // features actually overlap, since a sparse lane loses nothing to the
-        // collapse and needs no affordance.
+        // `'collapse'` is the "there is more here than one row shows" signal the
+        // group label reads to offer its expand affordance — recorded exactly
+        // when features actually overlap, since a sparse lane loses nothing to
+        // the collapse and needs no affordance. It is a cap like the other three:
+        // one row, and the chip expands out of it.
         ...cloneWithLayout(
           data,
           new Uint16Array(data.readKeys.length),
           maxY,
-          overlaps.overlapYs.length > 0,
+          overlaps.overlapYs.length > 0 ? 'collapse' : undefined,
         ),
         ...overlaps,
       })

@@ -10,10 +10,16 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../shared/types.ts'
+import { UNCAPPED } from './types.ts'
 
 import type { ReadKey, ReadKeys } from '../shared/readIdentity.ts'
 import type { SortedBy } from '../shared/types.ts'
-import type { LaidOutPileupData, WorkerPileupData } from './types'
+import type {
+  LaidOutPileupData,
+  RowCap,
+  RowCapSource,
+  WorkerPileupData,
+} from './types'
 
 const DELETION_CHAR = 42 // '*'
 
@@ -905,7 +911,7 @@ export function cloneWithLayout(
   data: WorkerPileupData,
   readYs: Uint16Array,
   maxY: number,
-  truncated = false,
+  clippedBy?: RowCapSource,
 ): LaidOutPileupData {
   const modificationYs = remapYs(data.modificationReadIndices, readYs)
   const numModifications = modificationYs.length
@@ -938,7 +944,7 @@ export function cloneWithLayout(
     perBaseQualYs: remapYs(data.perBaseQualReadIndices, readYs),
     perBaseLetterYs: remapYs(data.perBaseLetterReadIndices, readYs),
     maxY,
-    truncated,
+    clippedBy,
     modFlatbush,
   }
 }
@@ -978,12 +984,14 @@ export interface PileupLayoutArgs {
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean | undefined
   regions?: ReadonlyMap<number, RegionBounds>
-  maxRows?: number
+  // The cap AND which policy set it, so a clipped region can record what clipped
+  // it. Defaults to no cap at all.
+  rowCap?: RowCap
   largeFeaturesFirst?: boolean
 }
 
 // Per-region Y assignment before cloning: the raw data plus its filled readYs,
-// the shared row count, and the truncation flag. Split out from
+// the shared row count, and which cap clipped it (if any). Split out from
 // `buildLaidOutPileupMap` so a count-only caller (fit-height row counting) can
 // stop here and skip the per-feature `cloneWithLayout` — the dominant cost when
 // per-base-quality/letter overlays balloon the *Ys arrays. `laid` is empty when
@@ -994,7 +1002,7 @@ function computePileupRowLayout(
     sortedBy,
     showSoftClipping,
     regions,
-    maxRows = Number.POSITIVE_INFINITY,
+    rowCap = UNCAPPED,
     largeFeaturesFirst,
   }: PileupLayoutArgs,
   countOnly: boolean,
@@ -1002,8 +1010,14 @@ function computePileupRowLayout(
   empties: [number, WorkerPileupData][]
   laid: { idx: number; data: WorkerPileupData; readYs: Uint16Array }[]
   maxY: number
-  truncated: boolean
+  clippedBy: RowCapSource | undefined
 } {
+  const maxRows = rowCap.rows
+  // The cap's own label, recorded only when the cap actually bit — so
+  // `clippedBy` reads as "this is what hid reads here", never as "this is the cap
+  // it ran under".
+  const clipped = (truncated: boolean) =>
+    truncated ? rowCap.source : undefined
   const empties: [number, WorkerPileupData][] = []
   const withReads: [number, WorkerPileupData][] = []
   for (const [k, v] of dataMap) {
@@ -1014,7 +1028,7 @@ function computePileupRowLayout(
     }
   }
   if (withReads.length === 0) {
-    return { empties, laid: [], maxY: 0, truncated: false }
+    return { empties, laid: [], maxY: 0, clippedBy: undefined }
   }
   if (withReads.length === 1) {
     const [idx, data] = withReads[0]!
@@ -1026,7 +1040,7 @@ function computePileupRowLayout(
       empties,
       laid: countOnly ? [] : [{ idx, data, readYs }],
       maxY,
-      truncated,
+      clippedBy: clipped(truncated),
     }
   }
   const { rowMap, maxY, truncated } = computeMultiRegionLayout({
@@ -1047,7 +1061,7 @@ function computePileupRowLayout(
         }
         return { idx, data, readYs }
       })
-  return { empties, laid, maxY, truncated }
+  return { empties, laid, maxY, clippedBy: clipped(truncated) }
 }
 
 /**
@@ -1060,13 +1074,13 @@ function computePileupRowLayout(
 export function buildLaidOutPileupMap(
   args: PileupLayoutArgs,
 ): Map<number, LaidOutPileupData> {
-  const { empties, laid, maxY, truncated } = computePileupRowLayout(args, false)
+  const { empties, laid, maxY, clippedBy } = computePileupRowLayout(args, false)
   const out = new Map<number, LaidOutPileupData>()
   for (const [k, v] of empties) {
     out.set(k, withoutLayout(v))
   }
   for (const { idx, data, readYs } of laid) {
-    out.set(idx, cloneWithLayout(data, readYs, maxY, truncated))
+    out.set(idx, cloneWithLayout(data, readYs, maxY, clippedBy))
   }
   return out
 }

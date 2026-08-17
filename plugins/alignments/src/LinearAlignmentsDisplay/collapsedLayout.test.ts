@@ -70,7 +70,7 @@ test('a lane whose features never overlap needs no expand affordance', () => {
       ]),
     ),
   )
-  expect(out.truncated).toBe(false)
+  expect(out.clippedBy).toBeUndefined()
   expect(out.overlapPositions.length).toBe(0)
 })
 
@@ -83,7 +83,7 @@ test('overlaps are marked, all at row 0, and flag the lane for expansion', () =>
       ]),
     ),
   )
-  expect(out.truncated).toBe(true)
+  expect(out.clippedBy).toBe('collapse')
   expect([...out.overlapPositions]).toEqual([100, 150])
   expect([...out.overlapYs]).toEqual([0])
 })
@@ -121,7 +121,7 @@ test('a read spliced over a mate does not tint its own intron', () => {
     ),
   )
   expect(out.overlapPositions.length).toBe(0)
-  expect(out.truncated).toBe(false)
+  expect(out.clippedBy).toBeUndefined()
 })
 
 test('an empty region gets the zero-row layout, its arrays untouched', () => {

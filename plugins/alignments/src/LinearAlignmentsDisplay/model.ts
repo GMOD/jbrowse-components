@@ -95,6 +95,7 @@ import {
   anyRegionTruncated,
   applyReadColorsByGroup,
   collectAcrossGroups,
+  groupClipSource,
   groupMaxY,
   layoutGroupRowCounts,
   layoutGroupsToViewport,
@@ -1781,33 +1782,23 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Which cap hid reads from a group's pileup, if any: `'budget'` for the
-         * group's slice of the fit-to-viewport split, `'ceiling'` for the
-         * display-wide `maxHeight`, `undefined` when nothing was hidden (or when
-         * the user sized this group explicitly, which makes any clipping their
-         * own doing).
+         * Which cap hid reads from a group's pileup, or `undefined` when nothing
+         * was hidden. A read of what the layout pass recorded (`RowCapSource`
+         * names the five), not a re-derivation: it is handed its cap with the
+         * policy attached, so the answer comes back out of the layout rather than
+         * being reconstructed from a row count afterwards.
          *
-         * The two are different questions because different controls answer
-         * them, and only one of them can be right: expanding a group banks an
-         * override of `maxHeight` px, so a group ALREADY clipped at that ceiling
-         * gets the identical cap back — not one extra read appears, while the
-         * override silences the flag. A single-section grouping sat wholly in
-         * that hole, since one group takes the ungrouped `maxRowsFor(maxHeight)`
-         * cap and never a slice. A truncated group lays out exactly as many rows
-         * as its cap, so comparing its rows to the ceiling recovers which cap
-         * bound it without threading the caps back out of the layout pass.
+         * Which cap it was decides what may be offered, and only one answer can
+         * be right: expanding a lane banks an override of `maxHeight` px, so a
+         * lane already clipped at that ceiling gets the identical cap back — not
+         * one extra read appears, while the override silences the flag. The
+         * reconstruction this replaced compared a lane's rows against the
+         * ceiling, which is true whenever the two caps merely differ; a
+         * single-section grouping sat wholly in that hole, since one group takes
+         * the ungrouped cap and never a slice.
          */
-        groupClippedBy(key: string): 'budget' | 'ceiling' | undefined {
-          const map = this.groupLaidOutMap(key)
-          if (
-            self.groupMaxHeightOverrides.has(key) ||
-            !anyRegionTruncated(map)
-          ) {
-            return undefined
-          }
-          return groupMaxY(map) < maxRowsFor(this.maxHeight, this.rowHeight)
-            ? 'budget'
-            : 'ceiling'
+        groupClippedBy(key: string) {
+          return groupClipSource(this.groupLaidOutMap(key))
         },
 
         /**
@@ -1815,9 +1806,14 @@ export default function stateModelFactory(
          * True when a group's pileup was clipped by a cap the per-group expand
          * can actually raise. Drives the "show all" affordance on the section
          * label, which must not appear where it would do nothing.
+         *
+         * Two of the five caps qualify: a lane's viewport slice, and the single
+         * row `collapseGroupRows` gives it. Both expand into a true stack because
+         * banking an override opts the lane out of each.
          */
         isGroupTruncated(key: string) {
-          return this.groupClippedBy(key) === 'budget'
+          const clippedBy = this.groupClippedBy(key)
+          return clippedBy === 'budget' || clippedBy === 'collapse'
         },
 
         /**
