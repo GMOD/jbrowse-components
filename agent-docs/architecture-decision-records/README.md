@@ -83,4 +83,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [071](adr-071-a-status-phase-must-outlive-the-window.md) | Accepted | Every RPC status write goes through the one throttle window, the phase-end clear included, so a phase shorter than the window never paints |
 | [072](adr-072-only-one-phase-at-a-time-is-summable.md) | Accepted | aggregateStatus sums only the concurrent operations in the same phase; the rest are charged as unmeasured |
 | [073](adr-073-delegated-member-blocks-are-followed.md) | Accepted | A model's `.views(sharedViews)` link is followed to the declaration behind it, so a model file can be split by MEMBER and not only by member BODY — and a block the generator cannot follow is fatal rather than silent |
+| [074](adr-074-force-load-is-one-boolean-per-track.md) | Accepted | Force-load is a single per-track boolean, not a per-region per-axis ceiling — every question a raised ceiling had to answer was unanswerable, and four of them shipped as bugs |
 <!-- END GENERATED ADR INDEX -->
