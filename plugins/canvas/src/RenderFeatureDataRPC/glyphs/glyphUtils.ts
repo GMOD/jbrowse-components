@@ -166,12 +166,16 @@ export function hasContainerChildren(feature: Feature) {
   return getSubfeatures(feature).some(sub => getSubfeatures(sub).length > 0)
 }
 
-// CDS anywhere in the subtree: ranks coding transcripts ahead of non-coding
-// ones when stacking, so they render on top
-export function hasCodingSubfeature(feature: Feature): boolean {
-  return getSubfeatures(feature).some(
-    sub => isCDS(sub) || hasCodingSubfeature(sub),
-  )
+// A CDS here or anywhere below: ranks coding transcripts ahead of non-coding
+// ones when stacking, so they render on top.
+//
+// The feature ITSELF counts, because an isoform can be the CDS rather than
+// contain one — a viral polyprotein (NCBI's gene → CDS → mature_protein_region)
+// hangs cleavage products off its CDS, not further CDSs. Read as a subtree-only
+// question, the biologically important feature on a viral genome answered
+// "codes for nothing" and sorted below every ordinary mRNA in its gene.
+export function isCodingFeature(feature: Feature): boolean {
+  return isCDS(feature) || getSubfeatures(feature).some(isCodingFeature)
 }
 
 // Used by main-thread label-fit math in LinearBasicDisplay/layout.ts —

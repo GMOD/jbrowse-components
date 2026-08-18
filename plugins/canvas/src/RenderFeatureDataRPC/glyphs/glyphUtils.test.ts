@@ -1,7 +1,7 @@
 import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutBox } from './box.ts'
 import { findGlyph } from './findGlyph.ts'
-import { sortByPosition } from './glyphUtils.ts'
+import { isCodingFeature, sortByPosition } from './glyphUtils.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutSegments } from './segments.ts'
 
@@ -72,6 +72,64 @@ describe('sortByPosition', () => {
     const original = [...layouts]
     sortByPosition(layouts)
     expect(layouts).toEqual(original)
+  })
+})
+
+// What makes a feature coding is that a CDS is there — as the feature itself or
+// anywhere below it — and never what hangs off that CDS. Keying off the
+// polyprotein shape (a CDS with mature-protein children) instead would answer
+// this for the viral genomes and still leave a bare CDS isoform, which codes
+// for a protein like any other, ranked as coding for nothing.
+describe('isCodingFeature', () => {
+  const cds = (start: number, end: number) =>
+    mockFeature({ type: 'CDS', start, end })
+
+  it('is true for a CDS with no children of its own', () => {
+    expect(isCodingFeature(cds(100, 400))).toBe(true)
+  })
+
+  it('is true for a polyprotein CDS whose children are cleavage products', () => {
+    const polyprotein = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 900,
+      subfeatures: [
+        mockFeature({
+          type: 'mature_protein_region_of_CDS',
+          start: 100,
+          end: 500,
+        }),
+        mockFeature({ type: 'mat_peptide', start: 500, end: 900 }),
+      ],
+    })
+    expect(isCodingFeature(polyprotein)).toBe(true)
+  })
+
+  it('is true for a CDS anywhere below (gene → mRNA → CDS)', () => {
+    const gene = mockFeature({
+      type: 'gene',
+      start: 0,
+      end: 1000,
+      subfeatures: [
+        mockFeature({
+          type: 'mRNA',
+          start: 0,
+          end: 1000,
+          subfeatures: [cds(100, 900)],
+        }),
+      ],
+    })
+    expect(isCodingFeature(gene)).toBe(true)
+  })
+
+  it('is false for an exon-only transcript', () => {
+    const lncRna = mockFeature({
+      type: 'lnc_RNA',
+      start: 0,
+      end: 1000,
+      subfeatures: [mockFeature({ type: 'exon', start: 100, end: 900 })],
+    })
+    expect(isCodingFeature(lncRna)).toBe(false)
   })
 })
 

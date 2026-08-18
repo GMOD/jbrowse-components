@@ -797,4 +797,137 @@ describe('layoutSubfeatures layout', () => {
       ).toBe(false)
     })
   })
+
+  // NCBI RefSeq annotates a viral genome as gene → CDS → mature_protein_region,
+  // so the CDS is the isoform AND the coding feature: nothing under it is
+  // another CDS. test_data/enterovirus_d and SARS-CoV-2 ORF1ab are both this
+  // shape.
+  describe('polyprotein CDS isoform', () => {
+    const PRODUCTS = 16
+    const PRODUCT_WIDTH = 400
+    const POLYPROTEIN_START = 700
+
+    // `precursor` adds the uncleaved product RefSeq annotates beside the two it
+    // cleaves into (enterovirus VP0 next to capsid proteins 1A and 1B), which
+    // is what makes the products cover 800bp of the CDS twice
+    function polyprotein({ precursor = false } = {}) {
+      const products = Array.from({ length: PRODUCTS }, (_, i) =>
+        mockFeature({
+          type: 'mature_protein_region_of_CDS',
+          name: `product-${i}`,
+          start: POLYPROTEIN_START + i * PRODUCT_WIDTH,
+          end: POLYPROTEIN_START + (i + 1) * PRODUCT_WIDTH,
+        }),
+      )
+      return mockFeature({
+        type: 'CDS',
+        name: 'polyprotein',
+        start: POLYPROTEIN_START,
+        end: POLYPROTEIN_START + PRODUCTS * PRODUCT_WIDTH,
+        subfeatures: precursor
+          ? [
+              mockFeature({
+                type: 'mature_protein_region_of_CDS',
+                name: 'precursor',
+                start: POLYPROTEIN_START,
+                end: POLYPROTEIN_START + 2 * PRODUCT_WIDTH,
+              }),
+              ...products,
+            ]
+          : products,
+      })
+    }
+
+    // a plain transcript whose protein is a fraction of the polyprotein's 6400bp
+    function plainTranscript(name: string, cdsLength: number) {
+      return mockFeature({
+        type: 'mRNA',
+        name,
+        start: 100,
+        end: 200 + cdsLength,
+        subfeatures: [
+          mockFeature({
+            type: 'CDS',
+            name: `${name}-cds`,
+            start: 100,
+            end: 100 + cdsLength,
+          }),
+        ],
+      })
+    }
+
+    // the polyprotein first, so a ranking that reads it as non-coding has to
+    // move it for the stack order to change
+    function viralGene() {
+      return mockFeature({
+        type: 'gene',
+        name: 'ORF1ab',
+        start: 100,
+        end: POLYPROTEIN_START + PRODUCTS * PRODUCT_WIDTH,
+        subfeatures: [
+          polyprotein(),
+          plainTranscript('tx1', 300),
+          plainTranscript('tx2', 400),
+          plainTranscript('tx3', 500),
+        ],
+      })
+    }
+
+    const names = (layout: ReturnType<typeof layoutSubfeatures>) =>
+      layout.children.map(c => c.feature.get('name'))
+
+    it("survives longestCoding against the gene's plain mRNAs", () => {
+      const layout = layoutSubfeatures({
+        feature: viralGene(),
+        config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+      })
+      expect(names(layout)).toEqual(['polyprotein'])
+    })
+
+    // The cap measures the rows a gene really packs and a 16-product
+    // polyprotein packs 16 of them, so this gene overflows a 4-row lane that an
+    // isoform COUNT would have let through whole — and the ranking then decides
+    // what it keeps.
+    it('is what the measuring cap keeps', () => {
+      const layout = layoutSubfeatures({
+        feature: viralGene(),
+        config: mockDisplayConfig({ geneGlyphMode: 'all', maxIsoforms: 4 }),
+      })
+      expect(layout.isoformsCollapsed).toBe(true)
+      expect(names(layout)).toEqual(['polyprotein'])
+    })
+
+    it('stacks on top when nothing is collapsed', () => {
+      const layout = layoutSubfeatures({
+        feature: viralGene(),
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
+      })
+      expect(layout.isoformsCollapsed).toBe(false)
+      expect(names(layout)).toEqual(['polyprotein', 'tx1', 'tx2', 'tx3'])
+    })
+
+    // A polyprotein ranks by its CDS span, which is the protein the translator
+    // reads out of it (dedupedSortedCDS falls back to exactly this span). The
+    // cleavage products are a different quantity and would overstate it: RefSeq
+    // annotates enterovirus VP0 alongside the 1A and 1B it cleaves into, so the
+    // products can cover the same bases twice. Here they sum to 7200 against a
+    // 6400bp CDS, and a longer 6800bp protein still has to win.
+    it('loses to a genuinely longer protein', () => {
+      const gene = mockFeature({
+        type: 'gene',
+        name: 'g',
+        start: 100,
+        end: POLYPROTEIN_START + PRODUCTS * PRODUCT_WIDTH,
+        subfeatures: [
+          polyprotein({ precursor: true }),
+          plainTranscript('longer', 6800),
+        ],
+      })
+      const layout = layoutSubfeatures({
+        feature: gene,
+        config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
+      })
+      expect(names(layout)).toEqual(['longer'])
+    })
+  })
 })

@@ -4,7 +4,7 @@ import { findGlyph } from './findGlyph.ts'
 import {
   budgetFeatureHeightPx,
   featureHeightPx,
-  hasCodingSubfeature,
+  isCodingFeature,
 } from './glyphUtils.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
@@ -54,6 +54,14 @@ function getIsoforms(
 // dedupedSortedCDS): duplicated CDS rows are a real GFF3 quirk (e.g. Gencode)
 // and, counted twice here, would inflate one isoform's length and win it the
 // "longest coding" pick over a genuinely longer protein.
+//
+// A feature that IS the CDS falls back to its own span, which is the same
+// number and the same rule dedupedSortedCDS gives the translator — so a
+// polyprotein is ranked on the protein it really translates to, comparable with
+// the summed-CDS length every other isoform is ranked on. Summing its cleavage
+// products instead would count a different quantity: they can cover the same
+// bases twice (RefSeq annotates enterovirus VP0 beside the 1A and 1B it cleaves
+// into) and they stop short of the stop codon.
 function codingLength(feature: Feature): number {
   const seen = new Set<string>()
   let sum = 0
@@ -73,7 +81,9 @@ function codingLength(feature: Feature): number {
     }
   }
   walk(feature)
-  return sum
+  return sum === 0 && isCDS(feature)
+    ? feature.get('end') - feature.get('start')
+    : sum
 }
 
 // How highly the annotation itself rates this feature as the gene's
@@ -112,7 +122,7 @@ interface IsoformScore {
 }
 
 // The two terms BOTH orderings below lead with, per child, measured once —
-// `hasCodingSubfeature` walks the whole subtree, and the ranking (which the cap
+// `isCodingFeature` walks the whole subtree, and the ranking (which the cap
 // and `longestCoding` share) and the stack sort each used to walk it again.
 //
 // Protein length is deliberately not here: only the ranking needs it, and
@@ -129,7 +139,7 @@ function scoreIsoforms(features: Feature[], config: DisplayConfig) {
         canonical: wanted.length
           ? canonicalRank(feature, field, wanted)
           : Infinity,
-        coding: hasCodingSubfeature(feature),
+        coding: isCodingFeature(feature),
       },
     ]),
   )
