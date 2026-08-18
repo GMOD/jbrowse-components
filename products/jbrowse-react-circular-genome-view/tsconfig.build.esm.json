@@ -9,7 +9,6 @@
     { "path": "../../plugins/config/tsconfig.build.esm.json" },
     { "path": "../../plugins/data-management/tsconfig.build.esm.json" },
     { "path": "../../plugins/sequence/tsconfig.build.esm.json" },
-    { "path": "../../plugins/variants/tsconfig.build.esm.json" },
-    { "path": "../../plugins/wiggle/tsconfig.build.esm.json" }
+    { "path": "../../plugins/variants/tsconfig.build.esm.json" }
   ]
 }

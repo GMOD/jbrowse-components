@@ -2476,9 +2476,6 @@ importers:
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../../plugins/variants
-      '@jbrowse/plugin-wiggle':
-        specifier: workspace:^
-        version: link:../../plugins/wiggle
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
@@ -2494,6 +2491,9 @@ importers:
       react:
         specifier: '>=18.0.0'
         version: 19.2.8
+      react-dom:
+        specifier: '>=18.0.0'
+        version: 19.2.8(react@19.2.8)
 
   products/jbrowse-react-circular-genome-view/examples-site:
     dependencies:
