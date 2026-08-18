@@ -48,22 +48,33 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   // Appended after the shared builder's dimension radios, behind a divider so a
   // checkbox doesn't read as one of them. Synteny-specific: only an all-vs-all
   // track has a self lane.
+  //
+  // Offered only while mate-assembly grouping is on, which is the same condition
+  // `hiddenGroupKeys` reads: under any other dimension the self alignments are
+  // not a lane of their own, so the box hid nothing whichever way it was ticked.
+  // Absent rather than disabled, like `collapseGroupRowsItems` and the interbase
+  // toggle below.
   return {
     ...item,
     subMenu: [
       ...item.subMenu,
-      { type: 'divider' as const },
-      toggleItem(
-        'Hide self-alignment lane',
-        model.hideSelfAlignments,
-        model.setHideSelfAlignments,
-        {
-          helpText:
-            "Drop the mate-assembly lane for the view's own assembly. An " +
-            "aligner skips each sequence's own diagonal, so that lane holds " +
-            "no self-alignment line — only the assembly's internal repeats.",
-        },
-      ),
+      ...(model.groupBy?.type === 'mateAssembly'
+        ? [
+            { type: 'divider' as const },
+            toggleItem(
+              'Hide self-alignment lane',
+              model.hideSelfAlignments,
+              model.setHideSelfAlignments,
+              {
+                helpText:
+                  "Drop the mate-assembly lane for the view's own assembly. " +
+                  "An aligner skips each sequence's own diagonal, so that " +
+                  "lane holds no self-alignment line — only the assembly's " +
+                  'internal repeats.',
+              },
+            ),
+          ]
+        : []),
     ] satisfies MenuItem[],
   }
 }
