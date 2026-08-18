@@ -46,6 +46,80 @@ test('setHeight clamps to the minimum display height', () => {
   expect(m.height).toBe(20)
 })
 
+// A scrolling display, shaped like the real ones: the scroll extent is what the
+// content overruns the current height by, so it closes as the track grows.
+const scrolling = (contentHeight: number) =>
+  types
+    .compose(
+      'TestScrollingHeight',
+      TrackHeightMixin(),
+      types.model({
+        type: types.literal('test'),
+        configuration: configSchema,
+      }),
+    )
+    .views(self => ({
+      get scrollableHeight() {
+        return Math.max(0, contentHeight - self.height)
+      },
+    }))
+    .create({ type: 'test', configuration: { height: 100 } })
+
+test('expandToContentHeight grows the track onto the hidden content', () => {
+  const m = scrolling(340)
+  expect(m.expandToContentHeight()).toBe(240)
+  expect(m.height).toBe(340)
+  expect(m.scrollableHeight).toBe(0)
+})
+
+test('expandToContentHeight is a no-op once everything fits', () => {
+  const m = scrolling(80)
+  expect(m.expandToContentHeight()).toBe(0)
+  expect(m.height).toBe(100)
+})
+
+// The `Infinity` default — a display that doesn't scroll internally has no
+// hidden content to expand onto, and must not be resized to it.
+test('expandToContentHeight is a no-op for a non-scrolling display', () => {
+  const m = create()
+  expect(m.expandToContentHeight()).toBe(0)
+  expect(m.height).toBe(100)
+})
+
+// Whichever `resizeHeight` the composed display ends up with is the one the
+// expand has to go through — in practice `HeightModeMixin`'s, which leaves grow
+// mode first. Writing the slot directly instead would leave grow mode's
+// reactive height re-deriving `grownHeight`, and the double click would look
+// like it did nothing.
+test('expandToContentHeight goes through an overriding resizeHeight', () => {
+  const distances: number[] = []
+  const m = types
+    .compose(
+      'TestOverridingResize',
+      TrackHeightMixin(),
+      types.model({
+        type: types.literal('test'),
+        configuration: configSchema,
+      }),
+    )
+    .views(() => ({
+      get scrollableHeight() {
+        return 50
+      },
+    }))
+    .actions(() => ({
+      resizeHeight(distance: number) {
+        distances.push(distance)
+        return distance
+      },
+    }))
+    .create({ type: 'test', configuration: { height: 100 } })
+
+  m.expandToContentHeight()
+  expect(distances).toEqual([50])
+  expect(m.height).toBe(100)
+})
+
 // The compose-order contract. `HeightModeMixin` overrides `height` and
 // `resizeHeight`, and `types.compose` gives a collision to the later argument,
 // so the wrong order silently drops grow mode — and the two `height` getters

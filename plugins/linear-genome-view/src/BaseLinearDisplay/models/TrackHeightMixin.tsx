@@ -133,6 +133,29 @@ export default function TrackHeightMixin<
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * Grow the track by exactly the content it is currently hiding, so a
+       * display scrolled over a taller stack ends up showing all of it. The
+       * track's resize handle runs this on a double click.
+       *
+       * `scrollableHeight` is the whole measurement — it is already every
+       * scrolling display's answer to "how much is off the bottom", so no
+       * display has to supply a second one. A display that doesn't scroll
+       * internally leaves it at `Infinity` and gets a no-op, as does one
+       * already showing everything (0).
+       *
+       * Routed through `resizeHeight` rather than `setHeight` so grow mode's
+       * override still gets to leave grow first; going straight to the slot
+       * would let the reactive height re-derive `grownHeight` and the double
+       * click would appear to do nothing.
+       */
+      expandToContentHeight() {
+        const hidden = self.scrollableHeight
+        return Number.isFinite(hidden) && hidden > 0
+          ? self.resizeHeight(hidden)
+          : 0
+      },
       afterAttach() {
         // Keep scrollTop inside the content by construction. Any geometry change
         // — a shorter track, a smaller row height, a group collapse, a filter, a

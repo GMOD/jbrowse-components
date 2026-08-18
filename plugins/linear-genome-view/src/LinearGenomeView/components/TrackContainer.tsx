@@ -40,8 +40,12 @@ const useStyles = makeStyles()({
   // `bottom:0` portaled overlay (the status chips) lands on the track content's
   // bottom edge rather than having to subtract this height back out. The height
   // arrives inline from RESIZE_HANDLE_HEIGHT, which the model's offset
-  // arithmetic reads too; `bar` also carries one, and an inline style is the
-  // only spelling that beats it without depending on class injection order.
+  // arithmetic reads too.
+  //
+  // No `bar`: a divider drawn at rest under every track read as a band of its
+  // own down the whole view. It keeps its RESIZE_HANDLE_HEIGHT of space in flow
+  // and reveals itself under the pointer at `action.disabled`, the weight a
+  // `bar` rests at.
   resizeHandle: {
     position: 'relative',
   },
@@ -152,9 +156,13 @@ const TrackContainer = observer(function TrackContainer({
           display chrome clear of it. */}
       <PaddingBlocks model={model} offset={outlineOffset} />
       <ResizeHandle
-        bar
         style={{ height: RESIZE_HANDLE_HEIGHT }}
         onDrag={distance => display.resizeHeight(distance)}
+        // the drag's shortcut: grow the track by whatever it is scrolled over,
+        // so a pileup showing three rows of forty opens to all forty
+        onDoubleClick={() => {
+          display.expandToContentHeight()
+        }}
         // Bracket the drag so a display can sit an expensive per-frame layer
         // out of it (see `resizing` on TrackHeightMixin). Causal rather than a
         // per-display debounce: the handle owns both ends of the gesture.
