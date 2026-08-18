@@ -326,7 +326,7 @@ export interface FeatureLabelData {
   nameLabel?: LabelItem
   descriptionLabel?: LabelItem
   // The isoform badge, drawn immediately after the name on the same row: "+3
-  // more" on a gene the mode collapsed, "− fewer" on one the user opened from
+  // more" on a gene the mode collapsed, "show fewer" on one the user opened from
   // this badge (`expanded`). Present only where the collapse actually leaves
   // isoforms out, so a gene drawing all of its own carries none.
   //
