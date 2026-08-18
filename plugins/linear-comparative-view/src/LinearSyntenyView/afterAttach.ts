@@ -233,19 +233,13 @@ async function applyInit(
   init: LinearSyntenyViewInit,
   { superseded }: InitApplyContext,
 ) {
-  // The same rule DotplotView's applyInit states, for the same reason: counting
-  // rows answers a different question from whether they NAME anything.
-  // `views: [{}, {}]` is two rows naming nothing, which clears
-  // launchSyntenyView's `< 2` guard and then handed `waitForAssembly` an empty
-  // name, so the view threw "no assembly name supplied to waitForAssembly" over
-  // the import form it had just fallen back to.
-  //
-  // Naming NONE is not an error: empty rows mean "open a synteny view and let me
-  // choose", and the view's own empty state is that form -- which is the only
-  // route to it from a session spec, since a launch has to pass two rows to get
-  // here at all. Naming SOME is malformed, and LaunchLinearSyntenyView takes
-  // untrusted spec data, so say so rather than half-launch. Both consume the
-  // init the way a successful apply does: neither could succeed on a retry.
+  // Naming no assembly means "open a synteny view and let me choose", which is
+  // the only route to the import form from a session spec: a launch has to pass
+  // two rows to clear launchSyntenyView's `< 2` guard, and two EMPTY rows used
+  // to reach `waitForAssembly` with no name and throw across the form. Naming
+  // some but not all is malformed spec data, so say so rather than half-launch.
+  // Both consume the init: neither could succeed on a retry. DotplotView's
+  // applyInit states the same rule.
   const named = init.views.filter(v => v.assembly)
   if (named.length === 0) {
     return

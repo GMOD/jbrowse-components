@@ -5,7 +5,8 @@
 // WHAT A TOUR IS FOR. A tutorial page is a sequence of states, and its figures
 // are those states. What no figure carries is how a reader gets from one to the
 // next: the menu path, the dialog, the field a locus is typed into. A tour
-// carries exactly that, so every tutorial gets one and it opens from a starting
+// carries exactly that, so a page with a route worth watching gets one — not
+// every page, which is the rule in website/CLAUDE.md. It opens from a starting
 // point the reader can recognise — usually the session with the data already
 // loaded, and where getting the data in IS the page's difficulty (Open track,
 // a pasted config, a desktop file dialog), that route is the tour.
