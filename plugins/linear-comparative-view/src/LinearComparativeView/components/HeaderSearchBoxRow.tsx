@@ -1,7 +1,6 @@
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { HeaderSearchBoxes } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-
-import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 

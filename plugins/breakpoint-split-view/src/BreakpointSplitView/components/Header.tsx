@@ -1,5 +1,6 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { HeaderSearchBoxes } from '@jbrowse/plugin-linear-genome-view'
 import LinkIcon from '@mui/icons-material/Link'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import TuneIcon from '@mui/icons-material/Tune'
@@ -7,7 +8,6 @@ import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 import { useSearchBoxPrefs } from './useSearchBoxPrefs.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
