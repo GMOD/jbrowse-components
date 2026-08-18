@@ -1,0 +1,31 @@
+{
+  "id": "download-read-path",
+  "measured": "2026-08-18",
+  "published": false,
+  "source": {
+    "kind": "hand",
+    "repro": "node website/scripts/readpath-bench.ts — a local node server, headless Chrome, both arms read the same bytes inside a WORKER (the realm an adapter reads in), interleaved, min of 15. Run it three times and read the ratio, not the milliseconds.",
+    "notes": "Absolute ms are load-sensitive: three runs at load averages between ~4 and ~31 disagreed by 3x on the milliseconds and agreed on every ratio to within 0.2x, and on the crossover exactly. The sub-10MB direction is the tight one — all three runs put it between 0.53x and 0.91x. Above the crossover the spread is wider (0.94x-1.36x at 100MB), so read that half as 'a wash to a modest win', not as a number. Measured against generic-filehandle2 2.3.1, whose two paths this bench copies verbatim; `Response.prototype.bytes` exists in this Chrome, so the plain arm is one native call rather than the arrayBuffer fallback."
+  },
+  "columns": [
+    { "key": "size", "label": "body" },
+    { "key": "plainMs", "label": "no onProgress (`res.bytes()`)", "format": "ms" },
+    { "key": "loopMs", "label": "with onProgress (getReader)", "format": "ms" },
+    {
+      "key": "ratio",
+      "label": "loop / plain",
+      "format": "x",
+      "derived": "loopMs / plainMs"
+    }
+  ],
+  "rows": [
+    { "values": { "size": "256 KB", "plainMs": 2.7, "loopMs": 2.2 } },
+    { "values": { "size": "1 MB", "plainMs": 5.5, "loopMs": 3.1 } },
+    { "values": { "size": "4 MB", "plainMs": 15.0, "loopMs": 8.0 } },
+    { "values": { "size": "10 MB", "plainMs": 33.1, "loopMs": 18.6 } },
+    { "values": { "size": "25 MB", "plainMs": 37.7, "loopMs": 36.4 } },
+    { "values": { "size": "50 MB", "plainMs": 66.9, "loopMs": 73.6 } },
+    { "values": { "size": "100 MB", "plainMs": 126.5, "loopMs": 135.7 } },
+    { "values": { "size": "200 MB", "plainMs": 234.2, "loopMs": 277.2 } }
+  ]
+}

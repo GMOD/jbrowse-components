@@ -41,11 +41,35 @@ worker adapter → opts.statusCallback(status)
 
 A caller that passes no `statusCallback` is asking for no reporting, and every
 layer below has a branch for it: `downloadStatus` hands the reader no
-`onProgress` — which is what lets generic-filehandle2 take `res.arrayBuffer()`
-instead of its chunk-copy read loop — `createProgressReporter` skips its emit,
-and `openPhase` allocates no stack. **A no-op callback is not the same thing.**
-It is truthy at all three, so it turns those branches off while looking like a
-tidy-up.
+`onProgress`, `createProgressReporter` skips its emit, and `openPhase` allocates
+no stack. **A no-op callback is not the same thing.** It is truthy at all three,
+so it turns those branches off while looking like a tidy-up.
+
+**It is not a speed argument, and the tree said it was in four places.** The
+reader path `onProgress` selects — generic-filehandle2's `toBytesWithProgress`,
+a `getReader` loop — was described as the slow one that withholding the callback
+lets you skip. Measured in a Chrome worker, it is the *faster* one for every body
+under ~10MB, and only ~1.1x slower past ~25MB:
+
+<!-- BEGIN GENERATED MEASUREMENT download-read-path -->
+
+| body   | no onProgress (`res.bytes()`) | with onProgress (getReader) | loop / plain |
+| ------ | ----------------------------- | --------------------------- | ------------ |
+| 256 KB | 2.7ms                         | 2.2ms                       | 0.81x        |
+| 1 MB   | 5.5ms                         | 3.1ms                       | 0.56x        |
+| 4 MB   | 15ms                          | 8ms                         | 0.53x        |
+| 10 MB  | 33.1ms                        | 18.6ms                      | 0.56x        |
+| 25 MB  | 37.7ms                        | 36.4ms                      | 0.97x        |
+| 50 MB  | 66.9ms                        | 73.6ms                      | 1.10x        |
+| 100 MB | 126.5ms                       | 135.7ms                     | 1.07x        |
+| 200 MB | 234.2ms                       | 277.2ms                     | 1.18x        |
+
+<!-- END GENERATED MEASUREMENT download-read-path -->
+
+So a progress bar on a whole-file load is free or better below the crossover, and
+cheap above it. What withholding the callback buys is that a caller who asked for
+nothing gets nothing — the postMessage per status to a listener that drops it,
+and the two drivers answering the question differently, are the real costs.
 
 The decision was destroyed twice on the way down, so none of those branches were
 reachable in a worker:

@@ -133,16 +133,19 @@ const noUncancellableRpcCall = {
 // The other end of the two above: having decided a call reports nothing, don't
 // manufacture a reporter for it one frame later. `statusCallback` is optional
 // the whole way down and every consumer branches on the absence —
-// `downloadStatus` withholds the reader's `onProgress` (which is what lets
-// generic-filehandle2 take `res.arrayBuffer()` instead of its chunk-copy loop),
-// `createProgressReporter` skips its emit, `openPhase` allocates no stack. A
-// no-op default is truthy at all three, so it turns those branches off while
-// reading like a tidy-up. Thirty-one adapters had one.
+// `downloadStatus` withholds the reader's `onProgress`, `createProgressReporter`
+// skips its emit, `openPhase` allocates no stack. A no-op default is truthy at
+// all three, so it turns those branches off while reading like a tidy-up.
+// Thirty-one adapters had one.
+//
+// The point is that the caller's decision survives, not that the resulting read
+// is faster — it usually isn't
+// (agent-docs/measurements/download-read-path.json).
 const noNoOpStatusCallbackDefault = {
   selector:
     "AssignmentPattern[left.name='statusCallback'] > ArrowFunctionExpression",
   message:
-    'Do not default `statusCallback` to a no-op. It is optional everywhere below you and the absence is a live branch — a no-op is truthy, so it silently turns off the reader fast path and pays for progress nobody reads. Leave it `StatusCallback | undefined` and let `updateStatus`/`downloadStatus`/`createProgressReporter` handle it; call it as `statusCallback?.(…)`. See agent-docs/reference/PROGRESS_REPORTING.md.',
+    'Do not default `statusCallback` to a no-op. It is optional everywhere below you and the absence is a live branch — a no-op is truthy, so it silently overrides a caller who asked for no reporting and pays for progress nobody reads. Leave it `StatusCallback | undefined` and let `updateStatus`/`downloadStatus`/`createProgressReporter` handle it; call it as `statusCallback?.(…)`. See agent-docs/reference/PROGRESS_REPORTING.md.',
 }
 
 // The set every file gets. A block below that needs its own extra selectors

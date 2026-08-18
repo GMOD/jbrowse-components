@@ -18,10 +18,17 @@ export async function fetchAndMaybeUnzip(
   // parallel assembly loads, say)
   label = 'Downloading file',
 ) {
-  // statusCallback is passed through as-is rather than defaulted to a no-op:
-  // downloadStatus hands the reader an undefined onProgress when there is no
-  // status channel, which is what lets generic-filehandle2 take res.arrayBuffer()
-  // instead of its manual getReader() copy loop
+  // statusCallback is passed through as-is rather than defaulted to a no-op, so
+  // that "nobody is listening" reaches the reader: downloadStatus then hands it
+  // no onProgress and generic-filehandle2 takes `res.bytes()` rather than its
+  // getReader loop.
+  //
+  // **That is not the faster path, and this comment used to say it was.** In a
+  // Chrome worker the loop is ~1.8x faster up to 10MB and only ~1.1x slower past
+  // ~25MB — agent-docs/measurements/download-read-path.json. What withholding it
+  // buys is that a caller who asked for no reporting gets none, here and in the
+  // worker alike; the read speed is a wash at best and against us at the sizes a
+  // whole-file load usually is.
   const { statusCallback, stopToken } = opts
   // the stop token becomes the read's signal, so a cancelled whole-file load
   // drops at the socket rather than downloading a multi-GB body to completion

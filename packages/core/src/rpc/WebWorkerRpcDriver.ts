@@ -55,10 +55,14 @@ class WebWorkerHandle {
    * in the other direction.
    *
    * The absence is not cosmetic — it is a documented branch. `downloadStatus`
-   * hands the reader no `onProgress` without a callback, which is what lets
-   * generic-filehandle2 take `res.arrayBuffer()` instead of its chunk-copy read
-   * loop; `createProgressReporter` skips its emit; and every status the worker
-   * did send crossed a postMessage to reach a listener that dropped it.
+   * hands the reader no `onProgress` without a callback, `createProgressReporter`
+   * skips its emit, and every status the worker did send crossed a postMessage
+   * to reach a listener that dropped it.
+   *
+   * The postMessage traffic and the symmetry are the whole case; the read speed
+   * is not. `res.bytes()` is the SLOWER of the two reads under ~10MB —
+   * agent-docs/measurements/download-read-path.json — and an earlier revision of
+   * this comment claimed the opposite because four other places in the tree did.
    */
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback } = opts

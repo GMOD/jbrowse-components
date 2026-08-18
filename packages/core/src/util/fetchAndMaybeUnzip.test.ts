@@ -20,9 +20,11 @@ function fakeFilehandle(body: string) {
 }
 
 describe('fetchAndMaybeUnzip', () => {
-  // generic-filehandle2 only takes its manual getReader() copy loop when
-  // onProgress is set; defaulting statusCallback to a no-op made the reporter
-  // always defined, so every whole-file load paid for streaming it could not use
+  // generic-filehandle2 only takes its getReader loop when onProgress is set, so
+  // this is what carries "nobody is listening" down to the reader. Not a speed
+  // claim in either direction — the loop measures FASTER below ~10MB
+  // (agent-docs/measurements/download-read-path.json); what it pins is that the
+  // caller's decision survives the trip.
   it('hands the reader no onProgress when there is no status callback', async () => {
     const { seen, handle } = fakeFilehandle('hello')
     await fetchAndMaybeUnzip(handle)

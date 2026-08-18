@@ -43,9 +43,10 @@ export async function fetchFeaturesFromAdapter({
   // so forwarding one is a decision instead of something to remember. And
   // `undefined` is the meaningful answer, not a shrug — it tells a reader to
   // skip its progress bookkeeping entirely (`downloadStatusReporter` returns
-  // undefined for exactly that, which lets generic-filehandle2 take the fast
-  // `res.arrayBuffer()` path), which is why `() => {}` is the wrong way to say
-  // it and was what GetConsensusSequence had hard-coded.
+  // undefined for exactly that), which is why `() => {}` is the wrong way to say
+  // it and was what GetConsensusSequence had hard-coded. The `res.bytes()` path
+  // it selects is not a *fast* path, whatever this comment claimed before it was
+  // measured — agent-docs/measurements/download-read-path.json.
   statusCallback: StatusCallback | undefined
   stopToken?: StopToken
 }) {
