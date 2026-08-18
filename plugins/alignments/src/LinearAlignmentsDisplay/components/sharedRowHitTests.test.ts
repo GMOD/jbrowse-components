@@ -70,6 +70,12 @@ function makeRpcData(overrides: Partial<PileupDataResult>): PileupDataResult {
     numInsertions: count(INTERBASE_INSERTION),
     numSoftclips: count(INTERBASE_SOFTCLIP),
     numHardclips: count(INTERBASE_HARDCLIP),
+    // One entry per GAP (`deletionStartFrequencies`), full frequency by
+    // default: these tests are about which READ a mark belongs to, so the
+    // deletion's own significance gate must not be what decides them.
+    gapFrequencies:
+      overrides.gapFrequencies ??
+      new Uint8Array(data.gapTypes.length).fill(255),
   }
 }
 

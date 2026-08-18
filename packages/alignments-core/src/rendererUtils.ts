@@ -296,6 +296,17 @@ export function drawSnpSegments(
     const segBottom = bottom - f32[off + SNP_F32.yOffset]! * barH
     const segTop = segBottom - f32[off + SNP_F32.segHeight]! * barH
     ctx.fillStyle = snpColorForType(f32[off + SNP_F32.colorType]!, colors)
+    // No seam fudge here, unlike the depth bars above, and that is the right
+    // answer rather than the one that was forgotten. The fudge pays for itself
+    // only where a layer tiles: a depth bar exists at every covered bp, so
+    // widening every one of them is always closing a seam. Segments are SPARSE
+    // — one per (position, allele) — so the usual case is an isolated SNP
+    // column with no abutting neighbour, and widening that one draws it 0.8px
+    // wider than snpCoverage.slang does. That trades a divergence in the common
+    // case for a seam in the rare one (a RUN of consecutive bp carrying the same
+    // allele at the same stack height, i.e. a systematically mismatching
+    // stretch). Both backends already agree on the min-width rule that does
+    // apply: `fillSpanRect` mirrors `covSegQuad`'s `expandMinWidthX`.
     fillSpanRect(ctx, px, px2, segTop, segBottom - segTop)
   }
 }
@@ -408,7 +419,8 @@ export function drawInterbaseSegments(
   }
 }
 
-// See drawSnpSegments for the per-position fraction contract.
+// See drawSnpSegments for the per-position fraction contract, and for why
+// neither segment layer takes the depth bar's seam fudge.
 export function drawModCovSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
