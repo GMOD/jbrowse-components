@@ -213,6 +213,43 @@ two consecutive measurements rather than from a threshold; see
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/tooLargeBannerText.ts)
 
+## Tooltip
+
+A hover/focus label for a control, drawn rather than delegated to the browser's
+`title` attribute — positioned so it clears the display's `contain: strict` box
+and the window edge, dismissed by Escape, and drawn like every other JBrowse
+tooltip instead of like whatever the host OS renders.
+
+`title` is what this chrome used to use, and it was the wrong tool three ways:
+it can be neither styled nor positioned, it waits about a second and then
+disappears on a timer of its own, and on a control that already carries an
+`aria-label` some screen readers announce both strings. This reaches no UI
+toolkit, so the package's no-Material-UI guarantee holds.
+
+Takes a single element child and clones it rather than wrapping it: the controls
+that want a tooltip are absolutely positioned inside a legend or sit in a flex
+row, where an extra `<span>` moves them. The child keeps its own handlers —
+these compose on top of them.
+
+```tsx
+<Tooltip title="Hide legend">
+  <button type="button" aria-label="Hide legend" onClick={onDismiss}>
+    ×
+  </button>
+</Tooltip>
+```
+
+**The child still needs its own accessible name**, because this sets
+`aria-describedby` and never `aria-label` — see useTooltip, which is this
+without the cloning, for a host writing its own markup.
+
+```js
+// type signature
+({ title, placement, children, }: { title: ReactNode; placement?: TooltipPlacement | undefined; children: ReactElement<…>; }) => Element
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/tooltip/Tooltip.tsx)
+
 ## TrackOverlayPortal
 
 Lift floating track chrome out of the display's `contain: strict` sandbox and
@@ -282,6 +319,35 @@ click-drag pan.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackOverlay/TrackOverlaySlot.tsx)
+
+## useTooltip
+
+A hover/focus label for one control, as props to spread — the headless half of
+Tooltip, for a host writing its own chrome rather than restyling ours. Same
+relationship `useTrackControlMenu` has to `plainTrackControl`.
+
+```tsx
+const { triggerProps, tooltip } = useTooltip('Hide legend')
+return (
+  <>
+    <button {...triggerProps} aria-label="Hide legend" onClick={onDismiss}>
+      ×
+    </button>
+    {tooltip}
+  </>
+)
+```
+
+`triggerProps` carries no `onClick`, so a control's own handler does not collide
+with it. Any other handler on this list has to compose rather than replace —
+spread first, then call `triggerProps.onFocus` from yours.
+
+```js
+// type signature
+(title: ReactNode, { placement }?: { placement?: TooltipPlacement | undefined; }) => TooltipTrigger
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/tooltip/useTooltip.tsx)
 
 ## useTrackControlMenu
 
