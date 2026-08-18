@@ -271,11 +271,6 @@ function keepRanked(
   kept: number,
   scores: Scores,
   config: DisplayConfig,
-  // Which of the two collapses this is. The label badge is offered for one and
-  // not the other (see `isoformOverflow`), and the count cannot tell them
-  // apart — a lane short enough budgets one row, exactly as `longestCoding`
-  // does.
-  rule: 'representative' | 'heightCap',
 ) {
   return {
     keep: new Set(ranked.slice(0, kept).map(f => f.id())),
@@ -285,7 +280,6 @@ function keepRanked(
     // `isoformsWithinBudget` MEASURED, not `maxIsoforms`, so the badge's
     // "+N more" has no other way to know it.
     kept,
-    rule,
   }
 }
 
@@ -313,13 +307,7 @@ function collapseIsoforms({
   const { geneGlyphMode, maxIsoforms } = config
   if (geneGlyphMode === 'longestCoding') {
     return isoforms.length > 1
-      ? keepRanked(
-          rankIsoforms(isoforms, scores),
-          1,
-          scores,
-          config,
-          'representative',
-        )
+      ? keepRanked(rankIsoforms(isoforms, scores), 1, scores, config)
       : undefined
   }
   if (maxIsoforms === undefined) {
@@ -342,7 +330,7 @@ function collapseIsoforms({
   const ranked = rankIsoforms(isoforms, scores)
   const kept = isoformsWithinBudget({ ...budget, candidates: ranked })
   return kept < isoforms.length
-    ? keepRanked(ranked, kept, scores, config, 'heightCap')
+    ? keepRanked(ranked, kept, scores, config)
     : undefined
 }
 
@@ -430,11 +418,11 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   if (geneGlyphMode !== 'longestCoding') {
     // Stack the tagged isoform on top, then the coding ones (pointless for
-    // longestCoding, which keeps one). Same two terms `rankIsoforms` leads
-    // with, so the transcript a capped gene keeps first is also the one it
-    // draws first, and the gene reads top-down. Stable, so the survivors of the
-    // cap keep the order they would have had — and an annotation that tags
-    // nothing, which is most of them, sorts exactly as before.
+    // longestCoding, which keeps one). The two terms `rankIsoforms` leads with,
+    // so a capped gene draws first the transcript the chip credits with picking
+    // it. Stable below that, so isoforms tying on both terms keep the order they
+    // would have had — and an annotation that tags nothing, which is most of
+    // them, sorts exactly as before.
     subfeatures.sort((a, b) => {
       const x = scores.get(a.id())!
       const y = scores.get(b.id())!
@@ -502,7 +490,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     // collapsed ones with no visible control (the track menu's
     // "Collapse N expanded genes" is the other way, and is not on the gene).
     isoformOverflow:
-      collapse !== undefined && (collapse.rule === 'heightCap' || expanded)
+      collapse !== undefined && (geneGlyphMode !== 'longestCoding' || expanded)
         ? { hidden: isoforms.length - collapse.kept, expanded }
         : undefined,
   }
