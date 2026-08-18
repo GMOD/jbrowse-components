@@ -51,6 +51,30 @@ export interface RpcRegistry {
     args: {
       adapterConfig: Record<string, unknown>
       regions: RegionLike[]
+      /**
+       * Which question about the region set to answer, because a byte budget
+       * has a **scope** and the two in this codebase differ. Required, with no
+       * default, so a third caller has to say which one its budget is.
+       *
+       * - `largestRegion` — the biggest single region, for a budget enforced
+       *   once **per region**. The region-too-large gate's is: every region is
+       *   checked against the same limit, so a multi-region view where each
+       *   region individually fits must not be blanked by what they add up to.
+       * - `wholeRequest` — every region's chunks merged and summed, for a
+       *   budget on the **whole download**. "Save track data" pulls all of
+       *   them in one go, so that total is what it has to ask permission for,
+       *   and merging is what stops two regions sharing a BGZF block being
+       *   charged for it twice.
+       *
+       * The scope used to be implicit: `getRegionByteSize` merges and sums by
+       * construction, so every caller silently inherited `wholeRequest`,
+       * including the gate whose budget is per-region. A whole-genome VCF in
+       * this repo bannered on a total more than 5x its own largest region,
+       * while canvas — which measures one region per call — rendered the same
+       * file. Both figures, and what splitting the call costs, are in
+       * agent-docs/reference/REGION_TOO_LARGE.md § "A budget has a scope".
+       */
+      scope: 'largestRegion' | 'wholeRequest'
       headers?: Record<string, string>
     }
     return: number | undefined

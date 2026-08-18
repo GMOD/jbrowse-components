@@ -276,7 +276,10 @@ export default function CanvasFeatureGateMixin() {
         if (byteCounts.length > 0) {
           host(self).setByteEstimate({
             // Per-region max, not sum: each region is gated against the same
-            // per-region budget.
+            // per-region budget. The same reduction the pre-flight asks
+            // `CoreGetRegionByteEstimate` for by name (`scope:
+            // 'largestRegion'`) — one budget scope, so the two paths cannot
+            // reach opposite verdicts on one file the way they used to.
             bytes: Math.max(...byteCounts),
             viewport,
           })

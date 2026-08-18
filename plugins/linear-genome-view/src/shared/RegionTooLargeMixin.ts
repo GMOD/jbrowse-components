@@ -878,6 +878,14 @@ export default function RegionTooLargeMixin() {
               {
                 regions,
                 adapterConfig: self.byteGateAdapterConfig,
+                // This budget is enforced once per region — `gateByteLimit` is
+                // what a single region may cost — so the region set reduces by
+                // max, exactly as `commitGateMeasurements` reduces canvas's
+                // per-region fetches. It read the merged total until 2026-08,
+                // which is a budget on the whole download, and that is how the
+                // same VCF came to banner under this path and render under
+                // canvas's.
+                scope: 'largestRegion',
                 stopToken: ctx.stopToken,
                 statusCallback: ctx.statusCallback,
               },

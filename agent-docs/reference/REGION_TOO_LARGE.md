@@ -475,18 +475,51 @@ because every region is gated against the same per-region budget — a
 multi-region view where each region individually fits should never be blanked
 just because the regions add up.
 
-**The pre-flight path does the opposite, and that is the one place the two halves
-genuinely disagree.** `CoreGetRegionByteEstimate` hands the whole region set to
-`getRegionByteSize` in one call, and `bytesForRegions` sums the merged index
-chunks across all of them — so alignments/MAF/MSV/LD/arc gate on the *total*
-download while canvas gates on the *worst region*. Two 3 Mb regions against a
-5 Mb budget: the pre-flight banners at 6 Mb, canvas allows it and pulls 6 Mb. The
-same VCF reaches opposite verdicts through `LinearMultiSampleVariantDisplay` and
-`LinearVariantDisplay`. Both readings are defensible — one is what the wire
-costs, the other what any single region costs — and neither converts cheaply: the
-pre-flight measures a region set in one adapter call and keeps no per-region
-number, while canvas has no cross-region call to sum. Left as is, so the
-divergence is known rather than re-derived from the two call sites.
+## A budget has a scope
+
+The rule above is not canvas's; it is the **byte budget's**, and it is the one
+idea both halves of the gate now turn on. `gateByteLimit` answers "what may a
+single region cost" — every region is checked against it, and a multi-region view
+where each region individually fits must not be blanked by what they add up to.
+So a region set reduces to one comparable number **by max**, and it does so in
+both places: `commitGateMeasurements` over canvas's per-region fetches, and
+`CoreGetRegionByteEstimate` for the pre-flight, which asks for it by name with
+`scope: 'largestRegion'`.
+
+**The scope used to be implicit, and the gate silently had the wrong one.**
+`getRegionByteSize` merges and sums the index chunks across every region it is
+handed, so it answers "what does the whole download cost" by construction — and
+every caller inherited that reading without saying so. The pre-flight family
+(alignments/MAF/MSV/LD/arc) therefore gated on the total while canvas gated on
+the worst region, and the same file reached opposite verdicts through
+`LinearMultiSampleVariantDisplay` and `LinearVariantDisplay`. Not hypothetical:
+at whole-genome view `test_data/breakpoint/hs37d5.HG002…sv.vcf.gz` reads
+5059k<!--m:byte-estimate-scope.70.wholeRequest--> against `VcfTabixAdapter`'s
+5 Mb and banners, where its largest single region is
+968k<!--m:byte-estimate-scope.70.largestRegion-->.
+
+<!-- BEGIN GENERATED MEASUREMENT byte-estimate-scope -->
+
+| regions | `wholeRequest` bytes | `largestRegion` bytes | whole/largest | per-region cost |
+| ------- | -------------------- | --------------------- | ------------- | --------------- |
+| 24      | 3969k                | 381k                  | 10.43x        | 1.00x           |
+| 70      | **5059k**            | **968k**              | 5.23x         | 0.90x           |
+
+<!-- END GENERATED MEASUREMENT byte-estimate-scope -->
+
+Splitting the call costs nothing, which is why "neither converts cheaply" was the
+wrong reading of it: `getRegionByteSize` already resolves chunks region by region
+internally, and only the final merge is shared, so asking per region moves no
+work (0.9-1.0x above). What the merge does buy is correctness for the *other*
+budget — two regions sharing a BGZF block are charged for it once — and that
+budget exists: "Save track data" pulls every region in one go, so
+`exportByteLimit` is a bound on the whole download and `fetchTrackData` asks for
+`scope: 'wholeRequest'`.
+
+**`scope` is required, with no default.** Both readings are defensible and the
+right one follows from how the budget is enforced, not from which is bigger — so
+a third caller has to say which it is rather than inherit whichever the adapter
+happened to compute.
 
 **A fetch that measured no bytes at all writes nothing** — not
 `bytes: undefined`. Two ways that happens, meaning the same thing: the adapter

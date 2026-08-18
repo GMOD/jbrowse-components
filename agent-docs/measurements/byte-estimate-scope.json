@@ -1,0 +1,49 @@
+{
+  "id": "byte-estimate-scope",
+  "published": false,
+  "measured": "2026-08-18",
+  "source": {
+    "kind": "hand",
+    "repro": "Against `test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz` with `@gmod/tabix`: build a whole-genome region set (every reference sequence, full length), warm the index once, then take the median of 7 runs of `bytesForRegions(regions)` against `Promise.all(regions.map(r => bytesForRegions([r])))`.",
+    "notes": "The two scopes cost the same because `bytesForRegions` already resolves chunks per region internally — only the final merge-and-sum is shared, so splitting it moves no work. Warm the index before timing: an unwarmed first call put the per-region arm at 2.6x, which is the index parse, not the reduction."
+  },
+  "columns": [
+    { "key": "regions", "label": "regions" },
+    {
+      "key": "wholeRequest",
+      "label": "`wholeRequest` bytes",
+      "format": "compact"
+    },
+    {
+      "key": "largestRegion",
+      "label": "`largestRegion` bytes",
+      "format": "compact"
+    },
+    {
+      "key": "overstatement",
+      "label": "whole/largest",
+      "format": "x",
+      "derived": "wholeRequest / largestRegion"
+    },
+    { "key": "perRegionCost", "label": "per-region cost", "format": "x" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "regions": 24,
+        "wholeRequest": 3968729,
+        "largestRegion": 380586,
+        "perRegionCost": 1.0
+      }
+    },
+    {
+      "values": {
+        "regions": 70,
+        "wholeRequest": 5059454,
+        "largestRegion": 968280,
+        "perRegionCost": 0.9
+      },
+      "emphasize": ["wholeRequest", "largestRegion"]
+    }
+  ]
+}

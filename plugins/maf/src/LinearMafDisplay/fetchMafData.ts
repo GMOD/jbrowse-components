@@ -186,6 +186,11 @@ async function framesReadOverBudget(
     {
       regions: needed.map(n => n.region),
       adapterConfig,
+      // Same budget as the main gate (`gateByteLimit`), so the same scope: the
+      // frames read is a per-region fetch through `callEachRegion`, and a
+      // whole-genome view whose regions each fit should not lose the overlay
+      // over what they add up to.
+      scope: 'largestRegion',
       // An estimate off a tabix index is a set of range reads, and this one runs
       // on the fetch's critical path — the frames read waits on it. Without the
       // token a cancelled fetch goes on measuring a file it will not download.
