@@ -5,7 +5,13 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { isAlive, onSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  isAlive,
+  onSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import { autorun, onReactionError } from 'mobx'
 
 import { MultipleViewsSessionMixin } from './MultipleViews.ts'
 
@@ -86,17 +92,33 @@ class FakeViewsPlugin extends Plugin {
     // pluggable view (HierarchicalTrackSelectorWidget, AddTrackWidget,
     // PluginStoreWidget all declare exactly this). What a replaced view does to
     // that reference is the thing worth pinning down.
+    //
+    // The autorun is load-bearing, not decoration: a widget's model outlives
+    // the drawer panel, so it is the model's own reactions -- BaseFeatureWidget
+    // registers one that reads `track` -- that go on reading a reference the
+    // view took with it, and they report to `onReactionError`, not to a caller.
     pluginManager.addWidgetType(
       () =>
         new WidgetType({
           name: 'FakeViewWidget',
-          stateModel: types.model('FakeViewWidget', {
-            id: ElementId,
-            type: types.literal('FakeViewWidget'),
-            view: types.safeReference(
-              pluginManager.pluggableMstType('view', 'stateModel'),
-            ),
-          }),
+          stateModel: types
+            .model('FakeViewWidget', {
+              id: ElementId,
+              type: types.literal('FakeViewWidget'),
+              view: types.safeReference(
+                pluginManager.pluggableMstType('view', 'stateModel'),
+              ),
+            })
+            .actions(self => ({
+              afterCreate() {
+                addDisposer(
+                  self,
+                  autorun(() => {
+                    void self.view
+                  }),
+                )
+              },
+            })),
           configSchema: ConfigurationSchema('FakeViewWidget', {}),
           ReactComponent: () => null,
         }),
@@ -255,6 +277,47 @@ test('a widget referencing a sub-view is taken out with the view holding it', ()
   session.removeView(container)
 
   expect(session.activeWidgets.has('w1')).toBe(false)
+})
+
+// Hiding the widget is not enough, and the sub-view is where that shows. MST
+// invalidates a reference when its TARGET detaches, so the container's own
+// `beforeDetach` empties a reference to the container and leaves one pointing
+// at anything under it: that node is neither detached nor destroyed, it just
+// leaves the session's identifier cache, and reading it THROWS where
+// `safeReference` promises undefined. The panel is off screen by then, but the
+// widget's model is still in `widgets` with its autoruns running, so the throw
+// comes out of a reaction — reported to `onReactionError`, never to the caller.
+// This is the console error `ReadVsRef` produced on "Replace current view",
+// where the reference was a feature widget's `track`.
+test('a reference into the view empties rather than dangling', () => {
+  const errors: unknown[] = []
+  const dispose = onReactionError(e => {
+    errors.push(e)
+  })
+  const { session, container, widget } = sessionWithSubViewWidget()
+
+  session.removeView(container)
+
+  dispose()
+  expect(errors).toEqual([])
+  expect(widget.view).toBeUndefined()
+})
+
+// A widget the user closed keeps its references and its autoruns, so the match
+// is over every widget rather than over the active ones.
+test('a hidden widget referencing the view is emptied too', () => {
+  const errors: unknown[] = []
+  const dispose = onReactionError(e => {
+    errors.push(e)
+  })
+  const { session, container, widget } = sessionWithSubViewWidget()
+  session.hideWidget(widget)
+
+  session.removeView(container)
+
+  dispose()
+  expect(errors).toEqual([])
+  expect(widget.view).toBeUndefined()
 })
 
 // Where that throw actually landed, and why the bug reads as "close a view,

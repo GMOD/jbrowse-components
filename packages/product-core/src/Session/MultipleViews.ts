@@ -6,10 +6,14 @@ import {
 } from '@jbrowse/core/util'
 import {
   addDisposer,
+  applyPatch,
   cast,
   detach,
+  getMembers,
   getParent,
   hasParent,
+  isReferenceType,
+  isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -28,10 +32,14 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 // than by `widget.view.id === view.id`. ADR-069 says what that cost.
 //
 // Deliberately not `findParentThat`, which warns and throws when the walk runs
-// out: this asks the question of every active widget, and most of them are
-// under some other view, so "no" is an ordinary answer here rather than a fault.
-function isWithin(node: IAnyStateTreeNode, view: IBaseViewModel) {
-  let cur = node
+// out: this asks the question of every reference every widget holds, and most
+// of them point somewhere else entirely, so "no" is an ordinary answer here
+// rather than a fault.
+function isWithin(node: unknown, view: IBaseViewModel) {
+  if (!isStateTreeNode(node)) {
+    return false
+  }
+  let cur: IAnyStateTreeNode = node
   while (cur !== view) {
     if (!hasParent(cur)) {
       return false
@@ -39,6 +47,33 @@ function isWithin(node: IAnyStateTreeNode, view: IBaseViewModel) {
     cur = getParent(cur)
   }
   return true
+}
+
+// Empty every reference `holder` has into `view`, and say whether it had any.
+//
+// MST invalidates a reference when its TARGET node is detached or destroyed, so
+// a widget's reference to the view itself empties on its way out and one
+// pointing INSIDE it does not: `openFeatureWidget` stores the clicked feature's
+// track, and that node is neither detached nor destroyed — it just leaves the
+// session's identifier cache with the view, which makes reading the reference
+// THROW where `safeReference` promises undefined. The widget's own autoruns go
+// on running whether or not its panel is on screen, so that throw comes out of
+// a reaction, uncatchable by the caller.
+//
+// So do here what `onInvalidated` would have done, while the reference can
+// still be read. Only where the type allows undefined — a required reference
+// has no empty value to move to, and the widget is hidden either way. ADR-069.
+function dropRefsInto(holder: IAnyStateTreeNode, view: IBaseViewModel) {
+  let found = false
+  for (const [key, prop] of Object.entries(getMembers(holder).properties)) {
+    if (isReferenceType(prop) && isWithin(holder[key], view)) {
+      found = true
+      if (prop.is(undefined)) {
+        applyPatch(holder, { op: 'replace', path: `/${key}`, value: undefined })
+      }
+    }
+  }
+  return found
 }
 
 /**
@@ -140,18 +175,16 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         // already out of the session reaches here — `replaceView` documents
         // that case below — and by then it is detached, or destroyed by the
         // task scheduled at the bottom. MST's `detach` throws on a node with no
-        // parent, and its widgets were hidden when it left.
+        // parent, and the widgets holding it were emptied when it left.
         if (!self.views.includes(view)) {
           return
         }
-        // By containment, because `openFeatureWidget` stores
-        // `getContainingView(node)` — which inside a breakpoint-split or synteny
-        // view is the SUB-view, never the view in `session.views`. An id
-        // comparison left that widget on screen holding a reference into the
-        // tree about to leave, and the detach makes reading one THROW rather
-        // than resolve to undefined. ADR-069.
-        for (const [, widget] of self.activeWidgets) {
-          if (widget.view && isWithin(widget.view, view)) {
+        // Every widget, not the active ones: a widget the user closed keeps
+        // its references and its autoruns. One that pointed into the view is
+        // now empty, so hide it rather than leave the panel showing what it no
+        // longer has.
+        for (const [, widget] of self.widgets) {
+          if (dropRefsInto(widget, view)) {
             self.hideWidget(widget)
           }
         }
