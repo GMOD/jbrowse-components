@@ -33,10 +33,11 @@ const useStyles = makeStyles()({
   },
   // in flow at the bottom of the Paper, and outside `trackContent` — so a
   // `bottom:0` portaled overlay (the status chips) lands on the track content's
-  // bottom edge rather than having to subtract this height back out.
+  // bottom edge rather than having to subtract this height back out. The 4px
+  // height comes with `bar`, so it isn't restated here — two classes setting it
+  // land in an injection order neither file controls.
   resizeHandle: {
     position: 'relative',
-    height: 4,
   },
   // in-flow, so the label pushes the track body down by its own height. The
   // margin is that push plus a gap: without it the body starts on the label's
@@ -145,6 +146,7 @@ const TrackContainer = observer(function TrackContainer({
           display chrome clear of it. */}
       <PaddingBlocks model={model} offset={outlineOffset} />
       <ResizeHandle
+        bar
         onDrag={distance => display.resizeHeight(distance)}
         // Bracket the drag so a display can sit an expensive per-frame layer
         // out of it (see `resizing` on TrackHeightMixin). Causal rather than a

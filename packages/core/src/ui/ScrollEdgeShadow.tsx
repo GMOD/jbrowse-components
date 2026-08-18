@@ -26,7 +26,11 @@ const useStyles = makeStyles()(theme => {
   // the dark theme's #121212 canvas, which is the same trap the scrollbar thumb
   // hit before it became theme-aware.
   const ink = theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'
-  const from = `rgba(${ink},0.3)`
+  // 0.18, down from the 0.3 this shipped at: over a dense pileup the deep end
+  // of the ramp read as a band of its own and drew the eye before the features
+  // did, which inverts what it is for. It only has to be findable when someone
+  // asks "is that everything?", not noticeable when nobody asked.
+  const from = `rgba(${ink},0.18)`
   // NOT the `transparent` keyword, which is transparent BLACK: interpolating to
   // it puts a grey cast through the middle of the ramp, and on the dark theme's
   // white ink that is the whole ramp.

@@ -20,6 +20,13 @@ const useStyles = makeStyles()(theme => ({
   },
   // `bar` opt-in: the standard always-visible resize divider used at the bottom
   // (or side) of views and tracks. Other call sites stay invisible until hover.
+  //
+  // The hover has to be restated here, darker: a bar rests at
+  // `action.disabled` (0.26 light / 0.3 dark) and the invisible handles' hover
+  // is `action.selected` (0.08 / 0.16), so inheriting it made a bar go *fainter*
+  // under the pointer. `action.active` is the same resting/hover pair
+  // `VerticalScrollbar`'s thumb uses.
+  bar: { '&:hover': { background: theme.palette.action.active } },
   horizontalBar: { height: 4, background: theme.palette.action.disabled },
   verticalBar: { width: 4, background: theme.palette.action.disabled },
 }))
@@ -65,6 +72,7 @@ function ResizeHandle({
       className={cx(
         originalClassName,
         vertical ? classes.verticalHandle : classes.horizontalHandle,
+        bar && classes.bar,
         bar && (vertical ? classes.verticalBar : classes.horizontalBar),
       )}
       {...handleProps}
