@@ -497,9 +497,10 @@ export default function RegionTooLargeMixin() {
        * How many bytes we estimate the fetch this display would issue right now
        * would pull. The stored measurement, unmodified — the viewport it
        * describes is kept current by re-measuring rather than by scaling it (see
-       * the mixin docstring). Undefined when nothing has been measured or the
-       * adapter offers no index estimate, which keeps the byte axis out of the
-       * verdict entirely.
+       * the mixin docstring). Undefined when nothing has been measured — which
+       * includes the adapter offering no index estimate, since neither path
+       * stores one for that — and that keeps the byte axis out of the verdict
+       * entirely.
        */
       get estimatedFetchBytes() {
         return self.byteEstimate?.bytes
@@ -745,11 +746,14 @@ export default function RegionTooLargeMixin() {
        * because one thing about a measurement is only knowable from the one
        * before it: whether zooming in moved the number at all. See
        * `ByteEstimate.zoomIneffective`.
+       *
+       * `bytes` is a number, never `undefined`: a fetch that measured nothing
+       * calls this not at all, so the stored estimate stays whatever the last
+       * real measurement said. Both callers already skip that write —
+       * `byteGateBlocksFetch` and `commitGateMeasurements` — and the type is
+       * what keeps a third from publishing an empty one.
        */
-      setByteEstimate(measurement: {
-        bytes: number | undefined
-        viewport: GateViewport
-      }) {
+      setByteEstimate(measurement: { bytes: number; viewport: GateViewport }) {
         self.byteEstimate = nextByteEstimate(self.byteEstimate, measurement)
       },
 
@@ -882,7 +886,15 @@ export default function RegionTooLargeMixin() {
           return true
         }
         self.setGateMeasuredViewport(viewport)
-        self.setByteEstimate({ bytes, viewport })
+        // An adapter that quotes no index estimate answers `undefined`, and that
+        // is not a measurement: publishing it would wipe the last real one and
+        // reset the two-point `zoomIneffective` comparison. The stamp above
+        // still records that the gate asked about this viewport, which is what
+        // `gateMeasurementStale` means. `commitGateMeasurements` skips the same
+        // write for the same reason — the two paths agree.
+        if (bytes !== undefined) {
+          self.setByteEstimate({ bytes, viewport })
+        }
         // Read after the commit: the verdict is a pure function of the estimate,
         // and the estimate was just taken at this viewport.
         return self.regionTooLarge

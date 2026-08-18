@@ -31,7 +31,7 @@ interface GateHost {
   gateActive: boolean
   densityGateActive: boolean
   setByteEstimate: (measurement: {
-    bytes: number | undefined
+    bytes: number
     viewport: GateViewport
   }) => void
   setGateMeasuredViewport: (viewport: GateViewport) => void

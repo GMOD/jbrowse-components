@@ -185,16 +185,22 @@ describe('nextByteEstimate', () => {
   })
 
   // An adapter with no index estimate is "unmeasurable", not "unchanged" — it
-  // must not read as evidence that zooming is hopeless.
-  it('says nothing about zoom when either measurement is unmeasurable', () => {
-    const first = nextByteEstimate(undefined, {
+  // must not read as evidence that zooming is hopeless, and it must not wipe the
+  // last real measurement either. Both are answered by never getting here: the
+  // two callers skip the write entirely, so `bytes` is a number by type and the
+  // stored estimate is whatever the last measurable fetch said. The pin for that
+  // is at the call sites — see "keeps a good estimate when a batch measured no
+  // bytes" in LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts.
+  it('says nothing about zoom when the previous span is unusable', () => {
+    const degenerate = {
       bytes: 306_719,
-      viewport: vp(100_000),
-    })
+      measuredSpanBp: 0,
+      zoomIneffective: true,
+    }
     expect(
-      nextByteEstimate(first, { bytes: undefined, viewport: vp(10_000) }),
+      nextByteEstimate(degenerate, { bytes: 306_719, viewport: vp(10_000) }),
     ).toEqual({
-      bytes: undefined,
+      bytes: 306_719,
       measuredSpanBp: 10_000,
       zoomIneffective: false,
     })

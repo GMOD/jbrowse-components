@@ -100,11 +100,17 @@ const ZOOM_EVIDENCE_BYTE_RATIO = 0.9
  */
 export interface ByteEstimate {
   /**
-   * The adapter's cheap index-only estimate for {@link measuredSpanBp}, or
-   * undefined when it has none. "Unmeasurable" rather than `0`, so the byte axis
-   * stays out of the verdict instead of reading a zero as a measured value.
+   * The adapter's cheap index-only estimate for {@link measuredSpanBp}. Never
+   * `0`, which the verdict would read as a measured value, and never
+   * `undefined`: an adapter quoting no estimate leaves the whole
+   * `ByteEstimate` unset instead, so **"unmeasurable" and "not measured yet"
+   * are one state**. Both gating paths enforce that at the write —
+   * `byteGateBlocksFetch` and `commitGateMeasurements` each skip a batch that
+   * measured nothing — because an unmeasurable answer must not overwrite a good
+   * estimate, nor reset the {@link zoomIneffective} comparison that needs two
+   * real measurements.
    */
-  bytes: number | undefined
+  bytes: number
   /**
    * The **visible** span this measurement was taken at, captured before the
    * round trip. Nothing divides by it any more; it is kept because two
@@ -153,18 +159,16 @@ export interface GateViewport {
  */
 export function nextByteEstimate(
   previous: ByteEstimate | undefined,
-  measurement: { bytes: number | undefined; viewport: GateViewport },
+  measurement: { bytes: number; viewport: GateViewport },
 ): ByteEstimate {
   const { bytes, viewport } = measurement
   const base = { bytes, measuredSpanBp: viewport.spanBp }
-  // Nothing to compare against, or nothing comparable: an unmeasurable estimate
-  // on either side says nothing about zoom. Start from "zoom might help", which
-  // is what the banner has always said by default.
-  if (
-    previous?.bytes === undefined ||
-    bytes === undefined ||
-    previous.measuredSpanBp <= 0
-  ) {
+  // Nothing to compare against: one point is not evidence about zoom. Start from
+  // "zoom might help", which is what the banner has always said by default. An
+  // unmeasurable fetch reaches neither branch — the callers store no estimate
+  // for it at all ({@link ByteEstimate.bytes}), so it can't read as a flat
+  // re-measure here.
+  if (previous === undefined || previous.measuredSpanBp <= 0) {
     return { ...base, zoomIneffective: false }
   }
   // Zoomed out, or barely moved — no new evidence either way, so keep whatever
