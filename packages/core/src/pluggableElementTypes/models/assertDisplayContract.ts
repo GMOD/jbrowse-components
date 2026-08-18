@@ -87,18 +87,58 @@ export function assertDisplayContract(
   }
 }
 
-/** What one run of a global display's fetch autorun did. */
+/** What one run of a display's fetch autorun did. */
 export type FetchAutorunOutcome =
-  /** the display's own gate opened and `fetch()` ran */
+  /** the display's own gate opened and a fetch started */
   | 'fetched'
   /** the gate stayed shut, so this run did nothing */
   | 'declined'
-  /** the byte gate skipped the run before the display's gate was consulted */
+  /** a foundation gate skipped the run before the display's own was consulted */
   | 'gated'
+  /**
+   * The run stopped on something that re-wakes this autorun by itself, so it
+   * answers nothing either way — the same deferral `awaitingPrerequisite` gets,
+   * reached from inside the foundation rather than declared by the display. The
+   * per-region family's in-flight-fetch skip is the case: `reload()` signals the
+   * running fetch's stop token but `activeStopToken` clears in `runFetch`'s
+   * finally, so the very next run can still see `isLoading` — and that fetch
+   * ending bumps `fetchGeneration`, which the autorun tracks. Consuming the bump
+   * there would answer the retry with a run that predates it.
+   */
+  | 'deferred'
 
 interface RetryContractHost {
   reloadCounter: number
   loadingSuppressed: boolean
+}
+
+// Displays whose fetch funnel has been entered since the last time the caller
+// looked. Module-scope and keyed on the node for the same reason `attached`
+// above is: the state is per display *instance*, and the only code that needs it
+// — a `.actions()` block and an `afterAttach` in the same mixin — cannot share a
+// closure, because the mixin factory runs once per model type.
+//
+// The per-region foundation's gate is not a boolean it can read. Its
+// `fetchNeeded` hook is an async action that returns the fetch's promise, and an
+// override declines by returning early, which is indistinguishable from
+// returning the promise of a fetch that has started. So the foundation watches
+// its own funnel instead: `fetchRegions` is the mixin's action, every override
+// reaches it (directly or through `fetchEachRegion` / `fetchAllRegions`), and
+// entry happens in the override's synchronous prefix. That is the foundation
+// observing itself, not reading state it doesn't own.
+const fetchFunnelEntered = new WeakSet<object>()
+
+/** Called by the per-region foundation's own `fetchRegions`. Dev-only. */
+export function noteFetchFunnelEntered(self: object) {
+  if (process.env.NODE_ENV === 'production') {
+    return
+  }
+  fetchFunnelEntered.add(self)
+}
+
+/** Reads and clears the flag above, so each check starts from a known state. */
+export function takeFetchFunnelEntered(self: object) {
+  return fetchFunnelEntered.delete(self)
 }
 
 /**
@@ -122,6 +162,18 @@ interface RetryContractHost {
  * Detected at the moment it happens rather than statically, because the relation
  * between `reload()` and `shouldFetch` is semantic: a run that follows a
  * `reloadCounter` bump and declines to fetch IS the dead button.
+ *
+ * **Both fetch foundations install it**, and what counts as the gate differs.
+ * The global family has a literal `shouldFetch()` returning a boolean, so its
+ * run classifies itself. The per-region family's gate is block coverage — a
+ * `reload()` that invalidates nothing leaves `needed` empty — plus the
+ * `fetchNeeded` override, which can decline inside an async body the foundation
+ * cannot read a return value from. So `MultiRegionDisplayMixin` classifies on
+ * whether the override reached `fetchRegions`, which every one of them does in
+ * its synchronous prefix (checked across all eight). An override that awaits
+ * before fetching would read as a decline; there is no such override, and one
+ * added later gets a false report rather than a silent gap, which is the right
+ * way round.
  *
  * A display deliberately not fetching at all is the one exempt decline — LD with
  * the triangle off, whose `reload()` correctly does nothing because there is
@@ -173,6 +225,9 @@ export function makeRetryContractCheck(
       // that answers it, and if that run declines too the report lands then.
       // Deferring rather than exempting is what keeps the check's teeth here: a
       // display cannot spend its retry on a decline it called preliminary.
+      if (outcome === 'deferred') {
+        return
+      }
       if (outcome === 'declined' && awaitingPrerequisite?.()) {
         return
       }

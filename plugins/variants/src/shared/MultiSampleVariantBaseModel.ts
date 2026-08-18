@@ -1563,6 +1563,22 @@ export default function MultiSampleVariantBaseModelF(
                 : (insertionColor ?? drawnColor),
           }).filter(s => !self.dismissedLegendSections.includes(s.id))
         },
+
+        /**
+         * #getter
+         * Retry here is two-stage: `reload()` bumps `reloadCount` for the
+         * sources autorun as well as resetting the fetch, and `fetchNeeded`
+         * below declines until `sourcesBase` lands. So the retry contract is
+         * judged on the run that follows, not on the declining one — see
+         * `MultiRegionDisplayMixin.awaitingPrerequisite`.
+         *
+         * Strictly narrower than the decline it explains, which is what makes it
+         * a deferral: `fetchNeeded` also declines on an empty region set, and
+         * that one is still judged.
+         */
+        get awaitingPrerequisite(): boolean {
+          return !self.sourcesBase
+        },
       }))
       .actions(self => ({
         // `setScrollTop` and the re-clamp autorun are TrackHeightMixin's, earned
@@ -1624,15 +1640,19 @@ export default function MultiSampleVariantBaseModelF(
           })
         },
       }))
-      .actions(self => ({
-        reload() {
-          // Bump reloadCount so the sources autorun re-fires; clearAllRpcData
-          // clears error/regionTooLarge and bumps fetchGeneration to retrigger
-          // the cellData fetch via FetchVisibleRegions.
-          self.reloadCount++
-          self.clearAllRpcData()
-        },
-      }))
+      .actions(self => {
+        const superReload = self.reload
+        return {
+          reload() {
+            // Bump reloadCount so the sources autorun re-fires; super's
+            // clearAllRpcData clears error/regionTooLarge and bumps
+            // fetchGeneration to retrigger the cellData fetch via
+            // FetchVisibleRegions.
+            self.reloadCount++
+            superReload()
+          },
+        }
+      })
       .actions(self => ({
         /**
          * #action

@@ -1,4 +1,9 @@
-import { assertDisplayContract } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
+import {
+  assertDisplayContract,
+  makeRetryContractCheck,
+  noteFetchFunnelEntered,
+  takeFetchFunnelEntered,
+} from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import {
   createStatusFanOut,
   getContainingTrack,
@@ -81,6 +86,17 @@ export default function MultiRegionDisplayMixin() {
          * returns
          */
         loadedRegions: regionDataMap<Region>(),
+        /**
+         * #volatile
+         * Bumped by `reload()` and read unconditionally by the fetch autorun,
+         * so a user retry re-runs the body even where nothing else moved. The
+         * base `reload()` also clears `loadedRegions`, which is what normally
+         * re-fires it — the counter is the half that survives a `reload()`
+         * override that forgets to invalidate, which is the dead button
+         * `makeRetryContractCheck` reports. Same name and same role as
+         * `GlobalFetchMixin`'s, so the two families read alike.
+         */
+        reloadCounter: 0,
       }))
       .views(self => ({
         /**
@@ -179,6 +195,30 @@ export default function MultiRegionDisplayMixin() {
          * otherwise never resolve.
          */
         get svgReadyExtraTerminal(): boolean {
+          return false
+        },
+
+        /**
+         * #getter
+         * Overridable hook (default false), read only by the dev-only retry
+         * check: "this run declined because a prerequisite fetch in another
+         * autorun has not landed, and its arrival wakes this one again". It
+         * **defers** the retry verdict to that later run rather than waiving it,
+         * so a display cannot spend its retry on a decline it called
+         * preliminary — see `makeRetryContractCheck`, which also explains why a
+         * predicate that merely restates the gate is an exemption in disguise.
+         *
+         * `MultiSampleVariantBaseModel` is the case: its `reload()` bumps
+         * `reloadCount` for the sources autorun and its `fetchNeeded` declines
+         * until `sourcesBase` arrives. The global family says the same thing
+         * through `installGlobalFetchAutorun`'s `awaitingPrerequisite` option;
+         * it is a getter here because this family hands displays hooks rather
+         * than an options object.
+         *
+         * Not for a display that is deliberately not fetching at all — that is
+         * `loadingSuppressed` (FetchMixin), which the loading scrim reads too.
+         */
+        get awaitingPrerequisite(): boolean {
           return false
         },
 
@@ -328,8 +368,15 @@ export default function MultiRegionDisplayMixin() {
          * #action
          * Default reload: full reset. Subclasses with extra teardown can
          * override (and chain to `clearAllRpcData` directly if needed).
+         *
+         * An override must reach this counter, by chaining to super or by
+         * bumping it — `MultiSampleVariantBaseModel` is the one that overrides
+         * today and chains. Missing it doesn't break the retry, which the
+         * `clearAllRpcData` below drives; it turns the dev-only retry check off
+         * for that display, silently, which is the failure mode worth knowing.
          */
         reload() {
+          self.reloadCounter++
           this.clearAllRpcData()
         },
       }))
@@ -375,6 +422,9 @@ export default function MultiRegionDisplayMixin() {
           needed: { region: Region; displayedRegionIndex: number }[],
           work: (ctx: FetchContext) => Promise<void>,
         ) {
+          // The retry check's only view of this family's gate — see there for
+          // why the funnel and not `fetchNeeded`'s return value.
+          noteFetchFunnelEntered(self)
           await self.runFetch(async ctx => {
             // No-op unless the display set `measuresBytesPreFlight` — see
             // RegionTooLargeMixin
@@ -408,6 +458,15 @@ export default function MultiRegionDisplayMixin() {
           // before anything is installed so a double-install is reported rather
           // than merely happening.
           assertDisplayContract(self)
+
+          // The other half of the same doctrine: the trigger reads below
+          // guarantee `reload()` re-RUNS the fetch autorun, not that the run
+          // reaches a fetch. The global family has had this since arc shipped a
+          // dead Retry; this family is three times the size and had nothing.
+          const noteFetchAutorunRun = makeRetryContractCheck(
+            self,
+            () => self.awaitingPrerequisite,
+          )
 
           // Clear loaded data whenever the displayed-regions list changes,
           // through the same `onDisplayedRegionsChange` helper the two displays
@@ -446,12 +505,23 @@ export default function MultiRegionDisplayMixin() {
           // by loaded data. Fetches with an explicit buffer for smooth
           // scrolling without blank gaps.
           //
-          // #autorun the viewport, or `fetchGeneration` after a fetch ends | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized
+          // #autorun the viewport, `fetchGeneration` after a fetch ends, or `reloadCounter` on a user retry | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized
           autorunOnReadyView(
             self,
             view => {
               void self.fetchGeneration
+              // Unconditional and above every gate, for the reason the global
+              // family's identical read exists: `reload()` normally re-fires
+              // this through `clearAllRpcData`'s `fetchGeneration` bump, but an
+              // override that clears nothing would then not re-run the body at
+              // all — and a dead button nobody re-runs is one the check below
+              // never gets a run to judge.
+              void self.reloadCounter
               if (self.error || self.fetchCanceled) {
+                // A visible terminal state answers the retry: the user is
+                // looking at an error bar or a canceled load, not at a button
+                // that did nothing.
+                noteFetchAutorunRun('gated')
                 return
               }
               // A blocked gate skips the fetch it has already measured, not
@@ -468,12 +538,22 @@ export default function MultiRegionDisplayMixin() {
               // features on the byte axis, canvas's 1kb density probe on the
               // other. See `gateMeasurementStale`.
               if (self.regionTooLarge && !self.gateMeasurementStale) {
+                // The banner here offers Force load, not Retry, so this run
+                // answers the bump legitimately.
+                noteFetchAutorunRun('gated')
                 return
               }
 
               // perf guard: isLoading flip would re-fire this autorun mid-fetch;
               // fetchGeneration (bumped after fetch) is the real re-trigger.
               if (untracked(() => self.isLoading)) {
+                // Deferred, not consumed. `reload()` signals the running fetch's
+                // stop token but `activeStopToken` clears in `runFetch`'s
+                // finally, so the run immediately after a retry can still land
+                // here — and that fetch ending bumps `fetchGeneration`, which
+                // re-runs this body. Consuming would answer the retry with a run
+                // that predates it.
+                noteFetchAutorunRun('deferred')
                 return
               }
 
@@ -485,6 +565,10 @@ export default function MultiRegionDisplayMixin() {
               // autorun and the fetch resumes. Reuses the track already resolved
               // for the assembly-name check below — no extra getContainingTrack.
               if (track.minimized) {
+                // Nothing is on screen to click, so there is no dead button to
+                // report; un-minimizing re-fires this and the retry is judged
+                // then, off whatever bump is still outstanding.
+                noteFetchAutorunRun('gated')
                 return
               }
               const trackAssemblyNames = getTrackAssemblyNames(track)
@@ -502,6 +586,8 @@ export default function MultiRegionDisplayMixin() {
                       `region assembly (${regionAsm}) does not match track assemblies (${trackAssemblyNames})`,
                     ),
                   )
+                  // Raising a new error is an answer, and a visible one.
+                  noteFetchAutorunRun('gated')
                   return
                 }
               }
@@ -536,6 +622,12 @@ export default function MultiRegionDisplayMixin() {
                 // respectively. A new early return in a `fetchNeeded` override
                 // has to satisfy that or the display wedges: see CLAUDE.md,
                 // "`isCacheValid` and `rpcProps` are views, not actions".
+                //
+                // The retry check below now watches half of that rather than
+                // leaving it to this comment: a decline following a `reload()`
+                // reports unless the display says `loadingSuppressed` (sequence,
+                // whose `zoomedOut` implies it) or `awaitingPrerequisite`
+                // (variants, until `sourcesBase` lands).
                 if (
                   isBlockCovered(loaded, block) &&
                   self.isCacheValid(block.displayedRegionIndex)
@@ -547,9 +639,24 @@ export default function MultiRegionDisplayMixin() {
                   needed.push(buffered)
                 }
               }
-              if (needed.length > 0) {
-                self.fetchNeeded(needed)
+              if (needed.length === 0) {
+                // Every visible block is already covered, so this run reached
+                // no fetch. Following a `reload()` that is the dead button: the
+                // base clears `loadedRegions`, so an override landing here
+                // invalidated nothing.
+                noteFetchAutorunRun('declined')
+                return
               }
+              // Cleared first so the read below can only see this call's entry.
+              takeFetchFunnelEntered(self)
+              // Not awaited — and the classification depends on that. The
+              // override's synchronous prefix has run by the time it hands back
+              // a promise, and reaching `fetchRegions` is what every one of them
+              // does there.
+              self.fetchNeeded(needed)
+              noteFetchAutorunRun(
+                takeFetchFunnelEntered(self) ? 'fetched' : 'declined',
+              )
             },
             {
               name: 'FetchVisibleRegions',
