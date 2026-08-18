@@ -9,6 +9,7 @@ import { makeScoreNormalizer } from '@jbrowse/wiggle-core/normalize'
 
 import { coverageLayout } from './coverageBandBox.ts'
 import { forEachAtPosition, lowerBound } from './positionIndex.ts'
+import { snpLaneOf } from './snpCoverage.ts'
 
 import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
@@ -538,14 +539,45 @@ export function countSnpsAtPosition(
  * defaults to 0), so a threshold of 0 makes every bp qualify and the snap
  * degenerates to "the leftmost bp in the pixel".
  *
- * A caller whose band hides more than this raises it — `hitTestCoverage` passes
- * `max(this, coverageSnpMinFrequency)` so the snap can never name a segment the
- * band declined to colour. Nobody lowers it. Shared rather than spelled at each
- * call site: it was the literal `0.05` twice, the second under a comment saying
- * "mirrors alignments", which is the shape a constant takes just before the two
- * copies stop matching.
+ * A caller whose band hides low-frequency alleles hands `findSignificantInBin`
+ * its own floor as `drawnAllele` rather than raising this one. The two answer
+ * different questions and neither substitutes for the other: dominance in a
+ * pixel is the bar's whole coloured height, so this floor pools the alleles,
+ * while the band paints one segment per allele and so hides them one at a time.
+ * Folding both into a single `max()` let four alt alleles at 10% each on depth
+ * 100 clear a 30% band floor on their 40% pooled total, and the tooltip named a
+ * bp with nothing drawn on it. Nobody lowers this floor.
+ *
+ * Shared rather than spelled at each call site: it was the literal `0.05` twice,
+ * the second under a comment saying "mirrors alignments", which is the shape a
+ * constant takes just before the two copies stop matching.
  */
 export const SNP_TOOLTIP_SNAP_FLOOR = 0.05
+
+// The tallest segment the band would draw over `[from, to)`: the largest count
+// any one allele has there, bucketed by the segments' own lanes. The counters
+// come from the caller so a walk over many runs allocates once, and go back
+// cleared.
+function topAlleleCount(
+  bases: Uint8Array,
+  from: number,
+  to: number,
+  counts: Uint32Array,
+) {
+  let top = 0
+  for (let i = from; i < to; i++) {
+    const lane = snpLaneOf(bases[i])
+    const count = counts[lane]! + 1
+    counts[lane] = count
+    if (count > top) {
+      top = count
+    }
+  }
+  for (let lane = 0; lane < counts.length; lane++) {
+    counts[lane] = 0
+  }
+  return top
+}
 
 /**
  * Genomic position of the first event in [binStart, binEnd) that is
@@ -563,6 +595,14 @@ export const SNP_TOOLTIP_SNAP_FLOOR = 0.05
  * positions are adjacent, so counting a position needs no Map, and the run is
  * walked ascending, so the first qualifying position IS the smallest and the
  * `pos < best` comparison goes away with the loop that needed it.
+ *
+ * `drawnAllele` adds the second question a snap has to answer — is anything
+ * drawn at that bp at all? `threshold` pools the alleles because that is what
+ * dominance in a pixel means, while the band draws a segment per allele and
+ * hides each on its own share, so a position can clear the pooled test with
+ * every one of its segments hidden. Pass the band's floor here and both apply,
+ * at one tally per position the pooled test has already let through. A floor of
+ * 0 — the default — builds no counters and walks exactly as it did.
  */
 export function findSignificantInBin(
   positions: Uint32Array,
@@ -571,18 +611,28 @@ export function findSignificantInBin(
   binStart: number,
   binEnd: number,
   threshold: number,
+  drawnAllele?: { bases: Uint8Array; minFrequency: number },
 ) {
+  const alleles = drawnAllele?.minFrequency
+    ? { ...drawnAllele, counts: new Uint32Array(5) }
+    : undefined
   const len = positions.length
   let k = lowerBound(positions, binStart)
   while (k < len && positions[k]! < binEnd) {
     const pos = positions[k]!
-    let n = 0
+    const runStart = k
     while (k < len && positions[k] === pos) {
-      n++
       k++
     }
     const depth = coverageDepths[Math.floor(pos - coverageStartPos)]
-    if (depth && n / depth > threshold) {
+    if (!depth || (k - runStart) / depth <= threshold) {
+      continue
+    }
+    if (
+      !alleles ||
+      topAlleleCount(alleles.bases, runStart, k, alleles.counts) / depth >=
+        alleles.minFrequency
+    ) {
       return pos
     }
   }

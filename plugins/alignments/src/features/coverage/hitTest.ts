@@ -51,12 +51,14 @@ export function hitTestCoverage(
       coverageStartPos,
       from,
       from + width,
-      // The band's own allele-fraction floor, never below the snap floor. The
-      // threshold was a bare `SNP_TOOLTIP_SNAP_FLOOR` from before the band had
-      // a setting, so at `coverageSnpMinFrequency` 0.2 the tooltip named a 10%
-      // SNP that `drawSnpSegments` and snpCoverage.slang had both declined to
-      // colour — a hover answering for a segment that is not on screen.
-      Math.max(SNP_TOOLTIP_SNAP_FLOOR, coverageSnpMinFrequency),
+      SNP_TOOLTIP_SNAP_FLOOR,
+      // The band's own floor, applied per allele the way `drawSnpSegments` and
+      // snpCoverage.slang apply it, so the snap cannot name a segment neither
+      // backend drew. Passing it as a second pooled threshold — `max(floor,
+      // setting)` — was the same fix aimed one level too coarse: four alt
+      // alleles at 10% each on depth 100 pool to 40% and clear a 30% setting
+      // while the band paints nothing there.
+      { bases: rpcData.mismatchBases, minFrequency: coverageSnpMinFrequency },
     )
     if (snpHit !== undefined) {
       return { type: 'coverage', position: snpHit }

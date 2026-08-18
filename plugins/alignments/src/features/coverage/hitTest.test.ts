@@ -2,13 +2,21 @@ import { hitTestCoverage } from './hitTest.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
+// `mismatchBases` defaults to one allele ('A') at every mismatch position, which
+// is the shape every case here but the per-allele ones wants.
 function makeRpcData(overrides: Partial<PileupDataResult> = {}): PileupDataResult {
-  return {
+  const data = {
     mismatchPositions: new Uint32Array(),
     interbasePositions: new Uint32Array(),
     coverageDepths: new Float32Array(),
     coverageStartPos: 0,
     ...overrides,
+  }
+  return {
+    ...data,
+    mismatchBases:
+      overrides.mismatchBases ??
+      new Uint8Array(data.mismatchPositions.length).fill(65),
   } as PileupDataResult
 }
 
@@ -186,6 +194,58 @@ describe('hitTestCoverage zoomed-out bin search', () => {
           0.01,
         )?.position,
       ).toBe(1000)
+    })
+  })
+
+  // The band hides one allele at a time, so the floor it hides them with is a
+  // per-allele question. The snap floor above is the pooled one, because
+  // dominance in a pixel is the bar's whole coloured height — and a position can
+  // clear that with every segment of it hidden.
+  describe("the band's floor applies per allele, not pooled", () => {
+    // depth 100, 40 mismatches on one bp: 40% pooled either way, and the bases
+    // decide whether any single allele reaches the 30% floor.
+    function fortyMismatches(bases: Uint8Array) {
+      return makeZoomedRpcData({
+        coverageDepths: new Float32Array(100).fill(100),
+        mismatchPositions: new Uint32Array(40).fill(1003),
+        mismatchBases: bases,
+      })
+    }
+
+    it('does not snap to four 10% alleles the band paints nothing for', () => {
+      const alleles = [65, 67, 71, 84]
+      const bases = Uint8Array.from(
+        { length: 40 },
+        (_, i) => alleles[Math.floor(i / 10)]!,
+      )
+      expect(
+        hitTestCoverage(
+          basePos,
+          bpPerPx,
+          20,
+          fortyMismatches(bases),
+          true,
+          50,
+          false,
+          0.3,
+        )?.position,
+      ).toBe(1000)
+    })
+
+    it('snaps when one allele reaches the floor on its own', () => {
+      const bases = new Uint8Array(40).fill(65)
+      expect(
+        hitTestCoverage(
+          basePos,
+          bpPerPx,
+          20,
+          fortyMismatches(bases),
+          true,
+          50,
+          false,
+          0.3,
+        )?.position,
+      ).toBe(1003)
     })
   })
 

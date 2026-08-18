@@ -28,8 +28,10 @@ import {
 } from './snpCoverageLayout.generated.ts'
 
 // Lane index, i.e. colorType - 1. Lane 4 is the single grey bucket for N and
-// the IUPAC ambiguity codes.
-function laneOf(base: number | undefined) {
+// the IUPAC ambiguity codes. Shared with the tooltip snap's per-allele gate
+// (`findSignificantInBin`), which has to bucket a position exactly the way the
+// segments it is asking about were built.
+export function snpLaneOf(base: number | undefined) {
   return base === 65
     ? 0
     : base === 67
@@ -129,7 +131,7 @@ export function computeSNPCoverage(
     if (offset >= 0 && offset < windowLength && coverageDepths[offset]! > 0) {
       let mask = 0
       while (i < len && mismatchPositions[i] === position) {
-        mask |= 1 << laneOf(mismatchBases[i])
+        mask |= 1 << snpLaneOf(mismatchBases[i])
         i++
       }
       segmentCount += LANES_SET[mask]!
@@ -161,7 +163,7 @@ export function computeSNPCoverage(
     const totalDepth =
       offset >= 0 && offset < windowLength ? coverageDepths[offset]! : 0
     while (i < len && mismatchPositions[i] === position) {
-      counts[laneOf(mismatchBases[i])]!++
+      counts[snpLaneOf(mismatchBases[i])]!++
       i++
     }
     // The counters are cleared lane by lane on the way out rather than with one
