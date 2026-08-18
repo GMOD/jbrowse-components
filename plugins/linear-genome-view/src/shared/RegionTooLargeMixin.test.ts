@@ -4,8 +4,10 @@ import {
   SUB_FLOOR_BYTE_BUDGET_FACTOR,
 } from './regionTooLargeUtils.ts'
 
-import type { GateOptIns } from '../BaseLinearDisplay/models/perRegionTestEnv.ts'
-import type { PerRegionTestDisplay } from '../BaseLinearDisplay/models/perRegionTestEnv.ts'
+import type {
+  GateOptIns,
+  PerRegionTestDisplay,
+} from '../BaseLinearDisplay/models/perRegionTestEnv.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 
 // The mixin's own tests. `regionTooLargeUtils.test.ts` covers the comparison

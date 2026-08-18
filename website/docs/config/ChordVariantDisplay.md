@@ -45,11 +45,11 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
 - **Adapter:** [VcfAdapter](../vcfadapter)
 - **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
-- **Adapter:** [BedpeAdapter](../bedpeadapter)
-- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **State model:** [runtime API](../../models/chordvariantdisplay)
 
 ## Config slots

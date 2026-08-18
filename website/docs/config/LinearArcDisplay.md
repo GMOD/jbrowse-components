@@ -43,18 +43,18 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
-- **Adapter:** [FromConfigAdapter](../fromconfigadapter)
-- **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
-- **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 - **Adapter:** [BedAdapter](../bedadapter)
 - **Adapter:** [BedTabixAdapter](../bedtabixadapter)
 - **Adapter:** [BigBedAdapter](../bigbedadapter)
+- **Adapter:** [FromConfigAdapter](../fromconfigadapter)
 - **Adapter:** [Gff3Adapter](../gff3adapter)
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)
 - **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
 - **Adapter:** [NCListAdapter](../nclistadapter)
 - **Adapter:** [SPARQLAdapter](../sparqladapter)
+- **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
+- **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 - **State model:** [runtime API](../../models/lineararcdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 

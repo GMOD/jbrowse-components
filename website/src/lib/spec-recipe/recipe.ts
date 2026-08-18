@@ -1,6 +1,6 @@
 import { fileKind, lookupAssembly, lookupTrack } from './configs.ts'
 
-import type { RawTrack } from './configs.ts'
+import type { RawTrack, TrackInfo  } from './configs.ts'
 import {
   decodeSpecUrl,
   specDisplayType,
@@ -11,7 +11,6 @@ import {
 import { IGNORED_FIELDS, trackFields, viewFields } from './fields.ts'
 import { toProtocolUrl } from '../../../../products/jbrowse-desktop/electron/launchTarget.ts'
 
-import type { TrackInfo } from './configs.ts'
 import type { SpecTrackEntry, SpecView } from './decode.ts'
 import type { FieldContext, FieldRecipe } from './fields.ts'
 
