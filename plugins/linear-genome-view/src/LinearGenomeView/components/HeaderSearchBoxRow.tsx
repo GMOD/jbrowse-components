@@ -13,11 +13,10 @@ const useStyles = makeStyles()({
     minWidth: 0,
     gap: 12,
   },
-  inline: {
-    display: 'inline-flex',
-  },
+  // the only thing the orientation changes: side-by-side is the container as
+  // declared above, since this span is a flex item of the header bar either way
   vertical: {
-    flexDirection: 'column' as const,
+    flexDirection: 'column',
   },
 })
 
@@ -37,7 +36,7 @@ const HeaderSearchBoxRow = observer(function HeaderSearchBoxRow({
     <span
       className={cx(
         classes.searchBoxContainer,
-        sideBySide ? classes.inline : classes.vertical,
+        !sideBySide && classes.vertical,
       )}
     >
       {views.map(view => (

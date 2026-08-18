@@ -9,10 +9,10 @@ import type { RefNameMatchSource } from '../../util/selectNamedRegions.ts'
 
 // matches the rendered font-size of the TextField
 const INPUT_FONT_SIZE = 14
-// input padding + search icon + right margin (excludes the optional help button)
-export const ADORNMENT_RESERVE_PX = 70
-// extra room for the help IconButton, only reserved when it is actually shown
-export const HELP_BUTTON_RESERVE_PX = 30
+// input padding + search icon + right margin (excludes the overflow button)
+const ADORNMENT_RESERVE_PX = 70
+// extra room for the ⋮ IconButton, only reserved when it is actually drawn
+const OVERFLOW_BUTTON_RESERVE_PX = 30
 // quantize the computed width to this step so short locstring length changes (a
 // digit/comma appearing while panning/zooming) don't reflow the box and jitter
 // the surrounding header; also gives short values a little pleasant slack
@@ -132,6 +132,29 @@ export function getOptionLabel(option: string | Option) {
   return typeof option === 'string' ? option : option.result.getDisplayString()
 }
 
+/**
+ * What the end adornment occupies, and the number a caller passes as
+ * `adornmentWidth`.
+ *
+ * The ⋮ button is drawn for consumer-supplied rows as well as for the help one,
+ * so the reservation follows `menuItemCount || showHelp` — the same expression
+ * `EndAdornment` renders on. Both read it here rather than adding the constants
+ * up at the call site, which yields a box that has the button and is sized as
+ * if it did not.
+ */
+export function adornmentReservePx({
+  showHelp,
+  menuItemCount = 0,
+}: {
+  showHelp?: boolean
+  menuItemCount?: number
+}) {
+  return (
+    ADORNMENT_RESERVE_PX +
+    (menuItemCount || showHelp ? OVERFLOW_BUTTON_RESERVE_PX : 0)
+  )
+}
+
 // sized to the committed locstring, not the in-progress typed text, so the box
 // doesn't jitter while typing a long query. Quantized to WIDTH_STEP_PX so small
 // length changes during navigation don't continuously reflow the box.
@@ -139,7 +162,7 @@ export function getInputWidth(
   value: string,
   minWidth: number,
   maxWidth: number,
-  adornmentWidth = ADORNMENT_RESERVE_PX + HELP_BUTTON_RESERVE_PX,
+  adornmentWidth = ADORNMENT_RESERVE_PX + OVERFLOW_BUTTON_RESERVE_PX,
 ) {
   const raw = measureText(value, INPUT_FONT_SIZE) + adornmentWidth
   const stepped = Math.ceil(raw / WIDTH_STEP_PX) * WIDTH_STEP_PX

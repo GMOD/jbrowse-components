@@ -6,6 +6,7 @@ import {
   ErrorBanner,
   RefNameAutocomplete,
   RefNameAutocompleteEndAdornment,
+  adornmentReservePx,
   useAssemblySelection,
   useRecentLocations,
 } from '@jbrowse/core/ui'
@@ -166,6 +167,9 @@ const LinearGenomeViewImportForm = observer(
                   assemblyName={selectedAsm}
                   value={value}
                   minWidth={270}
+                  adornmentWidth={adornmentReservePx({
+                    menuItemCount: recentMenuItems.length,
+                  })}
                   onChange={v => {
                     // no `option` on the new object, so typing over a picked
                     // search result discards it rather than opening the old

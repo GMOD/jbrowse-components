@@ -1,15 +1,24 @@
 import '@testing-library/jest-dom'
 
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { RefNameAutocomplete } from '@jbrowse/core/ui'
+import { RefNameAutocomplete, useRecentLocations } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { isStopped } from '@jbrowse/core/util/stopToken'
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import { navigateToSelectedOption } from '../../searchUtils.ts'
+import SearchBox from './SearchBox.tsx'
 
+import type { LinearGenomeViewModel } from '../model.ts'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -678,5 +687,42 @@ describe('RefNameAutocomplete', () => {
     await waitFor(() => {
       expect(screen.getByText('ctgA')).toBeTruthy()
     }, patience)
+  })
+})
+
+// A stacked view's header turns help off, but the first recent location draws
+// the ⋮ button anyway, so what the box reserves has to follow the button rather
+// than the help flag — otherwise the locstring loses 30px to a button the box
+// is sized as if it did not have.
+describe('SearchBox adornment width', () => {
+  // minWidth 0 so the reservation is what decides the width; every real caller
+  // passes a floor that swallows the difference at a short locstring. Measured
+  // by mounting rather than by reading the prop, so this fails if `SearchBox`
+  // stops telling the box what it is drawing.
+  function mountWidth(model: LinearGenomeViewModel) {
+    const { container, unmount } = render(
+      <SearchBox model={model} showHelp={false} minWidth={0} />,
+    )
+    const width = container.querySelector<HTMLElement>('.MuiAutocomplete-root')!
+      .style.width
+    unmount()
+    return Number.parseInt(width, 10)
+  }
+
+  it('grows by the overflow button once there is a recent location', () => {
+    localStorage.clear()
+    const { model } = setupWithChromosome()
+    // same model in both mounts, so the locstring the box is sized to is the
+    // same and the button is the only difference
+    const bare = mountWidth(model)
+
+    // through the hook that owns the storage key, rather than a hand-built one
+    const { result } = renderHook(() => useRecentLocations('volvox'))
+    act(() => {
+      result.current.addRecentLocation({ label: 'ctgA', loc: 'ctgA' })
+    })
+
+    expect(mountWidth(model)).toBeGreaterThan(bare)
+    localStorage.clear()
   })
 })

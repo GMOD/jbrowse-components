@@ -89,8 +89,7 @@ export async function navToOption({
   // getLocation() can be an empty string when a result reports hasLocation()
   // but carries no coordinates; treat that as "no location" and fall back to
   // the label rather than forwarding '' into an empty, view-blanking parse
-  const rawLocation = option.getLocation()
-  const location = rawLocation ? rawLocation : option.getLabel()
+  const location = option.getLocation() || option.getLabel()
   const trackId = option.getTrackId()
   const session = getSession(model)
   const { assemblyManager } = session

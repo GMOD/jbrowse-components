@@ -1,8 +1,7 @@
 import {
-  ADORNMENT_RESERVE_PX,
-  HELP_BUTTON_RESERVE_PX,
   RefNameAutocomplete,
   RefNameAutocompleteEndAdornment,
+  adornmentReservePx,
   useRecentLocations,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -81,9 +80,10 @@ const SearchBox = observer(function SearchBox({
       value={model.coarseVisibleLocStrings}
       minWidth={minWidth}
       maxWidth={maxWidth}
-      adornmentWidth={
-        ADORNMENT_RESERVE_PX + (showHelp ? HELP_BUTTON_RESERVE_PX : 0)
-      }
+      adornmentWidth={adornmentReservePx({
+        showHelp,
+        menuItemCount: recentMenuItems.length,
+      })}
       style={style}
       endAdornment={
         <RefNameAutocompleteEndAdornment

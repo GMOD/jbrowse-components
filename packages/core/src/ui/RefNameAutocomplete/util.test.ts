@@ -1,6 +1,7 @@
 import BaseResult from '../../TextSearch/BaseResults.ts'
 import { MAX_GLOB_REGIONS } from '../../util/selectNamedRegions.ts'
 import {
+  adornmentReservePx,
   cap,
   coerceToResult,
   getDeduplicatedResult,
@@ -322,5 +323,27 @@ describe('getInputWidth', () => {
     const withHelp = getInputWidth('chr1:1..2,000,000', 50, 550, 100)
     const withoutHelp = getInputWidth('chr1:1..2,000,000', 50, 550, 70)
     expect(withoutHelp).toBeLessThan(withHelp)
+  })
+})
+
+// EndAdornment.test.tsx pins the render side of these: the ⋮ button appears for
+// injected rows with no help, and disappears when there is neither
+describe('adornmentReservePx', () => {
+  it('reserves nothing extra for a box with no overflow menu', () => {
+    expect(adornmentReservePx({})).toBe(adornmentReservePx({ showHelp: false }))
+  })
+
+  it('reserves the button for help alone', () => {
+    expect(adornmentReservePx({ showHelp: true })).toBeGreaterThan(
+      adornmentReservePx({}),
+    )
+  })
+
+  it('reserves the button for injected rows with help off', () => {
+    // the header box in a stacked view: showHelp={false}, but a recent location
+    // draws the button anyway, and the locstring lost that width to it
+    expect(adornmentReservePx({ showHelp: false, menuItemCount: 1 })).toBe(
+      adornmentReservePx({ showHelp: true }),
+    )
   })
 })

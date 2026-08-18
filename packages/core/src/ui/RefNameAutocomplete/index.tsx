@@ -135,7 +135,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       // server-side for `debouncedSearch`, regionOptions live for `searchQuery`
       // — so MUI must not re-filter them (its default filter would drop hits
       // matching on a description rather than the display string). Only cap.
-      filterOptions={opts => cap(opts)}
+      filterOptions={cap}
       renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField
           {...restParams}
@@ -163,4 +163,4 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
 
 export default RefNameAutocomplete
 export { default as RefNameAutocompleteEndAdornment } from './EndAdornment.tsx'
-export { ADORNMENT_RESERVE_PX, HELP_BUTTON_RESERVE_PX } from './util.ts'
+export { adornmentReservePx } from './util.ts'

@@ -37,9 +37,8 @@ export { useAssemblySelection } from './useAssemblySelection.ts'
 export { useRecentLocations } from './useRecentLocations.ts'
 export type { RecentLocation } from './useRecentLocations.ts'
 export {
-  ADORNMENT_RESERVE_PX,
-  HELP_BUTTON_RESERVE_PX,
   RefNameAutocompleteEndAdornment,
+  adornmentReservePx,
   default as RefNameAutocomplete,
 } from './RefNameAutocomplete/index.tsx'
 export { default as CascadingMenu } from './CascadingMenu.tsx'

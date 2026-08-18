@@ -42,7 +42,6 @@
     "createElementId"
   ],
   "@jbrowse/core/ui": [
-    "ADORNMENT_RESERVE_PX",
     "ActionLink",
     "AssemblySelector",
     "BaseExportSvgDialog",
@@ -65,7 +64,6 @@
     "GRADIENT_LEGEND_HEIGHT",
     "GRADIENT_LEGEND_SVG_AREA_WIDTH",
     "GRADIENT_LEGEND_WIDTH",
-    "HELP_BUTTON_RESERVE_PX",
     "INLINE_MENU_ROW_WIDTH",
     "InfoDialog",
     "JexlFilterDialog",

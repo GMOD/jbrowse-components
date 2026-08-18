@@ -39,6 +39,8 @@ export default function EndAdornment({
   return (
     <InputAdornment position="end" style={{ marginRight: 7 }}>
       <SearchIcon fontSize="small" />
+      {/* `adornmentReservePx` reserves the button's width off the same
+          condition — a row added here unconditionally would break that */}
       {items.length ? (
         <CascadingMenuButton
           menuItems={items}
