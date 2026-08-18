@@ -1,8 +1,8 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { arcColorLegendCategory } from '../../features/arcs/arcColors.ts'
 import { arcMarkScreenPath } from '../../features/arcs/arcPath.ts'
-import { arcColorLegendCategory } from '../../features/arcs/compute.ts'
 import { offsetArcMark } from '../../features/arcs/mark.ts'
 import CrossRegionArcMarkers from './CrossRegionArcMarkers.tsx'
 import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
@@ -64,56 +64,75 @@ const CrossRegionArcsBand = observer(function CrossRegionArcsBand({
       }}
     >
       {arcs.map(arc => (
-        <path
-          key={arc.key}
-          data-testid="cross-region-arc"
-          d={arc.d}
-          stroke={arc.stroke}
-          strokeWidth={arc.strokeWidth}
-          strokeDasharray={arc.dash}
-          fill="none"
-          style={{ pointerEvents: 'stroke', cursor: 'default' }}
-          onMouseEnter={() => {
-            // `setHoverState`, not a local hovered-key that thickens this
-            // path's own stroke. `ArcHoverOverlay` is its own z-layer and draws
-            // the highlight for a canvas arc, so a second mechanism here can
-            // show two hovers in one band at once; routing through the same
-            // state makes a seam-crossing arc hover exactly like any other.
-            model.setHoverState({
-              // FALSE, as for a canvas arc: `overCigarItem` is the pointer
-              // cursor, and an arc carries no read id to select or open.
-              overCigarItem: false,
-              featureIdUnderMouse: undefined,
-              mouseoverExtraInformation: formatArcTooltip(
-                {
-                  x1: arc.start,
-                  x2: arc.end,
-                  support: arc.support,
-                  shapeType: arc.shapeType,
-                  spanBp: arc.spanBp,
+        <g key={arc.key}>
+          <path
+            data-testid="cross-region-arc"
+            d={arc.d}
+            stroke={arc.stroke}
+            strokeWidth={arc.strokeWidth}
+            strokeDasharray={arc.dash}
+            fill="none"
+            // Inert, so the hover is decided entirely by the target path below
+            // rather than by whichever of the two the pointer happened to land
+            // on. A dashed split connector would otherwise answer on its dashes
+            // and not in its gaps.
+            style={{ pointerEvents: 'none' }}
+          />
+          <path
+            data-testid="cross-region-arc-target"
+            d={arc.d}
+            stroke="transparent"
+            // The canvas band's tolerance, spelled for a renderer that has no
+            // hit test — see `hitStrokeWidth`. Undashed on purpose, per above.
+            strokeWidth={arc.hitStrokeWidth}
+            fill="none"
+            style={{ pointerEvents: 'stroke', cursor: 'default' }}
+            onMouseEnter={() => {
+              // `setHoverState`, not a local hovered-key that thickens this
+              // path's own stroke. `ArcHoverOverlay` is its own z-layer and
+              // draws the highlight for a canvas arc, so a second mechanism
+              // here can show two hovers in one band at once; routing through
+              // the same state makes a seam-crossing arc hover exactly like any
+              // other.
+              model.setHoverState({
+                // FALSE, as for a canvas arc: `overCigarItem` is the pointer
+                // cursor, and an arc carries no read id to select or open.
+                overCigarItem: false,
+                featureIdUnderMouse: undefined,
+                mouseoverExtraInformation: formatArcTooltip(
+                  {
+                    x1: arc.start,
+                    x2: arc.end,
+                    support: arc.support,
+                    shapeType: arc.shapeType,
+                    spanBp: arc.spanBp,
+                  },
+                  arc.refName,
+                  arcColorLegendCategory(arc.colorType, model.arcColorByType),
+                  arc.endRefName,
+                ),
+                hoveredArcHighlight: {
+                  // The band-local mark, moved to the component's origin, which
+                  // is where `ArcHoverOverlay` draws. Same mark, so the
+                  // highlight lies on the arc rather than near it.
+                  d: arcMarkScreenPath(offsetArcMark(arc.mark, screenTop)),
+                  // This overlay's own box, which IS its clip (`overflow:
+                  // hidden`) — the highlight has to be cut at the same rect or
+                  // a far pair's dome traces across the coverage histogram.
+                  clip: { x: 0, y: screenTop, width, height },
+                  // The DRAWN width, not the target's: the highlight is meant to
+                  // read as this arc lighting up, and the target is deliberately
+                  // wider than the ink.
+                  lineWidth: arc.strokeWidth,
                 },
-                arc.refName,
-                arcColorLegendCategory(arc.colorType, model.arcColorByType),
-                arc.endRefName,
-              ),
-              hoveredArcHighlight: {
-                // The band-local mark, moved to the component's origin, which
-                // is where `ArcHoverOverlay` draws. Same mark, so the highlight
-                // lies on the arc rather than near it.
-                d: arcMarkScreenPath(offsetArcMark(arc.mark, screenTop)),
-                // This overlay's own box, which IS its clip (`overflow:
-                // hidden`) — the highlight has to be cut at the same rect or a
-                // far pair's dome traces across the coverage histogram.
-                clip: { x: 0, y: screenTop, width, height },
-                lineWidth: arc.strokeWidth,
-              },
-              highlightedChainReadIds: [],
-            })
-          }}
-          onMouseLeave={() => {
-            model.clearMouseoverState()
-          }}
-        />
+                highlightedChainReadIds: [],
+              })
+            }}
+            onMouseLeave={() => {
+              model.clearMouseoverState()
+            }}
+          />
+        </g>
       ))}
       <CrossRegionArcMarkers arcs={arcs} />
     </svg>

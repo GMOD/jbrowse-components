@@ -13,6 +13,13 @@ import type { CrossRegionArcShape } from '../../features/arcs/crossRegionOverlay
 //
 // Empty on every arc but a read-cloud connector — a dome's endpoints sit on the
 // band's anchor line and carry no marker (`packArcMarkers`).
+//
+// No hover of their own, which is the canvas band's arrangement rather than a
+// gap: `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`, so a square is inside the
+// tolerance of the bar it sits on, and the overlay's target path is stroked at
+// exactly that tolerance (`hitStrokeWidth`). The squares inherit the host
+// `<svg>`'s `pointerEvents: 'none'` and are answered for by the bar, in both
+// renderers, by the same arithmetic.
 export default function CrossRegionArcMarkers({
   arcs,
 }: {

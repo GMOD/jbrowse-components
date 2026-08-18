@@ -11,14 +11,15 @@ import {
 } from '../../shaders/slang/arcFlat.consts.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts'
+import { arcPaintOrder } from './arcColors.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcMarkScreenPath } from './arcPath.ts'
-import { arcPaintOrder } from './compute.ts'
+import { ARC_HIT_SLOP_PX } from './hitTest.ts'
 import { arcMarkFrom } from './mark.ts'
 import { ARC_SHAPE_FLAT_SPLIT } from './shapes.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { CrossRegionArc } from './compute.ts'
+import type { CrossRegionArc } from './arcTypes.ts'
 import type { ArcBandFrame, ArcMark } from './mark.ts'
 
 // The arcs no per-region pass can draw, projected across the whole view.
@@ -69,6 +70,26 @@ export interface CrossRegionArcShape {
   // than inside this band's box, so it needs the same mark one offset down —
   // see `offsetArcMark`. Re-projecting it there would be a second geometry.
   mark: ArcMark
+  // How wide this arc answers a hover, as opposed to how wide it draws.
+  //
+  // An SVG path with `pointerEvents: 'stroke'` answers on its own ink and
+  // nothing more, so at the default `readConnectionsLineWidth` of 1 these arcs
+  // had a ONE PIXEL target while every arc inside a region had seven —
+  // `hitTestArcBand` adds `ARC_HIT_SLOP_PX` either side of the stroke, for the
+  // reason given there: an arc is ink a few px wide in a band tens of px tall,
+  // and a hairline target makes the tooltip a thing you fish for. These are the
+  // arcs a two-region view is opened for (every interchromosomal arc is one), so
+  // they were the hardest to hover in the band that most needed hovering.
+  //
+  // The host strokes a second, invisible path at this width and hangs the
+  // handlers on that — see `CrossRegionArcsOverlay`. Resolved here rather than at
+  // the host so the two families' tolerance is one expression: this is
+  // `hitTestArcBand`'s target, spelled for a renderer that has no hit test.
+  //
+  // It also covers the endpoint squares, by the same arithmetic that covers them
+  // on canvas: `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`, and the squares sit on the
+  // bar this widens.
+  hitStrokeWidth: number
   // Reads coalesced into this arc, exactly as the stroke width encodes it and
   // as `ArcTooltipPayload` reports it.
   support: number
@@ -302,6 +323,7 @@ export function computeCrossRegionArcs({
         flatConnectorCss,
       ),
       strokeWidth,
+      hitStrokeWidth: strokeWidth + 2 * ARC_HIT_SLOP_PX,
       support: arc.support,
       refName: arc.p1.refName,
       endRefName: arc.p2.refName,
