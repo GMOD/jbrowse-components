@@ -166,26 +166,27 @@ export interface TrackConfigChange {
   to: Json
 }
 
-// Keys that identify a config node rather than record a user edit: trackId (kept
-// by diffTrackConfig so the delta self-identifies), plus displayId/type on a
-// display (diffValue re-stamps displayId, and a display present only in the delta
-// carries type/displayId whole). None reflect a setting the user changed, so they
-// are skipped when listing changes — a display stub with only these emits nothing.
-//
-// CAVEAT: this skip is by key name at EVERY nesting depth, not just on displays.
-// So a `type` change on a nested config (e.g. swapping `adapter.type` or a
-// renderer type) is intentionally omitted from the change list too. That's an
-// accepted tradeoff — such edits are rare and structural, and suppressing the
-// noisy display stubs (the actual bug this fixes) is worth it. If a nested-type
-// edit ever needs to surface, scope the skip to display-array elements instead
-// of matching the bare key name here.
-const IDENTITY_KEYS = new Set(['trackId', 'displayId', 'type'])
+// Keys that identify a config node rather than record a user edit: trackId, kept
+// by diffTrackConfig so the delta self-identifies, and displayId, which diffValue
+// re-stamps on every display it emits. Neither reflects a setting the user
+// changed, so listing changes skips them at any depth.
+const IDENTITY_KEYS = new Set(['trackId', 'displayId'])
+
+// `type` is identity only on a display-array element, where a display present in
+// the delta for its `{type, displayId}` stub alone must emit nothing. Elsewhere
+// it is a real edit: swapping `adapter.type` or a renderer type changes what the
+// track shows, and skipping it by bare key name at every depth made such an edit
+// invisible to `isTrackOverride` (no edited badge, no Reset) and to the desktop
+// web export, whose ship gate is this same list — an adapter-type edit produced
+// an empty change list and so travelled to the recipient not at all.
+const DISPLAY_IDENTITY_KEYS = new Set([...IDENTITY_KEYS, 'type'])
 
 function walkDelta(
   base: Json,
   delta: Json,
   path: string[],
   out: TrackConfigChange[],
+  identityKeys: Set<string> = IDENTITY_KEYS,
 ): void {
   if (isDisplayArray(delta)) {
     const baseById = new Map(
@@ -198,11 +199,17 @@ function walkDelta(
       // recurse into every display (missing base ⇒ {}) so only real slot edits
       // surface — a display present only for its {type, displayId} stub yields
       // no changes rather than being dumped whole
-      walkDelta(baseDisplay ?? {}, editedDisplay, [...path, label], out)
+      walkDelta(
+        baseDisplay ?? {},
+        editedDisplay,
+        [...path, label],
+        out,
+        DISPLAY_IDENTITY_KEYS,
+      )
     }
   } else if (isPlainObject(delta) && isPlainObject(base)) {
     for (const [k, v] of Object.entries(delta)) {
-      if (!IDENTITY_KEYS.has(k)) {
+      if (!identityKeys.has(k)) {
         walkDelta(base[k], v, [...path, k], out)
       }
     }

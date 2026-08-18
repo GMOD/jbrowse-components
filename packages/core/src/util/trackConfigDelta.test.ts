@@ -221,3 +221,53 @@ test('flatten ignores content-free display stubs (only type/displayId)', () => {
     },
   ])
 })
+
+// `type` is identity on a display element and a real edit anywhere else. Skipping
+// it by bare key name at every depth hid an adapter/renderer swap from the edited
+// badge, from the Reset menu, and from the desktop web export's ship gate — which
+// is this same list, so such an edit reached the recipient not at all.
+test('flatten reports a nested type change but not a display stub type', () => {
+  const noDisplayBase = {
+    trackId: 't',
+    type: 'FeatureTrack',
+    adapter: { type: 'BamAdapter' },
+  }
+  const delta = {
+    trackId: 't',
+    adapter: { type: 'CramAdapter' },
+    displays: [{ type: 'LinearBasicDisplay', displayId: 't-basic' }],
+  }
+  expect(flattenTrackConfigDelta(noDisplayBase, delta)).toEqual([
+    { path: ['adapter', 'type'], from: 'BamAdapter', to: 'CramAdapter' },
+  ])
+})
+
+test('flatten reports a renderer type swap inside a display', () => {
+  const trackBase = {
+    trackId: 't',
+    displays: [
+      {
+        type: 'LinearBasicDisplay',
+        displayId: 't-basic',
+        renderer: { type: 'SvgFeatureRenderer' },
+      },
+    ],
+  }
+  const delta = diffTrackConfig(trackBase, {
+    trackId: 't',
+    displays: [
+      {
+        type: 'LinearBasicDisplay',
+        displayId: 't-basic',
+        renderer: { type: 'PileupRenderer' },
+      },
+    ],
+  })
+  expect(flattenTrackConfigDelta(trackBase, delta)).toEqual([
+    {
+      path: ['displays', 'LinearBasicDisplay', 'renderer', 'type'],
+      from: 'SvgFeatureRenderer',
+      to: 'PileupRenderer',
+    },
+  ])
+})
