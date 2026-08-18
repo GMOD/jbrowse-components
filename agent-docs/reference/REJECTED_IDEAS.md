@@ -291,6 +291,12 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   part with an actual rule — `resolveRowHeight`'s `0` sentinel plus non-positive
   floor, the menu row and the dialog. See
   [ROW_HEIGHT_AND_FIT.md](ROW_HEIGHT_AND_FIT.md).
+
+  **What this rejects is the computed ladder, not the config slots.** A
+  `rowHeightConfigSchemaFields` following the `treeSidebarConfigSchemaFields`
+  pattern is the shared half above and is endorsed, not blocked, by this entry —
+  it is in flight on the `row-height-mixin` worktree. The three differences named
+  here are the reason the *derived* values stay per-display.
 - **A `createEmbeddedSessionModel({ view, tracksMixin, … })` factory** for the
   two single-view embedded products — measured 2026-08-16 and declined, in
   favour of the `EmbeddedSessionMixin` that shipped instead. The circular- and

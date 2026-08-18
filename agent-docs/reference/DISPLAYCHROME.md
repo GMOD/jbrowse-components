@@ -400,6 +400,19 @@ not in production. The one legitimate decline, a display deliberately not
 fetching at all (LD with the triangle off), exempts itself with
 `loadingSuppressed`.
 
+**A two-stage `reload()` says `awaitingPrerequisite`, and that is a deferral
+rather than a second exemption.** The declared decline leaves the `reloadCounter`
+bump outstanding instead of consuming it, so the run after the prerequisite lands
+is the one judged and a display cannot spend its retry on a decline it called
+preliminary. Read that mechanism in `makeRetryContractCheck`, and note what it
+costs at the one call site: HiC's predicate is `effectiveResolution === undefined`,
+the exact negation of its own gate, so every HiC decline defers and the report is
+unreachable for that display. There is nothing narrower to say — the gate and the
+prerequisite are one condition there — so HiC's retry is pinned by
+`LinearHicDisplay/infoFetchFailure.test.ts` and not by this check. A display whose
+predicate is strictly narrower than `!shouldFetch` keeps the coverage; one that
+restates the gate has opted out, and should say which test covers it instead.
+
 The other two stay manual: **work `reload()` never re-runs** can't be seen from
 here, because the autorun does reach a fetch; and **a display rendering its own
 banner** (dotplot, synteny) is off this path entirely.

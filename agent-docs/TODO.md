@@ -351,6 +351,17 @@ capture on every backend**, which is the property that was violated. Re-run
 `browser-tests/probe-webgpu-coverage.ts` afterwards. Widening the gate to webgpu
 is blocked only by this.
 
+**Then re-measure `Alignments Track` and `Alignments Color Schemes` before
+widening, not after.** Both block in `CI_GATE_SUITES` today and both hold only
+because every gate script passes `--skip-webgpu`; under webgpu they go eight
+pairs over threshold, and the cause is this same scroll artifact rather than a
+rendering difference, so **do not answer it with a threshold override** — see
+[reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md) §"Alignments
+under webgpu". No script runs the gate with webgpu in it — `test:browser:gate`
+and `test:browser:gate:ci` both pass `--skip-webgpu` — so drop the flag by hand
+from `products/jbrowse-web`:
+`node browser-tests/runner.ts --backend=all --swiftshader --gate-only`.
+
 ### Attribute the browser-test TIMEOUT failure mode
 
 The other failure mode next to blank captures: a display never reports `-done`

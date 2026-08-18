@@ -143,6 +143,14 @@ interface RetryContractHost {
  * `loadingSuppressed` is the wrong thing for HiC to say in any case, because it
  * does want the scrim while the header is re-read.
  *
+ * **The predicate has to be strictly narrower than `!shouldFetch` to be a
+ * deferral at all.** One that restates the gate's negation makes every decline a
+ * deferred one, so no run is ever judged and the display has opted out — an
+ * exemption by another name. HiC's is that shape, because its gate and its
+ * prerequisite are the same condition, and what covers HiC's retry instead is
+ * `LinearHicDisplay/infoFetchFailure.test.ts`. Say so at any call site that
+ * lands there, and pick a narrower predicate wherever one exists.
+ *
  * **Everything it reads is `untracked`.** It runs inside the fetch autorun, so a
  * tracked read of `loadingSuppressed` — or of whatever `awaitingPrerequisite`
  * reaches — would put that observable in the autorun's dependency set in dev and

@@ -749,7 +749,14 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           // through the same tracked read. So the retry contract is judged on
           // that later run rather than this one. Not `loadingSuppressed`, which
           // would be the wrong claim — HiC does want the scrim meanwhile.
-          awaitingPrerequisite: () => self.effectiveResolution === undefined,
+          //
+          // `hasResolutions` rather than `effectiveResolution === undefined`,
+          // which is the gate above spelled backwards: what this states is that
+          // the header has not landed. It is still the same condition — HiC's
+          // gate and its prerequisite are one — so every decline here defers and
+          // the check can never report on this display. Deliberate, and the cost
+          // is that `infoFetchFailure.test.ts` is what pins HiC's retry.
+          awaitingPrerequisite: () => !self.hasResolutions,
           fetch: () => {
             void self.performHicFetch()
           },
