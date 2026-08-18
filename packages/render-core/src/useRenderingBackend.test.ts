@@ -323,7 +323,7 @@ describe('useRenderingBackend', () => {
     rerender()
     await wait(2400)
 
-    // 1 initial + at most MAX_CONTEXT_RECOVER_ATTEMPTS (2) auto-retries.
+    // 1 initial + at most MAX_RECOVERIES (2) auto-retries.
     // Crucially it STOPS — no unbounded thrash.
     expect(factory).toHaveBeenCalledTimes(3)
   }, 15000)

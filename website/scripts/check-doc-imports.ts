@@ -453,7 +453,10 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // exemption is genuinely bad at — a table of CURRENT API, where the idiom that
 // justifies the exemption cannot apply.
 const SYMBOL_DIRS = [join(docsDir, 'developer_guides')]
-const SYMBOL_FILES = new Set([join(repoRoot, 'agent-docs', 'ARCHITECTURE.md')])
+const SYMBOL_FILES = new Set([
+  join(repoRoot, 'agent-docs', 'ARCHITECTURE.md'),
+  join(repoRoot, 'agent-docs', 'reference', 'ARCHITECTURAL_LIMITS.md'),
+])
 // Every CLAUDE.md is symbol-checked too — see claudeDocs() below for why, and
 // for the baseline. They describe current practice by definition, so the
 // "records superseded names on purpose" exemption that keeps reference/ out
@@ -480,8 +483,17 @@ const isClaudeDoc = (path: string) => path.endsWith('/CLAUDE.md')
 // is the supported way for a *doc* to name something gone, and there is no
 // equivalent escape for source, because source naming a dead symbol is the
 // thing this check has no way to tell apart from source defining a live one.
+//
+// The third alternative is CONST_CASE, which the first two cannot reach: an
+// underscore is in neither character class, so every module constant a doc
+// named was exempt by accident. That is the half the limits register needed
+// most — it cited one recovery-cap constant that has never existed under the
+// name it used and one response-deadline constant that had moved to another
+// repo, and both read as precise because a constant in backticks does. Neither
+// is spelled here, for the reason the paragraph below gives: naming them in
+// this file would re-exempt them everywhere.
 const TICKED_SYMBOL =
-  /`([A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)[`(]/g
+  /`([A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*|[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)[`(]/g
 // Two placeholder conventions, both standing in for a name the reader supplies:
 // `My*` in the guides (`MyAdapterConfig`, `MyPlugin`), and `Xxx` as an infix in
 // the architecture spec, where a rule holds across a family of per-plugin
@@ -511,6 +523,11 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // rather than cited.
   'withSuppressedPanelRemoval',
   'layoutsEqual',
+  // ARCHITECTURAL_LIMITS.md §"A region arrival draws twice wherever the render
+  // autorun observes the data": the name for a deferred-tick fix that was
+  // built, measured and found not to work. The entry exists to stop the next
+  // reader trying it, so the method must stay unwritten.
+  'renderSoon',
 ])
 
 // Symbols belonging to a DEPENDENCY, named because our behaviour turns on
@@ -529,6 +546,16 @@ const DOC_THIRD_PARTY = new Set([
   // a page worse) so nobody pulls it again. Naming the option is the whole
   // point of the note, and it is not ours to define.
   'advancedChunks',
+  // ARCHITECTURAL_LIMITS.md §"Every WebGPU display resolves its whole pass list
+  // before it can paint": the synchronous half of the WebGPU pipeline API,
+  // named because the entry accepts the eager build specifically to avoid it.
+  // Its async sibling `createRenderPipelineAsync` we do call, so only this one
+  // is absent.
+  'createRenderPipeline',
+  // ARCHITECTURAL_LIMITS.md §"Per-JS-context scoping multiplies by the RPC
+  // pool": the platform primitive the unbuilt fix would be built on, in the
+  // retire condition. Naming it is what makes that condition checkable.
+  'MessagePort',
 ])
 
 // Build output, which must not contribute symbols. `esm/` holds a `.d.ts` per
@@ -548,8 +575,12 @@ function collectSymbols() {
   // so a wider net over real sources costs nothing but the read.
   const isSource = (name: string) => /\.(tsx?|jsx?|mjs|cjs|slang)$/.test(name)
   const add = (file: string) => {
+    // Must stay in step with TICKED_SYMBOL, CONST_CASE alternative included.
+    // The two regexes are one test read from both ends: widening only the doc
+    // side asks about names this side never collected, which reported 61 live
+    // constants as dead the first time it was tried.
     for (const m of readFileSync(file, 'utf8').matchAll(
-      /\b(?:[A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)\b/g,
+      /\b(?:[A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*|[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)\b/g,
     )) {
       set.add(m[0])
     }
