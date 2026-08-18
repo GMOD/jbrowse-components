@@ -10,7 +10,21 @@ test('vcf file import', () => {
     'test_data',
     '1801160099-N32519_26611_S51_56704.hard-filtered.vcf',
   )
-  expect(parseVcfBuffer(fs.readFileSync(filepath))).toMatchSnapshot()
+  const { columns, rowSet } = parseVcfBuffer(fs.readFileSync(filepath))
+
+  // The column list is what this module decides — which INFO fields become
+  // columns, in what order, and where SVTYPE lands. The two tests below probe
+  // it directly; this pins the whole thing on a real file.
+  expect(columns).toMatchSnapshot()
+
+  // `cellData` is the other half it decides, and one line per row covers every
+  // cell in the file. `feature` is not this module's output — it is
+  // `VcfFeature.toJSON()` passed through from @jbrowse/plugin-variants, which
+  // is where its 148 lines per row belong — so one row carries it in full
+  // rather than all 101 restating the same pass-through.
+  expect(rowSet.rows.length).toBe(101)
+  expect(rowSet.rows.map(r => JSON.stringify(r.cellData))).toMatchSnapshot()
+  expect(rowSet.rows[0]).toMatchSnapshot()
 })
 
 // Regression: `.` is how VCF spells "no INFO here", and splitting it produced a
