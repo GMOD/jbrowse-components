@@ -7,25 +7,53 @@ import {
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// Only `getElementTypesInGroup` is read, and only for the name + stateModel of
-// each registered type — a real PluginManager here would drag every core plugin
-// into a test about one missing one.
-function fakePluginManager(groups: Record<string, string[]>) {
-  return {
-    getElementTypesInGroup: (group: string) =>
-      (groups[group] ?? []).map(name => ({
+// Stands in for a PluginManager on the two members the prune reads. A real one
+// would drag every core plugin into a test about one missing plugin, and the
+// registered models here carry the `type` literal every real state model does —
+// which is what lets the union discriminate at all.
+//
+// `renames` gives one model the `preProcessSnapshot` type rewrite that
+// LinearMultiSampleVariantDisplay uses for its old name: a type the registry
+// cannot name and the union still accepts.
+function fakePluginManager(
+  groups: Record<string, string[]>,
+  renames: Record<string, string> = {},
+) {
+  const elements = Object.fromEntries(
+    Object.entries(groups).map(([group, names]) => [
+      group,
+      names.map(name => ({
         name,
-        stateModel: types.model(name, {}),
+        stateModel: types
+          .model(name, { type: types.literal(name) })
+          .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
+            snap && renames[snap.type as string] === name
+              ? { ...snap, type: name }
+              : snap,
+          ),
       })),
+    ]),
+  )
+  return {
+    getElementTypesInGroup: (group: string) => elements[group] ?? [],
+    pluggableMstType: (group: string) => {
+      const models = (elements[group] ?? []).map(t => t.stateModel)
+      return models.length > 0
+        ? types.union(...models)
+        : types.maybe(types.null)
+    },
   } as unknown as PluginManager
 }
 
-const pluginManager = fakePluginManager({
-  widget: ['HierarchicalTrackSelectorWidget'],
-  view: ['LinearGenomeView', 'BreakpointSplitView'],
-  track: ['FeatureTrack'],
-  display: ['LinearBasicDisplay'],
-})
+const pluginManager = fakePluginManager(
+  {
+    widget: ['HierarchicalTrackSelectorWidget'],
+    view: ['LinearGenomeView', 'BreakpointSplitView'],
+    track: ['FeatureTrack'],
+    display: ['LinearBasicDisplay'],
+  },
+  { OldBasicDisplay: 'LinearBasicDisplay' },
+)
 
 test('drops a widget whose plugin this build does not have', () => {
   const { snapshot, dropped } = pruneUnbuildableNodes(
@@ -157,6 +185,36 @@ test('drops a display it cannot build, and the track when that empties it', () =
   expect(describeUnbuildableNodes(dropped)).toBe(
     'Removed session items that need plugins this JBrowse does not have: LinearGwasDisplay',
   )
+})
+
+// A registry name is not the whole story: a DisplayType can declare `aliases`
+// and a model's own preProcessSnapshot can rewrite the type literal, so a
+// renamed type appears unregistered while the union accepts it happily. Asking
+// only the registry dropped the old name and left the track with no display —
+// which is how the LinearMultiSampleVariantDisplay rename first showed up.
+test('keeps a renamed type the union still accepts', () => {
+  const { snapshot, dropped } = pruneUnbuildableNodes(
+    {
+      views: [
+        {
+          id: 'v',
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              id: 't',
+              type: 'FeatureTrack',
+              displays: [{ id: 'd', type: 'OldBasicDisplay' }],
+            },
+          ],
+        },
+      ],
+    },
+    pluginManager,
+  )
+  expect(dropped).toEqual([])
+  const [view] = snapshot.views as Record<string, unknown>[]
+  const [track] = view!.tracks as Record<string, unknown>[]
+  expect(track!.displays).toEqual([{ id: 'd', type: 'OldBasicDisplay' }])
 })
 
 test('describeUnbuildableNodes names each distinct type once', () => {
