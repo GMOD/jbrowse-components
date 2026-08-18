@@ -11,7 +11,7 @@ data: hosted
 **TL;DR:** every setting in a track menu has a name, and JBrowse will tell you
 what it is. Change the setting by clicking, read the session JSON back, and the
 same key works in a shareable link, in a saved session file, and in
-`config.json`. This page changes three settings on one CRAM track and follows
+`config.json`. This page changes four settings on one CRAM track and follows
 them through all three.
 
 ## Prerequisites
@@ -37,7 +37,7 @@ instead.
 Either way you get a pileup of short reads, drawn at the default height in the
 default gray.
 
-## Change three settings
+## Change four settings
 
 Open the track's menu from the track label, and set:
 
