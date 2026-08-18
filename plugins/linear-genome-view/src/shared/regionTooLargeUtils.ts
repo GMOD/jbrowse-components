@@ -162,9 +162,9 @@ export { tooLargeBannerText } from '@jbrowse/display-ui'
  * All three inputs are read on the main thread (`gateByteLimit`), so the banner
  * and the worker budget resolve one number. There is deliberately no force-load
  * tier: force-load is a boolean "render this track regardless" (`gateExempt`),
- * not a raised ceiling — see agent-docs/reference/REGION_TOO_LARGE.md
- * § Force-load. The span tier is not that ceiling wearing a hat, and the four
- * questions that killed the old one don't reach it: it is static rather than
+ * not a raised ceiling
+ * (agent-docs/architecture-decision-records/adr-074-force-load-is-one-boolean-per-track.md).
+ * The span tier is not that ceiling wearing a hat: it is static rather than
  * derived from a measurement, single-axis by construction, and never expires.
  */
 export function resolveByteLimit({

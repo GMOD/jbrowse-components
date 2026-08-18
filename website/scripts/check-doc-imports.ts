@@ -435,7 +435,6 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // narrowed per-doc, and it should not. Of the identifiers it names that no
 // source file has, all but three were deliberate — "the retired
 // `FeatureRendererType` path", "`BaseLinearDisplayComponent` ... are all gone",
-// "the deleted machinery (`userByteLimit`, `resolveForceLoadLimits`, ...)",
 // `hasRects`/`hasLines` offered as the shape a renderer must NOT cache. That
 // "it used to be X, and here is why it isn't" idiom is most of what those docs
 // are *for*, so an allowlist would grow past the drift it catches, one entry per
