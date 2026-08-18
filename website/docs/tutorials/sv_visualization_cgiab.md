@@ -148,14 +148,13 @@ nothing downloaded:
 <Figure caption="The chr3 breakends of the benchmark's cluster_3 in five SV callsets, over the HiFiCNV depth and the benchmark's CNV lane: the V0.5 benchmark, Severus, the minda ensemble, DRAGEN and NYGC's BEDPE. Every callset marks both breakends, the depth steps down between them, and the CNV lane crosses the whole window as one segment." src="/img/sv_cgiab/sv_callset_comparison.png" />
 
 The benchmark files those two breakends under one `EVENT`, and the depth says
-what they bound: the interval between them carries half the copies its flanks
-do, with both steps landing where the callsets put a breakend. The benchmark CNV
-BED covers the same window with a single CN 2 segment named `noCNV`, which is
-the scale that callset works at, so an event this size is the SV lanes' to
-carry.
+what they bound: the interval between them carries fewer copies than its flanks,
+with both steps landing where the callsets put a breakend. The benchmark CNV BED
+covers the same window with a single segment named `noCNV`, which is the scale
+that callset works at, so an event this size is the SV lanes' to carry.
 
 The second junction is written two ways. The benchmark and minda place a
-breakend; Severus and DRAGEN write a symbolic inversion whose `SVLEN` runs 54 Mb
+breakend; Severus and DRAGEN write a symbolic inversion whose `SVLEN` runs far
 down the arm, so those two lanes draw a span leaving the window where the others
 draw a mark.
 
