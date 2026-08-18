@@ -233,6 +233,29 @@ async function applyInit(
   init: LinearSyntenyViewInit,
   { superseded }: InitApplyContext,
 ) {
+  // The same rule DotplotView's applyInit states, for the same reason: counting
+  // rows answers a different question from whether they NAME anything.
+  // `views: [{}, {}]` is two rows naming nothing, which clears
+  // launchSyntenyView's `< 2` guard and then handed `waitForAssembly` an empty
+  // name, so the view threw "no assembly name supplied to waitForAssembly" over
+  // the import form it had just fallen back to.
+  //
+  // Naming NONE is not an error: empty rows mean "open a synteny view and let me
+  // choose", and the view's own empty state is that form -- which is the only
+  // route to it from a session spec, since a launch has to pass two rows to get
+  // here at all. Naming SOME is malformed, and LaunchLinearSyntenyView takes
+  // untrusted spec data, so say so rather than half-launch. Both consume the
+  // init the way a successful apply does: neither could succeed on a retry.
+  const named = init.views.filter(v => v.assembly)
+  if (named.length === 0) {
+    return
+  }
+  if (named.length < init.views.length) {
+    getSession(self).notifyError(
+      'LinearSyntenyView init needs an assembly on every one of its views',
+    )
+    return
+  }
   // declare the reorder gate up front, before any track render can paint: it
   // outlives this pass (only the reorder itself lowers it) where the levels'
   // `initPending` term covers only the apply window below
