@@ -386,9 +386,7 @@ describe('the badge in the label layer', () => {
     const badge = getByTestId('feature-more-isoforms-gene1')
     expect(badge.textContent).toBe('+6 more')
     // the badge has one 11px row, so the sentence is the hover title
-    expect(badge.title).toBe(
-      '6 more isoforms not shown — click to expand this gene',
-    )
+    expect(badge.title).toBe('6 isoforms not shown — click to expand this gene')
     const x = (el: HTMLElement) =>
       Number(/translate\(([-\d.]+)px/.exec(el.style.transform)![1])
     expect(x(badge)).toBeGreaterThan(x(name))

@@ -109,6 +109,18 @@ type _ModelSatisfiesHighlightBoxes = AssignableTo<
   HighlightBoxesModel
 >
 
+// The isoform badge's hover sentence. The badge itself has one 11px row to live
+// in, so its text is terse ("+3 more") and this spells it out — a native title
+// rather than the model hover the rest of the layer sets, since that one
+// describes the FEATURE and this is the layer's one control.
+function moreIsoformsTitle(label: { hidden?: number; expanded?: boolean }) {
+  const n = label.hidden ?? 0
+  const isoforms = `${n} ${pluralize(n, 'isoform')}`
+  return label.expanded
+    ? `Collapse this gene, hiding ${isoforms} again`
+    : `${isoforms} not shown — click to expand this gene`
+}
+
 // Whether two regions are the same reference sequence — assembly AND refName.
 // The pair, not refName alone, is what names a sequence here: it is the key the
 // layout groups rows by (`regionKey` in baseModel) and the one AGENTS.md
@@ -349,17 +361,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
         elements.push(
           <div
             key={`${displayedRegionIndex}-${featureId}-${kind}`}
-            // The badge has an 11px row to live in, so its text is terse and
-            // the sentence lives here. A native title rather than the model
-            // hover the rest of the layer sets: that one describes the FEATURE,
-            // and this is the one element in the layer that is a control.
-            title={
-              isMore
-                ? label.expanded
-                  ? `Collapse this gene back, hiding ${label.hidden} ${pluralize(label.hidden ?? 0, 'isoform')} again`
-                  : `${label.hidden} more ${pluralize(label.hidden ?? 0, 'isoform')} not shown — click to expand this gene`
-                : undefined
-            }
+            title={isMore ? moreIsoformsTitle(label) : undefined}
             data-testid={
               isMore
                 ? `feature-more-isoforms-${featureId}`
