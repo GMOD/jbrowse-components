@@ -1058,11 +1058,31 @@ curl -sI https://alphafold.ebi.ac.uk/api/prediction/P04637   # msaUrl field
 curl -sI https://alphafold.ebi.ac.uk/files/msa/AF-P04637-F1-msa_v6.a3m
 ```
 
-P38398 answers the same, so it is not one entry, and the structure files beside
-it serve normally, so it is not the host. **First move is to re-run those two
-lines.** While it 403s the page's paragraph about those two destinations is
-describing a route a reader cannot take either, so a fixed a3m is worth a second
-look at that paragraph as well as a figure.
+**First move is to re-run those two lines.** Re-checked 2026-08-18 and it still
+403s. Two things that re-check settled, so nobody spends the next one on them:
+the API still advertises *exactly* that URL, so the 403 is not a version number
+gone stale under a path that moved; and `AF-P04637-F1-model_v6.cif` and
+`AF-P04637-F1-confidence_v6.json` both answer 200, so what is blocked is the
+`files/msa/` path rather than the entry, the host or the rasterizer. P38398's
+a3m answers 403 the same way.
+
+Driving the route in the app agrees, which is what says the frame stuck at
+Loading is this and not a capture race worth a longer timeout: clicking **Launch
+MSA view** fires one request for the a3m that comes back 403, the structure's own
+`model_v6.cif` returns 200 in that same session, and the view then sits on
+`Loading...` for at least 105s and raises no error. **No error is surfaced** — so
+a reader who does not know about the 403 sees only a spinner, which is why the
+page's caution names the symptom rather than just the cause.
+
+While it 403s, the page's two MSA destinations are a route a reader cannot take
+either, and `genomes_proteins.md` now says so in a `:::caution` under that
+paragraph. **A fixed a3m retires that admonition as well as capturing the
+figure** — check for it before closing this out, or the page will keep warning
+about something that works.
+
+`PROTEIN_LAUNCH_SESSION` and the anchor beside it are also
+`proteinLaunchFixtures` now, which the `proteins/annotation_1d` video tour
+films, so the session this figure would use is exercised on every video run.
 
 ## Blocked on a visual call
 

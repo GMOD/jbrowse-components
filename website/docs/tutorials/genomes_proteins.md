@@ -137,6 +137,23 @@ which is deep, unlabelled by species, and a much larger download than the
 ortholog panel below. One opens the alignment alone, the other opens it beside
 the structure.
 
+:::caution AlphaFold's alignment file is unreachable
+
+Both MSA destinations stop on **Loading** and raise no error, so the wait looks
+like the large download above rather than a failure. Each reads the alignment
+AlphaFold's prediction API advertises for the entry as its `msaUrl`, and that
+file answers 403 to every request. Checked 2026-08-18 on
+`AF-P04637-F1-msa_v6.a3m` and `AF-P38398-F1-msa_v6.a3m`, and in the same session
+that took the 403 the structure's own `model_v6.cif` returned 200 — so what is
+blocked is AlphaFold's file server, rather than one entry, one plugin or your
+network.
+
+Nothing else on this page reads that file. **Launch** itself needs only the
+structure, and the ortholog route in [Launching an MSA](#launching-an-msa)
+builds its alignment at EBI from NCBI's records.
+
+:::
+
 The dialog's other two tabs take a structure from somewhere else: **Foldseek
 search** finds structures resembling the protein's own, and **Open file
 manually** takes a PDB or mmCIF file of yours.
