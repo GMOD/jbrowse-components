@@ -5,7 +5,7 @@ description: What repo-wide duplicate sweeps actually turn up — both the same-
 
 # Sweeping for duplicates
 
-Three sweeps have run this over the whole repo. Each found one or two real things
+Four sweeps have run this over the whole repo. Each found one or two real things
 and spent most of its budget re-deriving the same false positives, which is what
 this records.
 
@@ -105,7 +105,7 @@ So: **identical trivial copies are the expected shape of a deliberate split, not
 evidence against one.** Read the file header before deleting one. Details and
 the general rule are in [EAGER_BUNDLE.md](EAGER_BUNDLE.md).
 
-## What the three sweeps actually found
+## What the sweeps actually found
 
 Two real duplicates, both in the first sweep: alignments' `randomColor` (a
 char-code-sum palette that reached 36 hues at one saturation, deleted for core's
@@ -116,6 +116,25 @@ Everything else was a name collision, a documented copy, or a missing pin. The
 sweep's yield is low and its cost is a whole session; the useful version is not
 "find duplicates" but **"find copies whose mechanism is missing"** — a much
 smaller question, and the one the classes above leave you with.
+
+A fourth pass (2026-08-18, structural, 12-line window) found one:
+`HeaderSearchBoxes` — 44 byte-identical lines in the comparative view and the
+breakpoint split view — and, one composition up, the strip of them, which one
+plugin had named and the other had inline with its own copy of the same three
+style rules. Both plugins were already importing `SearchBox` from
+`plugin-linear-genome-view`'s barrel, so the shared home added no dependency
+edge and no eager bytes: the barrel edge sat on the same side of each plugin's
+lazy boundary before and after, and `measure-eager-bundle --check` reads the
+same as before (synteny 690 KB, budget 693). `useSearchBoxPrefs` stayed
+duplicated — that one has a mechanism already, and the storage prefixes differ.
+
+**What it did NOT find is the more useful half**: no `getConf`/`setConf`
+accessor is now written out in three displays, where a week earlier the
+`showLegend` triple was in six and the tree toggles in four. `LegendMixin` and
+`TreeSidebarMixin` took those (both listed in
+[ARCHITECTURE.md](../ARCHITECTURE.md)), so a scan that would have led straight
+to them now bottoms out at pairs. Run this after a mixin lands, not before, and
+read a floor of two as the shape working.
 
 ## The other scan: structural, not by name
 
