@@ -1,6 +1,8 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
+import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
 
 interface Src {
   name: string
@@ -134,5 +136,64 @@ describe('clusterProvenance', () => {
     const m = makeModel()
     m.setLayoutAndClusterTree([a, b], '(a,b);')
     expect(m.clusterProvenance).toBeUndefined()
+  })
+})
+
+// The three toggles the mixin owns, against the slot set it owns them for.
+// Composing `treeSidebarConfigSchemaFields` here is half the point: accessors and
+// slots are one contract, and a display gets both or neither.
+//
+// Each case flips ONE slot off a true default and asserts only that toggle
+// moved. Cross-wiring is the failure this is shaped for — the three bodies are
+// character-identical but for the slot name, so a copy-paste reads correctly and
+// answers for the wrong setting. The config half of this same set had already
+// drifted once (see treeSidebarConfigSchemaFields), and inverting
+// `showBranchLength` left all 3,698 tests across the four composing plugins
+// green.
+describe('the tree toggles', () => {
+  const configSchema = ConfigurationSchema('TestTreeDisplay', {
+    ...treeSidebarConfigSchemaFields({
+      tree: 'show the tree',
+      rowLabels: 'draw each row name',
+    }),
+  })
+
+  function makeConfigured(configuration: Record<string, boolean> = {}) {
+    return types
+      .compose(
+        'TestTreeSidebarConfigured',
+        TreeSidebarMixin<Src>(),
+        types.model({
+          type: types.literal('TestTreeDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .create({ type: 'TestTreeDisplay', configuration })
+  }
+
+  const toggles = [
+    ['showTree', 'setShowTree'],
+    ['showBranchLength', 'setShowBranchLength'],
+    ['showRowLabels', 'setShowRowLabels'],
+  ] as const
+
+  const others = (slot: string) => toggles.filter(([n]) => n !== slot)
+
+  it.each(toggles)('%s defaults on and reads its own slot', slot => {
+    expect(makeConfigured()[slot]).toBe(true)
+    const off = makeConfigured({ [slot]: false })
+    expect(off[slot]).toBe(false)
+    for (const [other] of others(slot)) {
+      expect(off[other]).toBe(true)
+    }
+  })
+
+  it.each(toggles)('%s is written by its own setter', (slot, setter) => {
+    const m = makeConfigured()
+    m[setter](false)
+    expect(m[slot]).toBe(false)
+    for (const [other] of others(slot)) {
+      expect(m[other]).toBe(true)
+    }
   })
 })

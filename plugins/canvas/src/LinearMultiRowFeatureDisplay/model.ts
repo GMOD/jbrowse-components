@@ -244,24 +244,6 @@ export default function stateModelFactory(
       get showRowSeparators(): boolean {
         return getConf(self, 'showRowSeparators')
       },
-      /**
-       * #getter
-       */
-      get showRowLabels(): boolean {
-        return getConf(self, 'showRowLabels')
-      },
-      /**
-       * #getter
-       */
-      get showTree(): boolean {
-        return getConf(self, 'showTree')
-      },
-      /**
-       * #getter
-       */
-      get showBranchLength(): boolean {
-        return getConf(self, 'showBranchLength')
-      },
     }))
     .views(self => ({
       /**
@@ -935,12 +917,6 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       */
-      setShowRowLabels(f: boolean) {
-        setConf(self, 'showRowLabels', f)
-      },
-      /**
-       * #action
        * Show/hide a legend category by label (render-time, no refetch).
        */
       toggleCategory(label: string) {
@@ -984,18 +960,6 @@ export default function stateModelFactory(
         setConf(self, 'partitionField', field)
         self.clearLayout()
         self.hiddenCategories.clear()
-      },
-      /**
-       * #action
-       */
-      setShowTree(f: boolean) {
-        setConf(self, 'showTree', f)
-      },
-      /**
-       * #action
-       */
-      setShowBranchLength(f: boolean) {
-        setConf(self, 'showBranchLength', f)
       },
       /**
        * #action

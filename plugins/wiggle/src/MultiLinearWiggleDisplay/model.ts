@@ -350,20 +350,8 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      get showTree(): boolean {
-        return getConf(self, 'showTree')
-      },
-
-      get showBranchLength(): boolean {
-        return getConf(self, 'showBranchLength')
-      },
-
       get showRowSeparators(): boolean {
         return getConf(self, 'showRowSeparators')
-      },
-
-      get showRowLabels(): boolean {
-        return getConf(self, 'showRowLabels')
       },
 
       // Resolved through the promotable-slot tiers (resolveConf): an explicit
@@ -420,7 +408,7 @@ export default function stateModelFactory(
         if (self.isOverlay) {
           return true
         }
-        if (this.showRowLabels && rowLabelsCarryText(self.effectiveRowHeight)) {
+        if (self.showRowLabels && rowLabelsCarryText(self.effectiveRowHeight)) {
           return false
         }
         return legendIsReadable(self.legendItems)
@@ -513,20 +501,8 @@ export default function stateModelFactory(
           installWiggleRenderingBackend(self, backend)
         },
 
-        setShowTree(arg: boolean) {
-          setConf(self, 'showTree', arg)
-        },
-
-        setShowBranchLength(arg: boolean) {
-          setConf(self, 'showBranchLength', arg)
-        },
-
         setShowRowSeparators(arg: boolean) {
           setConf(self, 'showRowSeparators', arg)
-        },
-
-        setShowRowLabels(arg: boolean) {
-          setConf(self, 'showRowLabels', arg)
         },
 
         setShowLegend(arg: boolean) {

@@ -314,24 +314,6 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get showTree(): boolean {
-          return getConf(self, 'showTree')
-        },
-        /**
-         * #getter
-         */
-        get showRowLabels(): boolean {
-          return getConf(self, 'showRowLabels')
-        },
-        /**
-         * #getter
-         */
-        get showBranchLength(): boolean {
-          return getConf(self, 'showBranchLength')
-        },
-        /**
-         * #getter
-         */
         get showCoverage(): boolean {
           return getConf(self, 'showCoverage')
         },
@@ -503,24 +485,6 @@ export default function stateModelFactory(
          */
         setShowAsUpperCase(arg: boolean) {
           setConf(self, 'showAsUpperCase', arg)
-        },
-        /**
-         * #action
-         */
-        setShowTree(arg: boolean) {
-          setConf(self, 'showTree', arg)
-        },
-        /**
-         * #action
-         */
-        setShowRowLabels(arg: boolean) {
-          setConf(self, 'showRowLabels', arg)
-        },
-        /**
-         * #action
-         */
-        setShowBranchLength(arg: boolean) {
-          setConf(self, 'showBranchLength', arg)
         },
         /**
          * #action

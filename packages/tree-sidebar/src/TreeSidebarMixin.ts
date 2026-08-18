@@ -1,3 +1,4 @@
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { applySubtreeFilter, buildTree } from './clusterUtils.ts'
@@ -5,14 +6,32 @@ import { maxNodeHeight } from './hierarchy.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { HoveredTreeNode, RowSource } from './types.ts'
+import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+
+// The mixin's own `self` is the model it declares, so it cannot see the
+// `configuration` the concrete display supplies — every display composing this
+// is a BaseDisplay, so it is really there. Same idiom, and the same reason, as
+// `HeightModeMixin`'s `confNode`.
+const confNode = (self: object) => self as ResolvableDisplay
 
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), plus the `run` callback naming its own clustering RPC. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `runClustering` / `clusterRegion` declarative launch pair `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
+ * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` declarative launch pair `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
  * Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
  * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
  * used while drawing the tree.
+ *
+ * **The three toggles are declared here because this package reads them.**
+ * `treeSidebarGeometry` reads `showTree`, `treeMenuItems` reads all three and
+ * `setShowTree`, `computeClusterHierarchy` takes `showBranchLength` — so a
+ * display composing this mixin and not supplying them would compile and then
+ * fail at the first menu click. They were four hand-written `getConf` /
+ * `setConf` copies, which is the same shape the config half was in before
+ * `treeSidebarConfigSchemaFields`: that set had already drifted, three displays
+ * spelling the labels toggle `showRowLabels` and the fourth
+ * `showSidebarLabels`, so `"showRowLabels": false` on a multi-sample variant
+ * track was dropped in silence. Slots and accessors now move together.
  */
 export function TreeSidebarMixin<S extends RowSource = RowSource>() {
   return types
@@ -70,6 +89,50 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       hoveredTreeNode: undefined as HoveredTreeNode | undefined,
       treeCanvas: null as HTMLCanvasElement | null,
       mouseoverCanvas: null as HTMLCanvasElement | null,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the dendrogram sidebar is drawn.
+       */
+      get showTree(): boolean {
+        return getConf(confNode(self), 'showTree')
+      },
+      /**
+       * #getter
+       * Whether tree nodes are positioned by branch length (dendrogram) or
+       * evenly by topology (cladogram).
+       */
+      get showBranchLength(): boolean {
+        return getConf(confNode(self), 'showBranchLength')
+      },
+      /**
+       * #getter
+       * Whether each row's name is drawn over the left of the plot.
+       */
+      get showRowLabels(): boolean {
+        return getConf(confNode(self), 'showRowLabels')
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setShowTree(arg: boolean) {
+        setConf(confNode(self), 'showTree', arg)
+      },
+      /**
+       * #action
+       */
+      setShowBranchLength(arg: boolean) {
+        setConf(confNode(self), 'showBranchLength', arg)
+      },
+      /**
+       * #action
+       */
+      setShowRowLabels(arg: boolean) {
+        setConf(confNode(self), 'showRowLabels', arg)
+      },
     }))
     .views(self => ({
       get parsedTree() {

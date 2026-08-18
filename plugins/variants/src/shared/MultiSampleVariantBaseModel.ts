@@ -850,15 +850,6 @@ export default function MultiSampleVariantBaseModelF(
         setMaxMissingnessFilter(arg: number) {
           setConf(self, 'maxMissingnessFilter', arg)
         },
-        setShowRowLabels(arg: boolean) {
-          setConf(self, 'showRowLabels', arg)
-        },
-        setShowTree(arg: boolean) {
-          setConf(self, 'showTree', arg)
-        },
-        setShowBranchLength(arg: boolean) {
-          setConf(self, 'showBranchLength', arg)
-        },
         /**
          * #action
          */
@@ -975,18 +966,6 @@ export default function MultiSampleVariantBaseModelF(
                   .pluginManager.jexl,
               })
             : undefined
-        },
-
-        get showRowLabels(): boolean {
-          return getConf(self, 'showRowLabels')
-        },
-
-        get showTree(): boolean {
-          return getConf(self, 'showTree')
-        },
-
-        get showBranchLength(): boolean {
-          return getConf(self, 'showBranchLength')
         },
 
         get referenceDrawingMode(): string {

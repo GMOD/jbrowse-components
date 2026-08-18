@@ -10,14 +10,27 @@ JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
 
 #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display
-rows, named), plus the `run` callback naming its own clustering RPC. Brings
-`layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` /
-`subtreeFilter`, the `runClustering` / `clusterRegion` declarative launch pair
+rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run`
+callback naming its own clustering RPC. Brings `layout` / `clusterTree` /
+`clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` /
+`showBranchLength` / `showRowLabels` getters and setters over those slots, the
+`runClustering` / `clusterRegion` declarative launch pair
 `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters,
 and the tree-hover and canvas-ref volatiles the shared sidebar draws through
 Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
 tree, sidebar width and subtree filter, plus the hover/canvas volatile state
 used while drawing the tree.
+
+**The three toggles are declared here because this package reads them.**
+`treeSidebarGeometry` reads `showTree`, `treeMenuItems` reads all three and
+`setShowTree`, `computeClusterHierarchy` takes `showBranchLength` — so a display
+composing this mixin and not supplying them would compile and then fail at the
+first menu click. They were four hand-written `getConf` / `setConf` copies,
+which is the same shape the config half was in before
+`treeSidebarConfigSchemaFields`: that set had already drifted, three displays
+spelling the labels toggle `showRowLabels` and the fourth `showSidebarLabels`,
+so `"showRowLabels": false` on a multi-sample variant track was dropped in
+silence. Slots and accessors now move together.
 
 ## Properties
 
@@ -46,6 +59,9 @@ used while drawing the tree.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-showtree">**showTree**</span><br><code>boolean</code> | Whether the dendrogram sidebar is drawn. |
+| <span id="getter-showbranchlength">**showBranchLength**</span><br><code>boolean</code> | Whether tree nodes are positioned by branch length (dendrogram) or evenly by topology (cladogram). |
+| <span id="getter-showrowlabels">**showRowLabels**</span><br><code>boolean</code> | Whether each row's name is drawn over the left of the plot. |
 | <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
 | <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
 | <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> |  |
@@ -62,6 +78,9 @@ used while drawing the tree.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="action-setshowtree">**setShowTree**</span><br><code>(arg: boolean) =&gt; void</code> |  |
+| <span id="action-setshowbranchlength">**setShowBranchLength**</span><br><code>(arg: boolean) =&gt; void</code> |  |
+| <span id="action-setshowrowlabels">**setShowRowLabels**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setlayout">**setLayout**</span><br><code>(layout: S[]) =&gt; void</code> |  |
 | <span id="action-clearlayout">**clearLayout**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setclustertree">**setClusterTree**</span><br><code>(tree?: string &#124; undefined) =&gt; void</code> |  |
