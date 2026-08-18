@@ -133,11 +133,11 @@ function makeData(widthBp: number): SyntenyInstanceData {
   }
 }
 
-function makeParams(): SyntenyTrackRenderParams {
+function makeParams(alpha = 1): SyntenyTrackRenderParams {
   return {
     yTop: 0,
     height: HEIGHT,
-    alpha: 1,
+    alpha,
     fadeThinAlignments: true,
     minAlignmentLength: 0,
     hoveredFeatureId: 0,
@@ -150,19 +150,25 @@ function makeParams(): SyntenyTrackRenderParams {
   }
 }
 
+/** Did the renderer paint anything at all for this ribbon? */
+function drawnMarks(widthBp: number, alpha?: number) {
+  const rec = createDrawCtx()
+  drawSyntenyTrack(rec.ctx, makeData(widthBp), makeParams(alpha), 800, 300)
+  return rec
+}
+
 /** Did the renderer paint this ribbon as a solid fill? */
 function isDrawnAsFill(widthBp: number) {
-  const rec = createDrawCtx()
-  drawSyntenyTrack(rec.ctx, makeData(widthBp), makeParams(), 800, 300)
+  const rec = drawnMarks(widthBp)
   expect(rec.filled + rec.stroked).toBe(1) // exactly one branch ran
   return rec.filled === 1
 }
 
 /** Does a click at the ribbon's center select it? */
-function isPickable(widthBp: number) {
+function isPickable(widthBp: number, alpha?: number) {
   const state: SyntenyRenderState = {
     overdrawPx: 300,
-    perTrack: new Map([[0, makeParams()]]),
+    perTrack: new Map([[0, makeParams(alpha)]]),
   }
   const hit = pickFeatureAtPoint({
     ctx: createPickCtx(),
@@ -195,6 +201,42 @@ test('the sweep actually crosses the boundary', () => {
   // while checking nothing.
   expect(WIDTHS.some(w => isDrawnAsFill(w))).toBe(true)
   expect(WIDTHS.some(w => !isDrawnAsFill(w))).toBe(true)
+})
+
+// The opacity slider reaches 0 (OpacitySlider's `min`), and the same "drawn and
+// pickable are one boundary" rule has to survive the bottom of it. The pick used
+// to weigh the packed byte alone, so a band faded to nothing kept every ribbon
+// hoverable and clickable — a tooltip and a feature widget off a blank canvas.
+// Well clear of the perpW gate at 10px wide, so the only thing varying is alpha.
+const WIDE_BP = 10
+
+test('a ribbon faded out of sight is not pickable either', () => {
+  for (const alpha of [0, 0.001, 0.01]) {
+    const rec = drawnMarks(WIDE_BP, alpha)
+    expect({ alpha, marks: rec.filled + rec.stroked }).toEqual({
+      alpha,
+      marks: 0,
+    })
+    expect({ alpha, pickable: isPickable(WIDE_BP, alpha) }).toEqual({
+      alpha,
+      pickable: false,
+    })
+  }
+})
+
+test('an ordinary opacity still draws and still picks', () => {
+  // Guards the above from passing vacuously, and pins that the floor sits well
+  // below the 0.2 the view opens at.
+  for (const alpha of [0.05, 0.2, 1]) {
+    expect({ alpha, marks: drawnMarks(WIDE_BP, alpha).filled }).toEqual({
+      alpha,
+      marks: 1,
+    })
+    expect({ alpha, pickable: isPickable(WIDE_BP, alpha) }).toEqual({
+      alpha,
+      pickable: true,
+    })
+  }
 })
 
 test('sub-pixel ribbons are the unpickable ones, not the reverse', () => {

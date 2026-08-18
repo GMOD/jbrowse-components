@@ -316,6 +316,19 @@ const MIN_VISIBLE_ALPHA_BYTE = 3
 // — the same "drawn and pickable are one boundary" rule `ribbonPerpWidth`
 // enforces for sub-pixel thinness. Which is why it is this function and not a
 // literal in each: there is one answer, so there is nothing to keep in step.
-export function isInstanceInvisible(packedColor: number) {
-  return abgrAlpha(packedColor) < MIN_VISIBLE_ALPHA_BYTE
+//
+// `displayAlpha` is the view's opacity slider, and it is a REQUIRED argument
+// because leaving it out is precisely how the two answers came apart: the pick
+// weighed the packed byte alone, so at the bottom of a slider that reaches 0
+// the whole band went blank and stayed fully hoverable and clickable. It scales
+// both arms of the fill — a BASE ribbon's output alpha IS `fillShade`'s
+// `pa * displayAlpha`, and a CIGAR tile keeps its own alpha but blends toward
+// the white background by the same factor, so one floor covers both.
+//
+// A location marker is the exception and its caller says so by passing 1: a
+// tick is drawn at its packed alpha, deliberately bypassing the slider. Nothing
+// picks one (both its edges are single points, so it never enters the index),
+// so only the draw loop has to make that distinction.
+export function isInstanceInvisible(packedColor: number, displayAlpha: number) {
+  return abgrAlpha(packedColor) * displayAlpha < MIN_VISIBLE_ALPHA_BYTE
 }

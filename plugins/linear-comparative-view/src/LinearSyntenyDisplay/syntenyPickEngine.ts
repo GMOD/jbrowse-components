@@ -158,7 +158,12 @@ function buildPickIndex(
       instanceOfAll[kept++] = i
     }
   }
-  const instanceOf = instanceOfAll.subarray(0, kept)
+  // `slice`, not `subarray`: a view keeps the whole instanceCount-long buffer
+  // alive behind it, and the index outlives this call — 2 MB retained per region
+  // at 500k instances, worst exactly where `kept` is smallest. At whole-genome
+  // zoom `kept` is 0 and the retained buffer was the entire cost of the entry.
+  // One copy against a rebuild already measured in tens of ms.
+  const instanceOf = instanceOfAll.slice(0, kept)
   if (kept === 0) {
     return {
       flatbush: undefined,
@@ -225,7 +230,7 @@ export function pickFeatureAtPoint(
     if (!data || data.instanceCount === 0) {
       continue
     }
-    const { yTop, height, minAlignmentLength } = params
+    const { yTop, height, minAlignmentLength, alpha } = params
     if (y < yTop || y > yTop + height) {
       continue
     }
@@ -274,7 +279,7 @@ export function pickFeatureAtPoint(
       if (data.alignmentLengths[i]! < minAlignmentLength) {
         continue
       }
-      if (isInstanceInvisible(data.colors[i]!)) {
+      if (isInstanceInvisible(data.colors[i]!, alpha)) {
         continue
       }
 

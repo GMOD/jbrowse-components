@@ -172,15 +172,16 @@ export function drawSyntenyTrack(
     if (data.alignmentLengths[i]! < minAlignmentLength) {
       continue
     }
-    const packed = data.colors[i]!
-    if (isInstanceInvisible(packed)) {
-      continue
-    }
-
-    // Read before the cull, which needs it: a marker is culled by its hull
-    // where a ribbon is culled per edge (see isRibbonCulled).
+    // Read before both tests below, which each need it: a marker keeps its own
+    // alpha through the opacity slider (see isInstanceInvisible), and is culled
+    // by its hull where a ribbon is culled per edge (see isRibbonCulled).
     const kind = data.kinds[i]!
     const isMarker = isMarkerKind(kind)
+
+    const packed = data.colors[i]!
+    if (isInstanceInvisible(packed, isMarker ? 1 : alpha)) {
+      continue
+    }
 
     const c = projectCorners(data, i, transform, scratch)
     if (isRibbonCulled(c, logicalW, overdrawPx, isMarker)) {

@@ -273,7 +273,7 @@ function bruteForcePick(
   x: number,
   y: number,
 ) {
-  const { height, minAlignmentLength } = params
+  const { height, minAlignmentLength, alpha } = params
   if (y < params.yTop || y > params.yTop + height) {
     return undefined
   }
@@ -285,7 +285,7 @@ function bruteForcePick(
     if (data.alignmentLengths[i]! < minAlignmentLength) {
       continue
     }
-    if (isInstanceInvisible(data.colors[i]!)) {
+    if (isInstanceInvisible(data.colors[i]!, alpha)) {
       continue
     }
     const c = projectCorners(data, i, t, scratch)
@@ -360,6 +360,10 @@ test('the index answers exactly what a brute-force scan answers', () => {
     { offsetPx0: 400, offsetPx1: 0 },
     { offsetPx0: 120, offsetPx1: 120 },
     { minAlignmentLength: 12000 },
+    // either side of the visibility floor, which the opacity slider reaches:
+    // 0.02 leaves the packed 0xff alpha above it, 0.005 puts every ribbon under
+    { alpha: 0.02 },
+    { alpha: 0.005 },
     { drawCurves: true },
     { height: 7 },
   ]
