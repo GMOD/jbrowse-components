@@ -20,6 +20,10 @@ export {
 // sweeping the shader's own window arithmetic over line lengths from
 // just-clears-the-gate to 4096× the viewport and the viewport at every position
 // along the line: 1200px block → 31 slots, 3840 → 97, 5077 → 128, 7680 → 193.
+// That sweep is `chevronWindow.test.ts` § "the vertex budget covers the block
+// width its comment claims", so the numbers above are checked rather than
+// remembered. They are a consequence of arithmetic in another file, and every
+// one of them moved the last time that arithmetic did.
 //
 // The sweep needs no bpPerPx axis, which is the window being unit-agnostic doing
 // its job: the shader measures in bp and Canvas2D in px, and the only ratio the
