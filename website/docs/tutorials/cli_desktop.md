@@ -8,8 +8,8 @@ tutorial_category: Configuration & embedding
 
 **TL;DR:** build a `config.json` from the command line with `@jbrowse/cli`.
 Because it records each data file by a path relative to the config, the same
-folder opens in JBrowse Desktop or served on the web. Desktop saves session
-state back into the file it opens, so keep a copy if you need both.
+folder opens in JBrowse Desktop or served on the web, and Desktop leaves the
+config it opens alone, so the same folder keeps working in both.
 
 ## Prerequisites
 
@@ -160,16 +160,11 @@ Desktop's **Add track** picker still works for a one-off file. The CLI route
 here is the one to reach for when you want a scripted, repeatable setup, or the
 same config on both Desktop and the web.
 
-:::caution
-
-Desktop treats the file you open as its session file and saves back to it, so
-the `config.json` you built is rewritten on open: each relative `uri` becomes an
-absolute local path on that machine, and `defaultSession` is replaced by
-whatever you were last looking at. Keep a pristine copy (or rerun the CLI
-commands, which are cheap) if the same folder also has to be served on the web
-or moved to another machine.
-
-:::
+Desktop does not save back into a `config.json` it opens. It resolves the
+relative `uri`s into absolute local paths for the renderer, then starts a
+session of its own and autosaves there, so the folder you built stays portable
+and still serves on the web. A `.jbrowse` file, which is one Desktop itself
+wrote, does save in place.
 
 ## Also use it on the web
 
