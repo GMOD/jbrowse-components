@@ -103,6 +103,8 @@ The linear synteny view is not limited to two genomes:
 Open each strain's gene track from its own track selector to make the alignment
 readable, so that conserved genes line up down the stack ribbon by ribbon.
 
+<Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above, in the form itself: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, and the three strains stacked by Launch. Gene tracks come after, from each row's own track selector." />
+
 <Figure caption="Three H. pylori strains stacked with a gene track on each genome. Ribbons connect aligned blocks between adjacent genomes, and genes such as fliR, cbf2, efp, and lysS line up across all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 
 Each panel is a full linear genome view, so search boxes, zooming, and the track

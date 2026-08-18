@@ -3964,3 +3964,19 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 10000,
   },
 ]
+
+// What videos/synteny.ts films: the linear synteny import form with nothing
+// filled in, which is where this page's three-strain figure comes from. Two
+// empty rows is the request for that form -- `launchSyntenyView` needs two rows
+// to launch at all, and rows naming no assembly are what the view reads as
+// "let me choose" (LinearSyntenyView/afterAttach.ts).
+export const syntenyVideoFixtures = {
+  emptySyntenyForm: hpyloriUrl({
+    views: [{ type: 'LinearSyntenyView', views: [{}, {}] }],
+  }),
+  strains: {
+    top: 'hpylori_26695',
+    middle: 'hpylori_chc155',
+    bottom: 'hpylori_j99',
+  },
+}
