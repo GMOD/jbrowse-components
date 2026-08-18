@@ -3,6 +3,7 @@
 // triangle vertices dispatched via vertex ID.
 //! targets: wgsl, glsl
 //! export-consts: STEM_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX, ARROW_MIN_FEATURE_WIDTH_PX
+//! js-export: arrowDraws
 
 import hpmath;
 import colorPack;
@@ -23,6 +24,21 @@ static const float HEAD_HALF_H_PX = 2.5;
 // principle as chevron.slang's short-line gate and the label decimation ladder:
 // an annotation that doesn't fit is dropped, never shrunk.
 static const float ARROW_MIN_FEATURE_WIDTH_PX = 14.0;
+
+// Whether a feature this wide gets its direction marker, from the gate above.
+//
+// A one-comparison function, and it earns being one because it has THREE
+// callers in two processes and they measure `featureWidthPx` differently on
+// purpose: this shader from `widthBp / bpPerPx`, `drawArrows` through the
+// block's own bp→px mapper, and — main-thread, before either renderer exists —
+// `strandArrowPadding` in layout.ts, which reserves the arrow's 8px of packing
+// room only where one will paint. That third caller is why the boundary is
+// load-bearing rather than cosmetic: reserved-but-unpainted room is what packed
+// 5000 sub-pixel stranded marks 46 rows deep instead of 2, and it is
+// `>=` vs `>` at exactly 14px that decides it.
+public bool arrowDraws(float featureWidthPx) {
+  return featureWidthPx >= ARROW_MIN_FEATURE_WIDTH_PX;
+}
 
 struct ArrowInstance {
   uint  x         : ATTR0;
@@ -49,7 +65,7 @@ static const float4 OFFSCREEN = float4(2.0, 2.0, 0.0, 1.0);
 
 [shader("vertex")]
 VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
-  if (float(inst.widthBp) / u.bpPerPx < ARROW_MIN_FEATURE_WIDTH_PX) {
+  if (!arrowDraws(float(inst.widthBp) / u.bpPerPx)) {
     VsOut culled;
     culled.position = OFFSCREEN;
     culled.color = float4(0.0);

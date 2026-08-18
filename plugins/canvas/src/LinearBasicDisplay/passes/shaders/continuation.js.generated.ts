@@ -8,6 +8,28 @@ function _max(a: number, b: number) {
   return b > a || Number.isNaN(a) ? b : a
 }
 
+function _min(a: number, b: number) {
+  return b < a || Number.isNaN(a) ? b : a
+}
+
+export function markerIsDark(r: number, g: number, b: number): boolean {
+  return ((((r * 0.29899999499320984) + (g * 0.58700001239776611)) + (b * 0.11400000005960464)) > 0.5)
+}
+
+export function runsOffEdge(outer: number, inner: number, edgeCoord: number, edgeSide: number, minOverhang: number): boolean {
+  let _t0: boolean
+  if ((((outer - edgeCoord) * edgeSide) > minOverhang)) {
+    _t0 = (((inner - edgeCoord) * edgeSide) < 0.0)
+  } else {
+    _t0 = false
+  }
+  return _t0
+}
+
+export function markerHalfHeight(boxHeight: number): number {
+  return _min(4.0, (boxHeight * 0.40000000596046448))
+}
+
 export function markerDirection(screenStrand: number, edgeSide: number): number {
   let _t0: number
   if ((screenStrand == 0.0)) {

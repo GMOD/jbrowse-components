@@ -7,7 +7,7 @@
 // that WebGL2 binds via `vertexAttribPointer` / `vertexAttribIPointer`.
 //! targets: wgsl, glsl
 //! export-consts: MIN_RECT_WIDTH_PX, MIN_DENSITY_ALPHA
-//! js-export: rectSpanPx
+//! js-export: rectSpanPx, rectDrawsOutline
 
 import hpmath;
 import colorPack;
@@ -105,6 +105,20 @@ public float2 rectSpanPx(float x1Px, float x2Px, bool isPoint) {
     left, extendToMinWidthPx(left, floor(x2Px + 0.5), MIN_RECT_WIDTH_PX));
 }
 
+// Whether a drawn box has room for the 1px outline inset inside it. Below this
+// the stroke would meet itself from both sides and paint the box solid in the
+// outline color, which reads as a wrong FILL rather than as a border.
+//
+// The threshold is 2px on each axis and is NOT `MIN_RECT_WIDTH_PX`, which
+// happens to be 2 as well: that one is how wide a sub-pixel mark is grown TO,
+// this one is how wide a box must be to take a border. They answer different
+// questions and would move for different reasons, so the coincidence is spelled
+// out rather than shared. Stated as a bare `2` here and again as a bare `2` in
+// `drawRects` until it was lifted.
+public bool rectDrawsOutline(float widthPx, float heightPx) {
+  return widthPx > 2.0 && heightPx > 2.0;
+}
+
 [shader("vertex")]
 VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
@@ -151,7 +165,10 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
 float4 fs_main(VsOut fragIn) : SV_Target {
   if (u.outlineColor != 0u) {
     float4 outlineRGBA = unpackRGBA(u.outlineColor);
-    if (outlineRGBA.a > 0.0 && fragIn.featSizePx.x > 2.0 && fragIn.featSizePx.y > 2.0) {
+    if (
+      outlineRGBA.a > 0.0 &&
+      rectDrawsOutline(fragIn.featSizePx.x, fragIn.featSizePx.y)
+    ) {
       float dxL = fragIn.localPos.x * fragIn.featSizePx.x;
       float dxR = (1.0 - fragIn.localPos.x) * fragIn.featSizePx.x;
       float dy  = min(fragIn.localPos.y, 1.0 - fragIn.localPos.y) * fragIn.featSizePx.y;

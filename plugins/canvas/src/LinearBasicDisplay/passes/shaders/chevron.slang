@@ -8,7 +8,7 @@
 // Per-chevron positioning is computed in the shader from viewport + line span.
 //! targets: wgsl, glsl
 //! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX, CHEVRON_VERTS
-//! js-export: showChevrons, chevronCount, chevronOffset
+//! js-export: showChevrons, chevronCount, chevronOffset, chevronFirstVisible, chevronLastVisible
 
 import hpmath;
 import colorPack;
@@ -74,6 +74,37 @@ public float chevronOffset(float span, float count, float index) {
   return span / (count + 1.0) * (index + 1.0);
 }
 
+// Which chevron indices can put ink on screen: the first and last of the
+// inclusive window, given the viewport measured from the LINE'S START and the
+// chevron's own half-width, both in whatever unit `spacing` is. Empty when the
+// last comes out below the first, which is a line entirely off screen.
+//
+// `chevronOffset` solved for the index, then widened by `reach`: chevron `i`
+// sits at `spacing * (i + 1)`, so it is on screen when
+// `spacing * (i + 1) + reach >= viewportStart` and
+// `spacing * (i + 1) - reach <= viewportEnd`.
+//
+// The window is over the chevron's ARMS, not its centre, and that is the whole
+// reason this is a function. Both backends had written it out inline — the
+// shader here in bp, `drawLines` in px — and only the GPU's copy allowed for the
+// arms (by padding a whole spacing at each end, which is also why the vertex
+// budget below covers less block than it looks like it should). A chevron
+// straddling the viewport edge therefore drew on the GPU and vanished on
+// Canvas2D and in the SVG export. The three decisions above were lifted out of
+// `vs_main` for exactly this reason and this one was left behind, where nothing
+// that inventories shader FUNCTIONS could see it.
+//
+// Two scalars rather than one pair: the two ends share no branch, so splitting
+// them costs neither backend a recomputation (contrast `rectSpanPx`, where the
+// right edge is defined in terms of the left).
+public float chevronFirstVisible(float viewportStart, float spacing, float reach) {
+  return max(0.0, ceil((viewportStart - reach) / spacing - 1.0));
+}
+
+public float chevronLastVisible(float viewportEnd, float spacing, float count, float reach) {
+  return min(count - 1.0, floor((viewportEnd + reach) / spacing - 1.0));
+}
+
 [shader("vertex")]
 VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   int localChevronIndex = int(vid / CHEVRON_VERTS);
@@ -103,8 +134,15 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float viewportStartBp = min(viewStartFromLine, viewEndFromLine);
   float viewportEndBp   = max(viewStartFromLine, viewEndFromLine);
 
-  int firstVisible = max(0, int(floor(viewportStartBp / bpSpacing)) - 1);
-  int lastVisible = min(totalChevrons - 1, int(ceil(viewportEndBp / bpSpacing)));
+  // The arms reach CHEVRON_W_PX * 0.5 SCREEN px to each side of the centre, and
+  // this window is measured in bp — so the reach converts, exactly as
+  // lineWidthPx above converts the other way. Both terms of `chevronFirstVisible`
+  // must be in one unit or the widening is meaningless.
+  float reachBp = CHEVRON_W_PX * 0.5 * u.bpPerPx;
+  int firstVisible =
+    int(chevronFirstVisible(viewportStartBp, bpSpacing, reachBp));
+  int lastVisible =
+    int(chevronLastVisible(viewportEndBp, bpSpacing, chevronsPerLine, reachBp));
 
   int globalChevronIndex = firstVisible + localChevronIndex;
   if (globalChevronIndex < 0 || globalChevronIndex > lastVisible || globalChevronIndex >= totalChevrons) {

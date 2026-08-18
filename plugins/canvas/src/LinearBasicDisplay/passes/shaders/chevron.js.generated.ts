@@ -8,6 +8,10 @@ function _max(a: number, b: number) {
   return b > a || Number.isNaN(a) ? b : a
 }
 
+function _min(a: number, b: number) {
+  return b < a || Number.isNaN(a) ? b : a
+}
+
 export function showChevrons(lineWidthPx: number): boolean {
   return (lineWidthPx >= 20.0)
 }
@@ -18,4 +22,12 @@ export function chevronCount(lineWidthPx: number): number {
 
 export function chevronOffset(span: number, count: number, index: number): number {
   return ((span / (count + 1.0)) * (index + 1.0))
+}
+
+export function chevronFirstVisible(viewportStart: number, spacing: number, reach: number): number {
+  return _max(0.0, Math.ceil((((viewportStart - reach) / spacing) - 1.0)))
+}
+
+export function chevronLastVisible(viewportEnd: number, spacing: number, count: number, reach: number): number {
+  return _min((count - 1.0), Math.floor((((viewportEnd + reach) / spacing) - 1.0)))
 }

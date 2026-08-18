@@ -17,28 +17,36 @@ import {
   snapBoxHeightPx,
 } from '@jbrowse/render-core/shaders/hpmath'
 
+import { arrowDraws } from '../passes/shaders/arrow.js.generated.ts'
 import {
   chevronCount,
+  chevronFirstVisible,
+  chevronLastVisible,
   chevronOffset,
   showChevrons,
 } from '../passes/shaders/chevron.js.generated.ts'
 import {
   markerDirection,
+  markerHalfHeight,
+  markerIsDark,
+  runsOffEdge,
   strandMatchesEdge,
 } from '../passes/shaders/continuation.js.generated.ts'
-import { rectSpanPx } from '../passes/shaders/rect.js.generated.ts'
+import {
+  rectDrawsOutline,
+  rectSpanPx,
+} from '../passes/shaders/rect.js.generated.ts'
 import { GLYPH_LAYERS } from './glyphLayers.ts'
 import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
 import {
-  ARROW_MIN_FEATURE_WIDTH_PX,
   CHEVRON_H_PX,
   CHEVRON_THICKNESS_PX,
   CHEVRON_W_PX,
   CONT_EDGE_MARGIN_PX,
+  CONT_MARK_ALPHA,
   CONT_MIN_OVERHANG_PX,
   CONT_TRI_GAP_PX,
-  CONT_TRI_HALF_H_PX,
   CONT_TRI_W_PX,
   HEAD_HALF_H_PX,
   MIN_DENSITY_ALPHA,
@@ -77,7 +85,7 @@ type BpToScreen = (bp: number) => number
 
 // The furthest a glyph reaches outside the box it rides on: chevrons half of
 // CHEVRON_H_PX around the center row, arrowheads HEAD_HALF_H_PX, continuation
-// triangles CONT_TRI_HALF_H_PX, plus the ≤1px snapBoxCenterYPx snap. 8 clears
+// triangles `markerHalfHeight`, plus the ≤1px snapBoxCenterYPx snap. 8 clears
 // every one of them, and being generous costs nothing — the test below is only
 // ever decisive for primitives already well off-screen.
 const GLYPH_Y_SLACK_PX = 8
@@ -109,33 +117,6 @@ function centeredRowVisible(
   heightPx: number,
 ) {
   return rowVisible(state, centerY - heightPx * 0.5, heightPx)
-}
-
-// The chevron indices worth iterating: those whose glyph puts ink on the canvas,
-// as an inclusive `[first, last]` pair (empty when `first > last`).
-//
-// Chevron `c` is centred at `minX + spacing * (c + 1)` — `chevronOffset` solved
-// for the index — and its arms reach CHEVRON_HALF_W to each side of that centre,
-// so the window is over the ARMS, not the centre. Windowing on the centre alone
-// dropped a chevron straddling a canvas edge, where the GPU (which pads its own
-// bp-space window by a whole spacing, see chevron.slang's `firstVisible`) draws
-// the visible sliver. Two backends disagreeing by a few px at the canvas edge is
-// invisible in a diff and visible in a figure, which is why this is its own
-// tested function rather than two lines inside the draw loop.
-export function visibleChevronRange(
-  minX: number,
-  spacing: number,
-  totalChevrons: number,
-  canvasWidth: number,
-): [first: number, last: number] {
-  const reach = CHEVRON_HALF_W
-  return [
-    Math.max(0, Math.ceil((-minX - reach) / spacing - 1)),
-    Math.min(
-      totalChevrons - 1,
-      Math.floor((canvasWidth + reach - minX) / spacing - 1),
-    ),
-  ]
 }
 
 function drawLines(
@@ -184,16 +165,19 @@ function drawLines(
         const minX = Math.min(x1, x2)
         // Only iterate chevrons that put ink on screen. A long intron zoomed in
         // spans millions of px with almost all chevrons off-screen; without this
-        // window the loop issues thousands of clipped-away strokes. The GPU
-        // windows too, but against the viewport in bp — it has an hp-split line
-        // start to measure from and no minX — so the two arrive at the same
-        // visible set by different arithmetic. cx positions are unchanged either
-        // way, so on-screen output is identical.
-        const [firstC, lastC] = visibleChevronRange(
-          minX,
+        // window the loop issues thousands of clipped-away strokes.
+        //
+        // The shader's own window (adr-051), which is why the viewport is
+        // expressed the way it is: `chevronFirstVisible` measures from the LINE'S
+        // start, and the canvas here starts at `-minX` from it. Unit-agnostic
+        // like `chevronOffset` above — bp on the GPU, px here — so `reach` is the
+        // arm half-width in px.
+        const firstC = chevronFirstVisible(-minX, spacing, CHEVRON_HALF_W)
+        const lastC = chevronLastVisible(
+          canvasWidth - minX,
           spacing,
           totalChevrons,
-          canvasWidth,
+          CHEVRON_HALF_W,
         )
         for (let c = firstC; c <= lastC; c++) {
           const cx = minX + chevronOffset(lineWidthPx, totalChevrons, c)
@@ -305,7 +289,7 @@ function drawRects(
       lastStyle = style
     }
     ctx.fillRect(xLeft, y, w, h)
-    if (outlineStyle !== undefined && w > 2 && h > 2) {
+    if (outlineStyle !== undefined && rectDrawsOutline(w, h)) {
       // This file had the inset spelling open-coded and was the only painter
       // that did; the rule is `strokeRectInside` now, so the alignments read
       // painter gets it too rather than rediscovering the `+0.5`.
@@ -338,9 +322,10 @@ function drawArrows(
         ? xBp - region.arrowWidthsBp[i]!
         : xBp + region.arrowWidthsBp[i]!
     const cx = toX(xBp)
-    // Mirrors arrow.slang: a feature too narrow to be worth a direction marker
-    // gets none, so a dense repeat run doesn't drown in overlapping arrowheads.
-    if (Math.abs(toX(otherEndBp) - cx) < ARROW_MIN_FEATURE_WIDTH_PX) {
+    // arrow.slang's own gate: a feature too narrow to be worth a direction
+    // marker gets none, so a dense repeat run doesn't drown in overlapping
+    // arrowheads. Same predicate `strandArrowPadding` reserves packing room by.
+    if (!arrowDraws(Math.abs(toX(otherEndBp) - cx))) {
       continue
     }
     const y = snapBoxCenterYPx(
@@ -459,27 +444,33 @@ function drawContinuation(
     const right = Math.max(x1, x2)
     // Only mark once a meaningful amount of the feature is hidden (overhang past
     // the edge > threshold); a few px clipped off a short repeat stays unmarked.
+    // `runsOffEdge` is the shader's own three comparisons, in px here and in clip
+    // there; the canvas-edge flags stay outside it, being a per-block fact each
+    // backend holds under its own name.
     const offLeft =
       leftIsCanvasEdge &&
-      scissorLeft - left > CONT_MIN_OVERHANG_PX &&
-      right > scissorLeft
+      runsOffEdge(left, right, scissorLeft, -1, CONT_MIN_OVERHANG_PX)
     const offRight =
       rightIsCanvasEdge &&
-      right - scissorRight > CONT_MIN_OVERHANG_PX &&
-      left < scissorRight
+      runsOffEdge(right, left, scissorRight, 1, CONT_MIN_OVERHANG_PX)
     if (offLeft || offRight) {
       const c = region.rectColors[i]!
-      const lum =
-        0.299 * abgrRed(c) + 0.587 * abgrGreen(c) + 0.114 * abgrBlue(c)
-      ctx.strokeStyle =
-        lum > 127.5 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)'
+      // 0..1 channels, which is the unit `markerIsDark` weighs them in — the
+      // unpack is this backend's half of the split (see the shader).
+      ctx.strokeStyle = markerIsDark(
+        abgrRed(c) / 255,
+        abgrGreen(c) / 255,
+        abgrBlue(c) / 255,
+      )
+        ? `rgba(0,0,0,${CONT_MARK_ALPHA})`
+        : `rgba(255,255,255,${CONT_MARK_ALPHA})`
       ctx.lineWidth = 1
       const cy = snapBoxCenterYPx(
         region.rectYs[i]! + region.rectHeights[i]! * 0.5,
         region.rectHeights[i]!,
         scrollY,
       )
-      const halfH = Math.min(CONT_TRI_HALF_H_PX, region.rectHeights[i]! * 0.4)
+      const halfH = markerHalfHeight(region.rectHeights[i]!)
       // Genomic strand → screen direction, so a reversed block's markers point
       // the way its glyphs run — same flip drawLines/drawArrows apply, and
       // continuation.slang's `flipX(inst.strand, u)`.

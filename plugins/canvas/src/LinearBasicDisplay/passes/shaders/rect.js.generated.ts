@@ -27,3 +27,13 @@ export function rectSpanPx(x1Px: number, x2Px: number, isPoint: boolean): [numbe
   let left = Math.floor((x1Px + 0.5))
   return [left, extendToMinWidthPx(left, Math.floor((x2Px + 0.5)), 2.0)]
 }
+
+export function rectDrawsOutline(widthPx: number, heightPx: number): boolean {
+  let _t0: boolean
+  if ((widthPx > 2.0)) {
+    _t0 = (heightPx > 2.0)
+  } else {
+    _t0 = false
+  }
+  return _t0
+}

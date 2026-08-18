@@ -11,10 +11,8 @@ import {
   labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { mergeSpans } from '../shared/mergeSpans.ts'
-import {
-  ARROW_MIN_FEATURE_WIDTH_PX,
-  MIN_RECT_WIDTH_PX,
-} from './components/sharedRendererConstants.ts'
+import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
+import { arrowDraws } from './passes/shaders/arrow.js.generated.ts'
 import { OFFSCREEN_Y, isPlacedRow } from './rowPlacement.ts'
 import { captureFeatureTops } from './yMorph.ts'
 
@@ -307,11 +305,12 @@ function keepFeatureLabel(
 // spanning both reversed and non-reversed regions points opposite ways in
 // each, so it legitimately reserves on both sides.
 //
-// And only where the arrow DRAWS. Both backends drop the marker on a feature
-// under ARROW_MIN_FEATURE_WIDTH_PX wide, so a dense repeat run doesn't drown in
-// overlapping arrowheads (arrow.slang, and Canvas2D's twin of its gate) — the
-// packer reserving 8px for it anyway made every narrow stranded feature claim
-// space nothing paints into. Worst where it costs most: sub-pixel stranded marks
+// And only where the arrow DRAWS, by `arrowDraws` — arrow.slang's own gate, the
+// one both renderers cull on, so a dense repeat run doesn't drown in overlapping
+// arrowheads. Asking it here rather than restating the threshold is what keeps
+// the reservation and the paint the same decision: the packer reserving 8px for
+// an arrow nothing paints made every narrow stranded feature claim space nothing
+// paints into. Worst where it costs most: sub-pixel stranded marks
 // held out of the density collapse (by a wide feature overlapping them, say) got
 // ~8px of layout width apiece instead of ~0, so 5000 of them packed 46 rows deep
 // instead of 2.
@@ -326,8 +325,7 @@ function strandArrowPadding(
   bpPerPx: number,
 ) {
   const drawsArrow =
-    !!ext.strand &&
-    (ext.endBp - ext.startBp) / bpPerPx >= ARROW_MIN_FEATURE_WIDTH_PX
+    !!ext.strand && arrowDraws((ext.endBp - ext.startBp) / bpPerPx)
   const arrow = drawsArrow ? STRAND_ARROW_WIDTH : 0
   const pointsLeft =
     (ext.hasNonReversed && ext.strand === -1) ||

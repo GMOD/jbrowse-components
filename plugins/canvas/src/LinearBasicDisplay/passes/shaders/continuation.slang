@@ -29,8 +29,8 @@
 // features running well past the viewport — the zoomed-in case the marker is
 // meant for — qualify.
 //! targets: wgsl, glsl
-//! js-export: markerDirection, strandMatchesEdge
-//! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX, CONT_MIN_OVERHANG_PX
+//! js-export: markerDirection, strandMatchesEdge, markerIsDark, markerHalfHeight, runsOffEdge
+//! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX, CONT_MIN_OVERHANG_PX, CONT_MARK_ALPHA
 
 import hpmath;
 import colorPack;
@@ -44,6 +44,9 @@ static const float CONT_TRI_HALF_H_PX  = 4.0;
 static const float CONT_EDGE_MARGIN_PX = 1.0;
 static const float CONT_TRI_GAP_PX     = 4.0;
 static const float CONT_MIN_OVERHANG_PX = 20.0;
+// Reduced opacity so the hollow outline blends with the strand arrows' visual
+// weight (text.secondary ~0.6) rather than jarring against the fill it sits on.
+static const float CONT_MARK_ALPHA = 0.55;
 
 // RectInstance (rectInstance.slang) is the shared layout — this pass reads
 // rect's buffer, so it must declare the same attributes rect does. `densityFade`
@@ -82,6 +85,52 @@ public float strandMatchesEdge(float screenStrand, float edgeSide) {
   return max(0.0, markerDirection(screenStrand, edgeSide) * edgeSide);
 }
 
+// Whether the marker draws dark-on-light rather than light-on-dark, from the
+// fill it sits on. Channels are 0..1; the ITU-R BT.601 luma weights and the
+// midpoint are the decision, and the unpack that produces the channels is the
+// conversion each backend keeps doing its own way (`unpackRGBA` here,
+// `abgrRed`/`abgrGreen`/`abgrBlue` there) — the split adr-051 prescribes for a
+// candidate whose signature would otherwise want a vector.
+//
+// Stated in 0..255 on the Canvas2D side, against a `> 127.5` midpoint, until
+// this was lifted. Mathematically the same line, which is exactly what makes a
+// drift between them undetectable by eye: neither copy looks like the other.
+public bool markerIsDark(float r, float g, float b) {
+  return r * 0.299 + g * 0.587 + b * 0.114 > 0.5;
+}
+
+// Half-height of one marker chevron, shrunk to fit a short box rather than
+// overhanging it. The 0.4 was a bare literal in both backends.
+public float markerHalfHeight(float boxHeight) {
+  return min(CONT_TRI_HALF_H_PX, boxHeight * 0.4);
+}
+
+// Does this rect run far enough past `edgeCoord` to earn a marker there, while
+// still reaching into view?
+//
+// `outer` is the rect edge on the far side of `edgeCoord` and `inner` the near
+// one — the right edge and the left edge respectively at the right screen edge,
+// swapped at the left — and `edgeSide` is +1 for the right edge, -1 for the
+// left, so both edges are one piece of arithmetic. Unit-agnostic like
+// `chevronOffset`: clip here (where `edgeCoord` is ±1 and the overhang converts
+// through `pxToClipW`), screen px on the Canvas2D side.
+//
+// Not gated on `leftIsCanvasEdge`/`rightIsCanvasEdge` here: that is a per-block
+// fact each backend already holds — a uniform on the GPU, `canvasEdgeFlags` on
+// the CPU — and folding it in would make the shared decision take an argument
+// only one side has a natural name for. What must not drift is the overhang
+// test, which is three comparisons that were spelled twice.
+public bool runsOffEdge(
+  float outer,
+  float inner,
+  float edgeCoord,
+  float edgeSide,
+  float minOverhang
+) {
+  return (outer - edgeCoord) * edgeSide > minOverhang
+      && (inner - edgeCoord) * edgeSide < 0.0;
+}
+
 [shader("vertex")]
 VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startEnd.x, u);
@@ -90,13 +139,14 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float leftClip  = min(sx1, sx2);
   float rightClip = max(sx1, sx2);
 
-  // Match the visual weight of strand arrows (text.secondary ~0.6 opacity):
-  // choose dark/light based on fill luminance but render at reduced opacity so
-  // the hollow outline blends rather than jarring.
+  // Dark or light by the fill's luminance, at CONT_MARK_ALPHA so the hollow
+  // outline blends. The pick is `markerIsDark`, shared with Canvas2D; the
+  // unpack around it is this backend's.
   float4 base = unpackRGBA(inst.color);
-  float lum = dot(base.rgb, float3(0.299, 0.587, 0.114));
-  float3 mark = lum > 0.5 ? float3(0.0, 0.0, 0.0) : float3(1.0, 1.0, 1.0);
-  float markAlpha = 0.55;
+  float3 mark = markerIsDark(base.r, base.g, base.b)
+    ? float3(0.0, 0.0, 0.0)
+    : float3(1.0, 1.0, 1.0);
+  float markAlpha = CONT_MARK_ALPHA;
 
   uint chev = vid / 3u;   // 0,1 = right edge marker; 2,3 = left edge marker
   uint tv   = vid % 3u;   // vertex within the triangle
@@ -110,10 +160,10 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   // still reaching into view — and the edge is the real canvas edge, not an
   // internal seam between displayedRegions (a feature spilling past a sub-region
   // boundary mustn't draw a mid-screen marker).
-  bool offRight =
-    rightClip - 1.0 > minOverhangClip && leftClip < 1.0 && u.rightIsCanvasEdge > 0.5;
-  bool offLeft =
-    -1.0 - leftClip > minOverhangClip && rightClip > -1.0 && u.leftIsCanvasEdge > 0.5;
+  bool offRight = runsOffEdge(rightClip, leftClip, 1.0, 1.0, minOverhangClip)
+    && u.rightIsCanvasEdge > 0.5;
+  bool offLeft = runsOffEdge(leftClip, rightClip, -1.0, -1.0, minOverhangClip)
+    && u.leftIsCanvasEdge > 0.5;
   bool visible = isRight ? offRight : offLeft;
 
   VsOut o;
@@ -127,7 +177,7 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float marginClip = pxToClipW(CONT_EDGE_MARGIN_PX, u);
   float triWClip   = pxToClipW(CONT_TRI_W_PX, u);
   float gapClip    = pxToClipW(CONT_TRI_GAP_PX, u);
-  float halfHClip  = pxToClipH(min(CONT_TRI_HALF_H_PX, inst.height * 0.4), u);
+  float halfHClip  = pxToClipH(markerHalfHeight(inst.height), u);
 
   float cy = snapBoxCenterY(inst.y + inst.height * 0.5, inst.height, u.scrollY, u.canvasHeight);
 

@@ -10,3 +10,5 @@ export const CONT_EDGE_MARGIN_PX = 1
 export const CONT_TRI_GAP_PX = 4
 
 export const CONT_MIN_OVERHANG_PX = 20
+
+export const CONT_MARK_ALPHA = 0.55
