@@ -40,6 +40,7 @@ import { displaySettled } from '@jbrowse/browser-test-utils'
 import { CODE_BASE, RELEASED_CODE_BASE } from '../src/lib/code-base.ts'
 import { menuCascade, sessionSpec } from './screenshot-spec-helpers.ts'
 import { dog10kVideoFixtures } from './specs/dog10k.ts'
+import { proteinLaunchFixtures } from './specs/features.ts'
 import { pggbVideoFixtures } from './specs/graph-ecoli.ts'
 import {
   TOOLBAR_READY,
@@ -706,6 +707,141 @@ export const videoSpecs: VideoSpec[] = [
     // asked nothing, and both of these keep that out of the reader's way.
     posterAt: 36,
     tailMs: 1200,
+  },
+  // THE SPLIT BUTTON, and the destination on it that a still actively misleads
+  // about. protein/annotation_1d is a picture of the 1D view with four tracks
+  // drawn across the chain, and a reader who has only seen that picture will
+  // take the same route and find nothing: protein3d adds its tracks to the
+  // session and turns none of them on. The page's prose had that backwards
+  // until the figure was captured, which is the tell that this route wants
+  // filming rather than describing — the view arrives in one state and the
+  // figure shows another, and a still can only hold the second.
+  //
+  // The menu is the other half. The page describes four destinations behind an
+  // arrow beside Launch, and a screenshot of an open cascade is a picture of a
+  // menu; here the menu is what the section is about, so the film is where it
+  // can be read.
+  //
+  // Filmed against the LOCAL build, unlike genomes_protein_launch above it. The
+  // config is still genomes.jbrowse.org's own hg38 — that is where the launcher
+  // comes from — but the app serving it is this repo's, so the display-phase
+  // attributes the readiness stack keys on are published and this tour needs
+  // none of the settle guessing the released-app tour is stuck with.
+  {
+    name: 'proteins/annotation_1d',
+    description:
+      "The gene menu to a linear genome view whose genome is a protein: the launch dialog's split button, the 1D view arriving with none of its tracks on, and four of them turned on in residue coordinates",
+    url: proteinLaunchFixtures.session,
+    viewportWidth: 1280,
+    // the two views and the drawer open beside them
+    viewportHeight: 1045,
+    // the UCSC hub config is ~570 tracks and pulls four remote plugins
+    readySelector: '::-p-text(NCBI RefSeq)',
+    readyTimeout: 120000,
+    steps: [
+      {
+        type: 'rightclick',
+        anchor: proteinLaunchFixtures.geneAnchor,
+        say: 'Right-click the gene',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Launch protein view' },
+      {
+        type: 'click',
+        text: 'Launch protein view',
+        say: 'Launch protein view',
+      },
+      // OFF CAMERA, for the reason the other protein tour cuts here: the dialog
+      // opens empty and fills itself from UniProt's ID mapping, the isoform's
+      // protein sequences and AlphaFold's structure url, and a film of a form
+      // filling in is a film of a spinner. An enabled Launch is the dialog
+      // saying it has resolved.
+      {
+        type: 'waitForSelector',
+        selector: 'button:not([disabled])::-p-text(Launch)',
+        timeout: 180000,
+        cut: true,
+      },
+      { type: 'delay', ms: 2500 },
+      // Held long enough to read all four destinations, which is the whole
+      // reason this step is filmed.
+      {
+        type: 'click',
+        selector: 'button[aria-label="More launch options"]',
+        say: 'More launch options',
+        hold: 4000,
+      },
+      {
+        type: 'click',
+        text: 'Launch 1D protein annotation view',
+        say: 'Launch 1D protein annotation view',
+      },
+      // The assembly protein3d registers here is the amino-acid chain itself, so
+      // the view has to navigate a genome that did not exist when the tour
+      // started. `No tracks active` is its own empty state and gates on both:
+      // the assembly registered, and the view has nothing on.
+      {
+        type: 'waitForText',
+        text: 'No tracks active',
+        timeout: 120000,
+        cut: true,
+      },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'The launch adds the tracks without turning them on',
+      },
+      {
+        type: 'click',
+        text: 'Open track selector',
+        say: 'Open track selector',
+      },
+      // The list opens with its categories collapsed, and everything protein3d
+      // added is under this one — which is the answer to "where did they go".
+      {
+        type: 'click',
+        text: 'Session tracks',
+        say: 'Session tracks',
+        hold: 1500,
+      },
+      // The last of them to be added, so its row is the selector having finished
+      // filling in.
+      { type: 'waitForText', text: 'AlphaMissense scores', timeout: 120000 },
+      // The same four the figure turns on, in the order they stack. Each is held
+      // after its click, because what a reader is here to see is a band arriving
+      // in residue coordinates rather than a checkbox ticking.
+      { type: 'click', text: 'DNA binding', say: 'DNA binding', hold: 2000 },
+      {
+        type: 'click',
+        text: 'Natural variant',
+        say: 'Natural variant',
+        hold: 2000,
+      },
+      {
+        type: 'click',
+        text: 'AlphaFold confidence',
+        say: 'AlphaFold confidence (pLDDT)',
+        hold: 3000,
+      },
+      {
+        type: 'click',
+        text: 'AlphaMissense scores',
+        say: 'AlphaMissense scores',
+        hold: 3000,
+      },
+      // The drawer takes ~400px off the views while it is open, so the end state
+      // the clip holds is the one the page's figure shows.
+      {
+        type: 'click',
+        selector: 'button[aria-label="Close drawer"]',
+        say: 'Close the track selector',
+      },
+      { type: 'waitForAppSettled' },
+    ],
+    // Long, because the end state is the payoff and it is four tracks deep: the
+    // confidence and the substitution scores both fall away over the terminal
+    // tails, and that is read rather than glanced at.
+    tailMs: 5000,
   },
   // A ROUTE AND A RE-LAYOUT AT ONCE, and the one place in the three Dog10K
   // tutorials where a still is structurally short of the point.

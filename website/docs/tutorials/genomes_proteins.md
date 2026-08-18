@@ -129,6 +129,8 @@ single-view embedded components.
 
 <Figure src="/img/protein/annotation_1d.png" caption="TP53 on hg38 above the 1D protein view its gene menu launched, with four of the session tracks turned on: the DNA binding call, UniProt natural variants, AlphaFold pLDDT and AlphaMissense substitution scores, all in residue coordinates. Confidence and variant density both fall away over the terminal tails." />
 
+<Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, where its four destinations are, and the 1D annotation view the second of them builds. The view arrives with none of its tracks on; DNA binding, Natural variant, AlphaFold confidence and AlphaMissense scores come on from Session tracks in the selector." />
+
 The two MSA destinations appear when msaview is loaded in the same session, and
 both build their alignment from the one AlphaFold's own pipeline folded from,
 which is deep, unlabelled by species, and a much larger download than the

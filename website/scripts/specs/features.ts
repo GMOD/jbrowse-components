@@ -69,6 +69,17 @@ const APPLE3_MRNA = {
   dy: 121,
 }
 
+const PROTEIN_LAUNCH_GENE_TRACK = 'hg38-ncbiRefSeqCurated'
+
+// TP53's own band, near the top of it: `longestCoding` draws one gene row, so a
+// centered right-click lands on empty canvas and opens the view's own menu with
+// no feature items on it.
+const PROTEIN_LAUNCH_ANCHOR = {
+  track: PROTEIN_LAUNCH_GENE_TRACK,
+  locus: 'chr17:7,676,000',
+  fracY: 0.2,
+}
+
 // The gene menu route protein/annotation_1d takes, on genomes.jbrowse.org's own
 // hg38 config — the one the msa figures load and the one the tutorial's
 // click-path is written against, rather than the pinned PROTEIN3D_CONFIG that
@@ -77,13 +88,16 @@ const APPLE3_MRNA = {
 // same right-click opens a menu with neither launcher on it, so the route the
 // page documents is only reachable here.
 //
-// Split out from its one caller because the split button's other worthwhile
-// destination — "Launch 3D structure + MSA view", the page's three-connected-
-// views claim in one frame — is written and cannot be captured: the a3m the two
-// MSA destinations read is the URL AlphaFold's own prediction API advertises,
-// and it answers 403 to anyone. `curl https://alphafold.ebi.ac.uk/files/msa/
-// AF-P04637-F1-msa_v6.a3m` is the whole reproduction, and P38398 answers the
-// same, so it is AlphaFold rather than this entry or this rasterizer.
+// Split out from its one caller for two consumers that arrived after it. The
+// video tour `proteins/annotation_1d` films this same route, because the one
+// thing the still cannot say is that the launch opens the view with none of its
+// tracks on. And the split button's other worthwhile destination — "Launch 3D
+// structure + MSA view", the page's three-connected-views claim in one frame —
+// is written and cannot be captured: the a3m the two MSA destinations read is
+// the URL AlphaFold's own prediction API advertises, and it answers 403 to
+// anyone. `curl https://alphafold.ebi.ac.uk/files/msa/AF-P04637-F1-msa_v6.a3m`
+// is the whole reproduction, and P38398 answers the same, so it is AlphaFold
+// rather than this entry or this rasterizer.
 const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
   views: [
     {
@@ -95,7 +109,7 @@ const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
         // pins: the click is resolved against the track's band, and an auto
         // height is a function of how many isoforms RefSeq draws here
         {
-          trackId: 'hg38-ncbiRefSeqCurated',
+          trackId: PROTEIN_LAUNCH_GENE_TRACK,
           geneGlyphMode: 'longestCoding',
           height: 60,
         },
@@ -107,14 +121,7 @@ const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
 // Right-click TP53, open the launch dialog, and open the split button beside
 // its Launch. Everything the dialog can build is on that menu.
 const OPEN_PROTEIN_LAUNCH_MENU: ScreenshotAction[] = [
-  {
-    type: 'rightclick',
-    anchor: {
-      track: 'hg38-ncbiRefSeqCurated',
-      locus: 'chr17:7,676,000',
-      fracY: 0.2,
-    },
-  },
+  { type: 'rightclick', anchor: PROTEIN_LAUNCH_ANCHOR },
   { type: 'waitForText', text: 'Launch protein view' },
   { type: 'click', text: 'Launch protein view' },
   // Launch is disabled until the dialog has mapped the transcript to a UniProt
@@ -131,6 +138,16 @@ const OPEN_PROTEIN_LAUNCH_MENU: ScreenshotAction[] = [
   // and none of them carries a test id.
   { type: 'click', selector: 'button[aria-label="More launch options"]' },
 ]
+
+// What the `proteins/annotation_1d` tour films this same route against. The
+// session and the anchor rather than the action list: the tour writes its own
+// steps because it needs captions, holds and camera cuts the figure has no use
+// for, but a tour that opened its own session or picked its own locus would
+// document a route through an app this page's figure is not showing.
+export const proteinLaunchFixtures = {
+  session: PROTEIN_LAUNCH_SESSION,
+  geneAnchor: PROTEIN_LAUNCH_ANCHOR,
+}
 
 export const featuresSpecs: ScreenshotSpec[] = [
   {
