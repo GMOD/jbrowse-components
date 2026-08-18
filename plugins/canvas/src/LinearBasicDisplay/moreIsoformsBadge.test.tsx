@@ -21,6 +21,7 @@ import type {
   VisibleRegion,
 } from './components/hitTesting.ts'
 import type { LayoutInputs } from './layout.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -408,4 +409,31 @@ test('an expanded gene reaches the worker as a fetch input', () => {
 
   display.toggleExpandedGene('gene1')
   expect(display.rpcProps().expandedGeneIds).toBeUndefined()
+})
+
+// Each badge re-collapses its own gene, which is no way back for a reader who
+// opened six across a locus and has panned away from four of them.
+test('the track menu offers the way back from a run of expansions', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  const collapseRow = () => {
+    const items: MenuItem[] = display.trackMenuItems()
+    const geneGlyph = items.find(i => 'label' in i && i.label === 'Gene glyph')
+    const subMenu = geneGlyph && 'subMenu' in geneGlyph ? geneGlyph.subMenu : []
+    const row = subMenu.find(
+      i => 'label' in i && String(i.label).startsWith('Collapse'),
+    )
+    return row && 'onClick' in row ? row : undefined
+  }
+
+  // absent while nothing is expanded, so the submenu stays the mode radio
+  expect(collapseRow()).toBeUndefined()
+
+  display.toggleExpandedGene('gene1')
+  display.toggleExpandedGene('gene2')
+  expect(String(collapseRow()!.label)).toBe('Collapse 2 expanded genes')
+
+  collapseRow()!.onClick()
+  expect(display.expandedGeneIds).toHaveLength(0)
+  expect(collapseRow()).toBeUndefined()
 })

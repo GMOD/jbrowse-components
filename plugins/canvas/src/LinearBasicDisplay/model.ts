@@ -11,8 +11,10 @@ import {
   radioItems,
   toggleItem,
 } from '@jbrowse/core/ui/menuItems'
+import { pluralize } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import SegmentIcon from '@mui/icons-material/Segment'
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import { autorun } from 'mobx'
 
 import { budgetFeatureHeightPx } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
@@ -454,13 +456,33 @@ export default function stateModelFactory(
             {
               label: 'Gene glyph',
               icon: SegmentIcon,
-              subMenu: radioItems(
-                GENE_GLYPH_MODE_OPTIONS,
-                self.geneGlyphMode,
-                value => {
-                  self.setGeneGlyphMode(value)
-                },
-              ),
+              subMenu: [
+                ...radioItems(
+                  GENE_GLYPH_MODE_OPTIONS,
+                  self.geneGlyphMode,
+                  value => {
+                    self.setGeneGlyphMode(value)
+                  },
+                ),
+                // The way back from a run of per-gene expansions. Each badge
+                // re-collapses its own gene, but a reader who opened six of them
+                // across a locus has six badges to find again — and the ones
+                // they panned away from are not on screen to find. Absent while
+                // nothing is expanded, so the submenu stays the mode radio it is
+                // on every ordinary track.
+                ...(self.expandedGeneIds.length > 0
+                  ? [
+                      { type: 'divider' as const },
+                      {
+                        label: `Collapse ${self.expandedGeneIds.length} expanded ${pluralize(self.expandedGeneIds.length, 'gene')}`,
+                        icon: UnfoldLessIcon,
+                        onClick: () => {
+                          self.clearExpandedGenes()
+                        },
+                      },
+                    ]
+                  : []),
+              ],
             },
           ]
         },
