@@ -177,7 +177,7 @@ export default function configSchemaF() {
       // adding rows shrinks them, and every one of them stays on screen.
       ...rowHeightConfigSchemaFields({
         rowHeight:
-          'fixed row height in px; 0 (default) auto-fits all rows to the display height',
+          'fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track',
       }),
       /**
        * #slot

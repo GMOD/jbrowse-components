@@ -137,6 +137,29 @@ accessor is now written out in three displays, where a week earlier the
 to them now bottoms out at pairs. Run this after a mixin lands, not before, and
 read a floor of two as the shape working.
 
+### That floor was wrong, and the reason generalizes
+
+A fifth pass (2026-08-18) re-ran the same scan with **`readConfObject(self.conf,
+…)` in the pattern** and `rowHeight` came back at three displays — maf, the
+multi-sample variant base and the multi-row feature painting — not two. The
+third copy was invisible to the earlier scan for one reason: canvas declares a
+typed `get conf()` over `self.configuration` and reads through it, and
+`getConf(self, 'x')` **is** `readConfObject(self.configuration, 'x')`, so the
+two spellings are the same call with different sugar. `RowHeightMixin` took the
+triple (`d2b1af1`).
+
+So a floor of two is only evidence when the pattern covers every spelling of the
+read. Before reading a count as "the shape working", grep for the accessor
+*sugar* the way you grepped for the accessor: `getConf` / `readConfObject` /
+`resolveConf`, and receivers of the form `self`, `self.conf`,
+`self.configuration`.
+
+The half that did hold up is the **interface** tell. `rowHeightMenu.ts` already
+restated `rowHeight` / `setRowHeight` / `setFitToHeight` as `RowHeightModel`, and
+ARCHITECTURE.md had already named it in the list of duck-typed contracts that
+precede their mixins. Reading that list is cheaper than any scan, and it names
+the copies a name scan cannot see.
+
 ## The other scan: structural, not by name
 
 A name scan only finds copies that agree on a name. The complement is a clone

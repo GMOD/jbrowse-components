@@ -131,6 +131,15 @@ overlay only under `showTree`).
 
 ## Two row-height arguments, and neither is the display height
 
+`rowHeightConfigSchemaFields` + `RowHeightMixin` (in `src/rowHeight/`, beside
+the menu and dialog) are the slot and the three members over it: the raw
+`rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight`. Three
+displays hand-wrote all four. What a display still owes is `autoRowHeight` — the
+rows viewport is a different quantity in each — and `setFitToHeight`, which is
+required to seed the `height` slot exactly where the `height` getter is
+content-derived. Canvas overrides `effectiveRowHeight` to cap the stack at the
+canvas limit.
+
 `TreeDrawingModel` takes **`effectiveRowHeight`**, never a raw `rowHeight` —
 variants and MAF keep `rowHeight` raw, where `0` means fit-to-height, so reading
 it painted zero-height rects. Structural typing let that through, so keep the

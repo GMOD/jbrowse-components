@@ -112,15 +112,23 @@ function spreadPairs(expr: ts.Expression, sf: ts.SourceFile) {
   if (!ts.isCallExpression(expr) || !ts.isIdentifier(expr.expression)) {
     return undefined
   }
-  // One object-literal argument, matching the single destructured parameter the
-  // factory index accepts. Anything else is not a shape this can substitute
-  // into, and gets no entry rather than a half-substituted one.
+  // At most one object-literal argument, matching the single destructured
+  // parameter the factory index accepts. Anything else is not a shape this can
+  // substitute into, and gets no entry rather than a half-substituted one.
+  //
+  // **No argument at all is one of those shapes**, not a rejection: a factory
+  // whose every parameter has a default is spread as a bare
+  // `...rowHeightConfigSchemaFields()`, and substitution then falls back to
+  // those defaults exactly as it does for a parameter one call omits and
+  // another passes. Rejecting it dropped the slot from the page of every
+  // display taking the defaults, which the manifest gap check then reported as
+  // a missing `#slot` tag on a file that has one.
   const [arg, ...rest] = expr.arguments
-  if (!arg || rest.length || !ts.isObjectLiteralExpression(arg)) {
+  if (rest.length || (arg && !ts.isObjectLiteralExpression(arg))) {
     return undefined
   }
   const args = new Map<string, string>()
-  for (const p of arg.properties) {
+  for (const p of arg?.properties ?? []) {
     if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name)) {
       args.set(p.name.text, p.initializer.getText(sf))
     }

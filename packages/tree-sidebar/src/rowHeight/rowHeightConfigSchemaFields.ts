@@ -14,9 +14,15 @@
  * differs: rows the user can scroll to (maf, the multi-sample variant displays)
  * versus a painting that grows to its content and has nowhere to scroll (the
  * multi-row feature display).
+ *
+ * **Write it as the whole explanation.** A slot reached by spreading a table
+ * renders on its config page from this `description` alone: this file declares
+ * no config schema, so the config docs generator has nothing to file a JSDoc
+ * comment under and the slot prose below reaches the source and not the page.
+ * Everything a config author needs has to be in the sentence.
  */
 export function rowHeightConfigSchemaFields({
-  rowHeight = 'per-row height in px, scrolling the rows that do not fit; 0 fits the rows to the display height instead',
+  rowHeight = 'per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them',
 }: {
   /** Overridable, but the default sentence fits any scrolling row display. */
   rowHeight?: string

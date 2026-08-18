@@ -1,6 +1,6 @@
 ---
 name: row-height-and-fit
-description: The shared two-valued row-height convention every multi-row display implements — the `rowHeight` slot whose `0` means fit-to-height, the resolved `effectiveRowHeight` getter that is a cross-plugin ABI, the shared menu row and dialog in tree-sidebar, and the two places a display legitimately differs. Read before adding a row-height setting or a fit-to-height mode.
+description: The shared two-valued row-height convention every multi-row display implements — the `rowHeight` slot whose `0` means fit-to-height, the resolved `effectiveRowHeight` getter that is a cross-plugin ABI, `RowHeightMixin` and the shared menu row and dialog in tree-sidebar, and the two places a display legitimately differs. Read before adding a row-height setting or a fit-to-height mode.
 ---
 
 # Row height and fit-to-display-height
@@ -22,6 +22,17 @@ the shared spelling, and the two places a display legitimately differs.
 | menu row | `'Squeeze to fit view'`, radio | mutually exclusive with the pinned presets |
 
 Fit-to-height is the default everywhere — the slot ships at `0`.
+
+**"Pinned" means the user chose a px height**, and it is the whole opposite of
+fit: a pinned row keeps the height it was given when the track is dragged, and
+the drag reveals more rows instead of restretching the ones on screen.
+
+The slot and the three members over it are **one mixin**, not a per-display
+spelling: `rowHeightConfigSchemaFields()` and `RowHeightMixin()`, both in
+`packages/tree-sidebar/src/rowHeight/` beside the menu and dialog that read
+them. A display composes both halves or neither. What it still owes the mixin is
+`autoRowHeight`; what it may still override is `effectiveRowHeight`, and one
+display does (below).
 
 The menu row and the "Custom..." dialog are **shared**, not per display:
 `packages/tree-sidebar/src/rowHeight/` holds `rowHeightMenuItem(model, presets)`
@@ -50,6 +61,10 @@ row display has to satisfy them:
 - `packages/core/src/util/applyRowResizeWheel.ts`
 - `packages/tree-sidebar/src/types.ts` (`TreeDrawingModel`)
 
+Satisfying them is now structural rather than conventional — the mixin declares
+the getter — but the duck types stay, because both take a model they were handed
+rather than one they compose.
+
 Displays implementing this: `variants/MultiSampleVariantBaseModel` (both the
 regular and matrix multi-sample variant displays), `maf/LinearMafDisplay`,
 `canvas/LinearMultiRowFeatureDisplay`. `wiggle/MultiLinearWiggleDisplay` is
@@ -69,10 +84,17 @@ value (consumers divide by it), and the drawing code widening a sub-pixel band
 (`rowBand` in canvas) without changing how many rows fit.
 
 Both halves of that — resolving the `0` sentinel and flooring only a
-non-positive result — are `packages/core/src/util/resolveRowHeight.ts`, which
-maf, variants and canvas each call from their `effectiveRowHeight`. They used to
-spell it out individually and canvas's copy had lost the floor, which is exactly
-the drift a two-rules-pulling-opposite-ways invariant invites.
+non-positive result — are `packages/core/src/util/resolveRowHeight.ts`, called
+once from `RowHeightMixin`. Each display used to spell it out individually and
+canvas's copy had lost the floor, which is exactly the drift a
+two-rules-pulling-opposite-ways invariant invites.
+
+Per-display coverage of those two rules was uneven, measured by sabotage: drop
+the floor and only the multi-sample variants' `rowHeightResolution.test.ts`
+fails; floor the sub-pixel case as well and that one plus canvas's
+`trackHeightFloor.test.ts` fail. maf pinned neither.
+`packages/tree-sidebar/src/rowHeight/RowHeightMixin.test.ts` is where one
+implementation gets one set of assertions.
 
 ### `setFitToHeight` seeds the height slot only where `height` is derived
 
@@ -87,7 +109,9 @@ Variants leaves `height` to `TrackHeightMixin`, where the getter *is* the slot,
 so the same line would write it back to itself.
 
 **So the question to ask before copying either version is which `height` the
-display has**, not which neighbour it resembles.
+display has**, not which neighbour it resembles. That is why `setFitToHeight`
+stays per display while `setRowHeight` moved onto the mixin — the two look like
+a pair and only one of them is display-independent.
 
 ### Drag-resize leaves a pinned height alone
 
@@ -106,6 +130,12 @@ height, and `setHeight` re-pins `newHeight / nrow` deliberately. Adopting the
 rule above would mean giving canvas a scroll viewport, which is a different
 change.
 
+The same structure is why canvas is the one display overriding
+`RowHeightMixin`'s `effectiveRowHeight`: nothing downstream bounds a stack that
+sizes its own canvas, so the `maxCanvasHeight / nrow` cap has to land on the
+resolved row height. The mixin's `resolveRowHeight` call stays inside the
+override.
+
 ### The rows viewport has three names
 
 `autoRowHeight` divides the height actually available to rows, and each display
@@ -117,8 +147,8 @@ subtracts different chrome to get it:
 - variants — `availableHeight`, `height - lineZoneHeight` (the matrix display's
   connector zone)
 
-These are genuinely different quantities, so they keep separate names; only the
-`autoRowHeight` / `effectiveRowHeight` pair derived from them is shared.
+These are genuinely different quantities, so they keep separate names, and
+`autoRowHeight` is exactly the member each display still owes the mixin.
 
 ## `squashToHeight` is a different concept
 
@@ -134,6 +164,26 @@ It is named for the squash rather than the fit so that `setSquashToHeight(bool)`
 can't be confused with the row displays' `setFitToHeight()` — those were both
 called `setFitToHeight` at one point, same name, different arity, different
 concept.
+
+## Why one number with a sentinel, and not a mode enum
+
+The repo spells this same fixed-versus-fit choice two ways. Track height uses a
+`heightMode` enum (`fixed` / `grow` / `fit`) plus a separate height, behind
+`HeightModeMixin`. Row height uses one number where `0` is the fit sentinel.
+
+The sentinel is the older of the two — it lands in `56bc6ad7a0` (2026-06-28),
+the `heightMode` enum in `b51403f9f0` (2026-07-08) — and it is what is in
+shipped configs and saved sessions, so replacing it is a migration rather than a
+rename. It also
+buys less than it looks like: an enum removes the sentinel but not
+`effectiveRowHeight`, because fit mode still has to compute a height from the
+rows viewport, and the `resolveRowHeight` floor still has to exist for the case
+where that viewport is 0px. What the enum would genuinely buy is a third mode —
+canvas's grow-to-content behaviour is a mode today only in the sense that its
+`height` getter is derived — and one vocabulary for both axes.
+
+**Not currently planned.** If it is taken up, it is one mixin and one fields
+helper to migrate, which it was not before this convention was consolidated.
 
 ## Where the values live
 

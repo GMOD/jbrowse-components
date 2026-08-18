@@ -7,17 +7,18 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RowHeightMixin } from './RowHeightMixin.ts'
 import { rowHeightConfigSchemaFields } from './rowHeightConfigSchemaFields.ts'
 
-// Three displays composing this had, between them, tests that would notice a
-// broken sentinel resolution on two — maf and the multi-sample variants — and
-// only the variants had one for the non-positive floor. Sabotaging the resolved
-// height inside the multi-row feature painting's own suite changed nothing at
-// all. Consolidating the implementation is what makes that fixable in one
-// place, and this is that place.
+// The two rules `resolveRowHeight` carries pull in opposite directions — a
+// sub-pixel fit height passes through untouched, a non-positive one is floored
+// to 1 — so "floor it" is the plausible-looking edit and it is a bug either
+// way round. Measured against the three displays composing this mixin, dropping
+// the floor fails **only** the multi-sample variants' `rowHeightResolution`
+// suite; flooring the sub-pixel case as well fails that one and canvas's
+// `trackHeightFloor`. maf pins neither, and `resolveRowHeight` itself has no
+// unit test of its own. This file is where one implementation gets one set of
+// assertions.
 //
-// The two rules pull opposite ways, which is why they both need pinning: a
-// sub-pixel fit height must pass through untouched, and a non-positive one must
-// not. Flooring both is the plausible-looking edit, and it is a bug
-// (agent-docs/reference/ROW_HEIGHT_AND_FIT.md).
+// The convention, and which parts of it deliberately stay per display, is
+// agent-docs/reference/ROW_HEIGHT_AND_FIT.md.
 
 // `autoRowHeight` is what the mixin does NOT declare: the height available to
 // rows is a different quantity in each display, so the mixin reads it off the
