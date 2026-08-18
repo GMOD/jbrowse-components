@@ -1500,14 +1500,14 @@ export const viewFields: Record<string, FieldRecipe> = {
   showHighlightChips: (value, { viewType }) =>
     typeof value === 'boolean' && viewType === 'LinearGenomeView'
       ? {
-          path: `View menu → Show highlight chips (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Bookmarks/highlights → Show highlight chips (${value ? 'checked' : 'unchecked'})`,
           note: 'Greyed out while highlights themselves are hidden — the chip is drawn on a highlight band.',
         }
       : undefined,
   showIntraviewLinks: (value, { viewType }) =>
     typeof value === 'boolean' && viewType === 'BreakpointSplitView'
       ? {
-          path: `View menu → Show intra-view links (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show... → Show intra-view links (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   // Both comparative views carry the same palette button (ColorBySelector), so
