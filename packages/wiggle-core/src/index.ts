@@ -44,8 +44,8 @@ export {
 } from './pointMarker.ts'
 export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'
 
+export { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
 export {
-  DEFAULT_AUTOSCALE_OPTIONS,
   makeAutoscaleTypeSubMenu,
   makeCrossHatchItem,
   makeScaleTypeSubMenu,

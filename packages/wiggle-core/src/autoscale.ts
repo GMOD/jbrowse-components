@@ -1,3 +1,20 @@
+// Default autoscale modes shared by wiggle / multi-wiggle. The alignments
+// coverage band exposes only a subset and a dynamic σ value, so it passes its
+// own option list.
+//
+// Here rather than beside the menu that renders it because a `[value, label]`
+// table is the one thing a menu holds that something outside the app needs to
+// read: the website's figure recipes name these labels in a click path, and a
+// module importing React or a lazy .tsx cannot be loaded by the node script
+// that builds them. A leaf module makes the recipe import the label instead of
+// retyping it, which is the difference between a copy that drifts and one that
+// cannot.
+export const DEFAULT_AUTOSCALE_OPTIONS: [string, string][] = [
+  ['local', 'Local'],
+  ['localpercentile', 'Local (99th percentile)'],
+  ['localsd', 'Local ± 3σ'],
+]
+
 export interface FeatureArrays {
   featurePositions: Uint32Array
   featureScores: Float32Array

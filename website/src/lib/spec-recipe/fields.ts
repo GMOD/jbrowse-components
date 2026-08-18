@@ -18,6 +18,8 @@ import {
   ROW_RENDERINGS,
 } from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
 import { GROUP_BY_LABELS } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
+import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/autoscale.ts'
+import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { getHeightModeOptions } from '../../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
 import {
@@ -486,13 +488,11 @@ const SCALE_TYPES: Record<string, string> = {
   log: 'Log scale',
 }
 
-// DEFAULT_AUTOSCALE_OPTIONS. The alignments coverage band passes a shorter list
-// whose σ label interpolates numStdDev, so it is deliberately not served here.
-const AUTOSCALE_TYPES: Record<string, string> = {
-  local: 'Local',
-  localpercentile: 'Local (99th percentile)',
-  localsd: 'Local ± 3σ',
-}
+// The alignments coverage band passes a shorter list whose σ label interpolates
+// numStdDev, so it is deliberately not served here.
+const AUTOSCALE_TYPES: Record<string, string> = Object.fromEntries(
+  DEFAULT_AUTOSCALE_OPTIONS,
+)
 
 // Every display that filters names the item 'Filter by...' — the canvas base
 // (trackMenus.ts), the alignments/LGVSynteny one (menus/filters.ts, which adds
@@ -645,12 +645,11 @@ const DISPLAY_MODES: Record<string, string> = {
 }
 
 // The arc display's `displayMode`, a different setting under the same name:
-// what an arc is drawn as. Labels from ARC_DISPLAY_MODE_OPTIONS, which the
-// plugin's config schema and its menu radios are both built from.
-const ARC_DISPLAY_MODES: Record<string, string> = {
-  arcs: 'Arcs',
-  semicircles: 'Semi-circles',
-}
+// what an arc is drawn as. Imported rather than copied, so a renamed radio
+// changes this table with it — see the note on the import block above.
+const ARC_DISPLAY_MODES: Record<string, string> = Object.fromEntries(
+  ARC_DISPLAY_MODE_OPTIONS,
+)
 
 const SHOW_LABELS_MODES: Record<string, string> = {
   auto: 'Auto',

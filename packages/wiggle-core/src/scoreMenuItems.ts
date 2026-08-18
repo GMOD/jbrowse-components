@@ -4,6 +4,8 @@ import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getSession } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 
+import { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
+
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -28,15 +30,6 @@ export interface ScoreScaleModel extends IStateTreeNode {
   setMinScore: (n?: number) => void
   setMaxScore: (n?: number) => void
 }
-
-// Default autoscale modes shared by wiggle / multi-wiggle. The alignments
-// coverage band exposes only a subset and a dynamic σ value, so it passes
-// its own option list.
-export const DEFAULT_AUTOSCALE_OPTIONS: [string, string][] = [
-  ['local', 'Local'],
-  ['localpercentile', 'Local (99th percentile)'],
-  ['localsd', 'Local ± 3σ'],
-]
 
 export function makeScaleTypeSubMenu(self: {
   scaleType: string
