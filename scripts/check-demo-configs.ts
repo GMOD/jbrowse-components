@@ -14,9 +14,10 @@
 //   node scripts/check-demo-configs.ts          report drift, exit 1 if any
 //   node scripts/check-demo-configs.ts --fix    pull live into the repo copies
 //
-// Not wired into CI: it needs the network and reports on state no commit
-// controls (someone can upload at any time). Run it before editing a demo
-// config, and after deploying one.
+// Not a PR gate: it needs the network and reports on state no commit controls
+// (someone can upload at any time). It runs weekly instead, as a job in
+// .github/workflows/links.yml, which is the sweep for exactly that shape of
+// drift. Run it by hand before editing a demo config, and after deploying one.
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

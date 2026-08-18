@@ -1,5 +1,7 @@
-# Weekly probe of every external URL written in the repo — docs prose, tutorial
-# reproduce scripts, demo and test configs, screenshot specs.
+# The weekly sweep for drift in state this repo does not own: every external URL
+# written down here — docs prose, tutorial reproduce scripts, demo and test
+# configs, screenshot specs — plus the demo configs' own contents, which live in
+# an S3 bucket the repo only keeps a copy of.
 #
 # Off the PR path on purpose, same reasoning as the figure sweep: nearly every
 # URL here belongs to somebody else (jbrowse.org's own bucket, hgdownload, ENCODE,
@@ -37,3 +39,26 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Probe every external URL
         run: pnpm --filter @jbrowse/website-astro check-external-links
+
+  # Same shape as the sweep above, and here for the same reason: the repo's
+  # demos/<name>/config.json is a copy of a file that lives in an S3 bucket
+  # anyone can overwrite, so the drift is in someone else's state and no commit
+  # controls when it appears. That rules out a PR gate and rules in a schedule.
+  #
+  # The failure is silent and expensive. These configs used to live only in S3,
+  # hand-edited through `aws s3 cp`, which made a dropped track invisible in
+  # review and — on an unversioned bucket — unrecoverable: ecoli_pangenome lost
+  # its `ecoli_ava` track that way and four figures failed with "Could not
+  # resolve identifier". Nothing else asks the question, and the figure sweep
+  # cannot: a demo whose track vanished still renders, just without the track.
+  demo-configs:
+    name: Demo config drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Compare each repo copy against what is live
+        run: pnpm check-demo-configs

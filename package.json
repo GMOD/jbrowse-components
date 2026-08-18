@@ -18,6 +18,7 @@
     "check-declaration-leaks": "node --experimental-strip-types scripts/check-declaration-leaks.ts",
     "check-gated-adapter-budgets": "node --experimental-strip-types scripts/check-gated-adapter-budgets.ts",
     "check-shell-pipefail": "node --experimental-strip-types scripts/check-shell-pipefail.ts",
+    "check-demo-configs": "node --experimental-strip-types scripts/check-demo-configs.ts",
     "check-core-plugin-sets": "node --experimental-strip-types scripts/check-core-plugin-sets.ts",
     "check-config-read-types": "node --experimental-strip-types scripts/audit-config-read-types.ts",
     "check-deferred-slot-reads": "node --experimental-strip-types scripts/audit-deferred-slot-reads.ts",
