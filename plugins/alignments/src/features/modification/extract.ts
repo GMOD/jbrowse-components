@@ -240,6 +240,11 @@ export function extractMethylation(
 // against the reference. Unmethylated C is converted (read T); methylated C is
 // protected (read C). Produces the same methylated/unmethylated marks as the
 // modBAM methylation path so all downstream rendering is shared.
+//
+// `callCounts` tallies every informative call per position, methylated or not,
+// while `modificationsData` gets only the marks `twoColor` paints. They differ
+// in single-colour mode and that is the point: the coverage bar's denominator
+// is a measurement, not a count of what got drawn (computeBisulfiteCoverage).
 export function extractBisulfite(
   feature: Feature,
   readIndex: number,
@@ -251,6 +256,7 @@ export function extractBisulfite(
   context: CytosineContext,
   twoColor: boolean,
   modificationsData: ModificationEntry[],
+  callCounts: Map<number, number>,
 ) {
   // packed ops rather than a CIGAR string, for the reason in
   // extractModifications above
@@ -300,6 +306,9 @@ export function extractBisulfite(
           const readBase = seq[readPos + j]?.toUpperCase()
           const methylated = readBase === methRead
           const unmethylated = readBase === unmethRead
+          if (methylated || unmethylated) {
+            callCounts.set(genomicPos, (callCounts.get(genomicPos) ?? 0) + 1)
+          }
           // Single-color mode (twoColor false) draws only the methylated
           // (protected) sites and leaves the unmethylated ones blank, like
           // IGV's non-2-color bisulfite view.

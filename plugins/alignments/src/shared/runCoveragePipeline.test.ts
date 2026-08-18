@@ -60,6 +60,7 @@ const baseArgs = {
   hardclips: [],
   modifications: [],
   modBaseCounts: new Map<number, StrandBaseCounts>(),
+  bisulfiteCallCounts: new Map<number, number>(),
   simplexModifications: new Set<string>(),
   bisulfite: false,
   region,
@@ -145,6 +146,7 @@ describe('runCoveragePipeline bisulfite mod coverage', () => {
     const out = await runCoveragePipeline({
       ...baseArgs,
       modifications: bisulfiteCalls(MISMATCH_POS),
+      bisulfiteCallCounts: new Map([[MISMATCH_POS, 40]]),
       showCoverage: true,
       trackStrands: true,
       bisulfite: true,
@@ -157,5 +159,24 @@ describe('runCoveragePipeline bisulfite mod coverage', () => {
     expect(heights[0]).toBeCloseTo(0.75) // methylated, bottom
     expect(heights[1]).toBeCloseTo(0.25) // unmethylated, top
     expect(heights[0]! + heights[1]!).toBeCloseTo(1)
+  })
+
+  test('single-color: the tally still reaches the height arithmetic', async () => {
+    // Single-color mode paints only the 30 methylated marks, so the 40-call
+    // tally is the pipeline's ONLY way to know the level is 0.75. If it stops
+    // being threaded through, the bar comes back at full height.
+    const out = await runCoveragePipeline({
+      ...baseArgs,
+      modifications: bisulfiteCalls(MISMATCH_POS).filter(m => !m.noMod),
+      bisulfiteCallCounts: new Map([[MISMATCH_POS, 40]]),
+      showCoverage: true,
+      trackStrands: true,
+      bisulfite: true,
+    })
+    const segments = readModCovSegments(
+      out.coverageAreaPacked.modCovPackedBuffer,
+    )
+    expect(segments).toHaveLength(1)
+    expect(segments[0]!.height).toBeCloseTo(0.75)
   })
 })

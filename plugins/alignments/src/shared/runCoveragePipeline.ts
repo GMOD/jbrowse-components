@@ -38,8 +38,10 @@ import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
  *
  * Mod coverage runs whenever `trackStrands` is set (the modification color
  * modes); chain mode leaves it off so `packCoverageAreaForGpu` emits a 0-byte
- * mod-cov pass. Its modifiable/detectable denominator comes from a read-base
- * pileup (`modBaseCounts`, IGV-style), so no reference sequence is needed here.
+ * mod-cov pass. The modBAM modifiable/detectable denominator comes from a
+ * read-base pileup (`modBaseCounts`, IGV-style), so no reference sequence is
+ * needed here; bisulfite divides by `bisulfiteCallCounts` instead, which the
+ * extractor tallies because only it knows which reads called which cytosine.
  */
 export async function runCoveragePipeline({
   features,
@@ -49,6 +51,7 @@ export async function runCoveragePipeline({
   hardclips,
   modifications,
   modBaseCounts,
+  bisulfiteCallCounts,
   simplexModifications,
   region,
   mismatchArrays,
@@ -67,6 +70,7 @@ export async function runCoveragePipeline({
   hardclips: HardclipData[]
   modifications: ModificationEntry[]
   modBaseCounts: ReadonlyMap<number, StrandBaseCounts>
+  bisulfiteCallCounts: ReadonlyMap<number, number>
   simplexModifications: ReadonlySet<string>
   region: Region
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
@@ -121,6 +125,7 @@ export async function runCoveragePipeline({
         gaps,
         modifications,
         modBaseCounts,
+        bisulfiteCallCounts,
         simplexModifications,
         regionStart,
         trackStrands,
@@ -159,6 +164,7 @@ function computeCoverageBand({
   gaps,
   modifications,
   modBaseCounts,
+  bisulfiteCallCounts,
   simplexModifications,
   regionStart,
   trackStrands,
@@ -172,6 +178,7 @@ function computeCoverageBand({
   gaps: GapData[]
   modifications: ModificationEntry[]
   modBaseCounts: ReadonlyMap<number, StrandBaseCounts>
+  bisulfiteCallCounts: ReadonlyMap<number, number>
   simplexModifications: ReadonlySet<string>
   regionStart: number
   trackStrands?: boolean
@@ -192,7 +199,12 @@ function computeCoverageBand({
 
   const modCoverage = trackStrands
     ? bisulfite
-      ? computeBisulfiteCoverage(modifications, regionStart, coverage)
+      ? computeBisulfiteCoverage(
+          modifications,
+          bisulfiteCallCounts,
+          regionStart,
+          coverage,
+        )
       : computeModificationCoverage(
           modifications,
           modBaseCounts,

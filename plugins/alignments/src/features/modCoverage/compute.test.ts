@@ -1,5 +1,7 @@
+import { SimpleFeature } from '@jbrowse/core/util'
 import { abgrBlue, abgrRed, packAbgr } from '@jbrowse/core/util/colorBits'
 
+import { extractBisulfite } from '../modification/extract.ts'
 import {
   computeBisulfiteCoverage,
   computeModificationCoverage,
@@ -126,7 +128,12 @@ test('bisulfite splits the whole bar by methylation level, ignoring base counts'
     prob: 1,
     noMod: true,
   })
-  const out = computeBisulfiteCoverage([...meth, unmeth], 0, coverage)
+  const out = computeBisulfiteCoverage(
+    [...meth, unmeth],
+    new Map([[POS, 10]]),
+    0,
+    coverage,
+  )
 
   expect(out.count).toBe(2)
   expect(out.yOffsets[0]).toBe(0)
@@ -137,4 +144,78 @@ test('bisulfite splits the whole bar by methylation level, ignoring base counts'
   expect(abgrBlue(out.colors[1]!)).toBe(255)
   // The two states cover the whole bar (no callable-fraction shrink).
   expect(out.heights[0]! + out.heights[1]!).toBeCloseTo(1)
+})
+
+// The bar has to read the same whether or not the unmethylated state is
+// painted, so these drive the real extractor rather than hand-built marks: the
+// bug was that single-color mode emits only the methylated marks, and a
+// denominator summed off those marks made every bar full height.
+describe('bisulfite methylation level does not depend on twoColor', () => {
+  const REF = 'acgacagacatt'
+  const CPG = 1
+  const READS = 30
+
+  function levelAt(methylatedReads: number, twoColor: boolean) {
+    const mods: ModificationEntry[] = []
+    const callCounts = new Map<number, number>()
+    for (let i = 0; i < READS; i++) {
+      extractBisulfite(
+        new SimpleFeature({
+          uniqueId: `r${i}`,
+          refName: 'ctg',
+          start: 0,
+          end: REF.length,
+          strand: 1,
+          CIGAR: `${REF.length}M`,
+          // read C at the CpG = protected = methylated; read T = converted
+          seq: i < methylatedReads ? 'ACGATAGACATT' : 'ATGATAGACATT',
+          flags: 0,
+        }),
+        i,
+        0,
+        1,
+        { refName: 'ctg', start: 0, end: REF.length, assemblyName: 'a' },
+        REF,
+        0,
+        'CG',
+        twoColor,
+        mods,
+        callCounts,
+      )
+    }
+    const depths = new Float32Array(REF.length)
+    depths[CPG] = READS
+    const out = computeBisulfiteCoverage(mods, callCounts, 0, {
+      depths,
+      maxDepth: READS,
+      startPos: 0,
+    })
+    return out
+  }
+
+  test.each([1, 5, 15, 30])(
+    'single-color: %i of 30 reads methylated paints that fraction',
+    methylatedReads => {
+      const out = levelAt(methylatedReads, false)
+      expect(out.count).toBe(1)
+      expect(out.yOffsets[0]).toBe(0)
+      expect(out.heights[0]).toBeCloseTo(methylatedReads / READS)
+      expect(abgrRed(out.colors[0]!)).toBeGreaterThan(0)
+    },
+  )
+
+  test.each([1, 5, 15, 30])(
+    'two-color agrees with single-color at %i of 30',
+    methylatedReads => {
+      const single = levelAt(methylatedReads, false)
+      const two = levelAt(methylatedReads, true)
+      expect(two.heights[0]).toBeCloseTo(single.heights[0]!)
+      expect(two.heights[0]).toBeCloseTo(methylatedReads / READS)
+    },
+  )
+
+  test('a lightly methylated site is not a full-height opaque bar', () => {
+    const out = levelAt(1, false)
+    expect(out.heights[0]).toBeLessThan(0.1)
+  })
 })

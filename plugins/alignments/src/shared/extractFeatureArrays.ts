@@ -72,6 +72,9 @@ export function extractFeatureArrays<T extends FeatureData>(
     hardclips: [] as HardclipData[],
   }
   const modifications: ModificationEntry[] = []
+  // Bisulfite only: informative C->T calls per position, the coverage bar's
+  // denominator. Stays empty in every other color mode.
+  const bisulfiteCallCounts = new Map<number, number>()
   const perBaseQualities: PerBaseQualityEntry[] = []
   const isPerBaseQualityMode = colorBy?.type === 'perBaseQuality'
   const perBaseLetters: PerBaseLetterEntry[] = []
@@ -224,6 +227,7 @@ export function extractFeatureArrays<T extends FeatureData>(
         colorBy.modifications?.cytosineContext ?? 'CG',
         colorBy.modifications?.twoColor ?? false,
         modifications,
+        bisulfiteCallCounts,
       )
     }
 
@@ -246,6 +250,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     features,
     ...cigarOutput,
     modifications,
+    bisulfiteCallCounts,
     perBaseQualities,
     perBaseLetters,
     tagColorValues,

@@ -23,6 +23,7 @@ function run(
   opts: { strand: number; flags: number; seq: string },
   context: CytosineContext,
   twoColor = true,
+  callCounts = new Map<number, number>(),
 ) {
   const out: ModificationEntry[] = []
   const feature = new SimpleFeature({
@@ -46,6 +47,7 @@ function run(
     context,
     twoColor,
     out,
+    callCounts,
   )
   return out
 }
@@ -126,5 +128,20 @@ describe('single-color mode (twoColor false) draws methylated only', () => {
 
   test('two-color keeps the unmethylated call for comparison', () => {
     expect(run(fwd, 'all', true).map(e => e.position)).toEqual([1, 4, 8])
+  })
+
+  test('the call tally counts the unmethylated site either way', () => {
+    // The coverage denominator is a measurement, so pos4 is counted even though
+    // single-color mode paints nothing there.
+    const single = new Map<number, number>()
+    run(fwd, 'all', false, single)
+    const two = new Map<number, number>()
+    run(fwd, 'all', true, two)
+    expect([...single]).toEqual([
+      [1, 1],
+      [4, 1],
+      [8, 1],
+    ])
+    expect([...single]).toEqual([...two])
   })
 })

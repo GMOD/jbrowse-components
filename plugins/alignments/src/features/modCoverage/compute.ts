@@ -259,18 +259,29 @@ export function computeModificationCoverage(
 
 /**
  * Bisulfite/EM-seq methylation coverage (colorBy bisulfite). A cytosine reads as
- * a binary C-vs-T call, so the informative reads at a position are exactly the
- * methylated + unmethylated calls emitted there (the two `noMod` bins). The bar
- * is a per-position methylation level: each state takes its share of those calls
- * and they fill the WHOLE bar (meth + unmeth = 1), like a mini methylation track
- * — matching IGV's BisulfiteCounts.
+ * a binary C-vs-T call, so the bar is a per-position methylation level: each
+ * state takes its share of the calls made there and they fill the WHOLE bar
+ * (meth + unmeth = 1), like a mini methylation track — matching IGV's
+ * BisulfiteCounts.
  *
- * It deliberately takes no read-base pileup: an unmethylated cytosine reads as T
- * (C->T converted), so the C/G base count the modBAM path divides by would
- * exclude it and cap the methylated fraction near 0.5 (the half-height bar bug).
+ * `callCounts` (position -> methylated + unmethylated calls, from
+ * `extractBisulfite`) is the denominator, and counting it at extraction is what
+ * makes the level independent of `twoColor`. Deriving it from the marks instead
+ * looks equivalent and is not: single-colour mode paints only the methylated
+ * state, so the marks at a position are its numerator and every bar came out at
+ * height 1.
+ *
+ * Two denominators that are wrong here, both giving a half-height bar:
+ *
+ * - The read-base pileup the modBAM path divides by. An unmethylated cytosine
+ *   reads as T (C->T converted), so a C/G base count excludes it.
+ * - Read depth. Only the reads whose template strand is the examined one call a
+ *   given cytosine, so a directional library covers a CpG's C with the whole
+ *   pileup while half of it calls the G instead.
  */
 export function computeBisulfiteCoverage(
   modifications: ModificationEntry[],
+  callCounts: ReadonlyMap<number, number>,
   regionStart: number,
   coverage: Coverage,
 ) {
@@ -278,15 +289,9 @@ export function computeBisulfiteCoverage(
     modifications,
     regionStart,
     coverage,
-    ({ colorMap }) => {
-      // Summed off the values directly: `stackBar` is about to materialize and
-      // sort this same map, so spreading it here made two lists per position
-      // where one is needed.
-      let totalCalls = 0
-      for (const e of colorMap.values()) {
-        totalCalls += e.probabilityCount
-      }
-      return entry => entry.probabilityCount / totalCalls
+    ({ position }) => {
+      const totalCalls = callCounts.get(position) ?? 0
+      return entry => (totalCalls > 0 ? entry.probabilityCount / totalCalls : 0)
     },
   )
 }
