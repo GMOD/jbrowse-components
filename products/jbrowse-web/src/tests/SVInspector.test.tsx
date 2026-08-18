@@ -54,69 +54,71 @@ test('opens a vcf.gz file in the sv inspector view', () => {
   })
 }, 90000)
 
-test('opens a track with minimal adapter config via "Open from track"', async () => {
-  const { session, findByText, findByTestId, findByLabelText } =
-    await createView()
+test('opens a track with minimal adapter config via "Open from track"', () => {
+  return mockConsoleWarn(async () => {
+    const { session, findByText, findByTestId, findByLabelText } =
+      await createView()
 
-  fireEvent.click(await findByText('File'))
-  fireEvent.click(await findByText('Add'))
-  fireEvent.click(await findByText('SV inspector'))
+    fireEvent.click(await findByText('File'))
+    fireEvent.click(await findByText('Add'))
+    fireEvent.click(await findByText('SV inspector'))
 
-  fireEvent.click(await findByLabelText('Open from track', {}, delay))
+    fireEvent.click(await findByLabelText('Open from track', {}, delay))
 
-  const trackDropdown = await findByLabelText('Tracks', {}, delay)
-  fireEvent.mouseDown(trackDropdown)
+    const trackDropdown = await findByLabelText('Tracks', {}, delay)
+    fireEvent.mouseDown(trackDropdown)
 
-  fireEvent.click(
-    await findByText(
-      '[Variants] volvox structural variant test w/renamed refs',
+    fireEvent.click(
+      await findByText(
+        '[Variants] volvox structural variant test w/renamed refs',
+        {},
+        delay,
+      ),
+    )
+
+    const openButton = await findByTestId('open_spreadsheet', {}, delay)
+    await waitFor(() => {
+      expect(openButton.closest('button')).not.toBeDisabled()
+    }, delay)
+
+    fireEvent.click(openButton)
+
+    fireEvent.click(await findByTestId('chord-vcf-6', {}, delay))
+
+    // Click on split level option in the dialog
+    fireEvent.click(await findByText('Split level (top/bottom)', {}, delay))
+
+    // Click Open button
+    fireEvent.click(await findByText('Open', {}, delay))
+
+    await waitFor(() => {
+      expect(session.views.length).toBe(3)
+    }, delay)
+
+    // Three: bnd_Y lands on A:21681, where bnd_V leaves for A:23456. Both hops
+    // cross a refName the VCF spells `A`/`B` and the assembly calls `ctgA`/`ctgB`,
+    // so this also pins that the chain resolves aliases — an unresolved name finds
+    // no region and the launch throws before any view is added.
+    expect(panelCount(session)).toBe(3)
+
+    const breakpointView = session.views[2] as unknown as {
+      views: { showTrack: (t: string) => void }[]
+    }
+    // Every panel, not the first two: the overlay renders only for tracks in
+    // `matchedTracks`, which is the INTERSECTION across panels, so a track missing
+    // from one panel draws no connections at all — including between the panels
+    // that do have it. This record's breakends chain across three panels.
+    for (const panel of breakpointView.views) {
+      panel.showTrack('volvox_sv_test_renamed')
+    }
+
+    const container = await findByTestId(
+      'volvox_sv_test_renamed-loaded',
       {},
       delay,
-    ),
-  )
-
-  const openButton = await findByTestId('open_spreadsheet', {}, delay)
-  await waitFor(() => {
-    expect(openButton.closest('button')).not.toBeDisabled()
-  }, delay)
-
-  fireEvent.click(openButton)
-
-  fireEvent.click(await findByTestId('chord-vcf-6', {}, delay))
-
-  // Click on split level option in the dialog
-  fireEvent.click(await findByText('Split level (top/bottom)', {}, delay))
-
-  // Click Open button
-  fireEvent.click(await findByText('Open', {}, delay))
-
-  await waitFor(() => {
-    expect(session.views.length).toBe(3)
-  }, delay)
-
-  // Three: bnd_Y lands on A:21681, where bnd_V leaves for A:23456. Both hops
-  // cross a refName the VCF spells `A`/`B` and the assembly calls `ctgA`/`ctgB`,
-  // so this also pins that the chain resolves aliases — an unresolved name finds
-  // no region and the launch throws before any view is added.
-  expect(panelCount(session)).toBe(3)
-
-  const breakpointView = session.views[2] as unknown as {
-    views: { showTrack: (t: string) => void }[]
-  }
-  // Every panel, not the first two: the overlay renders only for tracks in
-  // `matchedTracks`, which is the INTERSECTION across panels, so a track missing
-  // from one panel draws no connections at all — including between the panels
-  // that do have it. This record's breakends chain across three panels.
-  for (const panel of breakpointView.views) {
-    panel.showTrack('volvox_sv_test_renamed')
-  }
-
-  const container = await findByTestId(
-    'volvox_sv_test_renamed-loaded',
-    {},
-    delay,
-  )
-  await waitFor(() => {
-    expect(container.querySelectorAll('path').length).toBe(3)
-  }, delay)
+    )
+    await waitFor(() => {
+      expect(container.querySelectorAll('path').length).toBe(3)
+    }, delay)
+  })
 }, 90000)

@@ -45,6 +45,8 @@ afterEach(() => {
 // depends on that write, since the replacement app boots from the snapshot
 // handed to the callback rather than from sessionStorage.
 test('a plugin install still reloads when sessionStorage is full', async () => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
   jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
     throw new Error('exceeded the quota')
   })
