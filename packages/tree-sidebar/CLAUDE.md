@@ -121,8 +121,12 @@ renderer at all.
 
 `treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
 `showBranchLength` / `showRowLabels`), taking only the per-display descriptions,
-so a display cannot ship two of the three. `showRowLabelsMenuItem` is the row;
-`requiresTree` is its one real per-display difference (MAF mounts its label
+so a display cannot ship two of the three. **The mixin declares the accessors
+over those slots**, so a display composes both halves or neither — it used to
+hand-write six `getConf` / `setConf` one-liners while this package's own code
+read them, which is how the labels toggle came to be spelled `showSidebarLabels`
+on one display and silently ignore its config. `showRowLabelsMenuItem` is the
+row; `requiresTree` is its one real per-display difference (MAF mounts its label
 overlay only under `showTree`).
 
 ## Two row-height arguments, and neither is the display height

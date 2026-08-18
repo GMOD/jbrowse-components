@@ -1116,38 +1116,38 @@ stays where it always was, on `sourcesVolatile` / `sourcesBase` — `sampleFilte
 and `fetchNeeded` read those, and the `undefined` → list transition is what
 wakes the fetch autorun (ARCHITECTURE.md §"The global-fetch trigger list").
 
+Landed 2026-08-17: **the three tree toggles moved onto the mixin.** `showTree` /
+`showBranchLength` / `showRowLabels` and their setters were four hand-written
+`getConf` / `setConf` copies while `packages/tree-sidebar`'s own code read them
+— `treeSidebarGeometry` reads `showTree`, `treeMenuItems` all three plus
+`setShowTree`, `computeClusterHierarchy` takes `showBranchLength` — so the mixin
+depended on members it did not declare. That is the shape the config half was in
+before `treeSidebarConfigSchemaFields`, and that set had already drifted, three
+displays spelling the labels toggle `showRowLabels` and the fourth
+`showSidebarLabels`. Slots and accessors now travel together, matching
+`heightModeConfigSchemaFields` + `HeightModeMixin`, and
+`TreeSidebarMixin.test.ts` pins each accessor to its own slot: inverting
+`showBranchLength` used to leave all 3,698 tests across the four composing
+plugins green.
+
 Still per display:
-
-- **The three tree toggles**, and this is the one with a bug already spent on
-  it. `showTree` / `showRowLabels` / `showBranchLength` and their three setters
-  are hand-written in all four displays as `getConf` / `setConf` one-liners —
-  182 lines and 25 members with `hierarchy` — while **`packages/tree-sidebar`'s
-  own code reads them** (`treeSidebarGeometry.ts` reads `model.showTree` and
-  `model.hierarchy`, `treeMenuItems.ts` reads all three plus `setShowTree`).
-  The mixin depends on members it does not declare, so nothing makes a display
-  that composes it actually supply them.
-
-  The **config half was already consolidated** into
-  `treeSidebarConfigSchemaFields.ts`, and its docstring says why: the four
-  hand-written copies had drifted, three spelling the labels toggle
-  `showRowLabels` and the fourth `showSidebarLabels`, so `"showRowLabels":
-  false` on a multi-sample variant track was dropped in silence. The model half
-  is the same four copies with the same failure still available.
-
-  The pattern to copy is one row up the same tree: `heightModeConfigSchemaFields`
-  ships alongside `HeightModeMixin`, which owns `get heightMode()` /
-  `get autoHeight()` / `setHeightMode()` for the slots it declares.
-  `treeSidebar` is the one shared field group whose mixin does not.
 
 - **`hierarchy`**, four copies of one `computeClusterHierarchy(...)` call
   differing only in which expression supplies the content height (and
-  multi-wiggle's `isOverlay` short-circuit). Small, and the shared part is
-  already the function; a mixin getter would need three hooks it can't type.
-  **Re-price this after the toggles move**, not before: the mixin already owns
-  `root` and `treeAreaWidth`, would then own `showBranchLength`, and `sources`
-  is already its declared contract — which leaves the content height as the one
-  hook, returning `number | undefined` so multi-wiggle's overlay case is the
-  absent answer rather than a second hook.
+  multi-wiggle's `isOverlay` short-circuit). **Re-priced after the toggles
+  landed, and the answer is still no** — for a better reason than the original
+  "three hooks it can't type", which the toggles did dissolve: the mixin now
+  owns `root` / `treeAreaWidth` / `showBranchLength` and `sources` is already
+  its contract, so it really is down to one hook.
+
+  That one hook is the problem. It is `rowsContentHeight`, and the comment
+  standing over that parameter in `clusterUtils.ts` exists to refuse exactly
+  this move: pass the viewport a display's rows scroll inside instead of the
+  height they add up to and the dendrogram still draws, still looks plausible,
+  and names the wrong rows. Today each call site spells the product out under
+  that comment. Behind a `treeContentHeight` hook the author implementing it
+  sees the hook's name and not the warning — so the refactor would relocate the
+  one parameter in this package named to resist relocation, to save four lines.
 
 **The row-height ladder is deliberately not on this list, and the reasons are
 structural rather than stylistic** — worth stating, because two of the three
