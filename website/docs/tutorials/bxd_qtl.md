@@ -229,7 +229,9 @@ order by their B/D genotype at the peak, so the clean B/D split directly beneath
 it is exactly the contrast the scan scores, and it breaks up into mixed B/D
 blocks away from the locus.
 
-<Figure src="/img/qtl/bxd_painting_sorted.png" caption="The context menu that triggers the sort, over the painting it produces: sorted by genotype at the peak, the strains resolve into a clean, wide red-over-blue split directly beneath the Manhattan peak."/>
+<Video src="/media/qtl/painting_sort.mp4" caption="The sort as the menu item does it: 198 strains arrive in their recombinant mosaic, a right-click on the column under the peak reaches Sort rows by color here, and the rows resolve into the B/D split the scan scores." />
+
+<Figure src="/img/qtl/bxd_painting_sorted.png" caption="The menu open over the sorted painting: keyed on genotype at the peak, the strains resolve into a clean, wide red-over-blue split directly beneath the Manhattan peak."/>
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4 (~156 Mb): the coat-color association rises to a peak at ~80 Mb over Tyrp1, and the haplotype painting (sorted by genotype at that peak) resolves into a clean D (red) over B (blue) split at the gene."/>
 

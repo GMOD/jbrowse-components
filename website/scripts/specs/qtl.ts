@@ -32,7 +32,11 @@ const TYRP1_LOCUS = `chr4:${TYRP1_PEAK_POS}`
 // Sorted-overview panel below: the painting's declarative `sortRowsBy` groups
 // D strains over B at the peak, and the split is clean/wide because
 // neighbours share long flanking haplotypes (linkage).
-const paintingSortPanel = () =>
+//
+// `sorted: false` is the same panel with that one property dropped, which is the
+// state a reader lands in and the state the tour starts from. Both come out of
+// one builder so the film cannot drift from the figure it is filmed beside.
+const paintingSortPanel = ({ sorted = true } = {}) =>
   lgvSession('test_data/config_bxd.json', {
     assembly: 'mm10',
     loc: 'chr4',
@@ -46,7 +50,7 @@ const paintingSortPanel = () =>
         trackId: 'bxd_chromosome_painting_mm10',
         type: 'LinearMultiRowFeatureDisplay',
         height: 420,
-        sortRowsBy: TYRP1_PEAK,
+        ...(sorted ? { sortRowsBy: TYRP1_PEAK } : {}),
         // whole-chr4 painting: lift the byte gate so the multi-row track loads
         // headless (density gating no longer applies to multi-row). Session-
         // scoped force-load, not baked into the demo config.
@@ -54,6 +58,14 @@ const paintingSortPanel = () =>
       },
     ],
   })
+
+// What videos/qtl.ts films: the panel above before anything sorted it, and the
+// column the right-click lands in.
+export const qtlVideoFixtures = {
+  unsorted: paintingSortPanel({ sorted: false }),
+  paintingTrackId: 'bxd_chromosome_painting_mm10',
+  peakLocus: TYRP1_LOCUS,
+}
 
 export const qtlSpecs: ScreenshotSpec[] = [
   // Whole chr4 with the Tyrp1 gene position marked. The association is a broad

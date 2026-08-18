@@ -22,6 +22,7 @@ import { HPRC_SEGMENTS_TRACK_JSON } from './specs/graph-hprc.ts'
 import { dog10kVideos } from './videos/dog10k.ts'
 import { pangenomeVideos } from './videos/pangenome.ts'
 import { proteinVideos } from './videos/proteins.ts'
+import { qtlVideos } from './videos/qtl.ts'
 import { tcgaVideos } from './videos/tcga.ts'
 
 import type { VideoSpec } from './video-spec-types.ts'
@@ -33,6 +34,7 @@ export const videoSpecs: VideoSpec[] = [
   ...proteinVideos,
   ...dog10kVideos,
   ...tcgaVideos,
+  ...qtlVideos,
 ]
 
 // The track configs a tour TYPES into the app, paired with the page that prints
