@@ -54,6 +54,8 @@ export interface PerRegionTestControl {
   /** what `CoreGetRegionByteEstimate` answers, and how often it was asked */
   estimateBytes: number
   estimateCalls: number
+  /** the display's own density verdict, canvas's second too-large axis */
+  densityTooLarge: boolean
 }
 
 /**
@@ -64,9 +66,16 @@ export interface PerRegionTestControl {
  * as the foundation, which is how the foundation's own autoruns came to be
  * pinned only by canvas's suite.
  */
+/** Which of the gate's opt-in hooks this display overrides. */
+export interface GateOptIns {
+  measuresBytesPreFlight?: boolean
+  measuresBytesInFetch?: boolean
+  densityGateEnabled?: boolean
+}
+
 function makeStateModel(
   control: PerRegionTestControl,
-  measuresBytes: boolean,
+  gate: GateOptIns,
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
@@ -89,7 +98,16 @@ function makeStateModel(
     }))
     .views(() => ({
       get measuresBytesPreFlight() {
-        return measuresBytes
+        return gate.measuresBytesPreFlight ?? false
+      },
+      get measuresBytesInFetch() {
+        return gate.measuresBytesInFetch ?? false
+      },
+      get densityGateEnabled() {
+        return gate.densityGateEnabled ?? false
+      },
+      get densityTooLarge() {
+        return control.densityTooLarge
       },
       isCacheValid(_displayedRegionIndex: number) {
         control.cacheValidCalls += 1
@@ -138,10 +156,13 @@ export type PerRegionTestDisplay = Instance<ReturnType<typeof makeStateModel>>
  */
 export function createPerRegionTestEnvironment({
   measuresBytes = false,
+  gate,
   ...opts
 }: Partial<Parameters<typeof createDisplayTestEnvironment>[0]> & {
-  /** turn on the pre-flight byte gate, so the too-large banner is reachable */
+  /** shorthand for `gate: { measuresBytesPreFlight: true }` */
   measuresBytes?: boolean
+  /** which of the gate's opt-in hooks the display overrides */
+  gate?: GateOptIns
 } = {}) {
   const control: PerRegionTestControl = {
     cacheValidCalls: 0,
@@ -150,12 +171,14 @@ export function createPerRegionTestEnvironment({
     fetchDelayMs: 0,
     estimateBytes: 100,
     estimateCalls: 0,
+    densityTooLarge: false,
   }
+  const optIns: GateOptIns = gate ?? { measuresBytesPreFlight: measuresBytes }
   const env = createDisplayTestEnvironment<PerRegionTestDisplay>({
     trackType: 'FeatureTrack',
     displayName: DISPLAY_NAME,
     configSchema: makeConfigSchema,
-    stateModel: (_pm, schema) => makeStateModel(control, measuresBytes, schema),
+    stateModel: (_pm, schema) => makeStateModel(control, optIns, schema),
     viewModel: linearGenomeViewStateModelFactory,
     assemblyEnd: 100_000,
     // an empty display-config entry is still an entry: without one the harness
