@@ -2,11 +2,25 @@ Show rather than tell — informative screenshot specs, minimal prose. No
 em-dashes anywhere, including code comments. Numbers, captions and voice are in
 `website/CLAUDE.md`; page mechanics in `website/docs/CLAUDE.md`.
 
-A tutorial follows **one dataset** step by step; a page touring a capability
-across three is a user guide wearing a tutorial's clothes. Every dataset should
-carry a built-in control — something in the same figure that ought to come out
-negative — and the page should end by checking the inference against the raw
-data.
+A tutorial is **one continuous line of work**. Each step consumes what the step
+before it produced, and the test is whether the sections could be reordered
+without the page breaking. If they could, it is a user guide wearing a
+tutorial's clothes.
+
+One dataset is the usual way to get that, and the safe default. A second is fine
+where the first **raised the question it answers**, so the reader arrives at it
+rather than being taken there. What the rule excludes is the page that visits
+three datasets because each demonstrates the capability once.
+
+The spine can be a task rather than a finding. `display_settings` changes a
+setting, reads the name back out of the session, puts that name in a config and
+then makes the two disagree; `cli_desktop` builds one folder and opens it twice.
+Neither has a dataset in the sense the rest of this file means, and both are
+tutorials, because you cannot start at step three.
+
+Every dataset carries a built-in control — something in the same figure that
+ought to come out negative — and the page ends by checking the inference against
+the raw data.
 
 ## Typography
 
