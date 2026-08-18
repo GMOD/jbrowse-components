@@ -128,6 +128,12 @@ BED/BAM. Worker output is **absolute genomic uint32** — no regionStart-relativ
 arithmetic crosses the worker boundary. The precision machinery that makes this
 work on a float32 GPU is in [reference/BP_PRECISION.md](reference/BP_PRECISION.md).
 
+**Positions cross the worker boundary cleanly; names do not.** `refName` means
+one thing on the main thread and another to an adapter, and which side is
+allowed to canonicalize is a rule of its own —
+[reference/REFNAME_NAMESPACES.md](reference/REFNAME_NAMESPACES.md), summarized
+in the root `CLAUDE.md`.
+
 ## Where a display's state lives
 
 A new setting has three possible homes, and picking wrong fails silently rather
@@ -198,12 +204,26 @@ so its effect can read hover state without setting a hover re-firing it. Clearin
 on `bpPerPx` alone is the same bug with two axes left in it, which is where
 alignments started.
 
-**The fetch foundation installs it, so a display does not.** It clears through
-`BaseDisplay.clearHoveredFeature` — the writing twin of the `hoveredFeature`
-getter below, defaulting to a no-op — so a display that stores a hover overrides
-one action and a display that derives one does nothing. It used to be six
-displays each passing their own closure to the installer, which is six chances
-to omit the call entirely, and omitting it is invisible until someone pans.
+**`MultiRegionDisplayMixin` installs it, so a per-region display does not.** It
+clears through `BaseDisplay.clearHoveredFeature` — the writing twin of the
+`hoveredFeature` getter below, defaulting to a no-op — so a display that stores
+a hover overrides one action and a display that derives one does nothing. It
+used to be six displays each passing their own closure to the installer, which
+is six chances to omit the call entirely, and omitting it is invisible until
+someone pans.
+
+**Only that one foundation installs it, and every storer in tree is under it.**
+That is a fact about today's tree, not a property of the architecture: a display
+on the global family (HiC, LD, arc) or on the comparative one would store a
+hover and get no clear, in the same silence. Dotplot is the case already outside
+the LGV, and it answers the question rather than inheriting an answer —
+`setupClearHoverOnPlotMove` is its own `reaction`, on the *view* (the hover is
+the view's), over `plotTransform`, which is one observable covering every way
+the plot can move: wheel, drag pan, zoom buttons, `squareView`, the aspect lock,
+an axis locstring, `showAllRegions`, and a resize. Minus the two axes a plot
+does not have — no per-display scroll, no too-large banner. So the rule is
+*answer the invalidation question once, in the place that owns the hover*; on
+the per-region family the mixin has already answered it for you.
 
 **A fourth axis *removes* the content, and it is the same installer's job.**
 `regionTooLarge` replaces the subtree with the banner, and Force load brings it
@@ -235,7 +255,9 @@ answers the hook with a getter over it.
 So there are two correct answers and one wrong one. **Store** a hover when the
 hit is expensive or several components read it (canvas, alignments, Manhattan,
 wiggle, the multi-row painting, the multi-sample variant matrix) — and then
-install the clear. **Derive** it when the hit test is a lookup and one component
+answer the clear: override `clearHoveredFeature` under
+`MultiRegionDisplayMixin`, or install your own reaction anywhere else. **Derive** it when the hit test is a
+lookup and one component
 consumes it. What is not allowed is the third thing: storing it and leaving the
 clear to the pointer handlers, which cover only the case where the pointer is
 what moved.
@@ -274,14 +296,21 @@ outside reader can act on:
 
 Several tables in those guides are **generated**, and so are their counterparts
 in this doc — `pnpm autogen` rewrites both from the same scan, so there is no
-mirroring step to forget. Don't hand-edit between a `<!-- NAME START -->` /
-`<!-- NAME END -->` pair anywhere, here or under `website/docs`:
+mirroring step to forget. **A generated block is bracketed by a marker pair in
+one of two spellings** — `<!-- NAME START -->` / `<!-- NAME END -->`, or
+`<!-- BEGIN GENERATED NAME -->` / `<!-- END GENERATED NAME -->` — and neither is
+hand-editable, here or under `website/docs`. Both spellings are live and the
+difference is only which generator wrote the block, so read the marker, not the
+form. `pnpm autogen --check` names every block it owns; a block it does not name
+is hand-written:
 
 | Marker | Renders | From |
 | --- | --- | --- |
 | `DISPLAY_FOUNDATIONS` / `DISPLAY_FOUNDATION_STACKS` | which displays compose which foundation ([Display stacks](#display-stacks)) | the `#displayFoundation` / `#displayFoundationDef` tags, plus each foundation's `types.compose(...)` |
 | `CROSS_CUTTING_MIXINS` | which displays compose which cross-cutting mixin ([Cross-cutting mixins](#cross-cutting-mixins-orthogonal-to-the-fetch-foundation)); the same block renders in `creating_display.md` | the `#crossCuttingMixin` tags, plus every `types.compose(...)` in the tree — no consumer-side tag |
 | `FETCH_AUTORUNS` | the fetch-lifecycle autoruns ([Data fetching pipeline](#data-fetching-pipeline)) | the install sites in `MultiRegionDisplayMixin.ts` and their `#autorun` tags |
+| `DISPLAY_HOOK_OVERRIDES` | which display overrides which hook, and what the default does for one that doesn't ([The hooks](#the-hooks-and-who-is-sitting-on-a-default)) | the override sites, scanned and attributed by directory. The hook list and its default text are a curated `HOOKS` array in the generator — no scan can find them — whose `owner` file is asserted to still declare the default |
+| `DISPLAY_CHROME_ADOPTION` | which displays render the shared chrome, on screen and on export (in [DISPLAYCHROME.md](reference/DISPLAYCHROME.md), not here) | each LGV display registration: `ReactComponent` for the on-screen column, the state model's `renderSvg` for the export one |
 | `PALETTE_KEYS` | the settable theme palette keys | the `Palette` / `StringColors` interfaces |
 | `HELPER_PACKAGES` | the standalone npm helper packages | `packages/*/package.json` |
 | `REEXPORT_MODULES` | the `@jbrowse/core` subpaths a plugin gets the host's copy of | the `#reexport` comments in `ReExports/list.ts` |
@@ -794,10 +823,12 @@ the split is about which banner needs the backend hook's `retry()`, not about
 the tree shape, which is identical for both). For either banner it
 early-`return`s it as the component's *entire* output,
 replacing the display subtree, rather than keeping the container `<div>` mounted
-and swapping the banner in beside the canvas. This looks like a leak — the
-caller's `className`/`ref`/mouse handlers are absent in those two states — but a
-benign one: a too-large region has no canvas to interact with, and the ref
-re-attaches on force-load. What makes it the right shape:
+and swapping the banner in beside the canvas. The caller's
+`className`/`ref`/mouse handlers are absent in those two states. Two of those
+three are free — a too-large region has no canvas to interact with, and the ref
+re-attaches on force-load. **The mouse handlers are not**, and the chrome pays
+for them explicitly; see the pointer bullet below. What makes it the right
+shape:
 
 - **Clean GPU dispose/re-init.** Early-`return` unmounts the canvas subtree,
   which fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
@@ -808,6 +839,18 @@ re-attaches on force-load. What makes it the right shape:
   `loading` as a thunk and calls it only after ruling out the terminal flags, so
   when a banner is up the chrome's observer tracks only that flag, not the
   view's churning `visibleRegions`/`loadedRegions`.
+- **The chrome drops the pointer measurement itself**, which is the price of the
+  shape rather than a bonus. `mouseleave` cannot fire on an element unmounted
+  under the cursor, so without a compensating effect the tracker goes on
+  publishing the position the pointer had when the banner went up — invisible
+  while the banner is there, then read by the body on its **first** render after
+  Force load or Retry, drawing a crosshair where the cursor is not.
+  `DisplayChromeBaseInner` runs `handleMouseLeave()` on the transition for
+  exactly this, and `DisplayChrome.test.tsx` pins it ("the pointer measurement
+  drops when the container is replaced", whose third case is the negative
+  control: an *overlay* phase keeps the position, because the container is still
+  there). A container that owns a pointer measurement and can unmount its own
+  subtree owes the same clear.
 - **React Compiler opt-out.** `DisplayChromeBaseInner` carries `'use no memo'`,
   so babel-plugin-react-compiler doesn't compile it and can't memoize a MobX read
   on `model`'s stable identity. That opt-out is also why `return`-vs-ternary is now
@@ -895,14 +938,22 @@ MST view methods (not getters), so subclasses extend them via the standard
 MobX runs an action inside `untracked`, so declaring either as an action makes
 its reads register no dependency and every caller silently keeps a stale answer
 — no error, no crash, and it has regressed twice. That is what
-`assertDisplayContract` checks: dev-only, called once per display from whichever
-fetch foundation installed its autoruns — `MultiRegionDisplayMixin`'s
-`afterAttach` for the per-region family, `installGlobalFetchAutorun` for the
-global one — and `console.error` rather than `throw` (an error
-escaping `afterAttach` reads as an invalid track and the display is dropped,
-hiding the very violation it reports). It also catches a display that wrongly
-chains to `super` in its own `afterAttach`, which re-enters the mixin's hook and
-installs the fetch autoruns twice.
+`assertDisplayContract` checks: dev-only, and `console.error` rather than
+`throw` (an error escaping `afterAttach` reads as an invalid track and the
+display is dropped, hiding the very violation it reports). It also catches a
+display that wrongly chains to `super` in its own `afterAttach`, which re-enters
+the mixin's hook and installs the fetch autoruns twice.
+
+**Two of the three fetch families call it**, once per display, from whichever
+installed that display's autoruns: `MultiRegionDisplayMixin`'s `afterAttach` for
+the per-region family, `installGlobalFetchAutorun` for the global one. The
+comparative family does not, and cannot as things stand — the checker lives in
+`plugins/linear-genome-view` while `installComparativeFetchAutorun` lives in
+`@jbrowse/synteny-core`, so calling it would be a package depending on a plugin,
+the upward edge [workspace tiers](#workspace-tiers) records by exception. So
+synteny and dotplot get no dev report on any of the three violations above, and
+a fix means moving `assertDisplayContract` down to a package rather than adding
+a fourth call site.
 
 Their predecessor `renderProps` belonged to the removed server-side block
 system and is gone from the tree entirely — it survives only in
@@ -1143,9 +1194,11 @@ getter — `<plugin builder>(getSession(self).palette)` — that `gpuProps()` /
 mount, so SVG export and RPC — neither of which has a component — see a null
 palette and render blank. As a getter the value is always present and MobX
 recomputes it only when the theme changes: same re-encode invalidation, no mount
-dependency. The three in tree, each with its own builder over the same session
-input: `buildColorPaletteFromPalette` (alignments), `getMafColorPalette` (MAF),
-`buildColorPalette` (reference sequence).
+dependency. Four builders in tree read that one session input:
+`buildColorPaletteFromPalette` (alignments), `getMafColorPalette` (MAF),
+`buildColorPalette` (reference sequence), and `treeStroke` / `treeHoverColors`
+(tree-sidebar, whose consumer is a drawing autorun rather than `gpuProps()` —
+same rule, since an autorun has no component either).
 
 **Read `session.palette`, not `session.theme`.** Both are required on
 `AbstractSessionModel` and both resolve from the same `resolvePalette` call, so
@@ -1227,6 +1280,11 @@ and 12 lines — and both have since been given the sections they wanted.
   way. And don't write a slot name onto a *session* display node: that node is
   built by the state model, so the key is dropped in silence. See [where a
   display's state lives](#where-a-displays-state-lives).
+- Don't give a plugin a dependency on a product. A plugin is a library a third
+  party installs and a product is a whole application, so a runtime edge there
+  puts an app in the plugin's dependency closure — the one workspace rule with
+  no exceptions. A test-only edge is allowed onto `@jbrowse/web` alone. See
+  [workspace tiers](#workspace-tiers).
 - Don't re-implement a cross-cutting mixin's policy in a display. `scrollTop`
   clamping, grow-mode height and the score axis each arrive by overriding one
   hook (see [Cross-cutting
@@ -1241,7 +1299,8 @@ and 12 lines — and both have since been given the sections they wanted.
   [ordering is the contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract).
 - Don't chain to `super` in a display's own `afterAttach`. Our MST fork
   auto-chains lifecycle hooks, so calling it installs every fetch autorun twice;
-  `assertDisplayContract` reports it in dev. Regular actions still use
+  `assertDisplayContract` reports it in dev on the per-region and global
+  families, and nowhere on the comparative one. Regular actions still use
   super-capture.
 
 ### Fetch
@@ -1251,7 +1310,8 @@ and 12 lines — and both have since been given the sections they wanted.
   [the trap](#rpcprops-loop-trap-and-how-to-break-it).
 - Don't declare `rpcProps` or `isCacheValid` in `.actions()`. MST runs an action
   `untracked`, so their reads register no dependency and callers silently keep a
-  stale answer; `assertDisplayContract` `console.error`s on it in dev. See
+  stale answer; `assertDisplayContract` `console.error`s on it in dev, on the
+  two fetch families that call it. See
   [the pattern](#rpcprops--gpuprops-pattern).
 - Don't put a pure "go again" signal under a fetch gate. `reloadCounter` and
   friends must be read unconditionally, above the bail-outs — a read inside the
@@ -1262,6 +1322,14 @@ and 12 lines — and both have since been given the sections they wanted.
   something `FetchVisibleRegions` already tracks will wake it. A fetch bumps
   `fetchGeneration`; an early return that skips the fetch breaks that chain and
   must supply its own wake path.
+- Don't override `gateEnabled`. It is the OR of the two byte-gate opt-ins,
+  additive so a gate mixin can contribute one without racing the base on
+  composition order; shadowing it disables the whole gate in silence. Override
+  `measuresBytesPreFlight` / `measuresBytesInFetch` instead. See [the gate
+  summary](#the-region-too-large-gate-summary).
+- Don't pass `sessionId` twice. `RpcManager.call` injects the first argument
+  into the payload, and `RpcCallArgs` `Omit`s it from the typed args for that
+  reason. See [the pattern](#rpcprops--gpuprops-pattern).
 - Don't ship a `rpcProps()` field whose distinct states serialize identically.
   `JSON.stringify` *is* the comparison, so a class without `toJSON` flattens to
   `{}` and an `undefined` drops its key — a silently dead cache axis that raises
@@ -1298,6 +1366,17 @@ and 12 lines — and both have since been given the sections they wanted.
 - Don't destructure model methods; call on the model.
 - Don't use `useMemo` for observable-dependent values; use a cached MST view.
 - Don't mutate per-region values in place; emit fresh objects.
+- Don't build a per-region map with a bare `observable.map<number, …>()`. Use
+  `regionDataMap()` from `installPerRegionLifecycle`, which is shallow: an entry
+  nothing mutates has nothing for MobX's deep enhancer to observe, so the
+  per-entry observable graph and the proxy hop on every field read buy no
+  reactivity ([ADR-060](architecture-decision-records/adr-060-region-data-maps-are-shallow-observable.md)).
+- Don't size an on-screen canvas from `view.trackWidthPx`, or from any of the
+  other three plausible view getters. Read `MultiRegionDisplayMixin`'s
+  `canvasWidthPx`; `no-restricted-syntax` bans the underlying read everywhere
+  but that getter, because a second spelling agrees until it doesn't. SVG export
+  is the documented exception — the shell has no outline, so `renderSvg`
+  overrides `canvasWidth`. See [SVG export](#svg-export).
 - Don't key a shared backend by a list index. Use `sharedBackendKey(self.id)` —
   an index renumbers the moment a sibling is hidden, aliasing one display's
   buffer onto another's slot.
@@ -1354,9 +1433,11 @@ and 12 lines — and both have since been given the sections they wanted.
   spells it differently drops out of `session.hovered` in silence. A stored hit
   goes in a differently-named volatile with a getter over it — MST refuses to
   instantiate a volatile over a base computed.
-- Don't install the hover clear yourself, and don't skip overriding
-  `clearHoveredFeature` if you store one. The fetch foundation installs the
-  reaction for every display; what a storer owes is that one action.
+- Don't install the hover clear yourself *under `MultiRegionDisplayMixin`*, and
+  don't skip overriding `clearHoveredFeature` if you store one — the mixin
+  installs the reaction and that one action is all a storer owes it. Outside
+  that family nothing installs it, so a display or view that stores a hover owes
+  the whole reaction, the way dotplot's `setupClearHoverOnPlotMove` does.
 
 ### Backends and generated code
 
@@ -1364,6 +1445,10 @@ and 12 lines — and both have since been given the sections they wanted.
   `.slang` and run `pnpm gen:shaders`; CI's `git diff --exit-code` catches stale
   outputs. Consume generated constants by name from TS — never copy a literal
   offset into a renderer.
+- Don't hand-edit a generated markdown block either. Both marker spellings are
+  live — `<!-- NAME START -->` and `<!-- BEGIN GENERATED NAME -->` — and `pnpm
+  autogen` overwrites the edit at the next run; change the source it scans. See
+  [the marker table](#public-developer-guides-mirror-this-spec).
 - Don't leave a per-instance vertex budget without the input range it covers.
   Where one instance draws an unbounded number of marks, `verticesPerInstance`
   caps how many the shader can address and the Canvas2D path has no such cap, so
@@ -1381,7 +1466,9 @@ and 12 lines — and both have since been given the sections they wanted.
 ## See also
 
 Deep subsystems, each read on its own task (also linked inline where they come
-up):
+up). The list is a curated entry set, not the whole shelf —
+[reference/README.md](reference/README.md) is the generated index of every
+reference doc, and is the right place to look when nothing below matches:
 
 - [reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) — the
   live register of what this architecture *can't* do: the WebGL2 context budget,
@@ -1427,6 +1514,21 @@ up):
   actually reaches the socket: the two mechanisms behind one token, which
   adapters are wired, and the shared-fetch coalescing trap. The other half of
   cancellation from PROGRESS_REPORTING's UI side.
+- [reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md) — the
+  CI gate behind "don't diverge the two backends": what is in its scope, the
+  measured drift behind its threshold, and how to read a failure.
+- [reference/DRAW_PASS_REGISTRIES.md](reference/DRAW_PASS_REGISTRIES.md) — the
+  ordered-id-list-plus-exhaustive-`Record` technique the multi-layer gating rule
+  above names, decomposed into the mechanisms it is really made of.
+- [reference/DISPLAY_TYPE_DEFAULTS.md](reference/DISPLAY_TYPE_DEFAULTS.md) —
+  promotable slots and their CSS-cascade resolution, i.e. the half of [where a
+  display's state lives](#where-a-displays-state-lives) that makes a slot
+  settable for every track of a type at once. Read before adding a
+  make-default-for-all-tracks setting.
+- [reference/REFNAME_NAMESPACES.md](reference/REFNAME_NAMESPACES.md) — the
+  naming counterpart to [Coordinate system](#coordinate-system): why `refName`
+  means two different things either side of the RPC boundary, and which side may
+  canonicalize.
 - [reference/SHADER_JS_CODEGEN.md](reference/SHADER_JS_CODEGEN.md) — the
   `//! js-export` set that keeps a scalar decision identical in the shader and in
   TS, and how to add one. Read with the "don't diverge the two backends" rule
