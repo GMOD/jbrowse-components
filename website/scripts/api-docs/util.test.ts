@@ -5,6 +5,7 @@ import {
   exampleSection,
   filterUnseenByName,
   lastTaggedLine,
+  markerBlockNames,
   overviewSection,
   parseTaggedComment,
   removeComments,
@@ -455,5 +456,30 @@ describe('elideSignature', () => {
 
   test('leaves a type it cannot shorten structurally alone', () => {
     expect(elideSignature('z'.repeat(300))).toBe('z'.repeat(300))
+  })
+})
+
+describe('markerBlockNames', () => {
+  test('finds a plain and a grouped block, the group under its base name', () => {
+    expect(
+      markerBlockNames(
+        '<!-- JEXL_CATALOG START -->\n\n<!-- JEXL_CATALOG END -->\n<!-- COLOR_TABLE alignments-indicators START -->',
+      ),
+    ).toEqual(['JEXL_CATALOG', 'COLOR_TABLE'])
+  })
+
+  test('ignores a marker named inside a sentence', () => {
+    // ARCHITECTURE.md documents the convention by naming the pair in prose.
+    // CommonMark reads an HTML comment mid-paragraph as inline text, so nothing
+    // is spliced there and counting it would report a block no generator owes.
+    expect(
+      markerBlockNames("Don't hand-edit between a `<!-- NAME START -->` pair"),
+    ).toEqual([])
+  })
+
+  test('ignores an END, and a START carrying trailing text', () => {
+    expect(
+      markerBlockNames('<!-- JEXL_CATALOG END -->\n<!-- X START --> and more'),
+    ).toEqual([])
   })
 })

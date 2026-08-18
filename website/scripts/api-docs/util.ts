@@ -2290,19 +2290,23 @@ const markersWritten = new Set<string>()
 // mid-paragraph as inline text, so nothing is spliced there.
 const MARKER_BLOCK = /^<!-- ([A-Z][A-Z0-9_]*)(?: (\S+))? START -->$/gm
 
-// Every marker pair the docs carry, marker name to the docs carrying it. A
-// grouped marker (`COLOR_TABLE alignments-indicators`) counts under its base
-// name — the group's own existence check is `rewriteGroupedMarkerBlocks`'s
-// `seen`.
+// The marker names one doc opens a block for. A grouped marker
+// (`COLOR_TABLE alignments-indicators`) counts under its base name — the group's
+// own existence check is `rewriteGroupedMarkerBlocks`'s `seen`.
+export function markerBlockNames(text: string) {
+  return [...text.matchAll(MARKER_BLOCK)].map(([, marker]) => marker!)
+}
+
+// Every marker pair the docs carry, marker name to the docs carrying it.
 export function markerBlocksInDocs() {
   const found = new Map<string, Set<string>>()
   for (const file of markerDocs()) {
-    for (const [, marker] of readDoc(file).matchAll(MARKER_BLOCK)) {
-      const docs = found.get(marker!)
+    for (const marker of markerBlockNames(readDoc(file))) {
+      const docs = found.get(marker)
       if (docs) {
         docs.add(file)
       } else {
-        found.set(marker!, new Set([file]))
+        found.set(marker, new Set([file]))
       }
     }
   }
@@ -2322,7 +2326,7 @@ export function markerBlocksInDocs() {
 //     a marker in the generator is both failures at once: the new name renders
 //     nowhere and the old block freezes.
 //
-// `writtenMarkers` is what the run actually asked for, so a partial run
+// `markersWritten` is what the run actually asked for, so a partial run
 // (`markers.ts <filter>`) checks only its own markers; pass `both: false` there,
 // since a marker the run never invoked is not evidence of an ungenerated block.
 export function assertMarkersAndDocsAgree({ both = true } = {}) {
