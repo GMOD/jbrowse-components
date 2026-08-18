@@ -184,8 +184,12 @@ export {
 // so the view registration module holds no React component at all.
 export { default as SearchBox } from './LinearGenomeView/components/SearchBox.tsx'
 // The same two consumers, one composition further on: a header stacking several
-// views draws one search box per row beside the span it is showing.
+// views draws one search box per row beside the span it is showing, and
+// `HeaderSearchBoxRow` is the whole strip of them. Where the side-by-side choice
+// is REMEMBERED stays with each container (`useSearchBoxPrefs`, one storage
+// prefix each), so the row takes it as a prop.
 export { default as HeaderSearchBoxes } from './LinearGenomeView/components/HeaderSearchBoxes.tsx'
+export { default as HeaderSearchBoxRow } from './LinearGenomeView/components/HeaderSearchBoxRow.tsx'
 export { normalizeTrackInit } from '@jbrowse/core/util/tracks'
 export {
   linearGenomeViewPropKeys,

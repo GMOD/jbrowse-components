@@ -1,8 +1,9 @@
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { HeaderSearchBoxes } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import type { LinearComparativeViewModel } from '../model.ts'
+import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
+
+import type { LinearGenomeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   searchBoxContainer: {
@@ -20,11 +21,15 @@ const useStyles = makeStyles()({
   },
 })
 
+// The whole search-box strip of a header that stacks several linear genome
+// views: one box per row, laid out side by side or in a column. `sideBySide` is
+// the caller's, because where the choice is remembered differs — each container
+// keys its own `useSearchBoxPrefs` under its own storage prefix.
 const HeaderSearchBoxRow = observer(function HeaderSearchBoxRow({
-  model,
+  views,
   sideBySide,
 }: {
-  model: LinearComparativeViewModel
+  views: LinearGenomeViewModel[]
   sideBySide: boolean
 }) {
   const { classes } = useStyles()
@@ -35,7 +40,7 @@ const HeaderSearchBoxRow = observer(function HeaderSearchBoxRow({
         sideBySide ? classes.inline : classes.vertical,
       )}
     >
-      {model.views.map(view => (
+      {views.map(view => (
         <HeaderSearchBoxes key={view.id} view={view} />
       ))}
     </span>

@@ -1,8 +1,8 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { HeaderSearchBoxRow } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
-import HeaderSearchBoxRow from './HeaderSearchBoxRow.tsx'
 import ScrollZoomToggle from './ScrollZoomToggle.tsx'
 import SyntenyHeaderControls from './SyntenyHeaderControls.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'
@@ -39,7 +39,7 @@ const Header = observer(function Header({
       {syntenyModel ? <SyntenyHeaderControls model={syntenyModel} /> : null}
 
       {prefs.showSearchBoxes ? (
-        <HeaderSearchBoxRow model={model} sideBySide={prefs.sideBySide} />
+        <HeaderSearchBoxRow views={model.views} sideBySide={prefs.sideBySide} />
       ) : null}
 
       <SyntenyWarnings model={model} />

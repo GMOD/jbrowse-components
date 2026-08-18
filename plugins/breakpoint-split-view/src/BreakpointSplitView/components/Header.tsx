@@ -1,6 +1,6 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { HeaderSearchBoxes } from '@jbrowse/plugin-linear-genome-view'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { HeaderSearchBoxRow } from '@jbrowse/plugin-linear-genome-view'
 import LinkIcon from '@mui/icons-material/Link'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import TuneIcon from '@mui/icons-material/Tune'
@@ -21,19 +21,6 @@ const useStyles = makeStyles()({
   buttons: {
     display: 'flex',
     alignItems: 'center',
-  },
-  searchBoxContainer: {
-    display: 'flex',
-    // scroll rather than clip when many rows' search boxes exceed the bar width
-    overflowX: 'auto',
-    minWidth: 0,
-    gap: 12,
-  },
-  inline: {
-    display: 'inline-flex',
-  },
-  vertical: {
-    flexDirection: 'column' as const,
   },
   toggleButton: {
     border: 'none',
@@ -127,16 +114,7 @@ const Header = observer(function Header({
       </div>
 
       {showSearchBoxes ? (
-        <span
-          className={cx(
-            classes.searchBoxContainer,
-            sideBySide ? classes.inline : classes.vertical,
-          )}
-        >
-          {views.map(view => (
-            <HeaderSearchBoxes key={view.id} view={view} />
-          ))}
-        </span>
+        <HeaderSearchBoxRow views={views} sideBySide={sideBySide} />
       ) : null}
     </div>
   )
