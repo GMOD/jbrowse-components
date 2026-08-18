@@ -43,7 +43,7 @@ TimeTraveller
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (20)
+# member tags in a file that documents no #stateModel (21)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts charactersPerRow
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts intronBp
@@ -64,6 +64,7 @@ plugins/grid-bookmark/src/index.ts rubberBandMenuItems
 plugins/linear-comparative-view/src/SyntenyFeatureDetail/index.ts level
 plugins/linear-comparative-view/src/SyntenyFeatureDetail/index.ts type
 plugins/linear-genome-view/src/LinearGenomeView/lazyChromeComponents.tsx suspend
+products/jbrowse-react-circular-genome-view/src/createCircularGenomeView.ts whenReady
 products/jbrowse-react-linear-genome-view/src/createLinearGenomeView.ts whenReady
 
 # baseConfiguration references that resolved to no documented #config (0)

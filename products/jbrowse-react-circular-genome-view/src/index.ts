@@ -4,6 +4,15 @@ export type { CircularGenomeViewProps } from './CircularGenomeView/index.ts'
 export { default as createModel } from './createModel/index.ts'
 export { default as createViewState } from './createViewState.ts'
 export type { ViewStateOptions } from './createViewState.ts'
+// the non-React door: hand it an element and drive the view through the
+// returned controller, for a host (anywidget, htmlwidgets, a <script> page)
+// that cannot write JSX
+export { createCircularGenomeView } from './createCircularGenomeView.ts'
+export type {
+  CircularGenomeViewController,
+  CircularGenomeViewState,
+  CreateCircularGenomeViewOptions,
+} from './createCircularGenomeView.ts'
 export { useCreateViewState } from './useCreateViewState.ts'
 // tear down an engine the host built and is discarding — React unmount alone
 // leaves its RPC workers and autoruns running
