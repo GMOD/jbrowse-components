@@ -516,11 +516,21 @@ function nonPortableUserTracks(
 
 // Splits the portable tracks against the hosted base. A track with no base entry
 // is user-added and ships whole in `addedTracks` (→ sessionTracks). A track that
-// matches a base entry but was edited on desktop (desktop edits jbrowse.tracks in
-// place, keeping the base trackId) becomes an `editDeltas` entry — the same
-// channel the web session uses — so the recipient's base is overlaid with the
-// sender's edits. An unedited base track produces neither and resolves from the
-// base.
+// matches a base entry but differs from it becomes an `editDeltas` entry — the
+// same channel the web session uses — so the recipient's base is overlaid with
+// what the sender has. A track equal to its base entry produces neither and
+// resolves from the base.
+//
+// "Differs" is not the same claim as "the user edited it", and the difference is
+// worth naming. The oracle here is the hub as it is NOW, while desktop's copy is
+// the hub as it was when the session was created (desktop edits jbrowse.tracks in
+// place, keeping the base trackId, and persists the whole config). So a track the
+// hub itself changed since then also lands in `editDeltas`, pinning the recipient
+// to the values the sender is looking at. That is the export's stated intent —
+// reproduce the sender's screen, the same reason `bakeSessionCascades` exists —
+// but the delta channel it travels in means "user override" on the far side, and
+// a delta masks later admin changes to that track. Telling the two apart needs
+// the base as it was at session creation, which nothing persists.
 function splitTracksAgainstBase(
   tracks: TrackSnapshot[],
   baseTracks: TrackSnapshot[],
