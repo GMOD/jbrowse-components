@@ -30,6 +30,7 @@ import {
   regionDataMap,
 } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
+  RowHeightMixin,
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
@@ -125,6 +126,7 @@ export default function stateModelFactory(
       MultiRegionDisplayMixin(),
       CanvasFeatureGateMixin(),
       LegendMixin(),
+      RowHeightMixin(),
       TreeSidebarMixin<MultiRowSource>(),
       types.model({
         /**
@@ -426,15 +428,6 @@ export default function stateModelFactory(
       get fitTargetHeight(): number {
         return readConfObject(self.conf, 'height')
       },
-      /**
-       * #getter
-       * Raw per-row height setting: `0` is auto-fit, any positive value is a
-       * pinned px height. The resolved value is `effectiveRowHeight` —
-       * consumers read that, never this.
-       */
-      get rowHeight(): number {
-        return readConfObject(self.conf, 'rowHeight')
-      },
     }))
     .views(self => ({
       /**
@@ -529,20 +522,21 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Resolved per-row height: `rowHeight === 0` auto-fits, any positive
-       * value is the pinned px height. Every consumer reads this, never the raw
-       * `rowHeight` setting.
+       * The one override of `RowHeightMixin`'s resolved height, and the reason
+       * is structural: this display sizes its canvas to its *content* instead
+       * of scrolling a viewport, so nothing downstream bounds the row stack and
+       * the cap has to land here. `maxCanvasHeight / nrow` is that cap; past it
+       * the rows thin out and every one of them stays on screen, which is what
+       * this display is for.
        *
-       * The sentinel resolution and the non-positive floor are shared with the
-       * other sentinel-bearing row displays (`resolveRowHeight`) — `featureAt`
-       * and `rowBand` divide by this, so a `height` slot configured to 0 must
-       * not reach them as a 0. A genuine sub-pixel fit height passes through;
-       * see `autoRowHeight`.
+       * The sentinel resolution and the non-positive floor stay the mixin's
+       * `resolveRowHeight` — `featureAt` and `rowBand` divide by this, so a
+       * `height` slot configured to 0 must not reach them as a 0.
        *
-       * Then capped so the stack fits `maxCanvasHeight`. It is not floored back
-       * up afterwards: a row below a pixel is legitimate here (see
-       * `autoRowHeight`), and `rowBand` is where a sub-pixel row is widened for
-       * drawing without changing how many of them fit.
+       * The cap is not floored back up afterwards: a row below a pixel is
+       * legitimate here (see `autoRowHeight`), and `rowBand` is where a
+       * sub-pixel row is widened for drawing without changing how many of them
+       * fit.
        */
       get effectiveRowHeight(): number {
         return Math.min(
@@ -880,12 +874,6 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setRowHeight(n: number) {
-        setConf(self, 'rowHeight', n)
-      },
       /**
        * #action
        */

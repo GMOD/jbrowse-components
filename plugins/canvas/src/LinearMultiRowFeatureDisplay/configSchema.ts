@@ -1,6 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
-import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
+import {
+  rowHeightConfigSchemaFields,
+  treeSidebarConfigSchemaFields,
+} from '@jbrowse/tree-sidebar'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -169,18 +172,13 @@ export default function configSchemaF() {
         defaultValue: [],
         description: 'optional explicit row order (by partition value)',
       },
-      /**
-       * #slot
-       * Fixed height in pixels of each row. `0` (the default) auto-fits: all rows
-       * stretch to fill the display height, so adding rows shrinks them instead of
-       * growing the track — a dense, fully-visible painting.
-       */
-      rowHeight: {
-        type: 'number',
-        defaultValue: 0,
-        description:
+      // This display grows to its content instead of scrolling, so the shared
+      // sentence about scrolling to the rows that don't fit is wrong here:
+      // adding rows shrinks them, and every one of them stays on screen.
+      ...rowHeightConfigSchemaFields({
+        rowHeight:
           'fixed row height in px; 0 (default) auto-fits all rows to the display height',
-      },
+      }),
       /**
        * #slot
        * Fraction of the row height each block fills (1 = full, leaving no gap

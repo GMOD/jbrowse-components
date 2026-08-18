@@ -11,7 +11,6 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
-import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
@@ -24,6 +23,7 @@ import {
   regionDataMap,
 } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
+  RowHeightMixin,
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
@@ -201,6 +201,7 @@ export default function stateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
+        RowHeightMixin(),
         TreeSidebarMixin<MafSource>(),
         types.model({
           /**
@@ -280,12 +281,6 @@ export default function stateModelFactory(
         treeNewickVolatile: undefined as string | undefined,
       }))
       .views(self => ({
-        /**
-         * #getter
-         */
-        get rowHeight(): number {
-          return getConf(self, 'rowHeight')
-        },
         /**
          * #getter
          */
@@ -384,12 +379,6 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
-        /**
-         * #action
-         */
-        setRowHeight(n: number) {
-          setConf(self, 'rowHeight', n)
-        },
         /**
          * #action
          */
@@ -1046,32 +1035,16 @@ export default function stateModelFactory(
          * belongs in `effectiveRowHeight`, which is the resolved value consumers
          * divide by. Same rule, and same regression, as the multi-sample variant
          * display's `autoRowHeight`.
+         *
+         * A **pinned** height goes the other way and is used as-is however many
+         * species there are: the rows canvas is the viewport (`rowsHeight`), so
+         * hundreds of tall rows cost scroll extent, not backing store. The
+         * canvas-size ceiling that `effectiveRowHeight` used to apply —
+         * shrinking every row so the whole stack could be one canvas — now
+         * lives on `rowsHeight` itself, where the canvas actually is.
          */
         get autoRowHeight() {
           return self.rowsHeight / self.nrow
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Resolved per-row height. `rowHeight === 0` is fit-to-height (rows
-         * stretch to the dragged track height); any positive value is a pinned px
-         * height. Every consumer reads this getter, never the raw `rowHeight`
-         * property.
-         *
-         * A pinned height is used as-is however many species there are: the rows
-         * canvas is the viewport (`rowsHeight`), so hundreds of tall rows cost
-         * scroll extent, not backing store. The canvas-size ceiling that used to
-         * be applied here — shrinking every row so the whole stack could be one
-         * canvas — now lives on `rowsHeight` itself, where the canvas actually
-         * is.
-         *
-         * The sentinel resolution and the non-positive floor are shared with the
-         * other sentinel-bearing row displays (`resolveRowHeight`); a genuine
-         * sub-pixel fit height passes through, see `autoRowHeight`.
-         */
-        get effectiveRowHeight() {
-          return resolveRowHeight(self.rowHeight, self.autoRowHeight)
         },
       }))
       .views(self => ({

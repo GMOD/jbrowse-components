@@ -16,7 +16,6 @@ import {
   configuredJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
-import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -26,6 +25,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
+  RowHeightMixin,
   TreeSidebarMixin,
   applyColorPalette,
   buildSpatialIndex,
@@ -365,6 +365,7 @@ export default function MultiSampleVariantBaseModelF(
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
         LegendMixin(),
+        RowHeightMixin(),
         TreeSidebarMixin<Source>(),
         types.model({
           type: types.string,
@@ -636,18 +637,6 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * Raw per-row height setting: `0` is fit-to-display-height, any
-         * positive value is a pinned px height. The resolved value is
-         * `effectiveRowHeight` — consumers read that, never this. On the config
-         * for the same reason `height` and `lineZoneHeight` are: a drag-resized
-         * dimension outlives the display instance.
-         */
-        get rowHeight(): number {
-          return getConf(self, 'rowHeight')
-        },
-
-        /**
-         * #getter
          * The effective sample-grouping attribute (config default or runtime
          * override). Drives the sidebar row coloring and the legend's group
          * section; '' means no grouping.
@@ -760,12 +749,6 @@ export default function MultiSampleVariantBaseModelF(
                 console.error(e)
                 getSession(self).notifyError(`${e}`, e)
               })
-          },
-          /**
-           * #action
-           */
-          setRowHeight(arg: number) {
-            setConf(self, 'rowHeight', arg)
           },
           /**
            * #action
@@ -1212,9 +1195,10 @@ export default function MultiSampleVariantBaseModelF(
           }
           return out
         },
-        // Row-height model: `rowHeight` (raw setting, 0 = fit), `autoRowHeight`
-        // (the fit height), `effectiveRowHeight` (resolved). Shared spelling
-        // across the row displays — see agent-docs/reference/ROW_HEIGHT_AND_FIT.
+        // Row-height model: `rowHeight` (raw setting, 0 = fit) and
+        // `effectiveRowHeight` (resolved) are `RowHeightMixin`'s; what this
+        // display owes it is `autoRowHeight` below. See
+        // agent-docs/reference/ROW_HEIGHT_AND_FIT.md.
         /**
          * #getter
          * The bands stacked above the rows — the variant lane and the
@@ -1261,28 +1245,17 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
+         * What fit-to-display-height divides between the rows, and the reason
+         * `RowHeightMixin`'s non-positive floor is reachable at all here:
+         * `availableHeight` floors at 0, so a `lineZoneHeight` that swallows
+         * the whole display makes this exactly 0.
+         *
+         * A **pinned** height goes the other way and is used as-is however many
+         * samples there are — the rows area is a scroll viewport, so rows that
+         * don't fit cost scroll extent rather than a resize.
          */
         get autoRowHeight() {
           return this.availableHeight / this.nrow
-        },
-
-        /**
-         * #getter
-         * Resolved per-row height. `rowHeight === 0` means auto-fit (computed
-         * from availableHeight / nrow); any positive value is a user-pinned
-         * height, used as-is however many samples there are — the rows area is
-         * a scroll viewport, so rows that don't fit cost scroll extent rather
-         * than a resize. Every consumer reads this, never the raw `rowHeight`
-         * setting.
-         *
-         * The sentinel resolution and the non-positive floor are shared with
-         * the other sentinel-bearing row displays (`resolveRowHeight`) — the
-         * floor is reachable here because `availableHeight` floors at 0, so a
-         * `lineZoneHeight` that swallows the whole display makes
-         * `autoRowHeight` exactly 0.
-         */
-        get effectiveRowHeight() {
-          return resolveRowHeight(self.rowHeight, this.autoRowHeight)
         },
         /**
          * #getter
@@ -1291,7 +1264,7 @@ export default function MultiSampleVariantBaseModelF(
           return computeClusterHierarchy(
             self.root,
             self.sources,
-            this.effectiveRowHeight * this.nrow,
+            self.effectiveRowHeight * this.nrow,
             self.treeAreaWidth,
             self.showBranchLength,
           )

@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
-import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
+import {
+  rowHeightConfigSchemaFields,
+  treeSidebarConfigSchemaFields,
+} from '@jbrowse/tree-sidebar'
 
 /**
  * #config SharedVariantDisplay
@@ -31,21 +34,7 @@ export default function sharedVariantConfigFactory() {
         defaultValue: 0,
         advanced: true,
       },
-      /**
-       * #slot
-       * Per-row height in px, or `0` for fit-to-display-height mode where the
-       * rows divide the available height between them. The resolved value is
-       * the model's `effectiveRowHeight` getter. Defaults to fit so a
-       * many-sample cohort stays bounded by the track height; a pinned height
-       * is honored whatever the sample count, with the rows that don't fit
-       * reached by scrolling.
-       */
-      rowHeight: {
-        type: 'number',
-        defaultValue: 0,
-        description:
-          'per-row height in px, scrolling the rows that do not fit; 0 fits the rows to the display height instead',
-      },
+      ...rowHeightConfigSchemaFields(),
       ...treeSidebarConfigSchemaFields({
         tree: 'Show the sample clustering tree in the sidebar',
         rowLabels: 'Show the per-sample row labels in the sidebar',
