@@ -64,6 +64,7 @@ test('finds a forward-strand SpCas9 guide with protospacer, PAM, cut site', asyn
   // AAATTT: no G/C, only 3 consecutive T's (not a poly-T terminator)
   expect(g.get('gcPercent')).toBe(0)
   expect(g.get('hasPolyT')).toBe(false)
+  expect(g.get('softMasked')).toBe(false)
   const pamSub = g.get('subfeatures')![0]!
   expect(pamSub.get('start')).toBe(16)
   expect(pamSub.get('end')).toBe(19)
@@ -127,6 +128,48 @@ test('GC and poly-T filters drop guides the caller asked to exclude', async () =
     { assemblyName: 'volvox', refName: 'chr1', start: 0, end: 25 },
   )
   expect(dropped).toHaveLength(0)
+})
+
+test('a protospacer reaching into an assembly gap is not a guide', async () => {
+  // the PAM (TGG at 16-18) matches as usual — N is a residue, not the IUPAC
+  // code N — but the 6bp protospacer in front of it is all gap
+  const seq = 'ATATATATATNNNNNNTGGATATAT'
+  const guides = await getGuides(makeAdapter(seq, { searchReverse: false }), {
+    assemblyName: 'volvox',
+    refName: 'chr1',
+    start: 0,
+    end: 25,
+  })
+  expect(guides).toHaveLength(0)
+})
+
+test('a soft-masked protospacer is flagged and reported uppercase', async () => {
+  // the same guide as the first test, in a repeat-masked reference
+  const seq = 'ATATATATATaaatttTGGATATAT'
+  const guides = await getGuides(makeAdapter(seq, { searchReverse: false }), {
+    assemblyName: 'volvox',
+    refName: 'chr1',
+    start: 0,
+    end: 25,
+  })
+  expect(guides).toHaveLength(1)
+  const g = guides[0]!
+  expect(g.get('softMasked')).toBe(true)
+  // a guide gets copied out of here into an order form, so the case the
+  // reference happened to use is not part of the sequence
+  expect(g.get('guideSeq')).toBe('AAATTT')
+  expect(g.get('name')).toBe('AAATTT')
+})
+
+test.each(['', 'XYZ', 'N['])('a PAM of %p is rejected by name', async pam => {
+  await expect(
+    getGuides(makeAdapter('ATATATATATAAATTTTGGATATAT', { pam }), {
+      assemblyName: 'volvox',
+      refName: 'chr1',
+      start: 0,
+      end: 25,
+    }),
+  ).rejects.toThrow(/Invalid PAM/)
 })
 
 test('overlapping PAMs each yield a guide', async () => {

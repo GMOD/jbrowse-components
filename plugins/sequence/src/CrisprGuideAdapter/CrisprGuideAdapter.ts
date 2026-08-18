@@ -1,4 +1,5 @@
 import {
+  IUPAC_MOTIF_REGEX,
   iupacToRegex,
   revcom,
   reverseComplementIupac,
@@ -10,6 +11,8 @@ import { guideQuality, placeGuide } from './guideUtils.ts'
 import type { ScanWindow } from '../ReferenceScanAdapter.ts'
 import type { CrisprGuideAdapterConfig } from './configSchema.ts'
 
+const ACGT_ONLY = /^[acgt]+$/i
+
 export default class CrisprGuideAdapter extends ReferenceScanAdapter<CrisprGuideAdapterConfig> {
   protected scanPadding() {
     // a guide's protospacer reaches guideLength+PAM beyond the PAM match, so pad
@@ -19,6 +22,15 @@ export default class CrisprGuideAdapter extends ReferenceScanAdapter<CrisprGuide
 
   protected scan({ query, residues, windowStart, emit }: ScanWindow) {
     const pam = this.getConf('pam')
+    // The panel validates this, a hand-written config does not, and every way of
+    // getting it wrong fails quietly or worse: an empty PAM makes `(?=())` match
+    // at every offset (a guide on every base of both strands), and a non-IUPAC
+    // letter passes through iupacToRegex verbatim to match nothing at all.
+    if (!IUPAC_MOTIF_REGEX.test(pam)) {
+      throw new Error(
+        `Invalid PAM "${pam}": expected IUPAC nucleotide codes, e.g. NGG`,
+      )
+    }
     const guideLength = this.getConf('guideLength')
     const pamLocation = this.getConf('pamLocation')
     const cutOffset = this.getConf('cutOffset')
@@ -50,8 +62,23 @@ export default class CrisprGuideAdapter extends ReferenceScanAdapter<CrisprGuide
           rel(placement.protoEnd),
         )
         const pamPlus = residues.slice(rel(pamStart), rel(pamEnd))
-        const guideSeq = strand === 1 ? protoPlus : revcom(protoPlus)
-        const pamSeq = strand === 1 ? pamPlus : revcom(pamPlus)
+        const guideRaw = strand === 1 ? protoPlus : revcom(protoPlus)
+        const pamRaw = strand === 1 ? pamPlus : revcom(pamPlus)
+        // A protospacer reaching into an assembly gap is not a guide. The PAM
+        // itself cannot match an N — iupacToRegex maps the code N to [ACGT] —
+        // but nothing constrains the protospacer, so every gap edge otherwise
+        // yields a wall of guides made mostly of N.
+        if (!ACGT_ONLY.test(guideRaw)) {
+          continue
+        }
+        // Lowercase residues are the reference's own soft-masking: this
+        // protospacer lies in a repeat, which is the one specificity signal the
+        // sequence carries for free. Report it, rather than leaving it to
+        // survive only as the letter case of `guideSeq` — a guide is copied out
+        // of here into an order form, so the sequence itself is normalized.
+        const softMasked = guideRaw !== guideRaw.toUpperCase()
+        const guideSeq = guideRaw.toUpperCase()
+        const pamSeq = pamRaw.toUpperCase()
         const { gcPercent, hasPolyT } = guideQuality(guideSeq)
         // Sequence-level triage, applied here rather than left to the viewer: a
         // PAM occurs every ~8bp of genome, so an unfiltered track is a solid
@@ -81,6 +108,7 @@ export default class CrisprGuideAdapter extends ReferenceScanAdapter<CrisprGuide
             : { cutSiteBottom: placement.cutSiteBottom }),
           gcPercent,
           hasPolyT,
+          softMasked,
           subfeatures: [
             {
               uniqueId: `${id}-pam`,
