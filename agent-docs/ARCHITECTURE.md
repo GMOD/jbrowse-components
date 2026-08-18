@@ -145,11 +145,47 @@ than loudly. Each has its own JSDoc tag and its own generated doc page:
 | MST property | `#property` | yes — in the session snapshot, on the display node | `self.x`, written by an action |
 | MST volatile | `#volatile` | no | `self.x`, written by an action |
 
-**The slot is the default, and by a wide margin.** Count the tags on a display
-and the split is lopsided: `LinearAlignmentsDisplay` has 45 slots and 2
-properties, `LinearWiggleDisplay` 6 and 2, `LinearBasicDisplay` 24 and 7 — and
-on most displays the surviving properties are just `type` and `configuration`,
-the structural minimum MST needs. Nearly every track-menu setting is a slot.
+**The slot is the default, and by a wide margin.** The census below is
+**generated** — a display joins it by registering itself with `addDisplayType`,
+and its three numbers are the `#slot` / `#property` / `#volatile` tags its own
+directory declares. Read the shape rather than any one row: the split is
+lopsided everywhere, and on most displays the surviving properties are just
+`type` and `configuration`, the structural minimum MST needs. Nearly every
+track-menu setting is a slot.
+
+<!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
+
+
+19 registered displays declare 177 config slots, 39 MST properties and 53 volatiles between them — counting what each display's own directory declares.
+
+<!-- prettier-ignore -->
+| Display | Plugin | `#slot` | `#property` | `#volatile` |
+| --- | --- | --- | --- | --- |
+| `LinearAlignmentsDisplay` | `plugins/alignments` | 46 | 2 | 18 |
+| `LinearBasicDisplay` | `plugins/canvas` | 25 | 7 | 12 |
+| `LinearMafDisplay` | `plugins/maf` | 19 | 2 | 8 |
+| `LDDisplay` | `plugins/variants` | 15 | 1 | 2 |
+| `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 12 | 4 | 2 |
+| `LinearHicDisplay` | `plugins/hic` | 9 | 2 | 3 |
+| `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
+| `LinearArcDisplay` | `plugins/arc` | 6 | 2 | 0 |
+| `LinearManhattanDisplay` | `plugins/gwas` | 6 | 3 | 0 |
+| `LinearWiggleDisplay` | `plugins/wiggle` | 6 | 2 | 0 |
+| `MultiLinearWiggleDisplay` | `plugins/wiggle` | 6 | 1 | 1 |
+| `LinearMultiSampleVariantDisplay` | `plugins/variants` | 5 | 0 | 0 |
+| `ChordVariantDisplay` | `plugins/circular-view` | 4 | 3 | 2 |
+| `LinearGCContentDisplay` | `plugins/gccontent` | 4 | 0 | 0 |
+| `LinearReferenceSequenceDisplay` | `plugins/sequence` | 4 | 2 | 0 |
+| `LinearMultiSampleVariantMatrixDisplay` | `plugins/variants` | 2 | 0 | 0 |
+| `LinearPairedArcDisplay` | `plugins/arc` | 2 | 2 | 0 |
+| `LinearSyntenyDisplay` | `plugins/linear-comparative-view` | 0 | 2 | 4 |
+| `LinearVariantDisplay` | `plugins/variants` | 0 | 1 | 1 |
+<!-- END GENERATED DISPLAY_STATE_CENSUS -->
+
+Slots a display inherits are in the declaring schema's row, not in its own — the
+count is per directory, so `LinearBasicDisplay`'s includes the
+`LinearCanvasBaseDisplay` base beside it while a shared fields file outside every
+display directory (`heightModeConfigSchemaFields.ts`) is in nobody's.
 
 That works because a slot is not admin-only. A user's edit is diffed into
 `trackConfigDeltas` — a frozen `trackId → partial config` map on the session —
@@ -309,6 +345,7 @@ is hand-written:
 | `DISPLAY_FOUNDATIONS` / `DISPLAY_FOUNDATION_STACKS` | which displays compose which foundation ([Display stacks](#display-stacks)) | the `#displayFoundation` / `#displayFoundationDef` tags, plus each foundation's `types.compose(...)` |
 | `CROSS_CUTTING_MIXINS` | which displays compose which cross-cutting mixin ([Cross-cutting mixins](#cross-cutting-mixins-orthogonal-to-the-fetch-foundation)); the same block renders in `creating_display.md` | the `#crossCuttingMixin` tags, plus every `types.compose(...)` in the tree — no consumer-side tag |
 | `FETCH_AUTORUNS` | the fetch-lifecycle autoruns ([Data fetching pipeline](#data-fetching-pipeline)) | the install sites in `MultiRegionDisplayMixin.ts` and their `#autorun` tags |
+| `DISPLAY_STATE_CENSUS` | how many slots, properties and volatiles each display declares ([Where a display's state lives](#where-a-displays-state-lives)) | the `#slot` / `#property` / `#volatile` tags in each display directory, the set of directories being those whose `index.ts` calls `pluginManager.addDisplayType` |
 | `DISPLAY_HOOK_OVERRIDES` | which display overrides which hook, and what the default does for one that doesn't ([The hooks](#the-hooks-and-who-is-sitting-on-a-default)) | the override sites, scanned and attributed by directory. The hook list and its default text are a curated `HOOKS` array in the generator — no scan can find them — whose `owner` file is asserted to still declare the default |
 | `DISPLAY_CHROME_ADOPTION` | which displays render the shared chrome, on screen and on export (in [DISPLAYCHROME.md](reference/DISPLAYCHROME.md), not here) | each LGV display registration: `ReactComponent` for the on-screen column, the state model's `renderSvg` for the export one |
 | `PALETTE_KEYS` | the settable theme palette keys | the `Palette` / `StringColors` interfaces |

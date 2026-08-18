@@ -143,6 +143,17 @@ const GENERATORS: Generator[] = [
     name: 'display hook override table',
     argv: web('generate-display-hook-overrides.ts'),
   },
+  {
+    // ARCHITECTURE.md's slot-vs-property census, which argues that the config
+    // slot is a display's default state home. It argued it with three pairs of
+    // numbers typed into the prose until 2026-08, and they had already drifted:
+    // alignments moved 45 -> 47 -> 48 -> 46 while the sentence still said 45.
+    // No checker could see it — check-doc-imports resolves the identifiers a
+    // doc names, never the counts it states about them, which is the gap this
+    // closes for one section.
+    name: 'display state census',
+    argv: web('generate-display-state-census.ts'),
+  },
   // Before the README is mirrored into the docs site, since this rewrites it.
   {
     name: 'jbrowse-img README commands',
