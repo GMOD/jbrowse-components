@@ -2,6 +2,7 @@ import { parseNewick } from '@gmod/newick'
 
 import {
   clusterLayout,
+  eachAfter,
   hasIncrementalBranchLengths,
   hierarchy,
   leaves,
@@ -26,30 +27,39 @@ function findSubtree<T extends ClusterNodeData>(
   // whether all those names are in filterSet). The first node whose count
   // equals filterSet.size and is fully contained is the unique match
   // (descendants have strictly fewer leaves).
+  //
+  // `eachAfter` rather than a recursive walk for the reason every traversal in
+  // this package is iterative: a single-linkage dendrogram is a caterpillar
+  // whose depth is its leaf count. It visits a node only after all of its
+  // descendants, so the first match is still the deepest one — which is what
+  // picks the clade itself over an ancestor that adds only unnamed leaves.
+  const below = new Map<HierarchyNode<T>, { count: number; allIn: boolean }>()
   let found: HierarchyNode<T> | undefined
-  function visit(n: HierarchyNode<T>): { count: number; allIn: boolean } {
+  eachAfter(root, (n: HierarchyNode<T>) => {
     if (n.children?.length) {
       let count = 0
       let allIn = true
       for (const child of n.children) {
-        const r = visit(child)
+        const r = below.get(child)!
         count += r.count
         if (!r.allIn) {
           allIn = false
         }
       }
+      below.set(n, { count, allIn })
       if (!found && allIn && count === filterSet.size) {
         found = n
       }
-      return { count, allIn }
+    } else {
+      const { name } = n.data
+      below.set(
+        n,
+        name === undefined
+          ? { count: 0, allIn: true }
+          : { count: 1, allIn: filterSet.has(name) },
+      )
     }
-    const { name } = n.data
-    if (name === undefined) {
-      return { count: 0, allIn: true }
-    }
-    return { count: 1, allIn: filterSet.has(name) }
-  }
-  visit(root)
+  })
   return found
 }
 
@@ -81,22 +91,46 @@ export function pruneNewickToLeaves(
   keep: Set<string>,
   incrementalLengths = true,
 ): ClusterNodeData | undefined {
-  if (node.children?.length) {
-    const children = node.children
-      .map(c => pruneNewickToLeaves(c, keep, incrementalLengths))
-      .filter((c): c is ClusterNodeData => c !== undefined)
-    if (children.length === 0) {
-      return undefined
+  // Iterative post-order, on the raw newick data rather than a HierarchyNode:
+  // build each node's replacement only once every child's is known. Recursion
+  // here threw past ~5000 tips on the caterpillar this package exists to draw.
+  const order: ClusterNodeData[] = []
+  const stack = [node]
+  while (stack.length > 0) {
+    const n = stack.pop()!
+    order.push(n)
+    if (n.children) {
+      for (const child of n.children) {
+        stack.push(child)
+      }
     }
-    if (children.length === 1) {
-      const child = children[0]!
-      return incrementalLengths
-        ? { ...child, length: (child.length ?? 0) + (node.length ?? 0) }
-        : child
-    }
-    return { ...node, children }
   }
-  return node.name !== undefined && keep.has(node.name) ? node : undefined
+  const pruned = new Map<ClusterNodeData, ClusterNodeData | undefined>()
+  for (let i = order.length - 1; i >= 0; i--) {
+    const n = order[i]!
+    if (n.children?.length) {
+      const children = n.children.flatMap(c => {
+        const p = pruned.get(c)
+        return p ? [p] : []
+      })
+      pruned.set(
+        n,
+        children.length === 0
+          ? undefined
+          : children.length === 1
+            ? incrementalLengths
+              ? {
+                  ...children[0]!,
+                  length: (children[0]!.length ?? 0) + (n.length ?? 0),
+                }
+              : children[0]!
+            : { ...n, children },
+      )
+    } else {
+      pruned.set(n, n.name !== undefined && keep.has(n.name) ? n : undefined)
+    }
+  }
+  return pruned.get(node)
 }
 
 // Narrow a tree to the active subtree filter. A filter that names exactly one

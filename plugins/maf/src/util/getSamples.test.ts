@@ -49,6 +49,19 @@ describe('collectLeafNames', () => {
   test('single leaf', () => {
     expect(collectLeafNames(parseNewick('(A);'))).toEqual(['A'])
   })
+  // Left-to-right order is row order, and a guide tree promises no depth bound.
+  // Recursion threw here past a few thousand tips, during sample resolution —
+  // so it failed the whole track, not one drawing pass.
+  test('a caterpillar deeper than the call stack keeps its leaf order', () => {
+    let deep: NewickNode = { name: 'l0' }
+    for (let i = 1; i < 20_000; i++) {
+      deep = { name: `i${i}`, children: [deep, { name: `l${i}` }] }
+    }
+    const names = collectLeafNames(deep)
+    expect(names).toHaveLength(20_000)
+    expect(names.slice(0, 3)).toEqual(['l0', 'l1', 'l2'])
+    expect(names.at(-1)).toBe('l19999')
+  })
 })
 
 test('string array — id used as label fallback', () => {

@@ -1,4 +1,5 @@
 import {
+  applySubtreeFilter,
   buildClusteredLayout,
   computeClusterHierarchy,
   filterRowsBySubtree,
@@ -363,5 +364,41 @@ describe('reconcileLayout', () => {
       { name: 'dad' },
       { name: 'kid' },
     ])
+  })
+})
+
+// Both halves of applySubtreeFilter used to recurse once per node, so focusing a
+// clade on a single-linkage dendrogram threw RangeError past about 5000 tips —
+// and `subtreeFilter` is persisted, so a shared session carrying one threw on
+// load and never recovered. The rest of this package went iterative for exactly
+// this shape (hierarchy.test.ts lays out a 50,000-tip caterpillar); these two
+// were missed.
+describe('a caterpillar deeper than the call stack', () => {
+  const DEPTH = 20_000
+  function caterpillar() {
+    let deep: NewickNode = { name: 'l0' }
+    for (let i = 1; i < DEPTH; i++) {
+      deep = { name: `i${i}`, length: 1, children: [deep, { name: `l${i}` }] }
+    }
+    return deep
+  }
+
+  test('focusing a monophyletic clade descends into it', () => {
+    const root = hierarchy<NewickNode>(caterpillar(), d => d.children)
+    // every leaf below the second-deepest internal node: l0 and l1
+    const filtered = applySubtreeFilter(root, ['l0', 'l1'])
+    expect(getLeafNames(filtered)).toEqual(['l0', 'l1'])
+  })
+
+  test('a scattered leaf set prunes to those leaves', () => {
+    const root = hierarchy<NewickNode>(caterpillar(), d => d.children)
+    const keep = ['l0', 'l500', 'l9000', `l${DEPTH - 1}`]
+    const filtered = applySubtreeFilter(root, keep)
+    expect(getLeafNames(filtered).sort()).toEqual([...keep].sort())
+  })
+
+  test('a filter naming nothing present leaves the tree alone', () => {
+    const root = hierarchy<NewickNode>(caterpillar(), d => d.children)
+    expect(getLeafNames(applySubtreeFilter(root, ['nope']))).toHaveLength(DEPTH)
   })
 })

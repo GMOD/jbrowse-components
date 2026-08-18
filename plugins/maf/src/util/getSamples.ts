@@ -53,19 +53,31 @@ export function normalizeSamples(r: SampleConfig): Sample[] {
 }
 
 /**
- * Depth-first collection of the leaf (tip) names of a parsed Newick tree.
+ * Depth-first collection of the leaf (tip) names of a parsed Newick tree, in
+ * left-to-right order — which is row order, so the traversal order is the
+ * contract and not an implementation detail.
  *
  * Trimmed for the same reason config ids are: a leaf name is a sample id, and a
  * `.nh` written with a space after a comma carries it into the name, where it
  * matches no source token in the file.
+ *
+ * Iterative because the depth of a tree is not something a guide tree promises
+ * to bound: recursion here threw RangeError past a few thousand tips, and it
+ * threw during sample resolution, so it failed the whole track rather than one
+ * drawing pass. Children are pushed in reverse so they pop left-first.
  */
-export function collectLeafNames(node: NewickNode, acc: string[] = []) {
-  if (node.children?.length) {
-    for (const child of node.children) {
-      collectLeafNames(child, acc)
+export function collectLeafNames(node: NewickNode) {
+  const acc: string[] = []
+  const stack = [node]
+  while (stack.length > 0) {
+    const n = stack.pop()!
+    if (n.children?.length) {
+      for (let i = n.children.length - 1; i >= 0; i--) {
+        stack.push(n.children[i]!)
+      }
+    } else if (n.name?.trim()) {
+      acc.push(n.name.trim())
     }
-  } else if (node.name?.trim()) {
-    acc.push(node.name.trim())
   }
   return acc
 }
