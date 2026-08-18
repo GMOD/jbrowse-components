@@ -141,6 +141,21 @@ drawing. Pass a `makeWorkerInstance` factory and JBrowse switches its RPC to a
 web worker instead; supplying the factory is the whole switch, no config slot
 needed.
 
+Every embedded package ships that factory already written, so the shortest
+version imports it and passes it straight through —
+`import makeWorkerInstance from '@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance'`,
+then `makeWorkerInstance` as the option. Its body is the plain
+`new Worker(new URL('./rpcWorker', import.meta.url))`. Take the subpath from the
+package you render, never a sibling: each worker entry registers **its own**
+product's plugin set, so the linear one boots a worker that has never heard of a
+chord display. The circular package spells it
+`@jbrowse/react-circular-genome-view2/esm/makeWorkerInstance`.
+
+Write the `new URL` yourself only inside your own source tree. At your call site
+the specifier is a bare package name, which `new URL` cannot resolve — the
+relative path works in the shipped factory because it is resolved from inside
+the package.
+
 <!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithWebWorker.tsx -->
 
 ```tsx
@@ -181,13 +196,48 @@ export default function WithWebWorker() {
 }
 ```
 
+The example above reaches for Vite's `?worker` suffix rather than the shipped
+factory, and the reason is narrow enough to state: that site sets
+`worker.format: 'es'`, because the worker code-splits. The shipped factory
+constructs a **classic** worker, which cannot load an ES-module script, so under
+ES worker output the `?worker` import — which builds the matching module worker
+— is the form that runs. It builds either way; only the classic-worker version
+fails, and it fails at runtime rather than at build.
+
+That cuts the other way for plugins. A classic worker can `importScripts`, so it
+loads a **UMD** plugin; a module worker cannot, so a Vite build with
+`worker.format: 'es'` can't load UMD plugins worker-side. ESM plugins work in
+both.
+
 It is off by default only because constructing a worker is bundler-specific, not
-because it is experimental — turn it on wherever your toolchain allows. Vite and
-other ESM bundlers handle the `?worker` import natively; webpack and CRA want
-`output.publicPath: 'auto'` and the package's prebuilt
-`@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance` instead. If you also
-load plugins, they must be registered in **both** the main thread and the
-worker, since the worker resolves its own copy.
+because it is experimental — turn it on wherever your toolchain allows. webpack
+and CRA want `output.publicPath: 'auto'` and the shipped factory.
+
+### Plugins have to reach the worker too
+
+The worker is a separate JavaScript realm with its own plugin registry, and it
+does not inherit the main thread's. A plugin contributing anything that runs
+there — an adapter, most commonly — has to be registered on both sides, and
+**what decides whether it gets there is the `definition`, not the plugin**.
+
+`loadPlugins` returns `{ plugin, definition }` records. Pass those through to
+`plugins` unchanged. The definition is a URL, and it is the only thing the
+worker can boot from: `PluginManager` records a runtime plugin in
+`runtimePluginDefinitions` only when its load record carries one, `RpcManager`
+ships exactly that list as the worker's boot config, and the worker fetches its
+own copy from those URLs.
+
+So `plugins: [MyPlugin]` — a bare class — registers on the main thread and
+**never** in the worker. There is no definition to ship, nothing warns, and the
+failure surfaces far from its cause: a track whose adapter type is unknown,
+reported from inside the worker, on a page that worked before the worker was
+switched on. `plugins.map(p => p.plugin)` throws the definition away the same
+way and is the commoner spelling of the same bug.
+
+The rule that follows is worth stating plainly: **if you pass plugin classes,
+don't pass `makeWorkerInstance`.** A bare class is fine on the main thread,
+where there is only one realm. Adding the worker gives it two, and the class
+reaches only one of them.
 
 ## The remaining options
 
