@@ -94,7 +94,7 @@ Both views map a genomic position to a residue through the transcript's CDS with
 [g2p_mapper](https://github.com/cmdcolin/g2p_mapper), so a hover highlights
 nothing when the position has no residue to land on. Introns and UTRs have none,
 and neither does a residue the structure is missing, which shows up as a gap in
-the **Pairwise alignment** panel below the structure. That panel shows the
+the **Pairwise alignment** panel above the structure. That panel shows the
 transcript row against the structure row with a consensus line, so it is where
 to check a mapping before trusting a highlight. For exact correspondence, fold
 the transcript's own sequence with AlphaFold instead of taking a database
@@ -110,7 +110,7 @@ helices and hydrophobicity. The gear beside the dialog's **Launch** button opens
 **Launch settings**, whose side-by-side option puts the protein view beside the
 genome view rather than under it.
 
-<Figure caption="A connected session on human TP53 (UniProt P04637). Hovering a variant in the genome view highlights the matching residue on the structure." src="/img/protein/connected.png" />
+<Figure caption="A connected session on human TP53 (UniProt P04637), NCBI RefSeq and ClinVar beside the AlphaFold structure. A motif clicked on the protein's feature track selects its residues on the structure and bands the codons they came from across both genome tracks." src="/img/protein/connected.png" />
 
 ### The other things that dialog launches
 
