@@ -9,11 +9,16 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 
+import {
+  describeUnbuildableNodes,
+  pruneUnbuildableNodes,
+} from '../pruneUnbuildableNodes.ts'
 import { scheduleDetachedDestroy } from '../scheduleDetachedDestroy.ts'
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
 import { filterSessionInPlace } from '../sessionUtils.ts'
 
 import type { BaseSession } from '../Session/BaseSession.ts'
+import type { UnbuildableNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
@@ -116,18 +121,28 @@ export function BaseRootModelFactory({
       /**
        * #action
        * Sets the active session. Remaps any legacy display type names
-       * (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), then walks the
-       * resulting MST tree to drop open tracks whose config can't hydrate so
-       * shared sessions still load when referencing tracks that no longer
-       * exist. Dropped tracks are surfaced to the user via a snackbar. If
-       * filtering throws, the previous session is restored.
+       * (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), drops nodes whose
+       * pluggable type this build has no plugin for (see
+       * `pruneUnbuildableNodes`), then walks the resulting MST tree to drop open
+       * tracks whose config can't hydrate so shared sessions still load when
+       * referencing tracks that no longer exist. Both kinds of drop are surfaced
+       * to the user via a snackbar. If filtering throws, the previous session is
+       * restored.
        */
       setSession(sessionSnapshot?: SnapshotIn<IAnyType>) {
         const oldSession = self.session
-        const migrated =
-          sessionSnapshot && typeof sessionSnapshot === 'object'
-            ? migrateSessionSnapshot(sessionSnapshot as Record<string, unknown>)
-            : sessionSnapshot
+        const unbuildable: UnbuildableNode[] = []
+        let migrated = sessionSnapshot
+        if (sessionSnapshot && typeof sessionSnapshot === 'object') {
+          // before the cast, because a type this build has no plugin for is a
+          // union failure the try below never gets to see
+          const pruned = pruneUnbuildableNodes(
+            migrateSessionSnapshot(sessionSnapshot as Record<string, unknown>),
+            pluginManager,
+          )
+          migrated = pruned.snapshot
+          unbuildable.push(...pruned.dropped)
+        }
         // Detach first: assigning over it would destroy it inside this action,
         // and MobX runs the action's pending reactions afterwards, against the
         // nodes it just killed. ADR-069.
@@ -137,6 +152,13 @@ export function BaseRootModelFactory({
         self.session = cast(migrated)
         if (self.session) {
           try {
+            const unbuildableMessage = describeUnbuildableNodes(unbuildable)
+            if (unbuildableMessage) {
+              ;(self.session as BaseSession).notify(
+                unbuildableMessage,
+                'warning',
+              )
+            }
             const dropped = filterSessionInPlace(
               self.session,
               getType(self.session),
