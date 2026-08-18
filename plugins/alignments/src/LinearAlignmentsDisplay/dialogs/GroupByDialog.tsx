@@ -15,7 +15,7 @@ import { observer } from 'mobx-react'
 
 import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
-import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
+import { MAX_GROUPS, compareGroupKeys } from '../../shared/groupFeatures.ts'
 
 import type { ColorBy, FilterBy, GroupBy } from '../../shared/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -181,8 +181,11 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         </Typography>
       ) : values?.length ? (
         // Fewer than MAX_GROUPS of them, since that many blocks Submit above.
+        // Listed in the order the sections will stack — the scan returns them in
+        // whichever order the reads arrived, so an HP preview read "2, 1" over a
+        // track about to draw HP 1 first.
         <Typography variant="caption" color="text.secondary">
-          Found values: {values.join(', ')}
+          Found values: {[...values].sort(compareGroupKeys).join(', ')}
         </Typography>
       ) : null}
       <div>
