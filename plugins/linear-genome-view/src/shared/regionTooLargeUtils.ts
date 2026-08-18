@@ -101,20 +101,9 @@ const ZOOM_EVIDENCE_BYTE_RATIO = 0.9
  */
 export interface ByteEstimate {
   /**
-   * The adapter's cheap index-only estimate for {@link measuredSpanBp}. Never
-   * `undefined`: an adapter quoting no estimate leaves the whole `ByteEstimate`
-   * unset instead, so **"unmeasurable" and "not measured yet" are one state**.
-   * Both gating paths enforce that at the write — `byteGateBlocksFetch` and
-   * `commitGateMeasurements` each skip a fetch that measured nothing — because
-   * an unmeasurable answer must not overwrite a good estimate, nor reset the
-   * {@link zoomIneffective} comparison that needs two real measurements.
-   *
-   * `0` **is** one of those real measurements, not a stand-in for the missing
-   * one: an index quotes chunks, and a region with none — an empty contig, a
-   * chromosome this file has no records on — sums to zero bytes. The verdict
-   * handles it as what it says (nothing to download, so nothing to gate). It is
-   * only unusable as the *baseline* of a ratio, which {@link nextByteEstimate}
-   * guards.
+   * Undefined is not representable: an adapter quoting no estimate leaves the
+   * whole {@link ByteEstimate} unset, so "unmeasurable" and "not measured yet"
+   * are one state. `0` is a real measurement — a region with no index chunks.
    */
   bytes: number
   /**
@@ -155,22 +144,8 @@ export interface GateViewport {
 }
 
 /**
- * What was true about the gate when a fetch was **issued**, carried alongside
- * that fetch so its results are judged by the state that produced them. Every
- * field here is one a live read at commit time gets wrong, because the user can
- * zoom or force-load during the round trip.
- *
- * - `viewport` — what the measurement is about. `undefined` before the view is
- *   measured, which `commitGateMeasurements` treats as nothing to label these
- *   numbers with.
- * - `gated` — whether the gate was watching, i.e. whether the worker was handed
- *   any budget to measure against. `resolvedByteLimit() !== undefined` is
- *   exactly that, and both fetch paths already read it to build the RPC args, so
- *   nothing new is captured.
- *
- * One object rather than two parameters because they answer the same question
- * and go stale together: adding a third live read here later is the mistake this
- * shape is meant to make awkward.
+ * The gate as it was when a fetch was issued, since both fields move during the
+ * round trip and its results are judged against neither's live value.
  */
 export interface GateFetchState {
   viewport: GateViewport | undefined
@@ -192,21 +167,7 @@ export function nextByteEstimate(
 ): ByteEstimate {
   const { bytes, viewport } = measurement
   const base = { bytes, measuredSpanBp: viewport.spanBp }
-  // Nothing to compare against, or nothing to compare against it *with*: one
-  // point is not evidence about zoom, and neither is a ratio whose denominator
-  // is zero. Both baselines below are real measurements — a region with no index
-  // chunks is genuinely zero bytes, and a degenerate span is a view mid-measure
-  // — they just cannot carry a ratio, so start over from "zoom might help",
-  // which is what the banner says by default.
-  //
-  // Zero in particular is not hypothetical and it fails in the damaging
-  // direction: an empty contig measures 0, and zooming into real data next
-  // divides by it, so `Infinity > ZOOM_EVIDENCE_BYTE_RATIO` declares zoom
-  // useless at exactly the moment zooming brought the data in.
-  //
-  // An unmeasurable fetch reaches none of this — the callers store no estimate
-  // for it at all (see `ByteEstimate.bytes`), so it can't read here as a
-  // re-measure that came back flat.
+  // A zero baseline, of span or of bytes, cannot carry a ratio
   if (
     previous === undefined ||
     previous.measuredSpanBp <= 0 ||

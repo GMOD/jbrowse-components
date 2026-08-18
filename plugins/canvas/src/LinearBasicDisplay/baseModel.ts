@@ -2649,8 +2649,7 @@ export default function baseStateModelFactory(
             // keys.
             const byteLimit = self.resolvedByteLimit()
             const maxFeatureDensity = self.maxFeatureDensity
-            // captured here, not at commit time: its results are judged
-            // against what the gate looked like when this fetch was issued
+            // captured here, not at commit time
             const issued = self.gateFetchState()
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during

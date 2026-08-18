@@ -247,11 +247,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.gateMeasurementStale).toBe(true)
   })
 
-  // The stamp answers about the fetch, so it is decided by what the gate looked
-  // like when that fetch was ISSUED — not by what it looks like when the results
-  // land. `commitGateMeasurements` read `gateActive` live until 2026-08, which
-  // is a different question whenever force-load moves during the round trip, and
-  // it got both directions wrong. These are the two directions.
+  // decided by the gate at ISSUE, not at commit: force-load can move between
   it('stamps a gated fetch even if force-load lands before the results do', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)

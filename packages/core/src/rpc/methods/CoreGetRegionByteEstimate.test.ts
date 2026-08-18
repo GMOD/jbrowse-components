@@ -70,14 +70,8 @@ describe('CoreGetRegionByteEstimate', () => {
   })
 })
 
-// A byte budget has a scope, and this RPC serves both of the ones in the tree:
-// the gate's, enforced once per region, and the save dialog's, on the whole
-// download. The scope used to be implicit — `getRegionByteSize` merges and sums
-// by construction, so the gate silently got the wrong one and a whole-genome VCF
-// bannered on a total no single region came close to.
 describe('budget scope', () => {
-  // The adapter is asked per region under `largestRegion`, so the stub answers
-  // per region and the two scopes have different right answers.
+  // asked per region under `largestRegion`, so the two scopes differ here
   const perRegionAdapter = (bytes: Record<string, number | undefined>) => ({
     getFeatures: () => {},
     getRegionByteSize: async (regions: { refName: string }[]) =>
@@ -107,10 +101,6 @@ describe('budget scope', () => {
     ).resolves.toBe(1700)
   })
 
-  // The reduction has to skip an unmeasurable region rather than read it as
-  // zero, and answer "unmeasurable" only when every region is — otherwise a
-  // mixed set would gate against a number that left regions out, or a wholly
-  // unmeasurable one would read as a region that comfortably fits.
   it('ignores unmeasurable regions but keeps the measured ones', async () => {
     await expect(
       run(perRegionAdapter({ ctgA: undefined, ctgB: 900, ctgC: undefined }), {

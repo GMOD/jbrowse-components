@@ -490,11 +490,6 @@ export default function RegionTooLargeMixin() {
        * to carry, expire, or reconcile between the two axes. A self-summarizing
        * adapter (BigWig, HiC, sequence) needs no term here: it reports no byte
        * estimate at all, which already keeps the byte axis out of the verdict.
-       *
-       * It was `byteGateExempt`, while its own first sentence said "on either
-       * axis" — force-load has never lifted only the byte gate, and a name
-       * claiming an axis it has no term from is how a reader comes to believe it
-       * does.
        */
       get gateExempt() {
         return self.configForceLoad || self.forceLoadTrack
@@ -555,11 +550,8 @@ export default function RegionTooLargeMixin() {
        * an RPC cache key", in REGION_TOO_LARGE.md § How the verdict is built.
        *
        * `aboveForceLoadFloor` is also false on an unmeasured view, so read this
-       * under `gateActive` or an unmeasured display reads the sub-floor budget
-       * rather than no budget. All three consumers do: `resolvedByteLimit()` and
-       * `tooLargeStatus` below, and MAF's `framesReadOverBudget`, which bounds a
-       * *third* file the banner never quotes (the `mafFrames` overlay) against
-       * this same number.
+       * under `gateActive`, as all three consumers do — `resolvedByteLimit()`,
+       * `tooLargeStatus`, and MAF's `framesReadOverBudget`.
        */
       get gateByteLimit() {
         return resolveByteLimit({
@@ -664,18 +656,8 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #method
-       * Snapshot the gate as it is **right now**, for a fetch about to be
-       * issued. Its results are judged against this rather than against the live
-       * gate, because both fields move during a round trip and neither can be
-       * recovered afterwards — a zoom relabels `gateViewport`, a force-load flips
-       * `gateActive`.
-       *
-       * A method, not a getter, because calling it *is* the capture: a fetch
-       * path calls it once, above its await, and hands the value to
-       * `commitGateMeasurements`. The two canvas fetch paths and the tests all
-       * went through their own copy of this expression, which is one copy per
-       * place to forget that `gated` means "at issue" — and a test copy that
-       * re-derives it cannot fail when the production rule changes.
+       * The gate as it is right now, for a fetch about to be issued. Calling it
+       * is the capture, which is why it is a method.
        */
       gateFetchState(): GateFetchState {
         return { viewport: self.gateViewport, gated: self.gateActive }
@@ -925,13 +907,7 @@ export default function RegionTooLargeMixin() {
               {
                 regions,
                 adapterConfig: self.byteGateAdapterConfig,
-                // This budget is enforced once per region — `gateByteLimit` is
-                // what a single region may cost — so the region set reduces by
-                // max, exactly as `commitGateMeasurements` reduces canvas's
-                // per-region fetches. It read the merged total until 2026-08,
-                // which is a budget on the whole download, and that is how the
-                // same VCF came to banner under this path and render under
-                // canvas's.
+                // `gateByteLimit` is what a single region may cost
                 scope: 'largestRegion',
                 stopToken: ctx.stopToken,
                 statusCallback: ctx.statusCallback,
@@ -946,12 +922,7 @@ export default function RegionTooLargeMixin() {
           return true
         }
         self.setGateMeasuredViewport(viewport)
-        // An adapter that quotes no index estimate answers `undefined`, and that
-        // is not a measurement: publishing it would wipe the last real one and
-        // reset the two-point `zoomIneffective` comparison. The stamp above
-        // still records that the gate asked about this viewport, which is what
-        // `gateMeasurementStale` means. `commitGateMeasurements` skips the same
-        // write for the same reason — the two paths agree.
+        // unmeasurable is not a measurement: it must not wipe the last real one
         if (bytes !== undefined) {
           self.setByteEstimate({ bytes, viewport })
         }

@@ -159,13 +159,8 @@ export { plainChromeOverlays } from './BaseLinearDisplay/index.ts'
 // there — by this plugin's internals and by arc's SVG chrome alike. It is
 // deliberately not mirrored here: one module owns the ranking, and consumers
 // name that module.
-// The two region-too-large names that leave this plugin, and only because the
-// canvas plugin's duck-typed fetch contracts have to name them: a display
-// snapshots `gateFetchState()` when it issues a fetch and hands it back to
-// `commitGateMeasurements`. The rest of the gate — the mixin, the floor, the
-// verdict helpers, `ByteEstimate` and `RegionTooLargeStatus` — is internal,
-// which is the export-surface reduction ADR-045 took instead of moving the gate
-// to a foundation package.
+// The only region-too-large names that leave this plugin: canvas's duck-typed
+// fetch contracts have to name them. The rest is internal (ADR-045).
 export type {
   GateFetchState,
   GateViewport,

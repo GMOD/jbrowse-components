@@ -59,8 +59,7 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
   const byteLimit = self.resolvedByteLimit()
-  // captured before the fetch, because its results are judged against what the
-  // gate looked like when it was issued rather than when they land
+  // captured before the fetch, not at commit time
   const issued = self.gateFetchState()
   // Per-region gate measurements, keyed by the displayedRegionIndex onResult
   // reports back. A region whose fetch was skipped as stale never lands here.

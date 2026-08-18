@@ -184,16 +184,6 @@ describe('nextByteEstimate', () => {
     ).toBe(false)
   })
 
-  // There is no case here for an unmeasurable measurement, and that is the
-  // point: an adapter quoting no index estimate never reaches this function,
-  // because both callers skip the write rather than publish an empty estimate.
-  // `bytes` is a number by type. The pin lives at the call sites — "keeps a good
-  // estimate when a batch measured no bytes", in
-  // LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts.
-  //
-  // What still can't be compared is a baseline of zero — of span, or of bytes.
-  // Both are real measurements; neither can carry a ratio, so the fold starts
-  // over rather than reporting one it cannot compute.
   it('says nothing about zoom when the previous span is unusable', () => {
     const degenerate = {
       bytes: 306_719,
@@ -209,12 +199,7 @@ describe('nextByteEstimate', () => {
     })
   })
 
-  // An index quotes chunks, so a region with none — an empty contig, or a
-  // chromosome this file carries no records on — measures exactly zero bytes.
-  // That is a real measurement, but as the denominator of the zoom-evidence
-  // ratio it is `Infinity`, which reads as "the bytes did not fall" at the one
-  // moment they rose from nothing. The banner would then withhold "zoom in to
-  // see features" immediately after zooming in is what brought the data.
+  // dividing by it reads as "the bytes did not fall" at the moment they rose
   it('says nothing about zoom when the previous measurement was zero bytes', () => {
     const emptyContig = {
       bytes: 0,
@@ -230,8 +215,6 @@ describe('nextByteEstimate', () => {
     })
   })
 
-  // ...and zero is measured, not missing: it stores, and the next real
-  // measurement compares against the one after it rather than against nothing.
   it('stores a zero measurement rather than treating it as absent', () => {
     expect(
       nextByteEstimate(undefined, { bytes: 0, viewport: vp(100_000) }),

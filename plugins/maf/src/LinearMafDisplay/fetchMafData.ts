@@ -20,12 +20,8 @@ interface MafFetchSelf extends IStateTreeNode {
   subtreeFilterSet: string[] | undefined
   annotationDataActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
-  // The byte budget the main gate enforces, and the "may the gate act at all"
-  // term that governs it. Read rather than restated so the frames pre-flight
-  // below cannot end up bounded by a different number than everything else on
-  // this display — and `gateActive` rather than `gateExempt` for the reason
-  // `gateByteLimit`'s own docstring gives: below `AUTO_FORCE_LOAD_BP` the budget
-  // is the raised sub-floor tier, and an unmeasured view reads as below it.
+  // read rather than restated, so the frames pre-flight below is bounded by the
+  // same number as everything else on this display
   gateByteLimit: number
   gateActive: boolean
   fetchRegions: (
@@ -169,12 +165,8 @@ async function framesReadOverBudget(
   adapterConfig: Record<string, unknown>,
   ctx: FetchContext,
 ) {
-  // `gateActive` is the whole "may anything gate right now" question: force-load
-  // exempts the track outright on every axis — the same getter the main gate
-  // reads, so one informed click covers this read too rather than leaving the
-  // overlay mysteriously off after the banner is gone — and it is also what
-  // makes `gateByteLimit` below the budget rather than the sub-floor tier an
-  // unmeasured view would resolve.
+  // force-load exempts the track on every axis, so one click covers this read
+  // too rather than leaving the overlay mysteriously off
   if (!self.gateActive) {
     return false
   }
@@ -186,10 +178,7 @@ async function framesReadOverBudget(
     {
       regions: needed.map(n => n.region),
       adapterConfig,
-      // Same budget as the main gate (`gateByteLimit`), so the same scope: the
-      // frames read is a per-region fetch through `callEachRegion`, and a
-      // whole-genome view whose regions each fit should not lose the overlay
-      // over what they add up to.
+      // same budget as the main gate, so the same scope
       scope: 'largestRegion',
       // An estimate off a tabix index is a set of range reads, and this one runs
       // on the fetch's critical path — the frames read waits on it. Without the

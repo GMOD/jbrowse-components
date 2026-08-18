@@ -11,13 +11,7 @@ type Region = RenderFeatureDataArgs['region']
 // Features-per-pixel for a feature count spread over a region at a given zoom.
 // Shared by the pre-fetch (sampled estimate) and post-fetch (exact) density
 // gates so both measure against maxFeatureScreenDensity the same way.
-//
-// A region with no span occupies no pixels, so nothing is dense in it. The guard
-// is here rather than at a call site because being shared is this function's
-// whole job: `screenDensity` on the main thread carried it and the worker's two
-// verdicts did not, so the same zero-width region read as 0 on the side that
-// draws the banner and `count / 0` -> Infinity on the side that decides it —
-// which is a short-circuit refusing to fetch a region containing nothing.
+// A region with no span occupies no pixels, so nothing in it is dense.
 export function featuresPerPx(
   featureCount: number,
   region: { start: number; end: number },

@@ -98,10 +98,8 @@ export async function fetchTrackData({
     const bytes = await session.rpcManager.call(
       sessionId,
       'CoreGetRegionByteEstimate',
-      // The opposite scope from the display's gate, and deliberately: a save
-      // downloads every region in one file, so the whole merged total is what
-      // the user is being asked to approve. The gate's budget is per-region
-      // because it decides per region whether to render one.
+      // a save downloads every region in one file, so the total is what the
+      // user approves — unlike the gate, whose budget is per-region
       { adapterConfig, regions, scope: 'wholeRequest', ...opts },
     )
     const limit = model.exportByteLimit

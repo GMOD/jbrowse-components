@@ -202,65 +202,22 @@ export default function CanvasFeatureGateMixin() {
     .actions(self => ({
       /**
        * #action
-       * Commit a batch of per-region fetch outcomes: record the per-region byte
-       * **max** (not sum — each region is gated against the same per-region
-       * budget, so a multi-region view where every region individually fits is
-       * never blanked by the cross-region total) and the per-region density, then
-       * publish the byte estimate to `RegionTooLargeMixin` — bytes and nothing
-       * else, since the budget it is compared against is a main-thread config
-       * read (`gateByteLimit`), the same one that produced the worker's
-       * `resolvedByteLimit()`.
+       * Commit a batch of per-region fetch outcomes. Byte **max**, not sum: the
+       * budget is per-region. See agent-docs/reference/REGION_TOO_LARGE.md.
        */
       commitGateMeasurements(
         measurements: RegionGateMeasurement[],
         issued: GateFetchState,
       ) {
         const { viewport, gated } = issued
-        // Nothing measured (every region's fetch went stale) — leave the
-        // previous estimate alone rather than replacing it with an empty one,
-        // and don't claim this viewport has been asked about either, or a
-        // blocked display would stop re-measuring after a superseded fetch.
-        //
-        // An absent `viewport` means the view was unmeasured when the fetch was
-        // issued, so there is nothing to label these numbers with. Same
-        // treatment, and self-correcting for the same reason: the stamp is not
-        // written, so `gateMeasurementStale` holds and the next settled viewport
-        // measures again. Accepting it here rather than asserting at the two
-        // call sites keeps the fetch paths free of a non-null assertion that
-        // would throw mid-commit if it were ever wrong.
         if (measurements.length === 0 || !viewport) {
           return
         }
-        // Stamped whatever the batch learned, but only when the gate could
-        // learn anything. A dense region short-circuits on its feature count and
-        // reports no bytes, and it must still stamp — it did ask the adapter
-        // about this viewport, and that is what `gateMeasurementStale` answers,
-        // so keying the stamp on bytes instead makes a density-blocked display
-        // refetch forever. A force-loaded fetch is the other case and goes the
-        // other way: the worker was handed no budget on either axis, so it
-        // measured against nothing and the gate asked nothing. Stamping there
-        // wrote "this viewport has been measured" over a fetch that could not
-        // have measured it, and the pre-flight path already answers the other
-        // way — `byteGateBlocksFetch` returns before its own stamp when
-        // `gateActive` is false. The two agreeing is the point: the stamp means
-        // one thing, so putting a track back under the gate
-        // (`setForceLoadTrack(false)`, from a plugin or a test) lands on a
-        // viewport that reads as unmeasured and re-measures, instead of
-        // inheriting a stamp from fetches the gate sat out.
-        //
-        // `gated` comes from `issued`, not from reading `gateActive` here, for
-        // the same reason `viewport` does: it describes the fetch, and a fetch
-        // is judged by the state that produced it. Read live, it answered about
-        // a gate the user could have turned off — or back on — while the round
-        // trip was in flight, and the stamp would then describe budgets the
-        // worker never had.
-        //
-        // The density stats below are deliberately outside this: they are
-        // committed on every successful fetch regardless of budget, which is
-        // what lets zooming back out re-gate from the live main-thread verdict.
         if (gated) {
           host(self).setGateMeasuredViewport(viewport)
         }
+        // outside the `gated` check: committed whatever the budget was, so
+        // zooming back out re-gates from the live main-thread verdict
         for (const { displayedRegionIndex, region, result } of measurements) {
           const { featureCount } = result
           if (featureCount !== undefined) {
@@ -270,22 +227,7 @@ export default function CanvasFeatureGateMixin() {
             })
           }
         }
-        // Per-region max, not sum: each region is gated against the same
-        // per-region budget. `largestRegionBytes` is the same reduction the
-        // pre-flight asks `CoreGetRegionByteEstimate` for by name (`scope:
-        // 'largestRegion'`), shared rather than restated — one budget scope, so
-        // the two paths cannot reach opposite verdicts on one file the way they
-        // used to.
         const bytes = largestRegionBytes(measurements.map(m => m.result.bytes))
-        // No byte count in the batch — either the adapter has no index estimate,
-        // or the worker was handed no budget to measure against because the byte
-        // gate was inactive for this fetch (force-loaded). Either way this fetch
-        // measured nothing, so leave the previous estimate and the span it was
-        // taken at untouched rather than overwriting them with an unmeasurable
-        // one: an empty write would also reset the zoom-effectiveness comparison
-        // that `nextByteEstimate` builds across two real measurements. The
-        // pre-flight path never had the problem — `byteGateBlocksFetch` skips the
-        // RPC outright when nothing could gate, and so writes nothing.
         if (bytes !== undefined) {
           host(self).setByteEstimate({ bytes, viewport })
         }

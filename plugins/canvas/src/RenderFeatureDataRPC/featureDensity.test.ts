@@ -30,11 +30,7 @@ describe('featuresPerPx', () => {
     )
   })
 
-  // A region with no span occupies no pixels, so nothing in it is dense.
-  // Unguarded this is `count / 0` -> Infinity, which clears any budget and makes
-  // the worker refuse to fetch a region containing nothing. The main thread's
-  // `screenDensity` guarded it and the worker's two verdicts did not, which is
-  // the pair this function exists to keep identical.
+  // unguarded this is `count / 0` -> Infinity: a refusal to fetch nothing
   it('is zero, not Infinity, for a region with no span', () => {
     expect(featuresPerPx(5000, { start: 100, end: 100 }, 10)).toBe(0)
     expect(featuresPerPx(0, { start: 100, end: 100 }, 10)).toBe(0)
