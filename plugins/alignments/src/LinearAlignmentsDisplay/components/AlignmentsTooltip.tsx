@@ -361,7 +361,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
   if (typeof tooltipData === 'string') {
     return (
       <BaseTooltip clientPoint={{ x, y }}>
-        <div className={classes.tooltipContent}>
+        <div className={classes.tooltipContent} data-testid="pileup-tooltip">
           <SimpleTooltipContents message={tooltipData} />
         </div>
       </BaseTooltip>

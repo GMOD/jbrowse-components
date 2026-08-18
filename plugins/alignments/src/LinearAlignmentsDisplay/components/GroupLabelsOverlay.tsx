@@ -177,7 +177,11 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         return (
           <Fragment key={sectionKey(section.groupKey)}>
             {i > 0 ? <div className={classes.divider} style={{ top }} /> : null}
-            <div className={classes.controls} style={{ top: chipTop + 1 }}>
+            <div
+              className={classes.controls}
+              style={{ top: chipTop + 1 }}
+              data-testid="group-label-chip"
+            >
               {showPileup ? (
                 <button
                   type="button"
@@ -196,10 +200,12 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   ) : (
                     <ExpandMoreIcon className={classes.icon} />
                   )}
-                  {label}
+                  <span data-testid="group-label-text">{label}</span>
                 </button>
               ) : (
-                <span className={classes.label}>{label}</span>
+                <span className={classes.label} data-testid="group-label-text">
+                  {label}
+                </span>
               )}
               {/* Restore a manually-sized group to the fit budget; otherwise a
                   "show all" affordance only when reads were actually clipped by

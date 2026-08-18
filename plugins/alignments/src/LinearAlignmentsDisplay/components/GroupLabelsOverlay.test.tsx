@@ -13,6 +13,17 @@ const CANVAS_HEIGHT = 200
 const SECTION_HEIGHT = 120
 const CONTENT_HEIGHT = SECTION_HEIGHT * 2
 
+// The positioned element is the chip, not the text node's parent — the label
+// sits in a span of its own so the browser suite can read it.
+function chipTop(label: string) {
+  return /top:\s*([^;]+)/.exec(
+    screen
+      .getByText(label)
+      .closest('[data-testid="group-label-chip"]')!
+      .getAttribute('style')!,
+  )![1]!
+}
+
 function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
   const showPileup = overrides.showPileup ?? true
   const model = {
@@ -64,10 +75,9 @@ test('a group scrolled past its coverage band keeps its label, pinned at the top
       canvasHeight: CANVAS_HEIGHT,
     },
   })
-  const first = screen.getByText('HP: 1')
-  expect(first.parentElement!.style.top).toBe('1px')
+  expect(chipTop('HP: 1')).toBe('1px')
   // the section below it still sits at its own (scrolled) top
-  expect(screen.getByText('HP: 2').parentElement!.style.top).toBe('61px')
+  expect(chipTop('HP: 2')).toBe('61px')
 })
 
 // ... but the pin stops at the section's own bottom edge, or a group on its way
@@ -81,8 +91,8 @@ test('the pinned label yields to the next section', () => {
     },
   })
   // 4px of section 1 left on screen, and the chip is 16px tall
-  expect(screen.getByText('HP: 1').parentElement!.style.top).toBe('-11px')
-  expect(screen.getByText('HP: 2').parentElement!.style.top).toBe('5px')
+  expect(chipTop('HP: 1')).toBe('-11px')
+  expect(chipTop('HP: 2')).toBe('5px')
 })
 
 test('a section entirely above the viewport drops its label', () => {
