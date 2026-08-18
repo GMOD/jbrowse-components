@@ -502,6 +502,16 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
         }
       }}
       onMouseMove={e => {
+        // Checked ahead of the feature path for the same reason the click is:
+        // the badge carries a feature id, so it would otherwise raise the
+        // GENE's tooltip on top of its own `title` — two tooltips on one 40px
+        // control, saying different things. Clearing rather than returning,
+        // because the cursor reached the badge across the name it sits after,
+        // and that pass already set the hover.
+        if (resolveMoreIsoforms(e) !== undefined) {
+          onLabelMouseLeave?.()
+          return
+        }
         const t = resolveTarget(e)
         if (t && onLabelMouseOver) {
           onLabelMouseOver(t.item)

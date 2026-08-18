@@ -372,7 +372,13 @@ const BADGE_DATA = {
   featureCount: 1,
 }
 
-function renderLabelLayer(overrides: Record<string, unknown>) {
+function renderLabelLayer(
+  overrides: Record<string, unknown>,
+  hover: {
+    onLabelMouseOver?: (item: unknown) => void
+    onLabelMouseLeave?: () => void
+  } = {},
+) {
   const model = {
     renderedShowLabels: true,
     renderedShowSubfeatureLabels: true,
@@ -402,7 +408,7 @@ function renderLabelLayer(overrides: Record<string, unknown>) {
   }
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <FloatingLabelsLayer model={model} view={VIEW} />
+      <FloatingLabelsLayer model={model} view={VIEW} {...hover} />
     </ThemeProvider>,
   )
 }
@@ -462,6 +468,26 @@ describe('the badge in the label layer', () => {
     expect(baseline(getByTestId('feature-more-isoforms-gene1'))).toBeCloseTo(
       baseline(getByTestId('feature-name-GENE1')),
     )
+  })
+
+  // The badge carries a feature id so its click can find the gene, which also
+  // put it on the layer's hover path: it raised the GENE's tooltip on top of its
+  // own `title`, two of them on one 40px control saying different things. The
+  // cursor arrives across the name, so the hover it has to undo is already set.
+  it('does not raise the feature tooltip over its own', () => {
+    const onLabelMouseOver = jest.fn()
+    const onLabelMouseLeave = jest.fn()
+    const { getByTestId } = renderLabelLayer(
+      {},
+      { onLabelMouseOver, onLabelMouseLeave },
+    )
+
+    fireEvent.mouseMove(getByTestId('feature-name-GENE1'))
+    expect(onLabelMouseOver).toHaveBeenCalledTimes(1)
+
+    fireEvent.mouseMove(getByTestId('feature-more-isoforms-gene1'))
+    expect(onLabelMouseOver).toHaveBeenCalledTimes(1)
+    expect(onLabelMouseLeave).toHaveBeenCalled()
   })
 
   // The badge is anchored to the end of the name text, so a badge outliving its
