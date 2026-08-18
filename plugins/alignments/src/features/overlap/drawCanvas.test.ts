@@ -81,3 +81,12 @@ test('sub-3px rows draw nothing in either layout', () => {
     expect(draw(WIDE, { ...state, featureHeight: 2 })).not.toContain('<rect')
   }
 })
+
+// The other half of `shouldDrawOverlaps`, and the half only this test sees: the
+// renderer reaches this pass through a PILEUP_LAYERS entry gated on the same
+// predicate, so a regression here is invisible from there. One feature per row
+// means an overlap span is a read overlapping itself, and painting it reads as
+// depth that isn't there.
+test('and neither layout means nothing to draw at any height', () => {
+  expect(draw(WIDE, {})).not.toContain('<rect')
+})
