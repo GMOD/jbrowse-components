@@ -499,7 +499,7 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearBasicDisplay": {
     "canonicalTranscriptField": "string = "tag"",
-    "canonicalTranscriptTags": "stringArray = ["MANE Select","MANE_Select","RefSeq Select","Ensembl_canonical","MANE Plus Clinical"]",
+    "canonicalTranscriptTags": "stringArray = ["MANE Select","MANE_Select","RefSeq Select","Ensembl_canonical","MANE Plus Clinical","MANE_Plus_Clinical"]",
     "color": "maybeColor = undefined",
     "connectorColor": "maybeColor = undefined",
     "containerTypes": "stringArray = ["proteoform_orf"]",
@@ -730,7 +730,7 @@ exports[`every registered schema slot default 1`] = `
   "display: LinearSyntenyDisplay": {},
   "display: LinearVariantDisplay": {
     "canonicalTranscriptField": "string = "tag"",
-    "canonicalTranscriptTags": "stringArray = ["MANE Select","MANE_Select","RefSeq Select","Ensembl_canonical","MANE Plus Clinical"]",
+    "canonicalTranscriptTags": "stringArray = ["MANE Select","MANE_Select","RefSeq Select","Ensembl_canonical","MANE Plus Clinical","MANE_Plus_Clinical"]",
     "color": "maybeColor = undefined",
     "connectorColor": "maybeColor = undefined",
     "containerTypes": "stringArray = ["proteoform_orf"]",
