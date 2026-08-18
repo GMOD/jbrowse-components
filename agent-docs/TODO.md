@@ -26,6 +26,7 @@ before anyone noticed.
 | Item | Area | First move |
 | --- | --- | --- |
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
+| [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
@@ -1181,6 +1182,36 @@ not, the feature is gone either way, so don't open one.
 The silent half was ours and is fixed: react-msaview `9d8af2e`
 (GMOD/JBrowseMSA#111) shows a failed load instead of spinning on it forever,
 which was never specific to AlphaFold and needs no release to matter here.
+
+### Import the recipes' remaining copied label tables
+
+`website/src/lib/spec-recipe/fields.ts` names menu labels in the click paths
+shown beside every doc figure and gallery card. Half its tables import the app's
+own `[value, label]` registry and cannot drift; the other half retype the labels,
+and every wrong label found so far was in a copy — "Gene glyph mode" for "Gene
+glyph", "Arcs"/"Read cloud" for "Show read arcs"/"Show read cloud", "Finer /
+Coarser" for a control that is two buttons. `check-spec-recipes` catches these
+now, but a copy that cannot drift needs no catching.
+
+**The criterion is whether the registry's module is a leaf.** The node script
+that builds the recipes cannot load a module importing React, MUI or a lazy
+`.tsx`, which is why `DEFAULT_AUTOSCALE_OPTIONS` had to move out of
+`scoreMenuItems.ts` into `autoscale.ts` before it could be imported —
+that move is the worked example, and `ARC_DISPLAY_MODE_OPTIONS` is the case that
+needed nothing.
+
+Three more cite a registry that exists but is not exported, so each is a one-word
+change plus the same leaf test: `arcColorOptions`
+(alignments/LinearAlignmentsDisplay/menus/colorBy.ts), `SUBFEATURE_LABEL_OPTIONS`
+and `displayModeOptions` (canvas/LinearBasicDisplay, model.ts and trackMenus.ts).
+All three modules build menus, so expect to extract rather than just export.
+
+The rest of the ~20 tables have no cited registry at all, and several are not
+convertible in principle — `SETTINGS_POPOVERS` and the `GRAPH_*` tables name
+controls in a plugin this repo does not build, and the config-slot names under
+`Track menu → Settings` are generated form fields rather than labels. Read the
+comment above each table before assuming one is available; the ones worth doing
+say where their labels came from.
 
 ## Blocked on a visual call
 
