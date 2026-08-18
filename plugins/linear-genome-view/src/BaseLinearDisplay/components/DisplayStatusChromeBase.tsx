@@ -90,28 +90,59 @@ export type DisplayStatusChromeBaseProps = {
    */
   testid: string
   children?: ReactNode
-} & Omit<ComponentPropsWithRef<'div'>, 'children'>
+} & ChromeDivProps
+
+type ChromeDivProps = Omit<ComponentPropsWithRef<'div'>, 'children'>
 
 /**
- * A pointer handler that fires only for pointers actually over the chrome.
+ * A pointer event that asks "what is under this pixel" — anything but the
+ * enter/leave pairs, which have to keep firing from a portalled overlay because
+ * leaving the chrome for one is how a display learns to clear its hover.
+ */
+function asksWhereThePointerIs(key: string) {
+  return (
+    /^on(Mouse|Pointer|Aux|Click|ContextMenu|DoubleClick|Wheel)/.test(key) &&
+    !/(Enter|Leave)$/.test(key)
+  )
+}
+
+/**
+ * The caller's pointer handlers, rebound to fire only for pointers actually over
+ * the chrome.
  *
  * REACT EVENTS DO NOT STOP AT A PORTAL: they bubble through the COMPONENT tree,
  * not the DOM one. Everything a display floats above itself -- a context menu, a
  * colour legend, the track control -- is portalled to another node while staying
- * a React child of this div, so its clicks arrived here as though they had
- * happened on the canvas. A display that hit-tests `onClick` then answered them,
- * and picking a menu item or dismissing a legend also opened the feature that
- * happened to be underneath.
+ * a React child of this div, so its pointer events arrived here as though they
+ * had happened on the canvas. Picking a menu item or dismissing a legend then
+ * opened whatever the overlay was covering.
+ *
+ * Every positional handler rather than the two that were noticed: maf resolves
+ * its click from `onMouseUp`, and the chrome's own hover measurement rides
+ * `onMouseMove` (see `DisplayChromeBase`), so a hand-written list of event names
+ * left both of those leaking and would go stale again on the next display to
+ * bind a gesture here.
  *
  * The DOM says which is which: a portalled target is not inside this element.
  */
-const overChrome =
-  (handler: MouseEventHandler<HTMLDivElement> | undefined) =>
-  (event: React.MouseEvent<HTMLDivElement>) => {
-    if (event.currentTarget.contains(event.target as Node)) {
-      handler?.(event)
-    }
-  }
+function overChrome(props: ChromeDivProps): ChromeDivProps {
+  return Object.fromEntries(
+    Object.entries(props).map(([key, value]) => {
+      if (!asksWhereThePointerIs(key) || typeof value !== 'function') {
+        return [key, value]
+      }
+      const handler = value as MouseEventHandler<HTMLDivElement>
+      return [
+        key,
+        (event: React.MouseEvent<HTMLDivElement>) => {
+          if (event.currentTarget.contains(event.target as Node)) {
+            handler(event)
+          }
+        },
+      ]
+    }),
+  )
+}
 
 export default function DisplayStatusChromeBase({
   model,
@@ -121,8 +152,6 @@ export default function DisplayStatusChromeBase({
   testid,
   style,
   children,
-  onClick,
-  onContextMenu,
   ...divProps
 }: DisplayStatusChromeBaseProps) {
   // Destructured so the JSX below reads as ordinary components rather than
@@ -141,11 +170,9 @@ export default function DisplayStatusChromeBase({
   }
   return (
     <div
-      {...divProps}
       // Only the pointers that happened over this element, so a portalled
-      // overlay's clicks are not answered as canvas hits -- see `overChrome`.
-      onClick={overChrome(onClick)}
-      onContextMenu={overChrome(onContextMenu)}
+      // overlay's events are not answered as canvas hits -- see `overChrome`.
+      {...overChrome(divProps)}
       // The chrome owns the positioning context: the loading scrim and error
       // bar below are position:absolute children, so the container must be the
       // containing block. Centralized here so no caller has to remember it (and

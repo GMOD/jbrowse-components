@@ -68,26 +68,3 @@ test('closes once on an item click, before the callback runs', () => {
   fireEvent.click(getByText('Do a thing'))
   expect(order).toEqual(['close', 'callback'])
 })
-
-// THE PORTAL DOES NOT STOP A REACT EVENT. Every display that raises this menu
-// renders it inside the element whose own `onClick` hit-tests the pointer, and
-// React bubbles a portal's events through the component tree rather than the
-// DOM one — so picking an item also ran that hit test, and a right-click route
-// ended with the clicked feature's details drawer open beside its own result.
-test('an item click does not reach the display that rendered the menu', () => {
-  const displayClicks = jest.fn()
-  const { getByText } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <div onClick={displayClicks}>
-        <ContextMenu
-          anchor={{ clientX: 10, clientY: 20 }}
-          menuItems={ITEMS}
-          onClose={() => {}}
-        />
-      </div>
-    </ThemeProvider>,
-  )
-
-  fireEvent.click(getByText('Do a thing'))
-  expect(displayClicks).not.toHaveBeenCalled()
-})

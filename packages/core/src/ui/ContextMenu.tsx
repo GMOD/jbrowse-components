@@ -33,6 +33,12 @@ const DEFAULT_OFFSET = { x: 12, y: 0 }
  * coordinate state there re-ran the whole menu build — with fresh item
  * identities — on every move while a menu was open.
  *
+ * Its events do not stop at the portal — React bubbles them through the
+ * component tree to whatever rendered the menu, which on a display is the
+ * element that hit-tests the pointer. `DisplayStatusChromeBase` is where that
+ * element refuses the events that did not happen over it, for every portalled
+ * overlay rather than for menus alone.
+ *
  * Mounts only while open, and only with something to show: MUI keeps a Paper
  * that fades out on close, so an anchored-but-empty menu flashes an empty box
  * at the cursor. `onClose` is the single close path — Menu's
@@ -56,40 +62,20 @@ const ContextMenu = observer(function ContextMenu({
   }
   const items = Array.isArray(menuItems) ? menuItems : menuItems()
   return items.length > 0 ? (
-    // A REACT EVENT DOES NOT STOP AT THE PORTAL. The menu renders into
-    // document.body, but React bubbles a portal's events through the COMPONENT
-    // tree, and every display that raises this menu renders it inside the same
-    // element whose `onClick` hit-tests the pointer. So picking any item also
-    // ran that hit test, and every right-click route ended with the clicked
-    // feature's details drawer open beside the thing the item had just done.
-    //
-    // `display: contents` because this wrapper is only here to catch events:
-    // the menu itself is portalled out, so the div holds nothing to lay out,
-    // and a box in the display's flow would move what is under it.
-    <div
-      style={{ display: 'contents' }}
-      onClick={e => {
-        e.stopPropagation()
+    <Menu
+      open
+      onMenuItemClick={callback => {
+        callback()
       }}
-      onContextMenu={e => {
-        e.stopPropagation()
+      onClose={onClose}
+      anchorReference="anchorPosition"
+      anchorPosition={{
+        top: anchor.clientY + offset.y,
+        left: anchor.clientX + offset.x,
       }}
-    >
-      <Menu
-        open
-        onMenuItemClick={callback => {
-          callback()
-        }}
-        onClose={onClose}
-        anchorReference="anchorPosition"
-        anchorPosition={{
-          top: anchor.clientY + offset.y,
-          left: anchor.clientX + offset.x,
-        }}
-        style={{ zIndex: CONTEXT_MENU_Z_INDEX }}
-        menuItems={items}
-      />
-    </div>
+      style={{ zIndex: CONTEXT_MENU_Z_INDEX }}
+      menuItems={items}
+    />
   ) : null
 })
 
