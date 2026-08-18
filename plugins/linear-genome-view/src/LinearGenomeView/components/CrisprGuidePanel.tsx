@@ -79,6 +79,8 @@ const NO_FILTER = { minGcPercent: 0, maxGcPercent: 100 }
 const DEFAULT_ENZYME = 'SpCas9'
 const DEFAULT_PRESET = ENZYME_PRESETS[DEFAULT_ENZYME]!
 
+const toBpCount = (str: string) => (str.trim() ? Number(str) : Number.NaN)
+
 const CrisprGuidePanel = observer(function CrisprGuidePanel({
   model,
   handleClose,
@@ -102,12 +104,16 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
   const [searchReverse, setSearchReverse] = useState(true)
   const [filterQuality, setFilterQuality] = useState(false)
 
-  const guideLength = Number(guideLengthStr)
-  const cutOffset = Number(cutOffsetStr)
+  // `Number('')` is 0, so an emptied field would otherwise read as a valid zero
+  const guideLength = toBpCount(guideLengthStr)
+  const cutOffset = toBpCount(cutOffsetStr)
   // both are bp counts used for fixed-length string slicing, so a fractional
   // value would silently truncate and skew the placement
   const guideLengthValid = Number.isInteger(guideLength) && guideLength > 0
-  const cutOffsetValid = Number.isInteger(cutOffset)
+  // a cut beyond either end of the protospacer draws its tick outside the glyph
+  // that is supposed to carry it, and outside the box that can be clicked
+  const cutOffsetValid =
+    Number.isInteger(cutOffset) && cutOffset >= 0 && cutOffset <= guideLength
   // each PAM position must be a single IUPAC code (one base); other characters
   // would leak into the match regex and break the fixed-length placement
   const pamValid = IUPAC_MOTIF_REGEX.test(pam)
@@ -202,6 +208,7 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
               label="Guide length (bp)"
               value={guideLengthStr}
               error={!guideLengthValid}
+              helperText={guideLengthValid ? undefined : 'A whole number of bp'}
               onChange={event => {
                 setGuideLengthStr(event.target.value)
               }}
@@ -211,6 +218,9 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
               label="Cut offset (bp)"
               value={cutOffsetStr}
               error={!cutOffsetValid}
+              helperText={
+                cutOffsetValid ? undefined : 'bp from the PAM, within the guide'
+              }
               onChange={event => {
                 setCutOffsetStr(event.target.value)
               }}
