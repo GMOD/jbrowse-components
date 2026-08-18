@@ -1658,7 +1658,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   showCenterLine: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show center line (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show... → Show center line (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   trackLabels: value => {
@@ -1675,6 +1675,15 @@ export const viewFields: Record<string, FieldRecipe> = {
     typeof value === 'boolean'
       ? {
           path: `View menu → Show... → Show amino acids when zoomed in (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
+  // The checkbox carries the placeholder's visibility, so it reads the inverse
+  // of the field: hiding it is the box unchecked. A synteny row takes this the
+  // same way any other LGV does, through the per-row launch props.
+  hideNoTracksActive: value =>
+    typeof value === 'boolean'
+      ? {
+          path: `View menu → Show... → Show no tracks active button (${value ? 'unchecked' : 'checked'})`,
         }
       : undefined,
   drawCurves: value =>
