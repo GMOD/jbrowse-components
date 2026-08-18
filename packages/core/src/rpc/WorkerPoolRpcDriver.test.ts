@@ -1,3 +1,4 @@
+import { stopStopToken } from '../util/stopToken.ts'
 import WorkerPoolRpcDriver from './WorkerPoolRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
@@ -11,10 +12,15 @@ function makeConfig(overrides: { workerCount?: number } = {}) {
 class FakeWorker implements WorkerHandle {
   destroyed = false
   calls: { fn: string; args: unknown; opts?: unknown }[] = []
+  stopped: string[] = []
   private errorCallbacks: (() => void)[] = []
 
   destroy() {
     this.destroyed = true
+  }
+
+  notifyStopToken(id: string) {
+    this.stopped.push(id)
   }
 
   onError(callback: () => void) {
@@ -162,6 +168,28 @@ describe('WorkerPoolRpcDriver.destroy', () => {
     // the original worker was terminated, the replacement stays live
     expect(driver.workers[0]!.destroyed).toBe(true)
     expect(driver.workers[1]!.destroyed).toBe(false)
+  })
+
+  test('the pool built after a destroy still hears a stopped token', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
+    await driver.getWorker('s')
+    driver.destroy()
+    await driver.getWorker('s')
+    // the boot promise the notify routes through has to settle first
+    await Promise.resolve()
+
+    // a string token, not createStopToken(): jsdom has SharedArrayBuffer, and a
+    // SAB token cancels through shared memory with no broadcast to make. The
+    // string path is the one every deployment without cross-origin isolation
+    // takes, which is all of ours.
+    const stopToken = 'stop-1'
+    stopStopToken(stopToken)
+    await Promise.resolve()
+
+    // registered in the constructor, this was unregistered by destroy and never
+    // renewed, so the second pool could not be cancelled at all — every stopped
+    // fetch ran to completion with nothing failing
+    expect(driver.workers[1]!.stopped).toEqual([stopToken])
   })
 })
 

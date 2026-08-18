@@ -6,7 +6,6 @@ import BaseRpcDriver from './BaseRpcDriver.ts'
 import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import type { StatusCallback } from '../util/progress.ts'
-import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
 
 export interface WorkerHandle {
   destroy(): void
@@ -125,16 +124,16 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
   // is the seam that carries it. Broadcast rather than routed per call: one
   // token is commonly in flight on several calls at once, and a worker holding
   // nothing under that id ignores the frame.
-  private unregisterBroadcaster: () => void
-
-  constructor(args: RpcDriverConstructorArgs) {
-    super(args)
-    this.unregisterBroadcaster = registerStopTokenBroadcaster(id => {
-      for (const worker of this.workerPool ?? []) {
-        worker.notifyStopToken(id)
-      }
-    })
-  }
+  //
+  // Registered with the POOL, not in the constructor, because `destroy` drops
+  // the pool and nothing forbids using the driver again — `getWorkerPool` just
+  // builds a fresh one, which is a supported path with a test on it. A
+  // constructor registration is unregistered once and never renewed, so the
+  // second pool ran with no way to hear a stop at all: every cancelled fetch
+  // downloaded and parsed to completion, silently, on the driver every worker
+  // deployment uses. It also keeps a driver that never boots a worker out of the
+  // module-global broadcaster set.
+  private unregisterBroadcaster: () => void = () => {}
 
   abstract makeWorker(): Promise<WorkerHandle>
 
@@ -157,6 +156,12 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
   }
 
   private createWorkerPool(): LazyWorker[] {
+    this.unregisterBroadcaster = registerStopTokenBroadcaster(id => {
+      for (const worker of this.workerPool ?? []) {
+        worker.notifyStopToken(id)
+      }
+    })
+
     // workerCount 0 (the config default) means "decide from hardware"
     const workerCount =
       readConfObject(this.config, 'workerCount') ||
