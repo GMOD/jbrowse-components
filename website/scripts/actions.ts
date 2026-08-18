@@ -1,5 +1,6 @@
 import { delay, waitForAppSettled } from '@jbrowse/browser-test-utils'
 
+import { chordPoint } from './chordAnchor.ts'
 import { graphNodePoint } from './graphAnchor.ts'
 import { locusPoint } from './locusAnchor.ts'
 
@@ -242,18 +243,21 @@ function assertInViewport(
 }
 
 // The viewport point a click/hover acts on when it isn't targeting an element:
-// a model-resolved position where the spec gives an anchor — a graph node, or a
-// genomic locus in a linear view — else the literal `from`. An anchor that
-// resolves to nothing throws, so a moved node or a locus scrolled out of view
-// fails the spec by name instead of clicking the top-left corner of the page.
+// a model-resolved position where the spec gives an anchor — a chord, a graph
+// node, or a genomic locus in a linear view — else the literal `from`. An anchor
+// that resolves to nothing throws, so a moved node or a locus scrolled out of
+// view fails the spec by name instead of clicking the top-left corner of the
+// page.
 async function anchorPoint(
   page: Page,
   action: ScreenshotAction,
   anchor: AnnotationAnchor,
 ) {
-  const point = anchor.graphNode
-    ? await graphNodePoint(page, anchor)
-    : await locusPoint(page, anchor)
+  const point = anchor.chord
+    ? await chordPoint(page, anchor)
+    : anchor.graphNode
+      ? await graphNodePoint(page, anchor)
+      : await locusPoint(page, anchor)
   if (!point) {
     throw new Error(
       `${action.type} anchor did not resolve: ${JSON.stringify(anchor)}`,

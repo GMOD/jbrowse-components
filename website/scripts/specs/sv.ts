@@ -1174,13 +1174,19 @@ export const svSpecs: ScreenshotSpec[] = [
     // the grid's own internal viewport, so its DOM rect is real but not
     // visible until scrolled into view — hover (which Puppeteer auto-scrolls
     // to) brings it on-screen before the anchor box is measured. The matching
-    // chord in the circular plot (data-testid `chord-vcf-19`, confirmed by
-    // walking the React fiber tree from the chord path to its `feature`
-    // prop) is a 1px stroke among ~160 others with no reliable on-screen
-    // anchor (hover can't land on it, and its rendered curve geometry doesn't
-    // map cleanly through the circular view's screen transform), so the grid
-    // row — which carries the same identity in readable text — is the
-    // dependable anchor instead.
+    // chord in the circular plot is not the anchor, and the reason is better
+    // than it used to be. `anchor: { chord }` now resolves a chord by its own
+    // `<title>` and hit-tests along the curve (`chordAnchor.ts`), so the
+    // geometry is no longer the problem — but SV_20 in particular has no pixel
+    // to point at: SV_190 is the same junction written the other way round,
+    // draws the same curve, and paints over it end to end
+    // (`node scripts/probe-chords.ts <spec> --click=SV_20` reports exactly
+    // that). So the grid row, which carries the same identity in readable text,
+    // stays the anchor here.
+    //
+    // The id this comment used to name, `chord-vcf-19`, is SV_14 today. A
+    // feature id is parse order, which is why nothing should be anchored by
+    // one.
     actions: [{ type: 'hover', text: 'SV_20' }],
     annotations: [
       { type: 'box', anchor: { text: 'SV_20' } },

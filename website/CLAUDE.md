@@ -203,8 +203,19 @@ the tour was filmed in.
   `PROBE_SPEC=<name> node scripts/probe-app-settled.ts` samples the app's own
   phase while the wait runs and says which kind of sleep you have. A menu
   animation, a tooltip delay or a hover settling stays a `delay`.
-- **Every annotation `anchor`s** — by locus, dotplot cell or graph node, never a
-  measured pixel. Shapes belong in
+- **A chord is anchored by its `<title>`, and hit-tested** —
+  `anchor: { chord: 'SV_20' }`, resolved by `chordAnchor.ts`. Two reasons it is
+  not a selector. A chord's DOM id is `chord-<feature id>`, and a feature id is
+  parse order, so it drifts silently (a comment in `specs/sv.ts` named the id
+  for SV_20; that id is SV_14 today). And a chord is a Bezier, so the
+  bounding-box centre `elementHandle.click()` aims at is not on it, while the
+  curve's midpoint is where every other chord bundles. So the resolver walks the
+  curve and asks `elementFromPoint`, returning the first point the browser
+  agrees belongs to that chord — a buried one resolves to nothing rather than
+  clicking its neighbour. `node scripts/probe-chords.ts <spec> --click=<label>`
+  lists what was drawn and says which of those two it hit.
+- **Every annotation `anchor`s** — by locus, dotplot cell, graph node or chord,
+  never a measured pixel. Shapes belong in
   `@jbrowse/browser-test-utils/src/annotationOverlay.ts`. Prefer an in-app
   `highlight` to an overlay. A band under 24 CSS px carries no chip and clips
   any `label` to nothing (`CHIP_MIN_WIDTH`, and the band is `overflow: clip`),
