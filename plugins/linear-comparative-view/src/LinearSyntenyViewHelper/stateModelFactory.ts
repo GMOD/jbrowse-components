@@ -5,11 +5,10 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 import { displaysSettled } from '@jbrowse/synteny-core'
-import { reaction } from 'mobx'
 
 import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
 
@@ -314,19 +313,6 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
-       * Where a cumBp lands on screen in this band: the pan and scale of the two
-       * genome rows it draws between, which is every input `projectCorners` has.
-       * Its only reader is the hover clear below — a change here means the
-       * ribbons moved.
-       */
-      get viewportKey() {
-        const { views } = self.parentView
-        const v0 = views[self.level]
-        const v1 = views[self.level + 1]
-        return `${v0?.offsetPx}_${v0?.bpPerPx}_${v1?.offsetPx}_${v1?.bpPerPx}`
-      },
-      /**
-       * #getter
        * Render-lifecycle precondition (overrides `RenderLifecycleMixin`'s
        * default-true hook): the render callback sizes the canvas off
        * `parentView.width`, which throws by design before the view is
@@ -338,36 +324,6 @@ export function linearSyntenyViewHelperModelFactory(
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        // Drop the hover whenever the ribbon it names slides out from under a
-        // stationary cursor. Nothing on the shared canvas travels with a
-        // feature, so no pointer event fires and nothing re-picks — the tooltip
-        // and the darkened ribbon just stay pinned to an alignment that has
-        // moved on.
-        //
-        // One reaction over `viewportKey` covers every way that can happen:
-        // the wheel, a drag-pan of the band (whose own mousemove handler
-        // deliberately doesn't pick while the drag is in flight), either row's
-        // scrollbar or zoom buttons, a locstring navigation, `showAllRegions`.
-        // Listing the entry points instead is how the LGV side and the dotplot
-        // each got this wrong first — see `installClearHoverOnViewportChange`
-        // and `setupClearHoverOnPlotMove`, whose twin this is. A big enough pan
-        // also refetches, and `setRpcData` clears the index then, but that
-        // covers only the pans that cross the fetch buffer.
-        //
-        // A `reaction`, not an `autorun`: the effect writes the hover, and an
-        // autorun body that both read and wrote it would re-fire itself.
-        addDisposer(
-          self,
-          reaction(
-            () => self.viewportKey,
-            () => {
-              self.setHoveredFeature(undefined)
-            },
-            { name: 'SyntenyLevelClearHoverOnViewportChange' },
-          ),
-        )
-      },
       /**
        * #action
        */

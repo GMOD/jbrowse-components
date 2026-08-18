@@ -143,8 +143,9 @@ describe('the location-marker toggle', () => {
     const off = paint(false)
     expect(abgrAlpha(off[1]!)).toBe(0)
     // below the floor the draw loop and the pick engine share, so the instance
-    // is skipped outright rather than blended
-    expect(isInstanceInvisible(off[1]!)).toBe(true)
+    // is skipped outright rather than blended. A tick bypasses the opacity
+    // slider, so the floor sees it at full alpha.
+    expect(isInstanceInvisible(off[1]!, 1)).toBe(true)
     expect(off[0]).toBe(paint(true)[0]!)
   })
 
