@@ -7,6 +7,8 @@ import {
   resolveSamplesFromTree,
 } from './getSamples.ts'
 
+import type { NewickNode } from '@jbrowse/tree-sidebar'
+
 describe('getSamplesFromConfig sample-set resolution', () => {
   const noTree = {
     uri: '/path/to/my.nh',

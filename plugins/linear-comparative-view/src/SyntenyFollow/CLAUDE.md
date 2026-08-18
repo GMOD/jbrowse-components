@@ -98,16 +98,21 @@ asked. So **anything it can never say yes to is an infinite loop**, not a
 misplacement — one core at 90%, and jest's own timeout does not fire because the
 loop starves the timer queue.
 
-The wake is **`navToLocString` replacing `displayedRegions`**, which it does
-whether or not the row moves; that invalidates `followPairs`, which is the first
+The wake was **`navToLocString` replacing `displayedRegions`**, which it did
+whether or not the row moved; that invalidates `followPairs`, which is the first
 thing the exact pass reads. Measured across fourteen consecutive passes on the
 swapped track: coarse blocks, `featureData` and width all stable, the pass
-re-entering on nothing but its own navigation. Nothing outside the follow stops
-that, so the follow keeps its own backstop: asking for the same span **from the
-same observed window** twice cannot be a real disagreement — the first attempt
-already had its chance and the row still reports where it was — so `execute`
-refuses the second. Arriving clears the record, which is what keeps a
-hand-nudged row navigable back to exactly the span it was nudged off.
+re-entering on nothing but its own navigation. `navToResolvedSpan` takes `navTo`
+first now, which moves inside the row's existing regions and so does not replace
+them — a navigation that does not move the row no longer wakes anything, and the
+fourteen-pass shape needs the fallback to reach it. It is still only the loudest
+way in, not the only one: the exact pass reads the moving row on purpose, so any
+placement it disagrees with wakes it again. The backstop therefore stays, and
+stays load-bearing: asking for the same span **from the same observed window**
+twice cannot be a real disagreement — the first attempt already had its chance
+and the row still reports where it was — so `execute` refuses the second.
+Arriving clears the record, which is what keeps a hand-nudged row navigable back
+to exactly the span it was nudged off.
 
 **A navigation that REJECTED keeps its record too, deliberately.** By the
 backstop's own wording it never had its chance, so clearing it reads like the
@@ -154,6 +159,15 @@ showing another contig and the exact pass is on its way to navigate it.
 A limit to know, because it silently weakens any test written without it. The
 synteny fetch keeps a block only when **both** ends are in view, so a row parked
 on one contig is only ever sent alignments already pointing at it.
+
+**So the follow must never narrow the row's own region set**, or the limit
+becomes self-inflicted and permanent. It was: `navToLocString` resolving to a
+single location replaces `displayedRegions` wholesale, so the first settle
+collapsed a whole-genome row onto whichever contig the answer landed on, and
+every later pan reported "nothing aligns here" for a region set the follow
+itself had thrown away. `navToResolvedSpan` takes `navTo` first for that reason
+and falls back only for a span the row genuinely cannot reach. A placement that
+replaces regions is the thing to look at first if this comes back.
 
 ## Every refName the follow reads is canonical, made so in two places
 

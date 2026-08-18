@@ -798,10 +798,10 @@ test('a navigation that does not move the row is not asked for twice', async () 
 // first, and on a single-region row those two are the same number. ctgB goes
 // first so a ctgA answer only lands if its 6079 bases are counted ahead.
 //
-// The FRAME pass, because blocking the navigation is what keeps the two regions
-// in place — `navToLocString` replaces `displayedRegions` wholesale, so the
-// exact pass collapses the row to one contig on the first settle and the
-// arithmetic is never reached.
+// The FRAME pass specifically, so the exact pass's navigation is blocked to
+// keep the frame pass the only thing moving the row. Both of its navigation
+// paths have to be stubbed: `navTo` is the one it takes while the span is
+// inside the row's regions, which on this two-contig row is every time.
 test('the frame pass places a two-contig row in its concatenated space', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
@@ -812,6 +812,9 @@ test('the frame pass places a two-contig row in its concatenated space', async (
   view.setRowSyncMode('follow')
 
   let navs = 0
+  jest.spyOn(target!, 'navTo').mockImplementation(() => {
+    navs++
+  })
   jest.spyOn(target!, 'navToLocString').mockImplementation(async () => {
     navs++
   })
@@ -831,6 +834,48 @@ test('the frame pass places a two-contig row in its concatenated space', async (
     // ignored ctgB's 6079 bases lands that much to the left
     expect(win.start).toBeGreaterThan(31000)
     expect(win.end).toBeLessThan(33000)
+  }, timeout)
+}, 60000)
+
+// The follow used to narrow its own input. `navToLocString` resolving to one
+// location replaces `displayedRegions` wholesale, so the first settle collapsed
+// a multi-contig row onto whichever contig the answer landed on — and the
+// synteny fetch keeps a block only when both ends are in view, so from then on
+// the row was never offered an alignment pointing anywhere else. Panning the
+// anchor to a locus matching another contig then held every row and reported
+// "nothing aligns here", for a region set the follow itself had thrown away.
+test('following does not narrow the row it moves', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  const regions = [
+    { refName: 'ctgB', start: 0, end: 6079, assemblyName: TARGET_ASM },
+    { refName: 'ctgA', start: 0, end: 50001, assemblyName: TARGET_ASM },
+  ]
+  target!.setDisplayedRegions(regions)
+  view.setRowSyncMode('follow')
+
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).refName).toBe('ctgA')
+  }, timeout)
+
+  expect(target!.displayedRegions.map(r => r.refName)).toEqual(['ctgB', 'ctgA'])
+}, 60000)
+
+// The fallback still has to fire: a row displaying only a contig the answer is
+// not on cannot be moved within its own regions, and replacing them is the only
+// way to reach the span at all.
+test('following a row onto a contig it does not display still navigates', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  target!.setDisplayedRegions([
+    { refName: 'ctgB', start: 0, end: 6079, assemblyName: TARGET_ASM },
+  ])
+  view.setRowSyncMode('follow')
+
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).refName).toBe('ctgA')
   }, timeout)
 }, 60000)
 

@@ -16,6 +16,24 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * span is on another contig, which the per-frame pass must not do — it uses
  * `positionViewOnSpan` instead.
  *
+ * `navTo` FIRST, and `navToLocString` only as the fallback. Both send the row
+ * to the right place; only `navTo` leaves it able to be sent anywhere else.
+ * `navToLocString` resolving to a single location replaces `displayedRegions`
+ * with the one contig it landed on, and the synteny fetch keeps a block only
+ * when both ends are in view — so a whole-genome row is narrowed to one contig
+ * by its own first successful move, and is never again offered an alignment
+ * pointing off it. Under the follow that is permanent and self-inflicted: pan
+ * the anchor to a locus matching another contig and every row holds while the
+ * header reports "nothing aligns here", which is true only of the region set
+ * the follow itself threw away.
+ *
+ * Falling back rather than pre-checking: "is this span inside the displayed
+ * regions" is `navTo`'s own containment rule, and restating it here is how the
+ * two come to disagree. It resolves both endpoints before it moves anything, so
+ * a throw leaves the view untouched. A row genuinely not displaying the contig
+ * — one the user navigated to a single region — still gets the replacement,
+ * which is the only way to reach the span at all.
+ *
  * Shared for the one-base clamp, which is silent when left out: a zero-width
  * span assembles into an inverted locstring.
  */
@@ -23,13 +41,16 @@ export async function navToResolvedSpan(
   view: LinearGenomeViewModel,
   span: ResolvedSpan,
 ) {
-  await view.navToLocString(
-    assembleLocStringRaw({
-      refName: span.refName,
-      start: span.start,
-      end: Math.max(span.start + 1, span.end),
-    }),
-  )
+  const { refName } = span
+  const start = span.start
+  const end = Math.max(span.start + 1, span.end)
+  try {
+    view.navTo({ refName, start, end })
+    return
+  } catch {
+    // the span is not inside this row's displayed regions
+  }
+  await view.navToLocString(assembleLocStringRaw({ refName, start, end }))
 }
 
 /**
