@@ -119,13 +119,12 @@ export default function stateModelFactory(
          * feature's refName has left the view and there is no genomic x to point
          * at — dropped rather than pinned to the left edge.
          *
-         * Indexed rather than filtered because the crosshair asks the same
-         * question of one column that the field below asks of all of them, and
-         * the filtered list cannot answer it: dropping an entry shifts every
-         * index past it. That is why the two were a computed and a method
-         * resolving the assembly, the feature list and `genomicViewportX`
-         * separately — one walk each, and two chances for the drawn line and the
-         * highlighted one to be computed differently for the same column.
+         * Indexed rather than filtered, because the crosshair asks of one
+         * column what the drawn field asks of all of them and a filtered list
+         * cannot answer it: dropping an entry shifts every index past it. So
+         * this is the one walk — the field filters it, the crosshair indexes it,
+         * and the highlighted line is one OF the drawn lines rather than a
+         * second answer to where that line goes.
          *
          * Screen column and data index are the same number: the worker hands the
          * features back in screen order (`orderByScreenPosition`), so nothing
