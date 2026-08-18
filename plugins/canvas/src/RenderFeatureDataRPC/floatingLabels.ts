@@ -80,7 +80,9 @@ export function createFeatureFloatingLabels({
 // DOM/SVG halves of the same choice.
 //
 // `hidden` rides along for the hover title, which is where the terse text is
-// spelled out; the badge itself has one short row to live in.
+// spelled out; the badge itself has one short row to live in. It is always at
+// least 1 — `isoformOverflow` exists only where the collapse left something out
+// — so there is no zero case to answer for here.
 //
 // Through `labelItem` like every other label, so the packer's width reservation
 // and the drawn text agree by construction (see the invariant there) — measured
@@ -93,18 +95,16 @@ export function createMoreIsoformsLabel({
   palette: JBrowsePalette
 }) {
   const { hidden, expanded } = overflow
-  return hidden > 0
-    ? {
-        ...labelItem(
-          expanded ? 'show fewer' : `+${hidden} more`,
-          palette.text.secondary,
-          0,
-          LABEL_FONT_SIZE * MORE_ISOFORMS_FONT_SCALE,
-        ),
-        hidden,
-        expanded,
-      }
-    : undefined
+  return {
+    ...labelItem(
+      expanded ? 'show fewer' : `+${hidden} more`,
+      palette.text.secondary,
+      0,
+      LABEL_FONT_SIZE * MORE_ISOFORMS_FONT_SCALE,
+    ),
+    hidden,
+    expanded,
+  }
 }
 
 export function createTranscriptFloatingLabel({
