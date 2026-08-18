@@ -107,7 +107,14 @@ const stale: string[] = []
 // compiles that call: `@jbrowse/capture` wraps it in `waitForAppReady`, which
 // is the thing the page is telling a reader they can do without. An include
 // pointing at the const would put a declaration where the page needs a call.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '20')
+//
+// 20 -> 21 on 2026-08-18: `embedded_components.md` gained a second imperative
+// controller example when `createCircularGenomeView` landed (fe371f0346), the
+// twin of the `createLinearGenomeView` fence above it — which is already one of
+// these 20, for the same reason. `createCircularGenomeView.test.ts` does compile
+// those calls, but wraps them in jest and a `view.setWidth(800)` that only jsdom
+// needs, so an include would teach a reader the harness instead of the API.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '21')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {
