@@ -445,7 +445,7 @@ async function buildGroupResult(
 // and the spine runs once per group, returning one WorkerPileupData per group.
 // Pileup partitions per read (partitionFeatures); chain partitions per chain
 // (partitionChains) so a chain stays whole, and is restricted to
-// chain-consistent dimensions. Ungrouped fetches return a single group.
+// fragment-level dimensions. Ungrouped fetches return a single group.
 export async function executeRenderAlignmentData({
   pluginManager,
   args,

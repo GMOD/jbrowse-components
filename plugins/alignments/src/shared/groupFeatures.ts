@@ -250,21 +250,13 @@ export function compareGroupKeys(a: string, b: string) {
 // sorts into that tail, a plain splice would bury it under "N more values".
 function capGroups(groups: FeatureGroup[]) {
   const untagged = groups.at(-1)?.key === '' ? groups.pop() : undefined
-  const kept = untagged ? MAX_GROUPS - 2 : MAX_GROUPS - 1
-  const overflow = groups.splice(kept)
-  groups.push({
+  const overflow = groups.splice(MAX_GROUPS - (untagged ? 2 : 1))
+  const merged = {
     key: OVERFLOW_GROUP_KEY,
     label: `${overflow.length} more values`,
     features: overflow.flatMap(g => g.features),
-  })
-  if (untagged) {
-    // Before the overflow group that was just pushed, so it stays last.
-    // Spelled `length - 1` rather than `-1`: `unicorn/no-confusing-array-splice`
-    // is right that `splice(-1, 0, x)` reads like "remove the last one".
-    // eslint-disable-next-line unicorn/prefer-negative-index -- the two rules disagree; clarity wins
-    groups.splice(groups.length - 1, 0, untagged)
   }
-  return groups
+  return untagged ? [...groups, untagged, merged] : [...groups, merged]
 }
 
 function orderGroups(groups: FeatureGroup[]) {
@@ -334,11 +326,24 @@ function chainRepresentative(chain: Feature[]): Feature {
 
 export interface GroupByDimension {
   type: GroupByType
-  // True iff every read of a chain yields the same key, so `partitionChains` can
-  // key the chain off its representative read. A plain fact about the key
-  // generator — whether chain mode HONORS the dimension is
-  // `isChainGroupableType`, which also accepts a `chainKey` below.
-  chainConsistent: boolean
+  // Whether the dimension describes the FRAGMENT rather than the record, so
+  // `partitionChains` can key a whole chain off its representative read.
+  //
+  // Not "every read of the chain yields this key" — for two of the dimensions
+  // marked true it doesn't, and the difference matters when classifying a new
+  // one. A supplementary segment carries its own strand and its own
+  // @gmod/bam-derived `pair_orientation`, so an inverted split makes
+  // `firstOfPairStrand` and `pairOrientation` disagree with their primary. The
+  // primary read1 still holds the fragment's answer, which is what
+  // `chainRepresentative` returns and what the pileup's own colors read
+  // (buildChainMetadata takes pair orientation off the primary for the same
+  // reason). `mapq` and `strand` are false because a chain HAS no single answer:
+  // the two mates genuinely point opposite ways and map with their own
+  // confidence.
+  //
+  // Whether chain mode HONORS the dimension is `isChainGroupableType`, which
+  // also accepts a `chainKey` below.
+  fragmentLevel: boolean
   // True for dimensions that don't apply to ordinary alignment reads and so are
   // not offered in the general "Group by..." radios; a display that supports them
   // surfaces them itself — mateAssembly is offered by LGVSyntenyDisplay's own
@@ -348,11 +353,10 @@ export interface GroupByDimension {
   // each dimension is defined in exactly one place — `groupKeyFor` just looks it
   // up. `groupBy` is passed for tag grouping, which needs `groupBy.tag`.
   key: (feature: Feature, groupBy: GroupBy) => GroupKey
-  // Key for a whole chain, for a dimension whose per-read key is a property of
-  // the chain rather than of the read. Without it `partitionChains` keys off the
-  // chain's representative read, which answers "is the primary read1 like this",
-  // not "is any read of this fragment". Supplying one is also what makes a
-  // chain-inconsistent dimension groupable in chain mode
+  // Key for a whole chain, for a dimension the representative read cannot answer
+  // for. Without it `partitionChains` keys off that read, which answers "is the
+  // primary read1 like this", not "is any read of this fragment". Supplying one
+  // is also what makes a per-read dimension groupable in chain mode
   // (`isChainGroupableType`).
   chainKey?: (chain: Feature[], groupBy: GroupBy) => GroupKey
 }
@@ -373,52 +377,51 @@ export const GROUP_BY_DIMENSIONS: {
 } = {
   strand: {
     type: 'strand',
-    chainConsistent: false,
+    fragmentLevel: false,
     key: strandKey,
   },
   firstOfPairStrand: {
     type: 'firstOfPairStrand',
-    chainConsistent: true,
+    fragmentLevel: true,
     key: firstOfPairStrandKey,
   },
   tag: {
     type: 'tag',
-    chainConsistent: true,
+    fragmentLevel: true,
     key: (feature, groupBy) => tagKey(feature, groupBy.tag ?? ''),
   },
   pairOrientation: {
     type: 'pairOrientation',
-    chainConsistent: true,
+    fragmentLevel: true,
     key: pairOrientationKey,
   },
   // Chain mode is where this dimension earns its keep — long-read SV viewing is
   // linked reads plus split-read evidence — so it defines the chain's key rather
   // than being dropped there. A chain is keyed by read name and so holds both
-  // mates, and one mate can be split where the other is not: the per-read key
-  // therefore varies within a chain (hence `chainConsistent: false`), and the
-  // fragment has split evidence if either mate does, which the representative
-  // read cannot answer.
+  // mates, and one mate can be split where the other is not: the fragment has
+  // split evidence if either mate does, which the representative read cannot
+  // answer (hence `fragmentLevel: false` plus a `chainKey`).
   splitRead: {
     type: 'splitRead',
-    chainConsistent: false,
+    fragmentLevel: false,
     key: splitReadKey,
     chainKey: chain => (chainIsSplit(chain) ? SPLIT_GROUP : UNSPLIT_GROUP),
   },
   mapq: {
     type: 'mapq',
-    chainConsistent: false,
+    fragmentLevel: false,
     key: mapqKey,
   },
   mateAssembly: {
     type: 'mateAssembly',
-    chainConsistent: true,
+    fragmentLevel: true,
     hidden: true,
     key: mateAssemblyKey,
   },
 }
 
 // Whether chain mode can honor a dimension: one chain has to resolve to one key,
-// which holds when every read of the chain yields the same one OR when the
+// which holds when the representative read answers for the fragment OR when the
 // dimension states the chain's key itself. Derived from the two facts rather than
 // asserted as a third field — a `chainKey` written without a matching flag would
 // otherwise never run, and the dimension would degrade to ungrouped with the code
@@ -427,15 +430,15 @@ export function isChainGroupableType(type: GroupByType | undefined) {
   if (type === undefined) {
     return false
   }
-  const { chainConsistent, chainKey } = GROUP_BY_DIMENSIONS[type]
-  return chainConsistent || chainKey !== undefined
+  const { fragmentLevel, chainKey } = GROUP_BY_DIMENSIONS[type]
+  return fragmentLevel || chainKey !== undefined
 }
 
-// The grouping a fetch can actually honor. Chain mode allows only chain-consistent
-// dimensions, where every read of a chain yields one key so `partitionChains` keeps
-// the chain whole; a per-read dimension (an old session with strand + chain, say)
-// degrades to ungrouped rather than splitting chains across sections and breaking
-// their connecting lines. Named so the worker reads as "the grouping for this mode"
+// The grouping a fetch can actually honor. Chain mode allows only the dimensions
+// a chain resolves to one key under, so `partitionChains` keeps the chain whole;
+// a per-read dimension (an old session with strand + chain, say) degrades to
+// ungrouped rather than splitting chains across sections and breaking their
+// connecting lines. Named so the worker reads as "the grouping for this mode"
 // instead of an inline mode/registry ternary. See ../RenderAlignmentDataRPC/CLAUDE.md.
 export function groupByForMode(
   groupBy: GroupBy | undefined,

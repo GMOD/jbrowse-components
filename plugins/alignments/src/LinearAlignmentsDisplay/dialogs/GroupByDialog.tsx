@@ -76,7 +76,7 @@ function nextColorScheme(
 
 // Group reads into stacked sections by a tag value (HP, RG, ...). Tag is the one
 // group-by dimension needing extra input, so it gets a dialog; every other
-// dimension is a direct radio in the Group-by menu. Tag is chain-consistent, so
+// dimension is a direct radio in the Group-by menu. Tag is fragment-level, so
 // this works in linked-read mode too (no per-mode gating needed).
 const GroupByDialog = observer(function GroupByDialog(props: {
   model: GroupByDialogModel

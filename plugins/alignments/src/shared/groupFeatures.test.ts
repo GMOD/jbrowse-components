@@ -282,19 +282,19 @@ test('mate-assembly grouping pins features with no mate assembly last', () => {
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b', 'c'])
 })
 
-// Two ways a dimension resolves one chain to one key: every read yields the same
-// key, or the dimension states the chain's key itself. `splitRead` is the second
-// — its per-read key differs between a split mate and its unsplit partner — so a
-// reading of `chainConsistent` alone would drop it from chain mode, where it
-// matters most.
-test('isChainGroupableType allows a chain-consistent key or a chainKey', () => {
+// Two ways a dimension resolves one chain to one key: the representative read
+// answers for the fragment, or the dimension states the chain's key itself.
+// `splitRead` is the second — its per-read key differs between a split mate and
+// its unsplit partner — so a reading of `fragmentLevel` alone would drop it from
+// chain mode, where it matters most.
+test('isChainGroupableType allows a fragment-level key or a chainKey', () => {
   expect(isChainGroupableType('tag')).toBe(true)
   expect(isChainGroupableType('firstOfPairStrand')).toBe(true)
   expect(isChainGroupableType('pairOrientation')).toBe(true)
   expect(isChainGroupableType('mateAssembly')).toBe(true)
   expect(isChainGroupableType('strand')).toBe(false)
   expect(isChainGroupableType('splitRead')).toBe(true)
-  expect(GROUP_BY_DIMENSIONS.splitRead.chainConsistent).toBe(false)
+  expect(GROUP_BY_DIMENSIONS.splitRead.fragmentLevel).toBe(false)
   expect(isChainGroupableType('mapq')).toBe(false)
   expect(isChainGroupableType(undefined)).toBe(false)
 })

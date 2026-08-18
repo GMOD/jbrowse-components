@@ -33,11 +33,14 @@ read likewise.
   count. The `''` untagged group is held out of the overflow merge — reads
   _lacking_ the tag are a distinct answer users look for.
 - Chain mode allows only dimensions that resolve one chain to one key —
-  `chainConsistent` (every read yields the same key) **or** a `chainKey` that
-  answers for the whole chain, which is why `isChainGroupableType` derives the
-  answer instead of reading a third field. A new `GroupByType` member is a
-  compile error until it's classified, and each entry's `type` is pinned to its
-  own registry key.
+  `fragmentLevel` (the chain's representative read answers for the fragment)
+  **or** a `chainKey` that answers for the whole chain, which is why
+  `isChainGroupableType` derives the answer instead of reading a third field.
+  `fragmentLevel` is **not** "every read yields the same key": a supplementary
+  segment carries its own strand and its own `pair_orientation`, so it disagrees
+  with its primary and the fragment's answer is the primary read1's. A new
+  `GroupByType` member is a compile error until it's classified, and each
+  entry's `type` is pinned to its own registry key.
 - Key generators must cover **both** worlds this pipeline serves — hence
   `strand` over `SAM_FLAG_REVERSE`, and `getMappingQuality`.
 - Chain numbering is **per worker call**, so anything unioning chains across

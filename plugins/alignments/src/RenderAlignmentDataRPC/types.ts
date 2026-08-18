@@ -42,7 +42,7 @@ export interface RenderAlignmentDataArgs {
   showCoverage?: boolean
   // In-track stacked grouping. When set, the worker partitions the single fetch
   // into N ordered groups and returns one WorkerPileupData per group. Honored in
-  // chain mode too, but only for the chain-consistent dimensions — `groupByForMode`
+  // chain mode too, but only for the fragment-level dimensions — `groupByForMode`
   // degrades a per-read one to ungrouped rather than splitting a chain across
   // sections, and `partitionChains` assigns each chain as a unit. Tier-1 refetch
   // setting (in rpcProps): changing it re-partitions, so the worker must re-run.

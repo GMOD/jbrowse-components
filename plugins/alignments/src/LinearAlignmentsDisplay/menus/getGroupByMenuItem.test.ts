@@ -37,7 +37,7 @@ test('offers None, the per-read dimensions, then Tag... last', () => {
   ])
 })
 
-test('chain mode offers only the chain-consistent dimensions', () => {
+test('chain mode offers only the fragment-level dimensions', () => {
   expect(
     radios(makeModel({ isChainMode: true }).model).map(i => i.label),
   ).toEqual([
