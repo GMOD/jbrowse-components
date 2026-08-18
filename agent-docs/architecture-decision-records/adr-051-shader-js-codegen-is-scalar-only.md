@@ -236,6 +236,10 @@ the part a scanner cannot know and the part that says whether the bar was met.
 | `ldUniforms.slang` | `ldRSquared`, `ldGenotypeD`, `ldGenotypeCorrelation`, `ldHaplotypeCorrelation` | `@jbrowse/ld-core` `calculateLDStats` + `calculateLDStatsPhased` — the rest of what `dprimeFinalize` left behind. Both compute kernels now end in these too, so the r/r²/D block is stated once instead of four times |
 | `rect.slang` | `rectSpanPx` | `Canvas2DFeatureRenderer` `paintedRectSpan` — the point-vs-span branch, the pixel snap and the widening, all restated there; the first export whose answer is a pair |
 | `chevron.slang` | `showChevrons`, `chevronCount`, `chevronOffset` | `Canvas2DFeatureRenderer` `drawLines` — the strand-marker layout, stated in bp in the shader and in px here, so the two copies did not even look alike |
+| `chevron.slang` | `chevronFirstVisible`, `chevronLastVisible` | `drawLines` **and `vs_main`** — the first export to replace code on both sides, both of it inline, and the only one so far that fixed a live divergence rather than a latent one: the shader's window covered the chevron's arms and the Canvas2D one did not (see §The blind spot). Sharing it also made the GPU's window exact, which bought back 3 of the vertex slots `MAX_VISIBLE_CHEVRONS_PER_LINE` budgets |
+| `continuation.slang` | `markerIsDark`, `markerHalfHeight`, `runsOffEdge` (+ `CONT_MARK_ALPHA` via `export-consts`) | `drawContinuation` **and `vs_main`** — the rest of what the marker decides, swept out in one pass rather than left for the next one to find. The luminance pick was stated in 0..1 against `> 0.5` on the GPU and in 0..255 against `> 127.5` here; the overhang gate was three comparisons in clip space against three hand-mirrored ones in px; the `0.4` height shrink and the `0.55` alpha were bare literals on both sides |
+| `arrow.slang` | `arrowDraws` | `drawArrows`, and — the reason it is worth a function for one comparison — `strandArrowPadding` in **layout.ts**, which runs before either renderer and reserves the arrow's packing room. Three call sites in two processes, each measuring the width its own way on purpose, agreeing on the boundary by having written `14` down three times |
+| `rect.slang` | `rectDrawsOutline` | `drawRects` `fs_main` — the "is this box big enough to inset a border" gate, a bare `2` on each side. Deliberately not `MIN_RECT_WIDTH_PX`, which is also 2 and answers a different question |
 | `arc.slang` | `arcRadiiPx` | `features/arcs/drawCanvas.ts` `strokeArc` — the paired-read dome's two radii and the near/far branch behind them. The second export whose answer is a pair, and the second one whose copies did not look alike: the gate was `2*halfWidthPx > k*canvasW` in the shader and `\|sx2-sx1\| > k*screenWidthPx` here, taken as a `far` boolean the caller worked out |
 | `ldUniforms.slang` | `ldEnoughGenotypes`, `ldEnoughGametes`, `ldLociPolymorphic`, `ldGenotypeAlleleFreq` | `@jbrowse/ld-core` + both compute kernels — the degenerate-input gates that stood between the moments and the already-generated estimators. The polymorphism test was written out in four places |
 
@@ -370,6 +374,43 @@ which is why comment-syncing it had held: the two copies do not even look alike.
 
 The generated inventory does not close this — it also lists functions. What
 closes it is the habit: when a `vs_main` body grows a decision, name it.
+
+**The habit was not enough, and the third miss says why (2026-08-18).** The
+chevron lift above named three decisions and left a fourth — the visible-index
+window — inline in `vs_main`, because three were what it needed. `drawLines` had
+its own copy, and the two disagreed: the shader's padded a whole slot at each end
+and so happened to cover the chevron's arms, while the Canvas2D copy windowed on
+the centre, so a chevron straddling a canvas edge drew on a GPU machine and
+vanished on the no-GPU path and in every SVG export.
+
+The residue is worse than an untouched `vs_main`, because a partly-factored one
+*looks* finished: `chevron.slang` had a `//! js-export` line, three public
+functions with the unit-agnosticism spelled out, and a parity test named
+`chevronLayoutParity` sitting beside the untested window. Nothing in the
+inventory, the export list or the test file said the shader still had an
+unshared decision in it.
+
+So the habit is not "name a decision when you add one", it is **"when you lift a
+decision out of an entry point, lift every decision that entry point makes"** —
+the ones you do not need included, since it is the neighbour left behind that the
+next reader will take for already-shared. `chevronFirstVisible` /
+`chevronLastVisible` are the fourth, and `vs_main` now makes no scalar decision
+of its own.
+
+Applied to the rest of `plugins/canvas`'s entry points in the same pass, which is
+what the rule asks for: `continuation.slang`'s luminance pick, height shrink and
+overhang gate; `arrow.slang`'s width gate; `rect.slang`'s outline-room test. None
+of those had drifted — they are in the table above because the one that had gave
+no sign, and a partly-lifted shader is where that happens.
+
+The emitter got a fix out of it too, and by the route this section is about: the
+oracle sweeps a function's whole domain, so naming the chevron window made it
+probe a zero spacing, whose `0/0` reached `max(0.0, NaN)` — where the twin
+answered NaN and slangc's C++ answers 0. `_max`/`_min` had been written as
+`a > b ? a : b`, which is NaN-faithful in first argument position only, and every
+existing test put the NaN on the left. Inline arithmetic is invisible to the
+oracle as well as to the inventory: it referees *exports*, so lifting a decision
+is also what gets it checked.
 
 ### Deliberately not exported
 
