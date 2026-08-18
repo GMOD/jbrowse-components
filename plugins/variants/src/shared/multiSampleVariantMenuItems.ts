@@ -297,7 +297,12 @@ export function variantTrackMenuItems(
       // for the same reason: the dialog would otherwise open only to report it
       // after the user clicks Run.
       disabled: (self.sourcesWithoutLayout?.length ?? 0) < 2,
-      disabledHelpText: loaded
+      // Off the sample list, not `loaded`: the samples arrive on their own RPC
+      // (`MultiSampleVariantGetSources`), which neither waits for the cell data
+      // nor is waited on by it. Keyed on the cell data, the row blamed the
+      // cohort for a sample list that had not landed yet, and called a genuinely
+      // single-sample track still-loading forever.
+      disabledHelpText: self.sourcesWithoutLayout
         ? 'Needs at least two samples to cluster'
         : 'Loading samples...',
       onClick: () => {

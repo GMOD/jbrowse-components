@@ -163,3 +163,18 @@ test('leaves the rows alone at a position no loaded region covers', () => {
 
   expect(display.layout).toEqual([])
 })
+
+// The right-click item is gated on the row count already (it is absent below
+// two rows, above), but `sortRowsByScoreAt` is also the declarative
+// `sortRowsBy` entry point a session spec reaches directly, and a write there
+// is not a harmless no-op: `setLayout` drops the cluster tree whenever the row
+// set changes, so one source would trade a dendrogram for a layout naming the
+// only row there is. The multi-row feature display's twin carries the same
+// guard.
+test('sorts nothing when there is a single row to order', () => {
+  const display = makeDisplay({ a: 1 })
+
+  display.sortRowsByScoreAt('ctgA', 50)
+
+  expect(display.layout).toEqual([])
+})
