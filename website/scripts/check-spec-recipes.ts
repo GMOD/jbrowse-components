@@ -3,6 +3,13 @@ import { join } from 'node:path'
 
 import { parseSessionSpecUrl } from '../../packages/app-core/src/SessionSpec/parseSessionSpecUrl.ts'
 import { parseProtocolUrl } from '../../products/jbrowse-desktop/electron/launchTarget.ts'
+import { lookupTrack } from '../src/lib/spec-recipe/configs.ts'
+import {
+  decodeSpecUrl,
+  specDisplayType,
+  specTrackId,
+  specTracks,
+} from '../src/lib/spec-recipe/decode.ts'
 import { GRAPH_LABELS } from '../src/lib/spec-recipe/fields.ts'
 import { buildRecipe } from '../src/lib/spec-recipe/recipe.ts'
 import { check } from './check-utils.ts'
@@ -22,7 +29,14 @@ import { screenshotLiveUrls } from './screenshot-specs.ts'
 //    src/lib/spec-recipe/fields.ts. The bare run writes their names to
 //    spec-recipe-unmapped.txt; `--check` fails when the committed list differs,
 //    naming what moved.
-// 3. The graph view's labels are copied out of a plugin this repo does not
+// 3. A height step names the menu row after what the track holds ("Read
+//    height" on a pileup, "Feature height" otherwise), and the noun comes from
+//    the display the spec names or the track's own type. With neither it used
+//    to fall back to "feature" silently, which put the wrong row in 31
+//    figures' recipes — every one of them a pileup, because a hosted config's
+//    track type is unreadable at build time and most figures load one. So an
+//    entry that sets a height field has to resolve one of the two.
+// 4. The graph view's labels are copied out of a plugin this repo does not
 //    build, so a rename there leaves every graph figure's recipe naming a
 //    control that no longer exists, with no commit here to notice it. Checked
 //    against a sibling checkout when one is on disk, and reported as skipped
@@ -80,12 +94,51 @@ for (const [name, url] of Object.entries(screenshotLiveUrls)) {
   }
 }
 
+// Fields whose recipe titles the menu after the track's noun (fields.ts's
+// `heightMenu`). Nothing else in the table reads `noun`.
+const NOUN_FIELDS = new Set(['featureHeight', 'heightMode'])
+
+const nounless: string[] = []
+for (const [name, url] of Object.entries(screenshotLiveUrls)) {
+  const decoded = decodeSpecUrl(url)
+  if (!decoded) {
+    continue
+  }
+  const { config, spec } = decoded
+  const sessionTracks = spec.sessionTracks
+  const walk = (views: typeof spec.views) => {
+    for (const view of views ?? []) {
+      for (const entry of specTracks(view)) {
+        if (!Object.keys(entry).some(field => NOUN_FIELDS.has(field))) {
+          continue
+        }
+        const trackId = specTrackId(entry)
+        const info = lookupTrack(config, trackId, sessionTracks)
+        if (!specDisplayType(entry) && !info?.type) {
+          nounless.push(
+            `  ${name}: "${trackId}" sets a height with no display type and no readable track config — add \`type\` to the spec entry so the recipe knows whether its rows are reads or features`,
+          )
+        }
+      }
+      walk(view.views)
+    }
+  }
+  walk(spec.views)
+}
+
 const unmapped = [...unmappedCounts].sort((a, b) => b[1] - a[1])
 console.log(
   `figures=${figures} withSessionSpec=${withRecipe} desktopLinkFailures=${roundTripFailures.length} unmappedFields=${unmapped.length}`,
 )
 for (const failure of roundTripFailures) {
   console.error(`  BROKEN  ${failure}`)
+}
+if (nounless.length > 0) {
+  console.error('\nA height step with no noun to name its menu row:')
+  for (const line of nounless) {
+    console.error(line)
+  }
+  process.exit(1)
 }
 for (const [field, count] of unmapped) {
   console.log(`  ${String(count).padStart(3)}  ${field}`)

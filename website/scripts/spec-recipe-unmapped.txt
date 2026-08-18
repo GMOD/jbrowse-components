@@ -24,7 +24,6 @@ paneHeight
 readConnections
 sampleColorMap
 showBranchLength
-showCoverage
 showLegend
 showVariantLane
 sideBySide
