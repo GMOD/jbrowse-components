@@ -244,22 +244,77 @@ export interface SortedBy {
   tag?: string
 }
 
-// Numeric codes stored in the Uint8Array `readChainHasSupp`, describing how a
-// read's chain is split. Emitted by the worker (executeRenderAlignmentData) and
-// consumed by exactly ONE reader: `readColorCategory` (colorUtils), which bakes
-// it into `readColorCategories` once per recolour. Every fill path — GPU,
-// Canvas2D, SVG export, legend — then reads that baked category and never this.
+// Bit flags stored in the Uint8Array `readChainHasSupp`, describing how a read's
+// chain is split. Emitted by the worker (executeRenderAlignmentData), rewritten
+// twice on the main thread (reconcileChainSuppAcrossRegions, then
+// consensusChainStrandFrames), and consumed by exactly ONE reader:
+// `readColorCategory` (colorUtils), which bakes it into `readColorCategories`
+// once per recolour. Every fill path — GPU, Canvas2D, SVG export, legend — then
+// reads that baked category and never this.
 //
 // It said "read by every fill path … read.slang is the one twin that must still
 // be hand-mirrored", which stopped being true when the classification moved to
 // the CPU: read.slang has no `chainHasSupp` and takes `colorCategory` (ATTR10).
 // The array was still threaded into `ReadRegionFields` and `Canvas2DRegionData`
 // on the strength of that sentence, where nothing read it.
-export const CHAIN_FILL_NO_SUPP = 0
-export const CHAIN_FILL_SUPP_PRIMARY_FWD = 1
-export const CHAIN_FILL_SUPP_PRIMARY_REV = 2
-export const CHAIN_FILL_SPLIT_INVERSION = 3
-export const CHAIN_FILL_SPLIT_DELETION = 4
+//
+// FLAGS, NOT A 0-4 ENUM, and the difference is not cosmetic. The two things this
+// byte carries are answers to unrelated questions asked of different units —
+// which way does this CHAIN point (a sign, from the chain's primary) and how did
+// this MATE split away from its own primary (a category, from the pair) — and as
+// consecutive integers the second could only be written by destroying the first.
+// It was: `buildChainResultFields` overwrote the 1/2 frame with a 3/4 split kind,
+// so a split read's frame was simply gone. Everything downstream then had to
+// defend against that. `reconcileChainSuppAcrossRegions` skipped split reads
+// outright rather than re-answer half a byte, `consensusChainStrandFrames`
+// re-tested the enum's membership on all four of its loops, and the long comment
+// in `readColorCategory` about a magnitude test being "correct only under
+// unreachable-with-3-and-4" was describing the encoding rather than the data.
+// Orthogonal bits let both answers be true at once, which they always were.
+export const CHAIN_SUPP_NONE = 0
+// The chain carries a supplementary segment at all. Every other bit here is
+// meaningless without it.
+export const CHAIN_SUPP_PRESENT = 1 << 0
+// The chain's frame is reverse. Absent means forward, which is also the answer
+// for "no primary in this chain, so we cannot tell" — see `chainSuppFill`.
+export const CHAIN_FRAME_REV = 1 << 1
+// How this read's MATE split from its own primary. Both may be set while a
+// chain's several supplementary segments disagree; `chainSplitKind` resolves the
+// precedence in the one place that reads it, so the accumulation stays a plain
+// OR.
+export const CHAIN_SPLIT_INVERSION = 1 << 2
+export const CHAIN_SPLIT_DELETION = 1 << 3
+export const CHAIN_SPLIT_MASK = CHAIN_SPLIT_INVERSION | CHAIN_SPLIT_DELETION
+
+export function chainHasSupp(bits: number) {
+  return (bits & CHAIN_SUPP_PRESENT) !== 0
+}
+
+// The chain's frame as the sign it is: +1 keeps each segment's mapping strand,
+// -1 inverts it. Reading the bit rather than comparing against a code is what
+// makes an unexpected value fall to the unframed +1 — "we don't know" looking
+// like "not flipped" — instead of to whichever branch the comparison happened to
+// take.
+export function chainFrame(bits: number) {
+  return (bits & CHAIN_FRAME_REV) !== 0 ? -1 : 1
+}
+
+// Rewrite just the frame, leaving the split kind and the has-supp bit alone.
+// Both main-thread passes over this array want exactly this and nothing else.
+export function withChainFrame(bits: number, frame: number) {
+  return frame === -1 ? bits | CHAIN_FRAME_REV : bits & ~CHAIN_FRAME_REV
+}
+
+// Inversion is the stronger signal and wins over a plain deletion, which wins
+// over none. Returns the bit, so callers compare against CHAIN_SPLIT_* rather
+// than against a third vocabulary.
+export function chainSplitKind(bits: number) {
+  return bits & CHAIN_SPLIT_INVERSION
+    ? CHAIN_SPLIT_INVERSION
+    : bits & CHAIN_SPLIT_DELETION
+      ? CHAIN_SPLIT_DELETION
+      : 0
+}
 
 // Numeric interbase type codes stored in Uint8Array interbaseTypes.
 // Must match the order used in shared/buildInterbaseArrays addItems calls.

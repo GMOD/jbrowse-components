@@ -29,10 +29,12 @@ import {
 import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
 import {
-  CHAIN_FILL_NO_SUPP,
-  CHAIN_FILL_SPLIT_DELETION,
-  CHAIN_FILL_SPLIT_INVERSION,
-  CHAIN_FILL_SUPP_PRIMARY_REV,
+  CHAIN_SPLIT_DELETION,
+  CHAIN_SPLIT_INVERSION,
+  CHAIN_SUPP_NONE,
+  chainFrame,
+  chainHasSupp,
+  chainSplitKind,
 } from '../shared/types.ts'
 import { MAPQ_UNAVAILABLE, firstOfPairStrand } from '../shared/util.ts'
 import { ColorScheme } from './constants.ts'
@@ -273,8 +275,8 @@ export function readColorCategory(
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
 
-  const chainSupp = data.readChainHasSupp?.[i] ?? CHAIN_FILL_NO_SUPP
-  const hasSupp = chainSupp !== CHAIN_FILL_NO_SUPP
+  const chainSupp = data.readChainHasSupp?.[i] ?? CHAIN_SUPP_NONE
+  const hasSupp = chainHasSupp(chainSupp)
   const isPaired = (flags & SAM_FLAG_PAIRED) !== 0
   // Both split markers only apply to paired chains, and only under a scheme that
   // encodes orientation — otherwise the split hue would displace the scheme the
@@ -297,7 +299,7 @@ export function readColorCategory(
   // 2 and 3 are scoped to opposite data because a pair HAS a richer answer: a
   // supplementary framed against its own mate's primary is an inversion or a
   // deletion junction, which `buildChainMetadata` already resolved into
-  // CHAIN_FILL_SPLIT_*. An unpaired read has no mate to frame against, so the
+  // CHAIN_SPLIT_*. An unpaired read has no mate to frame against, so the
   // strand flip is the whole story. 1 is scoped to neither, and used to be
   // paired-only purely because it was added to restore what a paired-only change
   // removed (5b8aa129d9) — on long reads the tickbox then did nothing at all,
@@ -333,18 +335,14 @@ export function readColorCategory(
     flipStrandLongReadChains &&
     !dataFillSchemes.has(colorScheme)
   ) {
-    // Names the one code that means "reverse" instead of testing `> FWD`. The
-    // magnitude form was correct only under "unreachable with the split markers
-    // 3/4, which buildChainMetadata writes for paired chains only" — and that
-    // rests on `summarizeChain`'s `paired` (ANY read of the chain is paired)
-    // agreeing with this branch's `!isPaired` (THIS read is not), which two
-    // records sharing a QNAME across a paired and an unpaired run do not. Under
-    // the ordering test such a read claimed a reverse primary and painted its
-    // strand framing inverted; naming the code makes an unexpected marker fall
-    // to the unframed +1 instead, which is what "we don't know" should look
-    // like. Identical for 1 and 2, which is every real chain.
-    const chainFrame = chainSupp === CHAIN_FILL_SUPP_PRIMARY_REV ? -1 : 1
-    return strandCategory(strand * chainFrame)
+    // One bit, read as the sign it is. This was a comparison against a code,
+    // and correct only while the split bits could not coexist with the frame —
+    // which rested on `summarizeChain`'s `paired` (ANY read of the chain is
+    // paired) agreeing with this branch's `!isPaired` (THIS read is not), and
+    // two records sharing a QNAME across a paired and an unpaired run do not.
+    // Now the frame is its own bit and answers on its own terms whatever else
+    // the byte carries.
+    return strandCategory(strand * chainFrame(chainSupp))
   }
 
   // Paired split read whose supplementary segment maps opposite-strand to its
@@ -352,17 +350,18 @@ export function readColorCategory(
   // chain a dedicated inversion hue, distinct from the RR-pair blue so the two
   // are tellable apart. Co-linear paired splits keep their per-scheme
   // pair-orientation color.
-  if (
-    splitsUnderOrientationScheme &&
-    chainSupp === CHAIN_FILL_SPLIT_INVERSION
-  ) {
+  // `chainSplitKind` settles inversion-beats-deletion, so a mate whose several
+  // supplementary segments disagree resolves once here rather than at whichever
+  // segment the accumulating OR saw last.
+  const splitKind = chainSplitKind(chainSupp)
+  if (splitsUnderOrientationScheme && splitKind === CHAIN_SPLIT_INVERSION) {
     return 'splitInversion'
   }
 
   // Same as above but for a same-strand (co-linear) split — a deletion / tandem-
   // dup junction. Its own color (the supplementary orange), reserving magenta
   // for the more specific inversion case.
-  if (splitsUnderOrientationScheme && chainSupp === CHAIN_FILL_SPLIT_DELETION) {
+  if (splitsUnderOrientationScheme && splitKind === CHAIN_SPLIT_DELETION) {
     return 'splitDeletion'
   }
 

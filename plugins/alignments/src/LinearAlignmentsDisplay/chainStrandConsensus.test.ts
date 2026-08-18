@@ -2,10 +2,10 @@ import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import {
-  CHAIN_FILL_NO_SUPP,
-  CHAIN_FILL_SPLIT_INVERSION,
-  CHAIN_FILL_SUPP_PRIMARY_FWD,
-  CHAIN_FILL_SUPP_PRIMARY_REV,
+  CHAIN_FRAME_REV,
+  CHAIN_SPLIT_INVERSION,
+  CHAIN_SUPP_NONE,
+  CHAIN_SUPP_PRESENT,
 } from '../shared/types.ts'
 import { consensusChainStrandFrames } from './chainStrandConsensus.ts'
 
@@ -33,7 +33,7 @@ function region(segs: Seg[]): PileupDataResult {
       segs.map(s => SAM_FLAG_SUPPLEMENTARY | (s.paired ? SAM_FLAG_PAIRED : 0)),
     ),
     readChainHasSupp: Uint8Array.from(
-      segs.map(s => s.fill ?? CHAIN_FILL_SUPP_PRIMARY_FWD),
+      segs.map(s => s.fill ?? CHAIN_SUPP_PRESENT),
     ),
   })
 }
@@ -42,8 +42,8 @@ function fills(map: Map<number, PileupDataResult>, idx: number) {
   return [...map.get(idx)!.readChainHasSupp!]
 }
 
-const FWD = CHAIN_FILL_SUPP_PRIMARY_FWD
-const REV = CHAIN_FILL_SUPP_PRIMARY_REV
+const FWD = CHAIN_SUPP_PRESENT
+const REV = CHAIN_SUPP_PRESENT | CHAIN_FRAME_REV
 
 // The COLO829 chr3 foldback in miniature, and the shape the pass exists for.
 //
@@ -152,14 +152,14 @@ it('leaves paired chains and their split markers alone', () => {
           end: 900,
           strand: -1,
           paired: true,
-          fill: CHAIN_FILL_SPLIT_INVERSION,
+          fill: CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERSION,
         },
         {
           chain: 'c',
           start: 100,
           end: 900,
           strand: -1,
-          fill: CHAIN_FILL_NO_SUPP,
+          fill: CHAIN_SUPP_NONE,
         },
       ]),
     ],

@@ -7,35 +7,31 @@ import {
 import { groupBy } from '@jbrowse/core/util'
 
 import { chainGroupingKey } from './chainGroupingKey.ts'
+import {
+  CHAIN_FRAME_REV,
+  CHAIN_SPLIT_DELETION,
+  CHAIN_SPLIT_INVERSION,
+  CHAIN_SUPP_NONE,
+  CHAIN_SUPP_PRESENT,
+} from './types.ts'
 
 import type { ReadKey } from './readIdentity.ts'
 import type { ChainFeatureData } from './webglRpcTypes.ts'
 
-// How a mate's supplementary segment splits away from its own primary. Kept as a
-// worker-local classification (the read-fill markers it maps to live in
-// buildChainResultFields); exported so that mapping can name the cases it reads.
-export const SPLIT_NONE = 0
-export const SPLIT_INVERSION = 1
-export const SPLIT_DELETION = 2
-
 // This path's encoding of the shared junction classifier: unknown (the primary
-// is off-screen, strand 0) means nothing to draw.
-const SPLIT_KIND_MARKER = {
-  inversion: SPLIT_INVERSION,
-  deletion: SPLIT_DELETION,
+// is off-screen, strand 0) means nothing to draw. The result is already a
+// `readChainHasSupp` bit, so a mate's several supplementary segments accumulate
+// by OR and `chainSplitKind` settles inversion-beats-deletion where it is read —
+// there is no third split vocabulary to translate through, and no
+// `strongerSplitKind` reducer to keep in step with that precedence.
+const SPLIT_KIND_BIT = {
+  inversion: CHAIN_SPLIT_INVERSION,
+  deletion: CHAIN_SPLIT_DELETION,
 }
 
 function classifySplitKind(primaryStrand: number, suppStrand: number) {
   const kind = splitJunctionKind(primaryStrand, suppStrand)
-  return kind === undefined ? SPLIT_NONE : SPLIT_KIND_MARKER[kind]
-}
-
-// A mate can carry several supplementary segments; inversion is the stronger
-// signal and wins over a plain deletion, which in turn wins over none.
-function strongerSplitKind(a: number, b: number) {
-  return a === SPLIT_INVERSION || b === SPLIT_INVERSION
-    ? SPLIT_INVERSION
-    : Math.max(a, b)
+  return kind === undefined ? 0 : SPLIT_KIND_BIT[kind]
 }
 
 function isSupplementary(f: ChainFeatureData) {
@@ -105,8 +101,8 @@ type ChainSummary = ReturnType<typeof summarizeChain>
 // order is moot. A mate with several supplementary segments keeps the strongest
 // kind.
 function mateSplitKinds(chain: ChainFeatureData[], summary: ChainSummary) {
-  let mate0SplitKind = SPLIT_NONE
-  let mate1SplitKind = SPLIT_NONE
+  let mate0SplitKind = 0
+  let mate1SplitKind = 0
   if (summary.paired && summary.hasSupp) {
     for (const f of chain) {
       if (isSupplementary(f)) {
@@ -116,9 +112,9 @@ function mateSplitKinds(chain: ChainFeatureData[], summary: ChainSummary) {
           f.strand,
         )
         if (isFirst) {
-          mate0SplitKind = strongerSplitKind(mate0SplitKind, kind)
+          mate0SplitKind |= kind
         } else {
-          mate1SplitKind = strongerSplitKind(mate1SplitKind, kind)
+          mate1SplitKind |= kind
         }
       }
     }
@@ -127,29 +123,30 @@ function mateSplitKinds(chain: ChainFeatureData[], summary: ChainSummary) {
 }
 
 /**
- * The read-fill marker for a chain that has no split to report: 0 = no
- * supplementary segment at all, 1 = supplementary framed against a forward
- * primary, 2 = against a reverse primary. For a paired chain (two
- * opposite-strand primaries) `primaryStrand` is whichever was iterated last, but
- * that's fine — the fwd-vs-rev distinction is only read on the unpaired branch
+ * The has-supplementary and frame bits of `readChainHasSupp` for a chain: absent
+ * when it carries no supplementary segment at all, otherwise CHAIN_SUPP_PRESENT
+ * plus CHAIN_FRAME_REV when the chain's primary points reverse. For a paired
+ * chain (two opposite-strand primaries) `primaryStrand` is whichever was
+ * iterated last, but that's fine — the frame is only read on the unpaired branch
  * of the read-fill classifier (colorUtils), where a chain has exactly one
- * primary. Paired chains that DID split overwrite this per-mate with the split
- * markers (see buildChainResultFields).
+ * primary. Paired chains that DID split OR their per-mate split bits alongside
+ * these (see buildChainResultFields); they no longer replace them.
  *
- * `primaryStrand` 0 (no primary in the chain at all) resolves to 1, the same
- * unframed answer colorUtils gives an unrecognized marker — "we don't know"
- * looks like "not flipped". Exported because a chain can straddle displayed
- * regions and this runs per region: `reconcileChainSuppAcrossRegions` re-answers
- * it from the union, and must encode the answer the same way rather than the
- * same way again.
+ * `primaryStrand` 0 (no primary in the chain at all) leaves CHAIN_FRAME_REV
+ * clear, which `chainFrame` reads as +1 — "we don't know" looks like "not
+ * flipped". Exported because a chain can straddle displayed regions and this
+ * runs per region: `reconcileChainSuppAcrossRegions` re-answers it from the
+ * union, and must encode the answer the same way rather than the same way again.
  *
- * The 1/2 the worker writes here is a STARTING POINT, not the painted answer.
- * `consensusChainStrandFrames` then re-answers the same two codes on the main
- * thread from all the chains on screen at once, because the primary flag is
- * arbitrary on a foldback — no worker call, seeing one chain, can tell.
+ * What the worker writes here is a STARTING POINT, not the painted answer.
+ * `consensusChainStrandFrames` then re-answers the frame bit on the main thread
+ * from all the chains on screen at once, because the primary flag is arbitrary
+ * on a foldback — no worker call, seeing one chain, can tell.
  */
 export function chainSuppFill(hasSupp: boolean, primaryStrand: number) {
-  return hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0
+  return hasSupp
+    ? CHAIN_SUPP_PRESENT | (primaryStrand === -1 ? CHAIN_FRAME_REV : 0)
+    : CHAIN_SUPP_NONE
 }
 
 function suppType(summary: ChainSummary) {
@@ -187,17 +184,14 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
   const chainAbsMaxEnds = new Uint32Array(numChains)
   const chainDistances = new Uint32Array(numChains)
   const chainNames: string[] = []
-  // Worker-local: drives readChainHasSupp in the read-array loop. Not part of
-  // the result transferred to the main thread.
-  // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev. (The split markers 3
-  // (inversion) and 4 (deletion) are applied per-read in the fan-out to BOTH
-  // segments of a split mate — see chainMate{0,1}SplitKind below.)
+  // Worker-local: the has-supp and frame bits of readChainHasSupp, ORed into it
+  // in the read-array loop. Not part of the result transferred to the main
+  // thread.
   const chainSuppTypes = new Uint8Array(numChains)
-  // Per-mate (read1/read2) split kind (SPLIT_NONE/INVERSION/DELETION, see
-  // classifySplitKind). Worker-local. The fan-out paints BOTH segments of a
-  // split mate the matching color so the split read stands out and which mate
-  // split is visible; the normal partner mate keeps its own pair-orientation
-  // color.
+  // Per-mate (read1/read2) CHAIN_SPLIT_* bits (see classifySplitKind).
+  // Worker-local. The fan-out paints BOTH segments of a split mate the matching
+  // color so the split read stands out and which mate split is visible; the
+  // normal partner mate keeps its own pair-orientation color.
   const chainMate0SplitKind = new Uint8Array(numChains)
   const chainMate1SplitKind = new Uint8Array(numChains)
   // Pair orientation (0=unknown, 1=LR, 2=RL, 3=RR, 4=LL) taken from the chain's

@@ -45,11 +45,19 @@ types").
 
 ## A split segment's colour is framed by the chains on screen
 
-`readChainHasSupp`'s 1/2 is a chain-level **frame**. The worker's answer is
-overwritten twice on the main thread — `reconcileChainSuppAcrossRegions` (one
-molecule across regions) then `consensusChainStrandFrames` (molecules about each
-other) — because the worker frames on `primaryStrand` and **on a foldback the
-primary flag is arbitrary**. Alternatives measured 58/52/61% agreement where the
+`readChainHasSupp` is a **bitfield, not a 0-4 enum** — `CHAIN_SUPP_PRESENT` and
+`CHAIN_FRAME_REV` answer a chain-level question (which way does this molecule
+point), `CHAIN_SPLIT_*` a per-mate one (how did this mate leave its own
+primary), and the two are independent. Read them through `chainHasSupp` /
+`chainFrame` / `chainSplitKind`, never by comparing the byte. As consecutive
+integers the split kind could only be written by destroying the frame, and every
+consumer carried a workaround for that.
+
+`CHAIN_FRAME_REV` is a **frame**, and the worker's answer for it is overwritten
+twice on the main thread — `reconcileChainSuppAcrossRegions` (one molecule
+across regions) then `consensusChainStrandFrames` (molecules about each other) —
+because the worker frames on `primaryStrand` and **on a foldback the primary
+flag is arbitrary**. Alternatives measured 58/52/61% agreement where the
 consensus reaches 100%.
 
 - **Votes are purity-normalized, not length-weighted**, or one long arm — also

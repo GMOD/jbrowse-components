@@ -2,6 +2,12 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
+  CHAIN_FRAME_REV,
+  CHAIN_SPLIT_DELETION,
+  CHAIN_SPLIT_INVERSION,
+  CHAIN_SUPP_PRESENT,
+} from '../shared/types.ts'
+import {
   framesUnpairedChainStrand,
   getReadColor,
   readColorCategory,
@@ -11,6 +17,17 @@ import { ColorScheme } from './constants.ts'
 import { makeTestPalette } from './testUtils.ts'
 
 import type { RGBColor } from '../shaders/colors.ts'
+
+// The `readChainHasSupp` bit combinations these cases build, named for what they
+// mean rather than spelled as the byte. The frame and the split kind are
+// independent bits, so SUPP_REV_SPLIT_INV — a chain framed reverse whose mate
+// also split at an inversion — is a state the byte can hold; under the old 0-4
+// enum it could not, and the cases below that exercise it were written to pin
+// what happened instead.
+const SUPP_FWD = CHAIN_SUPP_PRESENT
+const SUPP_REV = CHAIN_SUPP_PRESENT | CHAIN_FRAME_REV
+const SPLIT_INV = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERSION
+const SPLIT_DEL = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_DELETION
 
 // Distinct colors only for the roles these cases assert on, so a mis-mapped
 // category resolves to a different (zeroed) color and the test catches it.
@@ -177,7 +194,7 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 1, flags: 1, pairOrientation: 3 }),
+        makeData({ chainHasSupp: SUPP_FWD, flags: 1, pairOrientation: 3 }),
         ColorScheme.pairOrientation,
         chainOpts,
       ),
@@ -186,20 +203,20 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 1, flags: 1 }),
+        makeData({ chainHasSupp: SUPP_FWD, flags: 1 }),
         ColorScheme.strand,
         chainOpts,
       ),
     ).not.toBe('supplementary')
   })
 
-  test('paired split-inversion chains (chainHasSupp=3) paint the dedicated split-inversion color', () => {
+  test('paired split-inversion chains paint the dedicated split-inversion color', () => {
     // orientation schemes: the whole chain reads as an inversion regardless of
     // the concordant pair orientation it inherited (po=1 LR here)
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 3, flags: 1, pairOrientation: 1 }),
+        makeData({ chainHasSupp: SPLIT_INV, flags: 1, pairOrientation: 1 }),
         ColorScheme.pairOrientation,
         chainOpts,
       ),
@@ -207,7 +224,10 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 3, flags: 1, pairOrientation: 1 }, stats),
+        makeData(
+          { chainHasSupp: SPLIT_INV, flags: 1, pairOrientation: 1 },
+          stats,
+        ),
         ColorScheme.insertSizeAndOrientation,
         chainOpts,
       ),
@@ -216,7 +236,7 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 3, flags: 1, strand: -1 }),
+        makeData({ chainHasSupp: SPLIT_INV, flags: 1, strand: -1 }),
         ColorScheme.strand,
         chainOpts,
       ),
@@ -225,17 +245,17 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 3, flags: 1, pairOrientation: 1 }),
+        makeData({ chainHasSupp: SPLIT_INV, flags: 1, pairOrientation: 1 }),
         ColorScheme.pairOrientation,
       ),
     ).toBe('pairLR')
   })
 
-  test('paired split-deletion chains (chainHasSupp=4) get the deletion bucket', () => {
+  test('paired split-deletion chains get the deletion bucket', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 4, flags: 1, pairOrientation: 1 }),
+        makeData({ chainHasSupp: SPLIT_DEL, flags: 1, pairOrientation: 1 }),
         ColorScheme.pairOrientation,
         chainOpts,
       ),
@@ -243,7 +263,10 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 4, flags: 1, pairOrientation: 1 }, stats),
+        makeData(
+          { chainHasSupp: SPLIT_DEL, flags: 1, pairOrientation: 1 },
+          stats,
+        ),
         ColorScheme.insertSizeAndOrientation,
         chainOpts,
       ),
@@ -252,7 +275,7 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 4, flags: 1, strand: -1 }),
+        makeData({ chainHasSupp: SPLIT_DEL, flags: 1, strand: -1 }),
         ColorScheme.strand,
         chainOpts,
       ),
@@ -265,7 +288,7 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 1, flags: 1, pairOrientation: 3 }),
+        makeData({ chainHasSupp: SUPP_FWD, flags: 1, pairOrientation: 3 }),
         ColorScheme.pairOrientation,
         { ...chainOpts, colorSupplementaryChains: true },
       ),
@@ -274,7 +297,7 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 1, flags: 1, pairOrientation: 3 }),
+        makeData({ chainHasSupp: SUPP_FWD, flags: 1, pairOrientation: 3 }),
         ColorScheme.pairOrientation,
         { colorSupplementaryChains: true },
       ),
@@ -284,7 +307,7 @@ describe('readColorCategory', () => {
   // It reaches long reads too, and outranks the strand framing there — the two
   // tickboxes are ordered, not scoped to different data.
   test('the orange opt-in covers unpaired chains and beats the strand framing', () => {
-    const longRead = makeData({ chainHasSupp: 2, flags: 0, strand: 1 })
+    const longRead = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
     expect(readColorCategory(0, longRead, ColorScheme.normal, chainOpts)).toBe(
       'revStrand',
     )
@@ -310,7 +333,7 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 2, flags: 0, strand: 1 }),
+        makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
         ColorScheme.strand,
         chainOpts,
       ),
@@ -319,7 +342,7 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 2, flags: 0, strand: 1 }),
+        makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
         ColorScheme.strand,
       ),
     ).toBe('fwdStrand')
@@ -330,35 +353,40 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(
         0,
-        makeData({ chainHasSupp: 2, flags: 0, strand: 1 }),
+        makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
         ColorScheme.strand,
         { ...chainOpts, flipStrandLongReadChains: false },
       ),
     ).toBe('fwdStrand')
   })
 
-  // The unpaired framing decodes `chainHasSupp` by NAMING the reverse code
-  // rather than testing `> FWD`. Under the magnitude form a split marker (3/4)
-  // reaching this branch claimed a reverse primary and inverted the framing —
-  // and it can reach it, because `summarizeChain` writes the markers when ANY
-  // read of the chain is paired while this branch asks whether THIS read is not,
-  // which two records sharing a QNAME across a paired and an unpaired run
-  // disagree about. Falling to the unframed +1 is what "no primary direction
-  // known" should look like.
-  test('an unexpected split marker leaves the framing unflipped', () => {
-    for (const chainHasSupp of [3, 4]) {
+  // A split bit alongside the frame no longer says anything about the frame, so
+  // the framing reads the frame bit and ignores it. Such a read is reachable:
+  // `summarizeChain` writes the split bits when ANY read of the chain is paired
+  // while this branch asks whether THIS read is not, and two records sharing a
+  // QNAME across a paired and an unpaired run disagree about that.
+  //
+  // The old 0-4 enum could not represent the combination at all — a split code
+  // REPLACED the frame — so the question here used to be which way the framing
+  // should fail, and the answer was to name the reverse code so an unrecognized
+  // one fell to the unframed +1. With independent bits there is nothing to fail:
+  // both halves of the byte are still true and each is read on its own terms.
+  test('a split bit does not disturb the frame it now sits beside', () => {
+    for (const split of [CHAIN_SPLIT_INVERSION, CHAIN_SPLIT_DELETION]) {
       expect(
         readColorCategory(
           0,
-          makeData({ chainHasSupp, flags: 0, strand: 1 }),
+          makeData({ chainHasSupp: SUPP_FWD | split, flags: 0, strand: 1 }),
           ColorScheme.strand,
           chainOpts,
         ),
       ).toBe('fwdStrand')
+      // and the reverse frame still inverts, which under the enum was the
+      // unreachable case: the split code had overwritten the 2 that said so
       expect(
         readColorCategory(
           0,
-          makeData({ chainHasSupp, flags: 0, strand: -1 }),
+          makeData({ chainHasSupp: SUPP_REV | split, flags: 0, strand: 1 }),
           ColorScheme.strand,
           chainOpts,
         ),
@@ -370,7 +398,12 @@ describe('readColorCategory', () => {
   // already about the alignment's geometry. Over a scheme carrying a per-read
   // datum it would answer a different question than the one the user asked.
   test('the long-read framing yields to the data-carrying schemes', () => {
-    const supp = makeData({ chainHasSupp: 2, flags: 0, strand: 1, tagColor: 7 })
+    const supp = makeData({
+      chainHasSupp: SUPP_REV,
+      flags: 0,
+      strand: 1,
+      tagColor: 7,
+    })
     expect(readColorCategory(0, supp, ColorScheme.tag, chainOpts)).toBe('tag')
     expect(
       readColorCategory(0, supp, ColorScheme.mappingQuality, chainOpts),
@@ -395,7 +428,7 @@ describe('readColorCategory', () => {
   // Unticking it is the only escape hatch under a geometry scheme, and it used
   // to leave the reads strand-coloured anyway.
   test('unticking the framing restores the scheme, not the unframed strand', () => {
-    const supp = makeData({ chainHasSupp: 2, flags: 0, strand: 1 })
+    const supp = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
     const off = { ...chainOpts, flipStrandLongReadChains: false }
     expect(readColorCategory(0, supp, ColorScheme.normal, chainOpts)).toBe(
       'revStrand',
@@ -459,7 +492,7 @@ describe('getReadColor maps each category to its palette color', () => {
     expect(
       getReadColor(
         0,
-        makeData({ chainHasSupp: 1, flags: 1, strand: -1 }),
+        makeData({ chainHasSupp: SUPP_FWD, flags: 1, strand: -1 }),
         ColorScheme.strand,
         palette,
         chainOpts,
@@ -586,7 +619,7 @@ describe('framesUnpairedChainStrand', () => {
       const framed =
         readColorCategory(
           0,
-          makeData({ strand: -1, chainHasSupp: 2 }),
+          makeData({ strand: -1, chainHasSupp: SUPP_REV }),
           scheme,
           on,
         ) === 'fwdStrand'

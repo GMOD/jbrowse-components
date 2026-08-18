@@ -2,10 +2,7 @@ import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 
 import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { chainSuppFill } from '../shared/buildChainMetadata.ts'
-import {
-  CHAIN_FILL_SPLIT_DELETION,
-  CHAIN_FILL_SPLIT_INVERSION,
-} from '../shared/types.ts'
+import { CHAIN_SPLIT_MASK } from '../shared/types.ts'
 import { getOrCreate } from '../shared/util.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
@@ -33,11 +30,14 @@ import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
  * the rows out by, and the one this plugin's RPC doc states for anything unioning
  * chains across worker calls. This is that rule applied to the fill.
  *
- * The paired per-mate split markers (`CHAIN_FILL_SPLIT_*`) are deliberately left
- * alone: they classify a supplementary against its OWN mate's primary, which is
- * a finer question than this pass answers, and a read that already carries one
- * keeps it. Unioning those needs each mate's primary strand rather than the
- * chain's and is a separate change; nothing here can downgrade one.
+ * The paired per-mate split bits (`CHAIN_SPLIT_*`) are deliberately left alone:
+ * they classify a supplementary against its OWN mate's primary, which is a finer
+ * question than this pass answers, and a read that already carries one keeps it.
+ * Unioning those needs each mate's primary strand rather than the chain's and is
+ * a separate change; nothing here can downgrade one. They ride across as a
+ * masked OR — the read still gets its has-supp and frame bits re-answered, which
+ * under the old enum it could not, since the split code occupied the very value
+ * space being recomputed.
  *
  * A no-op for the single-region case (returns the input map untouched), which is
  * almost every view.
@@ -90,15 +90,14 @@ export function reconcileChainSuppAcrossRegions<T extends WorkerPileupData>(
     let changed = false
     for (let i = 0; i < n; i++) {
       const own = readChainHasSupp[i]!
-      if (
-        own === CHAIN_FILL_SPLIT_INVERSION ||
-        own === CHAIN_FILL_SPLIT_DELETION
-      ) {
-        merged[i] = own
-        continue
-      }
       const entry = byChain.get(chainNames[readChainIndices[i]!]!)!
-      const fill = chainSuppFill(entry.hasSupp, entry.primaryStrand)
+      // Re-answer the has-supp and frame bits from the union; carry this read's
+      // own split bits across untouched. Under the old 0-4 enum a split read had
+      // to be skipped whole, because its marker occupied the same value space as
+      // the answer being recomputed and there was no way to replace half of it.
+      const fill =
+        chainSuppFill(entry.hasSupp, entry.primaryStrand) |
+        (own & CHAIN_SPLIT_MASK)
       merged[i] = fill
       changed = changed || fill !== own
     }

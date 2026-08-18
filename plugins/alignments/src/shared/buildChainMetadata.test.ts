@@ -8,6 +8,12 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { buildChainMetadata } from './buildChainMetadata.ts'
+import {
+  CHAIN_FRAME_REV,
+  CHAIN_SPLIT_DELETION,
+  CHAIN_SPLIT_INVERSION,
+  CHAIN_SUPP_PRESENT,
+} from './types.ts'
 
 import type { ChainFeatureData } from './webglRpcTypes.ts'
 
@@ -49,8 +55,32 @@ test('a supplementary alignment chains with its primary', () => {
   ])
   expect(chainNames).toEqual(['r1'])
   expect([...chainHasMultiple]).toEqual([1])
-  // primary strand forward + has supplementary -> type 1
-  expect([...chainSuppTypes]).toEqual([1])
+  // primary strand forward + has supplementary: the present bit, no frame bit
+  expect([...chainSuppTypes]).toEqual([CHAIN_SUPP_PRESENT])
+})
+
+test('a reverse primary sets the frame bit alongside the present bit', () => {
+  // Both, not one or the other: the frame is only meaningful for a chain that
+  // HAS a supplementary, so CHAIN_FRAME_REV on its own would say a chain points
+  // backwards without saying it splits.
+  const { chainSuppTypes } = buildChainMetadata([
+    feat({
+      id: 'r1.1',
+      name: 'r1',
+      start: 0,
+      end: 100,
+      strand: -1,
+      flags: SAM_FLAG_REVERSE,
+    }),
+    feat({
+      id: 'r1.supp',
+      name: 'r1',
+      start: 900,
+      end: 950,
+      flags: SAM_FLAG_SUPPLEMENTARY,
+    }),
+  ])
+  expect([...chainSuppTypes]).toEqual([CHAIN_SUPP_PRESENT | CHAIN_FRAME_REV])
 })
 
 test('chain pair orientation comes from the primary, not the supplementary', () => {
@@ -71,11 +101,12 @@ test('chain pair orientation comes from the primary, not the supplementary', () 
   expect([...chainPairOrientations]).toEqual([3])
 })
 
-test('read1 mate whose supplementary opposes the primary is split-kind 1 (inversion)', () => {
+test('read1 mate whose supplementary opposes the primary splits at an inversion', () => {
   // read1 primary forward, read1 supplementary reverse -> read1 spans an
-  // inversion junction, so chainMate0SplitKind is 1 (read2 untouched). The
-  // chain-level supp type stays 1 (has-supp); the per-read fan-out uses the mate
-  // kind to paint BOTH read1 segments.
+  // inversion junction, so chainMate0SplitKind carries the inversion bit (read2
+  // untouched). The chain-level supp type is unaffected — the two are ORed into
+  // one byte per read by the fan-out, which uses the mate kind to paint BOTH
+  // read1 segments.
   const { chainSuppTypes, chainMate0SplitKind, chainMate1SplitKind } =
     buildChainMetadata([
       feat({
@@ -97,12 +128,12 @@ test('read1 mate whose supplementary opposes the primary is split-kind 1 (invers
           SAM_FLAG_REVERSE,
       }),
     ])
-  expect([...chainSuppTypes]).toEqual([1])
-  expect([...chainMate0SplitKind]).toEqual([1])
+  expect([...chainSuppTypes]).toEqual([CHAIN_SUPP_PRESENT])
+  expect([...chainMate0SplitKind]).toEqual([CHAIN_SPLIT_INVERSION])
   expect([...chainMate1SplitKind]).toEqual([0])
 })
 
-test('co-linear (same-strand) supplementary is split-kind 2 (deletion)', () => {
+test('co-linear (same-strand) supplementary splits at a deletion', () => {
   const { chainMate0SplitKind } = buildChainMetadata([
     feat({
       id: 'r1.1',
@@ -119,7 +150,7 @@ test('co-linear (same-strand) supplementary is split-kind 2 (deletion)', () => {
       flags: SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
     }),
   ])
-  expect([...chainMate0SplitKind]).toEqual([2])
+  expect([...chainMate0SplitKind]).toEqual([CHAIN_SPLIT_DELETION])
 })
 
 test('flags the read2 mate for a second-in-pair inverted supplementary', () => {
@@ -144,7 +175,7 @@ test('flags the read2 mate for a second-in-pair inverted supplementary', () => {
     }),
   ])
   expect([...chainMate0SplitKind]).toEqual([0])
-  expect([...chainMate1SplitKind]).toEqual([1])
+  expect([...chainMate1SplitKind]).toEqual([CHAIN_SPLIT_INVERSION])
 })
 
 test('an unpaired long-read inverted split does not set a mate kind', () => {

@@ -1,10 +1,7 @@
 import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 
 import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
-import {
-  CHAIN_FILL_SUPP_PRIMARY_FWD,
-  CHAIN_FILL_SUPP_PRIMARY_REV,
-} from '../shared/types.ts'
+import { chainFrame, chainHasSupp, withChainFrame } from '../shared/types.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 
@@ -15,27 +12,18 @@ import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 // (33 chains, 3 buckets) settles in 3.
 const MAX_SWEEPS = 8
 
-// A chain's frame: +1 keeps each segment's mapping strand, -1 inverts it. The
-// two values `readChainHasSupp` can carry for an unpaired split chain are
-// exactly this sign, so the pass reads and writes the existing marker rather
-// than adding a field — every downstream consumer (the GPU category bake, the
-// Canvas2D fill, the legend, the SVG export) is untouched.
-function frameOf(fill: number) {
-  return fill === CHAIN_FILL_SUPP_PRIMARY_REV ? -1 : 1
-}
-
-function fillOf(frame: number) {
-  return frame === -1
-    ? CHAIN_FILL_SUPP_PRIMARY_REV
-    : CHAIN_FILL_SUPP_PRIMARY_FWD
-}
-
+// The reads this pass frames: an unpaired segment of a chain that carries a
+// supplementary. `chainFrame`/`withChainFrame` then read and write only the
+// frame bit of the same byte, so every downstream consumer (the GPU category
+// bake, the Canvas2D fill, the legend, the SVG export) is untouched and no split
+// bits are disturbed.
+//
+// This used to enumerate the two enum values that meant "framed", which is a
+// membership test standing in for a bit test — and it had to be repeated on all
+// four loops below because getting it wrong anywhere would have had the pass
+// rewrite a split marker into a frame.
 function isFramedUnpairedSplit(fill: number, flags: number) {
-  return (
-    (fill === CHAIN_FILL_SUPP_PRIMARY_FWD ||
-      fill === CHAIN_FILL_SUPP_PRIMARY_REV) &&
-    (flags & SAM_FLAG_PAIRED) === 0
-  )
+  return chainHasSupp(fill) && (flags & SAM_FLAG_PAIRED) === 0
 }
 
 interface Seg {
@@ -281,7 +269,7 @@ export function consensusChainStrandFrames<T extends WorkerPileupData>(
       }
       const id = chainIds.get(data.chainNames[data.readChainIndices[i]!]!)
       if (id !== undefined) {
-        frames[id] = frameOf(fill)
+        frames[id] = chainFrame(fill)
       }
     }
   }
@@ -326,7 +314,7 @@ export function consensusChainStrandFrames<T extends WorkerPileupData>(
       if (id === undefined) {
         continue
       }
-      const next = fillOf(frames[id]!)
+      const next = withChainFrame(fill, frames[id]!)
       merged[i] = next
       dirty = dirty || next !== fill
     }

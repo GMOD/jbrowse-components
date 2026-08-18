@@ -20,11 +20,7 @@ import {
   pairOrientationToNum,
 } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
-import {
-  SPLIT_DELETION,
-  SPLIT_INVERSION,
-  buildChainMetadata,
-} from '../shared/buildChainMetadata.ts'
+import { buildChainMetadata } from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
 import { featureChainKey } from '../shared/chainGroupingKey.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
@@ -46,10 +42,6 @@ import {
 } from '../shared/readNextRefs.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 import { chainIsSplit } from '../shared/splitAlignment.ts'
-import {
-  CHAIN_FILL_SPLIT_DELETION,
-  CHAIN_FILL_SPLIT_INVERSION,
-} from '../shared/types.ts'
 import { getFlags } from '../shared/util.ts'
 
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
@@ -203,19 +195,17 @@ function buildChainResultFields(
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const cIdx = featureIdToChainIdx.get(f.id) ?? 0
-    // Split markers are per-MATE: BOTH segments of a split mate get the marker
-    // so the whole split read stands out; the normal partner mate keeps the
-    // chain's plain has-supp value (1/2) and its pair color.
+    // Split bits are per-MATE: BOTH segments of a split mate get them so the
+    // whole split read stands out; the normal partner mate has none and keeps
+    // its pair color. ORed onto the chain's has-supp/frame bits rather than
+    // replacing them — the two describe different units (this mate's junction,
+    // the chain's orientation) and were only ever mutually exclusive because a
+    // 0-4 enum had nowhere to put both.
     const splitKind =
       f.flags & SAM_FLAG_FIRST_IN_PAIR
         ? chainMate0SplitKind[cIdx]!
         : chainMate1SplitKind[cIdx]!
-    readChainHasSupp[i] =
-      splitKind === SPLIT_INVERSION
-        ? CHAIN_FILL_SPLIT_INVERSION
-        : splitKind === SPLIT_DELETION
-          ? CHAIN_FILL_SPLIT_DELETION
-          : chainSuppTypes[cIdx]!
+    readChainHasSupp[i] = chainSuppTypes[cIdx]! | splitKind
     readChainIndices[i] = cIdx
     // Only overwrite when the chain's primary (paired) read set an orientation;
     // a supplementary whose primary is in another region keeps its own value.
