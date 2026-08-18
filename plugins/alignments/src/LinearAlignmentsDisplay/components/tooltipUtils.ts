@@ -625,7 +625,7 @@ export function formatSashimiTooltip(arc: {
 
 // Unlike sashimi's, this comes from a hit test for MOST arcs: the ones painted
 // into the canvas by both renderers have no per-path mouse handler to hand their
-// own arc over, so `hitTestArcs` has to find them first. The cross-region
+// own arc over, so `hitTestArcBand` has to find them first. The cross-region
 // overlay is the exception and calls this directly, which is why the parameter
 // is narrowed to the fields an arc's hover reports rather than the whole
 // `ArcHitResult` — a seam-crossing arc then reads identically to one inside a

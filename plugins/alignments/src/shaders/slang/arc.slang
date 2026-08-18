@@ -180,7 +180,7 @@ bool arcIsFar(float halfWidthPx, float canvasWidthPx) {
 //     its own paint and culling.
 //
 // It was stated twice, and the two copies did not look alike: this pass wrote
-// the gate as `2*halfWidthPx > k*canvasW` while drawCanvas.ts's `strokeArc`
+// the gate as `2*halfWidthPx > k*canvasW` while drawCanvas.ts's `strokeArcMark`
 // wrote `|sx2-sx1| > k*screenWidthPx` and took the answer as a `far` boolean
 // parameter. That is the shape the chevron layout drifted in (adr-051, "the
 // blind spot the survey had") — stated in different units on the two sides, so

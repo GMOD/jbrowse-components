@@ -62,7 +62,7 @@ function drawnEllipse(data: ArcsUploadData, i: number, opts: ArcHitOptions) {
   return call!
 }
 
-// Points on that ellipse, at the angles strokeArc sweeps — INSIDE the band
+// Points on that ellipse, at the angles strokeArcMark sweeps — INSIDE the band
 // only. Both renderers clip the arc pass to it and `hitTestArcBand` gates on it
 // exactly, so a sample above the band is not ink and asserting a hit there
 // would assert the opposite of what the band does. A tall dome's in-band part

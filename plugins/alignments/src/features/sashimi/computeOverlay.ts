@@ -343,7 +343,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
   // Hover: the paths carry `pointerEvents: 'stroke'`, so the topmost one under
   // the cursor takes the tooltip. Alternative 5'/3' splice sites sit a few bp
   // apart and draw as near-identical arcs, so a 1-read junction laid over a
-  // 200-read one answered for it — the same defect `hitTestArcs` had for
+  // 200-read one answered for it — the same defect `hitTestArcBand` had for
   // read-connection arcs, arriving here through the browser's hit test instead
   // of one of ours.
   //

@@ -2680,7 +2680,7 @@ describe('identical arcs coalesce and carry their support', () => {
 
   // The same junction, but the reads sit on the RIGHT side of it and name the
   // left breakpoint as their mate — so the connection resolves with the two
-  // endpoints the other way round. It draws the identical arc (strokeArc is
+  // endpoints the other way round. It draws the identical arc (strokeArcMark is
   // endpoint-order independent, pinned in arcShape.test.ts), so it has to fold
   // into the same one.
   //
@@ -2732,7 +2732,7 @@ describe('identical arcs coalesce and carry their support', () => {
   // Array order is paint order and the strokes are opaque, so whichever arc is
   // last keeps the pixels the two share. Reads arrive in no particular order
   // with respect to support, so without the sort a singleton fetched after a
-  // heavy junction draws over it — and `hitTestArcs` resolves the overlap the
+  // heavy junction draws over it — and `hitTestArcBand` resolves the overlap the
   // same way, which is how a hover on the strongest junction in the band
   // reported "1 read".
   test('the heavier junction packs last, whatever order the reads arrived in', () => {

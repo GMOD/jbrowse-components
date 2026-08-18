@@ -94,7 +94,7 @@ export function arcPaintRank(colorType: number) {
 // every arc that does not; see it for why a deep pileup needs that. Support
 // orders each rank internally: first-seen order is the reads' order, which is
 // arbitrary with respect to support, so a singleton fetched late punched a gap
-// through every heavier arc it crossed — and `hitTestArcs`' last-drawn-wins
+// through every heavier arc it crossed — and `hitTestArcBand`'s last-drawn-wins
 // tie-break then handed those pixels to it too. Heaviest-last is the ranking
 // `arcLineWidth` exists to express, and it is what lets the hit test resolve an
 // overlap toward the strongest junction and still be describing the arc on top.

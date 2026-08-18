@@ -25,7 +25,7 @@ export {
 
 // The band edge insert size 0 springs from: the bottom when arcs point up, the
 // top when they point down. One line, and it was written five times — here as
-// `arcMark`'s anchor, again in `drawArcsToCtx`, again in `hitTestArcs`,
+// `arcMark`'s anchor, again in `drawArcsToCtx`, again in `hitTestArcBand`,
 // again as the insert-size ruler's `anchor`, and a fifth time as the GPU's
 // `arcAnchorPx` uniform. Every one of them has to agree or the ruler labels a
 // height nothing plots at, so it is the same missing-function shape the rest of

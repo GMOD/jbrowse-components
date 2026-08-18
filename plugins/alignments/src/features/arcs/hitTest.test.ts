@@ -50,7 +50,7 @@ function arcsData(
   }
 }
 
-// The ellipse `strokeArc` actually hands to Canvas2D for these inputs. Sampling
+// The ellipse `strokeArcMark` actually hands to Canvas2D for these inputs. Sampling
 // the hit test against THIS rather than against a re-derivation is the whole
 // point: the two would otherwise be two placements of the same arc, free to
 // disagree while both look right on their own.

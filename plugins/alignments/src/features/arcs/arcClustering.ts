@@ -48,7 +48,7 @@ export function arcKey(a: {
   yBp: number
 }) {
   // ENDPOINT ORDER IS NORMALIZED, because the drawn arc is symmetric in it and
-  // so the key has to be. `strokeArc` centres on (p1+p2)/2 with |p2-p1|/2 as its
+  // so the key has to be. `strokeArcMark` centres on (p1+p2)/2 with |p2-p1|/2 as its
   // half-width and `arcShape.test.ts` pins that as endpoint-order independent;
   // the shader takes min/max of the two. A junction whose reads name the mates
   // the other way round therefore paints the identical pixels.

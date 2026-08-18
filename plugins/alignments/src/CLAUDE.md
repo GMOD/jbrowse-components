@@ -133,12 +133,3 @@ back and the last fetch to resolve rebinds it for every other region, resolving
 one region's mismatches against another's sequence. `regionRefAliasing.test.ts`
 is the regression test, `noRecordRefMutation` the lint rule that stops the
 assignment coming back.
-
-## CRAM read-feature walks
-
-CRAM stores no CIGAR, and **neither walk over its read features is ours** —
-`CramRecord.forEachCigarOp` and `CramRecord.forEachMismatch` both live in
-cram-js. `CramSlightlyLazyFeature.forEachMismatch` only delegates. So a wrong or
-missing mismatch on a CRAM track is a cram-js change, not one here.
-
-What is ours is `packCigar.ts`, which packs into `(length << 4) | op`.
