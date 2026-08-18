@@ -3,6 +3,16 @@ import { useResizeDrag } from '../util/useResizeDrag.ts'
 
 import type React from 'react'
 
+// Two kinds of handle, one ladder of weight between them. A handle that draws
+// nothing at rest reveals itself under the pointer at exactly the weight a
+// visible one rests at (`action.disabled`); a visible one then goes past that,
+// to `action.active` — the same resting/hover pair `VerticalScrollbar`'s thumb
+// uses.
+//
+// `action.selected` (0.08 light / 0.16 dark) used to be the hover for both, and
+// was too faint to answer "is this the thing I grab?" over a dense pileup — and
+// on a `bar`, which rests at 0.26, it made the handle go *fainter* under the
+// pointer, since `:hover` beats the plain class whatever the source order.
 const useStyles = makeStyles()(theme => ({
   horizontalHandle: {
     cursor: 'row-resize',
@@ -10,22 +20,16 @@ const useStyles = makeStyles()(theme => ({
     // stop the browser turning a touch-drag into a scroll/pan gesture so the
     // pointer stream reaches us
     touchAction: 'none',
-    '&:hover': { background: theme.palette.action.selected },
+    '&:hover': { background: theme.palette.action.disabled },
   },
   verticalHandle: {
     cursor: 'col-resize',
     height: '100%',
     touchAction: 'none',
-    '&:hover': { background: theme.palette.action.selected },
+    '&:hover': { background: theme.palette.action.disabled },
   },
   // `bar` opt-in: the standard always-visible resize divider used at the bottom
   // (or side) of views and tracks. Other call sites stay invisible until hover.
-  //
-  // The hover has to be restated here, darker: a bar rests at
-  // `action.disabled` (0.26 light / 0.3 dark) and the invisible handles' hover
-  // is `action.selected` (0.08 / 0.16), so inheriting it made a bar go *fainter*
-  // under the pointer. `action.active` is the same resting/hover pair
-  // `VerticalScrollbar`'s thumb uses.
   bar: { '&:hover': { background: theme.palette.action.active } },
   horizontalBar: { height: 4, background: theme.palette.action.disabled },
   verticalBar: { width: 4, background: theme.palette.action.disabled },

@@ -157,4 +157,16 @@ describe('ResizeHandle', () => {
     expect(hover).toBeTruthy()
     expect(colord(hover).alpha()).toBeGreaterThan(colord(rest).alpha())
   })
+
+  // The ladder: an invisible handle reveals itself at the weight a bar rests at,
+  // so a divider drawn over a dense pileup (the alignments coverage band, the
+  // group splits) answers the pointer at all.
+  it('reveals an invisible handle at a visible handle resting weight', () => {
+    const { container: plain } = render(<ResizeHandle onDrag={() => {}} />)
+    const { container: barred } = render(<ResizeHandle bar onDrag={() => {}} />)
+    const plainHover = readBarAlphas(plain.firstChild as HTMLElement).hover
+    const barRest = readBarAlphas(barred.firstChild as HTMLElement).rest
+
+    expect(colord(plainHover).alpha()).toBe(colord(barRest).alpha())
+  })
 })

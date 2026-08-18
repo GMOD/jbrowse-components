@@ -17,12 +17,28 @@ store in URL hash, clear on first navigation.
 **Breakpoint connectors.** Smooth out the awkward blue/green curves (currently arbitrary
 Y increase/loop).
 
-**BSV overlay: fix model-derived track Y positions.** `getTrackYOffset` sums
-`headerHeight + scalebarHeight + Σ(track.height + RESIZE_HANDLE_HEIGHT)` but diverges from
-the actual CSS layout (likely a gap/border/constant mismatch). The current workaround is a
-`getBoundingClientRect` rAF loop in `useDomTrackYOffsets` (~60fps re-renders). Finding the
-discrepancy — `console.log(view.getTrackYOffset(id), trackRef.top − svgRef.top)` on a
-loaded view — would let us delete the DOM measurement and rely on MobX reactivity alone.
+**BSV overlay: the constant half of the Y discrepancy is fixed; the label half
+cannot be.** The measurement this entry asked for has been run, on a four-track
+volvox view against `trackRef.top − svgRef.top`. Two terms came out of it.
+
+The **constant** term was 5px per track — a 2px gap over each Paper, a 1px
+border on each of its sides, and a 4px resize divider, against the single
+`RESIZE_HANDLE_HEIGHT = 3` the model counted. Those constants now live in
+`consts.ts`, TrackContainer lays out from them, and `getTrackYOffset` matches
+the DOM to 0px with labels hidden, outlines either way.
+
+The **label** term is 31.140625px per track that renders an offset label, which
+is the default. It is a `TrackLabel` Paper of icon buttons plus its 8px margin:
+whatever the theme renders it at, uniform across tracks in the measured case but
+free to grow when a long track name wraps. Nothing in the model can derive it.
+
+So deleting `useDomTrackYOffsets` outright is off — "MobX reactivity alone"
+would still need a DOM measurement, just an event-driven one. What is left is a
+narrower question: **publish each track's measured label box into the model
+(one `ResizeObserver`, written from TrackContainer) and let the arithmetic be
+exact in every label mode**, which would retire the rAF poll without changing
+what the overlay reads. Worth doing only with a way to check BSV connector
+positions afterwards, since that is the thing it breaks.
 
 **Relative-URI resolution: `bigWigs` shorthand can't be relative (issue #3562), and
 `addRelativeUris` is shape-heuristic.** Today relative URLs resolve via a three-stage
