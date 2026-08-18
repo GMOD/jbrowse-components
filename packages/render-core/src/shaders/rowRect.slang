@@ -17,7 +17,7 @@
 // two shaders. It is also unsettled, and device px additionally makes MAF's
 // floor depend on the reader's monitor:
 // `agent-docs/ideas/maf-subpixel-cells.md`.
-//! export-consts: MIN_DRAWN_ROW_PX
+//! export-consts: MIN_DRAWN_ROW_PX, MIN_DRAWN_CELL_PX
 //! js-export: drawnRowHeightPx, rowBandOffsetPx
 module rowRect;
 
@@ -52,11 +52,27 @@ public struct RowRectVsOut {
   public float4 color    : COLOR0;
 };
 
-// Thinnest a row is ever painted. Vertical twin of the min-width floor used
-// below: a row thinner than a pixel can miss every pixel center and disappear,
-// so without this rows drop out as they get denser instead of just getting
+// Thinnest a row is ever painted. Vertical twin of MIN_DRAWN_CELL_PX below: a
+// row thinner than a pixel can miss every pixel center and disappear, so
+// without this rows drop out as they get denser instead of just getting
 // thinner. Floored, neighbours overlap instead.
 static const float MIN_DRAWN_ROW_PX = 1.0;
+
+// Narrowest a cell is ever painted, for the same reason on the other axis.
+//
+// Named because it was not: the vertical twin above has carried a name and an
+// `export-consts` since it was written, while this one was a bare `1.0` in
+// `rowRectVertex` and a bare `1` in the multi-row painter's `Math.max(1, …)`.
+// The header's whole paragraph about which unit each caller measures the floor
+// in was pointing at a number nothing named — and the two GPU renderers each
+// spend a paragraph on that choice, so the number is anything but incidental.
+//
+// One caller mirrors it on the Canvas2D side and one deliberately does not: the
+// multi-row painter floors, MAF draws cells at their natural sub-pixel width.
+// That asymmetry is real and parked in `agent-docs/ideas/maf-subpixel-cells.md`;
+// sharing the constant does not decide it, it just stops the value being
+// anonymous in the places that DO agree.
+static const float MIN_DRAWN_CELL_PX = 1.0;
 
 public struct RowBand {
   public float height;  // what the rect is painted at
@@ -97,7 +113,7 @@ public RowRectVsOut rowRectVertex(
 
   float sx1 = hpToClipX(hpSplitUint(inst.startBp), u.bpRangeX, u.zero);
   float sx2 = hpToClipX(hpSplitUint(inst.endBp), u.bpRangeX, u.zero);
-  sx2 = extendToMinWidthX(sx1, sx2, 1.0, u.viewportWidth);
+  sx2 = extendToMinWidthX(sx1, sx2, MIN_DRAWN_CELL_PX, u.viewportWidth);
 
   float yPx = lerp(rowY, rowY + h, local.y);
 

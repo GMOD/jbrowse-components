@@ -3,6 +3,7 @@
 // triangle glyph out of the quad when shapeType != RECT.
 //! targets: wgsl, glsl
 //! blend: premultiplied
+//! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT
 //! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
 
@@ -11,6 +12,19 @@ import colorPack;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
+
+// The glyph vocabulary the instance buffer's `shapeType` lane speaks, owned here
+// and generated into TS — the same way manhattan.slang owns GLYPH_POINT/
+// GLYPH_INSERTION/GLYPH_INDEX, wiggle owns RENDERING_TYPE_*, and syntenyTypes
+// owns its KIND_* boundary. This pair was the one still going the other way:
+// declared in `../variantShape.ts` and held against the shader by a "keep in
+// sync there" comment, with the fragment stage testing a bare `0u`.
+//
+// An inversion is symmetric — VCF sets no strand on a variant record — so one
+// triangle covers it and the vocabulary is two values rather than a left/right
+// pair.
+static const uint SHAPE_RECT = 0u;
+static const uint SHAPE_TRI_LEFT = 1u;
 
 // Height a cell is painted at. The 2px floor keeps a lone cell in a sparse
 // matrix visible (matching the 2px min width) rather than fading to a sub-pixel
@@ -160,8 +174,10 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float alpha = fragIn.color.a;
 
   // Any non-rect cell is an inversion, drawn as a left-pointing triangle via a
-  // mirrored right-triangle SDF (SHAPE_TRI_LEFT in ../variantShape.ts).
-  if (fragIn.shapeType != 0u) {
+  // mirrored right-triangle SDF. Tested as "not RECT" rather than "== TRI_LEFT"
+  // so a third shape added to the vocabulary above draws SOMETHING here rather
+  // than silently falling back to a plain box.
+  if (fragIn.shapeType != SHAPE_RECT) {
     float w = fragIn.sizePx.x;
     float h = fragIn.sizePx.y;
     float d = triSdfRight(float2(w - fragIn.localPx.x, fragIn.localPx.y), w, h, fragIn.hypRight);

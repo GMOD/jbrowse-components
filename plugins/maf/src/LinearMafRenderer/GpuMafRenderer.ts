@@ -53,9 +53,11 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
       //
       // NOTE: GpuMultiRowRenderer draws the same shared `rowRect` module but
       // feeds CSS px (scissorW) for a 1-CSS-px floor — it moved off pxW in
-      // e1c2585e4d to match its Canvas2D `Math.max(1, ...)`. maf has no such
-      // Canvas2D floor (drawMafBlocks draws cells at natural sub-pixel width),
-      // so the two are not interchangeable and neither is obviously wrong.
+      // e1c2585e4d to match its Canvas2D `Math.max(MIN_DRAWN_CELL_PX, ...)`.
+      // maf has no such Canvas2D floor (drawMafBlocks draws cells at natural
+      // sub-pixel width), so the two are not interchangeable and neither is
+      // obviously wrong. What differs is this uniform, not the constant: both
+      // widen to the shader's MIN_DRAWN_CELL_PX, in different units.
       //
       // Device px also means **this floor moves with the monitor** — 0.5 CSS px
       // at dpr 2 — so MAF renders differently on a retina screen than on a plain

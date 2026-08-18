@@ -2,3 +2,5 @@
 // Do not edit. Run `pnpm gen:shaders` to regenerate.
 
 export const MIN_DRAWN_ROW_PX = 1
+
+export const MIN_DRAWN_CELL_PX = 1

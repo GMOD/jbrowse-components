@@ -2,7 +2,10 @@ import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
-import { MIN_DRAWN_ROW_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
+import {
+  MIN_DRAWN_CELL_PX,
+  MIN_DRAWN_ROW_PX,
+} from '@jbrowse/render-core/shaders/rowRectConsts'
 
 // Vertical band a row's blocks occupy: `rowProportion` of the row, centered, so
 // a proportion below 1 leaves an even gutter above and below. One definition
@@ -27,6 +30,11 @@ import { MIN_DRAWN_ROW_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 // and it is why clustering matters at this density: with similar rows adjacent,
 // whichever one wins a pixel stands for its neighbours.
 export { MIN_DRAWN_ROW_PX }
+
+// Narrowest a cell is painted, the horizontal twin of the row floor above and
+// the same constant `rowRectVertex` widens to. Re-exported here so the Canvas2D
+// painter reads both floors from one place, as it already read the band.
+export { MIN_DRAWN_CELL_PX }
 
 // Height a row's blocks are painted at. Distinct from the row's own height,
 // which stays sub-pixel so that `nrow * rowHeight` still fits the display.

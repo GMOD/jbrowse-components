@@ -49,10 +49,12 @@ export class GpuMultiRowRenderer extends GpuPerRegionRenderingBackend<
     multiRowShader.writeUniforms(this.uniformData, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,
-      // CSS px, not physical: `extendToMinWidthX` in rowRect.slang divides its
-      // 1.0 by this to reach clip space, so a CSS width is what makes it a
-      // 1-CSS-pixel minimum feature width, matching the Canvas2D Math.max(1,...)
-      // path. clip.pxW is dpr-scaled, so on hi-DPI it would halve the min width.
+      // CSS px, not physical: `extendToMinWidthX` in rowRect.slang divides
+      // MIN_DRAWN_CELL_PX by this to reach clip space, so a CSS width is what
+      // makes it a 1-CSS-pixel minimum feature width, matching the Canvas2D
+      // `Math.max(MIN_DRAWN_CELL_PX, …)` path — the same constant on both sides
+      // now, rather than the same digit. clip.pxW is dpr-scaled, so on hi-DPI it
+      // would halve the min width.
       viewportWidth: clip.scissorW,
       zero: 0,
       rowHeight: state.rowHeight,

@@ -1,7 +1,14 @@
-// Shape IDs match the shader check in `shaders/variant.slang` (fs_main): 0 is a
-// plain rect, any non-zero value is the inversion glyph. Keep in sync there.
-export const SHAPE_RECT = 0
-export const SHAPE_TRI_LEFT = 1
+// The glyph vocabulary the `shapeType` lane speaks, generated from
+// `shaders/variant.slang` (adr-051) rather than declared here and kept in sync
+// with it by hand — 0 is a plain rect and any other value is the inversion
+// glyph, and the fragment stage tests against the same `SHAPE_RECT`. Re-exported
+// so this module stays the one place the shapes are read from.
+import {
+  SHAPE_RECT,
+  SHAPE_TRI_LEFT,
+} from './shaders/variant.consts.generated.ts'
+
+export { SHAPE_RECT, SHAPE_TRI_LEFT }
 
 // Minimal 2D path sink — both CanvasRenderingContext2D and SvgCanvas match.
 // closePath is optional because native Canvas auto-closes on fill; SVG
