@@ -5,6 +5,20 @@
 // before using a baked width for anything geometric.
 export const LABEL_FONT_SIZE = 11
 
+// How much smaller the isoform badge draws than the name it sits beside. It is
+// an aside on the gene's label, not a second label, so it recedes — with the
+// italic and the muted grey the badge also takes (see floatingLabelMore and
+// createMoreIsoformsLabel).
+//
+// A DRAWING size, and the badge's baked `textWidth` is measured at
+// `LABEL_FONT_SIZE × this` for that reason: `renderedTextWidth` below is linear,
+// so every reservation that converts a baked width — the packer's overhang, the
+// hit box, the highlight overlay, the SVG export's boxes — then lands on the
+// width the badge actually paints without any of them knowing there is a second
+// size in play. Scaling at the reservation sites instead would have been four
+// multiplies to keep in step, three of which fail silently by over-reserving.
+export const MORE_ISOFORMS_FONT_SCALE = 0.85
+
 // A baked textWidth converted to the width it actually paints at `fontSize`.
 // Text width scales linearly with font size for a fixed string, so this single
 // multiply is the whole conversion, and it's the one every consumer of a baked

@@ -1,21 +1,33 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { LABEL_FONT_SIZE, MAX_DESCRIPTION_LABEL_WIDTH_PX } from './constants.ts'
+import {
+  LABEL_FONT_SIZE,
+  MAX_DESCRIPTION_LABEL_WIDTH_PX,
+  MORE_ISOFORMS_FONT_SCALE,
+} from './constants.ts'
 import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
 
 import type { LabelItem } from './rpcTypes.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // Single constructor for a LabelItem so textWidth is always the measured width
-// of `text` at LABEL_FONT_SIZE — the invariant the layout/hit-test reservations
-// rely on (see maxLabelTextWidth). relativeY defaults to 0; the main thread
-// (labelPositioning) sets the final name→description gap.
-function labelItem(text: string, color: string, relativeY = 0): LabelItem {
+// of `text` at the base size this label DRAWS at — the invariant the
+// layout/hit-test reservations rely on (see maxLabelTextWidth), since every one
+// of them converts with `renderedTextWidth`, which scales from LABEL_FONT_SIZE.
+// `fontSize` is that base size, and only the isoform badge passes anything but
+// the default (see MORE_ISOFORMS_FONT_SCALE). relativeY defaults to 0; the main
+// thread (labelPositioning) sets the final name→description gap.
+function labelItem(
+  text: string,
+  color: string,
+  relativeY = 0,
+  fontSize = LABEL_FONT_SIZE,
+): LabelItem {
   return {
     text,
     relativeY,
     color,
-    textWidth: measureText(text, LABEL_FONT_SIZE),
+    textWidth: measureText(text, fontSize),
   }
 }
 
@@ -61,11 +73,18 @@ export function createFeatureFloatingLabels({
 // Helvetica indexed by char code and falls back to an average outside it, so a
 // typographic minus would be reserved at a width nothing measured.
 //
+// `text.secondary` and the smaller base size make it an aside on the name rather
+// than a second label: it is translucent (the same property `getStrokeColor`
+// leans on), so it reads as grey against the track in either theme instead of
+// competing with the name it qualifies. The underline and the italic are the
+// DOM/SVG halves of the same choice.
+//
 // `hidden` rides along for the hover title, which is where the terse text is
-// spelled out; the badge itself has an 11px row to live in.
+// spelled out; the badge itself has one short row to live in.
 //
 // Through `labelItem` like every other label, so the packer's width reservation
-// and the drawn text agree by construction (see the invariant there).
+// and the drawn text agree by construction (see the invariant there) — measured
+// at the size it draws at, which is what keeps that true across the two sizes.
 export function createMoreIsoformsLabel({
   overflow,
   palette,
@@ -78,7 +97,9 @@ export function createMoreIsoformsLabel({
     ? {
         ...labelItem(
           expanded ? 'show fewer' : `+${hidden} more`,
-          palette.primary.main,
+          palette.text.secondary,
+          0,
+          LABEL_FONT_SIZE * MORE_ISOFORMS_FONT_SCALE,
         ),
         hidden,
         expanded,

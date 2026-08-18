@@ -11,6 +11,7 @@ import {
 import {
   LABEL_BASELINE_RATIO,
   LABEL_OVERLAY_BACKGROUND,
+  MORE_ISOFORMS_FONT_SCALE,
   renderedTextWidth,
 } from '../RenderFeatureDataRPC/constants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
@@ -56,8 +57,17 @@ export interface RenderSvgModel extends SvgExportable {
 // on-screen, so the on-screen renderer doesn't draw them. SVG export must
 // bake them into the output, so they live here as a vector-only post-pass
 // that runs after drawFeatureBlocks paints the geometry.
+//
+// Owns `ctx.font` rather than taking it set: the isoform badge draws smaller
+// and italic (floatingLabelMore is the DOM half of the same choice), so the pass
+// has two fonts in it and neither caller nor callee can hold just one. Free to
+// reassign per label here — the export's ctx is an SvgCanvas, which stores the
+// shorthand and parses it at serialize time.
 function paintLabels(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
-  for (const { label, labelX, labelY } of labels) {
+  for (const { label, labelX, labelY, kind } of labels) {
+    const isMore = kind === 'more'
+    const size = isMore ? fontSize * MORE_ISOFORMS_FONT_SCALE : fontSize
+    ctx.font = `${isMore ? 'italic ' : ''}${size}px sans-serif`
     if (label.isOverlay) {
       ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
       // The baked textWidth is measured at the base font size; scale it to what
@@ -78,6 +88,9 @@ function paintLabels(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
     // inconsistently, while an explicit y is portable everywhere. Rounded
     // because SvgCanvas interpolates coordinates raw — the unrounded product
     // serializes as y="21.240000000000002" for no visible gain.
+    //
+    // Off the label's OWN size, so the badge sits on the name's baseline rather
+    // than a smaller one of its own — they share a line.
     ctx.fillText(
       label.text,
       labelX,
@@ -182,7 +195,6 @@ function CanvasFeaturesSvgBody({
             highlightBoxColors(palette.highlight.main),
             labelContext,
           )
-          ctx.font = `${fontSize}px sans-serif`
           // Labels/peptides are laid out in absolute track px (drawHighlightBoxes
           // above applies scrollY itself, as drawFeatureBlocks does); shift the
           // rest of the layer up by scrollY so text tracks the feature geometry

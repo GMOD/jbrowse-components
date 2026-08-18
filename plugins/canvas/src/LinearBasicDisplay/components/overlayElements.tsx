@@ -4,6 +4,7 @@ import { pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { MORE_ISOFORMS_FONT_SCALE } from '../../RenderFeatureDataRPC/constants.ts'
 import PeptideCanvas from './PeptideCanvas.tsx'
 import {
   computeOverlayRect,
@@ -227,13 +228,15 @@ const useStyles = makeStyles()(() => {
     floatingLabelStatic: {
       pointerEvents: 'none',
     },
-    // The isoform badge ("+3 more"). Always clickable — it is the affordance,
-    // not a readout — and underlined so it reads as one against the plain name
-    // it sits beside. Its color is the worker-baked label.color like every
-    // other label, for the reason floatingLabel gives.
+    // The isoform badge ("+3 more"): an aside on the gene's name, not a second
+    // label, so it is italic and — via the worker-baked label.color, like every
+    // other label here — a translucent grey, at MORE_ISOFORMS_FONT_SCALE of the
+    // name's size. What keeps it from receding out of existence is the
+    // underline and the pointer: it is the affordance, not a readout.
     floatingLabelMore: {
       pointerEvents: 'auto',
       cursor: 'pointer',
+      fontStyle: 'italic',
       textDecoration: 'underline',
     },
     // Light backing rect for overlay labels; the text color still comes from the
@@ -381,7 +384,11 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
             }
             style={{
               color: label.color,
-              fontSize: labelFontSize,
+              // the badge's baked width is measured at this same scale, so the
+              // room reserved for it is the room it takes (see the constant)
+              fontSize: isMore
+                ? labelFontSize * MORE_ISOFORMS_FONT_SCALE
+                : labelFontSize,
               transform: `translate(${labelX}px, ${labelY}px)`,
             }}
           >

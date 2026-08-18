@@ -1,10 +1,15 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { measureText } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import { collectRenderData } from '../RenderFeatureDataRPC/collectRenderData.ts'
+import {
+  LABEL_FONT_SIZE,
+  MORE_ISOFORMS_FONT_SCALE,
+} from '../RenderFeatureDataRPC/constants.ts'
 import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import {
   makeFeatureData,
@@ -215,6 +220,17 @@ describe('the badge rides the gene name label', () => {
   // box, the highlight overlay, the SVG export's boxes. The badge is drawn AFTER
   // the name on the same row, so all of them have to reserve both or the box
   // stops at the name and the badge hangs outside its own feature.
+  it("bakes its width at the size it draws, not the name's", () => {
+    const badge = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!
+      .moreIsoformsLabel!
+    // `renderedTextWidth` scales every baked width from LABEL_FONT_SIZE, so
+    // measuring the badge at the smaller size is what makes each reservation
+    // land on the width it paints without knowing there are two sizes in play.
+    expect(badge.textWidth).toBeCloseTo(
+      measureText(badge.text, LABEL_FONT_SIZE * MORE_ISOFORMS_FONT_SCALE),
+    )
+  })
+
   it('counts toward the label width the hit box and highlight reserve', () => {
     const data = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!
     const withBadge = computeLabelExtraWidth(data, 0)
@@ -385,11 +401,23 @@ describe('the badge in the label layer', () => {
     const name = getByTestId('feature-name-GENE1')
     const badge = getByTestId('feature-more-isoforms-gene1')
     expect(badge.textContent).toBe('+6 more')
-    // the badge has one 11px row, so the sentence is the hover title
+    // the badge has one short row, so the sentence is the hover title
     expect(badge.title).toBe('6 isoforms not shown — click to expand this gene')
     const x = (el: HTMLElement) =>
       Number(/translate\(([-\d.]+)px/.exec(el.style.transform)![1])
     expect(x(badge)).toBeGreaterThan(x(name))
+  })
+
+  // It is an aside on the name, not a second label. The size is the half that
+  // can go wrong quietly: the badge's baked width is measured at this same
+  // scale, so a drawn size that drifted from it would put the text and the room
+  // reserved for it at different widths — the invariant every label here holds.
+  it('draws smaller than the name it qualifies', () => {
+    const { getByTestId } = renderLabelLayer({})
+    const size = (el: HTMLElement) => Number.parseFloat(el.style.fontSize)
+    expect(size(getByTestId('feature-more-isoforms-gene1'))).toBeCloseTo(
+      size(getByTestId('feature-name-GENE1')) * MORE_ISOFORMS_FONT_SCALE,
+    )
   })
 
   // The badge is anchored to the end of the name text, so a badge outliving its
