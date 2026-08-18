@@ -260,7 +260,7 @@ describe('isoformRowBudget', () => {
   })
 
   // However short the lane, a gene collapsed to nothing is not an overview of
-  // it — and the worker's own cap floors at 1 too (isoformsWithinCap).
+  // it — and the worker's own cap floors at 1 too (isoformsWithinBudget).
   it('never drops below one isoform', () => {
     const cost = geneRowCostPx({
       featureHeightPx: 10,

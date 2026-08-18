@@ -221,7 +221,7 @@ function labelDataFor(
 }
 
 describe('the badge rides the gene name label', () => {
-  it('reads "+N more" collapsed and "− fewer" expanded', () => {
+  it('reads "+N more" collapsed and "show fewer" expanded', () => {
     expect(
       labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!.moreIsoformsLabel,
     ).toMatchObject({ text: '+6 more', hidden: 6, expanded: false })

@@ -165,8 +165,9 @@ interface LoadedSpan {
 // Nor is an exact-id (right-click) one, and for a stronger reason: nothing about
 // it can be mistyped. Its id came from a feature that was rendered, so it
 // resolving to nothing means the feature stopped being drawn — hidden, filtered,
-// or an isoform dropped when the gene glyph collapsed to the longest one at
-// zoom-out. All routine, and the warning below would blame the user's
+// or an isoform the gene glyph dropped, whether by collapsing to the
+// representative transcript at zoom-out or by capping the gene at the rows the
+// track has. All routine, and the warning below would blame the user's
 // coordinates for each of them.
 function highlightIsCheckable(
   h: FeatureHighlight,
