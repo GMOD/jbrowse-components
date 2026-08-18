@@ -11,7 +11,6 @@ import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
-import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { FetchContext } from './FetchMixin.ts'
