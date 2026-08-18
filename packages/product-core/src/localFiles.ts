@@ -35,6 +35,26 @@ export function registerLocalFiles(files: LocalFileInput) {
   )
 }
 
+/**
+ * Fold newly-offered files into a controller's registered map, registering only
+ * the names it has not seen. Registering is what mints the blobIds, so a host
+ * re-stating its whole file set on every update — which is what a declarative
+ * host does — pays for each file once rather than once per update.
+ *
+ * Only ever adds: a name already registered keeps its existing blob, because a
+ * live track config points at that blobId and swapping it underneath would
+ * leave the track reading bytes nothing else references.
+ */
+export function mergeLocalFiles(
+  current: Record<string, BlobLocation>,
+  files: LocalFileInput,
+) {
+  const fresh = Object.fromEntries(
+    Object.entries(files).filter(([name]) => !current[name]),
+  )
+  return { ...current, ...registerLocalFiles(fresh) }
+}
+
 // Registering the same bytes twice used to mint a second blobId and leave the
 // first in core's process-global blobMap forever. Nothing collects that map, so
 // a host that hands the same `localFiles` to a new controller each time it

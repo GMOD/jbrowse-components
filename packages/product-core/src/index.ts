@@ -114,11 +114,27 @@ export type { SessionSnapshot } from './sessionUrl.ts'
 // than at a URL (a notebook kernel, an R session) — read by byte range, so an
 // indexed file stays indexed
 export {
+  mergeLocalFiles,
   normalizeAdapterSnapshots,
   registerLocalFiles,
   resolveLocalFileUris,
 } from './localFiles.ts'
 export type { LocalFileInput } from './localFiles.ts'
+// the track half of an imperative controller: loose track specs -> configs, and
+// opening exactly the wanted set
+export {
+  isLooseTrack,
+  mergeSearchAdapters,
+  openTracks,
+  reconcileTracks,
+  resolveTracks,
+  withAssemblyName,
+} from './controllerTracks.ts'
+export type {
+  ControllerSession,
+  TrackConf,
+  TrackInput,
+} from './controllerTracks.ts'
 // hub names, sequence URIs and hub configs -> assembly configs, so every
 // product takes the same assembly vocabulary
 export { resolveAssemblies, resolveAssembly } from './resolveAssemblies.ts'
