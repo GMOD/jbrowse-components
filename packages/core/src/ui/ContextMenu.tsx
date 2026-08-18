@@ -56,20 +56,40 @@ const ContextMenu = observer(function ContextMenu({
   }
   const items = Array.isArray(menuItems) ? menuItems : menuItems()
   return items.length > 0 ? (
-    <Menu
-      open
-      onMenuItemClick={callback => {
-        callback()
+    // A REACT EVENT DOES NOT STOP AT THE PORTAL. The menu renders into
+    // document.body, but React bubbles a portal's events through the COMPONENT
+    // tree, and every display that raises this menu renders it inside the same
+    // element whose `onClick` hit-tests the pointer. So picking any item also
+    // ran that hit test, and every right-click route ended with the clicked
+    // feature's details drawer open beside the thing the item had just done.
+    //
+    // `display: contents` because this wrapper is only here to catch events:
+    // the menu itself is portalled out, so the div holds nothing to lay out,
+    // and a box in the display's flow would move what is under it.
+    <div
+      style={{ display: 'contents' }}
+      onClick={e => {
+        e.stopPropagation()
       }}
-      onClose={onClose}
-      anchorReference="anchorPosition"
-      anchorPosition={{
-        top: anchor.clientY + offset.y,
-        left: anchor.clientX + offset.x,
+      onContextMenu={e => {
+        e.stopPropagation()
       }}
-      style={{ zIndex: CONTEXT_MENU_Z_INDEX }}
-      menuItems={items}
-    />
+    >
+      <Menu
+        open
+        onMenuItemClick={callback => {
+          callback()
+        }}
+        onClose={onClose}
+        anchorReference="anchorPosition"
+        anchorPosition={{
+          top: anchor.clientY + offset.y,
+          left: anchor.clientX + offset.x,
+        }}
+        style={{ zIndex: CONTEXT_MENU_Z_INDEX }}
+        menuItems={items}
+      />
+    </div>
   ) : null
 })
 
