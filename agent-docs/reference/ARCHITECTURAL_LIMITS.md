@@ -925,6 +925,49 @@ global-fetch helper reads unconditionally, and a required `rpcProps` (or the
 explicit opt-out above). The third condition this used to name — a marker the
 height mixins can compare composition order on — is `supportsHeightModes`, above.
 
+### A spreadsheet's rows leave the session snapshot silently, and a local import cannot get them back
+
+**Status:** Accepted on the cap, Open on the silence.
+
+`SpreadsheetViewModel`'s `postProcessSnapshot` drops `rowSet` when
+`rowsExceedSnapshotBudget` says the serialized rows clear `ROW_SNAPSHOT_BUDGET`
+(1 MB). The cap earns its place: the session snapshot is mirrored to
+sessionStorage on every edit, which throws on a write rather than failing an
+async put, so an unbounded sheet loses the whole session instead of one view.
+`snapshotBudget.ts` carries the reasoning, including why the test samples for a
+per-row floor before measuring exactly.
+
+**What nothing bounds is the recovery.** `ImportWizard` remembers a location
+only when it is a URI — `if ('uri' in src) { self.setCachedFileLocation(src) }`
+— so a sheet imported from a local path or a dropped blob has no
+`cachedFileLocation`, and the reload path in the view's `afterAttach` keys
+entirely on that field. Over the budget, such a sheet returns as an empty import
+form. Nothing says so at any point: `omitRows` is computed inside the snapshot
+transform, never recorded, and no notification fires — so the loss is visible
+only as a sheet that used to have rows.
+
+Two things make it reachable rather than theoretical:
+
+- **The sibling limit on the same import path does speak.** `IMPORT_SIZE_LIMIT`
+  (100 MB) sets a visible error naming the cap. A reader who has met that one
+  has been taught that this import path announces its limits.
+- **`SvInspectorView` holds a child `SpreadsheetView`**, so the SV workflow
+  whose ordinary input is a local VCF or BEDPE inherits the whole shape.
+
+**The shape, not the instance, is what to carry away**, because the codebase is
+otherwise careful about it: `GranularRectLayout` throws past `hardRowLimit`
+rather than truncating, and alignments records a `clippedBy: RowCapSource` so a
+lane can say which cap hid its reads. The one sibling with the same silence is
+`BaseFeatureWidget`, which persists `undefined` for feature data past 2 MB
+serialized — benign only because clicking the feature again rebuilds it, which
+is exactly what an imported sheet cannot do.
+
+**Retire when** the drop is either visible or impossible: a flag on the
+persisted snapshot that the reloaded view turns into a message naming the file
+to re-import, or rows over the budget going somewhere IndexedDB-shaped instead
+of into the snapshot. The message is the cheap half and needs nothing about the
+budget to change.
+
 ### The plugin ABI is unversioned and the surface is unbounded
 
 **Status:** Open, with a plan.
