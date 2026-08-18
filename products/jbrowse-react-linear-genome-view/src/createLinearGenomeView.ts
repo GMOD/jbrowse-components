@@ -1,12 +1,16 @@
 import { createElement } from 'react'
 
-import { getEnv } from '@jbrowse/core/util'
-import { guessTrackConf } from '@jbrowse/core/util/tracks'
 import {
+  isLooseTrack,
+  mergeLocalFiles,
+  mergeSearchAdapters,
   observeSession,
+  reconcileTracks,
   registerLocalFiles,
   resolveAssembly,
   resolveLocalFileUris,
+  resolveTracks,
+  withAssemblyName,
 } from '@jbrowse/product-core'
 import { createRoot } from 'react-dom/client'
 
@@ -16,19 +20,14 @@ import { destroyViewState } from './destroyViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
 import type { ViewStateOptions } from './createViewState.ts'
-import type { BlobLocation } from '@jbrowse/core/util'
-import type { LooseTrackInput } from '@jbrowse/core/util/tracks'
 import type {
   AssemblyInput,
   LocalFileInput,
   SessionObservers,
+  TrackConf,
+  TrackInput,
 } from '@jbrowse/product-core'
 
-type Tracks = NonNullable<ViewStateOptions['tracks']>
-type TrackConf = Record<string, unknown>
-/** A full track config, a bare data-file URL, or `{ uri, index?, ...extra }` —
- * the loose forms are expanded via core's guessTrackConf at mount time. */
-type TrackInput = string | TrackConf
 type SearchAdapters = ViewStateOptions['aggregateTextSearchAdapters']
 // What the controller accepts as a session. This API's audience is hosts that
 // don't write TypeScript (anywidget, htmlwidgets, plain JS), and what they hand
@@ -39,60 +38,22 @@ type SearchAdapters = ViewStateOptions['aggregateTextSearchAdapters']
 // all, which is what `decodeSession`'s own docs used to point hosts at.
 type SessionSnapshot = ViewStateOptions['session']
 
-function isLooseTrack(track: TrackInput): track is string | LooseTrackInput {
-  return typeof track === 'string' || (!('adapter' in track) && 'uri' in track)
-}
-
-// Stamp the view's single assembly onto a full-config track that omits
-// assemblyNames. The embedded view has exactly one assembly, so it's
-// unambiguous — and doing it here frees every host (R htmlwidgets, anywidget,
-// vanilla JS) from computing the name itself. Loose tracks get the same name
-// through guessTrackConf's `assemblyName` argument below.
-export function withAssemblyName(track: TrackConf, assemblyName?: string) {
-  return assemblyName !== undefined && !('assemblyNames' in track)
-    ? { ...track, assemblyNames: [assemblyName] }
-    : track
-}
-
-// Expand any loose entries (bare URL, or { uri, index? }) into full track
-// configs using core's guessTrackConf; full configs only get the assembly name
-// stamped on. The view model carries the pluginManager whose format plugins
-// drive the guess.
-function resolveTracks(
-  tracks: TrackInput[],
-  viewState: ViewModel,
-  assemblyName?: string,
-  localFiles?: Record<string, BlobLocation>,
-): Tracks {
-  const { pluginManager } = getEnv(viewState)
-  return tracks.map(track => {
-    const conf = isLooseTrack(track)
-      ? guessTrackConf(track, pluginManager, assemblyName)
-      : // full configs are stamped here too, not just in the build() catalog
-        // seed: a config that first appears through setTracks/addTrack never
-        // passes through that seed, and would otherwise reach addTrackConf with
-        // no assemblyNames and silently fail to display
-        withAssemblyName(track, assemblyName)
-    // after the guess, so the adapter has already derived its index sibling
-    // from the uri string and both get swapped for blobs together
-    return localFiles ? resolveLocalFileUris(conf, localFiles) : conf
-  })
-}
-
-export interface CreateLinearGenomeViewOptions {
-  assembly: AssemblyInput
-  /** tracks to open (full configs, bare data-file URLs, or `{ uri, index? }`); a
-   * `session` owns display instead when given */
-  tracks?: TrackInput[]
-  /** a serialized view; when present it owns the initial location and layout */
+/**
+ * What the view is showing, as a value. Every field here can be re-stated at
+ * any time through {@link LinearGenomeViewController.update}, which is the
+ * point of separating it from the options that build the engine: a declarative
+ * host — an anywidget traitlet, an htmlwidget re-render, an Observable cell —
+ * holds the wanted state and hands it over whole, rather than diffing it into a
+ * sequence of calls itself.
+ */
+export interface LinearGenomeViewState {
   /**
-   * A saved session to open instead of `tracks`/`location` — what
-   * `onSessionChange` handed you, or a {@link decodeSession} of a URL param.
-   * Named for what it is: this is the restore slot, not a default the user's
-   * own state layers on top of. `createApp` calls it the same thing.
+   * The tracks to have open (full configs, bare data-file URLs, or
+   * `{ uri, index? }`). The complete wanted set, not an addition: a track the
+   * view has open and this list omits gets closed.
    */
-  session?: SessionSnapshot
-  /** e.g. `chr1:1-1000` or a gene name; ignored when a `session` positions the view */
+  tracks?: TrackInput[]
+  /** where to look, e.g. `chr1:1-1000` or a gene name */
   location?: string
   /**
    * In-memory files, `name -> bytes`, that `tracks` may then refer to by that
@@ -101,8 +62,32 @@ export interface CreateLinearGenomeViewOptions {
    * CORS. They are read by byte range, so register an index under its
    * conventional sibling name (`peaks.bed.gz` + `peaks.bed.gz.tbi`) and the
    * file stays indexed: only the bytes the current view needs are touched.
+   *
+   * The one field that only grows: re-stating it registers names the controller
+   * has not seen and keeps the rest, because a track config already points at
+   * the blob a registered name minted.
    */
   localFiles?: LocalFileInput
+}
+
+export interface CreateLinearGenomeViewOptions extends LinearGenomeViewState {
+  /**
+   * The genome, as a sequence file URL (`.fa.gz`, `.2bit`), a hub name like
+   * `'hg38'` or a GenArk accession, a whole hub config, or a bare assembly
+   * config. Not part of {@link LinearGenomeViewState} because it is what the
+   * engine is *built from*: changing it is a different browser, so a host that
+   * swaps genomes destroys this controller and creates another.
+   */
+  assembly: AssemblyInput
+  /**
+   * A saved session to open instead of `tracks`/`location` — what
+   * `onSessionChange` handed you, or a {@link decodeSession} of a URL param.
+   * Named for what it is: this is the restore slot, not a default the user's
+   * own state layers on top of. `createApp` calls it the same thing. A
+   * build-time input too: it describes a whole tree rather than a field to
+   * reconcile.
+   */
+  session?: SessionSnapshot
   /** merged with any search adapters the resolved hub already provides */
   aggregateTextSearchAdapters?: SearchAdapters
   internetAccounts?: ViewStateOptions['internetAccounts']
@@ -137,15 +122,21 @@ export interface LinearGenomeViewController {
    * and a host that has awaited this already has it.
    */
   whenReady(): Promise<ViewModel>
-  setLocation(location: string): Promise<void>
-  addTrack(track: TrackInput): void
-  removeTrack(trackId: string): void
   /**
-   * Register more in-memory files (see the `localFiles` option), for a host
-   * whose data arrives after mount — a notebook cell that just finished
-   * computing. Existing names are kept, so this only ever adds.
+   * Bring the view to this state — the single write door, and a declarative
+   * one: you state what you want to be true rather than the steps to get there.
+   * Each field you state is the complete wanted value for it (`tracks` closes
+   * whatever it omits), and a field you leave out is left alone, so a host
+   * whose own state covers part of the view hands over that part.
+   *
+   * Resolves once the state has reached the view, not once the view has
+   * finished drawing it: a `location` is handed to the same init machinery a
+   * URL launch goes through, which waits for the assembly and then navigates.
+   * Watch `onLocationChange` (or the model) to see it land. Safe to call before
+   * the build settles — the state is recorded immediately and applied when the
+   * engine arrives.
    */
-  addLocalFiles(files: LocalFileInput): void
+  update(state: LinearGenomeViewState): Promise<void>
   /**
    * Unmount the view and tear the engine down — React root, RPC worker threads,
    * and the MST tree's autoruns. The controller is unusable afterwards.
@@ -153,49 +144,13 @@ export interface LinearGenomeViewController {
   destroy(): void
 }
 
-function mergeSearchAdapters(a: SearchAdapters, b: SearchAdapters) {
-  const merged = [...(a ?? []), ...(b ?? [])]
-  return merged.length ? merged : undefined
-}
-
-// register a track config only if the session can't already resolve it — then
-// show it. The guard matters: addTrackConf only dedupes against sessionTracks,
-// so re-adding a config already seeded into the config catalog (createViewState
-// `tracks`) would push a duplicate into sessionTracks that then shadows the
-// catalog entry. getTrackById resolves catalog + connection + session tracks,
-// so this is idempotent on mount and on every later setTracks.
-function openTrack(session: ViewModel['session'], conf: Tracks[number]) {
-  if (!session.getTrackById(conf.trackId)) {
-    session.addTrackConf(conf)
-  }
-  session.view.showTrack(conf.trackId)
-}
-
-// open every wanted track and close any others the view is currently showing
-function reconcileTracks(viewState: ViewModel, tracks: Tracks) {
-  const { session } = viewState
-  const { view } = session
-  const wanted = new Set(tracks.map(t => t.trackId))
-  for (const conf of tracks) {
-    openTrack(session, conf)
-  }
-  // materialize the ids first: hideTrack splices view.tracks, so iterating it
-  // live would skip entries
-  const unwanted = view.tracks
-    .map(track => track.configuration.trackId)
-    .filter(trackId => !wanted.has(trackId))
-  for (const trackId of unwanted) {
-    view.hideTrack(trackId)
-  }
-}
-
 /**
  * Mount a JBrowse linear genome view imperatively into a DOM element and drive
  * it through a small controller. This is the framework-agnostic primitive every
  * non-React host (anywidget, htmlwidgets, vanilla JS, Observable, ...) wraps:
- * events flow out through `onLocationChange`/`onFeatureSelect`, mutations flow in
- * through the returned methods, and the controller owns the whole lifecycle
- * (async assembly resolution, rebuilds, teardown).
+ * events flow out through `onLocationChange`/`onFeatureSelect`, the wanted
+ * state flows in through `update`, and the controller owns the whole lifecycle
+ * (async assembly resolution, reconciliation, teardown).
  */
 export function createLinearGenomeView(
   el: HTMLElement,
@@ -210,16 +165,16 @@ export function createLinearGenomeView(
     },
   } = opts
 
-  // Wanted state the build applies, kept mutable because the live methods
-  // change it and because a call made before the async build resolves has to
-  // land: `addTrack` before `whenReady()` must open that track when the engine
-  // arrives, not be lost.
+  // The wanted state, held as the mutable twin of what `update` takes. Held
+  // rather than read back off the model because a build in flight has no model
+  // yet: an `update` before `whenReady()` records here and is applied when the
+  // engine arrives, instead of being lost.
   let tracks: TrackInput[] = opts.tracks ?? []
   let location = opts.location
   // the resolved assembly name, stamped onto tracks guessed from a bare URL
   let assemblyName: string | undefined
-  // each registration pushes a File into core's process-global blobMap, so
-  // addLocalFiles only ever registers names it has not seen
+  // each registration pushes a File into core's process-global blobMap, so this
+  // only ever grows, by names it has not seen
   let localFiles = registerLocalFiles(opts.localFiles ?? {})
 
   const root = createRoot(el)
@@ -235,19 +190,17 @@ export function createLinearGenomeView(
   }
 
   // Runs exactly once: nothing here swaps the engine out from under a mounted
-  // tree any more. The genome, the session and the track list are what the
-  // engine is BUILT from, so changing one is a new browser — the host destroys
-  // this controller and creates another, which is what `setAssembly`,
-  // `setSession` and `setTracks` did internally before they were removed. That
-  // is what retired the generation counter and the mounted-versus-current
-  // split this function used to need: two builds could be in flight at once,
-  // finishing in whatever order their fetches did rather than the order they
-  // were asked for.
+  // tree. The genome and the session are what the engine is BUILT from, so
+  // changing one is a new browser — the host destroys this controller and
+  // creates another. That is what retired the generation counter and the
+  // mounted-versus-current split this function used to need: two builds could
+  // be in flight at once, finishing in whatever order their fetches did rather
+  // than the order they were asked for.
   async function build() {
     const resolved = await resolveAssembly(opts.assembly)
-    // local until this build is known to have won: `assemblyName` is what later
-    // addTrack/setTracks calls stamp onto bare configs, so a superseded build
-    // promoting its own would misname every track added afterwards
+    // local until this build is known to have won: `assemblyName` is what a
+    // later `update` stamps onto bare configs, so a superseded build promoting
+    // its own would misname every track added afterwards
     const name =
       typeof resolved.assembly.name === 'string'
         ? resolved.assembly.name
@@ -292,10 +245,10 @@ export function createLinearGenomeView(
     }
     assemblyName = name
     // a restored session owns the initial track layout; without one, open the
-    // configured tracks so they actually display
+    // wanted tracks so they actually display
     if (!hasSession) {
       reconcileTracks(
-        viewState,
+        viewState.session,
         resolveTracks(tracks, viewState, assemblyName, localFiles),
       )
     }
@@ -325,40 +278,52 @@ export function createLinearGenomeView(
   const ready = build()
   ready.catch(onError)
 
+  // Reconcile the live view to the wanted state, touching only the fields the
+  // caller just stated: re-navigating on a tracks-only update would yank a user
+  // who had panned since, and re-reconciling tracks on a location-only update
+  // is work with nothing to show for it.
+  function apply(state: LinearGenomeViewState) {
+    if (!current) {
+      return
+    }
+    if (state.tracks) {
+      reconcileTracks(
+        current.session,
+        resolveTracks(tracks, current, assemblyName, localFiles),
+      )
+    }
+    if (state.location !== undefined && location && assemblyName) {
+      // Stated through the view's own `init` field rather than called as
+      // navToLocString: the engine being built is not the assembly being
+      // loaded, and a host that sets a location as soon as it has a widget —
+      // which is when a notebook cell or a Shiny observer fires — hits a bare
+      // navToLocString before there are refNames to resolve against, as an
+      // unhandled rejection. The init autorun waits for `initialized` and runs
+      // the same navToLocString, gene-name search included, then reports a
+      // locstring that matched nothing as a snackbar rather than a throw.
+      current.session.view.setInit({ assembly: assemblyName, loc: location })
+    }
+  }
+
   return {
     whenReady() {
       return ready
     },
-    async setLocation(loc) {
-      location = loc
-      const view = current?.session.view
-      // navToLocString no-ops cleanly when already at loc (MST skips identical
-      // offsetPx/bpPerPx writes), so no guard against the current position is
-      // needed — and the previous coarseVisibleLocStrings comparison never
-      // matched anyway (formatted "ctgA:1..100" vs a raw "ctgA:1-100"/gene input)
-      if (view && loc) {
-        await view.navToLocString(loc)
+    async update(state) {
+      // recorded before the await, so an update landing mid-build is what
+      // build() itself reconciles from rather than something applied twice by
+      // halves. localFiles first: a track in the same update may name one
+      if (state.localFiles) {
+        localFiles = mergeLocalFiles(localFiles, state.localFiles)
       }
-    },
-    addTrack(track) {
-      tracks = [...tracks, track]
-      if (current) {
-        const [conf] = resolveTracks([track], current, assemblyName, localFiles)
-        openTrack(current.session, conf)
+      if (state.tracks) {
+        tracks = state.tracks
       }
-    },
-    addLocalFiles(files) {
-      // registering is what mints the blobIds, so only the new names pay for it
-      const fresh = Object.fromEntries(
-        Object.entries(files).filter(([name]) => !localFiles[name]),
-      )
-      localFiles = { ...localFiles, ...registerLocalFiles(fresh) }
-    },
-    removeTrack(trackId) {
-      // loose specs have no trackId until resolved; a full config matching the
-      // id is dropped, hideTrack closes it in the view regardless
-      tracks = tracks.filter(t => isLooseTrack(t) || t.trackId !== trackId)
-      current?.session.view.hideTrack(trackId)
+      if (state.location !== undefined) {
+        location = state.location
+      }
+      await ready
+      apply(state)
     },
     destroy() {
       // set first: a build still in flight reads it and destroys the engine it

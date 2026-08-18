@@ -5,6 +5,7 @@ export { createLinearGenomeView } from './createLinearGenomeView.ts'
 export type {
   CreateLinearGenomeViewOptions,
   LinearGenomeViewController,
+  LinearGenomeViewState,
 } from './createLinearGenomeView.ts'
 export { default as LinearGenomeView } from './LinearGenomeView/index.ts'
 export type { LinearGenomeViewProps } from './LinearGenomeView/index.ts'

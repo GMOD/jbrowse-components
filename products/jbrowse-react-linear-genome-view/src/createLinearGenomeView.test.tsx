@@ -1,4 +1,5 @@
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { waitFor } from '@testing-library/react'
 
 import { createLinearGenomeView } from './index.ts'
 
@@ -69,9 +70,9 @@ test('a full-config track seeds the catalog, not sessionTracks (no shadow copy)'
   controller.destroy()
 })
 
-// The `tracks` option is what a host declares, and it is applied once, at
-// build. There is no setTracks to re-apply it with: a host that wants a
-// different set builds a different browser.
+// The `tracks` option and `update({ tracks })` are the same statement, made at
+// two times: the build applies the option through the same reconcile a later
+// update goes through.
 test('the declared tracks are the ones shown', async () => {
   const el = document.createElement('div')
   const controller = createLinearGenomeView(el, {
@@ -86,17 +87,99 @@ test('the declared tracks are the ones shown', async () => {
   controller.destroy()
 })
 
-test('addTrack/removeTrack toggle a single track', async () => {
+// The write door is declarative: a host states the track set it wants and the
+// controller opens and closes to match, rather than the host diffing its own
+// state into add/remove calls. Closing is the half that has to be stated —
+// a list is a wanted set, not an addition.
+test('update({ tracks }) opens what it names and closes what it omits', async () => {
   const el = document.createElement('div')
   const controller = createLinearGenomeView(el, { assembly, tracks: [] })
   const state = await controller.whenReady()
   const { view } = state.session
 
-  controller.addTrack(featureTrack('t1'))
+  await controller.update({ tracks: [featureTrack('t1')] })
   expect(shownIds(view)).toEqual(['t1'])
 
-  controller.removeTrack('t1')
+  await controller.update({ tracks: [featureTrack('t2')] })
+  expect(shownIds(view)).toEqual(['t2'])
+
+  await controller.update({ tracks: [] })
   expect(shownIds(view)).toEqual([])
+  controller.destroy()
+})
+
+// A field the host leaves out of an update is left alone. Without this a host
+// that only knows where it wants to look — the common case for a location
+// callback wired to a search box — would close every track by saying nothing
+// about them.
+test('a field an update omits is untouched', async () => {
+  const el = document.createElement('div')
+  const controller = createLinearGenomeView(el, {
+    assembly,
+    tracks: [featureTrack('t1')],
+  })
+  const state = await controller.whenReady()
+
+  await controller.update({ location: 'ctgA:1-5' })
+  expect(shownIds(state.session.view)).toEqual(['t1'])
+
+  await controller.update({})
+  expect(shownIds(state.session.view)).toEqual(['t1'])
+  controller.destroy()
+})
+
+// The engine being built is not the assembly being loaded, and a host sets a
+// location as soon as it has a widget. A bare navToLocString there resolves
+// refNames against an assembly that has none yet and throws into an unhandled
+// rejection; stating it through the view's `init` field waits instead.
+test('update({ location }) before the assembly loads navigates once it has', async () => {
+  const el = document.createElement('div')
+  // its own longer contig: at 800px a 5bp request on the 10bp ctgA above clamps
+  // to the whole thing, so the assertion could not tell a navigation from the
+  // whole-assembly fallback
+  const controller = createLinearGenomeView(el, {
+    assembly: {
+      ...assembly,
+      sequence: {
+        ...assembly.sequence,
+        adapter: {
+          type: 'FromConfigSequenceAdapter',
+          features: [
+            {
+              refName: 'ctgA',
+              uniqueId: 'firstId',
+              start: 0,
+              end: 4000,
+              seq: 'a'.repeat(4000),
+            },
+          ],
+        },
+      },
+    },
+  })
+  const state = await controller.whenReady()
+  const { view } = state.session
+  view.setWidth(800)
+
+  await controller.update({ location: 'ctgA:1-400' })
+  await waitFor(() => {
+    expect(view.visibleLocStrings).toBe('ctgA:1..400')
+  })
+  controller.destroy()
+})
+
+// An update that lands before the async build settles has to survive it: a
+// notebook cell or a Shiny observer fires as soon as the widget is created,
+// which is long before a hub fetch and an assembly load have finished.
+test('an update before the build settles is applied when the engine arrives', async () => {
+  const el = document.createElement('div')
+  const controller = createLinearGenomeView(el, { assembly, tracks: [] })
+
+  const updated = controller.update({ tracks: [featureTrack('t1')] })
+  const state = await controller.whenReady()
+  await updated
+
+  expect(shownIds(state.session.view)).toEqual(['t1'])
   controller.destroy()
 })
 
@@ -112,10 +195,12 @@ test('assemblyNames is stamped onto full configs arriving after mount', async ()
   const state = await controller.whenReady()
   const { session } = state
 
-  controller.addTrack(unstampedTrack('t1'))
+  await controller.update({ tracks: [unstampedTrack('t1')] })
   expect(assemblyNamesOf(session, 't1')).toEqual(['volvox'])
 
-  controller.addTrack(unstampedTrack('t2'))
+  await controller.update({
+    tracks: [unstampedTrack('t1'), unstampedTrack('t2')],
+  })
   expect(assemblyNamesOf(session, 't2')).toEqual(['volvox'])
   expect(shownIds(session.view)).toEqual(['t1', 't2'])
   controller.destroy()
