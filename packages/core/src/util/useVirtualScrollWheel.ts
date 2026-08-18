@@ -20,7 +20,7 @@ export interface VirtualScrollOpts {
 // animation frame, instead of one synchronous repaint per event. Pure with
 // respect to model state: the caller applies the committed offset via its own
 // setScrollTop, so the no-destructure-model-actions rule is preserved. Mirrors
-// the rAF coalescing the horizontal path already does in `useWheelScroll`.
+// the rAF coalescing the horizontal path already does in `useSideScroll`.
 export type ApplyVirtualScroll = (
   e: WheelEvent,
   opts: VirtualScrollOpts,

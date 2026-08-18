@@ -243,12 +243,12 @@ columns wide. The column-major version's working set is a single block, a few
 tens of KB, and where a block does exceed the L2 cache the 26 species being read
 at once still prefetch.
 
-**Reading four columns at a time** as one `Uint32` measures 4.5x for a kernel
-that only counts depth and matches, and 0.51x once it classifies correctly. The
-whole 4.5x comes from testing "is this a base" as `folded >= 0x40`, which puts
-`.` and `*` on the wrong side of the line. Testing for `-` and ` ` exactly costs
-three lane-wise zero-byte tests per word against that one comparison. **The 4.5x
-was the semantic change, priced.**
+**Reading four columns at a time** through a `Uint32Array` view measures 4.5x
+for a kernel that only counts depth and matches, and 0.51x once it classifies
+correctly. The whole 4.5x comes from testing "is this a base" as
+`folded >= 0x40`, which puts `.` and `*` on the wrong side of the line. Testing
+for `-` and ` ` exactly costs three lane-wise zero-byte tests per word against
+that one comparison. **The 4.5x was the semantic change, priced.**
 
 What did move the walk was decomposition: the largest single item in the
 per-cell body was a bounds test answering a question about the whole block, and

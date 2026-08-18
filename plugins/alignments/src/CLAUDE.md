@@ -136,14 +136,9 @@ assignment coming back.
 
 ## CRAM read-feature walks
 
-CRAM stores no CIGAR; the reconstruction lives in cram-js as
-`CramRecord.forEachCigarOp`, cross-checked there against samtools.
-`packCigar.ts` here only packs into `(length << 4) | op`.
+CRAM stores no CIGAR, and **neither walk over its read features is ours** —
+`CramRecord.forEachCigarOp` and `CramRecord.forEachMismatch` both live in
+cram-js. `CramSlightlyLazyFeature.forEachMismatch` only delegates. So a wrong or
+missing mismatch on a CRAM track is a cram-js change, not one here.
 
-`readFeaturesToMismatches` is a walk of our own because it emits this repo's
-`MISMATCH_TYPE` vocabulary, and must stay consistent with cram-js's
-`forEachMismatch`: gate on `RF_POSITIONAL[code]`, flush a pending insertion run
-before **any** other op, drop zero-length ops, merge same-op runs. To check a
-change, sweep the cram-js fixtures and diff against `record.getMismatches()`,
-allowing for the two known shape differences (soft-clip `length` 0 vs 1,
-deletion `bases` `''` vs `'*'`).
+What is ours is `packCigar.ts`, which packs into `(length << 4) | op`.

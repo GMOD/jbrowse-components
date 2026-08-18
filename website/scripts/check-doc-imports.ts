@@ -22,7 +22,8 @@
 //      one only after grepping — which is a rule that wants a checker.
 //   5. Every backticked identifier in developer-guide and ARCHITECTURE.md prose
 //      — `PascalCase`, or `camelCase` with an internal capital — checked to
-//      appear somewhere in source. Catches a symbol renamed out from under the
+//      appear somewhere in source CODE (`codeOf` strips comments, or a stale
+//      comment whitelists its own name). Catches a symbol renamed out from under the
 //      prose (e.g. `AlignmentsFeatureDetailWidget` for what is really
 //      `AlignmentsFeatureWidget`, or `renderProps` for a method deleted with the
 //      server-side block system) — the fence checks above can't see prose, and
@@ -476,13 +477,14 @@ const isClaudeDoc = (path: string) => path.endsWith('/CLAUDE.md')
 // whole time. No allowlist entry was needed to close it — every call-shaped
 // reference in scope resolved once that one was fixed.
 //
-// Deliberately without the offending name: `collectSymbols` walks
-// `website/scripts`, so a source comment here that spelled it would add it to
-// the symbol set and whitelist it in every doc, repo-wide and invisibly. That
-// applies to any comment anywhere under the collected roots — `DOC_ABSENT_ON_PURPOSE`
-// is the supported way for a *doc* to name something gone, and there is no
-// equivalent escape for source, because source naming a dead symbol is the
-// thing this check has no way to tell apart from source defining a live one.
+// A source comment naming a dead symbol used to whitelist it in every doc,
+// repo-wide and invisibly, since `collectSymbols` read whole files — so this
+// file could not even spell the name of the method that prompted the fix.
+// `codeOf` closed that, and with it the reason the same test could never be
+// pointed at source comments: they are no longer their own evidence.
+// `DOC_ABSENT_ON_PURPOSE` remains the supported way for a doc to name something
+// gone; source now needs no equivalent, because a comment that names a dead
+// symbol is exactly what a future extension of this check would want to catch.
 //
 // The third alternative is CONST_CASE, which the first two cannot reach: an
 // underscore is in neither character class, so every module constant a doc
@@ -528,6 +530,17 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // built, measured and found not to work. The entry exists to stop the next
   // reader trying it, so the method must stay unwritten.
   'renderSoon',
+  // ARCHITECTURE.md §"A stored hover is a volatile the viewport can invalidate": the per-family name the container used
+  // to read, quoted to say why a base-declared getter replaced it — three
+  // display families spelled it three ways, so the channel carried a third of
+  // the hovers and nothing said which. Two source comments telling the same
+  // story kept it in the symbol set until `codeOf` stopped collecting from
+  // comments.
+  'featureUnderMouse',
+  // packages/tree-sidebar/CLAUDE.md §"`RowSource` is the row vocabulary": the
+  // computed MAF bridged its own `color` field with, named because that bridge
+  // is why three adapter schemas advertised a slot reaching no renderer.
+  'labelSources',
 ])
 
 // Symbols belonging to a DEPENDENCY, named because our behaviour turns on
@@ -556,6 +569,13 @@ const DOC_THIRD_PARTY = new Set([
   // pool": the platform primitive the unbuilt fix would be built on, in the
   // retire condition. Naming it is what makes that condition checkable.
   'MessagePort',
+  // ARCHITECTURAL_LIMITS.md §"A canvas past `MAX_CANVAS_DIM_PX` renders wrong": the DOMException the browser throws, quoted because the guard
+  // exists to keep it from being thrown. The name is the browser's.
+  'InvalidStateError',
+  // products/jbrowse-build-your-own/examples-site/CLAUDE.md: the MUI global
+  // class an embedder would find in their bundle. The entry is about what
+  // reaches an embedder's page, so the emitted class name is the evidence.
+  'MuiLinearProgress',
 ])
 
 // Build output, which must not contribute symbols. `esm/` holds a `.d.ts` per
@@ -564,6 +584,38 @@ const DOC_THIRD_PARTY = new Set([
 // CI, which has no build at all, disagreed with the developer's machine about
 // whether a doc reference resolved. The set is now a pure function of `src/`.
 const BUILD_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
+
+/**
+ * A source file with its COMMENTS removed, which is what the symbol set has to
+ * be built from.
+ *
+ * Collecting over whole files made the check self-defeating in one direction
+ * and blind in the other. A source comment naming a symbol that no longer
+ * exists put that name in the set, so it was exempt in every doc, repo-wide and
+ * invisibly — the very drift this check exists for, whitelisted by the prose
+ * that drifted alongside it. And it is why the same test could never be pointed
+ * at source comments themselves: every one of them was its own evidence.
+ *
+ * It was not hypothetical. Stripping comments surfaced, immediately, a CLAUDE.md
+ * section maintaining a CRAM walk that moved to cram-js, a limits-register
+ * sentence listing a rAF-coalescing hook under a name nothing has, and an
+ * ARCHITECTURE.md hover-channel name that three source comments had kept alive.
+ *
+ * Strings stay. A doc citing `alwaysDrawn` or `methylation` is naming a member
+ * of a string-literal union or a config enum, which is as real a symbol as an
+ * exported function and lives nowhere else.
+ *
+ * Line comments are recognised only where `//` does not follow a `:`, so a URL
+ * inside a string keeps the rest of its line. The remaining hole is a `/*` or
+ * `//` inside a regex literal, which would drop live names and report them dead
+ * — the failure mode that reads as a checker bug. None is in the tree; if one
+ * lands, the fix is here rather than an allowlist entry.
+ */
+function codeOf(text: string) {
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1')
+}
 
 function collectSymbols() {
   const set = new Set<string>()
@@ -579,7 +631,7 @@ function collectSymbols() {
     // The two regexes are one test read from both ends: widening only the doc
     // side asks about names this side never collected, which reported 61 live
     // constants as dead the first time it was tried.
-    for (const m of readFileSync(file, 'utf8').matchAll(
+    for (const m of codeOf(readFileSync(file, 'utf8')).matchAll(
       /\b(?:[A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*|[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)\b/g,
     )) {
       set.add(m[0])

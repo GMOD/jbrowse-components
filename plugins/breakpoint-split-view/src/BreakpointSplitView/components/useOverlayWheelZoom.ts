@@ -13,7 +13,7 @@ const MEASURE_TTL_MS = 16
 // Only fires when the pointer is over an overlay path: the overlay <div> paints
 // below the views (which sit inside a position:relative wrapper), so it's the
 // z-index:100 <svg>'s pointer-events:auto paths that receive the wheel. Every
-// other point in the view goes to the LGV's own useWheelScroll, and both run the
+// other point in the view goes to the LGV's own `useWheelZoom`, and both run the
 // same createWheelZoomController so the gesture behaves identically.
 export function useOverlayWheelZoom(
   divRef: React.RefObject<HTMLDivElement | null>,

@@ -63,7 +63,7 @@ export function useSideScroll(model: LinearGenomeViewModel) {
         window.removeEventListener('mousemove', globalMouseMove, true)
         window.removeEventListener('mouseup', globalMouseUp, true)
         // drop a frame queued mid-drag so it can't fire a stray scroll after
-        // unmount (matches useWheelScroll's cleanup)
+        // unmount (matches `useVirtualScrollWheel`'s cleanup)
         if (rafRef.current !== null) {
           window.cancelAnimationFrame(rafRef.current)
           rafRef.current = null

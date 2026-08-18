@@ -372,7 +372,8 @@ Two things that already coalesce correctly, so don't "fix" them:
   4 per-key autoruns and yields exactly **1** render: the per-key `renderNow()`
   bumps land while the render reaction is already scheduled, and MobX dedupes.
 - **Pan and zoom.** Wheel, drag and side-scroll batch their MST writes into one
-  `requestAnimationFrame` (`useWheelScroll`, `usePointerDrag`, `useRafCommit`),
+  `requestAnimationFrame` (`useSideScroll`, `useVirtualScrollWheel`,
+  `usePointerDrag`, `useRafCommit`),
   so a gesture commits at most once per frame.
 
 **Deferring the `renderTick` bump does not help, and the arrival draw is the
