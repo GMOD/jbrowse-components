@@ -7,6 +7,7 @@ import { fireEvent, render } from '@testing-library/react'
 
 import { collectRenderData } from '../RenderFeatureDataRPC/collectRenderData.ts'
 import {
+  LABEL_BASELINE_RATIO,
   LABEL_FONT_SIZE,
   MORE_ISOFORMS_FONT_SCALE,
 } from '../RenderFeatureDataRPC/constants.ts'
@@ -417,6 +418,19 @@ describe('the badge in the label layer', () => {
     const size = (el: HTMLElement) => Number.parseFloat(el.style.fontSize)
     expect(size(getByTestId('feature-more-isoforms-gene1'))).toBeCloseTo(
       size(getByTestId('feature-name-GENE1')) * MORE_ISOFORMS_FONT_SCALE,
+    )
+  })
+
+  // Both divs are positioned by their TOP with `line-height: 1`, so equal tops
+  // put the smaller badge's baseline above the name's and it reads as a
+  // superscript. The two share a line, so they share a baseline.
+  it("sits on the name's baseline, not above it", () => {
+    const { getByTestId } = renderLabelLayer({})
+    const baseline = (el: HTMLElement) =>
+      Number(/translate\([-\d.]+px, ([-\d.]+)px/.exec(el.style.transform)![1]) +
+      Number.parseFloat(el.style.fontSize) * LABEL_BASELINE_RATIO
+    expect(baseline(getByTestId('feature-more-isoforms-gene1'))).toBeCloseTo(
+      baseline(getByTestId('feature-name-GENE1')),
     )
   })
 

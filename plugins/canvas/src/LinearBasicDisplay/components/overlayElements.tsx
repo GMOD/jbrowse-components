@@ -4,7 +4,10 @@ import { pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { MORE_ISOFORMS_FONT_SCALE } from '../../RenderFeatureDataRPC/constants.ts'
+import {
+  LABEL_BASELINE_RATIO,
+  MORE_ISOFORMS_FONT_SCALE,
+} from '../../RenderFeatureDataRPC/constants.ts'
 import PeptideCanvas from './PeptideCanvas.tsx'
 import {
   computeOverlayRect,
@@ -109,6 +112,21 @@ type _ModelSatisfiesHighlightBoxes = AssignableTo<
   LinearCanvasBaseDisplayModel,
   HighlightBoxesModel
 >
+
+// The badge draws smaller than the name it sits beside, and both divs are
+// positioned by their TOP with `line-height: 1` — so aligning their tops floats
+// the badge's baseline ~1.4px above the name's and it reads as a superscript
+// rather than as part of the line. Push it down by the difference the two font
+// sizes make to where a baseline falls inside its own box.
+//
+// `labelY` therefore stays the shared line's top, which is what the SVG export
+// wants: `paintLabels` converts to a baseline with the NAME's size for every
+// label, arriving at the same place from the other side.
+function moreBaselineTop(isMore: boolean, labelY: number, fontSize: number) {
+  return isMore
+    ? labelY + fontSize * (1 - MORE_ISOFORMS_FONT_SCALE) * LABEL_BASELINE_RATIO
+    : labelY
+}
 
 // The isoform badge's hover sentence. The badge itself has one 11px row to live
 // in, so its text is terse ("+3 more") and this spells it out — a native title
@@ -389,7 +407,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
               fontSize: isMore
                 ? labelFontSize * MORE_ISOFORMS_FONT_SCALE
                 : labelFontSize,
-              transform: `translate(${labelX}px, ${labelY}px)`,
+              transform: `translate(${labelX}px, ${moreBaselineTop(isMore, labelY, labelFontSize)}px)`,
             }}
           >
             {label.text}
