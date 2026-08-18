@@ -27,9 +27,18 @@ export function setupMultiSampleVariantAutoruns(self: Self) {
   // points share: phased mode needs `sampleInfo`, which only a landed fetch
   // supplies, so "sources exist" is not enough here the way it is for the
   // other two flavors.
+  //
+  // The row count is the other half, and it is this autorun's alone to state —
+  // the dialog can't be opened below two samples because the menu row that
+  // opens it is disabled there. Without it a session naming `runClustering`
+  // spent a whole genotype-matrix pass to hand back a one-leaf dendrogram, on
+  // exactly the track the menu refuses. Same list the menu counts, so the two
+  // answers cannot disagree, and the same place the multi-row and multi-wiggle
+  // displays put theirs.
   setupRunClusteringAutorun(self, {
     name: 'AutoRunMultiSampleVariantClustering',
-    ready: () => self.clusteringReady,
+    ready: () =>
+      self.clusteringReady && (self.sourcesWithoutLayout?.length ?? 0) > 1,
     run: async args => {
       const { runGenotypeClustering } =
         await import('./runGenotypeClustering.ts')
