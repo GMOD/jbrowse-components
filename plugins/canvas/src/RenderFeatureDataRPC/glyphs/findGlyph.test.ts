@@ -136,4 +136,23 @@ describe('findGlyph structural dispatch', () => {
       ),
     ).toBe(layoutRepeatRegion)
   })
+
+  // `containerTypes` was the last case-SENSITIVE type test here, and it is the
+  // one slot two places read: `featureAdmission` lowercases it into the
+  // gene-like set `showOnlyGenes` admits by, so a `Proteoform_ORF` was admitted
+  // and then refused a stacked glyph — drawn as one flat Segments row with its
+  // parts on top of each other. Leaf children, so `hasContainerChildren` cannot
+  // rescue it and the slot is the only thing deciding.
+  it('matches containerTypes case-insensitively too', () => {
+    const orf = (type: string) =>
+      mockFeature({
+        type,
+        subfeatures: [
+          mockFeature({ type: 'CDS' }),
+          mockFeature({ type: 'CDS' }),
+        ],
+      })
+    expect(findGlyph(orf('proteoform_orf'), config)).toBe(layoutSubfeatures)
+    expect(findGlyph(orf('Proteoform_ORF'), config)).toBe(layoutSubfeatures)
+  })
 })

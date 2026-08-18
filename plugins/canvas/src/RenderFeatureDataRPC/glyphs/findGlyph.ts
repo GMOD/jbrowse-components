@@ -98,11 +98,17 @@ export function findGlyph(
     //
     //   - containerTypes: the one explicit override, for top-level types that
     //     must stack even when no structural heuristic fires; first so it wins.
+    //     Matched case-insensitively, like isCDS/isExon and every other type
+    //     test here — and like `featureAdmission`, which lowercases this same
+    //     slot to build its gene-like set. The two read one config list, so a
+    //     case-sensitive test here meant `showOnlyGenes` admitted a feature the
+    //     dispatch then refused to stack.
     //   - children-are-containers → stack (gene → mRNA → exon).
     //   - direct CDS child → coding transcript (its CDS children are leaves).
     if (
       isTopLevel &&
-      (containerTypes.includes(type) || hasContainerChildren(feature))
+      (containerTypes.some(t => t.toLowerCase() === type.toLowerCase()) ||
+        hasContainerChildren(feature))
     ) {
       return layoutSubfeatures
     }
