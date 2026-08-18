@@ -15,6 +15,7 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import SegmentIcon from '@mui/icons-material/Segment'
 import { autorun } from 'mobx'
 
+import { budgetFeatureHeightPx } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
   anyIsoformsHidden,
   mergeIsoformPicks,
@@ -25,11 +26,7 @@ import {
   isGeneLikeType,
 } from './collapseIntronsMenu.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
-import {
-  budgetFeatureHeightPx,
-  geneRowCostPx,
-  isoformRowBudget,
-} from './isoformBudget.ts'
+import { geneRowCostPx, isoformRowBudget } from './isoformBudget.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'

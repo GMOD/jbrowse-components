@@ -1,5 +1,4 @@
 import {
-  FALLBACK_FEATURE_HEIGHT,
   HEIGHT_MULTIPLIERS,
   ROW_PADDING,
   labelFontSize,
@@ -23,23 +22,6 @@ import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 const MAX_FEATURE_LABEL_LINES = 2
 
 /**
- * The body height (px, in normal-mode units) the cap should assume for one
- * feature, from the raw `featureHeight` config slot value.
- *
- * The RAW slot value, never `readConfObject`: `featureHeight` declares
- * `contextVariable: ['feature']`, and an arg-less read of a `jexl:` one still
- * evaluates it — against a context where `feature` is undefined, so
- * `get(feature, …)` throws, out of a getter `rpcProps()` reads. Only the worker
- * can resolve a callback per feature, so a callback height assumes the same
- * fallback the worker's own `featureHeightPx` falls back to.
- */
-export function budgetFeatureHeightPx(rawSlotValue: unknown) {
-  return typeof rawSlotValue === 'number' && rawSlotValue > 0
-    ? rawSlotValue
-    : FALLBACK_FEATURE_HEIGHT
-}
-
-/**
  * What one gene costs the lane, split into the part that scales with the isoform
  * count and the part it pays once — the packer's own row arithmetic
  * (`decideLabelReservations` in layout.ts, over the stack `layoutSubfeatures`
@@ -49,8 +31,16 @@ export function budgetFeatureHeightPx(rawSlotValue: unknown) {
  * `layoutSubfeatures` spends after it, plus — under `below` — the subfeature
  * label row the worker reserves for it. `geneOwnPx` is the mode's row padding
  * and the gene's own label lines, less the one gap the last isoform never
- * spends. So a gene of n isoforms occupies `n * perIsoformPx + geneOwnPx`, and
- * `isoformRowBudget` is that solved for n.
+ * spends. So a gene of n one-row isoforms occupies `n * perIsoformPx +
+ * geneOwnPx`, and `isoformRowBudget` is that solved for n.
+ *
+ * One-row isoforms and nothing else: a gene also hangs decorations beside them
+ * (an NCBI source record, a `biological_region`) and an isoform can be taller
+ * than a row (a polyprotein CDS draws one row per cleavage product). Neither is
+ * visible from the main thread before the fetch, so this is a budget of ROWS
+ * that the worker spends over the gene's real children — see
+ * `isoformsWithinBudget` in subfeatures.ts, which reconstructs it from
+ * `maxIsoforms` and charges each child what it measures.
  *
  * Exported as the pair rather than just the budget so a test can assert the two
  * agree with the packer, which is the only thing that makes the budget correct:
