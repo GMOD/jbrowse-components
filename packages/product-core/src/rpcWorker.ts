@@ -90,19 +90,25 @@ type RpcFunc = (args: unknown) => Promise<unknown>
  * postMessage each of those cost to reach a main-thread listener that dropped
  * it.
  *
+ * `channel` is transport bookkeeping and comes back OFF here, the mirror of
+ * `BaseRpcDriver.call` stripping `statusCallback` on the way out. It used to
+ * ride through into every worker method's arguments, where nothing read it and
+ * `RpcExecuteArgs<M>` did not declare it — a key the main-thread driver never
+ * adds, so the two drivers handed `execute` different bags. `rpcDriverParity`
+ * is what says so.
+ *
  * Exported for its test and not from the package barrel: `initializeWorker` is
  * the only thing a product's worker entry calls, and the branch here is a claim
  * about the driver on the other side of postMessage that nothing else asserts.
  */
 export function wrapForRpc(func: RpcFunc) {
   return (args: unknown) => {
-    const wrappedArgs = args as WrappedFuncArgs
-    const { channel } = wrappedArgs
+    const { channel, ...rest } = args as WrappedFuncArgs
     return func(
       channel === undefined
-        ? wrappedArgs
+        ? rest
         : {
-            ...wrappedArgs,
+            ...rest,
             statusCallback: (message: RpcStatus) => {
               self.rpcServer?.emit(channel, message)
             },

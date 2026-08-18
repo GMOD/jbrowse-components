@@ -22,6 +22,10 @@ test('a call with a channel gets a statusCallback that emits on it', async () =>
   const statusCallback = seen!.statusCallback as (s: string) => void
   statusCallback('Downloading')
   expect(emitted).toEqual([['message-abc', 'Downloading']])
+  // and the channel itself does not ride through into the method's arguments —
+  // it is transport bookkeeping, the mirror of `BaseRpcDriver.call` stripping
+  // `statusCallback` on the way out
+  expect(seen).not.toHaveProperty('channel')
 })
 
 test('a call with no channel gets no statusCallback at all', async () => {
