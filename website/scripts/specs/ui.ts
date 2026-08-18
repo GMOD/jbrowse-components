@@ -229,11 +229,13 @@ export const uiSpecs: ScreenshotSpec[] = [
     annotations: [{ type: 'box', anchor: { text: 'Zoom to region' } }],
   },
 
-  // display_settings.md: render the tutorial's own URL session-spec example so
-  // the reader sees what those inline display settings produce. Matches the
-  // doc's JSON (volvox_sv_cram at ctgA:1-10000, height 250, softclipping on,
-  // viewed as pairs — which links each read to its mate and colors by insert
-  // size + orientation).
+  // display_settings.md: the state its "Change four settings" step leaves the
+  // track in, so the figure is what those clicks produce. The four here are the
+  // four the page names (height 250, softclipping on, viewed as pairs, colored
+  // by insert size and orientation), and the page reads them back out of the
+  // session JSON under exactly these keys, so a rename breaks both together.
+  // The live link opens that end state, which is why the settings live in the
+  // session spec rather than being clicked through as actions.
   {
     mode: 'url',
     name: 'display_settings_url_snapshot',
