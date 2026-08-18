@@ -372,7 +372,9 @@ export function drawAlignmentBlocks(
   // block per section to produce the same value.
   const coverageLayers = COVERAGE_LAYERS.filter(l => l.enabled(state))
   const coverageScale = makeCoverageScale(state)
-  const sectionStates = state.sections.map(sec => sectionRenderState(state, sec))
+  const sectionStates = state.sections.map(sec =>
+    sectionRenderState(state, sec),
+  )
 
   forEachClippedBlock(
     ctx,
@@ -579,7 +581,14 @@ function drawCoverage(
     // segments are readings of one axis; each building its own normalizer is how
     // all three came to hardcode a zero floor and ignore `minScore`.
     for (const layer of layers) {
-      CANVAS_COVERAGE_DRAW[layer.id](ctx, region, bpToX, viewWidth, state, scale)
+      CANVAS_COVERAGE_DRAW[layer.id](
+        ctx,
+        region,
+        bpToX,
+        viewWidth,
+        state,
+        scale,
+      )
     }
   } finally {
     ctx.restore()

@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Read-pair curved links, coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), large-region viewing for dense BAM, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`.
+description: Read-pair curved links, coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), large-region viewing for dense BAM, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`, and why the pileup's low-frequency threshold wants a read-count floor rather than a depth ramp.
 ---
 
 # Alignments
@@ -16,6 +16,32 @@ Missing in the 1kg demo — may be a bug or unimplemented; needs reproduction.
 
 **Quality-aware feature fade.** Toggle to disable sub-pixel fade for high-quality
 reads (Illumina/HiFi) where most mismatches are real variants, not errors.
+
+**A count floor, not a depth ramp, for `featureFrequencyThreshold`.** The two
+entries above both rescale a curve whose SHAPE is the problem. A 50% allele
+first clears the ramp at **22x** (0.8 under 10x, linear to 0.3 at 30x), so below
+that a heterozygote's pileup marks are zeroed and fade to `pxPerBp` when zoomed
+out. What separates a sequencing error from a het at low depth is the read
+COUNT, not the fraction — one read at 6x is 17% and three reads is 50%, and only
+the count tells them apart.
+
+`≥ 2 supporting reads AND ≥ 25% of depth` suppresses every error case the ramp
+does (a singleton at 500x is 0.2%, a singleton at 6x fails the count) while
+keeping hets at every depth. It is also the shape the indicator triangles
+already use — a depth floor plus a flat fraction — so the pileup ramp is the
+outlier of the three rules in DEEP_COVERAGE.md rather than the convention.
+
+The fade then double-counts what is left: the number of rows painting a mark AT
+a position IS the supporting-read count, so allele fraction is already in the
+picture linearly, and `frequencyAlpha` multiplies alpha by that same fraction
+again. Total ink goes as count²/depth — at 40x a hom column measures 40.0 and a
+het 10.1, a 4x gap from a 2x difference in support. Making the alpha a step on
+the already-thresholded byte rather than a lerp on it is the other half.
+
+Undecided: whether this is a default change or a setting. It moves what every
+alignments track shows at zoom-out, so it wants a measurement against the
+real-read fixtures and a golden refresh, and the escape hatch
+(`showLowFreqMismatches`) already exists to keep the old behaviour reachable.
 
 **Auto-detect when to use first-of-pair strand.** The precedents are both in
 hand: sashimi already picks its own settings, and `geneGlyphMode`'s `auto` is the

@@ -116,6 +116,25 @@ for. 0.2 is IGV's default. It is a draw-time test in both backends against each
 segment's `segHeight`, which IS that allele's share of the position's depth, so
 changing it repaints rather than refetches.
 
+### Three rules answer "is this event real", and they are not calibrated alike
+
+Reach for the right one rather than assuming a shared setting:
+
+| rule | shape | what it gates |
+| --- | --- | --- |
+| `featureFrequencyThreshold` | depth-ramped, 0.8 under 10x down to 0.3 at 30x | the pileup's mismatch / indel / clip frequency bytes, zeroed in the worker |
+| `coverageSnpMinFrequency` | flat, user-set, 0 by default | the band's coloured segments, at draw time in both backends |
+| `MINIMUM_INDICATOR_READ_DEPTH` + `INDICATOR_THRESHOLD` | depth floor of 8, then a flat 0.3 | whether an interbase position earns an indicator triangle |
+
+Two consequences a reader is otherwise surprised by. **Below 8x no indicator
+triangle is emitted at all**, whatever the evidence — the depth floor is
+absolute, not a fraction. And the pileup ramp is strict enough at low depth to
+zero a heterozygote: a 50% allele first clears `featureFrequencyThreshold` at
+**22x**, so under that a real het's pileup marks fade to `pxPerBp` when zoomed
+out while the band, floored at 0, still colours it. The band is where a
+low-frequency variant is legible at low depth, which is the same argument that
+keeps its own floor at 0.
+
 **On a log axis the coloured fraction is the allele proportion, not a count off
 the y-axis.** The segments are linear slices of a log-scaled bar
 (`snpCoverage.slang`): a 50% allele is half the bar's height whatever the
