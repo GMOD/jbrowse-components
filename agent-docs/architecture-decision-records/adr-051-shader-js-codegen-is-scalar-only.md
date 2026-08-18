@@ -412,6 +412,46 @@ existing test put the NaN on the left. Inline arithmetic is invisible to the
 oracle as well as to the inventory: it referees *exports*, so lifting a decision
 is also what gets it checked.
 
+#### The sweep across the other display types (2026-08-18)
+
+Run once, so it does not get run again from scratch. Two findings, both the same
+shape as the chevron one — a decision whose neighbour had a name and it did not:
+
+- **`rowRect.slang`'s horizontal min-width floor.** A bare `1.0` in
+  `rowRectVertex` and a bare `1` in the multi-row painter, beside a *vertical*
+  twin that has carried `MIN_DRAWN_ROW_PX` and an `export-consts` since it was
+  written — whose comment calls itself "vertical twin of the min-width floor
+  used below", naming a number nothing named. Both GPU renderers drawing this
+  primitive spend a paragraph on which unit they measure it in. Now
+  `MIN_DRAWN_CELL_PX`.
+- **`variant.slang`'s glyph vocabulary.** The one enum still owned by
+  TypeScript: `SHAPE_RECT`/`SHAPE_TRI_LEFT` declared in `variantShape.ts` under
+  "Keep in sync there", with `fs_main` testing a bare `0u`. `manhattan` owns
+  `GLYPH_*`, `wiggle` owns `RENDERING_TYPE_*`, `syntenyTypes` owns its `KIND_*`
+  boundary; this now reads the same way.
+
+What came back clean, which is most of it and is the point of writing this down:
+`multiRow.slang` (a five-line wrapper over `rowRect`), wiggle's scatter
+square/disc split (shared through `pointGlyph` and pinned by
+`pointMarkerParity.test.ts`), `clip.slang`'s frequency fade (routes through the
+exported `frequencyAlpha`), `insertion.slang`'s serif caps (constants generated;
+the wedge itself is draw-stage), `snpCoverage.slang`'s `snpColor` (a `float3`,
+so already an inventory refusal), and the variant cell span (already through
+`snapVariantCellX`). Of the `SYNC:` markers, 27 at this ADR's writing, **six
+remain across six files**: three sit in tests that pin the sync, one is
+`syntenyTypes.slang` pointing at its own such test, and the two left in source
+name divergences the inventory already refuses — `computeCorners` (`type
+'Instance'`) and the dotplot renderer's `panPx` reconstruction.
+
+Two greps did the finding, and either is worth re-running after a shader lands:
+`SYNC:` across the tree, and — for the undeclared ones, which is what the
+chevron case was — TypeScript files whose comments claim to mirror a `.slang`
+while importing nothing from that shader's generated twin or consts. Neither is
+a checker. A comparison inside a `vs_main` is legitimate about as often as it is
+a missed lift (vertex-id dispatch, culling), so a gate on it would be noise; the
+greps are for a human to read, which is why this section records the answer
+rather than adding a job.
+
 ### Deliberately not exported
 
 **This list now lives in the code**, as `//! js-skip: <fn> — <why not>` on the
