@@ -1,3 +1,7 @@
+import PluginManager from '@jbrowse/core/PluginManager'
+import { readConfObject } from '@jbrowse/core/configuration'
+
+import configSchemaFactory from '../../LinearBasicDisplay/configSchema.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutSubfeatures } from './subfeatures.ts'
 
@@ -499,12 +503,23 @@ describe('layoutSubfeatures layout', () => {
       expect(names({ transcript_support: 'RefSeq Select' })).toEqual(['long'])
     })
 
-    // The default list holds two tags one gene carries at once: MANE Plus
-    // Clinical marks an ADDITIONAL transcript beside the MANE Select one, and
-    // it is often the longer. Flattened to a boolean "tagged", the
-    // coding-length tiebreak then picked between them by a coin flip; the list
-    // is read as a priority order, so the earlier tag wins outright.
-    it('prefers the earlier tag in the list over a longer protein', () => {
+    // The tags a real LinearBasicDisplay ships with. mockDisplayConfig carries a
+    // two-entry stand-in, so a test asserting on the shipped list has to read the
+    // slot; asserting through the stand-in stays green whatever the default says.
+    const pm = new PluginManager([])
+    pm.createPluggableElements()
+    pm.configure()
+    const shippedTags = readConfObject(
+      configSchemaFactory(pm).create(
+        { displayId: 'shipped', type: 'LinearBasicDisplay' },
+        { pluginManager: pm },
+      ),
+      'canonicalTranscriptTags',
+    )
+
+    // Two tagged isoforms, the longer protein on the second, so only the list's
+    // priority order can bring the first one to the front.
+    function geneWithTwoTags(shortTag: string, longTag: string) {
       const tagged = (name: string, cdsEnd: number, tag: string) =>
         mockFeature({
           type: 'mRNA',
@@ -521,22 +536,58 @@ describe('layoutSubfeatures layout', () => {
             }),
           ],
         })
-      const gene = mockFeature({
+      return mockFeature({
         type: 'gene',
         name: 'TestGene',
         start: 100,
         end: 500,
         subfeatures: [
-          tagged('short', 200, 'MANE Select'),
-          tagged('long', 400, 'MANE Plus Clinical'),
+          tagged('short', 200, shortTag),
+          tagged('long', 400, longTag),
         ],
       })
+    }
+
+    const shippedNames = (feature: Feature) =>
+      layoutSubfeatures({
+        feature,
+        config: mockDisplayConfig({
+          geneGlyphMode: 'longestCoding',
+          canonicalTranscriptTags: shippedTags,
+        }),
+      }).children.map(c => c.feature.get('name'))
+
+    // One gene carries two of the shipped tags at once: MANE Plus Clinical marks
+    // an ADDITIONAL transcript beside the MANE Select one and is often the
+    // longer. Flattened to a boolean "tagged", the coding-length tiebreak picked
+    // between them by a coin flip; the list is a priority order, so the earlier
+    // tag wins outright.
+    it('prefers the earlier tag in the list over a longer protein', () => {
       expect(
-        layoutSubfeatures({
-          feature: gene,
-          config: mockDisplayConfig({ geneGlyphMode: 'longestCoding' }),
-        }).children.map(c => c.feature.get('name')),
+        shippedNames(geneWithTwoTags('MANE Select', 'MANE Plus Clinical')),
       ).toEqual(['short'])
+    })
+
+    // GENCODE spells the MANE tags with underscores where NCBI's GFF3 spells
+    // them with spaces, and canonicalRank compares list members whole, so every
+    // tag both sources emit needs both spellings in the default. MANE Select had
+    // its pair and MANE Plus Clinical did not, which left GENCODE's
+    // MANE_Plus_Clinical transcripts ranking as untagged.
+    describe("GENCODE's underscore spelling", () => {
+      it('is recognised for MANE_Plus_Clinical', () => {
+        expect(
+          names(
+            { tag: 'MANE_Plus_Clinical' },
+            { canonicalTranscriptTags: shippedTags },
+          ),
+        ).toEqual(['short'])
+      })
+
+      it('keeps MANE_Plus_Clinical ranked under MANE_Select', () => {
+        expect(
+          shippedNames(geneWithTwoTags('MANE_Select', 'MANE_Plus_Clinical')),
+        ).toEqual(['short'])
+      })
     })
 
     it('is the first isoform the height cap keeps', () => {
