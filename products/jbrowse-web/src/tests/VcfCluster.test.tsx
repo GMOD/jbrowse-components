@@ -39,6 +39,12 @@ test('opens a vcf track and clusters genotypes', async () => {
     await findByText('Multi-sample variant display (matrix)', ...opts),
   )
 
+  // "Cluster rows by genotype..." is disabled until the display has its
+  // samples — it needs two rows to reorder, and reads "Loading samples..."
+  // before then — and a disabled MenuItem swallows the click, so opening the
+  // menu first left this suite waiting on a dialog nothing had opened.
+  await findDisplayPainted('variant-matrix-display', delay)
+
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Clustering', ...opts))
   fireEvent.click(await findByText('Cluster rows by genotype...', ...opts))
