@@ -123,20 +123,35 @@ interface RetryContractHost {
  * between `reload()` and `shouldFetch` is semantic: a run that follows a
  * `reloadCounter` bump and declines to fetch IS the dead button.
  *
- * The one legitimate decline is a display deliberately not fetching at all — LD
- * with the triangle off, whose `reload()` correctly does nothing because there
- * is nothing to load. That is already a named state: `loadingSuppressed`, which
- * the loading scrim reads for the same reason, so the exemption is not a second
+ * A display deliberately not fetching at all is the one exempt decline — LD with
+ * the triangle off, whose `reload()` correctly does nothing because there is
+ * nothing to load. That is already a named state: `loadingSuppressed`, which the
+ * loading scrim reads for the same reason, so the exemption is not a second
  * thing to remember. A display that suppresses the scrim and still wants the
  * retry checked has the two questions genuinely apart and should say so here.
  *
+ * `awaitingPrerequisite` is not a second exemption — it is a *deferral*, and the
+ * difference is the point. A two-stage `reload()` bumps the counter, wakes a
+ * prerequisite fetch in another autorun, and declines here only until that
+ * lands. HiC is the case: the contacts autorun runs first and declines because
+ * `effectiveResolution` is still undefined, and the header arriving a moment
+ * later wakes it again through the tracked read that declined. So the bump is
+ * left outstanding instead of consumed, and the run after the prerequisite
+ * lands is the one that has to reach a fetch — if it declines too, the report
+ * lands then. A display cannot spend its retry on a decline it called
+ * preliminary, which is what an exemption here would have let it do.
+ * `loadingSuppressed` is the wrong thing for HiC to say in any case, because it
+ * does want the scrim while the header is re-read.
+ *
  * **Everything it reads is `untracked`.** It runs inside the fetch autorun, so a
- * tracked read of `loadingSuppressed` would put that observable in the autorun's
- * dependency set in dev and not in production — a display whose fetch re-fires
- * only in development, which is worse than the bug being checked for.
+ * tracked read of `loadingSuppressed` — or of whatever `awaitingPrerequisite`
+ * reaches — would put that observable in the autorun's dependency set in dev and
+ * not in production, a display whose fetch re-fires only in development, which
+ * is worse than the bug being checked for.
  */
 export function makeRetryContractCheck(
   self: IAnyStateTreeNode & RetryContractHost,
+  awaitingPrerequisite?: () => boolean,
 ) {
   if (process.env.NODE_ENV === 'production') {
     return () => {}
@@ -144,8 +159,17 @@ export function makeRetryContractCheck(
   let lastCounter = untracked(() => self.reloadCounter)
   return function noteFetchAutorunRun(outcome: FetchAutorunOutcome) {
     untracked(() => {
+      // A decline while a prerequisite is still in flight is a stage of the
+      // retry, so the bump stays OUTSTANDING rather than being either reported
+      // or forgotten — the run that follows the prerequisite landing is the one
+      // that answers it, and if that run declines too the report lands then.
+      // Deferring rather than exempting is what keeps the check's teeth here: a
+      // display cannot spend its retry on a decline it called preliminary.
+      if (outcome === 'declined' && awaitingPrerequisite?.()) {
+        return
+      }
       const retried = self.reloadCounter !== lastCounter
-      // Consumed on every outcome, `gated` included: a run the byte gate
+      // Consumed on every other outcome, `gated` included: a run the byte gate
       // skipped answers the retry legitimately (that banner offers Force load,
       // not Retry), and leaving the bump unconsumed would report against
       // whichever unrelated run cleared the gate later.
@@ -159,7 +183,10 @@ export function makeRetryContractCheck(
             `counter (ArcFetchModel.reload drops loadedRegionSignature so its ` +
             `dataCurrent goes false). If this display is deliberately not ` +
             `fetching, say so with loadingSuppressed — the loading scrim reads ` +
-            `it too. See DISPLAYCHROME.md §"The retry contract".`,
+            `it too; if this run declined only because a prerequisite fetch ` +
+            `in another autorun has not landed, say so with ` +
+            `awaitingPrerequisite and the retry is judged on the run after ` +
+            `it does. See DISPLAYCHROME.md §"The retry contract".`,
         )
       }
     })

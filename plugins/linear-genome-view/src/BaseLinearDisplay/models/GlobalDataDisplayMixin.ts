@@ -154,6 +154,11 @@ export function installGlobalFetchAutorun(
     fetch: () => void
     delay: number
     name: string
+    // Dev-only, and read only by the retry check: "this decline means a
+    // prerequisite fetch in another autorun has not landed yet, and its
+    // arrival wakes this one again". It defers the retry verdict to that run
+    // rather than waiving it. See makeRetryContractCheck.
+    awaitingPrerequisite?: () => boolean
   },
 ) {
   // Leading-edge on the *first* fetch, trailing-edge (debounced) after, so
@@ -173,7 +178,10 @@ export function installGlobalFetchAutorun(
   // The other half of the same doctrine, and the one this family gets wrong:
   // the trigger reads below guarantee `reload()` re-RUNS the autorun, not that
   // the run reaches a fetch. See makeRetryContractCheck.
-  const noteFetchAutorunRun = makeRetryContractCheck(self)
+  const noteFetchAutorunRun = makeRetryContractCheck(
+    self,
+    opts.awaitingPrerequisite,
+  )
 
   const debounce = leadingEdgeDebounce(opts.delay)
   // a computed, not a bare `rpcProps()` in the body: that tracks every

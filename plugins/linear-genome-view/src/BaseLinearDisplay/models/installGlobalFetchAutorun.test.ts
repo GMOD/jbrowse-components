@@ -65,6 +65,11 @@ const TestDisplay = types
     gateMeasurementStale: true,
     // FetchMixin's, and the retry check's "deliberately not fetching" exemption
     loadingSuppressed: false,
+    // stands in for HiC's `effectiveResolution === undefined`, and read by
+    // NOTHING else — which is what makes it a probe for whether the retry
+    // check's reads leak into the autorun's dependency set. See the two
+    // dependency-set tests at the bottom.
+    prereqPending: true,
   }))
   .views(self => ({
     rpcProps() {
@@ -92,6 +97,9 @@ const TestDisplay = types
     setLoadingSuppressed(flag: boolean) {
       self.loadingSuppressed = flag
     },
+    setPrereqPending(flag: boolean) {
+      self.prereqPending = flag
+    },
     reload() {
       self.reloadCounter += 1
     },
@@ -101,7 +109,10 @@ const TestDisplay = types
 // itself owns that observable
 type TestDisplayModel = Instance<typeof TestDisplay>
 
-function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
+function setup(
+  shouldFetch: (d: TestDisplayModel) => boolean,
+  awaitingPrerequisite?: (d: TestDisplayModel) => boolean,
+) {
   const view = TestView.create({ display: {} })
   const { display } = view
   const gateCalls = { count: 0 }
@@ -116,6 +127,9 @@ function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
     },
     delay: DELAY,
     name: 'TestGlobalFetch',
+    awaitingPrerequisite: awaitingPrerequisite
+      ? () => awaitingPrerequisite(display)
+      : undefined,
   })
   return { view, display, gateCalls, fetched }
 }
@@ -287,6 +301,67 @@ describe('the retry contract', () => {
     expect(reports()).toEqual([])
   })
 
+  // HiC's shape: `reload()` wakes a prerequisite fetch in another autorun, this
+  // one declines only until that lands, and the landing wakes it again through
+  // the same tracked read. `loadingSuppressed` is the wrong claim for it — HiC
+  // wants the scrim meanwhile — so the display says this instead.
+  it('holds the verdict over a decline that is waiting on a prerequisite', async () => {
+    const { display, fetched } = setup(
+      d => d.loaded,
+      d => !d.loaded,
+    )
+    await settle()
+
+    display.reload()
+    await settle()
+    expect(reports()).toEqual([])
+
+    // the prerequisite landing wakes the same autorun, and THAT run is the one
+    // answering the retry — silent because it reaches the fetch
+    display.setLoaded(true)
+    await settle()
+    expect(fetched.count).toBe(1)
+    expect(reports()).toEqual([])
+  })
+
+  // deferral rather than exemption, which is the whole difference: the bump is
+  // left outstanding, so a display cannot spend its retry on a decline it
+  // called preliminary. Here the prerequisite lands and the gate declines
+  // anyway — a genuinely dead button that an exemption would have waved past.
+  it('reports when the run after the prerequisite declines too', async () => {
+    const { display } = setup(
+      () => false,
+      d => !d.loaded,
+    )
+    await settle()
+
+    display.reload()
+    await settle()
+    expect(reports()).toEqual([])
+
+    // prerequisite in hand; the retry has to reach a fetch now and does not.
+    // `setSetting` is what re-runs the body — `loaded` is nothing this gate reads
+    display.setLoaded(true)
+    display.setSetting('b')
+    await settle()
+    expect(reports().join('\n')).toMatch(/Retry is a dead button/)
+  })
+
+  // the negative control: declaring the predicate does not turn the check off,
+  // so the arc shape behind one that never claims a decline still reports
+  it('still reports a decline the predicate does not claim', async () => {
+    const { display } = setup(
+      d => !d.loaded,
+      () => false,
+    )
+    display.setLoaded(true)
+    await settle()
+
+    display.reload()
+    await settle()
+    expect(reports().join('\n')).toMatch(/Retry is a dead button/)
+  })
+
   // the too-large banner offers Force load, not Retry, so a run the byte gate
   // skipped answers the bump legitimately — and consuming it there is what stops
   // the report landing on whichever unrelated run clears the gate later
@@ -340,5 +415,56 @@ describe('a blocked display still re-measures', () => {
     view.setBlocks(['chr1:0-300'])
     await settle()
     expect(fetched.count).toBe(afterFirst + 1)
+  })
+})
+
+// The retry check runs INSIDE the fetch autorun, so every observable it touches
+// is one MobX would add to that autorun's dependency set — and the check is
+// stripped in production. A tracked read there gives a display whose fetch
+// re-fires on an observable in development and not in the shipped bundle, which
+// is a worse bug than the dead button being checked for and one no user-facing
+// test can see. `untracked` is what prevents it; these are what prove it, one
+// per observable the check reads.
+//
+// Both probes mutate an observable that NOTHING in the trigger list, the gate or
+// `rpcProps()` reads, so a re-run can only mean the check leaked it. Asserted on
+// `gateCalls` rather than on fetches, because the leak re-runs the body whether
+// or not the gate then opens.
+describe('the retry check leaks nothing into the dependency set', () => {
+  it('does not track the awaitingPrerequisite predicate', async () => {
+    const { display, gateCalls } = setup(
+      () => false,
+      d => d.prereqPending,
+    )
+    display.reload()
+    await settle()
+    expect(reports()).toEqual([])
+
+    const before = gateCalls.count
+    display.setPrereqPending(false)
+    await settle()
+    expect(gateCalls.count).toBe(before)
+
+    // and the deferral is still outstanding rather than lost: the next run to
+    // reach the check is the one that answers the retry, and it declines
+    display.setSetting('b')
+    await settle()
+    expect(reports().join('\n')).toMatch(/Retry is a dead button/)
+  })
+
+  it('does not track loadingSuppressed', async () => {
+    // read only once `retried && declined` both hold — JS short-circuits before
+    // it otherwise — so the reload is what gets the check as far as reading it
+    const { display, gateCalls } = setup(d => !d.loaded)
+    display.setLoaded(true)
+    await settle()
+    display.reload()
+    await settle()
+    expect(reports().join('\n')).toMatch(/Retry is a dead button/)
+
+    const before = gateCalls.count
+    display.setLoadingSuppressed(true)
+    await settle()
+    expect(gateCalls.count).toBe(before)
   })
 })

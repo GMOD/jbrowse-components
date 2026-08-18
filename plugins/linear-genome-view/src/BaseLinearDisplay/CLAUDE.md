@@ -24,9 +24,17 @@ follows is local.
 `makeRetryContractCheck` is the same idea for retry: it reports when a
 `reloadCounter` bump re-runs the autorun and the gate still declines — the dead
 Retry button. Opt out with `loadingSuppressed` if the display deliberately isn't
-fetching. Reports reach the jest gate through `console.error`, so a harness
-replacing it opts itself out; a test provoking a violation calls
-`takeDisplayContractReports()`.
+fetching. A two-stage `reload()` says `awaitingPrerequisite` instead (HiC, whose
+contacts fetch declines until the header lands), which **defers** the verdict to
+the run after the prerequisite arrives rather than waiving it. Reports reach the
+jest gate through `console.error`, so a harness replacing it opts itself out; a
+test provoking a violation calls `takeDisplayContractReports()`.
+
+**Everything the check reads, it reads `untracked`** — it runs inside the fetch
+autorun, so a tracked read puts that observable in the autorun's dependency set
+in dev and not in the production build, where the whole check is stripped. That
+is a display whose fetch re-fires only in development. One test per observable
+the check reads pins it, at the bottom of `installGlobalFetchAutorun.test.ts`.
 
 ## Height and scroll are hooks
 

@@ -743,6 +743,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           // (bpPerPx + resolutionBias) so a zoom or step refires. The helper
           // tracks rpcProps() (normalization) + reloadCounter for us.
           shouldFetch: () => self.effectiveResolution !== undefined,
+          // Retry here is two-stage: `reload()` wakes the info autorun and
+          // this one, this one runs first and declines because the header it
+          // needs has not landed, and the header arriving wakes it again
+          // through the same tracked read. So the retry contract is judged on
+          // that later run rather than this one. Not `loadingSuppressed`, which
+          // would be the wrong claim — HiC does want the scrim meanwhile.
+          awaitingPrerequisite: () => self.effectiveResolution === undefined,
           fetch: () => {
             void self.performHicFetch()
           },

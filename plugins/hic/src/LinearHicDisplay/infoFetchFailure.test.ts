@@ -63,14 +63,13 @@ test('retry re-reads the header instead of dropping back onto the scrim', async 
   expect(display.effectiveResolution).toBeDefined()
   expect(display.error).toBeUndefined()
 
-  // The retry contract check reports here, and the three assertions above are
-  // why it is a false positive: the reload wakes both autoruns, the fetch one
-  // runs first and declines because `effectiveResolution` is still undefined,
-  // and the header that defines it lands a moment later and wakes it again.
-  // Asserted rather than merely taken, so this stops pinning a known-wrong
-  // report the moment either side changes. agent-docs/TODO.md §"The retry check
-  // calls HiC's Retry dead, and it isn't".
-  expect(takeDisplayContractReports().join('\n')).toMatch(
-    /Retry is a dead button/,
-  )
+  // The retry contract check used to report here, and the three assertions
+  // above are why it was a false positive: the reload wakes both autoruns, the
+  // contacts one runs first and declines because `effectiveResolution` is still
+  // undefined, and the header that defines it lands a moment later and wakes it
+  // again. `awaitingPrerequisite` on the fetch autorun is HiC saying that, and
+  // it defers the verdict rather than waiving it — the run above, which does
+  // reach `availableResolutions`, is the one that answers the retry. So this is
+  // a silent check over a working retry, not a check that stopped looking.
+  expect(takeDisplayContractReports()).toEqual([])
 })
