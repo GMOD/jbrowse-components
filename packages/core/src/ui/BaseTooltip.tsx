@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import {
   autoUpdate,
   flip,
@@ -60,6 +62,33 @@ const tooltipBaseStyle = {
 // than the tooltip, so on a flipped placement it pushed the tooltip *toward*
 // the cursor instead of away. Don't reintroduce one; change this number.
 const CURSOR_GAP_PX = 15
+
+// Where the pointer last was, app-wide.
+//
+// A hover tooltip mounts BECAUSE the pointer landed on something, so the event
+// that could position it has already been delivered — and floating-ui's own
+// follow mode (`useClientPoint` with no x/y) registers its window listener on
+// mount, so it learns nothing until the NEXT move. An unpositioned tooltip is
+// `visibility: hidden` (see below), which means landing on a narrow feature and
+// stopping showed no tooltip at all, indefinitely. It is why the callers that
+// have a pointer in hand pass `clientPoint`; the ones that do not are hovering
+// an ELEMENT (an SVG arc, a breakpoint connector), whose `onMouseOver` says
+// only that it was entered.
+//
+// One passive listener storing two numbers, installed at import rather than per
+// tooltip: the value a tooltip needs is the one from before it existed, so
+// there is nothing for a listener installed with it to have recorded.
+let lastPointerPoint: { x: number; y: number } | undefined
+
+if (typeof window !== 'undefined') {
+  window.addEventListener(
+    'pointermove',
+    event => {
+      lastPointerPoint = { x: event.clientX, y: event.clientY }
+    },
+    { passive: true, capture: true },
+  )
+}
 
 // An element is its own size, so the gap is measured from its edge rather than
 // from a point the pointer happens to be at. 15px off a button reads as a
@@ -126,11 +155,34 @@ export default function BaseTooltip({
     whileElementsMounted: anchor ? autoUpdate : undefined,
   })
 
+  // Follow the pointer here, rather than handing floating-ui its own follow
+  // mode, so the tooltip opens AT a point instead of at nothing — see
+  // `lastPointerPoint`. A caller that named a point, or an element, owns the
+  // position outright and this stays out of the way.
+  const [tracked, setTracked] = useState(lastPointerPoint)
+  const following = !anchor && clientPointCoords === undefined
+  useEffect(() => {
+    if (!following) {
+      return undefined
+    }
+    setTracked(lastPointerPoint)
+    const onMove = (event: PointerEvent) => {
+      setTracked({ x: event.clientX, y: event.clientY })
+    }
+    window.addEventListener('pointermove', onMove, {
+      passive: true,
+      capture: true,
+    })
+    return () => {
+      window.removeEventListener('pointermove', onMove, true)
+    }
+  }, [following])
+
   // `enabled` rather than a conditional hook: with an element reference in
   // play, letting this also write one would leave the two arms fighting over
   // the same slot.
   const clientPoint = useClientPoint(context, {
-    ...clientPointCoords,
+    ...(clientPointCoords ?? tracked),
     enabled: !anchor,
   })
   const { getFloatingProps } = useInteractions([clientPoint])

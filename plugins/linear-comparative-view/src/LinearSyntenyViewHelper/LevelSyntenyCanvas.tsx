@@ -49,20 +49,12 @@ const useStyles = makeStyles()({
   },
 })
 
-// Distance (px) below which a mousedown/mouseup pair counts as a click, not
-// a drag. Tuned to be tolerant of jittery trackpads.
+// Distance (px) a press has to travel before it is a pan rather than a click.
+// Tuned to be tolerant of jittery trackpads.
 const CLICK_DRAG_THRESHOLD_PX = 5
 
 // MouseEvent.button for the left/primary button
 const PRIMARY_BUTTON = 0
-
-// One pointer position in both spaces the band needs it in: canvas-local pixels
-// for the pick, and the client point the tooltip anchors on.
-interface PointerSample {
-  x: number
-  y: number
-  client: { x: number; y: number }
-}
 
 function openSyntenyFeatureWidget(
   display: LinearSyntenyDisplayModel,
@@ -90,19 +82,21 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const width = parentView.width
   const height = model.height
 
-  // In-flight drag-pan, or undefined when the pointer is not down. `travel` is
-  // total distance moved, not net displacement from the start: a pan out and
-  // back ends where it began, and measuring the difference made that release
-  // read as a click and open the feature widget.
-  const dragRef = useRef<{ lastX: number; travel: number } | undefined>(
-    undefined,
-  )
+  // In-flight drag-pan, or undefined when the pointer is not down. `panned`
+  // LATCHES the first time the press travels past the threshold and never
+  // clears, which is what makes the release's verdict independent of where the
+  // pointer ended up: this used to compare the release position against the
+  // start, so a pan out and back read as a click and opened the feature widget.
+  // Same shape as the genome view's own `usePanZoom`.
+  const dragRef = useRef<
+    { startX: number; lastX: number; panned: boolean } | undefined
+  >(undefined)
   // Coalesces hover picks to one per frame. A pick is under 0.1ms on collinear
   // data but ~12.5ms on an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse
   // reporting faster than the display would otherwise queue a pick per event
   // and spend the whole frame budget on hovers nothing draws.
   const hoverRef = useRef<
-    { frame: number; at: PointerSample | undefined } | undefined
+    { frame: number; at: { x: number; y: number } | undefined } | undefined
   >(undefined)
   const cancelHover = useCallback(() => {
     if (hoverRef.current) {
@@ -156,21 +150,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const errors = [gpuError, model.displayError].filter(e => e != null)
   const combinedError = errors.length > 0 ? errors.join('\n') : undefined
 
-  // One sample, so the pick and the tooltip anchor can't describe different
-  // moments.
-  function canvasCoords(evt: {
-    clientX: number
-    clientY: number
-  }): PointerSample | undefined {
+  function canvasCoords(evt: { clientX: number; clientY: number }) {
     const rect = canvas?.getBoundingClientRect()
     if (!rect) {
       return undefined
     }
-    return {
-      x: evt.clientX - rect.left,
-      y: evt.clientY - rect.top,
-      client: { x: evt.clientX, y: evt.clientY },
-    }
+    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
   }
 
   function pickAt(coords: { x: number; y: number }) {
@@ -194,8 +179,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     const drag = dragRef.current
     if (drag) {
       const dx = drag.lastX - event.clientX
-      drag.travel += Math.abs(dx)
       drag.lastX = event.clientX
+      drag.panned ||=
+        Math.abs(event.clientX - drag.startX) >= CLICK_DRAG_THRESHOLD_PX
       dragPan(dx)
       return
     }
@@ -218,7 +204,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         const at = hoverRef.current?.at
         hoverRef.current = undefined
         if (at) {
-          model.setHoveredFeature(pickAt(at), at.client)
+          model.setHoveredFeature(pickAt(at))
         }
       }),
     }
@@ -243,7 +229,11 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     // which is what a pair of window listeners used to buy — and unlike them it
     // needs no unmount cleanup, since the browser releases it with the element.
     event.currentTarget.setPointerCapture(event.pointerId)
-    dragRef.current = { lastX: event.clientX, travel: 0 }
+    dragRef.current = {
+      startX: event.clientX,
+      lastX: event.clientX,
+      panned: false,
+    }
     cancelHover()
   }
 
@@ -253,7 +243,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!drag || event.button !== PRIMARY_BUTTON) {
       return
     }
-    if (drag.travel >= CLICK_DRAG_THRESHOLD_PX) {
+    if (drag.panned) {
       return
     }
     const coords = canvasCoords(event)

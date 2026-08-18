@@ -68,21 +68,6 @@ export function linearSyntenyViewHelperModelFactory(
         level: types.number,
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       * Where the pointer was when this level last resolved a hover, in client
-       * coordinates, or undefined when nothing is hovered.
-       *
-       * `BaseTooltip` has no position of its own until a mousemove reaches the
-       * window listener it registers on mount, so a tooltip opened by the move
-       * that landed on a ribbon stays `visibility: hidden` until the pointer
-       * moves AGAIN — land on a narrow ribbon and stop, and no tooltip appears
-       * at all. Handing it the point the pick was answered at is what the
-       * dotplot does, for the same reason.
-       */
-      hoverClientPoint: undefined as { x: number; y: number } | undefined,
-    }))
     .views(self => ({
       /**
        * #getter
@@ -246,15 +231,8 @@ export function linearSyntenyViewHelperModelFactory(
       return {
         /**
          * #action
-         * `clientPoint` is where the pick was answered — see `hoverClientPoint`.
-         * A caller that has no pointer to name (the viewport-change clear) passes
-         * a miss, and a miss has no point.
          */
-        setHoveredFeature(
-          hit: SyntenyPickResult | undefined,
-          clientPoint?: { x: number; y: number },
-        ) {
-          self.hoverClientPoint = hit ? clientPoint : undefined
+        setHoveredFeature(hit: SyntenyPickResult | undefined) {
           return point(hit, (display, idx) => {
             display.setHoveredInstanceIdx(idx)
           })

@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 
 import BaseTooltip from './BaseTooltip.tsx'
 import { StyleThemeProvider } from './PaletteContext.tsx'
@@ -70,6 +70,34 @@ test('anchors to an element, and names itself for aria-describedby', () => {
   expect(tip.id).toBe('tip-1')
   expect(tip.getAttribute('role')).toBe('tooltip')
   expect(tip.style.position).toBe('fixed')
+})
+
+// A tooltip mounts because the pointer landed on something, so by the time it
+// exists the event that could position it has been delivered. Left to
+// floating-ui's own follow mode it registers a listener on mount and has no
+// position until the NEXT move — and an unpositioned tooltip is deliberately
+// `visibility: hidden`, so hovering a narrow feature and stopping showed
+// nothing at all, indefinitely. The callers that hover an ELEMENT (an SVG arc,
+// a breakpoint connector) have no point to pass and are the ones this is for.
+test('a tooltip with no clientPoint opens at the pointer, not at nothing', async () => {
+  window.dispatchEvent(
+    new PointerEvent('pointermove', { clientX: 300, clientY: 120 }),
+  )
+
+  const { getByText } = render(<BaseTooltip>ctgA:1..100</BaseTooltip>)
+
+  // floating-ui resolves a position asynchronously, so this is the first paint
+  // AFTER mount — and still without any further pointer event, which is the
+  // whole point.
+  await waitFor(() => {
+    expect(getByText('ctgA:1..100').style.visibility).not.toBe('hidden')
+  })
+  // jsdom lays nothing out, so `flip`/`shift` resolve against a zero-sized
+  // viewport and the exact offset is not meaningful — that it is not the origin
+  // is.
+  expect(getByText('ctgA:1..100').style.transform).not.toBe(
+    'translate(0px, 0px)',
+  )
 })
 
 // The tooltip has to leave its track's `contain: strict` box, so it portals.

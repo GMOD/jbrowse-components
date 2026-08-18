@@ -66,10 +66,7 @@ async function openHovered() {
   await when(() => level.linearSyntenyDisplays.length > 0, { timeout: 5000 })
   const display = level.linearSyntenyDisplays[0]!
 
-  level.setHoveredFeature(
-    { key: display.displayKey, instanceIndex: 3 },
-    { x: 10, y: 20 },
-  )
+  level.setHoveredFeature({ key: display.displayKey, instanceIndex: 3 })
   expect(display.hoveredInstanceIdx).toBe(3)
   return { view, level, display }
 }
@@ -82,14 +79,12 @@ test('zooming a row drops the hover it moved out from under', async () => {
   expect(display.hoveredInstanceIdx).toBe(-1)
 })
 
-test('panning a row drops the hover, and its tooltip anchor with it', async () => {
-  const { view, level, display } = await openHovered()
-  expect(level.hoverClientPoint).toEqual({ x: 10, y: 20 })
+test('panning a row drops the hover', async () => {
+  const { view, display } = await openHovered()
 
   view.views[1]!.horizontalScroll(120)
 
   expect(display.hoveredInstanceIdx).toBe(-1)
-  expect(level.hoverClientPoint).toBeUndefined()
 })
 
 test('resizing the band is not a viewport change', async () => {
