@@ -939,9 +939,10 @@ context, which is what the figure below is set to.
 <Figure caption="Tumor PacBio HiFi reads at the CDKN2B-AS1 end of the CDKN2A locus, over the NCBI RefSeq gene lane, colored by base modification with unmodified cytosines filled in. Neighboring CpG-dense blocks come out in opposite states, one of them at the CDKN2B-AS1 transcription start." src="/img/sv_cgiab/methylation_cdkn2b.png" />
 
 Where the marks thin out to scattered ticks, that is CpG density: the fill draws
-a cytosine only where the reference puts one in context. Every read crossing
-either block agrees with the others on it, so the state the figure shows belongs
-to the locus. The track is the one the SV walkthroughs opened, recolored.
+a cytosine only where the reference puts one in context. Inside either block
+every read carries some of both colors and all of them lean the same way, so
+each block reads as one state across the whole pileup. The track is the one the
+SV walkthroughs opened, recolored.
 
 Most somatic LINE insertions in HG008 come from two hypomethylated non-reference
 germline LINE insertions, so the methylation state of a source element explains
