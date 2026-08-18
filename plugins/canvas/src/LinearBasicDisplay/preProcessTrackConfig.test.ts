@@ -13,6 +13,8 @@ type DisplaySnapshot = {
   outlineColor?: string
   autoHeight?: boolean
   heightMode?: string
+  height?: number
+  featureHeight?: number
   renderer?: Record<string, unknown>
 }
 type TrackConfigSnapshot = {

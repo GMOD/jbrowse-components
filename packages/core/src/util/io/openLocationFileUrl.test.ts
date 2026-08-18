@@ -1,5 +1,9 @@
 import { openLocation } from './index.ts'
 
+// GenericFilehandle does not declare it, but every implementation carries the
+// key it was opened under, which is what says which branch openLocation took
+const keyOf = (f: unknown) => (f as { filename: string }).filename
+
 // A file: URI is how every desktop shorthand arrives: a config.json opened from
 // disk stamps its own directory as the baseUri, so the adapter's `uri` and each
 // sibling the shorthand derives from it resolve to file: here. Reading them as a
@@ -18,8 +22,8 @@ test('a file: uri opens as a local path, resolved through its baseUri', () => {
     localPath: '/data/proj/reads.bam',
     locationType: 'LocalPathLocation',
   })
-  expect(direct.filename).toBe(asPath.filename)
-  expect(viaBase.filename).toBe(asPath.filename)
+  expect(keyOf(direct)).toBe(keyOf(asPath))
+  expect(keyOf(viaBase)).toBe(keyOf(asPath))
 })
 
 test('a percent-encoded file: uri decodes to the path it names', () => {
@@ -31,7 +35,7 @@ test('a percent-encoded file: uri decodes to the path it names', () => {
     localPath: '/data/my reads/a+b.bam',
     locationType: 'LocalPathLocation',
   })
-  expect(encoded.filename).toBe(asPath.filename)
+  expect(keyOf(encoded)).toBe(keyOf(asPath))
 })
 
 test('an http uri is still opened remotely', () => {
