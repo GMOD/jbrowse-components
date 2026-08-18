@@ -65,3 +65,62 @@ test('an insertion reports the bases beyond its reference span', () => {
 test('a deletion inserts nothing', () => {
   expect(getInsertedBp(feature({ start: 100, end: 180, ALT: ['A'] }))).toBe(0)
 })
+
+// `<INS>` + SVLEN is how every short-read/long-read SV caller spells an
+// insertion, and it is the one symbolic class `getEnd` does not resolve into the
+// span — an insertion consumes no reference, so the record is 1 bp wide. Reading
+// only the span called every one of them 1 bp long: no marker, no "Insertion"
+// tooltip row, and dropped by an `alleleLength(feature) >= 50` filter.
+describe('symbolic insertions read their SVLEN', () => {
+  const ins = (info: Record<string, unknown>, ALT = ['<INS>']) =>
+    feature({ start: 100, end: 101, REF: 'A', ALT, INFO: info })
+
+  it('measures the declared inserted bases past the span', () => {
+    expect(getAlleleLength(ins({ SVLEN: [250] }))).toBe(251)
+    expect(getInsertedBp(ins({ SVLEN: [250] }))).toBe(250)
+  })
+
+  it('reads a negative SVLEN as a magnitude', () => {
+    expect(getInsertedBp(ins({ SVLEN: [-250] }))).toBe(250)
+  })
+
+  it('reads a subclassed insertion the same way', () => {
+    expect(getInsertedBp(ins({ SVLEN: [300] }, ['<INS:ME:ALU>']))).toBe(300)
+  })
+
+  it('takes the longest of several symbolic insertions', () => {
+    expect(
+      getInsertedBp(ins({ SVLEN: [40, 900] }, ['<INS>', '<INS:ME:LINE1>'])),
+    ).toBe(900)
+  })
+
+  it('is 0 for an insertion that declares no length', () => {
+    expect(getInsertedBp(ins({}))).toBe(0)
+    expect(getInsertedBp(ins({ SVLEN: ['.'] }))).toBe(0)
+  })
+
+  // The other symbolic classes already span what they describe (getEnd resolved
+  // END/SVLEN into it), so adding SVLEN again would double the deletion.
+  it('leaves a symbolic deletion on the span getEnd resolved', () => {
+    expect(
+      getAlleleLength(
+        feature({
+          start: 100,
+          end: 700,
+          ALT: ['<DEL>'],
+          INFO: { SVLEN: [-600] },
+        }),
+      ),
+    ).toBe(600)
+    expect(
+      getInsertedBp(
+        feature({
+          start: 100,
+          end: 700,
+          ALT: ['<DEL>'],
+          INFO: { SVLEN: [-600] },
+        }),
+      ),
+    ).toBe(0)
+  })
+})

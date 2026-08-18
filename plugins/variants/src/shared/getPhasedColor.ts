@@ -15,6 +15,8 @@ import {
 // and need a precedence rule to settle it.
 export const PHASE_SET_COLOR = 'phaseSet'
 
+const PIPE_CODE = 124 // '|'
+
 // Whether a variant declares a phase set, i.e. carries PS in FORMAT. Gates both
 // the "Color by...→Phase set" menu entry and the heavier per-sample `samples`
 // read the coloring needs.
@@ -33,8 +35,16 @@ export function featureHasPhaseSet(format: string | undefined) {
 // majority of human VCFs; the general split handles polyploid or multi-digit
 // allele indices ("10|0") and haploid calls ("1", "23"), which come back as a
 // one-element list.
+//
+// The fast path tests for the separator, not for the length alone. A haploid
+// three-digit call — "123", i.e. allele 123, which a pangenome site decomposed
+// to hundreds of alts spells routinely — is also three characters, and
+// splitting it positionally read it as two alleles: a phantom second haplotype
+// row painted "other alt allele", and a first row colored for allele 1, which
+// the sample does not carry. `buildValueTable` in anchoredHaplotypeSort splits
+// the same strings with the plain `split('|')` this now falls back to.
 export function splitPhasedAlleles(genotype: string) {
-  return genotype.length === 3
+  return genotype.length === 3 && genotype.charCodeAt(1) === PIPE_CODE
     ? [genotype[0]!, genotype[2]!]
     : genotype.split('|')
 }

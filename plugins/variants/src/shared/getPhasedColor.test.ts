@@ -1,4 +1,8 @@
-import { featureHasPhaseSet, getPhasedColor } from './getPhasedColor.ts'
+import {
+  featureHasPhaseSet,
+  getPhasedColor,
+  splitPhasedAlleles,
+} from './getPhasedColor.ts'
 
 // Everything downstream of this color memoizes on the *string* it returns —
 // `getCachedABGR` keys a module-level Map that never evicts, in a worker that
@@ -51,5 +55,33 @@ describe('featureHasPhaseSet', () => {
   it('is false for a sites-only record with no FORMAT', () => {
     expect(featureHasPhaseSet(undefined)).toBe(false)
     expect(featureHasPhaseSet('')).toBe(false)
+  })
+})
+
+// A haploid call is one allele however many digits it takes to spell. The
+// three-character fast path used to key on length alone, so allele 123 — an
+// ordinary index at a pangenome site decomposed to hundreds of alts — split into
+// alleles 1 and 3: an HP1 row for a haplotype the sample does not carry, and an
+// HP0 row colored for the wrong allele.
+describe('splitPhasedAlleles', () => {
+  it.each([
+    ['0|1', ['0', '1']],
+    ['1|2', ['1', '2']],
+    ['10|3', ['10', '3']],
+    ['1', ['1']],
+    ['23', ['23']],
+    ['123', ['123']],
+    ['1|2|3', ['1', '2', '3']],
+    ['.|.', ['.', '.']],
+  ])('splits %s', (genotype, expected) => {
+    expect(splitPhasedAlleles(genotype)).toEqual(expected)
+  })
+
+  it('gives a three-digit haploid alt no second haplotype to paint', () => {
+    const alleles = splitPhasedAlleles('123')
+    expect(getPhasedColor(alleles, 0, '123')).toBe(
+      getPhasedColor(['123'], 0, '123'),
+    )
+    expect(getPhasedColor(alleles, 1, '123')).toBe('')
   })
 })
