@@ -138,10 +138,10 @@ hardware reports itself. And `recreateMsaaTexture` checks
 the allocation is refused and reported rather than attempted. The failure at the
 top of this range is a legible refusal, not an OOM.
 
-**This is the highest-value thing to measure on borrowed hardware**: the same
-`probe-msaa-resize-cost.ts` run on a retina display would confirm both the 4x
-and where the refusal actually lands. Everything else in this doc holds without
-hardware; this one does not.
+**This is the highest-value thing to measure on borrowed hardware**, and it is
+the one claim here that does not hold without it — everything else is the spec
+against the tree. Filed as [../TODO.md](../TODO.md) §"Take the MSAA target's
+size on a retina display", which carries what the run has to settle.
 
 ---
 

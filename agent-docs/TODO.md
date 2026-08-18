@@ -64,6 +64,7 @@ before anyone noticed.
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
+| [Take the MSAA target's size on a retina display](#take-the-msaa-targets-size-on-a-retina-display) | GPU, limits | run the probe at dpr 2; the 640 MiB is arithmetic, not measurement |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
 | [Does a quality floor still buy anything on the band](#does-a-base-quality-floor-still-buy-anything-on-the-coverage-band) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
 | [Walk the CIGAR once per MM tag](#walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
@@ -1198,6 +1199,55 @@ implementer's call, hence here rather than in the small-items section.
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
+
+### Take the MSAA target's size on a retina display
+
+**Every GPU number in this repo came off one machine, and this is the one whose
+extrapolation is alarming.** `WebGPUHal` holds one 4x MSAA colour attachment per
+display, sized to its canvas and not to the data
+([ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) §"The MSAA target
+is the largest per-display allocation"). It is measured at **79.2 MiB** for a
+1266x4100 canvas at **dpr 1**, and dpr enters the size squared, so a retina
+panel costs 4x that before the window is any wider. The arithmetic in
+[reference/GPU_PORTABILITY.md](reference/GPU_PORTABILITY.md) puts an ordinary
+27" retina window with its height at the canvas clamp at **640.0 MiB for one
+track**, which nothing in the session counts.
+
+`node browser-tests/probe-msaa-resize-cost.ts [frames] [pxPerFrame]`, from
+`products/jbrowse-web`. **It needs Firefox Nightly, headed** — the probe's own
+TRAPS section says Chrome + puppeteer does not render a WebGPU canvas at all and
+a headless run measures nothing, so the retina machine has to be one that can
+run it. Three things the run should settle, in the order they matter:
+
+- **Does the formula hold at dpr 2?** It reproduces its own dpr-1 anchor exactly
+  (`1266*4100*4*4` = 79.20 MiB), which is what made extending it defensible, but
+  "defensible" is not "measured". If the sizes come back at 4x the dpr-1 run for
+  the same CSS box, the 640 MiB figure is real and the entry above should carry
+  it as a measurement rather than as arithmetic.
+- **Where does the refusal actually land?** `recreateMsaaTexture` checks
+  `maxTextureDimension2D`, so the predicted failure is at ~4096 CSS px tall at
+  dpr 2 — and the prediction is that it *refuses legibly* rather than OOMing.
+  Drag a track past that and read what the user sees. A blank canvas there is a
+  bug; a zoom-in banner is the design working.
+- **Is the per-frame rebuild still free?** The dpr-1 run measured 250 rebuilds
+  at 1.9 ms total, flat in texture size, and concluded the driver does not
+  commit at create time. That conclusion is per-driver and this is a different
+  driver.
+
+**Take `maxBufferSize` and `maxTextureDimension2D` off the same machine while
+you are there** — `logGpuCapabilities` warns them to the console on every
+WebGPU device acquisition, so it is a devtools read on any page that got a
+device, not a probe run. Two
+adapters is not a survey, but it is the difference between one data point and
+knowing whether the Intel UHD 630's 1 GiB is typical or generous.
+
+**Unrelated but the same trip, if the machine has Firefox:** the WebGL2 context
+ceiling has only ever been measured on Chrome. "Firefox around 16" comes from
+RFC-001 §12b, whose own superseded-in-part note says its context-cap figures
+were guesses — the Chrome measurement killed its "Chrome around 8" and left the
+Firefox one standing because nothing contradicted it.
+[reference/GPU_CONTEXT_BUDGET.md](reference/GPU_CONTEXT_BUDGET.md) has the
+harness; it walks `--tracks` up on one LGV.
 
 ### Walk the CIGAR once for a read's whole MM tag, not once per group
 
