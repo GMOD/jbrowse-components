@@ -70,7 +70,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
 
 interface ShowModel extends CollapseGroupRowsModel {
   showLegend: boolean
-  setShowLegend: (show: boolean | undefined) => void
+  setShowLegend: (show: boolean) => void
   showLegendDisplayTypeDefault: Pin
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void

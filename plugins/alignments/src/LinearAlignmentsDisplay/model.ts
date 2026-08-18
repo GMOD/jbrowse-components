@@ -30,6 +30,7 @@ import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   HeightModeMixin,
+  LegendMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   callEachRegion,
@@ -306,6 +307,7 @@ export default function stateModelFactory(
         // The coverage band's score axis, shared with the wiggle family so the
         // wiggle-core score menu / SetMinMaxDialog consume this model directly.
         ScoreScaleMixin(),
+        LegendMixin(),
         // Track-menu settings are config slots (read via getConf, written via
         // configuration.setSlot) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the
@@ -769,34 +771,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         */
-        get showLegend(): boolean {
-          // Opt-in: the floating color legend is hidden by default for every
-          // color scheme (including modifications) and shown only on demand via
-          // the "Show legend" track-menu item, rather than eagerly covering the
-          // top of every alignments track.
-          //
-          // Resolved through the promotable-slot tiers (resolveConf): an
-          // explicit track value customizes the legend on or off; otherwise it
-          // follows the session-wide default, falling back to the opt-in base.
-          // A `maybeBoolean` slot, so a session default of "on" can be
-          // customized back off on a single track — which is what the legend's
-          // own "×" writes.
-          return resolveConf(self, 'showLegend')
-        },
-
-        /**
-         * #getter
-         */
-        // "make the current legend visibility the default for all tracks"
-        // control (pin): symmetric, so it promotes whichever value the track
-        // currently shows.
-        get showLegendDisplayTypeDefault() {
-          return makePin(self, 'showLegend')
-        },
-
-        /**
-         * #getter
          * The single read of the `sortedBy` slot, so the RPC args and the menu
          * checkmarks cannot disagree about which sort is active.
          *
@@ -1061,7 +1035,7 @@ export default function stateModelFactory(
          */
         get colorLegendCategories(): Set<ReadColorCategory> {
           const present = new Set<ReadColorCategory>()
-          if (this.showLegend) {
+          if (self.showLegend) {
             // Reads the BAKED categories off the laid-out groups, not a second
             // classification pass over `rpcDataMap`. Scanning the raw map was
             // subtly wrong: `readTagColors` is empty until the main thread bakes
@@ -1101,7 +1075,7 @@ export default function stateModelFactory(
          */
         get presentTagValues(): ReadonlySet<string> | undefined {
           const { type } = this.colorBy
-          if (!this.showLegend || (type !== 'tag' && type !== 'mateRefName')) {
+          if (!self.showLegend || (type !== 'tag' && type !== 'mateRefName')) {
             return undefined
           }
           return collectAcrossGroups(this.laidOutByGroup, d => d.readTagValues)
@@ -1126,7 +1100,7 @@ export default function stateModelFactory(
          * marks are drawn. Same showLegend gate as the other two scans.
          */
         get presentModifications(): ReadonlySet<string> | undefined {
-          if (!this.showLegend || !isModificationScheme(this.colorBy.type)) {
+          if (!self.showLegend || !isModificationScheme(this.colorBy.type)) {
             return undefined
           }
           return collectAcrossGroups(
@@ -1157,7 +1131,7 @@ export default function stateModelFactory(
          */
         get arcLegendCategories(): Set<ReadColorCategory> {
           const present = new Set<ReadColorCategory>()
-          if (this.showLegend && self.readConnections !== 'off') {
+          if (self.showLegend && self.readConnections !== 'off') {
             // `colorSlots`, not a walk of `arcsByGroup`: that is only one of the
             // two halves the arcs are resolved into, and a lane whose every arc
             // crosses a seam would key no swatch at all for colours it draws.
@@ -3254,13 +3228,6 @@ export default function stateModelFactory(
            */
           setShowMismatches(show: boolean) {
             setConf(self, 'showMismatches', show)
-          },
-
-          /**
-           * #action
-           */
-          setShowLegend(show: boolean | undefined) {
-            setConf(self, 'showLegend', show)
           },
 
           /**

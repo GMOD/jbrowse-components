@@ -105,6 +105,7 @@ export {
   GlobalFetchMixin,
   HEIGHT_MODE_VALUES,
   HeightModeMixin,
+  LegendMixin,
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   StaleViewportRescaleMixin,

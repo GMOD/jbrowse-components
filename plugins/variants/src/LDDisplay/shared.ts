@@ -1,8 +1,6 @@
 import {
   ConfigurationReference,
   getConf,
-  makePin,
-  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -15,6 +13,7 @@ import {
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
+  LegendMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
   computeTriangleYScalar,
@@ -74,6 +73,7 @@ export default function sharedModelFactory(
       TrackHeightMixin(),
       GlobalDataDisplayMixin(),
       StaleViewportRescaleMixin(),
+      LegendMixin(),
       types.model({
         configuration: ConfigurationReference(configSchema),
         /**
@@ -121,9 +121,6 @@ export default function sharedModelFactory(
       setLDMetric(metric: LDMetric) {
         setConf(self, 'ldMetric', metric)
       },
-      setShowLegend(show: boolean) {
-        setConf(self, 'showLegend', show)
-      },
       setShowLDTriangle(show: boolean) {
         setConf(self, 'showLDTriangle', show)
       },
@@ -170,17 +167,6 @@ export default function sharedModelFactory(
       },
       get ldMetric() {
         return getConf(self, 'ldMetric')
-      },
-      // Resolved through the promotable-slot tiers (resolveConf): an explicit
-      // track value customizes the legend on or off; otherwise it follows the
-      // session-wide default, falling back to off.
-      get showLegend(): boolean {
-        return resolveConf(self, 'showLegend')
-      },
-      // "make the current legend visibility the default for all tracks" control
-      // (pin): symmetric, so it promotes whichever value the track shows.
-      get showLegendDisplayTypeDefault() {
-        return makePin(self, 'showLegend')
       },
       get showLDTriangle() {
         return getConf(self, 'showLDTriangle')

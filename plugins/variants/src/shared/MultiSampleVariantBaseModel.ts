@@ -1,8 +1,6 @@
 import {
   ConfigurationReference,
   getConf,
-  makePin,
-  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -23,6 +21,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
+  LegendMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -365,6 +364,7 @@ export default function MultiSampleVariantBaseModelF(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
+        LegendMixin(),
         TreeSidebarMixin<Source>(),
         types.model({
           type: types.string,
@@ -665,32 +665,6 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * Whether the floating legend is drawn over the display. Config-backed
-         * rather than volatile so a session or a track config can turn it off,
-         * which is what lets a short lane be sized to its rows: the legend is
-         * clipped to the display's bounds, so while it is on it sets a floor
-         * under the lane height.
-         *
-         * Resolved through the promotable-slot tiers (resolveConf): an explicit
-         * track value customizes it either way; otherwise it follows the
-         * session-wide default for this display type, falling back to on.
-         */
-        get showLegend(): boolean {
-          return resolveConf(self, 'showLegend')
-        },
-
-        /**
-         * #getter
-         * "make the current legend visibility the default for all tracks"
-         * control (pin): symmetric, so it promotes whichever value the track
-         * shows.
-         */
-        get showLegendDisplayTypeDefault() {
-          return makePin(self, 'showLegend')
-        },
-
-        /**
-         * #getter
          * Optional per-variant cell color (jexl string or CSS color) applied to
          * alt-carrying cells; '' means default genotype coloring. Reads the raw
          * config value directly (not `getConf`, which evaluates a `jexl:...`
@@ -740,180 +714,185 @@ export default function MultiSampleVariantBaseModelF(
           },
         }
       })
-      .actions(self => ({
-        /**
-         * #action
-         */
-        setJexlFilters(f?: string[]) {
-          self.jexlFiltersSetting = cast(f)
-        },
-        /**
-         * #action
-         */
-        setShowLegend(s: boolean) {
-          setConf(self, 'showLegend', s)
-          // Re-showing the legend restores any individually-closed sections.
-          if (s) {
-            self.dismissedLegendSections = []
-          }
-        },
-        /**
-         * #action
-         * Close a single legend section (leaving the others visible).
-         */
-        dismissLegendSection(id: string) {
-          self.dismissedLegendSections = [...self.dismissedLegendSections, id]
-        },
-        /**
-         * #action
-         */
-        selectFeature(feature: Feature) {
-          self
-            .fetchMetadataDescriptions()
-            .then(descriptions => {
-              if (isAlive(self)) {
-                openFeatureWidget(self, feature.toJSON(), {
-                  widget: self.featureWidgetType,
-                  extra: { descriptions },
-                })
-              }
-            })
-            .catch((e: unknown) => {
-              console.error(e)
-              getSession(self).notifyError(`${e}`, e)
-            })
-        },
-        /**
-         * #action
-         */
-        setRowHeight(arg: number) {
-          setConf(self, 'rowHeight', arg)
-        },
-        /**
-         * #action
-         */
-        setHoveredGenotype(
-          arg?: Record<string, unknown> & { genotype: string; name: string },
-        ) {
-          self.hoveredGenotype = arg
-        },
-        /**
-         * #action
-         */
-        setSources(sources: Source[]) {
-          if (deepEqual(sources, self.sourcesVolatile)) {
-            return
-          }
-          self.sourcesVolatile = sources
-          // Apply the colorBy palette and groupBy ordering only when the user
-          // hasn't already arranged the layout themselves.
-          if (self.layout.length === 0) {
-            applyArrangement(self, self.colorBy, self.groupBy)
-          }
-        },
-        /**
-         * #action
-         * Recolor sample rows by a metadata attribute (e.g. 'population'), or
-         * pass '' to clear the coloring. Persists the arrangement as the layout
-         * and records the choice in the `colorBy` config slot so it survives a
-         * data refetch and serializes into the session. Re-applies `groupBy` in
-         * the same pass so recoloring doesn't drop an existing grouping, and
-         * recolors the rows in place (see `applyArrangement`) so it doesn't drop
-         * an existing order either.
-         */
-        setColorBy(colorBy: string) {
-          setConf(self, 'colorBy', colorBy)
-          applyArrangement(self, colorBy, self.groupBy)
-        },
-        /**
-         * #action
-         * Reorder sample rows so each value of a metadata attribute (e.g.
-         * 'population') is contiguous, or pass '' to clear the grouping.
-         * Persists the arrangement as the layout and records the choice in the
-         * `groupBy` config slot so it survives a data refetch and serializes
-         * into the session. Re-applies `colorBy` in the same pass so grouping
-         * doesn't drop an existing palette.
-         */
-        setGroupBy(groupBy: string) {
-          setConf(self, 'groupBy', groupBy)
-          applyArrangement(self, self.colorBy, groupBy)
-        },
-        /**
-         * #action
-         */
-        setMafFilter(arg: number) {
-          setConf(self, 'minorAlleleFrequencyFilter', arg)
-        },
-        /**
-         * #action
-         */
-        setMaxMissingnessFilter(arg: number) {
-          setConf(self, 'maxMissingnessFilter', arg)
-        },
-        /**
-         * #action
-         */
-        setPhasedMode(arg: string) {
-          const renamesRows = self.renderingMode !== arg
-          setConf(self, 'renderingMode', arg)
-          if (renamesRows) {
-            // The mode decides what a row is *called* — sample names in
-            // allele-count mode, "HG001 HP0" haplotype names in phased — so the
-            // layout, the tree built from it, and the subtree filter naming that
-            // tree's leaves all go stale together. The filter is otherwise
-            // independent of the tree (`filterRowsBySubtree` keys on `name` and
-            // needs no tree, so a reorder leaves it perfectly valid); this is the
-            // one action that renames the rows out from under it, and leaving it
-            // set here matched nothing and blanked the display.
-            //
-            // Same reset as `clearLayout`, so the configured `colorBy` palette
-            // and `groupBy` order come back on the new row names. Clearing
-            // without re-arranging dropped the row coloring on every mode
-            // switch while the menu still showed it checked — nothing else
-            // re-seeds `layout` (`setSources` fires once per adapter).
-            self.clearLayout()
-          }
-        },
-        /**
-         * #action
-         * Enable fit-to-display-height mode: `rowHeight = 0` makes
-         * `effectiveRowHeight` divide `availableHeight` across the rows.
-         */
-        setFitToHeight() {
-          setConf(self, 'rowHeight', 0)
-          self.scrollTop = 0
-        },
-        /**
-         * #action
-         * Drag-resize the track. In fit-to-display-height mode the new height
-         * flows straight into `autoRowHeight`, so the rows stretch with the
-         * drag. With a pinned `rowHeight` the rows keep the size the user
-         * pinned and the drag reveals more of them — scaling the pin by the
-         * same ratio instead would keep content and viewport locked together,
-         * so dragging a track taller could not show one extra sample.
-         */
-        resizeHeight(distance: number) {
-          const oldHeight = self.height
-          const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
-          setConf(self, 'height', newHeight)
-          return newHeight - oldHeight
-        },
-        /**
-         * #action
-         */
-        setReferenceDrawingMode(arg: string) {
-          setConf(self, 'referenceDrawingMode', arg)
-        },
-        /**
-         * #action
-         * Set the per-variant cell color override (jexl string or CSS color), or
-         * '' to restore default genotype coloring. A fetch input — recomputes
-         * cells in the worker.
-         */
-        setFeatureColor(arg: string) {
-          setConf(self, 'featureColor', arg)
-        },
-      }))
+      .actions(self => {
+        const { setShowLegend: superSetShowLegend } = self
+        return {
+          /**
+           * #action
+           */
+          setJexlFilters(f?: string[]) {
+            self.jexlFiltersSetting = cast(f)
+          },
+          /**
+           * #action
+           * The one override of `LegendMixin`'s setter: this display keeps a
+           * per-section dismissed list, and re-showing the whole legend restores
+           * the sections closed inside it. The slot write stays the mixin's.
+           */
+          setShowLegend(s: boolean) {
+            superSetShowLegend(s)
+            if (s) {
+              self.dismissedLegendSections = []
+            }
+          },
+          /**
+           * #action
+           * Close a single legend section (leaving the others visible).
+           */
+          dismissLegendSection(id: string) {
+            self.dismissedLegendSections = [...self.dismissedLegendSections, id]
+          },
+          /**
+           * #action
+           */
+          selectFeature(feature: Feature) {
+            self
+              .fetchMetadataDescriptions()
+              .then(descriptions => {
+                if (isAlive(self)) {
+                  openFeatureWidget(self, feature.toJSON(), {
+                    widget: self.featureWidgetType,
+                    extra: { descriptions },
+                  })
+                }
+              })
+              .catch((e: unknown) => {
+                console.error(e)
+                getSession(self).notifyError(`${e}`, e)
+              })
+          },
+          /**
+           * #action
+           */
+          setRowHeight(arg: number) {
+            setConf(self, 'rowHeight', arg)
+          },
+          /**
+           * #action
+           */
+          setHoveredGenotype(
+            arg?: Record<string, unknown> & { genotype: string; name: string },
+          ) {
+            self.hoveredGenotype = arg
+          },
+          /**
+           * #action
+           */
+          setSources(sources: Source[]) {
+            if (deepEqual(sources, self.sourcesVolatile)) {
+              return
+            }
+            self.sourcesVolatile = sources
+            // Apply the colorBy palette and groupBy ordering only when the user
+            // hasn't already arranged the layout themselves.
+            if (self.layout.length === 0) {
+              applyArrangement(self, self.colorBy, self.groupBy)
+            }
+          },
+          /**
+           * #action
+           * Recolor sample rows by a metadata attribute (e.g. 'population'), or
+           * pass '' to clear the coloring. Persists the arrangement as the layout
+           * and records the choice in the `colorBy` config slot so it survives a
+           * data refetch and serializes into the session. Re-applies `groupBy` in
+           * the same pass so recoloring doesn't drop an existing grouping, and
+           * recolors the rows in place (see `applyArrangement`) so it doesn't drop
+           * an existing order either.
+           */
+          setColorBy(colorBy: string) {
+            setConf(self, 'colorBy', colorBy)
+            applyArrangement(self, colorBy, self.groupBy)
+          },
+          /**
+           * #action
+           * Reorder sample rows so each value of a metadata attribute (e.g.
+           * 'population') is contiguous, or pass '' to clear the grouping.
+           * Persists the arrangement as the layout and records the choice in the
+           * `groupBy` config slot so it survives a data refetch and serializes
+           * into the session. Re-applies `colorBy` in the same pass so grouping
+           * doesn't drop an existing palette.
+           */
+          setGroupBy(groupBy: string) {
+            setConf(self, 'groupBy', groupBy)
+            applyArrangement(self, self.colorBy, groupBy)
+          },
+          /**
+           * #action
+           */
+          setMafFilter(arg: number) {
+            setConf(self, 'minorAlleleFrequencyFilter', arg)
+          },
+          /**
+           * #action
+           */
+          setMaxMissingnessFilter(arg: number) {
+            setConf(self, 'maxMissingnessFilter', arg)
+          },
+          /**
+           * #action
+           */
+          setPhasedMode(arg: string) {
+            const renamesRows = self.renderingMode !== arg
+            setConf(self, 'renderingMode', arg)
+            if (renamesRows) {
+              // The mode decides what a row is *called* — sample names in
+              // allele-count mode, "HG001 HP0" haplotype names in phased — so the
+              // layout, the tree built from it, and the subtree filter naming that
+              // tree's leaves all go stale together. The filter is otherwise
+              // independent of the tree (`filterRowsBySubtree` keys on `name` and
+              // needs no tree, so a reorder leaves it perfectly valid); this is the
+              // one action that renames the rows out from under it, and leaving it
+              // set here matched nothing and blanked the display.
+              //
+              // Same reset as `clearLayout`, so the configured `colorBy` palette
+              // and `groupBy` order come back on the new row names. Clearing
+              // without re-arranging dropped the row coloring on every mode
+              // switch while the menu still showed it checked — nothing else
+              // re-seeds `layout` (`setSources` fires once per adapter).
+              self.clearLayout()
+            }
+          },
+          /**
+           * #action
+           * Enable fit-to-display-height mode: `rowHeight = 0` makes
+           * `effectiveRowHeight` divide `availableHeight` across the rows.
+           */
+          setFitToHeight() {
+            setConf(self, 'rowHeight', 0)
+            self.scrollTop = 0
+          },
+          /**
+           * #action
+           * Drag-resize the track. In fit-to-display-height mode the new height
+           * flows straight into `autoRowHeight`, so the rows stretch with the
+           * drag. With a pinned `rowHeight` the rows keep the size the user
+           * pinned and the drag reveals more of them — scaling the pin by the
+           * same ratio instead would keep content and viewport locked together,
+           * so dragging a track taller could not show one extra sample.
+           */
+          resizeHeight(distance: number) {
+            const oldHeight = self.height
+            const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
+            setConf(self, 'height', newHeight)
+            return newHeight - oldHeight
+          },
+          /**
+           * #action
+           */
+          setReferenceDrawingMode(arg: string) {
+            setConf(self, 'referenceDrawingMode', arg)
+          },
+          /**
+           * #action
+           * Set the per-variant cell color override (jexl string or CSS color), or
+           * '' to restore default genotype coloring. A fetch input — recomputes
+           * cells in the worker.
+           */
+          setFeatureColor(arg: string) {
+            setConf(self, 'featureColor', arg)
+          },
+        }
+      })
       .actions(self => {
         const superClearLayout = self.clearLayout
         return {

@@ -13,7 +13,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadsModel extends CollapseGroupRowsModel {
   showLegend: boolean
-  setShowLegend: (show: boolean | undefined) => void
+  setShowLegend: (show: boolean) => void
   showLegendDisplayTypeDefault: Pin
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void

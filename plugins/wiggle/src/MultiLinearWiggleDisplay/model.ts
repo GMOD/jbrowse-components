@@ -3,8 +3,6 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
-  makePin,
-  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -15,6 +13,7 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
+  LegendMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   fetchAllRegions,
@@ -130,6 +129,7 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       WiggleCommonMixin(),
+      LegendMixin(),
       TreeSidebarMixin<Source>(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
@@ -354,22 +354,6 @@ export default function stateModelFactory(
         return getConf(self, 'showRowSeparators')
       },
 
-      // Resolved through the promotable-slot tiers (resolveConf): an explicit
-      // track value customizes the key on or off; otherwise it follows the
-      // session-wide default, falling back to on.
-      get showLegend(): boolean {
-        return resolveConf(self, 'showLegend')
-      },
-
-      /**
-       * #getter
-       * "make the current key visibility the default for all tracks" control
-       * (pin): symmetric, so it promotes whichever value the track shows.
-       */
-      get showLegendDisplayTypeDefault() {
-        return makePin(self, 'showLegend')
-      },
-
       /**
        * #getter
        * Whether the source color key applies at all. Gates the menu checkbox,
@@ -503,10 +487,6 @@ export default function stateModelFactory(
 
         setShowRowSeparators(arg: boolean) {
           setConf(self, 'showRowSeparators', arg)
-        },
-
-        setShowLegend(arg: boolean) {
-          setConf(self, 'showLegend', arg)
         },
 
         /**

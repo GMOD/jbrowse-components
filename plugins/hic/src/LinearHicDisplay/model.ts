@@ -1,8 +1,6 @@
 import {
   ConfigurationReference,
   getConf,
-  makePin,
-  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -11,6 +9,7 @@ import { getRpcSessionId, getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
+  LegendMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
   computeTriangleYScalar,
@@ -76,6 +75,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       TrackHeightMixin(),
       GlobalDataDisplayMixin(),
       StaleViewportRescaleMixin(),
+      LegendMixin(),
       types.model({
         /**
          * #property
@@ -214,23 +214,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * Resolved through the promotable-slot tiers (resolveConf): an explicit
-       * track value customizes the legend on or off; otherwise it follows the
-       * session-wide default, falling back to off.
-       */
-      get showLegend(): boolean {
-        return resolveConf(self, 'showLegend')
-      },
-      /**
-       * #getter
-       * "make the current legend visibility the default for all tracks" control
-       * (pin): symmetric, so it promotes whichever value the track shows.
-       */
-      get showLegendDisplayTypeDefault() {
-        return makePin(self, 'showLegend')
-      },
-      /**
-       * #getter
        * Where the color ramp saturates. `0` is the "no data to scale against"
        * sentinel; `hasLegendData` is the one place it's interpreted.
        *
@@ -270,7 +253,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * `svgLegendWidth()` deliberately does not gate on this — see its note.
        */
       get showLegendArea(): boolean {
-        return this.showLegend && this.hasLegendData
+        return self.showLegend && this.hasLegendData
       },
       /**
        * #getter
@@ -520,12 +503,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       setSquashToHeight(arg: boolean) {
         setConf(self, 'squashToHeight', arg)
-      },
-      /**
-       * #action
-       */
-      setShowLegend(arg: boolean) {
-        setConf(self, 'showLegend', arg)
       },
       /**
        * #action

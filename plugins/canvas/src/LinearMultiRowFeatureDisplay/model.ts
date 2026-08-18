@@ -1,9 +1,7 @@
 import {
   ConfigurationReference,
   getConf,
-  makePin,
   readConfObject,
-  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -22,6 +20,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
+  LegendMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -125,6 +124,7 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       CanvasFeatureGateMixin(),
+      LegendMixin(),
       TreeSidebarMixin<MultiRowSource>(),
       types.model({
         /**
@@ -220,23 +220,6 @@ export default function stateModelFactory(
        */
       get densityGateEnabled() {
         return false
-      },
-      /**
-       * #getter
-       */
-      // Resolved through the promotable-slot tiers (resolveConf): an explicit
-      // track value customizes the key on or off; otherwise it follows the
-      // session-wide default, falling back to on.
-      get showLegend(): boolean {
-        return resolveConf(self, 'showLegend')
-      },
-      /**
-       * #getter
-       * "make the current key visibility the default for all tracks" control
-       * (pin): symmetric, so it promotes whichever value the track shows.
-       */
-      get showLegendDisplayTypeDefault() {
-        return makePin(self, 'showLegend')
       },
       /**
        * #getter
@@ -902,12 +885,6 @@ export default function stateModelFactory(
        */
       setRowHeight(n: number) {
         setConf(self, 'rowHeight', n)
-      },
-      /**
-       * #action
-       */
-      setShowLegend(f: boolean) {
-        setConf(self, 'showLegend', f)
       },
       /**
        * #action
