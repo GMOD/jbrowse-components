@@ -33,9 +33,21 @@ IUPAC sites.
 
 Choose an enzyme preset (SpCas9 `NGG`, SaCas9 `NNGRRT`, Cas12a `TTTV`, ...) or
 set the PAM, guide length, and PAM location by hand, and search either or both
-strands. Each guide is drawn with a dedicated guide-RNA glyph and annotated with
-its GC% and a poly-T flag, so you can eyeball guide quality without leaving the
-view.
+strands. Each guide is drawn with a dedicated guide-RNA glyph: the protospacer
+box, the PAM overpainted, and the predicted cut — one tick for a blunt cutter
+like SpCas9, a staggered pair for Cas12a.
+
+Clicking a guide reports its sequence, PAM, cut position, GC%, and two flags.
+`hasPolyT` marks the `TTTT` run that terminates transcription from the pol III
+promoters guides are usually expressed from. `softMasked` means the reference
+lower-cased this protospacer, which marks it as repetitive. Both describe the
+protospacer's own sequence; scoring a guide's specificity takes a genome-wide
+search, and this mode runs a scan of the region in view. A protospacer that
+reaches into an assembly gap is skipped.
+
+To order oligos from a search, use **Save track data** on the track's menu. The
+GFF3 export carries the guide sequence, PAM, cut positions, and flags as
+attributes.
 
 ## Restriction enzymes and other named motifs
 
