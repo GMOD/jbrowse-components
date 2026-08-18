@@ -24,6 +24,19 @@
 const RENAME =
   /\b(?:it |this |which )?(?:was|used to be)\s+(?:called|named|spelled)?\s*`([A-Za-z_$][\w$]*)`/gi
 
+// The same tautology with the name in front of the idiom — "Not `gateExempt`,
+// which is what it was called while saying …". `RegionTooLargeMixin.ts` carried
+// one of these for as long as it took someone to read the getter's own name back
+// to it, because the pattern above only ever looked after the verb.
+//
+// Narrower than that one on purpose, since a name before a bare "was" is
+// ordinary prose ("`foo` was removed", "`foo` was measured"): the verb has to be
+// an explicit naming one, and the name has to sit within a short span of it, so
+// a sentence that merely mentions an identifier earlier in the line doesn't
+// qualify.
+const RENAME_NAME_FIRST =
+  /`([A-Za-z_$][\w$]*)`[^`]{0,60}?\b(?:was|used to be)\s+(?:called|named|spelled)\b/gi
+
 const COMMENT = /^\s*(\/\/|\*|\/\*)/
 const stripMarker = (l = '') => l.replace(/^\s*(\/\/|\*|\/\*\*?)\s?/, '')
 
@@ -76,7 +89,11 @@ export function findRenameArchaeology(text: string): RenameArchaeologyHit[] {
         ? `${stripMarker(line)} ${stripMarker(next)}`
         : stripMarker(line)
     RENAME.lastIndex = 0
-    for (const m of window.matchAll(RENAME)) {
+    RENAME_NAME_FIRST.lastIndex = 0
+    for (const m of [
+      ...window.matchAll(RENAME),
+      ...window.matchAll(RENAME_NAME_FIRST),
+    ]) {
       const name = m[1]!
       if (seen.has(name) || !declaresLocally(text, name)) {
         continue

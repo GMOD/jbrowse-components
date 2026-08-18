@@ -59,6 +59,27 @@ describe('findRenameArchaeology', () => {
     ).toEqual(['gateEnabled'])
   })
 
+  // The form that hid in RegionTooLargeMixin.ts: the name comes first, so
+  // looking only after the verb saw nothing.
+  test('flags the tautology with the name ahead of the idiom', () => {
+    expect(
+      found(`
+      // Not \`gateExempt\`, which is what it was called while saying "on
+      // either axis" in its own first sentence.
+      get gateExempt() {}`),
+    ).toEqual(['gateExempt'])
+  })
+
+  // ...and the same rule stays quiet on ordinary prose that happens to put a
+  // live name before a bare "was". Only an explicit naming verb counts.
+  test('says nothing when a leading name precedes a non-naming verb', () => {
+    expect(
+      found(
+        '// `gateExempt` was measured at 20kb and left alone.\nget gateExempt() {}',
+      ),
+    ).toEqual([])
+  })
+
   // The correct spelling of the same sentence, which must stay silent.
   test('says nothing when the sentence names the OLD name', () => {
     expect(

@@ -486,8 +486,10 @@ export default function RegionTooLargeMixin() {
        * adapter (BigWig, HiC, sequence) needs no term here: it reports no byte
        * estimate at all, which already keeps the byte axis out of the verdict.
        *
-       * Not `gateExempt`, which is what it was called while saying "on
-       * either axis" in its own first sentence.
+       * It was `byteGateExempt`, while its own first sentence said "on either
+       * axis" — force-load has never lifted only the byte gate, and a name
+       * claiming an axis it has no term from is how a reader comes to believe it
+       * does.
        */
       get gateExempt() {
         return self.configForceLoad || self.forceLoadTrack
