@@ -297,16 +297,17 @@ disagreeing about what a stamp means is only ever found the hard way. The densit
 *stats* are still committed on a force-loaded fetch, which is what lets zooming
 back out re-gate from the live main-thread verdict.
 
-**That guard is read a beat late, and knowing so is the point.**
-`commitGateMeasurements` asks `gateActive` at *commit* time, while the budget the
-fetch actually carried was resolved at *issue* time — `viewport` is threaded
-through precisely because a value like that can't be recovered afterwards, and
-this one isn't. The only way they disagree is force-load being revoked while a
-fetch is in flight, which `setForceLoadTrack(false)` does and nothing else calls;
-turning force-load *on* supersedes the fetch through `reload()`, so that
-direction can't reach the commit at all. Closing it means passing the issue-time
-answer alongside the viewport, and both call sites already hold it — `byteLimit`
-is `undefined` exactly when the gate was inactive at issue.
+**Both halves of that read the fetch's own state, not the live one.**
+`commitGateMeasurements` takes a `GateFetchState` — `{ viewport, gated }` —
+captured where the fetch was issued, because a result is judged by the state that
+produced it and neither field can be recovered afterwards. `viewport` was always
+threaded for that reason; `gated` used to be a live `gateActive` read at commit
+time, which is a different question whenever force-load moves during the round
+trip, and it answered wrongly in both directions. `gated` is
+`resolvedByteLimit() !== undefined` — the budget the worker was actually handed,
+which both fetch paths already compute to build their RPC args, so nothing new is
+captured. One object rather than two arguments, so a third live read here is the
+awkward thing to add.
 
 The gated half is one condition, in the two fetch autoruns:
 
@@ -520,6 +521,23 @@ budget exists: "Save track data" pulls every region in one go, so
 right one follows from how the budget is enforced, not from which is bigger — so
 a third caller has to say which it is rather than inherit whichever the adapter
 happened to compute.
+
+**Zero bytes is a measurement, not a missing one.** An index quotes chunks, so a
+region with none — an empty contig, a chromosome the file carries no records on —
+sums to exactly zero, and the verdict reads that as what it says: nothing to
+download, nothing to gate. The one place it cannot serve is as the *baseline* of
+`zoomIneffective`'s ratio, where dividing by it yields `Infinity` and reads as
+"the bytes did not fall" at the moment they rose from nothing — so
+`nextByteEstimate` starts over from a zero baseline, the same way it does from a
+zero span. Do not confuse it with the unmeasurable case above: that one stores no
+estimate at all.
+
+**The density axis has the same zero, and it is now guarded in one place.**
+`featuresPerPx` is shared precisely so the worker's short-circuit and the banner
+agree on the number, but only the main-thread caller (`screenDensity`) guarded a
+zero-width region — so the worker read `count / 0` as `Infinity`, i.e. a
+short-circuit refusing to fetch a region that contains nothing. The guard belongs
+to the shared function, not to whichever caller remembered it.
 
 **A fetch that measured no bytes at all writes nothing** — not
 `bytes: undefined`. Two ways that happens, meaning the same thing: the adapter

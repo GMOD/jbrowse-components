@@ -101,14 +101,19 @@ const ZOOM_EVIDENCE_BYTE_RATIO = 0.9
 export interface ByteEstimate {
   /**
    * The adapter's cheap index-only estimate for {@link measuredSpanBp}. Never
-   * `0`, which the verdict would read as a measured value, and never
-   * `undefined`: an adapter quoting no estimate leaves the whole
-   * `ByteEstimate` unset instead, so **"unmeasurable" and "not measured yet"
-   * are one state**. Both gating paths enforce that at the write —
-   * `byteGateBlocksFetch` and `commitGateMeasurements` each skip a batch that
-   * measured nothing — because an unmeasurable answer must not overwrite a good
-   * estimate, nor reset the {@link zoomIneffective} comparison that needs two
-   * real measurements.
+   * `undefined`: an adapter quoting no estimate leaves the whole `ByteEstimate`
+   * unset instead, so **"unmeasurable" and "not measured yet" are one state**.
+   * Both gating paths enforce that at the write — `byteGateBlocksFetch` and
+   * `commitGateMeasurements` each skip a fetch that measured nothing — because
+   * an unmeasurable answer must not overwrite a good estimate, nor reset the
+   * {@link zoomIneffective} comparison that needs two real measurements.
+   *
+   * `0` **is** one of those real measurements, not a stand-in for the missing
+   * one: an index quotes chunks, and a region with none — an empty contig, a
+   * chromosome this file has no records on — sums to zero bytes. The verdict
+   * handles it as what it says (nothing to download, so nothing to gate). It is
+   * only unusable as the *baseline* of a ratio, which {@link nextByteEstimate}
+   * guards.
    */
   bytes: number
   /**
@@ -163,12 +168,26 @@ export function nextByteEstimate(
 ): ByteEstimate {
   const { bytes, viewport } = measurement
   const base = { bytes, measuredSpanBp: viewport.spanBp }
-  // Nothing to compare against: one point is not evidence about zoom. Start from
-  // "zoom might help", which is what the banner has always said by default. An
-  // unmeasurable fetch reaches neither branch — the callers store no estimate
+  // Nothing to compare against, or nothing to compare against it *with*: one
+  // point is not evidence about zoom, and neither is a ratio whose denominator
+  // is zero. Both baselines below are real measurements — a region with no index
+  // chunks is genuinely zero bytes, and a degenerate span is a view mid-measure
+  // — they just cannot carry a ratio, so start over from "zoom might help",
+  // which is what the banner says by default.
+  //
+  // Zero in particular is not hypothetical and it fails in the damaging
+  // direction: an empty contig measures 0, and zooming into real data next
+  // divides by it, so `Infinity > ZOOM_EVIDENCE_BYTE_RATIO` declares zoom
+  // useless at exactly the moment zooming brought the data in.
+  //
+  // An unmeasurable fetch reaches none of this — the callers store no estimate
   // for it at all (see `ByteEstimate.bytes`), so it can't read here as a
   // re-measure that came back flat.
-  if (previous === undefined || previous.measuredSpanBp <= 0) {
+  if (
+    previous === undefined ||
+    previous.measuredSpanBp <= 0 ||
+    previous.bytes <= 0
+  ) {
     return { ...base, zoomIneffective: false }
   }
   // Zoomed out, or barely moved — no new evidence either way, so keep whatever

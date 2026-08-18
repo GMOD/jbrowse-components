@@ -191,8 +191,9 @@ describe('nextByteEstimate', () => {
   // estimate when a batch measured no bytes", in
   // LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts.
   //
-  // A previous span of zero is the one comparison that still can't be made, and
-  // it starts over rather than carrying a flag it cannot check.
+  // What still can't be compared is a baseline of zero — of span, or of bytes.
+  // Both are real measurements; neither can carry a ratio, so the fold starts
+  // over rather than reporting one it cannot compute.
   it('says nothing about zoom when the previous span is unusable', () => {
     const degenerate = {
       bytes: 306_719,
@@ -206,6 +207,35 @@ describe('nextByteEstimate', () => {
       measuredSpanBp: 10_000,
       zoomIneffective: false,
     })
+  })
+
+  // An index quotes chunks, so a region with none — an empty contig, or a
+  // chromosome this file carries no records on — measures exactly zero bytes.
+  // That is a real measurement, but as the denominator of the zoom-evidence
+  // ratio it is `Infinity`, which reads as "the bytes did not fall" at the one
+  // moment they rose from nothing. The banner would then withhold "zoom in to
+  // see features" immediately after zooming in is what brought the data.
+  it('says nothing about zoom when the previous measurement was zero bytes', () => {
+    const emptyContig = {
+      bytes: 0,
+      measuredSpanBp: 100_000,
+      zoomIneffective: false,
+    }
+    expect(
+      nextByteEstimate(emptyContig, { bytes: 500_000, viewport: vp(10_000) }),
+    ).toEqual({
+      bytes: 500_000,
+      measuredSpanBp: 10_000,
+      zoomIneffective: false,
+    })
+  })
+
+  // ...and zero is measured, not missing: it stores, and the next real
+  // measurement compares against the one after it rather than against nothing.
+  it('stores a zero measurement rather than treating it as absent', () => {
+    expect(
+      nextByteEstimate(undefined, { bytes: 0, viewport: vp(100_000) }),
+    ).toEqual({ bytes: 0, measuredSpanBp: 100_000, zoomIneffective: false })
   })
 })
 

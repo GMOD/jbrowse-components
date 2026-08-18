@@ -123,6 +123,7 @@ import type {
   RenderFeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { GateFetchState } from '../shared/CanvasFeatureGateMixin.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
@@ -154,7 +155,6 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
-  GateViewport,
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -2603,7 +2603,7 @@ export default function baseStateModelFactory(
 
         function applyFetchResults(
           fetches: RegionFetch[],
-          viewport: GateViewport | undefined,
+          issued: GateFetchState,
         ) {
           for (const {
             displayedRegionIndex,
@@ -2620,7 +2620,7 @@ export default function baseStateModelFactory(
           // blanked by the cross-region total). `RegionFetch` already IS the
           // measurement shape — same helper the multi-row display uses, so the two
           // canvas gates can't drift.
-          self.commitGateMeasurements(fetches, viewport)
+          self.commitGateMeasurements(fetches, issued)
         }
 
         return {
@@ -2649,12 +2649,17 @@ export default function baseStateModelFactory(
             // keys.
             const byteLimit = self.resolvedByteLimit()
             const maxFeatureDensity = self.maxFeatureDensity
-            // captured here, not at commit time: the measurement is labelled
-            // with the viewport it describes, and a mid-fetch zoom would
-            // otherwise label it with one it never covered. Undefined only
-            // before the view is measured, which `commitGateMeasurements` treats
-            // as "nothing to label these numbers with" and skips.
-            const viewport = self.gateViewport
+            // captured here, not at commit time: what the gate looked like
+            // when this fetch was issued, which is what its results have to be
+            // judged against. A mid-fetch zoom would otherwise label the
+            // measurement with a viewport it never covered, and a mid-fetch
+            // force-load would make a fetch the gate sat out look measured.
+            // `byteLimit` being undefined IS "the gate was not watching" — it is
+            // the budget the worker gets.
+            const issued: GateFetchState = {
+              viewport: self.gateViewport,
+              gated: byteLimit !== undefined,
+            }
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
             // the refetch window without letting either map grow unboundedly
@@ -2686,7 +2691,7 @@ export default function baseStateModelFactory(
               if (ctx.isStale()) {
                 return
               }
-              applyFetchResults(results, viewport)
+              applyFetchResults(results, issued)
             })
           },
         }

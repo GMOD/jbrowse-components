@@ -11,13 +11,13 @@ export interface RegionDensityStats {
 // genomic span, and the current bpPerPx. Used by the derived regionTooLarge
 // banner and by force-load to sample observed density. Delegates to the same
 // `featuresPerPx` the worker's gate uses: main thread and worker must agree on
-// the number, or the banner contradicts the short-circuit that produced it.
+// the number, or the banner contradicts the short-circuit that produced it —
+// including on a zero-width region, which is why that guard now lives in
+// `featuresPerPx` rather than here, where only this side of the pair had it.
 export function screenDensity(ds: RegionDensityStats, bpPerPx: number) {
-  return ds.regionWidthBp > 0
-    ? featuresPerPx(
-        ds.featureCount,
-        { start: 0, end: ds.regionWidthBp },
-        bpPerPx,
-      )
-    : 0
+  return featuresPerPx(
+    ds.featureCount,
+    { start: 0, end: ds.regionWidthBp },
+    bpPerPx,
+  )
 }

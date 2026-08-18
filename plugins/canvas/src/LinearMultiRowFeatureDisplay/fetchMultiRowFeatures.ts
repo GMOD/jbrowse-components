@@ -3,7 +3,10 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
-import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
+import type {
+  GateFetchState,
+  RegionGateMeasurement,
+} from '../shared/CanvasFeatureGateMixin.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -46,7 +49,7 @@ interface FetchSelf extends IStateTreeNode {
   gateViewport: GateViewport | undefined
   commitGateMeasurements: (
     measurements: RegionGateMeasurement[],
-    viewport: GateViewport | undefined,
+    issued: GateFetchState,
   ) => void
 }
 
@@ -58,12 +61,13 @@ interface FetchSelf extends IStateTreeNode {
 export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
-  // captured before the fetch: the measurement is labelled with the viewport it
-  // describes, so a mid-fetch zoom must not re-label it. Undefined only before
-  // the view is measured, which `commitGateMeasurements` treats as "nothing to
-  // label these numbers with" and skips.
-  const viewport = self.gateViewport
   const byteLimit = self.resolvedByteLimit()
+  // captured before the fetch: what the gate looked like when this fetch was
+  // issued, which is what its results have to be judged against. A mid-fetch
+  // zoom must not re-label the measurement, and a mid-fetch force-load must not
+  // make it look like the gate measured something. `byteLimit` being undefined
+  // IS "the gate was not watching" — it is the budget the worker gets.
+  const issued = { viewport: self.gateViewport, gated: byteLimit !== undefined }
   // Per-region gate measurements, keyed by the displayedRegionIndex onResult
   // reports back. A region whose fetch was skipped as stale never lands here.
   const gateResults = new Map<
@@ -99,7 +103,7 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
           measurements.push({ displayedRegionIndex, region, result })
         }
       }
-      self.commitGateMeasurements(measurements, viewport)
+      self.commitGateMeasurements(measurements, issued)
     },
   })
 }

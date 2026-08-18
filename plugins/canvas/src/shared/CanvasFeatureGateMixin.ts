@@ -60,6 +60,29 @@ export interface RegionGateMeasurement {
 }
 
 /**
+ * What was true about the gate when a fetch was **issued**, carried alongside
+ * that fetch so its results are judged by the state that produced them. Every
+ * field here is one a live read at commit time gets wrong, because the user can
+ * zoom or force-load during the round trip.
+ *
+ * - `viewport` — what the measurement is about. `undefined` before the view is
+ *   measured, which `commitGateMeasurements` treats as nothing to label these
+ *   numbers with.
+ * - `gated` — whether the gate was watching, i.e. whether the worker was handed
+ *   any budget to measure against. `resolvedByteLimit() !== undefined` is
+ *   exactly that, and both fetch paths already read it to build the RPC args, so
+ *   nothing new is captured.
+ *
+ * One object rather than two parameters because they answer the same question
+ * and go stale together: adding a third live read here later is the mistake this
+ * shape is meant to make awkward.
+ */
+export interface GateFetchState {
+  viewport: GateViewport | undefined
+  gated: boolean
+}
+
+/**
  * Shared byte + density region-too-large gate for canvas feature displays.
  *
  * Composes on top of `RegionTooLargeMixin` (via `MultiRegionDisplayMixin`) to add
@@ -211,8 +234,9 @@ export default function CanvasFeatureGateMixin() {
        */
       commitGateMeasurements(
         measurements: RegionGateMeasurement[],
-        viewport: GateViewport | undefined,
+        issued: GateFetchState,
       ) {
+        const { viewport, gated } = issued
         // Nothing measured (every region's fetch went stale) — leave the
         // previous estimate alone rather than replacing it with an empty one,
         // and don't claim this viewport has been asked about either, or a
@@ -245,10 +269,17 @@ export default function CanvasFeatureGateMixin() {
         // viewport that reads as unmeasured and re-measures, instead of
         // inheriting a stamp from fetches the gate sat out.
         //
+        // `gated` comes from `issued`, not from reading `gateActive` here, for
+        // the same reason `viewport` does: it describes the fetch, and a fetch
+        // is judged by the state that produced it. Read live, it answered about
+        // a gate the user could have turned off — or back on — while the round
+        // trip was in flight, and the stamp would then describe budgets the
+        // worker never had.
+        //
         // The density stats below are deliberately outside this: they are
         // committed on every successful fetch regardless of budget, which is
         // what lets zooming back out re-gate from the live main-thread verdict.
-        if (host(self).gateActive) {
+        if (gated) {
           host(self).setGateMeasuredViewport(viewport)
         }
         const byteCounts: number[] = []

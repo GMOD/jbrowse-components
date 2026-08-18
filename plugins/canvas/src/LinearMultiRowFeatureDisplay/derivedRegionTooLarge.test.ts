@@ -2,6 +2,23 @@ import { getMembers } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { GateFetchState } from '../shared/CanvasFeatureGateMixin.ts'
+import type { GateViewport } from '@jbrowse/plugin-linear-genome-view'
+
+// What a fetch issued right now would carry: the viewport it is about, and
+// whether the gate was watching. `resolvedByteLimit()` is the budget the worker
+// gets, so `!== undefined` IS "the gate was watching" — the same expression both
+// production fetch paths use. Captured at issue and handed to the commit, which
+// is what lets these tests move the gate afterwards and still assert on what the
+// fetch actually had.
+const issuedNow = (display: {
+  gateViewport: GateViewport | undefined
+  resolvedByteLimit: () => number | undefined
+}): GateFetchState => ({
+  viewport: display.gateViewport,
+  gated: display.resolvedByteLimit() !== undefined,
+})
+
 // CanvasFeatureGateMixin never sets `measuresBytesPreFlight` (it folds the byte check
 // into its feature RPC instead of running the pre-flight), so the opt-in comes
 // entirely from `measuresBytesInFetch`, which RegionTooLargeMixin ORs into
@@ -205,7 +222,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { featureCount: 12 },
         },
       ],
-      display.gateViewport,
+      issuedNow(display),
     )
     expect(display.byteEstimate).toEqual({
       bytes: 8_000_000,
@@ -240,10 +257,65 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { featureCount: 12 },
         },
       ],
-      display.gateViewport,
+      issuedNow(display),
     )
 
     display.setForceLoadTrack(false)
+    expect(display.gateMeasurementStale).toBe(true)
+  })
+
+  // The stamp answers about the fetch, so it is decided by what the gate looked
+  // like when that fetch was ISSUED — not by what it looks like when the results
+  // land. `commitGateMeasurements` read `gateActive` live until 2026-08, which
+  // is a different question whenever force-load moves during the round trip, and
+  // it got both directions wrong. These are the two directions.
+  it('stamps a gated fetch even if force-load lands before the results do', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    // issued under the gate, so the worker really was handed a budget
+    const issued = issuedNow(display)
+    expect(issued.gated).toBe(true)
+
+    // ...and the user force-loads while it is in flight
+    display.setForceLoadTrack(true)
+    display.commitGateMeasurements(
+      [
+        {
+          displayedRegionIndex: 0,
+          region: { start: 0, end: 10_000 },
+          result: { bytes: 1000, featureCount: 12 },
+        },
+      ],
+      issued,
+    )
+
+    // the measurement happened, so the viewport has been asked about
+    display.setForceLoadTrack(false)
+    expect(display.gateMeasurementStale).toBe(false)
+  })
+
+  it('does not stamp an unguarded fetch even if the gate is back on by then', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setForceLoadTrack(true)
+    // issued with no budget on either axis: the worker measured against nothing
+    const issued = issuedNow(display)
+    expect(issued.gated).toBe(false)
+
+    // ...and the track is put back under the gate before the results land
+    display.setForceLoadTrack(false)
+    display.commitGateMeasurements(
+      [
+        {
+          displayedRegionIndex: 0,
+          region: { start: 0, end: 10_000 },
+          result: { featureCount: 12 },
+        },
+      ],
+      issued,
+    )
+
+    // nothing was measured, so the next settled viewport still has to ask
     expect(display.gateMeasurementStale).toBe(true)
   })
 
@@ -263,7 +335,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { featureCount: 12 },
         },
       ],
-      display.gateViewport,
+      issuedNow(display),
     )
 
     expect(display.densityStatsPerRegion.get(0)).toEqual({
@@ -331,7 +403,7 @@ describe('multi-region estimates over a shrinking region set', () => {
           result: { bytes: 2_000_000 },
         },
       ],
-      display.gateViewport,
+      issuedNow(display),
     )
     expect(display.byteEstimate).toMatchObject({
       bytes: 20_000_000,
@@ -357,7 +429,7 @@ describe('multi-region estimates over a shrinking region set', () => {
           result: { bytes: 8_000_000 },
         },
       ],
-      display.gateViewport,
+      issuedNow(display),
     )
     expect(display.regionTooLarge).toBe(true)
     expect(display.resolvedByteLimit()).toBe(5_000_000)
@@ -404,7 +476,7 @@ describe('multi-region estimates over a shrinking region set', () => {
           result: { bytes: perRegion },
         },
       ],
-      display.gateViewport,
+      issuedNow(display),
     )
 
     expect(display.resolvedByteLimit()).toBe(5_000_000)
