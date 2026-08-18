@@ -242,6 +242,41 @@ test('a WebGPU pin reports WebGPU even where the probe found none', () => {
   expect(effectiveRenderer({ webgpu: false, webgl2: true })).toBe('WebGPU')
 })
 
+// The rung-skip in createGpuHal, read back as an answer. This is the population
+// the skip exists for — a VM, a locked-down laptop, a remote desktop — so a
+// reader that missed it reported WebGL2 for exactly the machines that newly fall
+// back, in the About box, in pasted stack traces, and in the analytics field
+// whose whole purpose is counting that fallback.
+test('a software rasterizer reports the rung it actually lands on', () => {
+  expect(
+    effectiveRenderer({ webgpu: false, webgl2: true, softwareWebgl: true }),
+  ).toBe('Canvas2D')
+})
+
+// Firefox under privacy.resistFingerprinting withholds
+// WEBGL_debug_renderer_info, so the rasterizer is unknown rather than software —
+// and createGpuHal keeps the rung on that reading.
+test('an unknown rasterizer keeps the WebGL2 rung', () => {
+  expect(
+    effectiveRenderer({
+      webgpu: false,
+      webgl2: true,
+      softwareWebgl: undefined,
+    }),
+  ).toBe('WebGL2')
+})
+
+// A pin never falls through, so it outranks the skip too: the browser-test
+// runner pins every GPU arm and runs under SwiftShader, and a reader that
+// reported those arms as Canvas2D would describe the cross-backend gate as
+// comparing a backend with itself.
+test('a WebGL2 pin outranks the software-rasterizer skip', () => {
+  setGpuOverride('webgl')
+  expect(
+    effectiveRenderer({ webgpu: false, webgl2: true, softwareWebgl: true }),
+  ).toBe('WebGL2')
+})
+
 test('an unrecognized pin is no pin, so the ladder decides', () => {
   // setGpuOverride rejects what it does not know and clears the pin, warning as
   // it goes — gpuDevice.test.ts pins that behavior; this pins what it means here

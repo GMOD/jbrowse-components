@@ -176,6 +176,14 @@ export function getGraphicsCapabilities(): Promise<GraphicsCapabilities> {
  * machine, where the WebGL2 probe was skipped) is also the case where the pin
  * decides on its own.
  *
+ * **`softwareWebgl` skips the WebGL2 rung here because it skips it there**, and
+ * only where the ladder skips it — unpinned. Leaving it out is not a rounding
+ * error on a rare machine: the VM, the locked-down laptop and the remote desktop
+ * are exactly the population the rung-skip exists for, so the one group that
+ * newly falls back was the one group still reported as WebGL2, in the About box,
+ * in the stack traces users paste into bug reports, and in the analytics field
+ * whose stated purpose is counting that fallback.
+ *
  * Keeping this beside `gpuDevice` is the point of the module living in
  * render-core: it was previously in `@jbrowse/core`, which cannot see the
  * override, so every consumer reported the capability answer and a user who had
@@ -195,7 +203,10 @@ export function effectiveRenderer(c: GraphicsCapabilities): RendererName {
   if (c.webgpu) {
     return 'WebGPU'
   }
-  if (c.webgl2) {
+  // `softwareWebgl` is `undefined` where the browser withholds
+  // WEBGL_debug_renderer_info, and an unknown rasterizer keeps the rung — the
+  // same reading `createGpuHal` gives it.
+  if (c.webgl2 && !c.softwareWebgl) {
     return 'WebGL2'
   }
   return 'Canvas2D'
