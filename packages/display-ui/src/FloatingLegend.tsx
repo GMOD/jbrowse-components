@@ -12,6 +12,7 @@ import {
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import Tooltip from './tooltip/Tooltip.tsx'
 import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
 
 import type { LegendItem, LegendSection } from '@jbrowse/core/ui/legendSpec'
@@ -287,16 +288,18 @@ const FloatingLegend = observer(function FloatingLegend({
         data-gesture-owner="true"
       >
         {onDismiss ? (
-          <button
-            type="button"
-            className={classes.closeButton}
-            title="Hide legend"
-            onClick={() => {
-              onDismiss()
-            }}
-          >
-            ×
-          </button>
+          <Tooltip title="Hide legend">
+            <button
+              type="button"
+              className={classes.closeButton}
+              aria-label="Hide legend"
+              onClick={() => {
+                onDismiss()
+              }}
+            >
+              ×
+            </button>
+          </Tooltip>
         ) : null}
         {title ? <div className={classes.topTitle}>{title}</div> : null}
         {nonEmpty.map(section => (
@@ -305,16 +308,18 @@ const FloatingLegend = observer(function FloatingLegend({
               <div className={classes.sectionHeader}>
                 <span className={classes.sectionTitle}>{section.title}</span>
                 {onDismissSection ? (
-                  <button
-                    type="button"
-                    className={classes.sectionClose}
-                    title={`Hide ${section.title}`}
-                    onClick={() => {
-                      onDismissSection(section.id)
-                    }}
-                  >
-                    ×
-                  </button>
+                  <Tooltip title={`Hide ${section.title}`}>
+                    <button
+                      type="button"
+                      className={classes.sectionClose}
+                      aria-label={`Hide ${section.title}`}
+                      onClick={() => {
+                        onDismissSection(section.id)
+                      }}
+                    >
+                      ×
+                    </button>
+                  </Tooltip>
                 ) : null}
               </div>
             ) : null}

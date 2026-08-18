@@ -52,6 +52,16 @@ export type {
 export { default as FloatingLegend } from './FloatingLegend.tsx'
 export type { LegendItem, LegendSection } from './FloatingLegend.tsx'
 
+// The hover label every control in here used to delegate to the browser's
+// `title` attribute. The box it draws is `@jbrowse/core`'s `BaseTooltip`, the
+// same one the display tooltips draw, anchored to the control instead of to the
+// cursor — what lives here is the hover, the focus and the dismissal. It stays
+// behind a `lazy()` one module in, which `tooltip/eagerBoundary.test.ts` pins.
+export { default as Tooltip } from './tooltip/Tooltip.tsx'
+export { useTooltip } from './tooltip/useTooltip.tsx'
+export type { TooltipTrigger } from './tooltip/useTooltip.tsx'
+export type { TooltipPlacement } from '@jbrowse/core/ui/BaseTooltip'
+
 // The per-track overlay layer: the node floating chrome escapes into, and the
 // host's half of that portal.
 export { TrackOverlayContext } from './trackOverlay/TrackOverlayContext.ts'

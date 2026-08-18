@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'
 
+import Tooltip from '../tooltip/Tooltip.tsx'
 import { useTrackControlMenu } from './useTrackControlMenu.tsx'
 
 import type { TrackControlIcon, TrackControlProps } from './types.ts'
@@ -109,40 +110,38 @@ export default function PlainTrackControl({
 
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-      <button
-        type="button"
-        // `title` rather than a custom tooltip: it is the browser's own, it
-        // costs nothing, and it is the one piece of this control that a host
-        // design system usually does not want to restyle anyway.
-        title={tooltip}
-        aria-label={tooltip}
-        // same handle as the Material set's trigger — see MuiTrackControl. The
-        // string is repeated rather than imported, because importing anything
-        // from that module would drag Material UI back into this one, which is
-        // the whole point of this file.
-        data-testid={`track-control-${icon}`}
-        {...(options ? triggerProps : undefined)}
-        style={{
-          ...triggerStyle(!!warning),
-          // the (×) butts straight up against this one, so they read as a
-          // single control rather than two
-          borderRadius: onDelete ? '3px 0 0 3px' : 3,
-        }}
-        // `options` and `onClick` are mutually exclusive, so this replaces the
-        // spread handler rather than composing with it. Both stop the click
-        // reaching the track/view (drag-select, deselect).
-        onClick={
-          options
-            ? triggerProps.onClick
-            : event => {
-                event.stopPropagation()
-                onClick?.()
-              }
-        }
-      >
-        <Icon icon={icon} />
-        {label}
-      </button>
+      <Tooltip title={tooltip}>
+        <button
+          type="button"
+          aria-label={tooltip}
+          // same handle as the Material set's trigger — see MuiTrackControl.
+          // The string is repeated rather than imported, because importing
+          // anything from that module would drag Material UI back into this
+          // one, which is the whole point of this file.
+          data-testid={`track-control-${icon}`}
+          {...(options ? triggerProps : undefined)}
+          style={{
+            ...triggerStyle(!!warning),
+            // the (×) butts straight up against this one, so they read as a
+            // single control rather than two
+            borderRadius: onDelete ? '3px 0 0 3px' : 3,
+          }}
+          // `options` and `onClick` are mutually exclusive, so this replaces
+          // the spread handler rather than composing with it. Both stop the
+          // click reaching the track/view (drag-select, deselect).
+          onClick={
+            options
+              ? triggerProps.onClick
+              : event => {
+                  event.stopPropagation()
+                  onClick?.()
+                }
+          }
+        >
+          <Icon icon={icon} />
+          {label}
+        </button>
+      </Tooltip>
       {onDelete ? (
         <button
           type="button"

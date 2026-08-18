@@ -51,6 +51,27 @@ test('the floating strategy positions it, not the base style', () => {
   expect(getByText('ctgA:1..100').style.position).toBe('fixed')
 })
 
+// The second anchoring: hung off an element rather than following the pointer,
+// which is what a control's hover label wants. `@jbrowse/display-ui`'s
+// `useTooltip` supplies the hover and the dismissal and drives this arm; the box
+// is this component either way, so the two cannot drift apart in look, portal
+// target or z-index.
+test('anchors to an element, and names itself for aria-describedby', () => {
+  const anchor = document.createElement('button')
+  document.body.append(anchor)
+
+  const { getByText } = render(
+    <BaseTooltip id="tip-1" anchor={anchor}>
+      Hide legend
+    </BaseTooltip>,
+  )
+
+  const tip = getByText('Hide legend')
+  expect(tip.id).toBe('tip-1')
+  expect(tip.getAttribute('role')).toBe('tooltip')
+  expect(tip.style.position).toBe('fixed')
+})
+
 // The tooltip has to leave its track's `contain: strict` box, so it portals.
 // `document.body` is the default, which is what MUI's `Portal` gave it before
 // the toolkit came out of this file.
