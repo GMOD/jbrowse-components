@@ -168,6 +168,7 @@ const GENERATORS: Generator[] = [
   { name: 'CLI doc', argv: web('generate-cli-doc.ts') },
   { name: 'jbrowse-capture doc', argv: web('generate-capture-doc.ts') },
   { name: 'gallery links', argv: web('gen-gallery-links.ts') },
+  { name: 'live links', argv: web('gen-live-links.ts') },
   // The tutorial cards and homepage images used to be gated here. They are
   // cropped from other figures, so a figure republished without them left this
   // check failing on bytes nobody had written — the fix was always the same

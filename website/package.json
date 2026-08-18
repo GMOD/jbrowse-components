@@ -49,6 +49,7 @@
     "check-doc-slots": "node scripts/check-doc-slots.ts",
     "check-doc-surfaces": "node scripts/check-doc-surfaces.ts",
     "gen:gallery-links": "node scripts/gen-gallery-links.ts",
+    "gen:live-links": "node scripts/gen-live-links.ts",
     "//gen:derived-figures": "Every image computed from a figure rather than captured. The store holds none of them, so this has to run before anything renders the site — see isDerivedFigure in scripts/figure-store.ts.",
     "gen:derived-figures": "pnpm gen:gallery-thumbs && pnpm gen:tutorial-thumbs && pnpm gen:home-images",
     "gen:gallery-thumbs": "node scripts/gen-gallery-thumbs.ts",

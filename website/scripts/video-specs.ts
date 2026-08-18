@@ -37,7 +37,7 @@
 // through an app the rest of the page is not showing.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
-import { CODE_BASE, RELEASED_CODE_BASE } from '../src/lib/code-base.ts'
+import { RELEASED_CODE_BASE, liveHref } from '../src/lib/code-base.ts'
 import { menuCascade, sessionSpec } from './screenshot-spec-helpers.ts'
 import { dog10kVideoFixtures } from './specs/dog10k.ts'
 import { proteinLaunchFixtures } from './specs/features.ts'
@@ -1160,8 +1160,5 @@ export const pastedTrackConfigs = [
 // watching if the reader can then walk it. Every url here is the spec's own, so
 // the link cannot drift from what was filmed.
 export const videoLiveUrls: Record<string, string> = Object.fromEntries(
-  videoSpecs.map(spec => [
-    spec.name,
-    spec.url.startsWith('http') ? spec.url : `${CODE_BASE}${spec.url}`,
-  ]),
+  videoSpecs.map(spec => [spec.name, liveHref(spec.url)]),
 )

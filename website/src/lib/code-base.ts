@@ -22,6 +22,16 @@ export const MAIN_CODE_BASE = 'https://jbrowse.org/code/jb2/main/'
 
 export const CODE_BASE = process.env.JBROWSE_CODE_BASE || MAIN_CODE_BASE
 
+// A spec's live destination is either an absolute URL of its own or a bare
+// `?config=…&session=…` query, which opens identically on whichever hosted build
+// CODE_BASE names. The node side (screenshot-specs.ts, video-specs.ts) and the
+// Astro side (the remark plugins, reading liveLinks.generated.ts) both resolve
+// through this, so `JBROWSE_CODE_BASE` retargets the generated links and the
+// freshly computed ones the same way.
+export function liveHref(ref: string) {
+  return ref.startsWith('http') ? ref : `${CODE_BASE}${ref}`
+}
+
 // Point a hand-written `.../code/jb2/latest/...` URL at CODE_BASE, so the prose
 // "Live demo" links retarget with the generated figure links rather than being
 // the one kind of link left on a build that may not carry what the page

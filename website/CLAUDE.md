@@ -133,11 +133,15 @@ the tour was filmed in.
   so at whole-chromosome scale the caption does the naming. Alpha it for what it
   sits over: a wash marking a REGION can be opaque, one pointing at a feature
   inside itself cannot.
-- **A spec edit staleness `galleryLinks.generated.ts`, and no figure check says
-  so.** The regen writes the PNG and the store takes it, while the gallery
-  card's live link keeps opening the window, height or label the spec used to
-  have. `pnpm autogen` regenerates it; two links sat wrong on main for a day
-  because a pass that reframed a figure never ran it.
+- **A spec edit staleness `galleryLinks.generated.ts` and
+  `liveLinks.generated.ts`, and no figure check says so.** The regen writes the
+  PNG and the store takes it, while the gallery card's and the doc figure's live
+  links keep opening the window, height or label the spec used to have.
+  `pnpm autogen` regenerates both; two links sat wrong on main for a day because
+  a pass that reframed a figure never ran it. The site reads those two files
+  rather than the specs because `scripts/screenshot-specs.ts` and
+  `scripts/video-specs.ts` reach `@jbrowse/browser-test-utils`, whose barrel
+  loads puppeteer — `scripts/astroImportGraph.test.ts` is the gate.
 - **A label that points at something is `leader: true` on the text**, never a
   pill plus its own `arrow`: the tail belongs at the pill's edge and only the
   page knows how wide the pill is.

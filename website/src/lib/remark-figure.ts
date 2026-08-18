@@ -1,11 +1,12 @@
 import { SKIP, visit } from 'unist-util-visit'
 
-import {
-  screenshotLiveLabels,
-  screenshotLiveUrls,
-  screenshotSlowSpecNames,
-} from '../../scripts/screenshot-specs.ts'
+import { liveHref } from './code-base.ts'
 import { escapeAttr, escapeHtml, parseAttrs } from './inline-html.ts'
+import {
+  figureLiveLabels,
+  figureLiveRefs,
+  figureSlowSpecs,
+} from './liveLinks.generated.ts'
 import { recipeButtonHtml, recipeDialogHtml } from './spec-recipe/html.ts'
 import { buildRecipe } from './spec-recipe/recipe.ts'
 
@@ -16,6 +17,15 @@ const figureRe = /<Figure\s+([\s\S]*?)\s*\/>/
 
 // each figure's dialog needs an id unique to the page it renders on
 let dialogCount = 0
+
+// The generated refs carry each spec's url as it was written; CODE_BASE names
+// the hosted build a relative one opens against, and is a build-time env var, so
+// it is applied here rather than baked in (see src/lib/code-base.ts).
+const screenshotLiveUrls = Object.fromEntries(
+  Object.entries(figureLiveRefs).map(([name, ref]) => [name, liveHref(ref)]),
+)
+
+const screenshotSlowSpecNames = new Set(figureSlowSpecs)
 
 // map each /img/<name>.png to the live JBrowse instance that produced it, so a
 // screenshot links to a running view the reader can open and explore. The spec
@@ -147,7 +157,7 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         const help = helpFor(liveUrl, live?.name)
         // a spec whose link opens a plain page rather than a view says so
         // itself; everything else is a session and gets the default
-        const label = `${(live?.name ? screenshotLiveLabels[live.name] : undefined) ?? 'Open this view in JBrowse'} ↗`
+        const label = `${(live?.name ? figureLiveLabels[live.name] : undefined) ?? 'Open this view in JBrowse'} ↗`
         node.value = `<figure>${zoom(img, { url: liveUrl, label })}<figcaption>${caption} ${a(liveUrl, label)}${help.button}${slowNote(live?.name)}</figcaption>${help.dialog}</figure>`
       } else {
         node.value = `<figure>${zoom(img)}<figcaption>${caption}</figcaption></figure>`

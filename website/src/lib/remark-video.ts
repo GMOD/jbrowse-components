@@ -1,7 +1,8 @@
 import { visit } from 'unist-util-visit'
 
-import { videoLiveUrls } from '../../scripts/video-specs.ts'
+import { liveHref } from './code-base.ts'
 import { escapeAttr, escapeHtml, parseAttrs } from './inline-html.ts'
+import { videoLiveRefs } from './liveLinks.generated.ts'
 
 import type { Root } from 'mdast'
 import type { Plugin } from 'unified'
@@ -60,7 +61,8 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         `<video${flags} preload="metadata" poster="${poster}" ` +
         `aria-label="${escapeAttr(attrs.caption ?? '')}" ` +
         `style="max-width:100%;height:auto">${sources}</video>`
-      const live = videoLiveUrls[specNameOf(rawSrc) ?? '']
+      const ref = videoLiveRefs[specNameOf(rawSrc) ?? '']
+      const live = ref === undefined ? undefined : liveHref(ref)
       const label = 'Open this session in JBrowse ↗'
       const link = live
         ? ` <a href="${live}" target="_blank" rel="noopener noreferrer">${label}</a>`

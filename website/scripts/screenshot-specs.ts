@@ -13,7 +13,7 @@ export type {
   SessionUrlSpec,
 } from './screenshot-spec-types.ts'
 
-import { CODE_BASE } from '../src/lib/code-base.ts'
+import { liveHref } from '../src/lib/code-base.ts'
 import { alignmentsSpecs } from './specs/alignments.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
 import { cancerSvSpecs } from './specs/cancer_sv.ts'
@@ -99,23 +99,25 @@ export const specs: ScreenshotSpec[] = [
 // instance. The website Figure macro uses screenshotLiveUrls to link each
 // screenshot to the running view that produced it. CODE_BASE is the hosted build
 // they open in — see src/lib/code-base.ts for retargeting it.
-export function specLiveUrl(spec: ScreenshotSpec): string | undefined {
-  if (spec.mode === 'url') {
-    if (spec.url.startsWith('http')) {
-      // an absolute url is used verbatim — unless it's a localhost capture (a
-      // local dev-plugin build, e.g. protein/connected), which has no public
-      // equivalent and so can't become a reader-facing live link
-      return /^https?:\/\/(localhost|127\.0\.0\.1)\b/.test(spec.url)
-        ? undefined
-        : spec.url
-    } else {
-      // a bare `?config=...` captured against the local build opens identically
-      // on the public hosted instance
-      return `${CODE_BASE}${spec.url}`
-    }
-  } else {
+// The spec's destination before CODE_BASE is applied: an absolute url of its
+// own, or the bare `?config=...` query it was captured against, which opens
+// identically on the public hosted instance. gen-live-links.ts bakes these, and
+// not the resolved urls, so a `JBROWSE_CODE_BASE` build still retargets links
+// the generated file was written without.
+export function specLiveRef(spec: ScreenshotSpec): string | undefined {
+  if (spec.mode !== 'url') {
     return undefined
   }
+  // a localhost capture (a local dev-plugin build, e.g. protein/connected) has
+  // no public equivalent, so it can't become a reader-facing live link
+  return /^https?:\/\/(localhost|127\.0\.0\.1)\b/.test(spec.url)
+    ? undefined
+    : spec.url
+}
+
+export function specLiveUrl(spec: ScreenshotSpec): string | undefined {
+  const ref = specLiveRef(spec)
+  return ref === undefined ? undefined : liveHref(ref)
 }
 
 // screenshot name -> live-instance URL (all current specs are url-mode)
