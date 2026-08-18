@@ -48,13 +48,20 @@ export function geneRowCostPx({
 }) {
   const bodyPx = featureHeightPx * HEIGHT_MULTIPLIERS[displayMode]
   const labelPx = labelFontSize(displayMode)
-  // collapsed is a single-row overview and draws no labels at all
-  const labelLines = displayMode === 'collapsed' ? 0 : MAX_FEATURE_LABEL_LINES
+  // collapsed is a single-row overview and draws no labels at all — not the
+  // gene's own lines, and not the `below` row under each isoform either, which
+  // `rpcProps` forces to `none` before the payload leaves. Spending it here
+  // charged a row the worker never reserves, and halved the budget: a 100px
+  // collapsed lane holding 8 isoforms was capped at 4, with the chip telling the
+  // reader that 4 was as many as fit.
+  const labeled = displayMode !== 'collapsed'
+  const labelLines = labeled ? MAX_FEATURE_LABEL_LINES : 0
   return {
     // a body at this mode plus the gap `layoutSubfeatures` spends after it, plus
     // — under `below` — the label row the worker reserves under it
     perIsoformPx:
-      bodyPx * (1 + ISOFORM_GAP_RATIO) + (subfeatureLabelsBelow ? labelPx : 0),
+      bodyPx * (1 + ISOFORM_GAP_RATIO) +
+      (labeled && subfeatureLabelsBelow ? labelPx : 0),
     // the mode's row padding and the gene's own label lines, less the one gap
     // the last isoform never spends
     geneOwnPx:

@@ -105,6 +105,19 @@ function geneWith(
   })
 }
 
+// `subfeatureLabels` as the WORKER receives it, which is not as the slot is set:
+// `rpcProps` forces it to `none` in collapsed mode, because a subfeature label is
+// worker-baked and so cannot be gated on the main thread. Modelled here because
+// a budget checked against a payload nobody sends is a budget checked against
+// nothing — this test agreed with a cap that charged a `below` label row per
+// isoform in collapsed mode, where the worker reserves none.
+function workerSubfeatureLabels(
+  displayMode: DisplayMode,
+  subfeatureLabels: DisplayConfig['subfeatureLabels'],
+) {
+  return displayMode === 'collapsed' ? 'none' : subfeatureLabels
+}
+
 // The row height `decideLabelReservations` (layout.ts) gives this gene, rebuilt
 // here from the worker layout it is handed. Deliberately spelled out rather than
 // imported: the point of the test is that the budget's own arithmetic agrees
@@ -121,7 +134,16 @@ function packedRowHeightPx(
   displayMode: DisplayMode,
   config: DisplayConfig,
 ) {
-  const layout = layoutSubfeatures({ feature, config })
+  const layout = layoutSubfeatures({
+    feature,
+    config: {
+      ...config,
+      subfeatureLabels: workerSubfeatureLabels(
+        displayMode,
+        config.subfeatureLabels,
+      ),
+    },
+  })
   const labelFontPx = labelFontSize(displayMode)
   const labelLines = displayMode === 'collapsed' ? 0 : 2
   return (
@@ -155,7 +177,7 @@ function cappedConfig(
   subfeatureLabels: DisplayConfig['subfeatureLabels'],
 ) {
   return mockDisplayConfig({
-    subfeatureLabels,
+    subfeatureLabels: workerSubfeatureLabels(displayMode, subfeatureLabels),
     geneGlyphMode: 'all',
     maxIsoforms: laneBudget(trackHeightPx, displayMode, subfeatureLabels),
   })
@@ -220,6 +242,23 @@ describe('geneRowCostPx mirrors the packed row height', () => {
         6,
       )
     }
+  })
+
+  // Collapsed mode is the one where the `below` row above is NOT a cost, because
+  // `rpcProps` sends the worker `subfeatureLabels: 'none'` there and the worker
+  // reserves nothing. Charging it anyway halved the budget — 4 isoforms in a
+  // 100px lane that holds 8 — with the chip reporting 4 as as many as fit.
+  it('charges collapsed mode nothing for a below label the worker never draws', () => {
+    const cost = (subfeatureLabelsBelow: boolean) =>
+      geneRowCostPx({
+        featureHeightPx: 10,
+        displayMode: 'collapsed',
+        subfeatureLabelsBelow,
+      })
+    expect(cost(true)).toEqual(cost(false))
+    expect(isoformRowBudget(100, cost(true))).toBe(
+      isoformRowBudget(100, cost(false)),
+    )
   })
 
   // A non-default body height has to flow through the whole mirror, not just the
