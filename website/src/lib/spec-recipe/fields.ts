@@ -603,7 +603,7 @@ const BAND_OPTIONS = `${READ_CONNECTIONS_MENU} → Arc / read cloud band options
 function geneGlyphStep(value: unknown): FieldStep | undefined {
   const option = GENE_GLYPH_MODE_OPTIONS.find(o => o.value === value)
   return option
-    ? { path: `${TRACK_MENU} → Gene glyph mode → ${option.label}` }
+    ? { path: `${TRACK_MENU} → Gene glyph → ${option.label}` }
     : undefined
 }
 
@@ -666,9 +666,12 @@ const SASHIMI_PLACEMENT: Record<string, string> = {
   below: 'Below coverage',
 }
 
+// verified against getReadConnectionsMenuItem's own radios
+// (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts).
+// Both rows lead with "Show", which the shorter spellings here dropped.
 const READ_CONNECTIONS: Record<string, string> = {
-  arc: 'Arcs',
-  cloud: 'Read cloud',
+  arc: 'Show read arcs',
+  cloud: 'Show read cloud',
 }
 
 // verified against the inline radio list in makeSummaryScoreModeSubMenu
@@ -1265,9 +1268,13 @@ export const trackFields: Record<string, FieldRecipe> = {
   // for the other. The specs have all been converted to the rung
   // migrateBasicConfigSnapshot resolves them to, so a `showDescriptions` showing
   // up in the gap report again is a spec to convert, not a handler to add.
+  // The row inside Resolution is a custom control rather than a menu item —
+  // two buttons either side of the current bin size (ResolutionStepper) — so
+  // the path stops at the submenu and the note names what is in it, the same
+  // way coverageHeight's does for a drag handle.
   resolution: numberField(n => ({
-    path: `${TRACK_MENU} → Resolution → Finer / Coarser`,
-    note: `Higher fetches finer bins. This figure uses ${resolutionLabel(n)}, stepped by 2× per click.`,
+    path: `${TRACK_MENU} → Resolution`,
+    note: `Step with Coarser and Finer, 2× per click; the caption between them reads the current bin size. Higher fetches finer bins, and this figure uses ${resolutionLabel(n)}.`,
   })),
   minScore: numberField(n => ({
     path: `${TRACK_MENU} → Score → Set min/max score...`,

@@ -14,7 +14,14 @@ import { GRAPH_LABELS } from '../src/lib/spec-recipe/fields.ts'
 import { buildRecipe } from '../src/lib/spec-recipe/recipe.ts'
 import { check } from './check-utils.ts'
 import { norm, sourceLabels } from './menu-label-corpus.ts'
-import { pluginCheckout } from './paths.ts'
+import { pluginCheckout, repoRoot } from './paths.ts'
+import {
+  PATH_PROSE,
+  PATH_ROOTS,
+  authoredText,
+  isProseWrapped,
+  stripState,
+} from './recipe-path-labels.ts'
 import { screenshotLiveUrls } from './screenshot-specs.ts'
 
 // Checks the figure recipes against every real figure link.
@@ -36,7 +43,17 @@ import { screenshotLiveUrls } from './screenshot-specs.ts'
 //    figures' recipes — every one of them a pileup, because a hosted config's
 //    track type is unreadable at build time and most figures load one. So an
 //    entry that sets a height field has to resolve one of the two.
-// 4. The graph view's labels are copied out of a plugin this repo does not
+// 4. Every hand-written segment of a click path has to name a row the app
+//    renders. `check-menu-labels.ts` asks this of docs prose and reads
+//    `website/docs/**` only, so the recipes — which walk a reader through the
+//    same menus beside every figure and every gallery card — had nothing
+//    checking them, and three segments named rows that do not exist ("Gene
+//    glyph mode" for "Gene glyph", "Arcs"/"Read cloud" for "Show read
+//    arcs"/"Show read cloud"). Which segments count as hand-written comes from
+//    the source: text between the backticks is the author's, text arriving
+//    through a `${...}` is the figure's, and only the first kind is a claim
+//    about the app. See recipe-path-labels.ts.
+// 5. The graph view's labels are copied out of a plugin this repo does not
 //    build, so a rename there leaves every graph figure's recipe naming a
 //    control that no longer exists, with no commit here to notice it. Checked
 //    against a sibling checkout when one is on disk, and reported as skipped
@@ -56,6 +73,7 @@ const unmappedFile = join(import.meta.dirname, 'spec-recipe-unmapped.txt')
 
 const unmappedCounts = new Map<string, number>()
 const roundTripFailures: string[] = []
+const recipePaths = new Set<string>()
 let figures = 0
 let withRecipe = 0
 
@@ -66,6 +84,11 @@ for (const [name, url] of Object.entries(screenshotLiveUrls)) {
     withRecipe++
     for (const field of recipe.unmapped) {
       unmappedCounts.set(field, (unmappedCounts.get(field) ?? 0) + 1)
+    }
+    for (const step of recipe.steps) {
+      if (step.title.includes('→')) {
+        recipePaths.add(step.title)
+      }
     }
     try {
       const unwrapped = parseProtocolUrl(recipe.desktopUrl)
@@ -168,6 +191,70 @@ if (existsSync(graphSrc)) {
     `graph view labels unchecked (no checkout at ${graphSrc}) — a rename there would go unseen`,
   )
 }
+
+// Every hand-written path segment against what the app renders. The corpus is
+// the repo's plus the graph checkout's when it is here, for the reason
+// check-menu-labels unions them too: one path can cross both.
+const repoLabels = new Set(
+  [
+    ...sourceLabels(
+      ['plugins', 'products', 'packages'].map(dir => join(repoRoot, dir)),
+    ),
+    ...(existsSync(graphSrc) ? sourceLabels([graphSrc]) : []),
+  ].map(norm),
+)
+const authored = authoredText(
+  join(repoRoot, 'website/src/lib/spec-recipe/fields.ts'),
+)
+const unrendered = new Map<string, number>()
+const exemptionsUsed = new Set<string>()
+for (const path of recipePaths) {
+  for (const raw of path.split('→')) {
+    const segment = stripState(raw)
+    // not the author's text, so not a claim about the app
+    if (!authored.has(segment) || isProseWrapped(segment)) {
+      continue
+    }
+    if (PATH_ROOTS.has(segment) || PATH_PROSE.has(segment)) {
+      exemptionsUsed.add(segment)
+      continue
+    }
+    if (!repoLabels.has(norm(segment))) {
+      unrendered.set(segment, (unrendered.get(segment) ?? 0) + 1)
+    }
+  }
+}
+if (unrendered.size > 0) {
+  console.error(
+    '\nClick paths in spec-recipe/fields.ts name a row nothing renders:',
+  )
+  for (const [segment, count] of [...unrendered].sort()) {
+    console.error(
+      `  ${JSON.stringify(segment)} — in ${count} path(s); no source renders it`,
+    )
+  }
+  console.error(
+    '\nRead the label off the menu source and correct the table. A step with no control of its own goes in PATH_PROSE (recipe-path-labels.ts) with its reason.',
+  )
+  process.exit(1)
+}
+// An exemption covering nothing is the part of a check that rots: reword the
+// step and the entry silently stops applying, leaving the new wording unchecked
+// with nothing saying so.
+const deadExemptions = [...PATH_ROOTS, ...PATH_PROSE].filter(
+  entry => !exemptionsUsed.has(entry),
+)
+if (deadExemptions.length > 0) {
+  console.error(
+    `\nExemptions in recipe-path-labels.ts that no path uses:\n${deadExemptions
+      .map(entry => `  ${JSON.stringify(entry)}`)
+      .join('\n')}\n\nDrop each one, or fix the step that used to match it.`,
+  )
+  process.exit(1)
+}
+console.log(
+  `${recipePaths.size} recipe click path(s); every hand-written segment names a row the app renders`,
+)
 
 // A broken desktop link is always an error: it means a figure's "Open in
 // Desktop" link would fail or open something other than the figure.
