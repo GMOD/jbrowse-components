@@ -1222,6 +1222,7 @@ export const svSpecs: ScreenshotSpec[] = [
                 {
                   trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
+                  type: 'LinearAlignmentsDisplay',
                   featureHeight: 1,
                   height: 250,
                   forceLoad: true,
@@ -1241,6 +1242,7 @@ export const svSpecs: ScreenshotSpec[] = [
                 {
                   trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
+                  type: 'LinearAlignmentsDisplay',
                   featureHeight: 1,
                   height: 250,
                   forceLoad: true,
@@ -1490,6 +1492,7 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
+              type: 'LinearAlignmentsDisplay',
               featureHeight: 1,
               height: 320,
               forceLoad: true,

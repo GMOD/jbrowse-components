@@ -53,7 +53,13 @@ const SUPER_COMPACT = { featureHeight: 1 }
 // be. `forceLoad` is the declarative half of the FORCE LOAD button the banner
 // offers (RegionTooLargeMixin's `configForceLoad`), so the live link opens what
 // the figure shows and a reader clicks the same approval once.
-const DEEP_ONT = { forceLoad: true }
+// `type` names the display these entries would have opened anyway, which is a
+// no-op at render (`pickDisplayForView` takes the requested type first) and the
+// only way a static script can know a pileup is a pileup: the figures load a
+// hosted config, so the recipe builder cannot read the track's own type and
+// falls back to calling its rows "features". Naming the display is what puts
+// "Read height" rather than "Feature height" in the recipe.
+const DEEP_ONT = { type: 'LinearAlignmentsDisplay', forceLoad: true }
 
 // The two halves of cancer_sv/multihop_reads: the evidence at one breakpoint,
 // and the chain across every locus it visits, side by side.
@@ -464,6 +470,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
           { trackId: 'der3_segments', height: 70 },
           {
             trackId: 'reads_vs_der3',
+            type: 'LinearAlignmentsDisplay',
             showSoftClipping: true,
             // 29 reads rather than 200, so they get a row an order of magnitude
             // taller than the reference pane's and the pane fills with 380 bp
@@ -1349,6 +1356,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // what a reader follows and the overlaps are off-screen.
                 {
                   trackId: 'reads_vs_der3',
+                  type: 'LinearAlignmentsDisplay',
                   coverageHeight: 30,
                   // compact, same reviewer note as the lane above. 53
                   // non-secondary records pack into ~41 rows, so the Compact
@@ -1706,6 +1714,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // sized for, counted every record including the secondaries.)
                 {
                   trackId: 'reads_vs_der3',
+                  type: 'LinearAlignmentsDisplay',
                   // THE SAME PITCH AS THE hg38 LANE, because this figure is a
                   // comparison and a comparison is drawn at one scale. The
                   // super-compact 1px pitch this lane took (reviewer: "please
@@ -2211,6 +2220,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'K562_isoseq',
+          type: 'LinearAlignmentsDisplay',
           height: 600,
           coverageHeight: 150,
           // a read whose chr9 alignment has a chr22 supplementary IS the
@@ -2416,6 +2426,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // the fan between the two regions is that read set, read by read.
         {
           trackId: 'K562_isoseq',
+          type: 'LinearAlignmentsDisplay',
           // `grow` rather than a guessed height, which is what a fixed 700 was
           // at the 2px pitch: the track sizes to its own rows, so nothing ends
           // up behind the pileup's scrollbar and the page height the run
