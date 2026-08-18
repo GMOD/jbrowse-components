@@ -166,8 +166,8 @@ export function nextByteEstimate(
   // Nothing to compare against: one point is not evidence about zoom. Start from
   // "zoom might help", which is what the banner has always said by default. An
   // unmeasurable fetch reaches neither branch — the callers store no estimate
-  // for it at all ({@link ByteEstimate.bytes}), so it can't read as a flat
-  // re-measure here.
+  // for it at all (see `ByteEstimate.bytes`), so it can't read here as a
+  // re-measure that came back flat.
   if (previous === undefined || previous.measuredSpanBp <= 0) {
     return { ...base, zoomIneffective: false }
   }

@@ -184,13 +184,15 @@ describe('nextByteEstimate', () => {
     ).toBe(false)
   })
 
-  // An adapter with no index estimate is "unmeasurable", not "unchanged" — it
-  // must not read as evidence that zooming is hopeless, and it must not wipe the
-  // last real measurement either. Both are answered by never getting here: the
-  // two callers skip the write entirely, so `bytes` is a number by type and the
-  // stored estimate is whatever the last measurable fetch said. The pin for that
-  // is at the call sites — see "keeps a good estimate when a batch measured no
-  // bytes" in LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts.
+  // There is no case here for an unmeasurable measurement, and that is the
+  // point: an adapter quoting no index estimate never reaches this function,
+  // because both callers skip the write rather than publish an empty estimate.
+  // `bytes` is a number by type. The pin lives at the call sites — "keeps a good
+  // estimate when a batch measured no bytes", in
+  // LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts.
+  //
+  // A previous span of zero is the one comparison that still can't be made, and
+  // it starts over rather than carrying a flag it cannot check.
   it('says nothing about zoom when the previous span is unusable', () => {
     const degenerate = {
       bytes: 306_719,
