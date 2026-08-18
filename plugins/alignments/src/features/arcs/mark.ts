@@ -91,7 +91,7 @@ export interface ArcBar extends ArcMarkBase {
 //
 // "The arm", not "this segment's aligned body". The two coincide only where the
 // arc's endpoint IS the junction, which is the split-read producer and not the
-// mate-pair one — `pairOuterDir` (features/arcs/compute.ts) is where that gets
+// mate-pair one — `pairOuterDir` (features/arcs/arcChains.ts) is where that gets
 // reconciled, and it is what stops one junction drawing opposite feet depending
 // on which kind of read happened to evidence it.
 //
@@ -135,13 +135,26 @@ export interface ArcDome extends ArcMarkBase {
   // Which way it bulges, so a stroker and a path builder each take a mark and
   // nothing else — the sweep is the only thing the band's direction changes.
   down: boolean
-  // Near pair or far pair, and it is READ OFF the radii rather than re-asking
-  // `arcIsFar`: an equal pair is the only thing the far branch returns, and the
-  // predicate is `//! js-skip`ped precisely so a consumer cannot ask it
-  // separately from the radii it decides. What it distinguishes is numerical,
-  // not cosmetic — see `hitTest.ts`, where a far pair's radius reaches millions
-  // of px and the ellipse solver cancels away every significant digit.
-  far: boolean
+  // Whether the two radii are equal, i.e. whether this dome is a true CIRCLE —
+  // read off the radii rather than by re-asking `arcIsFar`, which the generated
+  // module deliberately does not export so that a consumer cannot ask it
+  // separately from the radii it decides.
+  //
+  // It is NOT "did `arcRadiiPx` take the far branch", and it was named `far` as
+  // though it were. The far branch returns equal radii, but so does the near one
+  // whenever a pair's on-screen half-span happens to equal `0.75 * destY` — and
+  // `destY` clamps to `availH` for every arc at or above the domain, which pins
+  // `ry` to one value across a large share of a feed and makes the coincidence
+  // ordinary rather than freakish.
+  //
+  // Circle-ness is the right question for both readers anyway, which is why the
+  // rename costs nothing. `hitTest.ts` wants it because `distToWideCirclePx` is
+  // the circle formula, assembled from small terms so a radius in the millions
+  // does not cancel away every significant digit the ellipse solver has. The
+  // debug overlay wants it because a circle is what got PAINTED; which branch
+  // produced it is not observable in the picture, so reporting the branch was
+  // reporting something the reader cannot check against the ink.
+  circular: boolean
   // Absent on every arc a per-region pass draws: `arcMark` reads
   // `ArcsUploadData`, which carries no per-foot direction, and adding one would
   // mean the GPU and Canvas2D passes growing the mark too. Present only on the
@@ -231,7 +244,7 @@ export function arcMarkFrom(
     rx,
     ry,
     down: pairedArcsDown,
-    far: rx === ry,
+    circular: rx === ry,
     // THE one place the two endpoints are sorted onto the two sides of the mark.
     // `mid - rx` is min(sx1, sx2) and `mid + rx` is max, whichever branch above
     // set the radii — so a reversed region, which puts sx2 left of sx1, is

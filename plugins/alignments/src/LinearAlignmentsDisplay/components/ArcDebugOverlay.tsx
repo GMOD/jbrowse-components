@@ -2,7 +2,8 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { resolveArcBandDebug } from './arcHitTest.ts'
+import { arcApexCeilingY, resolveArcBandDebug } from './arcHitTest.ts'
+import { bandScreenTop } from './sectionScreen.ts'
 
 import type { ArcMark } from '../../features/arcs/mark.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -65,10 +66,82 @@ function drawnHalfWidth(mark: ArcMark) {
 function describeMark(mark: ArcMark) {
   return mark.kind === 'bar'
     ? `FLAT(bar) half=${mark.halfPx.toFixed(0)} destY=${mark.destY.toFixed(0)}`
-    : `${mark.far ? 'FAR(circle)' : 'near(ellipse)'} ` +
+    : `${mark.circular ? 'circle' : 'ellipse'} ` +
         `rx=${mark.rx.toFixed(0)} ry=${mark.ry.toFixed(0)} ` +
         `aspect=${(mark.rx / Math.max(mark.ry, 1e-6)).toFixed(2)}`
 }
+
+// The cross-region half of the annotation: band outline, apex ceiling and the
+// widest few marks' numbers, for the arcs `CrossRegionArcsOverlay` draws.
+//
+// They had none, and the lane that shows it is the one whose EVERY arc crosses a
+// seam — `resolveArcBandDebug` gates on `numArcs`, so that lane got no outline,
+// no ceiling and no labels while a full band of arcs was painted beside it.
+//
+// It deliberately does NOT re-trace the paths, which is the whole of what the
+// per-region half is for. There a trace that misses its painted arc IS the
+// finding, the paint having come from a GPU or Canvas2D pass and the trace from
+// TypeScript. Here the overlay is itself the paint, off the very same `d`, so
+// agreement proves nothing. The FRAME and the NUMBERS are what is worth drawing:
+// these are the only arcs resolved through a different projector
+// (`makeBpToScreenX`, and the VIEW's width where every other arc takes a
+// block's), so a wrong `rx`/`ry` would come from here and the labels are how you
+// would see it.
+const CrossRegionArcDebugBand = observer(function CrossRegionArcDebugBand({
+  model,
+  section,
+  width,
+}: {
+  model: LinearAlignmentsDisplayModel
+  section: LinearAlignmentsDisplayModel['crossRegionArcSections'][number]
+  width: number
+}) {
+  const { classes } = useStyles()
+  const top = bandScreenTop(section.bandTop, model.scrollModel)
+  const down =
+    model.renderSections.find(s => s.groupKey === section.groupKey)?.arcDown ??
+    false
+  const labelled = [...section.arcs]
+    .sort((a, b) => drawnHalfWidth(b.mark) - drawnHalfWidth(a.mark))
+    .slice(0, 6)
+  return (
+    <g>
+      <rect
+        className={classes.band}
+        x={0}
+        y={top}
+        width={width}
+        height={section.bandHeight}
+      />
+      <line
+        className={classes.ceiling}
+        x1={0}
+        x2={width}
+        y1={top + arcApexCeilingY(0, section.bandHeight, down)}
+        y2={top + arcApexCeilingY(0, section.bandHeight, down)}
+      />
+      {labelled.map((arc, i) => (
+        <g key={arc.key} transform={`translate(6 ${top + 12 + i * 12})`}>
+          <rect
+            className={classes.labelBg}
+            x={-4}
+            y={-9}
+            width={330}
+            height={12}
+          />
+          {/* No `yBp`: a cross-region arc's drawn Y does not cross into
+              `CrossRegionArcShape`, and adding a field to a published type for a
+              debug label is a worse trade than one missing number. `span` is the
+              bp between its two feet and reads the same as the per-region row. */}
+          <text className={classes.label}>
+            {`x-region ${describeMark(arc.mark)} ` +
+              `span=${Math.abs(arc.end - arc.start)}bp n=${arc.support}`}
+          </text>
+        </g>
+      ))}
+    </g>
+  )
+})
 
 // Draws the arc band's own geometry over the canvas, for answering "why is this
 // arc this shape" without guessing from a screenshot.
@@ -113,11 +186,23 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
       return geom ? [geom] : []
     }),
   )
-  if (bands.length === 0) {
+  // The arcs no per-region feed holds, annotated beside the ones it does — see
+  // `CrossRegionArcDebugBand`. Empty in a single-region view, which is why this
+  // costs nothing on the path almost every session takes.
+  const crossRegion = model.crossRegionArcSections
+  if (bands.length === 0 && crossRegion.length === 0) {
     return null
   }
   return (
     <svg className={classes.svg} height={model.height}>
+      {crossRegion.map(section => (
+        <CrossRegionArcDebugBand
+          key={`x-${section.groupKey}`}
+          model={model}
+          section={section}
+          width={view.width}
+        />
+      ))}
       {bands.map((band, bi) => {
         // Widest first, so the labels describe the arcs most likely to be the
         // ones being asked about rather than whichever came first in the feed.

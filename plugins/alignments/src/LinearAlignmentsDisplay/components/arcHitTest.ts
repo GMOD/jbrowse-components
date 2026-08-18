@@ -237,6 +237,19 @@ export interface ArcDebugGeometry {
   clip: ArcBandClip
 }
 
+// Where a dome's apex was pinned before the clamp came off, as a screen y —
+// drawn as a reference line, so ink lying along it is the clamped-plateau
+// signature. Shared with the cross-region half below, which annotates the same
+// band and must put the line in the same place.
+export function arcApexCeilingY(
+  arcsTop: number,
+  arcsH: number,
+  pairedArcsDown: boolean,
+) {
+  const ceiling = ARC_APEX_FRACTION * arcAvailH(arcsH)
+  return pairedArcsDown ? arcsTop + ceiling : arcsTop + arcsH - ceiling
+}
+
 export function resolveArcBandDebug(
   arcs: ArcsUploadData | undefined,
   opts: ArcHitBandOptions,
@@ -271,12 +284,9 @@ export function resolveArcBandDebug(
       support: arcs.arcSupport[i]!,
     })
   }
-  const ceiling = ARC_APEX_FRACTION * arcAvailH(arcsH)
   return {
     shapes,
-    legacyCeilingY: pairedArcsDown
-      ? arcsTop + ceiling
-      : arcsTop + arcsH - ceiling,
+    legacyCeilingY: arcApexCeilingY(arcsTop, arcsH, pairedArcsDown),
     clip: arcBandClip(scale),
   }
 }
