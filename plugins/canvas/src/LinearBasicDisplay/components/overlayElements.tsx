@@ -128,8 +128,8 @@ function moreBaselineTop(isMore: boolean, labelY: number, fontSize: number) {
     : labelY
 }
 
-// The isoform badge's hover sentence. The badge itself has one 11px row to live
-// in, so its text is terse ("+3 more") and this spells it out — a native title
+// The isoform badge's hover sentence. The badge itself has one short row to
+// live in, so its text is terse ("+3 more") and this spells it out — a title
 // rather than the model hover the rest of the layer sets, since that one
 // describes the FEATURE and this is the layer's one control.
 function moreIsoformsTitle(label: { hidden?: number; expanded?: boolean }) {
