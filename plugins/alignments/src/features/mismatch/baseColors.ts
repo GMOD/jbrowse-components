@@ -14,14 +14,12 @@ type BaseColorState = Pick<RenderState, 'colors' | 'showModifications'>
  * `showModifications` is on they all collapse to `colorMutedSnpBase` so the
  * overlay stands out.
  *
- * **The one place that rule is written**, for either backend. It used to be
- * four: a ternary in `buildBaseColorTupleMap`, another in `baseColorFallback`,
- * a `??` chain in `buildSnpBaseColors`, and five uniform writes in
- * `GpuAlignmentsRenderer.writeUniforms` — the GPU one tied to the rest by a
- * comment saying to keep them in step. It had already gone missing from three
- * canvas call sites once (see the fallback below), and a miss is a base painted
- * its own colour on one backend and grey on the other, in the one mode whose
- * point is that bases recede.
+ * **The one place that rule is written**, for either backend — every table and
+ * palette below reads it, and so does `GpuAlignmentsRenderer.writeUniforms`,
+ * which used to spell the mute again across five uniform writes under a comment
+ * saying to keep them in step. A miss is a base painted its own colour on one
+ * backend and grey on the other, in the one mode whose point is that bases
+ * recede.
  */
 export function effectiveBaseColors(state: BaseColorState) {
   const { colors } = state
