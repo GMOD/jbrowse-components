@@ -165,15 +165,41 @@ function isObject(v: unknown): v is Record<string, unknown> {
 // its `colorBy` getter), which covers every persistence path — instance slot,
 // session-wide promoted default, and config-file display default — so session
 // migration deliberately leaves a `methylation` colorBy untouched.
-function migrateDisplayType(display: Record<string, unknown>) {
+function migrateDisplayType(
+  display: Record<string, unknown>,
+  trackConfigId: string | undefined,
+  collected: ExtractedDisplaySettings[],
+) {
   const entry = displayTypeMap[display.type as string]
   if (!entry) {
     return display
   }
-  const missing = Object.entries(entry.settings ?? {}).filter(
-    ([k]) => display[k] === undefined,
+  const missing = Object.fromEntries(
+    Object.entries(entry.settings ?? {}).filter(
+      ([k]) => display[k] === undefined,
+    ),
   )
-  return { ...display, ...Object.fromEntries(missing), type: entry.type }
+  // Every one of these is a config slot on the flat display, and a session
+  // instance declares only `type` and `configuration` — so merging them here
+  // would hand MST properties it drops on load, and the compensation would be
+  // gone exactly where it is needed most: a v4 session on an admin config, which
+  // is the commonest way anyone has one of these displays at all. Route them the
+  // way extractInstanceHeight routes its own, into the config the instance
+  // points at. A *config* display node has no `configuration` reference and
+  // keeps them inline, where they are the live slots.
+  const displayId = display.configuration
+  if (trackConfigId && typeof displayId === 'string') {
+    if (Object.keys(missing).length > 0) {
+      collected.push({
+        trackConfigId,
+        displayId,
+        displayType: entry.type,
+        settings: missing,
+      })
+    }
+    return { ...display, type: entry.type }
+  }
+  return { ...display, ...missing, type: entry.type }
 }
 
 /**
@@ -275,7 +301,7 @@ function migrateDisplaySnapshot(
 ) {
   return extractInstanceHeight(
     extractAlignmentsInstanceSettings(
-      migrateDisplayType(display),
+      migrateDisplayType(display, trackConfigId, collected),
       trackConfigId,
       collected,
     ),

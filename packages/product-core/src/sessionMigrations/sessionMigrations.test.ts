@@ -388,9 +388,12 @@ describe('migrateSessionSnapshot', () => {
     })
     const display = (result.views as any)[0].tracks[0].displays[0]
     expect(display.type).toBe('LinearAlignmentsDisplay')
-    // the read-cloud band settings migrateDisplayType restores stay on the
-    // instance snapshot; the dead per-instance keys are stripped
-    expect(display.readConnections).toBe('cloud')
+    // regression: the band settings used to be merged onto the instance, where
+    // they are config slots the state model does not declare — MST dropped all
+    // three on load and the arcs/cloud track opened as a full pileup + coverage
+    expect(display.readConnections).toBeUndefined()
+    expect(display.showPileup).toBeUndefined()
+    expect(display.showCoverage).toBeUndefined()
     expect(display.colorBySetting).toBeUndefined()
     expect(display.trackMaxHeight).toBeUndefined()
     expect(display.jexlFilters).toBeUndefined()
@@ -398,11 +401,49 @@ describe('migrateSessionSnapshot', () => {
 
     const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
     expect(deltaDisplay.displayId).toBe('track1-LinearReadCloudDisplay')
+    // the compensation for the type collapse lands on the config, beside the
+    // settings the extractor lifted
+    expect(deltaDisplay.readConnections).toBe('cloud')
+    expect(deltaDisplay.showPileup).toBe(false)
+    expect(deltaDisplay.showCoverage).toBe(false)
     expect(deltaDisplay.colorBy).toEqual({ type: 'insertSizeAndOrientation' })
     expect(deltaDisplay.maxHeight).toBe(900)
     expect(deltaDisplay.jexlFilters).toEqual(["jexl:get(feature,'flags')==99"])
     // hideMismatches inverts into the showMismatches slot that replaced it
     expect(deltaDisplay.showMismatches).toBe(false)
+  })
+
+  // The commonest way to have one of these displays at all: a BAM from an admin
+  // config, switched to Read arcs in v4.3.0 and saved. There is no sessionTrack
+  // and no other per-instance setting, so this display reaches the migration
+  // with nothing but its type — and the compensation still has to land.
+  test('routes the collapse compensation for a display carrying nothing else', () => {
+    const result = migrateSessionSnapshot({
+      name: 'test',
+      views: [
+        {
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              type: 'AlignmentsTrack',
+              configuration: 'track1',
+              displays: [
+                {
+                  type: 'LinearReadArcsDisplay',
+                  configuration: 'track1-LinearReadArcsDisplay',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
+    expect(deltaDisplay.displayId).toBe('track1-LinearReadArcsDisplay')
+    expect(deltaDisplay.type).toBe('LinearAlignmentsDisplay')
+    expect(deltaDisplay.readConnections).toBe('arc')
+    expect(deltaDisplay.showPileup).toBe(false)
+    expect(deltaDisplay.showCoverage).toBe(false)
   })
 
   // The config path runs the same extractor, and there `colorBy` is the live
