@@ -1118,10 +1118,36 @@ wakes the fetch autorun (ARCHITECTURE.md §"The global-fetch trigger list").
 
 Still per display:
 
+- **The three tree toggles**, and this is the one with a bug already spent on
+  it. `showTree` / `showRowLabels` / `showBranchLength` and their three setters
+  are hand-written in all four displays as `getConf` / `setConf` one-liners —
+  182 lines and 25 members with `hierarchy` — while **`packages/tree-sidebar`'s
+  own code reads them** (`treeSidebarGeometry.ts` reads `model.showTree` and
+  `model.hierarchy`, `treeMenuItems.ts` reads all three plus `setShowTree`).
+  The mixin depends on members it does not declare, so nothing makes a display
+  that composes it actually supply them.
+
+  The **config half was already consolidated** into
+  `treeSidebarConfigSchemaFields.ts`, and its docstring says why: the four
+  hand-written copies had drifted, three spelling the labels toggle
+  `showRowLabels` and the fourth `showSidebarLabels`, so `"showRowLabels":
+  false` on a multi-sample variant track was dropped in silence. The model half
+  is the same four copies with the same failure still available.
+
+  The pattern to copy is one row up the same tree: `heightModeConfigSchemaFields`
+  ships alongside `HeightModeMixin`, which owns `get heightMode()` /
+  `get autoHeight()` / `setHeightMode()` for the slots it declares.
+  `treeSidebar` is the one shared field group whose mixin does not.
+
 - **`hierarchy`**, four copies of one `computeClusterHierarchy(...)` call
   differing only in which expression supplies the content height (and
   multi-wiggle's `isOverlay` short-circuit). Small, and the shared part is
   already the function; a mixin getter would need three hooks it can't type.
+  **Re-price this after the toggles move**, not before: the mixin already owns
+  `root` and `treeAreaWidth`, would then own `showBranchLength`, and `sources`
+  is already its declared contract — which leaves the content height as the one
+  hook, returning `number | undefined` so multi-wiggle's overlay case is the
+  absent answer rather than a second hook.
 
 **The row-height ladder is deliberately not on this list, and the reasons are
 structural rather than stylistic** — worth stating, because two of the three
@@ -1144,6 +1170,36 @@ sentinel plus the non-positive floor) and the menu row and dialog. A mixin over
 the rest is two hooks plus two override points wrapping about four lines of
 arithmetic. See
 [reference/ROW_HEIGHT_AND_FIT.md](reference/ROW_HEIGHT_AND_FIT.md).
+
+### The legend is shared at both ends and hand-written in the middle
+
+Six displays — `LinearAlignmentsDisplay`, `LinearHicDisplay`,
+`LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`,
+`MultiSampleVariantBaseModel`, `SharedLDModel` — each hand-write the same
+triple:
+
+```ts
+get showLegend(): boolean { return resolveConf(self, 'showLegend') }
+get showLegendDisplayTypeDefault() { return makePin(self, 'showLegend') }
+setShowLegend(v: boolean) { setConf(self, 'showLegend', v) }
+```
+
+143 lines and 17 members, plus six `maybeBoolean` slot blocks whose comments are
+the same three sentences about the promotable tiers. The only real variation is
+`promotedBase` — `false` on alignments/hic/LD, `true` on variants/multi-row —
+and the noun in the description.
+
+**Both ends of this are already shared and only the middle is not.** The menu
+item is `core/ui/legendMenuItem.ts`'s `showLegendCheckboxItem`, which every one
+of the six calls; the rendering is `display-ui`'s `FloatingLegend` and core's
+`SvgColorLegend` / `SvgGradientLegend`, which every one of the six reaches
+(the small per-plugin `Svg*Legend` components are thin bindings on those, not
+copies). A `legendConfigSchemaFields({ promotedBase, description })` +
+`LegendMixin({ promotedBase })` pair, shaped like `heightModeConfigSchemaFields`
++ `HeightModeMixin`, closes the gap between them.
+
+Worth doing with the tree-toggle item above rather than separately: they are the
+same omission in the same place, and four of the six displays are the same four.
 
 ### Offer a file's PanSN prefixes in the all-vs-all add-track form
 

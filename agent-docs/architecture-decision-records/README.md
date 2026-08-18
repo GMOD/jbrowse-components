@@ -82,4 +82,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [070](adr-070-viewport-is-a-stored-window.md) | Accepted | The LGV viewport persists as a bp window, not as offsetPx/bpPerPx |
 | [071](adr-071-a-status-phase-must-outlive-the-window.md) | Accepted | Every RPC status write goes through the one throttle window, the phase-end clear included, so a phase shorter than the window never paints |
 | [072](adr-072-only-one-phase-at-a-time-is-summable.md) | Accepted | aggregateStatus sums only the concurrent operations in the same phase; the rest are charged as unmeasured |
+| [073](adr-073-delegated-member-blocks-are-followed.md) | Accepted | A model's `.views(sharedViews)` link is followed to the declaration behind it, so a model file can be split by MEMBER and not only by member BODY — and a block the generator cannot follow is fatal rather than silent |
 <!-- END GENERATED ADR INDEX -->

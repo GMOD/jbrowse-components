@@ -12,6 +12,16 @@ with the getter left as the memoized adapter — `groupedDataMaps.ts`,
 an MST tree, and it is why model.ts is a chain of thin getters rather than a
 chain of algorithms. The MST rule constrains the composed TYPES, not every view.
 
+**A getter that reads nothing but `configuration` belongs in
+`configSlotViews.ts`**, which the chain composes as one
+`.views(configSlotViews)` link — 32 getters and a method, 478 lines. The line
+between the two files is what the getter reads: any OTHER model member and it
+stays in the chain, where `self` is the model so far. `collapseGroupRows` and
+`showOutline` are slot reads that stayed for that reason. The docs generator
+follows the link
+([ADR-073](../../../../agent-docs/architecture-decision-records/adr-073-delegated-member-blocks-are-followed.md));
+before it did, this move silently deleted 33 rows from the model page.
+
 ## Which getter decides what a setting invalidates
 
 `rpcProps()` refetches, `groupLayoutContext` relayouts, `readColorContext`
