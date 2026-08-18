@@ -146,11 +146,18 @@ export {
   planWebExport,
 } from './sessionUtils.ts'
 export type {
+  AssemblySnapshot,
   DroppedSessionNode,
   HostedBaseConfig,
   NonPortableLocation,
+  SelfContainedReason,
   TrackSnapshot,
   WebExportInput,
   WebExportPlan,
   WebPortabilityReport,
 } from './sessionUtils.ts'
+export {
+  describeUnbuildableNodes,
+  pruneUnbuildableNodes,
+} from './pruneUnbuildableNodes.ts'
+export type { UnbuildableNode } from './pruneUnbuildableNodes.ts'

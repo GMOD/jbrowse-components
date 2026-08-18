@@ -480,7 +480,7 @@ test('planWebExport classifies a local assembly sequence as a blocking file, not
             },
           },
         },
-      } as { name: string },
+      },
     ],
     tracks: [],
     defaultSession: { name: 'session' },
@@ -515,7 +515,7 @@ test('planWebExport keeps a remote assembly and drops only the local user track'
             },
           },
         },
-      } as { name: string },
+      },
     ],
     tracks: [
       {
@@ -592,7 +592,7 @@ test('planWebExport does not report a local config assembly under a hosted base'
               },
             },
           },
-        } as { name: string },
+        },
       ],
       tracks: [],
       configuration: {
@@ -782,12 +782,8 @@ test('planWebExport falls back to the default for an unusable webExportUrl', () 
 test('buildWebExportUrl puts an encoded- long link in the hash, keeping config', () => {
   const url = buildWebExportUrl(
     {
-      strategy: 'hostedConfigBase',
       configUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
-      session: {},
       webBaseUrl: 'https://jbrowse.org/code/jb2/latest/',
-      droppedTracks: [],
-      blockingFiles: [],
     },
     'encoded-ABC',
   )
@@ -806,13 +802,7 @@ test('buildWebExportUrl puts an encoded- long link in the hash, keeping config',
 
 test('buildWebExportUrl puts a self-contained encoded- session in the hash', () => {
   const url = buildWebExportUrl(
-    {
-      strategy: 'selfContained',
-      session: {},
-      webBaseUrl: 'https://jbrowse.org/code/jb2/latest/',
-      droppedTracks: [],
-      blockingFiles: [],
-    },
+    { webBaseUrl: 'https://jbrowse.org/code/jb2/latest/' },
     'encoded-XYZ',
   )
   const parsed = new URL(url)
@@ -824,13 +814,7 @@ test('buildWebExportUrl puts a self-contained encoded- session in the hash', () 
 
 test('buildWebExportUrl adds the password param for a short share link', () => {
   const url = buildWebExportUrl(
-    {
-      strategy: 'selfContained',
-      session: {},
-      webBaseUrl: 'https://jbrowse.org/code/jb2/latest/',
-      droppedTracks: [],
-      blockingFiles: [],
-    },
+    { webBaseUrl: 'https://jbrowse.org/code/jb2/latest/' },
     'share-abc123',
     { password: 'sekret' },
   )
@@ -843,13 +827,7 @@ test('buildWebExportUrl adds the password param for a short share link', () => {
 // fresh on both ends, so nothing else in it is pinned. What produced it is the
 // one thing the producer can record.
 test('buildWebExportUrl stamps what produced the link, in whichever half carries the session', () => {
-  const plan = {
-    strategy: 'selfContained' as const,
-    session: {},
-    webBaseUrl: 'https://jbrowse.org/code/jb2/latest/',
-    droppedTracks: [],
-    blockingFiles: [],
-  }
+  const plan = { webBaseUrl: 'https://jbrowse.org/code/jb2/latest/' }
   const stamp = { exportedFrom: 'jbrowse-desktop@3.6.4' }
   const inline = new URL(buildWebExportUrl(plan, 'encoded-ABC', stamp))
   expect(new URLSearchParams(inline.hash.slice(1)).get('exportedFrom')).toBe(
@@ -893,4 +871,260 @@ test('analyzeWebPortability flags blob and file-handle locations by name', () =>
     ['BlobLocation', 'dropped.bam'],
     ['FileHandleLocation', 'picked.bam'],
   ])
+})
+
+// Indexing a remote track on desktop writes the Trix triple to local disk, which
+// used to make the whole track non-portable and drop it — reported to the user
+// as a track that "references local files", when the data file was a url the
+// recipient could open perfectly well.
+test('planWebExport keeps a remote track whose text-search index is local', () => {
+  const plan = planWebExport({
+    assemblies: [],
+    tracks: [
+      {
+        trackId: 'remote-gff',
+        name: 'Genes',
+        adapter: {
+          gffLocation: {
+            uri: 'https://example.com/genes.gff.gz',
+            locationType: 'UriLocation',
+          },
+        },
+        textSearching: {
+          indexingAttributes: ['Name', 'ID'],
+          textSearchAdapter: {
+            type: 'TrixTextSearchAdapter',
+            textSearchAdapterId: 'remote-gff-index',
+            ixFilePath: {
+              localPath: '/home/me/trix/remote-gff.ix',
+              locationType: 'LocalPathLocation',
+            },
+          },
+        },
+      },
+    ],
+  })
+  expect(plan.droppedTracks).toEqual([])
+  expect(plan.blockingFiles).toEqual([])
+  expect(plan.droppedTextIndexes).toEqual(['Genes'])
+  const [shipped] = plan.session.sessionTracks as Record<string, unknown>[]
+  expect(shipped).not.toHaveProperty('textSearching')
+  expect(shipped!.adapter).toBeDefined()
+})
+
+// A track whose DATA is local is still dropped whole — the index rule only
+// applies to the search index.
+test('planWebExport still drops a track whose data file is local', () => {
+  const plan = planWebExport({
+    assemblies: [],
+    tracks: [
+      {
+        trackId: 'local-bam',
+        name: 'Local alignments',
+        adapter: {
+          bamLocation: {
+            localPath: '/home/me/a.bam',
+            locationType: 'LocalPathLocation',
+          },
+        },
+        textSearching: {
+          textSearchAdapter: {
+            ixFilePath: {
+              localPath: '/home/me/trix/local-bam.ix',
+              locationType: 'LocalPathLocation',
+            },
+          },
+        },
+      },
+    ],
+  })
+  expect(plan.droppedTracks).toEqual(['Local alignments'])
+  expect(plan.session.sessionTracks).toEqual([])
+})
+
+// Under a hosted base the omission is also the right delta: a delta records adds
+// and changes but never a deletion, so leaving the local index out lets the
+// base's own index resolve instead of pinning the recipient to a path on the
+// sender's disk.
+test('planWebExport does not ship a local text index as a hub track edit', () => {
+  const base = {
+    trackId: 'hub-track',
+    name: 'Hub track',
+    textSearching: {
+      textSearchAdapter: {
+        ixFilePath: {
+          uri: 'https://hub.example/hub-track.ix',
+          locationType: 'UriLocation',
+        },
+      },
+    },
+  }
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }],
+      tracks: [
+        {
+          ...base,
+          textSearching: {
+            textSearchAdapter: {
+              ixFilePath: {
+                localPath: '/home/me/trix/hub-track.ix',
+                locationType: 'LocalPathLocation',
+              },
+            },
+          },
+        },
+      ],
+      configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [base] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  expect(plan.session).not.toHaveProperty('trackConfigDeltas')
+  expect(plan.droppedTextIndexes).toEqual(['Hub track'])
+})
+
+// Three self-contained plans that used to render the same sentence. Only the
+// unreachable one is something the sender can act on, and it is the one that
+// silently turns a 200-character link into an unopenable one.
+test('planWebExport says why a self-contained export is self-contained', () => {
+  expect(planWebExport({ assemblies: [] }).selfContainedReason).toBe(
+    'noSourceConfig',
+  )
+  expect(
+    planWebExport({
+      assemblies: [{ name: 'hg38' }],
+      configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+    }).selfContainedReason,
+  ).toBe('baseUnreachable')
+  expect(
+    planWebExport(
+      {
+        assemblies: [{ name: 'hg19' }],
+        configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+      },
+      { assemblies: [{ name: 'hg38' }] },
+    ).selfContainedReason,
+  ).toBe('assembliesNotInBase')
+  expect(
+    planWebExport(
+      {
+        assemblies: [{ name: 'hg38' }],
+        configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+      },
+      { assemblies: [{ name: 'hg38' }] },
+    ).selfContainedReason,
+  ).toBeUndefined()
+})
+
+// coveredByBase matches on name alone and nothing ships an assembly edit, so the
+// hub's original silently wins. The sender at least gets told which ones.
+test('planWebExport reports an edited assembly the hosted base takes back', () => {
+  const baseAssembly = {
+    name: 'hg38',
+    sequence: {
+      trackId: 'hg38-ReferenceSequenceTrack',
+      type: 'ReferenceSequenceTrack',
+    },
+  }
+  const plan = planWebExport(
+    {
+      assemblies: [
+        {
+          ...baseAssembly,
+          refNameAliases: {
+            adapter: {
+              type: 'RefNameAliasAdapter',
+              location: {
+                uri: 'https://example.com/aliases.txt',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
+      configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+    },
+    { assemblies: [baseAssembly] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  expect(plan.revertedAssemblies).toEqual(['hg38'])
+})
+
+test('planWebExport reports a session assembly the hosted base shadows', () => {
+  const assembly = { name: 'hg38' }
+  const plan = planWebExport(
+    {
+      assemblies: [assembly],
+      configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+      defaultSession: { sessionAssemblies: [{ name: 'hg38' }] },
+    },
+    { assemblies: [assembly] },
+  )
+  expect(plan.session.sessionAssemblies).toEqual([])
+  expect(plan.revertedAssemblies).toEqual(['hg38'])
+})
+
+test('planWebExport reports no reverted assembly when nothing was edited', () => {
+  const assembly = { name: 'hg38', sequence: { trackId: 'hg38-seq' } }
+  expect(
+    planWebExport(
+      {
+        assemblies: [assembly],
+        configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+      },
+      { assemblies: [assembly] },
+    ).revertedAssemblies,
+  ).toEqual([])
+})
+
+// Internet accounts live in the root config alone — no session carries one — so
+// a shipped track naming an account the recipient has no config for reaches them
+// with nothing to authenticate against.
+test('planWebExport reports an internet account the recipient will not have', () => {
+  const track = {
+    trackId: 'private',
+    name: 'Private data',
+    adapter: {
+      bamLocation: {
+        uri: 'https://private.example/a.bam',
+        locationType: 'UriLocation',
+        internetAccountId: 'dropbox1',
+      },
+    },
+  }
+  expect(
+    planWebExport({ assemblies: [], tracks: [track] }).unavailableAccounts,
+  ).toEqual(['dropbox1'])
+  // the hosted base declares it, so the recipient builds it from the config
+  expect(
+    planWebExport(
+      {
+        assemblies: [{ name: 'hg38' }],
+        tracks: [track],
+        configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+      },
+      {
+        assemblies: [{ name: 'hg38' }],
+        internetAccounts: [{ internetAccountId: 'dropbox1' }],
+      },
+    ).unavailableAccounts,
+  ).toEqual([])
+})
+
+// The webExportUrl slot names a deployment, and the easiest way to fill it is to
+// paste a jbrowse-web address — which carries the pasting user's own params.
+// jbrowse-web reads the hash whenever it holds any, so a leftover one opened the
+// sender's session and ignored the export entirely.
+test('planWebExport strips params from a pasted webExportUrl', () => {
+  const plan = planWebExport({
+    configuration: {
+      webExportUrl:
+        'https://inst.example/jb2/?trackId=x#config=hub.json&session=local-abc',
+    },
+  })
+  expect(plan.webBaseUrl).toBe('https://inst.example/jb2/')
+  const url = new URL(buildWebExportUrl(plan, 'share-abc123'))
+  expect(url.hash).toBe('')
+  expect(url.searchParams.get('session')).toBe('share-abc123')
 })

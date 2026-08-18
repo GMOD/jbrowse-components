@@ -243,12 +243,19 @@ export interface TrackSnapshot {
 // A jbrowse-desktop save snapshot (`{...jbrowse, defaultSession}`), narrowed to
 // the fields planWebExport reads.
 export interface WebExportInput {
-  assemblies?: { name: string }[]
+  assemblies?: AssemblySnapshot[]
   tracks?: TrackSnapshot[]
   plugins?: PluginDefinition[]
   connections?: unknown[]
   configuration?: { sourceConfigUrl?: string; webExportUrl?: string }
   defaultSession?: Record<string, unknown>
+}
+
+// An assembly config snapshot, loosely typed the same way TrackSnapshot is: the
+// hosted-base strategy diffs the whole object against its base assembly.
+export interface AssemblySnapshot {
+  name: string
+  [key: string]: unknown
 }
 
 // The hosted config a session was bootstrapped from, fetched fresh so the delta
@@ -257,8 +264,11 @@ export interface WebExportInput {
 // `baseUri` the desktop session stored at load — otherwise a track diff flags
 // every relative-URI location as an edit.
 export interface HostedBaseConfig {
-  assemblies?: { name: string }[]
+  assemblies?: AssemblySnapshot[]
   tracks?: TrackSnapshot[]
+  // jbrowse-web builds these from the config it loads, and a file location
+  // naming one the recipient lacks is fetched unauthenticated
+  internetAccounts?: { internetAccountId?: string }[]
   // jbrowse-web loads both of these itself when it opens `?config=<configUrl>`,
   // so an export reusing this config as its base only has to carry the ones it
   // does not already declare
@@ -289,7 +299,29 @@ export interface WebExportPlan {
   // connection track's config, any non-track local file. Empty when the
   // exported session is fully portable.
   blockingFiles: string[]
+  // Why a selfContained plan is self-contained; undefined under hostedConfigBase.
+  // The three cases produce byte-identical sessions and completely different
+  // advice — a hub that was simply never involved is normal, a hub that could
+  // not be fetched is a link the sender should build again on a connection that
+  // works, since a self-contained session is also the biggest kind and the one
+  // that outgrows what a URL can carry.
+  selfContainedReason?: SelfContainedReason
+  // names of tracks whose locally built text-search index was left behind. The
+  // track's data still ships; only its search box is gone.
+  droppedTextIndexes: string[]
+  // assemblies the recipient resolves from the hosted config, so an edit the
+  // sender made to one of them (a refNameAlias file, cytobands) does not travel.
+  // Empty under selfContained, which ships its assemblies whole.
+  revertedAssemblies: string[]
+  // internetAccountIds that files in `session` name and the recipient will not
+  // have, so those files are requested without credentials
+  unavailableAccounts: string[]
 }
+
+export type SelfContainedReason =
+  | 'noSourceConfig'
+  | 'baseUnreachable'
+  | 'assembliesNotInBase'
 
 // Distinct file display names of a set of non-portable locations, in first-seen
 // order.
@@ -367,6 +399,38 @@ function withoutBaseAssemblies(
   })
 }
 
+// The assemblies a hosted-base export silently hands back to the hosted config.
+// `coveredByBase` matches on name alone, and nothing ships an assembly edit: a
+// user who attached a refNameAlias or cytoband file to a hub assembly exports a
+// session that quietly uses the hub's original. Both halves of the loss are the
+// same fact to a sender, so they are reported as one list — a config assembly
+// whose config differs from the base's, and a session assembly that
+// `withoutBaseAssemblies` drops to keep the recipient's safeReferences
+// unambiguous.
+//
+// Edited-ness is `flattenTrackConfigDelta`, the same gate `splitTracksAgainstBase`
+// uses, so an export can't call an assembly edited on a diff too thin to be worth
+// shipping for a track.
+function assembliesRevertedToBase(
+  assemblies: AssemblySnapshot[],
+  sessionAssemblies: unknown[],
+  baseAssemblies: AssemblySnapshot[],
+): string[] {
+  const baseByName = new Map(baseAssemblies.map(a => [a.name, a]))
+  const edited = assemblies.flatMap(assembly => {
+    const base = baseByName.get(assembly.name)
+    return base &&
+      flattenTrackConfigDelta(base, diffTrackConfig(base, assembly)).length > 0
+      ? [assembly.name]
+      : []
+  })
+  const shadowed = sessionAssemblies.flatMap(a => {
+    const name = readAssemblyName(a)
+    return name && baseByName.has(name) ? [name] : []
+  })
+  return [...new Set([...edited, ...shadowed])]
+}
+
 // The `sessionAssemblies` override for a hosted-base session, or nothing at all
 // when the session had none — the spread of `defaultSession` is what carries
 // them otherwise, so an unconditional key would add an empty array to every
@@ -392,6 +456,43 @@ function droppableTrackIds(
   return new Set(
     [...tracks, ...sessionTracks].flatMap(t => readTrackId(t) ?? []),
   )
+}
+
+// Drops a track's `textSearching` when its index is local — the desktop indexer
+// writes the Trix ix/ixx/meta triple as LocalPathLocations
+// (`addTrackTextSearchConf`), so indexing a remote BAM on desktop is enough to
+// make an otherwise perfectly portable track non-portable and get it dropped
+// whole. The data file is the track; the index is a search box over it. Shedding
+// the index costs the recipient that box and nothing else, and under a hosted
+// base the omission also lets the base's own (remote) index resolve, since a
+// delta records adds and changes but never a deletion.
+function withoutLocalTextSearch<T>(track: T): T {
+  if (
+    !isRecord(track) ||
+    !isRecord(track.textSearching) ||
+    analyzeWebPortability(track.textSearching).portable
+  ) {
+    return track
+  }
+  const { textSearching, ...rest } = track
+  return rest as T
+}
+
+// Display names of the tracks `withoutLocalTextSearch` stripped, for the report.
+function strippedTextIndexNames(before: unknown[], after: unknown[]) {
+  return [
+    ...new Set(
+      before.flatMap((track, i) =>
+        track !== after[i] && isRecord(track)
+          ? [
+              typeof track.name === 'string'
+                ? track.name
+                : (readTrackId(track) ?? 'unknown track'),
+            ]
+          : [],
+      ),
+    ),
+  ]
 }
 
 // The tracks that reference a local file and can be shed by dropping them:
@@ -507,6 +608,44 @@ function readId(connection: unknown): string | undefined {
   return typeof id === 'string' ? id : undefined
 }
 
+// Collects every `internetAccountId` a snapshot's file locations name, in
+// first-seen order.
+function referencedAccountIds(node: unknown, out: Set<string>) {
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      referencedAccountIds(item, out)
+    }
+  } else if (isRecord(node)) {
+    if (typeof node.internetAccountId === 'string') {
+      out.add(node.internetAccountId)
+    }
+    for (const value of Object.values(node)) {
+      referencedAccountIds(value, out)
+    }
+  }
+  return out
+}
+
+// The accounts a shipped file names that the recipient has no way to build.
+// Internet accounts live in the root config alone — there is no
+// `sessionInternetAccounts` for one to ride in — so a hosted-base export carries
+// exactly the accounts the base config declares, and a self-contained export
+// (`?config=none`) carries none at all. The recipient does not crash on a
+// missing one (`findAppropriateInternetAccount` returns null rather than pushing
+// an unknown type into the union), it fetches the file unauthenticated and
+// reports the 401, which is worth the sender knowing before they send the link.
+function unavailableAccountIds(
+  session: Record<string, unknown>,
+  baseAccounts: { internetAccountId?: string }[],
+): string[] {
+  const available = new Set(
+    baseAccounts.flatMap(a => a.internetAccountId ?? []),
+  )
+  return [...referencedAccountIds(session, new Set<string>())].filter(
+    id => !available.has(id),
+  )
+}
+
 // Adds the session-level carriers to the exported session, leaving each key out
 // entirely when it would be empty so the exported snapshot stays minimal (same
 // rule as withDeltas above).
@@ -532,14 +671,22 @@ export function planWebExport(
   snapshot: WebExportInput,
   baseConfig?: HostedBaseConfig,
 ): WebExportPlan {
-  const report = analyzeWebPortability(snapshot)
   const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
   const assemblies = snapshot.assemblies ?? []
   const defaultSession = snapshot.defaultSession ?? {}
   const priorSessionAssemblies = asArray(defaultSession.sessionAssemblies)
-  const allTracks = snapshot.tracks ?? []
-  const allSessionTracks = asArray(defaultSession.sessionTracks)
+  const inputTracks = snapshot.tracks ?? []
+  const inputSessionTracks = asArray(defaultSession.sessionTracks)
+  const allTracks = inputTracks.map(withoutLocalTextSearch)
+  const allSessionTracks = inputSessionTracks.map(withoutLocalTextSearch)
 
+  // over the stripped lists, so a track whose only local file was its own search
+  // index is no longer read as one that has to be dropped
+  const report = analyzeWebPortability({
+    ...snapshot,
+    tracks: allTracks,
+    defaultSession: { ...defaultSession, sessionTracks: allSessionTracks },
+  })
   const dropped = nonPortableUserTracks(
     report,
     droppableTrackIds(allTracks, allSessionTracks),
@@ -558,6 +705,16 @@ export function planWebExport(
     !!sourceConfigUrl &&
     !!baseConfig &&
     assemblies.every(a => baseAssemblyNames.has(a.name))
+  // `baseConfig` is undefined only because the caller could not fetch
+  // `sourceConfigUrl` — it is the same fetch that produces it — so the two ways
+  // a hub drops out of the plan are distinguishable here without a flag.
+  const selfContainedReason: SelfContainedReason | undefined = coveredByBase
+    ? undefined
+    : !sourceConfigUrl
+      ? 'noSourceConfig'
+      : baseConfig
+        ? 'assembliesNotInBase'
+        : 'baseUnreachable'
 
   const plugins = snapshot.plugins ?? []
   const connections = snapshot.connections ?? []
@@ -611,6 +768,24 @@ export function planWebExport(
     // above never touches. Anything non-portable still present here survived
     // the drop and so blocks the session by definition.
     blockingFiles: distinctNames(analyzeWebPortability(session).nonPortable),
+    selfContainedReason,
+    droppedTextIndexes: [
+      ...new Set([
+        ...strippedTextIndexNames(inputTracks, allTracks),
+        ...strippedTextIndexNames(inputSessionTracks, allSessionTracks),
+      ]),
+    ],
+    revertedAssemblies: hosted
+      ? assembliesRevertedToBase(
+          assemblies,
+          priorSessionAssemblies,
+          baseConfig?.assemblies ?? [],
+        )
+      : [],
+    unavailableAccounts: unavailableAccountIds(
+      session,
+      hosted ? (baseConfig?.internetAccounts ?? []) : [],
+    ),
   }
 }
 
@@ -635,6 +810,14 @@ function resolveWebBaseUrl(webExportUrl: string | undefined) {
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
       throw new Error(`not an http(s) url: ${webExportUrl}`)
     }
+    // The slot names a deployment, so whatever params the value came with are
+    // not part of it — and the easiest way to fill the slot is to paste a
+    // jbrowse-web address out of the browser, which carries the pasting user's
+    // own `#config=…&session=…`. Params live in the hash XOR the query string
+    // and the hash wins whenever it holds any (queryParams.ts), so a leftover
+    // hash silently opens that session instead of the exported one.
+    url.search = ''
+    url.hash = ''
     return url.href
   } catch (e) {
     console.error(e)
@@ -665,7 +848,9 @@ function resolveWebBaseUrl(webExportUrl: string | undefined) {
 // link stays in the query string. Mirrors jbrowse-web's buildShareUrl; the
 // SessionLoader reads `session=`/`config=` from either location (hash XOR query).
 export function buildWebExportUrl(
-  plan: WebExportPlan,
+  // where the link points and what config it loads: the plan's report fields
+  // (what was dropped, what reverted) are for the sender's screen, not the URL
+  plan: Pick<WebExportPlan, 'webBaseUrl' | 'configUrl'>,
   sessionParam: string,
   options: { password?: string; exportedFrom?: string } = {},
 ): string {
