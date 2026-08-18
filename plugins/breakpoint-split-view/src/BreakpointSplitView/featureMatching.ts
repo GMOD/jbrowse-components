@@ -2,7 +2,14 @@ import {
   isAbnormalPairDirection,
   pairDirection,
 } from '@jbrowse/alignments-core'
-import { featurizeSAEntries, getClip, splitSA } from '@jbrowse/cigar-utils'
+import {
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_UNMAPPED,
+  featurizeSAEntries,
+  getClip,
+  splitSA,
+} from '@jbrowse/cigar-utils'
 import { assembleLocString, assembleLocStringRaw } from '@jbrowse/core/util'
 import { getTag } from '@jbrowse/modifications-utils'
 import { safeParseBreakend } from '@jbrowse/sv-core'
@@ -45,8 +52,8 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
       start: feature.get('start'),
       end: feature.get('end'),
     })}`
-    const unmapped = flags & 4
-    const correctlyPaired = flags & 2
+    const unmapped = flags & SAM_FLAG_UNMAPPED
+    const correctlyPaired = flags & SAM_FLAG_PROPER_PAIR
     // Include reads that either don't have the proper-pair flag set, or have
     // it set but a non-LR orientation (LL/RR same-strand, RL outie).
     const dir = pairDirection(
@@ -151,7 +158,7 @@ export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
   for (const f of features.values()) {
     // getTag, not get('tags'): this walks every fetched feature, and the full
     // tags decode allocates a Record per read to answer one presence check
-    if (!((f.get('flags') as number) & 4) && getTag(f, 'SA')) {
+    if (!((f.get('flags') as number) & SAM_FLAG_UNMAPPED) && getTag(f, 'SA')) {
       bucket(candidates, f.get('name')!, f)
     }
   }
@@ -160,7 +167,7 @@ export function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
 
 export function hasPairedReads(features: Map<string, Feature>) {
   for (const f of features.values()) {
-    if ((f.get('flags') as number) & 1) {
+    if ((f.get('flags') as number) & SAM_FLAG_PAIRED) {
       return true
     }
   }
