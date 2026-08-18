@@ -261,15 +261,21 @@ function keepRanked(
   kept: number,
   scores: Scores,
   config: DisplayConfig,
+  // Which of the two collapses this is. The label badge is offered for one and
+  // not the other (see `isoformOverflow`), and the count cannot tell them
+  // apart — a lane short enough budgets one row, exactly as `longestCoding`
+  // does.
+  rule: 'representative' | 'heightCap',
 ) {
   return {
     keep: new Set(ranked.slice(0, kept).map(f => f.id())),
     canonicalTag:
       config.canonicalTranscriptTags[scores.get(ranked[0]!.id())!.canonical],
     // Reported rather than re-derived: under the height cap this is what
-    // `isoformsWithinBudget` MEASURED, not `maxIsoforms`, so the label badge's
-    // "+N more" has no other way to know it (see `isoformOverflow`).
+    // `isoformsWithinBudget` MEASURED, not `maxIsoforms`, so the badge's
+    // "+N more" has no other way to know it.
     kept,
+    rule,
   }
 }
 
@@ -297,7 +303,13 @@ function collapseIsoforms({
   const { geneGlyphMode, maxIsoforms } = config
   if (geneGlyphMode === 'longestCoding') {
     return isoforms.length > 1
-      ? keepRanked(rankIsoforms(isoforms, scores), 1, scores, config)
+      ? keepRanked(
+          rankIsoforms(isoforms, scores),
+          1,
+          scores,
+          config,
+          'representative',
+        )
       : undefined
   }
   if (maxIsoforms === undefined) {
@@ -320,7 +332,7 @@ function collapseIsoforms({
   const ranked = rankIsoforms(isoforms, scores)
   const kept = isoformsWithinBudget({ ...budget, candidates: ranked })
   return kept < isoforms.length
-    ? keepRanked(ranked, kept, scores, config)
+    ? keepRanked(ranked, kept, scores, config, 'heightCap')
     : undefined
 }
 
@@ -466,9 +478,22 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     isoformsCollapsed: collapsed !== undefined,
     canonicalTag: collapsed?.canonicalTag,
     hasMultipleIsoforms,
+    // The badge exists to report a collapse the reader did not ask for and
+    // cannot see the extent of: the HEIGHT CAP, which fires per gene on however
+    // many isoforms that gene happens to have, and whose whole symptom is a gene
+    // drawn shorter than it is. `longestCoding` is a track-wide mode the user
+    // picked and the corner chip already names, so a badge under every gene
+    // there is one sentence repeated once per label — noise on exactly the
+    // zoomed-out view the mode exists to keep readable.
+    //
+    // An EXPANDED gene keeps its badge whichever rule would have collapsed it,
+    // because that badge is the only way back: a gene opened under the cap and
+    // then met by a mode switch would otherwise stand fully stacked among
+    // collapsed ones with no visible control (the track menu's
+    // "Collapse N expanded genes" is the other way, and is not on the gene).
     isoformOverflow:
-      collapse === undefined
-        ? undefined
-        : { hidden: isoforms.length - collapse.kept, expanded },
+      collapse !== undefined && (collapse.rule === 'heightCap' || expanded)
+        ? { hidden: isoforms.length - collapse.kept, expanded }
+        : undefined,
   }
 }

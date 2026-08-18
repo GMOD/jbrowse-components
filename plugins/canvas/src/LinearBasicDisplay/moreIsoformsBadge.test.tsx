@@ -162,16 +162,46 @@ describe('the worker counts what the collapse leaves out', () => {
     expect(layout.isoformOverflow).toEqual({ hidden: 6, expanded: true })
   })
 
-  // `longestCoding` is the cap at one, so it overflows by the same arithmetic
-  // rather than by a branch of its own.
-  it('counts a longestCoding collapse the same way', () => {
-    const feature = geneWith(4)
+  // The badge reports a collapse the reader did not ask for and cannot see the
+  // extent of. `longestCoding` is neither: it is a track-wide mode the user
+  // picked and the corner chip already names, so a badge under every gene there
+  // is one sentence repeated once per label — on exactly the zoomed-out view
+  // the mode exists to keep readable.
+  it('reports nothing for the representative-transcript mode', () => {
     const layout = layoutSubfeatures({
-      feature,
+      feature: geneWith(4),
       config: labelledConfig({ geneGlyphMode: 'longestCoding' }),
       jexl,
     })
+    expect(layout.children).toHaveLength(1)
+    expect(layout.isoformOverflow).toBeUndefined()
+  })
+
+  // A lane short enough resolves the height cap to 1 as well, so the two rules
+  // cannot be told apart by the count they leave — which is why the rule itself
+  // is what decides.
+  it('reports a height cap of one, which looks identical from the count', () => {
+    const layout = layoutSubfeatures({
+      feature: geneWith(4),
+      config: labelledConfig({ maxIsoforms: 1 }),
+      jexl,
+    })
+    expect(layout.children).toHaveLength(1)
     expect(layout.isoformOverflow).toEqual({ hidden: 3, expanded: false })
+  })
+
+  // The badge is the only way back for a gene the user opened, so it survives a
+  // switch into a mode that would not have offered it — otherwise that gene
+  // stands fully stacked among collapsed ones with no control on it.
+  it('keeps the badge on an expanded gene whatever mode it lands in', () => {
+    const layout = layoutSubfeatures({
+      feature: geneWith(4),
+      config: labelledConfig({ geneGlyphMode: 'longestCoding' }),
+      jexl,
+      expandedGeneIds: new Set(['gene1']),
+    })
+    expect(layout.children).toHaveLength(4)
+    expect(layout.isoformOverflow).toEqual({ hidden: 3, expanded: true })
   })
 })
 
