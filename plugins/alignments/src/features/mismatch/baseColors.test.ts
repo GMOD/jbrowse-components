@@ -1,4 +1,4 @@
-import { baseColorFallback, buildBaseCssMap } from './baseColors.ts'
+import { buildBaseCssMap, buildBaseTupleMap } from './baseColors.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -61,9 +61,12 @@ describe('per-base canvas palette', () => {
     expect(buildBaseCssMap(state(false))[IUPAC_R]).toBe('rgb(0,0,255)')
   })
 
+  // Read through the tuple table rather than off a fallback helper, because the
+  // table is what `drawMismatches` indexes for a faded mark — the branch that
+  // used to re-spell the fallback with a `??` of its own.
   test('the fallback tuple is the muted color under modifications', () => {
-    expect(baseColorFallback(state(true))).toEqual([0.5, 0.5, 0.5])
-    expect(baseColorFallback(state(false))).toEqual([0, 0, 1])
+    expect(buildBaseTupleMap(state(true))[IUPAC_R]).toEqual([0.5, 0.5, 0.5])
+    expect(buildBaseTupleMap(state(false))[IUPAC_R]).toEqual([0, 0, 1])
   })
 
   // The table is memoized across draws, and `state()` above hands out a fresh

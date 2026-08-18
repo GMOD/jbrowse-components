@@ -60,7 +60,7 @@ import type { OverlapsUploadData } from '../../features/overlap/types.ts'
 import type { PerBaseLetterUploadData } from '../../features/perBaseLetter/types.ts'
 import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
-import type { CoverageLayerId } from './coverageLayers.ts'
+import type { CoverageLayer, CoverageLayerId } from './coverageLayers.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -364,6 +364,15 @@ export function drawAlignmentBlocks(
   // asking them per section per block re-answered one question up to 120 times
   // a frame at MAX_GROUPS.
   const layers = PILEUP_LAYERS.filter(l => l.enabled(state))
+  // The coverage band's three per-frame answers, hoisted for the same reason
+  // and out of the same loop. Every `COVERAGE_LAYERS` gate reads display-wide
+  // state, the depth scale is built from the three domain fields
+  // `sectionRenderState` does not override, and a section state differs from
+  // the display's only in two Y offsets — so all three were re-derived per
+  // block per section to produce the same value.
+  const coverageLayers = COVERAGE_LAYERS.filter(l => l.enabled(state))
+  const coverageScale = makeCoverageScale(state)
+  const sectionStates = state.sections.map(sec => sectionRenderState(state, sec))
 
   forEachClippedBlock(
     ctx,
@@ -379,10 +388,17 @@ export function drawAlignmentBlocks(
       const found = state.sections
         .map((sec, s) => ({
           sec,
+          sectionState: sectionStates[s]!,
           region: regions.get(sectionRegionKey(s, block.displayedRegionIndex)),
         }))
-        .filter((e): e is { sec: SectionRender; region: Canvas2DRegionData } =>
-          Boolean(e.region),
+        .filter(
+          (
+            e,
+          ): e is {
+            sec: SectionRender
+            sectionState: RenderState
+            region: Canvas2DRegionData
+          } => Boolean(e.region),
         )
       return found.length > 0 ? found : undefined
     },
@@ -390,9 +406,7 @@ export function drawAlignmentBlocks(
       // Each stacked section sets its own vertical offsets and clip bands.
       // Section 0's region key equals the raw region index, so the ungrouped
       // (single-section) path reproduces the prior draw exactly.
-      for (const { sec, region } of sections) {
-        const sectionState = sectionRenderState(state, sec)
-
+      for (const { sec, sectionState, region } of sections) {
         // Same three bands the GPU's drawSection counts. A collapsed band
         // (height 0) draws nothing — matching the GPU's `cov.height > 0` /
         // `pileup.height > 0` gates — so it must not count as a paint. Arcs and
@@ -418,6 +432,8 @@ export function drawAlignmentBlocks(
                 bpLength,
                 fullBlockWidth,
                 sectionState,
+                coverageLayers,
+                coverageScale,
               )
             },
           )
@@ -546,6 +562,8 @@ function drawCoverage(
   bpLength: number,
   fullBlockWidth: number,
   state: RenderState,
+  layers: CoverageLayer[],
+  scale: CoverageScale | undefined,
 ) {
   const bpToX = (bp: number) => bpToScreenX(bp, block, bpLength, fullBlockWidth)
   const viewWidth = fullBlockWidth + block.screenStartPx
@@ -556,22 +574,12 @@ function drawCoverage(
   ctx.save()
   ctx.translate(0, state.coverageTopOffset)
   try {
-    // One scale for the whole band. Built once here because the bars, the SNP
-    // segments stacked inside them and the modification segments are readings of
-    // one axis; each building its own normalizer is how all three came to
-    // hardcode a zero floor and ignore `minScore`.
-    const scale = makeCoverageScale(state)
-    for (const layer of COVERAGE_LAYERS) {
-      if (layer.enabled(state)) {
-        CANVAS_COVERAGE_DRAW[layer.id](
-          ctx,
-          region,
-          bpToX,
-          viewWidth,
-          state,
-          scale,
-        )
-      }
+    // One scale for the whole band, built once per FRAME by the caller because
+    // the bars, the SNP segments stacked inside them and the modification
+    // segments are readings of one axis; each building its own normalizer is how
+    // all three came to hardcode a zero floor and ignore `minScore`.
+    for (const layer of layers) {
+      CANVAS_COVERAGE_DRAW[layer.id](ctx, region, bpToX, viewWidth, state, scale)
     }
   } finally {
     ctx.restore()

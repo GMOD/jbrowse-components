@@ -6,11 +6,7 @@ import {
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
-import {
-  baseColorFallback,
-  buildBaseColorTupleMap,
-  buildBaseCssMap,
-} from './baseColors.ts'
+import { buildBaseCssMap, buildBaseTupleMap } from './baseColors.ts'
 
 import type {
   DrawBlock,
@@ -41,8 +37,7 @@ export function drawMismatches(
   // resolve to 1 — read a prebuilt CSS string instead of formatting one per
   // mismatch; only a genuinely faded one pays `rgba255`.
   const baseCss = buildBaseCssMap(state)
-  const baseColors = buildBaseColorTupleMap(state)
-  const fallbackTuple = baseColorFallback(state)
+  const baseTuples = buildBaseTupleMap(state)
 
   for (let i = 0; i < region.mismatchPositions.length; i++) {
     const yRow = region.mismatchYs[i]!
@@ -63,9 +58,7 @@ export function drawMismatches(
     const alpha =
       freqAlpha * qualityFade(region.mismatchQuals[i]!, state.mismatchAlpha)
     ctx.fillStyle =
-      alpha >= 1
-        ? baseCss[base]!
-        : rgba255(baseColors[base] ?? fallbackTuple, alpha)
+      alpha >= 1 ? baseCss[base]! : rgba255(baseTuples[base]!, alpha)
     ctx.fillRect(x, y, w, fH)
   }
 }

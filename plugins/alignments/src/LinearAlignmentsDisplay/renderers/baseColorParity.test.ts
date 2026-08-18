@@ -2,7 +2,7 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { buildBaseColorTupleMap } from '../../features/mismatch/baseColors.ts'
+import { buildBaseTupleMap } from '../../features/mismatch/baseColors.ts'
 import { UNIFORM_OFFSET_U32 } from '../../shaders/slang/read.iface.generated.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
 import {
@@ -84,7 +84,7 @@ function gpuBaseSlots(showModifications: boolean) {
 }
 
 function canvasBaseColors(showModifications: boolean) {
-  const tuples = buildBaseColorTupleMap(renderState(showModifications))
+  const tuples = buildBaseTupleMap(renderState(showModifications))
   return Object.fromEntries(
     BASE_SLOTS.map(([base, code]) => {
       const rgb = tuples[code]!

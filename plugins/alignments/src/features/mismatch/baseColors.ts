@@ -35,17 +35,6 @@ export function effectiveBaseColors(state: BaseColorState) {
   }
 }
 
-// Per-base canvas colors (mismatch + softclip-base draws), keyed by
-// uppercase-ASCII base code. RGBColor tuples so mismatch draws can apply
-// per-mismatch alpha via rgba255(); softclip-base draws wrap in rgb255(). N
-// (78) has its own color; other non-A/C/G/T/N bytes take `baseColorFallback`.
-export function buildBaseColorTupleMap(
-  state: BaseColorState,
-): Record<number, RGBColor> {
-  const c = effectiveBaseColors(state)
-  return { 65: c.A, 67: c.C, 71: c.G, 84: c.T, 78: c.N }
-}
-
 // The color a byte that is not A/C/G/T/N takes. Reachable in ordinary data:
 // BAM's 4-bit alphabet is `=ACMGRSVTWYHKDBN`, so IUPAC ambiguity codes and '='
 // both reach the per-base draws, and the extractors only upper-case the byte
@@ -56,15 +45,56 @@ export function buildBaseColorTupleMap(
 // `default: colorBaseN`, so the fallback IS whatever N resolved to. Spelling it
 // as its own ternary is what once painted a stray IUPAC base blue on Canvas2D
 // while the GPU painted it grey.
-export function baseColorFallback(state: BaseColorState): RGBColor {
+function baseColorFallback(state: BaseColorState): RGBColor {
   return effectiveBaseColors(state).N
 }
 
-// The same palette as CSS strings, in a 256-entry table indexed by the raw base
-// byte, with the fallback above pre-filled. Two things follow: the byte indexes
-// the table directly, so no call site re-spells the non-ACGTN fallback (which
-// is how the mute above went missing from three of them), and a draw loop reads
-// a string rather than formatting one per cell. Mirrors `qualityCssColors`
+// One 256-entry table per palette, filled from a five-entry map so both tables
+// below are built the same way and index the raw base byte directly.
+function baseTable<T>(state: BaseColorState, of: (c: RGBColor) => T): T[] {
+  const c = effectiveBaseColors(state)
+  const table = new Array<T>(256).fill(of(baseColorFallback(state)))
+  table[65] = of(c.A)
+  table[67] = of(c.C)
+  table[71] = of(c.G)
+  table[84] = of(c.T)
+  table[78] = of(c.N)
+  return table
+}
+
+// Memo shared by both tables, since a caller wanting one of them at a given
+// palette is about to want the other: `drawMismatches` reads the CSS entry for
+// an opaque mismatch and the tuple entry for a faded one, and which it needs is
+// per mismatch.
+let tableMemo:
+  | {
+      colors: ColorPalette
+      showModifications: boolean
+      css: string[]
+      tuples: RGBColor[]
+    }
+  | undefined
+
+function baseTables(state: BaseColorState) {
+  if (
+    tableMemo?.colors !== state.colors ||
+    tableMemo.showModifications !== state.showModifications
+  ) {
+    tableMemo = {
+      colors: state.colors,
+      showModifications: state.showModifications,
+      css: baseTable(state, rgb255),
+      tuples: baseTable(state, c => c),
+    }
+  }
+  return tableMemo
+}
+
+// The palette as CSS strings, in a 256-entry table indexed by the raw base byte
+// with the fallback above pre-filled. Two things follow: the byte indexes the
+// table directly, so no call site re-spells the non-ACGTN fallback (which is how
+// the mute above went missing from three of them), and a draw loop reads a
+// string rather than formatting one per cell. Mirrors `qualityCssColors`
 // (perBaseQuality/colors.ts), the same table for the quality ramp.
 //
 // The formatting is what the table removes, not the `fillStyle` assignment —
@@ -72,37 +102,28 @@ export function baseColorFallback(state: BaseColorState): RGBColor {
 // display produces, so an `rgb()` template literal per cell is real allocation.
 // Whether de-duplicating the *assignment* on top of that pays (as `drawReads`
 // does with its `lastFill`) is unmeasured here.
-// Memoized on the two things it reads, for the reason `lineCss` in
-// linkedReads/drawCanvas.ts is: three passes call this and each calls it per
-// section per block, so a grouped display rebuilt a 256-entry array up to 360
-// times a frame to hold the same six strings. Not at module scope — the palette
-// is THEMED, and baking it at import time is how a dark-mode pileup came to draw
-// connectors in the light palette's colors.
+//
+// Memoized for the reason `lineCss` in linkedReads/drawCanvas.ts is: three
+// passes call this and each calls it per section per block, so a grouped display
+// rebuilt a 256-entry array up to 360 times a frame to hold the same six
+// strings. Not at module scope — the palette is THEMED, and baking it at import
+// time is how a dark-mode pileup came to draw connectors in the light palette's
+// colors.
 //
 // `showModifications` is in the key because it is the other half of
 // `effectiveBaseColors`: it mutes all five bases, so a palette-only key would
 // serve the unmuted table for the whole session after one modifications toggle.
-let baseCssMemo:
-  | { colors: ColorPalette; showModifications: boolean; table: string[] }
-  | undefined
-
 export function buildBaseCssMap(state: BaseColorState): string[] {
-  if (
-    baseCssMemo?.colors !== state.colors ||
-    baseCssMemo.showModifications !== state.showModifications
-  ) {
-    const tuples = buildBaseColorTupleMap(state)
-    const table = new Array<string>(256).fill(rgb255(baseColorFallback(state)))
-    for (const [code, tuple] of Object.entries(tuples)) {
-      table[Number(code)] = rgb255(tuple)
-    }
-    baseCssMemo = {
-      colors: state.colors,
-      showModifications: state.showModifications,
-      table,
-    }
-  }
-  return baseCssMemo.table
+  return baseTables(state).css
+}
+
+// The same table as RGB tuples, for the one draw that applies a per-mark alpha
+// (`drawMismatches`, through `rgba255`). A table rather than the five-entry map
+// it used to be, so the faded branch stops re-spelling the fallback with a `??`
+// — the exact thing the CSS table exists to prevent, left in the one call site
+// that needed both.
+export function buildBaseTupleMap(state: BaseColorState): RGBColor[] {
+  return baseTables(state).tuples
 }
 
 // The palette for Canvas2D SNP-coverage segment draws.
