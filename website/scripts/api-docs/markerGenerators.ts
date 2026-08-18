@@ -36,11 +36,12 @@ import type { SourceCorpus } from './util.ts'
 // generated all ten again in its own process, because generate.ts calls the
 // same writers.
 //
-// Splitting them out was still right: `gendocs`'s autogen entry diffs a list of
-// paths that does not include `website/docs/developer_guides` or `agent-docs`,
-// and five of these blocks live there — so without a `--check` of their own
-// they would have no gate at all. One process gives them that gate for the cost
-// of one TypeScript load.
+// Keeping a `--check` of their own is still right, though no longer because
+// nothing else would gate them (`gendocs`'s autogen entry diffs all of
+// `website/docs` and `agent-docs` now). It is what names the stale table:
+// gendocs' diff can only say "config/model/api docs". `markers.ts <label>`
+// narrows a development loop to one table, and the whole set costs one
+// TypeScript load rather than gendocs' whole-repo program.
 export interface MarkerGenerator {
   // Names the table in the run's output, and what `markers.ts <filter>` matches.
   label: string

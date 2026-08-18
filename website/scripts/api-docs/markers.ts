@@ -5,16 +5,17 @@
 //   node website/scripts/api-docs/markers.ts --check color
 //                                                       limit by label substring
 //
-// This is one `pnpm autogen` entry standing in for the ten the marker
-// generators used to have; markerGenerators.ts says why. The filter is the same
-// idea as autogen's own, one level down, so narrowing to a single table during
-// development did not have to be given up along with the per-file CLIs.
+// This is one `pnpm autogen` entry standing in for the one-per-generator
+// entries the marker generators used to have; markerGenerators.ts says why. The
+// filter is the same idea as autogen's own, one level down, so narrowing to a
+// single table during development did not have to be given up along with the
+// per-file CLIs.
 //
 // Every generator runs before anything exits, and each is reported by name.
 // Stopping at the first stale table would put back the fix-push-discover-the-
-// next loop that scripts/autogen.ts exists to end — and these ten are exactly
-// the case where it bites, since one source edit routinely staleness two of
-// them at once (a `#color` tag renders into both a guide and the spec).
+// next loop that scripts/autogen.ts exists to end — and these are exactly the
+// case where it bites, since one source edit routinely staleness two of them at
+// once (a `#color` tag renders into both a guide and the spec).
 import { MARKER_GENERATORS } from './markerGenerators.ts'
 import { assertMarkersAndDocsAgree, getAllFiles, sourceCorpus } from './util.ts'
 

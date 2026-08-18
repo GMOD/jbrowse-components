@@ -36,7 +36,7 @@ interface Generator {
   // Reads the figure corpus or figures.lock, so its answer is only CI's answer
   // when the two agree. `--skip-figure-dependent` drops these; the pre-push
   // hook passes it when `pnpm figures:check` says they don't, so it can still
-  // REGENERATE the other fifteen instead of degrading the whole run to a
+  // REGENERATE the other twenty-two instead of degrading the whole run to a
   // report. Nothing DERIVED from a figure belongs in this list — those left
   // autogen entirely (see the tutorial-card note below).
   figureDependent?: boolean
@@ -217,12 +217,16 @@ const GENERATORS: Generator[] = [
     argv: web('sync-inline-figures.ts'),
   },
   {
-    // The ten `<!-- TABLE START -->` blocks spliced into the hand-written
-    // guides and agent-docs. One entry, not ten: each was its own `node`
+    // The 28 `<!-- TABLE START -->` blocks spliced into the hand-written guides
+    // and agent-docs. One entry, not one per table: each was its own `node`
     // process paying ~2.5s to load TypeScript before scanning, and gendocs
-    // below then generated all ten again. They still need an entry of their
-    // own — five of the blocks land in `developer_guides`/`agent-docs`, which
-    // gendocs' diffPaths do not cover. `markers.ts <label>` narrows to one.
+    // below then generated them all again.
+    //
+    // They keep an entry of their own for the reporting. gendocs' diff now
+    // covers the same docs, but it can only say "config/model/api docs" — this
+    // names the stale table, and `markers.ts <label>` narrows a development
+    // loop to one of them. It is also the cheap half: one TypeScript load
+    // against gendocs' whole-repo program.
     name: 'marker tables',
     argv: api('markers.ts'),
   },

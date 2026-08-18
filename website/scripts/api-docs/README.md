@@ -274,24 +274,41 @@ Further generators inject tables/catalogs into the **hand-written** guides
 at the definition site so the docs can't drift from the code, and rewrites only
 the region between a `<!-- MARKER START -->` / `<!-- MARKER END -->` pair — a
 guide opts in by dropping that pair, and editing between the markers is
-pointless since regen overwrites it. They all run inside `pnpm gendocs`.
+pointless since regen overwrites it.
 
-| Tag                                        | Source scanned                      | Marker                   | Renders                                              |
-| ------------------------------------------ | ----------------------------------- | ------------------------ | ---------------------------------------------------- |
-| `#color`                                   | `packages/core/src/ui/theme.ts`     | `COLOR_TABLE <group>`    | A color-swatch table per group                       |
-| `#jexlFunction`                            | `packages/core/src/util/jexl.ts`    | `JEXL_CATALOG`           | The jexl function catalog, grouped by category       |
-| `#extensionPoint`                          | all `plugins`/`packages`/`products` | `EXTENSION_POINTS_INDEX` | A completeness index of every extension point        |
-| `#displayFoundation` / `…Def`              | `packages`/`plugins`                | `DISPLAY_FOUNDATIONS`    | The foundation mixins table, with a "used by" column |
-| `#fileFormat`                              | adapter `#config` blocks            | `FILE_TYPES <group>`     | Format → adapter → track type routing, per group     |
-| `#gotcha`                                  | any `#config` block                 | `GOTCHA <ConfigName>`    | The type's caution callouts, verbatim                |
-| _(none — `new DisplayType` registrations)_ | whole repo                          | `DISPLAY_TYPES`          | Track type → display types                           |
-| _(none — slots declaring `promotedBase`)_  | config schemas                      | `PROMOTABLE_SLOTS`       | Which settings can be pinned as a display default    |
+**The complete list of markers, and which docs render each, is generated**: the
+`MARKER_INDEX` table in `agent-docs/ARCHITECTURE.md`. A list here would be the
+same enumeration these generators exist to stop hand-maintaining, and was — it
+named eight of the thirty-two markers in use, sourced `#color` to the file that
+re-exports the colors rather than the one that declares them, and described a
+per-generator CLI that had already been replaced by `markers.ts`. Below is how
+to write one, not what exists.
 
-The first five are also standalone scripts with a `--check` mode CI uses to fail
-when a tag changed but the docs weren't regenerated. `DISPLAY_TYPES`, `GOTCHA`
-and `PROMOTABLE_SLOTS` have no standalone entry point — they need the whole-repo
-scan `generate.ts` already does — so they are gated by the `pnpm gendocs` diff
-in `push.yml` instead.
+A few, as examples of the shapes:
+
+| Tag                                        | Source scanned                                             | Marker                   | Renders                                              |
+| ------------------------------------------ | ---------------------------------------------------------- | ------------------------ | ---------------------------------------------------- |
+| `#color`                                   | `packages/core/src/ui/palette.ts`                          | `COLOR_TABLE <group>`    | A color-swatch table per group                       |
+| `#jexlFunction`                            | every source carrying the tag, core's `util/jexl.ts` first | `JEXL_CATALOG`           | The jexl function catalog, grouped by category       |
+| `#extensionPoint`                          | all `plugins`/`packages`/`products`                        | `EXTENSION_POINTS_INDEX` | A completeness index of every extension point        |
+| `#displayFoundation` / `…Def`              | `packages`/`plugins`                                       | `DISPLAY_FOUNDATIONS`    | The foundation mixins table, with a "used by" column |
+| `#fileFormat`                              | adapter `#config` blocks                                   | `FILE_TYPES <group>`     | Format → adapter → track type routing, per group     |
+| `#gotcha`                                  | any `#config` block                                        | `GOTCHA <ConfigName>`    | The type's caution callouts, verbatim                |
+| _(none — `new DisplayType` registrations)_ | whole repo                                                 | `DISPLAY_TYPES`          | Track type → display types                           |
+| _(none — slots declaring `promotedBase`)_  | config schemas                                             | `PROMOTABLE_SLOTS`       | Which settings can be pinned as a display default    |
+
+**Where a new generator goes decides what gates it.** One that needs nothing
+from the TypeScript program joins `MARKER_GENERATORS` in `markerGenerators.ts`
+and is verified by `markers.ts --check` (one process for all of them, through
+`pnpm autogen`); `generate.ts` calls the same list, so the two cannot disagree
+about the set. The five that need the whole-repo program — `DISPLAY_TYPES`,
+`DISPLAY_VIEW_TYPES`, `GOTCHA`, `PROMOTABLE_SLOTS`, `SPEC_KEYS` — are called
+from `generate.ts` directly and gated by the `pnpm gendocs` diff instead.
+
+Either way `assertMarkersAndDocsAgree` holds the two ends together: a marker no
+doc renders, and a doc block no generator writes, are both errors. Neither was
+before, and both are silent — the second keeps whatever was committed, and the
+first reports itself up to date forever.
 
 Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `util.ts`):
 
