@@ -250,8 +250,8 @@ a locus, lower it if a tab hangs. It multiplies the resolved budget rather than
 replacing it, so an adapter declaring its own `fetchSizeLimit` keeps its
 relationship to the display default at both tiers.
 
-It is not a per-region force-load ceiling wearing a hat; none of the four
-questions that ruled that out reaches a static span tier
+The span tier is not a per-region force-load ceiling wearing a hat; none of the
+four questions that ruled that out reaches a static span tier
 ([ADR-074](../architecture-decision-records/adr-074-force-load-is-one-boolean-per-track.md)).
 
 ## Measurement follows the viewport
