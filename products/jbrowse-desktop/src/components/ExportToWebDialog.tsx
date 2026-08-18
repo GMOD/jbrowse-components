@@ -67,11 +67,59 @@ function ShareModeRadios({
   )
 }
 
+// Which base the export settled on. The three self-contained cases produce the
+// same session and want different words: a hub that was never involved is the
+// ordinary case, a hub that could not be fetched is a link worth building again
+// on a working connection, since self-contained is also the biggest kind of
+// session and the one that outgrows what a URL can carry.
+function BaseSummary({
+  plan,
+  sourceConfigUrl,
+}: {
+  plan: WebExportPlan
+  sourceConfigUrl?: string
+}) {
+  if (plan.strategy === 'hostedConfigBase') {
+    return (
+      <Typography variant="caption" color="textSecondary">
+        Reuses the hosted config {plan.configUrl}
+      </Typography>
+    )
+  }
+  return plan.selfContainedReason === 'baseUnreachable' ? (
+    <Alert severity="warning">
+      Couldn&apos;t fetch the hosted config this session was opened from
+      {sourceConfigUrl ? ` (${sourceConfigUrl})` : ''}, so the session carries
+      its own assemblies and tracks and the link is much larger than it would
+      otherwise be. Export again once that config is reachable to get the small
+      one.
+    </Alert>
+  ) : (
+    <Typography variant="caption" color="textSecondary">
+      {plan.selfContainedReason === 'assembliesNotInBase'
+        ? 'Self-contained session: the hosted config no longer provides every assembly this session uses'
+        : 'Self-contained session (carries its own assemblies and tracks)'}
+    </Typography>
+  )
+}
+
 // What the export decided and what it had to leave behind. Depends only on the
 // plan, not on the share mode, so it stays on screen while a mode switch
 // re-encodes the link.
-function PlanSummary({ plan }: { plan: WebExportPlan }) {
-  const { droppedTracks, blockingFiles } = plan
+function PlanSummary({
+  plan,
+  sourceConfigUrl,
+}: {
+  plan: WebExportPlan
+  sourceConfigUrl?: string
+}) {
+  const {
+    droppedTracks,
+    blockingFiles,
+    droppedTextIndexes,
+    revertedAssemblies,
+    unavailableAccounts,
+  } = plan
   return (
     <>
       {/* blocking files (a local assembly sequence, say) aren't attached to a
@@ -80,7 +128,9 @@ function PlanSummary({ plan }: { plan: WebExportPlan }) {
         <Alert severity="error">
           This session references local files that jbrowse-web can&apos;t open,
           so it won&apos;t load correctly until they&apos;re hosted at a URL:{' '}
-          {blockingFiles.join(', ')}.
+          {blockingFiles.join(', ')}. Their paths stay in the exported session,
+          so they travel inside the link — and, for a short link, to the share
+          server with it.
         </Alert>
       ) : null}
       {droppedTracks.length ? (
@@ -92,11 +142,30 @@ function PlanSummary({ plan }: { plan: WebExportPlan }) {
           include them.
         </Alert>
       ) : null}
-      <Typography variant="caption" color="textSecondary">
-        {plan.strategy === 'hostedConfigBase'
-          ? `Reuses the hosted config ${plan.configUrl}`
-          : 'Self-contained session (carries its own assemblies and tracks)'}
-      </Typography>
+      {droppedTextIndexes.length ? (
+        <Alert severity="info">
+          The text-search index built on this computer stays behind for{' '}
+          {droppedTextIndexes.join(', ')}. The track itself is exported; only
+          its search box is gone.
+        </Alert>
+      ) : null}
+      {revertedAssemblies.length ? (
+        <Alert severity="warning">
+          The recipient takes {revertedAssemblies.join(', ')} from the hosted
+          config, so any change you made to{' '}
+          {revertedAssemblies.length === 1 ? 'it' : 'them'} — an alias or
+          cytoband file, say — is not part of this export.
+        </Alert>
+      ) : null}
+      {unavailableAccounts.length ? (
+        <Alert severity="warning">
+          Files in this session authenticate through{' '}
+          {unavailableAccounts.join(', ')}, which the recipient&apos;s JBrowse
+          won&apos;t have. Those files are requested without credentials and
+          will fail if they are not public.
+        </Alert>
+      ) : null}
+      <BaseSummary plan={plan} sourceConfigUrl={sourceConfigUrl} />
     </>
   )
 }
@@ -290,7 +359,12 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
           />
         ) : (
           <>
-            {plan ? <PlanSummary plan={plan} /> : null}
+            {plan ? (
+              <PlanSummary
+                plan={plan}
+                sourceConfigUrl={snapshot.configuration?.sourceConfigUrl}
+              />
+            ) : null}
             {promptForUpload ? (
               <ShortLinkPrompt
                 shareURL={preparation.shareURL}

@@ -74,11 +74,33 @@ export async function prepareExport(
     // resolves against a store the session was never uploaded to. With no hosted
     // base (self-contained, `?config=none`) web falls back to DEFAULT_SHARE_URL, and
     // the two defaults are a pair.
-    shareURL:
+    shareURL: resolveShareUrl(
       plan.strategy === 'hostedConfigBase'
         ? // mirrors web's readConf: an explicit empty string is honored as-is
           (baseConfig?.configuration?.shareURL ?? DEFAULT_SHARE_URL)
         : DEFAULT_SHARE_URL,
+      plan.webBaseUrl,
+    ),
+  }
+}
+
+// The share store as an absolute url. jbrowse-web honors an empty or relative
+// shareURL as "relative to the page", and the page it means is the jbrowse-web
+// deployment the link opens — resolving one against desktop's own page instead
+// points the upload at `file:///…/index.html` in a packaged build, where the POST
+// cannot leave the app. Resolving here also gives the upload prompt a host to
+// name, at the one moment the user is being asked to approve sending something
+// to it.
+function resolveShareUrl(shareURL: string, webBaseUrl: string) {
+  try {
+    // `./` for the empty string, not the empty string: web appends the endpoint
+    // name and lets the browser resolve `share` against the page, which drops the
+    // page's last segment. Resolving `''` would keep an `index.html` and post to
+    // `…/index.html/share`.
+    return new URL(shareURL || './', webBaseUrl).href
+  } catch (e) {
+    console.error(e)
+    return shareURL
   }
 }
 

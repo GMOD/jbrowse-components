@@ -211,3 +211,33 @@ test('a config webExportUrl reroutes the export to that deployment', async () =>
   const url = new URL(linkValue())
   expect(url.origin + url.pathname).toBe('https://inst.example/jbrowse/')
 })
+
+// jbrowse-web honors an empty shareURL as "relative to the page", and the page it
+// means is the deployment the link opens. Left unresolved it is desktop's own
+// page — `file:///…/index.html` in a packaged build — so the POST never leaves the
+// app, and the consent prompt names no host at the moment it asks to send.
+test('an empty shareURL on a hosted base posts to the export target', async () => {
+  fetchMock.resetMocks()
+  fetchMock.mockResponse(async request =>
+    request.url.endsWith('config.json')
+      ? JSON.stringify({
+          assemblies: [{ name: 'hg38' }],
+          tracks: [],
+          configuration: { shareURL: '' },
+        })
+      : JSON.stringify({ sessionId: 'abc123' }),
+  )
+  const { getByLabelText, getByText } = await renderDialog({
+    ...snapshot,
+    configuration: { sourceConfigUrl: 'https://hub.example/config.json' },
+  })
+
+  fireEvent.click(getByLabelText('Short link'))
+  getByText(/uploads it to jbrowse\.org/)
+  fireEvent.click(getByText('Upload and create short link'))
+  await waitFor(() => {
+    expect(linkValue()).toContain('share-abc123')
+  })
+  const [endpoint] = fetchMock.mock.calls.at(-1)!
+  expect(endpoint).toBe('https://jbrowse.org/code/jb2/latest/share')
+})

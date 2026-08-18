@@ -20,7 +20,9 @@ export default function ExportToWebInfoDialog({
         This opens your desktop session in jbrowse-web. Tracks pointing at
         remote URLs load directly. Files on this computer are not reachable from
         the web, so tracks that use one are left out of the export and listed
-        for you; host those files at a URL to include them.
+        for you; host those files at a URL to include them. A text-search index
+        built on this computer is the exception: the track still travels, and
+        only its search box stays behind.
       </DialogContentText>
       <DialogContentText>
         <strong>Long link</strong> (the default): the full session is compressed
