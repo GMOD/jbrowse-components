@@ -19,6 +19,7 @@ import {
   fetchAllRegions,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
+  MIN_SEPARATOR_ROW_PX,
   TreeSidebarMixin,
   buildSpatialIndex,
   clusteringMenuItem,
@@ -645,10 +646,19 @@ export default function stateModelFactory(
           ...(self.isOverlay
             ? []
             : [
+                // Stays clickable below the height the grid draws at — the
+                // toggle is a setting, and fewer subtracks or a taller track
+                // bring it back — but says so, the same row the multi-row
+                // feature display offers off the same threshold.
                 toggleItem(
                   'Show row separators',
                   self.showRowSeparators,
                   self.setShowRowSeparators,
+                  self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
+                    ? {
+                        subLabel: `Needs rows ${MIN_SEPARATOR_ROW_PX}px or taller`,
+                      }
+                    : undefined,
                 ),
                 showRowLabelsMenuItem(self),
               ]),

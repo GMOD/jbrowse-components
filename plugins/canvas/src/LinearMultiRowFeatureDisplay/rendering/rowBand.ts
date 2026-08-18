@@ -32,12 +32,6 @@ export { MIN_DRAWN_ROW_PX }
 // which stays sub-pixel so that `nrow * rowHeight` still fits the display.
 export { drawnRowHeightPx as drawnRowHeight }
 
-// Smallest row height an inter-row separator is drawn at (RowSeparatorLines
-// and the track-menu toggle that describes it). A 1px line between rows that are
-// themselves 2px tall is half the picture, and rows are allowed below a pixel
-// (above) — at that density the grid would be the figure.
-export const MIN_SEPARATOR_ROW_PX = 4
-
 // Alpha the separator takes over this display's painting. Higher than the
 // multi-wiggle's xyplot rows, which sit on paper: blocks here are saturated
 // fills edge to edge (rowProportion 1) and swallow a fainter line.

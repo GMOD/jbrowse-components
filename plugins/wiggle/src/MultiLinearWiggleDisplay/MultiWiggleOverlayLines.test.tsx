@@ -92,6 +92,19 @@ describe('row separators', () => {
     ).toEqual([])
   })
 
+  // A clustered cohort auto-fits hundreds of subtracks into the track height, so
+  // its rows go below a pixel — and one hairline per boundary there is not a
+  // grid over the plot, it IS the plot. `RowSeparatorLines` floors at
+  // MIN_SEPARATOR_ROW_PX for that reason and this display took the floor by
+  // taking the default, which used to be 0.
+  it('draws none once the rows are too short to divide', () => {
+    expect(
+      separatorYs(
+        render(makeModel({ effectiveRowHeight: 0.32, numRows: 1987 })),
+      ),
+    ).toEqual([])
+  })
+
   // Density rows are edge-to-edge saturated fill, so the line is dialed up to
   // stay visible over them; xyplot rows sit on paper and can take a fainter one.
   it('is stronger over density fill than over an xyplot', () => {

@@ -14,21 +14,40 @@ import { getStrokeProps } from '@jbrowse/core/util'
 // "should there be a grid at all" gate — a toggle, a rendering mode — and
 // passes the opacity its painting needs: blocks that fill their row edge to
 // edge swallow a fainter line than bars sitting on paper.
+
+/**
+ * Smallest row height a separator is drawn at, and the default `minRowPx`
+ * below.
+ *
+ * A 1px line between rows that are themselves 2px tall is half the picture, and
+ * every display here lets its rows go below a pixel (a clustered cohort at 0.32
+ * px a row is the case they exist for) — at that density the grid stops
+ * dividing the plot and becomes it. Multi-wiggle drew the wash for exactly that
+ * reason: it took the default, and the default was 0.
+ *
+ * A default rather than a per-caller argument because the threshold is the
+ * pixel rule this component already owns, and the one caller that passed it
+ * spelled it in its own module while the other passed nothing. Read it for a
+ * menu row that has to say why the grid is absent (see the multi-row and
+ * multi-wiggle "Show row separators" toggles); pass `minRowPx` only for a
+ * display whose rows are bounded some other way.
+ */
+export const MIN_SEPARATOR_ROW_PX = 4
+
 export function RowSeparatorLines({
   numRows,
   rowHeight,
   width,
   opacity,
-  minRowPx = 0,
+  minRowPx = MIN_SEPARATOR_ROW_PX,
 }: {
   numRows: number
   rowHeight: number
   width: number
   // Alpha applied to the theme's divider color.
   opacity: number
-  // Row height below which the grid is dropped: a 1px line between rows that
-  // are themselves a couple of pixels tall is half the picture. 0 (the default)
-  // always draws.
+  // Row height below which the grid is dropped; defaults to
+  // MIN_SEPARATOR_ROW_PX. Pass 0 to always draw.
   minRowPx?: number
 }) {
   const palette = usePalette()

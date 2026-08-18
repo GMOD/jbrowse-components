@@ -17,7 +17,10 @@ export {
   rowLabelsCarryText,
 } from './SvgRowLabels.tsx'
 export { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
-export { RowSeparatorLines } from './RowSeparatorLines.tsx'
+export {
+  MIN_SEPARATOR_ROW_PX,
+  RowSeparatorLines,
+} from './RowSeparatorLines.tsx'
 export { StaleTreeHint } from './StaleTreeHint.tsx'
 export { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'
 export {

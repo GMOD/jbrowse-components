@@ -13,10 +13,7 @@ import {
 import { observer } from 'mobx-react'
 
 import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts'
-import {
-  MIN_SEPARATOR_ROW_PX,
-  SEPARATOR_OPACITY,
-} from '../rendering/rowBand.ts'
+import { SEPARATOR_OPACITY } from '../rendering/rowBand.ts'
 import MultiRowColorLegend from './MultiRowColorLegend.tsx'
 import MultiRowHoverHighlight from './MultiRowHoverHighlight.tsx'
 import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
@@ -109,7 +106,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
             rowHeight={effectiveRowHeight}
             width={canvasWidthPx}
             opacity={SEPARATOR_OPACITY}
-            minRowPx={MIN_SEPARATOR_ROW_PX}
           />
         </svg>
       ) : null}

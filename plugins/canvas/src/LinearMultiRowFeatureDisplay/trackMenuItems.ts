@@ -10,6 +10,7 @@ import {
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import {
+  MIN_SEPARATOR_ROW_PX,
   clusteringMenuItem,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
@@ -19,8 +20,6 @@ import {
 } from '@jbrowse/tree-sidebar'
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import TableRowsIcon from '@mui/icons-material/TableRows'
-
-import { MIN_SEPARATOR_ROW_PX } from './rendering/rowBand.ts'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'

@@ -11,7 +11,7 @@ import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
 import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
-import { MIN_SEPARATOR_ROW_PX, SEPARATOR_OPACITY } from './rendering/rowBand.ts'
+import { SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type {
@@ -113,7 +113,6 @@ function MultiRowSvgBody({
           rowHeight={self.effectiveRowHeight}
           width={canvasWidth}
           opacity={SEPARATOR_OPACITY}
-          minRowPx={MIN_SEPARATOR_ROW_PX}
         />
       ) : null}
       <SvgTreeSidebar
