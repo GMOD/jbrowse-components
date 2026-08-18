@@ -887,6 +887,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
 export type LinearSyntenyDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearSyntenyDisplayModel = Instance<LinearSyntenyDisplayStateModel>
+export interface LinearSyntenyDisplayModel extends Instance<LinearSyntenyDisplayStateModel> {}
 
 export default stateModelFactory
