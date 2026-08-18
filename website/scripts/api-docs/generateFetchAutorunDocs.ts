@@ -37,11 +37,11 @@ import {
 // Editing between the markers is pointless — it is overwritten on regen.
 
 const SOURCE =
-  'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts'
+  'plugins/linear-genome-view/src/BaseLinearDisplay/models/installPerRegionFetchAutoruns.ts'
 
-// The two installers used inside `MultiRegionDisplayMixin`'s afterAttach. Each
-// names the argument its autorun name comes from: an options object for the
-// general one, a positional string for the displayed-regions helper.
+// The two installers `installPerRegionFetchAutoruns` builds on. Each names the
+// argument its autorun name comes from: an options object for the general one,
+// a positional string for the displayed-regions helper.
 const INSTALLERS: Record<string, 'options' | 'thirdArg'> = {
   autorunOnReadyView: 'options',
   onDisplayedRegionsChange: 'thirdArg',
@@ -83,13 +83,22 @@ function optionsArg(node: ts.CallExpression) {
     )?.initializer
   const name = prop('name')
   const delay = prop('delay')
-  return name && ts.isStringLiteral(name)
-    ? {
-        name: name.text,
-        delay:
-          delay && ts.isNumericLiteral(delay) ? Number(delay.text) : undefined,
-      }
-    : undefined
+  if (!name || !ts.isStringLiteral(name)) {
+    return undefined
+  }
+  // A `delay` that isn't a literal — a named constant, an expression — would
+  // otherwise drop out of the table in silence, and the docs would go on quoting
+  // whatever number was last written by hand. That is the one drift this
+  // generator exists to close, so refuse rather than omit.
+  if (delay && !ts.isNumericLiteral(delay)) {
+    throw new Error(
+      `${SOURCE}: the \`${name.text}\` autorun's \`delay\` is not a numeric literal, so the generated table cannot quote it`,
+    )
+  }
+  return {
+    name: name.text,
+    delay: delay ? Number((delay as ts.NumericLiteral).text) : undefined,
+  }
 }
 
 function thirdArg(node: ts.CallExpression) {
@@ -165,7 +174,7 @@ export function collectAutoruns(): Autorun[] {
 function render(autoruns: Autorun[]) {
   const count = COUNTS[autoruns.length] ?? String(autoruns.length)
   return [
-    `\`MultiRegionDisplayMixin\`'s \`afterAttach\` installs ${count} autoruns:`,
+    `\`installPerRegionFetchAutoruns\` installs ${count} autoruns:`,
     '',
     markdownTable(
       ['Autorun', 'Fires on', 'Action'],

@@ -22,7 +22,7 @@ for which foundation each in-tree display uses.
 
 <!-- FETCH_AUTORUNS START -->
 
-`MultiRegionDisplayMixin`'s `afterAttach` installs four autoruns:
+`installPerRegionFetchAutoruns` installs four autoruns:
 
 <!-- prettier-ignore -->
 | Autorun | Fires on | Action |
@@ -49,7 +49,7 @@ estimate is what stops the banner flickering on an ordinary clear.
 
 <Figure caption="The too-large gate is self-releasing: nothing clears the banner, and a blocked display re-measures at each settled viewport until the window is small enough to fetch. That is the second of the two returns the dashed edge carries." src="/img/fetch_chain.png" />
 
-`boundsValid` compares the block against the loaded bounds, and those are
+`isBlockCovered` compares the block against the loaded bounds, and those are
 buffered wider than the viewport, so a small pan finds them still covering and
 fetches nothing. `isCacheValid` is the override hook beside it, for a display
 whose data goes stale for reasons the bounds can't see.

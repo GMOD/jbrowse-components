@@ -24,9 +24,6 @@ import type { IndexedRegion } from './planRegionFetch.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-/** The debounce on `FetchVisibleRegions`, in ms. */
-export const FETCH_VISIBLE_REGIONS_DELAY = 600
-
 /**
  * What the per-region fetch autoruns read and call. Duck-typed rather than the
  * mixin's own `Instance` type: `MultiRegionDisplayMixin` composes this
@@ -182,7 +179,10 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
       self.fetchNeeded(plan.needed)
       noteFetchAutorunRun(takeFetchFunnelEntered(self) ? 'fetched' : 'declined')
     },
-    { name: 'FetchVisibleRegions', delay: FETCH_VISIBLE_REGIONS_DELAY },
+    // the debounce stays a literal here: `generateFetchAutorunDocs` reads it off
+    // this call to write the docs' autorun table, so a named constant would put
+    // the number back in the docs' hands
+    { name: 'FetchVisibleRegions', delay: 600 },
   )
 
   // Re-fetch when the RPC payload changes. The cache key is what rpcProps()

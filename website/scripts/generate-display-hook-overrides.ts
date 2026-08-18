@@ -250,7 +250,11 @@ function main() {
   for (const root of SCAN_ROOTS) {
     const files = walkFiles(
       join(repoRoot, root),
-      isTsSource,
+      // `isTsSource` drops `*.test.ts` but not a test HARNESS, and a harness
+      // that stands up a display to exercise a foundation declares the same
+      // hooks a display does — reading, in this table, as another display
+      // overriding them. No shipped display is named this way.
+      name => isTsSource(name) && !/test(env|utils)\.tsx?$/i.test(name),
       new Set(['node_modules', 'esm', 'dist', 'shaders', '__pycache__']),
     )
     for (const file of files) {

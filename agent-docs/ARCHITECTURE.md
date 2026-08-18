@@ -445,9 +445,10 @@ Read the three rows as: per-region fetch + GPU render; one global dataset +
 GPU render; the same global fetch with **no** `RenderLifecycleMixin`, because a
 non-GPU display shouldn't drag in the render lifecycle to get
 fetch/cancel/too-large/reload. The third is arc, which reaches it through its
-own `ArcFetchModel` and paints main-thread SVG. `MultiRegionDisplayMixin` is
-also the one row that installs fetch autoruns itself; on the other two each
-display installs its own in `afterAttach` via `installGlobalFetchAutorun`.
+own `ArcFetchModel` and paints main-thread SVG. The first row installs its
+autoruns for every display that composes it — one
+`installPerRegionFetchAutoruns(self)` from the mixin's `afterAttach` — while on
+the other two each display installs its own via `installGlobalFetchAutorun`.
 
 `GlobalFetchMixin` is the rendering-agnostic fetch foundation shared by the last
 two rows: GPU global displays layer `RenderLifecycleMixin` on top of it
@@ -627,11 +628,12 @@ wrapper, `rpcProps`, cancellation, byte gate).
 
 `MultiRegionDisplayMixin` (in
 `plugins/linear-genome-view/src/BaseLinearDisplay/`) drives RPC fetches for all
-LGV displays (alignments, canvas, wiggle, variants) via these autoruns:
+LGV displays (alignments, canvas, wiggle, variants). Its `afterAttach` is one
+call to `installPerRegionFetchAutoruns`, which installs these:
 
 <!-- FETCH_AUTORUNS START -->
 
-`MultiRegionDisplayMixin`'s `afterAttach` installs four autoruns:
+`installPerRegionFetchAutoruns` installs four autoruns:
 
 <!-- prettier-ignore -->
 | Autorun | Fires on | Action |
@@ -642,6 +644,20 @@ LGV displays (alignments, canvas, wiggle, variants) via these autoruns:
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself |
 
 <!-- FETCH_AUTORUNS END -->
+
+**What the autorun decides and what it merely wires are separate files, and the
+split is what either half can be tested against.** `planRegionFetch` answers
+"given these inputs, what should happen" as a value — fetch this region set,
+raise this assembly mismatch, or do nothing for this reason — and is pure, so
+its precedence and its buffered-region substitution need no tree.
+`installPerRegionFetchAutoruns` owns what no pure function can state: which
+reads MobX tracks, which are `untracked` perf guards whose observable has a
+better re-trigger, and which sit behind a thunk so a run that bails early does
+not subscribe to the viewport. The plan's thunk parameters are the only thing it
+says about that, the way `computeDisplayPhase` takes its `loading` term as one.
+Two test files, one per half; a third (`fetchRegions.test.ts`) covers the commit
+ordering. Before the split all three were transcriptions of the autoruns, and
+deleting the half-screen prefetch buffer from production left every one green.
 
 Why the byte estimate is dropped here: `displayedRegionIndex` is reused across
 chromosomes, so a stale estimate describes the previous chromosome's numbers and
@@ -736,7 +752,7 @@ signal, read unconditionally, each pinned by its installer's test:
 
 | family | installer | the pure signal | pinned by |
 | --- | --- | --- | --- |
-| per-region | `MultiRegionDisplayMixin`'s `FetchVisibleRegions` | `fetchGeneration` | the mixin's own fetch tests |
+| per-region | `installPerRegionFetchAutoruns` | `fetchGeneration` | `installPerRegionFetchAutoruns.test.ts` |
 | global | `installGlobalFetchAutorun` | `reloadCounter` | `installGlobalFetchAutorun.test.ts` |
 | comparative | `installComparativeFetchAutorun` | `SyntenyFetchStateMixin.reloadCounter` | `installComparativeFetchAutorun.test.ts` |
 
@@ -1037,8 +1053,8 @@ display that wrongly chains to `super` in its own `afterAttach`, which re-enters
 the mixin's hook and installs the fetch autoruns twice.
 
 **All three fetch families call it**, once per display, from whichever installed
-that display's autoruns: `MultiRegionDisplayMixin`'s `afterAttach` for the
-per-region family, `installGlobalFetchAutorun` for the global one,
+that display's autoruns: `installPerRegionFetchAutoruns` for the per-region
+family, `installGlobalFetchAutorun` for the global one,
 `installComparativeFetchAutorun` for the comparative one. So a fourth skeleton
 owes the same call, beside the pure "go again" signal [the trigger
 list](#the-global-fetch-trigger-list-must-be-read-unconditionally) asks it for.
