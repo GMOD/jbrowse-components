@@ -1,6 +1,7 @@
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodTypeWithRenameRegions from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts'
+import { largestRegionBytes } from '../byteBudget.ts'
 
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
@@ -43,15 +44,15 @@ export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRe
     // and keeps the biggest answer. It costs what the merged call costs —
     // `getRegionByteSize` already resolves chunks per region internally and only
     // the reduction is shared, measured at 0.9-1.0x over 24 and 70 regions
-    // (agent-docs/measurements/byte-estimate-scope.json). Splitting it here
-    // rather than returning the whole array keeps the wire a single number and
-    // keeps the reduction beside the adapter that produced the inputs.
-    const perRegion = await Promise.all(
-      regions.map(region => dataAdapter.getRegionByteSize([region], args)),
+    // (agent-docs/measurements/byte-estimate-scope.json). Reducing here rather
+    // than returning the whole array keeps the wire a single number; the
+    // reduction itself is `largestRegionBytes`, which canvas applies to its own
+    // per-region fetches so the two paths share the rule rather than restate
+    // it.
+    return largestRegionBytes(
+      await Promise.all(
+        regions.map(region => dataAdapter.getRegionByteSize([region], args)),
+      ),
     )
-    const measured = perRegion.filter(bytes => bytes !== undefined)
-    // Every region unmeasurable is itself "unmeasurable" — not `0`, which the
-    // verdict would read as a region that fits.
-    return measured.length > 0 ? Math.max(...measured) : undefined
   }
 }

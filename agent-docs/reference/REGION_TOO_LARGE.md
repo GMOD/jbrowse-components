@@ -25,6 +25,7 @@ the names were before.
 | --- | --- |
 | `RegionTooLargeMixin` (derived gate, byte axis, worker byte budget) | `plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts` |
 | Shared verdict primitives | `plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts` |
+| Budget vocabulary both sides of the worker share | `packages/core/src/rpc/byteBudget.ts` |
 | Pre-flight estimate RPC | `packages/core/src/rpc/methods/CoreGetRegionByteEstimate.ts` |
 | Adapter estimate | `BaseFeatureDataAdapter.getRegionByteSize` |
 | In-fetch byte short-circuit (both canvas RPCs) | `plugins/canvas/src/RenderFeatureDataRPC/byteGate.ts` |
@@ -41,11 +42,14 @@ survives regardless of mixin composition order" pin in
 Everything here is plugin-internal but one type: the mixin, the floor and the
 verdict helpers are not exported from `@jbrowse/plugin-linear-genome-view`, and
 [ADR-045](../architecture-decision-records/adr-045-region-too-large-gate-stays-in-lgv-plugin.md)
-is why they live in a plugin rather than a foundation package. The exception is
-`GateViewport`, which canvas's duck-typed fetch contracts have to name — a
-display hands `commitGateMeasurements` the viewport its measurement was taken
-at. `ByteEstimate` and `RegionTooLargeStatus` rode out beside it with no
-consumer and no longer do.
+is why they live in a plugin rather than a foundation package. The exceptions are
+`GateViewport` and `GateFetchState`, which canvas's duck-typed fetch contracts
+have to name — a display snapshots `gateFetchState()` when it issues a fetch and
+hands it back to `commitGateMeasurements`. `ByteEstimate` and
+`RegionTooLargeStatus` rode out beside them with no consumer and no longer do.
+The budget vocabulary is the one piece that is deliberately *not* plugin-internal
+(§ A budget has a scope): three callers in three packages make the same
+comparison, and only `packages/core` is reachable from all of them.
 
 The pre-flight RPC does take a stop token, and it earns it. `getRegionByteSize`
 bottoms out in an index lookup (`bytesForRegions`), which is a set of range reads
@@ -303,11 +307,14 @@ captured where the fetch was issued, because a result is judged by the state tha
 produced it and neither field can be recovered afterwards. `viewport` was always
 threaded for that reason; `gated` used to be a live `gateActive` read at commit
 time, which is a different question whenever force-load moves during the round
-trip, and it answered wrongly in both directions. `gated` is
-`resolvedByteLimit() !== undefined` — the budget the worker was actually handed,
-which both fetch paths already compute to build their RPC args, so nothing new is
-captured. One object rather than two arguments, so a third live read here is the
-awkward thing to add.
+trip, and it answered wrongly in both directions.
+
+`gateFetchState()` on `RegionTooLargeMixin` is the capture, and calling it *is*
+the snapshot — a method rather than a getter for that reason. One implementation
+rather than one per fetch path: both canvas paths and the tests spelled it
+themselves at first, which is one copy per place to forget that `gated` means "at
+issue", and a test copy that re-derives the rule cannot fail when the production
+rule changes.
 
 The gated half is one condition, in the two fetch autoruns:
 
@@ -477,6 +484,16 @@ multi-region view where each region individually fits should never be blanked
 just because the regions add up.
 
 ## A budget has a scope
+
+Its vocabulary is `packages/core/src/rpc/byteBudget.ts` — the scope type, the
+per-region reduction (`largestRegionBytes`) and the over-budget comparison
+(`overByteBudget`). Core is the only package all three callers can reach: the
+RPC beside it, canvas's in-fetch gate, and this plugin's
+`evaluateRegionTooLarge`. It is the byte axis's counterpart to `featuresPerPx`
+on the density axis, which is shared for exactly this reason and had no twin
+here — so the worker's short-circuit and the banner reached the same comparison
+separately, and a `>` drifting to `>=` on one side was invisible to every test
+in the tree.
 
 The rule above is not canvas's; it is the **byte budget's**, and it is the one
 idea both halves of the gate now turn on. `gateByteLimit` answers "what may a

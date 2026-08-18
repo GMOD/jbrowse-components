@@ -56,6 +56,12 @@ function makeSelf() {
           }),
         ).then(() => {}),
       setRpcData: () => {},
+      // the snapshot the mixin takes at issue; this stub stands in for a
+      // measured view under an active gate
+      gateFetchState: () => ({
+        viewport: { spanBp: 10_000, key: 'k' },
+        gated: true,
+      }),
       commitGateMeasurements: (m: RegionGateMeasurement[]) => {
         committed.push(m)
       },

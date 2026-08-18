@@ -2,23 +2,6 @@ import { getMembers } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { GateFetchState } from '../shared/CanvasFeatureGateMixin.ts'
-import type { GateViewport } from '@jbrowse/plugin-linear-genome-view'
-
-// What a fetch issued right now would carry: the viewport it is about, and
-// whether the gate was watching. `resolvedByteLimit()` is the budget the worker
-// gets, so `!== undefined` IS "the gate was watching" — the same expression both
-// production fetch paths use. Captured at issue and handed to the commit, which
-// is what lets these tests move the gate afterwards and still assert on what the
-// fetch actually had.
-const issuedNow = (display: {
-  gateViewport: GateViewport | undefined
-  resolvedByteLimit: () => number | undefined
-}): GateFetchState => ({
-  viewport: display.gateViewport,
-  gated: display.resolvedByteLimit() !== undefined,
-})
-
 // CanvasFeatureGateMixin never sets `measuresBytesPreFlight` (it folds the byte check
 // into its feature RPC instead of running the pre-flight), so the opt-in comes
 // entirely from `measuresBytesInFetch`, which RegionTooLargeMixin ORs into
@@ -222,7 +205,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { featureCount: 12 },
         },
       ],
-      issuedNow(display),
+      display.gateFetchState(),
     )
     expect(display.byteEstimate).toEqual({
       bytes: 8_000_000,
@@ -257,7 +240,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { featureCount: 12 },
         },
       ],
-      issuedNow(display),
+      display.gateFetchState(),
     )
 
     display.setForceLoadTrack(false)
@@ -273,7 +256,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     // issued under the gate, so the worker really was handed a budget
-    const issued = issuedNow(display)
+    const issued = display.gateFetchState()
     expect(issued.gated).toBe(true)
 
     // ...and the user force-loads while it is in flight
@@ -299,7 +282,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     view.zoomTo(100)
     display.setForceLoadTrack(true)
     // issued with no budget on either axis: the worker measured against nothing
-    const issued = issuedNow(display)
+    const issued = display.gateFetchState()
     expect(issued.gated).toBe(false)
 
     // ...and the track is put back under the gate before the results land
@@ -335,7 +318,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { featureCount: 12 },
         },
       ],
-      issuedNow(display),
+      display.gateFetchState(),
     )
 
     expect(display.densityStatsPerRegion.get(0)).toEqual({
@@ -403,7 +386,7 @@ describe('multi-region estimates over a shrinking region set', () => {
           result: { bytes: 2_000_000 },
         },
       ],
-      issuedNow(display),
+      display.gateFetchState(),
     )
     expect(display.byteEstimate).toMatchObject({
       bytes: 20_000_000,
@@ -429,7 +412,7 @@ describe('multi-region estimates over a shrinking region set', () => {
           result: { bytes: 8_000_000 },
         },
       ],
-      issuedNow(display),
+      display.gateFetchState(),
     )
     expect(display.regionTooLarge).toBe(true)
     expect(display.resolvedByteLimit()).toBe(5_000_000)
@@ -476,7 +459,7 @@ describe('multi-region estimates over a shrinking region set', () => {
           result: { bytes: perRegion },
         },
       ],
-      issuedNow(display),
+      display.gateFetchState(),
     )
 
     expect(display.resolvedByteLimit()).toBe(5_000_000)

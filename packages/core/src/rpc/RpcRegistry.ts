@@ -4,6 +4,7 @@ import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { NoAssemblyRegion } from '../util/types/index.ts'
 import type { RpcResult } from './RpcServer.ts'
+import type { ByteEstimateScope } from './byteBudget.ts'
 
 export interface RegionLike {
   refName: string
@@ -74,7 +75,7 @@ export interface RpcRegistry {
        * file. Both figures, and what splitting the call costs, are in
        * agent-docs/reference/REGION_TOO_LARGE.md § "A budget has a scope".
        */
-      scope: 'largestRegion' | 'wholeRequest'
+      scope: ByteEstimateScope
       headers?: Record<string, string>
     }
     return: number | undefined

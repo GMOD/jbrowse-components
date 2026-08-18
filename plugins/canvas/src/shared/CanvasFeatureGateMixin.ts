@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { largestRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { onDisplayedRegionsChange } from '@jbrowse/plugin-linear-genome-view'
@@ -9,6 +10,7 @@ import { screenDensity } from './regionDensity.ts'
 import type { RegionDensityStats } from './regionDensity.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
+  GateFetchState,
   GateViewport,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -57,29 +59,6 @@ export interface RegionGateMeasurement {
   displayedRegionIndex: number
   region: { start: number; end: number }
   result: { bytes?: number; featureCount?: number }
-}
-
-/**
- * What was true about the gate when a fetch was **issued**, carried alongside
- * that fetch so its results are judged by the state that produced them. Every
- * field here is one a live read at commit time gets wrong, because the user can
- * zoom or force-load during the round trip.
- *
- * - `viewport` — what the measurement is about. `undefined` before the view is
- *   measured, which `commitGateMeasurements` treats as nothing to label these
- *   numbers with.
- * - `gated` — whether the gate was watching, i.e. whether the worker was handed
- *   any budget to measure against. `resolvedByteLimit() !== undefined` is
- *   exactly that, and both fetch paths already read it to build the RPC args, so
- *   nothing new is captured.
- *
- * One object rather than two parameters because they answer the same question
- * and go stale together: adding a third live read here later is the mistake this
- * shape is meant to make awkward.
- */
-export interface GateFetchState {
-  viewport: GateViewport | undefined
-  gated: boolean
 }
 
 /**
@@ -282,12 +261,8 @@ export default function CanvasFeatureGateMixin() {
         if (gated) {
           host(self).setGateMeasuredViewport(viewport)
         }
-        const byteCounts: number[] = []
         for (const { displayedRegionIndex, region, result } of measurements) {
-          const { bytes, featureCount } = result
-          if (bytes !== undefined) {
-            byteCounts.push(bytes)
-          }
+          const { featureCount } = result
           if (featureCount !== undefined) {
             self.setDensityStats(displayedRegionIndex, {
               featureCount,
@@ -295,6 +270,13 @@ export default function CanvasFeatureGateMixin() {
             })
           }
         }
+        // Per-region max, not sum: each region is gated against the same
+        // per-region budget. `largestRegionBytes` is the same reduction the
+        // pre-flight asks `CoreGetRegionByteEstimate` for by name (`scope:
+        // 'largestRegion'`), shared rather than restated — one budget scope, so
+        // the two paths cannot reach opposite verdicts on one file the way they
+        // used to.
+        const bytes = largestRegionBytes(measurements.map(m => m.result.bytes))
         // No byte count in the batch — either the adapter has no index estimate,
         // or the worker was handed no budget to measure against because the byte
         // gate was inactive for this fetch (force-loaded). Either way this fetch
@@ -304,16 +286,8 @@ export default function CanvasFeatureGateMixin() {
         // that `nextByteEstimate` builds across two real measurements. The
         // pre-flight path never had the problem — `byteGateBlocksFetch` skips the
         // RPC outright when nothing could gate, and so writes nothing.
-        if (byteCounts.length > 0) {
-          host(self).setByteEstimate({
-            // Per-region max, not sum: each region is gated against the same
-            // per-region budget. The same reduction the pre-flight asks
-            // `CoreGetRegionByteEstimate` for by name (`scope:
-            // 'largestRegion'`) — one budget scope, so the two paths cannot
-            // reach opposite verdicts on one file the way they used to.
-            bytes: Math.max(...byteCounts),
-            viewport,
-          })
+        if (bytes !== undefined) {
+          host(self).setByteEstimate({ bytes, viewport })
         }
       },
     }))

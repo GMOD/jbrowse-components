@@ -1,3 +1,4 @@
+import { overByteBudget } from '@jbrowse/core/rpc/byteBudget'
 import { getDisplayStr } from '@jbrowse/core/util'
 
 /**
@@ -154,6 +155,29 @@ export interface GateViewport {
 }
 
 /**
+ * What was true about the gate when a fetch was **issued**, carried alongside
+ * that fetch so its results are judged by the state that produced them. Every
+ * field here is one a live read at commit time gets wrong, because the user can
+ * zoom or force-load during the round trip.
+ *
+ * - `viewport` — what the measurement is about. `undefined` before the view is
+ *   measured, which `commitGateMeasurements` treats as nothing to label these
+ *   numbers with.
+ * - `gated` — whether the gate was watching, i.e. whether the worker was handed
+ *   any budget to measure against. `resolvedByteLimit() !== undefined` is
+ *   exactly that, and both fetch paths already read it to build the RPC args, so
+ *   nothing new is captured.
+ *
+ * One object rather than two parameters because they answer the same question
+ * and go stale together: adding a third live read here later is the mistake this
+ * shape is meant to make awkward.
+ */
+export interface GateFetchState {
+  viewport: GateViewport | undefined
+  gated: boolean
+}
+
+/**
  * Fold a fresh measurement into the stored one, carrying across the only thing
  * the stored one knows that the fresh one can't: whether zooming has been shown
  * not to help. See {@link ByteEstimate.zoomIneffective}.
@@ -291,11 +315,11 @@ export function evaluateRegionTooLarge({
   byteLimit?: number
   densityTooLarge?: boolean
 }): RegionTooLargeStatus {
-  if (
-    estimatedFetchBytes !== undefined &&
-    byteLimit !== undefined &&
-    estimatedFetchBytes > byteLimit
-  ) {
+  // `overByteBudget` rather than the comparison written out here, because the
+  // worker's in-fetch short-circuit makes the same one and the two reaching it
+  // separately is how a rejection with no banner happens. This function's own
+  // job is the axis precedence and the wording.
+  if (overByteBudget(estimatedFetchBytes, byteLimit)) {
     return {
       tooLarge: true,
       reason: bytesTooLargeReason(estimatedFetchBytes),

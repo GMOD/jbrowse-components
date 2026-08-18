@@ -3,16 +3,13 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
-import type {
-  GateFetchState,
-  RegionGateMeasurement,
-} from '../shared/CanvasFeatureGateMixin.ts'
+import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   FetchContext,
-  GateViewport,
+  GateFetchState,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type Needed = { region: Region; displayedRegionIndex: number }[]
@@ -46,7 +43,7 @@ interface FetchSelf extends IStateTreeNode {
     work: (ctx: FetchContext) => Promise<void>,
   ) => Promise<void>
   setRpcData: (regionIndex: number, data: MultiRowRegionData) => void
-  gateViewport: GateViewport | undefined
+  gateFetchState: () => GateFetchState
   commitGateMeasurements: (
     measurements: RegionGateMeasurement[],
     issued: GateFetchState,
@@ -62,12 +59,9 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
   const byteLimit = self.resolvedByteLimit()
-  // captured before the fetch: what the gate looked like when this fetch was
-  // issued, which is what its results have to be judged against. A mid-fetch
-  // zoom must not re-label the measurement, and a mid-fetch force-load must not
-  // make it look like the gate measured something. `byteLimit` being undefined
-  // IS "the gate was not watching" — it is the budget the worker gets.
-  const issued = { viewport: self.gateViewport, gated: byteLimit !== undefined }
+  // captured before the fetch, because its results are judged against what the
+  // gate looked like when it was issued rather than when they land
+  const issued = self.gateFetchState()
   // Per-region gate measurements, keyed by the displayedRegionIndex onResult
   // reports back. A region whose fetch was skipped as stale never lands here.
   const gateResults = new Map<

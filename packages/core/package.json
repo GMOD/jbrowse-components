@@ -68,6 +68,7 @@
     "./pluginDefinitions": "./src/pluginDefinitions.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
+    "./rpc/byteBudget": "./src/rpc/byteBudget.ts",
     "./svg/SvgExport": "./src/svg/SvgExport.tsx",
     "./svg/constants": "./src/svg/constants.ts",
     "./svg/saveSvgAsImage": "./src/svg/saveSvgAsImage.ts",
@@ -454,6 +455,10 @@
       "./rpc/RpcRegistry": {
         "types": "./esm/rpc/RpcRegistry.d.ts",
         "import": "./esm/rpc/RpcRegistry.js"
+      },
+      "./rpc/byteBudget": {
+        "types": "./esm/rpc/byteBudget.d.ts",
+        "import": "./esm/rpc/byteBudget.js"
       },
       "./svg/SvgExport": {
         "types": "./esm/svg/SvgExport.d.ts",
@@ -1177,6 +1182,9 @@
         ],
         "rpc/RpcRegistry": [
           "esm/rpc/RpcRegistry.d.ts"
+        ],
+        "rpc/byteBudget": [
+          "esm/rpc/byteBudget.d.ts"
         ],
         "svg/SvgExport": [
           "esm/svg/SvgExport.d.ts"

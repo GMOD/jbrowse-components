@@ -123,7 +123,6 @@ import type {
   RenderFeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { GateFetchState } from '../shared/CanvasFeatureGateMixin.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
@@ -155,6 +154,7 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
+  GateFetchState,
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -2649,17 +2649,9 @@ export default function baseStateModelFactory(
             // keys.
             const byteLimit = self.resolvedByteLimit()
             const maxFeatureDensity = self.maxFeatureDensity
-            // captured here, not at commit time: what the gate looked like
-            // when this fetch was issued, which is what its results have to be
-            // judged against. A mid-fetch zoom would otherwise label the
-            // measurement with a viewport it never covered, and a mid-fetch
-            // force-load would make a fetch the gate sat out look measured.
-            // `byteLimit` being undefined IS "the gate was not watching" — it is
-            // the budget the worker gets.
-            const issued: GateFetchState = {
-              viewport: self.gateViewport,
-              gated: byteLimit !== undefined,
-            }
+            // captured here, not at commit time: its results are judged
+            // against what the gate looked like when this fetch was issued
+            const issued = self.gateFetchState()
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
             // the refetch window without letting either map grow unboundedly

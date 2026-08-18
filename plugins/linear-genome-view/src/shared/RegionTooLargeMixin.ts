@@ -18,7 +18,11 @@ import {
 
 import type { FetchContext } from '../BaseLinearDisplay/models/FetchMixin.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
-import type { ByteEstimate, GateViewport } from './regionTooLargeUtils.ts'
+import type {
+  ByteEstimate,
+  GateFetchState,
+  GateViewport,
+} from './regionTooLargeUtils.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -656,6 +660,24 @@ export default function RegionTooLargeMixin() {
        */
       resolvedByteLimit(): number | undefined {
         return self.gateActive ? self.gateByteLimit : undefined
+      },
+      /**
+       * #method
+       * Snapshot the gate as it is **right now**, for a fetch about to be
+       * issued. Its results are judged against this rather than against the live
+       * gate, because both fields move during a round trip and neither can be
+       * recovered afterwards — a zoom relabels `gateViewport`, a force-load flips
+       * `gateActive`.
+       *
+       * A method, not a getter, because calling it *is* the capture: a fetch
+       * path calls it once, above its await, and hands the value to
+       * `commitGateMeasurements`. The two canvas fetch paths and the tests all
+       * went through their own copy of this expression, which is one copy per
+       * place to forget that `gated` means "at issue" — and a test copy that
+       * re-derives it cannot fail when the production rule changes.
+       */
+      gateFetchState(): GateFetchState {
+        return { viewport: self.gateViewport, gated: self.gateActive }
       },
     }))
     .views(self => ({

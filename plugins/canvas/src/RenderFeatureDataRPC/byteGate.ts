@@ -1,3 +1,4 @@
+import { overByteBudget } from '@jbrowse/core/rpc/byteBudget'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import type { RegionTooLargeResult, RenderFeatureDataArgs } from './rpcTypes.ts'
@@ -44,7 +45,11 @@ export async function measureRegionBytes({
     statusCallback,
   })
   checkStopTokenThrottled(stopTokenCheck)
-  return bytes !== undefined && bytes > byteLimit
+  // The same comparison the main thread's `evaluateRegionTooLarge` makes, from
+  // the one place both reach: a worker that refuses a region the banner calls
+  // fine is a blank display with nothing to refetch on, and nothing else would
+  // report it.
+  return overByteBudget(bytes, byteLimit)
     ? { bytes, tooLarge: { regionTooLarge: true, bytes } }
     : { bytes }
 }
