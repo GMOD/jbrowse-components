@@ -23,12 +23,25 @@ follows is local.
 `assertDisplayContract` covers the two method-shaped hooks in dev.
 `makeRetryContractCheck` is the same idea for retry: it reports when a
 `reloadCounter` bump re-runs the autorun and the gate still declines — the dead
-Retry button. Opt out with `loadingSuppressed` if the display deliberately isn't
-fetching. A two-stage `reload()` says `awaitingPrerequisite` instead (HiC, whose
-contacts fetch declines until the header lands), which **defers** the verdict to
-the run after the prerequisite arrives rather than waiving it. Reports reach the
-jest gate through `console.error`, so a harness replacing it opts itself out; a
-test provoking a violation calls `takeDisplayContractReports()`.
+Retry button. Both foundations install it. Opt out with `loadingSuppressed` if
+the display deliberately isn't fetching. A two-stage `reload()` says
+`awaitingPrerequisite` instead (HiC, whose contacts fetch declines until the
+header lands; variants, until `sourcesBase` does), which **defers** the verdict
+to the run after the prerequisite arrives rather than waiving it. Reports reach
+the jest gate through `console.error`, so a harness replacing it opts itself
+out; a test provoking a violation calls `takeDisplayContractReports()`.
+
+**A predicate has to be strictly narrower than the gate it explains.** One that
+restates the gate's negation makes every decline a deferred one, so no run is
+ever judged and the display has opted out — HiC is in that shape deliberately,
+and `LinearHicDisplay/infoFetchFailure.test.ts` is what covers its retry
+instead.
+
+This family has no `shouldFetch()` to ask, so the classification is: `needed`
+empty is the decline, and reaching `fetchRegions` is the fetch. Every
+`fetchNeeded` override gets there in its synchronous prefix, which is what makes
+that readable without awaiting the override. A new override that awaits first
+gets a false report, not silence.
 
 **Everything the check reads, it reads `untracked`** — it runs inside the fetch
 autorun, so a tracked read puts that observable in the autorun's dependency set

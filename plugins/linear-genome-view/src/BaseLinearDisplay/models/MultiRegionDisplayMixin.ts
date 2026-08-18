@@ -372,7 +372,7 @@ export default function MultiRegionDisplayMixin() {
          * An override must reach this counter, by chaining to super or by
          * bumping it — `MultiSampleVariantBaseModel` is the one that overrides
          * today and chains. Missing it doesn't break the retry, which the
-         * `clearAllRpcData` below drives; it turns the dev-only retry check off
+         * `clearAllRpcData` call drives; it turns the dev-only retry check off
          * for that display, silently, which is the failure mode worth knowing.
          */
         reload() {

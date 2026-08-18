@@ -111,18 +111,54 @@ function setup() {
 
 // The FetchVisibleRegions autorun carries `delay: 600`, so every run after the
 // first needs the debounce waited out rather than a microtask.
+//
+// `unref` where there is one, so the longest timers in this file can't hold
+// jest's worker open past the run. Optional because there isn't one under jsdom,
+// where `setTimeout` returns a number — the lint rule reads node's types and
+// calls the guard unnecessary, and it is the guard that keeps this from throwing
+// under the environment the suite actually runs in.
 function settle() {
   return new Promise(resolve => {
-    setTimeout(resolve, 800)
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- jsdom's setTimeout returns a number
+    setTimeout(resolve, 800).unref?.()
   })
 }
+
+// The first fetch cycle has to be fully over before a test provokes anything:
+// a fetch settling late bumps `fetchGeneration` and re-runs the autorun on its
+// own, and a test would then pass on that run rather than on the one its own
+// action provoked. That is not hypothetical — with a fixed wait here, deleting
+// the autorun's `reloadCounter` read left this file green.
+//
+// Adaptive rather than a fixed sleep, because a fixed one long enough for a
+// loaded CI worker is also long enough to blow jest's 5s default on every test.
+// Quiet means no fetch in flight and no new RPC across a full debounce window.
+async function quiesce(
+  display: TestDisplay,
+  mockRpcCall: { mock: { calls: unknown[] } },
+) {
+  for (let i = 0; i < 12; i++) {
+    const before = mockRpcCall.mock.calls.length
+    await settle()
+    if (!display.isLoading && mockRpcCall.mock.calls.length === before) {
+      return
+    }
+  }
+  throw new Error('display never went quiet')
+}
+
+// Jest's 5s default is not a budget these can live inside: one quiesce plus one
+// provoked run is several debounce windows, and on a machine running other
+// suites in parallel it is more. A too-tight limit here fails as six red tests
+// that look like the check misbehaving, which is what it did before this line.
+jest.setTimeout(60_000)
 
 const reports = () => takeDisplayContractReports()
 
 test('a healthy reload refetches, and the check says nothing', async () => {
   const { createDisplay, mockRpcCall } = setup()
   const { display } = createDisplay()
-  await settle()
+  await quiesce(display, mockRpcCall)
 
   const before = mockRpcCall.mock.calls.length
   expect(before).toBeGreaterThan(0)
@@ -138,7 +174,7 @@ test('a healthy reload refetches, and the check says nothing', async () => {
 test('a reload that invalidates nothing is reported as a dead button', async () => {
   const { createDisplay, mockRpcCall } = setup()
   const { display } = createDisplay()
-  await settle()
+  await quiesce(display, mockRpcCall)
 
   const before = mockRpcCall.mock.calls.length
   display.bumpReloadCounterOnly()
@@ -151,9 +187,9 @@ test('a reload that invalidates nothing is reported as a dead button', async () 
 // The message is the whole value of the check — a bare "contract violated" would
 // cost the same hours the failure already costs. Assert it names the fix.
 test('the report names the fix, not just the symptom', async () => {
-  const { createDisplay } = setup()
+  const { createDisplay, mockRpcCall } = setup()
   const { display } = createDisplay()
-  await settle()
+  await quiesce(display, mockRpcCall)
 
   display.bumpReloadCounterOnly()
   await settle()
@@ -168,9 +204,9 @@ test('the report names the fix, not just the symptom', async () => {
 // counter is the only thing separating them, so a decline with no bump behind it
 // must stay silent.
 test('says nothing about a decline with no reload behind it', async () => {
-  const { createDisplay } = setup()
-  const { view } = createDisplay()
-  await settle()
+  const { createDisplay, mockRpcCall } = setup()
+  const { display, view } = createDisplay()
+  await quiesce(display, mockRpcCall)
 
   // zoom in, so every visible block stays inside what is already loaded
   view.zoomTo(view.bpPerPx / 2)
@@ -183,9 +219,9 @@ test('says nothing about a decline with no reload behind it', async () => {
 // fetching at all has a `reload()` that correctly does nothing. Sequence reaches
 // it through `zoomedOut`, which its `placeholderMessage` implies.
 test('a display that says it is not fetching is exempt', async () => {
-  const { createDisplay } = setup()
+  const { createDisplay, mockRpcCall } = setup()
   const { display } = createDisplay()
-  await settle()
+  await quiesce(display, mockRpcCall)
 
   display.setSuppressed(true)
   display.bumpReloadCounterOnly()
@@ -206,9 +242,9 @@ test('a display that says it is not fetching is exempt', async () => {
 // every block covered. That is the difference an exemption would erase: it
 // consumes the bump on the preliminary decline, and nothing is left to report.
 test('a claimed prerequisite defers the verdict rather than waiving it', async () => {
-  const { createDisplay } = setup()
+  const { createDisplay, mockRpcCall } = setup()
   const { display, view } = createDisplay()
-  await settle()
+  await quiesce(display, mockRpcCall)
 
   display.setPrereqPending(true)
   display.bumpReloadCounterOnly()

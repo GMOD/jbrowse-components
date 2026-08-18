@@ -390,8 +390,9 @@ The check when adding a display: raise each error it can produce, press retry,
 and confirm the display can leave that state. Cancel is one of them.
 
 **The first of those three shapes reports itself.** `makeRetryContractCheck`
-(`assertDisplayContract.ts`) runs inside `installGlobalFetchAutorun`, so every
-global display gets it with no per-display test: a run that follows a
+(`assertDisplayContract.ts`) runs inside **both** fetch foundations —
+`installGlobalFetchAutorun` and `MultiRegionDisplayMixin`'s `afterAttach` — so
+every fetching display gets it with no per-display test: a run that follows a
 `reloadCounter` bump and declines to fetch *is* the dead button, and it says so
 through the same `console.error` channel as the rest of the contract checks,
 naming the fix. Dev-only, and everything it reads is `untracked` — a tracked read
@@ -412,6 +413,35 @@ prerequisite are one condition there — so HiC's retry is pinned by
 `LinearHicDisplay/infoFetchFailure.test.ts` and not by this check. A display whose
 predicate is strictly narrower than `!shouldFetch` keeps the coverage; one that
 restates the gate has opted out, and should say which test covers it instead.
+
+**The two families classify a run differently, and only that part is per
+family.** The global one asks its `shouldFetch()`, which returns a boolean. The
+per-region one has no such boolean: its gate is block coverage — a `reload()`
+that invalidates nothing leaves `needed` empty — plus a `fetchNeeded` override
+that can decline inside an async body whose return value says nothing. So the
+foundation watches its own funnel: `fetchRegions` is the mixin's action, and
+every override reaches it in its synchronous prefix (all eight checked). An
+override that awaited before fetching would get a false report rather than
+silence, which is the right way round. It also has a fourth outcome,
+`deferred`, for the in-flight skip — `reload()` signals the running fetch's stop
+token but `activeStopToken` clears in `runFetch`'s finally, so the next run can
+still see `isLoading`, and consuming there would answer the retry with a run
+that predates it.
+
+Sequence and variants are the two per-region displays whose `fetchNeeded`
+declines. Sequence needed nothing: `zoomedOut` implies `placeholderMessage`
+implies `!rendersCanvas`, which is already its `loadingSuppressed`. Variants
+declares `awaitingPrerequisite` (`!sourcesBase`), HiC's two-stage shape in this
+family, and narrower than the decline it explains — `fetchNeeded` also declines
+on an empty region set, and that one is still judged.
+
+The ledger itself — bump, outcome, verdict — is tested apart from either
+foundation in `retryContractLedger.test.ts`, because it is a state machine with
+no MobX in it; which early return emits which outcome is tested against real
+autoruns in `installGlobalFetchAutorun.test.ts` and
+`gwas/LinearManhattanDisplay/retryContract.test.ts`. **Anything proving a
+deferral bumps the counter once**: under two bumps a deferral and an exemption
+behave identically, because the second bump is its own unanswered retry.
 
 The other two stay manual: **work `reload()` never re-runs** can't be seen from
 here, because the autorun does reach a fetch; and **a display rendering its own
