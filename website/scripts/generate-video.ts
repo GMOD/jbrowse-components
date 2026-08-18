@@ -62,7 +62,12 @@ import {
   scrollPage,
   setCaption,
 } from './video-overlay.ts'
-import { videoSpecs } from './video-specs.ts'
+import {
+  VIDEO_OUTPUT_WIDTH,
+  validateVideoSpecs,
+  videoFrame,
+} from './video-spec-rules.ts'
+import { pastedTrackConfigs, videoSpecs } from './video-specs.ts'
 
 import type { VideoSpec, VideoStep } from './video-specs.ts'
 import type { Page } from 'puppeteer'
@@ -114,8 +119,10 @@ const FPS = 30
 // choosing a viewport, not by supersampling one.
 const DEVICE_SCALE = 1
 // A ceiling rather than a target: the encode never upscales, so this only bites
-// on a spec filmed wider than a docs column can use.
-const OUTPUT_WIDTH = 1600
+// on a spec filmed wider than a docs column can use — which validateVideoSpecs
+// refuses, so that the finished clip's size is always the viewport the spec
+// asked for and remark-video can reserve the embed's box from it.
+const OUTPUT_WIDTH = VIDEO_OUTPUT_WIDTH
 // What a step holds for once it has finished, unless it says otherwise. Long
 // enough to see a menu open, short enough that a six-step tour is not a minute.
 const HOLD_MS = 900
@@ -124,7 +131,6 @@ const HOLD_MS = 900
 // a menu item teleport into a graph.
 const PRE_CUT_MS = 1200
 const TAIL_MS = 2500
-const DEFAULT_VIEWPORT = { width: 1280, height: 860 }
 
 // The actions with somewhere on screen to be, which are the ones the drawn
 // cursor travels to. A wait or a keypress has no target and must not move it:
@@ -231,8 +237,7 @@ function pendingTab(page: Page) {
 }
 
 async function film(page: Page, spec: VideoSpec, stem: string) {
-  const height = spec.viewportHeight ?? DEFAULT_VIEWPORT.height
-  const width = spec.viewportWidth ?? DEFAULT_VIEWPORT.width
+  const { width, height } = videoFrame(spec)
   // The page being filmed, which an `opensTab` step replaces.
   let stage = page
   const cam = camera(() => stage, stem)
@@ -451,6 +456,21 @@ async function main() {
     )
     return
   }
+  // Before anything is filmed: an odd viewport side fails the encode after the
+  // capture, and a duplicate name overwrites a published clip. Same check CI
+  // runs through check-video-specs.ts.
+  const specProblems = validateVideoSpecs(
+    videoSpecs,
+    pastedTrackConfigs.map(pair => pair.video),
+  )
+  if (specProblems.length > 0) {
+    console.error(
+      `${specProblems.length} video spec problem(s):\n${specProblems
+        .map(p => `  - ${p}`)
+        .join('\n')}`,
+    )
+    process.exit(1)
+  }
   const tokens = parseFilterTokens(values.filter)
   const selected = tokens.length
     ? videoSpecs.filter(s => matchesFilterTokens(s.name, tokens, false))
@@ -485,8 +505,7 @@ async function main() {
         let segments: string[] = []
         try {
           await page.setViewport({
-            width: spec.viewportWidth ?? DEFAULT_VIEWPORT.width,
-            height: spec.viewportHeight ?? DEFAULT_VIEWPORT.height,
+            ...videoFrame(spec),
             deviceScaleFactor: DEVICE_SCALE,
           })
           // The pangenome configs declare the GraphGenomeView plugin by url, and

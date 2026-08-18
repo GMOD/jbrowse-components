@@ -2,7 +2,7 @@ import { visit } from 'unist-util-visit'
 
 import { liveHref } from './code-base.ts'
 import { escapeAttr, escapeHtml, parseAttrs } from './inline-html.ts'
-import { videoLiveRefs } from './liveLinks.generated.ts'
+import { videoFrames, videoLiveRefs } from './liveLinks.generated.ts'
 
 import type { Root } from 'mdast'
 import type { Plugin } from 'unified'
@@ -27,7 +27,7 @@ import type { Plugin } from 'unified'
 //
 // The poster is what makes an unplayed embed a picture rather than a black
 // rectangle, so it is derived rather than left to each call site to remember.
-const videoRe = /<Video\s+([\s\S]*?)\s*\/>/
+const videoRe = /<Video\s+([\s\S]*?)\s*\/>/g
 
 // `/media/pangenome/x.mp4` -> the spec named `pangenome/x`.
 const specNameOf = (src: string) =>
@@ -36,38 +36,56 @@ const specNameOf = (src: string) =>
 const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
   const base = options.base?.replace(/\/$/, '') ?? ''
   const withBase = (u: string) => (base && u.startsWith('/') ? `${base}${u}` : u)
+  const figureFor = (attrList: string) => {
+    const attrs = parseAttrs(attrList)
+    const rawSrc = attrs.src ?? ''
+    const mp4 = withBase(rawSrc)
+    const poster = withBase(attrs.poster ?? rawSrc.replace(/\.mp4$/, '.jpg'))
+    const caption = escapeHtml(attrs.caption ?? '')
+    const autoplay = attrs.autoplay === 'true'
+    // autoplay only works muted, and a clip that starts by itself has no use
+    // for a play button
+    const flags =
+      (autoplay ? ' autoplay muted playsinline' : ' controls playsinline') +
+      (attrs.loop === 'true' || autoplay ? ' loop' : '')
+    // One source, because the generator writes one: h264 in mp4 plays in every
+    // browser that plays anything, and the VP9 alternative measured larger for
+    // this content rather than smaller.
+    const sources = `<source src="${mp4}" type="video/mp4"/>`
+    const name = specNameOf(rawSrc) ?? ''
+    // The tour's own frame, so the box is the right shape from the first paint.
+    // Without it a <video> is 300x150 until its metadata arrives and then jumps
+    // to the column width, which on these clips is most of a screen of reflow —
+    // they run from 600 to 1790 px tall.
+    const frame = videoFrames[name]
+    const size = frame ? ` width="${frame.width}" height="${frame.height}"` : ''
+    const video =
+      `<video${flags}${size} preload="metadata" poster="${poster}" ` +
+      `aria-label="${escapeAttr(attrs.caption ?? '')}" ` +
+      `style="max-width:100%;height:auto">${sources}</video>`
+    const ref = videoLiveRefs[name]
+    const live = ref === undefined ? undefined : liveHref(ref)
+    // Where the video STARTS, which for one that shows something being added is
+    // not the state it ends in — the reader takes the same route from the same
+    // place rather than being handed the result. Reader-facing, so it says video
+    // where the tooling says tour.
+    const label = 'Open the session this video starts in ↗'
+    const link = live
+      ? ` <a href="${live}" target="_blank" rel="noopener noreferrer">${label}</a>`
+      : ''
+    return `<figure>${video}<figcaption>${caption}${link}</figcaption></figure>`
+  }
   return tree => {
     visit(tree, 'html', node => {
-      const match = videoRe.exec(node.value)
-      if (!match) {
-        return
+      // Each tag is replaced in place rather than becoming the whole node: a
+      // node is a markdown BLOCK, so a tag with a second tag or a line of prose
+      // under it used to take its neighbour with it, silently.
+      // check-video-specs.ts asks for the blank line anyway.
+      if (node.value.includes('<Video')) {
+        node.value = node.value.replaceAll(videoRe, (_match, attrList: string) =>
+          figureFor(attrList),
+        )
       }
-      const attrs = parseAttrs(match[1]!)
-      const rawSrc = attrs.src ?? ''
-      const mp4 = withBase(rawSrc)
-      const poster = withBase(attrs.poster ?? rawSrc.replace(/\.mp4$/, '.jpg'))
-      const caption = escapeHtml(attrs.caption ?? '')
-      const autoplay = attrs.autoplay === 'true'
-      // autoplay only works muted, and a clip that starts by itself has no use
-      // for a play button
-      const flags =
-        (autoplay ? ' autoplay muted playsinline' : ' controls playsinline') +
-        (attrs.loop === 'true' || autoplay ? ' loop' : '')
-      // One source, because the generator writes one: h264 in mp4 plays in every
-      // browser that plays anything, and the VP9 alternative measured larger for
-      // this content rather than smaller.
-      const sources = `<source src="${mp4}" type="video/mp4"/>`
-      const video =
-        `<video${flags} preload="metadata" poster="${poster}" ` +
-        `aria-label="${escapeAttr(attrs.caption ?? '')}" ` +
-        `style="max-width:100%;height:auto">${sources}</video>`
-      const ref = videoLiveRefs[specNameOf(rawSrc) ?? '']
-      const live = ref === undefined ? undefined : liveHref(ref)
-      const label = 'Open this session in JBrowse ↗'
-      const link = live
-        ? ` <a href="${live}" target="_blank" rel="noopener noreferrer">${label}</a>`
-        : ''
-      node.value = `<figure>${video}<figcaption>${caption}${link}</figcaption></figure>`
     })
   }
 }

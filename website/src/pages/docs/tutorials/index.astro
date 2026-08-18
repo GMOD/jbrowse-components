@@ -56,6 +56,12 @@ const cardFrom = (entry: (typeof docs)[number], category: string) => ({
   description: entry.data.description,
   category,
   cost: entry.data.data,
+  // A page carrying a video tutorial says so in the grid. The videos are the one
+  // thing on these pages a reader might come looking for and cannot find by
+  // reading: 14 of them sit inside 9 tutorials, and a still and a clip look the
+  // same in a search result. Read off the page's own `<Video>` rather than
+  // declared in frontmatter, so adding one to a page is the whole of the work.
+  hasVideo: /<Video\s/.test(entry.body ?? ''),
   external: false,
 })
 
@@ -71,6 +77,7 @@ const EXTERNAL_CARDS = [
       'Live, copy-paste examples for the embeddable React components: themes, per-feature colors, sessions, text search, and more.',
     category: 'Configuration & embedding',
     cost: undefined as string | undefined,
+    hasVideo: false,
     external: true,
   },
 ]
@@ -180,12 +187,25 @@ const HAS_THUMB = new Set(
                   {tutorial.title}
                   {tutorial.external && <span class="tut-ext"> ↗</span>}
                 </span>
-                {tutorial.cost && TUTORIAL_DATA_COSTS[tutorial.cost] && (
-                  <span
-                    class={`tut-cost tut-cost-${tutorial.cost}`}
-                    title={TUTORIAL_DATA_COSTS[tutorial.cost]!.title}
-                  >
-                    {TUTORIAL_DATA_COSTS[tutorial.cost]!.label}
+                {(tutorial.hasVideo ||
+                  (tutorial.cost && TUTORIAL_DATA_COSTS[tutorial.cost])) && (
+                  <span class="tut-chips">
+                    {tutorial.cost && TUTORIAL_DATA_COSTS[tutorial.cost] && (
+                      <span
+                        class={`tut-cost tut-cost-${tutorial.cost}`}
+                        title={TUTORIAL_DATA_COSTS[tutorial.cost]!.title}
+                      >
+                        {TUTORIAL_DATA_COSTS[tutorial.cost]!.label}
+                      </span>
+                    )}
+                    {tutorial.hasVideo && (
+                      <span
+                        class="tut-cost tut-video"
+                        title="Includes a video tutorial"
+                      >
+                        ▶ Video
+                      </span>
+                    )}
                   </span>
                 )}
                 {tutorial.description && (
@@ -282,8 +302,13 @@ const HAS_THUMB = new Set(
     line-height: 1.4;
     color: var(--color-text-muted);
   }
-  /* The card body is a flex column, so without align-self the chip stretches
-     to the card width and stops reading as a chip. */
+  /* The card body is a flex column, so without a row of its own each chip
+     stretches to the card width and stops reading as a chip. */
+  .tut-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
   .tut-cost {
     align-self: flex-start;
     font-size: 0.68rem;
@@ -311,5 +336,12 @@ const HAS_THUMB = new Set(
     color: var(--color-text-muted);
     border-color: var(--color-border);
     background: transparent;
+  }
+  /* Quieter than every cost chip: the cost is what a reader filters the grid
+     by, and a video is a bonus on whichever page they land on. */
+  .tut-video {
+    color: var(--color-text-muted);
+    border-color: var(--color-border);
+    background: var(--color-blockquote-bg);
   }
 </style>

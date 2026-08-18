@@ -247,7 +247,7 @@ export const proteinVideos: VideoSpec[] = [
     url: proteinLaunchFixtures.session,
     viewportWidth: 1280,
     // the two views and the drawer open beside them
-    viewportHeight: 1045,
+    viewportHeight: 1046,
     // the UCSC hub config is ~570 tracks and pulls four remote plugins
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,

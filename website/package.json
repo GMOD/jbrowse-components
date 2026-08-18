@@ -39,6 +39,7 @@
     "check-media": "node scripts/media.ts check",
     "check-spec-recipes": "node scripts/check-spec-recipes.ts",
     "check-specs": "node scripts/check-specs.ts",
+    "check-video-specs": "node scripts/check-video-specs.ts",
     "check-live-configs": "node scripts/check-live-configs.ts",
     "check-figure-refs": "node scripts/check-figure-refs.ts",
     "check-paste-configs": "node scripts/check-paste-configs.ts",

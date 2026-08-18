@@ -61,7 +61,8 @@ const IMG_PREFIX = '/img/'
 // The POSTER is checked separately from the clip. An embed whose poster is
 // missing still plays, so its failure is a black rectangle where the reader
 // expected a picture, and nothing else would ever report it.
-const videoRe = /<Video\b[^>]*?\bsrc="([^"]*)"[^>]*?>/g
+const videoRe = /<Video\b[^>]*?\/>/g
+const videoAttr = (name: string) => new RegExp(`\\b${name}="([^"]*)"`)
 const VIDEO_PREFIX = '/media/'
 
 const manifest = readManifest()
@@ -84,15 +85,20 @@ for (const file of docFiles(docsDir)) {
   videoRe.lastIndex = 0
   let videoMatch: RegExpExecArray | null
   while ((videoMatch = videoRe.exec(text)) !== null) {
-    const src = videoMatch[1]!
+    const tag = videoMatch[0]
+    const src = videoAttr('src').exec(tag)?.[1] ?? ''
     if (!src.startsWith(VIDEO_PREFIX)) {
       continue
     }
     checked++
-    for (const want of [src, src.replace(/\.mp4$/, '.jpg')]) {
+    // The poster the embed asks for, which is the derived `.jpg` only while the
+    // tag does not name one of its own.
+    const poster =
+      videoAttr('poster').exec(tag)?.[1] ?? src.replace(/\.mp4$/, '.jpg')
+    for (const want of [src, poster].filter(u => u.startsWith(VIDEO_PREFIX))) {
       const path = `${mediaRoot}${want.slice(VIDEO_PREFIX.length - 1)}`
       if (!mediaManifest.has(path)) {
-        const kind = want.endsWith('.jpg') ? 'poster' : 'clip'
+        const kind = want === src ? 'clip' : 'poster'
         problems.push(
           `${docRelative(file)}: <Video src="${src}"> names no ${kind} in media.lock (${path})` +
             '\n    Film it, then `pnpm figures:push` and commit media.lock.',

@@ -51,6 +51,25 @@ the tour was filmed in.
 - **A video is for a ROUTE or a RE-LAYOUT**, and everything else is a figure. A
   still is searchable, diffable, annotatable and readable at a glance, and none
   of that survives being filmed.
+- **`check-video-specs` is the gate over the list and the pages together**, and
+  the rules are in `video-spec-rules.ts` where `videoSpecRules.test.ts` reaches
+  them. It pairs each spec with the embed that plays it in both directions: a
+  spec nothing embeds is filmed and served with nothing playing it, and an embed
+  whose spec was renamed keeps playing while silently losing the live session
+  link. `pnpm video` runs the spec half before it films.
+- **A viewport is even on both sides.** The scale filter's `-2` rounds an odd
+  height up, so the spec's frame is a pixel off the clip every reader plays
+  (`annotation_1d` said 1045 and shipped 1046) — and an odd WIDTH fails the
+  encode outright, after the filming. Even and at or under 1600 makes the
+  finished clip exactly the viewport, which is what the embed reserves its box
+  from: `videoFrames` in `liveLinks.generated.ts`, checked against the published
+  posters by `videoFrames.test.ts`. **So a re-frame needs `pnpm autogen`**, or
+  the page holds a box the wrong shape and the browser letterboxes the clip
+  inside it.
+- **A `<Video>` tag stands alone in its block**, with a blank line under it. One
+  html node becomes one figure, so a second tag or a line of prose sharing the
+  block used to be dropped without a word; the plugin now replaces each tag in
+  place, and the check still asks for the blank line.
 - `static/media/` is gitignored; bytes live in the store (`media.lock`), which
   `pnpm build` pulls through `figures:pull` **because `rclone sync` deletes**
   what dist/ does not carry. `pnpm figures:push` publishes it beside the

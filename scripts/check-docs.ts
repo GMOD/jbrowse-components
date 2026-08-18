@@ -92,6 +92,15 @@ const VALIDATORS: Validator[] = [
     argv: web('check-specs.ts'),
   },
   {
+    // The same question of the tours, which had nobody asking it: a duplicate
+    // name (one mp4, two specs), a spec no page embeds, an embed whose spec was
+    // renamed and which now renders without the live session link that is half
+    // of what a tour is for. Plus the frame arithmetic, because an odd viewport
+    // side fails the encode after the filming.
+    name: 'video specs pair up with the pages that embed them',
+    argv: web('check-video-specs.ts'),
+  },
+  {
     // Offline half only; the published half is --network, which needs
     // jbrowse.org and so has no place in a push build.
     name: 'figure live links name a config that ships',
