@@ -11,6 +11,7 @@ import {
   SvgTreePath,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
+import { ONSCREEN_AXIS_LEFT_PX } from '@jbrowse/wiggle-core'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import {
@@ -113,7 +114,6 @@ function MultiWiggleSvgBody({
   // edge-to-edge with no YSCALEBAR_LABEL_OFFSET inset — see its `renderState`),
   // but the two anchor helpers are pure geometry and shared, so the scale bars
   // and legends land in the same place as every other wiggle-family export.
-  const scalebarLeft = svgScalebarLeftPx(view)
   const { rpcDataMap, renderState } = model
 
   // No data-size gate: renderState is always defined (a [0,1] stub until
@@ -125,6 +125,18 @@ function MultiWiggleSvgBody({
   // the one `treeSidebarOffset` gate so a blank gutter can't appear.
   const { hierarchy } = model
   const labelOffset = treeSidebarOffset(model)
+  // The per-row axes are left-oriented, so what each one needs is a clear strip
+  // to its LEFT for its ticks and numbers. With no dendrogram that strip is the
+  // export's own margin, which is why this normally anchors at the content's
+  // left edge and lets the numbers run out past it. **A reserved gutter sits
+  // between the two**, so the margin is no longer reachable and an axis anchored
+  // there draws its spine down the full height of the tree panel — which is
+  // what the export did, while the screen put the same axis in its own strip
+  // past the gutter. Same strip, same width, because the numbers it has to
+  // clear are the same numbers.
+  const scalebarLeft = labelOffset
+    ? labelOffset + ONSCREEN_AXIS_LEFT_PX
+    : svgScalebarLeftPx(view)
 
   const props = model.gpuProps()
   const legendRight = svgLegendRightPx(view, canvasWidth)

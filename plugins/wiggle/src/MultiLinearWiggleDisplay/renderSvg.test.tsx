@@ -196,7 +196,31 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
       ),
     )
     expect(html).toContain('stroke="#0008"')
-    expect(html).toContain('translate(40')
+    // past the 40px gutter AND past the 50px axis strip beyond it, plus the
+    // 4px gap — the same place the on-screen path puts them
+    expect(html).toContain('translate(94 0)')
+  })
+
+  // The axes are left-oriented: their ticks and numbers occupy the strip that
+  // ends where they are anchored. With no dendrogram that strip is the export
+  // margin and the anchor is the content's left edge; a gutter sits between the
+  // two, so an axis left there ran its spine down the whole height of the tree
+  // panel. Same strip the screen gives it, on the other side of the gutter.
+  it('anchors the per-row axes past the tree gutter rather than inside it', async () => {
+    const axisXs = (html: string) =>
+      [...html.matchAll(/<g transform="translate\((\d+)\)">/g)].map(m =>
+        Number(m[1]),
+      )
+    expect(axisXs(render(await renderSvg(makeModel())))).toEqual([0])
+    expect(
+      axisXs(
+        render(
+          await renderSvg(
+            makeModel({ showTree: true, hierarchy: makeHierarchy() }),
+          ),
+        ),
+      ),
+    ).toEqual([90])
   })
 
   it('omits the dendrogram when the tree is hidden', async () => {
