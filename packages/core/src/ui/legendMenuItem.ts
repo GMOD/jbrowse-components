@@ -17,10 +17,12 @@ import type { MenuItem } from './MenuTypes.ts'
  * The `showLegend` **config slots** stay per display: their `promotedBase`
  * values legitimately differ (a Hi-C color scale is off by default, a variant
  * genotype key on), and their descriptions describe genuinely different legends.
- * What they now share is being *promotable* — pass `opts.pin` (from
- * `makePin(self, 'showLegend')`) and the row gains the pin that makes the
- * current state this display type's session-wide default. Every display whose
- * legend is backed by a config slot passes one.
+ * What they now share is being *promotable* — pass `opts.pin` and the row gains
+ * the pin that makes the current state this display type's session-wide
+ * default. Every display whose legend is backed by a config slot passes one,
+ * and gets it from `LegendMixin`'s `showLegendDisplayTypeDefault` rather than
+ * calling `makePin` itself: the slot is the per-display half, the accessors
+ * over it are not.
  *
  * `pin` is optional because two callers have no slot to promote: the Manhattan
  * plot's LD legend and `LinearBasicDisplay`'s color key are a volatile and a

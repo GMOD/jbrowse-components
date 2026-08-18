@@ -1171,35 +1171,34 @@ the rest is two hooks plus two override points wrapping about four lines of
 arithmetic. See
 [reference/ROW_HEIGHT_AND_FIT.md](reference/ROW_HEIGHT_AND_FIT.md).
 
-### The legend is shared at both ends and hand-written in the middle
+### The legend slots stay per display, and the accessors did not
 
-Six displays — `LinearAlignmentsDisplay`, `LinearHicDisplay`,
-`LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`,
-`MultiSampleVariantBaseModel`, `SharedLDModel` — each hand-write the same
-triple:
+Landed 2026-08-17: `LegendMixin` owns `showLegend` /
+`showLegendDisplayTypeDefault` / `setShowLegend`, which were
+character-identical in six displays — `LinearAlignmentsDisplay`,
+`LinearHicDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`,
+`MultiSampleVariantBaseModel`, `SharedLDModel`. Both ends of that were already
+shared: every one of the six builds its row with `showLegendCheckboxItem` and
+shows a `FloatingLegend`, so it was the middle link between two pieces of common
+code.
 
-```ts
-get showLegend(): boolean { return resolveConf(self, 'showLegend') }
-get showLegendDisplayTypeDefault() { return makePin(self, 'showLegend') }
-setShowLegend(v: boolean) { setConf(self, 'showLegend', v) }
-```
+**The `showLegend` config slots stay per display, and that half is settled** —
+`showLegendCheckboxItem`'s docstring decided it and the mixin does not disturb
+it. Checked while doing this rather than assumed: `promotedBase` really does
+split three/three, each description names a genuinely different legend, and the
+"falling back to off/on" tail every description carries agrees with its own
+`promotedBase` in all six. So a `legendConfigSchemaFields` helper would be
+parameterized on everything that varies and share one `type: 'maybeBoolean'`
+line. Not worth it, and re-proposing it needs a reason better than symmetry with
+`treeSidebarConfigSchemaFields`, which exists because that set had actually
+drifted.
 
-143 lines and 17 members, plus six `maybeBoolean` slot blocks whose comments are
-the same three sentences about the promotable tiers. The only real variation is
-`promotedBase` — `false` on alignments/hic/LD, `true` on variants/multi-row —
-and the noun in the description.
-
-**Both ends of this are already shared and only the middle is not.** The menu
-item is `core/ui/legendMenuItem.ts`'s `showLegendCheckboxItem`, which every one
-of the six calls; the rendering is `display-ui`'s `FloatingLegend` and core's
-`SvgColorLegend` / `SvgGradientLegend`, which every one of the six reaches
-(the small per-plugin `Svg*Legend` components are thin bindings on those, not
-copies). A `legendConfigSchemaFields({ promotedBase, description })` +
-`LegendMixin({ promotedBase })` pair, shaped like `heightModeConfigSchemaFields`
-+ `HeightModeMixin`, closes the gap between them.
-
-Worth doing with the tree-toggle item above rather than separately: they are the
-same omission in the same place, and four of the six displays are the same four.
+The coverage lesson generalizes and is the reason to do these at all: a wrong
+`showLegend` was visible to two of the six displays. Hi-C, multi-row,
+multi-wiggle and LD had no test that would notice, so inverting the getter left
+all four green. One shared implementation collapses that to one place, and
+`LegendMixin.test.ts` runs the whole promotable cascade over both `promotedBase`
+values.
 
 ### Offer a file's PanSN prefixes in the all-vs-all add-track form
 
