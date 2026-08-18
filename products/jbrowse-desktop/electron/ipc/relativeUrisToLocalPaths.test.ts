@@ -1,15 +1,18 @@
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 import { relativeUrisToLocalPaths } from './relativeUrisToLocalPaths.ts'
 
 const dir = path.resolve('/home/u/project')
 const abs = (p: string) => path.resolve(dir, p)
+const base = pathToFileURL(`${dir}${path.sep}`).href
 
 // relativeUrisToLocalPaths rewrites a plain JSON tree in place, so a fixture's
 // inferred literal type doesn't describe what it holds afterwards. Naming the
 // keys the rewrite can add lets the assertions read them back.
 interface Loc {
   type?: string
+  name?: string
   uri?: string
   baseUri?: string
   localPath?: string
@@ -17,13 +20,55 @@ interface Loc {
   index?: { location: Loc }
 }
 
-test('bare relative uri becomes a localPath resolved against the config dir', () => {
-  const cfg = { adapter: { type: 'BamAdapter', uri: 'sample.bam' } }
+test('a bare relative uri on a location node becomes a localPath', () => {
+  const cfg = { adapter: { type: 'BamAdapter', bamLocation: { uri: 'x.bam' } } }
+  relativeUrisToLocalPaths(cfg, dir)
+  expect(cfg.adapter.bamLocation).toEqual({
+    localPath: abs('x.bam'),
+    locationType: 'LocalPathLocation',
+  })
+})
+
+// regression: the rewrite used to fire on the adapter itself, deleting the `uri`
+// that normalizeSnapshot keys on. The adapter kept its type and lost its file —
+// bamLocation fell back to the schema default and the track drew nothing, with
+// nothing logged.
+test('an adapter shorthand keeps its uri and gains the config dir as baseUri', () => {
+  const cfg: { adapter: Loc } = {
+    adapter: { type: 'BamAdapter', uri: 'sample.bam' },
+  }
   relativeUrisToLocalPaths(cfg, dir)
   expect(cfg.adapter).toEqual({
     type: 'BamAdapter',
-    localPath: abs('sample.bam'),
-    locationType: 'LocalPathLocation',
+    uri: 'sample.bam',
+    baseUri: base,
+  })
+  expect(new URL(cfg.adapter.uri!, cfg.adapter.baseUri).href).toBe(
+    pathToFileURL(abs('sample.bam')).href,
+  )
+})
+
+// the flat `{ name, uri }` assembly form, and the `sequence.adapter` form whose
+// type is left to the guesser — the latter is shape-identical to a location
+// node, so only the key it hangs off distinguishes it
+test('both assembly shorthands survive with a baseUri', () => {
+  const cfg: {
+    assemblies: (Loc & { sequence?: { adapter: Loc } })[]
+  } = {
+    assemblies: [
+      { name: 'hg38', uri: 'hg38.fa.gz' },
+      { name: 'hg19', sequence: { adapter: { uri: 'hg19.2bit' } } },
+    ],
+  }
+  relativeUrisToLocalPaths(cfg, dir)
+  expect(cfg.assemblies[0]).toEqual({
+    name: 'hg38',
+    uri: 'hg38.fa.gz',
+    baseUri: base,
+  })
+  expect(cfg.assemblies[1]!.sequence!.adapter).toEqual({
+    uri: 'hg19.2bit',
+    baseUri: base,
   })
 })
 
@@ -38,8 +83,8 @@ test('a nested index location is resolved alongside its data file', () => {
     },
   }
   relativeUrisToLocalPaths(cfg, dir)
-  expect(cfg.adapter.localPath).toBe(abs('aln.bam'))
-  expect('uri' in cfg.adapter).toBe(false)
+  expect(cfg.adapter.uri).toBe('aln.bam')
+  expect(cfg.adapter.baseUri).toBe(base)
   expect(cfg.adapter.index!.location).toEqual({
     localPath: abs('aln.bam.bai'),
     locationType: 'LocalPathLocation',
@@ -59,10 +104,10 @@ test('http/https and other-scheme uris are left untouched', () => {
 })
 
 test('a Windows drive-letter uri is resolved as a path, not read as a scheme', () => {
-  const cfg = { adapter: { uri: 'C:/data/sample.bam' } }
+  const cfg = { bamLocation: { uri: 'C:/data/sample.bam' } }
   relativeUrisToLocalPaths(cfg, dir)
-  expect('uri' in cfg.adapter).toBe(false)
-  expect(cfg.adapter).toEqual({
+  expect('uri' in cfg.bamLocation).toBe(false)
+  expect(cfg.bamLocation).toEqual({
     localPath: abs('C:/data/sample.bam'),
     locationType: 'LocalPathLocation',
   })
@@ -96,14 +141,14 @@ test('walks arrays and assemblies, resolving every relative uri', () => {
   }
   relativeUrisToLocalPaths(cfg, dir)
   expect(cfg.assemblies[0]!.sequence.adapter).toEqual({
-    localPath: abs('ref.fa.gz'),
-    locationType: 'LocalPathLocation',
+    uri: 'ref.fa.gz',
+    baseUri: base,
   })
   expect(cfg.assemblies[1]!.sequence.adapter).toEqual({
     uri: 'https://host/ref2.fa.gz',
   })
-  expect(cfg.tracks[0]!.adapter.localPath).toBe(abs('a.bw'))
-  expect(cfg.tracks[1]!.adapter.localPath).toBe(abs('b.bw'))
+  expect(cfg.tracks[0]!.adapter.baseUri).toBe(base)
+  expect(cfg.tracks[1]!.adapter.baseUri).toBe(base)
 })
 
 test('non-object input is a no-op', () => {

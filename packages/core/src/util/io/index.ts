@@ -46,6 +46,24 @@ export function resolveUriLocation(location: UriLocation) {
     : location
 }
 
+/**
+ * The local path a `file:` URI names, or undefined for any other scheme. A
+ * Windows URL parses as `/C:/data/x.bam`, whose leading slash is part of the URL
+ * grammar rather than the path.
+ */
+function fileUrlToLocalPath(uri: string) {
+  if (!uri.startsWith('file:')) {
+    return undefined
+  }
+  try {
+    const { pathname } = new URL(uri)
+    const decoded = decodeURIComponent(pathname)
+    return /^\/[a-z]:/i.test(decoded) ? decoded.slice(1) : decoded
+  } catch {
+    return undefined
+  }
+}
+
 export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
@@ -106,6 +124,18 @@ export function openLocation(
     // a config that names its files relative to itself found no account at all
     // and read every one of them unauthenticated.
     const absoluteLocation = resolveUriLocation(location)
+
+    // A file: URI names a path on this machine, not something to fetch. Desktop
+    // reaches this by way of the shorthand forms: a config.json opened from disk
+    // carries a baseUri of its own directory, so `{ type: 'BamAdapter', uri:
+    // 'reads.bam' }` resolves here as file:///dir/reads.bam — and so does every
+    // sibling the shorthand derived from it (.bai, .fai, .gzi). Reading them as
+    // localPath keeps that whole chain on the one code path that can open a
+    // local file, instead of a fetch that no range request survives.
+    const localPath = fileUrlToLocalPath(absoluteLocation.uri)
+    if (localPath !== undefined && (isNode || isElectron)) {
+      return openLocation({ localPath, locationType: 'LocalPathLocation' })
+    }
 
     // If there is a plugin manager, we can try internet accounts
     if (pluginManager) {
