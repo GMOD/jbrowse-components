@@ -250,8 +250,29 @@ export default class RpcServer {
     }
   }
 
+  /**
+   * The only frame that must never fail to send, because it is the last one: a
+   * `throw` that throws leaves the call unsettled, and an unsettled call is a
+   * display spinning forever with no error to show. Everything upstream of here
+   * routes a failure into this, including {@link reply}'s own catch, so there is
+   * nothing left to catch it.
+   *
+   * It can fail. `serializeError` copies an error's own-enumerable properties so
+   * custom data survives the boundary, and it only skips the ones that are
+   * *themselves* functions — a property holding an object with a method on it
+   * (an arrow-function class field, an adapter, a `cause` that is a `Response`)
+   * is copied whole and is not structured-cloneable. So fall back to the
+   * message, which by construction is a string.
+   */
   protected throw(uid: string, error: ErrorObject | string) {
-    this.post({ uid, error }, [])
+    try {
+      this.post({ uid, error }, [])
+    } catch {
+      this.post(
+        { uid, error: typeof error === 'string' ? error : error.message },
+        [],
+      )
+    }
   }
 
   emit(eventName: string, data: unknown, transferables?: Transferable[]) {

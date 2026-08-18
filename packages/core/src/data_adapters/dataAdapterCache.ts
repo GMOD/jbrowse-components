@@ -19,7 +19,7 @@ interface AdapterCacheEntry {
 
 // Pruned by storeWithEvict (rejections) and by freeAdapterResources, which the
 // CoreFreeResources RPC reaches when the last track holding an adapter config is
-// closed (RpcManager.releaseSession). There is still no size bound: an adapter
+// closed (releaseAdapterSession). There is still no size bound: an adapter
 // whose track stays open lives as long as its worker, by design.
 let adapterCache: Record<string, Promise<AdapterCacheEntry>> = {}
 

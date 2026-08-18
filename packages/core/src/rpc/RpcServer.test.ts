@@ -149,6 +149,49 @@ describe('RpcServer.handler()', () => {
     ;(globalThis as any).postMessage = original
   })
 
+  // `throw` is the last frame there is — every other failure path routes into
+  // it, `reply`'s catch included — so a throw from inside it settles nothing and
+  // the caller's promise stays pending for the life of the page. That is a
+  // display on a spinner with no error, which is strictly worse than the error
+  // it was trying to send.
+  //
+  // Reachable because `serializeError` copies an error's own-enumerable
+  // properties to carry custom data across, skipping only the ones that are
+  // themselves functions: a property holding an OBJECT with a method on it goes
+  // over whole and structuredClone refuses it.
+  test('falls back to the message when the error object cannot be cloned', async () => {
+    const original = (globalThis as any).postMessage
+    const sent: unknown[] = []
+    ;(globalThis as any).postMessage = (data: unknown) => {
+      if ((data as any).error?.adapter) {
+        throw new DOMException(
+          'Failed to execute postMessage: function could not be cloned',
+          'DataCloneError',
+        )
+      }
+      sent.push(data)
+    }
+
+    const server = makeServer({
+      boom: async () => {
+        const e = new Error('index read failed') as Error & {
+          adapter: unknown
+        }
+        // an arrow-function class field is an OWN property, so this is what an
+        // error carrying the adapter that produced it looks like
+        e.adapter = { close: () => {} }
+        throw e
+      },
+    })
+    sendMessage(server, { method: 'boom', uid: 'nc', data: null, libRpc: true })
+    await flushPromises()
+
+    expect(sent).toHaveLength(1)
+    expect((sent[0] as any).uid).toBe('nc')
+    expect((sent[0] as any).error).toBe('index read failed')
+    ;(globalThis as any).postMessage = original
+  })
+
   test('passes data from message to method', async () => {
     const { sent, restore } = mockPostMessage()
     const server = makeServer({
