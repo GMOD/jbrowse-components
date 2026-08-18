@@ -1,0 +1,46 @@
+{
+  "id": "index-estimate-flat-spans",
+  "published": false,
+  "measured": "2026-08-06",
+  "source": {
+    "kind": "hand",
+    "repro": "`bytesForRegions` from `@gmod/tabix` against each file in `test_data/`, sweeping the span and recording where the answer stops changing.",
+    "notes": "Why AUTO_FORCE_LOAD_BP is not a floor on the byte axis. An index quotes whole blocks, so the estimate goes flat wherever a query stops splitting bins — and where that happens is a property of the file, not of the linear index's 16kb bin width. The whole-genome VCF is flat from 7.8 Mb down, 400x above where a 20kb floor would have looked."
+  },
+  "columns": [
+    { "key": "file", "label": "file" },
+    { "key": "flatFrom", "label": "flat from" },
+    { "key": "value", "label": "value", "format": "compact" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "file": "`volvox/volvox.maf.bed.gz`",
+        "flatFrom": "25kb up to 100kb",
+        "value": 306719
+      }
+    },
+    {
+      "values": {
+        "file": "`volvox/volvox.maf.bed.gz`",
+        "flatFrom": "12.5kb down",
+        "value": 213443
+      }
+    },
+    {
+      "values": {
+        "file": "`breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz` (chr1)",
+        "flatFrom": "7.8 Mb down",
+        "value": 15408
+      },
+      "emphasize": ["flatFrom"]
+    },
+    {
+      "values": {
+        "file": "`ce11.26way.chrI_subset.bed.gz`",
+        "flatFrom": "200bp to 50kb",
+        "value": 92757
+      }
+    }
+  ]
+}

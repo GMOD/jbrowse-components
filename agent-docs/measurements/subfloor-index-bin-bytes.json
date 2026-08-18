@@ -1,0 +1,43 @@
+{
+  "id": "subfloor-index-bin-bytes",
+  "published": false,
+  "measured": "2026-08-14",
+  "source": {
+    "kind": "hand",
+    "repro": "`estimatedBytesForRegions` from `@gmod/bam` on `ctgA` of each file, at spans from 1kb to 20kb. The sub-floor rows are flat across that whole range, which is the point: below one linear-index bin the estimate stops moving.",
+    "notes": "What SUB_FLOOR_BYTE_BUDGET_FACTOR is sized against. The deepest file here needs 2x to clear BAM's 5 Mb adapter limit at gene scale: 7.44 Mb against 5 becomes 7.44 against 10."
+  },
+  "columns": [
+    { "key": "file", "label": "file" },
+    {
+      "key": "subFloor",
+      "label": "1kb–10kb (flat)",
+      "format": "compact"
+    },
+    { "key": "atFloor", "label": "20kb", "format": "compact" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "file": "volvox-ultradeep (~2000x)",
+        "subFloor": 7441672,
+        "atFloor": 14468389
+      },
+      "emphasize": ["subFloor"]
+    },
+    {
+      "values": {
+        "file": "volvox-sorted",
+        "subFloor": 256892,
+        "atFloor": 317130
+      }
+    },
+    {
+      "values": {
+        "file": "volvox long reads",
+        "subFloor": 101982,
+        "atFloor": 101982
+      }
+    }
+  ]
+}

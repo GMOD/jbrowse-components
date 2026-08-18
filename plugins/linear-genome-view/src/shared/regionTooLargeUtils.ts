@@ -1,75 +1,26 @@
-import { overByteBudget } from '@jbrowse/core/rpc/byteBudget'
+import { adapterByteLimit, overByteBudget } from '@jbrowse/core/rpc/byteBudget'
 import { getDisplayStr } from '@jbrowse/core/util'
 
 /**
- * The span below which the **density** axis stops gating: at this zoom a canvas
- * display is drawing few enough glyphs that a banner asking permission costs the
- * user more than the draw does. Lives with the gate rather than on the view
- * because the view never reads it — `aboveForceLoadFloor` on
- * `RegionTooLargeMixin` is the only comparison against it, and MAF's summary
- * swap reads that getter, so the threshold has one spelling.
+ * The span below which the **density** axis stops gating. `aboveForceLoadFloor`
+ * on `RegionTooLargeMixin` is the only comparison against it.
  *
  * **On the byte axis it is a budget tier, not a floor** — see
- * {@link SUB_FLOOR_BYTE_BUDGET_FACTOR}. It was a floor: the gate simply stopped
- * asking below it, on the premise that "a small span is a small fetch". The gate
- * now measures at the viewport it is judging (`RegionTooLargeMixin`
- * §"Measurement follows the viewport") rather than assuming that, and the
- * assumption routinely fails. An index quotes whole blocks, so the estimate goes
- * flat wherever a query stops splitting bins, and *where* that happens is a
- * property of the file, not of the index's bin width. Measured 2026-08-06 on
- * files in this repo: `volvox.maf.bed.gz` reports an identical 306,719 bytes
- * from 25kb up to 100kb, and the whole-genome `hs37d5.HG002…sv.vcf.gz` is flat
- * at 15,408 from 7.8 Mb down — 400x above where a 20kb floor would have looked.
- * The old reading here ("roughly a tabix/BAI linear index's own resolution, 16kb
- * bins") described one dense file and generalized from it.
- *
- * The density axis keeps the floor because its number is still a *model* — the
- * last fetch's features-per-bp times the current bpPerPx — with no measurement
- * under it at the span being judged. A repo-wide scan of all 60 indexed files
- * (same date) found nothing that would banner below this span on a display with
- * the density axis on, so removing it would be a change with no measured
- * benefit and an unmeasured risk.
+ * {@link SUB_FLOOR_BYTE_BUDGET_FACTOR}. Why, and the measurements that decided
+ * it: agent-docs/reference/REGION_TOO_LARGE.md § "The sub-floor budget tier".
  */
 export const AUTO_FORCE_LOAD_BP = 20_000
 
 /**
  * How much the byte budget is multiplied by below {@link AUTO_FORCE_LOAD_BP}.
- * The gate keeps asking down there — it is a tier, not the old floor's
- * off-switch — but it asks against a larger number, because at gene scale the
- * user navigated to this locus deliberately and a banner is a worse answer than
- * a few seconds of download.
+ * The gate keeps asking down there — a tier, not an off-switch — but against a
+ * larger number, because at gene scale the user navigated to this locus
+ * deliberately.
  *
- * **Why a tier and not the floor back.** Index estimates are monotone
- * non-decreasing in span, so a region over budget below the floor was over
- * budget at 20kb too. Turning the gate off down there therefore made it
- * *bypassable*: the banner said "zoom in to see features", and zooming in handed
- * over the very bytes it had just refused — or, arriving by locus search, never
- * showed a banner at all. That is what `7958e989d0` fixed for alignments and
- * `ea80879d95` generalized. A tier keeps the gate reachable at every zoom, so
- * the pathological files it exists for (a mitochondrial or amplicon pileup, tens
- * of MB inside a gene-sized window) still ask, while ordinary deep sequencing
- * stops being asked about.
- *
- * **Why below the floor specifically.** A BAI's linear index resolves 16kb bins,
- * so under it the estimate stops moving and the user cannot act on the banner's
- * own advice. Measured 2026-08-14, `estimatedBytesForRegions` on `ctgA`:
- *
- * | span | volvox-ultradeep (~2000x) | volvox-sorted | volvox long reads |
- * | --- | --- | --- | --- |
- * | 1kb–10kb | 7,441,672 (flat) | 256,892 (flat) | 101,982 (flat) |
- * | 20kb | 14,468,389 | 317,130 | 101,982 |
- *
- * So the sub-floor budget is really "what one index bin costs", and 2x is what
- * it takes for the deepest file in this repo to clear it: 7.44 Mb against BAM's
- * 5 Mb becomes 7.44 against 10. It is a policy dial rather than a derived
- * constant — it buys ordinary deep sequencing at gene scale and still stops
- * anything an order of magnitude worse — so raise it if real tracks keep
- * bannering at a locus and lower it if a tab hangs.
- *
- * Deliberately a multiplier of the resolved budget rather than a second absolute
- * number, so an adapter that declares its own `fetchSizeLimit` keeps its
- * relationship to the display default at both tiers, and so there is one budget
- * to reason about instead of two.
+ * A policy dial, not a derived constant: raise it if real tracks keep bannering
+ * at a locus, lower it if a tab hangs. What it is sized against, and why a tier
+ * rather than the old floor: agent-docs/reference/REGION_TOO_LARGE.md § "The
+ * sub-floor budget tier".
  */
 export const SUB_FLOOR_BYTE_BUDGET_FACTOR = 2
 
@@ -81,11 +32,9 @@ export const SUB_FLOOR_BYTE_BUDGET_FACTOR = 2
 const ZOOM_EVIDENCE_SPAN_RATIO = 0.5
 
 /**
- * ...and a halving that buys less than a tenth of the bytes is the index
- * quoting the same blocks. Measured on the whole-genome
- * `hs37d5.HG002…sv.vcf.gz`, successive halvings buy 47%, 34%, 26%, 17%, 12%, 4%,
- * 2%, 0% — so the curve's knee is comfortably inside this threshold and a track
- * still making progress is never called stuck.
+ * ...and a halving that buys less than a tenth of the bytes is the index quoting
+ * the same blocks. The halving curve that chose this: REGION_TOO_LARGE.md
+ * § "Measurement follows the viewport".
  */
 const ZOOM_EVIDENCE_BYTE_RATIO = 0.9
 
@@ -227,10 +176,7 @@ export function resolveByteLimit({
   configFetchSizeLimit: number
   belowForceLoadFloor?: boolean
 }) {
-  const base =
-    adapterFetchSizeLimit !== undefined && adapterFetchSizeLimit > 0
-      ? adapterFetchSizeLimit
-      : configFetchSizeLimit
+  const base = adapterByteLimit(adapterFetchSizeLimit, configFetchSizeLimit)
   return belowForceLoadFloor ? base * SUB_FLOOR_BYTE_BUDGET_FACTOR : base
 }
 

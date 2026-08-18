@@ -249,12 +249,17 @@ amplicon pileup at tens of MB inside a gene-sized window still asks.
 **Why a tier is warranted at all**, given the floor's stated premise ("a small
 span is a small fetch") is false: below the floor the estimate stops moving, so
 the user cannot act on the banner's own advice. A BAI's linear index resolves
-16 kb bins. Measured 2026-08-14, `estimatedBytesForRegions` on `ctgA`:
+16 kb bins:
 
-| span | volvox-ultradeep (~2000x) | volvox-sorted | volvox long reads |
-| --- | --- | --- | --- |
-| 1 kb – 10 kb | 7,441,672 (flat) | 256,892 (flat) | 101,982 (flat) |
-| 20 kb | 14,468,389 | 317,130 | 101,982 |
+<!-- BEGIN GENERATED MEASUREMENT subfloor-index-bin-bytes -->
+
+| file                      | 1kb–10kb (flat) | 20kb   |
+| ------------------------- | --------------- | ------ |
+| volvox-ultradeep (~2000x) | **7442k**       | 14468k |
+| volvox-sorted             | 257k            | 317k   |
+| volvox long reads         | 102k            | 102k   |
+
+<!-- END GENERATED MEASUREMENT subfloor-index-bin-bytes -->
 
 So the sub-floor budget is "what one index bin costs", and 2x is what the deepest
 file here needs to clear it — 7.44 Mb against BAM's 5 Mb becomes 7.44 against 10.
@@ -718,12 +723,16 @@ paths can't drift apart.
     but *where* that happens is a property of the file, not of the linear index's
     16kb bin width:
 
-    | file | flat from | value |
-    | --- | --- | --- |
-    | `volvox/volvox.maf.bed.gz` | 25kb up to 100kb | 306,719 |
-    | `volvox/volvox.maf.bed.gz` | 12.5kb down | 213,443 |
-    | `breakpoint/hs37d5.HG002…sv.vcf.gz` (chr1) | 7.8 Mb down | 15,408 |
-    | `ce11.26way.chrI_subset.bed.gz` | 200bp to 50kb | 92,757 |
+<!-- BEGIN GENERATED MEASUREMENT index-estimate-flat-spans -->
+
+| file                                                    | flat from        | value |
+| ------------------------------------------------------- | ---------------- | ----- |
+| `volvox/volvox.maf.bed.gz`                              | 25kb up to 100kb | 307k  |
+| `volvox/volvox.maf.bed.gz`                              | 12.5kb down      | 213k  |
+| `breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz` (chr1) | **7.8 Mb down**  | 15k   |
+| `ce11.26way.chrI_subset.bed.gz`                         | 200bp to 50kb    | 93k   |
+
+<!-- END GENERATED MEASUREMENT index-estimate-flat-spans -->
 
     The whole-genome VCF is flat 400x above where a 20kb floor would have looked,
     which is what killed the old reading of this constant ("roughly a tabix/BAI

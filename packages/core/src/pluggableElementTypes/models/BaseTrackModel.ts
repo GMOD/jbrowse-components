@@ -10,6 +10,7 @@ import {
   retainAdapterSession,
 } from '../../data_adapters/adapterSessionRefcount.ts'
 import { adapterConfigCacheKey } from '../../data_adapters/dataAdapterCache.ts'
+import { adapterByteLimit } from '../../rpc/byteBudget.ts'
 import { getContainingView, getEnv, getSession } from '../../util/index.ts'
 import { viewDisplayNames } from '../../util/tracks.ts'
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
@@ -398,10 +399,10 @@ export function createBaseTrackModel(
        * these bytes by name.
        */
       get exportByteLimit(): number {
-        const declared = getConf(self, ['adapter', 'fetchSizeLimit'])
-        return typeof declared === 'number' && declared > 0
-          ? declared
-          : DEFAULT_EXPORT_BYTE_LIMIT
+        return adapterByteLimit(
+          getConf(self, ['adapter', 'fetchSizeLimit']),
+          DEFAULT_EXPORT_BYTE_LIMIT,
+        )
       },
       /**
        * #method

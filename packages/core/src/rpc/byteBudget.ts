@@ -16,6 +16,11 @@ export function largestRegionBytes(perRegion: (number | undefined)[]) {
   return largest
 }
 
+/** A non-positive declared limit means "no opinion" (htsget reports 0). */
+export function adapterByteLimit(declared: unknown, fallback: number) {
+  return typeof declared === 'number' && declared > 0 ? declared : fallback
+}
+
 export function overByteBudget(
   bytes: number | undefined,
   byteLimit: number | undefined,
