@@ -53,6 +53,16 @@ export function makeFeatureColorResolver(
 ) {
   const slotIsUnset = colorConfig === undefined
   const colorCfg = { color: colorConfig ?? FEATURE_DEFAULT_COLOR }
+  // A slot holding a plain CSS color is the same answer for every feature, so
+  // resolve it once — the same `isCallbackValue` split
+  // `makeFeaturePartitionResolver` makes below, for the same reason. A painting
+  // is half a million features per region, and each one was paying a
+  // `readConfigValue` call plus a fresh result object to be handed back a
+  // constant. Only the callback form needs the per-feature evaluation.
+  if (colorConfig !== undefined && !isCallbackValue(colorConfig)) {
+    const constant = { css: colorConfig, fromBed: false }
+    return () => constant
+  }
   return (feature: Feature) => {
     const bedColor = slotIsUnset ? featureBedColor(feature) : undefined
     return {
@@ -100,7 +110,7 @@ const PARTITION_CANDIDATE_SAMPLE = 20
  * interface an adapter is free to implement carries only the serializer. Both
  * enumerate the same attribute set.
  */
-export function collectPartitionCandidates(features: Feature[]) {
+function collectPartitionCandidates(features: Feature[]) {
   const names = new Set<string>()
   const n = Math.min(features.length, PARTITION_CANDIDATE_SAMPLE)
   for (let i = 0; i < n; i++) {

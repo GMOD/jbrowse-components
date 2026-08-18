@@ -225,9 +225,37 @@ describe('makeFeatureColorResolver (shared with clustering)', () => {
   })
 
   test('a set slot resolves every feature the same, and never claims fromBed', () => {
+    // The constant-slot fast path: one answer for the whole region, and a set
+    // slot beats the file's own itemRgb (which these features all carry).
     const colors = resolve('red')
     expect(colors.map(c => c.css)).toEqual(['red', 'red', 'red'])
     expect(colors.some(c => c.fromBed)).toBe(false)
+  })
+
+  test('a jexl slot is still evaluated per feature', () => {
+    // The other side of the fast path above: a callback slot cannot be hoisted,
+    // and hoisting it would paint the whole region in whichever color the first
+    // feature happened to resolve.
+    const colors = resolve(
+      "jexl:feature.sample=='mom'?'tomato':'cornflowerblue'",
+    )
+    expect(colors.map(c => c.css)).toEqual([
+      'tomato',
+      'cornflowerblue',
+      'cornflowerblue',
+    ])
+    expect(colors.some(c => c.fromBed)).toBe(false)
+  })
+
+  test('a jexl slot that yields no color degrades to the default', () => {
+    // Whether the expression throws or simply resolves to a non-string, one bad
+    // slot costs the color and not the region.
+    const colors = resolve('jexl:feature.missing.deeper')
+    expect(colors.map(c => c.css)).toEqual([
+      FEATURE_DEFAULT_COLOR,
+      FEATURE_DEFAULT_COLOR,
+      FEATURE_DEFAULT_COLOR,
+    ])
   })
 
   test('resolves the same colors the painting bakes', () => {
