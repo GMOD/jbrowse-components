@@ -12,6 +12,7 @@ import {
   getHitMenuItems,
   getSortByMenuItem,
   linearAlignmentsDisplayStateModelFactory,
+  NO_HIDDEN_GROUPS,
   pickColorOptions,
 } from '@jbrowse/plugin-alignments'
 import {
@@ -133,13 +134,12 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * it again without a refetch.
          */
         get hiddenGroupKeys(): ReadonlySet<string> {
-          const view = self.lgv
-          const assemblyName = view.assemblyNames[0]
+          const assemblyName = self.lgv.assemblyNames[0]
           return this.hideSelfAlignments &&
             self.groupBy?.type === 'mateAssembly' &&
             assemblyName !== undefined
             ? new Set([assemblyName])
-            : new Set()
+            : NO_HIDDEN_GROUPS
         },
       }))
       .views(self => ({

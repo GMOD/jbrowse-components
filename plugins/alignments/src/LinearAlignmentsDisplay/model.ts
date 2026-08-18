@@ -100,6 +100,7 @@ import {
   buildReadIdIndexMap,
   buildSashimiDownKeys,
   hasNamedGroups,
+  NO_HIDDEN_GROUPS,
   orderedGroups,
 } from './groupedDataMaps.ts'
 import {
@@ -190,10 +191,6 @@ export { ColorScheme } from './constants.ts'
 // group-label overlay, and the plugin's public surface.
 export { laneExpandable }
 export type { AlignmentLane }
-
-// Shared by every display that hides no group, so `groupOrder` compares against
-// a stable identity rather than allocating a set per read.
-const EMPTY_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
 
 // colorBy.type → shader colorScheme index, resolved through the shared
 // COLOR_SCHEMES registry (each scheme names a shader path) and ColorScheme (the
@@ -497,7 +494,7 @@ export default function stateModelFactory(
          * self-alignment lane of an all-vs-all track.
          */
         get hiddenGroupKeys(): ReadonlySet<string> {
-          return EMPTY_HIDDEN_GROUPS
+          return NO_HIDDEN_GROUPS
         },
       }))
       .views(self => ({
@@ -1477,8 +1474,7 @@ export default function stateModelFactory(
          * layout pass), so group identity/order stays stable across relayouts.
          */
         get groupOrder() {
-          const hidden = self.hiddenGroupKeys
-          return orderedGroups(self.rpcDataMap).filter(g => !hidden.has(g.key))
+          return orderedGroups(self.rpcDataMap, self.hiddenGroupKeys)
         },
 
         /**

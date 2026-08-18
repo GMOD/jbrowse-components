@@ -13,6 +13,13 @@ import type {
 import type { RegionJunctions } from '../features/sashimi/junctions.ts'
 import type { SashimiArcsMode } from './constants.ts'
 
+// The "this display hides no lane" answer, shared so every `hiddenGroupKeys`
+// getter returns one identity. A fresh `new Set()` per evaluation is a different
+// object each time, so every computed downstream of it — `groupOrder`,
+// `rawDataByGroup`, `readIdIndexMap` — reruns on any unrelated invalidation of
+// the getter.
+export const NO_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
+
 // The one place the `rpcDataMap` → groups nested walk is spelled. Every scan
 // below (and the model's `.some`/max getters) iterates this generator instead of
 // re-nesting the two loops, so the traversal shape lives in exactly one spot.
@@ -25,7 +32,7 @@ import type { SashimiArcsMode } from './constants.ts'
 // per-group regroupers below want — they're looked up by `groupOrder` key.
 export function* eachGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  hidden: ReadonlySet<string> = NOTHING_HIDDEN,
+  hidden: ReadonlySet<string> = NO_HIDDEN_GROUPS,
 ) {
   for (const [displayedRegionIndex, grouped] of rpcDataMap) {
     for (const { key, label, data } of grouped.groups) {
@@ -35,8 +42,6 @@ export function* eachGroup(
     }
   }
 }
-
-const NOTHING_HIDDEN: ReadonlySet<string> = new Set()
 
 export interface SashimiSidesOpts {
   minSashimiScore: number
@@ -141,6 +146,12 @@ export function hasNamedGroups(order: readonly GroupId[]) {
 // rather than recomputing it inside the layout pass (`buildLaidOutByGroup`) and
 // again as `buildRawDataByGroup`'s key order.
 //
+// `hidden` drops here rather than in the caller, for the reason
+// `buildRawDataByGroup` gives: this is what `groupOrder` is, and every other
+// per-group collection is keyed by that already-filtered set. Filtering
+// afterwards left one consumer restating the rule the rest of this file exists
+// to keep in one place.
+//
 // The explicit re-sort is load-bearing across regions: the worker sorts each
 // region's groups on its own, but a plain first-seen merge would order the
 // union by which region first exhibited each key. A group absent from an early
@@ -149,9 +160,10 @@ export function hasNamedGroups(order: readonly GroupId[]) {
 // purely from fetch layout. Sorting the merged set restores the intended order.
 export function orderedGroups(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  hidden?: ReadonlySet<string>,
 ): GroupId[] {
   const order = new Map<string, GroupId>()
-  for (const { key, label } of eachGroup(rpcDataMap)) {
+  for (const { key, label } of eachGroup(rpcDataMap, hidden)) {
     if (!order.has(key)) {
       order.set(key, { key, label })
     }

@@ -108,6 +108,25 @@ test('orderedGroups is empty for an empty fetch', () => {
   expect(orderedGroups(new Map())).toEqual([])
 })
 
+// `groupOrder` IS the filtered order, so the drop belongs here rather than in a
+// `.filter` at the one call site — the same rule the other regroupers in this
+// file apply to their own walks.
+test('orderedGroups drops a hidden lane', () => {
+  const rpcDataMap = new Map([
+    [
+      0,
+      grouped([
+        { key: '+', data: data(['a']) },
+        { key: '-', data: data(['b']) },
+      ]),
+    ],
+  ])
+  expect(orderedGroups(rpcDataMap, new Set(['-']))).toEqual([
+    { key: '+', label: '+' },
+  ])
+  expect(orderedGroups(rpcDataMap)).toHaveLength(2)
+})
+
 // The labels gate reads the sections the worker actually emitted, because the
 // `groupBy` setting can be set while the fetch is ungrouped.
 test('hasNamedGroups is false for an ungrouped or degraded fetch', () => {

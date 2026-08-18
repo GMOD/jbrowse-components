@@ -101,6 +101,10 @@ export type {
   ReadConnectionsMode,
   SashimiArcsMode,
 } from './LinearAlignmentsDisplay/constants.ts'
+// The shared "this display hides no lane" set. Exported so an overriding
+// `hiddenGroupKeys` returns the same identity the base one does instead of a
+// fresh set per evaluation.
+export { NO_HIDDEN_GROUPS } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 export type {
   GroupId,
   ReadIdIndexMap,
