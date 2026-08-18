@@ -1,3 +1,5 @@
+import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
+
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { executeRenderLDData } from './executeRenderLDData.ts'
 
@@ -42,25 +44,29 @@ function noSurvivors(snps: LDSnp[]): LDMatrixResult {
   }
 }
 
-function run(regions: Region[], useGenomicPositions: boolean) {
+async function run(regions: Region[], useGenomicPositions: boolean) {
   jest.mocked(getLDMatrix).mockResolvedValue(noSurvivors([]))
-  return executeRenderLDData({
-    pluginManager: {} as PluginManager,
-    args: {
-      sessionId: 'test',
-      adapterConfig: { type: 'VcfTabixAdapter' },
-      regions,
-      bpPerPx: 1,
-      ldMetric: 'r2',
-      minorAlleleFrequencyFilter: 0.5,
-      lengthCutoffFilter: 0,
-      hweFilterThreshold: 0,
-      callRateFilter: 0,
-      jexlFilters: [],
-      signedLD: false,
-      useGenomicPositions,
-    },
-  })
+  // the envelope `deserializeReturn` takes off for the real caller: the four
+  // Float32Arrays are transferred rather than cloned
+  return unwrapRpcResult(
+    await executeRenderLDData({
+      pluginManager: {} as PluginManager,
+      args: {
+        sessionId: 'test',
+        adapterConfig: { type: 'VcfTabixAdapter' },
+        regions,
+        bpPerPx: 1,
+        ldMetric: 'r2',
+        minorAlleleFrequencyFilter: 0.5,
+        lengthCutoffFilter: 0,
+        hweFilterThreshold: 0,
+        callRateFilter: 0,
+        jexlFilters: [],
+        signedLD: false,
+        useGenomicPositions,
+      },
+    }),
+  )
 }
 
 // `genomicMode` is what the display branches its *chrome* on, not only its

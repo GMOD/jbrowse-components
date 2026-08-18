@@ -1,4 +1,5 @@
 import { updateStatus } from '@jbrowse/core/util'
+import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
@@ -35,8 +36,8 @@ function emptyResult(
   { metric, method, hasDprime, filterStats }: LDMatrixResult,
   signedLD: boolean,
   genomicMode: boolean,
-): LDDataResult {
-  return {
+) {
+  return rpcResultWithArrayBuffers<LDDataResult>({
     ldValues: new Float32Array(0),
     boundaries: new Float32Array(0),
     numCells: 0,
@@ -48,7 +49,7 @@ function emptyResult(
     signedLD,
     snps: [],
     filterStats,
-  }
+  })
 }
 
 export async function executeRenderLDData({
@@ -57,7 +58,7 @@ export async function executeRenderLDData({
 }: {
   pluginManager: PluginManager
   args: ExecuteArgs
-}): Promise<LDDataResult> {
+}) {
   const {
     sessionId,
     adapterConfig,
@@ -151,7 +152,10 @@ export async function executeRenderLDData({
     ? buildGenomicCellBuffers(boundaries)
     : undefined
 
-  return {
+  // The buffers move rather than clone: `ldValues` alone is n(n-1)/2 floats,
+  // which a structure clone copies on every pan. All four are allocated in this
+  // call (see the registry entry), so nothing worker-side is left detached.
+  return rpcResultWithArrayBuffers<LDDataResult>({
     ldValues,
     boundaries,
     numCells,
@@ -164,5 +168,5 @@ export async function executeRenderLDData({
     snps,
     filterStats: ldData.filterStats,
     ...cellBuffers,
-  }
+  })
 }

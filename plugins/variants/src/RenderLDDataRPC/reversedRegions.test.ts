@@ -1,3 +1,5 @@
+import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
+
 import { getLDMatrix, ldPairIndex } from '../VariantRPC/getLDMatrix.ts'
 import { executeRenderLDData } from './executeRenderLDData.ts'
 
@@ -60,27 +62,35 @@ function matrix(snps: LDSnp[]): LDMatrixResult {
   }
 }
 
-function run(regions: Region[], snps: LDSnp[], useGenomicPositions: boolean) {
+async function run(
+  regions: Region[],
+  snps: LDSnp[],
+  useGenomicPositions: boolean,
+) {
   jest.mocked(getLDMatrix).mockResolvedValue(matrix(snps))
-  return executeRenderLDData({
-    pluginManager: {} as PluginManager,
-    args: {
-      sessionId: 'test',
-      adapterConfig: {
-        type: 'VcfTabixAdapter',
+  // the envelope `deserializeReturn` takes off for the real caller: the four
+  // Float32Arrays are transferred rather than cloned
+  return unwrapRpcResult(
+    await executeRenderLDData({
+      pluginManager: {} as PluginManager,
+      args: {
+        sessionId: 'test',
+        adapterConfig: {
+          type: 'VcfTabixAdapter',
+        },
+        regions,
+        bpPerPx: BP_PER_PX,
+        ldMetric: 'r2',
+        minorAlleleFrequencyFilter: 0,
+        lengthCutoffFilter: 0,
+        hweFilterThreshold: 0,
+        callRateFilter: 0,
+        jexlFilters: [],
+        signedLD: false,
+        useGenomicPositions,
       },
-      regions,
-      bpPerPx: BP_PER_PX,
-      ldMetric: 'r2',
-      minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: 0,
-      hweFilterThreshold: 0,
-      callRateFilter: 0,
-      jexlFilters: [],
-      signedLD: false,
-      useGenomicPositions,
-    },
-  })
+    }),
+  )
 }
 
 // LD value for a pair of SNPs, found by position rather than by index, so the

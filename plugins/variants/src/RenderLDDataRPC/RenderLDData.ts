@@ -24,6 +24,14 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     RenderLDData: {
       args: RenderLDDataArgs
       return: LDDataResult
+      // The odd one out among the Render* family until now: `ldValues` is the
+      // O(n²) pair matrix — 4MB at a thousand SNPs — and it crossed by structure
+      // clone on every fetch, alongside three more Float32Arrays. Every buffer
+      // in the result is freshly allocated per call (`getLDMatrix`,
+      // `getLDMatrixFromPlink`, `computeBoundaries`, `buildGenomicCellBuffers`,
+      // and both empty results), so there is nothing held across calls for the
+      // transfer to detach.
+      transferables: true
     }
   }
 }
