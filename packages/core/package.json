@@ -62,6 +62,7 @@
     "./pluggableElementTypes/models": "./src/pluggableElementTypes/models/index.ts",
     "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
     "./pluggableElementTypes/models/HighlightsMixin": "./src/pluggableElementTypes/models/HighlightsMixin.ts",
+    "./pluggableElementTypes/models/assertDisplayContract": "./src/pluggableElementTypes/models/assertDisplayContract.ts",
     "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
     "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
     "./pluginDefinitions": "./src/pluginDefinitions.ts",
@@ -429,6 +430,10 @@
       "./pluggableElementTypes/models/HighlightsMixin": {
         "types": "./esm/pluggableElementTypes/models/HighlightsMixin.d.ts",
         "import": "./esm/pluggableElementTypes/models/HighlightsMixin.js"
+      },
+      "./pluggableElementTypes/models/assertDisplayContract": {
+        "types": "./esm/pluggableElementTypes/models/assertDisplayContract.d.ts",
+        "import": "./esm/pluggableElementTypes/models/assertDisplayContract.js"
       },
       "./pluggableElementTypes/models/baseConnectionConfig": {
         "types": "./esm/pluggableElementTypes/models/baseConnectionConfig.d.ts",
@@ -1154,6 +1159,9 @@
         ],
         "pluggableElementTypes/models/HighlightsMixin": [
           "esm/pluggableElementTypes/models/HighlightsMixin.d.ts"
+        ],
+        "pluggableElementTypes/models/assertDisplayContract": [
+          "esm/pluggableElementTypes/models/assertDisplayContract.d.ts"
         ],
         "pluggableElementTypes/models/baseConnectionConfig": [
           "esm/pluggableElementTypes/models/baseConnectionConfig.d.ts"

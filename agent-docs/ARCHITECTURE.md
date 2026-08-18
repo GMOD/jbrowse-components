@@ -248,18 +248,26 @@ used to be six displays each passing their own closure to the installer, which
 is six chances to omit the call entirely, and omitting it is invisible until
 someone pans.
 
-**Only that one foundation installs it, and every storer in tree is under it.**
-That is a fact about today's tree, not a property of the architecture: a display
-on the global family (HiC, LD, arc) or on the comparative one would store a
-hover and get no clear, in the same silence. Dotplot is the case already outside
-the LGV, and it answers the question rather than inheriting an answer —
-`setupClearHoverOnPlotMove` is its own `reaction`, on the *view* (the hover is
-the view's), over `plotTransform`, which is one observable covering every way
-the plot can move: wheel, drag pan, zoom buttons, `squareView`, the aspect lock,
-an axis locstring, `showAllRegions`, and a resize. Minus the two axes a plot
-does not have — no per-display scroll, no too-large banner. So the rule is
-*answer the invalidation question once, in the place that owns the hover*; on
-the per-region family the mixin has already answered it for you.
+**Only that one foundation installs it, so a storer outside it owes its own.**
+Both comparative views store a hover and both had to answer this separately,
+which is what makes it a rule rather than one mixin's habit:
+`setupClearHoverOnPlotMove` (dotplot) and `installClearHoverOnBandMove`
+(synteny) are each a `reaction` on the *view* — the view is what owns the hover
+there, since one action fans a pick hit out across every display on the shared
+canvas — over one value carrying every number that moves the picture.
+Dotplot watches `plotTransform`; synteny watches `bandTransformKey`, each row's
+`offsetPx` and `bpPerPx` plus the band height. Both leave out the two axes a
+shared canvas does not have: no per-display scroll, no too-large banner.
+
+Synteny is also what that rule cost before anyone wrote it down. Its stored hit
+had one clear outside the pointer handlers — a fetch commit — and its fetch key
+is snapped and zoom-bucketed, so a pan inside the buffer left the tooltip open
+at the cursor naming the ribbon that used to be there. A wheel over that canvas
+zooms both rows while suppressing the hover handler, so the commonest way to
+move the picture was also the one that fired no pointer event.
+
+So the rule is *answer the invalidation question once, in the place that owns
+the hover*; on the per-region family the mixin has already answered it for you.
 
 **A fourth axis *removes* the content, and it is the same installer's job.**
 `regionTooLarge` replaces the subtree with the banner, and Force load brings it
@@ -981,16 +989,19 @@ display is dropped, hiding the very violation it reports). It also catches a
 display that wrongly chains to `super` in its own `afterAttach`, which re-enters
 the mixin's hook and installs the fetch autoruns twice.
 
-**Two of the three fetch families call it**, once per display, from whichever
-installed that display's autoruns: `MultiRegionDisplayMixin`'s `afterAttach` for
-the per-region family, `installGlobalFetchAutorun` for the global one. The
-comparative family does not, and cannot as things stand — the checker lives in
-`plugins/linear-genome-view` while `installComparativeFetchAutorun` lives in
-`@jbrowse/synteny-core`, so calling it would be a package depending on a plugin,
-the upward edge [workspace tiers](#workspace-tiers) records by exception. So
-synteny and dotplot get no dev report on any of the three violations above, and
-a fix means moving `assertDisplayContract` down to a package rather than adding
-a fourth call site.
+**All three fetch families call it**, once per display, from whichever installed
+that display's autoruns: `MultiRegionDisplayMixin`'s `afterAttach` for the
+per-region family, `installGlobalFetchAutorun` for the global one,
+`installComparativeFetchAutorun` for the comparative one. So a fourth skeleton
+owes the same call, beside the pure "go again" signal [the trigger
+list](#the-global-fetch-trigger-list-must-be-read-unconditionally) asks it for.
+
+It lives in `@jbrowse/core` rather than beside the mixin that first needed it,
+which is what lets the comparative family reach it at all: the installer is in
+`@jbrowse/synteny-core`, and a package importing from a plugin is the upward
+edge [workspace tiers](#workspace-tiers) records by exception. The checker needs
+nothing from either — `getMembers` and `untracked` — so the tier it belongs to
+is the lowest one that can hold it.
 
 Their predecessor `renderProps` belonged to the removed server-side block
 system and is gone from the tree entirely — it survives only in
@@ -1336,9 +1347,8 @@ and 12 lines — and both have since been given the sections they wanted.
   [ordering is the contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract).
 - Don't chain to `super` in a display's own `afterAttach`. Our MST fork
   auto-chains lifecycle hooks, so calling it installs every fetch autorun twice;
-  `assertDisplayContract` reports it in dev on the per-region and global
-  families, and nowhere on the comparative one. Regular actions still use
-  super-capture.
+  `assertDisplayContract` reports it in dev, on all three fetch families.
+  Regular actions still use super-capture.
 
 ### Fetch
 
@@ -1347,8 +1357,7 @@ and 12 lines — and both have since been given the sections they wanted.
   [the trap](#rpcprops-loop-trap-and-how-to-break-it).
 - Don't declare `rpcProps` or `isCacheValid` in `.actions()`. MST runs an action
   `untracked`, so their reads register no dependency and callers silently keep a
-  stale answer; `assertDisplayContract` `console.error`s on it in dev, on the
-  two fetch families that call it. See
+  stale answer; `assertDisplayContract` `console.error`s on it in dev. See
   [the pattern](#rpcprops--gpuprops-pattern).
 - Don't put a pure "go again" signal under a fetch gate. `reloadCounter` and
   friends must be read unconditionally, above the bail-outs — a read inside the
@@ -1474,7 +1483,8 @@ and 12 lines — and both have since been given the sections they wanted.
   don't skip overriding `clearHoveredFeature` if you store one — the mixin
   installs the reaction and that one action is all a storer owes it. Outside
   that family nothing installs it, so a display or view that stores a hover owes
-  the whole reaction, the way dotplot's `setupClearHoverOnPlotMove` does.
+  the whole reaction, the way dotplot's `setupClearHoverOnPlotMove` and
+  synteny's `installClearHoverOnBandMove` each do.
 
 ### Backends and generated code
 

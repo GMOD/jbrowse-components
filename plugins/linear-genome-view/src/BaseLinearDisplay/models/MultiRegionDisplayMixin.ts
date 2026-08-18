@@ -1,3 +1,4 @@
+import { assertDisplayContract } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import {
   createStatusFanOut,
   getContainingTrack,
@@ -13,7 +14,6 @@ import { autorun, untracked } from 'mobx'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
-import { assertDisplayContract } from './assertDisplayContract.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'

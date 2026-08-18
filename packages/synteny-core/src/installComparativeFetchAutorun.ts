@@ -1,3 +1,4 @@
+import { assertDisplayContract } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import {
   createStopTokenRotation,
   getSession,
@@ -89,6 +90,12 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
     commit: (result: TResult, args: TArgs) => void
   },
 ) {
+  // Dev-only, and the reason this call is here rather than in each comparative
+  // display: the same contracts the other two fetch families check are checked
+  // by whichever installer put the display's autoruns in, so a family that
+  // grows its own skeleton does not also have to remember to ask.
+  assertDisplayContract(self, `${name}'s installComparativeFetchAutorun`)
+
   const fetch = createStopTokenRotation(self, self)
   // Leading edge on the first fetch, debounced after. MobX's own `{ delay }`
   // schedules even the initial run, so opening a view waited a full `delay`

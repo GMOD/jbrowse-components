@@ -1,3 +1,7 @@
+import {
+  assertDisplayContract,
+  makeRetryContractCheck,
+} from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
@@ -5,10 +9,6 @@ import { computed } from 'mobx'
 
 import GlobalFetchMixin from './GlobalFetchMixin.ts'
 import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
-import {
-  assertDisplayContract,
-  makeRetryContractCheck,
-} from './assertDisplayContract.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
