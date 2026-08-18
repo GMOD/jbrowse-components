@@ -2,9 +2,15 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { stringifyBedGraph } from './bedGraph.ts'
 
-function feat(data: Record<string, unknown>) {
+function feat(data: {
+  refName: string
+  start: number
+  end: number
+  score?: number
+  source?: string
+}) {
   return new SimpleFeature({
-    uniqueId: `${data.refName}-${data.start}`,
+    uniqueId: `${data.refName}-${data.start}-${data.source ?? ''}`,
     ...data,
   })
 }
