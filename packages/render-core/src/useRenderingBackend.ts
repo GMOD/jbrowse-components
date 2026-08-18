@@ -28,7 +28,7 @@ const CONTEXT_RECOVER_BASE_MS = 1000
 // `webglcontextrestored`, which lands within a frame or two for the recoverable
 // causes (GPU crash, driver reset) and needs no banner at all. Nothing is
 // aborted when the window expires, so this is not a readiness cap.
-const CONTEXT_LOST_REPORT_GRACE_MS = 400
+export const CONTEXT_LOST_REPORT_GRACE_MS = 400
 
 const CONTEXT_LOST_MESSAGE =
   'WebGL context lost. The browser reclaimed the GPU context for this display, ' +

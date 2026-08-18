@@ -1,7 +1,9 @@
 import { act, renderHook } from '@testing-library/react'
 
 import { onDeviceLost } from './gpuDevice.ts'
+import { RECOVERY_WINDOW_MS } from './recoveryBudget.ts'
 import {
+  CONTEXT_LOST_REPORT_GRACE_MS,
   isGpuContextLostError,
   useRenderingBackend,
 } from './useRenderingBackend.ts'
@@ -252,6 +254,38 @@ describe('useRenderingBackend', () => {
     expect(model.renderError).toBeUndefined()
   })
 
+  test('losses a window apart are not one flap, and each gets its own budget', async () => {
+    const factory = jest
+      .fn()
+      .mockResolvedValue({ dispose: jest.fn(), setErrorHandler: jest.fn() })
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+
+    // Spend the whole budget, twice, an hour apart. A lifetime counter passes
+    // the first round and gives up on the second, leaving a long-lived tab
+    // unable to auto-recover at all; the window is what tells the two apart.
+    for (let round = 0; round < 2; round++) {
+      for (let i = 0; i < 2; i++) {
+        act(() => {
+          simulateDeviceLost()
+        })
+        await act(async () => {})
+      }
+      expect(model.renderError).toBeUndefined()
+      await wait(RECOVERY_WINDOW_MS * 60)
+    }
+
+    // 1 initial + 2 rebuilds per round, and no give-up banner in either.
+    expect(factory).toHaveBeenCalledTimes(5)
+    expect(model.renderError).toBeUndefined()
+  })
+
   test('re-initializes when canvas element is replaced after regionTooLarge recovery', async () => {
     const canvas1 = document.createElement('canvas')
     const canvas2 = document.createElement('canvas')
@@ -325,13 +359,20 @@ describe('useRenderingBackend', () => {
     await wait(1400)
     rerender()
     await wait(2400)
-    rerender()
-    await wait(2400)
 
     // 1 initial + at most MAX_RECOVERIES (2) auto-retries.
-    // Crucially it STOPS — no unbounded thrash.
     expect(factory).toHaveBeenCalledTimes(3)
-  }, 15000)
+
+    // And it STOPS. Waiting one more backoff cannot tell "gave up" from "the
+    // next backoff has not elapsed yet" — the pair that used to stand here read
+    // 3 with the give-up branch deleted outright. Outrunning every remaining
+    // backoff is what makes the cap the only thing this can be measuring.
+    for (let i = 0; i < 10; i++) {
+      rerender()
+      await wait(30_000)
+    }
+    expect(factory).toHaveBeenCalledTimes(3)
+  })
 
   test('does not auto-recover a non-context render error', async () => {
     const factory = jest.fn().mockRejectedValue(new Error('bad config'))
@@ -353,7 +394,7 @@ describe('useRenderingBackend', () => {
     await wait(2400)
 
     expect(factory).toHaveBeenCalledTimes(1)
-  }, 10000)
+  })
 
   test('reports a context loss the browser never restores as renderError', async () => {
     const factory = createMockFactory()
@@ -369,13 +410,17 @@ describe('useRenderingBackend', () => {
     act(() => {
       canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
     })
-    // nothing user-visible until the grace window for `webglcontextrestored`
-    // has passed
+
+    // Nothing user-visible until the grace window for `webglcontextrestored`
+    // has passed — and asserted just under it, not just after the dispatch.
+    // Any deferral at all satisfies the latter, so the window read 0 with no
+    // test noticing.
+    await wait(CONTEXT_LOST_REPORT_GRACE_MS - 1)
     expect(model.renderError).toBeUndefined()
 
-    await wait(600)
+    await wait(2)
     expect(isGpuContextLostError(model.renderError)).toBe(true)
-  }, 10000)
+  })
 
   test('stays silent when the browser restores the context in the grace window', async () => {
     const factory = createMockFactory()
@@ -396,7 +441,7 @@ describe('useRenderingBackend', () => {
     await wait(600)
 
     expect(model.renderError).toBeUndefined()
-  }, 10000)
+  })
 
   test('does not report a context loss after the canvas unmounts', async () => {
     const factory = createMockFactory()
@@ -417,7 +462,7 @@ describe('useRenderingBackend', () => {
     await wait(600)
 
     expect(model.renderError).toBeUndefined()
-  }, 10000)
+  })
 
   test('does not report a context loss across a pagehide teardown', async () => {
     const factory = createMockFactory()
@@ -438,7 +483,7 @@ describe('useRenderingBackend', () => {
     // bfcache thaws the timer after pageshow rebuilt the backend, so a report
     // here would banner a working canvas
     expect(model.renderError).toBeUndefined()
-  }, 10000)
+  })
 
   test('canvasKey changes per re-init so a consumer can remount the element', async () => {
     const factory = createMockFactory()
