@@ -188,13 +188,13 @@ describe('the badge rides the gene name label', () => {
   it('reads "+N more" collapsed and "− fewer" expanded', () => {
     expect(
       labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!.moreIsoformsLabel,
-    ).toMatchObject({ text: '+6 more', expanded: false })
+    ).toMatchObject({ text: '+6 more', hidden: 6, expanded: false })
 
     expect(
       labelDataFor(
         layoutGene(9, { maxIsoforms: 3, expandedGeneIds: new Set(['gene1']) }),
       ).gene1!.moreIsoformsLabel,
-    ).toMatchObject({ text: '− fewer', expanded: true })
+    ).toMatchObject({ text: 'show fewer', hidden: 6, expanded: true })
   })
 
   it('is absent where nothing is collapsed', () => {
@@ -270,7 +270,11 @@ function twoFeatures(badgeWidth: number | undefined) {
               moreIsoformsLabel:
                 badgeWidth === undefined
                   ? undefined
-                  : { ...label('+6 more', badgeWidth), expanded: false },
+                  : {
+                      ...label('+6 more', badgeWidth),
+                      hidden: 6,
+                      expanded: false,
+                    },
             },
           },
         }),
@@ -381,6 +385,10 @@ describe('the badge in the label layer', () => {
     const name = getByTestId('feature-name-GENE1')
     const badge = getByTestId('feature-more-isoforms-gene1')
     expect(badge.textContent).toBe('+6 more')
+    // the badge has one 11px row, so the sentence is the hover title
+    expect(badge.title).toBe(
+      '6 more isoforms not shown — click to expand this gene',
+    )
     const x = (el: HTMLElement) =>
       Number(/translate\(([-\d.]+)px/.exec(el.style.transform)![1])
     expect(x(badge)).toBeGreaterThan(x(name))

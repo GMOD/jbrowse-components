@@ -1,5 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
+import { pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -348,6 +349,17 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
         elements.push(
           <div
             key={`${displayedRegionIndex}-${featureId}-${kind}`}
+            // The badge has an 11px row to live in, so its text is terse and
+            // the sentence lives here. A native title rather than the model
+            // hover the rest of the layer sets: that one describes the FEATURE,
+            // and this is the one element in the layer that is a control.
+            title={
+              isMore
+                ? label.expanded
+                  ? `Collapse this gene back, hiding ${label.hidden} ${pluralize(label.hidden ?? 0, 'isoform')} again`
+                  : `${label.hidden} more ${pluralize(label.hidden ?? 0, 'isoform')} not shown — click to expand this gene`
+                : undefined
+            }
             data-testid={
               isMore
                 ? `feature-more-isoforms-${featureId}`

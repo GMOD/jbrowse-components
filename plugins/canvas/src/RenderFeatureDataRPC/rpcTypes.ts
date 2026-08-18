@@ -334,7 +334,7 @@ export interface FeatureLabelData {
   // a control: it needs its own color, its own hit target, and — for the packer
   // — its own width beside the name's, which `renderedLabelWidths` adds to the
   // name row (the two share one line, so one reservation covers both).
-  moreIsoformsLabel?: LabelItem & { expanded: boolean }
+  moreIsoformsLabel?: LabelItem & { hidden: number; expanded: boolean }
   parentFeatureId?: string
   subfeatureLabel?: LabelItem & { isOverlay: boolean }
 }

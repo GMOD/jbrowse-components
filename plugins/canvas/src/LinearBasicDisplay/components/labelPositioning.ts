@@ -209,7 +209,12 @@ export function computeLabelPosition(
 }
 
 export interface ResolvedLabel {
-  label: LabelItem & { isOverlay?: boolean; expanded?: boolean }
+  label: LabelItem & {
+    isOverlay?: boolean
+    // the isoform badge's two extra fields, for the layer that draws it
+    hidden?: number
+    expanded?: boolean
+  }
   labelX: number
   labelY: number
   kind: 'name' | 'desc' | 'sub' | 'more'

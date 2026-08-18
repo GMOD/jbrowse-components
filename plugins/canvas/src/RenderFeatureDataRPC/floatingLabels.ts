@@ -54,9 +54,15 @@ export function createFeatureFloatingLabels({
 // The isoform badge that rides after a collapsed gene's name: what is missing
 // from this gene, on this gene, rather than a track-wide count of what is shown.
 //
-// Reads "+3 more" collapsed and "− fewer" expanded — the second is not a count,
-// because the number it would name is the number of isoforms now on screen,
-// which is the one thing the reader can already see.
+// Reads "+3 more" collapsed and "show fewer" expanded. The second is not a
+// count, because the number it would name is the number of isoforms now on
+// screen, which is the one thing the reader can already see; it says what
+// clicking does instead. Plain ASCII either way — `measureText`'s width table is
+// Helvetica indexed by char code and falls back to an average outside it, so a
+// typographic minus would be reserved at a width nothing measured.
+//
+// `hidden` rides along for the hover title, which is where the terse text is
+// spelled out; the badge itself has an 11px row to live in.
 //
 // Through `labelItem` like every other label, so the packer's width reservation
 // and the drawn text agree by construction (see the invariant there).
@@ -71,9 +77,10 @@ export function createMoreIsoformsLabel({
   return hidden > 0
     ? {
         ...labelItem(
-          expanded ? '− fewer' : `+${hidden} more`,
+          expanded ? 'show fewer' : `+${hidden} more`,
           palette.primary.main,
         ),
+        hidden,
         expanded,
       }
     : undefined
