@@ -370,6 +370,7 @@ export function isSupportedIndexingAdapter(type = '') {
     'Gff3Adapter',
     'Gff3TabixAdapter',
     'GtfAdapter',
+    'GtfTabixAdapter',
     'VcfAdapter',
     'VcfTabixAdapter',
   ].includes(type)
