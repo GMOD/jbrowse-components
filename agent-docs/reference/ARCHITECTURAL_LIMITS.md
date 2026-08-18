@@ -15,8 +15,8 @@ Keeping it honest:
 - **Delete an entry when its retire condition is met.** If the story shaped a
   design, move a paragraph to [HISTORICAL.md](HISTORICAL.md). Never leave a
   "fixed" entry here.
-- **Statuses:** `Mitigated` (a mechanism bounds it, root cause remains),
-  `Accepted` (a cost we chose, with the reason), `Open` (unbuilt, and we would
+- **Statuses:** Mitigated (a mechanism bounds it, root cause remains),
+  Accepted (a cost we chose, with the reason), Open (unbuilt, and we would
   take a fix).
 - **Not a backlog.** An entry earns its place by being something you can trip
   over without knowing it exists. Work items go in [../TODO.md](../TODO.md).
@@ -59,10 +59,12 @@ Mitigations in place, both bounding rather than fixing:
   view, converting the cap into a per-scroll cost — cheap on a real GPU, ~10x
   that under software rendering. It is not a free win, and it bounds nothing
   across a multi-panel workspace, where every panel is on screen at once.
-- **Bounded auto-recovery** in `useRenderingBackend`: at most
-  `MAX_CONTEXT_RECOVER_ATTEMPTS` re-inits on backoff, and the budget resets only
-  on a genuine `webglcontextrestored` or a manual retry, so a flapping context
-  climbs to the cap and stops rather than spinning.
+- **Bounded auto-recovery** in `useRenderingBackend`, spending a `RecoveryBudget`:
+  at most `MAX_RECOVERIES` re-inits on backoff. **The budget is windowed, not
+  lifetime** — `record` restarts the count once `RECOVERY_WINDOW_MS` has passed
+  since the last loss, so what the cap bounds is a flap, and two losses a minute
+  apart are two first attempts. `reset` clears it outright, only on a genuine
+  `webglcontextrestored` or a manual Retry.
 
 Still exposed: tracks inside a mounted view are not virtualized, so one LGV with
 17 GPU tracks allocates 17 contexts and crosses the ceiling.
@@ -121,7 +123,7 @@ than every instance buffer under it, and counted nowhere.
 ### The MSAA target is the largest per-display allocation, and nothing counts it
 
 **Status:** Open on size. **The per-frame reallocation it used to also claim is
-measured and free** — `browser-tests/probe-msaa-resize-cost.ts`, Firefox
+measured and free** — `products/jbrowse-web/browser-tests/probe-msaa-resize-cost.ts`, Firefox
 Nightly on an Intel UHD 630, 2026-08-16.
 
 `WebGPUHal` holds one 4x MSAA color attachment sized to its own canvas
@@ -167,7 +169,7 @@ the numbers above are what a change has to beat.
 
 ### Every WebGPU display resolves its whole pass list before it can paint
 
-**Status:** Accepted, measured — `browser-tests/probe-webgpu-pipeline-cost.ts`,
+**Status:** Accepted, measured — `products/jbrowse-web/browser-tests/probe-webgpu-pipeline-cost.ts`,
 Firefox Nightly on an Intel UHD 630, 2026-08-16. The eagerness is real and
 costs about 22 ms of off-thread work once per page.
 
@@ -219,7 +221,8 @@ pipelines and, because `createShaderModule` is synchronous, 4x fewer
 main-thread WGSL parses, with summed compile time 14x lower and the slowest
 single compile flat at ~22 ms instead of degrading to 88 ms as compiles contend.
 **And none of it reaches the user**: to-all-displays-drawn does not improve, and
-the bypassed arm is nominally faster on three rows of four. Startup here is
+the bypassed arm is nominally faster on two of the three rows that recorded
+both arms (the cached 3-track run never reached all-drawn). Startup here is
 fetch and parse bound, the same answer ["a region arrival draws
 twice"](#a-region-arrival-draws-twice-wherever-the-render-autorun-observes-the-data)
 reached about draws. What the cache buys is headroom and memory — 92 pipeline
@@ -343,8 +346,9 @@ one display:
   for the zero-group grouped-fetch reason in [HISTORICAL.md](HISTORICAL.md)
   §"Each display asserted its own 'did we paint?'") **and** transitively:
   `renderState.sections` is `buildSectionRenders(self.sections, …)`, and
-  `sections` reads `groupOrder` / `groupLaidOutMap`, both derived from
-  `rpcDataMap`. Deleting the gate would leave the second path in place, so it
+  `sections` reaches `groupOrder` / `laidOutByGroup` through `drawnLanes` →
+  `lanes` → `buildLanes`, both of them derived from `rpcDataMap` (`groupOrder`
+  reads it outright). Deleting the gate would leave the second path in place, so it
   would not stop the double draw. Band geometry has to follow the laid-out data,
   making that path structural. `model.coupling.test.ts` §"a region arrival
   invalidates renderState, not just the size gate" pins it.
@@ -468,49 +472,9 @@ and volume as the max-in-flight cap it has to have anyway.
 **Retire when** a session-level priority queue with a max-in-flight cap lands, or
 `fetchRegions` at least sorts `needed` by distance from viewport center.
 
-### A failed fetch is not retried automatically, and will not be
-
-**Status:** Accepted. Proposed and declined the same day.
-
-`RemoteFileWithRangeCache.fetchRange` throws on the first non-2xx, and nothing
-anywhere retries it — not this class, not `generic-filehandle2`, not an adapter.
-One alignments viewport is hundreds of range requests against a CDN, so a single
-transient 5xx, 429 or connection reset fails the whole track.
-
-Automatic retry with backoff was proposed for exactly that and **declined: the
-client does not re-issue a request the user did not ask for.** The recovery is a
-legible error plus the Retry button the display error chrome already carries
-([DISPLAYCHROME.md](DISPLAYCHROME.md) §"The retry contract"). A retry that fires
-on its own hides the failure it is recovering from — a server rate-limiting the
-page, a missing CORS header, a file half-uploaded — behind a delay, and the
-person who could have fixed it never learns it happened.
-
-That puts the whole weight on the message, which is where the work went. Both
-halves landed in `RemoteFileWithRangeCache`:
-
-- **A network-level rejection is rewritten.** A CORS denial, a mixed-content
-  block, a DNS failure and an offline browser all reject `fetch` with the same
-  bare `TypeError`; it now becomes the URL, the byte range, and the triage —
-  offline and mixed content where the page can tell them apart, otherwise the two
-  CORS headers to add. Every other message the class throws carries the same
-  treatment.
-- **A stalled connection becomes an error at all.** It used to produce none, and
-  every readiness signal downstream was *correct* to keep waiting, because a
-  fetch really was in flight — so the user got a spinner that never resolved and
-  no Retry to press, the chrome raising one only from an error.
-  `RESPONSE_TIMEOUT_MS` bounds the wait for a **response**, not for the bytes: it
-  clears when the headers arrive, so a 6.5 MiB coalesced read over a slow link is
-  never cut off mid-download. It sits on the shared request inside the chunk
-  de-duplication and composes with the caller's signal rather than replacing it,
-  or cancellation would stop reaching the socket.
-
-**Retire when** never. Document, don't fix — and if it comes up again, the
-question to ask first is whether the error the user saw told them what to do,
-because that is the thing retry was standing in for.
-
 ### Per-JS-context scoping multiplies by the RPC pool
 
-**Status:** Open. Measured 2026-08-12, `browser-tests/percontext-probe.ts`.
+**Status:** Open. Measured 2026-08-12, `products/jbrowse-web/browser-tests/percontext-probe.ts`.
 
 Three read-path resources are scoped per JS context — the BGZF inflate pool,
 `RemoteFileWithRangeCache`'s chunk map, and `SharedBudget` — and adapters are
@@ -717,7 +681,7 @@ ring, and `useFocusOnInteraction` now also listens for `focusin`, so a Tab
 keystroke later. Each track's display box carries `role="figure"` and a generated
 name (`TrackRenderingContainer`), one polite live region per LGV restates the
 settled locstring (`NavigationAnnouncer`), and the ctrl/cmd + arrow bindings are
-listed in the Help widget. `browser-tests/probe-a11y-focus.ts` is where the parts
+listed in the Help widget. `products/jbrowse-web/browser-tests/probe-a11y-focus.ts` is where the parts
 jsdom cannot see are verified — that a click draws no ring, that focus does not
 scroll the port, and that Tab reaches the next view.
 
@@ -961,31 +925,6 @@ global-fetch helper reads unconditionally, and a required `rpcProps` (or the
 explicit opt-out above). The third condition this used to name — a marker the
 height mixins can compare composition order on — is `supportsHeightModes`, above.
 
-### LDDisplay is multi-region on the fetch side and single-region on the axis
-
-**Status:** Open, unmeasured (found 2026-07-26, not chased).
-
-`performLDFetch` sends every content block, `executeRenderLDData` sums
-`totalWidthBp` across all of them and orders SNPs across all of them, and then
-projects each SNP's x with `bpOffsetInRegion(regions[0], snp.start)`
-(`RenderLDDataRPC/ldLayout.ts`). Two consumers do the same on the main thread:
-`LDDisplayComponent.tsx` for the hover lines and `renderSvg.tsx` for the
-recombination track.
-
-So in a view showing more than one region, SNPs from the second block are placed
-in the first block's coordinate space: the inter-block offset and the second
-block's own start both drop out. The display is not simply single-region-only,
-which would be a clean limitation. It half-supports the case.
-
-Nobody has confirmed how it looks on screen, and no LD spec or test uses a
-multi-region view, so the size of the error is unknown. Found by grepping for
-the `contentBlocks[0]` pattern behind the region-launch fix in
-[REGION_VIEW_LAUNCH.md](REGION_VIEW_LAUNCH.md) convention 6.
-
-**Retire when** either the layout takes the whole `regions` array and accumulates
-the inter-region offset the way the launch pickers now do, or the display
-declares itself single-region and the fetch stops pretending otherwise.
-
 ### The plugin ABI is unversioned and the surface is unbounded
 
 **Status:** Open, with a plan.
@@ -1009,14 +948,16 @@ build-time gate today, and gives the `@public` audit a factual starting point.
 
 **Status:** Open.
 
-`agent-docs/` is 40k lines against the 28 in-tree `CLAUDE.md` files' 2k. The
-`CLAUDE.md` half was cut from 3.7k lines to 840 in 2026-08 — rationale,
-measurements, and rejected alternatives dropped in favor of the imperative rule
-alone, on the theory that git history and the ADRs already hold the why.
-`agent-docs/` itself has had no equivalent pass, and the ratio is the entry:
-almost all of the contract now sits in the half nothing trimmed. Rules the
-compiler already owns are still written as warnings, spending the attention the
-unenforceable ones need.
+`agent-docs/` is 42.6k lines against the 28 in-tree `CLAUDE.md` files' 2.6k
+(2026-08-18). Rules the compiler already owns are still written as warnings,
+spending the attention the unenforceable ones need.
+
+**Re-count before citing those; don't quote them from here.** Both halves grow
+fast enough to make any number written down wrong within weeks — over the
+sixteen days to 2026-08-18, `CLAUDE.md` grew 3.2x and `agent-docs/` 2.2x, which
+moved the ratio from ~24:1 to ~16:1 while a paragraph here asserted it was
+getting worse. `find . -name CLAUDE.md -not -path '*/node_modules/*' -not -path
+'*/.claude/*' | xargs wc -l` is the whole measurement.
 
 Alongside them sit hand-maintained membership lists in a doc set that explicitly
 warns against enumerations and lists autogenerating them as a follow-up
