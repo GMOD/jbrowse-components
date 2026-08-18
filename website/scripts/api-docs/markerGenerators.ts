@@ -13,6 +13,7 @@ import { writeGraphPluginDocs } from './generateGraphPluginDocs.ts'
 import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { writeLaunchViewDocs } from './generateLaunchViewDocs.ts'
+import { writeMarkerIndexDocs } from './generateMarkerIndex.ts'
 import { writeMenuDocs } from './generateMenuDocs.ts'
 import { writeOrthofinderSetDocs } from './generateOrthofinderSetDocs.ts'
 import { writePaletteDocs } from './generatePaletteDocs.ts'
@@ -141,5 +142,14 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
     // and the configs serving it are tracked in this repo.
     label: 'Graph plugin config fence',
     write: (_corpus, opts) => writeGraphPluginDocs(opts),
+  },
+  {
+    // The index of every other entry in this list, and of the marker blocks the
+    // whole-repo scan in generate.ts writes. Its source is the docs' own marker
+    // pairs, so it belongs to no one generator and reads the same whichever run
+    // invokes it — which is why it can sit here rather than at the end of
+    // generate.ts, and so gets the `--check` gate the rest of this list has.
+    label: 'Marker index',
+    write: (_corpus, opts) => writeMarkerIndexDocs(opts),
   },
 ]

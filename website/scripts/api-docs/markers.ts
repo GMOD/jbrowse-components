@@ -16,7 +16,7 @@
 // the case where it bites, since one source edit routinely staleness two of
 // them at once (a `#color` tag renders into both a guide and the spec).
 import { MARKER_GENERATORS } from './markerGenerators.ts'
-import { getAllFiles, sourceCorpus } from './util.ts'
+import { assertMarkersAndDocsAgree, getAllFiles, sourceCorpus } from './util.ts'
 
 const args = process.argv.slice(2)
 const check = args.includes('--check')
@@ -48,6 +48,16 @@ for (const { label, write } of selected) {
   console.log(
     `${label}: ${docs.length ? `${docs.length} stale` : 'up to date'}`,
   )
+}
+
+// Only the generated-but-rendered-nowhere half: this run invokes 22 of the
+// generators, so a marker pair it never wrote is not evidence that nothing
+// writes it. `generate.ts` runs them all and checks both directions.
+try {
+  assertMarkersAndDocsAgree({ both: false })
+} catch (e) {
+  console.error(`\n${e instanceof Error ? e.message : e}`)
+  process.exit(1)
 }
 
 if (stale.size) {

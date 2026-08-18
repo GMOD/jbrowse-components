@@ -13,8 +13,32 @@ import { oxfmtBin } from '../check-utils.ts'
 // touches are outside website/docs entirely.
 const written = new Set<string>()
 
+// Every doc read this run. Each marker generator sweeps the whole doc tree for
+// its own pair, so a `markers.ts` run read 17,640 files to see 588 distinct
+// ones — 8.85MB re-read 30 times, 1.1-1.7s against 0.08-0.09s once cached.
+//
+// The cache lives here rather than beside the sweep because `writeDoc` is what
+// has to invalidate it. A stale entry would be silent and total: a second
+// generator splicing into the same doc writes the whole file back from what it
+// read, and ARCHITECTURE.md carries four marker blocks, so the first
+// generator's block would be dropped.
+const docText = new Map<string, string>()
+
+// A doc's current content, from the cache when this run already read or wrote
+// it. Only for files a run may also write — a source file read through this
+// would never be invalidated.
+export function readDoc(file: string) {
+  let text = docText.get(file)
+  if (text === undefined) {
+    text = fs.readFileSync(file, 'utf8')
+    docText.set(file, text)
+  }
+  return text
+}
+
 export function writeDoc(file: string, content: string) {
   fs.writeFileSync(file, content)
+  docText.set(file, content)
   written.add(file)
 }
 

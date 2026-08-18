@@ -23,6 +23,7 @@ import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { MARKER_GENERATORS } from './markerGenerators.ts'
 import {
   assertEveryDisplayTypeIsDocumented,
+  assertMarkersAndDocsAgree,
   createDocProgram,
   extractWithComment,
   getAllFiles,
@@ -233,7 +234,6 @@ async function main() {
         .map(c => [c.header!.name, c.header!.gotchas]),
     ),
   )
-
   pruneUnwritten()
 
   // Exactly the files written above, not a list of directories to keep in sync
@@ -245,6 +245,13 @@ async function main() {
   // fight `pnpm format` — which is what a guide outside the old six directories
   // would silently have done.
   await formatWithOxfmt(writtenDocs())
+
+  // After the formatter, not before it: this fails on marker bookkeeping rather
+  // than on a page's content, and everything above it is already written. A
+  // throw in between leaves those writes on disk unformatted, and the next run
+  // does not repair them — it regenerates the same bytes, sees the file already
+  // holds them, and so never writes (and never formats) it again.
+  assertMarkersAndDocsAgree()
 }
 
 // The three directories this script owns outright — every `.md` in them is

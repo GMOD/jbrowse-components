@@ -6,7 +6,7 @@ import { promisify } from 'util'
 import * as ts from 'typescript'
 
 import { BUILD_DIRS, isDocFile, isTsSource, walkFiles } from '../check-utils.ts'
-import { writeDoc } from './format.ts'
+import { readDoc, writeDoc } from './format.ts'
 
 const exec2 = promisify(exec)
 
@@ -2269,11 +2269,85 @@ export function escapeRegExp(s: string) {
 // instruction for exactly that. A file is only touched if it holds the marker
 // pair, so widening the sweep costs nothing to the docs that don't opt in.
 //
-// Each marker generator sweeps the whole tree for its own pair, so a run relists
-// and rereads these eight times. Caching that measured 113ms for all eight
-// sweeps — not worth the module-level state, so don't.
+// Each marker generator sweeps the whole tree for its own pair, so a run
+// relists and rereads these once per marker — 30 sweeps in `markers.ts`, not the
+// eight the note here used to be measured against. The relisting stays uncached
+// at 1ms a sweep; the rereading is `readDoc`'s, and format.ts says what it cost.
 function markerDocs() {
   return [...listDocs('website/docs'), ...listDocs('agent-docs')]
+}
+
+// Which docs carry each `<!-- MARKER … START -->` pair, and which markers a
+// generator asked to render. The two are checked against each other by
+// `assertMarkersAndDocsAgree`; the doc side is also what the MARKER_INDEX table
+// renders, so the index is read off the docs rather than off this registry and
+// therefore lists itself.
+const markersWritten = new Set<string>()
+
+// A marker at the start of a line, which is the only place one can be a block:
+// `<!-- NAME START -->` inside a sentence is a doc *about* the convention (that
+// is how ARCHITECTURE.md names the pair), and CommonMark reads an HTML comment
+// mid-paragraph as inline text, so nothing is spliced there.
+const MARKER_BLOCK = /^<!-- ([A-Z][A-Z0-9_]*)(?: (\S+))? START -->$/gm
+
+// Every marker pair the docs carry, marker name to the docs carrying it. A
+// grouped marker (`COLOR_TABLE alignments-indicators`) counts under its base
+// name — the group's own existence check is `rewriteGroupedMarkerBlocks`'s
+// `seen`.
+export function markerBlocksInDocs() {
+  const found = new Map<string, Set<string>>()
+  for (const file of markerDocs()) {
+    for (const [, marker] of readDoc(file).matchAll(MARKER_BLOCK)) {
+      const docs = found.get(marker!)
+      if (docs) {
+        docs.add(file)
+      } else {
+        found.set(marker!, new Set([file]))
+      }
+    }
+  }
+  return found
+}
+
+// Both halves of "a generated table and the doc that renders it still know
+// about each other", which nothing checked. Either direction is silent and
+// permanent, and both are one rename away:
+//
+//   - a marker no doc carries renders nowhere. The generator reports it up to
+//     date, because the docs it did not touch are all identical to themselves.
+//     Removing the pair from a page is enough — the table's last reader can go
+//     with every gate green, which is the failure `gen-diagram-usage.ts` calls
+//     fatal for the same reason.
+//   - a pair no generator writes keeps whatever was committed forever. Renaming
+//     a marker in the generator is both failures at once: the new name renders
+//     nowhere and the old block freezes.
+//
+// `writtenMarkers` is what the run actually asked for, so a partial run
+// (`markers.ts <filter>`) checks only its own markers; pass `both: false` there,
+// since a marker the run never invoked is not evidence of an ungenerated block.
+export function assertMarkersAndDocsAgree({ both = true } = {}) {
+  const inDocs = markerBlocksInDocs()
+  const problems = [
+    ...[...markersWritten]
+      .filter(marker => !inDocs.has(marker))
+      .map(
+        marker =>
+          `  ${marker} — generated, but no doc carries a \`<!-- ${marker} START -->\` pair. Render it in a doc, or delete the generator.`,
+      ),
+    ...(both
+      ? [...inDocs.keys()]
+          .filter(marker => !markersWritten.has(marker))
+          .map(
+            marker =>
+              `  ${marker} — ${[...inDocs.get(marker)!].join(', ')} carries the pair, but no generator writes it. The block keeps whatever was committed.`,
+          )
+      : []),
+  ]
+  if (problems.length > 0) {
+    throw new Error(
+      `${problems.length} marker(s) and the docs disagree:\n${problems.join('\n')}`,
+    )
+  }
 }
 
 // Replace every `<!-- … START -->`/`<!-- … END -->` region in one doc, and fail
@@ -2344,8 +2418,9 @@ export function rewriteMarkerBlock(
   const startMarker = `<!-- ${marker} START -->`
   const endMarker = `<!-- ${marker} END -->`
   const stale: string[] = []
+  markersWritten.add(marker)
   for (const file of markerDocs()) {
-    const original = fs.readFileSync(file, 'utf8')
+    const original = readDoc(file)
     if (original.includes(startMarker)) {
       const updated = replaceMarkerRegions({
         text: original,
@@ -2390,8 +2465,9 @@ export function rewriteGroupedMarkerBlocks(
   const markerRe = new RegExp(`<!-- ${marker} (\\S+) START -->`, 'g')
   const stale: string[] = []
   const seen = new Set<string>()
+  markersWritten.add(marker)
   for (const file of markerDocs()) {
-    const original = fs.readFileSync(file, 'utf8')
+    const original = readDoc(file)
     let updated = original
     // A group repeated in one doc matches twice; rendering it twice is
     // wasted work, not a wrong answer, and dropping the duplicate keeps the
