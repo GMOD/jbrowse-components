@@ -35,13 +35,10 @@ function bedGraphRow(feature: Feature) {
 export function stringifyBedGraph({ features }: { features: Feature[] }) {
   const bySource = new Map<string, string[]>()
   for (const feature of features) {
-    const source = feature.get('source') ?? ''
-    const rows = bySource.get(source)
-    if (rows) {
-      rows.push(bedGraphRow(feature))
-    } else {
-      bySource.set(source, [bedGraphRow(feature)])
-    }
+    const source = String(feature.get('source') ?? '')
+    const rows = bySource.get(source) ?? []
+    rows.push(bedGraphRow(feature))
+    bySource.set(source, rows)
   }
   return [...bySource]
     .flatMap(([source, rows]) =>

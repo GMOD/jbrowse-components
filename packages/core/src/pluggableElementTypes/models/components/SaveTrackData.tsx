@@ -34,6 +34,7 @@ import { useFetch } from '../../../util/useFetch.ts'
 import { fetchTrackData, roundRegions } from './fetchTrackData.ts'
 
 import type { Region } from '../../../util/index.ts'
+import type { RpcStatus } from '../../../util/progress.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { ExportableTrack } from './fetchTrackData.ts'
 
@@ -170,6 +171,38 @@ function FormatSelector({
   )
 }
 
+/**
+ * What the preview pane says — the export itself only once there is one, and
+ * before that whichever of the four other states the dialog is in. In
+ * precedence order, because more than one can hold at a time.
+ */
+function previewText({
+  regions,
+  loading,
+  status,
+  tooLarge,
+  regionStr,
+  str,
+}: {
+  regions: Region[]
+  loading: boolean
+  status: RpcStatus | undefined
+  tooLarge: { bytes: number; limit: number } | undefined
+  regionStr: string
+  str: string
+}) {
+  if (!regions.length) {
+    return 'This view has no region on screen to export.'
+  }
+  if (loading) {
+    return statusProgressLabel(status) || 'Loading...'
+  }
+  if (tooLarge) {
+    return `${regionStr} is an estimated ${getDisplayStr(tooLarge.bytes)} on this track, over the ${getDisplayStr(tooLarge.limit)} this export asks about. Nothing has been downloaded — click "Download anyway" to fetch it.`
+  }
+  return str.length > MAX_PREVIEW_CHARS ? TOO_BIG_TO_PREVIEW : str
+}
+
 const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   model,
   handleClose,
@@ -202,7 +235,9 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   })
   const tooLarge = result?.tooLarge
   const str = result?.str ?? ''
-  const noResult = loading || !!error || !!tooLarge
+  // no regions means no fetch ran at all — without that term Copy and Download
+  // stayed live over the empty string and saved a plausible-looking empty file
+  const noResult = loading || !!error || !!tooLarge || !regions.length
 
   return (
     <InfoDialog
@@ -266,15 +301,14 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           minRows={5}
           maxRows={15}
           fullWidth
-          value={
-            loading
-              ? statusProgressLabel(status) || 'Loading...'
-              : tooLarge
-                ? `${regionStr} is an estimated ${getDisplayStr(tooLarge.bytes)} on this track, over the ${getDisplayStr(tooLarge.limit)} this export asks about. Nothing has been downloaded — click "Download anyway" to fetch it.`
-                : str.length > MAX_PREVIEW_CHARS
-                  ? TOO_BIG_TO_PREVIEW
-                  : str
-          }
+          value={previewText({
+            regions,
+            loading,
+            status,
+            tooLarge,
+            regionStr,
+            str,
+          })}
           slotProps={{
             input: {
               readOnly: true,
