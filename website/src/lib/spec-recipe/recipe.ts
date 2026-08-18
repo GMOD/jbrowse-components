@@ -1,4 +1,6 @@
 import { fileKind, lookupAssembly, lookupTrack } from './configs.ts'
+
+import type { RawTrack } from './configs.ts'
 import {
   decodeSpecUrl,
   specDisplayType,
@@ -102,8 +104,26 @@ const IMPORT_FORM_VIEWS: Record<string, ImportFormView> = {
 
 // Labels that name what a track holds read naturally only if the noun matches
 // the track ('Fixed read height' for a pileup, 'Fixed feature height' otherwise).
-function trackNoun(trackType: string | undefined): string {
-  return trackType === 'AlignmentsTrack' ? 'read' : 'feature'
+//
+// The DISPLAY settles this where the track config cannot. A hosted config is
+// not readable at build time, so `lookupTrack` returns nothing for most figures
+// on this site and the track type is unavailable — which used to leave every
+// one of them on the 'feature' fallback, and told a reader to open "Feature
+// height" on a pileup whose menu says "Read height". The alignments display
+// passes 'read' at its own call site (its model.ts) and the canvas displays
+// pass 'feature' (trackMenus.ts), so naming either one answers it outright.
+// LGVSyntenyDisplay takes the noun from its own `featureNoun`, which is a
+// config slot, so it stays with the track-type reading.
+const DISPLAY_NOUNS: Record<string, string> = {
+  LinearAlignmentsDisplay: 'read',
+  LinearBasicDisplay: 'feature',
+}
+
+function trackNoun(trackType: string | undefined, displayType?: string): string {
+  return (
+    (displayType ? DISPLAY_NOUNS[displayType] : undefined) ??
+    (trackType === 'AlignmentsTrack' ? 'read' : 'feature')
+  )
 }
 
 // Walks a set of spec fields, skipping the ones that describe the figure rather
@@ -156,9 +176,13 @@ function withWhere({ where, ...step }: RecipeStep): RecipeStep {
 
 // The track's own name as a breadcrumb segment, falling back to the id a
 // figure's config doesn't carry a name for.
-function trackName(entry: SpecTrackEntry, config: string): string {
+function trackName(
+  entry: SpecTrackEntry,
+  config: string,
+  sessionTracks?: RawTrack[],
+): string {
   const trackId = specTrackId(entry)
-  return `“${lookupTrack(config, trackId)?.name ?? trackId}”`
+  return `“${lookupTrack(config, trackId, sessionTracks)?.name ?? trackId}”`
 }
 
 // What the Add menu calls each view, for a figure whose spec holds more than
@@ -208,21 +232,23 @@ const ADD_TRACK =
 function trackStep(
   entry: SpecTrackEntry,
   config: string,
+  sessionTracks?: RawTrack[],
   band?: BandContext,
   viaTrackSelector?: boolean,
 ): RecipeStep & { settings: RecipeStep[]; unmapped: string[] } {
   const trackId = specTrackId(entry)
-  const info = lookupTrack(config, trackId)
+  const info = lookupTrack(config, trackId, sessionTracks)
   const kind = info ? fileKind(info.adapterType) : undefined
+  // The spec's own `type` first. Failing that, the track config's declared
+  // display — but only when it declares exactly one, which is the case
+  // `pickDisplayForView` settles without consulting the registry: with a
+  // single declared display there is nothing for the view's supported-types
+  // filter to choose between. Several declared, or none, still yields
+  // undefined rather than a guess.
+  const displayType = specDisplayType(entry) ?? soleDeclaredDisplay(info)
   const context: FieldContext = {
-    noun: trackNoun(info?.type),
-    // The spec's own `type` first. Failing that, the track config's declared
-    // display — but only when it declares exactly one, which is the case
-    // `pickDisplayForView` settles without consulting the registry: with a
-    // single declared display there is nothing for the view's supported-types
-    // filter to choose between. Several declared, or none, still yields
-    // undefined rather than a guess.
-    displayType: specDisplayType(entry) ?? soleDeclaredDisplay(info),
+    noun: trackNoun(info?.type, displayType),
+    displayType,
   }
   const { steps: settings, unmapped } = fieldSteps(
     specTrackSettings(entry),
@@ -251,6 +277,7 @@ function importFormSteps(
   view: SpecView,
   form: ImportFormView,
   config: string,
+  sessionTracks?: RawTrack[],
 ): { steps: RecipeStep[]; unmapped: string[] } {
   const steps: RecipeStep[] = []
   const unmapped: string[] = []
@@ -283,7 +310,7 @@ function importFormSteps(
       settings,
       unmapped: trackUnmapped,
       ...step
-    } = trackStep(entry, config, {
+    } = trackStep(entry, config, sessionTracks, {
       form,
       bands: distinct.length === 1 ? entries.length : 0,
     })
@@ -308,7 +335,11 @@ function importFormSteps(
   return { steps, unmapped }
 }
 
-function pythonSnippet(view: SpecView, config: string): string | undefined {
+function pythonSnippet(
+  view: SpecView,
+  config: string,
+  sessionTracks?: RawTrack[],
+): string | undefined {
   const assembly = view.assembly
   if (view.type !== PYTHON_VIEW_TYPE || !assembly) {
     return undefined
@@ -322,7 +353,7 @@ function pythonSnippet(view: SpecView, config: string): string | undefined {
     : 'from jbrowse_anywidget import LinearGenomeView, make_assembly'
   const entries = specTracks(view)
   const tracks = entries.map((entry, i) => {
-    const info = lookupTrack(config, specTrackId(entry))
+    const info = lookupTrack(config, specTrackId(entry), sessionTracks)
     const type = info?.type || 'FeatureTrack'
     const adapterType = info?.adapterType || 'BamAdapter'
     // trackIds must be unique within a view, so a multi-track snippet can't
@@ -354,6 +385,9 @@ function pythonSnippet(view: SpecView, config: string): string | undefined {
 function viewSteps(
   view: SpecView,
   config: string,
+  // tracks the spec declares inline, which is where a figure on a hosted config
+  // gets its track types from (see lookupTrack)
+  sessionTracks?: RawTrack[],
   // set when the view is one row of a comparative view: the import form has
   // already opened its genome, and the steps left are about that row, so each
   // says which one it belongs to
@@ -377,7 +411,7 @@ function viewSteps(
   }
 
   if (form) {
-    const formSteps = importFormSteps(view, form, config)
+    const formSteps = importFormSteps(view, form, config, sessionTracks)
     steps.push(...formSteps.steps)
     unmapped.push(...formSteps.unmapped)
   } else {
@@ -387,14 +421,14 @@ function viewSteps(
         settings,
         unmapped: trackUnmapped,
         ...step
-      } = trackStep(entry, config, undefined, viaTrackSelector)
+      } = trackStep(entry, config, sessionTracks, undefined, viaTrackSelector)
       // Three tracks in one view produce three runs of "Track menu → ..." with
       // nothing between them, and every one of those menus hangs off a
       // different track's label. The settings say which.
       steps.push(
         step,
         ...(entries.length > 1
-          ? labelSteps(settings, trackName(entry, config))
+          ? labelSteps(settings, trackName(entry, config, sessionTracks))
           : settings),
       )
       unmapped.push(...trackUnmapped)
@@ -422,7 +456,7 @@ function viewSteps(
       : undefined
     // a sub-view is never the session's only view, so its tracks go in through
     // its own track selector
-    const sub = viewSteps(subView, config, label, true)
+    const sub = viewSteps(subView, config, sessionTracks, label, true)
     steps.push(...(label ? labelSteps(sub.steps, label) : sub.steps))
     unmapped.push(...sub.unmapped)
   }
@@ -480,9 +514,10 @@ export function buildRecipe(
     return undefined
   }
   const { base, config, spec } = decoded
+  const sessionTracks = spec.sessionTracks as RawTrack[] | undefined
   const views = spec.views ?? []
   const collected = views.map(view =>
-    viewSteps(view, config, undefined, views.length > 1),
+    viewSteps(view, config, sessionTracks, undefined, views.length > 1),
   )
   const firstView = views[0]
   const desktopWebUrl = withSessionName(liveUrl, figureName)
@@ -518,7 +553,9 @@ export function buildRecipe(
         ]
       })
       .map(withWhere),
-    python: firstView ? pythonSnippet(firstView, config) : undefined,
+    python: firstView
+      ? pythonSnippet(firstView, config, sessionTracks)
+      : undefined,
     agentCommand: agentCommandFor(base, config, specJson),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],
   }

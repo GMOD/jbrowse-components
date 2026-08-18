@@ -15,7 +15,7 @@ interface RawAdapter {
   [field: string]: unknown
 }
 
-interface RawTrack {
+export interface RawTrack {
   trackId: string
   name?: string
   type?: string
@@ -71,11 +71,19 @@ function readConfig(config: string): RawConfig | undefined {
   return cache.get(config)
 }
 
+// A track the SPEC declares inline, which is the only description of it a
+// static build gets when the figure loads a hosted config: `readConfig` reads
+// `test_data/` and nothing else, so every figure on a jbrowse.org demo config
+// used to resolve to `undefined` here — no type, no adapter, no declared
+// display. The spec's own `sessionTracks` carry all three.
 export function lookupTrack(
   config: string,
   trackId: string,
+  sessionTracks?: RawTrack[],
 ): TrackInfo | undefined {
-  const track = readConfig(config)?.tracks?.find(t => t.trackId === trackId)
+  const track =
+    sessionTracks?.find(t => t.trackId === trackId) ??
+    readConfig(config)?.tracks?.find(t => t.trackId === trackId)
   return track
     ? {
         trackId,
