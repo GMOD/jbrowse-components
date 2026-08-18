@@ -205,9 +205,12 @@ export interface HitTestOptions {
   featureSpacing: number
   scrollTop: number
   isChainMode: boolean
-  // Mirrors the draw-time alpha gate: when true, low-frequency mismatches fade
-  // (and stop being clickable) once zoomed out; when false they draw opaque and
-  // stay clickable at every zoom.
+  // Mirrors the draw-time alpha gate: when true, a low-frequency mark fades
+  // (and stops being clickable) once it goes sub-pixel; when false every mark
+  // draws opaque and stays clickable at every zoom. All four fading marks read
+  // it through `passesFrequencyGate` — mismatch, small insertion, clip and
+  // deletion — each against its OWN sub-pixel test, which for a deletion is its
+  // reference span rather than one base.
   filterMismatchesByFrequency: boolean
   // Mirrors the `deletion` / `mismatch` / `insertion` draw layers, which are
   // the three PILEUP_LAYERS entries gated on this flag. The arrays are fetched
@@ -228,13 +231,23 @@ export interface HitTestOptions {
 // A deletion/skip under the cursor, dropped when it is narrower than
 // `minLength`. Zoomed in that is 0 — every gap the cursor is over counts —
 // and zoomed out it is `bpPerPx`, i.e. keep only what still spans a pixel.
+//
+// That length rule applies to both gap kinds and is about resolvability alone.
+// The frequency gate `hitTestGap` runs is the separate significance question
+// every other mark test asks, and it reaches only deletions — see it for why.
 function hitTestSignificantGap(
   resolved: ResolvedBlock,
   coords: CigarCoords,
   minLength: number,
   includeDeletions: boolean,
+  filterMismatchesByFrequency: boolean,
 ) {
-  const gap = hitTestGap(resolved, coords, includeDeletions)
+  const gap = hitTestGap(
+    resolved,
+    coords,
+    includeDeletions,
+    filterMismatchesByFrequency,
+  )
   return gap && gap.length >= minLength ? gap : undefined
 }
 
@@ -294,6 +307,7 @@ function hitTestCigarItem(
       coords,
       perBase ? 0 : bpPerPx,
       showMismatches,
+      filterMismatchesByFrequency,
     ) ??
     hitTestClip(resolved, coords, filterMismatchesByFrequency)
   )

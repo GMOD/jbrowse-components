@@ -70,6 +70,12 @@ function makeRpcData(
     numInsertions: countType(types, INTERBASE_INSERTION),
     numSoftclips: countType(types, INTERBASE_SOFTCLIP),
     numHardclips: countType(types, INTERBASE_HARDCLIP),
+    // One entry per GAP (`deletionStartFrequencies`), defaulting to full
+    // frequency so a test that says nothing about significance keeps testing
+    // what it meant to. A test about the gate supplies its own zeros.
+    gapFrequencies:
+      overrides.gapFrequencies ??
+      new Uint8Array(data.gapTypes.length).fill(255),
   }
 }
 
@@ -841,6 +847,97 @@ describe('clip hit gates on frequency like every other mark', () => {
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('softclip')
+    }
+  })
+})
+
+// Deletions were the mark the clip fix above left behind, and the length rule in
+// `hitTestSignificantGap` hid it: above SNP_HIT_MAX_BP_PER_PX that rule already
+// demands a pixel of span, and a deletion spanning a pixel is one the frequency
+// lerp resolves opaque anyway. Below it the rule is `minLength: 0`, so a
+// zeroed deletion drew at `widthPx³` — invisible — and answered every click
+// across its span.
+//
+// The gate is per-mark: a deletion's sub-pixel test is its own reference span,
+// not one base, so the numbers here are a 5bp deletion at 10 bp/px (0.5px wide,
+// alpha 0.125) rather than the point-mark case the mismatch tests use.
+describe('deletion hit gates on frequency like every other mark', () => {
+  // bpRange [0,2000] over 200px → bpPerPx=10, inside the per-base branch.
+  // canvasX=100 → genomicPos=1000, which lands in [998, 1003).
+  function deletion(frequency: number) {
+    return {
+      ...makeResolved({
+        gapPositions: new Uint32Array([998, 1003]),
+        gapYs: new Uint16Array([0]),
+        gapTypes: new Uint8Array([GAP_DELETION]),
+        gapFrequencies: new Uint8Array([frequency]),
+      }),
+      bpRange: [0, 2000] as [number, number],
+    }
+  }
+
+  it('a noise-floor deletion does not intercept', () => {
+    expect(performHitTest(100, 60, deletion(0), ZOOMED_OUT_OPTS).type).toBe(
+      'none',
+    )
+  })
+
+  it('one the worker kept does', () => {
+    const result = performHitTest(100, 60, deletion(255), ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('deletion')
+    }
+  })
+
+  it('and it stays hittable with frequency filtering off', () => {
+    const result = performHitTest(100, 60, deletion(0), {
+      ...ZOOMED_OUT_OPTS,
+      filterMismatchesByFrequency: false,
+    })
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('deletion')
+    }
+  })
+
+  // The gate reaches deletions alone: `deletionStartFrequencies` writes a
+  // hardcoded 0 into every skip slot, so a shared gate would make every intron
+  // centerline inert past 1 bp/px while gap.slang goes on drawing it.
+  it('a zero-frequency SKIP is exempt', () => {
+    const resolved = {
+      ...makeResolved({
+        gapPositions: new Uint32Array([998, 1003]),
+        gapYs: new Uint16Array([0]),
+        gapTypes: new Uint8Array([GAP_SKIP]),
+        gapFrequencies: new Uint8Array([0]),
+      }),
+      bpRange: [0, 2000] as [number, number],
+    }
+    const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('skip')
+    }
+  })
+
+  // Past its own sub-pixel point a deletion is opaque whatever its frequency
+  // (`frequencyFadeGate` short-circuits on `base >= 1`), so the gate must let it
+  // through: 500bp at 10 bp/px is 50px of drawn bar.
+  it('a wide zero-frequency deletion still intercepts', () => {
+    const resolved = {
+      ...makeResolved({
+        gapPositions: new Uint32Array([750, 1250]),
+        gapYs: new Uint16Array([0]),
+        gapTypes: new Uint8Array([GAP_DELETION]),
+        gapFrequencies: new Uint8Array([0]),
+      }),
+      bpRange: [0, 2000] as [number, number],
+    }
+    const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('deletion')
     }
   })
 })
