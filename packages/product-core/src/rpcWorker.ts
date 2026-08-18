@@ -160,6 +160,26 @@ export async function initializeWorker(
 
     postMessage({ message: 'ready' })
   } catch (e) {
-    postMessage({ message: 'error', error: serializeError(e) })
+    // The boot handshake's last frame, and it must never fail to send — for the
+    // reason RpcServer.throw must not, one level worse. `serializeError` copies
+    // an error's own-enumerable properties and skips only the ones that are
+    // themselves functions, so an error carrying an object with a method on it
+    // (a `cause` that is a Response, an adapter instance) makes this postMessage
+    // throw DataCloneError. This runs floating, so that throw becomes an
+    // unhandled rejection the listener above only logs: no 'ready', no 'error',
+    // and no ErrorEvent either, since a rejected promise is not a script error.
+    // The boot promise in WebWorkerRpcDriver then never settles, and because
+    // `invalidate` hangs off its rejection, the pool hands every later caller
+    // the same pending promise — every RPC on that slot awaits forever, showing
+    // a spinner and no error, until the page is reloaded. One worker's failure
+    // to report a failure takes the whole session's worth of calls with it.
+    //
+    // deserializeError accepts a bare string, which is what makes the fallback
+    // sound: a string always clones.
+    try {
+      postMessage({ message: 'error', error: serializeError(e) })
+    } catch {
+      postMessage({ message: 'error', error: `${e}` })
+    }
   }
 }

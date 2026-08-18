@@ -80,8 +80,16 @@ export default class RpcClient {
       return
     }
     // three frame kinds share the channel: an error (rejects the call), a
-    // named event (status side-channel), and — the default — a call reply
-    if (error) {
+    // named event (status side-channel), and — the default — a call reply.
+    //
+    // Which KIND the frame is, never whether its payload looks useful. A truthy
+    // test read `error: ''` as a reply and resolved the call with `undefined`,
+    // and an empty message is exactly what `RpcServer.throw`'s last-resort
+    // fallback can produce — so the guard against an unsettleable call turned
+    // one class of failure into a wrong value instead. `resolve(uid, undefined)`
+    // then reaches `deserializeReturn` and the caller reads fields off nothing,
+    // blaming its own display.
+    if (error !== undefined) {
       this.reject(uid, error)
     } else if (eventName) {
       this.emit(eventName, data)

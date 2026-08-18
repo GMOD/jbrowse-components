@@ -140,10 +140,22 @@ export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
             break
           }
           case 'readyForConfig': {
-            instance.postMessage({
-              message: 'config',
-              config: this.workerBootConfiguration,
-            })
+            // The worker is waiting in receiveConfiguration(), which has no
+            // timeout, and this listener's throw would escape before cleanup or
+            // fail could run — so an unclonable boot configuration left both
+            // sides waiting forever rather than reporting anything.
+            try {
+              instance.postMessage({
+                message: 'config',
+                config: this.workerBootConfiguration,
+              })
+            } catch (e) {
+              fail(
+                new Error(`could not send the worker its boot configuration`, {
+                  cause: e,
+                }),
+              )
+            }
             break
           }
           case 'error': {

@@ -276,8 +276,19 @@ export default class RpcServer {
     try {
       this.post({ uid, error }, [])
     } catch {
+      const message = typeof error === 'string' ? error : error.message
+      // Never empty. `new Error()` has an empty message, and the client tells an
+      // error frame from a reply by which key the frame carries — so an empty
+      // one is a rejection the caller cannot read a reason from, and used to be
+      // a frame it read as a reply. Naming the error's own class is the most the
+      // fallback still has to work with.
       this.post(
-        { uid, error: typeof error === 'string' ? error : error.message },
+        {
+          uid,
+          error:
+            message ||
+            `${typeof error === 'string' ? 'Error' : (error.name ?? 'Error')} (no message)`,
+        },
         [],
       )
     }

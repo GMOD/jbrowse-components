@@ -271,3 +271,37 @@ describe('RpcClient event subscriptions', () => {
     expect(b).toEqual([42])
   })
 })
+
+// The three frame kinds are told apart by which key the frame carries, never by
+// whether that key's value looks useful. RpcServer.throw's last-resort fallback
+// posts `error: error.message`, and `new Error()` has an empty one — read as a
+// reply, that resolved the call with `undefined`, so the guard against a call
+// that never settles produced a wrong value instead. deserializeReturn then runs
+// on nothing and the caller blames its own display.
+describe('RpcClient error frames', () => {
+  test('an error frame with an empty message still rejects', async () => {
+    const { worker, client } = makeClient()
+    const p = client.call('CoreGetFeatures', {})
+    const uid = (worker.sent[0] as { uid: string }).uid
+    worker.dispatchEvent(
+      new MessageEvent('message', { data: { uid, error: '', libRpc: true } }),
+    )
+    await expect(p).rejects.toThrow()
+  })
+
+  test('a reply frame carrying no error still resolves', async () => {
+    const { worker, client } = makeClient()
+    const p = client.call('CoreGetFeatures', {})
+    const uid = (worker.sent[0] as { uid: string }).uid
+    reply(worker, uid, { features: [] })
+    await expect(p).resolves.toEqual({ features: [] })
+  })
+
+  test('a falsy reply value is not mistaken for an error frame', async () => {
+    const { worker, client } = makeClient()
+    const p = client.call('CoreGetFeatures', {})
+    const uid = (worker.sent[0] as { uid: string }).uid
+    reply(worker, uid, 0)
+    await expect(p).resolves.toBe(0)
+  })
+})
