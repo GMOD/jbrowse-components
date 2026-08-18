@@ -91,8 +91,20 @@ The parked spike landed unchanged and both pages regenerate **byte-identical to
 before the move**. That is the acceptance test: the same diff that used to cost
 33 rows now costs none.
 
+The Context figures are the measurement that motivated the decision, so they
+stay as they were taken. Spending against them started immediately, and a reader
+re-running the count will get a smaller number: the alignments extraction took
+`model.ts` from 3,982 lines to 3,756, `TreeSidebarMixin` took the three tree
+toggles and their setters off four displays, and `LegendMixin` took the
+`showLegend` triple off six — 41 slot members between them, leaving **211
+members / 1,261 lines** across the family.
+
+Those two are mixins rather than delegated blocks, and that is the split the
+decision draws: shared members go to a mixin, which `types.compose` already
+carried; the delegated block is for what one model keeps elsewhere for size.
+
 **What this does and does not license.** It makes a model file splittable by
-member, which is a mechanical lever on the 1,485 lines above. It does not make
+member, which is a mechanical lever on the lines above. It does not make
 splitting a good idea by itself — a getter that reads any *other* model member
 still belongs in the chain, where `self` is the model so far, and that line is
 what keeps `configSlotViews.ts` honest (`collapseGroupRows` and `showOutline`

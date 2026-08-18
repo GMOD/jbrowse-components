@@ -260,6 +260,70 @@ test('a shared block reached by two models lands on both pages', () => {
   ])
 })
 
+// A block needing an argument beyond `self` is written as a factory call. It
+// resolves, because making the natural shape of an extracted block fatal while
+// encouraging extraction would be the worst of both.
+test('a factory call returning the callback resolves', () => {
+  const helper = write(
+    'makeViews.ts',
+    `export function makeViews(label: string) {
+       return () => ({
+         /**
+          * #getter
+          */
+         get made() {
+           return label
+         },
+       })
+     }`,
+  )
+  const model = write(
+    'model.ts',
+    `import { makeViews } from './makeViews.ts'
+     ${HEADER}
+     export function WidgetModel() {
+       return types.model({}).views(makeViews('x'))
+     }`,
+  )
+  expect(members(extract([model, helper]))).toEqual(['getter made @ model.ts'])
+})
+
+// The delegation says where the MEMBER rows go and nothing about any other home
+// a node has. Dropping the whole node would take the #api entry with it.
+test('a node also carrying a page-level tag keeps that tag', () => {
+  const helper = write(
+    'sharedViews.ts',
+    `export function sharedViews() {
+       return {
+         /**
+          * #getter
+          * #api
+          */
+         get dual() {
+           return 1
+         },
+       }
+     }`,
+  )
+  const model = write(
+    'model.ts',
+    `import { sharedViews } from './sharedViews.ts'
+     ${HEADER}
+     export function WidgetModel() {
+       return types.model({}).views(sharedViews)
+     }`,
+  )
+  const nodes = extract([model, helper]).filter(n => n.type !== 'stateModel')
+  // the getter row on the model's page, and the #api entry still in its own file
+  expect(
+    nodes.map(n => `${n.type} @ ${path.basename(n.filename)}`).sort(),
+  ).toEqual([
+    'api @ sharedViews.ts',
+    'getter @ model.ts',
+    'getter @ sharedViews.ts',
+  ])
+})
+
 // The case the fatal exists for: the generator can see that the block holds
 // members and cannot see which, so every row would be dropped in silence.
 test('a delegation that cannot be resolved is fatal, and names the call', () => {

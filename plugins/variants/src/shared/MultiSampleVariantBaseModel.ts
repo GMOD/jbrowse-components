@@ -20,8 +20,8 @@ import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  MIN_DISPLAY_HEIGHT,
   LegendMixin,
+  MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'

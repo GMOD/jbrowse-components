@@ -229,8 +229,15 @@ export function extractWithComment(
     // already emitted against the model's filename. Emitting it here too would
     // bucket a second copy under this file, where no #stateModel header can
     // render it — dropped in silence, and counted as an orphan.
+    //
+    // Suppressed only when EVERY tag on the node is a member tag. A node also
+    // carrying a page-level tag (#api, #slot) has a second home the delegation
+    // says nothing about, and dropping the whole node would take that with it.
     const delegatedAway =
-      !isStateModel && tags.some(isMemberTag) && claimed.has(memberKey(node))
+      !isStateModel &&
+      tags.length > 0 &&
+      tags.every(isMemberTag) &&
+      claimed.has(memberKey(node))
     if (tags.length && !delegatedAway) {
       if (!isStateModel && tags.some(isMemberTag)) {
         memberTagged.set(
@@ -562,14 +569,20 @@ function delegatedBlockAt(
   return obj ? { kind, obj } : undefined
 }
 
-// The members object an argument ultimately yields. Two shapes, both of which
+// The members object an argument ultimately yields. Three shapes, all of which
 // `memberObjectLiteral` gives up on: a bare identifier naming the callback
-// (`.views(sharedViews)`), and a callback that returns an identifier naming a
-// shared object (`.volatile(() => CONSTANTS)`).
+// (`.views(sharedViews)`), a callback that returns an identifier naming a shared
+// object (`.volatile(() => CONSTANTS)`), and a factory call returning the
+// callback (`.views(makeViews(schema))`) — the shape a block that needs an
+// argument beyond `self` takes, and the one this would otherwise make fatal
+// while encouraging people to extract blocks in the first place.
 function delegatedMembersObject(
   checker: ts.TypeChecker,
   arg: ts.Expression,
 ): ts.ObjectLiteralExpression | undefined {
+  if (ts.isCallExpression(arg) && ts.isIdentifier(arg.expression)) {
+    return objectLiteralBehind(checker, arg.expression)
+  }
   if (ts.isArrowFunction(arg) || ts.isFunctionExpression(arg)) {
     const ret = returnedExpression(arg)
     return ret && ts.isIdentifier(ret)
@@ -591,7 +604,18 @@ function objectLiteralBehind(checker: ts.TypeChecker, id: ts.Identifier) {
   }
   const fn = factoryFunction(decl)
   if (fn) {
-    return returnedObjectLiteral(fn)
+    // One extra hop for a factory: `makeViews = schema => self => ({...})`
+    // returns the callback rather than the members, so the object is a level
+    // further in than for a callback named directly.
+    const direct = returnedObjectLiteral(fn)
+    if (direct) {
+      return direct
+    }
+    const inner = returnedExpression(fn)
+    return inner &&
+      (ts.isArrowFunction(inner) || ts.isFunctionExpression(inner))
+      ? returnedObjectLiteral(inner)
+      : undefined
   }
   return ts.isVariableDeclaration(decl) &&
     decl.initializer &&
