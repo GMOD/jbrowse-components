@@ -69,6 +69,69 @@ const APPLE3_MRNA = {
   dy: 121,
 }
 
+// The gene menu route protein/annotation_1d takes, on genomes.jbrowse.org's own
+// hg38 config — the one the msa figures load and the one the tutorial's
+// click-path is written against, rather than the pinned PROTEIN3D_CONFIG that
+// protein/connected uses. The launcher is contributed to the gene menu by the
+// plugin the hosted config loads; against the repo config's own protein3d the
+// same right-click opens a menu with neither launcher on it, so the route the
+// page documents is only reachable here.
+//
+// Split out from its one caller because the split button's other worthwhile
+// destination — "Launch 3D structure + MSA view", the page's three-connected-
+// views claim in one frame — is written and cannot be captured: the a3m the two
+// MSA destinations read is the URL AlphaFold's own prediction API advertises,
+// and it answers 403 to anyone. `curl https://alphafold.ebi.ac.uk/files/msa/
+// AF-P04637-F1-msa_v6.a3m` is the whole reproduction, and P38398 answers the
+// same, so it is AlphaFold rather than this entry or this rasterizer.
+const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'hg38',
+      loc: 'chr17:7,668,000-7,688,000',
+      tracks: [
+        // the two settings every right-clicked gene track in these figures
+        // pins: the click is resolved against the track's band, and an auto
+        // height is a function of how many isoforms RefSeq draws here
+        {
+          trackId: 'hg38-ncbiRefSeqCurated',
+          geneGlyphMode: 'longestCoding',
+          height: 60,
+        },
+      ],
+    },
+  ],
+})
+
+// Right-click TP53, open the launch dialog, and open the split button beside
+// its Launch. Everything the dialog can build is on that menu.
+const OPEN_PROTEIN_LAUNCH_MENU: ScreenshotAction[] = [
+  {
+    type: 'rightclick',
+    anchor: {
+      track: 'hg38-ncbiRefSeqCurated',
+      locus: 'chr17:7,676,000',
+      fracY: 0.2,
+    },
+  },
+  { type: 'waitForText', text: 'Launch protein view' },
+  { type: 'click', text: 'Launch protein view' },
+  // Launch is disabled until the dialog has mapped the transcript to a UniProt
+  // entry and read its protein sequence, so an enabled Launch is the
+  // declarative "the dialog has resolved" rather than a guess at how long
+  // UniProt takes to answer.
+  {
+    type: 'waitForSelector',
+    selector: 'button:not([disabled])::-p-text(Launch)',
+    timeout: 120000,
+  },
+  // The arrow beside Launch. `More launch options` is the button's own
+  // aria-label; the menu it opens is where the three other destinations live,
+  // and none of them carries a test id.
+  { type: 'click', selector: 'button[aria-label="More launch options"]' },
+]
+
 export const featuresSpecs: ScreenshotSpec[] = [
   {
     // The session-wide feature-height default on alignments tracks.
@@ -786,62 +849,15 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // The route through the dialog's split button is the only one there is, which
   // also makes the frame a picture of the button the prose names.
   //
-  // genomes.jbrowse.org's own hg38 config, the one the msa figures load and the
-  // one the tutorial's click-path is written against, rather than the pinned
-  // PROTEIN3D_CONFIG the figure above uses. The launcher this spec drives is
-  // contributed to the gene menu by the plugin the hosted config loads; against
-  // the repo config's own protein3d the same right-click opens a menu with
-  // neither launcher on it, so the route the page documents is only reachable
-  // here.
   {
     mode: 'url',
     name: 'protein/annotation_1d',
-    url: sessionSpec(UCSC_HG38_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr17:7,668,000-7,688,000',
-          tracks: [
-            // the two settings every right-clicked gene track in these figures
-            // pins: the click is resolved against the track's band, and an auto
-            // height is a function of how many isoforms RefSeq draws here
-            {
-              trackId: 'hg38-ncbiRefSeqCurated',
-              geneGlyphMode: 'longestCoding',
-              height: 60,
-            },
-          ],
-        },
-      ],
-    }),
+    url: PROTEIN_LAUNCH_SESSION,
     readyText: 'NCBI RefSeq',
     // the UCSC hub config is ~570 tracks and pulls four remote plugins
     readyTimeout: 120000,
     actions: [
-      {
-        type: 'rightclick',
-        anchor: {
-          track: 'hg38-ncbiRefSeqCurated',
-          locus: 'chr17:7,676,000',
-          fracY: 0.2,
-        },
-      },
-      { type: 'waitForText', text: 'Launch protein view' },
-      { type: 'click', text: 'Launch protein view' },
-      // Submit is disabled until the dialog has mapped the transcript to a
-      // UniProt entry and read its protein sequence, so an enabled Launch is
-      // the declarative "the dialog has resolved" rather than a guess at how
-      // long UniProt takes to answer.
-      {
-        type: 'waitForSelector',
-        selector: 'button:not([disabled])::-p-text(Launch)',
-        timeout: 120000,
-      },
-      // The arrow beside Launch. `More launch options` is the button's own
-      // aria-label; the menu it opens is where the three other destinations
-      // live, and none of them carries a test id.
-      { type: 'click', selector: 'button[aria-label="More launch options"]' },
+      ...OPEN_PROTEIN_LAUNCH_MENU,
       { type: 'click', text: 'Launch 1D protein annotation view' },
       // The launch adds the tracks to the session and opens the view with none
       // of them on, so the frame the page wants is four clicks further along.

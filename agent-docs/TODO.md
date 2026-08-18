@@ -36,6 +36,7 @@ before anyone noticed.
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
+| [Capture the structure-beside-MSA figure](#capture-the-structure-beside-msa-figure-once-alphafold-serves-its-a3m-again) | figures, protein3d | re-curl the a3m; the spec's two halves are already split out |
 | [What colour is an arc with no pair orientation](#what-colour-is-an-arc-with-no-pair-orientation) | alignments | a visual call, then one of two edits |
 | [Midnight primary is invisible on dark stock](#midnight-primary-is-invisible-on-the-dark-stock-ground) | palette, theme | pick one of three; never re-tint a single component |
 | [The interbase stack overruns its half-band](#the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint) | alignments | a visual call; the overflow is measured, no fix is chosen |
@@ -1038,6 +1039,30 @@ hosted demo file still resolves:
 `tabix -l <url> | cut -c2- | cut -d'#' -f1 | sort -u` (the leading character is
 the PIF tier letter). All four `demos/ecoli_pangenome` files were checked that
 way.
+
+### Capture the structure-beside-MSA figure once AlphaFold serves its a3m again
+
+`genomes_proteins` describes what the protein dialog's split button can build,
+and the entry that puts all three connected views in one frame — **Launch 3D
+structure + MSA view** — is the one it has no picture of. The spec was written
+against `PROTEIN_LAUNCH_SESSION` and `OPEN_PROTEIN_LAUNCH_MENU` in
+`website/scripts/specs/features.ts`, which are split out of their one caller for
+exactly this, and it fails on a frame stuck at Loading.
+
+The blocker is not ours. Both of the dialog's MSA destinations read the a3m
+AlphaFold's own prediction API advertises for the entry, and that file answers
+403 to everyone:
+
+```sh
+curl -sI https://alphafold.ebi.ac.uk/api/prediction/P04637   # msaUrl field
+curl -sI https://alphafold.ebi.ac.uk/files/msa/AF-P04637-F1-msa_v6.a3m
+```
+
+P38398 answers the same, so it is not one entry, and the structure files beside
+it serve normally, so it is not the host. **First move is to re-run those two
+lines.** While it 403s the page's paragraph about those two destinations is
+describing a route a reader cannot take either, so a fixed a3m is worth a second
+look at that paragraph as well as a figure.
 
 ## Blocked on a visual call
 
