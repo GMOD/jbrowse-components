@@ -22,9 +22,10 @@
 //      one only after grepping — which is a rule that wants a checker.
 //   5. Every backticked identifier in developer-guide and ARCHITECTURE.md prose
 //      — `PascalCase`, or `camelCase` with an internal capital — checked to
-//      appear somewhere in source CODE (`codeOf` strips comments, or a stale
-//      comment whitelists its own name). Catches a symbol renamed out from under the
-//      prose (e.g. `AlignmentsFeatureDetailWidget` for what is really
+//      appear somewhere in source CODE — `codeOf` strips comments first, or a
+//      stale one whitelists the very name it got wrong. Catches a symbol
+//      renamed out from under the prose (e.g. `AlignmentsFeatureDetailWidget`
+//      for what is really
 //      `AlignmentsFeatureWidget`, or `renderProps` for a method deleted with the
 //      server-side block system) — the fence checks above can't see prose, and
 //      `sync-doc-snippets` only guards fences that opted into an include.
@@ -489,11 +490,12 @@ const isClaudeDoc = (path: string) => path.endsWith('/CLAUDE.md')
 // The third alternative is CONST_CASE, which the first two cannot reach: an
 // underscore is in neither character class, so every module constant a doc
 // named was exempt by accident. That is the half the limits register needed
-// most — it cited one recovery-cap constant that has never existed under the
-// name it used and one response-deadline constant that had moved to another
-// repo, and both read as precise because a constant in backticks does. Neither
-// is spelled here, for the reason the paragraph below gives: naming them in
-// this file would re-exempt them everywhere.
+// most — it capped context recovery at a `MAX_CONTEXT_RECOVER_ATTEMPTS` that
+// has never existed (the budget is `MAX_RECOVERIES`, and windowed), and gave a
+// response deadline as `RESPONSE_TIMEOUT_MS`, which is real but lives in
+// `@gmod/range-cache-filehandle`. Both read as precise, because a constant in
+// backticks does. Spelling them here used to re-exempt them repo-wide, which is
+// what `codeOf` above fixed.
 const TICKED_SYMBOL =
   /`([A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*|[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)[`(]/g
 // Two placeholder conventions, both standing in for a name the reader supplies:
@@ -583,7 +585,20 @@ const DOC_THIRD_PARTY = new Set([
 // went on "existing" in a stale local build, and — since these are gitignored —
 // CI, which has no build at all, disagreed with the developer's machine about
 // whether a doc reference resolved. The set is now a pure function of `src/`.
-const BUILD_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
+//
+// `bundle/` joins the list for that same reason and was missed: jbrowse-cli
+// ships one 1.6MB minified file, gitignored like the rest, and walking it put
+// 2074 names out of express, iconv-lite and the rest of its dependency closure
+// into the set — so `sendFile` or `parseKeys` in a doc resolved on a machine
+// that had built the CLI, and nowhere else.
+const BUILD_DIRS = new Set([
+  'node_modules',
+  'dist',
+  'esm',
+  'cjs',
+  'build',
+  'bundle',
+])
 
 /**
  * A source file with its COMMENTS removed, which is what the symbol set has to
@@ -601,20 +616,124 @@ const BUILD_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
  * sentence listing a rAF-coalescing hook under a name nothing has, and an
  * ARCHITECTURE.md hover-channel name that three source comments had kept alive.
  *
- * Strings stay. A doc citing `alwaysDrawn` or `methylation` is naming a member
- * of a string-literal union or a config enum, which is as real a symbol as an
- * exported function and lives nowhere else.
+ * Strings stay, template substitutions and all. A doc citing `alwaysDrawn` or
+ * `methylation` is naming a member of a string-literal union or a config enum,
+ * which is as real a symbol as an exported function and lives nowhere else.
  *
- * Line comments are recognised only where `//` does not follow a `:`, so a URL
- * inside a string keeps the rest of its line. The remaining hole is a `/*` or
- * `//` inside a regex literal, which would drop live names and report them dead
- * — the failure mode that reads as a checker bug. None is in the tree; if one
- * lands, the fix is here rather than an allowlist entry.
+ * It SCANS rather than pattern-matches, because what a `/` opens cannot be
+ * decided a character at a time. A pair of regexes over the whole file took the
+ * slash-star inside a path glob — prose, inside a line comment — for a
+ * block-comment opener, and dropped the 260 lines to the next comment close.
+ * Repo-wide that lost 154 live names, this file's own `CODE_EXTS` among them,
+ * which is the direction that calls a live symbol dead and so reads as a
+ * checker bug. The scan therefore tracks what it is inside of: a string, a
+ * template (through `${…}`, by brace depth), a regex literal, or code.
+ *
+ * The one heuristic left is the classic `/` ambiguity, resolved the classic
+ * way: a `/` after an identifier, `)`, `]` or `$` divides, and anything else
+ * opens a regex. Misreading a division as a regex only widens the set by a few
+ * names; the reverse is what lets a `//` inside a regex eat the rest of a line.
  */
 function codeOf(text: string) {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, ' ')
-    .replace(/(^|[^:])\/\/[^\n]*/g, '$1')
+  const n = text.length
+  // The brace depth each open `${` returns to, so the `}` that ends a
+  // substitution is told apart from the `}` of an object literal inside one.
+  const resumeDepth: number[] = []
+  let out = ''
+  let i = 0
+  // The last non-space character emitted, which is all the `/` test needs.
+  let prev = ''
+  let braces = 0
+
+  // A template body, entered at its opening backtick or at the `}` closing a
+  // substitution, and left at the next `${` or the closing backtick.
+  const template = () => {
+    while (i < n) {
+      const c = text[i]!
+      if (c === '\\') {
+        out += text.slice(i, i + 2)
+        i += 2
+      } else if (c === '`') {
+        out += c
+        i++
+        return
+      } else if (c === '$' && text[i + 1] === '{') {
+        out += '${'
+        i += 2
+        resumeDepth.push(braces)
+        return
+      } else {
+        out += c
+        i++
+      }
+    }
+  }
+
+  // A string or regex literal, kept verbatim and never re-read as code.
+  const literal = (end: number, tag: string) => {
+    out += text.slice(i, end + 1)
+    i = end + 1
+    prev = tag
+  }
+
+  while (i < n) {
+    const c = text[i]!
+    const next = text[i + 1]
+    if (c === '/' && next === '*') {
+      const end = text.indexOf('*/', i + 2)
+      out += ' '
+      i = end < 0 ? n : end + 2
+    } else if (c === '/' && next === '/') {
+      const end = text.indexOf('\n', i)
+      out += ' '
+      i = end < 0 ? n : end
+    } else if (c === '"' || c === "'") {
+      let j = i + 1
+      while (j < n && text[j] !== c && text[j] !== '\n') {
+        j += text[j] === '\\' ? 2 : 1
+      }
+      literal(j, c)
+    } else if (c === '`') {
+      out += c
+      i++
+      template()
+      prev = '`'
+    } else if (c === '}' && braces === resumeDepth.at(-1)) {
+      resumeDepth.pop()
+      out += c
+      i++
+      template()
+      prev = '`'
+    } else if (c === '/' && !/[\w$)\]]/.test(prev)) {
+      let j = i + 1
+      let inClass = false
+      while (j < n && text[j] !== '\n') {
+        const d = text[j]!
+        if (d === '/' && !inClass) {
+          break
+        }
+        if (d === '[') {
+          inClass = true
+        } else if (d === ']') {
+          inClass = false
+        }
+        j += d === '\\' ? 2 : 1
+      }
+      literal(j, '/')
+    } else {
+      if (c === '{') {
+        braces++
+      } else if (c === '}') {
+        braces--
+      }
+      out += c
+      if (!/\s/.test(c)) {
+        prev = c
+      }
+      i++
+    }
+  }
+  return out
 }
 
 function collectSymbols() {
