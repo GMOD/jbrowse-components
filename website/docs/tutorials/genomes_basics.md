@@ -51,15 +51,17 @@ starts. Type `TP53` into the location box and press Enter. The hosted config
 ships a name index, so gene symbols resolve with no setup, and coordinates like
 `chr17:7,668,400-7,687,550` work anywhere a symbol does.
 
-<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, answered by the config's own name index. Middle: what Enter opens, with the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, answered by the config's own name index. Middle: what Enter opens — as many transcripts as the track's height holds, the gene labelled TP53 +20 more for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
 
 RefSeq All draws each transcript of a gene on its own row and writes the gene
-name under the stack, and TP53 has more transcripts than a track opens tall
-enough to show, so both the last rows and the name end up behind its scrollbar.
-That is the middle panel. The circled control at the bottom right of the track
-opens **Auto / All transcripts / Representative transcript**; picking the last
-collapses the stack to one transcript with the gene name under it, which is the
-bottom panel and what the rest of this page uses.
+name under the stack, and TP53 has far more transcripts than a track opens tall
+enough to show. Rather than hide the last ones behind the track's scrollbar, the
+default keeps as many as the height has rows for and says what it left out: the
+gene name reads **TP53 +20 more**, and the circled chip at the bottom right says
+`Isoforms trimmed to fit`. That is the middle panel. Clicking **+20 more** opens
+that one gene; clicking the chip opens **Auto / All transcripts / Representative
+transcript**, and picking the last collapses every gene to one transcript, which
+is the bottom panel and what the rest of this page uses.
 
 ## Finding a track
 

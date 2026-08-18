@@ -276,7 +276,10 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // 100px band's own scrollbar, denied three times, the third time as a product
   // bug ("it should truncate the number of isoforms so that it fits in the
   // display height"). `auto` now caps a gene at the rows its lane has, so the
-  // default is seven legible transcripts and a `Top 7 isoforms` chip.
+  // default is a few legible transcripts, an `Isoforms trimmed to fit` chip,
+  // and a `+N more` badge on the gene's own label saying how many that gene is
+  // missing -- the count being per gene is the whole reason it is not on the
+  // chip, which can only ever report one number for the view.
   //
   // That makes the middle frame a result, and the third frame still earns its
   // rows: the cap is the browser's answer to the height, one canonical

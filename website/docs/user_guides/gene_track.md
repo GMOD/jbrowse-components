@@ -34,13 +34,24 @@ length — or, for a gene with no coding isoform at all, the one with the widest
 genomic span. The attribute read and the tags that count are the
 `canonicalTranscriptField` and `canonicalTranscriptTags` config slots.
 
+A gene left short by the track's height says so on its own label: a small **+N
+more** beside the gene name, counting the isoforms that gene is missing.
+Clicking it opens that one gene without stacking every other gene on screen, and
+the badge then reads **show fewer** and closes it again. The count sits on the
+gene because that is the only place it means anything — one gene in a window can
+be missing twenty isoforms and its neighbour one, which no single number for the
+view can say. The **Gene glyph** submenu grows a row to re-collapse every gene
+opened this way. Representative transcript carries no badge: that mode is a
+choice you made, and the chip below already names it.
+
 While transcripts are being left out, the track's bottom-right corner says so
-with a chip naming the tag that picked most of the genes on screen —
-`RefSeq Select`, `MANE Select`, or `Longest isoform` for an annotation that tags
-nothing. Its tooltip counts the genes under each rule when a window holds a mix,
-which is usual: NCBI tags its protein-coding genes and leaves most non-coding
-ones alone. Clicking the chip opens the same three modes, and its (×) shrinks it
-to the small icon that stays in that corner.
+with a chip naming the rule that did it: `Isoforms trimmed to fit` where the
+track's height is the constraint, otherwise the tag that picked most of the
+genes on screen — `RefSeq Select`, `MANE Select`, or `Longest isoform` for an
+annotation that tags nothing. Its tooltip counts the genes under each rule when
+a window holds a mix, which is usual: NCBI tags its protein-coding genes and
+leaves most non-coding ones alone. Clicking the chip opens the same three modes,
+and its (×) shrinks it to the small icon that stays in that corner.
 
 ## Collapsing introns
 
