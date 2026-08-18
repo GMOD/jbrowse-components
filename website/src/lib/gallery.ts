@@ -273,6 +273,11 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Human nanopore reads over a CpG island: red CpGs where the 5mC call is methylated, blue where it is not. The calls come straight from the CRAM modification tags, with no bedMethyl track involved.',
       },
+      // The C-GIAB tutorial's methylation figure is deliberately not a fourth
+      // card here. Its picture is the nanopore card's — a CpG island in red and
+      // blue off MM/ML tags — on a different dataset, and the thing that makes
+      // it worth a figure on that page is that the reads are the ones its SV
+      // walkthroughs already opened, which a card cannot show.
       {
         label: 'Bisulfite read coloring',
         spec: 'methylation/arabidopsis_wgbs_contexts',
@@ -382,6 +387,13 @@ export const gallerySections: readonly GallerySection[] = [
         guide: 'tutorials/tcga_cohort_cnv',
         description:
           'Copy number across every primary tumor in the cohort, one row per tumor, clustered by profile. Blue is loss and red is gain on the log2 ratio, so recurrent events appear as vertical stripes through the stack.',
+      },
+      {
+        label: 'C-GIAB subclonal copy number',
+        spec: 'sv_cgiab/subclonal_cnv',
+        guide: 'tutorials/sv_visualization_cgiab',
+        description:
+          "One row per clone grown from a single tumor cell, partitioned out of one CNVkit BED by its clone column, under the bulk HiFi depth and the benchmark's absolute call. The benchmark calls one state across the arm and the rows mostly hold it; the one that departs at the p-terminus is copy number the bulk lanes average away.",
       },
       {
         label: 'ChromHMM chromatin states',
