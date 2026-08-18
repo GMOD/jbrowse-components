@@ -58,6 +58,27 @@ describe('MainThreadRpcDriver', () => {
     expect(result).toEqual({ deserialized: 'raw-result' })
   })
 
+  test('adds no statusCallback key when the caller passed none', async () => {
+    const executeArgs: unknown[] = []
+    class SomeMethod extends RpcMethodType {
+      name = 'SomeMethod'
+
+      async execute(args: unknown) {
+        executeArgs.push(args)
+        return 'raw-result'
+      }
+    }
+    const { driver, pluginManager } = makeDriver(
+      new SomeMethod({} as PluginManager),
+    )
+
+    await driver.call(pluginManager, 'sid', 'SomeMethod', { sessionId: 'sid' })
+
+    // the worker answers this by minting no status channel, so wrapForRpc adds
+    // no key; the two drivers have to hand `execute` the same bag
+    expect(executeArgs[0]).not.toHaveProperty('statusCallback')
+  })
+
   test('never touches a worker pool (no makeWorker)', () => {
     // MainThreadRpcDriver intentionally has no makeWorker; freeSession/destroy
     // are inherited no-ops

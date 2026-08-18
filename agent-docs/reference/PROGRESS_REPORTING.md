@@ -37,6 +37,35 @@ worker adapter → opts.statusCallback(status)
   → DisplayLoadingOverlay draws a determinate bar + cancel, else a spinner
 ```
 
+## No callback is a value, and it travels
+
+A caller that passes no `statusCallback` is asking for no reporting, and every
+layer below has a branch for it: `downloadStatus` hands the reader no
+`onProgress` — which is what lets generic-filehandle2 take `res.arrayBuffer()`
+instead of its chunk-copy read loop — `createProgressReporter` skips its emit,
+and `openPhase` allocates no stack. **A no-op callback is not the same thing.**
+It is truthy at all three, so it turns those branches off while looking like a
+tidy-up.
+
+The decision was destroyed twice on the way down, so none of those branches were
+reachable in a worker:
+
+- `WebWorkerHandle.call` minted a `message-<nanoid>` channel for every call, and
+  `wrapForRpc` builds the worker's `statusCallback` out of whatever channel it is
+  handed. Every method in every worker therefore ran with a live status handle,
+  and every status it sent crossed a postMessage to reach a main-thread listener
+  that dropped it. It now mints a channel only when there is a callback to feed,
+  and `wrapForRpc` adds no key without one — which is also what
+  `MainThreadRpcDriver` does, so the two drivers answer the question the same
+  way.
+- Thirty-one adapters and worker helpers then wrote
+  `statusCallback = () => {}` in their destructuring. `no-restricted-syntax`
+  rejects that now; leave the type `StatusCallback | undefined` and call it as
+  `statusCallback?.(…)`.
+
+The tell that a layer has re-manufactured one: a whole-file download whose
+caller reports nothing still runs `toBytesWithProgress`.
+
 ## Helpers (`progress.ts`)
 
 - `downloadStatus(label, cb, fn(onProgress))` wraps every download adapter:
