@@ -262,8 +262,16 @@ function isExcluded(name: string) {
 //
 // The list is meant to grow as more view types are shown clean; growing it is a
 // measurement, not an edit.
+//
+// The two alignments suites joined on the same evidence — three consecutive
+// clean runs, tight drift — but they hold **only while CI runs
+// `--skip-webgpu`**. Both go eight-failures red the moment webgpu enters the
+// gate, so whoever widens the backend set re-measures this pair first rather
+// than reading its presence here as a clean bill.
 export const CI_GATE_SUITES = [
   'Additional Track Types',
+  'Alignments Color Schemes',
+  'Alignments Track',
   'BasicLinearGenomeView',
   'BigWig Tracks',
   'Dotplot View',
