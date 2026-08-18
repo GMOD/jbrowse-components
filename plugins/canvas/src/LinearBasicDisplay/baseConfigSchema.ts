@@ -255,12 +255,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * can carry two of these at once: `MANE Plus Clinical` marks an
        * ADDITIONAL transcript beside the `MANE Select` one and is often the
        * longer, so it sorts last and the coding-length ranking below never gets
-       * to break that tie the wrong way. The two MANE tags are the ones NCBI
-       * and Ensembl/GENCODE both emit, and each spells them its own way —
-       * spaces in NCBI's GFF3, underscores in GENCODE's — so both appear twice.
-       * `RefSeq Select` is NCBI's alone and `Ensembl_canonical` is
-       * Ensembl/GENCODE's alone, so one spelling covers each. Empty turns the
-       * whole rule off.
+       * to break that tie the wrong way. NCBI and Ensembl/GENCODE both emit the
+       * MANE tags and spell them differently — spaces in NCBI's GFF3,
+       * underscores in GENCODE's — so `MANE Select` and `MANE Plus Clinical`
+       * are each listed twice. `RefSeq Select` comes from NCBI alone and
+       * `Ensembl_canonical` from Ensembl/GENCODE alone, so one spelling serves
+       * each. Empty turns the whole rule off.
        */
       canonicalTranscriptTags: {
         type: 'stringArray',
