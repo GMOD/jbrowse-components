@@ -20,6 +20,7 @@ import { readFileSync } from 'node:fs'
 import { docFiles, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir } from './paths.ts'
 import {
+  validatePastePages,
   validateVideoEmbeds,
   validateVideoSpecs,
   videoEmbedsIn,
@@ -39,6 +40,7 @@ const problems = [
     embeds,
     videoSpecs.map(spec => spec.name),
   ),
+  ...validatePastePages(embeds, pastedTrackConfigs),
 ]
 
 reportProblems(

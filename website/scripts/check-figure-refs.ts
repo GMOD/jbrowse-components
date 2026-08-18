@@ -42,6 +42,7 @@ import { readManifest } from './figure-paths.ts'
 import { figureName } from './figure-store.ts'
 import { mediaRoot, readManifest as readMediaManifest } from './media-store.ts'
 import { docRelative, docsDir } from './paths.ts'
+import { videoEmbedsIn } from './video-spec-rules.ts'
 
 // Same shape check-captions.ts scans for: every <Figure> in the corpus is a
 // self-closing tag with a src attribute.
@@ -61,8 +62,11 @@ const IMG_PREFIX = '/img/'
 // The POSTER is checked separately from the clip. An embed whose poster is
 // missing still plays, so its failure is a black rectangle where the reader
 // expected a picture, and nothing else would ever report it.
-const videoRe = /<Video\b[^>]*?\/>/g
-const videoAttr = (name: string) => new RegExp(`\\b${name}="([^"]*)"`)
+//
+// The tags come from `videoEmbedsIn` rather than from a pattern of this file's
+// own, which had already drifted from it: a `[^>]` scan loses a tag that wraps,
+// and loses one whose caption holds an angle bracket — the corpus writes `<DEL>`
+// in a caption today. A tag this file cannot see is a clip it never checks.
 const VIDEO_PREFIX = '/media/'
 
 const manifest = readManifest()
@@ -82,19 +86,15 @@ let checked = 0
 
 for (const file of docFiles(docsDir)) {
   const text = readFileSync(file, 'utf8')
-  videoRe.lastIndex = 0
-  let videoMatch: RegExpExecArray | null
-  while ((videoMatch = videoRe.exec(text)) !== null) {
-    const tag = videoMatch[0]
-    const src = videoAttr('src').exec(tag)?.[1] ?? ''
+  for (const embed of videoEmbedsIn(text, docRelative(file))) {
+    const src = embed.src
     if (!src.startsWith(VIDEO_PREFIX)) {
       continue
     }
     checked++
     // The poster the embed asks for, which is the derived `.jpg` only while the
     // tag does not name one of its own.
-    const poster =
-      videoAttr('poster').exec(tag)?.[1] ?? src.replace(/\.mp4$/, '.jpg')
+    const poster = embed.poster ?? src.replace(/\.mp4$/, '.jpg')
     for (const want of [src, poster].filter(u => u.startsWith(VIDEO_PREFIX))) {
       const path = `${mediaRoot}${want.slice(VIDEO_PREFIX.length - 1)}`
       if (!mediaManifest.has(path)) {
