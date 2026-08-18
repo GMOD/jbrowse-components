@@ -5,6 +5,11 @@ import { TrackOverlaySlot } from '@jbrowse/display-ui'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import {
+  RESIZE_HANDLE_HEIGHT,
+  TRACK_OUTLINE_BORDER,
+  TRACK_TOP_GAP,
+} from '../consts.ts'
 import Gridlines from './Gridlines.tsx'
 import PaddingBlocks from './PaddingBlocks.tsx'
 import TrackLabel from './TrackLabel.tsx'
@@ -23,7 +28,7 @@ const useStyles = makeStyles()({
   // and shift the track — which the breakpoint split view would pick up, since
   // its connector overlay measures trackRefs' getBoundingClientRect().top.
   root: {
-    marginTop: 2,
+    marginTop: TRACK_TOP_GAP,
     position: 'relative',
     display: 'flow-root',
     contain: 'layout style paint',
@@ -33,9 +38,10 @@ const useStyles = makeStyles()({
   },
   // in flow at the bottom of the Paper, and outside `trackContent` — so a
   // `bottom:0` portaled overlay (the status chips) lands on the track content's
-  // bottom edge rather than having to subtract this height back out. The 4px
-  // height comes with `bar`, so it isn't restated here — two classes setting it
-  // land in an injection order neither file controls.
+  // bottom edge rather than having to subtract this height back out. The height
+  // arrives inline from RESIZE_HANDLE_HEIGHT, which the model's offset
+  // arithmetic reads too; `bar` also carries one, and an inline style is the
+  // only spelling that beats it without depending on class injection order.
   resizeHandle: {
     position: 'relative',
   },
@@ -83,7 +89,7 @@ const TrackContainer = observer(function TrackContainer({
   // the masks over it have to move by the same amount or they land a pixel off
   // the data. One binding rather than three copies of the ternary, because the
   // three agreeing is the whole point.
-  const outlineOffset = showTrackOutlines ? 1 : 0
+  const outlineOffset = showTrackOutlines ? TRACK_OUTLINE_BORDER : 0
   const trackLabelStyle =
     model.effectiveTrackLabels !== 'overlapping' || display.prefersOffset
       ? classes.trackLabelOffset
@@ -147,6 +153,7 @@ const TrackContainer = observer(function TrackContainer({
       <PaddingBlocks model={model} offset={outlineOffset} />
       <ResizeHandle
         bar
+        style={{ height: RESIZE_HANDLE_HEIGHT }}
         onDrag={distance => display.resizeHeight(distance)}
         // Bracket the drag so a display can sit an expensive per-frame layer
         // out of it (see `resizing` on TrackHeightMixin). Causal rather than a

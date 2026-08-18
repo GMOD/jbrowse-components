@@ -56,6 +56,8 @@ import {
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
   SHOW_ALL_REGIONS_FILL,
+  TRACK_OUTLINE_BORDER,
+  TRACK_TOP_GAP,
 } from './consts.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
 // lazy, and deliberately so — see lazyChromeComponents.tsx. A view model is
@@ -935,7 +937,47 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get scalebarHeight() {
-        return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
+        return SCALE_BAR_HEIGHT
+      },
+
+      /**
+       * #getter
+       * What TrackContainer puts *above* a track's rendering container: the gap
+       * over its Paper, and the Paper's own top border when outlines are on.
+       */
+      get trackLeadingChrome() {
+        return (
+          TRACK_TOP_GAP + (self.showTrackOutlines ? TRACK_OUTLINE_BORDER : 0)
+        )
+      },
+
+      /**
+       * #getter
+       * ...and what it puts below: the resize divider, plus the matching bottom
+       * border.
+       */
+      get trackTrailingChrome() {
+        return (
+          RESIZE_HANDLE_HEIGHT +
+          (self.showTrackOutlines ? TRACK_OUTLINE_BORDER : 0)
+        )
+      },
+
+      /**
+       * #getter
+       * A track's full cost beyond its display height.
+       *
+       * The track *label* is not counted, and cannot be: an offset label is an
+       * in-flow box whose height is whatever the theme renders a Paper of icon
+       * buttons at — 31.140625px on the stock theme, and not a number this file
+       * can derive. So these getters are exact while labels are hidden or
+       * overlapping, and short by one label box per labelled track otherwise.
+       * Anything needing the offset to the pixel with labels showing measures
+       * the DOM; `BreakpointSplitViewOverlay` does, and falls back to this
+       * arithmetic only for a track with no mounted div.
+       */
+      get trackChromeHeight() {
+        return this.trackLeadingChrome + this.trackTrailingChrome
       },
 
       /**
@@ -975,8 +1017,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get trackHeightsWithResizeHandles() {
-        return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
+      get trackHeightsWithChrome() {
+        return this.trackHeights + self.tracks.length * this.trackChromeHeight
       },
 
       /**
@@ -987,9 +1029,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return this.headerHeight + this.scalebarHeight
         }
         return (
-          this.trackHeightsWithResizeHandles +
-          this.headerHeight +
-          this.scalebarHeight
+          this.trackHeightsWithChrome + this.headerHeight + this.scalebarHeight
         )
       },
 
@@ -997,17 +1037,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        * Y offset (in pixels, from the top of the view) where a track's
        * rendering container starts. Walks tracks in DOM render order (pinned
-       * first, then unpinned), matching TrackContainer's layout and using the
-       * same constants it renders with. Returns `undefined` if the track is
-       * not present in the view.
+       * first, then unpinned), from the same constants TrackContainer lays its
+       * Paper out with. Returns `undefined` if the track is not present.
+       *
+       * Exact while track labels are hidden or overlapping. With an offset
+       * label the answer is short by one label box per labelled track above
+       * this one — see `trackChromeHeight` for why that box is not derivable
+       * here.
        */
       getTrackYOffset(trackId: string) {
-        let y = this.headerHeight + this.scalebarHeight
+        let y =
+          this.headerHeight + this.scalebarHeight + this.trackLeadingChrome
         for (const t of [...self.pinnedTracks, ...self.unpinnedTracks]) {
           if (t.configuration.trackId === trackId) {
             return y
           }
-          y += this.trackHeight(t) + RESIZE_HANDLE_HEIGHT
+          y += this.trackHeight(t) + this.trackChromeHeight
         }
         return undefined
       },

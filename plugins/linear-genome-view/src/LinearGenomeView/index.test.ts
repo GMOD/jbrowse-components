@@ -407,11 +407,12 @@ test('can instantiate a model that lets you navigate', () => {
   expect(model.maxBpPerPx).toBeCloseTo(13.888)
   model.setNewView(0.02, 0)
 
-  expect(model.scalebarHeight).toEqual(20)
+  // the scalebar alone. It used to carry a spare 3 that turned out to be the
+  // first track's leading gap and border, which now sit on the track where they
+  // are laid out.
+  expect(model.scalebarHeight).toEqual(17)
   // header height 20 + area where polygons get drawn has height of 48
   expect(model.headerHeight).toEqual(68)
-  // TODO: figure out how to better test height
-  // expect(model.height).toBe(191)
   // test some sanity values from zooming around
   model.setNewView(0.02, 0)
   expect(model.pxToBp(10).offset).toEqual(0.2)
