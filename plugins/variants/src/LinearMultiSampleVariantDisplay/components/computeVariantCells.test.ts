@@ -964,3 +964,61 @@ describe('phase-set coloring classifies from the allele, not the color', () => {
     expect(byRow.get(2)!.color).toBe(getCachedABGR(REFERENCE_COLOR))
   })
 })
+
+// The phase-set path resolves its style per cell rather than through the
+// per-genotype memo, so `isRef` — which decides the paint-order bucket, not just
+// a color — is classified there and nowhere else. Deleting that classification
+// leaves every color right and paints reference cells on top of alt ones, which
+// no color assertion can see.
+test('phase-set coloring still files reference cells in the reference bucket', () => {
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+    { name: 'S2 HP0', sampleName: 'S2', HP: 0 },
+    { name: 'S2 HP1', sampleName: 'S2', HP: 1 },
+  ]
+  // S1 is het (one alt, one ref), S2 hom-ref: three reference cells, one alt.
+  const feature = vcfFeature(
+    '1\t101\tv1\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:77\t0|0:77',
+    ['S1', 'S2'],
+  )
+  const result = computeVariantCells({
+    filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+    sources,
+    renderingMode: 'phased',
+    referenceDrawingMode: 'draw',
+    colorByPhaseSet: true,
+    ...genotypeArgs([feature]),
+  })
+  expect(result.numCells).toBe(4)
+  expect(result.refCellCount).toBe(3)
+  // The one alt cell is S1 HP0, and it sits past the boundary so it paints last.
+  expect([...result.cellRowIndices.slice(0, result.refCellCount)]).toEqual([
+    1, 2, 3,
+  ])
+  expect(result.cellRowIndices[result.refCellCount]).toBe(0)
+})
+
+// `referenceDrawingMode: 'skip'` has to reach the phase-set path too, or the
+// mode's whole point — grey background, only alt cells drawn — is lost the
+// moment a user colors by phase set.
+test('phase-set coloring honors referenceDrawingMode: skip', () => {
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+  ]
+  const feature = vcfFeature('1\t101\tv1\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:77', [
+    'S1',
+  ])
+  const result = computeVariantCells({
+    filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+    sources,
+    renderingMode: 'phased',
+    referenceDrawingMode: 'skip',
+    colorByPhaseSet: true,
+    ...genotypeArgs([feature]),
+  })
+  expect(result.numCells).toBe(1)
+  expect(result.refCellCount).toBe(0)
+  expect(result.cellRowIndices[0]).toBe(0)
+})

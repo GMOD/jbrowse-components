@@ -3,19 +3,13 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { buildSourceSampleIndices } from '../../VariantRPC/computeSampleInfo.ts'
 import { getInsertedBp } from '../../shared/alleleLength.ts'
-import { BLACK_ABGR, NO_CALL_COLOR } from '../../shared/constants.ts'
-import {
-  featureHasPhaseSet,
-  getPhasedColor,
-  isNoCall,
-  isPhasedOrHaploid,
-  splitPhasedAlleles,
-} from '../../shared/getPhasedColor.ts'
+import { featureHasPhaseSet } from '../../shared/getPhasedColor.ts'
 import { makePhaseSetReader } from '../../shared/phaseSetReader.ts'
 import {
   buildAlleleCountStyle,
   buildPhasedStyles,
   countHaplotypes,
+  makePhaseSetStyler,
 } from '../../shared/variantCellStyles.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
@@ -141,9 +135,6 @@ export function computeVariantCells({
   // this loop indexes a typed array where it used to hash a sample name per
   // cell. Phased mode puts several rows on one sample, and they share a column.
   const sourceSampleIndices = buildSourceSampleIndices(sources, sampleNames)
-  // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
-  const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
-
   const numSources = sources.length
   const numHaplotypes = countHaplotypes(sources)
   const maxCells = filteredVariants.length * numSources
@@ -242,6 +233,8 @@ export function computeVariantCells({
   // Per-sample phase sets, filled per feature only when phase-set coloring is
   // on. Allocated once here so the fill reuses one pair of typed arrays.
   const phaseSets = makePhaseSetReader(sampleNames)
+  // Its style twin, owning one scratch cell for the same reason.
+  const phaseSetStyle = makePhaseSetStyler()
   const numCodes = genotypeDict.length + 1
   const alleleCountStyles = new Array<VariantCellStyle | null | undefined>(
     numCodes,
@@ -295,7 +288,7 @@ export function computeVariantCells({
         phaseSets.read(feature)
       if (usePhaseSet) {
         // The hue comes from a per-(feature, sample) FORMAT field, so there is
-        // nothing site-wide to memoize and this stays on the per-cell color
+        // nothing site-wide to memoize and this stays on the per-cell style
         // call. GT comes from the interned codes, same as every other branch.
         for (let j = 0; j < numSources; j++) {
           const { HP } = sources[j]!
@@ -304,51 +297,25 @@ export function computeVariantCells({
           if (code === 0) {
             continue
           }
-          const genotype = genotypeDict[code - 1]!
-          if (isPhasedOrHaploid(genotype)) {
-            const alleles = splitPhasedAlleles(genotype)
-            const allele = alleles[HP!]
-            const c = getPhasedColor(
-              alleles,
-              HP!,
-              mostFrequentAlt,
-              phaseSets.present[si] ? phaseSets.value[si] : undefined,
-              drawRef,
+          const style = phaseSetStyle(
+            genotypeDict[code - 1]!,
+            HP!,
+            mostFrequentAlt,
+            phaseSets.present[si] ? phaseSets.value[si] : undefined,
+            drawRef,
+            overrideColor,
+          )
+          if (style) {
+            addCell(
+              start,
+              end,
+              j,
+              style.abgr,
+              shape,
+              style.isRef,
+              style.altDosage,
+              featureIdx,
             )
-            if (c) {
-              // From the ALLELE, not from the color `getPhasedColor` returned
-              // for it. Comparing the color against the constants happens to
-              // work here — this file's color functions return them by identity
-              // — but it is the exact test that shipped a bug once the
-              // allele-count path started blending its no-call shade to a hex
-              // (see `altDosageByte`). One rule, and it cannot rot.
-              const isRefCell = allele === '0'
-              // Only alt-carrying cells take the per-variant override; ref and
-              // no-call keep their own color so a missing call is never painted
-              // as though it carried the variant.
-              const isAltCell =
-                allele !== undefined && allele !== '.' && !isRefCell
-              addCell(
-                start,
-                end,
-                j,
-                getCachedABGR(
-                  isAltCell && overrideColor !== undefined ? overrideColor : c,
-                ),
-                shape,
-                isRefCell,
-                // per haplotype in this mode, so a drawn marker is full
-                // strength; the rows carry the zygosity
-                isAltCell ? 255 : 0,
-                featureIdx,
-              )
-            }
-          } else if (isNoCall(genotype)) {
-            // A missing unphased call (`./.`, `.`) is a no-call, not unphased
-            // data — draw it as no-call rather than the black "Unphased" fill.
-            addCell(start, end, j, noCallAbgr, shape, false, 0, featureIdx)
-          } else {
-            addCell(start, end, j, BLACK_ABGR, shape, false, 0, featureIdx)
           }
         }
       } else {

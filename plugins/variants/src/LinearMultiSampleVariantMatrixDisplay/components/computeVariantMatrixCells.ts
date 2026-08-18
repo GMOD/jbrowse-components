@@ -1,20 +1,13 @@
 import { buildSourceSampleIndices } from '../../VariantRPC/computeSampleInfo.ts'
 import { getInsertedBp } from '../../shared/alleleLength.ts'
-import { BLACK_ABGR, NO_CALL_COLOR } from '../../shared/constants.ts'
-import {
-  featureHasPhaseSet,
-  getPhasedColor,
-  isNoCall,
-  isPhasedOrHaploid,
-  splitPhasedAlleles,
-} from '../../shared/getPhasedColor.ts'
+import { featureHasPhaseSet } from '../../shared/getPhasedColor.ts'
 import { makePhaseSetReader } from '../../shared/phaseSetReader.ts'
 import {
   buildAlleleCountStyle,
   buildPhasedStyles,
   countHaplotypes,
+  makePhaseSetStyler,
 } from '../../shared/variantCellStyles.ts'
-import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
@@ -80,8 +73,6 @@ export function computeVariantMatrixCells({
   sampleNames: string[]
   report?: ProgressReporter
 }): MatrixCellData {
-  // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
-  const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
   // See computeVariantCells: each source's column in the code arrays, resolved
   // once instead of hashing a sample name per cell.
   const sourceSampleIndices = buildSourceSampleIndices(sources, sampleNames)
@@ -156,6 +147,8 @@ export function computeVariantMatrixCells({
   // Per-sample phase sets, filled per feature only when phase-set coloring is
   // on. Allocated once so the fill reuses one pair of typed arrays.
   const phaseSets = makePhaseSetReader(sampleNames)
+  // Its style twin, owning one scratch cell for the same reason.
+  const phaseSetStyle = makePhaseSetStyler()
 
   for (let idx = 0; idx < numFeatures; idx++) {
     report?.()
@@ -169,6 +162,7 @@ export function computeVariantMatrixCells({
     }
     touchedCodes.length = 0
     const codes = featureGenotypeCodes.get(featureId)!
+    featureData.push(makeFeatureData(feature, featureId, codes))
 
     if (isPhasedMode) {
       // PS (phase-set) coloring reads a second FORMAT field per sample, so it
@@ -182,11 +176,9 @@ export function computeVariantMatrixCells({
         featureHasPhaseSet(feature.get('FORMAT') as string | undefined) &&
         phaseSets.read(feature)
 
-      featureData.push(makeFeatureData(feature, featureId, codes))
-
       if (usePhaseSet) {
         // The hue comes from a per-(feature, sample) FORMAT field, so there is
-        // nothing site-wide to memoize and this stays on the per-cell color
+        // nothing site-wide to memoize and this stays on the per-cell style
         // call. GT comes from the interned codes, same as every other branch.
         for (let j = 0; j < numSources; j++) {
           const { HP } = sources[j]!
@@ -195,36 +187,18 @@ export function computeVariantMatrixCells({
           if (code === 0) {
             continue
           }
-          const genotype = genotypeDict[code - 1]!
-          if (isPhasedOrHaploid(genotype)) {
-            const alleles = splitPhasedAlleles(genotype)
-            const allele = alleles[HP!]
-            const c = getPhasedColor(
-              alleles,
-              HP!,
-              mostFrequentAlt,
-              phaseSets.present[si] ? phaseSets.value[si] : undefined,
-            )
-            if (c) {
-              // From the ALLELE, not from the color `getPhasedColor` returned
-              // for it — see the same spot in computeVariantCells, and
-              // `altDosageByte` for the bug the color comparison shipped.
-              const isRefCell = allele === '0'
-              // Only alt-carrying cells take the per-variant override; ref and
-              // no-call keep their own color so a missing call is never painted
-              // as though it carried the variant.
-              const isAltCell =
-                allele !== undefined && allele !== '.' && !isRefCell
-              const cellColor =
-                overrideColor !== undefined && isAltCell ? overrideColor : c
-              addCell(idx, j, getCachedABGR(cellColor), isRefCell)
-            }
-          } else if (isNoCall(genotype)) {
-            // A missing unphased call (`./.`, `.`) is a no-call, not unphased
-            // data — draw it as no-call rather than the black "Unphased" fill.
-            addCell(idx, j, noCallAbgr, false)
-          } else {
-            addCell(idx, j, BLACK_ABGR, false)
+          const style = phaseSetStyle(
+            genotypeDict[code - 1]!,
+            HP!,
+            mostFrequentAlt,
+            phaseSets.present[si] ? phaseSets.value[si] : undefined,
+            // the matrix always draws reference cells and greys the background
+            // in CSS, so `referenceDrawingMode: 'skip'` never reaches here
+            true,
+            overrideColor,
+          )
+          if (style) {
+            addCell(idx, j, style.abgr, style.isRef)
           }
         }
       } else {
@@ -254,8 +228,6 @@ export function computeVariantMatrixCells({
         }
       }
     } else {
-      featureData.push(makeFeatureData(feature, featureId, codes))
-
       for (let j = 0; j < numSources; j++) {
         const si = sourceSampleIndices[j]!
         const code = si === -1 ? 0 : codes[si]!

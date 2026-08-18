@@ -1,3 +1,6 @@
+import VcfParser from '@gmod/vcf'
+
+import VcfFeature from '../../VcfFeature/index.ts'
 import {
   buildSampleIndex,
   decodeGenotype,
@@ -7,6 +10,19 @@ import { computeVariantMatrixCells } from './computeVariantMatrixCells.ts'
 
 import type { ProcessedSource } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
+
+// Phase-set coloring reads PS through `processFormatFields`, which only a real
+// VcfFeature offers — see computeVariantCells.test.ts.
+function vcfFeature(line: string, samples: string[], id = 'f1'): Feature {
+  const parser = new VcfParser({
+    header:
+      '##fileformat=VCFv4.2\n' +
+      '##FORMAT=<ID=GT,Number=1,Type=String,Description="gt">\n' +
+      '##FORMAT=<ID=PS,Number=1,Type=Integer,Description="ps">\n' +
+      `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${samples.join('\t')}\n`,
+  })
+  return new VcfFeature({ variant: parser.parseLine(line), parser, id })
+}
 
 function makeFeature(props: Record<string, unknown>, id = 'f1'): Feature {
   return {
@@ -287,4 +303,50 @@ test('a site with no ALT alleles reports an empty alt list', () => {
   })
   expect(result.numCells).toBe(1)
   expect(result.featureData[0]!.alt).toEqual([])
+})
+
+// The matrix's phase-set branch shares `makePhaseSetStyler` with the regular
+// display's, and had no coverage of its own before that extraction — so a change
+// to the shared classification could break exactly one of the two displays in
+// silence. `isRef` is the half no color assertion can see: it files the cell in
+// the reference bucket, which is what makes alt paint over ref.
+describe('phase-set coloring', () => {
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+    { name: 'S2 HP0', sampleName: 'S2', HP: 0 },
+    { name: 'S2 HP1', sampleName: 'S2', HP: 1 },
+  ]
+  // S1 het (one alt, one ref), S2 hom-ref: three reference cells, one alt.
+  const feature = vcfFeature(
+    '1\t101\tv1\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:77\t0|0:77',
+    ['S1', 'S2'],
+  )
+
+  const run = (colorByPhaseSet: boolean) =>
+    computeVariantMatrixCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'phased',
+      colorByPhaseSet,
+      ...genotypeArgs([feature]),
+    })
+
+  test('files reference cells in the reference bucket', () => {
+    const result = run(true)
+    expect(result.numCells).toBe(4)
+    // ref bucket first, in row order; the single alt cell is S1 HP0 and paints
+    // last
+    expect([...result.cellRowIndices.slice(0, result.numCells)]).toEqual([
+      1, 2, 3, 0,
+    ])
+  })
+
+  test('the alt cell takes its hue from PS, not from the allele', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { PRIMARY_ALT_COLOR } = await import('../../shared/constants.ts')
+    const primary = getCachedABGR(PRIMARY_ALT_COLOR)
+    expect(run(false).cellColors[3]).toBe(primary)
+    expect(run(true).cellColors[3]).not.toBe(primary)
+  })
 })

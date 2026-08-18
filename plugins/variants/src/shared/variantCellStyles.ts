@@ -140,18 +140,95 @@ export function buildPhasedStyles(
     }
     return out
   }
-  // A missing unphased call (`./.`, `.`) is a no-call, not unphased data — draw
-  // it as no-call rather than the black "Unphased" fill.
-  const style: VariantCellStyle = isNoCall(genotype)
-    ? {
-        abgr: getCachedABGR(NO_CALL_COLOR),
-        isRef: false,
-        isAlt: false,
-        altDosage: 0,
-      }
-    : { abgr: BLACK_ABGR, isRef: false, isAlt: false, altDosage: 0 }
-  out.fill(style)
+  out.fill(uncalledStyle(genotype))
   return out
+}
+
+// The two fills a genotype that isn't phased-or-haploid paints, whichever
+// haplotype row it lands on. Shared, immutable and resolved once: a missing
+// unphased call (`./.`, `.`) is a no-call, not unphased data, so it draws as
+// no-call rather than the black "Unphased" fill.
+const NO_CALL_STYLE: VariantCellStyle = {
+  abgr: getCachedABGR(NO_CALL_COLOR),
+  isRef: false,
+  isAlt: false,
+  altDosage: 0,
+}
+const UNPHASED_STYLE: VariantCellStyle = {
+  abgr: BLACK_ABGR,
+  isRef: false,
+  isAlt: false,
+  altDosage: 0,
+}
+
+function uncalledStyle(genotype: string) {
+  return isNoCall(genotype) ? NO_CALL_STYLE : UNPHASED_STYLE
+}
+
+/**
+ * The phased cell style when coloring by phase set, which is the one mode with
+ * nothing site-wide to memoize: PS is a per-(feature, sample) FORMAT field, so
+ * `buildPhasedStyles`' per-genotype table cannot answer for it and the color has
+ * to be resolved per cell.
+ *
+ * Both cell loops go through this rather than each spelling out the
+ * phased/no-call/unphased branch and the allele classification again. The
+ * classification is the part that must not be re-derived: `isRef`/`isAlt` come
+ * from the ALLELE, never from the color, and reading them back off the color
+ * string is precisely what shipped a bug once the allele-count path started
+ * blending its no-call shade to a hex (see `altDosageByte`).
+ *
+ * A factory owning one scratch style, the same shape `makePhaseSetReader` uses
+ * for the PS values themselves: this runs once per cell, so returning a fresh
+ * object would be an allocation per cell on the worker's hottest loop. The
+ * result is therefore valid only until the next call — every caller reads it
+ * straight into its cell arrays.
+ */
+export function makePhaseSetStyler() {
+  const scratch: VariantCellStyle = {
+    abgr: 0,
+    isRef: false,
+    isAlt: false,
+    altDosage: 0,
+  }
+  return function phaseSetStyle(
+    genotype: string,
+    HP: number,
+    mostFrequentAlt: string,
+    phaseSet: string | number | undefined,
+    drawRef: boolean,
+    overrideColor: string | undefined,
+  ): VariantCellStyle | null {
+    if (!isPhasedOrHaploid(genotype)) {
+      return uncalledStyle(genotype)
+    }
+    const alleles = splitPhasedAlleles(genotype)
+    const allele = alleles[HP]
+    const color = getPhasedColor(
+      alleles,
+      HP,
+      mostFrequentAlt,
+      phaseSet,
+      drawRef,
+    )
+    if (!color) {
+      return null
+    }
+    const isRef = allele === '0'
+    // Only alt-carrying cells take the per-variant override; ref and no-call
+    // keep their own color so a missing call is never painted as though it
+    // carried the variant.
+    const isAlt = allele !== undefined && allele !== '.' && !isRef
+    scratch.abgr = getCachedABGR(
+      isAlt && overrideColor !== undefined ? overrideColor : color,
+    )
+    scratch.isRef = isRef
+    scratch.isAlt = isAlt
+    // per haplotype in this mode, so a drawn marker is full strength; the rows
+    // carry the zygosity
+    scratch.altDosage = isAlt ? 255 : 0
+    return scratch
+  }
 }
 
 /**
