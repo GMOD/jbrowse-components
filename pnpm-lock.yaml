@@ -1523,6 +1523,9 @@ importers:
         specifier: '>=19.0.0'
         version: 19.2.8(react@19.2.8)
     devDependencies:
+      '@jbrowse/display-test-utils':
+        specifier: workspace:^
+        version: link:../../packages/display-test-utils
       '@jbrowse/web':
         specifier: workspace:^
         version: link:../../products/jbrowse-web

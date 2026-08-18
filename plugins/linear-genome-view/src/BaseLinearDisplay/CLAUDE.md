@@ -84,5 +84,11 @@ re-remembering the cancel term — one edit from the dead-Retry bug.
   estimate alone, so the banner doesn't flicker.
 - Displays on `GlobalFetchMixin` (LD, arc) call `byteGateBlocksFetch`
   themselves; `fetchRegions` already does.
-- `fetchLifecycle.test.ts` / `fetchAutorun.test.ts` use simplified shapes —
-  check the helpers before assuming a field name matches the model.
+- The foundation's own tests come in two halves, and a change usually belongs in
+  one of them rather than in a plugin's suite. `planRegionFetch.test.ts` is the
+  **decision** — given these inputs, fetch this region set — and needs no tree.
+  `installPerRegionFetchAutoruns.test.ts` and `fetchRegions.test.ts` are the
+  **wiring**, on a real display in a real view (`perRegionTestEnv.ts`), because
+  which reads MobX tracks is not something a pure function can state. Three
+  earlier files tested transcriptions of the autoruns instead; deleting the
+  half-screen prefetch buffer from production left all of them green.
