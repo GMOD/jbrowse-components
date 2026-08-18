@@ -8,6 +8,11 @@ import {
   computeFrequenciesAndThresholds,
   computePositionFrequencies,
 } from './computeFrequenciesAndThresholds.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from './types.ts'
 
 describe('computePositionFrequencies (interbase depth)', () => {
   it('uses max of left and right depth for interbase features', () => {
@@ -75,7 +80,10 @@ describe('computeFrequenciesAndThresholds (gap frequencies)', () => {
         mismatchPositions: new Uint32Array(0),
         mismatchBases: new Uint8Array(0),
       },
-      { interbasePositions: new Uint32Array(0) },
+      {
+        interbasePositions: new Uint32Array(0),
+        interbaseTypes: new Uint8Array(0),
+      },
       { gapPositions, gapTypes },
       depths,
       0,
@@ -165,5 +173,64 @@ describe('featureFrequencyThreshold', () => {
       expect(curr).toBeLessThanOrEqual(prev)
       prev = curr
     }
+  })
+})
+
+// An SV breakpoint puts insertions, soft clips and hard clips on the same base,
+// and each kind draws its own bar, so each counts only its own kind. Pooling
+// them let three insertions at depth 40 inherit twelve clips' 37% and draw
+// opaque past the fade.
+describe('computeFrequenciesAndThresholds (interbase frequencies)', () => {
+  const depths = new Float32Array(200).fill(40)
+  const POS = 100
+
+  function interbaseFrequencies(counts: {
+    insertions: number
+    softclips: number
+    hardclips: number
+  }) {
+    const { insertions, softclips, hardclips } = counts
+    const total = insertions + softclips + hardclips
+    const interbasePositions = new Uint32Array(total).fill(POS)
+    const interbaseTypes = new Uint8Array(total)
+    interbaseTypes.fill(INTERBASE_INSERTION, 0, insertions)
+    interbaseTypes.fill(INTERBASE_SOFTCLIP, insertions, insertions + softclips)
+    interbaseTypes.fill(INTERBASE_HARDCLIP, insertions + softclips)
+    return computeFrequenciesAndThresholds(
+      {
+        mismatchPositions: new Uint32Array(0),
+        mismatchBases: new Uint8Array(0),
+      },
+      { interbasePositions, interbaseTypes },
+      { gapPositions: new Uint32Array(0), gapTypes: new Uint8Array(0) },
+      depths,
+      0,
+    ).interbaseFrequencies
+  }
+
+  it('does not count clips toward an insertion at the same base', () => {
+    const alone = interbaseFrequencies({
+      insertions: 3,
+      softclips: 0,
+      hardclips: 0,
+    })
+    const withClips = interbaseFrequencies({
+      insertions: 3,
+      softclips: 12,
+      hardclips: 8,
+    })
+    expect(alone[0]).toBe(0)
+    expect(withClips[0]).toBe(alone[0])
+  })
+
+  it('keeps each kind on its own count at a shared base', () => {
+    const freqs = interbaseFrequencies({
+      insertions: 16,
+      softclips: 12,
+      hardclips: 20,
+    })
+    expect(freqs[0]).toBe(Math.round((16 / 40) * 255))
+    expect(freqs[16]).toBe(Math.round((12 / 40) * 255))
+    expect(freqs[28]).toBe(Math.round((20 / 40) * 255))
   })
 })

@@ -115,22 +115,40 @@ function spanOf(
   return { min, length: max < min ? 0 : max - min + 1 }
 }
 
-// Per-position count / total depth. Used for insertions, softclips, hardclips
-// (point features), and gap start positions. Depth basis is interbaseDepthAt
-// (deeper of the two flanking bins); a zero-depth position falls back to 1 so a
-// stray event there reads as full frequency rather than dividing by zero.
+// Lanes are sized off the array rather than a shared constant: a lane count that
+// lags the caller's vocabulary pools two of its codes into one, silently.
+function laneCount(types: Uint8Array) {
+  let max = 0
+  for (let i = 0; i < types.length; i++) {
+    if (types[i]! > max) {
+      max = types[i]!
+    }
+  }
+  return max + 1
+}
+
+// Per-position, per-type count / total depth. Serves insertions, softclips,
+// hardclips (point features), and gap start positions. Depth basis is
+// interbaseDepthAt (deeper of the two flanking bins); a zero-depth position
+// falls back to 1 so a stray event there reads as full frequency rather than
+// dividing by zero.
 //
-// Same flat-count shape as computeMismatchFrequencies above, one lane per bp
-// since there is no base to key on. Neither can be a run-walk over contiguous
-// equal positions the way `computeSNPCoverage` is — these positions are
-// ascending only WITHIN each of the three interbase blocks the caller
-// concatenates, and one position can appear in more than one block. The
-// mismatch pass upstairs *could* and is measurably worse for it; see
-// `benches/coverageFrequencies.bench.ts`.
+// `types` separates the kinds sharing a bp, the way MISMATCH_LANES separates
+// bases. An SV breakpoint puts insertions and clips on the same base, and one
+// pooled count per bp let three insertions at depth 40 inherit twelve soft
+// clips' 37% — opaque past the fade, and clickable through
+// `passesFrequencyGate`, over a read the click was meant for. A caller with a
+// single kind of event omits `types`.
+//
+// Neither pass can be a run-walk over contiguous equal positions the way
+// `computeSNPCoverage` is — these positions ascend only WITHIN each of the three
+// interbase blocks the caller concatenates. The mismatch pass upstairs *could*
+// and is measurably worse for it; see `benches/coverageFrequencies.bench.ts`.
 export function computePositionFrequencies(
   positions: Uint32Array,
   coverageDepths: Float32Array,
   coverageStartPos: number,
+  types?: Uint8Array,
 ) {
   const n = positions.length
   const frequencies = new Uint8Array(n)
@@ -140,26 +158,30 @@ export function computePositionFrequencies(
     coverageStartPos,
     windowLength,
   )
-  const counts = new Uint32Array(span)
+  const lanes = types ? laneCount(types) : 1
+  const counts = new Uint32Array(span * lanes)
   let rare: Map<number, number> | undefined
   for (let i = 0; i < n; i++) {
     const offset = positions[i]! - coverageStartPos
+    const lane = types ? types[i]! : 0
     if (offset >= 0 && offset < windowLength) {
-      counts[offset - base]!++
+      counts[(offset - base) * lanes + lane]!++
     } else {
+      const key = positions[i]! * 256 + lane
       rare ??= new Map()
-      rare.set(positions[i]!, (rare.get(positions[i]!) ?? 0) + 1)
+      rare.set(key, (rare.get(key) ?? 0) + 1)
     }
   }
   for (let i = 0; i < n; i++) {
     const pos = positions[i]!
     const offset = pos - coverageStartPos
+    const lane = types ? types[i]! : 0
     const localDepth = interbaseDepthAt(coverageDepths, coverageStartPos, pos)
     const depth = localDepth > 0 ? localDepth : 1
     const count =
       offset >= 0 && offset < windowLength
-        ? counts[offset - base]!
-        : (rare?.get(pos) ?? 1)
+        ? counts[(offset - base) * lanes + lane]!
+        : (rare?.get(pos * 256 + lane) ?? 1)
     frequencies[i] = Math.min(255, Math.round((count / depth) * 255))
   }
   return frequencies
@@ -194,11 +216,13 @@ function thresholdedPositionFrequencies(
   positions: Uint32Array,
   depths: Float32Array,
   coverageStartPos: number,
+  types?: Uint8Array,
 ) {
   const frequencies = computePositionFrequencies(
     positions,
     depths,
     coverageStartPos,
+    types,
   )
   applyDepthDependentThreshold(
     frequencies,
@@ -262,7 +286,10 @@ function deletionStartFrequencies(
 
 export function computeFrequenciesAndThresholds(
   mismatchArrays: { mismatchPositions: Uint32Array; mismatchBases: Uint8Array },
-  interbaseArrays: { interbasePositions: Uint32Array },
+  interbaseArrays: {
+    interbasePositions: Uint32Array
+    interbaseTypes: Uint8Array
+  },
   gapArrays: { gapPositions: Uint32Array; gapTypes: Uint8Array },
   depths: Float32Array,
   coverageStartPos: number,
@@ -286,6 +313,7 @@ export function computeFrequenciesAndThresholds(
       interbaseArrays.interbasePositions,
       depths,
       coverageStartPos,
+      interbaseArrays.interbaseTypes,
     ),
     gapFrequencies: deletionStartFrequencies(
       gapArrays.gapPositions,
