@@ -211,3 +211,79 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     expect(rulers(display)).toEqual([])
   })
 })
+
+// `belowCoverageBands` is the pooled twin of the per-section stacking: one
+// answer for a display, where `computeStackedSections` gives one per lane. It
+// resolved the arc strip from the SETTINGS alone while the sections resolved it
+// from the settings AND the lane's arcs, so with connections on and nothing
+// paired the two disagreed by `readConnectionsHeight`. Its `bottom` is the
+// ungrouped scrollbar's top offset and the fit-to-viewport row budget's
+// per-group overhead, so both spent a strip no lane drew in.
+describe('the pooled below-coverage bands agree with the sections', () => {
+  function ungrouped(mateBp?: number) {
+    const { display } = createEnv()
+    display.setReadConnections('arc')
+    display.setReadConnectionsDown(true)
+    display.setRpcData(0, {
+      groups: [{ key: '', label: '', data: oneRead(mateBp) }],
+    })
+    display.setLoadedRegion(0, {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    })
+    return display
+  }
+
+  test('an unpaired ungrouped pileup reserves no arc strip either way', () => {
+    const display = ungrouped()
+    const layout: SectionsLayout = display.sections
+    expect(layout.sections[0]!.hasArcsBand).toBe(false)
+    expect(display.belowCoverageBands.hasArcsBand).toBe(false)
+    expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
+    expect(layout.sections[0]!.pileupTop).toBe(display.coverageDisplayHeight)
+  })
+
+  test('a paired ungrouped pileup reserves it in both', () => {
+    const display = ungrouped(2000)
+    const layout: SectionsLayout = display.sections
+    expect(layout.sections[0]!.hasArcsBand).toBe(true)
+    expect(display.belowCoverageBands.hasArcsBand).toBe(true)
+    expect(display.coverageDisplayHeight).toBe(
+      display.coverageHeight + display.readConnectionsHeight,
+    )
+    expect(layout.sections[0]!.pileupTop).toBe(display.coverageDisplayHeight)
+  })
+
+  // The other consumer: `fitGroupMaxRows` subtracts this bottom once per group
+  // before dividing the viewport into rows. With no lane paired, connections on
+  // has exactly as much room for rows as connections off.
+  test('the fit row budget spends nothing on a strip no lane has', () => {
+    const seedTwoUnpairedLanes = (connections: 'arc' | 'off') => {
+      const { display } = createEnv()
+      display.setHeightMode('fit')
+      display.setReadConnections(connections)
+      display.setReadConnectionsDown(true)
+      display.setGroupBy({ type: 'strand' })
+      display.setRpcData(0, {
+        groups: [
+          { key: '+', label: 'Forward strand', data: oneRead() },
+          { key: '-', label: 'Reverse strand', data: oneRead() },
+        ],
+      })
+      display.setLoadedRegion(0, {
+        refName: 'ctgA',
+        start: 0,
+        end: 10_000,
+        assemblyName: 'volvox',
+      })
+      return display
+    }
+    const on = seedTwoUnpairedLanes('arc')
+    const off = seedTwoUnpairedLanes('off')
+    expect(on.coverageDisplayHeight).toBe(off.coverageDisplayHeight)
+    expect(on.fittedFeatureHeight).toBe(off.fittedFeatureHeight)
+    expect(on.sections.contentHeight).toBe(off.sections.contentHeight)
+  })
+})

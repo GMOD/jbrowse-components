@@ -21,6 +21,8 @@ function lane(
   return { label: o.key, hasArcs: true, hasSashimiDownArcs: false, ...o }
 }
 
+// Defaults to having arcs, like `lane` above, so a case only names the data
+// signal it is about.
 const baseBands: BelowCoverageBandsInput = {
   showCoverage: true,
   coverageHeight: 45,
@@ -29,6 +31,7 @@ const baseBands: BelowCoverageBandsInput = {
   readConnectionsHeight: 40,
   showSashimiArcs: false,
   sashimiArcsHeight: 40,
+  hasArcs: true,
   hasSashimiDownArcs: false,
 }
 
@@ -51,6 +54,49 @@ test('belowCoverageBandsGeometry: down-mode arcs reserve their own band', () => 
   expect(r.hasArcsBand).toBe(true)
   expect(r.bottom).toBe(45 + 40)
 })
+
+// The settings say the strip MAY be reserved and no lane has an arc to put in
+// it, so nothing does — the same two-halved rule `computeStackedSections`
+// applies per lane, which the pooled geometry used to answer on the settings
+// alone. It then sat `readConnectionsHeight` px below the pileup the sections
+// laid out, and that bottom is the ungrouped scrollbar's top offset and the
+// fit-to-viewport row budget's overhead.
+test('belowCoverageBandsGeometry: no arcs anywhere reserves no arc band', () => {
+  const r = belowCoverageBandsGeometry({
+    ...baseBands,
+    readConnections: 'arc',
+    readConnectionsDown: true,
+    hasArcs: false,
+  })
+  expect(r.hasArcsBand).toBe(false)
+  expect(r.bottom).toBe(45)
+})
+
+// The ungrouped case is one lane, so the two answers are the same statement and
+// have to come out equal however the data falls.
+test.each([true, false])(
+  'belowCoverageBandsGeometry agrees with the one section (hasArcs %s)',
+  hasArcs => {
+    const settings = {
+      readConnections: 'arc',
+      readConnectionsDown: true,
+      showCoverage: true,
+      coverageHeight: 45,
+      readConnectionsHeight: 40,
+    } as const
+    const bands = belowCoverageBandsGeometry({
+      ...baseBands,
+      ...settings,
+      hasArcs,
+    })
+    const { sections } = computeStackedSections(
+      [lane({ key: '', maxY: 3, hasArcs })],
+      { ...settings, rowHeight: 10 },
+    )
+    expect(sections[0]!.pileupTop).toBe(bands.bottom)
+    expect(sections[0]!.hasArcsBand).toBe(bands.hasArcsBand)
+  },
+)
 
 test('belowCoverageBandsGeometry: up-mode arcs overlay coverage (no reserved band)', () => {
   const r = belowCoverageBandsGeometry({

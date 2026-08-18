@@ -106,12 +106,18 @@ export function reservesArcsBand(s: {
   )
 }
 
-// Resolve which of the below-coverage bands are present and their stacked tops,
-// from the raw display settings. Single source of truth shared by the
-// `belowCoverageBands` getter (sticky-coverage geometry, resize handles) and the
-// fit-to-viewport row budget (which needs each section's reserved overhead but
-// runs in an earlier `.views` block than that getter). `bottom` is where the
-// pileup begins (== `coverageDisplayHeight`).
+// Resolve which of the below-coverage bands are present and their stacked tops.
+// Single source of truth shared by the `belowCoverageBands` getter
+// (sticky-coverage geometry, resize handles) and the fit-to-viewport row budget
+// (which needs each section's reserved overhead but runs in an earlier `.views`
+// block than that getter). `bottom` is where the pileup begins (==
+// `coverageDisplayHeight`).
+//
+// The display settings decide whether each strip MAY be reserved; `hasArcs` and
+// `hasSashimiDownArcs` say whether any lane has something to put in it. This is
+// the pooled answer over every lane, where `computeStackedSections` asks per
+// lane — ungrouped, the one lane makes them the same statement, which is what
+// keeps this bottom and that section's `pileupTop` equal.
 export interface BelowCoverageBandsInput {
   showCoverage: boolean
   coverageHeight: number
@@ -120,6 +126,12 @@ export interface BelowCoverageBandsInput {
   readConnectionsHeight: number
   showSashimiArcs: boolean
   sashimiArcsHeight: number
+  // Whether any lane has arc-band ink (`inkGroupKeys`) — the data half of the
+  // reserve rule, which `computeStackedSections` applies per lane and this
+  // pooled geometry applies across them. Both halves, or the global bottom
+  // reserves a strip nothing draws in and lands `readConnectionsHeight` px
+  // below the pileup the sections actually laid out.
+  hasArcs: boolean
   // Whether any junction actually lands in the below-coverage strip, already
   // resolved against the mode + score filter by `groupsWithSashimiDownArcs`
   // (mode lives there, not here: 'auto' has to inspect the junctions to know).
@@ -140,7 +152,7 @@ export function reservesSashimiBand(s: {
 
 export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
   const coverageBand = s.showCoverage ? s.coverageHeight : 0
-  const hasArcsBand = reservesArcsBand(s)
+  const hasArcsBand = reservesArcsBand(s) && s.hasArcs
   const hasSashimiBand = reservesSashimiBand(s)
   const stack = computeBandStack({
     coverageHeight: coverageBand,

@@ -1373,9 +1373,13 @@ export default function stateModelFactory(
         /**
          * #getter
          * Inputs to `belowCoverageBandsGeometry` — the below-coverage band
-         * settings plus whether any sashimi junction is present. Defined here
-         * (an earlier .views block than `belowCoverageBands`) so the fit-budget
-         * `laidOutByGroup` and the `belowCoverageBands` getter share one source.
+         * settings, plus whether any lane has arcs or a sashimi junction bound
+         * for its strip. Both data halves are pooled over the lanes, which
+         * `computeStackedSections` asks per lane: the geometry here is the one
+         * ungrouped answer, and there the lanes agree with it because there is
+         * only the one. Defined in an earlier .views block than
+         * `belowCoverageBands` so the fit-budget `laidOutByGroup` and that
+         * getter share one source.
          */
         get belowCoverageBandsInput() {
           return {
@@ -1386,6 +1390,7 @@ export default function stateModelFactory(
             readConnectionsHeight: self.readConnectionsHeight,
             showSashimiArcs: self.showSashimiArcs,
             sashimiArcsHeight: self.sashimiArcsHeight,
+            hasArcs: this.arcsResult.inkGroupKeys.size > 0,
             hasSashimiDownArcs: this.sashimiDownArcLanes.size > 0,
           }
         },
