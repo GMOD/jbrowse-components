@@ -126,6 +126,35 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **COLO829 for canonical imprinting** — a cancer line with LOH at every DMR.
   The methylation tutorial uses HG002 germline ONT (`ont-open-data`,
   `giab_2025.01/.../HG002/PAW70337/`) instead.
+- **Great ape HSA16 all-vs-all** — the chr16 panel of Yoo et al. 2025, drawn
+  there with SVbyEye plotAVA, as a six-row synteny stack. A build script for it
+  landed and was removed again 2026-08-18 without ever emitting a PAF, so no
+  figure, demo or doc cited it — `git show 17a7b2a4d5` is the pipeline. Three
+  things it established, which is why the alignment half should not be
+  re-derived from scratch:
+  - **Getting the sequence is solved and cheap.** The HSA16-syntenic chromosome
+    is chr18 in all five apes, named with the human synteny in it
+    (`chr18_hap1_hsa16`), and GenomeArk ships `.fai`/`.gzi` beside each bgzipped
+    FASTA — so each chromosome comes out by HTTP range request with no
+    whole-genome download. Check the lengths against published values: a
+    truncated range request still looks like valid FASTA.
+  - **`--secondary=no` cannot combine with `-X`/`-P`.** Volume has to come from
+    length-filtering the PAF afterwards, which is what SVbyEye's own `filterPaf`
+    step does.
+  - **`-c` with `-P` is what killed it.** SVbyEye's published all-vs-all
+    parameters combine base-level alignment with retain-all-chains, and in ape
+    satellite arrays that base-aligns every paralogous chain: 30 GB of RAM
+    exhausted and 54 GB driven into swap without one row of output. minimap2's
+    `-I` batches the target index and drops peak memory roughly in proportion,
+    but nothing above 30 GB was ever tested. Dropping `-P` is the bigger lever
+    and costs nothing here — SVbyEye's own pairwise recipe omits it, and the
+    paralogous secondary chains it retains cannot appear in a synteny band
+    anyway.
+
+  So the open question is a machine, not a method. Note
+  [ideas/synteny-comparative.md](../ideas/synteny-comparative.md) carries a
+  *different* great-apes route — precomputed ntSynt synteny blocks — that needs
+  no alignment run at all.
 
 ## Cancer and C-GIAB
 
