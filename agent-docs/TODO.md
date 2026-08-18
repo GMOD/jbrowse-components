@@ -1074,6 +1074,28 @@ MSA view** fires one request for the a3m that comes back 403, the structure's ow
 a reader who does not know about the 403 sees only a spinner, which is why the
 page's caution names the symptom rather than just the cause.
 
+**It is the prefix, not the file.** Every key under `files/msa/` answers 403,
+including ones that cannot exist (`files/msa/definitely-not-a-real-key-xyz.a3m`),
+and so does the bare `files/msa/`. A nonexistent key one level up answers 404 and
+a real one answers 200, so the request is refused before key lookup — a bucket or
+CDN permission on the whole prefix rather than a moved or withdrawn file. That is
+also why no url rewrite gets around it: `_v4`, `_v5` and an unversioned name all
+403, AlphaFold's own documented example (`AF-G1JSI4-F1-msa_v6.a3m`) 403s, and a
+browser UA with a matching referer changes nothing. **Nor is there a second
+source**: the GCS mirror carries model, confidence and PAE but no a3m, and the
+EBI FTP ships per-proteome tars of coordinates only. It worked in January 2026
+(google-deepmind/alphafold#1111 downloads individual MSAs), so it is a
+regression worth reporting to EBI rather than designing around.
+
+**The silent half is ours and is fixed pending release.** react-msaview branch
+`fix-msa-error-surfacing` (`e96a07d`): a non-abort failure keeps its filehandle,
+only an abort clears it, so `hasPendingFilehandle` held Loading.tsx on its
+spinner branch ahead of the ImportForm — which renders `model.error` and was
+never reached. `modelFilehandleLoaders.test.ts` covered this the whole time under
+"a failed fetch surfaces as an error" and passed, because it pins the model
+rather than the DOM. **When that ships, the caution's "raise no error" half stops
+being true** and wants rewording to the 403 the view will then name.
+
 While it 403s, the page's two MSA destinations are a route a reader cannot take
 either, and `genomes_proteins.md` now says so in a `:::caution` under that
 paragraph. **A fixed a3m retires that admonition as well as capturing the
