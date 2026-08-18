@@ -80,3 +80,32 @@ describe('WebWorkerRpcDriver boot handshake', () => {
     expect(worker.terminated).toBe(true)
   })
 })
+
+describe('WebWorkerRpcDriver status channel', () => {
+  // the `channel` is what the worker's wrapForRpc builds a statusCallback from,
+  // so minting one unconditionally handed every method a live status handle its
+  // caller had declined — and gave "no statusCallback" two answers, since
+  // MainThreadRpcDriver passes the caller's own undefined straight through
+  async function callWith(statusCallback?: (s: unknown) => void) {
+    const { worker, driver } = makeDriver()
+    const handleP = driver.makeWorker()
+    worker.send('readyForConfig')
+    worker.send('ready')
+    const handle = await handleP
+    worker.posted.length = 0
+
+    void handle.call('SomeMethod', { sessionId: 's' }, { statusCallback })
+    return worker.posted[0] as { data: Record<string, unknown> }
+  }
+
+  test('opens a channel when the caller passes a statusCallback', async () => {
+    const posted = await callWith(() => {})
+    expect(posted.data.channel).toMatch(/^message-/)
+  })
+
+  test('opens none when the caller passes no statusCallback', async () => {
+    const posted = await callWith()
+    expect(posted.data).not.toHaveProperty('channel')
+    expect(posted.data).toEqual({ sessionId: 's' })
+  })
+})

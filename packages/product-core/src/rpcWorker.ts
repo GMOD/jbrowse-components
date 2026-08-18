@@ -71,22 +71,43 @@ async function getPluginManager(
 }
 
 interface WrappedFuncArgs {
-  channel: string
+  // absent when the caller passed no statusCallback; see wrapForRpc
+  channel?: string
   [key: string]: unknown
 }
 
 type RpcFunc = (args: unknown) => Promise<unknown>
 
-function wrapForRpc(func: RpcFunc) {
+/**
+ * Wire the method's `statusCallback` to the status channel the driver opened
+ * for this call — and to nothing at all when it opened none.
+ *
+ * The `channel` is the driver's statement of whether anyone is listening
+ * (`WebWorkerHandle.call`), so a method run without one has to see the
+ * `undefined` its caller passed. Injecting a callback regardless made every
+ * "no statusCallback" branch in the worker unreachable: the byte reporter an
+ * adapter hands its reader, the emit `createProgressReporter` gates, and the
+ * postMessage each of those cost to reach a main-thread listener that dropped
+ * it.
+ *
+ * Exported for its test and not from the package barrel: `initializeWorker` is
+ * the only thing a product's worker entry calls, and the branch here is a claim
+ * about the driver on the other side of postMessage that nothing else asserts.
+ */
+export function wrapForRpc(func: RpcFunc) {
   return (args: unknown) => {
     const wrappedArgs = args as WrappedFuncArgs
     const { channel } = wrappedArgs
-    return func({
-      ...wrappedArgs,
-      statusCallback: (message: RpcStatus) => {
-        self.rpcServer?.emit(channel, message)
-      },
-    })
+    return func(
+      channel === undefined
+        ? wrappedArgs
+        : {
+            ...wrappedArgs,
+            statusCallback: (message: RpcStatus) => {
+              self.rpcServer?.emit(channel, message)
+            },
+          },
+    )
   }
 }
 

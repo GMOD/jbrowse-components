@@ -42,15 +42,36 @@ class WebWorkerHandle {
     this.client.notifyStopToken(id)
   }
 
+  /**
+   * A `channel` only when the caller asked for status, so that "no
+   * statusCallback" survives the worker boundary.
+   *
+   * It did not. The channel was minted unconditionally, and `wrapForRpc` builds
+   * the worker's `statusCallback` from whatever channel it is handed — so every
+   * method in every worker ran with a live status handle whoever called it had
+   * declined, and `MainThreadRpcDriver` (which passes the caller's own
+   * `undefined` straight through) answered the same question differently. That
+   * asymmetry is the one {@link RpcManager}'s `call` docstring already records
+   * in the other direction.
+   *
+   * The absence is not cosmetic — it is a documented branch. `downloadStatus`
+   * hands the reader no `onProgress` without a callback, which is what lets
+   * generic-filehandle2 take `res.arrayBuffer()` instead of its chunk-copy read
+   * loop; `createProgressReporter` skips its emit; and every status the worker
+   * did send crossed a postMessage to reach a listener that dropped it.
+   */
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback } = opts
+    if (!statusCallback) {
+      return this.client.call(funcName, args)
+    }
     const channel = `message-${nanoid()}`
     // RpcClient is a generic event emitter (it also carries 'error' events), so
     // its listeners see `unknown`. This channel is dedicated to one method's
     // status emits, which the worker only ever posts as RpcStatus (see
     // wrapForRpc in rpcWorker.ts), so narrowing to RpcStatus here is sound.
     const listener = (message: unknown) => {
-      statusCallback?.(message as RpcStatus)
+      statusCallback(message as RpcStatus)
     }
     this.client.on(channel, listener)
     try {
