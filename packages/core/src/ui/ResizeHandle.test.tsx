@@ -1,5 +1,6 @@
 import { act, fireEvent, render } from '@testing-library/react'
 
+import { colord } from '../util/colord.ts'
 import ResizeHandle from './ResizeHandle.tsx'
 
 // Faithful rAF mock (same shape as useRafCommit.test): cancel really drops the
@@ -35,6 +36,39 @@ function flushRaf() {
       cb(0)
     }
   })
+}
+
+/**
+ * The resting and hover background a `bar` handle actually resolves to, read
+ * off the emitted stylesheet.
+ *
+ * Not `getComputedStyle`, which resolves no `:hover` in jsdom — and the hover is
+ * the half that was wrong. Two classes on the element carry a `:hover`
+ * background at equal specificity, so the browser settles it on source order and
+ * so does this: iterate the sheet in order and keep the last match.
+ */
+function readBarAlphas(el: HTMLElement) {
+  let rest = ''
+  let hover = ''
+  for (const sheet of document.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      if (!(rule instanceof CSSStyleRule)) {
+        continue
+      }
+      const bg = rule.style.backgroundColor || rule.style.background
+      if (!bg) {
+        continue
+      }
+      for (const cls of el.classList) {
+        if (rule.selectorText === `.${cls}`) {
+          rest = bg
+        } else if (rule.selectorText === `.${cls}:hover`) {
+          hover = bg
+        }
+      }
+    }
+  }
+  return { rest, hover }
 }
 
 function drag(el: HTMLElement, ys: number[]) {
@@ -95,5 +129,32 @@ describe('ResizeHandle', () => {
     expect((container.firstChild as HTMLElement).dataset.gestureOwner).toBe(
       'true',
     )
+  })
+
+  // `bar` is the whole difference between a divider someone can see and a 4px
+  // strip of nothing, and it is one word at a call site — a rebase or a
+  // stray reformat drops it without changing behaviour anything else asserts.
+  it('draws nothing until hover without `bar`, and a divider with it', () => {
+    const { container: plain } = render(<ResizeHandle onDrag={() => {}} />)
+    const { container: barred } = render(<ResizeHandle bar onDrag={() => {}} />)
+    const bgAlpha = (c: HTMLElement) =>
+      colord(
+        getComputedStyle(c.firstChild as HTMLElement).backgroundColor,
+      ).alpha()
+
+    expect(bgAlpha(plain)).toBe(0)
+    expect(bgAlpha(barred)).toBeGreaterThan(0)
+  })
+
+  // A bar rests at `action.disabled` and used to inherit the invisible handles'
+  // `action.selected` hover, which is *lighter* — so the one gesture that should
+  // confirm "yes, this is the thing you grab" made it harder to see. Read off the
+  // stylesheet because jsdom resolves no `:hover`.
+  it('gets darker under the pointer, not lighter', () => {
+    const { container } = render(<ResizeHandle bar onDrag={() => {}} />)
+    const { rest, hover } = readBarAlphas(container.firstChild as HTMLElement)
+    expect(rest).toBeTruthy()
+    expect(hover).toBeTruthy()
+    expect(colord(hover).alpha()).toBeGreaterThan(colord(rest).alpha())
   })
 })
