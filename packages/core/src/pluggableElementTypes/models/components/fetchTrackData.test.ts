@@ -2,7 +2,7 @@ import { getConf } from '../../../configuration/getConf.ts'
 import { getSession } from '../../../util/mstUtils.ts'
 import SimpleFeature from '../../../util/simpleFeature.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
-import { fetchTrackData } from './fetchTrackData.ts'
+import { fetchTrackData, roundRegions } from './fetchTrackData.ts'
 
 import type { Feature, Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
@@ -87,6 +87,25 @@ function respond(handlers: Record<string, unknown>) {
 beforeEach(() => {
   call.mockReset()
   writer.mockClear()
+})
+
+// what an LGV block looks like: whole-base bounds plus the screen geometry and
+// `reversed` flag the dialog's region label picked up as a stray "[rev]"
+test('roundRegions widens to whole bases and drops the view geometry', () => {
+  expect(
+    roundRegions([
+      {
+        assemblyName: 'volvox',
+        refName: 'ctgA',
+        start: 100.7,
+        end: 200.2,
+        reversed: true,
+        displayedRegionIndex: 0,
+        screenStartPx: 0,
+        screenEndPx: 800,
+      } as Region,
+    ]),
+  ).toEqual([{ assemblyName: 'volvox', refName: 'ctgA', start: 100, end: 201 }])
 })
 
 test('an adapter that exports the format returns its raw lines', async () => {
@@ -199,6 +218,28 @@ test('an adapter quoting no estimate does not gate', async () => {
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
   expect(res).toEqual({ str: 'gene1\n', usedAdapterExport: false })
+})
+
+// GenBank fetches its ORIGIN sequence from inside the writer, so the pair has
+// to travel one hop further than the RPCs above
+test('the stop token and status callback reach the writer too', async () => {
+  setup()
+  respond({ CoreGetFeatures: [feature('gene1')] })
+  const stopToken = 'token-1'
+  const statusCallback = jest.fn()
+
+  await fetchTrackData({
+    model,
+    regions,
+    type: 'bed',
+    options,
+    stopToken,
+    statusCallback,
+  })
+
+  expect(writer).toHaveBeenCalledWith(
+    expect.objectContaining({ stopToken, statusCallback }),
+  )
 })
 
 test('an empty export stays empty rather than becoming one newline', async () => {

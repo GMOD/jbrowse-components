@@ -1,4 +1,8 @@
-import { coreFeatureFields, formatAttributeValue } from './util.ts'
+import {
+  coreFeatureFields,
+  formatAttributeValue,
+  formatStrand,
+} from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -95,7 +99,6 @@ function formatFeat({
   refName?: string
   cdsPhase?: number
 }) {
-  const strand = feature.get('strand')
   const score = feature.get('score')
   const phase = feature.get('phase') ?? cdsPhase
   return [
@@ -105,7 +108,7 @@ function formatFeat({
     feature.get('start') + 1,
     feature.get('end'),
     score ?? '.',
-    strand === 1 ? '+' : strand === -1 ? '-' : '.',
+    formatStrand(feature.get('strand')),
     phase ?? '.',
     formatAttributes(feature, { id, parentId }),
   ].join('\t')

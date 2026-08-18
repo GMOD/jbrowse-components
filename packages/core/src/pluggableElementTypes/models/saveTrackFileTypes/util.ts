@@ -21,6 +21,14 @@ export const coreFeatureFields = new Set([
 ])
 
 /**
+ * Column 6 of BED and column 7 of GFF3 are the same three tokens over the same
+ * 1/-1/0 a feature carries, so the convention gets one definition.
+ */
+export function formatStrand(strand: number | undefined) {
+  return strand === 1 ? '+' : strand === -1 ? '-' : '.'
+}
+
+/**
  * Render an attribute value: an array joins on a comma, an object goes through
  * JSON, anything else stringifies. Returns undefined for a value with nothing
  * in it, so a caller can drop the attribute rather than write it empty.

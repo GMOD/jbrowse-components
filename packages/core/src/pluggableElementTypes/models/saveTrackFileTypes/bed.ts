@@ -1,3 +1,5 @@
+import { formatStrand } from './util.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 
 // One row of BED, kept as data until the whole set is known: BED is
@@ -13,11 +15,6 @@ interface BedRow {
   thickStart: number
   thickEnd: number
   blocks: { start: number; end: number }[]
-}
-
-// column 6 is +/-/., and features carry strand as 1/-1/0
-function formatStrand(strand: number) {
-  return strand === 1 ? '+' : strand === -1 ? '-' : '.'
 }
 
 // name is the only free-text column, and a space or tab in it shifts every

@@ -22,11 +22,19 @@ export interface ExportableTrack extends IStateTreeNode {
   saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
 }
 
-export function roundRegions(regions: Region[]) {
-  return regions.map(r => ({
-    ...r,
-    start: Math.floor(r.start),
-    end: Math.ceil(r.end),
+/**
+ * The four fields a region fetch needs, with the fractional bounds a view hands
+ * out widened to whole bases. Narrowed rather than spread whole: an LGV's
+ * `visibleRegions` blocks also carry screen geometry and a `reversed` flag, and
+ * `reversed` is what put a stray "[rev]" on the region the dialog says it is
+ * exporting — the export itself is in reference order either way.
+ */
+export function roundRegions(regions: Region[]): Region[] {
+  return regions.map(({ assemblyName, refName, start, end }) => ({
+    assemblyName,
+    refName,
+    start: Math.floor(start),
+    end: Math.ceil(end),
   }))
 }
 
@@ -123,6 +131,7 @@ export async function fetchTrackData({
     features: feats,
     session,
     assemblyName: regions[0]!.assemblyName,
+    ...opts,
   })
   return { str: endWithNewline(str), usedAdapterExport: false }
 }

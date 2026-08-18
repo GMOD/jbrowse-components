@@ -259,7 +259,7 @@ describe('GenBank export', () => {
     expect(result).not.toContain('join(21..180)')
   })
 
-  it('truncates long feature type names to 16 characters', async () => {
+  it('truncates a long feature type to the 15-char feature-key width', async () => {
     const f = createFeature({
       id: 'gene9',
       refName: 'chr1',
@@ -410,6 +410,33 @@ describe('GenBank export', () => {
         session: mockSession,
       }),
     ).toBe('')
+  })
+
+  // The only writer that fetches anything. Dropping the pair left closing the
+  // dialog with a whole-gene sequence read still running, and its download
+  // unnamed while it ran.
+  it('carries the stop token and a status slot into the ORIGIN fetch', async () => {
+    const statusCallback = jest.fn()
+    await stringifyGBK({
+      features: [
+        createFeature({
+          id: 'geneA',
+          refName: 'ctgA',
+          start: 100,
+          end: 200,
+          type: 'gene',
+        }),
+      ],
+      assemblyName: 'volvox',
+      session: mockSession,
+      stopToken: 'token-1',
+      statusCallback,
+    })
+
+    const [arg] = jest.mocked(fetchSeq).mock.calls[0]!
+    expect(arg.stopToken).toBe('token-1')
+    arg.statusCallback?.('Downloading sequence')
+    expect(statusCallback).toHaveBeenCalledWith('Downloading sequence')
   })
 })
 

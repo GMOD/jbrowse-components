@@ -238,7 +238,7 @@ ORIGIN
 //"
 `;
 
-exports[`GenBank export truncates long feature type names to 16 characters 1`] = `
+exports[`GenBank export truncates a long feature type to the 15-char feature-key width 1`] = `
 "LOCUS       chr1_1..100              100 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:1..100 from testAssembly.
 ACCESSION   chr1

@@ -1,8 +1,13 @@
 import { fetchSeq } from '../../../util/fetchSeq.ts'
-import { groupBy, max, min } from '../../../util/index.ts'
+import { createStatusFanOut, groupBy, max, min } from '../../../util/index.ts'
 import { coreFeatureFields, formatAttributeValue } from './util.ts'
 
-import type { AbstractSessionModel, Feature } from '../../../util/index.ts'
+import type {
+  AbstractSessionModel,
+  Feature,
+  StatusCallback,
+  StopToken,
+} from '../../../util/index.ts'
 
 // name becomes the /label qualifier rather than one of its own
 const coreFields = new Set([...coreFeatureFields, 'name'])
@@ -198,11 +203,15 @@ async function formatRecord({
   features,
   assemblyName,
   session,
+  stopToken,
+  statusCallback,
 }: {
   refName: string
   features: Feature[]
   assemblyName: string
   session: AbstractSessionModel
+  stopToken?: StopToken
+  statusCallback?: StatusCallback
 }) {
   const minPos = min(features.map(f => f.get('start')))
   const maxPos = max(features.map(f => f.get('end')))
@@ -215,6 +224,8 @@ async function formatRecord({
     start: minPos,
     end: maxPos,
     refName,
+    stopToken,
+    statusCallback,
   })
 
   const header = formatHeader({ refName, region, assemblyName, length })
@@ -228,10 +239,14 @@ export async function stringifyGBK({
   features,
   assemblyName,
   session,
+  stopToken,
+  statusCallback,
 }: {
   assemblyName: string
   session: AbstractSessionModel
   features: Feature[]
+  stopToken?: StopToken
+  statusCallback?: StatusCallback
 }) {
   // A record per reference sequence, which is what GenBank is: a multi-region
   // view used to take min(start)/max(end) across every feature and label the
@@ -239,9 +254,20 @@ export async function stringifyGBK({
   // record spanning a stretch of sequence that does not exist, with an ORIGIN
   // fetched over it.
   const byRefName = groupBy(features, f => f.get('refName'))
+  // the records fetch their ORIGIN concurrently and all report the same phase,
+  // so each gets its own fan-out slot rather than the caller's raw callback —
+  // otherwise the first contig to finish blanks the label for the rest
+  const slot = createStatusFanOut(statusCallback)
   const records = await Promise.all(
     Object.entries(byRefName).map(([refName, feats]) =>
-      formatRecord({ refName, features: feats, assemblyName, session }),
+      formatRecord({
+        refName,
+        features: feats,
+        assemblyName,
+        session,
+        stopToken,
+        statusCallback: slot(),
+      }),
     ),
   )
   return records.join('\n')
