@@ -12,12 +12,16 @@ import type { PopoverOrigin } from '@mui/material'
 // Only CascadingMenu's submenus render this, so it takes exactly what they pass
 // — the root's pointer-events and the paper slot are its whole point, and a
 // pass-through of the full MenuProps would let a caller quietly override them.
+// `zIndex` is the one thing a caller does set: it is the ROOT menu's level, and
+// a submenu that stays on MUI's default modal scale under a raised root ends up
+// beneath that root's viewport-spanning backdrop, which then eats its clicks.
 function HoverMenu({
   open,
   anchorEl,
   onClose,
   anchorOrigin,
   transformOrigin,
+  zIndex,
   children,
 }: {
   open: boolean
@@ -25,6 +29,7 @@ function HoverMenu({
   onClose: () => void
   anchorOrigin: PopoverOrigin
   transformOrigin: PopoverOrigin
+  zIndex?: React.CSSProperties['zIndex']
   children: React.ReactNode
 }) {
   return (
@@ -34,7 +39,7 @@ function HoverMenu({
       onClose={onClose}
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
-      style={{ pointerEvents: 'none' }}
+      style={{ pointerEvents: 'none', zIndex }}
       slotProps={{ paper: { style: { pointerEvents: 'auto' } } }}
       // A submenu is portaled in the DOM but is still a React *descendant* of
       // the parent menu's list, so React replays its key events into the parent

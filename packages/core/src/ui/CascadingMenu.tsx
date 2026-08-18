@@ -61,6 +61,13 @@ interface CascadingMenuListProps {
   // close this menu level and refocus its opener (ArrowLeft); undefined at the
   // root level where there is nothing to go back to
   onNavigateBack?: () => void
+  // The root menu's stacking level, carried down to every submenu portal. Each
+  // level is its own MUI Menu, so a submenu left on MUI's default modal z-index
+  // sits UNDER a root that was raised off that scale (ContextMenu clears the
+  // tooltip layer) — and the root's modal spans the viewport, so its backdrop
+  // takes every click and hover the submenu rows never see. Undefined leaves
+  // MUI's default, which is what a menu opened from a button wants.
+  zIndex?: React.CSSProperties['zIndex']
 }
 
 // Identity of a submenu row, used both as its React key and to remember which
@@ -193,6 +200,7 @@ function CascadingSubmenu({
   closeAfterItemClick,
   onCloseRoot,
   onNavigateBack,
+  zIndex,
   isOpen,
   onOpen,
   onClose,
@@ -249,12 +257,14 @@ function CascadingSubmenu({
         onClose={onClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        zIndex={zIndex}
       >
         <CascadingMenuList
           closeAfterItemClick={closeAfterItemClick}
           onMenuItemClick={onMenuItemClick}
           menuItems={menuItems}
           onCloseRoot={onCloseRoot}
+          zIndex={zIndex}
           onNavigateBack={() => {
             onClose()
             anchorEl?.focus()
@@ -341,6 +351,7 @@ function CascadingMenuList({
   menuItems,
   onCloseRoot,
   onNavigateBack,
+  zIndex,
 }: CascadingMenuListProps) {
   const { classes } = useStyles()
   const [openSubmenu, setOpenSubmenu] = useState<string | undefined>()
@@ -378,6 +389,7 @@ function CascadingMenuList({
               closeAfterItemClick={closeAfterItemClick}
               onCloseRoot={onCloseRoot}
               onNavigateBack={onNavigateBack}
+              zIndex={zIndex}
               isOpen={openSubmenu === key && !item.disabled}
               onOpen={() => {
                 if (!item.disabled) {
@@ -484,6 +496,7 @@ const CascadingMenu = observer(function CascadingMenu({
         closeAfterItemClick={closeAfterItemClick}
         onMenuItemClick={onMenuItemClick}
         onCloseRoot={onClose}
+        zIndex={style?.zIndex}
       />
     </Menu>
   )
