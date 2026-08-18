@@ -12,6 +12,12 @@ import {
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { mergeSpans } from '../shared/mergeSpans.ts'
 import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
+// Straight from the shader's JS twin, and safe from here even though this module
+// is eager (layout ← baseModel ← the plugin entry): a `.js.generated.ts` holds
+// the lifted scalar functions and nothing else — the WGSL/GLSL source is a
+// different generated file. Same property that lets `sharedRendererConstants`
+// read the `.consts.generated.ts` directly rather than through the pass barrel,
+// and for the same reason; see the paragraph there.
 import { arrowDraws } from './passes/shaders/arrow.js.generated.ts'
 import { OFFSCREEN_Y, isPlacedRow } from './rowPlacement.ts'
 import { captureFeatureTops } from './yMorph.ts'
