@@ -153,6 +153,17 @@ export function extractWithComment(
   const checker = program.getTypeChecker()
   const blindSpots: BlindSpot[] = []
   const slotGaps: ConfigSlotGap[] = []
+  // Which members a model reaches through a delegated block, and the blocks
+  // that name something unresolvable. Collected up front because a helper file
+  // can be walked before or after the model that delegates to it, and both
+  // answers below have to be the same either way: whether the helper's own tag
+  // pass should stay quiet (the model is emitting these rows), and whether a
+  // tagged member is orphaned (no model renders it anywhere).
+  const { claimed, unresolved } = collectDelegatedClaims(checker, sources)
+  assertNoUnresolvedDelegations(unresolved)
+  // Member-tagged nodes in files that document no #stateModel and that no model
+  // claimed. Each renders on no page — see `orphanMembers`.
+  const memberTagged = new Map<string, string>()
 
   for (const sourceFile of sources) {
     // Test files are excluded outright: their fixtures (a `#config` fixture
@@ -175,6 +186,22 @@ export function extractWithComment(
   return {
     // `<file> <name>` per gap, for the committed coverage list
     blindSpots: blindSpots.map(s => `${repoRelative(s.filename)} ${s.name}`),
+    // Member tags in a file that documents no #stateModel and that no model
+    // claimed through a delegated block. Each is a documented member that
+    // renders on no page: `withHeaders` drops a bucket with no header, and it
+    // drops it in silence. Reported rather than fatal because the count is not
+    // zero — an `extendViewType` augmentation tags members onto a model owned by
+    // another plugin, which is a real shape this generator has no page for.
+    // Deduped by label: a member declared as an exported `const` is visited
+    // twice, as the statement and as the declaration, and the two nodes carry
+    // different positions but name one member.
+    orphanMembers: [
+      ...new Set(
+        [...memberTagged]
+          .filter(([key]) => !claimed.has(key))
+          .map(([, label]) => label),
+      ),
+    ],
   }
 
   function visit(node: ts.Node, isStateModel: boolean, isConfig: boolean) {
@@ -185,9 +212,32 @@ export function extractWithComment(
     if (isConfig) {
       collectUntaggedSlots(node, slotGaps)
     }
+    if (isStateModel) {
+      const delegated = delegatedBlockAt(checker, node)
+      if (delegated) {
+        emitDelegatedMembers(
+          checker,
+          delegated,
+          node.getSourceFile().fileName,
+          cb,
+        )
+      }
+    }
     const comment = getOwnJSDocText(node)
     const tags = comment ? TAG_TYPES.filter(t => containsTag(comment, t)) : []
-    if (tags.length) {
+    // A member in a helper file some model delegates to is that model's row,
+    // already emitted against the model's filename. Emitting it here too would
+    // bucket a second copy under this file, where no #stateModel header can
+    // render it — dropped in silence, and counted as an orphan.
+    const delegatedAway =
+      !isStateModel && tags.some(isMemberTag) && claimed.has(memberKey(node))
+    if (tags.length && !delegatedAway) {
+      if (!isStateModel && tags.some(isMemberTag)) {
+        memberTagged.set(
+          memberKey(node),
+          `${repoRelative(node.getSourceFile().fileName)} ${describeSymbol(checker, node).name}`,
+        )
+      }
       const { name, signature, declId } = describeSymbol(checker, node)
       const base = {
         name,
@@ -409,6 +459,12 @@ const MEMBER_TAGS = [
   'action',
 ] as const
 
+// A tag that documents a member of a model, as opposed to one that documents an
+// entity with a page of its own (#stateModel, #config, #api, #slot).
+function isMemberTag(tag: TagType): tag is (typeof MEMBER_TAGS)[number] {
+  return (MEMBER_TAGS as readonly string[]).includes(tag)
+}
+
 type MemberBlock = 'property' | 'volatile' | 'views' | 'actions'
 
 // The MST member block a call introduces, or undefined. `types.model({...})`
@@ -457,6 +513,219 @@ function returnedObjectLiteral(fn: ts.FunctionLikeDeclaration) {
   return unwrapped && ts.isObjectLiteralExpression(unwrapped)
     ? unwrapped
     : undefined
+}
+
+// A member block whose argument names a declaration elsewhere instead of
+// writing the object inline — `.views(configSlotViews)`, or the
+// `.volatile(() => CONSTANTS)` shape that returns a shared object. The
+// generator buckets members by the FILE they are written in, so without this
+// every row in such a block lands in a bucket with no #stateModel header and
+// `withHeaders` drops it: the page loses the members and nothing says so.
+//
+// This is what makes a model file splittable at all. Extracting a getter's
+// BODY to a sibling module has always been free (the thin getter stays behind,
+// carrying the docstring), but extracting the getters themselves was not, and
+// that is the difference between moving a few hundred lines and moving the
+// ~1,500 lines of config-slot plumbing the display models are mostly made of.
+// `types.compose` was the one extraction the generator already followed, which
+// is why a shared concern could become a mixin and a per-model one could not.
+interface DelegatedBlock {
+  kind: MemberBlock
+  obj: ts.ObjectLiteralExpression
+}
+
+// The member-block call `node` is the members argument of, if any. `types.model`
+// is excluded: its argument is a plain object literal, never a callback, so
+// there is no indirection to follow.
+function delegatingCallKind(node: ts.Node): MemberBlock | undefined {
+  const call = node.parent
+  if (!ts.isCallExpression(call) || call.arguments.at(-1) !== node) {
+    return undefined
+  }
+  const kind = memberBlockKind(call)
+  return kind && kind !== 'property' ? kind : undefined
+}
+
+// Resolve a member-block argument that names its object rather than writing it,
+// following one level of indirection. Returns undefined when the argument is an
+// ordinary inline callback (already handled by `memberObjectLiteral`) or when
+// nothing can be resolved — `unresolvedDelegation` decides which of those it is.
+function delegatedBlockAt(
+  checker: ts.TypeChecker,
+  node: ts.Node,
+): DelegatedBlock | undefined {
+  const kind = delegatingCallKind(node)
+  if (!kind || !ts.isExpression(node)) {
+    return undefined
+  }
+  const obj = delegatedMembersObject(checker, node)
+  return obj ? { kind, obj } : undefined
+}
+
+// The members object an argument ultimately yields. Two shapes, both of which
+// `memberObjectLiteral` gives up on: a bare identifier naming the callback
+// (`.views(sharedViews)`), and a callback that returns an identifier naming a
+// shared object (`.volatile(() => CONSTANTS)`).
+function delegatedMembersObject(
+  checker: ts.TypeChecker,
+  arg: ts.Expression,
+): ts.ObjectLiteralExpression | undefined {
+  if (ts.isArrowFunction(arg) || ts.isFunctionExpression(arg)) {
+    const ret = returnedExpression(arg)
+    return ret && ts.isIdentifier(ret)
+      ? objectLiteralBehind(checker, ret)
+      : undefined
+  }
+  return ts.isIdentifier(arg) ? objectLiteralBehind(checker, arg) : undefined
+}
+
+// The object literal an identifier stands for: the object a named callback
+// returns (`const sharedViews = self => ({...})`, or a function declaration), or
+// a named object constant. Alias-followed, so an import resolves to the
+// declaration in the file that owns it.
+function objectLiteralBehind(checker: ts.TypeChecker, id: ts.Identifier) {
+  const symbol = checker.getSymbolAtLocation(id)
+  const decl = symbol && followAlias(checker, symbol).declarations?.[0]
+  if (!decl) {
+    return undefined
+  }
+  const fn = factoryFunction(decl)
+  if (fn) {
+    return returnedObjectLiteral(fn)
+  }
+  return ts.isVariableDeclaration(decl) &&
+    decl.initializer &&
+    ts.isObjectLiteralExpression(decl.initializer)
+    ? decl.initializer
+    : undefined
+}
+
+// A member-block argument that names something the generator could not reduce
+// to an object literal. Every row the block declares would silently vanish, so
+// this is fatal rather than a coverage-gap line — the same reasoning as
+// `assertNoUntaggedSlots`: the count is zero, and the fix is local. An inline
+// callback the structural pass merely finds nothing in is NOT this; it keeps
+// its existing non-fatal treatment, because there is nothing to point the
+// author at.
+function unresolvedDelegation(checker: ts.TypeChecker, node: ts.Node) {
+  const kind = delegatingCallKind(node)
+  return kind &&
+    (ts.isIdentifier(node) || ts.isCallExpression(node)) &&
+    !delegatedMembersObject(checker, node as ts.Expression)
+    ? { filename: node.getSourceFile().fileName, kind, text: node.getText() }
+    : undefined
+}
+
+interface UnresolvedBlock {
+  filename: string
+  kind: MemberBlock
+  text: string
+}
+
+// Walk the #stateModel files once before anything is emitted, resolving every
+// delegated member block. Cheap — the program has already parsed these trees,
+// and it is a small fraction of the corpus — and it is what makes the two
+// answers that depend on a delegation independent of file order.
+function collectDelegatedClaims(
+  checker: ts.TypeChecker,
+  sources: readonly ts.SourceFile[],
+) {
+  const claimed = new Set<string>()
+  const unresolved: UnresolvedBlock[] = []
+  for (const sourceFile of sources) {
+    if (
+      /\.test\.tsx?$/.test(sourceFile.fileName) ||
+      !containsTag(sourceFile.getFullText(), 'stateModel')
+    ) {
+      continue
+    }
+    const walk = (node: ts.Node) => {
+      const delegated = delegatedBlockAt(checker, node)
+      if (delegated) {
+        for (const prop of delegated.obj.properties) {
+          claimed.add(memberKey(prop))
+        }
+      } else {
+        const bad = unresolvedDelegation(checker, node)
+        if (bad) {
+          unresolved.push(bad)
+        }
+      }
+      ts.forEachChild(node, walk)
+    }
+    ts.forEachChild(sourceFile, walk)
+  }
+  return { claimed, unresolved }
+}
+
+function assertNoUnresolvedDelegations(blocks: UnresolvedBlock[]) {
+  if (blocks.length) {
+    throw new Error(
+      `${blocks.length} MST member block(s) name a declaration this generator cannot resolve to an object literal, so every member they declare would be dropped from the model page with no warning. Point the call at a directly-named callback (\`.views(sharedViews)\` where \`sharedViews\` is a \`const\`/\`function\` in scope), or write the block inline:\n${blocks
+        .map(b => `  ${repoRelative(b.filename)} .${b.kind}(${b.text})`)
+        .join('\n')}`,
+    )
+  }
+}
+
+// Emit one delegated block's members as if they had been written inline in the
+// model file. `filename` is the MODEL's, which is the whole mechanism: that is
+// the key `accumulateModel` buckets by, and the bucket the #stateModel header
+// sits on. Called at the point the walk reaches the argument, so the members
+// land in chain position — a model page's tables are in source order, and a
+// block hoisted to the front of one reads as a different model.
+function emitDelegatedMembers(
+  checker: ts.TypeChecker,
+  { kind, obj }: DelegatedBlock,
+  modelFile: string,
+  cb: (obj: ExtractedNode) => void,
+) {
+  // A block delegated to from inside the model's own file is already bucketed
+  // to the right page by whichever pass sees it — but only the TAG pass sees
+  // it, since `enclosingMemberBlock` cannot climb from a standalone `const
+  // localViews = () => ({...})` to a chain call. So a tagged member here would
+  // be emitted twice and an untagged one not at all; take exactly the second.
+  const sameFile = obj.getSourceFile().fileName === modelFile
+  for (const prop of obj.properties) {
+    const comment = getOwnJSDocText(prop)
+    const tagged = comment
+      ? MEMBER_TAGS.filter(t => containsTag(comment, t))
+      : []
+    if (sameFile && tagged.length) {
+      continue
+    }
+    const structural = memberType(prop, kind)
+    const types: TagType[] = tagged.length
+      ? [...tagged]
+      : structural
+        ? [structural]
+        : []
+    const { name, signature, declId } = describeSymbol(checker, prop)
+    if (
+      !types.length ||
+      !name ||
+      (kind === 'actions' && LIFECYCLE_HOOKS.has(name))
+    ) {
+      continue
+    }
+    for (const type of types) {
+      cb({
+        type,
+        name,
+        comment,
+        signature,
+        node: prop.getFullText(),
+        filename: modelFile,
+        selfDeclId: declId,
+      })
+    }
+  }
+}
+
+// Identity of one member node, independent of which model claimed it — a shared
+// block reached by two models is claimed by both and emitted onto both pages.
+function memberKey(node: ts.Node) {
+  return `${node.getSourceFile().fileName}:${node.pos}`
 }
 
 // The MemberBlock whose members object directly contains `node`, or undefined.

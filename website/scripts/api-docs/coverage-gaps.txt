@@ -43,6 +43,31 @@ TimeTraveller
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
+# member tags in a file that documents no #stateModel (22)
+# fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts charactersPerRow
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts intronBp
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts setIntronBp
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts setShowCoordinates
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts setUpDownBp
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts setUpperCaseCDS
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts showCoordinates
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts showCoordinatesSetting
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts upDownBp
+packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts upperCaseCDS
+plugins/grid-bookmark/src/index.ts activateBookmarkWidget
+plugins/grid-bookmark/src/index.ts activateBookmarkWidget
+plugins/grid-bookmark/src/index.ts bookmarkCurrentRegion
+plugins/grid-bookmark/src/index.ts highlightMenuItems
+plugins/grid-bookmark/src/index.ts menuItems
+plugins/grid-bookmark/src/index.ts menuItems
+plugins/grid-bookmark/src/index.ts navigateNewestBookmark
+plugins/grid-bookmark/src/index.ts rubberBandMenuItems
+plugins/linear-comparative-view/src/SyntenyFeatureDetail/index.ts level
+plugins/linear-comparative-view/src/SyntenyFeatureDetail/index.ts type
+plugins/linear-genome-view/src/LinearGenomeView/lazyChromeComponents.tsx suspend
+products/jbrowse-react-linear-genome-view/src/createLinearGenomeView.ts whenReady
+
 # baseConfiguration references that resolved to no documented #config (0)
 # fix: document the base with #config, or accept that the page shows raw code
 

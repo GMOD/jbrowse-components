@@ -91,7 +91,7 @@ async function main() {
   // enum tables first: the config generator resolves `[...NAME]` spreads in
   // stringEnum models against this while rendering slots
   buildEnumConstantIndex(docProgram.sources)
-  const { blindSpots } = extractWithComment(
+  const { blindSpots, orphanMembers } = extractWithComment(
     docProgram,
     obj => {
       accumulateConfig(configs, obj)
@@ -188,6 +188,16 @@ async function main() {
       title: 'members the structural pass cannot see',
       fix: 'add #getter/#method/#action to the local declaration the shorthand returns',
       names: blindSpots,
+    },
+    {
+      title: 'member tags in a file that documents no #stateModel',
+      // The counterpart of the delegated-block follow: a member tag is only
+      // rendered by the page its file's #stateModel header owns, so a tagged
+      // member in a file with no header renders nowhere and says nothing. A
+      // block a model reaches through `.views(sharedViews)` is claimed by that
+      // model and does not appear here.
+      fix: 'give the file a #stateModel, reach the block from one via .views(name), or drop the tags',
+      names: orphanMembers,
     },
     {
       title:
