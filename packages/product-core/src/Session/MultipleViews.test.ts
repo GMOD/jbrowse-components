@@ -94,8 +94,8 @@ class FakeViewsPlugin extends Plugin {
     // that reference is the thing worth pinning down.
     //
     // The autorun is load-bearing, not decoration: a widget's model outlives
-    // the drawer panel, so it is the model's own reactions -- BaseFeatureWidget
-    // registers one that reads `track` -- that go on reading a reference the
+    // the drawer panel, so it is the model's own reactions — BaseFeatureWidget
+    // registers one that reads `track` — that go on reading a reference the
     // view took with it, and they report to `onReactionError`, not to a caller.
     pluginManager.addWidgetType(
       () =>
@@ -321,11 +321,10 @@ test('a hidden widget referencing the view is emptied too', () => {
 })
 
 // Where that throw actually landed, and why the bug reads as "close a view,
-// then close another one, and it breaks". A widget the first removal left
-// behind is still active, and `takeOut` reads the view of EVERY active widget
-// to decide which to hide — so the second removal reads the dangling one,
-// throws inside the action, and leaves its own view in the session. Hiding the
-// widget at the first removal is what stops the cascade.
+// then close another one, and it breaks". `takeOut` reads the references of
+// EVERY widget to decide which to empty, so one the first removal left dangling
+// throws inside the action of the second, which then leaves its own view in the
+// session. Emptying at the first removal is what stops the cascade.
 test('removing a second view still works after one held a sub-view widget', () => {
   const { session, container } = sessionWithSubViewWidget()
   const other = session.addView('FakeLinearView', {})
