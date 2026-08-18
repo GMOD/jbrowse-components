@@ -486,29 +486,43 @@ Some of the largest wins are decisions about the files, not about the code.
 
 ## What is still slow
 
+Each of these is owned by the reference doc that measured it, and that doc is
+where the next attempt starts.
+
 - **Interaction is main-thread React re-render bound**, and the residual after
   the ruler fix is the rest of the components that read `bpPerPx` / `offsetPx`
   each frame. Closing it needs a React-render-level measurement, not a CPU flame
-  graph.
+  graph
+  ([INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md)).
 - **The coarse blocks a view works against advance about every ~500 ms during a
   gesture**, and each advance invalidates a per-track computed chain that
   repaints every open canvas on one frame. Counted, the recompute is warranted —
   a new coarse window covers different data, so the stats genuinely change — so
-  what is left is staggering it or making the repaint cheaper.
+  what is left is staggering it or making the repaint cheaper
+  ([INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md),
+  and the suppression direction is closed in
+  [REJECTED_IDEAS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/REJECTED_IDEAS.md)).
 - **One track's parse is single-threaded.** Worker assignment is sticky per
   adapter, which is what makes the inflate pool worth having and is also a
   ceiling.
 - **A hover over an all-vs-all comparison** costs what the picking table says,
-  and the index cannot fix it.
+  and the index cannot fix it
+  ([SYNTENY_PICKING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_PICKING.md)).
 - **A dense whole-genome synteny view is bound by the number of alignments**,
   and only a file that already carries binned alignments reaches the dominant
-  two-thirds of that cost.
+  two-thirds of that cost
+  ([SYNTENY_LOD.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_LOD.md)).
 - **Dropping small mismatches** would cut the MAF worker's largest remaining
   emission. It trades fidelity for speed, so it is held back deliberately while
-  free performance remains.
+  free performance remains
+  ([MAF_WORKER_PIPELINE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_WORKER_PIPELINE.md)).
 
+One of these is also an architectural limit rather than a slow path: the sticky
+worker assignment has a retire condition, and
 [ARCHITECTURAL_LIMITS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/ARCHITECTURAL_LIMITS.md)
-is the live register of these, each with the condition that would retire it.
+carries it beside the GPU and scoping ceilings [](/docs/developer_guides/memory)
+sends you to. The rest are measured costs of the current design with nothing yet
+proposed to retire them, which is why they are on this page instead.
 
 ## Reproducing any of this
 
@@ -527,6 +541,13 @@ with the bogus figure it actually reported. The four that recur:
   forever.
 - **A ratio survives a loaded machine; a millisecond does not.** Absolute
   figures taken while the box is descheduling are not properties of the code.
+
+Taking a first measurement at all is a different problem from not faking one,
+and
+[PERF_INSTRUMENTATION.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PERF_INSTRUMENTATION.md)
+carries the patterns for the frame clock — what to instrument for a render or a
+scroll that feels slow, validated against a real jank report rather than
+invented for the doc.
 
 The parser libraries each keep their own equivalent of this page, and the fetch
 half of the path is theirs. Each ends with a "what the consumer has to do"
