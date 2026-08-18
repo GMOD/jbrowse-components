@@ -287,7 +287,9 @@ toolkit, so the package's no-Material-UI guarantee holds.
 Takes a single element child and clones it rather than wrapping it: the controls
 that want a tooltip are absolutely positioned inside a legend or sit in a flex
 row, where an extra `<span>` moves them. The child keeps its own handlers —
-these compose on top of them.
+these compose on top of them. This is the same trigger pattern MUI's own
+`Tooltip` uses, which is what the rest of JBrowse's chrome is built on; the
+toolkit is what differs here, not the shape.
 
 ```tsx
 <Tooltip title="Hide legend">
