@@ -26,11 +26,31 @@ admin config" on the far side, so it shows an edited badge, offers Reset, and
 masks every later admin change to that track.
 
 The oracle is the base as it was at session creation, which nothing persists.
-Cheapest shape that would work: record a per-track digest of the pristine config
-at `fetchConfig` time (a hash per track, tens of KB for a 1000-track hub) and
-ship a delta only for a track whose digest no longer matches. Tracks saved before
-that exists have no digest, so the fallback is today's behaviour, which is what
-makes it addable without a migration.
+The cheapest shape that would work: digest each track of the **hydrated** config
+once, right after the root model is built from a fetched hub, and store the map
+in a desktop-only config slot; at export, ship a delta only where the digest no
+longer matches. Digest the hydrated snapshot rather than the raw JSON, or every
+track reads as edited — `stripDefault` drops an explicitly-authored default from
+the snapshot and the raw file still has it. A session saved before the slot
+exists has no digests and falls back to today's behaviour, so no migration.
+
+**Do not reach for that without deciding the question under it, which is not a
+bug so much as a choice about what a link means.** Both behaviours are wrong in
+one direction:
+
+| hub drift since the session was made | today (ship the delta) | with the oracle (ship nothing) |
+| --- | --- | --- |
+| the hub **fixed** a broken adapter url | recipient gets the broken url, with an edited badge and a Reset that repairs it | recipient gets the working url |
+| the hub **changed** a color the sender is looking at | recipient sees what the sender saw | recipient silently sees a different color from the one the sender sent them to look at |
+
+So the oracle buys the first row and sells the second, and the two failures are
+not equally visible: today's is announced on the track and one click from being
+undone, while the oracle's is silent on both ends. A smaller link and admin fixes
+flowing through are real gains; a "look at this" link quietly showing something
+else is a real loss. Take this on when someone decides which of those the export
+is for — and if the answer is the oracle, the badge is worth suppressing for a
+delta the sender never authored, since that is the visible half of what makes
+today's behaviour tolerable.
 
 ## 2. An assembly edit does not travel
 
