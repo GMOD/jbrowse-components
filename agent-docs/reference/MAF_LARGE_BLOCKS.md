@@ -5,7 +5,10 @@ description: Why a MAF-tabix track with very long alignment blocks is slow and c
 
 # MAF-tabix and megabase alignment blocks
 
-Design notes for unfinished work. What shipped is the sub-pixel decimation
+Design notes for unfinished work, and the work is **parked** —
+[ideas/maf-long-block-fetch-cost.md](../ideas/maf-long-block-fetch-cost.md)
+says why: no file this repo can reach has a block wide enough to be the reported
+problem, so the premise below is waiting on a `.bed.gz` from a reporting user. What shipped is the sub-pixel decimation
 (commit `perf(maf): decimate base cells once they go sub-pixel`); that fixed
 **render** cost at zoom-out and nothing about **fetch** cost. This document is
 the fetch half.

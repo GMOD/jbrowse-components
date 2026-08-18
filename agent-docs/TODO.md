@@ -10,7 +10,7 @@ entries actually disagree on. Roughly two fifths are ordinary build work; a
 quarter carry a design that survived a rejected alternative and needs following
 rather than re-deriving; most of the rest open with an instruction to go measure
 something, because the premise or the cost attribution is not established and
-building first would be guessing. Three are blocked on a visual call that is not
+building first would be guessing. Five are blocked on a visual call that is not
 the implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
@@ -40,14 +40,12 @@ before anyone noticed.
 | [Midnight primary is invisible on dark stock](#midnight-primary-is-invisible-on-the-dark-stock-ground) | palette, theme | pick one of three; never re-tint a single component |
 | [The interbase stack overruns its half-band](#the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint) | alignments | a visual call; the overflow is measured, no fix is chosen |
 | [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
-| [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
 | [Contract checks are stripped in production](#the-display-contract-checks-are-stripped-in-production) | limits, plugins | the in-tree half is gated; decide the out-of-tree channel |
-| [The retry check calls HiC's Retry dead](#the-retry-check-calls-hics-retry-dead-and-it-isnt) | hic, limits | reported in tree today; decide whose contract bends |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | delete half done; the implement half goes in `RpcHandles` |
 | [Brand the out-of-request refNames](#brand-the-out-of-request-refnames) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
 | [Give `session.jbrowse` a real type](#give-sessionjbrowse-a-real-type) | core types, MST | pick one interface or two BEFORE touching any of the 36 sites |
@@ -60,12 +58,10 @@ before anyone noticed.
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
 | [Pangenome graph view queue](#pangenome-graph-view-the-open-queue) | pangenome | three items unblock the rest; take the LGV axis first |
 | [Collapse trivial bubbles in a file-loaded graph](#coarsen-a-graph-loaded-as-a-file-collapse-trivial-bubbles) | pangenome | designed; path lanes are the open question |
-| [Reads on the derivative allele](#reads-on-the-reconstructed-derivative-allele) | cancer SV | two open halves; the middle one is already built |
 | [PanSN prefixes in the add-track form](#offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form) | comparative | the error half shipped; this is the discovery half |
 | [Synteny clicked outline in tiled mode](#the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode) | synteny | get the visual call — hull silhouette or per-tile |
 | [Observer reactions leak from discarded renders](#destroying-an-mst-tree-that-something-still-observes) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
-| [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
@@ -74,7 +70,6 @@ before anyone noticed.
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [The SV inspector rebuilds its chord track per filter](#the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter) | SV inspector | time it on a callset in the thousands, not the 44-row table |
-| [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 | [The comparative displays sit behind neither bring-your-own seam](#the-comparative-displays-sit-behind-neither-bring-your-own-seam) | synteny, dotplot, embedded | fetch status done; tooltip and context menu left, and they need shapes of their own |
 | [Sweep the unused exports, or close the question](#sweep-the-unused-exports-with-a-real-tool-or-close-the-question) | tooling, CI | configure knip per package; a grep returns 623 names and almost none are dead |
@@ -351,19 +346,6 @@ capture on every backend**, which is the property that was violated. Re-run
 `browser-tests/probe-webgpu-coverage.ts` afterwards. Widening the gate to webgpu
 is blocked only by this.
 
-### Widen `CI_GATE_SUITES`
-
-Add `Alignments Track` and `Alignments Color Schemes` first — tight drift, clean
-3/3 — and **say in the commit that this is safe only because CI runs
-`--skip-webgpu`**, or the next person widening to webgpu gets eight failures and
-no context. Hold `Long Reads and Inversions`: it would buy four pairs whose
-passing verdict is a 5–17% divergence the gate is configured to ignore.
-
-Then the local deterministic suites never measured under swiftshader — arcs,
-workspaces, redraw, cursor-guides, svg-export, custom-url, variant-force-load.
-Arcs and workspaces carry overrides tuned on a real GPU, so **measure before
-adding**; that is the whole procedure, and it is a measurement, not an edit.
-
 ### Attribute the browser-test TIMEOUT failure mode
 
 The other failure mode next to blank captures: a display never reports `-done`
@@ -463,31 +445,6 @@ Whether it is worth a session flag is the whole item, and the question is
 A `console.error` surviving into a production build reaches nobody either; the
 version worth building is one a plugin author would see, which means a session
 notification behind a developer flag rather than an unstripped `console.error`.
-
-### The retry check calls HiC's Retry dead, and it isn't
-
-Turned up by the gate above on its first full run.
-`plugins/hic/src/LinearHicDisplay/infoFetchFailure.test.ts` "retry re-reads the
-header" makes `makeRetryContractCheck` report `LinearHicDisplay: … Retry is a
-dead button`, and the app does the same whenever a user retries a HiC display
-whose `CoreGetInfo` failed.
-
-It is a false positive, and the shape is general: HiC's retry is **two-stage**.
-`reload()` bumps `reloadCounter`, which wakes both the info autorun (which
-re-reads the header) and the fetch autorun. The fetch autorun runs first and
-declines, because `effectiveResolution` is still undefined — the header it is
-waiting on lands a moment later, and `shouldFetch` read `effectiveResolution`
-inside the tracked body, so that arrival wakes it and the contacts load. The
-button works, and the test asserts that it does.
-
-The check's one exemption is `loadingSuppressed`, which is wrong here: HiC does
-want the loading scrim while the header is re-read. So the decision is whose
-contract bends. A `reload()` that answers the retry through a *prerequisite*
-fetch in another autorun is a legitimate shape the check has no name for, and
-giving it one — an opt-out passed to `installGlobalFetchAutorun` next to
-`shouldFetch`, so the display says it rather than the check guessing — is the
-candidate fix. Until then that test takes the report and asserts on it, so the
-day HiC's behaviour changes, something says so.
 
 ### Delete or implement the RPC `timeout` option
 
@@ -1059,119 +1016,6 @@ junctions and the mean linear run is 2.8 segments, so RDP tops out at 59.5% and
 only grid snapping reaches 99%. That is a layout-space simplification for an
 overview, not something that makes one 20-node window legible.
 
-### Reads on the reconstructed derivative allele
-
-Came out of the screenshot review on `cancer_sv/derivative_autogenerated`, which
-asked whether the reconstruction could load the reads across its loci and whether
-a wasm minimap2 could realign them to the derived contig.
-
-Three separate things, cheapest first. **The middle one is built** — see
-[reference/SV_MULTIHOP.md](reference/SV_MULTIHOP.md), "Reads on the allele"; the other
-two are open.
-
-**Reads on the reference panel: already possible, off on purpose.**
-`refPanelTrackIds` (`LinearDerivativeVsRef.tsx`) carries every open track onto
-the reference panel except `AlignmentsTrack`, because that panel merges every
-locus the path touches into one window and a pileup there refetches the reads
-already on screen in the launching view. A user can add the track from the track
-selector in the launched view. If the default is ever revisited, it's that filter.
-
-Now weaker than it was: the derivative panel carries the reads already, in
-derivative coordinates, so what the reference panel would add is the same reads
-in the frame that does NOT show whether they agree with the allele.
-
-**minimap2 in wasm: needs bases the feature deliberately does not build.** The
-temporary assembly's `FromConfigSequenceAdapter` carries `seq: ''` — "the path is
-a structure, not a consensus" — so there is nothing to align against. Getting
-bases means either concatenating each segment's reference sequence (revcomp for
-inverted segments; available in-app from the sequence adapter, but that is a
-*reference-derived* contig, not the sample's) or building a read consensus, which
-is what `scripts/sv_multihop.py derive` already does offline with samtools and
-minimap2. wasm in the browser is not itself exotic here — `@gmod/bgzf-filehandle`
-ships a 29 KB inflate wasm that every BAM/VCF read goes through — but a minimap2
-build is megabytes, so it belongs in an external plugin rather than in core for
-one menu item.
-
-### What is left of the row-display family, and the one part not worth sharing
-
-The four row displays — `LinearMafDisplay`, `MultiSampleVariantBaseModel` (two
-displays), `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay` — all
-compose `TreeSidebarMixin`, which is now the row in the cross-cutting table
-naming them. Landed 2026-08-07: the declarative clustering trigger
-(`runClustering` / `clusterRegion` and their setters) moved onto that mixin, and
-the three `getXxxClusterAutorun.ts` wrapper modules are gone —
-`setupRunClusteringAutorun` resolves `rpcManager` / `sessionId` itself and each
-display passes a `run` callback that code-splits its own RPC module.
-
-Also landed 2026-08-07: **`sources` is a resolved array on all four**. maf and
-variants returned `T[] | undefined`; every consumer collapsed the absent case
-immediately (`?.length`, `?? []`, `?? 0`) — about twenty defensive reads and no
-decision behind any of them, which is why `TreeSidebarModel.sources` had to be
-optional. Two maf consumers *were* reading the tri-state, and both were asking
-"has the species list arrived", so that got its own name (`sourcesKnown`, over
-`sourcesVolatile.length`). The distinction it preserves is real and has a
-regression test: an empty `sources` arrives both from "no fetch yet" and from a
-fetch that found no rows, and the render callback's first-paint gate must open
-for the second (`emptyRegionLoading.test.ts`). The load-bearing `undefined`
-stays where it always was, on `sourcesVolatile` / `sourcesBase` — `sampleFilter`
-and `fetchNeeded` read those, and the `undefined` → list transition is what
-wakes the fetch autorun (ARCHITECTURE.md §"The global-fetch trigger list").
-
-Landed 2026-08-17: **the three tree toggles moved onto the mixin.** `showTree` /
-`showBranchLength` / `showRowLabels` and their setters were four hand-written
-`getConf` / `setConf` copies while `packages/tree-sidebar`'s own code read them
-— `treeSidebarGeometry` reads `showTree`, `treeMenuItems` all three plus
-`setShowTree`, `computeClusterHierarchy` takes `showBranchLength` — so the mixin
-depended on members it did not declare. That is the shape the config half was in
-before `treeSidebarConfigSchemaFields`, and that set had already drifted, three
-displays spelling the labels toggle `showRowLabels` and the fourth
-`showSidebarLabels`. Slots and accessors now travel together, matching
-`heightModeConfigSchemaFields` + `HeightModeMixin`, and
-`TreeSidebarMixin.test.ts` pins each accessor to its own slot: inverting
-`showBranchLength` used to leave all 3,698 tests across the four composing
-plugins green.
-
-Still per display:
-
-- **`hierarchy`**, four copies of one `computeClusterHierarchy(...)` call
-  differing only in which expression supplies the content height (and
-  multi-wiggle's `isOverlay` short-circuit). **Re-priced after the toggles
-  landed, and the answer is still no** — for a better reason than the original
-  "three hooks it can't type", which the toggles did dissolve: the mixin now
-  owns `root` / `treeAreaWidth` / `showBranchLength` and `sources` is already
-  its contract, so it really is down to one hook.
-
-  That one hook is the problem. It is `rowsContentHeight`, and the comment
-  standing over that parameter in `clusterUtils.ts` exists to refuse exactly
-  this move: pass the viewport a display's rows scroll inside instead of the
-  height they add up to and the dendrogram still draws, still looks plausible,
-  and names the wrong rows. Today each call site spells the product out under
-  that comment. Behind a `treeContentHeight` hook the author implementing it
-  sees the hook's name and not the warning — so the refactor would relocate the
-  one parameter in this package named to resist relocation, to save four lines.
-
-**The row-height ladder is deliberately not on this list, and the reasons are
-structural rather than stylistic** — worth stating, because two of the three
-differences look like drift and are not:
-
-- Canvas caps `effectiveRowHeight` at `maxCanvasHeight / nrow`. It sizes its
-  canvas to its content, so nothing downstream bounds the stack.
-- Multi-wiggle has no `rowHeight` sentinel at all (always fit) and branches on
-  `isOverlay`, which collapses every source onto one plot.
-- maf and canvas seed the `height` slot in `setFitToHeight` and variants does
-  not. **This is the one that looks like a bug and isn't:** both of those
-  *override* the `height` getter to a content-derived value, so `self.height` in
-  fixed mode is not the slot and entering fit mode without re-seeding jumps.
-  Variants leaves `height` to `TrackHeightMixin`, so the same line would write
-  the slot back to itself. Check which `height` a display has before copying
-  either one.
-
-What is shared is the part with an actual rule: `resolveRowHeight` (the `0`
-sentinel plus the non-positive floor) and the menu row and dialog. A mixin over
-the rest is two hooks plus two override points wrapping about four lines of
-arithmetic. See
-[reference/ROW_HEIGHT_AND_FIT.md](reference/ROW_HEIGHT_AND_FIT.md).
-
 ### Offer a file's PanSN prefixes in the all-vs-all add-track form
 
 An all-vs-all track whose JBrowse assembly name is not the file's PanSN sample
@@ -1684,15 +1528,6 @@ Canvas2D. Canvas2D is ~2x worse for that group, so it cannot simply be routed
 too — and the analytics `software-rendering` bit says how much of the no-WebGPU
 population has already been taken out of it. Ask that before spending on context
 pooling or track-level mount/release.
-
-### MAF fetch cost on long blocks
-
-Design done, nothing built, premise unconfirmed — see
-[reference/MAF_LARGE_BLOCKS.md](reference/MAF_LARGE_BLOCKS.md). Run the one-line block-size
-check before building any of it. The byte-gate half is closed: the gate no longer
-scales an estimate by span, it re-measures at the viewport it is judging, so a
-cost quantized by feature is measured rather than modelled
-(REGION_TOO_LARGE.md § "Measurement follows the viewport").
 
 ### Produce and host the HPRC summary tier
 
