@@ -27,7 +27,13 @@
 //
 // Run: `pnpm check-config-cli` (needs products/jbrowse-cli built).
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -52,6 +58,17 @@ import { docFiles, reportProblems } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
 const cli = join(repoRoot, 'products', 'jbrowse-cli', 'dist', 'bin.js')
+
+// Every block below shells out to that bin, so an unbuilt CLI fails all of them
+// identically — its own fixtures included. That reads as a corpus-wide docs
+// break (127 of them in a fresh worktree) when it means one build is missing, so
+// say which it is before running anything.
+if (!existsSync(cli)) {
+  console.error(
+    `${cli} not found — run \`pnpm build\` in products/jbrowse-cli first.`,
+  )
+  process.exit(1)
+}
 
 interface Block {
   file: string
