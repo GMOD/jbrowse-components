@@ -72,6 +72,7 @@ export const indexableAdapters: Record<
   Gff3Adapter: { locationKey: 'gffLocation', format: 'gff3' },
   Gff3TabixAdapter: { locationKey: 'gffGzLocation', format: 'gff3' },
   GtfAdapter: { locationKey: 'gtfLocation', format: 'gtf' },
+  GtfTabixAdapter: { locationKey: 'gtfGzLocation', format: 'gtf' },
   VcfAdapter: { locationKey: 'vcfLocation', format: 'vcf' },
   VcfTabixAdapter: { locationKey: 'vcfGzLocation', format: 'vcf' },
 }

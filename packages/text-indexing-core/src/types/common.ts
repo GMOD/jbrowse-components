@@ -176,8 +176,13 @@ export function makeLocation(
 }
 
 // ordered most-specific-first so e.g. `.vcf.gz` matches before `.vcf`.
-// GtfAdapter reads plain and gzipped GTF through the same gtfLocation slot, so
-// there is no separate tabix variant for it
+//
+// `.gtf.gz` maps to GtfAdapter rather than GtfTabixAdapter on purpose: this
+// guesser only invents a throwaway track for `text-index --file`, which streams
+// the file start to finish and never opens the .tbi, and GtfAdapter's
+// gtfLocation takes a gzipped path (the reader gunzips on the suffix). A track
+// in a config.json is the other case — `jbrowse add-track` gives a bgzipped GTF
+// a GtfTabixAdapter, which is indexable too, from its own gtfGzLocation.
 const adapterGuesses = [
   { regex: /\.vcf\.b?gz$/i, type: 'VcfTabixAdapter' },
   { regex: /\.gff3?\.b?gz$/i, type: 'Gff3TabixAdapter' },

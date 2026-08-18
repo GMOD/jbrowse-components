@@ -2,9 +2,11 @@
  * @jest-environment node
  */
 
+import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { gzipSync } from 'node:zlib'
 
 import { defaultAttributesToIndex } from '../util.ts'
 import { indexGtf } from './gtfAdapter.ts'
@@ -125,5 +127,29 @@ describe('indexGtf', () => {
       'chr2\t.\texon\t100\t200\t.\t+\t.\tgene_id "dup";',
     ])
     expect(results.map(r => loc(r))).toEqual(['chr1:1..9', 'chr2:100..200'])
+  })
+
+  // What a GtfTabixAdapter track hands over: the reader gunzips on the suffix,
+  // so the same walk has to reach the same entries from a compressed file
+  test('a gzipped GTF indexes to the same entries as the plain one', async () => {
+    const rows = [
+      'ctgA\t.\texon\t1050\t1500\t.\t+\t.\tgene_id "EDEN"; gene_name "EDEN";',
+      'ctgA\t.\tCDS\t3000\t3902\t.\t+\t0\tgene_id "EDEN"; gene_name "EDEN";',
+    ]
+    const file = path.join(tmpDir, 'test.gtf.gz')
+    fs.writeFileSync(file, gzipSync(Buffer.from([...rows, ''].join('\n'))))
+    const results = await Array.fromAsync(
+      indexGtf({
+        config: { trackId: 'gtf-tabix-track' },
+        attributesToIndex: defaultAttributesToIndex,
+        inLocation: file,
+        outDir: tmpDir,
+        onStart: () => {},
+        onUpdate: () => {},
+      }),
+    )
+    expect(results.map(r => [words(r).join(' '), loc(r)])).toEqual([
+      ['EDEN', 'ctgA:1050..3902'],
+    ])
   })
 })

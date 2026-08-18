@@ -8,7 +8,7 @@ import http from 'node:http'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 
-import { isSupportedIndexingAdapter } from '../util.ts'
+import { indexableAdapters, isSupportedIndexingAdapter } from '../util.ts'
 import {
   getLocalOrRemoteStream,
   guessAdapterFromFileName,
@@ -90,8 +90,10 @@ describe('utils for text indexing', () => {
     }).toThrow(`Unsupported file type ${unsupported}`)
   })
   it('guesses GtfAdapter for plain and gzipped gtf', () => {
-    // GtfAdapter unzips through the same gtfLocation slot, so both variants
-    // land on one adapter type rather than a tabix sibling
+    // Both variants land on GtfAdapter here because this guesser serves
+    // `text-index --file`, which streams the whole file and never opens a .tbi,
+    // and gtfLocation unzips on the suffix. GtfTabixAdapter is what a track in a
+    // config.json gets, and indexableAdapters covers it — see the test below.
     expect(guessAdapterFromFileName('genes.gtf').adapter).toMatchObject({
       type: 'GtfAdapter',
       gtfLocation: { locationType: 'LocalPathLocation' },
@@ -103,6 +105,26 @@ describe('utils for text indexing', () => {
     expect(() => {
       guessAdapterFromFileName('genes.gt')
     }).toThrow('Unsupported file type')
+  })
+})
+
+// `jbrowse add-track` writes a tabix adapter for every bgzipped indexable
+// format, and the table is what decides whether `jbrowse text-index` then sees
+// that track. GtfTabixAdapter was missing from it, so a bgzipped GTF — which is
+// what `jbrowse sort-gff genes.gtf | bgzip` and add-track produce together — was
+// skipped in silence while the identical .gff.gz path indexed. Assert the pair
+// rather than the list, since the failure was an asymmetry between them.
+describe('indexableAdapters', () => {
+  it.each([
+    ['Gff3Adapter', 'Gff3TabixAdapter'],
+    ['GtfAdapter', 'GtfTabixAdapter'],
+    ['VcfAdapter', 'VcfTabixAdapter'],
+  ])('covers %s and its tabix sibling %s', (plain, tabix) => {
+    expect(indexableAdapters[plain]).toBeDefined()
+    expect(indexableAdapters[tabix]).toBeDefined()
+    expect(indexableAdapters[tabix]!.format).toBe(
+      indexableAdapters[plain]!.format,
+    )
   })
 })
 

@@ -1,6 +1,9 @@
 import { parseArgs } from 'node:util'
 
-import { defaultAttributesToIndex } from '@jbrowse/text-indexing-core'
+import {
+  defaultAttributesToIndex,
+  indexableAdapters,
+} from '@jbrowse/text-indexing-core'
 
 import { printHelp } from '../../utils.ts'
 import { aggregateIndex, indexFileList, perTrackIndex } from './index.ts'
@@ -96,8 +99,9 @@ export async function run(args?: string[]) {
     'indexing by setting "metadata": { "skipTextIndex": true } on the track. ' +
     'Such tracks are skipped even when indexing all tracks or a whole ' +
     'assembly, so you do not have to pass --excludeTracks on every run.\n\n' +
-    'Only tracks with an indexable adapter type (Gff3Adapter, ' +
-    'Gff3TabixAdapter, GtfAdapter, VcfAdapter, VcfTabixAdapter) are indexed; ' +
+    // read off the table rather than restated, because the hand-written version
+    // of this sentence outlived GtfTabixAdapter's absence from it
+    `Only tracks with an indexable adapter type (${Object.keys(indexableAdapters).sort().join(', ')}) are indexed; ` +
     'tracks with other adapter types are skipped automatically.\n\n' +
     'GTF has no Name/ID attributes, so the default --attributes also match ' +
     'their GTF spellings (gene_name, transcript_name, gene_id, transcript_id).'
