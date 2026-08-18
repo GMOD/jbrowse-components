@@ -249,10 +249,20 @@ const GENERATORS: Generator[] = [
     ],
   },
   {
-    // config_guides and user_guides are in the diff because gendocs also
-    // rewrites the marker blocks embedded in the hand-written guides
-    // (DISPLAY_TYPES, which needs the whole-repo DisplayType scan generate.ts
-    // does, FILE_TYPES, and PROMOTABLE_SLOTS in display_defaults.md).
+    // The whole of `website/docs` and `agent-docs`, not the generated
+    // directories alone, because gendocs also rewrites the marker blocks
+    // embedded in the hand-written guides (DISPLAY_TYPES, which needs the
+    // whole-repo DisplayType scan generate.ts does, FILE_TYPES, and
+    // PROMOTABLE_SLOTS in display_defaults.md).
+    //
+    // Anything gendocs can WRITE has to be listed here, and listing the
+    // generated directories only was both halves of that wrong.
+    // `DISPLAY_VIEW_TYPES` renders in `developer_guides/creating_display.md`
+    // and needs the program, so it is not one of markers.ts's either: a stale
+    // one passed `pnpm autogen --check` with the table in front of it naming a
+    // view type nothing registers. And because `restore()` only puts back what
+    // it diffed, that same --check REWROTE the file and left it rewritten —
+    // the tree-dirtying its own comment exists to prevent.
     //
     // api-docs/coverage-gaps.txt is the doc-coverage list (missing #example,
     // a type that fell back to the General category, ...). It rides this same
@@ -268,14 +278,15 @@ const GENERATORS: Generator[] = [
     name: 'config/model/api docs',
     argv: ['pnpm', 'gendocs'],
     diffPaths: [
-      'website/docs/config',
-      'website/docs/models',
-      'website/docs/api',
-      'website/docs/config_guides',
-      'website/docs/user_guides',
-      // the SPEC_KEYS blocks: what a session spec may set on each view type,
-      // rendered from the views' own declarations
-      'website/docs/urlparams.md',
+      // the generated pages, plus every hand-written guide a marker block
+      // landed in — including `urlparams.md`'s SPEC_KEYS blocks, what a session
+      // spec may set on each view type, rendered from the views' own
+      // declarations
+      'website/docs',
+      // the marker blocks in the architecture spec and the reference docs. The
+      // marker-tables entry above gates their content; this is what keeps a
+      // --check from leaving one rewritten.
+      'agent-docs',
       'website/scripts/api-docs/coverage-gaps.txt',
       'packages/*/README.md',
       'plugins/*/README.md',
