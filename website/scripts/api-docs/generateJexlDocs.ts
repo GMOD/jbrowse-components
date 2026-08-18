@@ -4,6 +4,7 @@ import {
   jsDocText,
   parsePipeTags,
   parseSourceFileSyntactic,
+  rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
 } from './util.ts'
 
@@ -26,6 +27,11 @@ import type { SourceCorpus } from './util.ts'
 //
 //   <!-- JEXL_CATALOG START -->
 //   <!-- JEXL_CATALOG END -->
+//
+// or pulls in one category, by the slug of its name:
+//
+//   <!-- JEXL_CATEGORY variant-functions START -->
+//   <!-- JEXL_CATEGORY variant-functions END -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 //
@@ -89,28 +95,59 @@ function collectFunctions(corpus: SourceCorpus, files: string[]) {
   return groups
 }
 
-function renderCategory(category: string, entries: Entry[]) {
+function renderCategory(entries: Entry[]) {
   const lines = entries
     .map(e =>
       e.result ? `jexl: ${e.example} // ${e.result}` : `jexl: ${e.example}`,
     )
     .join('\n')
-  return `**${category}**\n\n\`\`\`js\n${lines}\n\`\`\``
+  return `\`\`\`js\n${lines}\n\`\`\``
 }
 
 function renderCatalog(groups: Map<string, Entry[]>) {
   return [...groups]
-    .map(([category, entries]) => renderCategory(category, entries))
+    .map(
+      ([category, entries]) => `**${category}**\n\n${renderCategory(entries)}`,
+    )
     .join('\n\n')
+}
+
+// The marker names a category by slug, since a marker's group cannot carry a
+// space: `<!-- JEXL_CATEGORY variant-functions START -->`.
+function slug(category: string) {
+  return category.toLowerCase().replaceAll(/\s+/g, '-')
 }
 
 // In `check` mode, report which docs have a stale catalog instead of rewriting —
 // used by CI to fail when a jexl function changed but the docs were not
 // regenerated.
+//
+// Two markers over one scan. `JEXL_CATALOG` is the whole catalog, for the jexl
+// guide. `JEXL_CATEGORY <slug>` is one category, for a guide that documents the
+// plugin those functions came with — variant_track.md listed the variants
+// plugin's helpers by hand, and had six of the seven (`alleleLength` landed
+// after the table was written, which is the whole failure mode).
+//
+// A category with no per-category block is normal, unlike a `#color` group:
+// every category already renders in the catalog, so a page pulling one in
+// separately is an extra, not the only home.
 export function writeJexlDocs(corpus: SourceCorpus, { check = false } = {}) {
-  return rewriteMarkerBlock(
-    'JEXL_CATALOG',
-    renderCatalog(collectFunctions(corpus, taggedSources(corpus))),
-    { check },
-  )
+  const groups = collectFunctions(corpus, taggedSources(corpus))
+  const bySlug = new Map([...groups].map(([c, e]) => [slug(c), e]))
+  return [
+    ...rewriteMarkerBlock('JEXL_CATALOG', renderCatalog(groups), { check }),
+    ...rewriteGroupedMarkerBlocks(
+      'JEXL_CATEGORY',
+      (group, file) => {
+        const entries = bySlug.get(group)
+        if (!entries) {
+          throw new Error(
+            `${file}: JEXL_CATEGORY "${group}" is not a #jexlFunction category — the tagged ones are ${[...bySlug.keys()].join(', ')}`,
+          )
+        }
+        return renderCategory(entries)
+      },
+      { check },
+    ).stale,
+  ]
 }

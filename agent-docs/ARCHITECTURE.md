@@ -393,6 +393,7 @@ grep for in `website/scripts` to find the generator behind a block, and
 | `GRAPH_PLUGIN_CONFIG` | `website/docs/tutorials/pangenome_cactus.md`<br />`website/docs/tutorials/pangenome_ecoli.md`<br />`website/docs/tutorials/pangenome_hprc.md`<br />`website/docs/user_guides/graph_genome_view.md` |
 | `HELPER_PACKAGES` | `website/docs/developer_guides/imports_and_reexports.md` |
 | `JEXL_CATALOG` | `website/docs/config_guides/jexl.md` |
+| `JEXL_CATEGORY` | `website/docs/config_guides/variant_track.md` |
 | `LAUNCH_VIEW_POINTS` | `website/docs/developer_guides/extension_points.md` |
 | `MARKER_INDEX` | `agent-docs/ARCHITECTURE.md` |
 | `MENU_ACTIONS` | `website/docs/developer_guides/menus.md` |

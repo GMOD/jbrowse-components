@@ -72,14 +72,19 @@ more jexl color examples.
 The variants plugin registers several helper functions for use in a jexl `color`
 expression:
 
-| Function               | Returns                                                 |
-| ---------------------- | ------------------------------------------------------- |
-| `maf(feature)`         | minor allele frequency, computed from the genotypes     |
-| `missingness(feature)` | fraction of no-call genotypes                           |
-| `impact(feature)`      | `HIGH`/`MODERATE`/`LOW`/`MODIFIER` from ANN/CSQ         |
-| `consequence(feature)` | the most severe consequence term as a string            |
-| `impactColor(feature)` | the impact color the **Consequence impact** preset uses |
-| `svTypeColor(feature)` | the SV-type color the **SV type** preset uses           |
+<!-- JEXL_CATEGORY variant-functions START -->
+
+```js
+jexl: maf(feature) // minor allele frequency over the called alleles
+jexl: missingness(feature) // fraction of samples with no call
+jexl: impact(feature) // HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ
+jexl: consequence(feature) // e.g. missense_variant, from the same annotation
+jexl: impactColor(feature) // the color the "Color by consequence impact" menu item uses
+jexl: svTypeColor(feature) // the color "Color by SV type" uses
+jexl: alleleLength(feature) >= 50 // longest allele in bp, so an insertion is not measured by its reference span
+```
+
+<!-- JEXL_CATEGORY variant-functions END -->
 
 So a track can be colored by allele frequency without any preprocessing:
 
