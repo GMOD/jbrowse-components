@@ -98,17 +98,16 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
       })
     },
   )
-  const sequence = sequenceChunks
-    ? formatSeqFasta(
-        sequenceChunks.map(({ loc, seq }) => {
-          const revSeq = rev ? reverse(seq) : seq
-          return {
-            header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
-            seq: comp ? complement(revSeq) : revSeq,
-          }
-        }),
-      )
-    : ''
+  const entries =
+    sequenceChunks?.map(({ loc, seq }) => {
+      const revSeq = rev ? reverse(seq) : seq
+      return {
+        header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
+        seq: comp ? complement(revSeq) : revSeq,
+      }
+    }) ?? []
+  const sequence = formatSeqFasta(entries)
+  const plainSequence = entries.map(e => e.seq).join('\n')
   const sequenceTooLarge = sequence.length > MAX_DISPLAY_CHARS
   // What the textarea says instead of a sequence. `tooLargeToFetch` disables the
   // fetch, so without this branch it left an empty box with no loading state, no
@@ -138,6 +137,37 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
             message={statusProgressLabel(status) || 'Retrieving sequences'}
           />
         ) : null}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 8,
+            marginBottom: 4,
+          }}
+        >
+          <CopyToClipboardButton
+            value={plainSequence}
+            copiedLabel="Copied"
+            disabled={!plainSequence || sequenceTooLarge}
+            variant="contained"
+            color="primary"
+            size="small"
+            startIcon={<ContentCopyIcon />}
+          >
+            Copy plain text
+          </CopyToClipboardButton>
+          <CopyToClipboardButton
+            value={sequence}
+            copiedLabel="Copied"
+            disabled={!sequence || sequenceTooLarge}
+            variant="contained"
+            color="primary"
+            size="small"
+            startIcon={<ContentCopyIcon />}
+          >
+            Copy FASTA
+          </CopyToClipboardButton>
+        </div>
         <MonospaceTextField
           fullWidth
           readOnly
@@ -167,15 +197,6 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <CopyToClipboardButton
-          value={sequence}
-          copiedLabel="Copied"
-          disabled={!sequence || sequenceTooLarge}
-          color="primary"
-          startIcon={<ContentCopyIcon />}
-        >
-          Copy to clipboard
-        </CopyToClipboardButton>
         <Button
           variant="contained"
           onClick={async () => {
