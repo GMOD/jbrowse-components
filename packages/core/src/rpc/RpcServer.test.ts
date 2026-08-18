@@ -296,6 +296,33 @@ describe('rpcResult checks a hand-built transfer list under test', () => {
     expect(() => rpcResult({ first, second }, [backing])).not.toThrow()
   })
 
+  // `Object.entries` is blank on a Map, so a matrix keyed by sample name — what
+  // the wiggle score matrix and the variant genotype matrix return — read as an
+  // EMPTY payload, and the check failed in both directions at once.
+  test('accepts a Map-held row the list names', () => {
+    const row = new Float32Array(2)
+    const matrix = new Map([['HG002', row]])
+    // the wiggle matrix's list was exactly this and exactly right, and the
+    // check called it "not in the payload" — the one wording that sends the
+    // reader after a list bug that isn't there
+    expect(() => rpcResult(matrix, [row.buffer])).not.toThrow()
+  })
+
+  test('names a Map-held row the list forgot, by its key', () => {
+    const matrix = new Map([['HG002', new Float32Array(2)]])
+    expect(() => rpcResult(matrix, [])).toThrow(/HG002/)
+  })
+
+  test('reaches a Map nested under a field', () => {
+    const matrix = new Map([['HG002', new Float32Array(2)]])
+    expect(() => rpcResult({ rows: matrix }, [])).toThrow(/rows\.HG002/)
+  })
+
+  test('reaches a Set member, which has a position rather than a name', () => {
+    const members = new Set([new Float32Array(2)])
+    expect(() => rpcResult({ members }, [])).toThrow(/members\.<0>/)
+  })
+
   // A SharedArrayBuffer can only be cloned, so its absence from the list is the
   // right answer rather than an omission.
   test('does not ask for a SharedArrayBuffer', () => {
@@ -335,6 +362,19 @@ describe('rpcResultWithArrayBuffers', () => {
     const owned = new Uint32Array(2)
     const { transferables } = rpcResultWithArrayBuffers({ shared, owned })
     expect(transferables).toEqual([owned.buffer])
+  })
+
+  // The result IS the Map for both matrix RPCs, so the derivation has to start
+  // there rather than at a field holding one.
+  test('derives one transferable per row of a Map result', () => {
+    const a = new Float32Array(2)
+    const b = new Float32Array(2)
+    const matrix = new Map([
+      ['HG002', a],
+      ['HG003', b],
+    ])
+    const { transferables } = rpcResultWithArrayBuffers(matrix)
+    expect(transferables).toEqual([a.buffer, b.buffer])
   })
 
   // A packer that groups its arrays — `{ ...featureData, instanceData }` — was

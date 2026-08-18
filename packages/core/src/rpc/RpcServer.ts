@@ -1,6 +1,10 @@
 import { isRpcResult } from '../util/rpc.ts'
 import { markStopTokenStopped } from '../util/stopToken.ts'
-import { bufferPaths, explainTransferError } from './explainTransferError.ts'
+import {
+  bufferPaths,
+  containerEntries,
+  explainTransferError,
+} from './explainTransferError.ts'
 import { serializeError } from './serializeError/index.ts'
 
 import type { ErrorObject } from './serializeError/index.ts'
@@ -120,6 +124,11 @@ function detachedFieldName(view: ArrayBufferView, path: string) {
 // Walks one level into plain-object fields, because a packer that groups its
 // arrays (`{ ...featureData, instanceData }`) is otherwise back to maintaining
 // the nested half by hand — which is where the bug this guards against lived.
+//
+// A Map or Set counts as a container, so a matrix keyed by sample name — what
+// the wiggle score matrix and the variant genotype matrix return — derives its
+// list here rather than looping at the call site. Both had to, because
+// `Object.entries` is blank on either.
 export function rpcResultWithArrayBuffers<T extends object>(value: T) {
   // A Set because several fields can be views onto one allocation (subarrays of
   // a shared buffer), and postMessage rejects a transfer list with a duplicate
@@ -129,8 +138,7 @@ export function rpcResultWithArrayBuffers<T extends object>(value: T) {
   const detached: string[] = []
 
   function collect(obj: object, prefix: string, depth: number) {
-    for (const [key, field] of Object.entries(obj)) {
-      const path = prefix ? `${prefix}.${key}` : key
+    for (const [path, field] of containerEntries(obj, prefix)) {
       if (ArrayBuffer.isView(field)) {
         if (field.buffer instanceof ArrayBuffer) {
           const bad = detachedFieldName(field, path)

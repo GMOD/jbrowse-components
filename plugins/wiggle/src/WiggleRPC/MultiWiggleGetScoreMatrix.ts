@@ -1,5 +1,5 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { rpcResult } from '@jbrowse/core/util/librpc'
+import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import type { GetScoreMatrixArgs } from './types.ts'
@@ -26,10 +26,11 @@ export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRename
       args: { ...args, stopTokenCheck },
       pluginManager: this.pluginManager,
     })
-    const buffers: ArrayBuffer[] = []
-    for (const arr of matrix.values()) {
-      buffers.push(arr.buffer)
-    }
-    return rpcResult(matrix, buffers)
+    // derived, not the hand loop this replaced: that list was correct and
+    // `rpcResult`'s under-test check called every entry of it "not in the
+    // payload", because neither walk could see into a Map. Nothing here reached
+    // `execute` under test, so the report was waiting for the first caller who
+    // did.
+    return rpcResultWithArrayBuffers(matrix)
   }
 }

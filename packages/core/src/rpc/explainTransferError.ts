@@ -39,6 +39,42 @@ function bufferOf(node: unknown) {
 }
 
 /**
+ * What a container holds, as `[path, value]` — the one place that knows a Map
+ * and a Set carry payload the way an object's fields do.
+ *
+ * `Object.entries` yields `[]` for both, so a matrix keyed by sample name read
+ * as an EMPTY payload to every walk in this file. That is the shape
+ * `MultiWiggleGetScoreMatrix` and `MultiSampleVariantGetGenotypeMatrix` return,
+ * and it failed in both directions at once: the wiggle matrix's hand-built list
+ * is correct and `checkTransferList` reported every entry of it as "not in the
+ * payload" — the exact wording {@link bufferPaths} exists to avoid — while the
+ * variant matrix transfers nothing and no check could say so.
+ *
+ * A Map's key is worth printing (`rows.HG002` names the sample); a Set has no
+ * name for its members, so they get their position.
+ */
+export function* containerEntries(
+  obj: object,
+  prefix: string,
+): Generator<[string, unknown]> {
+  const join = (key: string) => (prefix ? `${prefix}.${key}` : key)
+  if (obj instanceof Map) {
+    for (const [key, value] of obj) {
+      yield [join(String(key)), value]
+    }
+  } else if (obj instanceof Set) {
+    let i = 0
+    for (const value of obj) {
+      yield [join(`<${i++}>`), value]
+    }
+  } else {
+    for (const [key, value] of Object.entries(obj)) {
+      yield [join(key), value]
+    }
+  }
+}
+
+/**
  * Every payload field each transferred buffer is reachable by.
  *
  * Several fields can name one buffer, so this collects all of them rather than
@@ -68,8 +104,7 @@ export function bufferPaths(value: unknown) {
       return
     }
     seen.add(node)
-    for (const [key, child] of Object.entries(node)) {
-      const path = prefix ? `${prefix}.${key}` : key
+    for (const [path, child] of containerEntries(node, prefix)) {
       const buffer = bufferOf(child)
       if (buffer) {
         paths.set(buffer, [...(paths.get(buffer) ?? []), path])

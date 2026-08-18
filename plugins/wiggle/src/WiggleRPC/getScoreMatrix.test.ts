@@ -2,7 +2,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 
+import { MultiWiggleGetScoreMatrix } from './MultiWiggleGetScoreMatrix.ts'
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
 import type { GetScoreMatrixArgs } from './types.ts'
@@ -215,5 +217,44 @@ describe('getScoreMatrix multi-source adapter', () => {
 
     expect(Array.from(rows.get('a')!)).toEqual([3, 3])
     expect(Array.from(rows.get('ghost')!)).toEqual([0, 0])
+  })
+})
+
+// The wrapping — the only line that assembles this method's transfer list — was
+// reached by nothing here, and it could not have passed: `rpcResult`'s
+// under-test check walks with `Object.entries`, blank on a Map, so it reported
+// the (correct) list as entries "not in the payload". The report was waiting for
+// the first caller who exercised `execute`.
+describe('MultiWiggleGetScoreMatrix.execute', () => {
+  it('transfers one buffer per row of the matrix', async () => {
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getMultiSourceFeatureArraysMulti: jest.fn().mockResolvedValue([
+        {
+          source: 'a',
+          raws: [
+            {
+              starts: new Int32Array([0]),
+              ends: new Int32Array([100]),
+              scores: new Float32Array([3]),
+              minScores: undefined,
+              maxScores: undefined,
+              count: 1,
+            },
+          ],
+        },
+      ]),
+    } as never)
+
+    const result = await new MultiWiggleGetScoreMatrix(pm).execute(
+      callArgs({
+        regions: [region('chr1', 0, 100)],
+        sources: ['a', 'b'],
+        bpPerPx: 50,
+      }),
+    )
+
+    const rows = unwrapRpcResult(result)
+    expect([...rows.keys()]).toEqual(['a', 'b'])
+    expect(result.transferables).toEqual([...rows.values()].map(r => r.buffer))
   })
 })
