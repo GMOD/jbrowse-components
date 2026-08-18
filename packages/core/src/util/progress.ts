@@ -326,6 +326,16 @@ export function statusProgressLabel(status: RpcStatus | undefined) {
  * transport, labelling each tick with `message`. Returns undefined when there's
  * no `statusCallback`, so the reader can skip its progress bookkeeping entirely.
  *
+ * That skip is not a saving, which is the opposite of what the shape suggests
+ * and of what four comments in this tree used to claim. Handed an `onProgress`,
+ * generic-filehandle2 streams the body into one pre-sized buffer; handed none it
+ * calls `res.bytes()` — and in a Chrome worker the streaming read is roughly
+ * 1.8x *faster* up to 10MB, giving that back only past ~25MB. So a progress bar
+ * on a whole-file load is free or better at the sizes most of them are, and
+ * withholding this reporter is about honoring a caller who asked for no
+ * reporting, never about speed. Numbers and the bench that retakes them:
+ * agent-docs/measurements/download-read-path.json.
+ *
  * `total` is optional because not every reader knows the size up front
  * (generic-filehandle2 omits it when the response has no Content-Length): with a
  * total we emit a determinate bar, without one we emit just the label so the UI
