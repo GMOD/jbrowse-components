@@ -26,7 +26,7 @@ export function resolveLocalRowIndices(
  * hit test runs per pointer frame and would otherwise rebuild `rowForLocal`
  * sixty times a second).
  */
-export interface DrawnFeatureContext {
+interface DrawnFeatureContext {
   rowForLocal: readonly (number | undefined)[]
   rowColorsByIndex: readonly (number | undefined)[]
   hiddenColors: ReadonlySet<number>

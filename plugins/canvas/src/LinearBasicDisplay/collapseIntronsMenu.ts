@@ -37,7 +37,7 @@ export function isGeneLikeType(type: string | undefined) {
 // this builder, so importing its inferred model type back here would be a
 // circular type reference. Same idiom, and same reason, as
 // `FeatureMenuSelf` in featureContextMenu.ts.
-export interface CollapseIntronsSelf extends IStateTreeNode {
+interface CollapseIntronsSelf extends IStateTreeNode {
   fetchFullFeature: (
     featureId: string,
     displayedRegionIndex: number,

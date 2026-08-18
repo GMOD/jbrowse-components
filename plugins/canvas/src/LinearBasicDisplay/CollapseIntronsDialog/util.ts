@@ -197,7 +197,7 @@ export function seedSoloInTracks(
  */
 export type CollapseResult = { regions: Region[] } | { error: string }
 
-export interface CollapseSpec {
+interface CollapseSpec {
   transcripts: Feature[]
   assembly: Assembly
   padding: number
@@ -248,7 +248,7 @@ export function collapsedRegionsFor({
 // view's track to that feature; `trackId` locates the display to isolate.
 // `label` names the new view — the clicked feature for the whole-gene action, the
 // row's transcript for a single-transcript action.
-export interface IntronActionArgs {
+interface IntronActionArgs {
   view: LinearGenomeViewModel
   regions: Region[]
   trackId: string
