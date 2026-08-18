@@ -15,7 +15,6 @@ displayMode
 filterBy
 growMaxHeight
 height
-hideNoTracksActive
 jexlFiltersSetting
 label
 legend
