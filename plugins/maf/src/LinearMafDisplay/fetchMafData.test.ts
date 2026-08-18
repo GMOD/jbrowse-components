@@ -96,8 +96,8 @@ function makeSelf() {
       adapterConfig: {},
       annotationDataActive: false,
       annotationAdapterConfig: undefined as Record<string, unknown> | undefined,
-      gateByteLimit: 1_000_000 as number | undefined,
-      gateExempt: false,
+      gateByteLimit: 1_000_000,
+      gateActive: true,
       fetchRegions: (_needed: unknown, work: (ctx: FetchContext) => unknown) =>
         Promise.resolve(
           work({
@@ -261,9 +261,10 @@ describe('the CDS-frame read is measured against its own file', () => {
 
   // Force-load exempts the track outright, on every axis — one informed click
   // covers this read too, rather than leaving the overlay mysteriously off
-  // after the banner is gone.
+  // after the banner is gone. It reaches here as `gateActive`, which is the
+  // whole "may anything gate right now" question rather than force-load alone.
   test('force-load lifts it, and skips the measurement entirely', async () => {
-    const { self, framesFetched } = framesSelf({ gateExempt: true })
+    const { self, framesFetched } = framesSelf({ gateActive: false })
     respondWith(50_000_000)
     await fetchMafAlignmentData(self as any, NEEDED)
     expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)

@@ -548,8 +548,11 @@ export default function RegionTooLargeMixin() {
        * an RPC cache key", in REGION_TOO_LARGE.md § How the verdict is built.
        *
        * `aboveForceLoadFloor` is also false on an unmeasured view, so read this
-       * under `gateActive` — as both consumers below do — or an unmeasured
-       * display reads the sub-floor budget rather than no budget.
+       * under `gateActive` or an unmeasured display reads the sub-floor budget
+       * rather than no budget. All three consumers do: `resolvedByteLimit()` and
+       * `tooLargeStatus` below, and MAF's `framesReadOverBudget`, which bounds a
+       * *third* file the banner never quotes (the `mafFrames` overlay) against
+       * this same number.
        */
       get gateByteLimit() {
         return resolveByteLimit({

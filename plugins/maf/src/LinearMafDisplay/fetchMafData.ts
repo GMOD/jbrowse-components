@@ -20,11 +20,14 @@ interface MafFetchSelf extends IStateTreeNode {
   subtreeFilterSet: string[] | undefined
   annotationDataActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
-  // The byte budget the main gate enforces, and the force-load exemption that
-  // lifts it. Read rather than restated so the frames pre-flight below cannot
-  // end up bounded by a different number than everything else on this display.
-  gateByteLimit: number | undefined
-  gateExempt: boolean
+  // The byte budget the main gate enforces, and the "may the gate act at all"
+  // term that governs it. Read rather than restated so the frames pre-flight
+  // below cannot end up bounded by a different number than everything else on
+  // this display — and `gateActive` rather than `gateExempt` for the reason
+  // `gateByteLimit`'s own docstring gives: below `AUTO_FORCE_LOAD_BP` the budget
+  // is the raised sub-floor tier, and an unmeasured view reads as below it.
+  gateByteLimit: number
+  gateActive: boolean
   fetchRegions: (
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
@@ -166,13 +169,16 @@ async function framesReadOverBudget(
   adapterConfig: Record<string, unknown>,
   ctx: FetchContext,
 ) {
-  const limit = self.gateByteLimit
-  // Force-load exempts the track outright, on every axis — the same boolean the
-  // main gate reads, so one informed click covers this read too rather than
-  // leaving the overlay mysteriously off after the banner is gone.
-  if (self.gateExempt || limit === undefined) {
+  // `gateActive` is the whole "may anything gate right now" question: force-load
+  // exempts the track outright on every axis — the same getter the main gate
+  // reads, so one informed click covers this read too rather than leaving the
+  // overlay mysteriously off after the banner is gone — and it is also what
+  // makes `gateByteLimit` below the budget rather than the sub-floor tier an
+  // unmeasured view would resolve.
+  if (!self.gateActive) {
     return false
   }
+  const limit = self.gateByteLimit
   const bytes = await getSession(self).rpcManager.call(
     getRpcSessionId(self),
     'CoreGetRegionByteEstimate',
