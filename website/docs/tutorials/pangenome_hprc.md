@@ -349,8 +349,8 @@ segment rather than over the clicked node: an off-reference allele is drawn
 across the reference it replaces, never over its own length.
 
 Taking the dropdown from one to the other says which node in the tangle is which
-node on the axis, and the tour under [The dataset](#the-dataset) makes that move
-on this subgraph.
+node on the axis, and the video under [The dataset](#the-dataset) makes that
+move on this subgraph.
 
 Each locus below is a window small enough to draw:
 
