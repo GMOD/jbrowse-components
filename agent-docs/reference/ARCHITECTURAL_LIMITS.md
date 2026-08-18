@@ -766,7 +766,7 @@ cache key" for why nothing is left unguarded by that.
 `loadedRegions`, not `rpcDataMap`, is the signal when measuring — the
 canvas base keeps fetched features through a settings clear on purpose. Guarded by
 the `SettingsInvalidate keys on the payload, not the reads` suite in
-`fetchAutorun.test.ts`.
+`plugins/canvas/src/LinearBasicDisplay/fetchAutorun.test.ts`.
 
 This is the one place the codebase inverts its own split (worker returns data,
 main thread owns pixels), and for a real reason: the canvas worker bakes
@@ -925,9 +925,11 @@ file rather than being attributed wrongly.
   `rpcPropsCacheKey` returns `''` and `SettingsInvalidate` is never installed —
   correct for `LinearReferenceSequenceDisplay`, indistinguishable from an
   omission for everyone else. Checkable only behind an explicit opt-out
-  (`noSettingsInvalidation: true`), which the simplified model shapes in
-  `fetchLifecycle.test.ts` / `fetchAutorun.test.ts` would also have to declare —
-  otherwise the check is console noise in the test suite rather than a signal.
+  (`noSettingsInvalidation: true`), which the foundation's own test display
+  (`BaseLinearDisplay/models/perRegionTestEnv.ts`, which defines no `rpcProps`
+  because it is testing the autoruns rather than a payload) would also have to
+  declare — otherwise the check is console noise in the test suite rather than a
+  signal.
 
 **Retire when** the remaining two become explicit data: a `deps()` callback the
 global-fetch helper reads unconditionally, and a required `rpcProps` (or the
