@@ -39,6 +39,14 @@
 // export runs the same Canvas2D function, which is why that node is on the
 // figure while the export is not), and every non-LGV view — synteny and dotplot
 // own their fetch and share one canvas across displays.
+//
+// ALSO LEFT OUT, and the one omission the LEGEND overstates: whether the
+// cluster is off the UI thread at all is the host's decision. jbrowse-web and
+// desktop spawn the pool; an embedded component runs every node in this box on
+// the main thread until the page passes `makeWorkerInstance`, so "off the UI
+// thread" is the main path rather than a property of the architecture. Drawing
+// both would cost the figure its spine, so the page carries it under "Where the
+// worker sits".
 digraph dataflow {
   rankdir=TB
   labelloc=t

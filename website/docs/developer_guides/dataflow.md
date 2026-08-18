@@ -38,6 +38,9 @@ the location box; and the non-linear views — synteny and dotplot own their fet
 and share one canvas between displays, so they compose neither of the
 [fetch foundations](/docs/developer_guides/creating_display#display-foundations)
 this path is built on.
+[SHARED_CANVAS_VIEWS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHARED_CANVAS_VIEWS.md)
+draws that third shape, and its rules generalize to any container laying out one
+canvas its children draw on.
 
 ## Where the worker sits
 
