@@ -2139,7 +2139,18 @@ export const svSpecs: ScreenshotSpec[] = [
             'hg008_cnv_calls',
             'hg008t_nygc_cnv',
             'hg008t_dragen_cnv',
-            'hg008t_wakhan_hifi_hic',
+            {
+              // Pinned, because auto-fit was dividing whatever was left over
+              // and gave the two haplotypes unequal bands — the reader is being
+              // asked to compare them, so they have to be the same size. It
+              // also puts a margin under the lower one: the run's fold report
+              // cannot see this display (its content is inside its own fixed
+              // height), and at the height it settled on the lower band ran
+              // into the frame's bottom border and read as cut off.
+              trackId: 'hg008t_wakhan_hifi_hic',
+              type: 'LinearMultiRowFeatureDisplay',
+              height: 120,
+            },
           ],
         },
       ],
@@ -2148,8 +2159,8 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1500,
     // seven lanes: 1000 left the Wakhan rows 191 css px below the fold, by the
-    // run's own report
-    viewportHeight: 1191,
+    // run's own report; + the pinned Wakhan height and a margin under it
+    viewportHeight: 1235,
     settleMs: 25000,
   },
 
@@ -2674,6 +2685,194 @@ export const svSpecs: ScreenshotSpec[] = [
         },
       },
     ],
+  },
+
+  // The subclonal-CNV section, whose config block the tutorial carries and
+  // whose track the hosted demo config already loads, with no figure under it.
+  // The claim the section makes is that a bulk callset averages the tumour's
+  // cells together, so the three lanes are that claim's three parts: the bulk
+  // depth HiFiCNV binned off the whole tumour, the benchmark's absolute CN over
+  // the same window, and the per-clone rows underneath.
+  //
+  // The p-arm of chr3, which is where the section's own claim is visible and
+  // which the depth/BAF figure above already reads as one single-copy loss with
+  // LOH. The benchmark calls CN 1 across the whole arm, the bulk depth holds
+  // the level that goes with it, and seven of the eight single-cell-derived
+  // clones sit on CN 1 with it. 2E6 alone runs three copies from the
+  // p-terminus and rejoins the others partway down the arm, so the departure
+  // and its end are both inside one frame.
+  //
+  // Picked by scanning the published BED for a segment whose CN differs from
+  // every other clone's at the same position by 2 or more. Most disagreements
+  // in that file are smaller than that and are a normalization offset rather
+  // than a subclone: CNVkit centres each clone on its own median and this
+  // genome is hypodiploid, so a figure built on one of those would be reading
+  // the centring. 2E6's is the largest of the ones that survive, and it is the
+  // only one that both starts and ends inside a readable window.
+  //
+  // 20 Mb of a 71 Mb arm. Whole-chromosome would put the whole thing in the
+  // left fifth of the frame and lose the rejoin; wider than this and the seven
+  // agreeing rows stop being the point.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/subclonal_cnv',
+    url: cgiabUrl({
+      sessionTracks: [HG008_DEPTH_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr3:1-20,000,000',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              // the bulk signal the clones are the decomposition of, on the
+              // same fixed axis the other cgiab depth figures use
+              trackId: 'hg008_depth',
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              useBicolor: false,
+              summaryScoreMode: 'avg',
+              scatterPointSize: 1,
+              resolution: 10,
+              minScore: 0,
+              maxScore: 160,
+              displayCrossHatches: true,
+              height: 130,
+            },
+            {
+              // one segment covers the whole window, so the default height was
+              // most of a lane of white under a single bar
+              trackId: 'hg008_cnv_calls',
+              type: 'LinearBasicDisplay',
+              height: 45,
+            },
+            {
+              // eight partitions share this height, and the display's own
+              // auto-fit had them at ~11 px with the row labels running into
+              // each other
+              trackId: 'hg008_subclonal_cnv',
+              type: 'LinearMultiRowFeatureDisplay',
+              height: 260,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr3',
+    readyTimeout: 120000,
+    viewportWidth: 1500,
+    // 700 cut the last two clone rows off, 74 css px of them by the run's own
+    // report; the benchmark lane gave 55 of that back. The last 20 is a margin
+    // under the bottom row that no report asks for — the multirow display's
+    // content is inside its own fixed height, so the fold check cannot see the
+    // band running into the frame's border, and at 720 it did.
+    viewportHeight: 745,
+    settleMs: 20000,
+  },
+
+  // The methylation walkthrough, which until now was the one section of the
+  // tutorial with no picture in it. The claim it makes is that the SVs and the
+  // 5mC come off the SAME reads with no second file, so the figure is the demo
+  // slice's own BAM — the track every other read figure on the page uses —
+  // recolored, and nothing else added.
+  //
+  // chr9:21,984,000-21,999,000, at the far end of the CDKN2A locus the deletion
+  // figure above visits. Two CpG islands 3 kb apart in opposite states, which
+  // is what makes this window rather than a wider one: the intronic island
+  // reads methylated and the CDKN2B-AS1 promoter island reads unmethylated, so
+  // a dense red block and a dense blue one sit side by side with the sparse
+  // background either side of both. Measured off this slice's own MM/ML tags at
+  // 500 bp: ~0.80 modified across the first, ~0.16 across the second.
+  //
+  // THE RIGHT EDGE IS THE DEMO SLICE'S OWN CUT (chr9:22,000,000) AND NOT A
+  // CHOICE OF FRAMING. Past it only reads that reach back into the region
+  // survive, so depth tapers from full to a third of it over the next 12 kb —
+  // smooth, plausible, and marked by nothing in the app. A first cut of this
+  // figure ran 12 kb past the edge and drew that taper as a staircase down the
+  // pileup, which reads as a copy-number decline. build_demo_slices.sh is where
+  // this is written down.
+  //
+  // `fillUnmarked` is the 2-color view — the second radio under Color by →
+  // Modifications, not the first. The by-type default draws ONLY the calls at
+  // or above threshold and leaves everything else blank, so an unmethylated
+  // island comes out as a hole and reads as missing data. The fill paints every
+  // cytosine in CpG context, so the island is blue rather than absent, and the
+  // picture has both states in it.
+  //
+  // The deletion is deliberately out of frame. It is 12 kb to the left and it
+  // is what driver_cdkn2a_deletion is about; carried in here it would be the
+  // largest thing in the window and the methylation would be the small print.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/methylation_cdkn2b',
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          // same inline re-declaration as the CDKN2A figure: the config's own
+          // reads track cannot raise fetchSizeLimit, and a 116x pileup over
+          // 20 kb is past the 5 MB default
+          type: 'AlignmentsTrack',
+          trackId: 'hg008_t_reads_meth',
+          name: 'HG008-T PacBio HiFi reads (5mC calls)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BamAdapter',
+            fetchSizeLimit: 30_000_000,
+            bamLocation: {
+              uri: HG008_T_PACBIO_BAM,
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'BAI',
+              location: {
+                uri: `${HG008_T_PACBIO_BAM}.bai`,
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr9:21,984,000-21,999,000',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 70,
+            },
+            {
+              trackId: 'hg008_t_reads_meth',
+              type: 'LinearAlignmentsDisplay',
+              forceLoad: true,
+              colorBy: {
+                type: 'modifications',
+                modifications: { fillUnmarked: true },
+              },
+              // `fit`, so the WHOLE pileup is in the frame at once. The pattern
+              // this figure is about is a column, and a column only reads as one
+              // if every read crossing it is drawn — at the default row height
+              // the capture cut the stack off partway down and the bottom of the
+              // frame looked like where the data stopped.
+              heightMode: 'fit',
+              height: 560,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 120000,
+    viewportWidth: 1500,
+    // 700 cut the pileup off 175 css px short, by the run's own report
+    viewportHeight: 880,
+    settleMs: 25000,
   },
 
   // SV inspector import form with a VCF URL pasted (sv_inspector_view.md) — the

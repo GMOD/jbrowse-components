@@ -3282,14 +3282,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
           minAlignmentLength: 500000,
           alpha: 0.35,
           tracks: ['HG008T_v3.2_pif'],
+          // hideNoTracksActive on both rows. Neither panel carries a track —
+          // GRCh38 at 300 Mb has nothing worth drawing under the ribbons, and
+          // the config has no HG008T_v3.2 track at all — so each was painting
+          // the LGV's "No tracks active / OPEN TRACK SELECTOR" block instead.
+          // Two dark call-to-action buttons in the middle of a figure read as
+          // an app caught half-loaded, and they were the only thing in the
+          // frame competing with the ribbons for attention.
           views: [
             {
               loc: 'chr3:1-198295559 chr13:1-114364328',
               assembly: 'GRCh38_GIABv3',
+              hideNoTracksActive: true,
             },
             {
               loc: 'chr3_chr13_hap1:1-212897834 chr13_hap2:1-99565785',
               assembly: 'HG008T_v3.2',
+              hideNoTracksActive: true,
             },
           ],
         },

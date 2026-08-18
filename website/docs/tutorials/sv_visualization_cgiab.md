@@ -145,7 +145,7 @@ nothing downloaded:
 | DRAGEN                                                                                                                  | Illumina WGS                                   |
 | NYGC somatic pipeline ([Manta](https://github.com/Illumina/manta) and [GRIDSS](https://github.com/PapenfussLab/gridss)) | Illumina WGS                                   |
 
-<Figure caption="The chr3 breakends of the benchmark's cluster_3 in five SV callsets, over the HiFiCNV depth and the benchmark's CNV lane: the V0.5 benchmark, Severus, the minda ensemble, DRAGEN and NYGC's BEDPE. Every callset marks both breakends, the depth between them sits at half its flanking level, and the CNV lane crosses the whole window as one balanced segment." src="/img/sv_cgiab/sv_callset_comparison.png" />
+<Figure caption="The chr3 breakends of the benchmark's cluster_3 in five SV callsets, over the HiFiCNV depth and the benchmark's CNV lane: the V0.5 benchmark, Severus, the minda ensemble, DRAGEN and NYGC's BEDPE. Every callset marks both breakends, the depth steps down between them, and the CNV lane crosses the whole window as one segment." src="/img/sv_cgiab/sv_callset_comparison.png" />
 
 The benchmark files those two breakends under one `EVENT`, and the depth says
 what they bound: the interval between them carries half the copies its flanks
@@ -558,6 +558,14 @@ on that sample's own median, so on a hypodiploid genome the balanced state is
 not the row's CN 2. The benchmark CNV track in the same view is what anchors
 them, its `total_copy_number` being absolute.
 
+The p-arm of chr3 is where that reads clearly: the benchmark calls one state
+across the whole arm and the bulk depth holds one level under it.
+
+<Figure caption="The p-arm of chr3 over the HG008-T clones: the HiFiCNV depth, the benchmark CNV call, and one row per clone from the per-clone CNVkit BED. One row departs from the rest at the p-terminus and rejoins them partway down the arm." src="/img/sv_cgiab/subclonal_cnv.png" />
+
+Each clone was grown from a single cell and sequenced on its own, so a row is
+that clone's own copy number and the bulk lanes above it are the mixture.
+
 ## Align the tumor assembly to GRCh38
 
 The C-GIAB project provides a near-complete telomere-to-telomere de novo
@@ -919,9 +927,22 @@ For more on these views, see the
 
 The C-GIAB PacBio HiFi BAMs carry per-read 5mC calls in their `MM`/`ML` tags,
 and JBrowse renders those with no extra files: open the tumor reads and set
-**Color by...** → **Modifications** from the track menu. The tags survive the
+**Color by... → Modifications** from the track menu. The tags survive the
 conversion to CRAM above, so the reads loaded for the SV walkthroughs already
 carry them.
+
+Two modes sit under that item. **One color per modification type** marks the
+cytosines the basecaller called modified and leaves the rest blank, so an
+unmethylated stretch and a stretch with no CpGs in it look alike. **One color
+per type, plus low-probability & unmodified in blue** paints every CpG in
+context, which is what the figure below is set to.
+
+<Figure caption="Tumor PacBio HiFi reads at the CDKN2B-AS1 end of the CDKN2A locus, over the NCBI RefSeq gene lane, colored by base modification with unmodified cytosines filled in. Neighboring CpG-dense blocks come out in opposite states, one of them at the CDKN2B-AS1 transcription start." src="/img/sv_cgiab/methylation_cdkn2b.png" />
+
+Where the marks thin out to scattered ticks, that is CpG density: the fill draws
+a cytosine only where the reference puts one in context. Every read crossing
+either block agrees with the others on it, so the state the figure shows belongs
+to the locus. The track is the one the SV walkthroughs opened, recolored.
 
 Most somatic LINE insertions in HG008 come from two hypomethylated non-reference
 germline LINE insertions, so the methylation state of a source element explains
