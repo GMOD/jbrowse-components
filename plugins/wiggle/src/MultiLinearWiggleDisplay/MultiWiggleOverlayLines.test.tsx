@@ -145,6 +145,24 @@ describe('cross hatches', () => {
     expect(hatchYs(svg)).toEqual([29.5, 0])
   })
 
+  // The same wash the separators drew, twice over: below 100px a row's ticks are
+  // just its own top and bottom, so at 0.32px a row the per-row hatches are two
+  // lines per subtrack on the same pixels.
+  it('draws none once the rows are too short to rule', () => {
+    expect(
+      hatchYs(
+        render(
+          makeModel({
+            showCrossHatches: true,
+            ticks,
+            effectiveRowHeight: 0.32,
+            numRows: 1987,
+          }),
+        ),
+      ),
+    ).toEqual([])
+  })
+
   it('draws none without ticks or with the setting off', () => {
     expect(hatchYs(render(makeModel({ showCrossHatches: true })))).toEqual([])
     expect(

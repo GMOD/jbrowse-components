@@ -1,4 +1,4 @@
-import { RowSeparatorLines } from '@jbrowse/tree-sidebar'
+import { MIN_SEPARATOR_ROW_PX, RowSeparatorLines } from '@jbrowse/tree-sidebar'
 import { CrossHatchLines } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -58,8 +58,17 @@ export default observer(function MultiWiggleOverlayLines({
 
   // overlay is one row over the full height (rowHeight === height, top === 0),
   // so its hatches draw once; multi-row repeats them per source.
+  //
+  // Floored at the same row height the separators are, and for the same reason:
+  // below 100px `computeYTicks` gives a row only its domain min and max, so each
+  // row's hatches sit on its own top and bottom edges — the separator grid,
+  // drawn twice. Under `MIN_SEPARATOR_ROW_PX` those edges are no longer
+  // distinguishable and 1,987 subtracks contribute 3,974 lines to the same
+  // handful of pixels. Overlay is exempt because it is one row over the full
+  // height, so its own height is the track's.
+  const hatchesFit = isOverlay || effectiveRowHeight >= MIN_SEPARATOR_ROW_PX
   const crossHatches =
-    showCrossHatches && ticks
+    showCrossHatches && ticks && hatchesFit
       ? Array.from({ length: numRows }).map((_, rowIdx) => (
           <CrossHatchLines
             // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one hatch set per source row
