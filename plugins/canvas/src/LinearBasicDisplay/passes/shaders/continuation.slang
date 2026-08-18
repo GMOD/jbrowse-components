@@ -118,8 +118,9 @@ public float markerHalfHeight(float boxHeight) {
 // Not gated on `leftIsCanvasEdge`/`rightIsCanvasEdge` here: that is a per-block
 // fact each backend already holds — a uniform on the GPU, `canvasEdgeFlags` on
 // the CPU — and folding it in would make the shared decision take an argument
-// only one side has a natural name for. What must not drift is the overhang
-// test, which is three comparisons that were spelled twice.
+// only one side has a natural name for. What must not drift is the pair of
+// comparisons below, which was written out four times: once per edge, on each
+// backend, with the left/right signs mirrored by hand each time.
 public bool runsOffEdge(
   float outer,
   float inner,
