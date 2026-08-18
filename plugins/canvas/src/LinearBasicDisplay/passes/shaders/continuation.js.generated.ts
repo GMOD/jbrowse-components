@@ -5,7 +5,7 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 function _max(a: number, b: number) {
-  return a > b ? a : b
+  return b > a || Number.isNaN(a) ? b : a
 }
 
 export function markerDirection(screenStrand: number, edgeSide: number): number {

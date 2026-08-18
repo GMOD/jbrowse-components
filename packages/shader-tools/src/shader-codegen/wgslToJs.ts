@@ -719,22 +719,33 @@ const HELPERS: Record<string, string> = {
   // `Math.max(a, b)` — but an emitter that is faithful *except for two builtins
   // on one input class* is a carve-out nobody will remember, and a check with an
   // accepted failure in it decays into a check nobody runs.
+  // C99 `fmaxf`/`fminf`, which is what slangc's C++ prelude reaches for on a
+  // host compiler (`F32_max` → `::fmaxf`; the `a > b ? a : b` spelling beside it
+  // in slang-cpp-scalar-intrinsics.h is the `SLANG_LLVM` branch, which the
+  // oracle's build does not take). Those return the NON-NaN operand whichever
+  // side it is on.
+  //
+  // The ternary spelling used to be here and was faithful on ONE side only:
+  // `a > b ? a : b` drops a NaN in first position and returns it in second, so
+  // `_max(0, NaN)` was NaN where the compiler generating the GPU path says 0.
+  // Caught by the oracle on `chevronFirstVisible(7.5, 0, 7.5)` — a zero spacing
+  // makes the division 0/0 — after the ternary had already been chosen
+  // deliberately, for this exact NaN behaviour, on the half of it that was right.
   _max: [
     'function _max(a: number, b: number) {',
-    '  return a > b ? a : b',
+    '  return b > a || Number.isNaN(a) ? b : a',
     '}',
   ].join('\n'),
   _min: [
     'function _min(a: number, b: number) {',
-    '  return a < b ? a : b',
+    '  return b < a || Number.isNaN(a) ? b : a',
     '}',
   ].join('\n'),
-  // Comparisons, not `Math.min`/`Math.max`, and the difference is NaN.
+  // `_min`/`_max`, not `Math.min`/`Math.max`, and the difference is NaN.
   //
-  // WGSL's `clamp` is `min(max(x, lo), hi)`, and slangc spells those as
-  // `a > b ? a : b` / `a < b ? a : b` — a form that DROPS a NaN, because every
-  // comparison against one is false and the other operand is returned. JS's
-  // `Math.max(NaN, 0)` is NaN, and it propagates from there.
+  // WGSL's `clamp` is `min(max(x, lo), hi)`, and slangc's C++ prelude drops a
+  // NaN through both of those (see `_max` above). JS's `Math.max(NaN, 0)` is
+  // NaN, and it propagates from there.
   //
   // So on a NaN the shader clamps to a bound and the twin returned NaN, which
   // is the exact split this codebase already guards by hand elsewhere:

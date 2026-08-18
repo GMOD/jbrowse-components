@@ -9,11 +9,11 @@ function _clamp(x: number, lo: number, hi: number) {
 }
 
 function _max(a: number, b: number) {
-  return a > b ? a : b
+  return b > a || Number.isNaN(a) ? b : a
 }
 
 function _min(a: number, b: number) {
-  return a < b ? a : b
+  return b < a || Number.isNaN(a) ? b : a
 }
 
 export function textWidth(num: number): number {

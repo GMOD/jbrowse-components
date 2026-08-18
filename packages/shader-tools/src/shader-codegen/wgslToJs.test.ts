@@ -95,11 +95,12 @@ test('drops literal type suffixes and emits helpers only when used', () => {
   expect(evaluate(clamped, 'f')(5)).toBe(1)
 })
 
-// WGSL's min/max on a NaN are indeterminate, and slangc resolves them as
-// `a > b ? a : b` — a form that DROPS the NaN and returns the bound. JS's
-// Math.min/Math.max propagate it. The emitter's helpers therefore have to be
-// written as comparisons, or every twin that clamps disagrees with the shader
-// on exactly the input this codebase already guards by hand elsewhere.
+// WGSL's min/max on a NaN are indeterminate, and slangc's C++ prelude resolves
+// them as `::fmaxf` / `::fminf` — which DROP the NaN and return the other
+// operand, whichever side it is on. JS's Math.min/Math.max propagate it. The
+// emitter's helpers therefore have to be written to match, or every twin that
+// clamps disagrees with the shader on exactly the input this codebase already
+// guards by hand elsewhere.
 describe('NaN through the clamping helpers', () => {
   test('clamp returns a bound, as the shader does, not NaN', () => {
     const clamp = evaluate(
@@ -135,6 +136,40 @@ describe('NaN through the clamping helpers', () => {
     expect(mn(Number.NaN)).toBe(1)
     expect(mn(5)).toBe(1)
     expect(mn(0.5)).toBe(0.5)
+  })
+
+  test('and returns it from the SECOND argument too', () => {
+    // The gap the gap-closing left behind, and the reason both tests above are
+    // written with the NaN on the left: `a > b ? a : b` drops a NaN in first
+    // position and RETURNS it in second, so it was faithful on exactly the half
+    // anyone thought to check. `chevronFirstVisible(7.5, 0, 7.5)` — a zero
+    // spacing making the division 0/0 — is 0 in slangc's C++ and was NaN here,
+    // and the differential oracle is what noticed.
+    const mx = evaluate(
+      emit(`fn f_0( x_0 : f32) -> f32 { return max(0.0f, x_0); }`, ['f']),
+      'f',
+    )
+    expect(mx(Number.NaN)).toBe(0)
+    expect(mx(-3)).toBe(0)
+    expect(mx(3)).toBe(3)
+
+    const mn = evaluate(
+      emit(`fn f_0( x_0 : f32) -> f32 { return min(1.0f, x_0); }`, ['f']),
+      'f',
+    )
+    expect(mn(Number.NaN)).toBe(1)
+    expect(mn(5)).toBe(1)
+    expect(mn(0.5)).toBe(0.5)
+  })
+
+  test('two NaNs stay NaN, as fmax/fmin do', () => {
+    const mx = evaluate(
+      emit(`fn f_0( a_0 : f32, b_0 : f32) -> f32 { return max(a_0, b_0); }`, [
+        'f',
+      ]),
+      'f',
+    )
+    expect(Number.isNaN(mx(Number.NaN, Number.NaN))).toBe(true)
   })
 
   test('a helper reached only through another helper is still emitted', () => {
