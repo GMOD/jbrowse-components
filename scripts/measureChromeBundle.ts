@@ -16,12 +16,21 @@
  * What is being compared is the *chrome layer only*: both entries pull the same
  * render-lifecycle hook and the same display-phase logic, so the delta is the
  * overlay set and nothing else. Renderers are not in here at all, and neither
- * is any display, because `RenderingComponent` is lazy in every plugin — this
- * is the eager, pre-first-paint cost.
+ * is any display, because `RenderingComponent` is lazy in every plugin.
  *
  * React and MobX are external because an embedder already has them. Everything
  * else is bundled, which is the honest question: what does adding this to my
  * app download.
+ *
+ * **Download, not first paint.** There is no `splitting: true` below, so esbuild
+ * emits one file per entry and inlines every `import()` into it — a lazy chunk
+ * counts here exactly like an eager one. That is the right basis for the
+ * comparison, since `DisplayChrome`'s Material weight is mostly lazy too and
+ * counting only entry chunks scores it 5 KB gzip against the plain set's 20,
+ * inverting the result. It is the wrong basis for a critical-path claim, so
+ * don't quote these as pre-first-paint numbers: measured with `splitting: true`,
+ * the plain entry chunk is 19.5 KB gzip and the tooltip's @floating-ui is a
+ * separate 18.5 KB chunk fetched on first hover.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
