@@ -51,11 +51,11 @@ Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
 
 ## Related links
 
-- **Adapter:** [BedpeAdapter](../bedpeadapter)
-- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
 - **Adapter:** [VcfAdapter](../vcfadapter)
 - **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **State model:** [runtime API](../../models/linearvariantdisplay)
 - **Base config:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 

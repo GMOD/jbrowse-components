@@ -46,11 +46,11 @@ Every slot comes from the shared base below; this display adds none of its own.
 
 ## Related links
 
-- **Adapter:** [BedpeAdapter](../bedpeadapter)
-- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
 - **Adapter:** [VcfAdapter](../vcfadapter)
 - **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Base config:** [SharedLDDisplay](../sharedlddisplay)
 
 ## Config slots
