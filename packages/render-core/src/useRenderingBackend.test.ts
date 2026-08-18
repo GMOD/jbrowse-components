@@ -13,11 +13,13 @@ jest.mock('./gpuDevice.ts', () => ({
 let consoleErrorSpy: jest.SpyInstance
 
 beforeEach(() => {
+  jest.useFakeTimers()
   jest.mocked(onDeviceLost).mockClear()
   consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 })
 
 afterEach(() => {
+  jest.useRealTimers()
   consoleErrorSpy.mockRestore()
 })
 
@@ -284,13 +286,16 @@ describe('useRenderingBackend', () => {
     expect(model.startRenderingBackend).toHaveBeenCalledTimes(2)
   })
 
-  // Real timers (not fake): jest fake timers block React's passive-effect
-  // flush, so the recovery effect — which must run to schedule the backoff —
-  // never fires under them. `rerender()` stands in for the observer re-render
-  // that re-runs the hook when `renderError` changes in the app.
+  // Advancing inside `act` is what flushes the passive effect that schedules
+  // the backoff — advancing outside it does not, which is why this file used to
+  // claim fake timers could not drive the recovery path at all. They also fake
+  // `performance.now()`, so the budget's window is drivable too.
+  //
+  // `rerender()` stands in for the observer re-render that re-runs the hook when
+  // `renderError` changes in the app.
   const wait = (ms: number) =>
     act(async () => {
-      await new Promise(r => setTimeout(r, ms))
+      jest.advanceTimersByTime(ms)
     })
 
   test('auto-recovers from context loss a bounded number of times, then stops', async () => {
