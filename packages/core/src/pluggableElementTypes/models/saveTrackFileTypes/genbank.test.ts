@@ -412,6 +412,33 @@ describe('GenBank export', () => {
     ).toBe('')
   })
 
+  // A positional parser reads the length out of columns 30-40, so nothing
+  // before it may overflow its own field. The region string did: naming this
+  // one after its refName is what keeps it inside 16 columns.
+  it('keeps the LOCUS fields in their columns on a long refName', async () => {
+    const result = await stringifyGBK({
+      features: [
+        createFeature({
+          id: 'geneA',
+          refName: 'NC_000017.11',
+          start: 7668402,
+          end: 7687550,
+          type: 'gene',
+        }),
+      ],
+      assemblyName: 'hg38',
+      session: mockSession,
+    })
+
+    const locus = result.split('\n')[0]!
+    expect(locus.slice(0, 12)).toBe('LOCUS       ')
+    expect(locus.slice(12, 28)).toBe('NC_000017.11    ')
+    expect(locus.slice(29, 40)).toBe('      19148')
+    expect(result).toContain(
+      'DEFINITION  NC_000017.11:7668403..7687550 from hg38.',
+    )
+  })
+
   // The only writer that fetches anything. Dropping the pair left closing the
   // dialog with a whole-gene sequence read still running, and its download
   // unnamed while it ran.

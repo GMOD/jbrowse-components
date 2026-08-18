@@ -147,10 +147,19 @@ function formatOrigin(sequence: string): string[] {
 // LOCUS line column layout per the GenBank flat-file spec: name at col 13,
 // length right-justified ending at col 40, molecule/topology/division/date in
 // their fixed slots.
-function formatLocus(name: string, length: number) {
+//
+// The name is the 16-column locus field, so it is the refName rather than the
+// region: `chr17:7,668,402..7,687,550` sanitizes to 22 characters and pushed
+// every field after it 6 columns right, which is a length a positional parser
+// then reads out of the wrong slot. The coordinates are on DEFINITION, where
+// the line is free text.
+const LOCUS_NAME_WIDTH = 16
+
+function formatLocus(refName: string, length: number) {
+  const name = refName.replaceAll(/[^\w.]/g, '_').slice(0, LOCUS_NAME_WIDTH)
   return [
     'LOCUS'.padEnd(12),
-    name.padEnd(16),
+    name.padEnd(LOCUS_NAME_WIDTH),
     ' ',
     String(length).padStart(11),
     ' bp ',
@@ -179,7 +188,7 @@ function formatHeader({
   length: number
 }) {
   return [
-    formatLocus(region.replaceAll(/[^\w.]/g, '_'), length),
+    formatLocus(refName, length),
     `DEFINITION  ${region} from ${assemblyName}.`,
     `ACCESSION   ${refName}`,
     `VERSION     ${refName}`,

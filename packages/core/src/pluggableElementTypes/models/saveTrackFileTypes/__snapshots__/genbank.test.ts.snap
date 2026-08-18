@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`GenBank export can export a feature with subfeatures (mRNA, CDS, exon) 1`] = `
-"LOCUS       chr1_1001..2000         1000 bp    DNA    linear    UNK 10-JAN-1970
+"LOCUS       chr1                    1000 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:1001..2000 from testAssembly.
 ACCESSION   chr1
 VERSION     chr1
@@ -46,7 +46,7 @@ ORIGIN
 `;
 
 exports[`GenBank export can export a simple feature 1`] = `
-"LOCUS       chr1_101..200            100 bp    DNA    linear    UNK 10-JAN-1970
+"LOCUS       chr1                     100 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:101..200 from testAssembly.
 ACCESSION   chr1
 VERSION     chr1
@@ -69,7 +69,7 @@ ORIGIN
 `;
 
 exports[`GenBank export formats ORIGIN section with proper line breaks for long sequences 1`] = `
-"LOCUS       chr1_1..150              150 bp    DNA    linear    UNK 10-JAN-1970
+"LOCUS       chr1                     150 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:1..150 from testAssembly.
 ACCESSION   chr1
 VERSION     chr1
@@ -92,7 +92,7 @@ ORIGIN
 `;
 
 exports[`GenBank export handles custom attributes 1`] = `
-"LOCUS       chr1_701..800            100 bp    DNA    linear    UNK 10-JAN-1970
+"LOCUS       chr1                     100 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:701..800 from testAssembly.
 ACCESSION   chr1
 VERSION     chr1
@@ -117,7 +117,7 @@ ORIGIN
 `;
 
 exports[`GenBank export handles features on negative strand 1`] = `
-"LOCUS       chr1_501..600            100 bp    DNA    linear    UNK 10-JAN-1970
+"LOCUS       chr1                     100 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:501..600 from testAssembly.
 ACCESSION   chr1
 VERSION     chr1
@@ -147,7 +147,7 @@ ORIGIN
 `;
 
 exports[`GenBank export handles mRNA with only exons (no CDS) 1`] = `
-"LOCUS       chr1_1..500              500 bp    DNA    linear    UNK 10-JAN-1970
+"LOCUS       chr1                     500 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:1..500 from testAssembly.
 ACCESSION   chr1
 VERSION     chr1
@@ -180,7 +180,7 @@ ORIGIN
 `;
 
 exports[`GenBank export handles multiple top-level features 1`] = `
-"LOCUS       chr1_101..400            300 bp    DNA    linear    UNK 10-JAN-1970
+"LOCUS       chr1                     300 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:101..400 from testAssembly.
 ACCESSION   chr1
 VERSION     chr1
@@ -207,7 +207,7 @@ ORIGIN
 `;
 
 exports[`GenBank export handles single CDS without join() wrapper 1`] = `
-"LOCUS       chr1_101..300            200 bp    DNA    linear    UNK 10-JAN-1970
+"LOCUS       chr1                     200 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:101..300 from testAssembly.
 ACCESSION   chr1
 VERSION     chr1
@@ -239,7 +239,7 @@ ORIGIN
 `;
 
 exports[`GenBank export truncates a long feature type to the 15-char feature-key width 1`] = `
-"LOCUS       chr1_1..100              100 bp    DNA    linear    UNK 10-JAN-1970
+"LOCUS       chr1                     100 bp    DNA    linear    UNK 10-JAN-1970
 DEFINITION  chr1:1..100 from testAssembly.
 ACCESSION   chr1
 VERSION     chr1
