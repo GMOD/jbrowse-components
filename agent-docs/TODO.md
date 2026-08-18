@@ -36,7 +36,7 @@ before anyone noticed.
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
-| [Capture the structure-beside-MSA figure](#capture-the-structure-beside-msa-figure-once-alphafold-serves-its-a3m-again) | figures, protein3d | re-curl the a3m; the spec's two halves are already split out |
+| [Re-film the protein launch tour](#re-film-the-protein-launch-tour-once-protein3d-ships-the-a3m-removal) | figures, protein3d | waits on a protein3d release; the a3m is gone for good |
 | [What colour is an arc with no pair orientation](#what-colour-is-an-arc-with-no-pair-orientation) | alignments | a visual call, then one of two edits |
 | [Midnight primary is invisible on dark stock](#midnight-primary-is-invisible-on-the-dark-stock-ground) | palette, theme | pick one of three; never re-tint a single component |
 | [The interbase stack overruns its half-band](#the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint) | alignments | a visual call; the overflow is measured, no fix is chosen |
@@ -1040,71 +1040,41 @@ hosted demo file still resolves:
 the PIF tier letter). All four `demos/ecoli_pangenome` files were checked that
 way.
 
-### Capture the structure-beside-MSA figure once AlphaFold serves its a3m again
+### Re-film the protein launch tour once protein3d ships the a3m removal
 
-`genomes_proteins` describes what the protein dialog's split button can build,
-and the entry that puts all three connected views in one frame — **Launch 3D
-structure + MSA view** — is the one it has no picture of. The spec was written
-against `PROTEIN_LAUNCH_SESSION` and `OPEN_PROTEIN_LAUNCH_MENU` in
-`website/scripts/specs/features.ts`, which are split out of their one caller for
-exactly this, and it fails on a frame stuck at Loading.
+The AlphaFold a3m MSA launches are deleted in protein3d (branch
+`remove-alphafold-a3m-msa`, `669c556`), and until that releases,
+genomes.jbrowse.org still serves the plugin that has them. Two things follow it
+here.
 
-The blocker is not ours. Both of the dialog's MSA destinations read the a3m
-AlphaFold's own prediction API advertises for the entry, and that file answers
-403 to everyone:
+**`proteins/annotation_1d` films a menu that is about to lose two rows.** The
+tour opens the split button and holds on it, and the release leaves **Launch 3D
+protein structure view** and **Launch 1D protein annotation view** where there
+were four. `pnpm video --filter annotation_1d`, then `figures push --filter
+annotation_1d` and commit `media.lock`. The caption no longer counts the rows,
+so it survives; nothing else on the page names the removed entries.
 
-```sh
-curl -sI https://alphafold.ebi.ac.uk/api/prediction/P04637   # msaUrl field
-curl -sI https://alphafold.ebi.ac.uk/files/msa/AF-P04637-F1-msa_v6.a3m
-```
+**Then re-read the page against the shipped menu.** `genomes_proteins.md` has
+had the two destinations, their caution and the third row of the "Where each MSA
+comes from" table taken out already, so this is a check rather than an edit.
 
-**First move is to re-run those two lines.** Re-checked 2026-08-18 and it still
-403s. Two things that re-check settled, so nobody spends the next one on them:
-the API still advertises *exactly* that URL, so the 403 is not a version number
-gone stale under a path that moved; and `AF-P04637-F1-model_v6.cif` and
-`AF-P04637-F1-confidence_v6.json` both answer 200, so what is blocked is the
-`files/msa/` path rather than the entry, the host or the rasterizer. P38398's
-a3m answers 403 the same way.
+Why it went rather than getting fixed: the a3m AlphaFold's prediction API
+advertises as `msaUrl` cannot be fetched by anyone, and no rewrite or mirror gets
+around it. The whole `/files/msa/` path answers 403 at Google's edge — the
+response carries none of the `x-goog-*`/`UploadServer` headers the bucket puts on
+its own 404s and 200s, so it is rejected before reaching storage rather than
+being a missing object. Every version suffix, AlphaFold's own documented example
+(`AF-G1JSI4-F1-msa_v6.a3m`), a browser UA with a referer and a second network all
+answer the same; the prediction API has no other MSA field and the OpenAPI has no
+MSA endpoint; the GCS mirror carries model, confidence and PAE only; the EBI FTP
+ships coordinate tars. It worked in January 2026
+(google-deepmind/alphafold#1111 asks about bulk-downloading MSAs at scale), which
+makes an anti-scraping rule that took individual access with it the likeliest
+reading — worth reporting to EBI, but not worth waiting on.
 
-Driving the route in the app agrees, which is what says the frame stuck at
-Loading is this and not a capture race worth a longer timeout: clicking **Launch
-MSA view** fires one request for the a3m that comes back 403, the structure's own
-`model_v6.cif` returns 200 in that same session, and the view then sits on
-`Loading...` for at least 105s and raises no error. **No error is surfaced** — so
-a reader who does not know about the 403 sees only a spinner, which is why the
-page's caution names the symptom rather than just the cause.
-
-**It is the prefix, not the file.** Every key under `files/msa/` answers 403,
-including ones that cannot exist (`files/msa/definitely-not-a-real-key-xyz.a3m`),
-and so does the bare `files/msa/`. A nonexistent key one level up answers 404 and
-a real one answers 200, so the request is refused before key lookup — a bucket or
-CDN permission on the whole prefix rather than a moved or withdrawn file. That is
-also why no url rewrite gets around it: `_v4`, `_v5` and an unversioned name all
-403, AlphaFold's own documented example (`AF-G1JSI4-F1-msa_v6.a3m`) 403s, and a
-browser UA with a matching referer changes nothing. **Nor is there a second
-source**: the GCS mirror carries model, confidence and PAE but no a3m, and the
-EBI FTP ships per-proteome tars of coordinates only. It worked in January 2026
-(google-deepmind/alphafold#1111 downloads individual MSAs), so it is a
-regression worth reporting to EBI rather than designing around.
-
-**The silent half is ours and is fixed pending release.** react-msaview branch
-`fix-msa-error-surfacing` (`e96a07d`): a non-abort failure keeps its filehandle,
-only an abort clears it, so `hasPendingFilehandle` held Loading.tsx on its
-spinner branch ahead of the ImportForm — which renders `model.error` and was
-never reached. `modelFilehandleLoaders.test.ts` covered this the whole time under
-"a failed fetch surfaces as an error" and passed, because it pins the model
-rather than the DOM. **When that ships, the caution's "raise no error" half stops
-being true** and wants rewording to the 403 the view will then name.
-
-While it 403s, the page's two MSA destinations are a route a reader cannot take
-either, and `genomes_proteins.md` now says so in a `:::caution` under that
-paragraph. **A fixed a3m retires that admonition as well as capturing the
-figure** — check for it before closing this out, or the page will keep warning
-about something that works.
-
-`PROTEIN_LAUNCH_SESSION` and the anchor beside it are also
-`proteinLaunchFixtures` now, which the `proteins/annotation_1d` video tour
-films, so the session this figure would use is exercised on every video run.
+The silent half was ours and is fixed: react-msaview `fix-msa-error-surfacing`
+(`e96a07d`) shows a failed load instead of spinning on it forever, which was
+never specific to AlphaFold.
 
 ## Blocked on a visual call
 

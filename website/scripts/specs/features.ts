@@ -88,16 +88,15 @@ const PROTEIN_LAUNCH_ANCHOR = {
 // same right-click opens a menu with neither launcher on it, so the route the
 // page documents is only reachable here.
 //
-// Split out from its one caller for two consumers that arrived after it. The
-// video tour `proteins/annotation_1d` films this same route, because the one
-// thing the still cannot say is that the launch opens the view with none of its
-// tracks on. And the split button's other worthwhile destination — "Launch 3D
-// structure + MSA view", the page's three-connected-views claim in one frame —
-// is written and cannot be captured: the a3m the two MSA destinations read is
-// the URL AlphaFold's own prediction API advertises, and it answers 403 to
-// anyone. `curl https://alphafold.ebi.ac.uk/files/msa/AF-P04637-F1-msa_v6.a3m`
-// is the whole reproduction, and P38398 answers the same, so it is AlphaFold
-// rather than this entry or this rasterizer.
+// Split out from its one caller for the video tour `proteins/annotation_1d`,
+// which films this same route: the one thing the still cannot say is that the
+// launch opens the view with none of its tracks on.
+//
+// The split button had two more destinations until protein3d removed them, both
+// reading the a3m AlphaFold advertises as `msaUrl` for the entry. That file is
+// unfetchable — the whole `/files/msa/` path answers 403 at Google's edge — so
+// neither ever built anything, and the figure of all three connected views that
+// would have gone on this page has no route to it.
 const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
   views: [
     {

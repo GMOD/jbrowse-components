@@ -115,7 +115,7 @@ genome view rather than under it.
 ### The other things that dialog launches
 
 The arrow beside **Launch** opens everything the dialog can build: the 3D
-structure that **Launch** itself renders, and three others.
+structure that **Launch** itself renders, and one other.
 
 **Launch 1D protein annotation view** opens a linear genome view whose genome is
 the protein. The plugin registers the UniProt accession as a temporary assembly
@@ -129,30 +129,7 @@ single-view embedded components.
 
 <Figure src="/img/protein/annotation_1d.png" caption="TP53 on hg38 above the 1D protein view its gene menu launched, with four of the session tracks turned on: the DNA binding call, UniProt natural variants, AlphaFold pLDDT and AlphaMissense substitution scores, all in residue coordinates. Confidence and variant density both fall away over the terminal tails." />
 
-<Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, where its four destinations are, and the 1D annotation view the second of them builds. The view arrives with none of its tracks on; DNA binding, Natural variant, AlphaFold confidence and AlphaMissense scores come on from Session tracks in the selector." />
-
-The two MSA destinations appear when msaview is loaded in the same session, and
-both build their alignment from the one AlphaFold's own pipeline folded from,
-which is deep, unlabelled by species, and a much larger download than the
-ortholog panel below. One opens the alignment alone, the other opens it beside
-the structure.
-
-:::caution AlphaFold's alignment file is unreachable
-
-Both MSA destinations stop on **Loading** and raise no error, so the wait looks
-like the large download above rather than a failure. Each reads the alignment
-AlphaFold's prediction API advertises for the entry as its `msaUrl`, and that
-file answers 403 to every request. Checked 2026-08-18 on
-`AF-P04637-F1-msa_v6.a3m` and `AF-P38398-F1-msa_v6.a3m`, and in the same session
-that took the 403 the structure's own `model_v6.cif` returned 200 — so what is
-blocked is AlphaFold's file server, rather than one entry, one plugin or your
-network.
-
-Nothing else on this page reads that file. **Launch** itself needs only the
-structure, and the ortholog route in [Launching an MSA](#launching-an-msa)
-builds its alignment at EBI from NCBI's records.
-
-:::
+<Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, where everything it can build is listed, and the 1D annotation view. The view arrives with none of its tracks on; DNA binding, Natural variant, AlphaFold confidence and AlphaMissense scores come on from Session tracks in the selector." />
 
 The dialog's other two tabs take a structure from somewhere else: **Foldseek
 search** finds structures resembling the protein's own, and **Open file
@@ -277,18 +254,16 @@ symbol fall through to the BLAST tab.
 
 ## Where each MSA comes from
 
-Three routes on this page open the same view type over three different MSAs, and
-which one you want depends on what the rows are for.
+Two routes on this page open the same view type over different MSAs, and which
+one you want depends on what the rows are for.
 
-| Route                                     | MSA                                                              | Rows                                |
-| ----------------------------------------- | ---------------------------------------------------------------- | ----------------------------------- |
-| **Launch MSA view** on the gene menu      | built per gene from NCBI's ortholog records, aligned at EBI      | one per species, named              |
-| The Gene Explorer                         | UCSC's precomputed multiz alignment across a hundred vertebrates | one per species, named; human genes |
-| **Launch MSA view** in the protein dialog | the input alignment AlphaFold folded from                        | deep, unlabelled                    |
+| Route                                | MSA                                                              | Rows                                |
+| ------------------------------------ | ---------------------------------------------------------------- | ----------------------------------- |
+| **Launch MSA view** on the gene menu | built per gene from NCBI's ortholog records, aligned at EBI      | one per species, named              |
+| The Gene Explorer                    | UCSC's precomputed multiz alignment across a hundred vertebrates | one per species, named; human genes |
 
-The named panels are the ones to read a present-or-absent domain call across,
-since a row means a species. AlphaFold's is the one to read depth from, and it
-is the largest download of the three.
+A row means a species in both, which is what makes them the panels to read a
+present-or-absent domain call across.
 
 ## Sharing a connected view as a URL
 
@@ -329,9 +304,9 @@ residues to a genome, so no highlight is exchanged.
 
 ## Adding the plugins to your own instance
 
-Both plugins are worth installing together rather than picking one: protein3d
-checks at runtime whether msaview is loaded, and grows the two extra launch
-options described above when it is.
+Both plugins are worth installing together rather than picking one: they open
+the same gene's structure and its cross-species alignment, and the three views
+stay connected when both are in the session.
 
 - Open the [plugin store](/docs/user_guides/plugin_store) (Tools menu) and
   install **Protein3d** and **MSAView**, or
