@@ -28,12 +28,13 @@ plugins/alignments  BamAdapter -> BamSlightlyLazyFeature (recordClass)
 @gmod/bgzf-filehandle  unzipChunkSlice(bytes, chunk, pool)
         |              -> {buffer, cpositions, dpositions}
         v
-packages/core       RemoteFileWithRangeCache / CachedFilehandle
-                    256 KiB chunk LRU, in-flight dedup, refcounted aborts
+@gmod/range-cache-filehandle  RemoteFileWithRangeCache / CachedFilehandle
+                              256 KiB chunk LRU, in-flight dedup, refcounted
+                              aborts
 ```
 
 Four caches stack, each bounded in its own unit and each with a documented
-reason to exist at that level: 256 KiB compressed chunks in core, decompressed
+reason to exist at that level: 256 KiB compressed chunks in the range cache, decompressed
 + parsed records per merged BAM chunk in `@gmod/bam`, the parsed index and
 header as one-entry shared reads, and the sequence adapter's own reads at the
 bottom of the reference fetch. Nothing between them is redundant — a

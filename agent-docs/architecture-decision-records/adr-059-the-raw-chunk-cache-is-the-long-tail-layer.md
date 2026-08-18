@@ -14,9 +14,10 @@ Accepted (2026-08). Measured, and both measurements are re-runnable:
 
 ## Context
 
-`packages/core/src/util/io/RemoteFileWithRangeCache.ts` caches raw byte ranges in
-256 KB chunks, module-level, capped by entry count — so the main thread and every
-RPC worker hold their own. Above it, every indexed format's library keeps a
+`RemoteFileWithRangeCache` (`@gmod/range-cache-filehandle`, re-exported from
+`packages/core/src/util/io/`) caches raw byte ranges in 256 KB chunks,
+module-level, capped by entry count — so the main thread and every RPC worker
+hold their own. Above it, every indexed format's library keeps a
 second cache of *parsed* results: `@gmod/bam`, `@gmod/cram` and `@gmod/tabix` all
 take a `cacheIdleTimeoutMs` and sweep themselves after three minutes.
 

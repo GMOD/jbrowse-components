@@ -503,8 +503,9 @@ deliberately *not* passing a stop token, which made the surrounding code read as
 though a bound existed.
 
 What is left is the implement half, and it is now the sharper of the two:
-`RemoteFileWithRangeCache` has a per-request deadline (`RESPONSE_TIMEOUT_MS`)
-and the RPC layer has none, so the same question is answered two ways at two
+`RemoteFileWithRangeCache` has a per-request deadline
+(`@gmod/range-cache-filehandle`'s `RESPONSE_TIMEOUT_MS`) and the RPC layer has
+none, so the same question is answered two ways at two
 layers. Copy the shape rather than inventing one — it bounds the wait for a
 *response*, not the transfer, and composes with the caller's signal instead of
 replacing it.
@@ -1959,9 +1960,9 @@ network are being bounded from the wrong place.
 
 Both halves of the reclamation pair are now done, so don't re-open either. The
 cache sweeps itself on an interval that starts with the first chunk and stops
-when the sweep empties the cache (`RemoteFileWithRangeCache.ts`); the exported
-`sweepIdleCache` is a documented extra for a caller with its own schedule, not a
-dangling hook. And the pool's fix could NOT have been "call
+when the sweep empties the cache (`@gmod/range-cache-filehandle`, re-exported
+from `packages/core/src/util/io/`); the exported `sweepIdleCache` is a
+documented extra for a caller with its own schedule, not a dangling hook. And the pool's fix could NOT have been "call
 `destroySharedWorkerPool` when the last bgzip track closes", which is the obvious
 shape and a footgun: a destroyed pool throws out of `decompressBlocks`, and
 `BamFile` holds the pool promise for the life of the track, so that would break

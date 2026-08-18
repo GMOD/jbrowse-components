@@ -52,8 +52,8 @@ whose reader accepts a signal:
 
 **The signal `fetch` receives is not the one the caller passed.**
 `RemoteFileWithRangeCache.fetchRange` composes it with a response deadline
-(`RESPONSE_TIMEOUT_MS`, the thing that makes a stalled connection an error
-instead of a permanent spinner), so identity with the caller's signal is not an
+(`@gmod/range-cache-filehandle`'s `RESPONSE_TIMEOUT_MS`, the thing that makes a
+stalled connection an error instead of a permanent spinner), so identity with the caller's signal is not an
 invariant on that path. Composing is the whole point: a deadline that *replaced*
 the signal would take cancellation back off the socket, undoing everything below.
 
@@ -79,8 +79,8 @@ The shared-fetch hazard is handled at every layer, and mostly not by us:
 `@gmod/tabix` and `@gmod/bbi` both route block reads through
 `@gmod/abortable-promise-cache`, whose `AggregateAbortController` fires only once
 **every** joined consumer has aborted — ref-counted by construction. `@gmod/bam`
-retries its chunk joins on a foreign abort. Only our own
-`RemoteFileWithRangeCache` needed the fix described below.
+retries its chunk joins on a foreign abort. Only `RemoteFileWithRangeCache`
+needed the fix described below.
 
 ## Why the uid-keyed abort protocol was not needed
 
@@ -101,12 +101,14 @@ sharer aborted, the others did not":
 - `@gmod/bam` ≥7.6.0 already retries its own chunk-cache joins when the read
   they joined aborted and theirs did not (`bamFile.js` `_cachedChunkFeatures`).
   Nothing to do.
-- `RemoteFileWithRangeCache` coalesces 256 KiB chunk fetches and did **not** —
-  its `inFlight` comment used to record precisely the assumption this work
-  breaks ("no waiter can cancel a fetch out from under the others, because
-  in-tree cancellation is stopToken-based"). It now records the owning signal
-  and `joinChunk` re-issues, once, on a foreign abort. Covered by three tests in
-  `RemoteFileWithRangeCache.test.ts`, verified to fail without the retry.
+- `RemoteFileWithRangeCache` coalesces 256 KiB chunk fetches, so one sharer's
+  abort must not cancel the request the others are waiting on. Its `inFlight`
+  entry records the owning signal, and `joinChunk` re-issues, once, on a foreign
+  abort. Covered upstream by
+  `@gmod/range-cache-filehandle`'s `test/rangeCache.test.ts`
+  §"RemoteFileWithRangeCache aborted-chunk sharing", five tests, verified to
+  fail without the retry. Nothing in this repo tests it, which is the thing to
+  know before changing the behaviour from here.
 
 Ref-counting was not needed: a single bounded retry makes the pathological case
 one duplicate 256 KiB fetch rather than a recursion whose depth depends on how

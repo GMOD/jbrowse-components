@@ -26,8 +26,9 @@ plugins/alignments  CramAdapter -> CramSlightlyLazyFeature (a wrapper, not a
         |           slice decode also calls BACK UP through
         |           fetchReferenceSequence -> the adapter's sequence adapter
         v
-packages/core       RemoteFileWithRangeCache / CachedFilehandle
-                    256 KiB chunk LRU, in-flight dedup, refcounted aborts
+@gmod/range-cache-filehandle  RemoteFileWithRangeCache / CachedFilehandle
+                              256 KiB chunk LRU, in-flight dedup, refcounted
+                              aborts
 ```
 
 The shape that matters and has no BAM equivalent is that **arrow going back
