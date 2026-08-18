@@ -103,7 +103,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
   public static capabilities = ['hasResolution']
 
   private async setupPre(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
+    const { statusCallback } = opts ?? {}
     const pluginManager = this.pluginManager
     const bigwig = new BigWig({
       filehandle: openLocation(this.getConf('bigWigLocation'), pluginManager),
@@ -150,7 +150,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     opts: WiggleOptions = {},
   ): Promise<ArrayFeatureView> {
     const { refName, start, end } = region
-    const { bpPerPx = 0, resolution = 1, statusCallback = () => {} } = opts
+    const { bpPerPx = 0, resolution = 1, statusCallback } = opts
     const resolutionMultiplier = this.getConf('resolutionMultiplier')
     const source = this.getConf('source')
 
@@ -199,7 +199,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     regions: Region[],
     opts: WiggleOptions = {},
   ): Promise<RawFeatureArrays[]> {
-    const { bpPerPx = 0, resolution = 1, statusCallback = () => {} } = opts
+    const { bpPerPx = 0, resolution = 1, statusCallback } = opts
     const resolutionMultiplier = this.getConf('resolutionMultiplier')
     const { bigwig } = await this.setup(opts)
 

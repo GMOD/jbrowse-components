@@ -31,7 +31,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
   }>
 
   public async configurePre(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
+    const { statusCallback } = opts ?? {}
     const pm = this.pluginManager
     const bigbed = new BigBed({
       filehandle: openLocation(this.getConf('bigBedLocation'), pm),
@@ -156,7 +156,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
     allowRedispatch: boolean
     originalQuery?: Region
   }) {
-    const { statusCallback = () => {} } = opts
+    const { statusCallback } = opts
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
     const disableGeneHeuristic = this.getConf('disableGeneHeuristic')

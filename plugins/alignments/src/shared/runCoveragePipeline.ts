@@ -75,7 +75,7 @@ export async function runCoveragePipeline({
   showCoverage: boolean
   trackStrands?: boolean
   bisulfite: boolean
-  statusCallback: StatusCallback
+  statusCallback: StatusCallback | undefined
   stopTokenCheck: StopTokenChecker
 }) {
   const { start: regionStart, end: regionEnd } = region

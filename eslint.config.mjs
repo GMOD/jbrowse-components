@@ -130,6 +130,21 @@ const noUncancellableRpcCall = {
     'This rpcManager.call passes no `stopToken`, so nothing can stop the worker once the user moves on or closes the dialog — it keeps its in-flight HTTP reads too. Pass `ctx.stopToken`, or the token useFetch hands the fetcher. If the work is genuinely uninterruptible or too short to matter, `// eslint-disable-next-line no-restricted-syntax` with the reason. See agent-docs/reference/PROGRESS_REPORTING.md.',
 }
 
+// The other end of the two above: having decided a call reports nothing, don't
+// manufacture a reporter for it one frame later. `statusCallback` is optional
+// the whole way down and every consumer branches on the absence —
+// `downloadStatus` withholds the reader's `onProgress` (which is what lets
+// generic-filehandle2 take `res.arrayBuffer()` instead of its chunk-copy loop),
+// `createProgressReporter` skips its emit, `openPhase` allocates no stack. A
+// no-op default is truthy at all three, so it turns those branches off while
+// reading like a tidy-up. Thirty-one adapters had one.
+const noNoOpStatusCallbackDefault = {
+  selector:
+    "AssignmentPattern[left.name='statusCallback'] > ArrowFunctionExpression",
+  message:
+    'Do not default `statusCallback` to a no-op. It is optional everywhere below you and the absence is a live branch — a no-op is truthy, so it silently turns off the reader fast path and pays for progress nobody reads. Leave it `StatusCallback | undefined` and let `updateStatus`/`downloadStatus`/`createProgressReporter` handle it; call it as `statusCallback?.(…)`. See agent-docs/reference/PROGRESS_REPORTING.md.',
+}
+
 // The set every file gets. A block below that needs its own extra selectors
 // spreads this rather than re-listing it — flat config overrides the rule
 // instead of merging it, so a hand-copied list is a list that drifts, which is
@@ -157,6 +172,7 @@ const sourceRestrictedSyntax = [
   noRecordRefMutation,
   noUnreportedRpcCall,
   noUncancellableRpcCall,
+  noNoOpStatusCallbackDefault,
 ]
 
 export default defineConfig(

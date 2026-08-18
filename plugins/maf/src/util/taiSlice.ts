@@ -30,7 +30,7 @@ export async function readTaiSlice({
   start,
   end,
   location,
-  statusCallback = () => {},
+  statusCallback,
 }: {
   index: IndexData
   refName: string

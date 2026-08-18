@@ -57,7 +57,7 @@ export async function buildAlignmentDetailArrays({
   perBaseLetters: PerBaseLetterEntry[]
   region: Region
   showSoftClipping?: boolean
-  statusCallback: StatusCallback
+  statusCallback: StatusCallback | undefined
 }) {
   const { start: regionStart } = region
   return updateStatus(

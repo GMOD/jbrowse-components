@@ -107,7 +107,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup(opts?: BaseOptions) {
-    const { statusCallback = () => {}, stopToken } = opts ?? {}
+    const { statusCallback, stopToken } = opts ?? {}
     // Only surface the "Downloading header" status on the genuine first
     // fetch: `@gmod/hic` memoizes the parsed header, so every later call (e.g. on
     // each zoom-level change) resolves from memory and shouldn't re-flash a
@@ -127,7 +127,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getHeader(opts?: BaseOptions) {
-    const { statusCallback = () => {}, stopToken } = opts ?? {}
+    const { statusCallback, stopToken } = opts ?? {}
     const { resolutions } = await this.setup(opts)
     // Its own phase, and not folded into `setup`'s: on a v8 file with no
     // recorded index position this walks the whole normalized-expected-values
@@ -165,7 +165,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     const {
       resolution: res,
       normalization = 'KR',
-      statusCallback = () => {},
+      statusCallback,
       stopToken,
     } = opts
 

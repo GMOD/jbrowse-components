@@ -133,7 +133,7 @@ async function makeEvaluators(
     | 'ldRefName'
   > & {
     pluginManager: PluginManager
-    statusCallback: StatusCallback
+    statusCallback: StatusCallback | undefined
     stopTokenCheck: StopTokenChecker
   },
 ): Promise<ManhattanEvaluators & { indexFound?: boolean }> {
@@ -187,7 +187,7 @@ export async function executeGetManhattanData({
     ldAdapterConfig,
     ldRefName,
     stopToken,
-    statusCallback = () => {},
+    statusCallback,
   } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)

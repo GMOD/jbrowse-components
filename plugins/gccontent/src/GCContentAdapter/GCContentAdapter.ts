@@ -33,7 +33,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
     query: Region,
     opts?: BaseOptions,
   ): Promise<Feature[]> {
-    const { statusCallback = () => {}, stopToken } = opts ?? {}
+    const { statusCallback, stopToken } = opts ?? {}
     const sequenceAdapter = await this.configure()
     const windowSize = this.getConf('windowSize')
     const windowDelta = this.getConf('windowDelta')

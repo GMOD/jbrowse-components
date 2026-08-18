@@ -102,7 +102,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   // downloading. Once loaded, callers (every getFeatures on pan/zoom) await the
   // cached promise silently rather than re-flashing the label.
   async getMetadata(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
+    const { statusCallback } = opts ?? {}
     return this.setupReady
       ? this.configure()
       : updateStatus('Downloading index', statusCallback, () =>
@@ -150,7 +150,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
-    const { stopToken, statusCallback = () => {} } = opts ?? {}
+    const { stopToken, statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       // warms the index under its own status label — getLines would otherwise
       // download it under "Downloading features"

@@ -236,7 +236,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
       filterBy?: FilterBy
     },
   ) {
-    const { stopToken, filterBy, statusCallback = () => {} } = opts ?? {}
+    const { stopToken, filterBy, statusCallback } = opts ?? {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {

@@ -32,7 +32,7 @@ export async function executeMultiRowClusterFeatures({
     partitionField,
     colorConfig,
     stopToken,
-    statusCallback = () => {},
+    statusCallback,
   } = args
   const stopTokenCheck = createStopTokenChecker(stopToken)
   const dataAdapter = await getFeatureAdapterOrThrow({

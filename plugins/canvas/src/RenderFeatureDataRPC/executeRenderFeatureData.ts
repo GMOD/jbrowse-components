@@ -49,7 +49,7 @@ export async function executeRenderFeatureData({
     byteLimit,
     theme: themeOptions,
     stopToken,
-    statusCallback = () => {},
+    statusCallback,
   } = args
 
   // Resolve the colors worker-side from the structurally serializable args the

@@ -40,7 +40,7 @@ export function sequenceFeatures(
   opts: BaseOptions | undefined,
   setup: () => Promise<SequenceSource>,
 ) {
-  const { statusCallback = () => {}, stopToken } = opts ?? {}
+  const { statusCallback, stopToken } = opts ?? {}
   return ObservableCreate<Feature>(async observer => {
     // outside the updateStatus below because setup owns its own phase labels —
     // an unindexed FASTA downloads and parses the whole file here — and a

@@ -29,7 +29,7 @@ export async function executeMultiRowGetFeatures({
     lengthField,
     colorConfig,
     stopToken,
-    statusCallback = () => {},
+    statusCallback,
   } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)

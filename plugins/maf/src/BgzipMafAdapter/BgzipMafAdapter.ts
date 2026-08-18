@@ -59,7 +59,7 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdap
   }
 
   setup(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
+    const { statusCallback } = opts ?? {}
     return this.setupReady
       ? this.setupPre()
       : updateStatus('Downloading index', statusCallback, () => this.setupPre())
@@ -73,7 +73,7 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdap
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
+    const { statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       const index = await this.setup(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
@@ -110,7 +110,7 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdap
       }
 
       resolver.reportUnmatched()
-      statusCallback('')
+      statusCallback?.('')
       observer.complete()
     }, opts?.stopToken)
   }

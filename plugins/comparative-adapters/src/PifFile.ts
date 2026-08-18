@@ -50,7 +50,7 @@ export class PifFile {
   }
 
   getHeader(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
+    const { statusCallback } = opts ?? {}
     return updateStatus('Downloading header', statusCallback, () =>
       this.tabix.getHeader(),
     )
@@ -101,7 +101,7 @@ export class PifFile {
     seqid: string
     start: number
     end: number
-    statusCallback: StatusCallback
+    statusCallback: StatusCallback | undefined
     stopTokenCheck: StopTokenChecker
     lineCallback: (line: PifLine, fileOffset: number) => void
   }) {

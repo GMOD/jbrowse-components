@@ -251,7 +251,7 @@ interface GroupContext {
   // Shared insert-size color scale, pooled across every group of the fetch so
   // all stacked sections color long/short inserts on one comparable scale.
   insertSizeStats: InsertSizeBand | undefined
-  statusCallback: StatusCallback
+  statusCallback: StatusCallback | undefined
   stopTokenCheck: StopTokenChecker
 }
 
@@ -459,7 +459,7 @@ export async function executeRenderAlignmentData({
     drawSingletons = true,
     drawProperPairs = true,
     showOnlySplitAlignments = false,
-    statusCallback = () => {},
+    statusCallback,
     stopToken,
   } = args
   const region = regions[0]!

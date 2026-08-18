@@ -51,7 +51,7 @@ export abstract class PlinkLDAdapterBase<
   }
 
   protected async configure(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
+    const { statusCallback } = opts ?? {}
     return this.configureReady
       ? this.loadConfigCached(opts)
       : updateStatus(this.statusLabel, statusCallback, () =>

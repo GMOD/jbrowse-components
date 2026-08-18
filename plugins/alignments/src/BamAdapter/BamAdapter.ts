@@ -123,7 +123,7 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
     // originalRefName is not read here — fetchRegionSeq resolves it, since the
     // reference read is the only consumer of the assembly-side name
     const { refName, start, end } = region
-    const { stopToken, filterBy, statusCallback = () => {} } = opts ?? {}
+    const { stopToken, filterBy, statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
       const { bam } = this.configure()

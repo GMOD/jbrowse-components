@@ -50,7 +50,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
-    const { statusCallback = () => {}, stopToken } = opts
+    const { statusCallback, stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 

@@ -153,7 +153,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
   // loaded, callers await the cached promise silently rather than re-flashing the
   // label on pan/zoom.
   setup(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
+    const { statusCallback } = opts ?? {}
     return this.setupReady
       ? this.setupPre()
       : updateStatus('Downloading index', statusCallback, () => this.setupPre())
@@ -202,7 +202,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
   }
 
   getFeatures(query: Region, opts?: MafAdapterOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
+    const { statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       const { index, runLengthEncodeBases } = await this.setup(opts)
       const resolver = makeSourceResolver(buildSampleFilter(opts))
@@ -243,7 +243,7 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffy
       }
 
       resolver.reportUnmatched()
-      statusCallback('')
+      statusCallback?.('')
       observer.complete()
       // The stop token, like the tabix and bigMaf adapters pass: without it a
       // cancelled fetch (any pan or zoom) kept delivering into a subscriber

@@ -98,7 +98,7 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
-    const { statusCallback = () => {}, stopToken } = opts
+    const { statusCallback, stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName: qref, assemblyName } = query
       const asmByPrefix = assemblyByPanSNPrefix(this)

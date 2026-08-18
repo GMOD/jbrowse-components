@@ -21,7 +21,7 @@ export async function loadSubAdapter<
   if (!self.getSubAdapter) {
     throw new Error('no getSubAdapter available')
   }
-  const { statusCallback = () => {} } = opts ?? {}
+  const { statusCallback } = opts ?? {}
   return updateStatus('Downloading index', statusCallback, async () => {
     const result = await self.getSubAdapter!({
       ...getSnapshot(self.config),
