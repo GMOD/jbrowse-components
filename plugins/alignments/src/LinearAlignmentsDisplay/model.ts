@@ -85,6 +85,7 @@ import { configSlotViews } from './configSlotViews.ts'
 import { ColorScheme } from './constants.ts'
 import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
 import {
+  applyChainStrandFrames,
   applyReadColorsByGroup,
   collectAcrossGroups,
   fittedReadPitch,
@@ -1394,6 +1395,37 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Whether the unpaired chain-strand framing is live, as a BOOLEAN and in
+         * its own computed. The boolean is the point: nine of the schemes give
+         * one of two answers, so MobX's value comparison stops a scheme switch
+         * from invalidating `laidOutByGroupFramed` unless the answer actually
+         * moved. Reading `framesUnpairedChainStrand` inline there instead would
+         * make the frame solve depend on `colorBy` itself and re-run on every
+         * switch — which is what it used to do.
+         */
+        get framesChainStrand() {
+          return framesUnpairedChainStrand(
+            colorSchemeIndexFor(this.colorBy.type),
+            this.readColorOpts,
+          )
+        },
+
+        /**
+         * #getter
+         * The laid-out data with every chain's strand frame settled — see
+         * `applyChainStrandFrames`, which says why the two passes are here and
+         * not in the colour bake below.
+         */
+        get laidOutByGroupFramed() {
+          return applyChainStrandFrames(
+            this.laidOutByGroupUncolored,
+            self.isChainMode,
+            this.framesChainStrand,
+          )
+        },
+
+        /**
+         * #getter
          * Per-group laid-out data with the per-read color arrays baked on. Every
          * consumer reads this one; `laidOutByGroupUncolored` exists only to be
          * its layout half.
@@ -1411,7 +1443,7 @@ export default function stateModelFactory(
          */
         get laidOutByGroup() {
           return applyReadColorsByGroup(
-            this.laidOutByGroupUncolored,
+            this.laidOutByGroupFramed,
             this.readColorContext,
           )
         },

@@ -3,6 +3,8 @@ import {
   pileupLayoutMaxY,
   withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import { consensusChainStrandFrames } from './chainStrandConsensus.ts'
+import { reconcileChainSuppAcrossRegions } from './chainSuppAcrossRegions.ts'
 import {
   buildCollapsedPileupMap,
   collapsedLayoutMaxY,
@@ -219,6 +221,76 @@ export interface ReadColorContext {
 
   colorScheme: number
   readColorOpts: ReadColorOpts
+}
+
+/**
+ * Settle every chain's `readChainHasSupp` frame bit over an already laid-out
+ * map, ahead of the colour bake.
+ *
+ * Two passes, and the order is the dependency: `reconcileChainSuppAcrossRegions`
+ * settles what one chain's own segments say across the displayed regions — each
+ * worker call sees one region, so a fusion read's primary and its supplementary
+ * are classified by two calls that each saw half a molecule — and then
+ * `consensusChainStrandFrames` settles the one thing no single chain can, which
+ * way "same strand" points, by comparing chains to each other.
+ *
+ * ITS OWN STEP because its inputs are its own. Neither pass reads the colour
+ * scheme, the tag map, or anything else in `ReadColorContext`; both read the
+ * layout, chain mode, and whether the framing is live. Folded into the colour
+ * bake (where they were) they re-ran on every scheme switch and on every tag
+ * value discovered mid-fetch, re-solving a relaxation over every chain on screen
+ * for a bit-identical answer. Callers should memoize this on `framed` as a
+ * BOOLEAN, so the schemes that share an answer share the memo.
+ *
+ * Reconciliation is per group and the consensus is across all of them, which is
+ * the scope each question actually has. A chain never spans groups
+ * (`partitionChains` keeps it whole), so unioning one across them would be a
+ * no-op; but the consensus is a comparison BETWEEN chains, and confining it to a
+ * group let two sections of the same locus settle on opposite signs — the
+ * red-for-blue swap its global sign anchor exists to prevent, happening between
+ * sections instead of between renders.
+ */
+export function applyChainStrandFrames(
+  byGroup: LaidOutByGroup,
+  chainMode: boolean,
+  framed: boolean,
+): LaidOutByGroup {
+  if (!chainMode) {
+    return byGroup
+  }
+  const reconciled: LaidOutByGroup = new Map()
+  for (const [key, map] of byGroup) {
+    reconciled.set(key, reconcileChainSuppAcrossRegions(map))
+  }
+  if (!framed) {
+    return reconciled
+  }
+  // The consensus takes one flat map and treats each entry as a locus-bucketing
+  // unit, so the groups are flattened into a private key space and split back
+  // out. The keys are this function's alone — nothing downstream sees them —
+  // which is why a running counter is enough and no stride namespacing is
+  // needed.
+  const flat = new Map<number, LaidOutPileupData>()
+  const origin: { key: string; idx: number }[] = []
+  for (const [key, map] of reconciled) {
+    for (const [idx, data] of map) {
+      flat.set(origin.length, data)
+      origin.push({ key, idx })
+    }
+  }
+  const framedFlat = consensusChainStrandFrames(flat)
+  if (framedFlat === flat) {
+    return reconciled
+  }
+  const out: LaidOutByGroup = new Map()
+  for (const key of reconciled.keys()) {
+    out.set(key, new Map())
+  }
+  for (const [flatKey, data] of framedFlat) {
+    const { key, idx } = origin[flatKey]!
+    out.get(key)!.set(idx, data)
+  }
+  return out
 }
 
 /**
