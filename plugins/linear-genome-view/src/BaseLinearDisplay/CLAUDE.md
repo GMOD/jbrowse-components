@@ -42,10 +42,21 @@ and `LinearHicDisplay/infoFetchFailure.test.ts` is what covers its retry
 instead.
 
 This family has no `shouldFetch()` to ask, so the classification is: `needed`
-empty is the decline, and reaching `fetchRegions` is the fetch. Every
+empty is the decline, and reaching `FetchMixin.runFetch` is the fetch. Every
 `fetchNeeded` override gets there in its synchronous prefix, which is what makes
 that readable without awaiting the override. A new override that awaits first
 gets a false report, not silence.
+
+A fetch also answers the retry by itself, from `runFetch`, because a `reload()`
+can reach one with no autorun run in between — canvas's clears and calls
+`fetchNeeded` directly rather than waiting out the 600ms debounce, and by the
+time the autorun runs the blocks are covered.
+
+**`reloadCounter` is the whole arming mechanism, and MST replaces an action
+outright.** A `reload()` override that neither bumps it nor chains to a captured
+`superReload()` turns the check off for its display, silently — canvas did, for
+`LinearBasicDisplay` and `LinearVariantDisplay` both.
+`reloadReachesCounter.test.ts` reads every `reload()` in the tree.
 
 **Everything the check reads, it reads `untracked`** — it runs inside the fetch
 autorun, so a tracked read puts that observable in the autorun's dependency set

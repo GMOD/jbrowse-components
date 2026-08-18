@@ -858,7 +858,8 @@ firing from a debounced autorun lands after the test body returns, so it fails
 whichever test ran next, and anything arriving after the last test fails the
 file rather than being attributed wrongly.
 
-**Now checked** (dev-only, no false positives possible):
+**Now checked** (dev-only; every one but the retry contract at the end reports
+only on a real violation):
 
 - **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
   Both define `measuresBytesInFetch` and the later wins, so swapping them switches
@@ -893,6 +894,25 @@ file rather than being attributed wrongly.
   case reads `measuresBytesInFetch`. **The general move: when a collision has no
   natural opt-in to probe, add the flag rather than concluding the order can't
   report itself.** Pinned both ways in `TrackHeightMixin.test.ts`.
+- **`reload()` must reach a fetch, not just clear the error.**
+  `makeRetryContractCheck` (`assertDisplayContract.ts`), installed by both fetch
+  foundations: a run following a `reloadCounter` bump that declines to fetch *is*
+  the dead Retry button `DisplayErrorBar` shows. Unlike the rest of this list it
+  is not an attach-time read — the relation between `reload()` and the gate is
+  semantic, so it is judged per run, which is also why it is the one entry that
+  can be wrong: a `fetchNeeded` override that awaited before fetching would read
+  as a decline. None does, and a new one gets a false report rather than a silent
+  gap.
+
+  **What it does not survive is a `reload()` override.** The bump is the whole
+  arming mechanism and MST replaces an action outright, so an override that
+  neither bumps nor chains leaves the counter frozen — which reads as a display
+  that never retries, and the check goes quiet for good. Canvas's
+  `LinearBasicDisplay` shipped that way and took `LinearVariantDisplay` with it.
+  **The general move: a check armed by a value a subclass can stop producing needs
+  something watching the producers**, which here is
+  `reloadReachesCounter.test.ts`, reading every `reload()` in the tree. Details in
+  [DISPLAYCHROME.md](DISPLAYCHROME.md) §"The retry contract".
 
 **Still silent:**
 
@@ -921,6 +941,16 @@ file rather than being attributed wrongly.
   installer calls, so it could run once at attach inside a MobX probe that
   reports which observables it touched, and compare against `gpuProps()`'s set.
 
+- **The comparative family's `reload()` is unchecked.** The retry contract check
+  covers the per-region and global foundations; `installComparativeFetchAutorun`
+  installs `assertDisplayContract` but not `makeRetryContractCheck`, and dotplot
+  and synteny both render a banner whose Retry calls the same `reload()`. The
+  blocker is that its gate is `prepare()` returning `undefined`, which conflates
+  "nothing to fetch" with "not ready yet" — the exemption half already exists as
+  `SyntenyFetchStateMixin.fetchInert`. See
+  [DISPLAYCHROME.md](DISPLAYCHROME.md) §"The retry contract" for what each display
+  bails on.
+
 - **A display that omits `rpcProps()` gets no settings invalidation, silently.**
   `rpcPropsCacheKey` returns `''` and `SettingsInvalidate` is never installed —
   correct for `LinearReferenceSequenceDisplay`, indistinguishable from an
@@ -931,10 +961,13 @@ file rather than being attributed wrongly.
   declare — otherwise the check is console noise in the test suite rather than a
   signal.
 
-**Retire when** the remaining two become explicit data: a `deps()` callback the
-global-fetch helper reads unconditionally, and a required `rpcProps` (or the
-explicit opt-out above). The third condition this used to name — a marker the
-height mixins can compare composition order on — is `supportsHeightModes`, above.
+**Retire when** each of the above becomes explicit data — this section's own rule
+against restating a list's length applies here too, so read the list: a `deps()`
+callback the global-fetch helper reads unconditionally, a `prepare()` that says
+which of its two bail-outs it took, and a required `rpcProps` (or the explicit
+opt-out above). One condition this used to name — a marker the height mixins can
+compare composition order on — is `supportsHeightModes`, and it has moved up into
+"Now checked".
 
 ### A spreadsheet's rows leave the session snapshot silently, and a local import cannot get them back
 

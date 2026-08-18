@@ -1570,11 +1570,15 @@ export default function MultiSampleVariantBaseModelF(
          * sources autorun as well as resetting the fetch, and `fetchNeeded`
          * below declines until `sourcesBase` lands. So the retry contract is
          * judged on the run that follows, not on the declining one — see
-         * `MultiRegionDisplayMixin.awaitingPrerequisite`.
+         * `FetchMixin.awaitingPrerequisite`.
          *
-         * Strictly narrower than the decline it explains, which is what makes it
-         * a deferral: `fetchNeeded` also declines on an empty region set, and
-         * that one is still judged.
+         * Strictly narrower than the declines it explains, which is what makes it
+         * a deferral rather than an opt-out: `FetchVisibleRegions` also declines
+         * when every visible block is already covered, and that one is judged as
+         * soon as `sourcesBase` is in hand. Not `fetchNeeded`'s own empty-region
+         * return — the autorun only calls it with a non-empty `needed`, which
+         * means the view has visible regions, so that branch is unreachable from
+         * there.
          */
         get awaitingPrerequisite(): boolean {
           return !self.sourcesBase

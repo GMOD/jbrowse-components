@@ -2623,17 +2623,28 @@ export default function baseStateModelFactory(
           self.commitGateMeasurements(fetches, issued)
         }
 
+        const superReload = self.reload
         return {
+          // `superReload()` is not optional: it is what bumps `reloadCounter`,
+          // and that counter is the whole arming mechanism of the dead-Retry
+          // check. MST replaces an action outright, so an override that skips it
+          // freezes the counter — which reads as a display that never retries,
+          // and turns the check off here and on `LinearVariantDisplay` with no
+          // symptom at all. `reloadReachesCounter.test.ts` watches every
+          // `reload()` in the tree for the next one.
           /**
            * #action
+           * Clears the loaded regions and fetches straight away, rather than
+           * waiting out `FetchVisibleRegions`' 600ms debounce as the rest of the
+           * family does — Retry and Force load are both clicks, and this is the
+           * display the user is most often clicking on.
            */
-          async reload() {
+          reload() {
+            superReload()
             const view = getView(self)
-            if (!view.initialized) {
-              return
+            if (view.initialized) {
+              self.fetchNeeded(view.bufferedVisibleRegions)
             }
-            self.clearAllRpcData()
-            self.fetchNeeded(view.bufferedVisibleRegions)
           },
 
           /**

@@ -1,3 +1,4 @@
+import { noteFetchStarted } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import {
   createGuardedStatusSink,
   createStatusThrottle,
@@ -380,6 +381,11 @@ export default function FetchMixin() {
        * errors are swallowed; others are stored in `error` if not stale.
        */
       runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
+        // Dev-only, and the one place every family's fetches pass through, which
+        // is why the retry check watches here: a fetch answers an outstanding
+        // `reload()` wherever that reload reached it from, including a `reload()`
+        // that fetches directly instead of leaving it to a fetch autorun.
+        noteFetchStarted(self)
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
           self.resetStatus()

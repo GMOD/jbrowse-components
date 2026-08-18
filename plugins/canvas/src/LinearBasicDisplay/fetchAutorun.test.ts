@@ -66,6 +66,23 @@ test('the gate opt-in survives regardless of mixin composition order', () => {
   expect(display.gateEnabled).toBe(true)
 })
 
+// This display overrides `reload()` to fetch straight away instead of waiting out
+// the autorun's 600ms debounce, and for a year that override also skipped the
+// `reloadCounter` bump — which is the only thing arming the dead-Retry check, so
+// the check was off here and on `LinearVariantDisplay` with it. Nothing was
+// visibly wrong, which is the whole problem: the button worked, the autoruns
+// fired, and the check simply never spoke.
+//
+// The source-level companion is
+// `plugin-linear-genome-view`'s `reloadReachesCounter.test.ts`; this is the
+// runtime half, on the display the miss was found on.
+test('reload() bumps reloadCounter, which is what arms the retry check', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const before = display.reloadCounter
+  display.reload()
+  expect(display.reloadCounter).toBe(before + 1)
+})
+
 // The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
 // them untracked and callers keep a stale answer (BaseLinearDisplay/CLAUDE.md,
 // "`isCacheValid` is a view, not an action").

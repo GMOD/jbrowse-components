@@ -1,7 +1,7 @@
 import {
   assertDisplayContract,
   makeRetryContractCheck,
-  takeFetchFunnelEntered,
+  takeFetchStarted,
 } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
@@ -155,18 +155,16 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
       })
 
       // A fetch is the one plan whose retry answer the plan cannot give:
-      // reaching `fetchNeeded` is not reaching `fetchRegions`, since an
-      // override can decline inside it, so the funnel flag classifies this one.
+      // reaching `fetchNeeded` is not reaching a fetch, since an override can
+      // decline inside it, so the fetch-start flag classifies this one.
       if (plan.kind === 'fetch') {
-        // Cleared first so the read below can only see this call's entry.
-        takeFetchFunnelEntered(self)
+        // Cleared first so the read below can only see this call's fetch.
+        takeFetchStarted(self)
         // Not awaited — and the classification depends on that. The override's
         // synchronous prefix has run by the time it hands back a promise, and
-        // reaching `fetchRegions` is what every one of them does there.
+        // reaching `FetchMixin.runFetch` is what every one of them does there.
         self.fetchNeeded(plan.needed)
-        noteFetchAutorunRun(
-          takeFetchFunnelEntered(self) ? 'fetched' : 'declined',
-        )
+        noteFetchAutorunRun(takeFetchStarted(self) ? 'fetched' : 'declined')
         return
       }
 

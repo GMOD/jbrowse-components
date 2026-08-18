@@ -22,7 +22,11 @@
 
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { makeRetryContractCheck } from './assertDisplayContract.ts'
+import {
+  makeRetryContractCheck,
+  noteFetchStarted,
+  takeFetchStarted,
+} from './assertDisplayContract.ts'
 
 import type { FetchAutorunOutcome } from './assertDisplayContract.ts'
 
@@ -252,6 +256,77 @@ describe('awaitingPrerequisite is a deferral', () => {
       host.reload()
       expect(run('declined')).toBe(false)
     }
+  })
+})
+
+// The second way in. Both fetch foundations classify their own autorun runs, but
+// a `reload()` can reach a fetch with no autorun run in between — canvas's clears
+// and calls `fetchNeeded` itself rather than waiting out the 600ms debounce — and
+// by the time the autorun does run, the blocks are covered and it reads as a
+// decline. So `FetchMixin.runFetch` answers the retry directly.
+describe('a fetch answers the retry wherever it started', () => {
+  it('consumes an outstanding bump, so the next decline is silent', () => {
+    const host = makeHost()
+    const run = drive(host)
+    host.reload()
+    noteFetchStarted(host)
+    expect(run('declined')).toBe(false)
+  })
+
+  it('reports nothing on its own when no retry is outstanding', () => {
+    const host = makeHost()
+    drive(host)
+    noteFetchStarted(host)
+    noteFetchStarted(host)
+    expect(takeDisplayContractReports()).toEqual([])
+  })
+
+  // A fetch is the thing the retry asked for, so it beats the deferral: there is
+  // nothing left to judge on the run after the prerequisite lands.
+  it('consumes the bump even while a prerequisite is claimed', () => {
+    const host = makeHost({ awaitingPrerequisite: true })
+    const run = drive(host)
+    host.reload()
+    noteFetchStarted(host)
+    host.setAwaitingPrerequisite(false)
+    expect(run('declined')).toBe(false)
+  })
+
+  // A fetch that started BEFORE the click cannot answer it. This is the ordinary
+  // case of a retry landing on a display that is already loading, and the
+  // per-region foundation's `deferred` outcome is what carries the bump across it.
+  it('does not answer a bump that follows it', () => {
+    const host = makeHost()
+    const run = drive(host)
+    noteFetchStarted(host)
+    host.reload()
+    expect(run('declined')).toBe(true)
+  })
+
+  // The flag half, which is what the per-region autorun classifies on: set by the
+  // same call, and read once so a stale entry can't credit the next run.
+  it('leaves a flag the foundation reads and clears', () => {
+    const host = makeHost()
+    drive(host)
+    expect(takeFetchStarted(host)).toBe(false)
+    noteFetchStarted(host)
+    expect(takeFetchStarted(host)).toBe(true)
+    expect(takeFetchStarted(host)).toBe(false)
+  })
+
+  it('is a no-op in production', () => {
+    const prev = process.env.NODE_ENV
+    const host = makeHost()
+    const run = drive(host)
+    process.env.NODE_ENV = 'production'
+    try {
+      noteFetchStarted(host)
+    } finally {
+      process.env.NODE_ENV = prev
+    }
+    expect(takeFetchStarted(host)).toBe(false)
+    host.reload()
+    expect(run('declined')).toBe(true)
   })
 })
 

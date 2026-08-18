@@ -1,4 +1,3 @@
-import { noteFetchFunnelEntered } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
@@ -311,10 +310,13 @@ export default function MultiRegionDisplayMixin() {
          * override (and chain to `clearAllRpcData` directly if needed).
          *
          * An override must reach this counter, by chaining to super or by
-         * bumping it — `MultiSampleVariantBaseModel` is the one that overrides
-         * today and chains. Missing it doesn't break the retry, which the
+         * bumping it. Missing it doesn't break the retry, which the
          * `clearAllRpcData` call drives; it turns the dev-only retry check off
-         * for that display, silently, which is the failure mode worth knowing.
+         * for that display, silently. Both overrides in the tree chain now —
+         * `MultiSampleVariantBaseModel` always did, canvas's `LinearBasicDisplay`
+         * did not, and that took `LinearVariantDisplay` with it — and
+         * `reloadReachesCounter.test.ts` reads every `reload()` in the tree
+         * rather than leaving the next one to this paragraph.
          */
         reload() {
           self.reloadCounter++
@@ -361,9 +363,6 @@ export default function MultiRegionDisplayMixin() {
           needed: IndexedRegion[],
           work: (ctx: FetchContext) => Promise<void>,
         ) {
-          // The retry check's only view of this family's gate — see there for
-          // why the funnel and not `fetchNeeded`'s return value.
-          noteFetchFunnelEntered(self)
           await self.runFetch(async ctx => {
             // No-op unless the display set `measuresBytesPreFlight` — see
             // RegionTooLargeMixin

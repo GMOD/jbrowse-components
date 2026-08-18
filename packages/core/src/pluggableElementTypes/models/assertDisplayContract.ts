@@ -113,33 +113,43 @@ interface RetryContractHost {
   awaitingPrerequisite: boolean
 }
 
-// Displays whose fetch funnel has been entered since the last time the caller
-// looked. Module-scope and keyed on the node for the same reason `attached`
-// above is: the state is per display *instance*, and the only code that needs it
-// — a `.actions()` block and an `afterAttach` in the same mixin — cannot share a
-// closure, because the mixin factory runs once per model type.
+// Displays whose fetch has started since the last time the caller looked, and
+// the ledger each of those nodes reports to. Both module-scope and keyed on the
+// node for the same reason `attached` above is: the state is per display
+// *instance*, and the code that needs it — `FetchMixin.runFetch`, a `.actions()`
+// block, an `afterAttach` — cannot share a closure, because a mixin factory runs
+// once per model type.
 //
-// The per-region foundation's gate is not a boolean it can read. Its
-// `fetchNeeded` hook is an async action that returns the fetch's promise, and an
-// override declines by returning early, which is indistinguishable from
-// returning the promise of a fetch that has started. So the foundation watches
-// its own funnel instead: `fetchRegions` is the mixin's action, every override
-// reaches it (directly or through `fetchEachRegion` / `fetchAllRegions`), and
-// entry happens in the override's synchronous prefix. That is the foundation
-// observing itself, not reading state it doesn't own.
-const fetchFunnelEntered = new WeakSet<object>()
+// The signal is `FetchMixin.runFetch`, the one place a fetch starts in every
+// family, reached in the synchronous prefix of every one of the nine
+// `fetchNeeded` overrides (directly, or through `fetchEachRegion` /
+// `fetchAllRegions` / `fetchRegions`). The per-region foundation needs it because
+// its gate is not a boolean it can read: `fetchNeeded` is an async action that
+// returns the fetch's promise, and an override declines by returning early, which
+// is indistinguishable from returning the promise of a fetch that has started.
+//
+// **A fetch answers an outstanding retry wherever `reload()` reached it from**,
+// which is why `noteFetchStarted` tells the ledger rather than only setting a
+// flag for the autorun to read. Canvas's `reload()` fetches directly — it clears
+// and calls `fetchNeeded` itself instead of waiting out `FetchVisibleRegions`'
+// 600ms debounce — so by the time that autorun runs, the blocks are covered and
+// the run reads as a decline. Judging only from the autorun reports a dead button
+// on the display with the liveliest one.
+const fetchStarted = new WeakSet<object>()
+const ledgers = new WeakMap<object, (outcome: FetchAutorunOutcome) => void>()
 
-/** Called by the per-region foundation's own `fetchRegions`. Dev-only. */
-export function noteFetchFunnelEntered(self: object) {
+/** Called by `FetchMixin.runFetch`. Dev-only. */
+export function noteFetchStarted(self: object) {
   if (process.env.NODE_ENV === 'production') {
     return
   }
-  fetchFunnelEntered.add(self)
+  fetchStarted.add(self)
+  ledgers.get(self)?.('fetched')
 }
 
 /** Reads and clears the flag above, so each check starts from a known state. */
-export function takeFetchFunnelEntered(self: object) {
-  return fetchFunnelEntered.delete(self)
+export function takeFetchStarted(self: object) {
+  return fetchStarted.delete(self)
 }
 
 /**
@@ -164,17 +174,28 @@ export function takeFetchFunnelEntered(self: object) {
  * between `reload()` and `shouldFetch` is semantic: a run that follows a
  * `reloadCounter` bump and declines to fetch IS the dead button.
  *
+ * **The bump is the only thing that arms this**, so a `reload()` override that
+ * neither bumps nor chains to super turns the whole check off for its display —
+ * silently, and for as long as nobody reads the override. Canvas shipped in that
+ * shape, which is two of the most-used displays in the product. What watches for
+ * the next one is `MultiRegionDisplayMixin`'s `reloadReachesCounter.test.ts`,
+ * which reads every `reload()` in the tree.
+ *
  * **Both fetch foundations install it**, and what counts as the gate differs.
  * The global family has a literal `shouldFetch()` returning a boolean, so its
  * run classifies itself. The per-region family's gate is block coverage — a
  * `reload()` that invalidates nothing leaves `needed` empty — plus the
  * `fetchNeeded` override, which can decline inside an async body the foundation
  * cannot read a return value from. So `MultiRegionDisplayMixin` classifies on
- * whether the override reached `fetchRegions`, which every one of them does in
- * its synchronous prefix (checked across all eight). An override that awaits
- * before fetching would read as a decline; there is no such override, and one
- * added later gets a false report rather than a silent gap, which is the right
- * way round.
+ * whether the override reached `runFetch`, which every one of the nine does in
+ * its synchronous prefix. An override that awaits before fetching would read as a
+ * decline; there is no such override, and one added later gets a false report
+ * rather than a silent gap, which is the right way round.
+ *
+ * **A fetch also answers the retry on its own** (`noteFetchStarted`), because
+ * `reload()` may reach one without an autorun run in between: canvas's clears and
+ * calls `fetchNeeded` directly rather than waiting out the 600ms debounce, and
+ * the autorun's next run then finds the blocks covered.
  *
  * A display deliberately not fetching at all is the one exempt decline — LD with
  * the triangle off, whose `reload()` correctly does nothing because there is
@@ -224,7 +245,7 @@ export function makeRetryContractCheck(
     return () => {}
   }
   let lastCounter = untracked(() => self.reloadCounter)
-  return function noteFetchAutorunRun(outcome: FetchAutorunOutcome) {
+  function noteRetryContractOutcome(outcome: FetchAutorunOutcome) {
     untracked(() => {
       // A decline while a prerequisite is still in flight is a stage of the
       // retry, so the bump stays OUTSTANDING rather than being either reported
@@ -261,4 +282,8 @@ export function makeRetryContractCheck(
       }
     })
   }
+  // So `noteFetchStarted` can answer an outstanding retry the moment a fetch
+  // begins, whether or not an autorun run is what began it.
+  ledgers.set(self, noteRetryContractOutcome)
+  return noteRetryContractOutcome
 }

@@ -401,14 +401,27 @@ not in production. The one legitimate decline, a display deliberately not
 fetching at all (LD with the triangle off), exempts itself with
 `loadingSuppressed`.
 
+**The bump is what arms it, so a `reload()` override is how the whole check gets
+turned off.** MST replaces an action outright, so an override that neither bumps
+`reloadCounter` nor chains to the one it replaced leaves the counter frozen, and a
+frozen counter reads as a display that never retries — silence, not a report.
+Canvas's `LinearBasicDisplay` shipped in that shape and took `LinearVariantDisplay`
+with it, both of them among the most-used displays in the product, while
+`MultiRegionDisplayMixin.reload`'s docstring described the failure mode and named
+the other override as the only one. `reloadReachesCounter.test.ts` now reads every
+`reload()` in `plugins/` and `packages/` and requires each to bump, chain, or be
+an empty placeholder; nothing else in the tree makes a claim that an empty body
+could contradict.
+
 **A two-stage `reload()` says `awaitingPrerequisite`, and that is a deferral
 rather than a second exemption.** The declared decline leaves the `reloadCounter`
 bump outstanding instead of consuming it, so the run after the prerequisite lands
 is the one judged and a display cannot spend its retry on a decline it called
 preliminary. Read that mechanism in `makeRetryContractCheck`, and note what it
-costs at the one call site: HiC's predicate is `effectiveResolution === undefined`,
-the exact negation of its own gate, so every HiC decline defers and the report is
-unreachable for that display. There is nothing narrower to say — the gate and the
+costs at the one call site: HiC's predicate is `!hasResolutions` and its gate is
+`effectiveResolution !== undefined`, which is the same condition — `availableResolutions`
+is what both read — so every HiC decline defers and the report is unreachable for
+that display. There is nothing narrower to say — the gate and the
 prerequisite are one condition there — so HiC's retry is pinned by
 `LinearHicDisplay/infoFetchFailure.test.ts` and not by this check. A display whose
 predicate is strictly narrower than `!shouldFetch` keeps the coverage; one that
@@ -419,21 +432,34 @@ family.** The global one asks its `shouldFetch()`, which returns a boolean. The
 per-region one has no such boolean: its gate is block coverage — a `reload()`
 that invalidates nothing leaves `needed` empty — plus a `fetchNeeded` override
 that can decline inside an async body whose return value says nothing. So the
-foundation watches its own funnel: `fetchRegions` is the mixin's action, and
-every override reaches it in its synchronous prefix (all eight checked). An
-override that awaited before fetching would get a false report rather than
-silence, which is the right way round. It also has a fourth outcome,
-`deferred`, for the in-flight skip — `reload()` signals the running fetch's stop
-token but `activeStopToken` clears in `runFetch`'s finally, so the next run can
-still see `isLoading`, and consuming there would answer the retry with a run
-that predates it.
+foundation watches the fetch instead: `FetchMixin.runFetch` is where every fetch
+in every family starts, and all nine `fetchNeeded` overrides reach it in their
+synchronous prefix. An override that awaited before fetching would get a false
+report rather than silence, which is the right way round. It also has a fourth
+outcome, `deferred`, for the in-flight skip — `reload()` signals the running
+fetch's stop token but `activeStopToken` clears in `runFetch`'s finally, so the
+next run can still see `isLoading`, and consuming there would answer the retry
+with a run that predates it.
+
+**A fetch answers the retry wherever `reload()` reached it from**, which is why
+`runFetch` tells the ledger and not just the autorun. Canvas's `reload()` clears
+and calls `fetchNeeded` itself rather than waiting out `FetchVisibleRegions`' 600ms
+debounce — Retry and Force load are clicks — so no autorun run separates the bump
+from the fetch, and by the time one arrives the blocks are covered and it reads as
+a decline. Judging only from the autorun reports a dead button on the display with
+the liveliest one, which is what four canvas tests do the moment that credit is
+removed.
 
 Sequence and variants are the two per-region displays whose `fetchNeeded`
 declines. Sequence needed nothing: `zoomedOut` implies `placeholderMessage`
 implies `!rendersCanvas`, which is already its `loadingSuppressed`. Variants
 declares `awaitingPrerequisite` (`!sourcesBase`), HiC's two-stage shape in this
-family, and narrower than the decline it explains — `fetchNeeded` also declines
-on an empty region set, and that one is still judged.
+family, and unlike HiC's it is genuinely narrower: `FetchVisibleRegions` declines
+whenever every visible block is covered, and that decline is judged as soon as
+`sourcesBase` is in hand. What does *not* establish the width is `fetchNeeded`'s
+own empty-region return — the autorun calls it only with a non-empty `needed`,
+which means the view has visible regions, so that branch is unreachable from
+there.
 
 **Both flags live on `FetchMixin`**, the one mixin all three foundations
 compose, and the check reads them off the node. That is the same argument the
@@ -466,9 +492,22 @@ autoruns in `installGlobalFetchAutorun.test.ts` and
 deferral bumps the counter once**: under two bumps a deferral and an exemption
 behave identically, because the second bump is its own unanswered retry.
 
-The other two stay manual: **work `reload()` never re-runs** can't be seen from
-here, because the autorun does reach a fetch; and **a display rendering its own
-banner** (dotplot, synteny) is off this path entirely.
+The other two stay manual. **Work `reload()` never re-runs** can't be seen from
+here, because the autorun does reach a fetch.
+
+**A display rendering its own banner** (dotplot, synteny) is uncovered rather than
+exempt, and the distinction matters — both banners carry a live Retry wired to the
+same `reload()`, `SyntenyFetchStateMixin.reload` bumps the same `reloadCounter`,
+and `installComparativeFetchAutorun` reads it unconditionally above its gate for
+exactly the reason the other two do. What is missing is the classification: that
+gate is `prepare()` returning `undefined`, which means both "nothing to fetch" and
+"not ready yet", so the installer cannot tell a decline from a skip. The exemption
+half already exists: `SyntenyFetchStateMixin.fetchInert` is this family's
+`loadingSuppressed`, an overridable hook defaulting to false that the loading
+overlay and the SVG export already read, and synteny's folds in `isMinimized`. The
+hole is dotplot, whose `prepare()` bails on `!view.initialized` — a transient that
+must not go into `fetchInert`, since a display about to fetch should still show its
+overlay. Closing it means `prepare()` saying which of the two it meant.
 
 A report is only useful if something can hear it. Nine `testEnv.ts` harnesses set
 `console.error = jest.fn()` as copied boilerplate, muting every contract check in
