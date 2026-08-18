@@ -111,6 +111,33 @@ function centeredRowVisible(
   return rowVisible(state, centerY - heightPx * 0.5, heightPx)
 }
 
+// The chevron indices worth iterating: those whose glyph puts ink on the canvas,
+// as an inclusive `[first, last]` pair (empty when `first > last`).
+//
+// Chevron `c` is centred at `minX + spacing * (c + 1)` — `chevronOffset` solved
+// for the index — and its arms reach CHEVRON_HALF_W to each side of that centre,
+// so the window is over the ARMS, not the centre. Windowing on the centre alone
+// dropped a chevron straddling a canvas edge, where the GPU (which pads its own
+// bp-space window by a whole spacing, see chevron.slang's `firstVisible`) draws
+// the visible sliver. Two backends disagreeing by a few px at the canvas edge is
+// invisible in a diff and visible in a figure, which is why this is its own
+// tested function rather than two lines inside the draw loop.
+export function visibleChevronRange(
+  minX: number,
+  spacing: number,
+  totalChevrons: number,
+  canvasWidth: number,
+): [first: number, last: number] {
+  const reach = CHEVRON_HALF_W
+  return [
+    Math.max(0, Math.ceil((-minX - reach) / spacing - 1)),
+    Math.min(
+      totalChevrons - 1,
+      Math.floor((canvasWidth + reach - minX) / spacing - 1),
+    ),
+  ]
+}
+
 function drawLines(
   ctx: Ctx2D,
   region: RegionRenderData,
@@ -155,17 +182,18 @@ function drawLines(
         const totalChevrons = chevronCount(lineWidthPx)
         const spacing = chevronOffset(lineWidthPx, totalChevrons, 0)
         const minX = Math.min(x1, x2)
-        // Only iterate chevrons whose center lands on-screen. A long intron
-        // zoomed in spans millions of px with almost all chevrons off-screen;
-        // without this window the loop issues thousands of clipped-away strokes.
-        // The GPU windows too, but against the viewport in bp — it has an
-        // hp-split line start to measure from and no minX — so the two arrive at
-        // the same visible set by different arithmetic and this half stays here.
-        // cx positions are unchanged either way, so on-screen output is identical.
-        const firstC = Math.max(0, Math.ceil(-minX / spacing - 1))
-        const lastC = Math.min(
-          totalChevrons - 1,
-          Math.floor((canvasWidth - minX) / spacing - 1),
+        // Only iterate chevrons that put ink on screen. A long intron zoomed in
+        // spans millions of px with almost all chevrons off-screen; without this
+        // window the loop issues thousands of clipped-away strokes. The GPU
+        // windows too, but against the viewport in bp — it has an hp-split line
+        // start to measure from and no minX — so the two arrive at the same
+        // visible set by different arithmetic. cx positions are unchanged either
+        // way, so on-screen output is identical.
+        const [firstC, lastC] = visibleChevronRange(
+          minX,
+          spacing,
+          totalChevrons,
+          canvasWidth,
         )
         for (let c = firstC; c <= lastC; c++) {
           const cx = minX + chevronOffset(lineWidthPx, totalChevrons, c)
