@@ -43,7 +43,7 @@ import {
   getNiceDomain,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, reaction } from 'mobx'
 
 import { computeReadChains } from '../features/arcs/arcChains.ts'
 import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
@@ -59,7 +59,11 @@ import {
   normalizeColorBy,
   workerColorBy,
 } from '../shared/colorSchemes.ts'
-import { groupByForMode, normalizeGroupBy } from '../shared/groupFeatures.ts'
+import {
+  groupByForMode,
+  groupKeySpaceOf,
+  normalizeGroupBy,
+} from '../shared/groupFeatures.ts'
 import {
   getArcLegendItems,
   getReadDisplayLegendItems,
@@ -394,16 +398,18 @@ export default function stateModelFactory(
            * #volatile
            * Group keys whose pileup is collapsed to just its coverage band
            * (in-track grouping). Keyed by group key so it survives re-fetches;
-           * volatile so it resets on reload. Stale keys from a prior grouping
-           * dimension are harmless — they never match the new keys.
+           * volatile so it resets on reload. A key means nothing outside the
+           * grouping that issued it — `''` is the ungrouped lane AND several
+           * dimensions' catch-all bucket — so the whole set is dropped when
+           * `groupKeySpace` moves (`AlignmentsGroupKeySpaceReset`).
            */
           collapsedGroups: observable.set<string>(),
           /**
            * #volatile
            * Per-group pileup height override in px (in-track grouping). Keyed by
-           * group key, volatile like `collapsedGroups`; absent keys fall back to
-           * the display-wide `maxHeight`. Lets a dense section be shrunk
-           * independently. Cleared by `setGroupBy`.
+           * group key, volatile like `collapsedGroups` and dropped alongside it
+           * on a key-space change; absent keys fall back to the display-wide
+           * `maxHeight`. Lets a dense section be shrunk independently.
            */
           groupMaxHeightOverrides: observable.map<string, number>(),
           /**
@@ -827,6 +833,27 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The grouping the fetch will actually partition by, which is what the
+         * worker resolves too (`executeRenderAlignmentData`): chain mode
+         * degrades a per-read dimension to ungrouped without the slot moving,
+         * so the slot alone never says which sections come back.
+         */
+        get effectiveGroupBy() {
+          return groupByForMode(this.groupBy, self.isChainMode)
+        },
+
+        /**
+         * #getter
+         * Identity of the key space the fetched group keys live in, and so of
+         * every collection this model keys by group key — see `groupKeySpaceOf`
+         * for why a key alone cannot name its grouping.
+         */
+        get groupKeySpace() {
+          return groupKeySpaceOf(this.effectiveGroupBy)
+        },
+
+        /**
+         * #getter
          * Offset the track label above the visualization when grouping, so the
          * stacked group sections aren't hidden behind an overlapping label.
          *
@@ -839,7 +866,7 @@ export default function stateModelFactory(
          * two settings alone, so no data is needed.
          */
         get prefersOffset() {
-          return groupByForMode(this.groupBy, self.isChainMode) !== undefined
+          return this.effectiveGroupBy !== undefined
         },
 
         /**
@@ -2952,12 +2979,25 @@ export default function stateModelFactory(
            * the stacked content height changes. Ungrouping stores an explicit
            * `null` override (not a cleared override) so it beats a configured
            * `groupBy` default rather than falling back to it.
+           *
+           * Doesn't drop the per-lane state: `AlignmentsGroupKeySpaceReset`
+           * does that for this write and for the ones no action of this
+           * display makes.
            */
           setGroupBy(groupBy?: GroupBy) {
             setConf(self, 'groupBy', groupBy ?? null)
+            self.scrollTop = 0
+          },
+
+          /**
+           * #action
+           * Forget every collapse and height override. Each is keyed by group
+           * key, and a group key only names a lane within the grouping that
+           * issued it, so a key-space change invalidates all of them at once.
+           */
+          dropGroupLaneState() {
             self.collapsedGroups.clear()
             self.groupMaxHeightOverrides.clear()
-            self.scrollTop = 0
           },
 
           /**
@@ -3756,6 +3796,26 @@ export default function stateModelFactory(
           // follows the default) so fixed/fit resume from the height the user was
           // seeing, not the stale slot.
           addDisposer(self, installGrowExitBake(self, self.lgv))
+
+          // Drop the collapses and height overrides whenever the grouping key
+          // space moves. A reaction rather than a line in `setGroupBy`, because
+          // the effective grouping also moves with no action of this display
+          // involved: Reset track settings drops the whole config delta, the
+          // settings editor writes the `groupBy` slot directly, and entering
+          // chain mode degrades a per-read dimension (`groupByForMode`). Left
+          // behind, a key carries its meaning to a lane that never earned it —
+          // and `''`, which every one of those routes can land on, is the
+          // ungrouped lane, which draws no chip to expand itself again.
+          addDisposer(
+            self,
+            reaction(
+              () => self.groupKeySpace,
+              () => {
+                self.dropGroupLaneState()
+              },
+              { name: 'AlignmentsGroupKeySpaceReset' },
+            ),
+          )
 
           // The scroll clamp (the shrink autorun and the bound on setScrollTop)
           // is TrackHeightMixin's, earned by overriding `scrollableHeight`.

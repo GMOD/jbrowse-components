@@ -395,6 +395,18 @@ export function groupByForMode(
     : groupBy
 }
 
+// Identity of the key space a grouping hands out keys in. A group key means
+// nothing on its own: `''` is the ungrouped lane (`singleSection`) AND the
+// catch-all bucket of `tag`, `pairOrientation` and `mateAssembly`, and the
+// digit keys `mapq` and `pairOrientation` emit overlap outright. Two groupings
+// share a key space only when this string matches, so anything holding
+// per-group state has one question to ask rather than a list of dimensions to
+// keep up with. Takes the EFFECTIVE grouping (`groupByForMode`) — chain mode
+// degrades a per-read dimension to ungrouped without the slot moving.
+export function groupKeySpaceOf(groupBy: GroupBy | undefined) {
+  return groupBy ? `${groupBy.type} ${groupBy.tag ?? ''}` : ''
+}
+
 // Dimensions as menu radio options, in the given order: the one join between the
 // registry above and the label table, so no call site re-spells a label. The
 // alignments menu takes every non-hidden dimension, LGVSyntenyDisplay a curated

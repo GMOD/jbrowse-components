@@ -1162,3 +1162,121 @@ describe('modification detection follows the loaded regions', () => {
     expect(display.detectedModificationTypes).toEqual(['m', 'a'])
   })
 })
+
+// A collapse and a height override are keyed by group key, and a group key only
+// names a lane within the grouping that issued it. `''` is the worst of them:
+// the ungrouped lane's key AND the catch-all bucket of tag / pairOrientation /
+// mateAssembly grouping. Carried across a grouping change it collapsed the whole
+// ungrouped pileup, and an ungrouped lane draws no chip, so nothing on screen
+// could expand it again.
+describe('per-lane state belongs to one grouping key space', () => {
+  // One read spanning the region, in each named group. Enough for a lane with a
+  // row in it, which is what a collapse zeroes.
+  function seedGroups(
+    display: ReturnType<typeof createDisplay>,
+    groups: { key: string; label: string }[],
+  ) {
+    display.setRpcData(0, {
+      groups: groups.map(({ key, label }) => ({
+        key,
+        label,
+        data: {
+          ...makeEmptyPileupData(),
+          readKeys: [`read-${key}`],
+          ...namesToBlock([`read-${key}`]),
+          readPositions: new Uint32Array([1000, 5000]),
+          readFlags: new Uint16Array([0]),
+          readMapqs: new Uint8Array([60]),
+        },
+      })),
+    })
+    display.setLoadedRegion(0, {
+      refName: 'ctgA',
+      start: 0,
+      end: 10000,
+      assemblyName: 'volvox',
+    })
+  }
+
+  // Grouped by HP with the untagged reads collapsed — the state every case below
+  // then carries into a different grouping.
+  function collapsedUntaggedLane() {
+    const display = createDisplay({ withRegions: true })
+    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    seedGroups(display, [
+      { key: '1', label: 'HP: 1' },
+      { key: '', label: 'HP: none' },
+    ])
+    display.toggleGroupCollapsed('')
+    expect(display.isGroupCollapsed('')).toBe(true)
+    return display
+  }
+
+  // The route the setter-only clear missed: the settings editor writes the
+  // `groupBy` slot directly, and Reset track settings drops the config delta
+  // holding it. Neither calls an action of this display.
+  test('a slot write that ungroups drops the collapse it would land on', () => {
+    const display = collapsedUntaggedLane()
+    display.configuration.setSlot('groupBy', undefined)
+    seedGroups(display, [{ key: '', label: '' }])
+    expect(display.groupBy).toBeUndefined()
+    expect(display.isGroupCollapsed('')).toBe(false)
+    expect(display.lanes.map((l: { maxY: number }) => l.maxY)).toEqual([1])
+    // And why that had no way back: the chevron that undoes a collapse hangs
+    // off a group label, which the ungrouped lane does not draw.
+    expect(display.showsGroupLabels).toBe(false)
+  })
+
+  // The height overrides are the same key space and go the same way, rather
+  // than needing a rule of their own.
+  test('a height override goes with the collapse', () => {
+    const display = collapsedUntaggedLane()
+    display.toggleGroupExpanded('')
+    expect(display.hasGroupHeightOverride('')).toBe(true)
+    display.configuration.setSlot('groupBy', undefined)
+    expect(display.hasGroupHeightOverride('')).toBe(false)
+  })
+
+  // Grouping FROM ungrouped is the same collision the other way round: the
+  // whole-pileup collapse would arrive on the "HP: none" lane.
+  test('grouping drops a collapse of the ungrouped pileup', () => {
+    const display = createDisplay({ withRegions: true })
+    seedGroups(display, [{ key: '', label: '' }])
+    display.toggleGroupCollapsed('')
+    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    expect(display.isGroupCollapsed('')).toBe(false)
+  })
+
+  // Chain mode degrades a per-read dimension to ungrouped (`groupByForMode`)
+  // with the slot untouched, so the fetch comes back as one '' lane while the
+  // menu still reads "Group by MAPQ".
+  test('entering chain mode drops the state of a grouping it degrades', () => {
+    const display = createDisplay({ withRegions: true })
+    display.setGroupBy({ type: 'mapq' })
+    seedGroups(display, [{ key: '0', label: 'MAPQ 30+ (high confidence)' }])
+    display.toggleGroupCollapsed('0')
+    display.setLinkedReads('normal')
+    expect(display.effectiveGroupBy).toBeUndefined()
+    expect(display.isGroupCollapsed('0')).toBe(false)
+  })
+
+  // Switching between two groupings that both hand out digit keys — mapq's
+  // confidence buckets and pairOrientation's categories — moves a collapse onto
+  // an unrelated lane. Recoverable (both lanes draw a chip) and still wrong.
+  test('two digit-keyed dimensions do not inherit one another state', () => {
+    const display = createDisplay({ withRegions: true })
+    display.setGroupBy({ type: 'mapq' })
+    seedGroups(display, [{ key: '0', label: 'MAPQ 30+ (high confidence)' }])
+    display.toggleGroupCollapsed('0')
+    display.setGroupBy({ type: 'pairOrientation' })
+    expect(display.isGroupCollapsed('0')).toBe(false)
+  })
+
+  // Re-picking the grouping already in effect changes no key, so nothing is
+  // dropped: the reaction fires on the key SPACE moving, not on the write.
+  test('re-setting the same grouping keeps the state', () => {
+    const display = collapsedUntaggedLane()
+    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    expect(display.isGroupCollapsed('')).toBe(true)
+  })
+})

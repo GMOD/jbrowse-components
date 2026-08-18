@@ -5,12 +5,14 @@ import {
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   groupByForMode,
+  groupKeySpaceOf,
   isChainGroupableType,
   normalizeGroupBy,
   partitionChains,
   partitionFeatures,
 } from './groupFeatures.ts'
 
+import type { GroupBy } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function feat(uniqueId: string, fields: Record<string, unknown>): Feature {
@@ -493,4 +495,37 @@ test('groupByForMode degrades a per-read dimension in chain mode only', () => {
   expect(groupByForMode(perRead, true)).toBeUndefined()
   expect(groupByForMode(chainSafe, true)).toBe(chainSafe)
   expect(groupByForMode(undefined, true)).toBeUndefined()
+})
+
+// The collision the display's per-group volatiles are keyed against: '' is the
+// ungrouped lane's key and the catch-all bucket of three dimensions, so a key
+// carried across a grouping change lands on a lane that never earned it. One
+// test because the point is that the SAME string comes back from groupings
+// that share nothing else.
+test("'' is the ungrouped lane's key and several dimensions' catch-all", () => {
+  const untagged = feat('a', { flags: 0, strand: 1 })
+  const keyUnder = (groupBy?: GroupBy) =>
+    partitionFeatures([untagged], groupBy)[0]!.key
+  expect(keyUnder()).toBe('')
+  expect(keyUnder({ type: 'tag', tag: 'HP' })).toBe('')
+  expect(keyUnder({ type: 'pairOrientation' })).toBe('')
+  expect(keyUnder({ type: 'mateAssembly' })).toBe('')
+})
+
+test('groupKeySpaceOf separates the groupings that share a key', () => {
+  const groupings: (GroupBy | undefined)[] = [
+    undefined,
+    { type: 'tag', tag: 'HP' },
+    { type: 'tag', tag: 'RG' },
+    { type: 'pairOrientation' },
+    { type: 'mateAssembly' },
+  ]
+  const spaces = groupings.map(g => groupKeySpaceOf(g))
+  expect(new Set(spaces).size).toBe(spaces.length)
+})
+
+test('groupKeySpaceOf answers the same for two equal groupings', () => {
+  expect(groupKeySpaceOf({ type: 'tag', tag: 'HP' })).toBe(
+    groupKeySpaceOf({ type: 'tag', tag: 'HP' }),
+  )
 })
