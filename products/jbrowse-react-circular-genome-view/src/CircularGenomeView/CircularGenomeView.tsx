@@ -8,18 +8,14 @@ import createViewState from '../createViewState.ts'
 
 import type { ViewModel } from '../createModel/createModel.ts'
 import type { CreateViewStateBaseOptions } from '../createViewState.ts'
-import type { CircularViewInit } from '@jbrowse/plugin-circular-view'
 import type { Ref } from 'react'
 
 export interface CircularGenomeViewProps extends CreateViewStateBaseOptions {
-  // declarative description of the initial view: optional tracks to show.
-  // mirrors the view's own `init` shape (minus `assembly`, which is taken from
-  // the `assembly` prop), so the same blob round-trips through saved sessions
-  // and URL specs. Optional, and `{}` is the same as leaving it off: the
-  // configured assembly is drawn either way, so this is how you name tracks to
-  // open with it, not how you ask for the genome
-  init?: Omit<CircularViewInit, 'assembly'>
-  // ref to the live engine, for imperative control after launch (showTrack, ...)
+  // ref to the live engine, for imperative control after launch (showTrack,
+  // ...). Good for firing an action from an event handler; a host that has to
+  // *read* the engine while rendering — to disable its own button until the
+  // view is up, to show what is on the ring — gets it a render too late, and
+  // should build the engine with useCreateViewState
   ref?: Ref<ViewModel>
 }
 
@@ -30,42 +26,34 @@ export interface CircularGenomeViewProps extends CreateViewStateBaseOptions {
  * ignored. To swap assembly/plugins, remount via React `key`.
  *
  * `init` is the declarative input; for imperative control after launch take a
- * `ref` to the live engine.
+ * `ref` to the live engine. The `ref` arrives a render after mount, so a host
+ * that needs the engine *during* render should call {@link useCreateViewState}
+ * with the same options and render `<JBrowseCircularGenomeView>` itself — that
+ * is this component's body, minus the ref.
  *
  * This owns its engine for the lifetime of the page and does not tear it down:
  * the engine is not owned by React, so unmounting leaves its RPC worker threads
  * and autoruns running. That is fine for a page that mounts one and keeps it,
  * and a leak for a host that mounts and discards repeatedly — an SPA route, a
  * notebook cell re-run. Those should use {@link useCreateViewState} +
- * `<JBrowseCircularGenomeView>`, which destroys the engine on unmount.
+ * `<JBrowseCircularGenomeView>`, which destroys the engine on unmount, or
+ * `createCircularGenomeView`, which owns the whole lifecycle.
  */
 const CircularGenomeView = observer(function CircularGenomeView({
-  init,
   ref,
   ...rest
 }: CircularGenomeViewProps) {
+  // `init` is passed straight through: createViewState takes the same blob and
+  // fills in the assembly name, so this component is the prop-shaped face of
+  // that call and nothing about launching a view lives only here. With no init
+  // the configured assembly is drawn anyway — a circular view's default is the
+  // whole genome, unlike the linear product, where no init means the import
+  // form.
+  //
   // `useCreateOnce`, not `useState(() => …)`: StrictMode double-invokes a state
   // initializer and discards the second result, which for an engine is a whole
   // orphaned worker pool per mount, and this component never destroys anything.
-  const state = useCreateOnce(() =>
-    createViewState({
-      ...rest,
-      // wrap init in the session the view expects, filling in the configured
-      // assembly name so callers never repeat it. With no init there is no
-      // session to author: createViewState seeds the view's own `init` with
-      // the configured assembly, so the whole genome is drawn either way —
-      // unlike the linear product, where no init means the import form
-      defaultSession: init
-        ? {
-            name: `New session ${new Date().toLocaleString()}`,
-            view: {
-              type: 'CircularView',
-              init: { ...init, assembly: rest.assembly.name },
-            },
-          }
-        : undefined,
-    }),
-  )
+  const state = useCreateOnce(() => createViewState(rest))
 
   useImperativeHandle(ref, () => state, [state])
 

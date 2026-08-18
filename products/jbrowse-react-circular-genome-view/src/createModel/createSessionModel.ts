@@ -1,6 +1,6 @@
 import { EmbeddedSessionMixin } from '@jbrowse/embedded-core'
 import { cast, types } from '@jbrowse/mobx-state-tree'
-import { TracksManagerSessionMixin } from '@jbrowse/product-core'
+import { SessionTracksManagerSessionMixin } from '@jbrowse/product-core'
 
 import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -30,13 +30,19 @@ export type _SessionModelParentCheck = AssertExtends<
  * its single CircularView. Both are spelled out here rather than passed to a
  * shared factory because `types.compose` cannot infer through a generic — see
  * EmbeddedSessionMixin.
+ *
+ * The tracks mixin is the session-tracks one, the same the linear embed uses.
+ * The plainer `TracksManagerSessionMixin` sends `addTrackConf` on to
+ * `jbrowse.addTrackConf`, which the embedded root config model does not have —
+ * so a host adding a track after mount got a TypeError, and there was no other
+ * door: this product's whole track set had to be decided at build time.
  */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
       'ReactCircularGenomeViewSession',
       EmbeddedSessionMixin(pluginManager),
-      TracksManagerSessionMixin(pluginManager),
+      SessionTracksManagerSessionMixin(pluginManager),
     )
     .props({
       /**

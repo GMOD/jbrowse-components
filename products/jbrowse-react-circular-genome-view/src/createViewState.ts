@@ -1,3 +1,10 @@
+import { expandAssemblyShorthand } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import {
+  normalizeAdapterSnapshots,
+  registerLocalFiles,
+  resolveLocalFileUris,
+} from '@jbrowse/product-core'
+
 import createModel from './createModel/index.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
@@ -6,7 +13,9 @@ import type {
   createSessionModel,
 } from './createModel/index.ts'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { CircularViewInit } from '@jbrowse/plugin-circular-view'
 import type {
+  LocalFileInput,
   PluginInput,
   SessionSnapshot as RestoredSessionSnapshot,
   RootConfigurationSnapshot,
@@ -44,11 +53,44 @@ export interface CreateViewStateBaseOptions {
    */
   plugins?: PluginInput[]
   makeWorkerInstance?: () => Worker
+  /**
+   * In-memory files, `name -> bytes`, that `tracks` may then refer to by that
+   * name as if it were a URL — for a host whose data lives in a process rather
+   * than at a URL (a notebook kernel, an R session), with no web server and no
+   * CORS. They are read by byte range, so register an index under its
+   * conventional sibling name (`sv.vcf.gz` + `sv.vcf.gz.tbi`) and the file
+   * stays indexed: only the bytes the current view needs are touched.
+   *
+   * Read once, at construction, like every other option here. A host whose
+   * files arrive later remounts on a React `key`; the imperative
+   * `createCircularGenomeView` has `addLocalFiles` for that instead.
+   */
+  localFiles?: LocalFileInput
+  /**
+   * The declarative description of the ring to open — which chromosomes it is
+   * drawn from, which tracks to show — minus `assembly`, which is filled in
+   * from the `assembly` option so you never repeat it. The same blob a saved
+   * session and a URL spec carry, so all three round-trip through each other.
+   *
+   * Shared by both entry points rather than being the managed component's own
+   * input, and that is the point: a host holding its own engine says
+   * `init: { displayedRegionNames: [...] }` instead of authoring a
+   * `defaultSession` around the same two fields, so choosing
+   * `useCreateViewState` over `<CircularGenomeView>` costs nothing.
+   *
+   * Optional, and `{}` is the same as leaving it off: the configured assembly
+   * is drawn either way, so this is how you restrict the ring or name tracks to
+   * open with it, not how you ask for the genome.
+   */
+  init?: Omit<CircularViewInit, 'assembly'>
 }
 
-// the imperative API adds a full session snapshot; the managed
-// <CircularGenomeView> component expresses initial state through an `init` blob
+// the imperative call adds the two session slots, plus a shorthand for the one
+// init field a host reaches for; the managed component expresses the same
+// through `init` alone
 export interface ViewStateOptions extends CreateViewStateBaseOptions {
+  /** sugar for `init.displayedRegionNames`. Wins over it */
+  displayedRegionNames?: string[]
   /** a session you author, checked against the session model's shape */
   defaultSession?: SessionSnapshot
   /**
@@ -69,14 +111,41 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
     aggregateTextSearchAdapters,
     plugins = [],
     makeWorkerInstance,
+    init,
+    displayedRegionNames,
+    localFiles,
   } = opts
   const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  // registered once, here, rather than per track: each registration pushes a
+  // File into core's process-global blobMap. Adapters are expanded out of their
+  // `{ type, uri }` shorthand first, because that is the form the substitution
+  // recognizes — see normalizeAdapterSnapshots
+  const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
+  // a declaration rather than a generic arrow: `<T>(x: T) => …` in a .ts file
+  // is a JSX tag to babel, which is what jest parses these with
+  function local<T>(node: T) {
+    return blobs
+      ? resolveLocalFileUris(
+          normalizeAdapterSnapshots(node, pluginManager),
+          blobs,
+        )
+      : node
+  }
   const stateTree = model.create(
     {
       config: {
         configuration,
-        assembly,
-        tracks,
+        // The assembly too, not only the tracks: its sequence adapter is the
+        // same shape, and a host whose genome is a file on disk rather than a
+        // hub — a non-model organism, an in-house build — has nowhere to put it.
+        //
+        // Its own shorthand is expanded first, and by a different door than an
+        // adapter's: `{ name, uri: 'genome.fa.gz' }` becomes a sequence adapter
+        // inside the *assembly* config schema, so until that has run the only
+        // `uri` here is on the assembly itself — which is not a location node
+        // and must not be rewritten as one.
+        assembly: local(expandAssemblyShorthand(assembly, pluginManager)),
+        tracks: tracks?.map(local),
         internetAccounts,
         aggregateTextSearchAdapters,
       },
@@ -99,14 +168,23 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
     stateTree.restoreSession(opts.session)
   }
   const { view } = stateTree.session
-  if (!view.displayedRegions.length && !view.init) {
-    // a session that specifies neither regions to draw nor an `init` blob
-    // (e.g. the default whole-genome case) auto-displays the configured
-    // assembly. route it through the view's own `init` field — the same path
-    // as URL/session-spec launches — instead of a bespoke autorun here. the
-    // view's init autorun sets displayedRegions once the assembly loads, then
-    // clears init. a session that already has displayedRegions is left as-is
-    view.setInit({ assembly: assembly.name })
+  // Route every declarative launch through the view's own `init` field — the
+  // same path URL and session-spec launches take — instead of a bespoke
+  // setDisplayedRegions/showTrack sequence here. The view's init autorun sets
+  // displayedRegions once the assembly loads, then clears init.
+  //
+  // The last clause is the circular view's own default: a view with no
+  // displayedRegions is showing its import form, and `init` is the only thing
+  // that can build the figure, so a session that specifies neither gets one
+  // seeded from the configured assembly. A session that already has regions is
+  // left alone unless the caller asked for something.
+  const positioned = view.displayedRegions.length > 0 || view.init !== undefined
+  if (init !== undefined || displayedRegionNames !== undefined || !positioned) {
+    view.setInit({
+      ...init,
+      assembly: assembly.name,
+      displayedRegionNames: displayedRegionNames ?? init?.displayedRegionNames,
+    })
   }
   return stateTree
 }
