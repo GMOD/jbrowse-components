@@ -127,3 +127,37 @@ test('lifts style slots out of the old renderer sub-config', () => {
   expect(out.displays![0]!.color).toBe('red')
   expect(out.displays![0]!.renderer).toBeUndefined()
 })
+
+// regression: `renderer.height` was v4's feature-body height and lifted by name
+// onto the display's `height`, which is the whole track — so the standard v4 way
+// of setting feature height opened as a ~10px-tall track with its feature height
+// back at the default.
+test('renderer.height becomes featureHeight, not the track height', () => {
+  const out = evaluate({
+    type: 'FeatureTrack',
+    displays: [
+      {
+        type: 'LinearBasicDisplay',
+        renderer: { type: 'SvgFeatureRenderer', height: 12 },
+      },
+    ],
+  })
+  expect(out.displays![0]!.featureHeight).toBe(12)
+  expect(out.displays![0]!.height).toBeUndefined()
+})
+
+// an explicit display-level height is the track's, and outranks the lift
+test('a display height alongside renderer.height keeps both meanings', () => {
+  const out = evaluate({
+    type: 'FeatureTrack',
+    displays: [
+      {
+        type: 'LinearBasicDisplay',
+        height: 200,
+        renderer: { type: 'SvgFeatureRenderer', height: 12 },
+      },
+    ],
+  })
+  expect(out.displays![0]!.height).toBe(200)
+  expect(out.displays![0]!.featureHeight).toBe(12)
+})

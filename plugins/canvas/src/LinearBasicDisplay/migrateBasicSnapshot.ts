@@ -17,9 +17,24 @@ function liftRendererProps(
     // renderer:null rather than carrying the unknown key into the snapshot.
     return rest
   }
-  const { type: _rendererType, ...rendererProps } = renderer
+  const {
+    type: _rendererType,
+    height: rendererHeight,
+    ...rendererProps
+  } = renderer
+  // `renderer.height` was the feature body's height, which is `featureHeight`
+  // now — the display's own `height` slot is the whole track. Lifting it by
+  // name would set a v4 config's track height to ~10px and quietly revert its
+  // feature height to the default. Same mapping as liftLegacyRendererConfig,
+  // which used to be the only one that made it.
   // snap props take priority: spread renderer first, then rest on top.
-  return { ...rendererProps, ...rest }
+  return {
+    ...rendererProps,
+    ...(rendererHeight !== undefined
+      ? { featureHeight: rendererHeight }
+      : undefined),
+    ...rest,
+  }
 }
 
 // The removed `reducedRepresentation` (always a no-op) and `collapse` (only
