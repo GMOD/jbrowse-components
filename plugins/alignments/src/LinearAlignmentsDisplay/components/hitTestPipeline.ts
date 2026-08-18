@@ -195,6 +195,10 @@ export interface HitTestOptions {
   // the interbase histogram bar heights for hit-testing. Undefined until the
   // debounced autoscale resolves.
   coverageMaxDepth: number | undefined
+  // The band's allele-fraction floor, so the zoomed-out tooltip snap can't name
+  // a segment the band hid. Not a gate on whether the coverage test runs — the
+  // grey depth bar is ungated and stays hoverable at every setting.
+  coverageSnpMinFrequency: number
   topOffset: number
   // Screen-px Y of this section's coverage band top. 0 for the ungrouped
   // sticky-at-top coverage; a stacked group's scrolled coverage top otherwise.
@@ -357,6 +361,7 @@ export function performHitTest(
     showInterbaseIndicators,
     coverageHeight,
     coverageMaxDepth,
+    coverageSnpMinFrequency,
     topOffset,
     coverageTopOffset,
     featureHeight,
@@ -402,6 +407,7 @@ export function performHitTest(
     showCoverage,
     coverageHeight,
     resolved.reversed,
+    coverageSnpMinFrequency,
   )
   if (coverageHit) {
     return { type: 'coverage', hit: coverageHit, resolved }

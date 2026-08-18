@@ -530,8 +530,26 @@ export function countSnpsAtPosition(
 }
 
 /**
+ * The floor under any tooltip-snap threshold, and the default one.
+ *
+ * The snap exists to name the bp a user is pointing AT when a pixel covers many
+ * — so it has to pick the dominant event in the pixel, not merely a drawn one.
+ * At depth 500 every sequencing error is drawn (the coverage band's own floor
+ * defaults to 0), so a threshold of 0 makes every bp qualify and the snap
+ * degenerates to "the leftmost bp in the pixel".
+ *
+ * A caller whose band hides more than this raises it — `hitTestCoverage` passes
+ * `max(this, coverageSnpMinFrequency)` so the snap can never name a segment the
+ * band declined to colour. Nobody lowers it. Shared rather than spelled at each
+ * call site: it was the literal `0.05` twice, the second under a comment saying
+ * "mirrors alignments", which is the shape a constant takes just before the two
+ * copies stop matching.
+ */
+export const SNP_TOOLTIP_SNAP_FLOOR = 0.05
+
+/**
  * Genomic position of the first event in [binStart, binEnd) that is
- * "significant" — at least `threshold` fraction of the local coverage depth at
+ * "significant" — more than `threshold` fraction of the local coverage depth at
  * that position. When a pixel spans many bp (zoomed out), an exact-position
  * lookup misses the event sitting elsewhere in the bin; callers scan the pixel's
  * bp range with this and tooltip the significant position instead. Returns

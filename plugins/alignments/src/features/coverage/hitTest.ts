@@ -1,4 +1,7 @@
-import { findSignificantInBin } from '@jbrowse/alignments-core'
+import {
+  SNP_TOOLTIP_SNAP_FLOOR,
+  findSignificantInBin,
+} from '@jbrowse/alignments-core'
 
 import type { CoverageHitResult } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -24,6 +27,7 @@ export function hitTestCoverage(
   showCoverage: boolean,
   coverageHeight: number,
   reversed = false,
+  coverageSnpMinFrequency = 0,
 ): CoverageHitResult | undefined {
   if (!showCoverage || canvasY > coverageHeight) {
     return undefined
@@ -47,7 +51,12 @@ export function hitTestCoverage(
       coverageStartPos,
       from,
       from + width,
-      0.05,
+      // The band's own allele-fraction floor, never below the snap floor. The
+      // threshold was a bare `SNP_TOOLTIP_SNAP_FLOOR` from before the band had
+      // a setting, so at `coverageSnpMinFrequency` 0.2 the tooltip named a 10%
+      // SNP that `drawSnpSegments` and snpCoverage.slang had both declined to
+      // colour — a hover answering for a segment that is not on screen.
+      Math.max(SNP_TOOLTIP_SNAP_FLOOR, coverageSnpMinFrequency),
     )
     if (snpHit !== undefined) {
       return { type: 'coverage', position: snpHit }

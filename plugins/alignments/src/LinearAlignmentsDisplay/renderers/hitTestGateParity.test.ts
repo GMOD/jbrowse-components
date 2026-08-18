@@ -145,6 +145,7 @@ it('names option gates that HitTestOptions actually carries', () => {
     showInterbaseIndicators: true,
     coverageHeight: true,
     coverageMaxDepth: true,
+    coverageSnpMinFrequency: true,
     topOffset: true,
     coverageTopOffset: true,
     featureHeight: true,

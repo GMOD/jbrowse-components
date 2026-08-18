@@ -118,6 +118,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             showInterbaseIndicators,
             coverageHeight,
             coverageMaxDepth: model.coverageDomain?.[1],
+            coverageSnpMinFrequency: model.coverageSnpMinFrequency,
             topOffset: picked.section.topOffset,
             coverageTopOffset: picked.coverageTopOffset,
             featureHeight,

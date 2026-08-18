@@ -109,6 +109,7 @@ export { packInstances as packSnpInstances } from './snpCoverageLayout.generated
 export { computeCoverage } from './coverageCompute.ts'
 export type { CoverageGap } from './coverageCompute.ts'
 export {
+  SNP_TOOLTIP_SNAP_FLOOR,
   buildCoverageTooltipBin,
   computeCoverageTicks,
   coverageDepthDomain,

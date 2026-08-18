@@ -1,4 +1,5 @@
 import {
+  SNP_TOOLTIP_SNAP_FLOOR,
   buildCoverageTooltipBin,
   computeCoverageTicks,
   computeVisibleCoverageStats,
@@ -1534,6 +1535,11 @@ export default function stateModelFactory(
           // lands on the SNP coordinate. Tooltip the most significant SNP in the
           // pixel's bp range instead (mirrors alignments' `hitTestCoverage`);
           // depth still falls back to the exact position when none qualifies.
+          //
+          // The threshold is the shared floor, not a second literal `0.05` under
+          // a comment saying it mirrors alignments. This band has no
+          // allele-fraction setting to raise it with, so the floor is the whole
+          // threshold here.
           const snpPos =
             bpPerPx > 1
               ? findSignificantInBin(
@@ -1542,7 +1548,7 @@ export default function stateModelFactory(
                   coverage.coverageStartPos,
                   position,
                   position + Math.ceil(bpPerPx),
-                  0.05,
+                  SNP_TOOLTIP_SNAP_FLOOR,
                 )
               : undefined
           const bin = buildCoverageTooltipBin(

@@ -91,6 +91,7 @@ const OPTS: HitTestOptions = {
   showInterbaseIndicators: false,
   coverageHeight: 50,
   coverageMaxDepth: undefined,
+  coverageSnpMinFrequency: 0,
   topOffset: 50,
   coverageTopOffset: 0,
   featureHeight: 10,

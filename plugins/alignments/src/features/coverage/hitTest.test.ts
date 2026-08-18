@@ -132,6 +132,63 @@ describe('hitTestCoverage zoomed-out bin search', () => {
     ).toBe(1000)
   })
 
+  // The snap must not name a segment the band declined to colour. Its threshold
+  // predates `coverageSnpMinFrequency` and was a bare 5%, so at a floor of 20% a
+  // hover reported a 10% SNP that neither backend drew.
+  describe("honors the band's allele-fraction floor", () => {
+    // depth=10, one mismatch at 1003 → 10%: above the 5% snap floor, below a
+    // 20% band floor.
+    function tenPercentSnp() {
+      return makeZoomedRpcData({
+        mismatchPositions: new Uint32Array([1003]),
+      })
+    }
+
+    it('snaps at the default floor of 0, where the band colours it', () => {
+      expect(
+        hitTestCoverage(basePos, bpPerPx, 20, tenPercentSnp(), true, 50, false, 0)
+          ?.position,
+      ).toBe(1003)
+    })
+
+    it('stops snapping once the band hides it', () => {
+      expect(
+        hitTestCoverage(
+          basePos,
+          bpPerPx,
+          20,
+          tenPercentSnp(),
+          true,
+          50,
+          false,
+          0.2,
+        )?.position,
+      ).toBe(1000)
+    })
+
+    // The setting only ever RAISES the threshold. At 0 every sequencing error is
+    // coloured, so a snap keyed straight off it would qualify on the first
+    // mismatch in the pixel and degenerate to "the leftmost bp".
+    it('a floor below the snap floor does not lower it', () => {
+      const rpcData = makeZoomedRpcData({
+        coverageDepths: new Float32Array(100).fill(100),
+        mismatchPositions: new Uint32Array([1003]),
+      })
+      expect(
+        hitTestCoverage(
+          basePos,
+          bpPerPx,
+          20,
+          rpcData,
+          true,
+          50,
+          false,
+          0.01,
+        )?.position,
+      ).toBe(1000)
+    })
+  })
+
   // On a reversed block bp runs LEFTWARD, so the pixel holding base 1000 covers
   // (990, 1000], not [1000, 1010). Widening rightward regardless searched the
   // neighbouring pixel's bp and snapped to a SNP the cursor was not over.
