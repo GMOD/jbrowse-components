@@ -8,10 +8,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // A directly-selectable dimension: picking it calls `onSelect(type)`.
 //
-// Label only, no help text: the menu reserves a help column across every row as
-// soon as one row carries one, and a dimension that needs a sentence to explain
-// it is better renamed. The radios are typed without the field rather than
-// merely left empty, so that stays a compile error instead of a convention.
+// No help text, and typed without the field so that stays a compile error rather
+// than a convention: the menu reserves a help column across every row as soon as
+// one row carries one, and a dimension needing a sentence is better renamed.
 export interface GroupByRadioOption {
   type: GroupByType
   label: string
@@ -24,10 +23,9 @@ export interface GroupByRadioItem extends GroupByRadioOption {
 }
 
 // Which radio to tick. A stored dimension this menu doesn't offer — a per-read
-// grouping saved before chain mode was turned on (the worker degrades it to
-// ungrouped), or a `hidden` dimension like mateAssembly owned by another display's
-// menu — ticks "None" rather than leaving the whole group blank. Resolved here, so
-// no caller has to remember to filter `current` against what it passed in.
+// grouping saved before chain mode was on, or a `hidden` one like mateAssembly
+// owned by another display's menu — ticks "None" rather than leaving the group
+// blank, so no caller has to filter `current` against what it passed in.
 function checkedType(
   current: GroupByType | undefined,
   offered: GroupByRadioOption[],
@@ -36,12 +34,10 @@ function checkedType(
 }
 
 // The chain-mode rule, applied HERE rather than by each caller: chain layout can
-// only honor a dimension where every read of a chain resolves to one key, and the
-// worker degrades any other to ungrouped (`groupByForMode`). A menu offering one
-// anyway ticks a radio that changes nothing — which is what LGVSyntenyDisplay's
-// menu did, since it passes a fixed option list and so had no filter of its own.
-// Alongside `checkedType`, this is the second rule no call site should have to
-// remember, and both belong to the shape this builder exists to keep identical.
+// only honor a dimension a chain resolves to one key under, and the worker
+// degrades any other to ungrouped (`groupByForMode`), so a menu offering one
+// anyway ticks a radio that changes nothing. Alongside `checkedType`, the second
+// rule no call site should have to remember.
 function offered<T extends GroupByRadioOption>(
   options: T[],
   isChainMode: boolean,
@@ -52,17 +48,14 @@ function offered<T extends GroupByRadioOption>(
 }
 
 // The shared "Group by..." radio submenu for the alignments track menu and
-// LGVSyntenyDisplay. Grouping is one dimension at a time, so it's a single radio
-// group: "None" (ungroup) plus one radio per offered dimension, the active one
-// checked. Mirrors the sort menu's radio shape — the current grouping is visible
-// at a glance and a common dimension is one click away, no dialog round-trip.
-// `options` select directly via `onSelect`; `extra` radios (appended last) carry
-// their own handler, so the two displays can't drift in menu shape.
+// LGVSyntenyDisplay. Grouping is one dimension at a time, so it is a single radio
+// group — "None" plus one per offered dimension — mirroring the sort menu, where
+// the current choice is visible at a glance and a common one is a click away with
+// no dialog round-trip. `options` select directly via `onSelect`; `extra` radios
+// carry their own handler, so the two displays can't drift in menu shape.
 //
-// Dimensions only. `collapseGroupRowsItems` below used to sit under these radios,
-// where a row reading "One row per group" looked like a description of grouping
-// rather than a separate toggle; it is a group's drawn height, so it lives in
-// "Show..." with the other layout toggles.
+// Dimensions only: a group's drawn height is `collapseGroupRowsItems`, which
+// belongs in "Show..." with the other layout toggles.
 export function groupByRadioMenuItem({
   current,
   options,
@@ -82,7 +75,7 @@ export function groupByRadioMenuItem({
   const extras = offered(extra, isChainMode)
   const checked = checkedType(current, [...dimensions, ...extras])
   // Direct selects keep the menu open; `extra` radios open a dialog, so they
-  // dismiss it — same rule the sort and color menus' tag rows follow.
+  // dismiss it — the rule the sort and color menus' tag rows follow.
   const radio = (
     o: { type?: GroupByType; label: string },
     onClick: () => void,
@@ -110,8 +103,7 @@ export function groupByRadioMenuItem({
         ),
       ),
       // `false`, not omitted: `staysOpenOnClick` defaults a radio to staying
-      // open, so leaving it unset left the track menu and this submenu standing
-      // over the dialog the row had just opened.
+      // open, which leaves both menus standing over the dialog it just opened.
       ...extras.map(e => radio(e, e.onClick, false)),
     ] satisfies MenuItem[],
   }
@@ -123,15 +115,13 @@ export interface CollapseGroupRowsModel {
   setCollapseGroupRows: (flag: boolean) => void
 }
 
-// Spread into a display's "Show..." menu, next to the pileup toggle: collapsing
-// is how tall a group is drawn, so it belongs with the layout controls and not
-// among the dimension radios.
+// Spread into a display's "Show..." menu next to the pileup toggle: collapsing is
+// how tall a group is drawn, so it belongs with the layout controls.
 //
-// Absent rather than disabled when it can't take effect (`canCollapseGroupRows`
-// — ungrouped, or chain mode, whose rows are chains). The display's
-// `collapseGroupRows` getter is gated on the same rule, so ungrouped it reads
-// `false` whatever the slot holds; a visible box then sat unchecked on a track
-// that defaults it on (LGVSyntenyDisplay) and clicking it changed nothing.
+// Absent rather than disabled when it can't take effect (`canCollapseGroupRows` —
+// ungrouped, or chain mode, whose rows are chains). The display's
+// `collapseGroupRows` getter is gated on the same rule, so a visible box would
+// sit unchecked on a track that defaults it on and do nothing when clicked.
 export function collapseGroupRowsItems(model: CollapseGroupRowsModel) {
   return (
     model.canCollapseGroupRows

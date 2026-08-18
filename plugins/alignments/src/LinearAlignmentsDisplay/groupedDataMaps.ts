@@ -14,22 +14,18 @@ import type { RegionJunctions } from '../features/sashimi/junctions.ts'
 import type { SashimiArcsMode } from './constants.ts'
 
 // The "this display hides no lane" answer, shared so every `hiddenGroupKeys`
-// getter returns one identity. A fresh `new Set()` per evaluation is a different
-// object each time, so every computed downstream of it — `groupOrder`,
-// `rawDataByGroup`, `readIdIndexMap` — reruns on any unrelated invalidation of
-// the getter.
+// getter returns one identity — a fresh `new Set()` per evaluation reruns
+// `groupOrder`, `rawDataByGroup` and `readIdIndexMap` on any invalidation.
 export const NO_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
 
-// The one place the `rpcDataMap` → groups nested walk is spelled. Every scan
-// below (and the model's `.some`/max getters) iterates this generator instead of
-// re-nesting the two loops, so the traversal shape lives in exactly one spot.
-// Yields each group's region index, identity (key/label), and data in worker
-// emit order; ungrouped fetches are the single-group ('') case per region.
+// The one place the `rpcDataMap` → groups nested walk is spelled; every scan
+// below and the model's `.some`/max getters iterate it rather than re-nesting
+// the two loops. Yields in worker emit order, an ungrouped fetch being the
+// single-group ('') case per region.
 //
-// `hidden` is the display's `hiddenGroupKeys`, so a lane it drops stays out of
-// the derivations shared across the visible lanes (coverage domain, color
-// legend, sashimi strip). Defaults to hiding nothing, which is what the
-// per-group regroupers below want — they're looked up by `groupOrder` key.
+// `hidden` is the display's `hiddenGroupKeys`, so a dropped lane stays out of
+// the derivations shared across the visible ones (coverage domain, color legend,
+// sashimi strip).
 export function* eachGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden: ReadonlySet<string> = NO_HIDDEN_GROUPS,
@@ -56,26 +52,16 @@ export interface SashimiSidesOpts {
 }
 
 // Per group, which of its junctions land in the strip below coverage, keyed by
-// `junctionKey`. Two questions come off this one scan:
+// `junctionKey`. Two questions come off this one scan, and sharing the set is
+// what makes them agree: the LAYOUT asks whether a lane needs the strip reserved
+// at all (a non-empty set), and the OVERLAY asks which side to draw each arc on.
+// The down sub-band renders at `sashimiArcsHeight` whether or not the layout
+// reserved it, so any under-reserving disagreement paints arcs over the pileup.
 //
-//   - the LAYOUT asks whether a lane needs the strip reserved at all (a
-//     non-empty set), so a grouping where only one lane has junctions doesn't
-//     hand every other lane an empty strip — the arc band's `hasArcs` does the
-//     same for read connections;
-//   - the OVERLAY asks which side to draw each arc on, by looking its junction
-//     up in the matching group's set.
-//
-// Sharing the set is what makes those agree. They used to be separate passes
-// over overlapping data (this one genomic and per-loaded-region, the geometry's
-// screen-space and per-visible-region), and the down sub-band renders at
-// `sashimiArcsHeight` whether or not the layout reserved it — so any
-// disagreement in the under-reserving direction painted arcs over the pileup.
-//
-// Deliberately genomic-bp, over every *loaded* region, so the layout keeps
-// depending only on `rpcDataMap` — projecting to screen px would make the pileup
-// re-lay-out on every pan frame, and would flip an arc between bands as regions
-// scroll in and out of view. Interleaving survives any monotonic projection, so
-// this is the same answer a screen-space assignment reaches.
+// Genomic-bp over every *loaded* region, so the layout keeps depending only on
+// `rpcDataMap`: projecting to screen px would re-lay-out the pileup on every pan
+// frame and flip an arc between bands as regions scroll in and out of view.
+// Interleaving survives any monotonic projection, so the answer is the same.
 export function buildSashimiDownKeys(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   opts: SashimiSidesOpts,
@@ -122,14 +108,12 @@ export interface GroupId {
   label: string
 }
 
-// Whether the fetch actually produced NAMED sections, i.e. whether to draw the
-// section labels + dividers. Deliberately reads the data, not the `groupBy`
-// setting: an ungrouped fetch is one group keyed '' with an empty label, and chain
-// mode with a per-read dimension degrades to exactly that in the worker (see
-// `groupByForMode`) while `groupBy` stays set — so keying off the setting labelled
-// that degraded single section "ungrouped". Every real dimension names even its
-// catch-all bucket ('HP: none', 'No orientation', 'MAPQ unavailable'), so a
-// non-empty label is the reliable signal that grouping is in effect.
+// Whether the fetch produced NAMED sections, and so whether to draw the section
+// labels + dividers. Reads the data rather than the `groupBy` setting: chain mode
+// degrades a per-read dimension to one unnamed section while `groupBy` stays set
+// (`groupByForMode`), so the setting labels that degraded section "ungrouped".
+// Every real dimension names even its catch-all bucket ('HP: none', 'No
+// orientation'), which makes a non-empty label the reliable signal.
 //
 // Distinct from the model's `isGrouped` (>1 section), which is about the scroll
 // model: grouping that yields a single section still wants its label.
@@ -137,27 +121,21 @@ export function hasNamedGroups(order: readonly GroupId[]) {
   return order.some(g => g.label !== '')
 }
 
-// Ordered, de-duplicated group identities across every fetched region, sorted
-// (untagged-key '' last) by the same `compareGroupKeys` the worker's per-region
-// partition uses. Group membership, order, and labels are a property of the
-// *fetch*, not of layout — deriving them straight from `rpcDataMap` keeps the
-// order stable across every main-thread relayout (sortedBy / softclip /
-// per-group height drag) and gives the whole model one source of truth for it,
-// rather than recomputing it inside the layout pass (`buildLaidOutByGroup`) and
-// again as `buildRawDataByGroup`'s key order.
-//
-// `hidden` drops here rather than in the caller, for the reason
-// `buildRawDataByGroup` gives: this is what `groupOrder` is, and every other
-// per-group collection is keyed by that already-filtered set. Filtering
-// afterwards left one consumer restating the rule the rest of this file exists
-// to keep in one place.
+// Ordered, de-duplicated group identities across every fetched region, by the
+// same `compareGroupKeys` the worker's per-region partition uses. Membership,
+// order and labels are a property of the *fetch*, so deriving them straight from
+// `rpcDataMap` keeps them stable across every relayout (sortedBy / softclip /
+// per-group height drag) rather than recomputing them in the layout pass.
 //
 // The explicit re-sort is load-bearing across regions: the worker sorts each
-// region's groups on its own, but a plain first-seen merge would order the
-// union by which region first exhibited each key. A group absent from an early
-// region (e.g. a chromosome with only reverse-strand reads) would then sort
-// ahead of one it should follow — and an untagged group could escape last —
-// purely from fetch layout. Sorting the merged set restores the intended order.
+// region on its own, and a first-seen merge would order the union by which
+// region exhibited each key first — a group absent from an early region (a
+// chromosome with only reverse-strand reads) sorting ahead of one it should
+// follow, or an untagged group escaping last, purely from fetch layout.
+//
+// `hidden` drops here rather than in the caller, for the reason
+// `buildRawDataByGroup` gives: this is what `groupOrder` IS, and every other
+// per-group collection is keyed by that already-filtered set.
 export function orderedGroups(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden?: ReadonlySet<string>,
@@ -171,16 +149,15 @@ export function orderedGroups(
   return [...order.values()].sort((a, b) => compareGroupKeys(a.key, b.key))
 }
 
-// Per-read lookups derived by scanning every group of every fetched region.
-// Pulled out of the model so the O(reads) scans are pure + unit-testable; the
-// model exposes them as memoized getters over `rpcDataMap`.
+// The per-read lookups below scan every group of every fetched region. They live
+// here rather than in the model so the O(reads) scans stay pure and testable;
+// the model exposes them as memoized getters over `rpcDataMap`.
 
 // chain name → the read ids belonging to that chain, across all groups/regions.
-// Empty unless chain (linked-reads) mode is active, where reads carry a
-// `readChainIndices` entry into the per-fetch `chainNames`. Keyed by the
-// globally-unique chain name, not the raw chainIdx: chainIdx is assigned per
-// worker call (per region, and now per group), so the same integer means
-// different chains across calls — keying by index would merge unrelated chains.
+// Empty outside chain mode, where reads carry a `readChainIndices` entry into
+// the per-fetch `chainNames`. Keyed by the globally-unique chain NAME: chainIdx
+// is assigned per worker call (per region, and per group), so the same integer
+// means different chains across calls and keying by it merges unrelated ones.
 export function buildReadIdsByChainName(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   chainMode: boolean,
@@ -203,26 +180,20 @@ export function buildReadIdsByChainName(
   return map
 }
 
-// Regroup the fetched `rpcDataMap` (region idx → grouped result) into one raw
-// region map per group key (group key → region idx → that group's raw data). The
-// arc compute (`computeArcsFromPileupData`) consumes one of these per-group maps,
-// so this is what lets arcs run per group.
+// Regroup the fetched `rpcDataMap` (region idx → grouped result) into group key
+// → region idx → raw data. The arc compute (`computeArcsFromPileupData`) takes
+// one of these per-group maps, which is what lets arcs run per group.
 //
-// `hidden` is dropped HERE, not by each consumer, and that is the point. The
-// per-lane consumers look a key up by an already-filtered `groupOrder`, so they
-// never noticed; the cross-group ones (`derivativePathCandidates`, and the arc
-// scale pooling) walk every entry, and each had to remember the rule on its own
-// — `derivativePathCandidates` didn't, and ranked derivative-allele paths on
-// chains from a lane the display never draws. Filtering the source makes every
-// present and future walk of this map correct by construction, the same way
-// `orderedGroups` → `groupOrder` does for the stacking order. `rpcDataMap` stays
-// the unfiltered escape hatch for anything that genuinely wants every lane.
+// `hidden` drops HERE, not in each consumer, and that is the point: the per-lane
+// consumers look a key up by an already-filtered `groupOrder` and never noticed,
+// while the cross-group walks (`derivativePathCandidates`, the arc scale pooling)
+// each had to remember the rule — and one didn't, ranking derivative-allele paths
+// on chains from a lane the display never draws. `rpcDataMap` stays the
+// unfiltered escape hatch for anything that genuinely wants every lane.
 //
-// Key order here is first-seen-across-regions, which is NOT the stacking order:
-// a group absent from an early region lands later than it should, the very case
-// `orderedGroups` re-sorts to fix. Every consumer looks a key up (`.get(key)`,
-// driven by `groupOrder`), so nothing depends on this map's iteration order —
-// don't start depending on it.
+// Key order is first-seen-across-regions, NOT the stacking order — the very case
+// `orderedGroups` re-sorts to fix. Every consumer looks a key up by `groupOrder`,
+// so nothing depends on this map's iteration order; don't start.
 export function buildRawDataByGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden?: ReadonlySet<string>,
@@ -237,23 +208,18 @@ export function buildRawDataByGroup(
   return out
 }
 
-// read id → where that read lives (which region, which group, row index),
-// letting hit-test/detail lookups resolve a feature back to its raw arrays.
-//
 // Read id → which lane, which region, and which slot in that region's per-read
-// arrays. `findRead` (readLookup.ts) is what turns one of these entries into the
-// read's data.
+// arrays, so a hit-test or detail lookup can resolve a feature back to them.
+// `findRead` (readLookup.ts) turns one of these entries into the read's data.
 export type ReadIdIndexMap = Map<
   string,
   { displayedRegionIndex: number; groupKey: string; idx: number }
 >
 
-// Hidden lanes are dropped here for the reason `buildRawDataByGroup` gives, plus
-// one of its own: `findRead` resolves an entry through
-// `laidOutByGroup`, which is built from the already-filtered `groupOrder`, so a
-// hidden lane's read matched a key that then resolved to nothing. Its entries
-// were unreachable by construction — and each one cost a `readIdAt` string for a
-// read no lookup can reach.
+// Hidden lanes drop here for `buildRawDataByGroup`'s reason plus one of its own:
+// `findRead` resolves an entry through `laidOutByGroup`, built from the already
+// filtered `groupOrder`, so a hidden lane's entries were unreachable by
+// construction — and each cost a `readIdAt` string no lookup can reach.
 export function buildReadIdIndexMap(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden?: ReadonlySet<string>,

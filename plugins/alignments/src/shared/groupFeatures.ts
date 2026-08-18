@@ -24,11 +24,9 @@ import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface FeatureGroup {
-  // Stable identity for the group (used for ordering + cross-fetch matching).
-  // Empty string is the "untagged"/"unknown" sentinel and sorts second-to-last,
-  // ahead of only the overflow bucket.
+  // '' is the "untagged"/"unknown" sentinel, which `groupKeyRank` sorts
+  // second-to-last, ahead of only the overflow bucket.
   key: string
-  // Human-readable label shown on the section divider.
   label: string
   features: Feature[]
 }
@@ -38,14 +36,11 @@ interface GroupKey {
   label: string
 }
 
-// Every closed-set dimension returns one of these interned GroupKeys rather than
-// building one per read, the way SPLIT_GROUP below always has. Two things follow
-// from that, and both are why they are spelled out one by one: a grouped fetch
-// walks every read, so the per-read allocation is the only one this pass makes;
-// and a dimension's sections are countable HERE, which is the "keep every
-// dimension a closed set" rule ../RenderAlignmentDataRPC/CLAUDE.md states — the
-// only two that can't be listed like this, `tag` and `mateAssembly`, are exactly
-// the two whose cardinality the data decides and that MAX_GROUPS guards.
+// Interned, one per section, because a grouped fetch walks every read. Spelling
+// each out also makes a dimension's sections countable here, which is the "keep
+// every dimension a closed set" rule of ../RenderAlignmentDataRPC/CLAUDE.md —
+// `tag` and `mateAssembly` are the two that can't be listed, and MAX_GROUPS
+// guards them.
 const FWD_STRAND_GROUP: GroupKey = { key: '+', label: 'Forward strand' }
 const REV_STRAND_GROUP: GroupKey = { key: '-', label: 'Reverse strand' }
 const FWD_FIRST_OF_PAIR_GROUP: GroupKey = {
@@ -57,26 +52,20 @@ const REV_FIRST_OF_PAIR_GROUP: GroupKey = {
   label: 'First-of-pair reverse',
 }
 
-// The two buckets every strand-flavoured dimension splits into. `-1` is reverse
-// and everything else (including the unstranded 0) is forward, so a feature with
-// no strand lands in an existing section rather than opening a third.
+// Everything but `-1` is forward, so an unstranded feature lands in an existing
+// section rather than opening a third.
 function strandGroup(strand: number, fwd: GroupKey, rev: GroupKey): GroupKey {
   return strand === -1 ? rev : fwd
 }
 
-// Keyed off `strand`, not SAM_FLAG_REVERSE — see getStrand. BAM/CRAM features
-// derive `strand` from that very flag, so reads group identically, while synteny
-// (PAF) features carry a real `strand` and no flags at all; reading the flag
-// collapsed every synteny block into one "Forward strand" section.
+// `getStrand`, never SAM_FLAG_REVERSE: a flagless synteny block reads forward
+// under the flag. getStrand carries the rule.
 function strandKey(feature: Feature): GroupKey {
   return strandGroup(getStrand(feature), FWD_STRAND_GROUP, REV_STRAND_GROUP)
 }
 
-// Strand of the fragment as inferred from the first-of-pair read, via the shared
-// `firstOfPairStrand` rule — the same call the `firstOfPairStrand` COLOR scheme
-// makes, so the section a read groups into and the color it paints can't
-// disagree. They did: this read SAM_FLAG_REVERSE while the color read `strand`,
-// which agree on a BAM and not on a flagless synteny block.
+// The fragment's strand, through the same `firstOfPairStrand` the color scheme
+// of that name calls, so a read's section and its color can't disagree.
 function firstOfPairStrandKey(feature: Feature): GroupKey {
   return strandGroup(
     firstOfPairStrand(getStrand(feature), getFlags(feature)),
@@ -92,22 +81,16 @@ function tagKey(feature: Feature, tag: string): GroupKey {
     : { key: value, label: `${tag}: ${value}` }
 }
 
-// Keyed by the shared IGV category (LR/RL/RR/LL), never by the raw
-// `pair_orientation` string. F1R2 and F2R1 are the same normal LR pair — they
-// differ only in which mate the record is — so the raw string opened a section
-// per permutation, up to eight of them, two of which were "normal". Every other
-// consumer collapses them through `pairDirection` (the color scheme, the read
-// tooltip, the arc palette, the concordant-pair filter), so those two sections
-// carried cryptic labels the rest of the app never shows and were painted the
-// identical LR grey.
+// The IGV category (LR/RL/RR/LL) through `pairDirection`, never the raw
+// `pair_orientation`: F1R2 and F2R1 are one normal LR pair differing only in
+// which mate the record is, so the raw string opens up to eight sections, two of
+// them "normal". Every other consumer — color scheme, tooltip, arc palette,
+// concordant-pair filter — collapses them the same way.
 //
-// Digit keys, not the letters, purely for ordering — the same move mapqKey makes.
-// Reusing `PAIR_DIRECTION_NUM` stacks the sections in the order the legend
-// already lists its swatches, where the letters' own code-point order (LL, LR,
-// RL, RR) would strand the normal lane between the aberrant ones. An orientation
-// string the classifier doesn't recognize is not a category, so it files with the
-// reads that have no orientation at all rather than opening a section named after
-// a value nothing else in the app will name.
+// `PAIR_DIRECTION_NUM` digits as keys, so the sections stack in the order the
+// legend lists its swatches; the letters' own code-point order (LL, LR, RL, RR)
+// would strand the normal lane between the aberrant ones. An unrecognized
+// orientation is not a category, so it files with the reads that have none.
 const NO_PAIR_ORIENTATION_GROUP: GroupKey = {
   key: '',
   label: 'No orientation',
@@ -131,20 +114,17 @@ function pairOrientationKey(feature: Feature): GroupKey {
 const SPLIT_GROUP: GroupKey = { key: 'split', label: 'Split (SA)' }
 const UNSPLIT_GROUP: GroupKey = { key: 'unsplit', label: 'Not split' }
 
-// The two sections are "reads that cross a breakpoint" and "reads that don't",
-// which at an SV locus is the evidence and the background. `isSplitAlignment`
-// carries why that is an SA question rather than a supplementary-flag one, and is
-// shared with the "Show only split alignments" filter.
+// Reads that cross a breakpoint and reads that don't — at an SV locus, the
+// evidence and the background. `isSplitAlignment` carries why that is an SA
+// question rather than a supplementary-flag one, and the "Show only split
+// alignments" filter shares it.
 function splitReadKey(feature: Feature): GroupKey {
   return isSplitAlignment(feature) ? SPLIT_GROUP : UNSPLIT_GROUP
 }
 
-// Synteny features (PAF/all-vs-all) carry a `mate` referencing the other side's
-// assembly. Its `assemblyName` is the loaded assembly if listed, else the bare
-// PanSN sample prefix (sample/haplotype, not necessarily a species). Grouping by
-// it puts each mate sample in its own section — the point of an all-vs-all track
-// in a plain LGV, where one assembly draws against every other sample. A missing
-// mate assembly collapses into the "" group.
+// One section per mate sample of an all-vs-all synteny track. `mate.assemblyName`
+// is the loaded assembly when it is listed, else the bare PanSN sample prefix
+// (a sample/haplotype, not necessarily a species).
 function mateAssemblyKey(feature: Feature): GroupKey {
   const mate = feature.get('mate') as { assemblyName?: string } | undefined
   const assemblyName = mate?.assemblyName
@@ -153,15 +133,13 @@ function mateAssemblyKey(feature: Feature): GroupKey {
     : { key: '', label: 'No mate assembly' }
 }
 
-// MAPQ bucketed by confidence, not by arithmetic decade: real MAPQ is bimodal —
-// a pile at the aligner's ceiling (60 for bwa/minimap2, 42 for bowtie2) and
-// another at 0 — so decades spent up to 26 mostly-empty sections. These are the
-// thresholds people already filter on (`samtools view -q 10` / `-q 30`), with 0
-// ("no unique placement") and SAM's 255 ("unavailable") called out on their own.
-// Digit keys, not the words, purely for ordering: keys sort by `compareGroupKeys`,
-// so ordinals put the confident reads at the head of the stack where the labels
-// would not. Five buckets by construction, so this dimension can't approach
-// MAX_GROUPS.
+// Bucketed by confidence rather than by decade: real MAPQ is bimodal, piling at
+// the aligner's ceiling (60 for bwa/minimap2, 42 for bowtie2) and at 0, so
+// decades spend up to 26 mostly-empty sections. These are the thresholds people
+// already filter on (`samtools view -q 10` / `-q 30`), with 0 ("no unique
+// placement") and SAM's 255 ("unavailable") called out. Digit keys, like
+// pairOrientation's, so `compareGroupKeys` puts the confident reads at the head
+// of the stack where the labels would not.
 const MAPQ_HIGH_GROUP: GroupKey = {
   key: '0',
   label: 'MAPQ 30+ (high confidence)',
@@ -184,42 +162,38 @@ function mapqKey(feature: Feature): GroupKey {
           : MAPQ_ZERO_GROUP
 }
 
-// All-digit key: numeric tag values (a numeric RG, a count-based tag) and mapq's
-// confidence bins. Compared by magnitude below so '2' precedes '10' instead of
-// code-point '10' < '2'.
+// Numeric tag values and the two dimensions with ordinal keys, compared by
+// magnitude below so '2' precedes '10'.
 const ALL_DIGITS = /^\d+$/
 
-// Hard ceiling on the sections one fetch may produce. Every group runs the whole
-// spine, and its coverage pipeline allocates per-bp depth arrays sized to the
-// region (then uploads a per-bp GPU coverage buffer, which alone approaches the
-// device limit at chromosome scale). So an accidentally high-cardinality grouping
-// — a UMI-style `RX`/`MI` tag, a per-read `NM` — would pay that region-width cost
-// thousands of times over and exhaust worker memory or the GPU. Groups past the
-// cap merge into one pinned-last overflow section instead.
+// Hard ceiling on the sections one fetch may produce; the rest merge into one
+// pinned-last overflow section. Every group runs the whole spine, and its
+// coverage pipeline allocates per-bp depth arrays sized to the region before
+// uploading a per-bp GPU buffer that alone approaches the device limit at
+// chromosome scale — so a UMI-style `RX`/`MI` tag would pay that region-width
+// cost thousands of times over and exhaust worker memory or the GPU.
 //
-// The backstop, not the first line of defence: every dimension except `tag` and
-// `mateAssembly` is a closed set of at most five keys, and `tag` is refused up
-// front by GroupByDialog, which has the distinct values in hand.
+// A backstop: every dimension but `tag` and `mateAssembly` is a closed set of at
+// most five keys, and GroupByDialog refuses `tag` up front with the distinct
+// values in hand.
 export const MAX_GROUPS = 40
 
 // The overflow bucket's key. '\0' cannot collide with a real tag value / refName,
 // and it is pinned dead last so the merged tail never displaces a named group.
 export const OVERFLOW_GROUP_KEY = '\u0000overflow'
 
-// Named groups first, then the "untagged"/"unknown" sentinel, then the overflow
-// bucket. Both catch-all methods sort after every real value regardless of its key.
+// Named groups, then the "untagged"/"unknown" sentinel, then the overflow bucket:
+// both catch-alls sort after every real value whatever its key.
 function groupKeyRank(key: string) {
   return key === '' ? 1 : key === OVERFLOW_GROUP_KEY ? 2 : 0
 }
 
-// Stable group-key ordering. Two all-digit keys compare by numeric magnitude so
-// numeric tag values order 1,2,10 not 1,10,2 (code-point) — the `tag` dimension
-// emits raw values, so it can't pad an arbitrary tag to fix this. Every other
-// pair falls back to plain code-point comparison (not localeCompare), which stays
-// deterministic and orders '+' before '-' for strand grouping. Exported so the
-// main-thread cross-region merge (`orderedGroups`) applies the identical order —
-// the worker's per-region sort alone doesn't fix merged order when a group is
-// absent from an early region.
+// Two all-digit keys compare by magnitude, so numeric tag values order 1,2,10 —
+// `tag` emits raw values and can't pad an arbitrary tag to fix this. Everything
+// else is code-point (not localeCompare), which stays deterministic and puts '+'
+// before '-'. Exported because the main-thread cross-region merge
+// (`orderedGroups`) has to apply the identical order: the worker's per-region
+// sort alone can't fix a group absent from an early region.
 export function compareGroupKeys(a: string, b: string) {
   const rankDiff = groupKeyRank(a) - groupKeyRank(b)
   if (rankDiff !== 0) {
@@ -235,19 +209,16 @@ export function compareGroupKeys(a: string, b: string) {
   return a === b ? 0 : a < b ? -1 : 1
 }
 
-// Merge everything past MAX_GROUPS into one overflow section rather than dropping
-// its reads. Runs on the already-ordered list, so which groups survive is a
-// deterministic function of the key set (not of per-region read counts, which
-// would keep different groups in different regions). A region-local cap can still
-// leave the main thread's cross-region union above MAX_GROUPS when regions expose
-// wildly different value sets, but it bounds the per-group region-width cost that
-// actually blows up.
+// Merge the tail past MAX_GROUPS into one overflow section rather than dropping
+// its reads. Runs on the already-ordered list, so which groups survive follows
+// from the key set alone and not from per-region read counts. The cap is still
+// region-local, so a cross-region union can exceed MAX_GROUPS when regions expose
+// wildly different value sets; it bounds the per-group region-width cost, which
+// is what actually blows up.
 //
-// The "untagged"/"unknown" group is held out of the merge and re-pinned ahead of
-// the overflow bucket. `groupKeyRank` sorts it second-to-last precisely so it
-// stays a named section — reads *lacking* the grouping tag are a distinct answer
-// users look for, not one arbitrary value among the merged tail — and since it
-// sorts into that tail, a plain splice would bury it under "N more values".
+// The untagged group is held out and re-pinned ahead of the overflow bucket:
+// reads *lacking* the grouping tag are a distinct answer users look for, and it
+// sorts into the very tail this merges.
 function capGroups(groups: FeatureGroup[]) {
   const untagged = groups.at(-1)?.key === '' ? groups.pop() : undefined
   const overflow = groups.splice(MAX_GROUPS - (untagged ? 2 : 1))
@@ -265,9 +236,6 @@ function orderGroups(groups: FeatureGroup[]) {
   return ordered.length > MAX_GROUPS ? capGroups(ordered) : ordered
 }
 
-// Append a single feature into its group, creating the group (seeded with the
-// feature) on first sight — one push per read, and no per-read array or group
-// object beyond the first sighting of a key.
 function appendFeature(
   groups: Map<string, FeatureGroup>,
   feature: Feature,
@@ -281,16 +249,13 @@ function appendFeature(
   }
 }
 
-// The ungrouped result: one section keyed '' holding every feature. Both
-// partitioners return this when no groupBy is set, so grouped and ungrouped
+// The ungrouped result, returned by both partitioners so grouped and ungrouped
 // fetches share one downstream shape.
 function singleSection(features: Feature[]): FeatureGroup[] {
   return [{ key: '', label: '', features }]
 }
 
-// Partition the fetched reads into ordered groups. Without groupBy this is a
-// single group with `key: ''` holding every feature, giving one uniform code
-// path for grouped and ungrouped fetches.
+// Partition the fetched reads into ordered groups, one group key per read.
 export function partitionFeatures(
   features: Feature[],
   groupBy: GroupBy | undefined,
@@ -306,10 +271,9 @@ export function partitionFeatures(
   return orderGroups([...groups.values()])
 }
 
-// The chain's representative read for group-key selection: a primary
-// (non-supplementary, non-secondary) read, preferring read1 so the key is
-// deterministic regardless of fetch order. Falls back to the first read when a
-// chain holds only supplementary/secondary records.
+// The read a chain's group key comes from: a primary, preferring read1 so the
+// key doesn't depend on fetch order. A chain holding only supplementary/secondary
+// records has no fragment-level answer, so it falls back to its first read.
 function chainRepresentative(chain: Feature[]): Feature {
   let primary: Feature | undefined
   for (const f of chain) {
@@ -329,49 +293,36 @@ export interface GroupByDimension {
   // Whether the dimension describes the FRAGMENT rather than the record, so
   // `partitionChains` can key a whole chain off its representative read.
   //
-  // Not "every read of the chain yields this key" — for two of the dimensions
-  // marked true it doesn't, and the difference matters when classifying a new
-  // one. A supplementary segment carries its own strand and its own
+  // NOT "every read of the chain yields this key", which two of the dimensions
+  // marked true fail: a supplementary segment carries its own strand and its own
   // @gmod/bam-derived `pair_orientation`, so an inverted split makes
   // `firstOfPairStrand` and `pairOrientation` disagree with their primary. The
-  // primary read1 still holds the fragment's answer, which is what
-  // `chainRepresentative` returns and what the pileup's own colors read
-  // (buildChainMetadata takes pair orientation off the primary for the same
-  // reason). `mapq` and `strand` are false because a chain HAS no single answer:
-  // the two mates genuinely point opposite ways and map with their own
-  // confidence.
+  // primary read1 holds the fragment's answer either way — the same read
+  // buildChainMetadata takes pair orientation off. `mapq` and `strand` are false
+  // because a chain has no single answer: its two mates genuinely point opposite
+  // ways and map with their own confidence.
   //
-  // Whether chain mode HONORS the dimension is `isChainGroupableType`, which
-  // also accepts a `chainKey` below.
+  // Whether chain mode HONORS the dimension is `isChainGroupableType`.
   fragmentLevel: boolean
-  // True for dimensions that don't apply to ordinary alignment reads and so are
-  // not offered in the general "Group by..." radios; a display that supports them
-  // surfaces them itself — mateAssembly is offered by LGVSyntenyDisplay's own
-  // "Group by..." radios (see its menus.ts).
+  // Not meaningful for ordinary alignment reads, so it is kept out of the general
+  // "Group by..." radios and surfaced by the display that supports it —
+  // LGVSyntenyDisplay's menus.ts owns mateAssembly.
   hidden?: boolean
-  // The group-key generator for this dimension. Co-located with the metadata so
-  // each dimension is defined in exactly one place — `groupKeyFor` just looks it
-  // up. `groupBy` is passed for tag grouping, which needs `groupBy.tag`.
+  // `groupBy` is passed for tag grouping, which needs `groupBy.tag`.
   key: (feature: Feature, groupBy: GroupBy) => GroupKey
   // Key for a whole chain, for a dimension the representative read cannot answer
-  // for. Without it `partitionChains` keys off that read, which answers "is the
-  // primary read1 like this", not "is any read of this fragment". Supplying one
-  // is also what makes a per-read dimension groupable in chain mode
-  // (`isChainGroupableType`).
+  // for — it answers "is the primary read1 like this", not "is any read of this
+  // fragment". Supplying one is also what makes a per-read dimension groupable in
+  // chain mode (`isChainGroupableType`).
   chainKey?: (chain: Feature[], groupBy: GroupBy) => GroupKey
 }
 
-// The single registry of group-by dimensions. Keyed by GroupByType, so adding a
-// member to the union is a compile error until it is classified here — a new
-// dimension can't be silently half-wired (missing a chain-mode classification or
-// a key generator). Each entry's `type` is pinned to its own key rather than to
-// the union at large: it is the field `offeredGroupByTypes` maps to, so a
-// copy-paste that left it naming a sibling dimension would have offered a radio
-// selecting something else, and a plain Record accepts that. Insertion order is
-// the menu order (Object.values preserves it). Labels live in the React-free
-// groupByLabels.ts, keyed by the same union, so the website's figure recipes can
-// name a menu path without importing this module (see its header) —
-// `pickGroupByOptions` is the one place that joins the two.
+// The one registry of group-by dimensions. Keyed by GroupByType, so a new member
+// of the union is a compile error until it is classified here; each entry's
+// `type` is pinned to its own key, because `offeredGroupByTypes` maps to that
+// field and a plain Record would accept one naming a sibling. Insertion order is
+// the menu order. Labels live in the React-free groupByLabels.ts (see its
+// header), joined to this registry by `pickGroupByOptions` alone.
 export const GROUP_BY_DIMENSIONS: {
   [K in GroupByType]: GroupByDimension & { type: K }
 } = {
@@ -395,12 +346,10 @@ export const GROUP_BY_DIMENSIONS: {
     fragmentLevel: true,
     key: pairOrientationKey,
   },
-  // Chain mode is where this dimension earns its keep — long-read SV viewing is
-  // linked reads plus split-read evidence — so it defines the chain's key rather
-  // than being dropped there. A chain is keyed by read name and so holds both
-  // mates, and one mate can be split where the other is not: the fragment has
-  // split evidence if either mate does, which the representative read cannot
-  // answer (hence `fragmentLevel: false` plus a `chainKey`).
+  // Chain mode is where this one earns its keep — long-read SV viewing is linked
+  // reads plus split-read evidence — so it states the chain's key rather than
+  // being dropped there. One mate can be split where the other is not, and the
+  // fragment has split evidence if either does, which no single read answers.
   splitRead: {
     type: 'splitRead',
     fragmentLevel: false,
@@ -420,12 +369,11 @@ export const GROUP_BY_DIMENSIONS: {
   },
 }
 
-// Whether chain mode can honor a dimension: one chain has to resolve to one key,
-// which holds when the representative read answers for the fragment OR when the
-// dimension states the chain's key itself. Derived from the two facts rather than
-// asserted as a third field — a `chainKey` written without a matching flag would
-// otherwise never run, and the dimension would degrade to ungrouped with the code
-// meant to prevent that sitting right there.
+// Whether chain mode can honor a dimension: the chain has to resolve to one key,
+// which holds when the representative read answers for the fragment or when the
+// dimension states the chain's key itself. Derived rather than asserted as a
+// third field, so a `chainKey` written without a matching flag can't sit there
+// unreachable while the dimension degrades to ungrouped.
 export function isChainGroupableType(type: GroupByType | undefined) {
   if (type === undefined) {
     return false
@@ -434,12 +382,10 @@ export function isChainGroupableType(type: GroupByType | undefined) {
   return fragmentLevel || chainKey !== undefined
 }
 
-// The grouping a fetch can actually honor. Chain mode allows only the dimensions
-// a chain resolves to one key under, so `partitionChains` keeps the chain whole;
-// a per-read dimension (an old session with strand + chain, say) degrades to
-// ungrouped rather than splitting chains across sections and breaking their
-// connecting lines. Named so the worker reads as "the grouping for this mode"
-// instead of an inline mode/registry ternary. See ../RenderAlignmentDataRPC/CLAUDE.md.
+// The grouping a fetch can actually honor. A per-read dimension in chain mode (an
+// old session with strand + chain, say) degrades to ungrouped rather than
+// splitting chains across sections and breaking their connecting lines.
+// See ../RenderAlignmentDataRPC/CLAUDE.md.
 export function groupByForMode(
   groupBy: GroupBy | undefined,
   isChainMode: boolean,
@@ -449,19 +395,17 @@ export function groupByForMode(
     : groupBy
 }
 
-// Dimensions as menu radio options, in the given order — the one place the
-// behavior registry above is joined to the React-free label table, so no call
-// site re-spells a label. Both the alignments menu (every non-hidden dimension)
-// and LGVSyntenyDisplay (a curated three) go through it. Mirrors pickColorOptions.
+// Dimensions as menu radio options, in the given order: the one join between the
+// registry above and the label table, so no call site re-spells a label. The
+// alignments menu takes every non-hidden dimension, LGVSyntenyDisplay a curated
+// three. Mirrors pickColorOptions.
 export function pickGroupByOptions(...types: GroupByType[]) {
   return types.map(type => ({ type, label: GROUP_BY_LABELS[type] }))
 }
 
-// Chain-aware partition for linked-reads/chain mode: reads sharing a QNAME form
-// one chain and are assigned, as a unit, to the group of the chain's
-// representative read — so a chain never splits across sections (which would
-// break connecting lines and desync mate rows). Same shape + ordering as
-// partitionFeatures; the ungrouped fallback is one group holding every read.
+// Partition for chain (linked-reads) mode: reads sharing a QNAME form one chain
+// and land in one group as a unit, so a chain never splits across sections —
+// which would break its connecting lines and desync its mate rows.
 export function partitionChains(
   features: Feature[],
   groupBy: GroupBy | undefined,
@@ -486,15 +430,13 @@ export function partitionChains(
   return orderGroups([...groups.values()])
 }
 
-// Resolve a persisted/configured `groupBy` into one the partitioners can actually
-// run, or `undefined` (ungrouped) when it can't. The `groupBy` config slot is
-// `frozen`, so its contents are unvalidated JSON from a hand-written config or an
-// older session: an unrecognized `type` would index the registry to `undefined`
-// and throw inside the worker (failing the whole track), and `tag` grouping with
-// no tag name would silently collapse every read into one `"<tag>: none"` section.
-// Both degrade to ungrouped instead. The display's `groupBy` getter runs this, so
-// every consumer — the menu, the layout, `rpcProps` and hence the worker — sees
-// only values the registry can key.
+// Resolve a persisted `groupBy` into one the partitioners can run, or `undefined`
+// when they can't. The slot is `frozen` — unvalidated JSON from a hand-written
+// config or an older session — and an unrecognized `type` indexes the registry to
+// `undefined` and throws inside the worker, failing the whole track, while `tag`
+// with no tag name collapses every read into one `"<tag>: none"` section. The
+// display's `groupBy` getter runs this, so the menu, the layout and `rpcProps`
+// all see only values the registry can key.
 export function normalizeGroupBy(groupBy: unknown): GroupBy | undefined {
   const obj =
     typeof groupBy === 'object' && groupBy !== null ? groupBy : undefined
