@@ -118,18 +118,42 @@ liveliness reads to the undo's 4, same shape, all on the display's
 `configuration` and `type`. Detaching below a view is not a further application
 of this rule but a worse trade — see "Detach a track or a display too" below.
 
-**A `safeReference` into the detached tree is the live-root asymmetry again.**
-The same trade the rejected alternative below is about also reaches the widgets,
-because a detached node is alive and so `onInvalidated` — which fires on
-destroy — has not run, while the node is already out of the session's identifier
-cache. Reading such a reference **throws** where destroy-in-place resolved it to
-undefined. So `takeOut` matches widgets by containment (`isWithin`), not by
-`widget.view.id === view.id`: `openFeatureWidget` stores
-`getContainingView(node)`, which inside a breakpoint-split or synteny view is
-the SUB-view, and an id comparison left that widget active and rendering. Worse,
-the matching loop reads every active widget's view, so one left behind took the
-NEXT `removeView` down with it — "close a view, then close another, and it
-breaks". Pinned by two tests in `MultipleViews.test.ts`.
+**A `safeReference` into the detached tree is the live-root asymmetry again**,
+and it reaches the widgets. MST hangs the invalidation hook on the reference's
+TARGET node, so a reference to the view itself empties on the view's way out
+(the hook fires on detach as well as on destroy) and a reference to anything
+UNDER the view does not: that node is neither detached nor destroyed, it simply
+leaves the session's identifier cache with the view. Reading it **throws** where
+destroy-in-place resolved it to undefined.
+
+So `takeOut` empties those references itself — what `onInvalidated` would have
+done, while the reference can still be read. Two things about which references,
+each of which took its own bug to find:
+
+- **By containment (`isWithin`), not by `widget.view.id === view.id`.**
+  `openFeatureWidget` stores `getContainingView(node)`, which inside a
+  breakpoint-split or synteny view is the SUB-view, and an id comparison left
+  that widget active and rendering. Worse, the matching loop reads every active
+  widget's view, so one left behind took the NEXT `removeView` down with it —
+  "close a view, then close another, and it breaks".
+- **Empty the reference; hiding the widget is not the same thing.** Hiding takes
+  the panel off screen and leaves the model in `session.widgets` with its own
+  autoruns running — and `BaseFeatureWidget` registers one whose first statement
+  reads `self.track`, outside the try/catch that guards the rest of it. So every
+  "Replace current view" over an open feature widget logged an uncaught
+  `InvalidReferenceError` at the `endBatch` closing the action, from a panel the
+  user could no longer see. Over every widget rather than the active ones, for
+  the same reason: a widget the user closed keeps its references AND its
+  autoruns.
+
+  **Removing the widget outright is the worse fix**, and `viewTeardown.test.tsx`
+  is what says so: a `widgets.delete` destroys it inside the action with React
+  still mounted over it — this ADR's own rule — and measures three dead reads of
+  `HierarchicalTrackSelectorWidget`'s `view` and `trackContainerId`.
+
+Pinned by four tests in `MultipleViews.test.ts`, two of them over
+`onReactionError`, which is where an autorun's throw goes when no caller is
+there to catch it.
 
 ## Rejected
 
