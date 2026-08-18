@@ -66,10 +66,19 @@ the tour was filmed in.
   posters by `videoFrames.test.ts`. **So a re-frame needs `pnpm autogen`**, or
   the page holds a box the wrong shape and the browser letterboxes the clip
   inside it.
-- **A `<Video>` tag stands alone in its block**, with a blank line under it. One
-  html node becomes one figure, so a second tag or a line of prose sharing the
-  block used to be dropped without a word; the plugin now replaces each tag in
-  place, and the check still asks for the blank line.
+- **A `<Video>` tag is one line, alone in its block, with a blank line under
+  it.** A tag that wraps is not an html block, because its first line is not a
+  whole tag: markdown reads it as a paragraph instead and the figure lands
+  beside the empty `<p>` that leaves. The blank line under it matters because
+  the block runs to the next one and everything inside is raw html by then, so
+  prose sharing it keeps its markdown on the page — a link stays `[text](url)`.
+- **`videoEmbedsIn` is the one scanner** — `check-video-specs` and
+  `check-figure-refs` both read it, rather than each carrying a pattern. Match
+  what remark-video matches or a tag goes unjudged while it renders: walking
+  lines loses a tag that wraps, and a `[^>]` scan loses one whose caption holds
+  an angle bracket (`<DEL>` is in a caption today). A tag that never closes with
+  `/>` matches nothing in the plugin at all, and the browser lowercases the raw
+  string into a bare `<video>` with no controls and no poster.
 - `static/media/` is gitignored; bytes live in the store (`media.lock`), which
   `pnpm build` pulls through `figures:pull` **because `rclone sync` deletes**
   what dist/ does not carry. `pnpm figures:push` publishes it beside the

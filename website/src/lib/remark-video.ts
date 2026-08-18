@@ -12,8 +12,12 @@ import type { Plugin } from 'unified'
 // and deliberately its shape: a caption under the frame, and a link to the live
 // session the tour was filmed in.
 //
-//   <Video src="/media/pangenome/pggb_subgraph_launch.mp4"
-//     caption="Cutting a subgraph out of the locus on screen." />
+//   <Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="Cutting a subgraph out of the locus on screen." />
+//
+// One line, however long the caption runs, with a blank line under it. A tag
+// that wraps is not an html block — its first line is not a whole tag, so
+// markdown reads the thing as a paragraph and the figure comes out beside the
+// empty <p> that leaves. check-video-specs refuses both shapes.
 //
 // Attributes:
 //   src      required; the mp4 url (local `/media/...` or absolute https://…)
