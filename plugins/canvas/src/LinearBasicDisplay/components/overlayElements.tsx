@@ -66,6 +66,8 @@ interface FloatingLabelsModel {
     displayedRegionIndex: number,
   ) => void
   toggleSoloFeature: (featureId: string) => void
+  // opens/re-collapses one gene's isoforms, from the badge on its label
+  toggleExpandedGene: (featureId: string) => void
 }
 
 interface HighlightBoxesModel {
@@ -212,6 +214,15 @@ const useStyles = makeStyles()(() => {
     floatingLabelStatic: {
       pointerEvents: 'none',
     },
+    // The isoform badge ("+3 more"). Always clickable — it is the affordance,
+    // not a readout — and underlined so it reads as one against the plain name
+    // it sits beside. Its color is the worker-baked label.color like every
+    // other label, for the reason floatingLabel gives.
+    floatingLabelMore: {
+      pointerEvents: 'auto',
+      cursor: 'pointer',
+      textDecoration: 'underline',
+    },
     // Light backing rect for overlay labels; the text color still comes from the
     // baked label.color (worker sets it to a dark tone that reads on this rect).
     floatingLabelOverlay: {
@@ -263,6 +274,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
     openContextMenu,
     selectFeatureById,
     toggleSoloFeature,
+    toggleExpandedGene,
   } = model
   const viewInitialized = view.initialized
   const width = viewInitialized ? model.canvasWidthPx : undefined
@@ -328,18 +340,30 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       // event time, so rebuilding a label allocates no handler.
       const clickable = featureItemMap.get(featureId)?.kind === 'feature'
       for (const { label, labelX, labelY, kind } of labels) {
+        // The badge is a control rather than a name, so it carries the
+        // `more` marker the delegated handlers below route on, and stays
+        // clickable whether or not the feature resolves to an openable one —
+        // expanding reads the id straight off the attribute.
+        const isMore = kind === 'more'
         elements.push(
           <div
             key={`${displayedRegionIndex}-${featureId}-${kind}`}
             data-testid={
-              clickable ? `feature-${kind}-${label.text}` : undefined
+              isMore
+                ? `feature-more-isoforms-${featureId}`
+                : clickable
+                  ? `feature-${kind}-${label.text}`
+                  : undefined
             }
-            data-feature-id={clickable ? featureId : undefined}
+            data-feature-id={clickable || isMore ? featureId : undefined}
+            data-more-isoforms={isMore ? '' : undefined}
             data-region-index={clickable ? displayedRegionIndex : undefined}
             className={
-              labelClasses[clickable ? 'clickable' : 'static'][
-                label.isOverlay ? 'overlay' : 'plain'
-              ]
+              isMore
+                ? cx(classes.floatingLabel, classes.floatingLabelMore)
+                : labelClasses[clickable ? 'clickable' : 'static'][
+                    label.isOverlay ? 'overlay' : 'plain'
+                  ]
             }
             style={{
               color: label.color,
@@ -363,11 +387,24 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   // the cursor via its data-feature-id (see the label divs above). Feature
   // lookup happens at event time (rare) against the current featureItemMap, so
   // no per-label closure is created on the per-frame rebuild path.
+  const labelElementAt = (e: React.MouseEvent) =>
+    e.target instanceof HTMLElement
+      ? e.target.closest<HTMLElement>('[data-feature-id]')
+      : null
+
+  // The gene id when the event landed on an isoform badge, else undefined.
+  // Answered off the badge's own marker rather than off `featureItemMap`,
+  // because expanding needs nothing but the id — and a badge whose gene has
+  // scrolled out of the laid-out map is not a badge the user can be pointing at.
+  const resolveMoreIsoforms = (e: React.MouseEvent) => {
+    const el = labelElementAt(e)
+    return el?.dataset.moreIsoforms === undefined
+      ? undefined
+      : el.dataset.featureId
+  }
+
   const resolveTarget = (e: React.MouseEvent) => {
-    const el =
-      e.target instanceof HTMLElement
-        ? e.target.closest<HTMLElement>('[data-feature-id]')
-        : null
+    const el = labelElementAt(e)
     const featureId = el?.dataset.featureId
     const entry = featureId ? featureItemMap.get(featureId) : undefined
     return el && entry?.kind === 'feature'
@@ -381,6 +418,14 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
     <div
       className={classes.labelLayer}
       onClick={e => {
+        // Checked ahead of the feature paths: the badge sits inside the label
+        // layer and carries a feature id of its own, so without this a click on
+        // it would open the gene's details instead of opening the gene.
+        const geneId = resolveMoreIsoforms(e)
+        if (geneId !== undefined) {
+          toggleExpandedGene(geneId)
+          return
+        }
         const t = resolveTarget(e)
         if (t) {
           // Same two gestures the canvas offers (see FeatureComponent's

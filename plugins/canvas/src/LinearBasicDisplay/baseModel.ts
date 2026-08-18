@@ -323,6 +323,23 @@ export default function baseStateModelFactory(
           hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
           /**
            * #property
+           * Genes the user opened from the isoform badge on their own label:
+           * these draw every isoform whatever `geneGlyphMode` or the height cap
+           * would otherwise collapse them to. A per-GENE override of a
+           * track-wide setting, so the reader can open the one gene they are
+           * reading without turning every other gene on screen into a stack.
+           *
+           * The collapse is the worker's decision, so this is an RPC cache key
+           * (see rpcProps) and a click refetches the visible regions — the same
+           * contract solo/hidden already have, and for the same reason.
+           *
+           * Persistent and by uniqueId, on the same basis as
+           * solo/hidden/pinnedFeatureIds; stripDefault so a display with nothing
+           * opened omits the empty array from its snapshot.
+           */
+          expandedGeneIds: types.stripDefault(types.array(types.string), []),
+          /**
+           * #property
            * Declarative feature highlights, typically seeded by a text search
            * (highlight the gene you searched for). Each entry pins a feature by
            * its span+name signature rather than its uniqueId — a search result
@@ -975,6 +992,13 @@ export default function baseStateModelFactory(
             hiddenFeatureIds:
               self.hiddenFeatureIds.length > 0
                 ? toJS(self.hiddenFeatureIds)
+                : undefined,
+            // The per-gene isoform expansions. A cache key, so opening or
+            // closing a gene refetches — the collapse happens in
+            // `layoutSubfeatures`, which only the worker runs.
+            expandedGeneIds:
+              self.expandedGeneIds.length > 0
+                ? toJS(self.expandedGeneIds)
                 : undefined,
             // Structurally-serializable theme description so worker-side coloring
             // (CDS frames, stroke fallback) matches the user's active theme; the
@@ -2012,6 +2036,24 @@ export default function baseStateModelFactory(
           if (self.pinnedFeatureIds.includes(featureId)) {
             self.setScrollTop(0)
           }
+        },
+        /**
+         * #action
+         * Open or re-collapse one gene's isoforms, from the badge on its own
+         * label. Nothing else has to change: the badge's text comes from the
+         * worker's own `isoformOverflow`, which reports what the collapse WOULD
+         * hide whether or not this gene is in the set — so the badge that
+         * opened a gene is the badge that closes it again.
+         */
+        toggleExpandedGene(featureId: string) {
+          toggleArrayMember(self.expandedGeneIds, featureId)
+        },
+        /**
+         * #action
+         * Re-collapse every gene opened from a badge.
+         */
+        clearExpandedGenes() {
+          self.expandedGeneIds.clear()
         },
 
         /**

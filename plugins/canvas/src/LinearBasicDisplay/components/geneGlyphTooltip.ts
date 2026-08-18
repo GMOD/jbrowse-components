@@ -12,22 +12,26 @@ import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 // transcripts looks exactly like a gene with 7 — so the chip has to name which
 // collapse this is rather than leaving it to the tooltip.
 //
-// A one-per-gene collapse names the RULE that picked the transcript, not the
-// count: "One isoform" said only that transcripts were missing, while the thing
-// a reader needs to know about the one on screen is that it is the annotation's
-// own RefSeq Select / MANE Select transcript rather than a guess. It is a chip,
-// so it gets the commonest rule and the tooltip gets the breakdown; a window
-// mixing tagged and untagged genes is normal (NCBI tags its protein-coding
-// genes and leaves most non-coding ones alone).
+// Every branch names the RULE, never a count. "One isoform" said only that
+// transcripts were missing, while the thing a reader needs to know about the one
+// on screen is that it is the annotation's own RefSeq Select / MANE Select
+// transcript rather than a guess. It is a chip, so it gets the commonest rule
+// and the tooltip gets the breakdown; a window mixing tagged and untagged genes
+// is normal (NCBI tags its protein-coding genes and leaves most non-coding ones
+// alone).
 //
-// A cap of one is spelled as the collapse it is: a very short lane resolves the
-// row budget to 1, which read as "Top 1 isoforms".
+// The height cap used to be the exception, reading "Top 6 isoforms" — the count
+// KEPT, which is the one number a reader can get by looking at any gene on
+// screen, and which says nothing about the 22 that are missing from one gene and
+// the 1 missing from the next. What is missing is per-gene and now says so per
+// gene, on each gene's own label (see `moreIsoformsLabel`), which leaves this
+// chip naming the track-wide rule the badges are the consequence of.
 export function geneGlyphChipLabel(
   maxIsoforms: number | undefined,
   picks?: IsoformPicks,
 ) {
   if (maxIsoforms !== undefined && maxIsoforms > 1) {
-    return `Top ${maxIsoforms} isoforms`
+    return 'Isoforms trimmed to fit'
   }
   const tag = dominantIsoformTag(picks)
   if (tag) {

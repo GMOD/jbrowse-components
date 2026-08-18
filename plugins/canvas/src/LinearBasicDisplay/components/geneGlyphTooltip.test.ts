@@ -6,8 +6,14 @@ const picks = (byTag: Record<string, number>, byLength = 0) => ({
 })
 
 describe('gene-glyph chip label', () => {
-  it('names which collapse this is', () => {
-    expect(geneGlyphChipLabel(7)).toBe('Top 7 isoforms')
+  // The cap's chip names the RULE, not a count. It read "Top 7 isoforms" — the
+  // number KEPT, which is the one number a reader gets from looking at any gene
+  // on screen, and which says nothing about how many are missing from each. That
+  // number is per-gene and is now on each gene's own label
+  // (`moreIsoformsLabel`), so nothing here restates it.
+  it('names the rule, never a count', () => {
+    expect(geneGlyphChipLabel(7)).toBe('Isoforms trimmed to fit')
+    expect(geneGlyphChipLabel(7)).not.toMatch(/\d/)
   })
 
   // a very short lane resolves the row budget to 1, which read "Top 1 isoforms".

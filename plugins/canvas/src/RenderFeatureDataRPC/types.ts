@@ -48,6 +48,14 @@ export interface FeatureLayout {
   // drives the always-visible gene-glyph control (which only makes sense when
   // there's actually a choice among isoforms to make)
   hasMultipleIsoforms?: boolean
+  // How many isoforms the current mode's collapse leaves out of this gene, and
+  // whether the user has already opened it (`expandedGeneIds`). Absent when the
+  // gene draws every isoform it has anyway.
+  //
+  // `hidden` counts what the collapse WOULD hide, so it stays put once the gene
+  // is expanded — that is what lets the badge on the gene's label offer the way
+  // back instead of vanishing the moment it is clicked.
+  isoformOverflow?: { hidden: number; expanded: boolean }
 }
 
 // `bpPerPx` is intentionally NOT part of LayoutArgs — feature widths and
@@ -63,6 +71,10 @@ export interface LayoutArgs {
   // `featureHeightPx` only needs it when the slot actually holds an expression,
   // and a plain numeric slot (every default config) never reaches for it.
   jexl?: JexlInstance
+  // Genes the user opened from their own label badge, which draw every isoform
+  // whatever the mode's collapse says. A per-GENE override of a track-wide
+  // setting, so it rides beside the config rather than in it.
+  expandedGeneIds?: ReadonlySet<string>
 }
 
 export type GlyphType =

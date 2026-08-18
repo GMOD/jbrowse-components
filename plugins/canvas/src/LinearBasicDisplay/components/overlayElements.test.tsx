@@ -54,6 +54,7 @@ const MODEL = {
   openContextMenu: () => {},
   selectFeatureById: () => {},
   toggleSoloFeature: () => {},
+  toggleExpandedGene: () => {},
 }
 
 // Only the geometry the layer reads; the layer takes the real LGV type, and the

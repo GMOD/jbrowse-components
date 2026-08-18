@@ -383,7 +383,14 @@ function renderedLabelWidths(
   labelFontPx: number,
 ): LabelWidths {
   return {
-    name: showLabels ? paddedLabelWidthPx(labelData.nameLabel, labelFontPx) : 0,
+    // The isoform badge shares the name's row (see `moreIsoformsLabel`), so it
+    // is reserved as part of the name rather than as a kind of its own — one
+    // line, one reservation, and the decimation weighs the row it actually
+    // draws. It renders only where the name does, so `showLabels` covers both.
+    name: showLabels
+      ? paddedLabelWidthPx(labelData.nameLabel, labelFontPx) +
+        paddedLabelWidthPx(labelData.moreIsoformsLabel, labelFontPx)
+      : 0,
     description: showDescriptions
       ? paddedLabelWidthPx(labelData.descriptionLabel, labelFontPx)
       : 0,

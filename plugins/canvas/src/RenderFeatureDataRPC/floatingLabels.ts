@@ -51,6 +51,34 @@ export function createFeatureFloatingLabels({
   return { nameLabel, descriptionLabel }
 }
 
+// The isoform badge that rides after a collapsed gene's name: what is missing
+// from this gene, on this gene, rather than a track-wide count of what is shown.
+//
+// Reads "+3 more" collapsed and "− fewer" expanded — the second is not a count,
+// because the number it would name is the number of isoforms now on screen,
+// which is the one thing the reader can already see.
+//
+// Through `labelItem` like every other label, so the packer's width reservation
+// and the drawn text agree by construction (see the invariant there).
+export function createMoreIsoformsLabel({
+  overflow,
+  palette,
+}: {
+  overflow: { hidden: number; expanded: boolean }
+  palette: JBrowsePalette
+}) {
+  const { hidden, expanded } = overflow
+  return hidden > 0
+    ? {
+        ...labelItem(
+          expanded ? '− fewer' : `+${hidden} more`,
+          palette.primary.main,
+        ),
+        expanded,
+      }
+    : undefined
+}
+
 export function createTranscriptFloatingLabel({
   displayLabel,
   featureHeight,

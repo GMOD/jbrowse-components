@@ -3,6 +3,7 @@ import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import {
   LABEL_EDGE_GUTTER_PX,
   LABEL_FONT_SIZE,
+  LABEL_PADDING_PX,
   renderedTextWidth,
 } from '../../RenderFeatureDataRPC/constants.ts'
 
@@ -80,9 +81,16 @@ function renderedLabelSet(
   showDescriptions: boolean,
   showSubfeatureLabels: boolean,
 ) {
+  const nameLabel = showLabels ? labelData.nameLabel : undefined
   return {
-    nameLabel: showLabels ? labelData.nameLabel : undefined,
+    nameLabel,
     descriptionLabel: showDescriptions ? labelData.descriptionLabel : undefined,
+    // Gated on the RESOLVED name, not on `showLabels`: the badge is anchored to
+    // the end of the name text, so a badge outliving its name would sit at the
+    // feature's left edge claiming isoforms of whatever glyph it landed on. The
+    // fit ladder's decimation deletes `nameLabel` outright
+    // (applyLayoutToRegion), which is the case `showLabels` alone misses.
+    moreIsoformsLabel: nameLabel ? labelData.moreIsoformsLabel : undefined,
     subfeatureLabel: showSubfeatureLabels
       ? labelData.subfeatureLabel
       : undefined,
@@ -105,14 +113,12 @@ function maxLabelTextWidth(
   showLabels: boolean,
   showDescriptions: boolean,
 ) {
-  const { nameLabel, descriptionLabel, subfeatureLabel } = renderedLabelSet(
-    labelData,
-    showLabels,
-    showDescriptions,
-    true,
-  )
+  const { nameLabel, descriptionLabel, subfeatureLabel, moreIsoformsLabel } =
+    renderedLabelSet(labelData, showLabels, showDescriptions, true)
   return Math.max(
-    nameLabel?.textWidth ?? 0,
+    // summed, not maxed: the badge is drawn AFTER the name on the same row, so
+    // the row is as wide as both (matching renderedLabelWidths' reservation)
+    (nameLabel?.textWidth ?? 0) + (moreIsoformsLabel?.textWidth ?? 0),
     descriptionLabel?.textWidth ?? 0,
     subfeatureLabel?.textWidth ?? 0,
   )
@@ -203,10 +209,10 @@ export function computeLabelPosition(
 }
 
 export interface ResolvedLabel {
-  label: LabelItem & { isOverlay?: boolean }
+  label: LabelItem & { isOverlay?: boolean; expanded?: boolean }
   labelX: number
   labelY: number
-  kind: 'name' | 'desc' | 'sub'
+  kind: 'name' | 'desc' | 'sub' | 'more'
 }
 
 // The label render context threaded through both label consumers (the DOM
@@ -241,26 +247,46 @@ function resolveFeatureLabels(
     featureBottomPx: labelData.topY + labelData.featureHeight,
     screenStartPx: vr.screenStartPx,
   }
-  const { nameLabel, descriptionLabel, subfeatureLabel } = renderedLabelSet(
-    labelData,
-    showLabels,
-    showDescriptions,
-    showSubfeatureLabels,
-  )
+  const { nameLabel, descriptionLabel, subfeatureLabel, moreIsoformsLabel } =
+    renderedLabelSet(
+      labelData,
+      showLabels,
+      showDescriptions,
+      showSubfeatureLabels,
+    )
   const out: ResolvedLabel[] = []
   const add = (
     label: ResolvedLabel['label'],
     padding: number,
     kind: ResolvedLabel['kind'],
   ) => {
-    out.push({
+    const resolved = {
       label,
       ...computeLabelPosition(label, padding, bounds, fontSize),
       kind,
-    })
+    }
+    out.push(resolved)
+    return resolved
   }
   if (nameLabel) {
-    add(nameLabel, LABEL_TOP_GAP_PX, 'name')
+    const name = add(nameLabel, LABEL_TOP_GAP_PX, 'name')
+    if (moreIsoformsLabel) {
+      // Placed off the NAME's resolved x rather than through
+      // computeLabelPosition, which clamps each label into the feature
+      // independently — the badge reads as the tail of the name, so it has to
+      // travel with it wherever those clamps put it. The packer reserved the
+      // pair's combined width (renderedLabelWidths), so this cannot overhang
+      // into a neighbour the name didn't already claim.
+      out.push({
+        label: moreIsoformsLabel,
+        labelX:
+          name.labelX +
+          renderedTextWidth(nameLabel.textWidth, fontSize) +
+          LABEL_PADDING_PX,
+        labelY: name.labelY,
+        kind: 'more',
+      })
+    }
   }
   if (descriptionLabel) {
     // The description sits one label-line (fontSize) below the name; when the
@@ -324,6 +350,8 @@ export function forEachRenderedLabel(
       showDescriptions,
       showSubfeatureLabels,
     )
+    // The badge is not tested: it only exists alongside a name, so a set with
+    // one already has `nameLabel`.
     if (!want.nameLabel && !want.descriptionLabel && !want.subfeatureLabel) {
       continue
     }

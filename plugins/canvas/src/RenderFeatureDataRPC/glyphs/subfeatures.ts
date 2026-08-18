@@ -266,6 +266,10 @@ function keepRanked(
     keep: new Set(ranked.slice(0, kept).map(f => f.id())),
     canonicalTag:
       config.canonicalTranscriptTags[scores.get(ranked[0]!.id())!.canonical],
+    // Reported rather than re-derived: under the height cap this is what
+    // `isoformsWithinBudget` MEASURED, not `maxIsoforms`, so the label badge's
+    // "+N more" has no other way to know it (see `isoformOverflow`).
+    kept,
   }
 }
 
@@ -379,13 +383,17 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   // gene with no isoform-shaped children. Ranking after it would rank a
   // reordered list, and rankIsoforms breaks a tie by index, so the cap at n = 1
   // would have kept a different isoform than the longestCoding collapse does.
-  const collapsed = collapseIsoforms({
+  const collapse = collapseIsoforms({
     isoforms,
     decorations: subfeatures.filter(sub => !isoformSet.has(sub)),
     scores,
     config,
     layoutOf,
   })
+  // An expanded gene still ASKS what the collapse would do — the badge on its
+  // label spends that count to offer the way back — but does not act on it.
+  const expanded = args.expandedGeneIds?.has(feature.id()) ?? false
+  const collapsed = expanded ? undefined : collapse
 
   // Drop the isoforms that lost, leaving the decorations alongside them alone —
   // an NCBI source record, a `biological_region`. `longestCoding` used to
@@ -458,5 +466,9 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     isoformsCollapsed: collapsed !== undefined,
     canonicalTag: collapsed?.canonicalTag,
     hasMultipleIsoforms,
+    isoformOverflow:
+      collapse === undefined
+        ? undefined
+        : { hidden: isoforms.length - collapse.kept, expanded },
   }
 }

@@ -58,6 +58,10 @@ export interface RenderFeatureDataArgs {
   // dropped from layout/drawing. Inverse of soloFeatureIds; hidden wins when a
   // feature is somehow in both.
   hiddenFeatureIds?: string[]
+  // Genes the user opened from the isoform badge on their own label: these draw
+  // every isoform whatever `geneGlyphMode` / `maxIsoforms` would collapse them
+  // to. Matched against feature.id(), like solo/hidden above.
+  expandedGeneIds?: string[]
   maxFeatureDensity?: number
   // Compressed-byte budget for this region. When set and the adapter offers a
   // cheap index estimate (getRegionByteSize), the fetch short-circuits before
@@ -321,6 +325,16 @@ export interface FeatureLabelData {
   featureHeight: number
   nameLabel?: LabelItem
   descriptionLabel?: LabelItem
+  // The isoform badge, drawn immediately after the name on the same row: "+3
+  // more" on a gene the mode collapsed, "− fewer" on one the user opened from
+  // this badge (`expanded`). Present only where the collapse actually leaves
+  // isoforms out, so a gene drawing all of its own carries none.
+  //
+  // A label of its own rather than text folded into `nameLabel`, because it is
+  // a control: it needs its own color, its own hit target, and — for the packer
+  // — its own width beside the name's, which `renderedLabelWidths` adds to the
+  // name row (the two share one line, so one reservation covers both).
+  moreIsoformsLabel?: LabelItem & { expanded: boolean }
   parentFeatureId?: string
   subfeatureLabel?: LabelItem & { isOverlay: boolean }
 }

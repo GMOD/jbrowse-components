@@ -45,6 +45,7 @@ export async function executeRenderFeatureData({
     showOnlyGenes,
     soloFeatureIds,
     hiddenFeatureIds,
+    expandedGeneIds,
     maxFeatureDensity,
     byteLimit,
     theme: themeOptions,
@@ -157,6 +158,10 @@ export async function executeRenderFeatureData({
     return tooManyFeatures
   }
 
+  // A Set once per region rather than per gene: `layoutSubfeatures` asks for
+  // every container feature it lays out.
+  const expandedGenes = expandedGeneIds && new Set(expandedGeneIds)
+
   const layouts = await withProgress(
     {
       label: 'Computing layout',
@@ -177,6 +182,7 @@ export async function executeRenderFeatureData({
             config: displayConfig,
             // for the one layout-time per-feature callback slot, `featureHeight`
             jexl: pluginManager.jexl,
+            expandedGeneIds: expandedGenes,
           }),
         )
       }

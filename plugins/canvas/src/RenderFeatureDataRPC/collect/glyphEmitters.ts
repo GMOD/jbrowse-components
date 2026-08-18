@@ -1,6 +1,9 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
-import { createFeatureFloatingLabels } from '../floatingLabels.ts'
+import {
+  createFeatureFloatingLabels,
+  createMoreIsoformsLabel,
+} from '../floatingLabels.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
@@ -751,6 +754,18 @@ export function processFeatureRecord(
     palette: ctx.palette,
   })
 
+  // Only beside a name, because the badge sits ON the name row and is read as
+  // part of it — a gene the annotation never named has no label for it to
+  // qualify, and floating one alone under the glyph would read as a transcript
+  // label rather than as this gene's own missing count.
+  const moreIsoformsLabel =
+    nameLabel && layout.isoformOverflow
+      ? createMoreIsoformsLabel({
+          overflow: layout.isoformOverflow,
+          palette: ctx.palette,
+        })
+      : undefined
+
   if (nameLabel || descriptionLabel) {
     collector.floatingLabelsData[feature.id()] = {
       featureId: feature.id(),
@@ -761,6 +776,7 @@ export function processFeatureRecord(
       labelRows: layout.labelRows,
       nameLabel,
       descriptionLabel,
+      moreIsoformsLabel,
     }
   }
 
