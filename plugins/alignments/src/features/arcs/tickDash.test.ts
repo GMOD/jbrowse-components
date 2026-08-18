@@ -3,7 +3,7 @@ import {
   ARC_LINE_DASH_PX,
   ARC_LINE_GAP_PX,
 } from '../../shaders/slang/arcLine.consts.generated.ts'
-import { arcsToRegionResult } from './compute.ts'
+import { arcsToRegionResult } from './arcRegions.ts'
 import { drawArcs } from './drawCanvas.ts'
 import { ARC_SHAPE_ARC } from './shapes.ts'
 
@@ -11,7 +11,7 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { ComputedArc, ComputedLine } from './compute.ts'
+import type { ComputedArc, ComputedLine } from './arcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Records the dash pattern in force at each stroke, which is the whole question

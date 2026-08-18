@@ -1,5 +1,5 @@
 import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { computeReadChains } from '../arcs/compute.ts'
+import { computeReadChains } from '../arcs/arcChains.ts'
 import { computeDerivativePaths } from './computePaths.ts'
 
 import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.ts'

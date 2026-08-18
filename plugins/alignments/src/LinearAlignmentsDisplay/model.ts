@@ -45,11 +45,9 @@ import {
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, observable } from 'mobx'
 
-import {
-  arcColorLegendCategory,
-  computeArcsByGroup,
-  computeReadChains,
-} from '../features/arcs/compute.ts'
+import { computeReadChains } from '../features/arcs/arcChains.ts'
+import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
+import { computeArcsByGroup } from '../features/arcs/compute.ts'
 import { computeDerivativePaths } from '../features/derivativePaths/computePaths.ts'
 import {
   bezierConnectionLegendItems,
@@ -211,7 +209,7 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
 )
 
 // The read-fill scheme each arc coloring mode is the overlay twin of —
-// getArcColorType (features/arcs/compute.ts) mirrors that scheme's classifier,
+// getArcColorType (features/arcs/arcColors.ts) mirrors that scheme's classifier,
 // so both paint a bucket the same color. Only 'orientation' is spelled
 // differently on the two sides.
 const ARC_SCHEME_AS_READ_SCHEME: Record<ArcColorByType, ColorSchemeType> = {

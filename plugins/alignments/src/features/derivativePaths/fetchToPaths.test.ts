@@ -5,7 +5,7 @@ import { buildBaseFeatureData } from '../../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../../shared/buildBaseReadArrays.ts'
 import { extractFeatureArrays } from '../../shared/extractFeatureArrays.ts'
 import { buildReadNameBlock } from '../../shared/readNameBlock.ts'
-import { computeReadChains } from '../arcs/compute.ts'
+import { computeReadChains } from '../arcs/arcChains.ts'
 import { computeDerivativePaths } from './computePaths.ts'
 
 import type { Feature, Region } from '@jbrowse/core/util'

@@ -1,7 +1,7 @@
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { computeCrossRegionArcs } from './crossRegionOverlay.ts'
 
-import type { CrossRegionArc } from './compute.ts'
+import type { CrossRegionArc } from './arcTypes.ts'
 
 // Document order is paint order in an SVG overlay, and `pointerEvents: 'stroke'`
 // hands the tooltip to the topmost path — so the order this returns decides both

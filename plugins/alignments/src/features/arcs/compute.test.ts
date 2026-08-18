@@ -13,14 +13,9 @@ import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.consts.generated
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
 import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
-import {
-  arcColorLegendCategory,
-  arcPaintRank,
-  arcsToRegionResult,
-  computeArcsByGroup,
-  computeArcsFromPileupData,
-  groupArcsByRef,
-} from './compute.ts'
+import { arcColorLegendCategory, arcPaintRank } from './arcColors.ts'
+import { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'
+import { computeArcsByGroup, computeArcsFromPileupData } from './compute.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
@@ -28,7 +23,7 @@ import {
 } from './shapes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ComputedLine, ComputedArc } from './compute.ts'
+import type { ComputedLine, ComputedArc } from './arcTypes.ts'
 
 // Find the junction under test rather than indexing into `arcs`. The array is
 // in PAINT order — ascending support, then by dedup key — which is deliberately

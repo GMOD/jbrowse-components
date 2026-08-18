@@ -1,6 +1,6 @@
 import { computeDerivativePaths, derivativeLocString } from './computePaths.ts'
 
-import type { SegAln } from '../arcs/compute.ts'
+import type { SegAln } from '../arcs/arcTypes.ts'
 
 function seg(
   refName: string,

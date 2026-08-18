@@ -73,7 +73,7 @@ export interface InsertSizeBand {
 export type InsertSizeClass = 'long' | 'short' | 'normal'
 
 // Single home of the short/normal/long threshold rule, shared by the read-fill
-// classifier (colorUtils.ts) and the arc/read-cloud classifier (arcs/compute.ts)
+// classifier (colorUtils.ts) and the arc/read-cloud classifier (arcs/arcColors.ts)
 // so the two can't drift. `absInsert` is |TLEN|; 0 means unset (single-end /
 // unpaired) and classifies as 'normal', never 'short' — otherwise an unpaired
 // read in a mixed dataset (stats defined) would paint as a short insert. There

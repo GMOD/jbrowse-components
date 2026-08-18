@@ -72,7 +72,7 @@ export function strokeArcMark(ctx: Ctx2D, mark: ArcDome) {
 }
 
 // Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
-// constant line Y, otherwise the curve apex. See ARC_SHAPE_* in compute.ts.
+// constant line Y, otherwise the curve apex. See ARC_SHAPE_* in shapes.ts.
 function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   // The band rect, the Y scale and the near/far width are not read here at all:
   // `arcMark` takes `opts` whole and resolves every mark from them.

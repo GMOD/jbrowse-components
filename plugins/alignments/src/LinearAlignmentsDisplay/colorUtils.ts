@@ -108,7 +108,7 @@ function pairOrientationCategory(po: number): ReadColorCategory {
 
 // Map the shared insert-size class onto the render/legend category vocabulary.
 // The threshold rule (including the unset-TLEN guard) lives in classifyInsertSize
-// so this and the arc path (arcs/compute.ts) share one source. The shader
+// so this and the arc path (arcs/arcColors.ts) share one source. The shader
 // used to re-apply those thresholds; it now receives the resulting category,
 // so this naming has no GPU twin to stay in step with.
 const insertClassCategory: Record<

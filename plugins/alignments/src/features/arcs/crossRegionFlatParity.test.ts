@@ -1,5 +1,5 @@
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { arcsToRegionResult } from './compute.ts'
+import { arcsToRegionResult } from './arcRegions.ts'
 import { computeCrossRegionArcs } from './crossRegionOverlay.ts'
 import { drawArcs } from './drawCanvas.ts'
 import {
@@ -12,7 +12,7 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { ComputedArc, CrossRegionArc } from './compute.ts'
+import type { ComputedArc, CrossRegionArc } from './arcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // A read-cloud connector that straddles a seam has to be the SAME MARK as one

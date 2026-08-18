@@ -1,5 +1,5 @@
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { arcsToRegionResult } from './compute.ts'
+import { arcsToRegionResult } from './arcRegions.ts'
 import { drawArcs } from './drawCanvas.ts'
 import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './shapes.ts'
 
@@ -7,7 +7,7 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { ComputedArc } from './compute.ts'
+import type { ComputedArc } from './arcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Records WHICH KIND of mark was painted, in order. The read cloud's two marks

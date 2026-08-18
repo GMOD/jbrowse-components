@@ -632,7 +632,7 @@ export function oneReadWithMate(mateBp?: number): WorkerPileupData {
  * `strand` and `mateReverse` are the two inputs those feet are derived from. A
  * foot points along the ARM its junction keeps, and this family's endpoints are
  * the fragment's OUTER edges, so the direction is each read's own reading
- * direction negated (`pairOuterDir`, features/arcs/compute.ts): a case that
+ * direction negated (`pairOuterDir`, features/arcs/arcChains.ts): a case that
  * wants outward feet asks for a forward read with a reverse mate — the FR,
  * deletion-type signature — and one that wants parallel feet asks for two
  * forward.

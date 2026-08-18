@@ -4,7 +4,7 @@ import {
   swatchPaletteKeys,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
-import { arcColorLegendCategory } from '../features/arcs/compute.ts'
+import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
 import {
   LINKED_READ_COLOR_PAIR_LL,
   LINKED_READ_COLOR_PAIR_LR,

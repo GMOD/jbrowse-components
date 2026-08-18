@@ -2,7 +2,7 @@ import * as arcShader from '../../shaders/slang/arc.iface.generated.ts'
 import * as arcFlatShader from '../../shaders/slang/arcFlat.iface.generated.ts'
 import * as arcLineShader from '../../shaders/slang/arcLine.iface.generated.ts'
 import { ARC_WIDTH_MAX_SCALE } from './arcLineWidth.ts'
-import { arcsToRegionResult } from './compute.ts'
+import { arcsToRegionResult } from './arcRegions.ts'
 import {
   packArcFlats,
   packArcLines,
@@ -15,7 +15,7 @@ import {
   ARC_SHAPE_FLAT_SPLIT,
 } from './shapes.ts'
 
-import type { ComputedArc } from './compute.ts'
+import type { ComputedArc } from './arcTypes.ts'
 
 // Deliberately not 1: a packer that dropped the configured width on the floor
 // and shipped a bare scale factor would still satisfy every assertion below if

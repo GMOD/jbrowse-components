@@ -2,7 +2,7 @@ import { assembleLocStringRaw } from '@jbrowse/core/util'
 
 import { getOrCreate } from '../../shared/util.ts'
 
-import type { SegAln } from '../arcs/compute.ts'
+import type { SegAln } from '../arcs/arcTypes.ts'
 
 // A derivative allele is an ordered, oriented list of reference intervals, and
 // that is exactly what a split read's segment chain already is. So the proposal

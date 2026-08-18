@@ -35,7 +35,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { pileupDataFromSamRecords } from '../plugins/alignments/src/LinearAlignmentsDisplay/testUtils.ts'
-import { computeReadChains } from '../plugins/alignments/src/features/arcs/compute.ts'
+import { computeReadChains } from '../plugins/alignments/src/features/arcs/arcChains.ts'
 import { computeDerivativePaths } from '../plugins/alignments/src/features/derivativePaths/computePaths.ts'
 
 import type { SamRecordFixture } from '../plugins/alignments/src/LinearAlignmentsDisplay/testUtils.ts'

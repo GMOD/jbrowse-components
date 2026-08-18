@@ -5,7 +5,7 @@ import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import { arcColorLegendCategory } from '../../features/arcs/compute.ts'
+import { arcColorLegendCategory } from '../../features/arcs/arcColors.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import { readColorCategoryLabel } from '../../shared/legendUtils.ts'
 import { getMismatchContrastMap } from '../../shared/util.ts'

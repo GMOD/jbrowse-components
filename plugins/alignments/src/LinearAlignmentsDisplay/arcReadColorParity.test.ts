@@ -1,7 +1,7 @@
 import {
   arcColorLegendCategory,
   getArcColorType,
-} from '../features/arcs/compute.ts'
+} from '../features/arcs/arcColors.ts'
 import { readColorCategory } from './colorUtils.ts'
 import { ColorScheme } from './constants.ts'
 

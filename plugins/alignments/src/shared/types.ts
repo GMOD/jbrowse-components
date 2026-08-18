@@ -8,7 +8,7 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // scheme's `'pairOrientation'`. Kept distinct because it is a saved config value
 // (renaming would need a migration) and the arc menu carries its own richer
 // help text (see arcColorOptions in menus/colorBy.tsx). getArcColorType
-// (features/arcs/compute.ts) mirrors the matching read-fill logic.
+// (features/arcs/arcColors.ts) mirrors the matching read-fill logic.
 export type ArcColorByType =
   | 'insertSizeAndOrientation'
   | 'insertSize'

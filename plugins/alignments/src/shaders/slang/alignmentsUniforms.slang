@@ -524,7 +524,7 @@ public float3 arcColorByIndex(uint idx, Uniforms u) {
 }
 
 // The short-insert slot, named because `getArcColorType` in
-// features/arcs/compute.ts has to assign the same number this palette resolves.
+// features/arcs/arcColors.ts has to assign the same number this palette resolves.
 // It is `//! export-consts`ed through arc.slang, so that side reads this
 // constant instead of spelling `2` a second time.
 public static const uint ARC_COLOR_SHORT_INSERT = 2u;
