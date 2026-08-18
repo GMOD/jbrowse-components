@@ -508,7 +508,14 @@ export default function stateModelFactory(
           const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
           const data =
             index === undefined ? undefined : self.rpcDataMap.get(index)
-          if (data) {
+          // Fewer than two rows has nothing to order, and the write is not a
+          // harmless no-op: `setLayout` drops the cluster tree whenever the row
+          // set changes, so an adapter that reported no sources for the loaded
+          // region would trade a dendrogram for an empty layout. The
+          // right-click item is already gated on the same count; this is the
+          // declarative `sortRowsBy` entry point, which is not, and the same
+          // guard the multi-row feature display's twin carries.
+          if (data && self.editableSources.length > 1) {
             // editableSources, not `sources`: layout-merged (so a user's
             // colors survive the reorder) and unfiltered by the subtree, so a
             // focused clade doesn't persist itself as the whole row order and

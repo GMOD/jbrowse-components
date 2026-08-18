@@ -292,6 +292,14 @@ export function variantTrackMenuItems(
     }),
     clusteringMenuItem(self, {
       label: 'Cluster rows by genotype...',
+      // Clustering reorders rows, so it needs rows to reorder and at least two
+      // of them — the same gate the other two clustering displays state, and
+      // for the same reason: the dialog would otherwise open only to report it
+      // after the user clicks Run.
+      disabled: (self.sourcesWithoutLayout?.length ?? 0) < 2,
+      disabledHelpText: loaded
+        ? 'Needs at least two samples to cluster'
+        : 'Loading samples...',
       onClick: () => {
         getSession(self).queueDialog(handleClose => [
           ClusterDialog,
