@@ -1,86 +1,136 @@
 ---
 title: Display settings
 description:
-  Set track display settings via config.json, URL, or embedded session
+  Change a track's height, color and soft clipping, then make the change stick
+  in a link, a session file, or config.json
 guide_category: Tutorials
 tutorial_category: Configuration & embedding
+data: hosted
 ---
 
-**TL;DR:** the same track display settings (height, color, display type) live as
-persistent defaults in `config.json` and as per-session overrides in a URL
-session spec or embedded view. When both are set, the per-session value wins.
+**TL;DR:** every setting in a track menu has a name, and JBrowse will tell you
+what it is. Change the setting by clicking, read the session JSON back, and the
+same key works in a shareable link, in a saved session file, and in
+`config.json`. This page changes three settings on one CRAM track and follows
+them through all three.
 
 ## Prerequisites
 
-- a JBrowse instance with a track already loaded (see the
-  [web quickstart](/docs/quickstart_web) or
-  [desktop quickstart](/docs/quickstart_desktop))
-- a text editor for its `config.json`
+- JBrowse Web or JBrowse Desktop. Both are covered at each step.
+- Nothing to download. The volvox demo data is hosted.
 
-## Where display settings live
+## Open the reads track
 
-Everything here is config and URL editing. Track display settings (height, color
-scheme, display type, score range, and so on) live in two places:
+Volvox is the small demo dataset the JBrowse test builds ship, and
+`volvox-sv (cram)` is its structural-variant CRAM.
 
-- Persistent defaults live in `config.json`, in the track's `displayDefaults`
-  object. These apply every time the track opens, in every session.
-- Per-session settings live on a track entry in a session spec. These set the
-  track's _initial_ state when a particular link or embedded view loads, and
-  override the `config.json` defaults.
+In **JBrowse Web**, open
+[volvox at ctgA:1-10,000](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-10000&tracks=volvox_sv_cram).
 
-Both use the same setting names, so a session entry is a per-session override of
-the fields you can bake in as defaults. Use `displayDefaults` for settings
-everyone should always get, and a session spec for a link or embedded view that
-should open in one specific state.
+In **JBrowse Desktop**, choose **File → Session → Open JBrowse Web link...** and
+paste that same URL, or **File → Session → Open config.json or .jbrowse
+file...** and give it
+`https://jbrowse.org/code/jb2/main/test_data/volvox/config.json`. Desktop reads
+a config you open and leaves it alone, saving your edits to a session of its own
+instead.
 
-## Finding a setting's name
+Either way you get a pileup of short reads, drawn at the default height in the
+default gray.
 
-The per-session setting keys match the display model's own settings (the same
-names you'd put in a config `displayDefaults`). Two ways to discover them:
+## Change three settings
 
-- Configure the track interactively (height, color scheme, etc.), then use the
-  **Share** button to generate a session link. The shared session records each
-  track's `displays` settings under those exact key names.
-- Look up the display in the auto-generated
-  [config schema docs](/docs/config_guide) (e.g.
-  [](/docs/config/linearwiggledisplay),
-  [](/docs/config/linearalignmentsdisplay)).
+Open the track's menu from the track label, and set:
 
-Common keys include `type` (the display type), `height`, `minScore` /
-`maxScore`, `defaultRendering`, `showSoftClipping`, and `colorBy`.
+- **Read connections → View as pairs / link supplementary alignments**, which
+  puts each read on the same row as its mate.
+- **Color by... → Insert size and orientation**, which leaves normally-paired
+  reads gray and colors the rest by how they disagree with the reference.
+- **Show... → Show soft clipping**, which draws the clipped ends the aligner
+  trimmed off.
 
-## In config.json (persistent defaults)
+Then drag the bottom edge of the track down to about 250px, so the deeper stack
+of paired rows fits.
 
-Put the settings in the track's `displayDefaults` object and JBrowse routes each
-one to the display that uses it, so you don't have to name the display. It
-applies whenever the track is shown:
+<Figure caption="The volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, soft-clipping shown, reads viewed as pairs and colored by insert size and orientation. The colored cluster at the left flags a structural variant." src="/img/display_settings_url_snapshot.png" />
+
+## Ask JBrowse what you just set
+
+Three menu clicks and a drag changed four settings, and each one has a name you
+can type into a config. JBrowse will tell you what those names are.
+
+In **JBrowse Web**, click **Share**, choose **Plaintext JSON**, and tick **Show
+readable JSON**. In **JBrowse Desktop**, choose **File → Session → Save session
+as...**, save a `volvox.jbrowse` file, and open it in a text editor.
+
+Both hold the same JSON. Find the track you were editing and its display carries
+what you clicked:
+
+```json
+"displays": [
+  {
+    "type": "LinearAlignmentsDisplay",
+    "configuration": "volvox_sv_cram-LinearAlignmentsDisplay",
+    "height": 250,
+    "linkedReads": "normal",
+    "colorBy": { "type": "insertSizeAndOrientation" },
+    "showSoftClipping": true
+  }
+]
+```
+
+`height`, `linkedReads`, `colorBy` and `showSoftClipping` are the setting names,
+and they are the only ones you need. Every route below spells them the same way.
+
+The desktop file is worth watching for a moment. Change one more setting in the
+app, wait a second, and read `volvox.jbrowse` again: it has already updated.
+Desktop autosaves the open session about a second after each edit, and reopening
+that file brings the settings back.
+
+The [config schema docs](/docs/config_guide) list the same names per display
+(e.g. [](/docs/config/linearalignmentsdisplay),
+[](/docs/config/linearwiggledisplay)) with what each one accepts, which is where
+to go for a setting you have not clicked yet.
+
+## Put them in config.json
+
+A session remembers settings for one session. To have the track open this way
+for everyone, every time, put the same keys in its `displayDefaults`:
 
 ```json addtrack
 {
-  "type": "QuantitativeTrack",
-  "trackId": "my_wiggle_track",
-  "name": "My Wiggle Track",
+  "type": "AlignmentsTrack",
+  "trackId": "volvox_sv_cram",
+  "name": "volvox-sv (cram)",
   "assemblyNames": ["volvox"],
-  "adapter": { "type": "BigWigAdapter", "uri": "http://yourhost/file.bw" },
+  "adapter": {
+    "type": "CramAdapter",
+    "cramLocation": { "uri": "volvox-sv.cram" },
+    "craiLocation": { "uri": "volvox-sv.cram.crai" }
+  },
   "displayDefaults": {
-    "defaultRendering": "line",
-    "minScore": 0,
-    "maxScore": 100
+    "height": 250,
+    "linkedReads": "normal",
+    "colorBy": { "type": "insertSizeAndOrientation" },
+    "showSoftClipping": true
   }
 }
 ```
 
-Spell out the full `displays` array instead when the example _selects_ a
-non-default display type (`LinearMultiSampleVariantDisplay`, `LDDisplay`, ...).
-See [configuring tracks](/docs/config_guides/tracks) for both forms.
+You do not have to say which display these belong to. JBrowse routes each key to
+the display that uses it. Spell out the full `displays` array instead when you
+are _selecting_ a non-default display type (`LinearMultiSampleVariantDisplay`,
+`LDDisplay`, and so on); see [configuring tracks](/docs/config_guides/tracks)
+for both forms.
 
-## In a URL (session spec)
+Reload with that config and the track opens paired, colored and soft-clipped,
+with no clicking.
 
-A `?session=spec-{...}` URL can open tracks with initial display settings. Each
-entry in a view's `tracks` array is either a plain `trackId` string or an object
-with `trackId` plus the display settings written directly alongside it:
+## Which value wins
 
-```json
+Now both places are set, so make them disagree. The config above asks for
+`height: 250`. Load a session that asks for 100 on the same track:
+
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -90,9 +140,7 @@ with `trackId` plus the display settings written directly alongside it:
       "tracks": [
         {
           "trackId": "volvox_sv_cram",
-          "height": 250,
-          "showSoftClipping": true,
-          "linkedReads": "normal",
+          "height": 100,
           "colorBy": { "type": "insertSizeAndOrientation" }
         }
       ]
@@ -101,77 +149,66 @@ with `trackId` plus the display settings written directly alongside it:
 }
 ```
 
-That JSON is URL-encoded onto the end of a JBrowse link. Append the query string
-below to your own instance's base URL (e.g.
-`https://jbrowse.org/code/jb2/latest/`), swapping `config` and the `trackId`
-values for ones in your config; `volvox_sv_cram` is an example track from the
-bundled volvox demo data:
+The track comes up 100px tall. The session wins, and it wins per setting: a key
+the session does not mention still comes from `displayDefaults`. So
+`config.json` says how the track opens by default, and anything carrying a
+session says how it opens this time.
 
-```
-?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","height":250,"showSoftClipping":true,"linkedReads":"normal","colorBy":{"type":"insertSizeAndOrientation"}}]}]}
-```
+Each entry in a view's `tracks` array is either a plain `trackId` string or an
+object with `trackId` plus settings written alongside it, as above. The settings
+can equivalently be nested under an explicit `displaySnapshot` key
+(`{ "trackId": "...", "displaySnapshot": { "height": 100 } }`); the inline form
+is shorthand for it. Use the explicit form when you also need `trackSnapshot`
+for track-config rather than display fields.
 
-The **Share** button and these `?session=spec-{...}` URLs are a JBrowse Web
-feature. JBrowse Desktop has no session-URL server. Persist a track's startup
-state there through `config.json` (the
-[defaults](#in-configjson-persistent-defaults) above) instead.
+## Where each route keeps the value
 
-<Figure caption="What that link opens: the volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, soft-clipping shown, reads viewed as pairs and colored by insert size and orientation. The colored cluster at the left flags a structural variant." src="/img/display_settings_url_snapshot.png" />
+| Route                              | Kept in                  | Applies to                                |
+| ---------------------------------- | ------------------------ | ----------------------------------------- |
+| The pin beside a menu row          | your browser, or the app | every track of that display type, for you |
+| **Share** link (`?session=`)       | the URL                  | whoever opens that link                   |
+| **Save session as...** (Desktop)   | the `.jbrowse` file      | whoever opens that file                   |
+| `displayDefaults` in `config.json` | the config file          | everyone, every session                   |
 
-The display settings can equivalently be nested under an explicit
-`displaySnapshot` key
-(`{ "trackId": "...", "displaySnapshot": { "height": 250 } }`). The inline form
-above is shorthand for it. Use the explicit form when you also need
-`trackSnapshot` to set track-config (not display) fields. See
-[URL parameters](/docs/urlparams) for the full session-spec format, including
+The pin is the one route with no file in it, and the only one a reader of your
+instance can reach without your help;
+[defaults for all tracks](/docs/user_guides/display_defaults) covers it.
+`?session=` URLs are a JBrowse Web feature, since Desktop has no session-URL
+server; Desktop's nearest equivalent is **File → Session → Export session to
+web...**, which uploads the session and hands you a web link, though the
+settings in it are encoded rather than readable.
+
+[URL parameters](/docs/urlparams) has the full session-spec format, including
 `trackSnapshot` and multi-view specs.
 
 ## In an embedded component
 
-The embedded React components take the same shape through
-`defaultSession.view.init.tracks`. Set each track's startup state with the same
-inline display settings:
+The embedded React components take the same keys through
+`defaultSession.view.init.tracks`:
 
 ```js
-import {
-  useCreateViewState,
-  JBrowseLinearGenomeView,
-} from '@jbrowse/react-linear-genome-view2'
-
-function GenomeBrowser() {
-  const state = useCreateViewState({
-    assembly,
-    tracks,
-    defaultSession: {
-      name: 'Wiggle display config',
-      view: {
-        type: 'LinearGenomeView',
-        init: {
-          loc: 'ctgA:1105..3000',
-          assembly: 'volvox',
-          tracks: [
-            {
-              trackId: 'volvox_microarray',
-              type: 'LinearWiggleDisplay',
-              defaultRendering: 'line',
-              height: 150,
-            },
-          ],
-        },
-      },
+init: {
+  loc: 'ctgA:1105..3000',
+  assembly: 'volvox',
+  tracks: [
+    {
+      trackId: 'volvox_microarray',
+      type: 'LinearWiggleDisplay',
+      defaultRendering: 'line',
+      height: 150,
     },
-  })
-  return <JBrowseLinearGenomeView viewState={state} />
+  ],
 }
 ```
 
 See [embedding the linear genome view](/docs/tutorials/embed_linear_genome_view)
-for the full embedded setup.
+for the surrounding setup.
 
 ## See also
 
+- [](/docs/user_guides/display_defaults)
+- [](/docs/config_guides/tracks)
+- [](/docs/urlparams)
 - [](/docs/tutorials/cli_desktop)
-- [Configuring tracks](/docs/config_guides/tracks)
-- [URL parameters](/docs/urlparams)
 - [](/docs/tutorials/embed_linear_genome_view)
-- [Config schema docs](/docs/config_guide)
+- [](/docs/config_guide)
