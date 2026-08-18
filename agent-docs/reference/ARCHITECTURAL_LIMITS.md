@@ -27,6 +27,14 @@ Keeping it honest:
 
 ## GPU / rendering
 
+**Every number in this section came off one machine** — Firefox Nightly or
+Chrome 151 on an Intel UHD 630. Each entry's provenance line says so.
+[GPU_PORTABILITY.md](GPU_PORTABILITY.md) is the complement: what a conformant
+implementation guarantees anywhere, which of these limits the code queries at
+runtime rather than assuming, and how much headroom the widest in-tree shader
+has over the floor. Read it before generalizing a figure below to hardware
+nobody here owns.
+
 ### One WebGL2 context per display canvas
 
 **Status:** Mitigated (view-level), root cause is WebGL2 itself.
