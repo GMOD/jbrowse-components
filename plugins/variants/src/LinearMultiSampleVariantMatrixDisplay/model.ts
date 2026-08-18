@@ -70,6 +70,25 @@ export default function stateModelFactory(
             ? placeVariantRows(cellData, rowRemap)
             : undefined
         },
+        /**
+         * #getter
+         * The width the matrix is laid out in: the rounded **content** width,
+         * so the columns still fill the drawn matrix when the genome doesn't
+         * reach across the viewport. Not `canvasWidthPx`, which is the viewport
+         * box every span-drawing display maps bp into — the matrix addresses
+         * columns by index, so the content width is a different question, not a
+         * different answer to the same one. Same name and same getter the LD
+         * display's triangle takes for the same reason.
+         *
+         * In its own block ahead of every reader so they reach it through
+         * `self`: the canvas element's CSS width, `renderState` (what the
+         * backends size their backing store to) and `columnGeometry` (the
+         * column pitch) have to be one number, or the cells are drawn against a
+         * box they don't fill and the connector lines miss their columns.
+         */
+        get canvasWidth() {
+          return self.lgv.totalWidthPxWithoutBorders
+        },
       }))
       .views(self => ({
         /**
@@ -82,11 +101,10 @@ export default function stateModelFactory(
         // exists is the render callback's gate (it already passes `null` data),
         // not a nullable state.
         get renderState() {
-          const view = self.lgv
           return {
             // Same rounded width the canvas, hit-test, and connector lines use,
             // so cells/lines/clicks stay pixel-aligned.
-            canvasWidth: view.totalWidthPxWithoutBorders,
+            canvasWidth: self.canvasWidth,
             canvasHeight: self.availableHeight,
             rowHeight: self.effectiveRowHeight,
             scrollTop: self.scrollTop,
@@ -105,7 +123,7 @@ export default function stateModelFactory(
           const n = self.featuresVolatile?.length
           return {
             n: n ?? 0,
-            columnWidth: n ? view.totalWidthPxWithoutBorders / n : 0,
+            columnWidth: n ? self.canvasWidth / n : 0,
             left: Math.max(0, -view.offsetPx),
           }
         },

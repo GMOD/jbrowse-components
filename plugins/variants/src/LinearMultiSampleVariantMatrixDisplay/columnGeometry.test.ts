@@ -1,3 +1,5 @@
+import { autorun } from 'mobx'
+
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -157,4 +159,29 @@ test('no data means no columns and no connectors', () => {
   expect(display.columnGeometry.columnWidth).toBe(0)
   expect(display.connectorLineCoords).toEqual([])
   expect(display.connectorLineAtScreenX(400)).toBeUndefined()
+})
+
+// The matrix body sizes its canvas off `canvasWidth`, and it is an observer, so
+// what it reads is what re-renders it. Reading the width out of `renderState`
+// instead looks equivalent — the field holds this same number — but that getter
+// also carries `scrollTop`, so every wheel frame over the rows invalidated the
+// component that mounts the canvas and the whole hit-test wiring under it. Same
+// reason `MatrixBodyOffset` is its own observer, one file over.
+test('scrolling the rows does not invalidate the width the canvas is sized by', () => {
+  const { display } = loadedDisplay()
+  display.setSources(Array.from({ length: 40 }, (_, i) => ({ name: `HG${i}` })))
+  display.setRowHeight(50)
+  expect(display.scrollableHeight).toBeGreaterThan(0)
+
+  let widthReads = 0
+  const stop = autorun(() => {
+    void display.canvasWidth
+    widthReads++
+  })
+  display.setScrollTop(50)
+  display.setScrollTop(100)
+  stop()
+
+  expect(display.scrollTop).toBe(100)
+  expect(widthReads).toBe(1)
 })

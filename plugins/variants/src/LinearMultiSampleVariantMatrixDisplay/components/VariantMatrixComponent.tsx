@@ -37,10 +37,13 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   canvas: HTMLCanvasElement | null
   canvasId: string
 }) {
-  // The width the cells were mapped into, off the model's own render state —
-  // the matrix's `canvasWidth` is the content width its columns, lines and hit
-  // test all key off, so reading the view again here is a second spelling of it.
-  const { canvasWidth: width } = model.renderState
+  // `model.canvasWidth`, the getter `renderState` and `columnGeometry` are both
+  // built from: the width the cells were mapped into, rather than a second
+  // spelling of it off the view. NOT `model.renderState` itself, which also
+  // carries `scrollTop` — a scroll would then re-render this body, and the
+  // canvas element plus the hit-test wiring below it, once per wheel frame for
+  // a width that never moved.
+  const width = model.canvasWidth
   const height = model.availableHeight
 
   useVariantVirtualScroll(canvas, model)
