@@ -639,3 +639,6 @@ resolution.
 
 - [](/docs/developer_guides/mst_patterns)
 - [](/docs/developer_guides/creating_display)
+- [CONFIG_PATTERN.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/CONFIG_PATTERN.md)
+  — the whole path a display's config takes to reach a renderer: config to MST
+  snapshot to plain object to RPC payload, and what each hop may carry

@@ -102,3 +102,9 @@ covers what the launcher is handed and which spec keys never reach it.
 - [](/docs/developer_guides/extension_points)
 - [](/docs/developer_guides/mst_patterns)
 - [](/docs/developer_guides/pluggable_elements)
+- [VIEW_INIT.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/VIEW_INIT.md)
+  — the launch state machine under the session spec above, and where
+  `afterAttach` sits in it
+- [REGION_VIEW_LAUNCH.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/REGION_VIEW_LAUNCH.md)
+  — the convention for opening another view type on a locus, where the two
+  existing launchers diverge, and what is still open

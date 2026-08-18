@@ -21,12 +21,16 @@
 // ## The ratchet
 //
 // Marking a doc internal is cheap and wrong is silent, so the other half — a
-// citeable doc nobody cites — cannot simply be an error today: thirteen of
-// them predate this check, and several want an editorial pass rather than a
-// link dropped at the bottom of a page. So it ratchets, the way
-// `sync-doc-snippets` does for un-included fences: the uncited count may fall
-// and may not rise. A NEW reference doc is therefore cited, marked internal, or
-// red, which is the case this exists for.
+// citeable doc nobody cites — was not an error the day this landed: seventeen
+// of them predated it. So it ratchets, the way `sync-doc-snippets` does for
+// un-included fences: the uncited count may fall and may not rise. A NEW
+// reference doc is therefore cited, marked internal, or red, which is the case
+// this exists for.
+//
+// The baseline reached 0 within two passes, so the ratchet now holds a floor
+// rather than a debt. Keep it as a ratchet anyway: raising it is one deliberate
+// edit, and the alternative — a bare error — invites marking a doc internal to
+// get green, which is the one move that puts this back where it started.
 import { readFileSync } from 'node:fs'
 import { basename, join, relative } from 'node:path'
 
@@ -39,7 +43,7 @@ import {
 } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
-const UNCITED_BASELINE = Number(process.env.REFERENCE_UNCITED_BASELINE ?? '13')
+const UNCITED_BASELINE = Number(process.env.REFERENCE_UNCITED_BASELINE ?? '0')
 
 const AUDIENCES = new Set(['internal'])
 
@@ -99,9 +103,14 @@ Link it from the page that owns the subject, or add "audience: internal" to its 
   )
 }
 
-reportProblems(
-  problems,
-  uncited.length < UNCITED_BASELINE
-    ? `${uncited.length} reference doc(s) uncited (baseline ${UNCITED_BASELINE}) — lower REFERENCE_UNCITED_BASELINE to ${uncited.length} to hold the gain.`
-    : `every reference doc is cited by a site page or marked internal, bar the ${uncited.length} in the baseline.`,
-)
+function ok() {
+  if (uncited.length < UNCITED_BASELINE) {
+    return `${uncited.length} reference doc(s) uncited (baseline ${UNCITED_BASELINE}) — lower REFERENCE_UNCITED_BASELINE to ${uncited.length} to hold the gain.`
+  }
+  if (uncited.length === 0) {
+    return 'every reference doc is cited by a site page or marked internal'
+  }
+  return `every reference doc is cited by a site page or marked internal, bar the ${uncited.length} in the baseline.`
+}
+
+reportProblems(problems, ok())

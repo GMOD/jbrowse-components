@@ -313,3 +313,6 @@ A gene-level MCScan track, showing the BED files and the two-assembly pairing:
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/dotplot_view)
 - [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)
+- [ORTHOLOG_TABLES.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/ORTHOLOG_TABLES.md)
+  — what a `.blocks` table can and cannot express, and why all-vs-all is a
+  question about the producer rather than about the format

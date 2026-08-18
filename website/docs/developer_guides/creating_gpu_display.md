@@ -520,3 +520,6 @@ section of the architecture spec is the full quick-scan list.
 - [](/docs/developer_guides/rpc_workers)
 - [](/docs/developer_guides/creating_display)
 - [](/docs/developer_guides/svg_export)
+- [GPU_CONTEXT_BUDGET.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_CONTEXT_BUDGET.md)
+  — the WebGL2 context ceiling one display spends against, what reaches it, and
+  the four fixes already measured and eliminated

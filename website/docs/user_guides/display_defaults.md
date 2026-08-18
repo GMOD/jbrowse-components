@@ -133,3 +133,6 @@ config edit.
 - [](/docs/tutorials/display_settings)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [](/docs/user_guides/alignments_track)
+- [DISPLAY_TYPE_DEFAULTS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md)
+  — the promotable slots and CSS-style cascade behind the resolution order
+  above, and how a default survives being serialized into a shared session

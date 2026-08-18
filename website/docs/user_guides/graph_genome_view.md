@@ -581,3 +581,7 @@ lacked the sequence. Use the per-strain route when you have the assemblies.
 - [](/docs/tutorials/pangenome_cactus)
 - [Configuring plugins](/docs/config_guides/plugins)
 - [Gallery: pangenomes](/gallery/#pangenome)
+- [PANGENOME_GRAPHS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PANGENOME_GRAPHS.md)
+  — what rGFA and plain GFA can and cannot say about coordinates and carriage,
+  the one-node-per-bubble level of detail, and the decisions here that look like
+  bugs

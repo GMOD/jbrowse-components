@@ -32,3 +32,9 @@ yourself.
 - [Plugin store page](/plugin_store)
 - [](/docs/developer_guide)
 - [Plugin configuration](/docs/config_guides/plugins)
+- [PLUGIN_INSTALL_RESTART.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PLUGIN_INSTALL_RESTART.md)
+  — why installing one rebuilds the whole app, and which of the two plugin lists
+  an edit goes into
+- [GLOBAL_PLUGINS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GLOBAL_PLUGINS.md)
+  — Desktop's global list, and the crash marker behind safe mode: when it arms,
+  and what clears it

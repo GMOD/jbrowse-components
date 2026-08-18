@@ -385,3 +385,9 @@ dotplot, which reads more clearly when a read visits one locus repeatedly.
 - [Alignments track configuration](/docs/config_guides/alignments_track)
 - [LinearAlignmentsDisplay config schema](/docs/config/linearalignmentsdisplay)
 - [Gallery: alignments and long reads](/gallery/#alignments)
+- [MODIFICATION_TAGS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MODIFICATION_TAGS.md)
+  — how this repo reads MM/ML base-modification tags, checked line by line
+  against htslib, and the one place it deliberately differs
+- [DEEP_COVERAGE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DEEP_COVERAGE.md)
+  — what these defaults do at 300x, where the insert-size cut flags a tight
+  library's own tail, and why a support floor has to count over a window

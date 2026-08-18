@@ -217,3 +217,6 @@ clustering elsewhere and pasting the order back.
 - [](/docs/user_guides/gene_track)
 - [](/docs/user_guides/quantitative_track) - phyloP/phastCons conservation
   scores as a signal track
+- [MAF_LARGE_BLOCKS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MAF_LARGE_BLOCKS.md)
+  — why a MAF-tabix track with very long alignment blocks is slow, and why
+  clipping to the visible region is the wrong fix

@@ -218,3 +218,6 @@ Each of these builds the input file and the track config end to end:
 - [](/docs/user_guides/multivariant_track)
 - [LinearMultiRowFeatureDisplay config schema](/docs/config/linearmultirowfeaturedisplay)
 - [](/docs/config_guides/customizing_feature_colors)
+- [ROW_HEIGHT_AND_FIT.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/ROW_HEIGHT_AND_FIT.md)
+  — the same Row height menu across every multi-row display: the slot whose `0`
+  means fit, and the resolved getter beside it that other plugins read
