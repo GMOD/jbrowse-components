@@ -1,7 +1,6 @@
 import { useId } from 'react'
 
 import { useMouseState } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
@@ -15,7 +14,6 @@ import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 
 import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ReactNode } from 'react'
 
 // Both pointer-driven pieces below read the tracker themselves, so a mousemove
@@ -70,12 +68,17 @@ function MatrixCrosshairLayer({
 // The matrix's own box, offset past the bands above the rows and clamped to the
 // viewport's left edge.
 //
-// Its own observer purely so `offsetPx` is read HERE. It moves every frame of a
-// pan, and read in the component that mounts `DisplayChrome` it re-rendered the
-// chrome for the whole of every drag — `useRenderingBackend` re-run, the status
-// container rebuilt with a fresh inline `style`, the overlay portal re-created —
-// to move one div. The body inside is passed as `children`, so it is an element
-// built by the caller and re-renders on its own terms.
+// Its own observer purely so the column origin is read HERE. It moves every
+// frame of a pan, and read in the component that mounts `DisplayChrome` it
+// re-rendered the chrome for the whole of every drag — `useRenderingBackend`
+// re-run, the status container rebuilt with a fresh inline `style`, the overlay
+// portal re-created — to move one div. The body inside is passed as `children`,
+// so it is an element built by the caller and re-renders on its own terms.
+//
+// `columnGeometry.left`, not a second `Math.max(0, -view.offsetPx)`: that is the
+// origin the columns, the connector lines and the hit test are all laid out
+// from, so the box holding them has to be the same number rather than a
+// same-looking expression beside it.
 const MatrixBodyOffset = observer(function MatrixBodyOffset({
   model,
   top,
@@ -85,13 +88,12 @@ const MatrixBodyOffset = observer(function MatrixBodyOffset({
   top: number
   children: ReactNode
 }) {
-  const view = getContainingView(model) as LinearGenomeViewModel
   return (
     <div
       style={{
         position: 'absolute',
         top,
-        left: Math.max(0, -view.offsetPx),
+        left: model.columnGeometry.left,
       }}
     >
       {children}

@@ -4,7 +4,7 @@ import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 
 // The matrix lays columns out by feature index, so only the positional fields of
 // the payload matter here; the cell buffers stay empty (nothing is painted).
-function matrixCellData(starts: number[]): CellDataResult {
+function matrixCellData(starts: number[], refNames?: string[]): CellDataResult {
   return {
     mode: 'matrix',
     sampleInfo: {},
@@ -19,7 +19,12 @@ function matrixCellData(starts: number[]): CellDataResult {
     svTypeColors: {},
     simplifiedFeatures: starts.map((start, i) => ({
       id: `v${i}`,
-      data: { start, end: start + 1, refName: 'ctgA', name: `v${i}` },
+      data: {
+        start,
+        end: start + 1,
+        refName: refNames?.[i] ?? 'ctgA',
+        name: `v${i}`,
+      },
     })),
     genotypeDict: [],
     sampleNames: [],
@@ -38,7 +43,8 @@ function matrixCellData(starts: number[]): CellDataResult {
 function loadedDisplay({
   reversed = false,
   starts = [0, 1000, 3000, 7000],
-} = {}) {
+  refNames,
+}: { reversed?: boolean; starts?: number[]; refNames?: string[] } = {}) {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
   view.setDisplayedRegions([
@@ -46,7 +52,7 @@ function loadedDisplay({
   ])
   view.zoomTo(10)
   view.scrollTo(0)
-  display.setCellData(matrixCellData(starts))
+  display.setCellData(matrixCellData(starts, refNames))
   return { display, view }
 }
 
@@ -62,14 +68,28 @@ test('columns are evenly pitched across the content width', () => {
   ])
 })
 
+// The crosshair reads the same per-column list the field draws from, which is
+// what `connectorCoordsByColumn` is for — the highlight IS one of the lines
+// rather than a second computation of where that line goes, so it carries the
+// label too.
 test('the crosshair anchors to the column it sits in, not the nearest edge', () => {
   const { display } = loadedDisplay()
 
   // anywhere inside column 2 (400-600px) resolves to that column's center and
   // its own variant's genomic x
-  expect(display.connectorLineAtScreenX(410)).toEqual({ mx: 500, gx: 300 })
-  expect(display.connectorLineAtScreenX(599)).toEqual({ mx: 500, gx: 300 })
-  expect(display.connectorLineAtScreenX(601)).toEqual({ mx: 700, gx: 700 })
+  expect(display.connectorLineAtScreenX(410)).toEqual(
+    display.connectorLineCoords[2],
+  )
+  expect(display.connectorLineAtScreenX(599)).toEqual({
+    mx: 500,
+    gx: 300,
+    label: 'v2',
+  })
+  expect(display.connectorLineAtScreenX(601)).toEqual({
+    mx: 700,
+    gx: 700,
+    label: 'v3',
+  })
 })
 
 // A reversed region takes no special case here at all: the worker reflects that
@@ -92,7 +112,35 @@ test('a reversed region is drawn from the order the worker sent', () => {
     { mx: 500, gx: 700, label: 'v2' },
     { mx: 700, gx: 800, label: 'v3' },
   ])
-  expect(display.connectorLineAtScreenX(100)).toEqual({ mx: 100, gx: 100 })
+  expect(display.connectorLineAtScreenX(100)).toEqual({
+    mx: 100,
+    gx: 100,
+    label: 'v0',
+  })
+})
+
+// A column still occupies its slot when its feature has no genomic x — the
+// refName left the displayed regions, so there is nothing on the ruler to point
+// at and the line is dropped. The crosshair must keep counting columns, not
+// drawn lines: indexing the filtered list instead answers with the NEXT
+// variant's connector for every column past the gap.
+test('a column with no genomic x drops its line without shifting the rest', () => {
+  const { display } = loadedDisplay({
+    refNames: ['ctgA', 'ctgB', 'ctgA', 'ctgA'],
+  })
+
+  expect(display.connectorLineCoords).toEqual([
+    { mx: 100, gx: 0, label: 'v0' },
+    { mx: 500, gx: 300, label: 'v2' },
+    { mx: 700, gx: 700, label: 'v3' },
+  ])
+  // column 1 is the dropped one; columns 2 and 3 still answer with their own
+  expect(display.connectorLineAtScreenX(300)).toBeUndefined()
+  expect(display.connectorLineAtScreenX(500)).toEqual({
+    mx: 500,
+    gx: 300,
+    label: 'v2',
+  })
 })
 
 test('there is no connector off either end of the matrix', () => {

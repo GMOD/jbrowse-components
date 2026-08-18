@@ -23,6 +23,9 @@ interface MatrixRenderSvgModel
   referenceDrawingMode: string
   renderState: MatrixRenderState
   placedMatrixData: VariantMatrixUploadData | undefined
+  // only `left` is read here — the column origin the matrix is shifted to when
+  // the content doesn't reach the left viewport edge
+  columnGeometry: { left: number }
 }
 
 export async function renderSvg(
@@ -37,7 +40,6 @@ export async function renderSvg(
 
 function VariantMatrixSvgBody({
   model,
-  view,
   height,
   canvasWidth,
   opts,
@@ -50,11 +52,12 @@ function VariantMatrixSvgBody({
   // the shell's viewport `canvasWidth` only frames the overlay.
   const { placedMatrixData, referenceDrawingMode, renderState } = model
   const { canvasWidth: matrixWidth, canvasHeight } = renderState
-  // same shift the live matrix body takes (VariantMatrixDisplayComponent):
-  // when the content doesn't reach the left viewport edge (offsetPx < 0) the
-  // matrix moves right with the ruler. The connector lines need no transform —
-  // their coords are already viewport-relative.
-  const left = Math.max(0, -view.offsetPx)
+  // The same origin the live matrix body takes (VariantMatrixDisplayComponent)
+  // and the same one the columns are laid out from: when the content doesn't
+  // reach the left viewport edge the matrix moves right with the ruler. The
+  // connector lines need no transform — their coords are already
+  // viewport-relative, off this same origin.
+  const { left } = model.columnGeometry
 
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
   // this narrows the single nullable fetch blob for TS only — unreachable at

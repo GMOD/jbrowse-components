@@ -113,67 +113,71 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The connector lines tying each matrix column to its feature's genomic
-         * position, in viewport pixels, plus the label the hover tooltip shows.
-         * A feature whose refName has left the view has no genomic x and is
-         * dropped rather than pinned to the left edge.
+         * One connector per matrix column, **by column**, in viewport pixels:
+         * `mx` the column centre, `gx` the feature's genomic position on the
+         * ruler, `label` what the hover tooltip shows. `undefined` where a
+         * feature's refName has left the view and there is no genomic x to point
+         * at — dropped rather than pinned to the left edge.
+         *
+         * Indexed rather than filtered because the crosshair asks the same
+         * question of one column that the field below asks of all of them, and
+         * the filtered list cannot answer it: dropping an entry shifts every
+         * index past it. That is why the two were a computed and a method
+         * resolving the assembly, the feature list and `genomicViewportX`
+         * separately — one walk each, and two chances for the drawn line and the
+         * highlighted one to be computed differently for the same column.
+         *
+         * Screen column and data index are the same number: the worker hands the
+         * features back in screen order (`orderByScreenPosition`), so nothing
+         * here has to invert a mirror.
          */
-        get connectorLineCoords(): ConnectorCoord[] {
+        get connectorCoordsByColumn(): (ConnectorCoord | undefined)[] {
           const view = self.lgv
           const { assemblyManager } = getSession(self)
           const assembly = assemblyManager.get(view.assemblyNames[0]!)
           const features = self.featuresVolatile
           const { columnWidth, left } = self.columnGeometry
           return assembly && features
-            ? features
-                .map((feature, i) => {
-                  const gx = genomicViewportX(
-                    view,
-                    assembly,
-                    feature.get('refName'),
-                    feature.get('start'),
-                  )
-                  return gx === undefined
-                    ? undefined
-                    : {
-                        mx: left + (i + 0.5) * columnWidth,
-                        gx,
-                        label: feature.get('name'),
-                      }
-                })
-                .filter(coord => coord !== undefined)
-            : []
-        },
-        /**
-         * #method
-         * The connector for the column under `screenX` (the crosshair), or
-         * undefined off the ends. Screen column and data index are the same
-         * number: the worker hands the features back in screen order
-         * (`orderByScreenPosition`), so nothing here has to invert a mirror.
-         */
-        connectorLineAtScreenX(screenX: number): ConnectorCoord | undefined {
-          const view = self.lgv
-          const { assemblyManager } = getSession(self)
-          const assembly = assemblyManager.get(view.assemblyNames[0]!)
-          const features = self.featuresVolatile
-          const { n, columnWidth, left } = self.columnGeometry
-          const screenCol = Math.floor((screenX - left) / columnWidth)
-          const feature =
-            assembly && features && screenCol >= 0 && screenCol < n
-              ? features[screenCol]!
-              : undefined
-          const gx =
-            assembly && feature
-              ? genomicViewportX(
+            ? features.map((feature, i) => {
+                const gx = genomicViewportX(
                   view,
                   assembly,
                   feature.get('refName'),
                   feature.get('start'),
                 )
-              : undefined
-          return gx === undefined
-            ? undefined
-            : { mx: left + (screenCol + 0.5) * columnWidth, gx }
+                return gx === undefined
+                  ? undefined
+                  : {
+                      mx: left + (i + 0.5) * columnWidth,
+                      gx,
+                      label: feature.get('name'),
+                    }
+              })
+            : []
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The connector lines that actually draw — `connectorCoordsByColumn`
+         * without the columns that have no genomic x.
+         */
+        get connectorLineCoords(): ConnectorCoord[] {
+          return self.connectorCoordsByColumn.filter(
+            coord => coord !== undefined,
+          )
+        },
+        /**
+         * #method
+         * The connector for the column under `screenX` (the crosshair), or
+         * undefined off the ends and over a column with no genomic x.
+         */
+        connectorLineAtScreenX(screenX: number): ConnectorCoord | undefined {
+          const { n, columnWidth, left } = self.columnGeometry
+          const screenCol = Math.floor((screenX - left) / columnWidth)
+          return screenCol >= 0 && screenCol < n
+            ? self.connectorCoordsByColumn[screenCol]
+            : undefined
         },
       }))
       .actions(self => ({

@@ -1,4 +1,3 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import {
@@ -14,9 +13,6 @@ import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
 import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 interface MatrixHit {
   fields: VariantTooltipFields
@@ -41,8 +37,10 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   canvas: HTMLCanvasElement | null
   canvasId: string
 }) {
-  const view = getContainingView(model) as LGV
-  const width = view.totalWidthPxWithoutBorders
+  // The width the cells were mapped into, off the model's own render state —
+  // the matrix's `canvasWidth` is the content width its columns, lines and hit
+  // test all key off, so reading the view again here is a second spelling of it.
+  const { canvasWidth: width } = model.renderState
   const height = model.availableHeight
 
   useVariantVirtualScroll(canvas, model)
