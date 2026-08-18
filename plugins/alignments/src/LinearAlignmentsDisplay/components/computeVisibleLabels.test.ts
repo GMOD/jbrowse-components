@@ -145,7 +145,13 @@ describe('SNP letters carry the per-base quality fade', () => {
                 // (opaque), 1 (0.02, under MIN_QUALITY_LETTER_OPACITY), 10
                 // (0.2 — a faint letter that survives, which is the case a
                 // floor raised toward the size labels' would silently delete)
-                mismatchQuals: new Uint8Array([60, 25, QUAL_UNAVAILABLE, 1, 10]),
+                mismatchQuals: new Uint8Array([
+                  60,
+                  25,
+                  QUAL_UNAVAILABLE,
+                  1,
+                  10,
+                ]),
               }),
           },
           topOffset: 0,

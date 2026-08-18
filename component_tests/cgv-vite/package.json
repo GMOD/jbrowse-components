@@ -34,7 +34,6 @@
     "@jbrowse/plugin-linear-genome-view": "file:./packed/jbrowse-plugin-linear-genome-view.tgz",
     "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",
     "@jbrowse/plugin-variants": "file:./packed/jbrowse-plugin-variants.tgz",
-    "@jbrowse/plugin-wiggle": "file:./packed/jbrowse-plugin-wiggle.tgz",
     "@jbrowse/product-core": "file:./packed/jbrowse-product-core.tgz",
     "@jbrowse/react-circular-genome-view2": "file:./packed/jbrowse-react-circular-genome-view2.tgz",
     "@jbrowse/render-core": "file:./packed/jbrowse-render-core.tgz",
