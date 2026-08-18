@@ -151,17 +151,16 @@ export function regionAssemblyMismatchMessage({
  *   reached no fetch. After a `reload()` that is the dead button: the base
  *   clears `loadedRegions`, so an override landing here invalidated nothing.
  *
- * A `fetch` plan is deliberately absent: reaching `fetchNeeded` is not the same
- * as reaching `fetchRegions`, and only the funnel flag can tell those apart.
+ * A `fetch` plan is excluded by the parameter type rather than answered with
+ * `undefined`: reaching `fetchNeeded` is not reaching `fetchRegions`, so only
+ * the funnel flag can classify one, and a caller that has not split that case
+ * off should not compile.
  */
 export function retryOutcomeForPlan(
-  plan: RegionFetchPlan,
-): 'gated' | 'deferred' | 'declined' | undefined {
+  plan: Exclude<RegionFetchPlan, { kind: 'fetch' }>,
+): 'gated' | 'deferred' | 'declined' {
   if (plan.kind === 'assemblyMismatch') {
     return 'gated'
-  }
-  if (plan.kind === 'fetch') {
-    return undefined
   }
   switch (plan.reason) {
     case 'inFlight':

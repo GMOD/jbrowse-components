@@ -2,11 +2,14 @@ import {
   isBlockCovered,
   planRegionFetch,
   regionAssemblyMismatchMessage,
+  retryOutcomeForPlan,
 } from './planRegionFetch.ts'
 
 import type {
   IndexedRegion,
+  RegionFetchIdleReason,
   RegionFetchInputs,
+  RegionFetchPlan,
   RegionFetchSources,
   VisibleBlock,
 } from './planRegionFetch.ts'
@@ -462,5 +465,52 @@ describe('isBlockCovered', () => {
     expect(isBlockCovered(region(0, 5000), visible(0, 0, 5000, 'chr2'))).toBe(
       false,
     )
+  })
+})
+
+// One mapping for what used to be seven `noteFetchAutorunRun(...)` calls down
+// the autorun body. The distinction that matters is `deferred` vs the rest: a
+// deferred run leaves the reload bump outstanding, so the run after the
+// in-flight fetch ends is the one judged; every other outcome consumes it.
+describe('retryOutcomeForPlan', () => {
+  const idle = (reason: RegionFetchIdleReason) =>
+    retryOutcomeForPlan({ kind: 'idle', reason })
+
+  test.each([
+    ['blocked', 'gated'],
+    ['measured', 'gated'],
+    ['minimized', 'gated'],
+  ] as const)('a %s run answers the retry visibly', (reason, expected) => {
+    expect(idle(reason)).toBe(expected)
+  })
+
+  test('an in-flight run defers rather than consuming the bump', () => {
+    expect(idle('inFlight')).toBe('deferred')
+  })
+
+  test('a fully covered run is the dead-button case', () => {
+    expect(idle('covered')).toBe('declined')
+  })
+
+  test('a new assembly-mismatch error is an answer, and a visible one', () => {
+    expect(
+      retryOutcomeForPlan({
+        kind: 'assemblyMismatch',
+        regionAssemblyName: 'mm10',
+        trackAssemblyNames: ['hg38'],
+      }),
+    ).toBe('gated')
+  })
+
+  // Reaching `fetchNeeded` is not reaching `fetchRegions` — an override can
+  // decline inside it — so the plan alone cannot answer and the installer
+  // consults the funnel flag. The parameter type is what says so.
+  test('a fetch plan is not a thing this can be asked about', () => {
+    const fetchPlan: RegionFetchPlan = {
+      kind: 'fetch',
+      needed: [buffered(visible(0, 0, 1))],
+    }
+    // @ts-expect-error a fetch plan is excluded from the parameter type
+    expect(() => retryOutcomeForPlan(fetchPlan)).toBeDefined()
   })
 })

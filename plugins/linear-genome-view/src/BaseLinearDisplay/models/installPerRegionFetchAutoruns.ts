@@ -154,30 +154,29 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
         },
       })
 
+      // A fetch is the one plan whose retry answer the plan cannot give:
+      // reaching `fetchNeeded` is not reaching `fetchRegions`, since an
+      // override can decline inside it, so the funnel flag classifies this one.
+      if (plan.kind === 'fetch') {
+        // Cleared first so the read below can only see this call's entry.
+        takeFetchFunnelEntered(self)
+        // Not awaited — and the classification depends on that. The override's
+        // synchronous prefix has run by the time it hands back a promise, and
+        // reaching `fetchRegions` is what every one of them does there.
+        self.fetchNeeded(plan.needed)
+        noteFetchAutorunRun(
+          takeFetchFunnelEntered(self) ? 'fetched' : 'declined',
+        )
+        return
+      }
+
       if (plan.kind === 'assemblyMismatch') {
         self.setError(new Error(regionAssemblyMismatchMessage(plan)))
       }
-
-      // One classification for the whole body, off the plan's own reason —
-      // `retryOutcomeForPlan` says why each answers (or defers) an outstanding
-      // `reload()`. A `fetch` plan answers nothing yet, because reaching
-      // `fetchNeeded` is not reaching `fetchRegions`.
-      const outcome = retryOutcomeForPlan(plan)
-      if (outcome) {
-        noteFetchAutorunRun(outcome)
-        return
-      }
-      if (plan.kind !== 'fetch') {
-        return
-      }
-
-      // Cleared first so the read below can only see this call's entry.
-      takeFetchFunnelEntered(self)
-      // Not awaited — and the classification depends on that. The override's
-      // synchronous prefix has run by the time it hands back a promise, and
-      // reaching `fetchRegions` is what every one of them does there.
-      self.fetchNeeded(plan.needed)
-      noteFetchAutorunRun(takeFetchFunnelEntered(self) ? 'fetched' : 'declined')
+      // Every other exit answers off the plan's own reason —
+      // `retryOutcomeForPlan` says which, in one place rather than at each of
+      // the five returns that used to carry its own call.
+      noteFetchAutorunRun(retryOutcomeForPlan(plan))
     },
     // the debounce stays a literal here: `generateFetchAutorunDocs` reads it off
     // this call to write the docs' autorun table, so a named constant would put
