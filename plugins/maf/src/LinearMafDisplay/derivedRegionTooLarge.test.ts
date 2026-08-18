@@ -565,4 +565,58 @@ describe('byte-estimate pre-flight forwarding', () => {
     // the label while it runs, then the clear that every phase helper ends with
     expect(seen).toEqual(['Estimating size', ''])
   })
+
+  // The pre-flight's half of "a fetch that measured nothing writes nothing".
+  // Canvas's half is pinned as "keeps a good estimate when a batch measured no
+  // bytes" in LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts; this
+  // path published `bytes: undefined` instead until 2026-08, which wiped the
+  // last real measurement and reset the two-point `zoomIneffective` comparison
+  // with it. `ByteEstimate.bytes` being a number is what makes re-introducing
+  // that a type error, but the SKIP itself is a call-site decision — coercing an
+  // unmeasurable answer to 0 would compile and would gate nothing forever.
+  it('keeps a good estimate when the adapter answers unmeasurable', async () => {
+    const { display, view, mockRpcCall } = createMafTestEnvironment(
+      {},
+    ).createDisplay()
+    view.zoomTo(100)
+    const ctx = { stopToken: 'tok', isStale: () => false, statusCallback() {} }
+
+    const bytes = over(display)
+    mockRpcCall.mockResolvedValue(bytes)
+    await display.byteGateBlocksFetch(
+      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
+      ctx,
+    )
+    expect(display.regionTooLarge).toBe(true)
+
+    // an adapter quoting no index estimate: "unmeasurable", not "zero bytes"
+    mockRpcCall.mockResolvedValue(undefined)
+    await display.byteGateBlocksFetch(
+      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
+      ctx,
+    )
+
+    expect(display.byteEstimate?.bytes).toBe(bytes)
+    expect(display.regionTooLarge).toBe(true)
+  })
+
+  // ...and it still records that the gate asked, so a blocked display keeps
+  // running one fetch per settled viewport instead of wedging on a stamp it
+  // never wrote. The stamp and the estimate are separate commits for exactly
+  // this case.
+  it('still stamps the viewport it asked about', async () => {
+    const { display, view, mockRpcCall } = createMafTestEnvironment(
+      {},
+    ).createDisplay()
+    view.zoomTo(100)
+    mockRpcCall.mockResolvedValue(undefined)
+
+    await display.byteGateBlocksFetch(
+      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
+      { stopToken: 'tok', isStale: () => false, statusCallback() {} },
+    )
+
+    expect(display.byteEstimate).toBeUndefined()
+    expect(display.gateMeasurementStale).toBe(false)
+  })
 })
