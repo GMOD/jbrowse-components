@@ -511,7 +511,7 @@ every caller inherited that reading without saying so. The pre-flight family
 (alignments/MAF/MSV/LD/arc) therefore gated on the total while canvas gated on
 the worst region, and the same file reached opposite verdicts through
 `LinearMultiSampleVariantDisplay` and `LinearVariantDisplay`. Not hypothetical:
-at whole-genome view `test_data/breakpoint/hs37d5.HG002…sv.vcf.gz` reads
+at whole-genome view `test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz` reads
 5059k<!--m:byte-estimate-scope.70.wholeRequest--> against `VcfTabixAdapter`'s
 5 Mb and banners, where its largest single region is
 968k<!--m:byte-estimate-scope.70.largestRegion-->.
