@@ -2879,6 +2879,7 @@ export const configManifest: ConfigManifest = {
         "soloFeatureIds",
         "soloApplied",
         "hiddenFeatureIds",
+        "expandedGeneIds",
         "featureHighlights"
       ]
     },
@@ -3716,6 +3717,7 @@ export const configManifest: ConfigManifest = {
         "soloFeatureIds",
         "soloApplied",
         "hiddenFeatureIds",
+        "expandedGeneIds",
         "featureHighlights"
       ]
     },
