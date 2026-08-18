@@ -22,6 +22,16 @@
 # check finishes, the shell that ran the merge has moved on, and writing to its
 # tty would land in the middle of whatever is there now.
 #
+# WHOSE DRIFT IT IS, which is the first thing anyone asks and what the message
+# used to answer wrongly. It named the head it checked at, so a drift that had
+# been sitting on main for twenty commits read as an accusation of whatever had
+# just landed -- and the reader either believed it or went hunting through
+# `git log -S` to find out otherwise. `autogen-stale-since` holds the head the
+# nag FIRST fired at, so a persisting one can say how far back it goes and say
+# outright that this land is not what staled it. The pair is cleared together,
+# here on a clean check and in autogen.ts when someone regenerates; leaving the
+# anchor behind would age the next unrelated drift by this one's lifetime.
+#
 # READ-ONLY, because the primary checkout is shared. `--check` reports and
 # writes nothing, so this can never rewrite another agent's uncommitted work --
 # the hazard pre-push's header spends two paragraphs on, and the reason this
@@ -58,6 +68,10 @@ fi
 
 common=$(git rev-parse --git-common-dir)
 marker=$common/autogen-stale
+# The head the check FIRST failed at, kept across lands so a persisting
+# staleness can say how old it is instead of restamping itself onto whatever
+# landed most recently. Cleared with the marker, here and by `pnpm autogen`.
+since=$common/autogen-stale-since
 lock=$common/autogen-check.lock
 
 # One check at a time. Several agents landing in the same minute would otherwise
@@ -90,16 +104,72 @@ mkdir "$lock" 2>/dev/null || exit 0
   out=$(pnpm autogen --check $flags 2>&1) && status=0 || status=$?
 
   if [ "$status" = 0 ]; then
-    rm -f "$marker"
+    rm -f "$marker" "$since"
   else
+    head=$(git rev-parse --short HEAD)
+
+    # How long this has been failing. The previous head is kept only while the
+    # marker is; a first failure records this one. Not "which commit staled the
+    # artifact" -- nothing here can know that -- but it is the difference
+    # between a drift this land introduced and one it merely re-reported, which
+    # is the first thing a reader needs and the message used to get wrong by
+    # stamping the current head either way.
+    first=
+    if [ -f "$marker" ] && [ -f "$since" ]; then
+      first=$(cat "$since" 2>/dev/null || true)
+      # A rewritten or pruned history leaves a ref that no longer describes
+      # this branch; start over rather than report against it.
+      git merge-base --is-ancestor "$first" HEAD 2>/dev/null || first=
+    fi
+    if [ -z "$first" ]; then
+      first=$head
+      printf '%s\n' "$head" >"$since" 2>/dev/null || true
+    fi
+
     {
-      echo "main is missing a regeneration as of $(git rev-parse --short HEAD)."
+      if [ "$first" = "$head" ]; then
+        echo "main is missing a regeneration, first seen at $head (this land)."
+      else
+        behind=$(git rev-list --count "$first..HEAD" 2>/dev/null || echo '?')
+        echo "main has been missing a regeneration since $first, $behind" \
+          "commit(s) back."
+        echo "$head is where it was last re-checked, NOT what staled it."
+      fi
       echo "Fix: pnpm autogen, then commit what it writes."
       echo
       echo "(Checked against the working tree, so an artifact named below may be"
       echo "another checkout's uncommitted edit rather than the commit that landed.)"
       echo
-      printf '%s\n' "$out" | grep -A20 'out of date' || printf '%s\n' "$out" | tail -20
+      # A crashed generator's diagnostic is inline, above the summary that
+      # names it -- so that case takes a window, and only the stale case takes
+      # the filter below, which would drop exactly that diagnostic.
+      #
+      # The filter is anchored on the summary block rather than written as "not
+      # the passing lines": every generator words its own success differently
+      # ("up to date", "match their source", ": up to date"), so excluding them
+      # is a list that grows quietly, while the summary is one line the runner
+      # itself writes and already names every stale artifact. Anything earlier
+      # saying "out of date" comes along, since that is where the path and the
+      # per-checker fix live. This used to be `grep -A20`, which pulled in
+      # twenty lines of other checkers reporting success.
+      if printf '%s\n' "$out" | grep -q 'did not run to completion'; then
+        printf '%s\n' "$out" | tail -40
+      else
+        summary=$(printf '%s\n' "$out" | awk '
+          /generated artifact\(s\) out of date/ { tail = 1 }
+          tail { print; next }
+          /out of date/ { print }')
+        # An output shape neither branch recognizes is still worth showing.
+        if [ -n "$summary" ]; then
+          printf '%s\n' "$summary"
+        else
+          printf '%s\n' "$out" | tail -20
+        fi
+      fi
+      echo
+      echo "To find what staled one: git log -1 -- <its path> is the last"
+      echo "regeneration, and the commits touching its inputs since then are"
+      echo "the suspects."
     } >"$marker" 2>/dev/null || true
   fi
 ) </dev/null >/dev/null 2>&1 &

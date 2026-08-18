@@ -435,11 +435,18 @@ if (crashed.length > 0 || stale.length > 0) {
 // Drops the nag the post-merge hook leaves for pre-commit to print. A clean run
 // IS the condition it reports on, so clearing it anywhere else would be a
 // second opinion about the same question.
+//
+// `-since` is the head that nag first fired at, which is what lets it age
+// itself rather than restamp the newest land. It has to go with the nag: left
+// behind, the next unrelated staleness inherits this one's age and reports
+// itself as dozens of commits old on the land that introduced it.
 const gitDir = spawnSync('git', ['rev-parse', '--git-common-dir'], {
   encoding: 'utf8',
 })
 if (gitDir.status === 0) {
-  rmSync(join(gitDir.stdout.trim(), 'autogen-stale'), { force: true })
+  const dir = gitDir.stdout.trim()
+  rmSync(join(dir, 'autogen-stale'), { force: true })
+  rmSync(join(dir, 'autogen-stale-since'), { force: true })
 }
 
 console.log(check ? '\nAll generated artifacts up to date' : '\nRegenerated')
