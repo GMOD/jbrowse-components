@@ -189,28 +189,27 @@ function totalLabelRows(layout: FeatureLayout) {
 // How many of `candidates`, in the order given, still fit a lane of
 // `budgetRows` isoform-sized rows once the decorations beside them are charged.
 //
-// Counting isoforms is wrong on two shapes, and both take real rows out of the
-// lane. A gene hangs decorations next to its isoforms (an NCBI source record, a
+// Counting isoforms is wrong on two shapes that both take real rows out of the
+// lane: a gene hangs decorations next to its isoforms (an NCBI source record, a
 // `biological_region`) which the cap deliberately keeps, and an isoform can be
-// taller than one row (a polyprotein CDS draws one row per cleavage product).
+// taller than one row (a polyprotein CDS draws one per cleavage product).
 // `effectiveMaxIsoforms` runs on the main thread before the fetch, off config
-// and track height alone, so it can see neither; this is the only place the
-// whole child list and every child's measured height are visible.
+// and track height alone, so it sees neither — this is the only place the whole
+// child list and every child's measured height are visible.
 //
 // Each child costs its own height plus the gap after it, and each budgeted row
-// costs a body plus a gap — so the one gap the last child never spends cancels
-// on both sides, and the budget is `isoformRowBudget`'s exactly.
+// costs a body plus a gap, so the one gap the last child never spends cancels on
+// both sides and the budget is `isoformRowBudget`'s exactly.
 //
 // `below` label rows are a SECOND budget rather than a term folded into the
 // first, because a label row's height is the display mode's label font size and
 // only the main thread knows it (see FeatureLayout.labelRowsAbove). Two budgets
-// can only under-admit, which is the direction the cap wants: an unspent row is
-// visible in the chip and one click from `All transcripts`, an overflowing one
-// is the silent scrollbar the cap exists to end.
+// can only under-admit, which is the direction the cap wants (see
+// MAX_FEATURE_LABEL_LINES).
 //
-// At least 1, like `isoformRowBudget`'s own floor — a gene collapsed to nothing
-// is not an overview of it. A lone isoform taller than the whole lane therefore
-// still overflows, which no arithmetic over a child list can fix.
+// The floor is one isoform, like `isoformRowBudget`'s own — so a lone isoform
+// taller than the whole lane still overflows, which no arithmetic over a child
+// list can fix.
 function isoformsWithinBudget({
   candidates,
   decorations,
