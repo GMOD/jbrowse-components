@@ -119,12 +119,15 @@ structure that **Launch** itself renders, and three others.
 
 **Launch 1D protein annotation view** opens a linear genome view whose genome is
 the protein. The plugin registers the UniProt accession as a temporary assembly
-whose reference sequence is the amino-acid sequence, then turns on one track per
+whose reference sequence is the amino-acid sequence, then adds a track per
 UniProt feature type over it, plus Antigen, Variation, AlphaFold confidence
-(pLDDT) and AlphaMissense scores. Coordinates are residues, so this is the view
-to take when the question is where along the chain something falls. It needs a
-session it can add tracks to, which is why it does not appear in the single-view
-embedded components.
+(pLDDT) and AlphaMissense scores. The view opens empty, and the tracks are in
+its selector under **Session tracks**. Coordinates are residues, so this is the
+view to take when the question is where along the chain something falls. It
+needs a session it can add tracks to, which is why it does not appear in the
+single-view embedded components.
+
+<Figure src="/img/protein/annotation_1d.png" caption="TP53 on hg38 above the 1D protein view its gene menu launched, with four of the session tracks turned on: the DNA binding call, UniProt natural variants, AlphaFold pLDDT and AlphaMissense substitution scores, all in residue coordinates. Confidence and variant density both fall away over the terminal tails." />
 
 The two MSA destinations appear when msaview is loaded in the same session, and
 both build their alignment from the one AlphaFold's own pipeline folded from,
@@ -174,7 +177,7 @@ The figures below take _NLRP1_ rather than _TP53_, because the overlay only says
 something when the rows differ, and _NLRP1_ is an inflammasome sensor whose
 domain architecture is not the same in every mammal.
 
-<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds. The pyrin block is on the great apes and the marmoset and on no other row." />
+<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds. In the panel the leftmost block comes and goes down the rows while the stack to the right of it is on every one." />
 
 ### Reading the overlay
 
@@ -234,9 +237,13 @@ different route. _NLRP1_ is transcribed right to left, so the pyrin block sits
 at the right-hand end of the gene, where its N terminus is, and NACHT, FIIND and
 CARD follow it leftward. They are projections of protein spans through exons, so
 a domain drawn once in the alignment is drawn once per isoform here, and the
-ones that share exons overlap. The neighbouring **UniProt - Chains**,
+ones that share exons overlap. **Filter by... → Edit filters...** on the track
+menu narrows that to one record: the figure below keeps the features whose
+`uniProtId` is the gene's reviewed entry. The neighbouring **UniProt - Chains**,
 **Mutations** and **AA Modifications** tracks are the same projection of the
 rest of the record.
+
+<Figure src="/img/genomes_msa/genomic_domains.png" caption="NLRP1 with NCBI RefSeq above UniProt - Domains, filtered to the gene's reviewed UniProt entry. Pyrin sits at the right-hand end, where the N terminus is, and NACHT, FIIND and CARD run leftward from it." />
 
 ### Trying other genes
 

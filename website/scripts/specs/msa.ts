@@ -417,4 +417,61 @@ export const msaSpecs: ScreenshotSpec[] = [
     viewportHeight: 1222,
     readyTimeout: 120000,
   },
+  {
+    // The tutorial's control on the overlay above: the same domain architecture
+    // read out of UniProt and projected onto the genome by UCSC, rather than out
+    // of NCBI's conserved-domain database and drawn in alignment columns. Two
+    // annotation sources over one gene, and the pyrin call is what a reader
+    // compares between them.
+    //
+    // NLRP1 is on the minus strand, so its N terminus is the RIGHT-hand end of
+    // this window and the pyrin block is the rightmost one on the domain track.
+    // The NACHT / winged-helix / FIIND / CARD core the alignment shows every row
+    // sharing runs leftward from it, which is what makes the frame readable: a
+    // track carrying one domain would say nothing about which of them the two
+    // sources agreed on.
+    //
+    // Declarative, and free of both plugins: these are the hosted config's own
+    // tracks, so a protein3d or msaview release cannot reach this figure.
+    mode: 'url',
+    name: 'genomes_msa/genomic_domains',
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: NLRP1_WINDOW,
+          tracks: [
+            {
+              trackId: 'hg38-ncbiRefSeqCurated',
+              geneGlyphMode: 'longestCoding',
+              height: 60,
+            },
+            // Filtered to NLRP1's own reviewed UniProt entry. UCSC's unipDomain
+            // BigBed carries one feature per record per isoform, so unfiltered
+            // this window is a dozen rows in which FIIND is written eleven
+            // times and the architecture the section is about is the top row
+            // only. `uniProtId` is the BigBed's own column, the one the track's
+            // mouseover reads.
+            {
+              trackId: 'hg38-unipDomain',
+              // the track's own display type, already its default. Named so
+              // `check-spec-recipes` can resolve which menu the filter below
+              // lives in rather than reporting the field as unreachable.
+              type: 'LinearBasicDisplay',
+              jexlFilters: ["jexl:get(feature,'uniProtId')=='Q9C000'"],
+              height: 90,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'UniProt - Domains',
+    // the UCSC hub config is ~570 tracks and pulls four remote plugins, the
+    // same reason the two specs above raise this
+    readyTimeout: 120000,
+    settleMs: 4000,
+    hideTooltip: true,
+    viewportHeight: 390,
+  },
 ]

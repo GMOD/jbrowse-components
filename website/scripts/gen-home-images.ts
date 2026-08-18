@@ -132,14 +132,16 @@ const THUMBS: Record<string, ImageSpec> = {
     height: THUMB_HEIGHT,
   },
   // Two-panel figure — the 3D structure is the right-hand panel. The band is
-  // the molstar canvas, from under its toolbar to the source's own bottom edge
-  // (the capture viewport clips the canvas there, so the molecule's tails are
-  // already cut in the source and no wider band brings them back). That region
-  // is narrower than the card aspect, so it pads onto the canvas background
-  // rather than cropping — cover would zoom back into the molecule.
+  // the molecule rather than the whole molstar canvas, and both edges matter:
+  // the canvas's bottom is inside the frame rather than at it, so a band
+  // reaching the source's last row takes the window border with it, and the
+  // region is height-constrained against this card's aspect, so every row of
+  // empty canvas the band keeps is scaled off the molecule. It still pads left
+  // and right onto the canvas background rather than cropping — cover would
+  // zoom back in past the tails.
   protein: {
     src: 'protein/connected.png',
-    band: [0.578, 1],
+    band: [0.5, 0.93],
     xband: [0.512, 0.945],
     pad: '#fcfbf9',
     width: THUMB_WIDTH,

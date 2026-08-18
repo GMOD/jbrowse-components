@@ -1,6 +1,7 @@
 import {
   DEMO_CONFIG,
   PARK_CURSOR,
+  UCSC_HG38_CONFIG,
   VOLVOX,
   cascadeBoxes,
   dismissMenus,
@@ -683,7 +684,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'protein/connected',
-    viewportHeight: 967,
+    // the two panes and nothing under them, from the run's own
+    // `CONTENT CLIPPED BELOW THE FOLD` at the track heights below
+    viewportHeight: 990,
     url: sessionSpec(PROTEIN3D_CONFIG, {
       views: [
         {
@@ -697,10 +700,21 @@ export const featuresSpecs: ScreenshotSpec[] = [
           // keep the connected genome at the gene-wide view when a domain is
           // clicked so the domain shows as a highlighted sub-region
           zoomToBaseLevel: false,
+          // Passed through as the new LinearGenomeView's `init`, so a track
+          // entry here is an ordinary LGV one and takes a height. Which is what
+          // fills the left column: side by side, the genome view is as tall as
+          // the structure beside it, and at their default heights these two
+          // tracks used a third of that and left the rest page background. The
+          // ClinVar display is the one with more to show — it scrolls inside
+          // its own band at any height, and at this one the rows a reader is
+          // being invited to hover reach the bottom of the frame.
           connectedView: {
             assembly: 'hg38',
             loc: 'chr17:7,671,000-7,684,500',
-            tracks: ['hg38-ncbiRefSeq', 'clinvar_ncbi_hg38'],
+            tracks: [
+              { trackId: 'hg38-ncbiRefSeq', height: 150 },
+              { trackId: 'clinvar_ncbi_hg38', height: 560 },
+            ],
           },
         },
       ],
@@ -757,5 +771,112 @@ export const featuresSpecs: ScreenshotSpec[] = [
     // the shot rather than cleared with PARK_CURSOR, which would also drop
     // whatever molstar is drawing off the hover.
     hideTooltip: true,
+  },
+
+  // The other view the protein dialog builds, and the one the page describes in
+  // a paragraph with no picture: a linear genome view whose GENOME is the
+  // protein. protein3d registers the UniProt accession as a temporary assembly
+  // whose reference sequence is the amino-acid chain, then turns on a track per
+  // UniProt feature type over it plus Antigen, Variation, pLDDT and
+  // AlphaMissense. Coordinates are residues all the way down, so a reader sees
+  // the same machinery answering a question the genome cannot phrase.
+  //
+  // Clicked rather than declared: `LaunchView-ProteinView` takes `url`,
+  // `uniprotId`, `connectedView` and the rest, and nothing that opens this view.
+  // The route through the dialog's split button is the only one there is, which
+  // also makes the frame a picture of the button the prose names.
+  //
+  // genomes.jbrowse.org's own hg38 config, the one the msa figures load and the
+  // one the tutorial's click-path is written against, rather than the pinned
+  // PROTEIN3D_CONFIG the figure above uses. The launcher this spec drives is
+  // contributed to the gene menu by the plugin the hosted config loads; against
+  // the repo config's own protein3d the same right-click opens a menu with
+  // neither launcher on it, so the route the page documents is only reachable
+  // here.
+  {
+    mode: 'url',
+    name: 'protein/annotation_1d',
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:7,668,000-7,688,000',
+          tracks: [
+            // the two settings every right-clicked gene track in these figures
+            // pins: the click is resolved against the track's band, and an auto
+            // height is a function of how many isoforms RefSeq draws here
+            {
+              trackId: 'hg38-ncbiRefSeqCurated',
+              geneGlyphMode: 'longestCoding',
+              height: 60,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'NCBI RefSeq',
+    // the UCSC hub config is ~570 tracks and pulls four remote plugins
+    readyTimeout: 120000,
+    actions: [
+      {
+        type: 'rightclick',
+        anchor: {
+          track: 'hg38-ncbiRefSeqCurated',
+          locus: 'chr17:7,676,000',
+          fracY: 0.2,
+        },
+      },
+      { type: 'waitForText', text: 'Launch protein view' },
+      { type: 'click', text: 'Launch protein view' },
+      // Submit is disabled until the dialog has mapped the transcript to a
+      // UniProt entry and read its protein sequence, so an enabled Launch is
+      // the declarative "the dialog has resolved" rather than a guess at how
+      // long UniProt takes to answer.
+      {
+        type: 'waitForSelector',
+        selector: 'button:not([disabled])::-p-text(Launch)',
+        timeout: 120000,
+      },
+      // The arrow beside Launch. `More launch options` is the button's own
+      // aria-label; the menu it opens is where the three other destinations
+      // live, and none of them carries a test id.
+      { type: 'click', selector: 'button[aria-label="More launch options"]' },
+      { type: 'click', text: 'Launch 1D protein annotation view' },
+      // The launch adds the tracks to the session and opens the view with none
+      // of them on, so the frame the page wants is four clicks further along.
+      // `No tracks active` is the view's own empty state, and gating on it is
+      // what says the assembly registered and the view navigated.
+      { type: 'waitForText', text: 'No tracks active', timeout: 120000 },
+      { type: 'click', text: 'Open track selector' },
+      // The list opens with its categories collapsed, and everything protein3d
+      // added is under this one.
+      { type: 'click', text: 'Session tracks' },
+      // The last of them to be added, so its row is the selector having
+      // finished filling in.
+      { type: 'waitForText', text: 'AlphaMissense scores', timeout: 120000 },
+      // Four of the nineteen, in the order they stack: the two UniProt feature
+      // types that carry TP53's story, then the two per-residue score tracks.
+      // Every one of them thins out over the terminal tails the DNA-binding
+      // core sits between, which is what makes one frame readable instead of
+      // nineteen bands of the same length.
+      { type: 'click', text: 'DNA binding' },
+      { type: 'click', text: 'Natural variant' },
+      { type: 'click', text: 'AlphaFold confidence' },
+      { type: 'click', text: 'AlphaMissense scores' },
+      // The drawer takes ~400px off the views while it is open and an LGV keeps
+      // its bp-per-pixel across a resize, so the genome view above is captured
+      // at a wider window than the session opened at unless this closes first.
+      { type: 'click', selector: 'button[aria-label="Close drawer"]' },
+      { type: 'waitForAppSettled' },
+    ],
+    // The launch leaves the cursor where the menu item was, which is over the
+    // new view's own track area.
+    hideTooltip: true,
+    // the two views and nothing under them, from the run's own
+    // `CONTENT CLIPPED BELOW THE FOLD`: at 900 the AlphaMissense heatmap was
+    // cut mid-row, and it is the track a reader has least idea what to expect
+    // of.
+    viewportHeight: 1045,
   },
 ]
