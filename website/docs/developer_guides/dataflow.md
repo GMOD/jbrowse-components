@@ -51,6 +51,16 @@ single-threaded however many cores the machine has.
 
 The main thread does no parsing. It holds the result, uploads it, and draws it.
 
+**Which hosts spawn that pool is the host's decision.** jbrowse-web and desktop
+always do. An embedded component runs the same pool once the page hands it a
+`makeWorkerInstance` factory; without one it runs every step in the box on the
+UI thread, so a deep BAM stalls whatever else the page is drawing. Constructing
+a worker is bundler-specific, which is the only reason the factory is the host's
+to write —
+[embedded components](/docs/embedded_components#move-the-data-work-off-the-main-thread)
+has the Vite and the webpack spelling, and passing one is the whole switch, with
+no config slot to set.
+
 ## Where wasm sits
 
 Everything orange is BGZF decompression, in
@@ -75,17 +85,24 @@ engaged are
 Three layers cache different things, and they compose because each dedups a
 different unit:
 
-| layer                        | unit                                | lives in          |
-| ---------------------------- | ----------------------------------- | ----------------- |
-| `RemoteFileWithRangeCache`   | compressed bytes, in aligned blocks | the worker        |
-| the parser's own chunk cache | decompressed and parsed chunks      | the worker        |
-| `rpcDataMap`                 | one region's finished columns       | the display model |
+| layer                        | unit                                | lives in          | goes stale when    |
+| ---------------------------- | ----------------------------------- | ----------------- | ------------------ |
+| `RemoteFileWithRangeCache`   | compressed bytes, in aligned blocks | the worker        | never              |
+| the parser's own chunk cache | decompressed and parsed chunks      | the worker        | never              |
+| `rpcDataMap`                 | one region's finished columns       | the display model | `rpcProps` changes |
 
 Only the last is on the figure, because it is the one a gesture interacts with.
 A pan back over a region the display still holds does no work at all; a pan onto
 a new region re-enters at the top.
 
-What bounds each of them is [](/docs/developer_guides/memory).
+The two lower layers hold a byte range and what that range decoded to, and
+neither answer changes while the session runs — they are evicted, never
+invalidated, and what evicts them is [](/docs/developer_guides/memory).
+`rpcDataMap` is the one that can hold a wrong answer: it keeps what the worker
+computed under one set of settings, so `SettingsInvalidate` watches the
+serialized `rpcProps()` and clears the map when that string changes.
+[The cache key](/docs/developer_guides/data_fetching#rpcprops-the-cache-key)
+says what may go in it.
 
 ## Where the GPU sits
 

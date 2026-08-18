@@ -17,11 +17,19 @@ too: a reader deciding what to try needs them more than the wins.
 
 ## Three clocks
 
-| clock        | what runs                                                               | what dominates it      |
-| ------------ | ----------------------------------------------------------------------- | ---------------------- |
-| a cold fetch | index read, range requests, decompression, record building, summarizing | decompression          |
-| a frame      | React re-render, one shader parameter write, one draw call per pass     | main-thread JavaScript |
-| first paint  | the modules every host evaluates before a plugin can register           | plugin registration    |
+| clock        | what runs                                                               | what dominates it      | how you know you are on it                                      |
+| ------------ | ----------------------------------------------------------------------- | ---------------------- | --------------------------------------------------------------- |
+| a cold fetch | index read, range requests, decompression, record building, summarizing | decompression          | the RPC workers are busy and the wait tracks the region's bytes |
+| a frame      | React re-render, one shader parameter write, one draw call per pass     | main-thread JavaScript | the time scales with CPU throttle and the RPC workers are idle  |
+| first paint  | the modules every host evaluates before a plugin can register           | plugin registration    | it is over before any track has been asked for                  |
+
+Identify the clock before optimizing, because the three barely interact:
+[the frame clock](#interaction-cost-is-react-re-render) profiles the RPC workers
+at 100% idle through a whole gesture, and
+[the fetch clock](#decompression-is-where-a-cold-querys-time-goes) is most of a
+second while nothing repaints. Between those two sits one `postMessage`, and
+[the shape of what crosses it](#the-worker-boundary) is why moving one of them
+leaves the other alone.
 
 [](/docs/developer_guides/dataflow) draws the path these sit on. What a session
 _retains_ is a fourth axis none of these clocks measures, and is
@@ -278,6 +286,17 @@ resize are all changes of shader parameter over data that is already there. The
 walkthrough, and the
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
 is the reference.
+
+Zooming in is where that shows up largest, since the new view is a strict subset
+of the reads the card already holds. Over a 1000x long-read pileup the block
+renderer JBrowse shipped in 4.3.0 refetches, showing a loading indicator for
+15321ms<!--m:zoom-in-refetch.1000x-longread.baselineMs-->; the redraw that
+replaces it is 50ms<!--m:zoom-in-refetch.1000x-longread.redrawMs-->. **Quoting
+that as the speedup overstates it** — zoom in is the one gesture where this
+architecture skips the work rather than doing it faster.
+[RENDERER_BENCHMARKS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/RENDERER_BENCHMARKS.md)
+carries the whole table, why it is imported from a sibling checkout instead of
+measured here, and the two of its neighbours that are not publishable.
 
 ### Coordinates are absolute uint32, split in the shader
 
