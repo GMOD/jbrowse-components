@@ -22,6 +22,19 @@ import type {
 } from './types/index.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+// Memoized ancestor lookups, and load-bearing ones: `getSession` alone has 465
+// call sites and is reached from render paths, while the walk it replaces is
+// six `getParent` hops — every MST array between a display and the session is a
+// node of its own. Worth 13.6-17.6x, and 3.2-3.7x even inside a reaction
+// (`packages/core/benches/parentWalkMemo.bench.ts`, which also rules out the
+// obvious alternative: the predicate's `in` checks are ~1% of the walk, so
+// making it cheaper buys nothing).
+//
+// Keying on the node is safe because nothing re-parents one — both `detach`
+// call sites hand the node straight to `scheduleDetachedDestroy` (ADR-069), so
+// a cached ancestor can only go stale by dying, which `cachedParent`'s
+// `isAlive` catches. That is the difference from the three memos REJECTED_IDEAS
+// records removing: each keyed on something its caller had just allocated.
 const containingDisplayCache = new WeakMap<
   IAnyStateTreeNode,
   AbstractDisplayModel
