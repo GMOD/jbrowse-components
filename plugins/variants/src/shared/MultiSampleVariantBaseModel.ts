@@ -1074,6 +1074,35 @@ export default function MultiSampleVariantBaseModelF(
             (self.renderingMode !== 'phased' || !!self.sampleInfo)
           )
         },
+        /**
+         * #getter
+         * Whether there is anything to cluster: clustering reorders rows, so it
+         * needs at least two rows to put in an order. Undefined is not "none" —
+         * it is the sample list not having landed yet — but both mean "not
+         * now", which is why one boolean answers for both and the menu's help
+         * text asks `sourcesWithoutLayout` itself which of the two it is.
+         *
+         * The unfiltered, haplotype-expanded list, because that is the row set
+         * the tree comes back describing.
+         */
+        get hasClusterableRows() {
+          const rows = self.sourcesWithoutLayout
+          return rows !== undefined && rows.length > 1
+        },
+        /**
+         * #getter
+         * Whether the declarative `runClustering: true` path may fire: the
+         * inputs have landed AND there are rows worth ordering. Both halves are
+         * named booleans rather than one expression at the autorun, so each can
+         * be read — and tested — on its own.
+         *
+         * The dialog gates on `clusteringReady` alone and needs no second half:
+         * the menu row that opens it carries `hasClusterableRows`, so it cannot
+         * be opened on a cohort too small to cluster in the first place.
+         */
+        get autoClusterReady() {
+          return this.clusteringReady && this.hasClusterableRows
+        },
       }))
       .views(self => ({
         /**

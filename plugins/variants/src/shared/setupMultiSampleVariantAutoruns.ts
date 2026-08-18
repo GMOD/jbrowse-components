@@ -10,7 +10,12 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 type Self = IStateTreeNode &
   ReducedModel &
-  Parameters<typeof getMultiSampleVariantSourcesAutorun>[0] &
+  // Here rather than on `ReducedModel` for the reason stated against
+  // `clusteringReady` there: that one is on the shared interface because BOTH
+  // clustering entry points gate on it, and this one only this autorun does.
+  { autoClusterReady: boolean } & Parameters<
+    typeof getMultiSampleVariantSourcesAutorun
+  >[0] &
   Parameters<typeof setupTreeDrawingAutorun>[0] &
   Parameters<typeof setupRunClusteringAutorun>[0]
 
@@ -28,17 +33,16 @@ export function setupMultiSampleVariantAutoruns(self: Self) {
   // supplies, so "sources exist" is not enough here the way it is for the
   // other two flavors.
   //
-  // The row count is the other half, and it is this autorun's alone to state —
-  // the dialog can't be opened below two samples because the menu row that
-  // opens it is disabled there. Without it a session naming `runClustering`
-  // spent a whole genotype-matrix pass to hand back a one-leaf dendrogram, on
-  // exactly the track the menu refuses. Same list the menu counts, so the two
-  // answers cannot disagree, and the same place the multi-row and multi-wiggle
-  // displays put theirs.
+  // `autoClusterReady` is that plus the row count, which is this autorun's
+  // alone to state — the dialog can't be opened below two samples because the
+  // menu row that opens it is disabled there. Without the count a session
+  // naming `runClustering` spent a whole genotype-matrix pass to hand back a
+  // one-leaf dendrogram, on exactly the track the menu refuses. Same getter the
+  // menu row counts with, so the two answers cannot disagree, and the same
+  // place the multi-row and multi-wiggle displays put theirs.
   setupRunClusteringAutorun(self, {
     name: 'AutoRunMultiSampleVariantClustering',
-    ready: () =>
-      self.clusteringReady && (self.sourcesWithoutLayout?.length ?? 0) > 1,
+    ready: () => self.autoClusterReady,
     run: async args => {
       const { runGenotypeClustering } =
         await import('./runGenotypeClustering.ts')

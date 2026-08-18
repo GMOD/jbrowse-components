@@ -89,3 +89,18 @@ test('the matrix clamps a drag exactly as LD does', () => {
   expect(m.lineZoneHeight).toBe(1000)
   expect(ld.lineZoneHeight).toBe(1000)
 })
+
+// `ConnectorLineOverlay` draws the zone from y=0 down to the raw
+// `lineZoneHeight` slot, where `topBands` is the resolved band geometry — the
+// exact substitution `variantTopBands.ts` exists to prevent. It is right today
+// only because the matrix stacks no variant lane above the zone, so the zone IS
+// the top band and the two numbers agree. Pinned here rather than left as a
+// comment: giving the matrix a lane turns this red, which is the moment the
+// overlay has to start reading `lineZoneTop` instead of drawing from zero.
+test('the matrix connector zone is the topmost band, which is what lets the overlay draw from zero', () => {
+  const m = matrixDisplay()
+
+  expect(m.topBands.laneHeight).toBe(0)
+  expect(m.topBands.lineZoneTop).toBe(0)
+  expect(m.topBands.bottom).toBe(m.lineZoneHeight)
+})

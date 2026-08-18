@@ -296,7 +296,7 @@ export function variantTrackMenuItems(
       // of them — the same gate the other two clustering displays state, and
       // for the same reason: the dialog would otherwise open only to report it
       // after the user clicks Run.
-      disabled: (self.sourcesWithoutLayout?.length ?? 0) < 2,
+      disabled: !self.hasClusterableRows,
       // Off the sample list, not `loaded`: the samples arrive on their own RPC
       // (`MultiSampleVariantGetSources`), which neither waits for the cell data
       // nor is waited on by it. Keyed on the cell data, the row blamed the
