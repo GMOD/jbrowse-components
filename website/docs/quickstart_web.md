@@ -203,6 +203,29 @@ jbrowse add-track yourfile.sorted.gff.gz --load copy
 
 See the [gene track guide](/docs/user_guides/gene_track).
 
+### GTF
+
+GTF shares GFF3's refname and start columns, so `sort-gff` sorts it too:
+
+```bash
+jbrowse sort-gff yourfile.gtf | bgzip > yourfile.sorted.gtf.gz
+tabix yourfile.sorted.gtf.gz
+jbrowse add-track yourfile.sorted.gtf.gz --load copy
+```
+
+A plain `.gtf` loads without any of this, but the whole file is read at once, so
+sort and index anything genome-scale.
+
+GTF has no `Name` or `ID` attribute the way GFF3 does, so two things follow.
+Transcripts are grouped into a gene by `gene_id`, and which attribute labels
+that gene is
+[`aggregateField`](/docs/config/gtftabixadapter/#slot-aggregatefield). And
+`jbrowse text-index` matches the GTF spellings — `gene_name`, `transcript_name`,
+`gene_id`, `transcript_id` — alongside its GFF3 defaults, so searching by gene
+name works on a GTF track without passing `--attributes`.
+
+See the [gene track guide](/docs/user_guides/gene_track).
+
 ### Synteny (PAF)
 
 Use [minimap2](https://github.com/lh3/minimap2) to align two assemblies and load
@@ -288,10 +311,10 @@ Optionally, build a text index so users can search by gene name or feature ID:
 jbrowse text-index
 ```
 
-This indexes the GFF3 and VCF tracks in your config, tabix-indexed or plain, and
-plain GTF. Every other track is skipped, and a bare `text-index` run skips
-silently — name a track with `--tracks` and it says why that one was left out.
-Once complete, names can be typed directly into the location search box. See
+This indexes the GFF3, GTF and VCF tracks in your config, tabix-indexed or
+plain. Every other track is skipped, and a bare `text-index` run skips silently
+— name a track with `--tracks` and it says why that one was left out. Once
+complete, names can be typed directly into the location search box. See
 [](/docs/config_guides/text_searching) for which attributes are indexed and how
 to narrow the set, the [text-index docs](/docs/cli#jbrowse-text-index) for the
 flags, and [](/docs/faq#text-searching) for how the trix files work.

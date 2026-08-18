@@ -142,6 +142,19 @@ behind these formats, see the [web quick start](/docs/quickstart_web).
 To load many tracks at once, choose **Add multiple tracks at once** in the "Add
 a track" form.
 
+### Gene annotations (GFF3 and GTF)
+
+Both load through the same form, and a plain `.gff3` or `.gtf` needs no index —
+pick the file and desktop reads it. That is the fast path for one chromosome's
+worth of annotation.
+
+Sort, bgzip and tabix anything genome-scale before loading it. An unindexed file
+is parsed once and held whole in memory, so a full annotation costs that much
+resident before the first feature draws. The commands are in the
+[web quick start](/docs/quickstart_web) under GFF3 and GTF; `jbrowse sort-gff`
+handles both formats. Give the form the `.gff.gz` or `.gtf.gz` as the main file
+and it infers the `.tbi` beside it.
+
 ### Connecting to a track hub
 
 To pull in a whole set of tracks at once, use **File → Open connection...** and
@@ -156,6 +169,10 @@ entry in the track selector) and choose **Index track**. Indexing runs as a
 background job; when it finishes, names from that track can be typed straight
 into the search box. This is the in-app equivalent of the CLI
 `jbrowse text-index` command.
+
+**Index track** only appears on a track it can index — GFF3, GTF and VCF, plain
+or tabix-indexed. A track of any other type has no such item, which is the
+answer when the menu does not offer it.
 
 ## Saving and reopening sessions
 
