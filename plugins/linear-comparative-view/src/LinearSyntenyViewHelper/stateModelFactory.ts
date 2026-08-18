@@ -10,6 +10,8 @@ import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 import { displaysSettled } from '@jbrowse/synteny-core'
 
+import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
+
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
   SyntenyPickResult,
@@ -137,6 +139,33 @@ export function linearSyntenyViewHelperModelFactory(
           }
         }
         return out
+      },
+      /**
+       * #getter
+       * The numbers that move a ribbon under a stationary cursor: each
+       * connected row's `offsetPx` and `bpPerPx`, plus the band height the
+       * ribbons are drawn through. Synteny's twin of `DotplotView.plotTransform`
+       * — and, like it, the value `installClearHoverOnBandMove` watches to
+       * decide the picture has moved.
+       *
+       * A key rather than the object dotplot returns, because nothing else
+       * consumes it: a string only differs when a number does, so a
+       * re-evaluation that lands on the same viewport fires nothing. Taking
+       * these off `LinearSyntenyDisplay.renderParams` instead would subscribe
+       * the reaction to `hoveredFeatureId` — which the reaction itself writes,
+       * so it would re-fire on its own effect.
+       *
+       * Empty while the rows are not both there (a trailing level, or before
+       * init), which no viewport can produce, so the first real value is a
+       * change and any hover held across init clears with it.
+       */
+      get bandTransformKey() {
+        const { views } = this.parentView
+        const v0 = views[self.level]
+        const v1 = views[self.level + 1]
+        return v0 && v1
+          ? `${v0.offsetPx}_${v0.bpPerPx}_${v1.offsetPx}_${v1.bpPerPx}_${self.height}`
+          : ''
       },
       /**
        * #getter
@@ -299,6 +328,11 @@ export function linearSyntenyViewHelperModelFactory(
             return true
           },
         })
+      },
+      afterAttach() {
+        // No `super`: our MST fork auto-chains lifecycle hooks, so calling it
+        // would re-enter RenderLifecycleMixin's own.
+        installClearHoverOnBandMove(self)
       },
     }))
 }
