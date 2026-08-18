@@ -38,10 +38,14 @@ survives regardless of mixin composition order" pin in
 `plugins/canvas/src/LinearBasicDisplay/fetchAutorun.test.ts` and
 `plugins/canvas/src/LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`.
 
-Everything here is plugin-internal: the mixin, the floor and the verdict helpers
-are not exported from `@jbrowse/plugin-linear-genome-view`, and
+Everything here is plugin-internal but one type: the mixin, the floor and the
+verdict helpers are not exported from `@jbrowse/plugin-linear-genome-view`, and
 [ADR-045](../architecture-decision-records/adr-045-region-too-large-gate-stays-in-lgv-plugin.md)
-is why they live in a plugin rather than a foundation package.
+is why they live in a plugin rather than a foundation package. The exception is
+`GateViewport`, which canvas's duck-typed fetch contracts have to name — a
+display hands `commitGateMeasurements` the viewport its measurement was taken
+at. `ByteEstimate` and `RegionTooLargeStatus` rode out beside it with no
+consumer and no longer do.
 
 The pre-flight RPC does take a stop token, and it earns it. `getRegionByteSize`
 bottoms out in an index lookup (`bytesForRegions`), which is a set of range reads

@@ -159,11 +159,13 @@ export { plainChromeOverlays } from './BaseLinearDisplay/index.ts'
 // there — by this plugin's internals and by arc's SVG chrome alike. It is
 // deliberately not mirrored here: one module owns the ranking, and consumers
 // name that module.
-export type {
-  ByteEstimate,
-  GateViewport,
-  RegionTooLargeStatus,
-} from './shared/regionTooLargeUtils.ts'
+// The one region-too-large name that leaves this plugin, and only because the
+// canvas plugin's duck-typed fetch contracts have to name it: a display hands
+// `commitGateMeasurements` the viewport its measurement was taken at. The rest
+// of the gate — the mixin, the floor, the verdict helpers, `ByteEstimate` and
+// `RegionTooLargeStatus` — is internal, which is the export-surface reduction
+// ADR-045 took instead of moving the gate to a foundation package.
+export type { GateViewport } from './shared/regionTooLargeUtils.ts'
 export {
   HighlightBand,
   HighlightChip,
