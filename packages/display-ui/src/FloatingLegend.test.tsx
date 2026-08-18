@@ -68,7 +68,7 @@ describe('FloatingLegend', () => {
 
   it('shows section titles and per-section close when multi-section', () => {
     const onDismissSection = jest.fn()
-    const { getByText, getByTitle } = render(
+    const { getByText, getByLabelText } = render(
       <FloatingLegend
         sections={[
           { id: 'genotypes', title: 'Genotypes', items: items(2) },
@@ -79,7 +79,7 @@ describe('FloatingLegend', () => {
     )
     expect(getByText('Genotypes')).toBeTruthy()
     expect(getByText('Population')).toBeTruthy()
-    fireEvent.click(getByTitle('Hide Population'))
+    fireEvent.click(getByLabelText('Hide Population'))
     expect(onDismissSection).toHaveBeenCalledWith('group')
   })
 

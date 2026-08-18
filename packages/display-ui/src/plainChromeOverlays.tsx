@@ -11,6 +11,7 @@ import { observer } from 'mobx-react'
 
 import { isLiveModel } from './isLiveModel.ts'
 import { tooLargeBannerText } from './tooLargeBannerText.ts'
+import Tooltip from './tooltip/Tooltip.tsx'
 
 import type {
   DisplayBackgroundProgressModel,
@@ -177,18 +178,19 @@ const PlainRenderError = observer(function PlainRenderError({
           shared with that set (`GpuFallbackButton`); only the markup differs,
           because this chrome cannot reach for MUI. */}
       {shouldOfferGpuFallback(error) ? (
-        <button
-          type="button"
-          style={button}
-          data-testid="use_canvas2d_button"
-          title={GPU_FALLBACK_TOOLTIP}
-          onClick={() => {
-            disableGpuRendering()
-            onRetry()
-          }}
-        >
-          {GPU_FALLBACK_LABEL}
-        </button>
+        <Tooltip title={GPU_FALLBACK_TOOLTIP}>
+          <button
+            type="button"
+            style={button}
+            data-testid="use_canvas2d_button"
+            onClick={() => {
+              disableGpuRendering()
+              onRetry()
+            }}
+          >
+            {GPU_FALLBACK_LABEL}
+          </button>
+        </Tooltip>
       ) : null}
     </div>
   )

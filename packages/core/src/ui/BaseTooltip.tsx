@@ -1,4 +1,5 @@
 import {
+  autoUpdate,
   flip,
   offset,
   shift,
@@ -12,7 +13,13 @@ import { useStyleTheme } from './PaletteContext.tsx'
 import { alpha, grey } from './palette.ts'
 import { TOOLTIP_Z_INDEX } from './zIndexes.ts'
 
-// The hover tooltip every display shares.
+// The hover tooltip every display shares, in both of its anchorings: following
+// the pointer over a display's data (`clientPoint`, what the ten display
+// tooltips use through `HoverTooltip`), or hanging off a control that was
+// hovered (`anchor`, what `@jbrowse/display-ui`'s `Tooltip` drives). One
+// component rather than two, because the second one only ever differed in which
+// reference it positioned against — everything below this line was the part
+// worth having once.
 //
 // Its look comes from the palette and plain inline styles rather than from a
 // `makeStyles` reading the Material UI theme, and that is deliberate: an
@@ -41,10 +48,10 @@ const tooltipBaseStyle = {
   wordWrap: 'break-word',
 } as const
 
-// The gap between the cursor and the tooltip, and the ONLY place it is decided.
-// `offset()` applies it along the resolved placement axis, so it stays a gap
-// when `flip()` puts the tooltip to the LEFT of the cursor near the right edge
-// of the viewport.
+// The gap between the reference and the tooltip, and the ONLY place it is
+// decided. `offset()` applies it along the resolved placement axis, so it stays
+// a gap when `flip()` puts the tooltip to the LEFT of the cursor near the right
+// edge of the viewport.
 //
 // Callers pass the pointer's true client point. Eight of them used to add 5, 10
 // or 15 to `x` themselves on top of this, so the same affordance sat 20, 25 or
@@ -54,25 +61,44 @@ const tooltipBaseStyle = {
 // the cursor instead of away. Don't reintroduce one; change this number.
 const CURSOR_GAP_PX = 15
 
+// An element is its own size, so the gap is measured from its edge rather than
+// from a point the pointer happens to be at. 15px off a button reads as a
+// tooltip belonging to nothing in particular.
+const ANCHOR_GAP_PX = 6
+
+export type TooltipPlacement =
+  | 'top'
+  | 'top-start'
+  | 'top-end'
+  | 'right'
+  | 'right-start'
+  | 'right-end'
+  | 'bottom'
+  | 'bottom-start'
+  | 'bottom-end'
+  | 'left'
+  | 'left-start'
+  | 'left-end'
+
 export default function BaseTooltip({
   clientPoint: clientPointCoords,
+  anchor,
+  id,
   children,
-  placement = 'right',
+  placement = anchor ? 'top' : 'right',
 }: {
-  placement?:
-    | 'top'
-    | 'top-start'
-    | 'top-end'
-    | 'right'
-    | 'right-start'
-    | 'right-end'
-    | 'bottom'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'left'
-    | 'left-start'
-    | 'left-end'
+  placement?: TooltipPlacement
+  /** Follow the pointer. The cursor-anchored mode, and the older of the two. */
   clientPoint?: { x: number; y: number }
+  /**
+   * Hang off an element instead — what a control's hover label wants, where
+   * following the cursor across a button reads as a stray box. Mutually
+   * exclusive with `clientPoint`; `@jbrowse/display-ui`'s `useTooltip` is what
+   * drives this arm.
+   */
+  anchor?: HTMLElement
+  /** For a trigger pointing at this with `aria-describedby`. */
+  id?: string
   children: React.ReactNode
 }) {
   // The style theme is read for two things and neither is a Material import:
@@ -84,12 +110,29 @@ export default function BaseTooltip({
   const { refs, floatingStyles, context } = useFloating({
     placement,
     strategy: 'fixed',
-    // flip/shift keep the tooltip on-screen when the cursor is near a viewport
-    // edge instead of letting it clip off the right/bottom
-    middleware: [offset(CURSOR_GAP_PX), flip(), shift({ padding: 8 })],
+    elements: { reference: anchor },
+    // flip/shift keep the tooltip on-screen when the reference is near a
+    // viewport edge instead of letting it clip off the right/bottom — and a
+    // control with a hover label is usually in a corner, so this arm needs it
+    // at least as much as the cursor one
+    middleware: [
+      offset(anchor ? ANCHOR_GAP_PX : CURSOR_GAP_PX),
+      flip(),
+      shift({ padding: 8 }),
+    ],
+    // An anchored tooltip is measured against an element that scrolls with the
+    // track under it, so its position is followed. A cursor-anchored one is
+    // remeasured by every pointer move anyway.
+    whileElementsMounted: anchor ? autoUpdate : undefined,
   })
 
-  const clientPoint = useClientPoint(context, clientPointCoords)
+  // `enabled` rather than a conditional hook: with an element reference in
+  // play, letting this also write one would leave the two arms fighting over
+  // the same slot.
+  const clientPoint = useClientPoint(context, {
+    ...clientPointCoords,
+    enabled: !anchor,
+  })
   const { getFloatingProps } = useInteractions([clientPoint])
 
   // `document.body` is the default, which is what MUI's `Portal` did. Resolved
@@ -108,7 +151,9 @@ export default function BaseTooltip({
 
   return createPortal(
     <div
+      id={id}
       ref={refs.setFloating}
+      role="tooltip"
       style={{
         ...tooltipBaseStyle,
         backgroundColor: alpha(grey[700], 0.9),
