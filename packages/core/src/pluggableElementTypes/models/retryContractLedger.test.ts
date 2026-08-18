@@ -5,10 +5,13 @@
 // outcome either answers it, defers it, or is the dead button. Everything it
 // reads it reads off the host object, so the host can be a plain object and the
 // whole machine runs in microseconds — which is what makes it worth covering
-// exhaustively here rather than through a real display. The wiring tests (which
-// early return emits which outcome) stay where a real autorun runs:
-// `installGlobalFetchAutorun.test.ts` for the global family,
-// `gwas/LinearManhattanDisplay/retryContract.test.ts` for the per-region one.
+// exhaustively here rather than through a real display. It sits beside the
+// checker, which moved down to `@jbrowse/core` so all three fetch families
+// could reach it; the wiring tests (which early return emits which outcome)
+// stay where a real autorun runs, in
+// `plugin-linear-genome-view`'s `installGlobalFetchAutorun.test.ts` for the
+// global family and `gwas/LinearManhattanDisplay/retryContract.test.ts` for the
+// per-region one.
 //
 // The distinction these pin, and the one that is easy to write and easy to get
 // wrong, is **deferral vs exemption**. An exemption consumes the bump, so the
@@ -58,11 +61,8 @@ function makeHost(overrides: Partial<Record<string, boolean>> = {}) {
 // Reports land on `console.error`, which `config/jest/console.js` buffers and
 // fails the test for if unclaimed — so a run that reports must be taken, and
 // `true` here means exactly one report was on the channel.
-function drive(host: HostModel, withPredicate = true) {
-  const check = makeRetryContractCheck(
-    host,
-    withPredicate ? () => host.awaitingPrerequisite : undefined,
-  )
+function drive(host: HostModel) {
+  const check = makeRetryContractCheck(host)
   return function run(outcome: FetchAutorunOutcome) {
     check(outcome)
     const taken = takeDisplayContractReports()
@@ -293,19 +293,20 @@ describe('deferred is the same hold, reached from inside the foundation', () => 
   })
 })
 
-// A display that never declares one gets `undefined`, and the check must not
-// call it. Both foundations can install without it — arc and LD do.
-describe('with no predicate declared', () => {
+// Most displays never override the hook and take `FetchMixin`'s `false` — arc
+// and LD on one foundation, eight of the ten on the other. Nothing about the
+// ledger may depend on the override existing.
+describe('with the hook left at its default', () => {
   it('reports a decline behind a bump', () => {
     const host = makeHost()
-    const run = drive(host, /* withPredicate */ false)
+    const run = drive(host)
     host.reload()
     expect(run('declined')).toBe(true)
   })
 
   it('still honours the foundation-level deferral', () => {
     const host = makeHost()
-    const run = drive(host, /* withPredicate */ false)
+    const run = drive(host)
     host.reload()
     expect(run('deferred')).toBe(false)
     expect(run('declined')).toBe(true)

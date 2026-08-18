@@ -2,9 +2,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * The RPC cache key both display families invalidate on: the display's
- * `rpcProps()` payload serialized to a string. Watched as the
- * `rpcPropsCacheKey` getter per-region (by `SettingsInvalidate`) and as a
- * `computed` in `installGlobalFetchAutorun` globally. `''` for a display with no
+ * `rpcProps()` payload serialized to a string. Reached through one getter,
+ * `FetchMixin.rpcPropsCacheKey` — watched by `SettingsInvalidate` per-region and
+ * by the fetch autorun's trigger list globally. `''` for a display with no
  * `rpcProps`.
  *
  * A string, because building the payload reads far more observables than it

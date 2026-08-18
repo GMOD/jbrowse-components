@@ -110,6 +110,7 @@ export type FetchAutorunOutcome =
 interface RetryContractHost {
   reloadCounter: number
   loadingSuppressed: boolean
+  awaitingPrerequisite: boolean
 }
 
 // Displays whose fetch funnel has been entered since the last time the caller
@@ -195,6 +196,13 @@ export function takeFetchFunnelEntered(self: object) {
  * `loadingSuppressed` is the wrong thing for HiC to say in any case, because it
  * does want the scrim while the header is re-read.
  *
+ * Both flags are read off the node, and both are declared once on `FetchMixin`
+ * — the one mixin all three display foundations compose. Neither foundation
+ * passes them in: the global family's `shouldFetch` and `fetch` are autorun
+ * options because that is what they are, and these two are properties of the
+ * display, which is why an earlier arrangement that made this one an option
+ * there and a getter on the per-region mixin had one concept in two spellings.
+ *
  * **The predicate has to be strictly narrower than `!shouldFetch` to be a
  * deferral at all.** One that restates the gate's negation makes every decline a
  * deferred one, so no run is ever judged and the display has opted out — an
@@ -211,7 +219,6 @@ export function takeFetchFunnelEntered(self: object) {
  */
 export function makeRetryContractCheck(
   self: IAnyStateTreeNode & RetryContractHost,
-  awaitingPrerequisite?: () => boolean,
 ) {
   if (process.env.NODE_ENV === 'production') {
     return () => {}
@@ -228,7 +235,7 @@ export function makeRetryContractCheck(
       if (outcome === 'deferred') {
         return
       }
-      if (outcome === 'declined' && awaitingPrerequisite?.()) {
+      if (outcome === 'declined' && self.awaitingPrerequisite) {
         return
       }
       const retried = self.reloadCounter !== lastCounter

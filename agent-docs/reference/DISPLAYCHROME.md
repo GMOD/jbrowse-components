@@ -435,8 +435,31 @@ declares `awaitingPrerequisite` (`!sourcesBase`), HiC's two-stage shape in this
 family, and narrower than the decline it explains — `fetchNeeded` also declines
 on an empty region set, and that one is still judged.
 
+**Both flags live on `FetchMixin`**, the one mixin all three foundations
+compose, and the check reads them off the node. That is the same argument the
+`loadingSuppressed` docstring makes about its own home, and `awaitingPrerequisite`
+briefly ignored it: it shipped as an `installGlobalFetchAutorun` option on one
+side and a `MultiRegionDisplayMixin` getter on the other, which is one concept in
+two spellings and a third surface on the check's own signature. `shouldFetch` and
+`fetch` stay options because they really are autorun wiring; these two describe
+the display.
+
+Two neighbours were converged on the same rule at the same time, because the
+families had drifted into saying one thing two ways:
+
+| concept | was | is |
+| --- | --- | --- |
+| "a prerequisite has not landed" | option one side, getter the other | `FetchMixin.awaitingPrerequisite` |
+| "the RPC cache key" | `rpcPropsCacheKey` getter one side, a local `computed` over the same `serializeRpcProps` the other | `FetchMixin.rpcPropsCacheKey` |
+| "the byte gate skips this run" | `regionTooLarge && !gateMeasurementStale`, written out in both autoruns under near-identical paragraphs | `RegionTooLargeMixin.gateSkipsMeasuredViewport` |
+
+None of the three changed behavior — each was already the same value computed
+twice. What they change is that a guard now has one copy, which is the copy an
+escape clause would have to be added to in the open.
+
 The ledger itself — bump, outcome, verdict — is tested apart from either
-foundation in `retryContractLedger.test.ts`, because it is a state machine with
+foundation in `core/pluggableElementTypes/models/retryContractLedger.test.ts`,
+because it is a state machine with
 no MobX in it; which early return emits which outcome is tested against real
 autoruns in `installGlobalFetchAutorun.test.ts` and
 `gwas/LinearManhattanDisplay/retryContract.test.ts`. **Anything proving a

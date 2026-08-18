@@ -22,7 +22,6 @@ import FetchMixin from './FetchMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
-import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { FetchContext } from './FetchMixin.ts'
@@ -200,30 +199,6 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Overridable hook (default false), read only by the dev-only retry
-         * check: "this run declined because a prerequisite fetch in another
-         * autorun has not landed, and its arrival wakes this one again". It
-         * **defers** the retry verdict to that later run rather than waiving it,
-         * so a display cannot spend its retry on a decline it called
-         * preliminary — see `makeRetryContractCheck`, which also explains why a
-         * predicate that merely restates the gate is an exemption in disguise.
-         *
-         * `MultiSampleVariantBaseModel` is the case: its `reload()` bumps
-         * `reloadCount` for the sources autorun and its `fetchNeeded` declines
-         * until `sourcesBase` arrives. The global family says the same thing
-         * through `installGlobalFetchAutorun`'s `awaitingPrerequisite` option;
-         * it is a getter here because this family hands displays hooks rather
-         * than an options object.
-         *
-         * Not for a display that is deliberately not fetching at all — that is
-         * `loadingSuppressed` (FetchMixin), which the loading scrim reads too.
-         */
-        get awaitingPrerequisite(): boolean {
-          return false
-        },
-
-        /**
-         * #getter
          * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
          * failed fetch has to read as finished to the consumers outside the
          * display. The global family declares the identical override.
@@ -318,17 +293,6 @@ export default function MultiRegionDisplayMixin() {
             self,
             () => self.viewportWithinLoadedData,
           )
-        },
-
-        /**
-         * #getter
-         * The RPC cache key watched by `SettingsInvalidate` — the subclass's
-         * `rpcProps()` payload serialized to a string. `serializeRpcProps` owns
-         * the why; `installGlobalFetchAutorun` keys its global-family counterpart
-         * on the same function, so the two families invalidate on the same axis.
-         */
-        get rpcPropsCacheKey(): string {
-          return serializeRpcProps(self)
         },
       }))
       .actions(self => ({
@@ -463,10 +427,7 @@ export default function MultiRegionDisplayMixin() {
           // guarantee `reload()` re-RUNS the fetch autorun, not that the run
           // reaches a fetch. The global family has had this since arc shipped a
           // dead Retry; this family is three times the size and had nothing.
-          const noteFetchAutorunRun = makeRetryContractCheck(
-            self,
-            () => self.awaitingPrerequisite,
-          )
+          const noteFetchAutorunRun = makeRetryContractCheck(self)
 
           // Clear loaded data whenever the displayed-regions list changes,
           // through the same `onDisplayedRegionsChange` helper the two displays
@@ -536,8 +497,11 @@ export default function MultiRegionDisplayMixin() {
               // So the fetch runs once per settled viewport while blocked, and
               // it stops at whichever gate rejected it: an index read and no
               // features on the byte axis, canvas's 1kb density probe on the
-              // other. See `gateMeasurementStale`.
-              if (self.regionTooLarge && !self.gateMeasurementStale) {
+              // other. `gateSkipsMeasuredViewport` is `RegionTooLargeMixin`'s,
+              // and the global foundation's skip is the same getter — one
+              // spelling, because a guard kept in two copies is where an escape
+              // clause gets added to one of them.
+              if (self.gateSkipsMeasuredViewport) {
                 // The banner here offers Force load, not Retry, so this run
                 // answers the bump legitimately.
                 noteFetchAutorunRun('gated')

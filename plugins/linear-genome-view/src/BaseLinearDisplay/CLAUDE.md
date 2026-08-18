@@ -31,6 +31,10 @@ to the run after the prerequisite arrives rather than waiving it. Reports reach
 the jest gate through `console.error`, so a harness replacing it opts itself
 out; a test provoking a violation calls `takeDisplayContractReports()`.
 
+Both flags are getters on `FetchMixin`, declared once for all three foundations
+and read off the node — not options either foundation passes in, because they
+describe the display rather than its autorun.
+
 **A predicate has to be strictly narrower than the gate it explains.** One that
 restates the gate's negation makes every decline a deferred one, so no run is
 ever judged and the display has opted out — HiC is in that shape deliberately,

@@ -125,7 +125,8 @@ function host(self: object) {
  * - **Gated:** the fetch measures anyway, once. `FetchVisibleRegions` and
  *   `installGlobalFetchAutorun` used to return early on `regionTooLarge`, which
  *   froze the estimate at the viewport it was captured over; they skip on
- *   `regionTooLarge && !gateMeasurementStale` instead. So a blocked display runs
+ *   `gateSkipsMeasuredViewport` instead — one getter, read by both. So a
+ *   blocked display runs
  *   one fetch per settled viewport, and that fetch stops at whichever gate
  *   rejected it — which is what releases the banner. No second,
  *   measurement-only RPC path exists, and canvas therefore keeps the single-call
@@ -520,7 +521,7 @@ export default function RegionTooLargeMixin() {
        * `regionTooLarge` holds — they have to, or a too-large region would
        * refetch forever off its own `fetchGeneration` bump — and skipping is
        * also what leaves the verdict frozen at the viewport it was taken at. So
-       * they skip on `regionTooLarge && !gateMeasurementStale` instead: one fetch
+       * they skip on `gateSkipsMeasuredViewport` instead: one fetch
        * per settled viewport while blocked, and none once that viewport has been
        * measured.
        *
@@ -756,6 +757,30 @@ export default function RegionTooLargeMixin() {
           self.tooLargeStatus.axis !== 'bytes' ||
           !self.byteEstimate?.zoomIneffective
         )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The skip both fetch foundations apply before consulting the display's
+       * own gate: the banner is up **and** the measurement behind it already
+       * describes the viewport on screen, so this run has nothing to do. Its
+       * negation is the rule `gateMeasurementStale` states — one fetch per
+       * settled viewport while blocked, which IS the re-measure and the only
+       * thing that can release the gate.
+       *
+       * One getter because it was one expression written twice, in
+       * `installGlobalFetchAutorun` and in `MultiRegionDisplayMixin`'s
+       * FetchVisibleRegions, each under its own paragraph saying the same thing.
+       * A guard kept in two copies is where an escape clause gets added to one
+       * of them; the two families should be exactly as far apart as their
+       * autoruns need and no further.
+       *
+       * A display that opts into no byte gate reads `regionTooLarge` as a
+       * literal false, so this is false for it too.
+       */
+      get gateSkipsMeasuredViewport(): boolean {
+        return self.regionTooLarge && !self.gateMeasurementStale
       },
     }))
     .actions(self => ({

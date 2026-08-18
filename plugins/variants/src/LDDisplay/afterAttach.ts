@@ -10,17 +10,25 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
 interface LDModel extends IStateTreeNode {
   showLDTriangle: boolean
-  regionTooLarge: boolean
   isMinimized: boolean
   reloadCounter: number
-  // The retry check's exemption, and this display is the reason it exists: with
-  // the triangle off `shouldFetch` is false forever, so a reload legitimately
-  // reaches no fetch. LD answers `!showLDTriangle` here, off the same slot.
+  // The retry check's two hooks, both `FetchMixin`'s. LD is the reason the
+  // first exists: with the triangle off `shouldFetch` is false forever, so a
+  // reload legitimately reaches no fetch, and LD answers `!showLDTriangle`
+  // there off the same slot. It takes the default `false` for the second — its
+  // fetch waits on no other autorun.
   loadingSuppressed: boolean
+  awaitingPrerequisite: boolean
   rpcProps(): Record<string, unknown>
+  // `FetchMixin`'s serialization of the above, which is what the skeleton
+  // tracks — the payload's own reads must not enter the dependency set.
+  rpcPropsCacheKey: string
   performLDFetch(): void
   clearByteEstimate(): void
-  gateMeasurementStale: boolean
+  // `RegionTooLargeMixin`'s combined skip, which is what the skeleton reads —
+  // its two terms are deliberately not named here, so no local expression can
+  // re-derive it.
+  gateSkipsMeasuredViewport: boolean
 }
 
 export function doAfterAttach(self: LDModel) {

@@ -8,6 +8,8 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
+import { serializeRpcProps } from './rpcPropsCacheKey.ts'
+
 import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -169,6 +171,53 @@ export default function FetchMixin() {
        */
       get loadingSuppressed(): boolean {
         return false
+      },
+
+      /**
+       * #getter
+       * Overridable hook (default false), read only by the dev-only retry check
+       * (`makeRetryContractCheck`): "this run declined because a prerequisite
+       * fetch in another autorun has not landed, and its arrival wakes this one
+       * again". It **defers** the retry verdict to that later run rather than
+       * waiving it, so a display cannot spend its retry on a decline it called
+       * preliminary.
+       *
+       * Two displays say it, one per fetch foundation, which is why it lives
+       * beside `loadingSuppressed` rather than on either: HiC's contacts fetch
+       * declines until `CoreGetInfo` lands, and `MultiSampleVariantBaseModel`'s
+       * `fetchNeeded` declines until `sourcesBase` does. Both have a `reload()`
+       * that wakes the prerequisite's autorun as well as their own.
+       *
+       * **It has to be strictly narrower than the gate it explains.** One that
+       * restates the gate's negation makes every decline a deferred one, so no
+       * run is ever judged and the display has silently opted out — an exemption
+       * by another name. HiC is in that shape deliberately, because its gate and
+       * its prerequisite are one condition; what covers its retry instead is
+       * `LinearHicDisplay/infoFetchFailure.test.ts`.
+       *
+       * Not for a display deliberately not fetching at all — that is
+       * `loadingSuppressed` above, which the loading scrim reads too.
+       */
+      get awaitingPrerequisite(): boolean {
+        return false
+      },
+
+      /**
+       * #getter
+       * The RPC cache key both fetch foundations invalidate on: this display's
+       * `rpcProps()` payload serialized to a string. `serializeRpcProps` owns
+       * the why, including the silently-dead-axis corollary.
+       *
+       * Here, beside the two hooks above, for the same reason they are: it
+       * describes the display, and every foundation composes this mixin. The
+       * per-region family watches it from `SettingsInvalidate` and the global
+       * one from its fetch autorun's trigger list — one getter and one name, so
+       * the two cannot come to invalidate on different axes. The global side
+       * built its own local `computed` over the same function until 2026-08,
+       * which was the same value under a second spelling.
+       */
+      get rpcPropsCacheKey(): string {
+        return serializeRpcProps(self)
       },
     }))
     .actions(self => {

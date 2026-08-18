@@ -17,6 +17,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { installGlobalFetchAutorun } from './GlobalDataDisplayMixin.ts'
+import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -69,12 +70,26 @@ const TestDisplay = types
     // NOTHING else — which is what makes it a probe for whether the retry
     // check's reads leak into the autorun's dependency set. See the two
     // dependency-set tests at the bottom.
-    prereqPending: true,
+    prereqPending: false,
   }))
   .views(self => ({
     rpcProps() {
       void self.consulted
       return { setting: self.setting }
+    },
+    // `FetchMixin`'s hook, which this fixture composes by hand — the check reads
+    // it off the node in both families rather than taking a predicate.
+    get awaitingPrerequisite() {
+      return self.prereqPending
+    },
+    // `RegionTooLargeMixin`'s combined skip, spelled here the same way the real
+    // mixin spells it. The two volatiles above stand in for its inputs.
+    get gateSkipsMeasuredViewport() {
+      return self.regionTooLarge && !self.gateMeasurementStale
+    },
+    // `FetchMixin`'s, over this fixture's own `rpcProps` above
+    get rpcPropsCacheKey() {
+      return serializeRpcProps(this as never)
     },
   }))
   .actions(self => ({
@@ -109,10 +124,7 @@ const TestDisplay = types
 // itself owns that observable
 type TestDisplayModel = Instance<typeof TestDisplay>
 
-function setup(
-  shouldFetch: (d: TestDisplayModel) => boolean,
-  awaitingPrerequisite?: (d: TestDisplayModel) => boolean,
-) {
+function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
   const view = TestView.create({ display: {} })
   const { display } = view
   const gateCalls = { count: 0 }
@@ -127,9 +139,6 @@ function setup(
     },
     delay: DELAY,
     name: 'TestGlobalFetch',
-    awaitingPrerequisite: awaitingPrerequisite
-      ? () => awaitingPrerequisite(display)
-      : undefined,
   })
   return { view, display, gateCalls, fetched }
 }
@@ -198,7 +207,7 @@ describe('installGlobalFetchAutorun', () => {
     expect(gateCalls.count).toBeGreaterThan(before)
   })
 
-  // the trigger is the *serialized* payload (MultiRegion's `rpcPropsCacheKey`
+  // the trigger is the *serialized* payload (`FetchMixin.rpcPropsCacheKey`
   // axis), so an observable rpcProps() merely consults doesn't refetch — this is
   // what keeps a global display off refetches the per-region family wouldn't do
   it('ignores an observable rpcProps() reads but does not return', async () => {
@@ -306,10 +315,8 @@ describe('the retry contract', () => {
   // the same tracked read. `loadingSuppressed` is the wrong claim for it — HiC
   // wants the scrim meanwhile — so the display says this instead.
   it('holds the verdict over a decline that is waiting on a prerequisite', async () => {
-    const { display, fetched } = setup(
-      d => d.loaded,
-      d => !d.loaded,
-    )
+    const { display, fetched } = setup(d => d.loaded)
+    display.setPrereqPending(true)
     await settle()
 
     display.reload()
@@ -318,6 +325,7 @@ describe('the retry contract', () => {
 
     // the prerequisite landing wakes the same autorun, and THAT run is the one
     // answering the retry — silent because it reaches the fetch
+    display.setPrereqPending(false)
     display.setLoaded(true)
     await settle()
     expect(fetched.count).toBe(1)
@@ -329,10 +337,8 @@ describe('the retry contract', () => {
   // called preliminary. Here the prerequisite lands and the gate declines
   // anyway — a genuinely dead button that an exemption would have waved past.
   it('reports when the run after the prerequisite declines too', async () => {
-    const { display } = setup(
-      () => false,
-      d => !d.loaded,
-    )
+    const { display } = setup(() => false)
+    display.setPrereqPending(true)
     await settle()
 
     display.reload()
@@ -340,20 +346,17 @@ describe('the retry contract', () => {
     expect(reports()).toEqual([])
 
     // prerequisite in hand; the retry has to reach a fetch now and does not.
-    // `setSetting` is what re-runs the body — `loaded` is nothing this gate reads
-    display.setLoaded(true)
+    // `setSetting` is what re-runs the body — nothing this gate reads moved
+    display.setPrereqPending(false)
     display.setSetting('b')
     await settle()
     expect(reports().join('\n')).toMatch(/Retry is a dead button/)
   })
 
-  // the negative control: declaring the predicate does not turn the check off,
-  // so the arc shape behind one that never claims a decline still reports
-  it('still reports a decline the predicate does not claim', async () => {
-    const { display } = setup(
-      d => !d.loaded,
-      () => false,
-    )
+  // the negative control: the arc shape, behind a display that never claims a
+  // decline, still reports
+  it('still reports a decline the display does not claim', async () => {
+    const { display } = setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
 
@@ -431,11 +434,9 @@ describe('a blocked display still re-measures', () => {
 // `gateCalls` rather than on fetches, because the leak re-runs the body whether
 // or not the gate then opens.
 describe('the retry check leaks nothing into the dependency set', () => {
-  it('does not track the awaitingPrerequisite predicate', async () => {
-    const { display, gateCalls } = setup(
-      () => false,
-      d => d.prereqPending,
-    )
+  it('does not track awaitingPrerequisite', async () => {
+    const { display, gateCalls } = setup(() => false)
+    display.setPrereqPending(true)
     display.reload()
     await settle()
     expect(reports()).toEqual([])
