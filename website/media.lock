@@ -10,6 +10,8 @@
 # <path> <width>x<height> <bytes> <sha256>
 website/static/media/dog10k/igf1_cluster_route.jpg 1280x960 275090 8a39d4d16134de520094104e813e69064baba60f8cacafb3079c4758550343b1
 website/static/media/dog10k/igf1_cluster_route.mp4 - 922201 e69cb1a4e76c76da13ea30e41acbf723444bac313b31c5353b1a7b84a439aac6
+website/static/media/methylation/group_by_hp.jpg 1280x740 224008 d5375423d9b901bd88c815906a904581dfa6302e717547c14033c0a51f270f93
+website/static/media/methylation/group_by_hp.mp4 - 1198126 d6e190a56018c91a873678959d9dd006e53a0f0d55aea2a2cb3d37f18ed4e1a1
 website/static/media/pangenome/hprc_cluster_callset.jpg 1280x750 131342 84bd958dae1037ff003e523690d3a5dadaa6bb80ca63a851aad6f3bb2ab13d20
 website/static/media/pangenome/hprc_cluster_callset.mp4 - 602043 1159b195ebeb6a5d80394f8cc286434438bcd0738f0d53e3bbfa0ec5251a6d92
 website/static/media/pangenome/hprc_end_to_end.jpg 1280x1120 150644 01ad380763205dfd4713eafe05339e8d8c420de36134cfcefa5bd0fdc43d183b

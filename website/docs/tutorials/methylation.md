@@ -108,11 +108,16 @@ The Y axis is percent methylation, each CpG a vertical bar.
 
 Each long read is a single DNA molecule, so reads that carry an `HP` haplotype
 tag (from WhatsHap, HiPhase, or ONT's `wf-human-variation`) can be separated by
-allele. Pick **Group by... → Tag...** from the track menu and enter `HP`, leave
-coloring on modifications, and the pileup stacks into one band per haplotype,
-computed in the browser with no external tool. The interleaved mix from the
-first section resolves: one band is methylated over the island, the other is
-not.
+allele. Pick **Group by... → Tag...** from the track menu and enter `HP`. The
+dialog scans the reads in view and reports the values it found, and it offers to
+color reads by the same tag — a box that arrives **checked**, because any scheme
+that is not already a tag counts as replaceable. Uncheck it, or the haplotypes
+come back as two flat colors and the methylation the section is about is gone.
+The pileup then stacks into one band per haplotype, computed in the browser with
+no external tool, and the interleaved mix from the first section resolves: one
+band is methylated over the island, the other is not.
+
+<Video src="/media/methylation/group_by_hp.mp4" caption="The split as the menu does it: the interleaved pileup, the tag dialog finding HP values 1 and 2 in the reads themselves, the coloring box turned back off, and one methylated band resolving over one unmethylated." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order. Bottom: the same reads grouped by the HP tag, one band per haplotype. Only the grouping differs." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 

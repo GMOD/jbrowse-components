@@ -126,6 +126,42 @@ const SNRPN_MODKIT_MULTI_TRACK = {
 // colored three ways (one copy per context), so the tri-context contrast reads
 // both quantitatively and per-molecule. The per-read copies use one-color mode:
 // methylated C = red, unmethylated sites left blank.
+// The SNRPN reads panel, in the two states the section is about: the grouping is
+// the only property that differs, so both come out of one builder rather than
+// out of two hand-kept copies. videos/methylation.ts films the route between
+// them and starts from the same `grouped: false` this pair's upper half shows.
+const snrpnReadsPanel = ({ grouped = false } = {}) =>
+  lgvSession(DEMO_CONFIG, {
+    assembly: 'hg38',
+    loc: 'chr15:24,948,000-24,962,000',
+    tracks: [
+      {
+        trackId: 'cpgisland_ucsc_hg38',
+        type: 'LinearBasicDisplay',
+        height: 40,
+      },
+      HG38_GENE_LANE,
+      {
+        trackId: 'HG002_snrpn_5mC_reads',
+        type: 'LinearAlignmentsDisplay',
+        height: 320,
+        forceLoad: true,
+        ...(grouped ? { groupBy: { type: 'tag', tag: 'HP' } } : {}),
+        colorBy: {
+          type: 'modifications',
+          modifications: { fillUnmarked: true },
+        },
+      },
+    ],
+  })
+
+// What videos/methylation.ts films: the ungrouped panel, and the track whose
+// menu the route starts from.
+export const methylationVideoFixtures = {
+  ungrouped: snrpnReadsPanel(),
+  readsTrackId: 'HG002_snrpn_5mC_reads',
+}
+
 export const methylationSpecs: ScreenshotSpec[] = [
   // The three plant methylation contexts, shown at both levels so the "3 modes"
   // is unmistakable and consistent: the aggregate MethylDackel track (one 0-100%
@@ -438,28 +474,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'methylation/hg002_snrpn_ungrouped',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr15:24,948,000-24,962,000',
-      tracks: [
-        {
-          trackId: 'cpgisland_ucsc_hg38',
-          type: 'LinearBasicDisplay',
-          height: 40,
-        },
-        HG38_GENE_LANE,
-        {
-          trackId: 'HG002_snrpn_5mC_reads',
-          type: 'LinearAlignmentsDisplay',
-          height: 320,
-          forceLoad: true,
-          colorBy: {
-            type: 'modifications',
-            modifications: { fillUnmarked: true },
-          },
-        },
-      ],
-    }),
+    url: snrpnReadsPanel(),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     settleMs: 15000,
@@ -487,29 +502,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'methylation/hg002_snrpn_grouped',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr15:24,948,000-24,962,000',
-      tracks: [
-        {
-          trackId: 'cpgisland_ucsc_hg38',
-          type: 'LinearBasicDisplay',
-          height: 40,
-        },
-        HG38_GENE_LANE,
-        {
-          trackId: 'HG002_snrpn_5mC_reads',
-          type: 'LinearAlignmentsDisplay',
-          height: 320,
-          forceLoad: true,
-          groupBy: { type: 'tag', tag: 'HP' },
-          colorBy: {
-            type: 'modifications',
-            modifications: { fillUnmarked: true },
-          },
-        },
-      ],
-    }),
+    url: snrpnReadsPanel({ grouped: true }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     settleMs: 15000,
