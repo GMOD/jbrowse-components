@@ -178,9 +178,10 @@ MAF's read from being a cycle — everything downstream of the swap
 (`byteGateAdapterConfig`) reads it, nothing upstream does.
 
 **Neither axis reads the live viewport for its *value*.** The byte axis compares
-a measurement, refreshed once per settled viewport on the fetch autorun's
-500-600 ms debounce; the density axis reads the 500 ms-debounced
-`coarseBpPerPx`, sharing the layout packing cadence. Reading live `visibleBp` and
+a measurement, refreshed once per settled viewport on whatever debounce the
+display's fetch autorun carries — 600 ms for the whole `MultiRegionDisplayMixin`
+family, 500 ms on LD and 1000 ms on arc; the density axis reads the 500
+ms-debounced `coarseBpPerPx`, sharing the layout packing cadence. Reading live `visibleBp` and
 rescaling is what used to release the banner the instant you crossed a
 threshold — against a number the index does not charge.
 
@@ -295,6 +296,17 @@ measured. Latent — nothing in the UI revokes force-load — but two paths
 disagreeing about what a stamp means is only ever found the hard way. The density
 *stats* are still committed on a force-loaded fetch, which is what lets zooming
 back out re-gate from the live main-thread verdict.
+
+**That guard is read a beat late, and knowing so is the point.**
+`commitGateMeasurements` asks `gateActive` at *commit* time, while the budget the
+fetch actually carried was resolved at *issue* time — `viewport` is threaded
+through precisely because a value like that can't be recovered afterwards, and
+this one isn't. The only way they disagree is force-load being revoked while a
+fetch is in flight, which `setForceLoadTrack(false)` does and nothing else calls;
+turning force-load *on* supersedes the fetch through `reload()`, so that
+direction can't reach the commit at all. Closing it means passing the issue-time
+answer alongside the viewport, and both call sites already hold it — `byteLimit`
+is `undefined` exactly when the gate was inactive at issue.
 
 The gated half is one condition, in the two fetch autoruns:
 
