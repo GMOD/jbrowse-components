@@ -124,19 +124,38 @@ export const DEFAULT_INTERCHROM_WINDOW_BP = 1000
 // `agent-docs/reference/DEEP_COVERAGE.md`), and is why this is offered for the
 // interchromosomal family only.
 //
-// Single-linkage on each side in turn, so a run of reads stepping across the
-// span stays one cluster: group the sorted entries into runs on `bpA`, then
-// re-sort each run on `bpB` and run the same rule again. Two sorts and two
-// linear passes, and no comparison of an entry against a cluster's members.
+// SINGLE-LINKAGE OVER BOTH COORDINATES AT ONCE — two connections join when they
+// are within the window on `bpA` AND on `bpB`, and a cluster is the transitive
+// closure of that. A run of reads stepping across the span therefore stays one
+// cluster, which is the property the whole pass exists for.
+//
+// It is stated that way because the relation is SYMMETRIC IN THE TWO CONTIGS and
+// the implementation has to be. Running the rule hierarchically — group into runs
+// on `bpA`, then re-run it on `bpB` within each run — is not the same relation
+// and is not symmetric: a `bpA` gap splits a run before `bpB` is ever consulted,
+// so two connections that agree on both coordinates can land in different
+// clusters because a third connection sat between them on one axis only. Which
+// axis is `bpA` is decided by `swap` below, i.e. by which contig NAME sorts
+// first, so the answer depended on refName spelling. The same three connections
+// scored `[2, 1]` one way round and `[1, 1, 1]` transposed — and at the default
+// floor of 2 that is the difference between a breakpoint drawn and a breakpoint
+// deleted. `arcClustering.test.ts` holds the transpose.
 //
 // Chaining ONE open cluster along `bpA` and testing each entry's `bpB` against
-// its members is what this replaces, and it lost reads to the order they arrived
-// in. Real support and mismapping interleave along the source contig, so a noise
-// entry sorts into the middle of a real cluster; failing the mate test, it closed
-// that cluster and opened its own, and the supporting pairs after it were counted
-// as a separate event. Measured on the five-pair fixture in `compute.test.ts`, a
-// four-read breakpoint scored 1 and 3 — below the default floor of 2 for the
-// first of them, and below any floor the real count clears.
+// its members is what the hierarchical form itself replaced, and it lost reads to
+// the order they arrived in. Real support and mismapping interleave along the
+// source contig, so a noise entry sorts into the middle of a real cluster;
+// failing the mate test, it closed that cluster and opened its own, and the
+// supporting pairs after it were counted as a separate event. Measured on the
+// five-pair fixture in `compute.test.ts`, a four-read breakpoint scored 1 and 3.
+//
+// WHAT IS STILL SINGLE-LINKAGE'S TO OWN: the window bounds the GAP between
+// neighbours, not the DIAMETER of the cluster, so 40 pairs spaced exactly one
+// window apart chain into one cluster spanning 39 of them. The comment above
+// reads as a diameter claim ("how far a supporting read can sit from the
+// breakpoint is one fragment length") and the rule is a density one. That is a
+// live question about what the floor means at depth rather than a slip —
+// `agent-docs/TODO.md`, "Bound an interchromosomal cluster's diameter".
 // One interchromosomal connection, in the endpoint order the clustering keys on:
 // `bpA` on the lexicographically-first contig, `bpB` on the other, `index` back
 // into the caller's `pendingArcs`.
@@ -189,6 +208,42 @@ export interface InterchromClusters {
 // tick's sum all keep reading one number.
 export function windowFor(arc: PendingArc, mateWindowBp: number) {
   return arc.isSplit ? 0 : mateWindowBp
+}
+
+/**
+ * Whether one interchromosomal cluster's evidence clears the user's support
+ * floor — and a SPLIT junction is exempt from it outright.
+ *
+ * THE FLOOR HAS THE SAME AXIS AS THE WINDOW, and only the window had been given
+ * it. `windowFor` above is the whole argument, one step further on: a floor over
+ * scattered mate pairs means "this breakpoint gathered evidence", and the
+ * windowing exists so that it can. Over a split junction it means something else
+ * entirely — "fewer than N reads broke at this exact base" — which nothing here
+ * measured and which the count cannot support, because a split junction is
+ * counted at window 0 and two reads whose aligner placed the same junction three
+ * bases apart are two clusters of one.
+ *
+ * `DEFAULT_MIN_INTERCHROM_SUPPORT` is measured on mate pairs — HG002 300x, 844
+ * of 856 breakpoints carrying exactly one read — and mismapping is what that
+ * measures. A split read is not indirect evidence that scatters; it CROSSES the
+ * breakpoint. Inheriting the mate floor meant a translocation carried by one
+ * chimeric read drew nothing at all, by default, which on unpaired long-read
+ * data is the only evidence there is.
+ *
+ * The trade, so it can be dialled back if a deep short-read view gets noisy: a
+ * chimeric alignment to another contig is itself a mismapping mode, and those
+ * now draw at support 1 — the base stroke width, the thinnest mark the band has,
+ * and still behind "Show inter-chromosomal pairs". Making the exemption
+ * conditional on `hasPaired` was the alternative considered; it ties an
+ * evidence-kind rule to a dataset-wide property, and a paired library whose
+ * chimeric reads carry the real signal is exactly the cancer case.
+ */
+export function clearsInterchromFloor(
+  isSplit: boolean,
+  support: number,
+  minInterchromSupport: number,
+) {
+  return isSplit || support >= minInterchromSupport
 }
 
 export function clusteredInterchromSupport(
@@ -253,47 +308,146 @@ export function clusteredInterchromSupport(
     })
   }
   for (const { windowBp, entries } of byContigPair.values()) {
-    entries.sort((a, b) => a.bpA - b.bpA)
-    forEachRun(
-      entries,
-      e => e.bpA,
-      windowBp,
-      run => {
-        run.sort((a, b) => a.bpB - b.bpB)
-        forEachRun(
-          run,
-          e => e.bpB,
-          windowBp,
-          cluster => {
-            const id = sizeOf.length
-            sizeOf.push(cluster.length)
-            for (const m of cluster) {
-              clusterOf[m.index] = id
-            }
-          },
-        )
-      },
-    )
+    for (const cluster of linkWithinWindow(entries, windowBp)) {
+      const id = sizeOf.length
+      sizeOf.push(cluster.length)
+      for (const m of cluster) {
+        clusterOf[m.index] = id
+      }
+    }
   }
   return { clusterOf, sizeOf }
 }
 
-// Single-linkage runs over a list already sorted on `valueOf`: a run ends
-// wherever consecutive values are further apart than `windowBp`.
-export function forEachRun<T>(
-  sorted: T[],
-  valueOf: (item: T) => number,
+// One cell of a `windowBp`-sized grid over the two coordinates, and the
+// connections in it. The cell size is the window itself, which is what makes the
+// intra-cell union free: two points inside one cell differ by less than
+// `windowBp` on both axes by construction, so they join without a comparison,
+// and any two points that DO qualify are in the same cell or in one of its eight
+// neighbours.
+//
+// `cx`/`cy` are carried rather than parsed back out of the map key, since the
+// neighbour walk needs them as numbers and a key that has to be re-split is a
+// second encoding of the same two values.
+interface GridCell {
+  cx: number
+  cy: number
+  members: number[]
+}
+
+// The four neighbours that, walked from every cell, visit each unordered pair of
+// adjacent cells exactly once.
+const FORWARD_NEIGHBORS = [
+  [1, -1],
+  [1, 0],
+  [1, 1],
+  [0, 1],
+] as const
+
+/**
+ * The connections of one contig pair, grouped into single-linkage clusters under
+ * the symmetric rule: within `windowBp` on BOTH coordinates, transitively.
+ *
+ * Grid + union-find rather than a sweep, because the sweep's cost is the local
+ * density squared and the density is exactly what a real event maximises: a
+ * translocation at 300x puts ~100 pairs inside one fragment length, and a repeat
+ * pileup can put far more. Cells are the window's own size, so every point in a
+ * cell joins for free and only the eight neighbouring cells need comparisons —
+ * and since a cell is already ONE component, the first qualifying cross pair
+ * merges both cells whole and the rest of that pair's comparisons are skipped.
+ *
+ * `windowBp` 0 is the split-junction case and takes the same shape with no
+ * neighbourhood at all: the cell key is then the exact coordinate pair, which is
+ * `arcKey`'s coincidence count arrived at through this pass — see `windowFor`.
+ */
+export function linkWithinWindow(entries: ClusterEntry[], windowBp: number) {
+  const parent = entries.map((_, i) => i)
+  function find(i: number): number {
+    let root = i
+    while (parent[root] !== root) {
+      root = parent[root]!
+    }
+    // Path-halving, so a long chain of near-neighbours does not make each later
+    // lookup walk it again.
+    while (parent[i] !== root) {
+      const next = parent[i]!
+      parent[i] = root
+      i = next
+    }
+    return root
+  }
+  function union(a: number, b: number) {
+    const ra = find(a)
+    const rb = find(b)
+    if (ra === rb) {
+      return false
+    }
+    parent[rb] = ra
+    return true
+  }
+
+  // Window 0 has no neighbourhood: a cell is then one exact coordinate pair, and
+  // the grid degenerates to the coincidence grouping `arcKey` does — which is
+  // `windowFor`'s split-junction arm arriving here rather than being a second
+  // code path. Sizing the cells at 1 keeps that a case of the same expression.
+  const cellSize = windowBp > 0 ? windowBp : 1
+  const cells = new Map<string, GridCell>()
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i]!
+    const cx = Math.floor(e.bpA / cellSize)
+    const cy = Math.floor(e.bpB / cellSize)
+    const cell = getOrCreate(cells, `${cx}\0${cy}`, () => ({
+      cx,
+      cy,
+      members: [],
+    }))
+    if (cell.members.length > 0) {
+      // Free: same cell means within the window on both axes.
+      union(cell.members[0]!, i)
+    }
+    cell.members.push(i)
+  }
+
+  if (windowBp > 0) {
+    for (const cell of cells.values()) {
+      for (const [dx, dy] of FORWARD_NEIGHBORS) {
+        const other = cells.get(`${cell.cx + dx}\0${cell.cy + dy}`)
+        if (other) {
+          joinCells(entries, cell.members, other.members, windowBp, union)
+        }
+      }
+    }
+  }
+
+  const byRoot = new Map<number, ClusterEntry[]>()
+  for (let i = 0; i < entries.length; i++) {
+    getOrCreate(byRoot, find(i), () => []).push(entries[i]!)
+  }
+  return byRoot.values()
+}
+
+// Merge two adjacent cells if any pair across them is within the window on both
+// coordinates. ONE qualifying pair settles it and the scan stops there: each cell
+// is already a single component, so that union merges both whole and every
+// further comparison between them is answering a question with no consequence.
+function joinCells(
+  entries: ClusterEntry[],
+  cell: number[],
+  other: number[],
   windowBp: number,
-  onRun: (run: T[]) => void,
+  union: (a: number, b: number) => boolean,
 ) {
-  let start = 0
-  for (let i = 1; i <= sorted.length; i++) {
-    if (
-      i === sorted.length ||
-      valueOf(sorted[i]!) - valueOf(sorted[i - 1]!) > windowBp
-    ) {
-      onRun(sorted.slice(start, i))
-      start = i
+  for (const i of cell) {
+    const a = entries[i]!
+    for (const j of other) {
+      const b = entries[j]!
+      if (
+        Math.abs(a.bpA - b.bpA) <= windowBp &&
+        Math.abs(a.bpB - b.bpB) <= windowBp
+      ) {
+        union(i, j)
+        return
+      }
     }
   }
 }

@@ -49,9 +49,15 @@ export interface ArcSettings {
   // (`isConcordantPairRead`). Defaults true — every arc drawn, as before the
   // setting existed.
   drawProperPairArcs?: boolean
-  // Reads a translocation breakpoint must gather before its ticks are drawn —
+  // Reads a translocation breakpoint must gather before its marks are drawn —
   // see `clusteredInterchromSupport`. 1 (or 0) draws every one, which is what
   // this did before the setting existed.
+  //
+  // MATE-LINK EVIDENCE ONLY (`clearsInterchromFloor`), and taken against the
+  // number each mark actually draws with: a cluster's own size for an arc, the
+  // coalesced total for a tick. Neither is a free choice — see `pushLine` for
+  // why testing a tick's addends instead let a display setting change the count
+  // the hover reported.
   minInterchromSupport?: number
   // See `CanonicalRefName`. Without it a split junction between a fetched read
   // (`1`) and its SA segment (`chr1`) reads as inter-chromosomal and paints as a
@@ -195,6 +201,10 @@ export interface ComputedLine {
   // distinct windowed CLUSTERS reaching this coordinate, each contributing once.
   // `pushLine` has why neither the reads at the coordinate nor one cluster's own
   // size will do, and `ComputedArc.support` the whole-junction case beside it.
+  //
+  // INDEPENDENT OF `minInterchromSupport`, which is applied to this total rather
+  // than to the clusters summed into it. A number that moved when the filter
+  // moved was reporting the filter, not the reads.
   support: number
   // The refName(s) on the FAR side of this breakpoint, sorted and unique. The
   // one fact a tick is drawn to convey and the only one it could not answer: a

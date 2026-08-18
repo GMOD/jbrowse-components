@@ -108,19 +108,60 @@ Not to be confused with the read cloud's `isConcordantFRPair`, which asks whethe
 |TLEN| sits in the modal band rather than what the aligner concluded. Both
 readings are deliberate; each function's comment names the other.
 
-**A support FLOOR is offered for the INTERCHROMOSOMAL family — either mark — and
-deliberately not for the same-chromosome arcs.** `minInterchromSupport` counts a
-MATE link's reads over a window of one fragment length on _both_ sides
-(`clusteredInterchromSupport`), never at a coordinate: mates straddle a breakpoint
-rather than landing on it, so `arcKey`'s exact count is 1 for essentially every
-interchromosomal PAIR and a floor over it would delete a real translocation
-as thoroughly as the mismapping. The window comes from `stats.upper`, so it tracks
-the library instead of a constant — and a SPLIT junction takes window 0 whatever
-the chromosomes, for the reason below. The same clusters are what BOTH
-interchromosomal marks are DRAWN with — see below. The same floor on
-same-chromosome arcs was
-measured and declined — at depth it is a density filter, not an evidence filter.
-Both results are in [DEEP_COVERAGE.md](DEEP_COVERAGE.md).
+**A support FLOOR is offered for the INTERCHROMOSOMAL MATE LINK — either mark —
+and deliberately not for the same-chromosome arcs, nor for split junctions.**
+`minInterchromSupport` counts a MATE link's reads over a window of one fragment
+length on _both_ sides (`clusteredInterchromSupport`), never at a coordinate:
+mates straddle a breakpoint rather than landing on it, so `arcKey`'s exact count
+is 1 for essentially every interchromosomal PAIR and a floor over it would delete
+a real translocation as thoroughly as the mismapping. The window comes from
+`stats.upper`, so it tracks the library instead of a constant — and a SPLIT
+junction takes window 0 whatever the chromosomes, for the reason below. The same
+clusters are what BOTH interchromosomal marks are DRAWN with — see below. The
+same floor on same-chromosome arcs was measured and declined — at depth it is a
+density filter, not an evidence filter. Both results are in
+[DEEP_COVERAGE.md](DEEP_COVERAGE.md).
+
+**THE FLOOR HAS THE SAME AXIS AS THE WINDOW, and only the window had it.**
+`windowFor` splits mate links from split junctions because the two localize their
+evidence differently; `clearsInterchromFloor` is that same split applied to the
+threshold, and it exempts split junctions outright. A floor over scattered mate
+pairs means "this breakpoint gathered evidence", and the windowing exists so that
+it can. Over a split junction — counted at window 0 — it means "fewer than N reads
+broke at this exact base", which nothing measured and which the count cannot
+support: two reads whose aligner placed one junction three bases apart are two
+clusters of one. `DEFAULT_MIN_INTERCHROM_SUPPORT` is measured on mate pairs (844
+of 856 breakpoints carrying one read), and mismapping is what that measures; a
+chimeric read is not indirect evidence that scatters, it CROSSES the breakpoint.
+Inherited, the mate floor drew nothing at all for a translocation carried by one
+split read — which on unpaired long-read data is the only evidence there is.
+
+**WHERE the floor is applied differs per mark, because the two spend the count
+differently.** An arc is one cluster, so its gate sits beside the push and tests
+the very number `arcLineWidth` will spend. A tick is a SUM over the clusters
+reaching its coordinate, so testing each addend was testing one term of the
+number it draws: on one donor with a 3-read and a 1-read acceptor the donor
+coordinate reported 4 at `all` and 3 at the default floor of 2, over four reads
+that cross that base either way — a display filter rewriting what the hover said
+about the data. It also deleted marks the floor had no quarrel with: two reads at
+one breakpoint whose partners land 3 bp apart are two clusters of one, so nothing
+drew where two reads agree. The ticks are therefore pushed unfiltered and the
+floor is taken against `line.support` after coalescing. `arcClustering.test.ts`
+holds both.
+
+**The clustering is SINGLE-LINKAGE OVER BOTH COORDINATES AT ONCE**, not the rule
+run hierarchically on one axis and then the other. Those are different relations,
+and the hierarchical one is not symmetric in the two contigs: a `bpA` gap splits a
+run before `bpB` is ever consulted, and which coordinate is `bpA` is decided by
+which contig NAME sorts first. The same three connections scored `[2, 1]` one way
+round and `[1, 1, 1]` transposed — and the `2` was a pair 1000 bp apart on `bpA`,
+further apart than the window, merged because a third connection bridged the run
+and then dropped out on `bpB`. That is the "manufacturing support out of local
+density" failure this pass cites as the reason for requiring both sides, happening
+inside it. What single-linkage still owns either way is that the window bounds the
+GAP and not the DIAMETER: 40 pairs spaced exactly one window apart chain into one
+cluster spanning 39 of them, where the prose reads as a diameter claim. That one is
+filed rather than fixed — `agent-docs/TODO.md`.
 
 ## Support, and why a tick is dashed
 
@@ -176,6 +217,18 @@ disagree, on the more common path.
 Two coordinates of one event do both report the whole event. That is the trade
 the arc already makes and for the same reason — the mark is the junction, the
 POSITION is its own read's — rather than a residue of this rule.
+
+**It is 2N coordinates, not 2, and that is an open question rather than a
+settled trade.** The premise of the windowing is that mate pairs never share a
+coordinate (862 of 865 were the sole occupant of theirs), so nothing coalesces:
+an N-pair translocation emits N marks per side, and every one of them is handed
+the cluster's N. An 8-pair event draws 8 arcs — or 8 + 8 ticks — each stroked as
+though it alone carried 8 reads and each hovering "supported by 8". The ink is
+O(N) marks at width(N) where the evidence is one junction, which is the opposite
+of what coalescing is for, and `compute.test.ts` pins it as `[5,5,5,5,5,5,5,5,5,5]`.
+Filed with the options in `agent-docs/TODO.md`, "Draw one mark per
+interchromosomal cluster" — it changes what every published translocation figure
+looks like, so it is a decision and not a fix.
 
 **A tick is DASHED, and that is what separates it from an arc's foot.** The two
 land on the same x whenever a breakpoint reaches one acceptor the view shows and

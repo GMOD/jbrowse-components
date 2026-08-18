@@ -223,3 +223,12 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   computed and discarded.
 - **`isFlatArcShape` answers "does this draw as a bar", never "does this have an
   insert size"** — only `ARC_SHAPE_FLAT` has a TLEN.
+- **`minInterchromSupport` is gated against the number each mark DRAWS with** —
+  a cluster's size for an arc, the coalesced total for a tick — and split
+  junctions are exempt (`clearsInterchromFloor`). Gating a tick's addends made
+  the hover's count follow the filter.
+- **A cross-region arc's hover target is a second, transparent path**
+  (`hitStrokeWidth`), because `pointerEvents: 'stroke'` answers on the ink alone
+  and the canvas band adds `ARC_HIT_SLOP_PX` either side. Don't hang handlers on
+  the visible path — a dashed connector would answer in its dashes and not its
+  gaps.

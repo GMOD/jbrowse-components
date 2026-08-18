@@ -56,6 +56,9 @@ before anyone noticed.
 | [Verify the shared rect buffer headed](#verify-the-shared-rectcontinuation-buffer-on-real-hardware) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
 | [Feet on the interchromosomal ticks](#give-the-interchromosomal-ticks-breakend-feet-too) | alignments | decide what a coalesced tick's direction is, then the shader |
 | [Bound a breakend foot by its region](#bound-a-breakend-foot-by-its-displayed-region) | alignments | bound it by the REGION; the partner bound is wrong and was reverted |
+| [One mark per interchromosomal cluster](#draw-one-mark-per-interchromosomal-cluster) | alignments | a figure-changing decision; pick the position rule first |
+| [Bound a cluster's diameter](#bound-an-interchromosomal-clusters-diameter) | alignments | measure at depth before changing what the floor means |
+| [The read cloud's axis follows one outlier](#the-read-clouds-y-axis-autoscales-to-a-single-outlier) | alignments | needs a measurement on deep data, not a chosen statistic |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
 | [Pangenome graph view queue](#pangenome-graph-view-the-open-queue) | pangenome | three items unblock the rest; take the LGV axis first |
 | [Collapse trivial bubbles in a file-loaded graph](#coarsen-a-graph-loaded-as-a-file-collapse-trivial-bubbles) | pangenome | designed; path lanes are the open question |
@@ -807,6 +810,97 @@ The right bound is each foot's own region's screen extent, which means:
 
 Same shape as the tick entry above — the mark says a direction, and a mark that
 says it on the wrong contig is worse than one that says nothing.
+
+### Draw one mark per interchromosomal cluster
+
+An N-pair translocation draws **N marks per side, each claiming N**. The
+clustering's own premise is that mate pairs never share a coordinate — 862 of 865
+were the sole occupant of theirs — so `arcKey` and `pushLine` coalesce nothing,
+every connection becomes its own mark, and `resolveArcs` hands each of them the
+whole cluster's size. An 8-pair event is 8 arcs (or 8 + 8 ticks), each stroked as
+though it alone carried 8 reads and each hovering "supported by 8".
+`compute.test.ts` pins the current answer as `[5,5,5,5,5,5,5,5,5,5]` for five
+pairs, and `ARC_BAND.md` describes the trade as "two coordinates of one event",
+which is what it would be if the marks were 2.
+
+The ink is O(N) marks at `arcLineWidth(N)` where the evidence is one junction —
+the opposite of what coalescing was introduced for on the same-chromosome arm
+("57% of the arcs in that window were exact repeats"), and it lands hardest on the
+mark that is a full-height opaque vertical.
+
+**The blocker is stated in `resolveArcs` and it is answerable**: "merging a
+cluster would have to invent a position for it, which is the thing `arcKey`'s
+exact-coordinate rule exists to refuse". A REPRESENTATIVE member invents nothing —
+it is one of the reads' own coordinates, which is the rule already in force. So
+the decision is which one:
+
+- **the junction-facing extreme.** A mate-pair cluster brackets the breakpoint
+  from one side, so the innermost supporting read is the tightest defensible point
+  estimate, and `p1Dir` already says which side that is. Closest to what an SV
+  caller would report.
+- **the median member.** Robust, says nothing about direction, and reads as "the
+  cluster is here".
+- **an interval instead of a point**, which is the honest mark for evidence that
+  is not localized: a tick widened to the cluster's own bp extent. Needs
+  `arcLine.slang` to take a span rather than a position, so it is the expensive
+  one — but it is the only option that does not have to choose a lie.
+
+Whichever wins, the hover should say the localization (`±window`), and the arc arm
+takes the same treatment as the tick arm. **This changes what every published
+translocation figure looks like**, so land it deliberately and re-render the
+`cancer_sv` set: `reference/DEMO_DATASETS.md`.
+
+### Bound an interchromosomal cluster's diameter
+
+`clusteredInterchromSupport` is single-linkage, so the window bounds the GAP
+between neighbours and not the DIAMETER of the cluster: 40 pairs spaced exactly
+one window apart chain into one cluster spanning 39 fragment lengths
+(`arcClustering.test.ts` has the probe shape). The prose beside it reads as a
+diameter claim — "how far a supporting read can sit from the breakpoint is one
+fragment length" — so the rule delivered is a density threshold and the rule
+described is a distance one.
+
+At depth the difference is not cosmetic. The pass's own measurement puts 865
+interchromosomal connections in 200 kb at 300x, i.e. ~231 bp apart on the source
+contig against a typical `stats.upper` of 500-700 — so the first coordinate chains
+nearly everything in the window and the partner coordinate does all of the
+discriminating. Whether that matters depends on how concentrated real mismapping
+is on the PARTNER side, which is the thing to measure: mismapping goes to repeats,
+and repeats are localized, so "both sides agree" may be weaker evidence than it
+reads.
+
+Do not change the rule before measuring it. The obvious alternative — cap a
+cluster's diameter at the window and split beyond it — trades chaining for
+arbitrary cut points, which is the failure mode the current form was adopted to
+escape (the one-open-cluster version scored a four-read breakpoint as 1 and 3).
+Measure on HG002 300x and on a sample with a known translocation, and report the
+cluster size distribution under both rules before touching either.
+
+### The read cloud's Y axis autoscales to a single outlier
+
+`arcsYDomainBp` is `max(1000, maxFlatArcSpanBp)` with no upper bound, and every
+lane shares it. One off-screen mate 50 Mb away on the SAME chromosome therefore
+sets the axis for the whole display and `insertSizeTickSections` prints "50Mb" at
+the top of it. Verified with two arcs: `maxFlatArcSpanBp: 50000000`.
+
+This is the failure the interchromosomal exclusion was written to prevent
+(`resolveArcs`: "one connection would rescale the whole read cloud to a 107 Mb
+'insert size' and label it"), reached by the identical route from a
+same-chromosome connection — and `drawLongRange` defaults true, so it is the
+default path. **Note the part that is NOT a defect**: a split junction plotting at
+its breakpoint gap is deliberate (`computeArcShape`, "so a split-supported SV
+lands on the same ruler height as the equivalent-span discordant pair"), so
+excluding `ARC_SHAPE_FLAT_SPLIT` from the domain is the wrong fix — it would put
+an unpaired long-read cloud entirely on the ceiling.
+
+The log axis limits the damage to roughly a 1.6x compression of the interesting
+range rather than a collapse, which is why this is filed rather than fixed. What
+it needs is a measurement, not a chosen statistic: a percentile domain is the
+standard answer and is a no-op at the sample sizes where the outlier is most
+visible (p99 IS the max below ~100 arcs), so picking one without deep data would
+be shipping an unmeasured change to the picture. Read the span distribution off a
+real 300x read cloud first. `arcYOffsetPx` already clamps over-domain arcs to the
+ceiling, so whatever bound wins needs nothing downstream.
 
 ### Linearize the pangenome: draw graph variation as alignment-style glyphs
 

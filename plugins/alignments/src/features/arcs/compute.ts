@@ -9,6 +9,7 @@ import {
   DEFAULT_INTERCHROM_WINDOW_BP,
   INTERCHROM_ARC_YBP,
   arcKey,
+  clearsInterchromFloor,
   clusteredInterchromSupport,
 } from './arcClustering.ts'
 import {
@@ -40,24 +41,22 @@ import type {
 } from './arcTypes.ts'
 import type { ArcsUploadData } from './types.ts'
 
-// The types this pass computes over live in `arcTypes.ts`, and colour
-// classification in `arcColors.ts`; both re-exported here because `compute.ts`
-// is the import site every consumer already knows.
-export type {
-  ArcRegions,
-  ComputedArc,
-  ComputedLine,
-  CrossRegionArc,
-  SegAln,
-} from './arcTypes.ts'
-export {
-  arcColorLegendCategory,
-  arcPaintOrder,
-  arcPaintRank,
-  getArcColorType,
-} from './arcColors.ts'
-export { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'
-export { computeReadChains } from './arcChains.ts'
+// NOTHING IS RE-EXPORTED FROM HERE, and that is the point of the file split
+// rather than a tidiness preference. The types live in `arcTypes.ts`, colour
+// classification in `arcColors.ts`, region partitioning in `arcRegions.ts`, read
+// grouping in `arcChains.ts`; every consumer imports the module that DEFINES
+// what it wants.
+//
+// This module used to forward all four "because `compute.ts` is the import site
+// every consumer already knows", and the cost of that convenience is the one
+// `shapes.ts`' header spells out — two thousand lines of read grouping, junction
+// clustering and colour classification pulled into the render path for a
+// comparator and a lookup table, plus "a cycle waiting for the first time
+// `compute.ts` wants anything back from `mark.ts`". That edge had arrived:
+// `crossRegionOverlay.ts` imports `mark.ts` and reached `arcPaintOrder` and
+// `CrossRegionArc` through here, and two React components took
+// `arcColorLegendCategory` the same way. `drawCanvas.ts` states the identical
+// rule one layer down for the generated modules — "with no re-export hop".
 
 // Deterministic 0..1 hash from arc endpoints — gives each pair a stable jitter
 // offset regardless of fetch/render order, so snapshot tests don't flake.
@@ -217,14 +216,14 @@ function resolveArcs(
   // sight and the later `support++` mutates that same object, so the count
   // cannot end up on a copy in the other half.
   const byKey = new Map<string, ComputedArc>()
-  const lines: ComputedLine[] = []
-  // The tick, plus the clusters already counted into it — see `pushLine`. The
-  // set is off `ComputedLine` because it is bookkeeping for the coalescing, not
-  // a field of the mark, and it is one element for all but a coordinate two
-  // events share.
+  // The tick, the clusters already counted into it, and whether any of them is
+  // exempt from the floor — see `pushLine`. All three are off `ComputedLine`
+  // because they are bookkeeping for the coalescing rather than fields of the
+  // mark, and `clusters` is one element for all but a coordinate two events
+  // share.
   const byLineKey = new Map<
     string,
-    { line: ComputedLine; clusters: Set<number> }
+    { line: ComputedLine; clusters: Set<number>; exempt: boolean }
   >()
 
   // The window is the LIBRARY's, not a constant: how far a supporting read can
@@ -234,17 +233,24 @@ function resolveArcs(
   // too narrow to hold one cluster together on a 3 kb mate-pair library, where
   // it would split a real translocation into the singletons the floor then eats.
   //
-  // RUN AT EVERY SETTING, including the menu's `all` position where nothing can
-  // be filtered out, because the floor is no longer the only consumer: this is
-  // also what an interchromosomal mark's `support` IS. See
-  // `ComputedArc.support`. The pass builds one small record per
-  // interchromosomal connection and sorts it — ~10% of the feed on deep
-  // short-read data — against an `arcKey` string built for every connection that
-  // survives, so making it unconditional is not what this loop costs.
-  const { clusterOf, sizeOf } = clusteredInterchromSupport(
-    pendingArcs,
-    stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,
-  )
+  // RUN AT EVERY SUPPORT SETTING, including the menu's `all` position where
+  // nothing can be filtered out, because the floor is no longer the only
+  // consumer: this is also what an interchromosomal mark's `support` IS. See
+  // `ComputedArc.support`.
+  //
+  // Skipped entirely when `drawInter` is off, which is the one setting that
+  // makes it dead rather than merely unfiltered: every reader below sits inside
+  // the interchromosomal branch, and that branch now returns before the first of
+  // them. `collectPendingArcs` still emits interchromosomal connections while
+  // `drawLongRange` is on (`emitsOffScreenPartner` is an OR), so without this
+  // the whole pass — a walk, a Map of contig pairs and a union-find over ~10% of
+  // the feed on deep short-read data — ran to build two arrays nothing read.
+  const { clusterOf, sizeOf } = drawInter
+    ? clusteredInterchromSupport(
+        pendingArcs,
+        stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,
+      )
+    : { clusterOf: [], sizeOf: [] }
 
   // One tick per breakpoint, COUNTING the reads that agree on it — the same
   // move `arcKey` makes for arcs, and for the same two reasons.
@@ -283,12 +289,31 @@ function resolveArcs(
   // two coordinates of one event do both report the whole event — the same trade
   // an arc makes, and for the same reason: the mark is the junction and the
   // POSITION is its own read's.
+  //
+  // EVERY CLUSTER IS COUNTED, and `minInterchromSupport` is applied to the SUM
+  // afterwards rather than to each addend. Filtering the addends made the number
+  // a tick reports depend on the setting: on one donor with a 3-read and a
+  // 1-read acceptor, the donor coordinate read 4 at `all` and 3 at the default
+  // floor of 2, over four reads that all cross that base either way. The gate and
+  // the drawn number are supposed to be one number — `ComputedArc.support` says
+  // so — and they are on the arc arm, where an arc IS one cluster. On this arm
+  // the number is a sum, so the gate has to be taken against the sum or it is
+  // testing one term of it.
+  //
+  // It also deleted marks the floor had no quarrel with: two reads at one
+  // breakpoint whose partners land 3 bp apart are two clusters of 1, so nothing
+  // drew at a coordinate two reads agree on. Summing first draws it at 2.
   function pushLine(
     refName: string,
     bp: number,
     partnerRef: string,
     cluster: number,
     clusterSupport: number,
+    // Whether this cluster's evidence answers to the floor at all — see
+    // `clearsInterchromFloor`. One exempt cluster keeps the tick whatever the
+    // sum, since the floor is a statement about scattered mate pairs and has
+    // nothing to say about a read that crosses the breakpoint.
+    exempt: boolean,
   ) {
     const key = `${refName}\0${bp}`
     const seen = byLineKey.get(key)
@@ -296,19 +321,22 @@ function resolveArcs(
       if (!seen.clusters.has(cluster)) {
         seen.clusters.add(cluster)
         seen.line.support += clusterSupport
+        seen.exempt ||= exempt
       }
       if (!seen.line.partnerRefNames.includes(partnerRef)) {
         seen.line.partnerRefNames.push(partnerRef)
       }
       return
     }
-    const line = {
-      x: { refName, bp },
-      support: clusterSupport,
-      partnerRefNames: [partnerRef],
-    }
-    byLineKey.set(key, { line, clusters: new Set([cluster]) })
-    lines.push(line)
+    byLineKey.set(key, {
+      line: {
+        x: { refName, bp },
+        support: clusterSupport,
+        partnerRefNames: [partnerRef],
+      },
+      clusters: new Set([cluster]),
+      exempt,
+    })
   }
 
   // One arc per distinct junction, COALESCING the reads that agree on it — the
@@ -418,48 +446,59 @@ function resolveArcs(
     // divider — so the colour is now the ONLY channel carrying it.
     if (p1Ref !== p2Ref) {
       // ONE gate over both marks, which is the point of hoisting it: `drawInter`
-      // and the mismapping floor used to sit inside the tick push, so an arc
-      // branch added beside them would have inherited neither — "Show
-      // inter-chromosomal pairs: off" still drawing arcs, and the floor bypassed
-      // for connections that now draw a BIGGER mark than the ticks they replace.
+      // used to sit inside the tick push, so an arc branch added beside it would
+      // have inherited neither it nor the floor — "Show inter-chromosomal pairs:
+      // off" still drawing arcs, and the floor bypassed for connections that now
+      // draw a BIGGER mark than the ticks they replace.
       //
       // Scattered IS the criterion for that floor, so it drops the whole
       // connection rather than merging it: a breakpoint whose reads cluster
       // keeps every mark at the coordinate its own read put it at. Merging a
       // cluster would have to invent a position for it, which is the thing
       // `arcKey`'s exact-coordinate rule exists to refuse.
+      if (!drawInter) {
+        continue
+      }
       // The reads behind this connection, and the number both its marks are
       // drawn and reported with — see `ComputedArc.support`. The tick also takes
       // the cluster's IDENTITY, because a coordinate several events reach adds
       // each of them once (`pushLine`).
       const cluster = clusterOf[i]!
       const support = sizeOf[cluster]!
-      if (drawInter && support >= minInterchromSupport) {
-        // AN ARC WHEN BOTH FEET ARE ON SCREEN, ticks otherwise — decided per
-        // connection, so a breakpoint reaching one displayed and one undisplayed
-        // chromosome gets an arc *and* a tick and both counts stay honest.
-        //
-        // Replacing the ticks rather than drawing beside them, because a tick's
-        // whole job is "there is a connection to somewhere you cannot see",
-        // which is precisely false in this configuration. No position is lost:
-        // the arc's feet are the two tick positions.
-        //
-        // NOT IN READ-CLOUD MODE, and that exclusion is the severe one. The
-        // cloud's Y axis IS insert size and an interchromosomal connection has
-        // none: it carries TLEN 0 (SAM sets it so across refs), so
-        // `computeArcShape` would fall back to the endpoint GAP — |ctgBbp -
-        // ctgAbp|, about 1.07e8 for a real chr9/chr22 junction — and that
-        // becomes a genuine `maxFlatArcSpanBp`, which `arcsYDomainBp` maxes
-        // across every group, which `insertSizeTickSections` prints on the
-        // ruler. One connection would rescale the whole read cloud to a 107 Mb
-        // "insert size" and label it. Arc mode's axis is genomic radius, where
-        // the band ceiling is not an invented position — see
-        // `INTERCHROM_ARC_YBP`.
-        if (
-          !cloud &&
-          p1RegionIndex !== undefined &&
-          p2RegionIndex !== undefined
-        ) {
+      // Whether the floor has anything to say about this connection's evidence —
+      // see `clearsInterchromFloor`.
+      const exempt = arc.isSplit
+      // AN ARC WHEN BOTH FEET ARE ON SCREEN, ticks otherwise — decided per
+      // connection, so a breakpoint reaching one displayed and one undisplayed
+      // chromosome gets an arc *and* a tick and both counts stay honest.
+      //
+      // Replacing the ticks rather than drawing beside them, because a tick's
+      // whole job is "there is a connection to somewhere you cannot see",
+      // which is precisely false in this configuration. No position is lost:
+      // the arc's feet are the two tick positions.
+      //
+      // NOT IN READ-CLOUD MODE, and that exclusion is the severe one. The
+      // cloud's Y axis IS insert size and an interchromosomal connection has
+      // none: it carries TLEN 0 (SAM sets it so across refs), so
+      // `computeArcShape` would fall back to the endpoint GAP — |ctgBbp -
+      // ctgAbp|, about 1.07e8 for a real chr9/chr22 junction — and that
+      // becomes a genuine `maxFlatArcSpanBp`, which `arcsYDomainBp` maxes
+      // across every group, which `insertSizeTickSections` prints on the
+      // ruler. One connection would rescale the whole read cloud to a 107 Mb
+      // "insert size" and label it. Arc mode's axis is genomic radius, where
+      // the band ceiling is not an invented position — see
+      // `INTERCHROM_ARC_YBP`.
+      if (
+        !cloud &&
+        p1RegionIndex !== undefined &&
+        p2RegionIndex !== undefined
+      ) {
+        // THE ARC'S OWN GATE, against the same number it will draw with: an arc
+        // is one junction is one cluster, so here the count the floor tests and
+        // the count `arcLineWidth` spends are the same value. The tick arm below
+        // cannot say that — its number is a sum — so its gate is applied after
+        // the summing instead.
+        if (clearsInterchromFloor(exempt, support, minInterchromSupport)) {
           pushArc(
             {
               p1: { refName: p1Ref, bp: p1Bp },
@@ -479,15 +518,18 @@ function resolveArcs(
             arc,
             support,
           )
-        } else {
-          // Each endpoint's tick names the OTHER endpoint's chromosome — that is
-          // the whole content of a translocation marker, and the direction is
-          // what makes the two ticks different marks rather than a mirrored
-          // pair. The one whose chromosome is not displayed reaches no region
-          // and is dropped by `lineTouchesRegion`.
-          pushLine(p1Ref, p1Bp, p2Ref, cluster, support)
-          pushLine(p2Ref, p2Bp, p1Ref, cluster, support)
         }
+      } else {
+        // Each endpoint's tick names the OTHER endpoint's chromosome — that is
+        // the whole content of a translocation marker, and the direction is
+        // what makes the two ticks different marks rather than a mirrored
+        // pair. The one whose chromosome is not displayed reaches no region
+        // and is dropped by `lineTouchesRegion`.
+        //
+        // Pushed unfiltered: the floor is taken against the coalesced total
+        // below, for the reason `pushLine` gives.
+        pushLine(p1Ref, p1Bp, p2Ref, cluster, support, exempt)
+        pushLine(p2Ref, p2Bp, p1Ref, cluster, support, exempt)
       }
       continue
     }
@@ -577,6 +619,15 @@ function resolveArcs(
   // down: SVG document order is paint order, and equal-support arcs left in the
   // reads' arrival order are not in the same order twice.
   crossRegion.sort(arcPaintOrder)
+
+  // THE TICKS' FLOOR, taken here rather than per contributing cluster — see
+  // `pushLine`. This is where the tick family's gate and its drawn number become
+  // one number, which is what the arc arm already had by construction.
+  const lines = [...byLineKey.values()]
+    .filter(e =>
+      clearsInterchromFloor(e.exempt, e.line.support, minInterchromSupport),
+    )
+    .map(e => e.line)
 
   // The same ordering, for the same reason, over the ticks. They are opaque
   // full-band verticals, so two within a stroke width of each other resolve by
