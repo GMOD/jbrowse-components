@@ -354,16 +354,27 @@ describe('the lane holds a capped gene whatever else it carries', () => {
   // the count charged it one row. Two transcripts beside an 8-product
   // polyprotein sit under a cap of 6 on the count alone, and packed 131px into a
   // 100px lane.
+  //
+  // The lane has to be one the polyprotein itself fits, because it is the
+  // isoform the cap keeps: a polyprotein codes for the gene's longest protein,
+  // so it ranks first, and what ranks first is what the cap may not drop. A
+  // shorter lane overflows the way the floor case below does — the gene no
+  // longer fits by dropping the polyprotein, which is what it used to do.
   it.each([2, 5, 8, 16])(
     'charges a polyprotein isoform each of its %i rows',
     cleavageProducts => {
-      const config = cappedConfig(100, 'normal', 'none')
-      // a LONE polyprotein is the floor case below, not this one
+      const lanePx = 10 * cleavageProducts + 30
+      const config = cappedConfig(lanePx, 'normal', 'none')
       for (const isoforms of [1, 2, 4]) {
         const gene = geneWith(isoforms, { cleavageProducts })
         expect(packedRowHeightPx(gene, 'normal', config)).toBeLessThanOrEqual(
-          100,
+          lanePx,
         )
+        expect(
+          layoutSubfeatures({ feature: gene, config })
+            .children.map(c => c.feature.get('name'))
+            .includes('polyprotein'),
+        ).toBe(true)
       }
     },
   )
