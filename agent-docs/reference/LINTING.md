@@ -1,6 +1,7 @@
 ---
 name: linting
 description: Which linter owns which rules, why .oxlintrc.json cannot carry comments, why neither linter can report unused disable directives, the rules measured and rejected with their counts, and the triage of oxlint's react-compiler port (39 findings, no bugs, 23 from one analysis bug with a minimal repro). Read before adding a rule, adding a plugin, or deleting a disable comment.
+audience: internal
 ---
 
 # Linting: who owns what

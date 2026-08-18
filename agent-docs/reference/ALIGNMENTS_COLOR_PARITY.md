@@ -1,6 +1,7 @@
 ---
 name: alignments-color-parity
 description: How a pileup's three colour vocabularies (read fills, arc / read-cloud overlays, linked-read connectors) are kept saying the same thing, why they are derived from one table rather than tested against each other, and the one meaning still split between them. Read before touching arc colour, the connector palette, or the alignments legend.
+audience: internal
 ---
 
 # Alignments colour parity

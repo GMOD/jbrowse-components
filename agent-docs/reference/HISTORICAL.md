@@ -1,6 +1,7 @@
 ---
 name: historical
 description: Bugs that shaped the current design and corrections to old writeups. Read to understand why something is not done the obvious way, or to avoid a known-bad fix.
+audience: internal
 ---
 
 # Historical notes

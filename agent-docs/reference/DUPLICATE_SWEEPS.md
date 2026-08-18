@@ -1,6 +1,7 @@
 ---
 name: duplicate-sweeps
 description: What repo-wide duplicate sweeps actually turn up — both the same-named-export scan and the structural clone scan, their different false-positive classes, the four mechanisms this repo uses to hold a legitimate copy in step, and the case where deleting a duplicate cost 12 KB of eager bundle. Read before deleting a copy that looks accidental.
+audience: internal
 ---
 
 # Sweeping for duplicates

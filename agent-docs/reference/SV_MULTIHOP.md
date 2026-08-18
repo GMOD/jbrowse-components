@@ -1,6 +1,7 @@
 ---
 name: sv-multihop
 description: How scripts/sv_multihop.py and the in-app picker each reconstruct a derivative allele, the silent-wrong-answer bugs in both now pinned by checks, and the measured COLO829/K562/HG008-T facts the cancer_sv and sv_visualization_cgiab tutorials rest on. Read before touching those figures or the derivative-allele reconstruction.
+audience: internal
 ---
 
 # sv_multihop and the cancer_sv tutorial

@@ -289,3 +289,6 @@ Simplest to most complex:
 
 - [](/docs/developer_guides/creating_display)
 - [](/docs/developer_guides/creating_gpu_display)
+- [SVG_EXPORT.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SVG_EXPORT.md)
+  — the pipeline behind this page: the `svgReady`/`settled` readiness gates an
+  export waits on, and how clip ids are kept unique across displays

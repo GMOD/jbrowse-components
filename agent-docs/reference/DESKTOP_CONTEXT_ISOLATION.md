@@ -1,6 +1,7 @@
 ---
 name: desktop-context-isolation
 description: How to remove jbrowse-desktop's renderer privilege — what actually blocks the contextIsolation flip (the renderer bundle's static `fs` require, the `openLocation` funnel, the `isElectron` userAgent sniff), what a probe disproved, and the suggested order. Read before touching electron/window.ts or the desktop file-access path.
+audience: internal
 ---
 
 # Desktop contextIsolation migration

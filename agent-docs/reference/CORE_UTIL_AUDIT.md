@@ -1,6 +1,7 @@
 ---
 name: core-util-audit
 description: What is left from the 2026-07-31 audit of packages/core/src/util — the latent typing/contract items still open, the dead code that is a plugin-ABI decision rather than a reachability question, the two structural nits, and the list verified clean. Read before re-auditing core/util or deleting something there that looks unused.
+audience: internal
 ---
 
 # packages/core/src/util audit — what is left

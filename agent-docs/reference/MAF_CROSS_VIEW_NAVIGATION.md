@@ -1,6 +1,7 @@
 ---
 name: maf-cross-view-navigation
 description: Design for jumping from a MAF row to that species' own genome in a new view. The plugin stays portal-agnostic; the sample→assembly table is precomputed by whoever builds the config. Read before adding species navigation to plugins/maf.
+audience: internal
 ---
 
 # MAF row → other genome navigation

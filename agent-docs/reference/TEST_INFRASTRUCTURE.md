@@ -1,6 +1,7 @@
 ---
 name: test-infrastructure
 description: Browser and unit tests and WebGPU CI. Read when running or writing tests, or validating RPC.
+audience: internal
 ---
 
 # Test Infrastructure

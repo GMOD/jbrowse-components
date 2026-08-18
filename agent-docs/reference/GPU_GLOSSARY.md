@@ -1,6 +1,7 @@
 ---
 name: gpu-glossary
 description: A plain-language GPU rendering glossary and Canvas2D to GPU primer, plus a table mapping standard real-time-graphics terms onto our spellings. Read when writing about GPU internals for a non-specialist audience, or when you need the standard name for something in the render path.
+audience: internal
 ---
 
 # GPU Rendering Glossary & Primer

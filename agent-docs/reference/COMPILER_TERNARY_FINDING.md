@@ -1,6 +1,7 @@
 ---
 name: compiler-ternary-finding
 description: Why babel-plugin-react-compiler can stale a MobX read, and the patterns that avoid it. Read when writing observer components or custom hooks that read MobX, or debugging a stale MobX read.
+audience: internal
 ---
 
 # React Compiler × MobX: memo-dependency coarsening

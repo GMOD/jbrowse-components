@@ -174,3 +174,6 @@ empty name. Whichever of the four columns a row does fill become aliases for it.
   [](/docs/config/ncbisequencereportaliasadapter)
 - [](/docs/developer_guides/creating_adapter)
 - [](/docs/developer_guides/rpc_workers)
+- [REFNAME_NAMESPACES.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/REFNAME_NAMESPACES.md)
+  — why `refName` means two different things either side of the RPC boundary,
+  and the rule for when canonicalizing an answer is safe

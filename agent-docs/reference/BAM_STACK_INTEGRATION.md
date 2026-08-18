@@ -1,6 +1,7 @@
 ---
 name: bam-stack-integration
 description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, the seven seams that remain, and the profile that ranks them (inflate dominates; the per-read work every seam here is about is under a tenth of a query). Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
+audience: internal
 ---
 
 # The BAM stack, layer by layer

@@ -1,6 +1,7 @@
 ---
 name: shader-lift-inventory
 description: Generated inventory of which shader functions the JS codegen can lift, which were declined and why, and what the emitter refuses — the standing sweep for the next `//! js-export`, as a diff.
+audience: internal
 ---
 
 # Shader → JS liftability inventory

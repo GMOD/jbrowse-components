@@ -1,6 +1,7 @@
 ---
 name: demo-datasets
 description: The data behind the demos, figures and tutorials — which fixtures cover only one contig, which loci were picked by measurement and must not be re-picked by reputation, which candidate datasets were tried and rejected, which upstream a new demo's annotation should come from and which existing ones cannot move off Ensembl, where each pipeline's build scripts live, and the file-format gotchas that cost hours. Read before choosing a demo locus, swapping a dataset, picking an annotation source, or diagnosing a figure that renders empty.
+audience: internal
 ---
 
 # Demo datasets

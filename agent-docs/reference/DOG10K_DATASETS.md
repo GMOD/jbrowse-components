@@ -1,6 +1,7 @@
 ---
 name: dog10k-datasets
 description: The Dog10K callsets, loci and measured recipes behind the local-ancestry, SV and LoF tutorials — which assembly everything is on, which VCF actually carries DUP/INV, how to compute per-sample copy number from the hosted CRAMs, and the gotchas that produce a plausible wrong answer. Read before adding a Dog10K locus or figure.
+audience: internal
 ---
 
 # Dog10K: callsets, loci and measured recipes

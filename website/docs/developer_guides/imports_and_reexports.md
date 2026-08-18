@@ -215,3 +215,6 @@ add it to the list.
 - [](/docs/developer_guides/simple_plugin)
 - [](/docs/developer_guides/no_build_plugin)
 - [](/docs/developer_guides/pluggable_elements)
+- [PLUGIN_ABI_STABILITY.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PLUGIN_ABI_STABILITY.md)
+  — why a name on this page ossifies once it ships, and what removing one
+  actually costs

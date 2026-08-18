@@ -1,6 +1,7 @@
 ---
 name: screenshot-capture-race
 description: The three ways a screenshot disagrees with what the app drew — the website generator's empty-canvas race, the browser-test blank where el.screenshot() and toDataURL disagree, and the band of app chrome that appears when el.screenshot() scrolls the element under a sticky header in one browser and not the other. Read before diagnosing an "empty painting" as a data problem or a cross-backend band as a render bug.
+audience: internal
 ---
 
 # Screenshot capture race: "empty canvas" figures

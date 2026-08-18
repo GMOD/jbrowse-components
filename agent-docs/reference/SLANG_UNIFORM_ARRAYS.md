@@ -1,6 +1,7 @@
 ---
 name: slang-uniform-arrays
 description: How to declare an indexed palette in a uniform block, and why it must be float4[N] and never a scalar array — slangc v2026.5.2 segfaults on the scalar form for WGSL with no diagnostic. Read before adding an array uniform, or when gen:shaders dies on a signal with no message.
+audience: internal
 ---
 
 # Array members in a uniform block

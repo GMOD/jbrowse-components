@@ -1,6 +1,7 @@
 ---
 name: desktop-screenshots
 description: The selenium harness that drives the packaged Electron app to produce the desktop-*.png figures — why a code change needs a fresh package build first, how --only scopes a regen, how it decides a view is done loading, and the failure modes that are not bugs. Read before regenerating a desktop figure or reading a failed run.
+audience: internal
 ---
 
 # Desktop screenshot harness

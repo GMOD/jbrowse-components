@@ -313,6 +313,9 @@ shape is still read and hoisted to the flat slot on load.)
 - [](/docs/developer_guides/creating_gpu_display)
 - [](/docs/developer_guides/creating_adapter)
 - [](/docs/developer_guides/refname_aliasing)
+- [PROGRESS_REPORTING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PROGRESS_REPORTING.md)
+  — what the `statusCallback` above feeds: determinate bars, aggregation across
+  concurrent fetches, and cancel
 
 [sca]:
   https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm

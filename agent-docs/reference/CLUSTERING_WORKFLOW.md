@@ -1,6 +1,7 @@
 ---
 name: clustering-workflow
 description: In-app hierarchical clustering for wiggle and variants. Read when touching cluster dialogs, dendrograms, or the TreeSidebar.
+audience: internal
 ---
 
 # In-App Clustering Workflow

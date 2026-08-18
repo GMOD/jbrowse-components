@@ -308,6 +308,9 @@ export function emitLiftReport(
     'description: Generated inventory of which shader functions the JS codegen' +
       ' can lift, which were declined and why, and what the emitter refuses —' +
       ' the standing sweep for the next `//! js-export`, as a diff.',
+    // Nothing on the website can act on this, and check-reference-citations
+    // would otherwise ask a generated file to earn a citation.
+    'audience: internal',
     '---',
     '',
     '# Shader → JS liftability inventory',

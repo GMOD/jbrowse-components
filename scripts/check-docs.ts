@@ -189,6 +189,15 @@ const VALIDATORS: Validator[] = [
     argv: web('check-todo-index.ts'),
   },
   {
+    // The reference docs a site page should point at, against the ones it
+    // should not. Ratcheted, because the uncited set predates the check and
+    // several of its entries want an editorial pass rather than a link; what
+    // it holds today is that a NEW reference doc is cited, or says in its own
+    // frontmatter that it is internal.
+    name: 'no new uncited reference docs',
+    argv: web('check-reference-citations.ts'),
+  },
+  {
     name: 'tutorial build scripts are valid',
     argv: ['python3', 'scripts/check-build-scripts.py'],
   },

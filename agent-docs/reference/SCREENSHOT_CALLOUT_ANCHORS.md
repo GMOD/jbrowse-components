@@ -1,6 +1,7 @@
 ---
 name: screenshot-callout-anchors
 description: How a screenshot callout or a driven click resolves its position at capture time, the four things about that resolution the types don't tell you, and how to convert a hand-placed coordinate into an anchor by measuring the committed PNG instead of re-rendering. Read before placing a callout, converting one, or diagnosing a figure whose annotation landed in the top-left corner.
+audience: internal
 ---
 
 # Anchoring a screenshot callout

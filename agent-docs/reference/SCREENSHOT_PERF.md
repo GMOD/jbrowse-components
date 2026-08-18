@@ -4,6 +4,7 @@ description:
   Why heavy screenshot specs take minutes (software rasterization, not app code),
   how that was established, and what is still open. Read before "optimizing" a
   slow figure or raising its timeouts.
+audience: internal
 ---
 
 # Slow figures are SwiftShader, not the app

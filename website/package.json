@@ -26,6 +26,7 @@
     "check-dupe-ids": "node scripts/check-duplicate-ids.ts",
     "check-widget-styles": "node scripts/check-widget-styles.ts",
     "check-todo-index": "node scripts/check-todo-index.ts",
+    "check-reference-citations": "node scripts/check-reference-citations.ts",
     "snapshot": "node scripts/snapshot.ts",
     "screenshots": "pnpm figures:pull && node scripts/generate-screenshots.ts",
     "screenshots:build": "pnpm figures:pull && pnpm --filter @jbrowse/web build && pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack && node scripts/generate-screenshots.ts",
