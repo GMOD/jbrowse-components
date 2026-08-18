@@ -330,8 +330,14 @@ function showDiff(paths: string[]) {
 
 // Put back what a `--check` run dirtied, so a check leaves the tree as it found
 // it. Only ever called with the files that were clean before the generator ran
-// (`after` is computed by excluding `before`), so it cannot discard anyone's
-// work in progress.
+// (`after` is computed by excluding `before`), so it cannot discard work that
+// was already there.
+//
+// It CAN discard work that appears while it runs, and an untracked file it
+// deletes outright — `before` is a snapshot taken when the generator starts. A
+// doc written into `agent-docs/` during the gendocs step went that way, its
+// index line reverted and the new file removed, which is the concrete form of
+// "run `pnpm autogen` on a clean tree and let it finish".
 //
 // Without this, `--check` is a command that silently modifies the tree, and the
 // modifications look exactly like your own: a `git add -A` after one sweeps
