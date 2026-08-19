@@ -2841,9 +2841,15 @@ importers:
         specifier: ^19.2.8
         version: 19.2.8(react@19.2.8)
     devDependencies:
+      '@jbrowse/add-track-core':
+        specifier: workspace:*
+        version: link:../../packages/add-track-core
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../packages/browser-test-utils
+      '@jbrowse/cli':
+        specifier: workspace:*
+        version: link:../jbrowse-cli
       generic-filehandle2:
         specifier: ^2.3.1
         version: 2.3.1
