@@ -316,6 +316,42 @@ async function clicksReachTheTrack(page) {
     : [`a click inside the track landed on <${target}>, not the track canvas`]
 }
 
+// The hover sweep's own Material coverage, which it did not have.
+//
+// `muiThemedStyling` is the only census the sweep runs, and it drops anything
+// carrying a `Mui*` class — on the stated grounds that the count above has
+// those by name. The count above is `muiBudget`, which runs first and reads
+// `window.__muiEver` at that instant, before a pointer has been anywhere. So a
+// Material element that exists only while something is under the cursor fell
+// between the two: named-but-not-yet, and themed-but-excluded.
+//
+// The recorder is a `setInterval` nobody clears, so the fix is to read its set
+// again once the sweep is done. One `evaluate`, and it holds the union to the
+// same number both other instants are held to.
+//
+// **A tooltip is the shape this is looking for**, because it is the one piece
+// of display chrome behind neither bring-your-own provider — a display renders
+// it directly, so an embedder installing both plain sets cannot redirect it.
+// `BaseTooltip.test.tsx` in `@jbrowse/core` pins today's implementation
+// deterministically, which is the right instrument for *that* component; this
+// is the one that notices any other Material widget a pointer can raise.
+async function muiRaisedByHover(page, slug) {
+  const expected = MUI_BUDGET[slug]
+  if (expected === undefined) {
+    return []
+  }
+  const ever = await page.evaluate(() => [...(window.__muiEver ?? [])])
+  return ever.length <= expected
+    ? []
+    : [
+        `${ever.length} Material UI element(s) had rendered by the end of the ` +
+          `hover sweep, expected ${expected}. The same union was within budget ` +
+          'before the pointer moved, so the difference is something a hover ' +
+          'raises:\n' +
+          ever.map(f => `           - ${f}`).join('\n'),
+      ]
+}
+
 // `getHighlightCoords` earns its place by what it does to awkward input, and
 // none of that is visible on a page at rest. The floor is the case worth
 // driving: a one-base highlight at 40kb of zoom is a hundredth of a pixel, so
@@ -920,6 +956,9 @@ const failures = await smokeExamplesSite({
     ...(await checkDemoAboveFold(page)),
     ...(await muiThemedStyling(page, 'at rest')),
     ...(await censusWhileHovering(page)),
+    // the other half of that sweep: what it raised that carries a Mui class,
+    // which the sweep's own census filters out
+    ...(await muiRaisedByHover(page, slug)),
     // Toggles the theme to dark and back, so it goes before everything below,
     // which clicks. It is also the check with the most to say on this site
     // specifically: these demos may not use the shell's custom properties, so

@@ -66,16 +66,30 @@ Every page installing `plainChromeOverlays` + `plainTrackControl` scores
 started rendering a Material component behind neither provider, and raising the
 budget quietly makes the prose false.
 
-**`MUI_BUDGET` is held at two instants, and the second one is why.** The count
-at rest is the obvious half; `recordMuiFromLoad` samples from before the page's
-own scripts run and holds the _union_ to the same number. Everything else here
-runs once the page is quiet, and quiet means nothing is loading — so a component
-that exists only while something is fetching was structurally unreachable. That
-is not a hypothetical: `synteny` scored zero for as long as it existed while
-drawing a `MuiLinearProgress` on every visit, from `ComparativeFetchStatus`,
-which was then behind neither provider. **So a failure naming only the "ever"
-number is the interesting one** — it means the page is clean by the time you
-look at it, which is exactly why nobody had.
+**`MUI_BUDGET` is held at three instants, and the two you did not ask for are
+why.** The count at rest is the obvious half; `recordMuiFromLoad` samples from
+before the page's own scripts run and holds the _union_ to the same number.
+Everything else here runs once the page is quiet, and quiet means nothing is
+loading — so a component that exists only while something is fetching was
+structurally unreachable. That is not a hypothetical: `synteny` scored zero for
+as long as it existed while drawing a `MuiLinearProgress` on every visit, from
+`ComparativeFetchStatus`, which was then behind neither provider. **So a failure
+naming only the "ever" number is the interesting one** — it means the page is
+clean by the time you look at it, which is exactly why nobody had.
+
+**The instant after the hover sweep exists because the two halves deferred to
+each other.** `censusWhileHovering` runs only `muiThemedStyling`, which drops
+anything carrying a `Mui*` class on the stated grounds that the count above has
+those by name — and the count above is `muiBudget`, which reads the recorder's
+set before a pointer has been anywhere. So a Material element that only exists
+under the cursor was named-but-not-yet in one census and themed-but-excluded in
+the other. `muiRaisedByHover` reads the same set once the sweep is done: one
+`evaluate`, no new instrument, since the recorder is an interval nobody clears.
+It finds nothing today, and a tooltip is what it is aimed at — the one piece of
+display chrome behind neither bring-your-own provider, whose current plain
+rendering is pinned deterministically in `@jbrowse/core`'s
+`BaseTooltip.test.tsx` because a headless hover may or may not land on a
+feature.
 
 **`everyDisplayIsInAnOverlaySlot` is the third, and it is a contract rather than
 a number.** Every `[data-display-id]` must sit inside a

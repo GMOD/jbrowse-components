@@ -552,9 +552,11 @@ rather than LGV display models.
 `recordMuiFromLoad` in the BYO site's `smoke.mjs` samples from before each page's
 own scripts run and holds the union to `MUI_BUDGET`, which is how the progress
 bar was found in the first place. It catches an element that *renders*, so it
-covers the cancel and retry buttons the moment a caller passes those handlers —
-but not the tooltip or the context menu, which need a hover and a right-click
-that nothing on that page drives.
+covers the cancel and retry buttons the moment a caller passes those handlers,
+and — since `muiRaisedByHover` reads that same union again once
+`censusWhileHovering` is done — a tooltip too, as far as a headless hover lands
+on a feature. The context menu is what is left: it needs a right-click nothing
+on that page drives.
 
 ### charactersPerRow is a constant living on a model
 
