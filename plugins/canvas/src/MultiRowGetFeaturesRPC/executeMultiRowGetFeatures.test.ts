@@ -53,8 +53,19 @@ function run(byteLimit?: number) {
   })
 }
 
+// the executor returns the byte gate's plain object OR an rpcResult, so the two
+// payload tests narrow rather than casting — a run that took the gate would
+// otherwise assert nothing and pass
+async function runPayload(byteLimit?: number) {
+  const result = await run(byteLimit)
+  if (!('__rpcResult' in result)) {
+    throw new Error('expected a payload, got the byte gate')
+  }
+  return result
+}
+
 test('every buffer in the packed payload is in the transfer list', async () => {
-  const { value, transferables } = await run()
+  const { value, transferables } = await runPayload()
   expect(value.partitionValues).toEqual(['mom', 'offspring01'])
   expect(transferables).toContain(value.featureStarts.buffer)
   expect(transferables).toContain(value.featurePartitionIndex.buffer)
@@ -63,7 +74,7 @@ test('every buffer in the packed payload is in the transfer list', async () => {
 // the byte gate reports through the same wrapper, and `bytes` beside the arrays
 // is the field a level-limited walk would trip over
 test('the byte measurement rides along without upsetting the list', async () => {
-  const { value, transferables } = await run(1_000_000)
+  const { value, transferables } = await runPayload(1_000_000)
   expect(value.bytes).toBe(1024)
   expect(new Set(transferables).size).toBe(transferables.length)
 })

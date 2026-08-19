@@ -46,9 +46,9 @@ function region(refName: string): Region {
 }
 
 async function run(counts: number[]) {
-  jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue(
-    mockAdapter(counts) as never,
-  )
+  jest
+    .mocked(getFeatureAdapterOrThrow)
+    .mockResolvedValue(mockAdapter(counts) as never)
   return executeRenderWiggleData({
     pluginManager: {} as PluginManager,
     args: {

@@ -27,14 +27,13 @@ export function applyDefaultSessionViewInit(
   init: Partial<InitState>,
 ) {
   const view = session?.views.find(v => v.type === 'LinearGenomeView') as
-    | LinearGenomeViewLike
-    | undefined
+    LinearGenomeViewLike | undefined
   // The URL may omit assembly. A defaultSession view that used the `init`
   // shorthand hasn't navigated yet, so assemblyNames (derived from
   // displayedRegions) is still empty and only its pending init names one.
   const pending = view?.init
   const assembly = init.assembly ?? pending?.assembly ?? view?.assemblyNames[0]
-  if (view && assembly) {
+  if (session && view && assembly) {
     // extendSession means "add to the defaultSession", so the URL's keys layer
     // over the view's own pending init rather than replacing it — a config that
     // opened tracks via `init.tracks` keeps them when the URL only sets `loc`.
