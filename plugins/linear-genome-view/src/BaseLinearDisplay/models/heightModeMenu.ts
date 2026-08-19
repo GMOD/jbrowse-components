@@ -4,13 +4,25 @@ import { promotableRadioItems } from '@jbrowse/core/ui/menuItems'
 import { getHeightModeOptions } from './heightMode.ts'
 
 import type { HeightMode } from './heightMode.ts'
-import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+import type { HeightModeConfigModel } from './heightModeConfigSchemaFields.ts'
+import type {
+  AnyConfigurationModel,
+  ResolvableDisplay,
+} from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The minimal display surface the "Track sizing" radio group drives: the
 // resolved mode (for the radio's `checked`), the setter (for `onClick`), and the
 // promotable-slot plumbing `makePin` needs for the pin.
-export type HeightModeMenuModel = ResolvableDisplay & {
+//
+// `CONF` is a parameter rather than `AnyConfigurationModel` because the pin's
+// slot name is only checked against a concrete schema, and each composing
+// display brings its own — canvas also pins `displayMode` through a model that
+// extends this. The default keeps the mixin's own table for a caller with
+// nothing more to pin.
+export type HeightModeMenuModel<
+  CONF extends AnyConfigurationModel = HeightModeConfigModel,
+> = ResolvableDisplay<CONF> & {
   heightMode: HeightMode
   setHeightMode: (mode: HeightMode) => void
 }
@@ -26,8 +38,8 @@ export type HeightModeMenuModel = ResolvableDisplay & {
 // size menu ("Feature height" / "Read height"), so one menu holds both halves
 // of the diametric split: the size radios are how tall each feature is drawn,
 // these are how the TRACK responds to more content than fits.
-export function heightModeMenuItems(
-  model: HeightModeMenuModel,
+export function heightModeMenuItems<CONF extends AnyConfigurationModel>(
+  model: HeightModeMenuModel<CONF>,
   noun: string,
 ): MenuItem[] {
   // The rows keep the menu open, like every other radio that only writes a
@@ -40,6 +52,10 @@ export function heightModeMenuItems(
     mode => {
       model.setHeightMode(mode)
     },
-    mode => makePin(model, 'heightMode', mode),
+    // Narrowed to this mixin's own table for the pin rather than to `CONF`: the
+    // slot pinned here is `heightModeConfigSchemaFields`' regardless of which
+    // display's schema `CONF` is, and every composing display's config extends
+    // the base that declares it. `CONF` stays open for the caller's own pins.
+    mode => makePin(model as HeightModeMenuModel, 'heightMode', mode),
   )
 }

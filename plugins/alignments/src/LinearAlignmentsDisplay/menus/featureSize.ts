@@ -8,8 +8,9 @@ import HeightIcon from '@mui/icons-material/Height'
 
 import { COMPACTNESS_PRESETS } from './compactnessPresets.ts'
 
-import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+import type { LinearAlignmentsDisplayConfigSchema } from '../configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { HeightMode } from '@jbrowse/plugin-linear-genome-view'
 
 const SetFeatureHeightDialog = lazy(
@@ -76,7 +77,14 @@ export {
 // absorbs overflow — so picking a size never changes the mode and vice versa.
 // Each group reads as a plain "pick one". `configuredFeatureHeight` drives the
 // size group; `heightMode` the mode group.
-interface FeatureHeightModel extends ResolvableDisplay, MaxHeightModel {
+//
+// `type` + `configuration` spelled out rather than `extends ResolvableDisplay`:
+// that is an intersection alias whose `configuration` is `AnyConfigurationModel`,
+// which switches off the slot-name check on the `makePin` below. Same reason,
+// and the same spelling, as `ConfigSlotSelf` in this display.
+interface FeatureHeightModel extends IStateTreeNode, MaxHeightModel {
+  type: string
+  configuration: Instance<LinearAlignmentsDisplayConfigSchema>
   configuredFeatureHeight: number
   heightMode: HeightMode
   setFeatureHeight: (height?: number) => void

@@ -16,6 +16,7 @@ import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasColorLegend } from './baseModel.ts'
+import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
@@ -84,7 +85,11 @@ interface ColorMenuSelf {
   setFeatureColor: (color: string) => void
 }
 
-interface FeatureHeightSelf extends IStateTreeNode, HeightModeMenuModel {
+// `HeightModeMenuModel<LinearBasicDisplayConfig>`, not the bare form: this menu
+// pins `displayMode` as well as `heightMode`, and only a concrete schema checks
+// that name.
+interface FeatureHeightSelf
+  extends IStateTreeNode, HeightModeMenuModel<LinearBasicDisplayConfig> {
   displayMode: DisplayMode
   setDisplayMode: (value: DisplayMode) => void
 }
