@@ -1,6 +1,6 @@
 ---
 name: data-formats
-description: Partial-feature cues, circular genomes, and Zarr VCF.
+description: Partial-feature cues, circular genomes.
 ---
 
 # Data formats
@@ -57,9 +57,3 @@ first whether jb2hubs has origin-*spanning features* or just `Is_circular`
 contigs with no crossing genes (if the latter, this is purely a cosmetic origin
 marker).
 
-**Multi-feature files.** Multiple types per row (e.g. chromatin BED with repeat types).
-
-**Zarr VCF.** Variant rendering from Zarr (more efficient than tabix for large cohorts).
-
-**Rolling average.** Smoothing option for wiggle/coverage (rolling mean, rendered as a
-line).
