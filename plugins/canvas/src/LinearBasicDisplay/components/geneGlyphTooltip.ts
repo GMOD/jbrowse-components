@@ -7,25 +7,16 @@ import {
 import type { IsoformPicks } from '../../RenderFeatureDataRPC/isoformPicks.ts'
 import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 
-// The loud chip's text. Here beside the tooltip, and tested with it, because
-// the two describe the same state and a gene drawn with 7 of its 28
-// transcripts looks exactly like a gene with 7 — so the chip has to name which
-// collapse this is rather than leaving it to the tooltip.
+// The loud chip's text. Beside the tooltip, and tested with it, because the two
+// describe the same state.
 //
-// Every branch names the RULE, never a count. "One isoform" said only that
-// transcripts were missing, while the thing a reader needs to know about the one
-// on screen is that it is the annotation's own RefSeq Select / MANE Select
-// transcript rather than a guess. It is a chip, so it gets the commonest rule
-// and the tooltip gets the breakdown; a window mixing tagged and untagged genes
-// is normal (NCBI tags its protein-coding genes and leaves most non-coding ones
-// alone).
-//
-// The height cap used to be the exception, reading "Top 6 isoforms" — the count
-// KEPT, which is the one number a reader can get by looking at any gene on
-// screen, and which says nothing about the 22 that are missing from one gene and
-// the 1 missing from the next. What is missing is per-gene and now says so per
-// gene, on each gene's own label (see `moreIsoformsLabel`), which leaves this
-// chip naming the track-wide rule the badges are the consequence of.
+// Every branch names the RULE, never a count: a count is the one number a reader
+// already has by looking at a gene, and it says nothing about the 22 isoforms
+// missing from one and the 1 missing from the next. What is missing is per-gene
+// and says so on each gene's own label (`moreIsoformsLabel`), which leaves the
+// chip naming the track-wide rule those badges are the consequence of. The chip
+// gets the commonest rule and the tooltip the breakdown; a window mixing tagged
+// and untagged genes is normal.
 export function geneGlyphChipLabel(
   maxIsoforms: number | undefined,
   picks?: IsoformPicks,
@@ -37,15 +28,12 @@ export function geneGlyphChipLabel(
   if (tag) {
     return tag
   }
-  // Three states, not two. The mode is the main thread's own decision and turns
-  // the chip loud the instant it changes — the zoom crossing `auto`'s threshold,
-  // or the user picking Representative from this chip's own menu — while WHICH
-  // rule picked what is the worker's answer, one fetch later. Until that lands
-  // the loaded data is still the previous mode's and has reported no pick at
-  // all, so "Longest isoform" there is a claim, and a wrong one for the whole
-  // fetch on every tagged annotation. `anyIsoformsHidden` is what separates
-  // "nothing has told us yet" from "the genes here carry no tag", and the count
-  // is what the mode alone justifies saying.
+  // Three states, not two. The mode turns the chip loud the instant it changes,
+  // while WHICH rule picked what is the worker's answer one fetch later — until
+  // it lands the loaded data is the previous mode's and has reported no pick, so
+  // "Longest isoform" there is a claim, and a wrong one for the whole fetch on
+  // every tagged annotation. `anyIsoformsHidden` separates "nothing has told us
+  // yet" from "the genes here carry no tag".
   return anyIsoformsHidden(picks) ? 'Longest isoform' : 'One isoform'
 }
 
@@ -64,15 +52,11 @@ function pickPhrase(picks: IsoformPicks | undefined) {
 // The isoform-collapse control's tooltip: what it is currently showing, whether
 // that was the user's choice or the zoom's, and how to dismiss the notice.
 //
-// Pure and in its own module rather than inline in GeneGlyphControl.tsx purely so
-// it can be tested: the clause below has to agree with an affordance drawn by a
-// sibling prop, and nothing but a test on the string can hold those two together.
-//
-// `noticeShowing` is that sibling — the same term deciding whether the control
-// gets an `onDelete` at all — NOT `dismissed`. The control renders as the bare
-// icon in two different situations (dismissed, and transcripts simply not
-// collapsed), and keying the clause on dismissal alone described a × that the
-// second of them never draws.
+// The minimize clause keys on `noticeShowing` — the same term deciding whether
+// the control gets an `onDelete` — NOT on `dismissed`. The control renders as
+// the bare icon in two situations (dismissed, and transcripts simply not
+// collapsed), and dismissal alone described a × the second never draws. Pure and
+// in its own module so a test can hold the clause and the affordance together.
 export function geneGlyphTooltip({
   mode,
   collapsed,

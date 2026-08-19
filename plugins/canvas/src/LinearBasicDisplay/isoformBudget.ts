@@ -7,33 +7,23 @@ import { TRANSCRIPT_PADDING_RATIO as ISOFORM_GAP_RATIO } from '../RenderFeatureD
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 
-// The most `decideLabelReservations` can reserve for a gene's own row, budgeted
-// as a constant rather than read off `showLabels`/`showDescriptions`. Those are
-// main-thread-only and fetch-derived (`showLabels` folds in feature density), so
-// reading them would make `maxIsoforms` — an RPC cache key — refetch on a label
-// toggle, which fetchAutorun.test.ts pins against. Budgeting the worst case can
-// leave a row unspent, never overflow: an unspent row is visible in the chip and
-// one click from `All transcripts`, an overflowing one is the silent scrollbar
-// the cap exists to end.
+// The most `decideLabelReservations` can reserve for a gene's own row. A
+// constant rather than a read of `showLabels`/`showDescriptions`, which are
+// fetch-derived: reading them would make `maxIsoforms` — an RPC cache key —
+// refetch on a label toggle (fetchAutorun.test.ts pins against it). The worst
+// case can leave a row unspent, never overflow.
 const MAX_FEATURE_LABEL_LINES = 2
 
 /**
- * What one gene costs the lane, split into the part that scales with the isoform
- * count and the part it pays once — `decideLabelReservations`' own row
- * arithmetic (layout.ts), in the units the display measures its track height in.
- * A gene of n one-row isoforms occupies `n * perIsoformPx + geneOwnPx`, and
- * `isoformRowBudget` is that solved for n.
+ * What one gene costs the lane: `n * perIsoformPx + geneOwnPx` for n one-row
+ * isoforms. A MIRROR of `decideLabelReservations`' row arithmetic (layout.ts) —
+ * one that drifts silently admits an isoform past the lane the cap exists to
+ * fit, so it is exported as the pair for a test to pin against the packer.
  *
- * One-row isoforms and nothing else: a gene also hangs decorations beside them
- * (an NCBI source record, a `biological_region`) and an isoform can be taller
- * than a row (a polyprotein CDS draws one per cleavage product). The main thread
- * sees neither before the fetch, so this is a budget of ROWS that the worker
- * re-spends over the gene's real children — `isoformsWithinBudget` in
- * subfeatures.ts, which charges each child what it measures.
- *
- * Exported as the pair rather than just the budget so a test can pin it against
- * the packer: this is a MIRROR of layout.ts's arithmetic, and one that drifts
- * silently admits an isoform past the lane it exists to fit.
+ * One-row isoforms is an estimate the main thread cannot improve on: a gene also
+ * hangs decorations beside them and an isoform can be taller than a row, neither
+ * visible before the fetch. So this is a budget of ROWS the worker re-spends
+ * over the real children (`isoformsWithinBudget` in subfeatures.ts).
  */
 export function geneRowCostPx({
   featureHeightPx,
@@ -49,11 +39,8 @@ export function geneRowCostPx({
   const bodyPx = featureHeightPx * HEIGHT_MULTIPLIERS[displayMode]
   const labelPx = labelFontSize(displayMode)
   // collapsed is a single-row overview and draws no labels at all — not the
-  // gene's own lines, and not the `below` row under each isoform either, which
-  // `rpcProps` forces to `none` before the payload leaves. Spending it here
-  // charged a row the worker never reserves, and halved the budget: a 100px
-  // collapsed lane holding 8 isoforms was capped at 4, with the chip telling the
-  // reader that 4 was as many as fit.
+  // gene's own lines, and not the `below` row under each isoform, which
+  // `rpcProps` forces to `none` before the payload leaves
   const labeled = displayMode !== 'collapsed'
   const labelLines = labeled ? MAX_FEATURE_LABEL_LINES : 0
   return {
@@ -72,11 +59,9 @@ export function geneRowCostPx({
 }
 
 /**
- * How many isoforms of one gene fit a lane `trackHeightPx` tall — the packer's
- * arithmetic (`geneRowCostPx`) solved for n rather than approximated.
- *
- * At least 1 however short the lane: a gene collapsed to nothing is not an
- * overview of it, and the worker's own `isoformsWithinBudget` floors at 1 too.
+ * How many isoforms of one gene fit a lane `trackHeightPx` tall — `geneRowCostPx`
+ * solved for n. At least 1 however short the lane, matching the floor in the
+ * worker's own `isoformsWithinBudget`.
  */
 export function isoformRowBudget(
   trackHeightPx: number,

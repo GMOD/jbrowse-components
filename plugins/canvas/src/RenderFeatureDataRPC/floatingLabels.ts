@@ -64,29 +64,13 @@ export function createFeatureFloatingLabels({
 }
 
 // The isoform badge that rides after a collapsed gene's name: what is missing
-// from this gene, on this gene, rather than a track-wide count of what is shown.
+// from THIS gene, rather than a track-wide count of what is shown.
 //
-// Reads "+3 more" collapsed and "show fewer" expanded. The second is not a
-// count, because the number it would name is the number of isoforms now on
-// screen, which is the one thing the reader can already see; it says what
-// clicking does instead. Plain ASCII either way — `measureText`'s width table is
-// Helvetica indexed by char code and falls back to an average outside it, so a
-// typographic minus would be reserved at a width nothing measured.
-//
-// `text.secondary` and the smaller base size make it an aside on the name rather
-// than a second label: it is translucent (the same property `getStrokeColor`
-// leans on), so it reads as grey against the track in either theme instead of
-// competing with the name it qualifies. The underline and the italic are the
-// DOM/SVG halves of the same choice.
-//
-// `hidden` rides along for the hover title, which is where the terse text is
-// spelled out; the badge itself has one short row to live in. It is always at
-// least 1 — `isoformOverflow` exists only where the collapse left something out
-// — so there is no zero case to answer for here.
-//
-// Through `labelItem` like every other label, so the packer's width reservation
-// and the drawn text agree by construction (see the invariant there) — measured
-// at the size it draws at, which is what keeps that true across the two sizes.
+// Plain ASCII — `measureText`'s width table is Helvetica indexed by char code
+// and falls back to an average outside it, so a typographic minus would be
+// reserved at a width nothing measured. Through `labelItem` at the size it
+// draws at, which is what keeps the packer's reservation and the drawn text
+// agreeing across the two sizes (see the invariant there).
 export function createMoreIsoformsLabel({
   overflow,
   palette,
