@@ -11,6 +11,8 @@
 // Pure: no filesystem, no process exit. The command wrapper owns both.
 
 import { configManifest } from './configManifest.generated.ts'
+import { displayDefaultKeys } from './displayDefaultKeys.ts'
+import { didYouMean } from './suggest.ts'
 
 import type {
   ConfigManifest,
@@ -20,48 +22,6 @@ import type {
   TypeGroup,
   ValidationResult,
 } from './types.ts'
-
-// ---------------------------------------------------------------- suggestions
-
-function editDistance(a: string, b: string) {
-  // Two rolling rows rather than the full matrix; these are short identifiers
-  // and this runs once per unknown key.
-  let prev = Array.from({ length: b.length + 1 }, (_, i) => i)
-  for (let i = 1; i <= a.length; i++) {
-    const row = [i]
-    for (let j = 1; j <= b.length; j++) {
-      row[j] = Math.min(
-        prev[j]! + 1,
-        row[j - 1]! + 1,
-        prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1),
-      )
-    }
-    prev = row
-  }
-  return prev[b.length]!
-}
-
-// The nearest candidate, if it is near enough to be worth naming. The threshold
-// scales with length so `uri` doesn't match every other three-letter slot while
-// a longer typo still resolves.
-function suggest(word: string, candidates: string[]) {
-  const limit = Math.max(2, Math.floor(word.length / 3))
-  let best: string | undefined
-  let bestScore = Infinity
-  for (const candidate of candidates) {
-    const score = editDistance(word.toLowerCase(), candidate.toLowerCase())
-    if (score < bestScore) {
-      bestScore = score
-      best = candidate
-    }
-  }
-  return bestScore <= limit ? best : undefined
-}
-
-function didYouMean(word: string, candidates: string[]) {
-  const hit = suggest(word, candidates)
-  return hit ? ` — did you mean "${hit}"?` : ''
-}
 
 // ------------------------------------------------------------------ reporting
 
@@ -258,10 +218,34 @@ function checkAdapter(
   }
 }
 
-// `displayDefaults: {color: 'green'}` is a track-level shorthand
-// (expandTrackConfigShorthand.ts) routing each key to whichever of the track's
-// display types declares it, so its keys check against the union of those
-// displays' slots rather than the track's own.
+// A pluggable sub-object written inline: resolve its type against `group`, then
+// check its own slots. `connections`, `aggregateTextSearchAdapters` and a
+// track's `textSearching.textSearchAdapter` are all this shape, and none of
+// them was opened at all — a Trix path typo is a search that returns nothing,
+// which is the class of mistake this command exists to catch.
+function checkPluggable(
+  obj: unknown,
+  group: TypeGroup,
+  groupLabel: string,
+  manifestWhere: string,
+  report: Report,
+) {
+  if (!isRecord(obj)) {
+    report.error(manifestWhere, `${groupLabel} must be an object`)
+    return
+  }
+  const entry = resolveType(
+    obj,
+    group,
+    groupLabel,
+    `${manifestWhere}.type`,
+    report,
+  )
+  if (entry) {
+    checkSlots(obj, entry, manifestWhere, report)
+  }
+}
+
 function checkDisplayDefaults(
   defaults: unknown,
   trackEntry: TypeEntry,
@@ -273,9 +257,7 @@ function checkDisplayDefaults(
     report.error(where, 'displayDefaults must be an object of display settings')
     return
   }
-  const accepted = (trackEntry.displayTypes ?? []).flatMap(
-    name => manifest.displays[name]?.slots.map(slot => slot.name) ?? [],
-  )
+  const accepted = displayDefaultKeys(trackEntry, manifest)
   if (accepted.length === 0) {
     return
   }
@@ -334,9 +316,13 @@ function checkTrack(
   } else {
     for (const name of names) {
       if (typeof name === 'string' && !ctx.assemblyNames.has(name)) {
+        // The connection caveat leads and the spelling guess trails, because a
+        // connection needn't be in this file to supply the assembly — the one
+        // that supplies test_data/volvox's `volvox_del2` is added at runtime,
+        // and `did you mean "volvox_del"?` called a working config a typo.
         report.error(
           `${where}.assemblyNames`,
-          `assembly "${name}" is not defined in this config${didYouMean(name, [...ctx.assemblyNames])}`,
+          `assembly "${name}" is not defined in this config and no connection here supplies one, though one added at runtime still could${didYouMean(name, [...ctx.assemblyNames])}`,
         )
       }
     }
@@ -365,6 +351,20 @@ function checkTrack(
     }
   }
   checkAdapter(track.adapter, manifest, `${where}.adapter`, report)
+
+  const textSearching = track.textSearching
+  if (
+    isRecord(textSearching) &&
+    textSearching.textSearchAdapter !== undefined
+  ) {
+    checkPluggable(
+      textSearching.textSearchAdapter,
+      manifest.textSearchAdapters,
+      'text search adapter',
+      `${where}.textSearching.textSearchAdapter`,
+      report,
+    )
+  }
 
   if (Array.isArray(track.displays)) {
     for (const [i, display] of track.displays.entries()) {
@@ -612,6 +612,10 @@ export function validateConfig(
     report.error('assemblies', 'no assemblies — a config needs at least one')
   }
 
+  const connections = Array.isArray(config.connections)
+    ? config.connections
+    : []
+
   const ctx: Ctx = {
     // An assembly's `aliases` are usable wherever its name is — a track can say
     // `assemblyNames: ['vvx']` against an assembly named volvox that lists vvx
@@ -650,6 +654,29 @@ export function validateConfig(
     : []
   for (const [i, track] of tracks.entries()) {
     checkTrack(track, i, manifest, report, ctx)
+  }
+
+  for (const [i, connection] of connections.entries()) {
+    checkPluggable(
+      connection,
+      manifest.connections,
+      'connection',
+      `connections[${i}]`,
+      report,
+    )
+  }
+
+  const aggregate = Array.isArray(config.aggregateTextSearchAdapters)
+    ? config.aggregateTextSearchAdapters
+    : []
+  for (const [i, adapter] of aggregate.entries()) {
+    checkPluggable(
+      adapter,
+      manifest.textSearchAdapters,
+      'text search adapter',
+      `aggregateTextSearchAdapters[${i}]`,
+      report,
+    )
   }
 
   // Tracks are registered before the session is checked, so a session may

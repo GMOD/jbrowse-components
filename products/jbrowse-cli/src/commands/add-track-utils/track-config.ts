@@ -2,6 +2,8 @@ import path from 'node:path'
 
 import { isURL } from '../../types/common.ts'
 import { parseCommaSeparatedString } from '../../utils.ts'
+import { displayDefaultKeysForTrackType } from '../validate/displayDefaultKeys.ts'
+import { suggest } from '../validate/suggest.ts'
 import { syntenyAdapterTypes } from './adapter-utils.ts'
 import { parseJsonFlag } from './validators.ts'
 
@@ -53,16 +55,24 @@ export function buildTrackConfig({
 // present in --config. Precedence: --config < --displayDefaults < typed flags,
 // so the most specific flag a user reaches for wins. Returns undefined when
 // nothing was supplied, so the track omits displayDefaults entirely.
+//
+// Takes `trackType` so it can refuse a key none of that track's displays
+// declares. `--color` on an alignments track is the reachable case — that
+// display declares `colorBy`, expandTrackConfigShorthand drops the unmatched
+// key with a console warning, and the command otherwise wrote the dead setting
+// and exited 0.
 export function mergeDisplayDefaults({
   configObj,
   color,
   height,
   displayDefaults,
+  trackType,
 }: {
   configObj?: Record<string, unknown>
   color?: string
   height?: string
   displayDefaults?: string
+  trackType: string
 }): Record<string, unknown> | undefined {
   const fromJson = displayDefaults
     ? parseJsonFlag(displayDefaults, '--displayDefaults')
@@ -77,7 +87,34 @@ export function mergeDisplayDefaults({
   }
   const existing = (configObj?.displayDefaults ?? {}) as Record<string, unknown>
   const merged = { ...existing, ...fromJson, ...typed }
-  return Object.keys(merged).length > 0 ? merged : undefined
+  if (Object.keys(merged).length === 0) {
+    return undefined
+  }
+  checkDisplayDefaultKeys(merged, trackType)
+  return merged
+}
+
+// An unknown track type accepts everything: it is a plugin's, and this manifest
+// is only the core plugins'.
+function checkDisplayDefaultKeys(
+  merged: Record<string, unknown>,
+  trackType: string,
+) {
+  const accepted = displayDefaultKeysForTrackType(trackType)
+  if (accepted.length === 0) {
+    return
+  }
+  const unknown = Object.keys(merged).filter(key => !accepted.includes(key))
+  if (unknown.length > 0) {
+    throw new Error(
+      unknown
+        .map(key => {
+          const hit = suggest(key, accepted)
+          return `no display of a ${trackType} declares "${key}"${hit ? `, did you mean "${hit}"?` : ''}`
+        })
+        .join('\n'),
+    )
+  }
 }
 
 export function addSyntenyAssemblyNames(

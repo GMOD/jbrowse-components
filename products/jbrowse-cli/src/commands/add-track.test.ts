@@ -340,6 +340,68 @@ test('--color, --height, and --displayDefaults merge into displayDefaults', asyn
   })
 })
 
+// LinearAlignmentsDisplay declares colorBy, not color, and
+// expandTrackConfigShorthand drops the unmatched key with a console warning —
+// so the run used to write the dead setting into the config and exit 0
+test('--color on a track whose displays do not declare it is refused', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--color',
+      'red',
+    ])
+
+    expect(error?.message).toContain(
+      'no display of a AlignmentsTrack declares "color"',
+    )
+    expect(error?.message).toContain('did you mean "colorBy"')
+    expect(readConf(ctx).tracks).toEqual([])
+  })
+})
+
+test('an unknown --displayDefaults key is refused', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    const { error } = await runCommand([
+      'add-track',
+      simpleGff,
+      '--load',
+      'copy',
+      '--displayDefaults',
+      '{"heigth":300}',
+    ])
+
+    expect(error?.message).toContain('did you mean "height"')
+  })
+})
+
+// the manifest carries only the core plugins' types, so a plugin's track type
+// has no accepted set to check against and everything passes
+test('a plugin track type accepts any displayDefaults key', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
+      'add-track',
+      simpleGff,
+      '--load',
+      'copy',
+      '--trackType',
+      'CustomTrackType',
+      '--color',
+      'red',
+    ])
+
+    expect(readConf(ctx).tracks[0].displayDefaults).toEqual({ color: 'red' })
+  })
+})
+
 test('--multiwig from a comma-separated list of URLs', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)

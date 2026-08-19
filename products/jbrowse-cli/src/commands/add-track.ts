@@ -276,6 +276,7 @@ export async function run(args?: string[]) {
     color: flags.color,
     height: flags.height,
     displayDefaults: flags.displayDefaults,
+    trackType,
   })
   const configObj = displayDefaults
     ? { ...baseConfigObj, displayDefaults }

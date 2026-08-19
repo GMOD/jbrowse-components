@@ -198,6 +198,74 @@ describe('validateConfig', () => {
     expect(error?.message).toContain('did you mean "height"')
   })
 
+  // A Trix path typo is a search that returns nothing, which is the class of
+  // mistake the command exists for — and the three surfaces below were never
+  // opened, so all of them passed with a deliberate typo in them.
+  it('opens a track textSearching.textSearchAdapter', () => {
+    const config = baseConfig()
+    // @ts-expect-error deliberately misspelled
+    config.tracks[0]!.textSearching = {
+      textSearchAdapter: {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'a',
+        ixFilePth: { uri: 'a.ix' },
+      },
+    }
+    const [error] = errorsOf(config)
+    expect(error?.where).toBe(
+      'tracks[0].textSearching.textSearchAdapter.ixFilePth',
+    )
+    expect(error?.message).toContain('did you mean "ixFilePath"')
+  })
+
+  it('opens aggregateTextSearchAdapters', () => {
+    const config = baseConfig()
+    // @ts-expect-error deliberately misspelled
+    config.aggregateTextSearchAdapters = [
+      {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'a',
+        assemblyNames: ['hg38'],
+        ixxFilePth: { uri: 'a.ixx' },
+      },
+    ]
+    const [error] = errorsOf(config)
+    expect(error?.where).toBe('aggregateTextSearchAdapters[0].ixxFilePth')
+    expect(error?.message).toContain('did you mean "ixxFilePath"')
+  })
+
+  it('opens connections', () => {
+    const config = baseConfig()
+    // @ts-expect-error deliberately misspelled
+    config.connections = [
+      {
+        type: 'UCSCTrackHubConnection',
+        connectionId: 'c',
+        name: 'hub',
+        hubTxtLocaton: { uri: 'hub.txt' },
+      },
+    ]
+    const [error] = errorsOf(config)
+    expect(error?.where).toBe('connections[0].hubTxtLocaton')
+    expect(error?.message).toContain('did you mean "hubTxtLocation"')
+  })
+
+  // test_data/volvox's config.json has a track on an assembly a
+  // JB2TrackHubConnection supplies onto a *second* config file, added at
+  // runtime — so no validator reading this one can resolve it, and leading with
+  // `did you mean "volvox_del"?` called a working config a typo.
+  it('names the connection possibility before the spelling guess', () => {
+    const config = baseConfig()
+    config.assemblies[0]!.aliases = ['volvox_del']
+    config.tracks[0]!.assemblyNames = ['volvox_del2']
+    const [error] = errorsOf(config)
+    expect(error?.where).toBe('tracks[0].assemblyNames')
+    expect(error?.message).toContain('one added at runtime still could')
+    expect(error?.message.indexOf('connection')).toBeLessThan(
+      error!.message.indexOf('did you mean'),
+    )
+  })
+
   // An unknown type is loud on load (MST throws), and is often a plugin's, so
   // it must never fail the run the way a silently-dropped slot does.
   it('warns rather than errors on an unrecognized type', () => {
