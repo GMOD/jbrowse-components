@@ -14,7 +14,9 @@ not a worse route, none.
 That count is not a design; it is what accumulated. The bad abstraction the old
 `plugin-extension-points` entry described got fixed underneath it: replacing is
 `wrapComponent` (wrapping and not rendering what you were handed, so two
-plugins nest instead of one vanishing), scoping is `<ForTrack>`, and a point
+plugins nest instead of one vanishing), scoping is one predicate every point
+asks (`matchesTrackSelector`, including the one that renders nothing), and a
+point
 declares itself `ComponentSlot` / `ComponentList` / `ElementList` in one line.
 Adding a seam now costs that line plus swapping `<Foo {...props}/>` for
 `<PluggableComponent name="…" component={Foo} props={props}/>`.

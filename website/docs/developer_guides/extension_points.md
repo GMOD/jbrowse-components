@@ -285,6 +285,121 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 }
 ```
 
+### wrapComponent: the one way to fill a slot
+
+A point declared [`ComponentSlot`](#points-that-resolve-to-ui) resolves to one
+component, and `wrapComponent`, from `@jbrowse/core/ui`, is how a plugin fills
+it. Your component is handed whatever fills the slot so far as
+`DefaultComponent`: render it and you have added to the default, leave it out
+and you have replaced it. There is no separate "replace" call, because replacing
+is this with the default dropped — and writing it this way is what lets the next
+plugin still wrap yours.
+
+<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#wrapComponent -->
+
+```tsx
+wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
+  <div>
+    <div>custom</div>
+    <DefaultComponent {...rest} />
+  </div>
+))
+```
+
+It takes the point's name, so the same call fills any single-component slot:
+`Core-replaceAbout` and the desktop start-screen panels work exactly like this.
+
+Wrappers from different plugins nest, so two plugins can both add content
+without either one disappearing. Two callbacks registered on the point by hand
+cannot, and JBrowse logs a warning naming the slot when that happens.
+
+### matchesTrackSelector: which tracks a contribution is for
+
+Every track-scoped point fires for every track, so a contribution that does not
+say which tracks it wants applies to all of them — a wrapper takes over every
+widget that opens, a panel appears on every feature. `matchesTrackSelector`,
+also from `@jbrowse/core/ui`, answers whether the props you were handed belong
+to a track `select` names. What you do with the answer depends on the point: a
+wrapper renders the component it was handed, a panel renders `null`, and a data
+transform returns its argument unchanged.
+
+<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#replaceWidget -->
+
+```tsx
+function scopedToOneTrack(pm: PluginManager) {
+  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) =>
+    matchesTrackSelector({ trackId: 'volvox.inv.vcf' }, rest) ? (
+      <div>mine</div>
+    ) : (
+      <DefaultComponent {...rest} />
+    ),
+  )
+}
+```
+
+`select` accepts any combination of the fields below, and all of the ones you
+give must match. An empty selector matches everything.
+
+<!-- include: packages/core/src/ui/extensionSelectors.ts#fields -->
+
+```typescript
+export interface TrackSelector {
+  /** track type, e.g. `'VariantTrack'`, usually what "for my tracks" means */
+  trackType?: string | string[]
+  /** track id; a plain string also matches the user's copies of that track */
+  trackId?: string | RegExp | (string | RegExp)[]
+  /** widget model type, e.g. `'AlignmentsFeatureWidget'`, for the slot points */
+  widgetType?: string | string[]
+}
+```
+
+Prefer `trackType` when what you mean is "my kind of track". A plain-string
+`trackId` also matches the user's copies of that track (the "Copy track" menu
+item appends a timestamp to the id), so scoping by id does not silently stop
+applying the first time someone copies the track. Pass a `RegExp` if you want to
+control the matching yourself.
+
+It reads either the widget model these points carry or the track config the
+About points carry, so one call scopes a contribution to any of them — including
+[`Core-customizeAbout`](#core-customizeabout), which transforms a config and
+renders nothing. Anything the fields cannot express joins the same condition;
+the panel below adds `depth` to it.
+
+Don't reach for `matchTrackId` from `@jbrowse/core/util` instead — that one
+tests an id against patterns you supply, so the copy-track normalization is back
+to being yours to remember.
+
+We match on the model rather than on the config because the config that produced
+a feature details widget isn't always retrievable.
+
+:::caution Declare the wrapper outside the callback, or use `wrapComponent`
+
+<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#inlineComponent -->
+
+```tsx
+pm.addToExtensionPoint('Core-replaceWidget', Default => {
+  // declared inside the callback, so every evaluation is a new component type
+  return function NewWidget(props: ReplaceWidgetProps) {
+    return (
+      <div>
+        <div>custom</div>
+        <Default {...props} />
+      </div>
+    )
+  }
+})
+```
+
+Use [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) instead, which
+builds the wrapped component once and caches it.
+
+`Core-replaceWidget` is re-evaluated on every render of the drawer, so returning
+a component declared inside the callback hands React a brand new component type
+each time. The widget inside is unmounted and remounted, losing its scroll
+position, any text typed into it, and any panel the user had expanded.
+
+:::
+
 ### Firing a point that renders
 
 A producer whose point resolves to UI fires it as JSX from `@jbrowse/core/ui`,
@@ -710,6 +825,12 @@ Transform the config snapshot shown in the "About this track" dialog, after any
 
 Return value: an object of the same `{ config }` shape, with your modifications
 
+The dialog fires this for whatever track was opened, so returning a modified
+config unconditionally rewrites every track's. This point renders nothing, so
+there is no wrapper to scope — ask
+[`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for)
+and return `arg` untouched when the answer is no.
+
 Example: add a derived field to a particular track's about dialog
 
 <!-- include: packages/product-core/src/ui/aboutExtensionPoints.test.tsx#customizeAbout -->
@@ -760,119 +881,10 @@ this point to replace a widget you do **not** own.
 
 This point fires whenever **any** widget opens, so a callback that does not
 scope itself takes over the drawer, the modal, and every feature details panel.
-Rather than write that scoping by hand, use `wrapComponent` and
-`matchesTrackSelector`, below. They are the supported way to use this point;
-reach for `addToExtensionPoint` directly only for something neither expresses.
-
-#### wrapComponent: the one way to fill a slot
-
-`wrapComponent`, from `@jbrowse/core/ui`, hands your component whatever fills
-the slot so far as `DefaultComponent`. Render it and you have added to the
-default; leave it out and you have replaced it. There is no separate "replace"
-call, because replacing is this with the default dropped — and writing it this
-way is what lets the next plugin still wrap yours.
-
-<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#wrapComponent -->
-
-```tsx
-wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
-  <div>
-    <div>custom</div>
-    <DefaultComponent {...rest} />
-  </div>
-))
-```
-
-It takes the point's name, so the same call fills any single-component slot:
-`Core-replaceAbout` and the desktop start-screen panels work exactly like this.
-
-Wrappers from different plugins nest, so two plugins can both add content
-without either one disappearing. Two callbacks registered on the point by hand
-cannot, and JBrowse logs a warning naming the slot when that happens.
-
-#### matchesTrackSelector: which tracks a contribution is for
-
-A wrapper with no condition takes over every widget that opens.
-`matchesTrackSelector` answers whether the props you were handed belong to a
-track `select` names — and rendering the component you were handed when it says
-no is what leaves the widget alone on the tracks you did not select.
-
-<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#replaceWidget -->
-
-```tsx
-function scopedToOneTrack(pm: PluginManager) {
-  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) =>
-    matchesTrackSelector({ trackId: 'volvox.inv.vcf' }, rest) ? (
-      <div>mine</div>
-    ) : (
-      <DefaultComponent {...rest} />
-    ),
-  )
-}
-```
-
-`select` accepts any combination of the fields below, and all of the ones you
-give must match. An empty selector matches everything.
-
-<!-- include: packages/core/src/ui/extensionSelectors.ts#fields -->
-
-```typescript
-export interface TrackSelector {
-  /** track type, e.g. `'VariantTrack'`, usually what "for my tracks" means */
-  trackType?: string | string[]
-  /** track id; a plain string also matches the user's copies of that track */
-  trackId?: string | RegExp | (string | RegExp)[]
-  /** widget model type, e.g. `'AlignmentsFeatureWidget'`, for the slot points */
-  widgetType?: string | string[]
-}
-```
-
-Prefer `trackType` when what you mean is "my kind of track". A plain-string
-`trackId` also matches the user's copies of that track (the "Copy track" menu
-item appends a timestamp to the id), so scoping by id does not silently stop
-applying the first time someone copies the track. Pass a `RegExp` if you want to
-control the matching yourself.
-
-It reads either the widget model these points carry or the track config the
-About points carry, so one call scopes a contribution to any of them — including
-[`Core-customizeAbout`](#core-customizeabout), which transforms a config and
-renders nothing. Anything the fields cannot express joins the same condition;
-the panel below adds `depth` to it.
-
-Don't reach for `matchTrackId` from `@jbrowse/core/util` instead — that one
-tests an id against patterns you supply, so the copy-track normalization is back
-to being yours to remember.
-
-We match on the model rather than on the config because the config that produced
-a feature details widget isn't always retrievable.
-
-:::caution Declare the wrapper outside the callback, or use `wrapComponent`
-
-<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#inlineComponent -->
-
-```tsx
-pm.addToExtensionPoint('Core-replaceWidget', Default => {
-  // declared inside the callback, so every evaluation is a new component type
-  return function NewWidget(props: ReplaceWidgetProps) {
-    return (
-      <div>
-        <div>custom</div>
-        <Default {...props} />
-      </div>
-    )
-  }
-})
-```
-
-Use [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) instead, which
-builds the wrapped component once and caches it.
-
-`Core-replaceWidget` is re-evaluated on every render of the drawer, so returning
-a component declared inside the callback hands React a brand new component type
-each time. The widget inside is unmounted and remounted, losing its scroll
-position, any text typed into it, and any panel the user had expanded.
-
-:::
+Fill it with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) and
+scope it with
+[`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for),
+which are how every component slot is filled and scoped, not just this one.
 
 ### Core-extraFeaturePanel
 
@@ -1048,8 +1060,13 @@ track-type selectors. It is a single-component fold: return your own component
 when the selected adapter is one you handle, and the accumulated component
 otherwise.
 
-Register with `addAddTrackComponent` (from `@jbrowse/core/util`), which states
-only which adapters you claim:
+Register with `addAddTrackComponent` (from `@jbrowse/core/util`) rather than
+with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot), which is the
+general way to fill a slot. This is the one slot with its own entry point, and
+it earns it by writing two points at once: the fold here, and
+`Core-addTrackComponentAdapterTypes`, a plain list of the same claims for
+callers that have an adapter name and no model. Stating your adapters once is
+the point.
 
 <!-- include: plugins/gwas/src/GWASAddTrackComponent/index.tsx#register -->
 
@@ -1137,8 +1154,10 @@ category.
 - `args` - a React component (the default `DefaultFolderDialog`)
 - `props` - `FolderDialogProps`
 
-Return value: a React component rendered as the dialog. It receives the same
-`FolderDialogProps` the point was fired with:
+Fill it with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot), the
+same call every component slot takes, and render the default you were handed for
+the categories you do not want. Return value: a React component rendered as the
+dialog. It receives the same `FolderDialogProps` the point was fired with:
 
 <!-- include: plugins/data-management/src/HierarchicalTrackSelectorWidget/components/tree/TrackCategory.tsx#folderDialogProps -->
 
@@ -1562,10 +1581,11 @@ type: synchronous
   panel component
 - `props` - `{ setPluginManager, loadPluginManager }`
 
-Desktop only. Replace or wrap the panel, in the same single-component fold as
-`Core-replaceWidget` — return your own component, or one that renders the
-default with extra chrome around it. If it throws while rendering, the start
-screen falls back to the built-in panel and shows an error above it.
+Desktop only, and the same component slot as `Core-replaceWidget` — fill it with
+[`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot), rendering the
+`DefaultComponent` you were handed to keep the built-in panel below your own
+chrome. If your component throws while rendering, the start screen falls back to
+the built-in panel and shows an error above it.
 
 ### Desktop-StartScreenRecentSessionsPanel
 
