@@ -60,11 +60,19 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       showLabels: {
-        type: 'stringEnum',
+        type: 'maybeStringEnum',
         model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
-        defaultValue: 'auto',
         description:
-          'Which label text is drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Replaces the former showLabels on/off enum + showDescriptions boolean pair',
+          'Which label text is drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Unset (the default) follows the session-wide default for this display type, falling back to `auto`. Replaces the former showLabels on/off enum + showDescriptions boolean pair',
+        // Promotable sentinel enum (see promotableDefaults.ts / displayMode):
+        // unset is the inherit state and `promotedBase` ('auto') is what it
+        // resolves to when nothing is promoted, so every rung — 'auto' included
+        // — stays customizable back over an opposite session default. Legacy
+        // values are folded onto a concrete member by
+        // `migrateBasicConfigSnapshot`, which fires only on a legacy shape, so a
+        // config that never carried one is left unset and follows the cascade.
+        // Read through the resolved `showLabelsMode` getter (resolveConf).
+        promotedBase: 'auto',
       },
       /**
        * #slot

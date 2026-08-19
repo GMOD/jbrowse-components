@@ -2,7 +2,6 @@ import { makePin } from '@jbrowse/core/configuration'
 import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
   promotableRadioItems,
-  radioItems,
   showLegendCheckboxItem,
   toggleItem,
 } from '@jbrowse/core/ui/menuItems'
@@ -19,6 +18,7 @@ import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasColorLegend } from './baseModel.ts'
 import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
+import type { Pin, ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -35,26 +35,36 @@ const RECOVERY_PRIORITY = -100
 // A named group of mutually-exclusive radio options rendered inline: a
 // subHeader followed by the radios, so a settings menu reads as one flat list
 // of checkboxes/radios instead of nesting a submenu the user has to hover into.
-// The rows come from core's `radioItems` rather than being spelled out here, so
-// every radio in every canvas menu keeps the menu open on click — a hand-rolled
-// copy is how the "Gene glyph" submenu ended up dismissing the whole track menu
-// while its siblings stayed put.
+// The rows come from core's `promotableRadioItems` rather than being spelled out
+// here, so every radio in every canvas menu keeps the menu open on click — a
+// hand-rolled copy is how the "Gene glyph" submenu ended up dismissing the whole
+// track menu while its siblings stayed put — and every option in the group gets
+// a pin, the `promotedBase` one included.
+//
+// `pin` is required rather than optional. Both promotable radio groups in this
+// plugin pass one, and an optional pin on a builder with a single caller is a
+// row that can silently go missing (`promotableRadioItems`' own note).
 function inlineRadioGroup<T extends string>(
   header: string,
   current: T,
   options: readonly { value: T; label: string; subLabel?: string }[],
   onSelect: (value: T) => void,
+  pin: (value: T) => Pin,
 ): MenuItem[] {
   return [
     { type: 'subHeader' as const, label: header },
-    ...radioItems(options, current, onSelect),
+    ...promotableRadioItems(options, current, onSelect, pin),
   ]
 }
 
 // Structural for the same reason as FeatureMenuSelf: the model factory calls
 // these builders, so it can't hand them its own inferred type. The model is
 // passed in at the call site, so a drifted field fails to typecheck there.
-interface ShowSubmenuSelf {
+// Extends the cascade's own shape because the labels group carries a pin, which
+// reaches the session through the display node. `LinearBasicDisplayConfig` for
+// the same reason `FeatureHeightSelf` names it: `ResolvableDisplay` alone widens
+// `configuration` and switches the slot-name check off.
+interface ShowSubmenuSelf extends ResolvableDisplay<LinearBasicDisplayConfig> {
   showOutline: boolean
   showLabelsMode: ShowLabelsMode
   // Collapsed mode drops every label kind regardless of the chosen rung, so the
@@ -151,6 +161,10 @@ export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
     mode => {
       self.setShowLabels(mode)
     },
+    // Every rung is pinnable, `auto` included: once a user promotes 'none' for
+    // all their feature tracks, pinning `auto` back is the only per-value way to
+    // undo it from its own row.
+    mode => makePin(self, 'showLabels', mode),
   )
 }
 

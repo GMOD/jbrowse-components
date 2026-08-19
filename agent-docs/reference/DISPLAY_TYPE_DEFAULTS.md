@@ -47,7 +47,7 @@ read one section, read [The cascade](#the-cascade).
 | Pin adornment + row builders | `packages/core/src/ui/{PinAdornment.tsx,promotableMenuItems.ts}` |
 | Config-editor view of a promotable slot (`SlotFacade.promotedBase`, consumed by `BooleanEditor` / `JsonEditor` / `StringEnumEditor`) | `packages/core/src/configuration/slotFacade.ts`, `plugins/config/src/ConfigurationEditorWidget/components/` |
 | `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
-| Adopters: `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts`. All four slots are **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, and all four resolve into its worker payload through the base `rpcProps`. Only two of the *pins* come along: `displayMode` and `heightMode` are built in the shared `trackMenus.ts`, while the `subfeatureLabels` / `displayDirectionalChevrons` rows **and their `resolveConf` getters** live in the concrete `LinearBasicDisplay/model.ts`. That split is right — both are transcript-structure settings, inert on a variant track — so don't move them down; see the variant row in [the pin table](#promotable-is-a-schema-fact-the-pin-is-a-menu-fact) |
+| Adopters: `displayMode` / `heightMode` / `showLabels` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts`. All four slots are **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, and all four resolve into its worker payload through the base `rpcProps`. Only three of the *pins* come along: `displayMode`, `heightMode` and `showLabels` are built in the shared `trackMenus.ts`, while the `subfeatureLabels` / `displayDirectionalChevrons` rows **and their `resolveConf` getters** live in the concrete `LinearBasicDisplay/model.ts`. That split is right — both are transcript-structure settings, inert on a variant track — so don't move them down; see the variant row in [the pin table](#promotable-is-a-schema-fact-the-pin-is-a-menu-fact) |
 | Adopters: `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `readConnectionsDown` / `showSashimiArcs` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping` / `showLegend` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 | Adopters: `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` + `showLdLegend` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
 | Adopters: `showLegend`, in six schemas | `plugins/{alignments/src/LinearAlignmentsDisplay,hic/src/LinearHicDisplay,canvas/src/LinearMultiRowFeatureDisplay,wiggle/src/MultiLinearWiggleDisplay}/configSchema.ts`, `plugins/variants/src/{shared/SharedVariantConfigSchema,LDDisplay/SharedLDConfigSchema}.ts`. `promotedBase` differs per display and is each one's old `defaultValue` (Hi-C and LD off, the rest on), because the legends are different objects. `LGVSyntenyDisplay` inherits the alignments slot and wires its own pin. The row itself is one builder — see [the `showLegend` note](#showlegend-is-one-row-across-nine-displays-and-one-of-them-has-no-slot) |
@@ -284,11 +284,11 @@ nothing to choose. `ConfigSlot` throws unless the type is a `maybe*` and
   `featureHeight` → `7`).
 - `maybeBoolean` — `showSoftClipping`/`mismatchAlpha`/`showSashimiLabels`/
   `displayDirectionalChevrons`.
-- `maybeStringEnum` — `displayMode`/`heightMode`/`subfeatureLabels`/
-  `linkedReads`/`readConnections`/`sashimiArcsMode`, resolving to
-  `'normal'`/`'fixed'`/`'none'`/`'off'`/`'off'`/`'up'`. The author writes the
-  plain enumeration (`['fixed','grow','fit']`) and `ConfigSlot` wraps it in
-  `types.maybe`.
+- `maybeStringEnum` — `displayMode`/`heightMode`/`showLabels`/
+  `subfeatureLabels`/`linkedReads`/`readConnections`/`sashimiArcsMode`,
+  resolving to `'normal'`/`'fixed'`/`'auto'`/`'none'`/`'off'`/`'off'`/`'up'`.
+  The author writes the plain enumeration (`['fixed','grow','fit']`) and
+  `ConfigSlot` wraps it in `types.maybe`.
 - `maybeFrozen` — the object-valued case: `colorBy`, resolving to
   `{ type: 'normal' }`.
 
@@ -719,8 +719,11 @@ of a row can only differ by the pin:
   row silently missing its trailing control reads as a bug. Building the group in
   one call is what makes that structural rather than a rule to follow;
   `sashimiArcsMode`'s base looked unpinnable precisely because the rows had been
-  named by hand. The four groups on it: `heightMode`, `displayMode`,
-  `subfeatureLabels`, `sashimiArcsMode`.
+  named by hand. The five groups on it: `heightMode`, `displayMode`,
+  `showLabels`, `subfeatureLabels`, `sashimiArcsMode`. Canvas reaches it through
+  `inlineRadioGroup`, which is `subHeader` + this — its `pin` factory is
+  required, since a group with one caller and an optional pin is the row that
+  goes missing.
 - **`promotableRadioItem`** — one row, the escape hatch for a group the plural
   form can't express. Three cases have it: a row with no single value to promote
   yet (the colorBy "Tag..." row before a tag is picked), a display whose slot

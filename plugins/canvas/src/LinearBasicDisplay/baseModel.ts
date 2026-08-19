@@ -546,7 +546,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get showLabelsMode() {
-          return getConf(self, 'showLabels')
+          return resolveConf(self, 'showLabels')
         },
 
         /**
