@@ -27,6 +27,16 @@ export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
     // test. The symptom was a blank LD track with no error whenever the file's
     // contig names differed from the assembly's canonical ones (an Ensembl-named
     // .ld file against a UCSC-named hub, say).
+    // Primes BEFORE it asks, and the order is load-bearing. A
+    // ReferenceScanAdapter (motif, CRISPR guide, sequence search) has no file of
+    // its own, so it answers `getRefNames` by asking the reference — and the
+    // only thing that has told it where the reference is, is this line. Swap the
+    // two and every scan track throws "No sequence adapter available" on the
+    // first refName map it needs, before anything is on screen to hint at why.
+    //
+    // This is also the one call that still passes `sequenceAdapter` explicitly:
+    // it is what `renameRegionsIfNeeded` CALLS, so it cannot be fed by the
+    // derivation that serves everything else. `loadRefNameMap` supplies it.
     if (isFeatureAdapter(dataAdapter)) {
       dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
     }

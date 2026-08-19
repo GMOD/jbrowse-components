@@ -24,6 +24,7 @@ import type Flatbush from '@jbrowse/core/util/flatbush'
 // filters) apply in both modes.
 export interface RenderAlignmentDataArgs {
   adapterConfig: Record<string, unknown>
+  // supplied by renameRegionsIfNeeded during serialization, never by a caller
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   filterBy?: FilterBy

@@ -46,6 +46,7 @@ export interface RenderFeatureDataArgs {
   // translation-table fallback for transcripts whose features lack a
   // transl_table attribute (e.g. UCSC genePred-derived GFFs).
   geneticCodeId?: number
+  // supplied by renameRegionsIfNeeded during serialization, never by a caller
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
   // "Show only these features" solo set: when present and non-empty, admit only

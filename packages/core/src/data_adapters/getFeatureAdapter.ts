@@ -8,8 +8,11 @@ export interface GetFeatureAdapterArgs {
   pluginManager: PluginManager
   sessionId: string
   adapterConfig: Record<string, unknown>
-  // reference-sequence adapter config for adapters that decode against the
-  // reference (BAM/CRAM); omitted by every other feature RPC
+  // Reference-sequence adapter config for adapters that decode against the
+  // reference (BAM/CRAM). Read straight off the RPC args and forwarded — no
+  // execute builds one, because `renameRegionsIfNeeded` derives it from the
+  // assembly it already resolved. Optional because the RPCs that don't rename
+  // regions have no assembly context to derive it from.
   sequenceAdapter?: Record<string, unknown>
 }
 

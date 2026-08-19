@@ -38,6 +38,27 @@ class ReferenceReadingAdapter extends BaseFeatureDataAdapter {
   }
 }
 
+// The shape of every ReferenceScanAdapter subclass (motif, CRISPR guide,
+// sequence search): it has no file of its own, so it answers `getRefNames` by
+// asking the reference — which means it must already be primed by the time
+// `CoreGetRefNames` calls it.
+class ScanAdapter extends BaseFeatureDataAdapter {
+  async getRefNames() {
+    const config = this.sequenceAdapterConfig
+    if (!config) {
+      throw new Error('No sequence adapter available')
+    }
+    const result = await this.getSubAdapter?.(config)
+    return (result?.dataAdapter as BaseSequenceAdapter).getRefNames()
+  }
+
+  getFeatures() {
+    return ObservableCreate<Feature>(observer => {
+      observer.complete()
+    })
+  }
+}
+
 class TestSequenceAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
     return ['ctgA']
@@ -57,6 +78,7 @@ class TestSequenceAdapter extends BaseFeatureDataAdapter {
 const pluginManager = new PluginManager()
 for (const [name, AdapterClass] of [
   ['ReferenceReadingAdapter', ReferenceReadingAdapter],
+  ['ScanAdapter', ScanAdapter],
   ['TestSequenceAdapter', TestSequenceAdapter],
 ] as const) {
   pluginManager.addAdapterType(
@@ -139,4 +161,19 @@ test('a later call naming a different sequence adapter does not replace it', asy
   await getRefNames({ sequenceAdapter })
   await getRefNames({ sequenceAdapter: { type: 'NoSuchSequenceAdapter' } })
   await expect(fetchWithoutPriming()).resolves.toBe('ACGT')
+})
+
+// The ordering inside `CoreGetRefNames` is load-bearing and reads as arbitrary:
+// it primes, THEN calls getRefNames. Swap those two statements and a scan track
+// throws "No sequence adapter available" on the first refName map it needs,
+// which is before anything is on screen to hint at the cause. Nothing else
+// pinned it — the swap left 3,015 tests green.
+test('CoreGetRefNames primes before it asks, so a scan adapter can answer', async () => {
+  await expect(
+    new CoreGetRefNames(pluginManager).invoke({
+      sessionId: 'test',
+      adapterConfig: { type: 'ScanAdapter' },
+      sequenceAdapter,
+    }),
+  ).resolves.toEqual(['ctgA'])
 })

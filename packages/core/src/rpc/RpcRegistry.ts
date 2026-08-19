@@ -17,6 +17,9 @@ export interface RpcRegistry {
   CoreGetRefNames: {
     args: {
       adapterConfig: Record<string, unknown>
+      // The one entry where a caller really does pass this — `loadRefNameMap`.
+      // This RPC is what renaming CALLS, so the derivation that fills it in for
+      // every other method cannot reach it.
       sequenceAdapter?: Record<string, unknown>
       assemblyName?: string
     }
@@ -41,6 +44,10 @@ export interface RpcRegistry {
     args: {
       regions: RegionLike[]
       adapterConfig: Record<string, unknown>
+      // Not dead, and grepping for a caller will say it is: nobody passes this.
+      // `renameRegionsIfNeeded` adds it during serialization, from the assembly
+      // it resolved to rename the regions. Delete it and every CRAM fetch loses
+      // its reference — silently, since the args still type-check.
       sequenceAdapter?: Record<string, unknown>
       opts?: Record<string, unknown>
     }

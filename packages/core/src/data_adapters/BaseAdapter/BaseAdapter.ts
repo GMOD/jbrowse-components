@@ -43,8 +43,15 @@ export class BaseAdapter<
    * against the reference (e.g. BAM/CRAM). Set once and never cleared: the
    * adapter is cached per adapterConfig (dataAdapterCache), so a given instance
    * maps to a single, stable sequence adapter, and an `undefined` from a later
-   * caller must not wipe a config an earlier one already primed. Callers don't
-   * need to guard.
+   * caller must not wipe a config an earlier one already primed. One `??=` does
+   * both; callers don't need to guard.
+   *
+   * **Instance state rather than a per-call argument, and that is forced.**
+   * `CramAdapter` binds its `seqFetch` into the `IndexedCramFile` at
+   * construction, and @gmod/cram invokes it later with `(seqId, start, end)` and
+   * nothing else — there is no call to thread a config through. Threading it per
+   * call is the recurring proposal here and it dies at CRAM, which is the
+   * adapter that needs the reference most.
    */
   setSequenceAdapterConfig(config: Record<string, unknown> | undefined) {
     this.sequenceAdapterConfig ??= config

@@ -17,6 +17,7 @@ import type { Region } from '@jbrowse/core/util'
 
 interface GetConsensusSequenceArgs {
   adapterConfig: Record<string, unknown>
+  // supplied by renameRegionsIfNeeded during serialization, never by a caller
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   filterBy?: FilterBy

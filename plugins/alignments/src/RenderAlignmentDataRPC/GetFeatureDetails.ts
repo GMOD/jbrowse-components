@@ -8,6 +8,7 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 interface GetFeatureDetailsArgs {
   adapterConfig: Record<string, unknown>
+  // supplied by renameRegionsIfNeeded during serialization, never by a caller
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   featureId: string
