@@ -27,6 +27,8 @@ function stubSession(
     resetUseWorkspaces: jest.fn(),
     animationMode: 'enabled',
     numberGrouping: true,
+    scrollZoom: false,
+    setScrollZoom: jest.fn(),
     setPreferenceOverride: jest.fn(),
     clearPreferenceOverrides: jest.fn(),
     getPreferenceChanges: (): TrackConfigChange[] => [],
@@ -97,4 +99,31 @@ test('nothing to reset when every preference is at its default', () => {
   expect(
     getByRole('button', { name: 'Reset to defaults' }).hasAttribute('disabled'),
   ).toBe(true)
+})
+
+// The dialog resets scroll-to-zoom (it is an override like any other) and used
+// to offer no way to set it, so the one place a user goes to undo a persistent
+// global preference was the one place that didn't have it.
+//
+// Through `setScrollZoom` rather than the override map directly: that setter
+// also stops offering the scroll-to-zoom prompt, and someone toggling it here
+// has plainly found the preference the prompt exists to point at.
+test('scroll-to-zoom is settable here, through the session setter', () => {
+  const setScrollZoom = jest.fn()
+  const setPreferenceOverride = jest.fn()
+  const session = stubSession({ setScrollZoom, setPreferenceOverride })
+  const { getByRole } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <PreferencesDialog
+        session={session}
+        pluginManager={pluginManager}
+        handleClose={() => {}}
+      />
+    </ThemeProvider>,
+  )
+
+  fireEvent.click(getByRole('checkbox', { name: /Zoom on scroll/ }))
+
+  expect(setScrollZoom).toHaveBeenCalledWith(true)
+  expect(setPreferenceOverride).not.toHaveBeenCalled()
 })

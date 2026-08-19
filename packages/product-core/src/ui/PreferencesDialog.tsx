@@ -1,6 +1,10 @@
 import { Suspense, useState } from 'react'
 
 import { Dialog, LabeledCheckbox } from '@jbrowse/core/ui'
+import {
+  SCROLL_ZOOM_HELP,
+  SCROLL_ZOOM_LABEL,
+} from '@jbrowse/core/ui/scrollZoomLabels'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
@@ -46,6 +50,11 @@ export interface PreferencesDialogSession {
   resetUseWorkspaces: () => void
   animationMode: AnimationMode
   numberGrouping: boolean
+  scrollZoom: boolean
+  // not `setPreferenceOverride('scrollZoom', …)` like the rows below it: the
+  // session's own setter also stops offering the scroll-to-zoom prompt, on the
+  // grounds that whoever set this from here has plainly found the preference
+  setScrollZoom: (flag: boolean) => void
   setPreferenceOverride: (key: string, value: unknown) => void
   clearPreferenceOverrides: () => void
   getPreferenceChanges: () => TrackConfigChange[]
@@ -258,6 +267,13 @@ const PreferencesDialog = observer(function PreferencesDialog({
           </TextField>
         ))}
         <FormGroup>
+          <LabeledCheckbox
+            checked={session.scrollZoom}
+            label={`${SCROLL_ZOOM_LABEL}: ${SCROLL_ZOOM_HELP}`}
+            onChange={checked => {
+              session.setScrollZoom(checked)
+            }}
+          />
           <LabeledCheckbox
             checked={session.stickyViewHeaders}
             label="Keep view header visible"
