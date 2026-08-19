@@ -1,4 +1,4 @@
-import { rowsUnderCursor } from './variantCellLookup.ts'
+import { contentSampleY, rowsUnderCursor } from './variantCellLookup.ts'
 import { MAX_INSERTION_MARKER_WIDTH_PX } from './variantCellSpan.ts'
 
 // Minimal region shape the hit-test geometry needs — a subset of the view's
@@ -62,7 +62,7 @@ export function computeVariantHitQuery(
     : region.start + frac * regionLengthBp
 
   const { nearest, lowest } = rowsUnderCursor(
-    mouseY + scrollTop,
+    contentSampleY(mouseY, scrollTop),
     effectiveRowHeight,
   )
 

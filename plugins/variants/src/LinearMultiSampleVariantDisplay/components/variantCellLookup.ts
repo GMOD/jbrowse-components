@@ -83,8 +83,7 @@ export function findCellIndex(
 }
 
 /**
- * The rows whose drawn cell covers content-Y `contentY`, nearest the cursor
- * first.
+ * The rows whose drawn cell covers content-Y `sampleY`, nearest first.
  *
  * Row r occupies [r*rowHeight, r*rowHeight + drawnCellHeightPx(rowHeight)) —
  * the 2px floor is variant.slang's, generated into TS (adr-051), so what is
@@ -92,12 +91,14 @@ export function findCellIndex(
  * one row and the band collapses; only sub-pixel rows stack several under one
  * drawn pixel.
  *
- * **The band is resolved at the centre of the pixel the cursor is in, not at
- * `contentY` itself.** Rasterization fills a pixel when its centre falls inside
- * the rect, so the centre is where the colours the user is picking from were
- * decided; asking at the pixel's top edge answers about a scanline nothing was
+ * **`sampleY` is a pixel CENTRE**, which is what makes the answer agree with
+ * what is on screen: rasterization fills a pixel when its centre falls inside
+ * the rect, so the centre is where the colours the reader is picking from were
+ * decided. Asking at the pixel's top edge answers about a scanline nothing was
  * sampled on, and misses by `0.5 / rowHeight` rows — three of them at the
- * default fit height with 2,504 samples.
+ * default fit height with 2,504 samples. `contentSampleY` builds it; this
+ * function does no rounding of its own, so a caller cannot get the centre and
+ * the scroll offset applied in the wrong order.
  *
  * `nearest` is the row whose own band contains that sample point, which is also
  * the last one painted there, so preferring it makes the pick both
@@ -105,10 +106,22 @@ export function findCellIndex(
  * `lowest` keeps sub-pixel rows hoverable when the nearest row happens to have
  * no cell.
  */
-export function rowsUnderCursor(contentY: number, rowHeight: number) {
+export function rowsUnderCursor(sampleY: number, rowHeight: number) {
   const drawnHeight = drawnCellHeightPx(rowHeight)
-  const sampleY = Math.floor(contentY) + 0.5
   const nearest = Math.floor(sampleY / rowHeight)
   const lowest = Math.floor((sampleY - drawnHeight) / rowHeight) + 1
   return { nearest, lowest: Math.max(lowest, 0) }
+}
+
+/**
+ * Content-space Y of the centre of the screen pixel `mouseY` is in.
+ *
+ * The floor is on `mouseY` alone and `scrollTop` is added after, because the
+ * canvas is drawn at `row*rowHeight - scrollTop` with `scrollTop` unrounded —
+ * `applyRowResizeWheel` sets it to `rowUnderMouse * newRowHeight - mouseY`, so
+ * it is routinely fractional. Flooring the sum instead snaps to a pixel grid
+ * the content is not on.
+ */
+export function contentSampleY(mouseY: number, scrollTop: number) {
+  return Math.floor(mouseY) + 0.5 + scrollTop
 }
