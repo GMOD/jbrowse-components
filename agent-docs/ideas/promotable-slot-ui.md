@@ -13,6 +13,13 @@ makes `resolveSlot.promoted` mean *effective* rather than *the user set this*,
 which is the value the generated pin reads. Taking either alone is fine;
 taking the second without reading the first is how the pin ends up lying.
 
+A third proposal moves the *user* tier out of localStorage and into the session
+snapshot ([how-permanent-a-promoted-default-is.md](how-permanent-a-promoted-default-is.md)).
+It makes §1 more valuable rather than less — with the user tier
+session-scoped, the admin slot becomes the only way an install gets a permanent
+house default — and it does not change §1's shape, since both read through
+`getDisplayTypeDefault`.
+
 ## 1. An admin tier above the session default
 
 Today a promoted display-type default is **user-only**: `session.setDisplayTypeDefault` writes `preferencesOverrides`,
