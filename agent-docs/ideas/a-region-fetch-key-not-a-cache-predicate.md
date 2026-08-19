@@ -5,6 +5,11 @@ description: Settings invalidation became rpcPropsCacheKey and tier invalidation
 
 # A region fetch key, not a cache predicate
 
+**Status: built.** `MultiRegionDisplayMixin` computes `isCacheValid` from a
+captured `regionFetchKey` and a `regionHasData` presence hook. Four things below
+were wrong about the code and are corrected in place — one of them would have
+shipped a regression, so read the corrections before trusting the prose.
+
 This codebase invalidates on a captured key twice, and each time the move was
 made because comparing the inputs was wrong:
 
@@ -66,11 +71,25 @@ isCacheValid(idx) =
 ```
 
 Filled in: wiggle returns `String(view.bpPerPx)`, canvas
-`String(shouldRenderPeptideBackground(view.bpPerPx))`, MAF
-`showSummary ? 'summary' : 'detail'`, multi-sample variant
-`cellDataMode === 'matrix' ? String(view.bpPerPx) : ''`. Manhattan and multi-row
-override neither and get the default, which is what each of them wants and one of
-them currently has to say by hand.
+`String(shouldRenderPeptideBackground(view.bpPerPx))`, multi-sample variant
+`cellDataMode === 'matrix' ? String(view.bpPerPx) : ''`. Manhattan overrides
+neither and gets the default, which is what it wants and what it currently has to
+say by hand.
+
+**MAF is the exception, and this line proposed a regression for it.** The
+`showSummary ? 'summary' : 'detail'` key above is wrong: `clearAlignmentData`
+runs one way only, so a detail fetch keeps the summary records and zooming back
+out reuses them. Under a tier key the stamp reads `detail`, every zoom-out misses,
+and the display re-reads the byte-gated summary adapter each time. MAF therefore
+keeps `regionFetchKey` empty and answers the tier through `regionHasData`
+(`summaryDataMap.has` or `rpcDataMap.has`), which is the hook whose question that
+actually is. `plugins/maf/src/LinearMafDisplay/summaryTierSwap.test.ts` goes red
+under the key this doc proposed — that is what settled it.
+
+So the deletion list below is one item short of what it claims: **MAF's use of map
+identity is not deleted, it is relocated** to the presence hook. Read that as the
+general shape rather than as MAF's quirk — "which map holds it" is a presence
+question wearing a staleness costume, and the split is what tells the two apart.
 
 **The key is captured at issue, not read at commit.** `fetchRegions` reads
 `self.regionFetchKey` before `await work(ctx)` and stamps that value alongside
@@ -89,13 +108,32 @@ returning a key that changes when data arrives — which is the `rpcProps()` loo
 in a different costume. Keeping it separate is also what makes the multi-row case
 read as what it is: no zoom rule at all.
 
+**The design introduces one hazard of its own: `regionFetchKey` is a getter, so
+MST makes it a computed.** A key that reads anything non-observable is memoized
+for the display's lifetime and never invalidates — the display then caches its
+first fetch forever, which is the exact failure the undefined sentinels used to
+cause and the reason for replacing them. It bit the foundation's own test
+harness first: the harness held the key in a plain closure, the refetch test read
+as a false green, and the fix was a volatile with a setter. So the passing test
+is also the demonstration. Any display whose key reads outside MobX has this,
+silently.
+
 ## What this buys, stated as deletions
 
-The two undefined sentinels, the `setLoadedBpPerPx` setter and its four call
-sites, both `clearDisplaySpecificData` clears of it (the key map goes with
-`loadedRegions` on `clearAllRpcData`), Manhattan's defensive `return true`, and
-MAF's reliance on map identity as a cache rule. What replaces them is one string
-per display and one comparison in the mixin.
+The two undefined sentinels, **two** `setLoadedBpPerPx` setters — this list said
+one setter with four call sites; `WiggleScoreConfigMixin` and
+`MultiSampleVariantBaseModel` each declared their own, with four call sites
+between them — both `clearDisplaySpecificData` clears of it (the key map goes
+with `loadedRegions` on `clearAllRpcData`), and Manhattan's defensive
+`return true`. What replaces them is one string per display and one comparison in
+the mixin.
+
+Two more deletions fell out that this list did not predict: canvas's per-region
+`data.loadedBpPerPx`, which the table above names as *where the comparand lives*
+without noticing it then has no reader, and `RegionFetch.bpPerPx` with it — 77
+`setRpcData` call sites lost an argument and 37 tests lost a `view` binding they
+held only to feed it. A comparand named in a table is a deletion too; look for
+its readers when the compare moves.
 
 Inheritance stops being a trap in the process. A subclass changing what it
 fetches spells the change in the key, and a subclass that forgets gets a stale
@@ -109,11 +147,20 @@ pins the one property that must survive: the hook stays in `.views()`, because
 MobX runs an action `untracked` and `FetchVisibleRegions` would keep a stale
 answer. `assertDisplayContract` checks the same thing at attach.
 
-Beside it, the five `derivedRegionTooLarge.test.ts` files (alignments, multi-row,
-MAF, LD, multi-sample variant) cover the presence half — a too-large region is
-marked loaded, stores nothing, and refetches when the gate releases — and
-`planRegionFetch.test.ts` covers the decision the hook feeds. Convert one display
-and run all three groups unchanged.
+**The claim that the five `derivedRegionTooLarge.test.ts` files cover the
+presence half is false, and it was checked rather than argued.** Alignments, LD
+and the multi-sample variant have no presence rule to cover. MAF's file left a
+`regionHasData → true` sabotage fully green across 763 tests. Multi-row's
+reddened only an unrelated `featureAt` case. Canvas is the one display whose
+presence rule was pinned at all, and by `LinearBasicDisplay/fetchAutorun.test.ts`
+— it has no `derivedRegionTooLarge.test.ts`. MAF and multi-row got direct pins in
+the build. Treat a named oracle as a lead until a sabotage reddens it; this one
+was a directory listing that read as coverage.
+
+`planRegionFetch.test.ts` does cover the decision the hook feeds, and
+`installPerRegionFetchAutoruns.test.ts` gained the two pins that matter most: the
+key is captured at issue (red when the read moves inside the `!ctx.isStale()`
+block) and a covered block whose key moved refetches.
 
 ## Where this sits
 
