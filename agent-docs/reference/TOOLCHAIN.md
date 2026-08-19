@@ -111,11 +111,23 @@ gitignored `buildInfo.ts` the install writes. Don't symlink `node_modules` from
 the primary checkout — the per-package `@jbrowse/*` links are relative, so
 cross-package imports resolve back to its sources.
 
-Figures are the one thing the install does not bring: `pnpm figures:pull`, or
-symlink both gitignored corpora — the website's `static/img` and jbrowse-img's
+Figures are one of two things the install does not bring: `pnpm figures:pull`,
+or symlink both gitignored corpora — the website's `static/img` and jbrowse-img's
 own `img`. Miss the second and `pnpm autogen` **dies** on the jbrowse-img
 generator rather than reporting it stale, so every later generator silently
 never runs.
+
+The other is `.cache/slangc`. `pnpm gen:shaders` re-downloads a 15MB binary into
+each worktree rather than failing, so the cost is silent — point it at the
+primary checkout's copy instead:
+
+```sh
+SLANGC=<primary-checkout>/.cache/slangc/bin/slangc pnpm gen:shaders
+```
+
+`build-shaders.ts` checks the version of whatever it is handed — the pin lives
+there, and a mismatched slangc re-emits every shader rather than failing, so a
+borrowed binary from a tree on a different pin is refused.
 
 **Regenerating a figure needs no web build of your own** when the change is to a
 spec rather than to app code. `pnpm screenshots:build` runs `@jbrowse/web`'s

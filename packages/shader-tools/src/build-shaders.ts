@@ -101,6 +101,15 @@ import type { ShaderScan } from './shader-codegen/liftReport.ts'
 import type { JsExportFn } from './shader-codegen/parseDirectives.ts'
 import type { Reflection } from './shader-codegen/reflection.ts'
 
+// How this script gives up, wherever it gives up. `main`'s failures already
+// carry the tool's own diagnostic and a Node stack on top of one buries it; the
+// setup below `main` runs at module scope, where a throw gets no handler at all
+// and prints nothing but a stack.
+function fail(message: string): never {
+  console.error(`\ngen:shaders failed: ${message}`)
+  process.exit(1)
+}
+
 const flagValue = (name: string) =>
   process.argv
     .slice(2)
@@ -160,7 +169,7 @@ function resolveSharedInclude() {
   ]
   const found = candidates.find(c => existsSync(c))
   if (!found) {
-    throw new Error(
+    fail(
       `Could not find the shared .slang modules. Looked in:\n${candidates
         .map(c => `  ${c}`)
         .join(
@@ -172,16 +181,36 @@ function resolveSharedInclude() {
 }
 const SHARED_INCLUDE = resolveSharedInclude()
 
+// `slangc -v` reports on stderr. A path that is not a binary at all reports
+// nothing, and one that does not exist never runs — `spawnSync` sets `error`
+// and leaves `stderr` null, which its TYPE does not admit, so the check has to
+// be on `error` rather than on the field.
+function slangcVersion(bin: string) {
+  const probe = spawnSync(bin, ['-v'], { encoding: 'utf8' })
+  return probe.error ? '' : probe.stderr.trim()
+}
+
 function ensureSlangc() {
+  const ver = SLANG_VERSION.replace(/^v/, '')
+  // The escape hatch is version-checked too, and it is the one that needs it
+  // most: the cache is fetched at the pin, while `SLANGC` is a path a person or
+  // a CI image chose — a system slangc, another checkout's copy. A mismatched
+  // compiler does not fail, it emits DIFFERENT WGSL for every shader in the
+  // tree, so the staleness gate then reports a diff against work nobody did.
   if (process.env.SLANGC) {
+    const found = slangcVersion(process.env.SLANGC)
+    if (found !== ver) {
+      fail(
+        `SLANGC=${process.env.SLANGC} reports ${found || 'no version'}, but ` +
+          `this tree is pinned to ${ver}. A different slangc re-emits every ` +
+          `shader, so the diff would look like yours. Unset SLANGC to fetch ` +
+          `the pin, or point it at a ${ver} binary.`,
+      )
+    }
     return process.env.SLANGC
   }
-  const ver = SLANG_VERSION.replace(/^v/, '')
-  if (existsSync(SLANGC_CACHE)) {
-    const { stderr } = spawnSync(SLANGC_CACHE, ['-v'], { encoding: 'utf8' })
-    if (stderr.trim() === ver) {
-      return SLANGC_CACHE
-    }
+  if (existsSync(SLANGC_CACHE) && slangcVersion(SLANGC_CACHE) === ver) {
+    return SLANGC_CACHE
   }
   const platform = process.platform
   const arch = process.arch
@@ -964,6 +993,5 @@ try {
 } catch (e) {
   // run() already put the tool's diagnostic in the Error message; print just
   // that (no Node stack / raw Buffer dump) and fail the build.
-  console.error(`\ngen:shaders failed: ${e instanceof Error ? e.message : e}`)
-  process.exit(1)
+  fail(e instanceof Error ? e.message : String(e))
 }
