@@ -20,5 +20,5 @@ export function resolveRenderState<T>(
   domain: [number, number] | undefined,
   build: (domain: [number, number]) => T,
 ): T {
-  return build(domain ? domain : EMPTY_PLOT_DOMAIN)
+  return build(domain ?? EMPTY_PLOT_DOMAIN)
 }

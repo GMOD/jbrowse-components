@@ -19,20 +19,6 @@ Computes a score domain from the visible feature arrays for the `local` /
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
-## computeScoreExtent
-
-The true `[min, max]` score extent of the visible features for a summary mode,
-before any autoscale clipping. Comparing it against the displayed domain flags
-when the domain clips real signal (e.g. localpercentile clamping copy-number
-gains that sit above the diploid baseline).
-
-```js
-// type signature
-(summaryScoreMode: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[]) => [number, number] | undefined
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
-
 ## DEFAULT_GAP_BREAK_MULTIPLE
 
 Default `multiple` for the wiggle interpolated line — the `maxGapMultiple`
@@ -120,12 +106,13 @@ Per-feature scalar score array for a summary mode: the min/max summary array for
 
 ## getNiceDomain
 
-Rounds a domain to "nice" endpoints, clamped to the origin and overridden by any
-explicit `bounds`.
+Rounds a domain to "nice" endpoints, clamped to the origin. An end given an
+explicit `bounds` value keeps that value exactly — only an autoscaled end is
+rounded. A log scale's floor still outranks a bound it cannot hold.
 
 ```js
 // type signature
-({…}: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; symlogConstant?: number | undefined; }) => [number, number]
+({ scaleType, domain, bounds, }: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; }) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
@@ -156,7 +143,7 @@ can represent 0 and that is where a bar should sit from.
 
 ## getScale
 
-Builds a d3 scale (linear/log/quantize) from a `ScaleOpts`, nicing the domain
+Builds a d3 scale (linear/log/symlog) from a `ScaleOpts`, nicing the domain
 unless `nice: false` says it is already the one being drawn with.
 
 ```js

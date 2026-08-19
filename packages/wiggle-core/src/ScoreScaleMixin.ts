@@ -106,16 +106,18 @@ export function ScoreScaleMixin() {
        * Resolved lower bound; `undefined` means autoscale this end.
        */
       get minScoreBound(): number | undefined {
-        const val: number = getConf(confNode(self), 'minScore')
-        return val === Number.MIN_VALUE ? this.defaultScoreDomain[0] : val
+        return this.minScore === Number.MIN_VALUE
+          ? this.defaultScoreDomain[0]
+          : this.minScore
       },
       /**
        * #getter
        * Resolved upper bound; `undefined` means autoscale this end.
        */
       get maxScoreBound(): number | undefined {
-        const val: number = getConf(confNode(self), 'maxScore')
-        return val === Number.MAX_VALUE ? this.defaultScoreDomain[1] : val
+        return this.maxScore === Number.MAX_VALUE
+          ? this.defaultScoreDomain[1]
+          : this.maxScore
       },
     }))
     .actions(self => ({

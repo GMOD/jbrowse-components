@@ -67,9 +67,23 @@ function overlaps(
   return fEnd > visStart && fStart < visEnd
 }
 
-// Autoscale types that expand the domain by ±numStdDev around the mean.
-function isStdDevAutoscale(autoscaleType: string) {
-  return autoscaleType === 'localsd'
+// Which per-feature array each end of the domain comes from. Whiskers spreads
+// the two ends across the min/max summary arrays; every other mode draws both
+// from a single scalar. One table because `computeScoreStats` and the
+// percentile histogram have to agree — a domain whose extent and whose clipped
+// bound were measured off different arrays is a domain that clips its own data.
+function boundArrays(summaryScoreMode: string) {
+  const useWhiskers = summaryScoreMode === 'whiskers'
+  return {
+    low: (data: FeatureArrays) =>
+      useWhiskers
+        ? data.featureMinScores
+        : getEffectiveScores(data, summaryScoreMode),
+    high: (data: FeatureArrays) =>
+      useWhiskers
+        ? data.featureMaxScores
+        : getEffectiveScores(data, summaryScoreMode),
+  }
 }
 
 // Bin count for the approximate percentile histogram. 1024 bins gives ~0.1%
@@ -85,7 +99,7 @@ export function computeScoreStats(
   summaryScoreMode: string,
   datasets: Dataset[],
 ): ScoreStats | undefined {
-  const useWhiskers = summaryScoreMode === 'whiskers'
+  const { low, high } = boundArrays(summaryScoreMode)
   let min = Infinity
   let max = -Infinity
   let sum = 0
@@ -93,15 +107,10 @@ export function computeScoreStats(
   let count = 0
   for (const { data, visStart, visEnd } of datasets) {
     const { featureScores, featurePositions, numFeatures } = data
-    // Whiskers spreads min/max across the two summary arrays; every other mode
-    // draws both bounds from a single per-feature scalar. Selecting the arrays
-    // once per dataset keeps the mode check out of the per-feature loop.
-    const minScores = useWhiskers
-      ? data.featureMinScores
-      : getEffectiveScores(data, summaryScoreMode)
-    const maxScores = useWhiskers
-      ? data.featureMaxScores
-      : getEffectiveScores(data, summaryScoreMode)
+    // Selecting the arrays once per dataset keeps the mode check out of the
+    // per-feature loop.
+    const minScores = low(data)
+    const maxScores = high(data)
     for (let i = 0; i < numFeatures; i++) {
       if (
         visStart !== undefined &&
@@ -145,7 +154,7 @@ export function domainFromStats(
   autoscaleType: string,
   numStdDev: number,
 ): [number, number] {
-  if (isStdDevAutoscale(autoscaleType)) {
+  if (autoscaleType === 'localsd') {
     const { scoreMean, scoreStdDev, scoreMin } = stats
     return [
       scoreMin >= 0 ? 0 : scoreMean - numStdDev * scoreStdDev,
@@ -235,32 +244,16 @@ function percentileDomainFromHistogram(
   if (scoreMax - scoreMin <= 0) {
     return [scoreMin, scoreMax]
   }
-  const useWhiskers = summaryScoreMode === 'whiskers'
-  // Mirror computeStats' array selection: whiskers spreads the bounds across the
-  // min/max summary arrays; every other mode draws both from one scalar.
-  const highScoresFor = (data: FeatureArrays) =>
-    useWhiskers
-      ? data.featureMaxScores
-      : getEffectiveScores(data, summaryScoreMode)
-  const lowScoresFor = (data: FeatureArrays) =>
-    useWhiskers
-      ? data.featureMinScores
-      : getEffectiveScores(data, summaryScoreMode)
+  const arrays = boundArrays(summaryScoreMode)
   const high =
     scoreMax > 0
-      ? sideMagnitudePercentile(
-          datasets,
-          highScoresFor,
-          true,
-          scoreMax,
-          quantile,
-        )
+      ? sideMagnitudePercentile(datasets, arrays.high, true, scoreMax, quantile)
       : 0
   const negExtent =
     scoreMin < 0
       ? sideMagnitudePercentile(
           datasets,
-          lowScoresFor,
+          arrays.low,
           false,
           -scoreMin,
           quantile,
@@ -327,23 +320,4 @@ export function computeAutoscaleDomain(
         visibleEntries,
       })
     : undefined
-}
-
-/**
- * #api
- * The true `[min, max]` score extent of the visible features for a summary mode,
- * before any autoscale clipping. Comparing it against the displayed domain flags
- * when the domain clips real signal (e.g. localpercentile clamping copy-number
- * gains that sit above the diploid baseline).
- */
-export function computeScoreExtent(
-  summaryScoreMode: string,
-  visibleEntries: {
-    data: FeatureArrays
-    visStart: number
-    visEnd: number
-  }[],
-): [number, number] | undefined {
-  const stats = computeScoreStats(summaryScoreMode, visibleEntries)
-  return stats ? [stats.scoreMin, stats.scoreMax] : undefined
 }
