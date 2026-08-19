@@ -557,12 +557,13 @@ nothing declares — `undefined`, read as a boolean, in silence.
 <!-- BEGIN GENERATED DISPLAY_HOOK_OVERRIDES -->
 
 
-19 overridable hooks. **Sitting on the default** is what a display that does not override one gets.
+20 overridable hooks. **Sitting on the default** is what a display that does not override one gets.
 
 <!-- prettier-ignore -->
 | Hook | Sitting on the default | Declared by |
 | --- | --- | --- |
-| `isCacheValid` | loaded regions never go stale — correct unless the worker output is zoom-dependent, and **inherited**, so a display composing a wiggle mixin gets wiggle’s strict-`bpPerPx` version whether or not it wants it | `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gwas/LinearManhattanDisplay`, `maf/LinearMafDisplay`, `variants/shared`, `wiggle/shared` |
+| `regionFetchKey` | the empty key, so loaded regions never go stale on zoom — correct unless the worker output is zoom-dependent. A subclass that changes what it fetches and forgets the key gets a redundant fetch, not a cached answer for a zoom the data was never fetched at | `canvas/LinearBasicDisplay`, `variants/shared`, `wiggle/shared` |
+| `regionHasData` | true — `fetchRegions` marks a region loaded even where the worker refused it for size, so a display holding a per-region data map and sitting on this default never refetches one the gate has since released | `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `maf/LinearMafDisplay` |
 | `rpcProps` | no `SettingsInvalidate` autorun at all, so no user setting ever refetches (correct for `LinearReferenceSequenceDisplay`, indistinguishable from an omission for anyone else) | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gccontent/LinearGCContentDisplay`, `gwas/LinearManhattanDisplay`, `hic/LinearHicDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/LinearMultiSampleVariantDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
 | `fetchNeeded` | nothing is ever fetched | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gwas/LinearManhattanDisplay`, `maf/LinearMafDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
 | `dataCurrent` | false forever, so `svgReady` never settles and one track hangs the whole view’s export (fail-hung over fail-stale, deliberately) | `arc/shared`, `dotplot-view/DotplotDisplay`, `hic/LinearHicDisplay`, `linear-comparative-view/LinearSyntenyDisplay`, `variants/LDDisplay` |
