@@ -414,7 +414,7 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #method
          * Whether the data held for a region still answers the current view.
-         * Not overridable any more: a display states its rule as
+         * Not a hook a display fills: a display states its rule as
          * `regionFetchKey` (what a fetch now would produce) and `regionHasData`
          * (did the last one store anything), and this compares the key against
          * the one the region was fetched under. A subclass that changes what it
@@ -422,9 +422,9 @@ export default function MultiRegionDisplayMixin() {
          * redundant fetch rather than a cached answer for a zoom the data was
          * never fetched at.
          *
-         * The stamp is read `untracked` for the reason the autorun reads
-         * `loadedRegions` untracked: this autorun is what writes it, and the
-         * `fetchGeneration` bump at fetch end is the re-trigger.
+         * The stamp is read `untracked` for the reason `FetchVisibleRegions`
+         * reads `loadedRegions` untracked: that autorun is what writes it, and
+         * the `fetchGeneration` bump at fetch end is the re-trigger.
          */
         isCacheValid(displayedRegionIndex: number): boolean {
           return (

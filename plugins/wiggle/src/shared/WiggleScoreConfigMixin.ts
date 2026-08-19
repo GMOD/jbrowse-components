@@ -37,17 +37,18 @@ export const RESOLUTION_STEP = 2
  *
  * The score-PLOT config every wiggle-family display shares: the score axis
  * (`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size.
- * Config only — the strict-`bpPerPx` fetch rule (adr-008) that used to sit here
- * is `WiggleCommonMixin`'s `regionFetchKey`, because it describes a fetch and
- * not a plot, and `LinearManhattanDisplay` composes this for the score axis and
- * had to state `isCacheValid` by hand to shake it off. Deliberately NOT the
- * wiggle-specific palette,
- * rendering-type, summary-mode and resolution config — those moved to
- * `WiggleCommonMixin`, which composes this, when it became clear that
- * `LinearManhattanDisplay` (the other composer) reads none of them and was
- * inheriting a config schema that advertised twelve slots doing nothing on a
- * Manhattan plot. Relocation rather than a new mixin layer: `types.compose`
- * depth is a real ceiling in these chains (ADR-041).
+ * Config only. The strict-`bpPerPx` fetch rule (adr-008) belongs to
+ * `WiggleCommonMixin`, as its `regionFetchKey`, because it describes what a
+ * fetch returns rather than how a plot is drawn — `LinearManhattanDisplay`
+ * composes this mixin for the score axis and fetches untransformed SNPs.
+ *
+ * Deliberately NOT the wiggle-specific palette, rendering-type, summary-mode
+ * and resolution config either — those moved to `WiggleCommonMixin`, which
+ * composes this, when it became clear that `LinearManhattanDisplay` (the other
+ * composer) reads none of them and was inheriting a config schema that
+ * advertised twelve slots doing nothing on a Manhattan plot. Relocation rather
+ * than a new mixin layer: `types.compose` depth is a real ceiling in these
+ * chains (ADR-041).
  *
  * A display that owns its own rpcDataMap type composes this; a wiggle-shaped
  * one composes `WiggleCommonMixin`.
