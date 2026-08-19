@@ -398,15 +398,25 @@ export async function downloadStatus<T>(
  * downloading.
  *
  * `''` is not one of those. It is how every phase helper says "this phase is
- * over", so an operation reporting it is not in flight and must not be charged
- * anything — charging it is a bar that runs *backwards* as regions finish
- * (three done and one at half of its 1000 read 500/4000 rather than 500/1000),
- * and it can win the `present[0]` fallback below, blanking the label of a region
- * still working. Callers that retire a slot on `''` never send one; this is here
- * so the function is right on its own rather than only in company.
+ * over", so an operation reporting it is not in flight and cannot be charged as
+ * one — charging it at zero is a bar that runs *backwards* as regions finish
+ * (three done and one at half of its 1000 reading 500/4000 rather than
+ * 500/1000), and it can win the `present[0]` fallback below, blanking the label
+ * of a region still working.
+ *
+ * `completed` is the other half of that, and the reason the bar no longer drops
+ * as the batch lands: work that FINISHED is charged in full, to numerator and
+ * denominator alike, so 500/1000 becomes 3500/4000 and the fraction only ever
+ * rises. Only the entries in the winning phase count, on the same
+ * incommensurability rule as everything else, and they cannot make the result
+ * anything on their own — a batch whose every slot is done is a batch with no
+ * bar, not a bar at 100%. Reconstructing them is the caller's job, since only a
+ * slot's own channel saw the total it retired at; {@link createStatusFanOut}
+ * does it, and a caller passing nothing gets the in-flight-only reading.
  */
 export function aggregateStatus(
   statuses: (RpcStatus | undefined)[],
+  completed: StatusWithProgress[] = [],
 ): RpcStatus | undefined {
   const present = statuses.filter(
     (s): s is RpcStatus => s !== undefined && s !== '',
@@ -433,7 +443,16 @@ export function aggregateStatus(
   }
   const unmeasured = present.length - summable.length
   const total = measured + (unmeasured * measured) / summable.length
-  return { message, current, total }
+  const done = sumTotals(completed.filter(s => s.message === message))
+  return { message, current: current + done, total: total + done }
+}
+
+function sumTotals(statuses: StatusWithProgress[]) {
+  let out = 0
+  for (const s of statuses) {
+    out += s.total
+  }
+  return out
 }
 
 /**
@@ -457,12 +476,22 @@ export function aggregateStatus(
  */
 export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
   const slots: (RpcStatus | undefined)[] = []
+  // What the retired slots got through, so the shared bar keeps their bytes in
+  // both halves of the fraction. Without it the denominator shrank as regions
+  // landed and the bar walked backwards near the end — see aggregateStatus.
+  // Only a slot's own channel ever saw the total it retired at, so this is the
+  // one place that can record it.
+  const completed: StatusWithProgress[] = []
   return (): StatusCallback => {
     const index = slots.length
     slots.push(undefined)
     return status => {
+      const previous = slots[index]
+      if (status === '' && typeof previous === 'object') {
+        completed.push({ ...previous, current: previous.total })
+      }
       slots[index] = status
-      statusCallback?.(aggregateStatus(slots) ?? '')
+      statusCallback?.(aggregateStatus(slots, completed) ?? '')
     }
   }
 }

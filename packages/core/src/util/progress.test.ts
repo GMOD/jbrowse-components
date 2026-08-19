@@ -754,10 +754,57 @@ describe('createStatusFanOut', () => {
     a({ message: 'Downloading', current: 100, total: 100 })
     b({ message: 'Downloading', current: 20, total: 100 })
     a('')
+    // a's 100 stays in both halves, so the reading is what it was the instant
+    // before it retired. Dropping it read 20/100 — the same 20% of work, priced
+    // as if a had never been asked for
     expect(seen.at(-1)).toEqual({
       message: 'Downloading',
-      current: 20,
-      total: 100,
+      current: 120,
+      total: 200,
+    })
+  })
+
+  // what the drop actually looked like: four regions of 1000, three landed and
+  // the fourth halfway, read 50% right after reading 87.5%
+  it('never runs backwards as the batch lands', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => seen.push(s))
+    const slots = Array.from({ length: 4 }, () => slot())
+    for (const s of slots) {
+      s({ message: 'Downloading', current: 500, total: 1000 })
+    }
+    for (const s of slots.slice(0, 3)) {
+      s({ message: 'Downloading', current: 1000, total: 1000 })
+      s('')
+    }
+
+    const fractions = seen.map(statusFraction).filter(f => f !== undefined)
+    for (const [i, f] of fractions.entries()) {
+      expect(f).toBeGreaterThanOrEqual(fractions[i - 1] ?? 0)
+    }
+    expect(seen.at(-1)).toEqual({
+      message: 'Downloading',
+      current: 3500,
+      total: 4000,
+    })
+  })
+
+  // a slot moving to its next phase is not a slot that finished the batch, and
+  // the phases are incommensurable anyway — bytes summed with features is the
+  // reading ADR-072 removed
+  it('does not charge a finished phase against a different one', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => seen.push(s))
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading', current: 400, total: 400 })
+    a('')
+    a({ message: 'Computing layout', current: 1, total: 4 })
+    b({ message: 'Computing layout', current: 1, total: 4 })
+    expect(seen.at(-1)).toEqual({
+      message: 'Computing layout',
+      current: 2,
+      total: 8,
     })
   })
 
