@@ -5,9 +5,9 @@ description: canvas2dUtils holds the forward bp→px mapper, the scale and the i
 
 # One spelling per geometry question
 
-**Status: sections 1, 2 and 4 are built; section 3 is not.** Each section below
-carries what the implementation found where it differed from the proposal — read
-those before acting on the prose around them.
+**Status: built, all four sections.** Each carries what the implementation found
+where it differed from the proposal — read those before acting on the prose
+around them.
 
 `packages/render-core/src/canvas2dUtils.ts` is where a geometry number goes when
 two paths have to agree on it, and each entry's docstring says what happened
@@ -87,7 +87,9 @@ question and legitimately so.
 
 Two of those displays declare the getter and say why, in near-identical
 docstrings about the three consumers that have to be one number (the canvas
-element's CSS size, the backing store, the SVG export's paint layer):
+element's CSS size, the backing store, the SVG export's paint layer) — though
+**the third consumer is not universal**: HiC's SVG body takes the export shell's
+own `canvasWidth` prop, so its getter has two readers, not three.
 
 - LD, `plugins/variants/src/LDDisplay/shared.ts:448`
 - the variant matrix, `plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/model.ts:89`

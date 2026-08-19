@@ -5,6 +5,11 @@ description: The comparative installer already splits a fetch into prepare/run/c
 
 # The global fetches hand-roll prepare/run/commit
 
+**Status: built.** `installGlobalFetchAutorun` takes `GlobalFetchPhases` now, and
+`performHicFetch` / `performLDFetch` are gone. Three of the sections below were
+wrong about the code and are corrected in place — read those corrections before
+trusting the prose around them.
+
 `installComparativeFetchAutorun` (`packages/synteny-core/src/installComparativeFetchAutorun.ts`,
 175 lines) takes three callbacks and its docstring says why each exists:
 
@@ -62,11 +67,17 @@ autorun watches `staticBlocks` on top of the `dynamicBlocks` the installer reads
 
 Nothing moves today: static blocks are quantized from the same `offsetPx` /
 `bpPerPx` the dynamic ones are, so the extra dependency fires on a subset of the
-runs the installer already causes. That is what makes it worth writing down —
-the reason it is harmless is a containment nobody stated and nothing checks, and
-[the trigger-list rule](../ARCHITECTURE.md#the-global-fetch-trigger-list-must-be-read-unconditionally)
-is about the opposite failure (a read that drops OUT of the set), so it does not
-cover this.
+runs the installer already causes.
+
+**The example was right and its mechanism was wrong.** `staticBlocks` was
+already in arc's dependency set before any of this, through the gate rather than
+through the declaration shape: `shouldFetch` was `() => !self.dataCurrent`, and
+`dataCurrent` → `currentRegionSignature` → `view.staticBlocks.contentBlocks`. So
+the tracked-prefix difference between a plain `async function` and an MST action
+is real, but arc is not evidence of it — pick a display whose prefix reads
+something its gate does not before citing this again. Naming a correlation as a
+mechanism is the failure this paragraph committed, not the one it was warning
+about.
 
 ## The prefix's stated reason has one caller left, and it is a test
 
@@ -81,6 +92,13 @@ thunk; the only direct caller anywhere else is
 `plugins/variants/src/LDDisplay/derivedRegionTooLarge.test.ts`, which drives
 `performLDFetch` twice. No test calls `performHicFetch` or `fetchArcFeatures`
 directly at all.
+
+**"Duplication" overstates it, and the build found where.** Only the *gate* half
+was written twice — HiC's `effectiveResolution`, LD's `showLDTriangle`, each
+also spelled in `shouldFetch`. `isMinimized` and the empty-viewport check were
+written **once**: the skeleton reads `isMinimized` to track it and never skips on
+it. So those two moved into `prepare` rather than being deleted, and a collapse
+that treated the whole prefix as redundant would have dropped two live gates.
 
 ## The shape
 
@@ -109,10 +127,16 @@ What must NOT change in the process:
 ## Oracle: both installers' suites already exist
 
 `installGlobalFetchAutorun.test.ts` is 19 tests and
-`installComparativeFetchAutorun.test.ts` is 8. Reimplement the global skeleton on
-the comparative one's phases and run both unchanged; the per-region family's
-`installPerRegionFetchAutoruns.test.ts` (19) is the third, and it is the one that
-should stay untouched, since this changes nothing about that family.
+`installComparativeFetchAutorun.test.ts` is 8. The per-region family's
+`installPerRegionFetchAutoruns.test.ts` (19) is the third, and it is the one to
+run untouched, since this changes nothing about that family.
+
+**"Run both unchanged" was the wrong ask for the first of them, and cannot be
+met.** `installGlobalFetchAutorun.test.ts` *constructs* the installer, so
+changing its parameters necessarily edits that file's `setup()` and its
+hand-built fixture. What survives unchanged is every one of its 19 assertions,
+which is the property that was worth asking for; the harness around them is not.
+Say "the assertions survive" when writing the next oracle line like this one.
 
 The dev-only contract checks come along for free: `assertDisplayContract` and
 `makeRetryContractCheck` are already called by whichever installer put the

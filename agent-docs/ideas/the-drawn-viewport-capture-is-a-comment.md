@@ -5,6 +5,10 @@ description: setLastDrawnViewport takes two loose numbers, and the rule that the
 
 # The drawn-viewport capture is a comment
 
+**Status: built.** `captureViewport()` and `commitDrawnViewport(v)` replaced
+`setLastDrawnViewport(offsetPx, bpPerPx)`. One claim in "The shape" was wrong
+about the code and is corrected there.
+
 `StaleViewportRescaleMixin.setLastDrawnViewport(offsetPx, bpPerPx)`
 (`plugins/linear-genome-view/src/BaseLinearDisplay/models/StaleViewportRescaleMixin.ts:87`)
 takes two bare numbers. Which two is load-bearing: they have to be the viewport
@@ -43,11 +47,19 @@ commitDrawnViewport(v: DrawnViewport) // replaces setLastDrawnViewport
 ```
 
 Two call sites, and the seven-line comment moves onto `captureViewport` where it
-is stated once. `DrawnViewport` is `{ offsetPx, bpPerPx }`, which is what
-`viewportMatchesLastDrawn` and `computeRenderTransform`
+is stated once. `DrawnViewport` is `{ offsetPx, bpPerPx }`.
+
+**Built, and the second-reader claim below was wrong.** This paragraph used to
+say `viewportMatchesLastDrawn` and `computeRenderTransform`
 (`plugins/linear-genome-view/src/BaseLinearDisplay/models/renderTransform.ts`)
-already take as two of their four arguments — so the type has a second reader
-the moment it exists.
+"already take it as two of their four arguments". They do not: they take four
+loose numbers under four different names (`lastDrawnOffsetPx` against
+`viewOffsetPx`), and folding either pair into the type would produce either a
+sometimes-`undefined` object — which the constraint below forbids — or a
+one-loose-one-object signature. The second reader came from somewhere better
+instead: `viewportFresh` and `renderTransform` now read the live viewport
+*through* `captureViewport()`, which is what makes "it has to be a view" an
+observable property rather than a note. `RenderTransformInputs` is unchanged.
 
 **Do not fold the two volatiles into one object.** `lastDrawnOffsetPx` and
 `lastDrawnBpPerPx` are read individually by both getters and both may be
