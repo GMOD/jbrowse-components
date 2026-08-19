@@ -1,14 +1,14 @@
 ---
 name: green-checks-that-cannot-fail
-description: Five checks in this repo passed for structural reasons rather than real ones — a compiler standing in for the memo a sabotage deleted, a census that sampled only while the page was quiet, a drift check silent because all fourteen copies were wrong identically, a branch every page rendered that no page could reach, and a geometry invariant held against a polygon the shader does not emit. The catch for each, and why the class is worth naming outside genomics.
+description: Seven checks in this repo passed for structural reasons rather than real ones — a compiler standing in for the memo a sabotage deleted, a census that sampled only while the page was quiet, a drift check silent because all fourteen copies were wrong identically, a branch every page rendered that no page could reach, a geometry invariant held against a polygon the shader does not emit, an oracle cited by directory that never asserted its subject, and a parity test sampling the one region where both spellings agree. The catch for each, and why the class is worth naming outside genomics.
 ---
 
 # Green checks that could not have failed
 
 A check that cannot fail is indistinguishable, from the outside, from a check
-that passes. This repo has now hit five of them from five different directions,
-which is enough to name the class rather than treat each as its own bug.
-Audience and framing: [upstreamable-ideas](upstreamable-ideas.md).
+that passes. This repo has now hit seven of them from seven different
+directions, which is enough to name the class rather than treat each as its own
+bug. Audience and framing: [upstreamable-ideas](upstreamable-ideas.md).
 
 The common shape: **something between the assertion and the code silently
 supplied the property being asserted.** The catch, every time, was to sabotage
@@ -125,12 +125,63 @@ general rule is that a geometry check has to be built from the vertex
 expressions, not from the curve they approximate — and that a sweep's breadth
 says nothing about whether it is sweeping the right object.
 
+## 6. An oracle cited by directory that never asserted its subject
+
+Splitting the per-region cache predicate into a `regionFetchKey` and a
+`regionHasData` hook needed to know that the presence half was already covered.
+The plan named its oracle: the five `derivedRegionTooLarge.test.ts` files, one
+per gated display, whose whole subject is a region marked loaded while holding
+no data. The name matches the property exactly, the directory listing is five
+files long, and none of that is coverage.
+
+Sabotaging `regionHasData` to a bare `true` left MAF's file green across 763
+tests. Multi-row's reddened one unrelated `featureAt` case. Alignments, LD and
+the multi-sample variant have no presence rule to cover at all. Canvas is the
+single display whose presence rule was pinned, and by a file with a different
+name in a different directory — it has no `derivedRegionTooLarge.test.ts`.
+
+The catch is the same sabotage the other six needed, run *before* leaning on the
+oracle rather than after. What made this one easy to skip is that the citation
+was a filename glob: five files whose name states the property read as five
+tests asserting it.
+
+**Why it travels:** naming a test file after a subject is how everyone
+organizes tests, so a plan that cites `**/<subject>.test.ts` as its safety net
+is citing the filesystem, not the assertions. The general rule is that an oracle
+is a lead until a sabotage reddens it, and the more exactly a filename matches
+the property the less anyone checks.
+
+## 7. A parity test sampling the one region where both spellings agree
+
+`bpAtPx` (render-core) and `basePaintedAt` (core) implement one rounding pivot
+twice, deliberately — there is no shared call to make. Keeping two copies honest
+wants a parity test driving both production paths, and the first draft of it
+swept cell interiors across many geometries and stayed green through a sabotage
+of *both* sides.
+
+`Math.ceil(x) - 1` and `Math.floor(x)` return the same value everywhere except
+where `x` is whole. The whole content of a pivot is which side of the integer it
+lands on, so a sample anywhere else exercises the arithmetic the two already
+share and nothing else. Sampling the boundary then has a second constraint the
+first draft would not have found either: the two paths form the offset
+differently (`px * bpPerPx` against `px * span / width`), so reaching a whole
+base exactly needs a power-of-two `bpPerPx`, and the fractional geometries a
+real view produces need a separate block.
+
+**Why it travels:** a differential test between two implementations is normally
+written by sweeping the input domain broadly, which is exactly wrong when the
+implementations differ only on a measure-zero subset of it. The general rule is
+to sample the discontinuity the two disagree about and then check that both can
+reach it — breadth over the domain is what hides this, not what finds it.
+
 ## Publishing this
 
 This is the most distinctive of the three general-audience groups and the
 hardest to write, because each item needs its failure narrated to land. The
 first two stand alone; items 3 and 4 are one post about examples-as-tests, and
-item 5 stands alone for a graphics audience. Item 4
+item 5 stands alone for a graphics audience. Items 6 and 7 are one post about
+oracles — the first is a check nobody read and the second a check read
+carefully, which is what makes them stronger together than apart. Item 4
 also appears in
 [mobx-state-patterns-to-publish](mobx-state-patterns-to-publish.md) as the
 argument for naming a lifecycle state — tell it once, from whichever goes out
