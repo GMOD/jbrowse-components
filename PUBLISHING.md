@@ -216,6 +216,30 @@ Once the post is on the site you can upgrade `![caption](src)` to
 `<Figure caption="…" src="…" />`, which adds a lightbox and, for any image
 backed by a screenshot spec, an "Open this view in JBrowse" link.
 
+## Checking a draft against the code
+
+**A sentence naming several things is where a draft goes wrong.** Two audits of
+the v5.0.0 draft found fifteen false claims, and eight of them had that shape —
+eight track types, five pinnable settings, three named modes — where most held
+and one or two did not. Reading the head of such a list confirms nothing about
+its tail, so expand every member and check each one. Both of that draft's
+universals (`every track`, `everywhere`) failed the same way.
+
+**Grep `agent-docs/` before tracing the code.** Both of those universals were
+contradicted by a reference doc written before the draft was — one of them by
+`ARCHITECTURE.md`, which carries the canonical list of exceptions to the very
+sentence the draft had written as exceptionless.
+
+**Generate anything that drifts under a commit**, rather than proofreading it.
+`sync-measurements` and `sync-inline-figures` scan this directory, so a draft
+takes numbers from `agent-docs/measurements/` the same two ways a docs page does
+— a `BEGIN GENERATED MEASUREMENT` block for a table, a `<!--m:id.row.column-->`
+marker for a figure quoted in prose. The ABI removal groups render from
+`knownRemovals.ts`. The diffstat is the placeholder `${DIFFSTAT}`, which
+`release.ts` computes against the last stable tag reachable from HEAD;
+`check-release-drafts` rejects any `${…}` no release fills, because a misspelled
+one publishes literally and leaves no wrong number for a proofreader to catch.
+
 ## Prereleases
 
 `--version` sets the target explicitly instead of computing it. Any version

@@ -126,6 +126,11 @@ the generator serves that build's `test_data` the same way. Check its
 `version.txt` date first — it is whatever the primary checkout last built, which
 is the wrong app to shoot a plugin or display change against.
 
+**A borrowed build can also be mid-rebuild.** `pnpm build` empties `build/`
+before it writes, so a screenshot run or a browser probe pointed at another
+agent's build while that build is running dies part-loaded, in whatever way that
+run reports a missing chunk. Wait for the build rather than overlapping them.
+
 `website/scripts/*.ts` needs `puppeteer`, which is not hoisted to the root —
 resolve it from `packages/browser-test-utils/`.
 
@@ -140,6 +145,13 @@ fixes it in seconds.
 Reach for `pnpm build` and you will also "fix" it, because pnpm verifies deps
 before running a script — ten minutes to do what the install did on the way in,
 and it teaches you the wrong cause.
+
+**A plain dependency bump does the same thing more quietly**, with no `TS2307` to
+name it. The worktree installed at creation time, so once a bump lands on `main`
+a rebased worktree still holds the old package and typechecks against it,
+reporting errors that the bump you just rebased onto had already fixed. That
+reads as "main is red" and has been reported as such. `pnpm install
+--frozen-lockfile` in the worktree.
 
 It cannot be a stale `esm/`, and the exports map is how you know: in the
 workspace `@jbrowse/core`'s exports point at `./src/**.ts`, and only

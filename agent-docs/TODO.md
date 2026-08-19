@@ -45,6 +45,7 @@ before anyone noticed.
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
+| [Shoot the multihop chain as counted arcs](#shoot-the-multihop-chain-as-counted-arcs-in-one-lgv) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
 | [Contract checks are stripped in production](#the-display-contract-checks-are-stripped-in-production) | limits, plugins | the in-tree half is gated; decide the out-of-tree channel |
@@ -70,6 +71,7 @@ before anyone noticed.
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
 | [Take the MSAA target's size on a retina display](#take-the-msaa-targets-size-on-a-retina-display) | GPU, limits | run the probe at dpr 2; the 640 MiB is arithmetic, not measurement |
+| [Cross-region arc count at 300x](#read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
 | [Does a quality floor still buy anything on the band](#does-a-base-quality-floor-still-buy-anything-on-the-coverage-band) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
 | [Walk the CIGAR once per MM tag](#walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
@@ -387,6 +389,26 @@ an `evaluateOnNewDocument` override of `getContext` verified against a plain
 canvas first. **This is one deliberate diagnostic run, not another A/B, and it
 must not be left on** — it was measured and refuted as a *fix*
 ([reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md)).
+
+### Shoot the multihop chain as counted arcs in one LGV
+
+`multihop_split_view` tells this story today as four panels built by "Reconstruct
+derivative allele → draw as split", plus a script. The read-connection arcs give
+a second, much shorter route to it: COLO829's `chr3:25,357,600-25,361,000` with
+the chr12 and chr10 partner windows as further **displayed regions** of one LGV,
+tumour track at `readConnections: 'arc'`, and each hop draws as one coalesced,
+support-weighted arc across the region dividers. This belongs beside the existing
+figure rather than replacing it — the reconstruction is the story there, and this
+is what the raw evidence for it looks like.
+
+ONT split junctions are exact, so they coalesce on `arcKey` with no jitter and
+each arc's width is the support nanomonsv called on. That is the best case this
+feature has, which is why it is worth shooting.
+
+**The figure only works if the partner windows are right**, and they come from
+the nanomonsv VCF / `sv_multihop.py derive` output rather than from reading the
+picture — [reference/SV_MULTIHOP.md](reference/SV_MULTIHOP.md) has the chain and
+what is established about it.
 
 ### Render the twenty specs whose callouts were converted to anchors
 
@@ -1819,6 +1841,30 @@ by shipping a second per-segment field (the high-quality count beside the total)
 which is 4 bytes a segment for a setting most users will never touch. A config
 slot with no menu entry is the honest middle, and it is what to reach for unless
 the measurement says people will move it.
+
+### Read the cross-region arc count at 300x, which the arc cap is sized from
+
+`CROSS_REGION_ARC_CAP = 600` (`features/arcs/crossRegionOverlay.ts`) is sized for
+the same-chromosome multi-seam case, which is the one that is actually unbounded.
+Its input is an **estimate**: 52 of 381 arcs (13.6%) were cross-region on one
+seam of HG02768's inverted duplication, a ~30x paired-end sample, and that count
+was then scaled by an assumed ~10x for depth and again for the number of seams.
+Only the 30x half was measured.
+
+Reading the real number is cheap — `crossRegion.length` off the model, on the
+HG002 300x window split in two — and it decides whether 600 is two deep seams'
+worth, as the comment claims, or off by an order of magnitude in either
+direction. Note what it does *not* decide: at that depth the reader's own lever
+already exists and is the one they are using, `drawProperPairArcs: false`
+dropping 9138 of 9204 arcs, so the cap is a floor under the frame rate rather
+than a filter, and a wrong number here degrades a picture that is a wash of ink
+either way.
+
+Three companion counts were taken at the same time and have been re-read but
+never re-run, so treat them the same way: that HG02768 view yields 0
+cross-region arcs both as one region and as two regions 2 Mb apart — the 52 came
+from splitting it 300 bp apart — and 865 of 9204 arcs are interchromosomal at
+`1:2,000,000` on HG002 300x.
 
 ### Measure the dense-lane SNP change on a deep pileup
 

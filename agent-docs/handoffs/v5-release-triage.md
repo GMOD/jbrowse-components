@@ -73,6 +73,16 @@ wrong within the week.
    vocabularies. All three probed with deliberate typos and passed. A Trix path
    typo is a search that returns nothing, which is the class the command exists
    for.
+
+   The same blindness reads the other way and produces a false positive.
+   `test_data/volvox/config.json` track 90 (`volvox_del2.paf`) names assembly
+   `volvox_del2`, which that file does not define and `validate` therefore calls
+   an error — but `LGVSynteny.test.tsx` supplies it at runtime through a
+   `JB2TrackHubConnection` onto `config2.json`. A validator that opened
+   `connections` still could not resolve that one, since the connection is not
+   in the config; what it can do is say that an assembly may arrive from a
+   connection instead of ranking a spelling guess first. The other error in that
+   file, track 76's `wombat`, is a deliberate fixture.
 9. **The download progress bar runs backwards near the end.** `aggregateStatus`
    (`core/src/util/progress.ts`) drops completed slots from both numerator and
    denominator. It cannot exceed 100% or divide by zero — those two are closed.
