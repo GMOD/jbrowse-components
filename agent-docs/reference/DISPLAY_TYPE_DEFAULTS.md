@@ -219,8 +219,8 @@ care to be checked at all: multi-wiggle's row is gated on
 `overlayLegendApplies`, which wants an overlay rendering **and** sources, and
 sources arrive with data the test never fetches — hence a fixture state that
 seeds them. Multi-row features gates its row on having a legend at all, so its
-fixture is `volvox_mouse_inheritance_painting`, the one volvox track that
-*configures* a legend rather than deriving one from a fetch. Manhattan's row is
+fixture states a `legend` in the display snapshot — the slot `colorLegend` reads
+before it derives anything from data. Manhattan's row is
 `disabled` without LD coloring but still built and still pinned, which is what
 lets the walk (which runs in the default `colorBy: 'normal'` state) find it;
 gating the row out entirely would have hidden the pin. Hi-C needs a `HicTrack`
