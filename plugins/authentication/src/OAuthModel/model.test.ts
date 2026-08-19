@@ -152,10 +152,26 @@ test('a token that fails validation is dropped, so the next read re-prompts', as
     opened.push(String(url))
     return {} as Window
   })
-  void account.getFetcher(location)(location.uri)
+  const reprompted = account.getFetcher(location)(location.uri)
   await Promise.resolve()
   await Promise.resolve()
   expect(opened).toHaveLength(1)
+
+  // and settle it: an abandoned flow keeps a live message listener on `window`
+  // for this same account id, which then answers the message a later test
+  // dispatches and rejects on the state mismatch, with nothing awaiting it
+  window.dispatchEvent(
+    new MessageEvent('message', {
+      origin: window.location.origin,
+      data: {
+        name: 'JBrowseAuthWindow-testOAuth',
+        redirectUri: `${window.location.origin}/?error=access_denied&state=${new URL(
+          opened[0]!,
+        ).searchParams.get('state')}`,
+      },
+    }),
+  )
+  await expect(reprompted).rejects.toThrow('OAuth flow was cancelled')
 })
 
 // Runs one authorization-code flow and reports the challenge the auth window
@@ -169,9 +185,7 @@ async function runAuthFlow(
     authUrl = String(url)
     return { closed: false, close: () => {} } as Window
   })
-  // a fresh Response per call: a body can only be read once, and an earlier
-  // test in this file leaves an unsettled flow whose listener also answers the
-  // message dispatched below
+  // a fresh Response per call: a body can only be read once
   fetchMock.mockImplementation(
     async () =>
       new Response(JSON.stringify({ access_token: `token-for-${code}` })),
