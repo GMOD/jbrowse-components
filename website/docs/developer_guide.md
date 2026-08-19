@@ -84,6 +84,7 @@ own via pull request.
 - [](/docs/developer_guides/menus)
 - [](/docs/developer_guides/svg_export)
 - [](/docs/developer_guides/creating_text_search_adapter)
+- [](/docs/developer_guides/upgrading_v5)
 
 ### Core concepts
 

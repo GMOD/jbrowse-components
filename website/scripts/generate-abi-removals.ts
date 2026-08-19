@@ -24,15 +24,15 @@ import {
   formatMarkdown,
   spliceGeneratedBlock,
 } from './check-utils.ts'
-import { releaseDraftsDir, repoRoot } from './paths.ts'
+import { docsDir, repoRoot } from './paths.ts'
 
 const MARKER = 'ABI REMOVALS'
 
-// Both pages carry the same block. The draft is optional -- it is deleted by the
-// release that consumes it, and after that the reference doc is the only home.
+// Both pages carry the same block: the internal reference, and the published
+// upgrade guide the release announcement sends plugin authors to.
 const targets = [
   join(repoRoot, 'agent-docs/reference/PLUGIN_ABI_STABILITY.md'),
-  join(releaseDraftsDir, 'v5.0.0.md'),
+  join(docsDir, 'developer_guides/upgrading_v5.md'),
 ].filter(path => existsSync(path))
 
 // The unique NAMES a group removed, not its entries: seven names were served

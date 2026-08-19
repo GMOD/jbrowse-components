@@ -454,6 +454,16 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // exemption is genuinely bad at — a table of CURRENT API, where the idiom that
 // justifies the exemption cannot apply.
 const SYMBOL_DIRS = [join(docsDir, 'developer_guides')]
+// The one guide in that directory whose subject is names that no longer exist.
+// A migration guide is the "it used to be X, and here is why it isn't" idiom
+// end to end -- the removed renderer registry, the dockview seam, the lollipop
+// display -- so an allowlist entry per sentence is the outcome the exemption
+// for agent-docs/reference/ was written to avoid. The page carries no claim
+// about current API that this check could defend: what it says about live
+// symbols it says through links to the guides that own them.
+const SYMBOL_EXEMPT_FILES = new Set([
+  join(docsDir, 'developer_guides', 'upgrading_v5.md'),
+])
 const SYMBOL_FILES = new Set([
   join(repoRoot, 'agent-docs', 'ARCHITECTURE.md'),
   join(repoRoot, 'agent-docs', 'reference', 'ARCHITECTURAL_LIMITS.md'),
@@ -790,6 +800,9 @@ function collectSymbols() {
 let symbolCache: Set<string> | undefined
 
 function scanSymbols(path: string, lines: string[]): Problem[] {
+  if (SYMBOL_EXEMPT_FILES.has(path)) {
+    return []
+  }
   if (
     !SYMBOL_DIRS.some(d => path.startsWith(d)) &&
     !SYMBOL_FILES.has(path) &&
