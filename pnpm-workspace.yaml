@@ -23,6 +23,14 @@ overrides:
   # removing it does not make the override droppable — jest alone is enough.
   '@babel/core': '^8.0.1'
 blockExoticSubdeps: true
+# A workspace cycle is a warning by default, and the tree carried 127 of them
+# unread. They all came from two edges that had a way out: three plugins taking
+# a `dependencies` edge on plugin-data-management for two model types core
+# already states structurally, and seven declaring `@jbrowse/web` a
+# devDependency for `createTestSession`, which the root package.json already
+# declares for the whole tree. Failing the install is what keeps the next one
+# from arriving unnoticed.
+disallowWorkspaceCycles: true
 allowBuilds:
   canvas: true
   electron: true

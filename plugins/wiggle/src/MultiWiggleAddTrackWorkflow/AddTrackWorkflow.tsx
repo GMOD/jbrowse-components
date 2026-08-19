@@ -31,7 +31,7 @@ import {
 } from './util.ts'
 
 import type { TrackItem } from './util.ts'
-import type { AddTrackModel } from '@jbrowse/plugin-data-management'
+import type { AddTrackWorkflowModel } from '@jbrowse/core/util'
 import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
@@ -66,7 +66,7 @@ function doSubmit({
 }: {
   tracks: TrackRow[]
   trackName: string
-  model: AddTrackModel
+  model: AddTrackWorkflowModel
 }) {
   const { assembly } = model
   if (!assembly) {
@@ -86,7 +86,11 @@ function doSubmit({
 }
 
 const MultiWiggleAddTrackWorkflow = observer(
-  function MultiWiggleAddTrackWorkflow({ model }: { model: AddTrackModel }) {
+  function MultiWiggleAddTrackWorkflow({
+    model,
+  }: {
+    model: AddTrackWorkflowModel
+  }) {
     const { classes } = useStyles()
     const [inputMode, setInputMode] = useState<'paste' | 'upload'>('paste')
     const [inputVal, setInputVal] = useState('')

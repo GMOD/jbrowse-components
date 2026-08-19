@@ -56,7 +56,6 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@jbrowse/display-test-utils": "workspace:^",
-    "@jbrowse/web": "workspace:^"
+    "@jbrowse/display-test-utils": "workspace:^"
   }
 }

@@ -14,8 +14,11 @@ import type {
   AdapterTypeOptions,
   IndexTypeOptions,
 } from './buildAdapterConfig.ts'
-import type { AbstractRootModel, FileLocation } from '@jbrowse/core/util'
-import type { AddTrackModel } from '@jbrowse/plugin-data-management'
+import type {
+  AbstractRootModel,
+  AddTrackWorkflowModel,
+  FileLocation,
+} from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -54,7 +57,7 @@ const SUMMARY_BED_LABEL =
 const MultiMAFWidget = observer(function MultiMAFWidget({
   model,
 }: {
-  model: AddTrackModel
+  model: AddTrackWorkflowModel
 }) {
   const { classes } = useStyles()
   const session = getSession(model)

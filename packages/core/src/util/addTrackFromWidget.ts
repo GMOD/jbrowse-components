@@ -34,6 +34,17 @@ export interface AddTrackWidgetSelf extends IStateTreeNode {
 }
 
 /**
+ * The slice of the add-track widget a whole workflow gets: the submit path
+ * above plus the assembly it writes into. Structural rather than the widget's
+ * own model type, so a plugin contributing a workflow doesn't take a package
+ * dependency on the plugin that owns the widget.
+ */
+export interface AddTrackWorkflowModel extends AddTrackWidgetSelf {
+  assembly: string | undefined
+  setAssembly: (arg: string) => void
+}
+
+/**
  * Reset the form and dismiss the widget after a successful add.
  *
  * Only ever on an add that landed something: finishing throws away what the

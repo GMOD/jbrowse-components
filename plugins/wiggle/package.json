@@ -33,7 +33,6 @@
     "@gmod/bbi": "^11.2.2",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.3.0",
-    "@jbrowse/plugin-data-management": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/tree-sidebar": "workspace:^",

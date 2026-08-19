@@ -238,6 +238,7 @@ export {
   containerDisplaysAssembly,
   finishAddTrack,
   type AddTrackWidgetSelf,
+  type AddTrackWorkflowModel,
 } from './addTrackFromWidget.ts'
 export { makeTrackId } from './makeTrackId.ts'
 export { matchTrackId } from './matchTrackId.ts'

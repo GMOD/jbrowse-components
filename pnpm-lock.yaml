@@ -951,10 +951,6 @@ importers:
       react-dom:
         specifier: '>=16.8.4'
         version: 19.2.8(react@19.2.8)
-    devDependencies:
-      '@jbrowse/web':
-        specifier: workspace:^
-        version: link:../../products/jbrowse-web
 
   plugins/canvas:
     dependencies:
@@ -1028,10 +1024,6 @@ importers:
       react-dom:
         specifier: '>=19.0.0'
         version: 19.2.8(react@19.2.8)
-    devDependencies:
-      '@jbrowse/web':
-        specifier: workspace:^
-        version: link:../../products/jbrowse-web
 
   plugins/comparative-adapters:
     dependencies:
@@ -1156,9 +1148,6 @@ importers:
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../variants
-      '@jbrowse/web':
-        specifier: workspace:^
-        version: link:../../products/jbrowse-web
 
   plugins/dotplot-view:
     dependencies:
@@ -1201,10 +1190,6 @@ importers:
       react-dom:
         specifier: '>=19.0.0'
         version: 19.2.8(react@19.2.8)
-    devDependencies:
-      '@jbrowse/web':
-        specifier: workspace:^
-        version: link:../../products/jbrowse-web
 
   plugins/gccontent:
     dependencies:
@@ -1283,10 +1268,6 @@ importers:
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
-    devDependencies:
-      '@jbrowse/web':
-        specifier: workspace:^
-        version: link:../../products/jbrowse-web
 
   plugins/gtf:
     dependencies:
@@ -1320,9 +1301,6 @@ importers:
       '@jbrowse/plugin-bed':
         specifier: workspace:^
         version: link:../bed
-      '@jbrowse/plugin-data-management':
-        specifier: workspace:^
-        version: link:../data-management
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1494,9 +1472,6 @@ importers:
       '@jbrowse/display-test-utils':
         specifier: workspace:^
         version: link:../../packages/display-test-utils
-      '@jbrowse/web':
-        specifier: workspace:^
-        version: link:../../products/jbrowse-web
 
   plugins/linear-genome-view:
     dependencies:
@@ -1534,9 +1509,6 @@ importers:
       '@jbrowse/display-test-utils':
         specifier: workspace:^
         version: link:../../packages/display-test-utils
-      '@jbrowse/web':
-        specifier: workspace:^
-        version: link:../../products/jbrowse-web
 
   plugins/maf:
     dependencies:
@@ -1552,9 +1524,6 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.3.0
         version: 6.3.0(mobx@7.0.0)
-      '@jbrowse/plugin-data-management':
-        specifier: workspace:^
-        version: link:../data-management
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1860,9 +1829,6 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.3.0
         version: 6.3.0(mobx@7.0.0)
-      '@jbrowse/plugin-data-management':
-        specifier: workspace:^
-        version: link:../data-management
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view

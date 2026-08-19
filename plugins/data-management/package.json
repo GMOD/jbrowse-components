@@ -61,7 +61,6 @@
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-gwas": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",
-    "@jbrowse/plugin-variants": "workspace:^",
-    "@jbrowse/web": "workspace:^"
+    "@jbrowse/plugin-variants": "workspace:^"
   }
 }

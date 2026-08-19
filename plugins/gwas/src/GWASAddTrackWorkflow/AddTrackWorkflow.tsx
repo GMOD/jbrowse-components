@@ -15,9 +15,11 @@ import {
 import { isTabixLocation, needsExplicitIndex } from './ldAdapterConfig.ts'
 import { buildGwasTrackConfig, canSubmit } from './util.ts'
 
-import type { AbstractRootModel } from '@jbrowse/core/util'
+import type {
+  AbstractRootModel,
+  AddTrackWorkflowModel,
+} from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
-import type { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -36,7 +38,7 @@ const useStyles = makeStyles()(theme => ({
 const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   model,
 }: {
-  model: AddTrackModel
+  model: AddTrackWorkflowModel
 }) {
   const { classes } = useStyles()
   const session = getSession(model)

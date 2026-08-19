@@ -7,7 +7,7 @@ import { addMultiWiggleTrack } from '../MultiWiggleAddTrackWorkflow/util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const ConfirmDialog = lazy(() => import('./ConfirmDialog.tsx'))
 
@@ -16,11 +16,19 @@ interface MakeTrackArg {
   tracks: AnyConfigurationModel[]
 }
 
+// The two things this menu item reads off the track selector, structurally:
+// importing the selector's own model type would make the plugin that owns the
+// widget a dependency of this one, and it already depends on this one.
+interface TrackSelectorSelf extends IStateTreeNode {
+  view?: { showTrack: (trackId: string) => void }
+  selection: AnyConfigurationModel[]
+}
+
 function makeTrack({
   model,
   arg,
 }: {
-  model: HierarchicalTrackSelectorModel
+  model: TrackSelectorSelf
   arg: MakeTrackArg
 }) {
   const { name, tracks } = arg
@@ -57,7 +65,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
       isSessionWithAddTracks(session)
         ? {
             label: 'Create multi-wiggle track...',
-            onClick: (model: HierarchicalTrackSelectorModel) => {
+            onClick: (model: TrackSelectorSelf) => {
               getSession(model).queueDialog(handleClose => [
                 ConfirmDialog,
                 {
