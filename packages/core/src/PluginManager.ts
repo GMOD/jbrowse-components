@@ -109,7 +109,7 @@ type ExtensionPointCallback = (
  * Marks a component built by wrapping the one the extension point accumulated
  * so far, so {@link PluginManager.evaluateComponentExtensionPoint} can tell
  * composition (two plugins each wrapping, both still visible) from a genuine
- * clobber (a second plugin discarding the first). Set by `addWidgetWrapper`.
+ * clobber (a second plugin discarding the first). Set by `wrapComponent`.
  */
 export const wrappedComponent = Symbol.for('jbrowse.wrappedComponent')
 
