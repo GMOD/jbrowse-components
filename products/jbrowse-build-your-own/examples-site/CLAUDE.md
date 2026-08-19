@@ -91,6 +91,17 @@ Ask the mechanism here, not the symptom. Whether a seam happens to be over the
 corner control right now depends on the demo's data and its zoom, which is why
 this shipped broken on fourteen pages under a full green board.
 
+**A branch every copy renders can still be unreachable.** Every `ViewStatus` on
+this site has a `noRegions` arm, and for as long as all eighteen
+`createViewState` calls here passed `init`, no page could reach one — including
+the page whose whole argument for `view.status` over `view.ready` _is_ that
+state. The copies were right, the drift check was green, and the thing being
+taught had no demo anywhere. `loading-and-errors` now builds one engine with no
+`init`, and `viewStatusStatesAreDrawn` drives both ends of it: the state has to
+be drawn, and `setInit` has to get back out of it. When a demo's own prose names
+a case, grep the site for an input that produces it before believing the case is
+shown.
+
 **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
 re-checked by `pnpm smoke`. Going **under** a budget fails as well as over —
 bank the win by re-running and committing, or the next change spends it quietly.

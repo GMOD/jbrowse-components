@@ -63,7 +63,7 @@ const COPIED = {
     "mounting a display is what the reader came to see, and the box it goes in is theirs to style — see EXAMPLES_SITES.md, 'the one good way out is to publish the block'",
   TrackStack: 'ditto: the reader owns the column their tracks sit in',
   ViewStatus:
-    "what a host's own loading and error box looks like is theirs; that `view.ready` covers two states rather than one is not, which is why the block is here at all rather than a `: null` on every page — see the Loading and error states page",
+    "what a host's loading, error and nothing-navigated box looks like is theirs; deciding which of the four it is showing is not, and that half is published as `view.status`. Without the block three of those states draw nothing — see the Loading and error states page",
   readSiteMode:
     "how a host knows its own colour mode is the host's business; JBrowse's half is useSessionPalette",
   watchSiteMode:

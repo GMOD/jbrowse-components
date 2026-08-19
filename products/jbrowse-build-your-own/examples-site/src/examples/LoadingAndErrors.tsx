@@ -21,7 +21,9 @@ import { observer } from 'mobx-react'
 //   watch it happen.
 // - **noRegions** -- nothing has told the view where to look yet. The older
 //   `view.ready` getter reports this one as *ready*, so a host gating on that
-//   mounts its tracks over a view with no regions and draws an empty box.
+//   mounts its tracks over a view with no regions and draws an empty box. The
+//   last radio withholds the location from `createViewState` to sit in it, and
+//   the button in that panel is how a view leaves it.
 // - **ready** -- the tracks.
 //
 // And one more channel that is not on the view at all:
@@ -102,7 +104,7 @@ const conservationTrack = {
   },
 }
 
-// Three engines, one per radio button. Each is a whole `createViewState`, and
+// Four engines, one per radio button. Each is a whole `createViewState`, and
 // the demo builds a fresh one to switch -- an assembly is not something you
 // swap on a live view. So this is also the one page here that *discards*
 // engines, which is what `destroyViewState` below is about.
@@ -125,28 +127,50 @@ const SCENARIOS = {
     track: wiggleTrack,
     loc: 'ctgA:1..20,000',
   },
+  unnavigated: {
+    label: 'a view with no location yet',
+    assembly: volvox,
+    track: wiggleTrack,
+    loc: 'ctgA:1..20,000',
+  },
 }
 
 type ScenarioName = keyof typeof SCENARIOS
 
-// `state` comes back alongside the view here, unlike on every other page. It is
-// the root of the engine, and it is what `destroyViewState` takes -- a view is a
-// node inside that tree, not a handle on it.
+/**
+ * `state` comes back alongside the view here, unlike on every other page. It is
+ * the root of the engine, and it is what `destroyViewState` takes -- a view is a
+ * node inside that tree, not a handle on it.
+ *
+ * The `unnavigated` scenario is the one that withholds `init`, and the whole
+ * difference is that one argument: the engine, the assembly and the track
+ * config are what every other radio builds. `navigate` hands the view the same
+ * blob afterwards through the model's own `setInit`, which spells `assembly`
+ * because it is the model-level call -- `createViewState` fills that field in
+ * from its own option so a host never names the genome twice.
+ */
 function makeView(name: ScenarioName) {
   const { assembly, track, loc } = SCENARIOS[name]
+  const init = { loc, tracks: [track.trackId] }
   const state = createViewState({
     assembly,
     tracks: [track],
-    init: {
-      loc,
-      tracks: [track.trackId],
-    },
+    init: name === 'unnavigated' ? undefined : init,
   })
   const { view } = state.session
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
-  return { state, view, session: state.session, trackId: track.trackId }
+  return {
+    state,
+    view,
+    session: state.session,
+    trackId: track.trackId,
+    loc,
+    navigate: () => {
+      view.setInit({ ...init, assembly: assembly.name })
+    },
+  }
 }
 
 type BrowserView = ReturnType<typeof makeView>['view']
@@ -233,11 +257,23 @@ const statusBox: React.CSSProperties = {
  * to be told, and what you need is the message. The per-track error bar --
  * see the Removing Material UI page -- *does* carry a retry, because a track
  * fetch is the one that fails transiently.
+ *
+ * `noRegions` is the one branch here that is not a failure at all, and it is
+ * the only one with something for the reader to press. It is where a host sits
+ * before it has decided what to show -- a dashboard whose dataset picker is
+ * still empty, a variant table nobody has clicked a row in. JBrowse's own apps
+ * draw the import form for it (`view.showImportForm` is exactly this state or
+ * `error`); a host drawing its own chrome draws its own picker, and this one is
+ * a single button.
  */
 const ViewStatusPanel = observer(function ViewStatusPanel({
   view,
+  loc,
+  onNavigate,
 }: {
   view: BrowserView
+  loc: string
+  onNavigate: () => void
 }) {
   const { status } = view
   switch (status.type) {
@@ -275,8 +311,15 @@ const ViewStatusPanel = observer(function ViewStatusPanel({
       return (
         <div style={statusBox}>
           <span style={{ opacity: 0.75 }}>
-            Nothing has navigated this view yet.
+            Nothing has told this view where to look yet.
           </span>
+          <button
+            type="button"
+            style={{ font: 'inherit' }}
+            onClick={onNavigate}
+          >
+            Show {loc}
+          </button>
         </div>
       )
   }
@@ -411,7 +454,7 @@ function useSiteMode() {
  * discards it, and that is not this component.
  */
 const Browser = observer(function Browser({ engine }: { engine: Engine }) {
-  const { view, session, trackId } = engine
+  const { view, session, trackId, loc, navigate } = engine
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
   const mode = useSiteMode()
@@ -436,7 +479,7 @@ const Browser = observer(function Browser({ engine }: { engine: Engine }) {
             {view.status.type === 'ready' ? (
               <TrackRow view={view} trackId={trackId} />
             ) : (
-              <ViewStatusPanel view={view} />
+              <ViewStatusPanel view={view} loc={loc} onNavigate={navigate} />
             )}
           </div>
           <Notifications session={session} />

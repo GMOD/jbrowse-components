@@ -624,11 +624,13 @@ async function everyDisplayIsInAnOverlaySlot(page) {
 
 // The one page whose subject is a state you cannot see by loading it.
 //
-// `loading-and-errors` argues that `view.ready` is false in two situations and
-// that a host drawing only one of them ships an empty box forever. Every other
-// check in this file censuses a page at rest, where that page looks exactly like
-// its neighbours — so its claim was verified once, by hand, and nothing stopped
-// the next change from making it blank again. Both halves are driven here.
+// `loading-and-errors` argues that a host gating on `view.ready` alone ships an
+// empty box: false for a failed load, and true for a view nothing has navigated
+// yet. Neither shows up on an idle page, and neither does the snackbar channel
+// that carries the failures the view has no state for. Every other check in
+// this file censuses a page at rest, where this page looks exactly like its
+// neighbours — so its claim was verified once, by hand, and nothing stopped the
+// next change from making it blank again. All three are driven here.
 //
 // `el.click()` rather than `page.mouse.click`, deliberately, and it is the
 // opposite call from the one `clicksReachTheTrack` makes: that check is *about*
@@ -689,7 +691,54 @@ async function viewStatusStatesAreDrawn(page, slug) {
   // function's.
   out.push(...(await checkTextContrast(page)))
 
-  // half two: view.error. The radio builds a fresh engine on an assembly whose
+  // half two: view.status noRegions, the state `view.ready` answers "ready" to.
+  // The radio builds an engine with no `init`, so nothing has told the view
+  // where to look, and the panel's button hands it one through `setInit`.
+  //
+  // **Both ends are asserted, and the second is the one that keeps the page
+  // honest.** Every other radio here is a state to be drawn; this one is a
+  // state to be *left*, and a host that draws it over a view it never lets the
+  // reader navigate has shipped the same empty box under a nicer caption.
+  //
+  // This scenario is also the only input on the site that reaches the branch at
+  // all. Every `ViewStatus` here renders a `noRegions` arm and every
+  // `createViewState` call used to pass `init`, so the state the page argues
+  // `view.ready` gets wrong was drawn by nothing, anywhere.
+  if (!(await clickByText('no location yet'))) {
+    return [...out, 'no unnavigated scenario radio on the page']
+  }
+  try {
+    await page.waitForFunction(
+      () =>
+        document
+          .querySelector('.demo')
+          ?.innerText.includes('where to look yet'),
+      { timeout: 10000 },
+    )
+  } catch {
+    out.push(
+      'an engine built with no `init` drew no noRegions state — the fourth ' +
+        'value of view.status is back to rendering nothing, which is the state ' +
+        `view.ready reports as ready. Demo read:\n${await demoText()}`,
+    )
+  }
+  if (await clickByText('Show ctgA')) {
+    try {
+      await page.waitForFunction(
+        () => !!document.querySelector('[data-display-id]'),
+        { timeout: 30000 },
+      )
+    } catch {
+      out.push(
+        'setInit on a view in noRegions mounted no display — the state has no ' +
+          `way out, so drawing it buys the reader nothing. Demo read:\n${await demoText()}`,
+      )
+    }
+  } else {
+    out.push('no navigate button in the noRegions panel')
+  }
+
+  // half three: view.error. The radio builds a fresh engine on an assembly whose
   // sequence file 404s, which is the state `view.ready ? tracks : null` renders
   // as an empty box with nothing anywhere saying why.
   if (!(await clickByText('behind a 404'))) {

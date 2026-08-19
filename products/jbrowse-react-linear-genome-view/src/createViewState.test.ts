@@ -74,10 +74,17 @@ test('location wins over init.loc, and does not disturb the rest of init', () =>
 
 // Without an init of any kind the view has none, which is what shows the import
 // form — the state a bare `createViewState({ assembly })` is supposed to land in
-test('no init input leaves the view with none', () => {
+// Withholding `init` is a supported way to build an engine — a host whose own
+// picker has not chosen anything yet — so what the view reports in that state
+// is part of the contract rather than an accident. `ready` says yes with
+// nothing on screen, which is why a host that gates on it alone draws an empty
+// box; `status` is where the state has a name.
+test('no init input leaves the view with none, in a state that says so', () => {
   const state = createViewState({ assembly, tracks })
 
   expect(state.session.view.init).toBeUndefined()
+  expect(state.session.view.status).toEqual({ type: 'noRegions' })
+  expect(state.session.view.ready).toBe(true)
 })
 
 // `localFiles` is only worth having if it survives all the way into the built
