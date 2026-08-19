@@ -52,9 +52,10 @@ export function drawMismatches(
       pxPerBp,
       region.mismatchFrequencies[i]!,
     )
-    // Fade by base quality: Phred 50+ opaque, lower fades out, and qual 0 (no
-    // quality) stays opaque. `qualityFade` is mismatch.slang's own ramp,
-    // generated into TS (adr-051).
+    // Fade by base quality: Phred 50+ opaque, lower fades out, and
+    // QUAL_UNAVAILABLE (the read reports none) stays opaque. Phred 0 is a score
+    // and fades all the way — it used to share the sentinel's value.
+    // `qualityFade` is mismatch.slang's own ramp, generated into TS (adr-051).
     const alpha =
       freqAlpha * qualityFade(region.mismatchQuals[i]!, state.mismatchAlpha)
     ctx.fillStyle =

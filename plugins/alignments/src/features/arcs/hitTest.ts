@@ -369,12 +369,12 @@ function markDistance(canvasX: number, localY: number, mark: ArcMark) {
     )
   }
   const { mid, rx, ry, circular } = mark
-  // The far branch is numerical, not cosmetic. A far pair's radius reaches
+  // The circle branch is numerical, not cosmetic. A far pair's radius reaches
   // millions of px, where `length(p - c) - r` — which is what the ellipse
   // solver's own circle short-circuit computes — cancels away every significant
   // digit. `distToWideCirclePx` assembles the same quantity from small terms,
-  // measured from the leg's own endpoint, which on this branch is `mid ± rx`
-  // (the radius IS the pair's half-span there).
+  // measured from the leg's own endpoint, `mid ± rx`, which is where the mark's
+  // two endpoints sit whichever branch of `arcRadiiPx` set the radii.
   if (circular) {
     const right = canvasX >= mid
     // x positive pointing AWAY from the circle, which is outward from whichever

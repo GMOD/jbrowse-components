@@ -448,8 +448,8 @@ export function computeVisibleLabels(
       //
       // Opacity stays 1 rather than picking up the quality fade above: clipped
       // bases carry no per-base quality here — the softclip pass shares
-      // mismatch.slang and packs qual 0, which `qualityFade` reads as opaque —
-      // so these letters match their boxes by staying opaque too.
+      // mismatch.slang and packs QUAL_UNAVAILABLE, which `qualityFade` reads as
+      // opaque — so these letters match their boxes by staying opaque too.
       if (canRenderText && hasSoftclipBases) {
         const numSoftclipBases = softclipBasePositions.length
         for (let i = 0; i < numSoftclipBases; i++) {
