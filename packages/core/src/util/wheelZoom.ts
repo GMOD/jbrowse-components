@@ -185,8 +185,15 @@ interface WheelState {
  * The one wheel gesture handler for linear views. Its decision matrix:
  *
  *   - ctrl/meta+wheel, or (scrollZoom && |dy| >= |dx|)  → zoom about the cursor
- *   - shift+wheel while scrollZoom is on                → native scroll, we pass
+ *   - shift+wheel while scrollZoom is on                → declined, we pass
  *   - a horizontal delta, unless one arrives mid-zoom   → pan by dx
+ *
+ * Declining shift is what leaves a nested panel its own scroll
+ * (`usePanelVirtualScroll`) — it is not a way back to the page. Browsers turn
+ * shift+wheel into *horizontal* scrolling, so what a view declines here scrolls
+ * the page sideways or not at all. The vertical way out is spatial rather than
+ * modal: JBrowse binds this below the view's sticky header, leaving that header
+ * as a gutter the wheel still scrolls (LinearGenomeViewContainer's tracksRef).
  *
  * The listener is non-passive so it can preventDefault to suppress native scroll
  * during a zoom. To pay for that it only accumulates deltas: every model write
@@ -311,7 +318,7 @@ export function createWheelZoomController({
         // With scrollZoom on, swallow the gesture even though it fell outside
         // the zoom threshold: without this, a diagonal trackpad gesture whose
         // |deltaX| slightly exceeds |deltaY| slips through and scrolls the page
-        // (shift+wheel above is the deliberate escape hatch). With scrollZoom
+        // (shift+wheel above is the deliberate exception). With scrollZoom
         // off, only swallow what we are about to pan with, so a plain vertical
         // wheel isn't silently eaten.
         if (

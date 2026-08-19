@@ -36,8 +36,10 @@ Keyboard shortcuts (when the view is focused):
 - `Ctrl`/`Cmd` + `←` / `→`: pan left/right
 
 The scroll-to-zoom toggle button in the LGV header lets the mouse wheel zoom the
-view directly, without holding `Ctrl`/`Cmd`. Hold `Shift` while scrolling to
-scroll normally instead.
+view directly, without holding `Ctrl`/`Cmd`. It zooms wherever the pointer is
+over the tracks; to scroll the page while it is on, put the pointer on the view
+header above the tracks, or use the scrollbar. `Shift` is not an escape hatch —
+every browser turns `Shift`+wheel into horizontal scrolling.
 
 <Figure caption="Click the scroll-to-zoom toggle button in the LGV header (top) to enable it; once enabled, the mouse wheel zooms the view (bottom)." src="/img/scroll_zoom_toggle.png" />
 

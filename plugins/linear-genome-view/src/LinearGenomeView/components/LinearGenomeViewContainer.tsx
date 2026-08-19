@@ -65,8 +65,21 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   const rectLeftRef = useRef(0)
   const MiniControlsComponent = model.MiniControlsComponent()
   const HeaderComponent = model.HeaderComponent()
-  // wheel on the whole view; the click-drag half is on the tracks area, so a
-  // drag over the header doesn't pan (see TracksContainer's useSideScroll).
+  // The tracks area, and not the whole view — the same rule the click-drag half
+  // already follows (see TracksContainer's useSideScroll), for a bigger payoff.
+  // The chrome above the tracks is the only surface left where a wheel still
+  // means "move down the page": the view header is `position: sticky`, so
+  // binding the gesture below it leaves ~100px of always-visible gutter that
+  // scrolls, instead of the ~26px of view title bar that is all a full-view
+  // binding leaves. That gutter is the whole answer for scroll-to-zoom users,
+  // because there is no modifier to fall back on — the browser turns shift into
+  // horizontal scroll, ctrl/meta is pinch-zoom, and Firefox binds alt to
+  // history navigation.
+  //
+  // Nothing is lost by it: a wheel over the toolbar used to zoom the view from
+  // a point that shows none of it. `browser-tests/probe-scroll-gutter.ts`
+  // measures the band.
+  const tracksRef = useRef<HTMLDivElement>(null)
   // Binds the gestures and reports the wheel that meant "zoom" and moved
   // nothing, which is what the hint below is for.
   const {
@@ -75,7 +88,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
     zoomHintMounted,
     dismissZoomHint,
     setZoomHintHeld,
-  } = useScrollZoomHint(ref, model, {
+  } = useScrollZoomHint(tracksRef, model, {
     lingerMs: HINT_LINGER_MS,
     // one budget for the whole session, not one per view: a synteny view is
     // three of these side by side
@@ -147,44 +160,51 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           <HeaderComponent model={model} />
           {hideHeader ? <MiniControlsComponent model={model} /> : null}
         </div>
-        {model.scalebarOnly ? (
-          <Scalebar
-            model={model}
-            style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
-          />
-        ) : (
-          <TracksContainer model={model}>
-            {!tracks.length ? (
-              <Suspense fallback={null}>
-                <NoTracksActiveButton model={model} />
-              </Suspense>
-            ) : (
-              <>
-                {pinnedTracks.length ? (
-                  <Paper
-                    elevation={6}
-                    className={classes.pinnedTracks}
-                    style={{
-                      top: pinnedTracksTop,
-                      maxHeight: `calc(100vh - ${pinnedTracksTop}px)`,
-                    }}
-                  >
-                    {pinnedTracks.map(track => (
-                      <TrackContainer
-                        key={track.id}
-                        model={model}
-                        track={track}
-                      />
-                    ))}
-                  </Paper>
-                ) : null}
-                {unpinnedTracks.map(track => (
-                  <TrackContainer key={track.id} model={model} track={track} />
-                ))}
-              </>
-            )}
-          </TracksContainer>
-        )}
+        {/* Everything the wheel may zoom, in both modes — see tracksRef. */}
+        <div ref={tracksRef}>
+          {model.scalebarOnly ? (
+            <Scalebar
+              model={model}
+              style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+            />
+          ) : (
+            <TracksContainer model={model}>
+              {!tracks.length ? (
+                <Suspense fallback={null}>
+                  <NoTracksActiveButton model={model} />
+                </Suspense>
+              ) : (
+                <>
+                  {pinnedTracks.length ? (
+                    <Paper
+                      elevation={6}
+                      className={classes.pinnedTracks}
+                      style={{
+                        top: pinnedTracksTop,
+                        maxHeight: `calc(100vh - ${pinnedTracksTop}px)`,
+                      }}
+                    >
+                      {pinnedTracks.map(track => (
+                        <TrackContainer
+                          key={track.id}
+                          model={model}
+                          track={track}
+                        />
+                      ))}
+                    </Paper>
+                  ) : null}
+                  {unpinnedTracks.map(track => (
+                    <TrackContainer
+                      key={track.id}
+                      model={model}
+                      track={track}
+                    />
+                  ))}
+                </>
+              )}
+            </TracksContainer>
+          )}
+        </div>
       </div>
       {/* Portals itself to the body and positions in viewport coordinates, so
       it sits outside the tracks rather than inside them — see ScrollZoomHint.

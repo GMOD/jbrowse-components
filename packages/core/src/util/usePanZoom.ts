@@ -5,9 +5,15 @@
 // and it is the part of embedding a view that has no interesting variants: a
 // wheel means the same thing in every genome browser, and getting it wrong is
 // mostly invisible until a trackpad or a touchscreen is involved. JBrowse's own
-// LinearGenomeView binds `useScrollZoomHint` to its container, and an embedder
+// LinearGenomeView binds `useScrollZoomHint` to its tracks area, and an embedder
 // building their own chrome around a view binds `usePanZoom` to theirs — same
 // gestures, same feel, one implementation.
+//
+// Bind these to the data, not to the whole view. The chrome you leave out is
+// the only surface a scroll-to-zoom user has left for scrolling the page: no
+// modifier can serve as one, because browsers turn shift+wheel into horizontal
+// scroll, ctrl/meta+wheel is how a trackpad reports a pinch, and Firefox binds
+// alt+wheel to history navigation.
 //
 // The wheel half is `createWheelZoomController` (wheelZoom.ts), which is where
 // the gesture decision matrix, the rAF batching and the zoom rate limit live.
