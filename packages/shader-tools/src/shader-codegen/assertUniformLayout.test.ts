@@ -1,6 +1,12 @@
-import { assertUniformLayoutMatches } from './assertUniformLayout.ts'
+import {
+  assertSharedUniformBlocksAgree,
+  assertUniformLayoutMatches,
+} from './assertUniformLayout.ts'
 
-import type { ExpectedUniformField } from './assertUniformLayout.ts'
+import type {
+  ExpectedUniformField,
+  SharedUniformBlock,
+} from './assertUniformLayout.ts'
 
 // A float, a float, and a `float4[2]` — the smallest block that exercises the
 // rule the whole check exists for: std140 pads an array element to 16 bytes, so
@@ -165,5 +171,95 @@ describe('finding nothing', () => {
         glslVertex: both.glslVertex,
       })
     }).toThrow(/GLSL output declares a uniform block and the WGSL one does not/)
+  })
+})
+
+describe('two shaders sharing one struct declaration', () => {
+  const block = (
+    shader: string,
+    fields: SharedUniformBlock['fields'] = [
+      { name: 'a', offsetBytes: 0, view: 'f32' },
+      { name: 'b', offsetBytes: 4, view: 'u32' },
+    ],
+    totalBytes = 16,
+  ) => ({ shader, owner: 'shared.slang', fields, totalBytes })
+
+  test('agreeing is one group checked', () => {
+    expect(
+      assertSharedUniformBlocksAgree([block('x.slang'), block('y.slang')]),
+    ).toBe(1)
+  })
+
+  test('a lone member of a declaration is not a group', () => {
+    expect(
+      assertSharedUniformBlocksAgree([
+        block('x.slang'),
+        { ...block('y.slang'), owner: 'other.slang' },
+      ]),
+    ).toBe(0)
+  })
+
+  test('catches an offset one of them puts elsewhere', () => {
+    expect(() => {
+      assertSharedUniformBlocksAgree([
+        block('x.slang'),
+        block('y.slang', [
+          { name: 'a', offsetBytes: 0, view: 'f32' },
+          { name: 'b', offsetBytes: 8, view: 'u32' },
+        ]),
+      ])
+    }).toThrow(/field 'b' is byte 4, u32 in x.slang and byte 8, u32 in y.slang/)
+  })
+
+  test('catches a field one of them does not have at all', () => {
+    expect(() => {
+      assertSharedUniformBlocksAgree([
+        block('x.slang'),
+        block('y.slang', [{ name: 'a', offsetBytes: 0, view: 'f32' }]),
+      ])
+    }).toThrow(/field 'b' is byte 4, u32 in x.slang and absent in y.slang/)
+  })
+
+  test('catches a scalar type change the offsets alone hide', () => {
+    // `UNIFORM_OFFSET_F32` and `_U32` are separate maps and a field appears
+    // under exactly one, so two shaders can agree on every byte and still
+    // disagree about which typed-array view addresses the word.
+    expect(() => {
+      assertSharedUniformBlocksAgree([
+        block('x.slang'),
+        block('y.slang', [
+          { name: 'a', offsetBytes: 0, view: 'f32' },
+          { name: 'b', offsetBytes: 4, view: 'f32' },
+        ]),
+      ])
+    }).toThrow(/field 'b' is byte 4, u32 in x.slang and byte 4, f32 in y.slang/)
+  })
+
+  test('catches a tail-padding difference no field shows', () => {
+    expect(() => {
+      assertSharedUniformBlocksAgree([
+        block('x.slang'),
+        block('y.slang', undefined, 32),
+      ])
+    }).toThrow(/the block is 16 bytes in x.slang and 32 in y.slang/)
+  })
+
+  test('names the same pair whichever order the build finished in', () => {
+    // Shaders compile concurrently, so the arrival order is nondeterministic
+    // and an unsorted reference would rotate through the group's members.
+    const drifted = block('m.slang', [
+      { name: 'a', offsetBytes: 0, view: 'f32' },
+    ])
+    const message = (blocks: SharedUniformBlock[]) => {
+      try {
+        assertSharedUniformBlocksAgree(blocks)
+      } catch (e) {
+        return (e as Error).message
+      }
+      return 'did not throw'
+    }
+    const forward = message([block('a.slang'), drifted, block('z.slang')])
+    expect(forward).toMatch(/m.slang and a.slang both compile against/)
+    expect(message([block('z.slang'), drifted, block('a.slang')])).toBe(forward)
   })
 })

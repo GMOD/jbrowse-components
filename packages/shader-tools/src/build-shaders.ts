@@ -45,7 +45,10 @@ import { availableParallelism, tmpdir } from 'node:os'
 import path from 'node:path'
 
 import { pool } from './pool.ts'
-import { assertUniformLayoutMatches } from './shader-codegen/assertUniformLayout.ts'
+import {
+  assertSharedUniformBlocksAgree,
+  assertUniformLayoutMatches,
+} from './shader-codegen/assertUniformLayout.ts'
 import { assertVertexInputsMatch } from './shader-codegen/assertVertexInputs.ts'
 import {
   assertBindingsMatchWgsl,
@@ -97,6 +100,7 @@ import {
   parseWgsl,
 } from './shader-codegen/wgslToJs.ts'
 
+import type { SharedUniformBlock } from './shader-codegen/assertUniformLayout.ts'
 import type { ShaderScan } from './shader-codegen/liftReport.ts'
 import type { JsExportFn } from './shader-codegen/parseDirectives.ts'
 import type { Reflection } from './shader-codegen/reflection.ts'
@@ -370,6 +374,12 @@ const EXPORTED = new Set<string>()
 // shader is now skipped, which is the one failure a per-shader guard cannot see.
 let UNIFORM_BLOCKS_COMPARED = 0
 
+// Every shader's reflected uniform layout, tagged with the `.slang` file whose
+// struct declaration it is an instance of. A whole-tree collection because the
+// claim is about a GROUP of shaders: nothing a single compile sees can tell
+// that its layout of a shared struct differs from a sibling's.
+const UNIFORM_BLOCKS: SharedUniformBlock[] = []
+
 const LIFT_REPORT_PATH = 'agent-docs/reference/SHADER_LIFT_INVENTORY.md'
 
 // Write a generated artifact and record it. All artifact writes go through here
@@ -571,19 +581,21 @@ function isModuleFile(source: string) {
   return /^\s*module\s+\w+\s*;/m.test(code) && !code.includes('[shader(')
 }
 
-// Sources of every module a shader `import`s, transitively, resolved against
-// the same include path slangc gets. The constant evaluator reads these so a
+// Every module a shader `import`s, transitively, resolved against the same
+// include path slangc gets. The constant evaluator reads the sources so a
 // shader can write `CURVE_SEGMENTS * 6u` instead of the product spelled out —
 // Slang resolves the identifier, and until this existed the codegen could not,
-// which is what forced the literal-plus-SYNC-comment pattern.
-function readImportedSources(
+// which is what forced the literal-plus-SYNC-comment pattern. The paths come
+// along for `uniformStructOwner`, which needs to name the file a declaration
+// came from and not just find its text.
+function readImports(
   slangPath: string,
   source: string,
   seen = new Set<string>(),
-): string[] {
+): { path: string; source: string }[] {
   const dir = path.dirname(slangPath)
   const code = stripComments(source)
-  const out: string[] = []
+  const out: { path: string; source: string }[] = []
   for (const m of code.matchAll(/^\s*import\s+(\w+)\s*;/gm)) {
     const found = [dir, SHARED_INCLUDE]
       .map(d => path.join(d, `${m[1]!}.slang`))
@@ -593,9 +605,35 @@ function readImportedSources(
     }
     seen.add(found)
     const imported = readFileSync(found, 'utf8')
-    out.push(imported, ...readImportedSources(found, imported, seen))
+    out.push(
+      { path: found, source: imported },
+      ...readImports(found, imported, seen),
+    )
   }
   return out
+}
+
+const readImportedSources = (slangPath: string, source: string) =>
+  readImports(slangPath, source).map(m => m.source)
+
+// Which `.slang` file declares the struct a shader's uniform block is an
+// instance of — the shader itself, or one of the modules it imports.
+//
+// The struct NAME comes from reflection rather than being assumed to be
+// `Uniforms`: two of the six shared declarations are not called that
+// (`RowRectUniforms`, `FeatureGlyphUniforms`), and hardcoding the common
+// spelling would have dropped their 7 shaders out of the parity check while
+// reporting nothing.
+function uniformStructOwner(
+  slangPath: string,
+  source: string,
+  structName: string,
+) {
+  const declares = (text: string) =>
+    new RegExp(String.raw`\bstruct\s+${structName}\b`).test(stripComments(text))
+  return declares(source)
+    ? slangPath
+    : readImports(slangPath, source).find(m => declares(m.source))?.path
 }
 
 async function compileOne(log: Log, slangPath: string, source: string) {
@@ -769,6 +807,28 @@ async function compileOne(log: Log, slangPath: string, source: string) {
         uniforms.totalBytes,
         { wgsl, glslVertex },
       )
+      // The same layout also goes to the tree-wide parity check. The check
+      // above compares a shader against its OWN emitted source, so shaders
+      // sharing one declaration each pass it however far apart the group has
+      // drifted.
+      const owner = uniformStructOwner(slangPath, source, uniforms.structName)
+      if (!owner) {
+        throw new Error(
+          `the uniform block is an instance of 'struct ` +
+            `${uniforms.structName}', which is declared neither here nor in ` +
+            `any module this shader imports. ` +
+            `assertSharedUniformBlocksAgree groups shaders by that ` +
+            `declaration, so this shader would be checked against nothing — ` +
+            `find where the struct comes from and teach uniformStructOwner to ` +
+            `resolve it.`,
+        )
+      }
+      UNIFORM_BLOCKS.push({
+        shader: path.relative(PROJECT_ROOT, slangPath),
+        owner: path.relative(PROJECT_ROOT, owner),
+        fields: uniforms.fields,
+        totalBytes: uniforms.totalBytes,
+      })
     }
 
     const codegenInputs = {
@@ -926,6 +986,12 @@ async function main() {
       `${failures.length} of ${files.length} .slang file(s) failed`,
     )
   }
+  // Before the whole-tree block below, because a scoped run compiling two
+  // members of one group is a real comparison and gets to make it. What a
+  // scoped run cannot see is the shader it did NOT compile — the stale
+  // generated module left behind by regenerating a subset — so the count is a
+  // tree-wide claim even though the comparison is not.
+  const sharedStructs = assertSharedUniformBlocksAgree(UNIFORM_BLOCKS)
   // Both are whole-tree claims, so both are meaningful only after a FULL build.
   // Given an explicit path list the scan covers those shaders alone, and
   // writing the report from it would delete every other shader's rows.
@@ -941,6 +1007,19 @@ async function main() {
     }
     console.log(
       `  ok: ${UNIFORM_BLOCKS_COMPARED} uniform block(s) agree with their emitted layout`,
+    )
+    if (sharedStructs === 0) {
+      throw new Error(
+        `no uniform struct was found to be shared by two shaders, so the ` +
+          `cross-shader layout parity check compared nothing. Six ` +
+          `declarations were shared when it landed — the alignments block's ` +
+          `19 passes among them — so this means uniformStructOwner stopped ` +
+          `resolving a struct to the module that declares it, and every ` +
+          `shader now reads as the sole owner of its own block.`,
+      )
+    }
+    console.log(
+      `  ok: ${sharedStructs} shared uniform struct(s) lay out identically in every shader compiled against them`,
     )
     assertNoOrphans()
     // Skips come from every file, modules included — see `collectSkips`.

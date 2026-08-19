@@ -81,7 +81,7 @@ see them.
 | `build-shaders.ts` `writeJsExports` | lifts from the shader's own WGSL, or from a synthesized compute wrapper for `module` files |
 | `liftReport.ts` | the generated inventory + the `js-skip` staleness check |
 | `check-oracle.ts`, `oracleProbe.ts` | the differential check against slangc's C++ (`pnpm check-shader-oracle`) |
-| `assertVertexInputs.ts`, `assertUniformLayout.ts` | the two build-time layout gates — the instance struct and the uniform block, each against both emitted backends |
+| `assertVertexInputs.ts`, `assertUniformLayout.ts` | the build-time layout gates — the instance struct and the uniform block against both emitted backends, plus the uniform block of every shader sharing one struct declaration against its group |
 | `*.generated.ts` / `*.iface.generated.ts` / `*.consts.generated.ts` | strings / layout + packers / `export-consts` integers — three modules, one shader, see below |
 | `*.js.generated.ts` | the generated twins — never hand-edit |
 | `*Parity.test.ts` | the retirement gates |
@@ -214,6 +214,19 @@ later. Read the numbers those print: a full build says how many uniform blocks i
 actually compared, and a run that compares none says so, because "the parser
 matched nothing" and "the shader has no uniform block" are otherwise the same
 green.
+
+**A third number, and it is about a group rather than a shader.** Both gates
+above check one shader against its own emitted source, so shaders sharing a
+`struct` declaration can drift apart together and every one of them still
+passes. `assertSharedUniformBlocksAgree` groups shaders by the `.slang` file
+that declares the struct their uniform block is an instance of — six
+declarations are shared today, the largest being `alignmentsUniforms.slang`'s 19
+passes — and refuses a group whose members lay it out differently. The reason a
+group has to agree is that a group shares a buffer: `GpuAlignmentsRenderer`
+writes one UBO per block render through `read.slang`'s `UNIFORM_OFFSET_*`, and
+every other pass reads that buffer at whatever offsets its own generated module
+claims. A full build prints how many shared declarations it compared, and zero
+is an error for the same reason it is above.
 
 **`pnpm check-shader-oracle` is what makes that checkable rather than
 reviewable.** slangc will also emit C++ for the same Slang, so the second

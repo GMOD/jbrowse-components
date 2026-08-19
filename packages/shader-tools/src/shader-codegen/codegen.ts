@@ -297,6 +297,7 @@ export function uniformFieldsFor(reflection: Reflection) {
     return undefined
   }
   return {
+    structName: cb.elementType.name,
     totalBytes: cb.elementVarLayout.binding.size,
     fields: cb.elementType.fields.flatMap(f =>
       f.binding?.kind === 'uniform'
@@ -308,6 +309,7 @@ export function uniformFieldsFor(reflection: Reflection) {
                 f.type.kind === 'array' ? f.type.uniformStride : undefined,
               elementCount:
                 f.type.kind === 'array' ? f.type.elementCount : undefined,
+              view: viewOf(f.type),
             },
           ]
         : [],

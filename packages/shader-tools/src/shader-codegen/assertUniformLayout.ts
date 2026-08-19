@@ -324,3 +324,110 @@ export function assertUniformLayoutMatches(
   }
   return compared
 }
+
+/** One shader's reflected uniform block, for the cross-shader parity check. */
+export interface SharedUniformBlock {
+  /** The shader, for the message. */
+  shader: string
+  /** The `.slang` file whose `struct` declaration every member of the group compiles against. */
+  owner: string
+  fields: readonly (ExpectedUniformField & { view?: string })[]
+  totalBytes: number
+}
+
+const signatureOf = (b: SharedUniformBlock) =>
+  [
+    `${b.totalBytes} bytes`,
+    ...b.fields.map(
+      f =>
+        `${f.name}@${f.offsetBytes}` +
+        (f.elementCount === undefined
+          ? ''
+          : `[${f.elementCount}x${f.strideBytes}]`) +
+        (f.view === undefined ? '' : `:${f.view}`),
+    ),
+  ].join(' ')
+
+function firstDisagreement(a: SharedUniformBlock, b: SharedUniformBlock) {
+  const names = [...new Set([...a.fields, ...b.fields].map(f => f.name))]
+  for (const name of names) {
+    const x = a.fields.find(f => f.name === name)
+    const y = b.fields.find(f => f.name === name)
+    const describe = (f?: SharedUniformBlock['fields'][number]) =>
+      f === undefined
+        ? 'absent'
+        : `byte ${f.offsetBytes}` +
+          (f.elementCount === undefined
+            ? ''
+            : `, ${f.elementCount} elements striding ${f.strideBytes}`) +
+          (f.view === undefined ? '' : `, ${f.view}`)
+    if (describe(x) !== describe(y)) {
+      return `field '${name}' is ${describe(x)} in ${a.shader} and ${describe(y)} in ${b.shader}`
+    }
+  }
+  return `the block is ${a.totalBytes} bytes in ${a.shader} and ${b.totalBytes} in ${b.shader}`
+}
+
+/**
+ * Throws if two shaders compiling against the SAME `struct` declaration ended
+ * up with different layouts for it.
+ *
+ * `assertUniformLayoutMatches` checks each shader against its own emitted
+ * source, so a group of shaders sharing one declaration can drift apart in
+ * lockstep with themselves and every member still passes. The 19 alignments
+ * passes are the case that makes this load-bearing: they share one UBO, written
+ * once per block render through ONE shader's `UNIFORM_OFFSET_*`
+ * (`GpuAlignmentsRenderer` writes through `read`'s), and every other pass reads
+ * that buffer at whatever offsets its own generated module claims. A pass whose
+ * layout drifts from `read`'s reads every uniform in the shader from a word the
+ * renderer never wrote — the same failure class as a per-shader divergence,
+ * arrived at from the other side.
+ *
+ * Returns how many groups had something to compare, i.e. how many declarations
+ * are shared by two or more shaders.
+ */
+export function assertSharedUniformBlocksAgree(
+  blocks: readonly SharedUniformBlock[],
+) {
+  const groups = new Map<string, SharedUniformBlock[]>()
+  for (const b of blocks) {
+    const group = groups.get(b.owner)
+    if (group) {
+      group.push(b)
+    } else {
+      groups.set(b.owner, [b])
+    }
+  }
+  let checked = 0
+  // Sorted, because the build compiles shaders concurrently and an unsorted
+  // group names whichever finished first as the reference — so the same drift
+  // would report a different pair from run to run.
+  for (const [owner, members] of [...groups].sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
+    if (members.length < 2) {
+      continue
+    }
+    const sorted = [...members].sort((a, b) => a.shader.localeCompare(b.shader))
+    const [reference, ...rest] = sorted as [
+      SharedUniformBlock,
+      ...SharedUniformBlock[],
+    ]
+    const want = signatureOf(reference)
+    for (const got of rest) {
+      if (signatureOf(got) !== want) {
+        throw new Error(
+          `${got.shader} and ${reference.shader} both compile against the ` +
+            `uniform struct declared in ${owner}, but they lay it out ` +
+            `differently: ${firstDisagreement(reference, got)}. One ` +
+            `declaration cannot have two layouts, so the generated modules ` +
+            `disagree about a buffer they share — whichever shader's ` +
+            `UNIFORM_OFFSET_* the TS side writes through, the other reads its ` +
+            `uniforms from words nobody wrote.`,
+        )
+      }
+    }
+    checked++
+  }
+  return checked
+}
