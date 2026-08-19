@@ -1,4 +1,5 @@
 import previous from './abiPreviousRelease.json'
+import { KNOWN_REMOVALS } from './knownRemovals.ts'
 import libs from './modules.ts'
 
 // abi.test.ts pins the ABI going forward: its baseline was snapshotted from this
@@ -15,127 +16,18 @@ import libs from './modules.ts'
 // Regenerate at release time, after the version bump lands:
 //   node --experimental-strip-types scripts/gen-abi-previous-release.ts <version>
 //
-// KNOWN_REMOVALS is the escape hatch, keyed `module#name`. Every entry is a
-// deliberate break, so give the reason and say which published plugins you
-// checked. Emptying it is not the goal -- reviewing what goes into it is.
+// The removals themselves live in `knownRemovals.ts`, grouped, because the
+// announcement and PLUGIN_ABI_STABILITY.md both publish those groups and
+// `generate-abi-removals` renders them from there.
 //
 // What this list costs in the wild is a separate question, and the answer moves
-// as plugins are rebuilt, so it is not restated here. Run
+// as plugins are rebuilt, so no count is restated here -- one written down in
+// 2026-08 already read "6 of 17" against a live run of 1 of 14. Run
 //   node --experimental-strip-types scripts/check-published-plugins.ts
 // which reads every bundle in the store and reports only the names each one
-// actually takes off JBrowseExports. As of the v5 work that was 6 of 17, all
-// declaring `jbrowseRange: "*"`, so the store offers them to a v5 user as
-// compatible -- pinning that range is the other half, and it lives in the
-// separate GMOD/jbrowse-plugin-list repo.
-const KNOWN_REMOVALS: Record<string, string> = {
-  // The renderer registry is gone with the server-side rendering pipeline;
-  // displays now compose RenderLifecycleMixin + DisplayChrome. No shim exists,
-  // and a plugin with a custom RendererType has to be rewritten.
-  '@jbrowse/core/pluggableElementTypes#RendererType':
-    'renderer registry removed',
-  '@jbrowse/core/pluggableElementTypes#FeatureRendererType':
-    'renderer registry removed',
-  '@jbrowse/core/pluggableElementTypes#BoxRendererType':
-    'renderer registry removed',
-  '@jbrowse/core/pluggableElementTypes#CircularChordRendererType':
-    'renderer registry removed',
-  '@jbrowse/core/pluggableElementTypes#ServerSideRendererType':
-    'renderer registry removed, core no longer renders on the server',
-  '@jbrowse/core/pluggableElementTypes#GlyphType':
-    'glyphs are drawn by the GPU displays, not registered',
-  '@jbrowse/core/util#getParentRenderProps':
-    'fed the renderer registry; nothing in the GPU pipeline consumes render props',
-  '@jbrowse/core/util/tracks#getParentRenderProps':
-    'fed the renderer registry; nothing in the GPU pipeline consumes render props',
-
-  // Layout moved onto the GPU packing path.
-  '@jbrowse/core/util/layouts#PileupLayout': 'replaced by GPU instance packing',
-  '@jbrowse/core/util/layouts#SceneGraph': 'replaced by GPU instance packing',
-  '@jbrowse/core/util#calculateLayoutBounds':
-    'replaced by GPU instance packing',
-  '@jbrowse/core/util#getLayoutId': 'replaced by GPU instance packing',
-
-  // AbortSignal-based cancellation became stop tokens; `checkStopToken` in
-  // util/stopToken.ts is the surviving form of the pair.
-  '@jbrowse/core/util#abortBreakPoint':
-    'AbortSignal cancellation -> stop tokens',
-  '@jbrowse/core/util#checkAbortSignal':
-    'AbortSignal cancellation -> stop tokens',
-  '@jbrowse/core/util#observeAbortSignal':
-    'AbortSignal cancellation -> stop tokens',
-  '@jbrowse/core/util#makeAbortableReaction':
-    'AbortSignal cancellation -> stop tokens',
-  '@jbrowse/core/util#checkStopToken2': 'renamed to checkStopToken',
-  '@jbrowse/core/util#forEachWithStopTokenCheck':
-    'folded into the callers that walked features',
-  '@jbrowse/core/util#RetryError': 'RPC retry handling reworked',
-  '@jbrowse/core/util#isRetryException': 'RPC retry handling reworked',
-
-  // The renderer-era status/progress reporting.
-  '@jbrowse/core/util#updateStatus2': 'status reporting reworked',
-  '@jbrowse/core/util#getProgressDisplayStr': 'status reporting reworked',
-  '@jbrowse/core/util#getStatsId': 'feature-density stats reworked',
-
-  // Desktop file handles moved behind the contextIsolation preload bridge.
-  '@jbrowse/core/util#getFileHandleCache':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util#setFileHandleCache':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util#removeFileHandle':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util#cleanupStaleHandles':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util#getPendingFileHandleIds':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util#setPendingFileHandleIds':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util#clearPendingFileHandleIds':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util#restorePendingFileHandles':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util/tracks#getFileHandleCache':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util/tracks#setFileHandleCache':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util/tracks#getPendingFileHandleIds':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util/tracks#setPendingFileHandleIds':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util/tracks#clearPendingFileHandleIds':
-    'desktop file handles moved to preload',
-  '@jbrowse/core/util/tracks#restorePendingFileHandles':
-    'desktop file handles moved to preload',
-
-  // Names with a surviving equivalent under a different name.
-  '@jbrowse/core/util#assembleLocStringFast':
-    'assembleLocString is the only form now',
-  '@jbrowse/core/util/color#contrastingTextColor': 'renamed to makeContrasting',
-  '@jbrowse/core/util#findLast': 'Array.prototype.findLast',
-  '@jbrowse/core/util#findLastIndex': 'Array.prototype.findLastIndex',
-
-  // Moved rather than dropped: re-exporting it from this barrel pulled
-  // @floating-ui (~266KB) onto the startup path, so it is served as its own
-  // '@jbrowse/core/ui/BaseTooltip' module behind React.lazy instead. A plugin
-  // built against the barrel still has to change the import, which is why
-  // apollo and react-msaview both had to.
-  '@jbrowse/core/ui#BaseTooltip':
-    'moved to its own @jbrowse/core/ui/BaseTooltip module to keep @floating-ui off the startup path',
-
-  // Dropped with no replacement; the remaining callers inlined them.
-  '@jbrowse/core/util#TextSearchManager':
-    'still in TextSearch/TextSearchManager.ts, no longer re-exported from util',
-  '@jbrowse/core/util#isContainedWithin': 'unused after the rewrite',
-  '@jbrowse/core/util#iterMap': 'unused after the rewrite',
-  '@jbrowse/core/util#when': 'unused after the rewrite',
-  '@jbrowse/core/util#blobToDataURL': 'unused after the rewrite',
-  '@jbrowse/core/util#cartesianToPolar': 'unused after the rewrite',
-  '@jbrowse/core/util#degToRad': 'unused after the rewrite',
-  '@jbrowse/core/util#getUriLink': 'unused after the rewrite',
-  '@jbrowse/core/util#defaultStops': 'unused after the rewrite',
-  '@jbrowse/core/util#useDebouncedCallback': 'unused after the rewrite',
-  '@jbrowse/core/configuration#isConfigurationSlotType':
-    'config models were flattened; slots are no longer their own MST instances',
-}
+// actually takes off JBrowseExports. They declare `jbrowseRange: "*"`, so the
+// store offers them to a v5 user as compatible -- pinning that range is the
+// other half, and it lives in the separate GMOD/jbrowse-plugin-list repo.
 
 describe('ABI against the previously published release', () => {
   it(`serves every module @jbrowse/core@${previous.version} served`, () => {

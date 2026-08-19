@@ -4,7 +4,9 @@ import path from 'node:path'
 
 import {
   absolutizeImages,
+  fillReleaseStats,
   findReleasePost,
+  formatDiffstat,
   parseReleaseFilename,
   parseReleasePost,
   releasePostFilename,
@@ -190,4 +192,43 @@ test('releaseDraftPaths names the two files a release consumes', () => {
     notes: `${DRAFTS_DIR}/v5.0.0.md`,
     changelog: `${DRAFTS_DIR}/v5.0.0.changelog.md`,
   })
+})
+
+// The one figure the draft cannot hold, because it moves under every commit.
+test("formatDiffstat reads git shortstat into the post's own voice", () => {
+  expect(
+    formatDiffstat(
+      ' 9166 files changed, 1011355 insertions(+), 295862 deletions(-)',
+    ),
+  ).toBe('9,166 files changed, +1,011,355 / \u2212295,862 lines')
+})
+
+test('formatDiffstat throws rather than publishing half a sentence', () => {
+  expect(() => formatDiffstat(' 3 files changed, 7 insertions(+)')).toThrow(
+    /Cannot read a diffstat/,
+  )
+})
+
+// A stat the release did not compute stays as it was written, so
+// check-release-drafts is the thing that catches it and not a silent blank.
+test('fillReleaseStats leaves a name it was given no value for', () => {
+  expect(
+    fillReleaseStats('a ${DIFFSTAT} b ${NOPE}', { DIFFSTAT: '1 file' }),
+  ).toBe('a 1 file b ${NOPE}')
+})
+
+// The template pass inserts NOTES literally rather than rescanning it, so a
+// draft's placeholder is only ever filled by the notes pass. Without that pass
+// it reaches the published post as nine characters.
+test('a draft placeholder is filled on the way into the post', () => {
+  const post = renderReleasePost({
+    template,
+    tag: 'v5.0.0',
+    date: '2026-09-01 10:11:12',
+    notes: 'Comparing the tags: ${DIFFSTAT}.',
+    changelog,
+    stats: { DIFFSTAT: '9,166 files changed' },
+  })
+  expect(post).toContain('Comparing the tags: 9,166 files changed.')
+  expect(post).not.toMatch(/\$\{/)
 })

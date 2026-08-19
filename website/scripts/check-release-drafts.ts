@@ -17,6 +17,7 @@ import { join } from 'node:path'
 import {
   CHANGELOG_HEADING,
   DRAFTS_DIR,
+  RELEASE_STAT_NAMES,
   prepareDraftNotes,
 } from '../../scripts/releaseBlog.ts'
 import { reportProblems } from './check-utils.ts'
@@ -137,6 +138,17 @@ for (const file of drafts) {
   for (const { re, what } of BANNED) {
     if (re.test(notes)) {
       flag(`contains ${what}`)
+    }
+  }
+  // A `${...}` the release does not fill reaches the post as those characters.
+  // The whole point of the placeholder is that the figure behind it moves under
+  // every commit, so nobody proofreading the draft can catch a misspelled one by
+  // noticing the number is wrong -- there is no number there to notice.
+  for (const [, name] of notes.matchAll(/\$\{(\w+)\}/g)) {
+    if (!(RELEASE_STAT_NAMES as readonly string[]).includes(name!)) {
+      flag(
+        `writes \`\${${name}}\`, which no release fills, so it publishes literally. The stats a draft may ask for: ${RELEASE_STAT_NAMES.join(', ')}`,
+      )
     }
   }
   for (const [, url] of notes.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)) {

@@ -71,7 +71,7 @@ import {
   spliceGeneratedBlock,
 } from './check-utils.ts'
 import { loadMeasurements } from './measurements.ts'
-import { docsDir, repoRoot } from './paths.ts'
+import { docsDir, releaseDraftsDir, repoRoot } from './paths.ts'
 
 const BEGIN = /^<!--\s*BEGIN GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/
 const END = /^<!--\s*END GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/
@@ -146,7 +146,12 @@ const problems: string[] = []
 const sources = collectSources(problems)
 const consumed = new Set<string>()
 
-const generated = docFiles(docsDir)
+// The docs site and the pending release announcement drafts. A draft is the
+// most exposed consumer there is: `pnpm release` renders, commits, tags and
+// pushes it in one run, so a table typed into one by hand publishes before
+// anyone can re-read it — which is how the v5.0.0 draft came to carry a pan
+// column no record holds beside a zoom column that is exact.
+const generated = [...docFiles(docsDir), ...docFiles(releaseDraftsDir)]
   .map(path => {
     const text = readFileSync(path, 'utf8')
     const ids = text

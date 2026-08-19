@@ -13,9 +13,9 @@ semver/`api-extractor` discipline as premature for an experimental phase; this
 doc captures the thinking so it's ready when there are stable surfaces to
 protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 
-## The two surfaces that exist today, and how to remove from them
+## The three surfaces that exist today, and how to remove from them
 
-Whatever the policy ends up being, these two are already checked:
+Whatever the policy ends up being, these three are already checked:
 
 - **`ReExports/modules.ts`** — the `@jbrowse/core/*` modules external plugins
   resolve against, pinned by `abi.test.ts` against `abiBaseline.json`. A removal
@@ -26,10 +26,39 @@ Whatever the policy ends up being, these two are already checked:
   test failure, just a plugin that stops asking. `pluginFacingSessionApi.test.ts`
   pins what published bundles actually call, and performs the call rather than
   asserting the member exists.
+- **The accumulating extension points, which fail quietest of the three.**
+  `addToExtensionPoint` excludes them in its *type*, so a plugin rebuilt against
+  v5 gets a compile error naming `contributeToExtensionPoint`. A prebuilt v4
+  bundle carries no types: the call reaches `pushExtensionPointCallback`, joins
+  the fold chain, and the old-style callback returns its own single-element array
+  in place of everyone else's entries. Nothing throws, and the plugin that did it
+  still works — the plugins that lose their entries are the other ones.
 
 **The signature is as public as the name.** A required second argument breaks a
 duck-typed caller exactly as deleting the member would, so plugin-facing
 arguments may be added **optional** and never made required.
+
+## What has already left the re-export surface
+
+Generated from `REMOVAL_GROUPS` in `packages/core/src/ReExports/knownRemovals.ts`
+by `pnpm gen-abi-removals`, and published from there into the release
+announcement as well — a group is invisible by being absent, and a hand-copied
+version of this list had lost seventeen names.
+
+<!-- BEGIN GENERATED ABI REMOVALS -->
+
+- the renderer registry (`RendererType`, `FeatureRendererType`, `BoxRendererType`, `CircularChordRendererType`, `ServerSideRendererType`, `GlyphType`, `getParentRenderProps`)
+- layout, which moved onto the GPU packing path (`PileupLayout`, `SceneGraph`, `calculateLayoutBounds`, `getLayoutId`)
+- `AbortSignal` cancellation, which became stop tokens (`abortBreakPoint`, `checkAbortSignal`, `observeAbortSignal`, `makeAbortableReaction`)
+- the renderer era's RPC retry and progress reporting (`RetryError`, `isRetryException`, `updateStatus2`, `getProgressDisplayStr`, `getStatsId`)
+- desktop file handles, which the desktop package now owns (`getFileHandleCache`, `setFileHandleCache`, `removeFileHandle`, `cleanupStaleHandles`, `getPendingFileHandleIds`, `setPendingFileHandleIds`, `clearPendingFileHandleIds`, `restorePendingFileHandles`)
+- renames with a survivor — `contrastingTextColor` is `makeContrasting`, `checkStopToken2` is `checkStopToken`, `assembleLocStringFast` is `assembleLocString`, `findLast`/`findLastIndex` are the `Array.prototype` methods
+- `BaseTooltip`, which moved to its own `@jbrowse/core/ui/BaseTooltip` module to keep @floating-ui off the startup path
+- names with no caller left in core, which the last callers inlined or folded away (`forEachWithStopTokenCheck`, `TextSearchManager`, `isContainedWithin`, `iterMap`, `when`, `blobToDataURL`, `cartesianToPolar`, `degToRad`, `getUriLink`, `defaultStops`, `useDebouncedCallback`)
+- `isConfigurationSlotType`, with the config models that were flattened
+
+That is 46 names over 53 entries, since 7 of them were served from two modules each. Every one is recorded with its reason in `REMOVAL_GROUPS` in `packages/core/src/ReExports/knownRemovals.ts`, and checked on every run against the exports of the previously published package.
+<!-- END GENERATED ABI REMOVALS -->
 
 ## The symptom
 

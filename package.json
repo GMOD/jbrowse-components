@@ -49,6 +49,7 @@
     "figures:push": "node website/scripts/figures.ts push",
     "figures:check": "node website/scripts/figures.ts check",
     "figures:report": "node website/scripts/figures.ts report",
+    "gen-abi-removals": "node website/scripts/generate-abi-removals.ts",
     "diagrams": "node website/scripts/diagrams.ts",
     "diagrams:check": "node website/scripts/diagrams.ts --check",
     "gen-diagram-usage": "node website/scripts/gen-diagram-usage.ts",

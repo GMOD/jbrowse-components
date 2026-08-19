@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url'
 import {
   DRAFTS_DIR,
   REPO,
+  formatDiffstat,
   releaseDraftPaths,
   releasePostFilename,
   releaseTimestamp,
@@ -25,6 +26,8 @@ import {
   parseReleaseArgs,
 } from './releaseVersion.ts'
 import { workspaceManifests } from './releaseWorkspaces.ts'
+
+import type { ReleaseStats } from './releaseBlog.ts'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const VERSION_SOURCE = 'plugins/alignments/package.json'
@@ -220,6 +223,34 @@ function readReleaseDocs(releaseTag: string, changelogSince: string[]) {
       ? `Using the hand-written changelog at ${paths.changelog}`
       : 'Generated the changelog from merged PRs',
   )
+  // The figures the draft asked the release to compute, resolved here with
+  // everything else that can fail and before the first byte is written.
+  //
+  // The boundary is the last STABLE tag reachable from HEAD, not the version in
+  // the tree: a stable release cut from a beta series would otherwise measure
+  // itself against its own last beta and report a fraction of the release. The
+  // same reason changelogSince above falls through to `releases/latest` there.
+  const stats = notes.includes('${DIFFSTAT}')
+    ? {
+        DIFFSTAT: formatDiffstat(
+          capture('git', [
+            'diff',
+            '--shortstat',
+            `${capture('git', [
+              'describe',
+              '--tags',
+              '--abbrev=0',
+              '--match',
+              'v[0-9]*',
+              '--exclude',
+              '*-*',
+              'HEAD',
+            ])}..HEAD`,
+          ]),
+        ),
+      }
+    : {}
+
   // Both are consumed, so neither can be mistaken for a pending release.
   const consumed = [paths.notes, ...(override ? [paths.changelog] : [])]
   // A draft that was never committed is the one file here with no copy
@@ -241,7 +272,7 @@ function readReleaseDocs(releaseTag: string, changelogSince: string[]) {
       )
     }
   }
-  return { consumed, notes, changelog }
+  return { consumed, notes, changelog, stats }
 }
 
 // Everything below writes through this, reading from the repo and writing under
@@ -264,6 +295,7 @@ function writeReleaseDocs({
   consumed,
   notes,
   changelog,
+  stats,
   releaseTag,
   date,
   datetime,
@@ -272,6 +304,7 @@ function writeReleaseDocs({
   consumed: string[]
   notes: string
   changelog: string
+  stats: ReleaseStats
   releaseTag: string
   date: string
   datetime: string
@@ -297,6 +330,7 @@ function writeReleaseDocs({
       date: datetime,
       notes,
       changelog,
+      stats,
     }),
   )
   return {

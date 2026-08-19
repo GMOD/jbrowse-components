@@ -104,6 +104,15 @@ const GENERATORS: Generator[] = [
     name: 'spec recipe unmapped list',
     argv: web('check-spec-recipes.ts'),
   },
+  {
+    // The grouped @jbrowse/core re-export removals, out of REMOVAL_GROUPS. Two
+    // pages publish them — PLUGIN_ABI_STABILITY.md and the release announcement
+    // draft — and the hand-written version of that list in the v5.0.0 draft
+    // covered 29 of the 46 names. A missing group looks like nothing at all, so
+    // no reader of either page could have caught it.
+    name: 'ABI removal groups',
+    argv: web('generate-abi-removals.ts'),
+  },
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
   {

@@ -47,7 +47,7 @@ import { join, relative } from 'node:path'
 
 import { check, checkOrWriteAll, docFiles } from './check-utils.ts'
 import { loadMeasurements, resolveReference } from './measurements.ts'
-import { docsDir, repoRoot } from './paths.ts'
+import { docsDir, releaseDraftsDir, repoRoot } from './paths.ts'
 
 // The value is the figure-shaped token immediately before the marker: a digit
 // and then anything that is not a space or a `<`. Deliberately narrower than
@@ -64,7 +64,13 @@ const records = loadMeasurements()
 const problems: string[] = []
 let spliced = 0
 
-const trees = [join(repoRoot, 'agent-docs'), docsDir]
+// The release announcement drafts are in here with the docs, and they are the
+// tree with the least slack: `pnpm release` renders, commits, tags and pushes a
+// draft in one run, so a figure typed into one by hand is published before
+// anyone can re-read it. `prepareDraftNotes` strips HTML comments on the way to
+// the blog, so the marker is a draft-only convenience the reader never sees —
+// the same bargain `normalizeDraftImages` makes for a repo-relative figure path.
+const trees = [join(repoRoot, 'agent-docs'), docsDir, releaseDraftsDir]
 
 const generated = trees
   .flatMap(tree => docFiles(tree))

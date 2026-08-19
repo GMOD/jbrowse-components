@@ -46,6 +46,11 @@ function findRepoRoot() {
 export const repoRoot = findRepoRoot()
 export const websiteDir = join(repoRoot, 'website')
 export const docsDir = join(websiteDir, 'docs')
+// The pending release announcement drafts. A draft is a public page that has
+// not been published yet, so the generators that keep a doc's figures honest
+// have to reach it: by the time `pnpm release` renders one it is committed,
+// tagged and pushed in the same run, and every number in it is live.
+export const releaseDraftsDir = join(websiteDir, 'release_announcement_drafts')
 export const distDir = join(websiteDir, 'dist')
 // Where a capture that failed dumps the frame it failed on. OUTSIDE static/, not
 // next to the figure it failed on: astro.config sets `publicDir: './static'`,

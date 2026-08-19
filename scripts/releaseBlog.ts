@@ -87,6 +87,50 @@ export function prepareDraftNotes(md: string) {
     .trim()
 }
 
+// A figure a draft cannot hold because it moves under every commit. The v5.0.0
+// draft stated its own diffstat and was 18.4% under on deletions within days of
+// being written; the answer is not a fresher number but a number the release
+// computes. `pnpm autogen` cannot own one either — an artifact that goes stale
+// on every commit fails the check on every commit.
+//
+// The stat names a draft may write, so an unknown `${…}` is a typo that would
+// otherwise publish literally. check-release-drafts rejects those; this is the
+// list it rejects against.
+export const RELEASE_STAT_NAMES = ['DIFFSTAT'] as const
+
+export type ReleaseStats = Partial<
+  Record<(typeof RELEASE_STAT_NAMES)[number], string>
+>
+
+// `git diff --shortstat`, in the draft's own voice. Reformatted rather than
+// quoted so the sentence around it reads: git writes "9166 files changed,
+// 1011355 insertions(+), 295862 deletions(-)".
+export function formatDiffstat(shortstat: string) {
+  const n = (re: RegExp) => {
+    const found = re.exec(shortstat)?.[1]
+    return found === undefined
+      ? undefined
+      : Number(found).toLocaleString('en-US')
+  }
+  const files = n(/(\d+) files? changed/)
+  const insertions = n(/(\d+) insertions?\(\+\)/)
+  const deletions = n(/(\d+) deletions?\(-\)/)
+  if (!files || !insertions || !deletions) {
+    throw new Error(`Cannot read a diffstat out of "${shortstat}"`)
+  }
+  return `${files} files changed, +${insertions} / \u2212${deletions} lines`
+}
+
+// Substitute the release-day stats a draft asked for. Separate from
+// `prepareDraftNotes` because that one runs in check-release-drafts too, where
+// there is no release to compute against.
+export function fillReleaseStats(md: string, stats: ReleaseStats) {
+  return md.replaceAll(
+    /\$\{(\w+)\}/g,
+    (whole, name: string) => stats[name as keyof ReleaseStats] ?? whole,
+  )
+}
+
 // The GitHub release body is rendered by GitHub, not by the website, so a
 // site-root path there resolves against github.com and misses the figure.
 export function absolutizeImages(md: string) {
@@ -108,23 +152,30 @@ export function stripImages(md: string) {
 }
 
 // Fill blog_template.txt. Unknown ${...} placeholders are left alone.
+//
+// The draft's own placeholders are filled first, and have to be: this pass
+// substitutes into the TEMPLATE, and a replacement value is inserted literally
+// rather than rescanned, so a `${DIFFSTAT}` arriving inside NOTES would reach
+// the published post as those nine characters.
 export function renderReleasePost({
   template,
   tag,
   date,
   notes,
   changelog,
+  stats = {},
 }: {
   template: string
   tag: string
   date: string
   notes: string
   changelog: string
+  stats?: ReleaseStats
 }) {
   const vars: Record<string, string> = {
     RELEASE_TAG: tag,
     DATE: date,
-    NOTES: prepareDraftNotes(notes),
+    NOTES: fillReleaseStats(prepareDraftNotes(notes), stats),
     CHANGELOG: changelog,
   }
   return template.replaceAll(
