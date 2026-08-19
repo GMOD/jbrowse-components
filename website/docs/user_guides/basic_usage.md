@@ -41,7 +41,7 @@ over the tracks; to scroll the page while it is on, put the pointer on the view
 header above the tracks, or use the scrollbar. `Shift` is not an escape hatch —
 every browser turns `Shift`+wheel into horizontal scrolling.
 
-<Figure caption="Click the scroll-to-zoom toggle button in the LGV header (top) to enable it; once enabled, the mouse wheel zooms the view (bottom)." src="/img/scroll_zoom_toggle.png" />
+<Figure caption="The scroll-to-zoom toggle in the LGV header. With it on, the wheel zooms wherever it is over the tracks, and the header the toggle sits in still scrolls the page." src="/img/scroll_zoom_toggle.png" />
 
 ### Reordering tracks
 

@@ -1227,10 +1227,8 @@ export const uiSpecs: ScreenshotSpec[] = [
         tailDx: 3,
       }),
       ...toolbarCallout({
-        // the control carries its own label now, so this callout names the
-        // gesture rather than repeating the button's words back at it
         selector: 'button[value="scrollZoom"]',
-        text: 'Wheel zooms, not scrolls',
+        text: 'Scroll-to-zoom toggle',
         pillDx: 125,
         tailDx: 144,
       }),
@@ -1287,10 +1285,13 @@ export const uiSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Click to enable scroll-to-zoom',
+        text: 'Applies to every view',
         anchor: {
           selector: 'button[value="scrollZoom"]',
         },
+        // threads the gap between the labelled control and the search box.
+        // Less puts the pill over the button's own label, more runs it into
+        // the search box — the gap is what a wider control left.
         dx: 70,
       },
     ],
