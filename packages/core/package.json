@@ -125,6 +125,7 @@
     "./ui/gpuFallback": "./src/ui/gpuFallback.ts",
     "./ui/legendSpec": "./src/ui/legendSpec.ts",
     "./ui/menuItems": "./src/ui/menuItems.ts",
+    "./ui/multiTrackMenuItems": "./src/ui/multiTrackMenuItems.ts",
     "./ui/palette": "./src/ui/palette.ts",
     "./ui/scrollZoomLabels": "./src/ui/scrollZoomLabels.ts",
     "./ui/showSubMenu": "./src/ui/showSubMenu.ts",
@@ -689,6 +690,10 @@
       "./ui/menuItems": {
         "types": "./esm/ui/menuItems.d.ts",
         "import": "./esm/ui/menuItems.js"
+      },
+      "./ui/multiTrackMenuItems": {
+        "types": "./esm/ui/multiTrackMenuItems.d.ts",
+        "import": "./esm/ui/multiTrackMenuItems.js"
       },
       "./ui/palette": {
         "types": "./esm/ui/palette.d.ts",
@@ -1379,6 +1384,9 @@
         ],
         "ui/menuItems": [
           "esm/ui/menuItems.d.ts"
+        ],
+        "ui/multiTrackMenuItems": [
+          "esm/ui/multiTrackMenuItems.d.ts"
         ],
         "ui/palette": [
           "esm/ui/palette.d.ts"

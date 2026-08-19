@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
+import { addMultiTrackMenuItems } from '@jbrowse/core/ui/multiTrackMenuItems'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
 import { addMultiWiggleTrack } from '../MultiWiggleAddTrackWorkflow/util.ts'
@@ -57,30 +58,28 @@ function makeTrack({
 
 // #region register
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
-  pm.contributeToExtensionPoint(
-    'TrackSelector-multiTrackMenuItems',
-    ({ session }) =>
-      // contributing nothing is `undefined`, not an empty array to spread into
-      // someone else's — the accumulated items are not this callback's to see
-      isSessionWithAddTracks(session)
-        ? {
-            label: 'Create multi-wiggle track...',
-            onClick: (model: TrackSelectorSelf) => {
-              getSession(model).queueDialog(handleClose => [
-                ConfirmDialog,
-                {
-                  tracks: model.selection,
-                  onClose: (result?: MakeTrackArg) => {
-                    if (result) {
-                      makeTrack({ model, arg: result })
-                    }
-                    handleClose()
-                  },
+  addMultiTrackMenuItems(pm, ({ session }) =>
+    // contributing nothing is `undefined`, not an empty array to spread into
+    // someone else's — the accumulated items are not this callback's to see
+    isSessionWithAddTracks(session)
+      ? {
+          label: 'Create multi-wiggle track...',
+          onClick: (model: TrackSelectorSelf) => {
+            getSession(model).queueDialog(handleClose => [
+              ConfirmDialog,
+              {
+                tracks: model.selection,
+                onClose: (result?: MakeTrackArg) => {
+                  if (result) {
+                    makeTrack({ model, arg: result })
+                  }
+                  handleClose()
                 },
-              ])
-            },
-          }
-        : undefined,
+              },
+            ])
+          },
+        }
+      : undefined,
   )
 }
 // #endregion

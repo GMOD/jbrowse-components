@@ -1,4 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { buildMultiTrackMenuItems } from '@jbrowse/core/ui/multiTrackMenuItems'
 import {
   getEnv,
   getSession,
@@ -25,12 +26,7 @@ const ShoppingCart = observer(function ShoppingCart({
   const { adminMode, sessionTracks } = session
   const s = new Set<string>(sessionTracks?.map(t => t.trackId))
   const canEdit = (t: string) => adminMode || s.has(t)
-  const items = pluginManager.evaluateExtensionPoint(
-    /** #extensionPoint TrackSelector-multiTrackMenuItems | sync | Add items to the multi-track (shopping cart) menu */
-    'TrackSelector-multiTrackMenuItems',
-    [],
-    { session },
-  )
+  const items = buildMultiTrackMenuItems(pluginManager, { session })
   const canDeleteAll =
     isSessionWithDeleteTrackConf(session) &&
     selection.every(

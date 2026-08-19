@@ -1091,13 +1091,15 @@ type: synchronous
 
 Registered contract:
 
-<!-- include: plugins/data-management/src/HierarchicalTrackSelectorWidget/index.ts#multiTrackMenuItems -->
+<!-- include: packages/core/src/ui/multiTrackMenuItems.ts#multiTrackMenuItems -->
 
 ```typescript
+// lets plugins act on the whole checked selection in the hierarchical
+// track selector's shopping-cart menu
 'TrackSelector-multiTrackMenuItems': {
   args: MenuItem[]
   result: MenuItem[]
-  props: { session: AbstractSessionModel }
+  props: MultiTrackMenuItemsProps
 }
 ```
 
@@ -1111,30 +1113,28 @@ multi-wiggle track, is the whole registration:
 
 ```typescript
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
-  pm.contributeToExtensionPoint(
-    'TrackSelector-multiTrackMenuItems',
-    ({ session }) =>
-      // contributing nothing is `undefined`, not an empty array to spread into
-      // someone else's — the accumulated items are not this callback's to see
-      isSessionWithAddTracks(session)
-        ? {
-            label: 'Create multi-wiggle track...',
-            onClick: (model: HierarchicalTrackSelectorModel) => {
-              getSession(model).queueDialog(handleClose => [
-                ConfirmDialog,
-                {
-                  tracks: model.selection,
-                  onClose: (result?: MakeTrackArg) => {
-                    if (result) {
-                      makeTrack({ model, arg: result })
-                    }
-                    handleClose()
-                  },
+  addMultiTrackMenuItems(pm, ({ session }) =>
+    // contributing nothing is `undefined`, not an empty array to spread into
+    // someone else's — the accumulated items are not this callback's to see
+    isSessionWithAddTracks(session)
+      ? {
+          label: 'Create multi-wiggle track...',
+          onClick: (model: TrackSelectorSelf) => {
+            getSession(model).queueDialog(handleClose => [
+              ConfirmDialog,
+              {
+                tracks: model.selection,
+                onClose: (result?: MakeTrackArg) => {
+                  if (result) {
+                    makeTrack({ model, arg: result })
+                  }
+                  handleClose()
                 },
-              ])
-            },
-          }
-        : undefined,
+              },
+            ])
+          },
+        }
+      : undefined,
   )
 }
 ```
