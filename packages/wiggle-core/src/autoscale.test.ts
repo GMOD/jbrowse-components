@@ -38,7 +38,9 @@ describe('localpercentile clipping', () => {
   })
 
   it('local autoscale does not clip', () => {
-    expect(computeAutoscaleDomain('local', 'avg', 3, copyNumber)).toEqual([2, 3])
+    expect(computeAutoscaleDomain('local', 'avg', 3, copyNumber)).toEqual([
+      2, 3,
+    ])
   })
 
   it('only counts features overlapping the visible window', () => {
