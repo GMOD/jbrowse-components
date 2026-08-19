@@ -203,16 +203,76 @@ test('the followed row moves during a pan, not only after it settles', async () 
 
   // now pan in small steps with NO waiting between them. Nothing debounced can
   // have run, so any movement here is the per-frame pass.
-  const positions: number[] = [target!.offsetPx]
+  const positions: number[] = [windowOf(target!).start]
   for (let i = 0; i < 5; i++) {
     query!.horizontalScroll(40)
-    positions.push(target!.offsetPx)
+    positions.push(windowOf(target!).start)
   }
 
   // strictly increasing: it tracked every step rather than moving once
   for (let i = 1; i < positions.length; i++) {
     expect(positions[i]!).toBeGreaterThan(positions[i - 1]!)
   }
+})
+
+// IN BP, NOT `offsetPx`, which this measured until the frame pass started
+// reading the CIGAR map. `offsetPx` is a position at the row's CURRENT
+// `bpPerPx`, and the row's scale is no longer constant through a pan: the map
+// says a 1001bp anchor window matches 1017bp of the target here and 982bp four
+// steps later, because a deletion came into view. That is the correspondence
+// being followed, so the row zooms very slightly as it goes and `offsetPx`
+// moves backwards over a step where the denominator shrank faster than the
+// numerator grew. The affine transform this replaced held the scale fixed
+// between settles, which is exactly the error the settle then had to correct.
+test("the row follows the alignment's scale, not one fixed ratio", async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setRowSyncMode('follow')
+
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
+
+  const widthOf = () => windowOf(target!).end - windowOf(target!).start
+  const before = widthOf()
+  for (let i = 0; i < 5; i++) {
+    query!.horizontalScroll(40)
+  }
+  // the anchor's own window never changed width — only what it matches did
+  expect(widthOf()).toBeLessThan(before - 20)
+})
+
+// THE POINT OF THE MAP, stated as the thing a user sees. The frame pass used to
+// extrapolate a straight line fitted at the last settle, so a pan drifted by
+// whatever indels it crossed and the settle yanked the row back — measured at
+// 15.5bp over this 200px pan, and it grows with the distance panned. Reading the
+// block's own CIGAR map instead, the settle finds the row already where it
+// belongs and `alreadyShowing` stops it before it navigates.
+test('the settle does not move a row the frame pass already placed', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setRowSyncMode('follow')
+
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
+  // the map is fetched off the settle above, so let it land before panning
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
+
+  for (let i = 0; i < 5; i++) {
+    query!.horizontalScroll(40)
+  }
+  const beforeSettle = windowOf(target!).start
+  await new Promise(resolve => {
+    setTimeout(resolve, 3000)
+  })
+  // 2bp, against a map tolerance of ~1.8bp on this block: a correction this
+  // small is the map's own rounding, not the follow disagreeing with itself
+  expect(Math.abs(windowOf(target!).start - beforeSettle)).toBeLessThan(2)
 })
 
 test('a followed row dragged away by hand is put back', async () => {
@@ -264,6 +324,41 @@ test('an answer the follow has just applied is not resolved a second time', asyn
   expect(
     call.mock.calls.filter(c => c[1] === 'SyntenyResolveMatchingRegion'),
   ).toHaveLength(1)
+})
+
+// ONCE PER BLOCK IS THE WHOLE ECONOMY OF IT. A map describes the block, so
+// every window inside that block reads the same one — asking per settle would be
+// the RPC-per-window shape the resolve already is, at a higher price, since a
+// map walks the whole CIGAR where a resolve walks up to two offsets in it.
+test('the CIGAR map is fetched once per block, not once per settle', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setRowSyncMode('follow')
+  // both of these windows are inside the one block covering query 26805..49184
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
+  await new Promise(resolve => {
+    setTimeout(resolve, 1500)
+  })
+
+  const call = jest.spyOn(getSession(query!).rpcManager, 'call')
+  await query!.navToLocString('ctgA:40000..41000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(39500)
+  }, timeout)
+  await new Promise(resolve => {
+    setTimeout(resolve, 1500)
+  })
+
+  expect(
+    call.mock.calls.filter(c => c[1] === 'SyntenyGetCigarMap'),
+  ).toHaveLength(0)
+  // and the settle still happened, so the zero above is not a dead follow
+  expect(
+    call.mock.calls.filter(c => c[1] === 'SyntenyResolveMatchingRegion').length,
+  ).toBeGreaterThan(0)
 })
 
 // A resolve is an RPC, and the mode can be switched off while one is in flight.

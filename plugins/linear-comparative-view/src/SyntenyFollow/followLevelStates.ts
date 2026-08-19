@@ -4,6 +4,7 @@ import type {
   FeatPos,
   LinearSyntenyDisplayModel,
 } from '../LinearSyntenyDisplay/model.ts'
+import type { SyntenyCigarMapResult } from '../LinearSyntenyRPC/SyntenyGetCigarMap.ts'
 import type { FollowAnswerCache } from './followAnswerCache.ts'
 import type { FollowTransform } from './followTransform.ts'
 
@@ -23,10 +24,27 @@ export interface LevelPick {
   transform?: FollowTransform
 }
 
+// One block's CIGAR reduced to bend points, and the block it was built for.
+// KEPT ACROSS SETTLES, unlike the pick beside it: a map describes the whole
+// block, so every window inside it reads the same one and re-asking per settle
+// would be the RPC-per-window shape this exists to get out of.
+//
+// A miss is recorded rather than dropped. A block with no CIGAR has no map and
+// never will, and without the entry the level asks again every settle for an
+// answer that cannot arrive.
+export interface LevelCigarMap {
+  featureId: string
+  value?: SyntenyCigarMapResult
+}
+
 // Not observable: the exact pass writes this every pass, so an observable would
 // make it a dependency of the run that writes it and re-enter forever.
 export interface FollowLevelState {
   pick?: LevelPick
+  map?: LevelCigarMap
+  // the block a map is in flight for, so a settle inside a block already being
+  // asked about does not ask again
+  mapPending?: string
   // Latest-wins: the RPC is not ordered, so a slow earlier resolve can land
   // after a fast later one and park the row at a window already left. Bumped
   // once per PASS per level rather than once per resolve, so that a pass which
@@ -77,6 +95,15 @@ export function createFollowLevelStates<Level extends object>() {
     // its own for a level that pass has never reached.
     pickFor(level: Level) {
       return states.get(level)?.pick
+    },
+    // The map only if it is THIS block's. `cigarMapSpan` re-checks the block's
+    // coordinates, which is the check that matters, but a map is per block and
+    // the id is what says so — the coordinates alone would accept the map of a
+    // different alignment sharing an extent, which an all-vs-all file has by
+    // the row.
+    mapFor(level: Level, featureId: string) {
+      const map = states.get(level)?.map
+      return map?.featureId === featureId ? map.value : undefined
     },
     // switching the mode off drops every pick, cached transform, in-flight
     // answer and reported error at once

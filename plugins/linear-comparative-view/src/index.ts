@@ -10,6 +10,7 @@ import LinearViewMenuItemsF from './LaunchSyntenyView/linearViewMenuItems.ts'
 import LinearDerivativeVsRefMenuItemF from './LinearDerivativeVsRef/index.ts'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay/index.ts'
+import SyntenyGetCigarMap from './LinearSyntenyRPC/SyntenyGetCigarMap.ts'
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
 import SyntenyResolveMatchingRegion from './LinearSyntenyRPC/SyntenyResolveMatchingRegion.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
@@ -67,6 +68,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
     )
     pluginManager.addRpcMethod(() => new DiagonalizeSyntenyRpc(pluginManager))
     pluginManager.addRpcMethod(() => new SyntenyDiscoverMates(pluginManager))
+    pluginManager.addRpcMethod(() => new SyntenyGetCigarMap(pluginManager))
     pluginManager.addRpcMethod(
       () => new SyntenyResolveMatchingRegion(pluginManager),
     )

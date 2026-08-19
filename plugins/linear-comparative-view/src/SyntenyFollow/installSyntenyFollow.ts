@@ -10,10 +10,12 @@ import { createFollowLevelStates } from './followLevelStates.ts'
 import { followTransform } from './followTransform.ts'
 import { planFollowStep } from './planFollowStep.ts'
 import { positionViewOnSpan } from './positionViewOnSpan.ts'
+import { requestCigarMap } from './requestCigarMap.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
+import type { FollowLevelState } from './followLevelStates.ts'
 import type { FollowStep } from './planFollowStep.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -149,6 +151,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         ? followTransform(step.window, span, step.feat.strand === -1)
         : undefined,
     }
+    ensureCigarMap(state, step)
     if (alreadyShowing(movingWindow, span, movingMinWidthBp)) {
       // arrived, so the next disagreement is a fresh one — a row the user
       // nudges away from here has to be navigable back to exactly this span
@@ -173,6 +176,54 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     }
     state.lastNav = nav
     await navToResolvedSpan(movingView, span)
+  }
+
+  /**
+   * Fetch this block's CIGAR map, once, if the frame pass could use one.
+   *
+   * NOT AWAITED, and its failure is not this pass's failure: the row is already
+   * being placed by the transform, and a map that never arrives costs precision
+   * between settles rather than a placement. So it neither blocks the resolve
+   * that just landed nor reaches `reportError`, which is for a follow that
+   * cannot resolve at all.
+   *
+   * `mapPending` rather than a promise, since the only question a second settle
+   * inside the same block asks is whether to ask again.
+   *
+   * Only where the frame pass would read it: a window wider than the block is
+   * placed by the envelope, which several blocks contribute to and no one map
+   * describes.
+   */
+  function ensureCigarMap(state: FollowLevelState, step: FollowStep) {
+    const featureId = step.feat.id
+    if (
+      !step.windowInsideFeat ||
+      !step.hasCigar ||
+      state.map?.featureId === featureId ||
+      state.mapPending === featureId
+    ) {
+      return
+    }
+    state.mapPending = featureId
+    const generation = levelStates.generation
+    requestCigarMap({ model: step.display, feat: step.feat })
+      .then(value => {
+        // The map is a property of the BLOCK, so `seq` is the wrong guard —
+        // a later window inside the same block still wants this. What makes it
+        // stale is the store being dropped underneath it.
+        if (generation === levelStates.generation) {
+          state.map = { featureId, value }
+        }
+      })
+      .catch(() => {
+        // asked again next settle: the frame pass is only less precise without
+        // it, and a level whose resolves work has nothing to report here
+      })
+      .finally(() => {
+        if (state.mapPending === featureId) {
+          state.mapPending = undefined
+        }
+      })
   }
 
   function reportError(level: FollowLevel, e: unknown) {
@@ -333,6 +384,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             toMate,
             mateAssembly,
             transform: pick.transform,
+            map: levelStates.mapFor(level, pick.feat.id),
           })
           if (span && positionViewOnSpan(movingView, span)) {
             written.add(movingView)

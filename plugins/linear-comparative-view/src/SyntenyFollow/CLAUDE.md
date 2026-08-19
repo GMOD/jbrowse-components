@@ -25,6 +25,45 @@ and the cached transform may only be built from a **single-block** answer — an
 envelope carries no one strand, and a forward transform derived from one mirrors
 the row inside an inverted alignment.
 
+## The map is what makes the two clocks agree
+
+Inside one block the frame pass reads a **`CigarMap`** — the block's CIGAR
+reduced in the worker to a few thousand bend points, two `Uint32Array`s of
+offsets, one `SyntenyGetCigarMap` per block. `applyFollowTransform` stays as the
+fallback beneath it and `interpolateFollowSpan` beneath that, so the three
+answers run best-first in `followFrameSpan`.
+
+Affine was never right here, only cheap. A straight line fitted at the last
+settle drifts by whatever indels lie between that window and the one the user
+panned to, and the settle corrects it visibly — 15.5bp over a 200px pan on
+`volvox_inv_indels`, growing with the distance, and it is _worst_ in the case
+the mode was built for, a human pair where one block runs for tens of Mb and
+navigating means navigating inside its CIGAR. With the map the settle finds the
+row already there, `alreadyShowing` says yes, and nothing navigates.
+
+**Once per BLOCK, where the resolve is once per window.** That is the whole
+difference between the two RPCs and why both exist: the resolve answers _this_
+window and says nothing about the next, the map answers every window inside the
+block. Re-asking per settle is the shape this exists to get out of, and at a
+higher price — the map walks the whole CIGAR where a resolve walks two offsets
+into it. `LevelCigarMap` therefore outlives the pick, and a MISS is recorded
+too, or a CIGAR-less block is asked about every settle forever.
+
+**A map is refused unless it names this block**, by feature id in `mapFor` and
+by the block's own coordinates in `cigarMapSpan`. Both: ids are only comparable
+within one LOD tier, and an all-vs-all file has several rows over one extent.
+
+**The row's scale is no longer constant through a pan, and that is the fix, not
+a side effect.** A 1001bp anchor window matches 1017bp of the target here and
+982bp four steps later, because a deletion came into view — so `offsetPx`, a
+position at the row's current `bpPerPx`, can move backwards over a step the row
+moved forwards through. Assert a follow's motion in **bp**; the test that used
+`offsetPx` was measuring the affine fit's held scale.
+
+The map is not the whole answer and must not be made into one. The exact pass
+still navigates — a matching region on another contig is a `navTo`, which the
+frame pass may not do — and a block with no CIGAR has no map at all.
+
 ## Ordering is outward from the anchor, not by level index
 
 An alignment relates one pair of rows, so the follow propagates one level at a
