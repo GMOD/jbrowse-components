@@ -400,6 +400,15 @@ type: synchronous
 Infer an adapter type from a location in the "Add track" workflow. See the
 [add track workflow guide](/docs/developer_guides/creating_addtrack_workflow).
 
+The formats JBrowse ships with are not registered here one plugin at a time.
+They are rows in `@jbrowse/add-track-core`'s table — filename regex, adapter
+type, location field, index layout, track type — which `CorePlugin` guesses from
+and `@jbrowse/cli`'s `add-track` reads too, so a file resolves to the same
+adapter config in the app and on the command line. Core guesses a row only when
+`pluginManager.hasAdapterType` says the build has that adapter, so a build
+without the alignments plugin still guesses nothing for a `.bam`. Register on
+this point to add a format the table does not describe.
+
 Use `addAdapterGuesser` rather than calling `addToExtensionPoint` directly:
 these two points are chains of responsibility, where each callback wraps the
 previously registered guesser and delegates to it when it has no match. The
@@ -453,24 +462,27 @@ Infer a track type from an adapter name (and, optionally, the file) in the "Add
 track" workflow. Register it with `addTrackTypeGuesser`, the companion to
 `addAdapterGuesser` above.
 
-A format plugin normally registers both together:
+A plugin adding a format registers both together, one guessing the adapter and
+one naming the track type to draw it with. The `file` argument is what lets one
+adapter serve two track types — a `.bedmethyl.gz` and a plain `.bed.gz` are both
+read by `BedTabixAdapter`:
 
-<!-- include: plugins/hic/src/GuessAdapter/index.ts#guessers -->
+<!-- include: packages/core/src/util/formatGuessers.ts#installFormatGuessers -->
 
 ```typescript
-export default function GuessAdapterF(pluginManager: PluginManager) {
-  addAdapterGuesser(pluginManager, (file, _index, adapterHint) => {
-    const fileName = getFileName(file)
-    return (/\.hic$/i.test(fileName) && !adapterHint) ||
-      adapterHint === 'HicAdapter'
-      ? {
-          type: 'HicAdapter',
-          hicLocation: file,
-        }
+export function installFormatGuessers(pluginManager: PluginManager) {
+  addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
+    const spec = matchFormat(getFileName(file), adapterHint)?.spec
+    return spec &&
+      'adapterType' in spec &&
+      pluginManager.hasAdapterType(spec.adapterType)
+      ? adapterConfigFromSpec(spec, file, index)
       : undefined
   })
-  addTrackTypeGuesser(pluginManager, adapterName =>
-    adapterName === 'HicAdapter' ? 'HicTrack' : undefined,
+  addTrackTypeGuesser(pluginManager, (adapterName, file) =>
+    pluginManager.hasAdapterType(adapterName)
+      ? trackTypeForAdapter(adapterName, file && getFileName(file))
+      : undefined,
   )
 }
 ```

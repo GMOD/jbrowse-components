@@ -23,7 +23,7 @@ Check these before opening anything, in roughly descending volume:
 
 1. **Architectural slots.** `stateModelFactory` (31 files), `normalizeSnapshot`
    (38), `renderSvg` (15), `run` (15), `configSchema`, `configSchemaF`,
-   `configSchemaFactory`, `doAfterAttach`, `register`, `GuessAdapterF`,
+   `configSchemaFactory`, `doAfterAttach`, `register`,
    `createTestEnvironment`, `handler`. The name is the interface. Nothing to
    look at.
 2. **Per-product parallel implementations.** `createViewState`, `loadPlugins`,

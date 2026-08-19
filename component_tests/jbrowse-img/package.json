@@ -11,6 +11,7 @@
     "@jbrowse/img": "file:./packed/jbrowse-img.tgz"
   },
   "resolutions": {
+    "@jbrowse/add-track-core": "file:./packed/jbrowse-add-track-core.tgz",
     "@jbrowse/alignments-core": "file:./packed/jbrowse-alignments-core.tgz",
     "@jbrowse/app-core": "file:./packed/jbrowse-app-core.tgz",
     "@jbrowse/cigar-utils": "file:./packed/jbrowse-cigar-utils.tgz",

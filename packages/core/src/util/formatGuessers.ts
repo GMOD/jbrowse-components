@@ -74,6 +74,7 @@ export function adapterConfigFromSpec(
  * registers is later in the chain and wins over the table. That is how a format
  * the table cannot express is added, and how a third-party plugin claims one.
  */
+// #region installFormatGuessers
 export function installFormatGuessers(pluginManager: PluginManager) {
   addAdapterGuesser(pluginManager, (file, index, adapterHint) => {
     const spec = matchFormat(getFileName(file), adapterHint)?.spec
@@ -89,3 +90,4 @@ export function installFormatGuessers(pluginManager: PluginManager) {
       : undefined,
   )
 }
+// #endregion
