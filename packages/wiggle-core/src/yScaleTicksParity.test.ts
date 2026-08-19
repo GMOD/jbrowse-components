@@ -78,6 +78,22 @@ const CASES = [
   },
   // short track: computeYTicks falls back to the domain endpoints
   { name: 'short track', scaleType: 'linear', raw: [0, 30], height: 60 },
+  // A window whose scores are all one value autoscales to a domain of no
+  // width — an all-zero coverage stretch is the everyday one. d3 answers the
+  // midpoint for every input there while `makeScoreNormalizer` answers 0, so
+  // the tick floated at half height over a plot drawn along the baseline.
+  {
+    name: 'flat domain at zero',
+    scaleType: 'linear',
+    raw: [0, 0],
+    height: 200,
+  },
+  {
+    name: 'flat domain, symlog',
+    scaleType: 'symlog',
+    raw: [0, 0],
+    height: 200,
+  },
 ] as const
 
 describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
@@ -108,7 +124,11 @@ describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
     }
   })
 
-  test('the domain spans the whole plot, not a point', () => {
+  // A domain of no width has nothing to span, and the normalizer says so by
+  // collapsing to `() => 0` — which is the answer the case above pins the axis
+  // against.
+  const testSpan = domain[0] === domain[1] ? test.skip : test
+  testSpan('the domain spans the whole plot, not a point', () => {
     const normalize = makeScoreNormalizer(
       domain[0],
       domain[1],

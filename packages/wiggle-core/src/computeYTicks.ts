@@ -39,6 +39,12 @@ export function computeYTicks(opts: {
   // multi-wiggle's row — that belongs in the drawing, and is now
   // `clampStrokeInsideAxis`.
   const { yTop, yBottom } = axisPlotBox(height, offset)
+  // A window whose scores are all one value (an all-zero coverage stretch) has
+  // a domain of no width. d3 answers the midpoint for every input there while
+  // `makeScoreNormalizer` answers 0, and the renderer is the one to agree with.
+  if (domainMin === domainMax) {
+    return { items: [{ value: domainMin, y: yBottom }], yTop, yBottom }
+  }
   // `nice: false`: the caller's domain is the one the renderer is drawing with
   // (every wiggle-family `domain` getter has already been through
   // getNiceDomain), so nicing it a second time would move the axis off the
@@ -53,11 +59,7 @@ export function computeYTicks(opts: {
     nice: false,
   })
   const values =
-    height < 100 || minimalTicks
-      ? domainMin === domainMax
-        ? [domainMin]
-        : [domainMin, domainMax]
-      : scale.ticks(4)
+    height < 100 || minimalTicks ? [domainMin, domainMax] : scale.ticks(4)
   return {
     items: values.map(v => ({ value: v, y: scale(v) })),
     yTop,

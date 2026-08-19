@@ -75,7 +75,7 @@ function specForType(
 
 /**
  * #api
- * Builds a d3 scale (linear/log/quantize) from a `ScaleOpts`, nicing the domain
+ * Builds a d3 scale (linear/log/symlog) from a `ScaleOpts`, nicing the domain
  * unless `nice: false` says it is already the one being drawn with.
  */
 export function getScale({
@@ -93,10 +93,16 @@ export function getScale({
   if (rangeMin === undefined || rangeMax === undefined) {
     throw new Error('invalid range')
   }
-  const spec = specForType(scaleType, [min, max], symlogConstant)
+  // Nice first, then build the spec from the domain that came out. The renderer
+  // resolves symlog's constant from the domain it is handed, so a spec built
+  // before nicing would give the axis a different constant and label heights
+  // the bars are not drawn at. `niceDomain` ignores the constant, so it can
+  // take a throwaway spec.
+  const nicedDomain = nice
+    ? niceDomain(specForType(scaleType, [min, max]))
+    : ([min, max] as [number, number])
   return buildScale({
-    ...spec,
-    domain: nice ? niceDomain(spec) : spec.domain,
+    ...specForType(scaleType, nicedDomain, symlogConstant),
     range: [rangeMin, rangeMax],
   })
 }
@@ -115,19 +121,21 @@ export function getOrigin(scaleType: string) {
 
 /**
  * #api
- * Rounds a domain to "nice" endpoints, clamped to the origin and
- * overridden by any explicit `bounds`.
+ * Rounds a domain to "nice" endpoints, clamped to the origin. An end given an
+ * explicit `bounds` value keeps that value exactly — only an autoscaled end is
+ * rounded. A log scale's floor still outranks a bound it cannot hold.
  */
+// No `symlogConstant` parameter: `niceDomain` puts symlog through d3's linear
+// path, which never reads the constant, so one passed here only looked like it
+// did something.
 export function getNiceDomain({
   scaleType,
   domain,
   bounds,
-  symlogConstant,
 }: {
   scaleType: string
   domain: readonly [number, number]
   bounds: readonly [number | undefined, number | undefined]
-  symlogConstant?: number
 }) {
   const [minScore, maxScore] = bounds
   let [min, max] = domain
@@ -170,7 +178,18 @@ export function getNiceDomain({
     }
   }
 
-  return niceDomain(specForType(scaleType, [min, max], symlogConstant))
+  // Rounding is for an autoscaled end, whose only meaning is "roughly the
+  // data's extent". A bound the user typed into Set min/max score means itself,
+  // and the menu row goes on displaying it, so it is taken as given.
+  //
+  // `min`/`max` rather than `minScore`/`maxScore`: the log guards above may
+  // have moved a bound scaleLog cannot hold, and that correction has to
+  // survive.
+  const [nicedMin, nicedMax] = niceDomain(specForType(scaleType, [min, max]))
+  return [
+    minScore === undefined ? nicedMin : min,
+    maxScore === undefined ? nicedMax : max,
+  ] as [number, number]
 }
 
 /**
