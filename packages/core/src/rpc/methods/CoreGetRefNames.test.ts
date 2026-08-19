@@ -9,7 +9,7 @@ jest.mock('../../data_adapters/dataAdapterCache.ts', () => ({
 
 const mockGetAdapter = jest.mocked(getAdapter)
 
-function run(dataAdapter: unknown) {
+function run(dataAdapter: unknown, args?: Record<string, unknown>) {
   const method = new CoreGetRefNames({} as PluginManager)
   mockGetAdapter.mockResolvedValue({ dataAdapter } as Awaited<
     ReturnType<typeof getAdapter>
@@ -17,6 +17,7 @@ function run(dataAdapter: unknown) {
   return method.invoke({
     sessionId: 's',
     adapterConfig: { type: 'AnyAdapter' },
+    ...args,
   })
 }
 
@@ -34,16 +35,26 @@ describe('CoreGetRefNames', () => {
     ])
   })
 
+  // toHaveBeenCalledWith, not toHaveBeenCalled: `run` used to pass no
+  // sequenceAdapter, so the assertion was satisfied by a call carrying
+  // undefined — which `setSequenceAdapterConfig` discards. It passed with the
+  // arg replaced by a literal undefined, and only failed if the call was
+  // deleted outright. What it means to wire the sequence adapter is that THIS
+  // config arrives, and only the argument says so.
   it('returns refNames from a feature adapter, and wires its sequence adapter', async () => {
     const setSequenceAdapterConfig = jest.fn()
+    const sequenceAdapter = { type: 'TestSequenceAdapter' }
     await expect(
-      run({
-        getRefNames: async () => ['chr1'],
-        getFeatures: () => {},
-        setSequenceAdapterConfig,
-      }),
+      run(
+        {
+          getRefNames: async () => ['chr1'],
+          getFeatures: () => {},
+          setSequenceAdapterConfig,
+        },
+        { sequenceAdapter },
+      ),
     ).resolves.toEqual(['chr1'])
-    expect(setSequenceAdapterConfig).toHaveBeenCalled()
+    expect(setSequenceAdapterConfig).toHaveBeenCalledWith(sequenceAdapter)
   })
 
   it('returns nothing for an adapter that cannot name its contigs', async () => {

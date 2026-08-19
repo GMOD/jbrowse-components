@@ -47,9 +47,7 @@ export class BaseAdapter<
    * need to guard.
    */
   setSequenceAdapterConfig(config: Record<string, unknown> | undefined) {
-    if (config) {
-      this.sequenceAdapterConfig ??= config
-    }
+    this.sequenceAdapterConfig ??= config
   }
 
   /** shorthand for `readConfObject(this.config, arg)` */
