@@ -1,6 +1,6 @@
 ---
 name: offscreen-synteny-mates
-description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a stub/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, and clickable to show that contig. Class B is untouched and needs two-axis-synteny-fetch.md; read this first for what class A settled, which constrains it.
+description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a stub/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, clickable to show that contig, and carried into an SVG export. Class B is untouched and needs two-axis-synteny-fetch.md; read this first for what class A settled, which constrains it.
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
@@ -10,9 +10,10 @@ description: Showing alignments whose mate lands on a contig the facing view is 
 query axis; `offscreenMateMenuItems` reports the count and the contigs;
 `showOffscreenMates` turns `OffscreenMateOverlay` on, which draws each as a stub
 at the top of the band, labelled with the contig it points at, and clicking one
-shows that contig on the facing row. The rest of this file is the case for it
-and the reasoning the implementation followed — kept because **class B is still
-open**, and because what it decided constrains what class B may do.
+shows that contig on the facing row; an SVG export carries the same marks. The
+rest of this file is the case for it and the reasoning the implementation
+followed — kept because **class B is still open**, and because what it decided
+constrains what class B may do.
 
 A synteny band draws a ribbon only when **both** ends land on a displayed
 region. When peach chr1 is stacked against grape chr1 and a peach locus is
@@ -167,6 +168,14 @@ reports nothing.
   test share `offscreenMateRects`, so they cannot disagree the way the ribbons
   can — `syntenyPickRenderAgreement.test.ts` exists because those are two code
   paths.
+- **Whether the figure carries them.** Settled: yes. `showOffscreenMates` is a
+  menu setting, so the same rule the color-by legend follows applies — an export
+  taken with it on has to have it, or the figure of a view reporting what it
+  cannot draw is the figure that does not draw it. `SVGOffscreenMates` is one
+  layer per level, after every display's ribbons and inside the band's clip,
+  running the same `drawOffscreenMates` through `PaintLayer`. Class B's stubs
+  hang off v2 and need their own layer; they must not be folded into this one,
+  which is positioned against `views[level]` alone.
 
 ## Cheaper thing this is not
 
