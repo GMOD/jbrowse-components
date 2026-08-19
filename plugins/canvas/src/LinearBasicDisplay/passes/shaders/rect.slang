@@ -46,7 +46,7 @@ struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   float2 localPos : TEXCOORD0;
-  float2 featSizePx : TEXCOORD1;
+  nointerpolation float2 featSizePx : TEXCOORD1;
 };
 
 // The two screen-x edges a rect actually paints, given its unsnapped edges in

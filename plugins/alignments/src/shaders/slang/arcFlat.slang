@@ -70,16 +70,15 @@ struct VsOut {
   // ramp is a constant (see STROKE_AA_PX).
   float2 local    : COLOR0;
   // Half-length of the drawn line, so the fragment can measure the butt caps.
-  float  halfLen  : COLOR1;
-  float  dashed   : COLOR2;
+  nointerpolation float halfLen : COLOR1;
+  nointerpolation float dashed  : COLOR2;
   // Screen x in CSS px (interpolated) — drives the dash pattern. Deliberately
   // NOT fragIn.position.x (physical px), which would halve the dash period on a
   // dpr=2 display and diverge from the Canvas2D setLineDash([3,3]) mirror.
   float  screenPx : COLOR3;
-  // The resolved half stroke width. Constant per instance, so it interpolates
-  // back to itself; carried so the quad's pad and the fragment's ramp cannot be
-  // sized from two different widths.
-  float  halfWidthPx : COLOR4;
+  // The resolved half stroke width, carried so the quad's pad and the
+  // fragment's ramp cannot be sized from two different widths.
+  nointerpolation float halfWidthPx : COLOR4;
 };
 
 [shader("vertex")]

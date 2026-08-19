@@ -68,7 +68,7 @@ struct VsOut {
   float2 localPos : TEXCOORD0;
   // Shape discriminator passed to the fragment shader: 0 = disc, 1 = diamond,
   // 2 = inverted triangle, 3 = solid bar.
-  float  shape    : TEXCOORD1;
+  nointerpolation float shape : TEXCOORD1;
 };
 
 // Shape discriminators for the fragment shader. AA_PAD_PX and

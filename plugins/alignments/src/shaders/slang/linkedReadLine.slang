@@ -61,7 +61,7 @@ struct VsOut {
   // constant — same contract as arcFlat.slang's `local`.
   float2 local    : COLOR1;
   // Half-length of the drawn segment, so the fragment can measure the butt caps.
-  float  halfLen  : COLOR2;
+  nointerpolation float halfLen : COLOR2;
 };
 
 // linkedReadColorSlot (alignmentsUniforms) is the index rule, split out so the

@@ -59,7 +59,7 @@ struct VsOut {
   // SEGMENT CENTER, so the fragment can evaluate the capsule SDF, with
   // segHalfLen the segment's half-length in px (the capsule body extent).
   float2 localPos : TEXCOORD0;
-  float  segHalfLen : TEXCOORD1;
+  nointerpolation float segHalfLen : TEXCOORD1;
 };
 
 // Which glyph the pass draws follows entirely from uniforms, so both stages

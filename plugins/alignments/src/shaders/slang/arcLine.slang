@@ -63,11 +63,11 @@ struct VsOut {
   // expanded by exactly this much, so |∇dx| is 1 and the AA ramp is a constant
   // (see STROKE_AA_PX).
   float  dx       : COLOR1;
-  // The resolved half stroke width, constant per instance so it interpolates
-  // back to itself. Carried rather than recomputed in the fragment so the quad
-  // the vertex stage expanded and the ink the fragment measures cannot be sized
-  // from two different widths — the same pairing arcFlat.slang makes.
-  float  halfWidthPx : COLOR2;
+  // The resolved half stroke width, carried rather than recomputed in the
+  // fragment so the quad the vertex stage expanded and the ink the fragment
+  // measures cannot be sized from two different widths — the same pairing
+  // arcFlat.slang makes.
+  nointerpolation float halfWidthPx : COLOR2;
   // Distance DOWN the band from its top edge, in CSS px, so the fragment can
   // cut the dash. Band-relative rather than canvas-absolute: the pattern then
   // starts at the band's own edge and every tick in a lane phases alike, where

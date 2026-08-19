@@ -171,8 +171,13 @@ struct VsOut {
   // On-screen width of this read in CSS px, for the outline's inset and its
   // width gate. The height half of this used to ride along and was `u.featHeight`
   // every time — see READ_OUTLINE_MIN_HEIGHT_PX.
-  float  featWPx  : COLOR2;
-  float  edgeFlag : COLOR3;
+  nointerpolation float featWPx  : COLOR2;
+  // Which edge the arrowhead caps: 0/±1 on the body quad, 2 on the cap
+  // triangle. `nointerpolation` unlike the others is safe per PRIMITIVE rather
+  // than per instance — verts 0-5 are two triangles that agree and 6-8 are one
+  // that does — so a vertex layout that split a triangle across the two values
+  // would have to drop the flat qualifier with it.
+  nointerpolation float edgeFlag : COLOR3;
 };
 
 // --- color painting ---

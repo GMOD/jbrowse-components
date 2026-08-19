@@ -40,8 +40,8 @@ struct Uniforms {
 struct VsOut {
   float4 position   : SV_Position;
   float4 color      : COLOR0;
-  float2 xspan      : COLOR1;
-  float  colWidthPx : COLOR2;
+  nointerpolation float2 xspan      : COLOR1;
+  nointerpolation float  colWidthPx : COLOR2;
 };
 
 [shader("vertex")]

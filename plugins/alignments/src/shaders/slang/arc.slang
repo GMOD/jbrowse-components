@@ -116,15 +116,14 @@ struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   // Fragment position in whichever frame its curve is measured in (band-local
-  // CSS px — see evalArcVertex), and the radii to measure against. `radii` is
-  // constant per instance, so it interpolates back to itself.
+  // CSS px — see evalArcVertex), and the radii to measure against.
   float2 local    : COLOR1;
-  float2 radii    : COLOR2;
-  float  kind     : COLOR3;
-  // The resolved half stroke width, also constant per instance. Carried rather
-  // than recomputed in the fragment so the hull the vertex stage inflated and
-  // the ink the fragment measures can only ever be the same width.
-  float  halfWidthPx : COLOR4;
+  nointerpolation float2 radii : COLOR2;
+  nointerpolation float  kind  : COLOR3;
+  // The resolved half stroke width. Carried rather than recomputed in the
+  // fragment so the hull the vertex stage inflated and the ink the fragment
+  // measures can only ever be the same width.
+  nointerpolation float halfWidthPx : COLOR4;
   // WHICH LEG a far circle's vertex belongs to: +1 right, -1 left (and +1
   // throughout for an ellipse, which is one connected curve). It exists to kill
   // the SEAM.
