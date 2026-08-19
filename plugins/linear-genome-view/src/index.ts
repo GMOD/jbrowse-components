@@ -160,11 +160,16 @@ export { plainChromeOverlays } from './BaseLinearDisplay/index.ts'
 // deliberately not mirrored here: one module owns the ranking, and consumers
 // name that module.
 // The only region-too-large names that leave this plugin: canvas's duck-typed
-// fetch contracts have to name them. The rest is internal (ADR-045).
+// fetch contracts have to name them. The rest is internal (ADR-045). The last
+// two are named by inference rather than by hand -- every display's emitted
+// `.d.ts` serializes them, so they need a path a published tarball ships.
 export type {
+  ByteEstimate,
   GateFetchState,
   GateViewport,
+  RegionTooLargeStatus,
 } from './shared/regionTooLargeUtils.ts'
+export type { IndexedRegion } from './BaseLinearDisplay/models/planRegionFetch.ts'
 export {
   HighlightBand,
   HighlightChip,
