@@ -722,7 +722,9 @@ Example: add a derived field to a particular track's about dialog
 ```typescript
 function addCustomizeAbout(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) =>
-    config.trackId === 'volvox_sv_test'
+    // this point transforms the config rather than rendering, so it scopes
+    // itself with the predicate ForTrack is built on
+    matchesTrackSelector({ trackId: 'volvox_sv_test' }, { config })
       ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
       : arg,
   )
@@ -843,6 +845,14 @@ control the matching yourself.
 the About points carry, so the same selector scopes a contribution to any of
 them. Anything the fields cannot express is an ordinary React condition around
 the same children — the panel below is scoped by `depth` that way.
+
+At a point that transforms data rather than rendering, there is nothing to wrap:
+call `matchesTrackSelector(select, { model })` or `{ config }`, which is what
+`ForTrack` is built on and takes the same selector.
+[`Core-customizeAbout`](#core-customizeabout) is the one such point, and its
+example below uses it. Don't reach for `matchTrackId` from `@jbrowse/core/util`
+here — that one tests an id against patterns you supply, so the copy-track
+normalization is back to being yours to remember.
 
 We match on the model rather than on the config because the config that produced
 a feature details widget isn't always retrievable.

@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react'
 
-import { selectorMatchesModel } from './extensionSelectors.ts'
+import { matchesTrackSelector } from './extensionSelectors.ts'
 
-import type { TrackSelector } from './extensionSelectors.ts'
+import type { SelectableModel, TrackSelector } from './extensionSelectors.ts'
 import type { ReactNode } from 'react'
 
 /**
@@ -13,8 +13,9 @@ import type { ReactNode } from 'react'
  * This is how a contribution to any of the track-scoped extension points says
  * which tracks it is for. The points all fire for every track, so the
  * alternative is `props.model.trackId === 'x'` written by hand, which stops
- * applying the moment the user copies the track — {@link matchTrackId}
- * normalizes the copy's suffix here so nobody has to know that.
+ * applying the moment the user copies the track — {@link matchesTrackSelector}
+ * normalizes the copy's suffix so nobody has to know that. Reach for the
+ * predicate directly at a point that transforms data rather than rendering.
  *
  * In a panel point, where the accumulated array already composes, omit
  * `fallback` and the panel simply does not appear:
@@ -40,7 +41,7 @@ const ForTrack = observer(function ForTrack({
 }: {
   select: TrackSelector
   /** a widget model, if the point's props carry one */
-  model?: { type?: string; trackId?: string; trackType?: string }
+  model?: SelectableModel
   /**
    * a track config, if they carry that instead — its `type` is the track type.
    * Loosely typed because the About points hand over either a live config node
@@ -51,11 +52,9 @@ const ForTrack = observer(function ForTrack({
   fallback?: ReactNode
   children: ReactNode
 }) {
-  const subject = model ?? {
-    trackId: config?.trackId as string | undefined,
-    trackType: config?.type as string | undefined,
-  }
-  return <>{selectorMatchesModel(select, subject) ? children : fallback}</>
+  return (
+    <>{matchesTrackSelector(select, { model, config }) ? children : fallback}</>
+  )
 })
 
 export default ForTrack

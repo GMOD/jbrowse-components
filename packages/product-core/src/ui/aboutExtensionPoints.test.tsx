@@ -4,7 +4,12 @@ import {
   ConfigurationSchema,
   FormatAboutConfigSchemaFactory,
 } from '@jbrowse/core/configuration'
-import { ForTrack, PluggableComponent, wrapComponent } from '@jbrowse/core/ui'
+import {
+  ForTrack,
+  PluggableComponent,
+  matchesTrackSelector,
+  wrapComponent,
+} from '@jbrowse/core/ui'
 import PluggableComponents from '@jbrowse/core/ui/PluggableComponents'
 import { types } from '@jbrowse/mobx-state-tree'
 import { render } from '@testing-library/react'
@@ -89,7 +94,9 @@ function addReplaceAbout(pluginManager: PluginManager) {
 // #region customizeAbout
 function addCustomizeAbout(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) =>
-    config.trackId === 'volvox_sv_test'
+    // this point transforms the config rather than rendering, so it scopes
+    // itself with the predicate ForTrack is built on
+    matchesTrackSelector({ trackId: 'volvox_sv_test' }, { config })
       ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
       : arg,
   )
@@ -167,4 +174,21 @@ test('customizeAbout adds a field to the config the dialog shows', () => {
     getAboutDialogConfig({ config: otherConfig, session, pluginManager })
       .config,
   ).not.toHaveProperty('Custom field')
+})
+
+// the same copy-track normalization the rendering points get. This point is not
+// React, so it reaches the predicate rather than ForTrack — and it is the one
+// place a hand-written `config.trackId === 'x'` survived the sweep
+test('customizeAbout applies to the users copy of the track it names', () => {
+  const pluginManager = new PluginManager([]).createPluggableElements()
+  pluginManager.configure()
+  addCustomizeAbout(pluginManager)
+
+  expect(
+    getAboutDialogConfig({
+      config: { ...config, trackId: 'volvox_sv_test-1712000000000' },
+      session,
+      pluginManager,
+    }).config,
+  ).toMatchObject({ 'Custom field': 'Custom value' })
 })

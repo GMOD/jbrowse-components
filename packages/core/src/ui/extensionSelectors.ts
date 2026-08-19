@@ -46,7 +46,7 @@ function matchesOneOf(value: string | undefined, expected: string | string[]) {
 }
 
 /** Whether `model` satisfies every declarative field of `select`. */
-export function selectorMatchesModel(
+function selectorMatchesModel(
   select: TrackSelector | undefined,
   model: SelectableModel,
 ) {
@@ -58,5 +58,38 @@ export function selectorMatchesModel(
       (Array.isArray(trackId) ? trackId : [trackId]).some(pattern =>
         matchesTrackId(model.trackId, pattern),
       ))
+  )
+}
+
+/**
+ * What a track-scoped extension point contribution is for: whether the widget
+ * model or track config in `subject` satisfies every field of `select`. Every
+ * field given must match, and an empty selector matches everything.
+ *
+ * {@link ForTrack} is this as a component, and is what a contribution that
+ * renders should use. Reach for the predicate where there is nothing to render
+ * — `Core-customizeAbout` transforms a config rather than drawing anything, and
+ * hand-writing `config.trackId === 'x'` there is what silently stops applying
+ * the first time a user copies the track.
+ *
+ * Not to be confused with {@link matchTrackId}, which tests an id against
+ * patterns you supply and so leaves that normalization to you.
+ */
+export function matchesTrackSelector(
+  select: TrackSelector | undefined,
+  subject: {
+    /** a widget model, if the point's props carry one */
+    model?: SelectableModel
+    /** a track config, if they carry that instead — `type` is the track type */
+    config?: Record<string, unknown>
+  },
+) {
+  const { model, config } = subject
+  return selectorMatchesModel(
+    select,
+    model ?? {
+      trackId: config?.trackId as string | undefined,
+      trackType: config?.type as string | undefined,
+    },
   )
 }

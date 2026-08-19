@@ -111,6 +111,7 @@ export type {
   SlotProps,
   WrapperProps,
 } from './wrapComponent.tsx'
+export { matchesTrackSelector } from './extensionSelectors.ts'
 export type { TrackSelector } from './extensionSelectors.ts'
 export type {
   BaseMenuItem,
