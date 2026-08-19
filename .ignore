@@ -58,3 +58,4 @@ packages/browser-test-utils/src/reviewVerdicts.test.ts
 packages/core/src/util/color/randomColor.test.ts
 website/scripts/screenshot-review.json
 website/diagrams/rpc_lifecycle.dot
+packages/core/src/extensionPointShapes.test.ts
