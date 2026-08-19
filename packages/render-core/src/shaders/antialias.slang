@@ -18,12 +18,23 @@
 // capsule, the synteny fill and the glyph SDFs each found that separately, in
 // three plugins, before this module existed.
 //
-// Both ramp SHAPES are here because the tree runs both, and they are not the
-// same function: `aaRamp` is linear in the signed distance, `aaSmoothRamp` is
-// cubic (the smoothstep shoulder). Linear is what a box filter — and so
-// Canvas2D — produces on a straight edge, which is the parity argument; cubic
-// reads softer on a curve. Sharing them here does not decide between them, and
-// a shader switching from one to the other is a visual change, not a cleanup.
+// Both ramp SHAPES are here because the tree runs both, and `aaRamp` — linear
+// in the signed distance — is the one to reach for. That is not a parity
+// preference. Scored against exact area coverage of a pixel by a straight edge,
+// the linear ramp is closer at EVERY angle: exact on an axis-aligned edge,
+// where the cubic is up to 0.096 of full ink out, and 0.043 against 0.067 worst
+// case at 45 degrees. A band built as a difference of two ramps is exact at
+// every width with the linear one; the cubic over-inks a half-pixel band by 37%
+// (0.688 where 0.500 is the coverage). `aaSmoothRamp` is the smoothstep
+// shoulder, and it reads softer because it carries more ink on both sides of
+// the half-max contour, not because it resolves a curve better.
+// `scripts/aa_ramp_coverage_study.ts` is the measurement.
+//
+// Four call sites still take the cubic: synteny's `perpCoverage` and
+// `vertCoverage`, the dotplot capsule, and `glyphEdgeAlpha` — and through it
+// every point glyph. Converting one moves pixels and wants the
+// backend-comparison instrument, so it is a tracked change rather than a
+// cleanup to do in passing; agent-docs/TODO.md carries it.
 //
 // The floor on `aaGradient` exists for an SDF that is a constant, such as
 // manhattan's SHAPE_BAR: zero gradient makes the ramp zero-wide and the

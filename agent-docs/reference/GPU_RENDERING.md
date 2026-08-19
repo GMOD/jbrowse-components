@@ -1226,10 +1226,33 @@ genuinely different:
   exact edges after a linear transform, and antialiasing them individually
   produces seams.
 
-The tree runs both ramp SHAPES, and `antialias.slang` does not pick between
-them: `aaRamp` is linear, which is what a box filter — and so Canvas2D —
-produces on a straight edge; `aaSmoothRamp` is cubic and reads softer on a
-curve. Switching one is a visual change, not a cleanup.
+The tree runs both ramp SHAPES, and the one to reach for is the linear
+`aaRamp`. That used to read as a preference — linear "is what a box filter, and
+so Canvas2D, produces on a straight edge", cubic "reads softer on a curve" — and
+`scripts/aa_ramp_coverage_study.ts` settles it by scoring both against the exact
+area a straight edge covers of a pixel, at five angles. Linear is closer at
+every one of them:
+
+| edge angle | max error, linear | max error, cubic |
+| --- | --- | --- |
+| 0° | 0.00023 (quadrature noise) | 0.09631 |
+| 22.5° | 0.03323 | 0.07345 |
+| 45° | 0.04298 | 0.06737 |
+
+The cubic is not trading accuracy on the axis for accuracy on the diagonal; it
+is worse on both, and "softer" is it carrying more ink on both sides of the
+half-max contour. A thin mark shows it plainly: a band built as
+`ramp(d) - ramp(d - W)` is exactly right at every width with the linear ramp,
+where the cubic paints a half-pixel band at 0.688 coverage instead of 0.500.
+
+**No pixels have moved on that finding.** Four call sites still take the cubic —
+synteny's `perpCoverage` and `vertCoverage`, the dotplot capsule, and
+`glyphEdgeAlpha` with every point glyph behind it — and each is a visual change
+wanting the backend-comparison instrument rather than a cleanup. The sharpest
+one to look at first is the dotplot capsule, because wiggle's capsule is the
+same primitive with the same SDF and already takes the linear ramp, so the two
+differ for no reason anyone recorded. `agent-docs/TODO.md` carries the
+conversion.
 
 **A ramp needs geometry to live in.** Widening one without padding the quad
 clips it: the dotplot capsule quad is now `halfWidth + aaHalfPx` on both axes, with

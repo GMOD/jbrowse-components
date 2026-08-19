@@ -35,6 +35,7 @@ before anyone noticed.
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Canvas2D fades a curved sub-pixel ribbon by one number](#canvas2d-fades-a-curved-sub-pixel-ribbon-by-one-number) | synteny, canvas2d | measured and understood; the cost is N strokes in the 500k-instance loop |
+| [Move the four cubic AA ramps onto the linear one](#move-the-four-cubic-aa-ramps-onto-the-linear-one) | shaders, GPU | the measurement is done; start at the dotplot capsule, and check whose reds the goldens are |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
@@ -1382,6 +1383,38 @@ opposite ("load-bearing and ACCEPTED"), which is the sentence that had kept it
 open. **Re-baseline in the same commit as any improvement**; the gate only fails
 when the count grows, so a win nobody ratchets is a win that can be undone
 silently.
+
+### Move the four cubic AA ramps onto the linear one
+
+`antialias.slang` offers two ramp shapes over one output pixel and the tree runs
+both, which used to be recorded as an open preference. It is now measured:
+`scripts/aa_ramp_coverage_study.ts` scores each against the exact area a
+straight edge covers of a pixel, and the linear `aaRamp` is closer at every
+angle — exact axis-aligned where the cubic is up to 0.096 of full ink out, and
+0.043 against 0.067 at 45°. A band built as a difference of ramps is exact at
+every width with the linear one; the cubic paints a half-pixel band at 0.688
+coverage instead of 0.500. GPU_RENDERING.md's antialiasing section carries the
+table.
+
+So the four remaining `aaSmoothRamp` callers are a correctness debt rather than
+a style: synteny's `perpCoverage` and `vertCoverage` (`syntenyTypes.slang`), the
+dotplot capsule, and `glyphEdgeAlpha` — which puts it behind `pointGlyph` and
+manhattan's SDFs too. Each call is a one-argument change: `aaSmoothRamp(d,
+halfPx)` becomes `aaRamp(d, 2.0 * halfPx)`, since the linear form takes the full
+width where the cubic takes the half.
+
+**Start with the dotplot capsule.** Wiggle's capsule is the same primitive with
+the same SDF and already takes the linear ramp, so those two differ today for no
+reason anyone recorded, and it is the cleanest place to see what the change
+looks like. Marks thinner than a pixel move the most — they are the ones the
+cubic over-inks.
+
+The reason this is not four one-line commits is the verification.
+`browser-tests/compare-backends.ts` is the instrument, and it wants captures in
+all three backends; several golden sets are stale on an untouched tree, so
+confirm which reds are main's before reading a diff as yours. Expect the
+Canvas2D pair to get *closer*, which is the direction that says the change
+worked.
 
 ## Blocked on a visual call
 
