@@ -34,6 +34,7 @@ before anyone noticed.
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
+| [Canvas2D fades a curved sub-pixel ribbon by one number](#canvas2d-fades-a-curved-sub-pixel-ribbon-by-one-number) | synteny, canvas2d | measured and understood; the cost is N strokes in the 500k-instance loop |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
@@ -245,6 +246,34 @@ zoom spring and snapping exact on settle.
 [reference/INTERACTION_PERF.md](reference/INTERACTION_PERF.md) has both
 measurements and the repro tool, including the trap that it serves
 `products/jbrowse-web/build` and so needs a rebuild between arms.
+### Canvas2D fades a curved sub-pixel ribbon by one number
+
+A sub-pixel ribbon is drawn as a ~1px band whose alpha carries how much of a
+pixel it really covers. The GPU measures that width per fragment from the local
+perpendicular; Canvas2D measures it once per ribbon off the centerline chord
+(`ribbonPerpWidth`). Identical in straight mode. On a bezier the tangent is
+vertical at both ends and twice the chord slope at the middle, so a rearranged
+block is at its *widest* perpendicular exactly where it meets the frame — and one
+number per ribbon cannot say that. The GPU is the accurate side.
+
+It is the whole of synteny's only cross-backend drift, measured three ways in
+[CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md) and reproducible with
+`probe-synteny-backend-drift.ts`: 1.54% curved vs 0.53% straight on the same
+data, and 1.72% / 0.44% once the ribbons are made steeper.
+
+**Why it is parked rather than fixed:** closing it means replacing one
+`ctx.stroke()` of the centerline with N segments at N alphas, in
+`drawSyntenyTrack`'s per-instance loop — the loop `StyleCache` exists for,
+because `rgba()` string construction alone cost >100ms at 500k instances. Paying
+N× the stroke calls there to sharpen the fallback backend is the wrong trade
+unless someone wants the SVG export to match too, which is the case that would
+justify it: the export goes through the same `strokeCenterline`, and a figure is
+looked at closely in a way a fallback render is not.
+
+**First move if it is picked up:** decide it on the SVG export, not the canvas.
+If the export is the reason, N is small (a figure has few visible ribbons after
+culling) and the interactive loop can keep the single stroke.
+
 ### Get the synteny shader source out of the eager set
 
 `GpuSyntenyRenderer.ts` is statically imported by `SyntenyRendererFactory`

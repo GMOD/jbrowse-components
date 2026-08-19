@@ -422,6 +422,60 @@ that — the sweep is a point-in-time measurement, not a gate. It was not made o
 for the same reason the override list is kept short: a check whose findings are
 all "no" teaches people to skip it.
 
+## Synteny's one drifting pair is the sub-pixel fade, and it is curve-only
+
+`targeted_hs1-mm39-synteny-clean-ribbon` is the only synteny pair that has ever
+been over threshold — 1.58% against the 1.5% default, the same figure under
+swiftshader and on a real GPU. Every other synteny pair in the suite sits at
+0.00-0.02%, including `grape-peach-synteny-clean-ribbon`, whose view spec is
+identical field for field.
+
+**It is the two sub-pixel fade models disagreeing, and only where the ribbon
+curves.** Whole-genome hs1/mm39 is 2.23 Mbp/px, so a 500kb alignment is 0.22px
+wide and every ribbon in the frame takes the thin path: a ~1px band whose alpha
+carries how much of a pixel it really covers. The GPU measures that width per
+fragment from the local perpendicular (`perpCoverage`); Canvas2D measures it once
+per ribbon off the centerline chord (`ribbonPerpWidth`). On a straight ribbon
+those are one number. On the bezier they are not — `sBlendDeriv/yCurveDeriv` is 0
+at both ends and 2.0 at the middle, so a rearranged block is at its *widest*
+perpendicular where it meets the frame and its thinnest halfway down, and a
+single per-ribbon number cannot say that. The diff image is red along the arcs at
+the top and bottom edges for exactly that reason.
+
+Three runs, each varying one thing (`probe-synteny-backend-drift.ts`):
+
+| view | `drawCurves` | straight |
+| --- | --- | --- |
+| hs1/mm39, diagonalized (what the suite renders) | 1.54% | 0.53% |
+| hs1/mm39, `autoDiagonalize: false` — steeper, same data and count | **1.72%** | **0.44%** |
+| grape/peach, same settings | 0.00% | 0.01% |
+
+Turning curves off at identical data and ribbon count takes three quarters of it.
+Making the ribbons steeper moves the two modes in **opposite** directions, which
+is the discriminating result: worse curved, better straight, because steeper
+drives both models further below `WIDTH_FADE_FLOOR` (0.15) where they agree
+again. That floor is also why grape/peach is immune at any slope — its 2kb
+alignments are 0.006px and both models are pinned to the floor.
+
+`probe-synteny-thin-fade.ts` is the two models side by side with no browser at
+all: 1.42-1.47x apart at a rearranged ribbon's ends in curve mode, 1.00x in
+straight mode, 1.00x for grape/peach.
+
+**Do not "fix" this on the GPU side.** The local width is the more honest
+statement of what a pixel row covers; Canvas2D is the approximation, and it is
+the fallback backend. Closing it there means stroking the centerline in N pieces
+at N alphas rather than one `ctx.stroke()`, inside the loop `StyleCache` exists
+because `rgba()` construction alone cost >100ms at 500k instances. Filed in
+TODO.md and given a 2% override with the gap understood.
+
+**One caveat this pair exposes about the audit rule.** "Identical across
+rasterizers ⇒ not antialiasing ⇒ a real difference in what is drawn" was derived
+from alignments. It is weaker here: these shaders compute coverage analytically
+rather than leaning on the rasterizer, and the canvas2d side is Skia either way,
+so a synteny pair can be rasterizer-stable and still be an antialiasing-shaped
+difference. The rule pointed at the right answer this time; it did not prove it —
+the `drawCurves` and `autoDiagonalize` arms did.
+
 ## Alignments vs webgl: the historical drift does not reproduce
 
 The exclusion rested on a 2026-07 record of over-threshold pileup drift.

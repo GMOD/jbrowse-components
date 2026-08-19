@@ -26,6 +26,12 @@
 // (edgeSpan), the clip (fillEdges), the slope pads (ribbonEdgeDeltas) and the
 // sub-pixel allowance (ribbonWidths) are all derived from that one function.
 
+// This file imports nothing on purpose — it is a model of the shader, not a
+// consumer of it — which without this line leaves `sBlend` and friends in the
+// GLOBAL scope, where tsc collides them with any sibling that mirrors the same
+// shader under the same names. `probe-synteny-thin-fade.ts` is one.
+export {}
+
 const NUM_SEGMENTS = 8
 const invN = 1 / NUM_SEGMENTS
 

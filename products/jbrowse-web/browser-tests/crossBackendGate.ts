@@ -185,6 +185,44 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // it was a separate connector bug; the equal figures refuted that before it
   // landed.
   { match: 'inversion-pbsim', threshold: 0.1 },
+  // The only synteny pair that has ever drifted, and the first entry here that
+  // is a CURVE-mode effect rather than a pileup one. 1.58% against the 1.5%
+  // default, identical under swiftshader and on a real GPU.
+  //
+  // Whole-genome hs1/mm39 is 2.23 Mbp/px, so the 500kb minimum alignment is
+  // 0.22px wide and every ribbon takes the sub-pixel path: a ~1px band whose
+  // ALPHA carries how much of a pixel it really covers (thinWidthFade). The GPU
+  // computes that per fragment from the LOCAL perpendicular width; Canvas2D
+  // computes it once per ribbon off the centerline chord (ribbonPerpWidth).
+  // Those are the same number in straight mode and not on a bezier, whose
+  // tangent is vertical at both ends and twice the chord slope at the middle —
+  // so a rearranged block is at its widest perpendicular exactly where it meets
+  // the frame, and one number per ribbon cannot say that.
+  //
+  // Three measurements, each varying one thing (probe-synteny-backend-drift.ts):
+  //
+  //   hs1/mm39 diagonalized       curves 1.54%   straight 0.53%
+  //   hs1/mm39 NOT diagonalized   curves 1.72%   straight 0.44%
+  //   grape/peach, same settings  curves 0.00%   straight 0.01%
+  //
+  // Turning curves off at identical data and ribbon count takes 3/4 of it, and
+  // making the ribbons steeper moves the two modes in OPPOSITE directions —
+  // worse curved, better straight, because steeper drives both models further
+  // below WIDTH_FADE_FLOOR where they agree again. probe-synteny-thin-fade.ts
+  // is the two models side by side with no browser: 1.42-1.47x apart at a
+  // rearranged ribbon's ends, 1.00x in straight mode, and 1.00x for grape/peach
+  // at any slope because 0.006px floors both. That is the whole of it.
+  //
+  // NOT a bug to fix on the GPU side: the local width is the more honest
+  // statement of what that pixel row covers, and Canvas2D is the approximation.
+  // Closing it there means stroking the centerline in N pieces at N alphas
+  // instead of one `ctx.stroke()`, in the loop `StyleCache` exists because
+  // `rgba()` construction alone cost >100ms at 500k instances. Filed in
+  // agent-docs/TODO.md; 2%, with the gap understood rather than mysterious.
+  //
+  // Matches `fullpage_` too (0.68%, already under the default) — same drawing,
+  // smaller share of the frame.
+  { match: 'hs1-mm39-synteny-clean-ribbon', threshold: 0.02 },
 ]
 
 function thresholdFor(name: string) {
