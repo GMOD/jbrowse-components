@@ -4,7 +4,10 @@ either row. They move independently, and the ribbons follow.
 Almost nothing here is new. A `LinearSyntenyView` holds ordinary linear genome
 views in `views`, so every page above applies to each row unchanged:
 `useWidthSetter`, `usePanZoom`, `getTrack(id).activeDisplay.RenderingComponent`.
-What it adds is `levels`: one band between each pair of rows, drawn by
+The outer view answers `view.status` with the same four values, so the gate is
+the same one too — and here it earns its keep, since `initialized` waits on
+every row and a failure in either assembly leaves it false for good. What it
+adds is `levels`: one band between each pair of rows, drawn by
 `LevelSyntenyCanvas` on the same GPU backend the rest of JBrowse renders with.
 
 The alignment is a **PIF**: a PAF sorted and indexed on both sides, so the view

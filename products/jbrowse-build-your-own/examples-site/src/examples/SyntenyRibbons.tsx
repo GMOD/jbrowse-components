@@ -417,12 +417,13 @@ const SyntenyRibbons = observer(function SyntenyRibbons() {
   // One measurement for the whole stack: `setWidth` on the synteny view assigns
   // it to every row, so the rows cannot disagree about how wide they are.
   const ref = useWidthSetter(view)
+  const { status } = view
 
   return (
     <SessionPaletteProvider session={session} mode={mode}>
       <DisplayUIProvider>
         <div ref={ref}>
-          {view.initialized ? (
+          {status.type === 'ready' ? (
             view.views.map((row, i) => (
               <div key={row.id}>
                 {i > 0 ? <Ribbons level={view.levels[i - 1]} /> : null}
@@ -433,16 +434,26 @@ const SyntenyRibbons = observer(function SyntenyRibbons() {
               </div>
             ))
           ) : (
-            // `initialized` waits on every row's view, so a failure in either
-            // assembly leaves it false permanently -- the synteny twin of the
-            // hole `view.status` closes on a linear view and leaves open here,
-            // and the reason `error` is checked below rather than assuming the
-            // only reason not to be initialized is that it is still loading.
-            // This view's `error` folds in its rows' for exactly that.
-            <div style={{ fontSize: '0.85rem', opacity: 0.7, padding: 8 }}>
-              {view.error
-                ? `Could not load: ${view.error instanceof Error ? view.error.message : String(view.error)}`
-                : 'Loading two assemblies…'}
+            // A synteny view answers `view.status` with the same four values a
+            // linear one does, so this is the gate every other page here
+            // writes, on a view whose rows are themselves linear views.
+            //
+            // **Not `view.initialized`**, which is what this page used to gate
+            // on: that one waits on every row, so a failure in either assembly
+            // leaves it false for good and this box would say "loading" for as
+            // long as the tab stayed open. The status branch carries the error
+            // instead, and this view's `error` folds in its rows' -- so a 404
+            // on the mouse genome names itself here rather than stalling the
+            // pair.
+            <div
+              role={status.type === 'error' ? 'alert' : 'status'}
+              style={{ fontSize: '0.85rem', opacity: 0.7, padding: 8 }}
+            >
+              {status.type === 'error'
+                ? `Could not load: ${status.error instanceof Error ? status.error.message : String(status.error)}`
+                : status.type === 'loading'
+                  ? status.message
+                  : 'Nothing to show yet'}
             </div>
           )}
         </div>

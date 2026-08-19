@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
+import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
@@ -36,6 +37,7 @@ import type {
   LinearSyntenyViewCommands,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   AttributeRange,
@@ -438,6 +440,31 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get showImportForm() {
         return !self.hasSomethingToShow || !!self.error
+      },
+      /**
+       * #getter
+       * The view's lifecycle as one value — ready, error, loading or noRegions
+       * — for a host that draws its own chrome and has to render all four. Same
+       * shape and same precedence as the linear view's, through
+       * `computeViewStatus`.
+       *
+       * A host gating on `initialized` alone gets the trap this closes: it
+       * waits on every row, so a failure in either assembly leaves it false for
+       * good, and the empty box that follows says nothing about which of the
+       * two happened.
+       */
+      get status(): ViewStatus {
+        return computeViewStatus({
+          error: self.error,
+          hasSomethingToShow: self.hasSomethingToShow,
+          loading: () =>
+            this.showLoading
+              ? {
+                  message: this.loadingMessage ?? 'Loading',
+                  progress: this.loadingProgress,
+                }
+              : undefined,
+        })
       },
     }))
     .actions(self => ({

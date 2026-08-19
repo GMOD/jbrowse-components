@@ -58,6 +58,7 @@ test('a bad per-row init loc keeps the built rows', async () => {
   // and the view stayed usable rather than falling back to the import form
   expect(view.error).toBeUndefined()
   expect(view.showImportForm).toBe(false)
+  expect(view.status).toEqual({ type: 'ready' })
   expect(notifyError).toHaveBeenCalledTimes(1)
 })
 
@@ -81,6 +82,27 @@ test('an unloadable assembly keeps init and shows the import form', async () => 
   // kept, so a reload can retry it
   expect(view.init).toBeDefined()
   expect(view.showImportForm).toBe(true)
+  // `initialized` waits on every row, so it is false here and stays false — a
+  // host gating on it draws an empty box for as long as the tab is open, with
+  // nothing anywhere naming the assembly that failed. `status` carries it.
+  expect(view.initialized).toBe(false)
+  expect(view.status).toEqual({ type: 'error', error: view.error })
   // the banner is the whole report — no duplicate snackbar
   expect(notifyError).not.toHaveBeenCalled()
+})
+
+// The third outcome, and the one a host is most likely to mistake for ready: no
+// rows and no `init` is a synteny view nobody has told what to compare, which
+// is what JBrowse's own apps draw the import form for.
+test('no rows and no init is noRegions', () => {
+  const session = setup()
+  const view = session.addView(
+    'LinearSyntenyView',
+    {},
+  ) as LinearSyntenyViewModel
+  view.setWidth(800)
+
+  expect(view.hasSomethingToShow).toBe(false)
+  expect(view.status).toEqual({ type: 'noRegions' })
+  expect(view.showImportForm).toBe(true)
 })
