@@ -5,10 +5,10 @@
 //   node --experimental-strip-types scripts/generateTrackTypeMap.ts
 //
 // The tag is the definition site — `website/scripts/api-docs/
-// generateFileTypeDocs.ts` builds the "Supported file types" table off it — and
-// the map used to restate it by hand. It has to be generated rather than read:
-// a JSDoc tag does not survive to runtime, `@jbrowse/add-track-core` carries no
-// dependencies, and the CLI parses no TypeScript.
+// generateFileTypeDocs.ts` builds the "Supported file types" table off it.
+// Generated rather than read because a JSDoc tag does not survive to runtime,
+// `@jbrowse/add-track-core` carries no dependencies, and the CLI parses no
+// TypeScript. ADR-077.
 //
 // A `#trackType` value is kept only when some config schema declares
 // `#config <that name>`, which is what drops `TextSearchAdapter` — a real tag

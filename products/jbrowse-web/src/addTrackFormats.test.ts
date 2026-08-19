@@ -19,8 +19,8 @@ jest.mock('./makeWorkerInstance', () => () => {})
 // One filename per format-table entry, so an entry added without a matching
 // name here fails `every regex entry has a sample filename` below rather than
 // going untested. The names are what a user actually types, not minimal regex
-// witnesses -- `.bg.bgz` and `.fas` are here because each was supported on
-// exactly one of the two sides before the table was shared.
+// witnesses -- `.bg.bgz` and `.fas` are here because each used to be supported
+// on exactly one of the two sides.
 const samples: Record<string, string[]> = {
   BamAdapter: ['volvox.bam'],
   CramAdapter: ['volvox.cram'],

@@ -55,10 +55,7 @@ export interface FormatEntry {
  * Every file format the "Add track" flow knows, in first-match order.
  *
  * One table, two consumers: `@jbrowse/core`'s `Core-guessAdapterForLocation`
- * chain and `@jbrowse/cli`'s `add-track`. Twelve plugins and the CLI used to
- * carry a copy each, in different shapes, and drifted — the CLI never learned
- * `.bedmethyl.gz` or `.fas`, the plugins never learned `.bed.bgz`, and half the
- * comparative regexes had an unescaped dot.
+ * chain and `@jbrowse/cli`'s `add-track`. ADR-077.
  *
  * An entry here does not make a build able to open the format. Core guesses an
  * entry only when its adapter type is registered, so the plugin providing the

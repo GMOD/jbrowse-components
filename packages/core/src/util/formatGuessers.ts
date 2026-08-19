@@ -65,10 +65,9 @@ export function adapterConfigFromSpec(
  * adapter config in the app and on the command line.
  *
  * Whether a build can open a format is decided by `hasAdapterType`, not by the
- * table: guessing `BamAdapter` in a build with no alignments plugin would write
- * a track config that fails at render, and asking the registry is the only
- * statement of that which cannot go stale. A plugin therefore registers its
- * adapters and nothing else — there is no format list to keep in step.
+ * table: guessing `BamAdapter` in a build with no alignments plugin writes a
+ * track config that fails at render. A plugin therefore registers its adapters
+ * and nothing else — there is no format list to keep in step. ADR-077.
  *
  * `CorePlugin` installs this first, so any `addAdapterGuesser` a plugin
  * registers is later in the chain and wins over the table. That is how a format
