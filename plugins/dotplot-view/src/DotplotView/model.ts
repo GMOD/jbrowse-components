@@ -74,7 +74,6 @@ import type {
   ComparativeTrackModel,
   LodMode,
 } from '@jbrowse/synteny-core'
-import type { ReactNode } from 'react'
 import type React from 'react'
 
 // lazies
@@ -1629,17 +1628,9 @@ declare module '@jbrowse/core/PluginManager' {
   // contract, the same way Core-replaceWidget's does.
   interface ExtensionPointRegistry {
     /** #extensionPoint DotplotView-OverlaySVGComponent | sync | Add an SVG overlay component to the dotplot view */
-    'DotplotView-OverlaySVGComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: DotplotViewModel }
-    }
+    'DotplotView-OverlaySVGComponent': ElementList<{ model: DotplotViewModel }>
     /** #extensionPoint DotplotView-OverlayHTMLComponent | sync | Add an HTML overlay component to the dotplot view */
-    'DotplotView-OverlayHTMLComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: DotplotViewModel }
-    }
+    'DotplotView-OverlayHTMLComponent': ElementList<{ model: DotplotViewModel }>
   }
   interface ViewTypeRegistry {
     DotplotView: DotplotViewStateModel

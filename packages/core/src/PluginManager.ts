@@ -33,7 +33,7 @@ import type {
   IStateTreeNode,
   IAnyType,
 } from '@jbrowse/mobx-state-tree'
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 export type PluggableElementTypeGroup =
   | 'adapter'
@@ -165,10 +165,72 @@ function logCallbackError(name: string, error: unknown) {
 //     }
 //   }
 //
+// A point that resolves to UI names one of the three shapes below instead of
+// spelling out the triple, because the shape decides which producer renders it
+// and which helper registers on it. Sniffing that back off `args` does not
+// work: a TrackTypeGuesser takes an argument and returns a string, so it
+// satisfies ComponentType too — extensionPointShapes.test.ts pins the seams
+// against it.
+//
 // Untyped extension points still work — they hit the second overload of each
 // method and fall back to the prior loose typing. Built-in points defined here
 // in PluginManager are declared inline; points owned by other modules augment
 // this interface via `declare module '@jbrowse/core/PluginManager'`.
+
+// #region uiShapes
+/**
+ * A point that resolves to one component — a slot with a default, which a
+ * plugin wraps or replaces. Declared as
+ * `'Core-replaceWidget': ComponentSlot<ReplaceWidgetProps>`, produced by
+ * {@link PluggableComponent}, registered on with `wrapComponent`.
+ */
+export interface ComponentSlot<P> {
+  args: ComponentType<P>
+  result: ComponentType<P>
+  props: P
+  /**
+   * Type-only: never present at runtime, and what makes the shape *declared*
+   * rather than guessed. Reading it off the value cannot work — a
+   * `TrackTypeGuesser` takes an argument and returns a string, which is also
+   * what a function component does, so a structural test admits it as a slot.
+   */
+  kind: 'componentSlot'
+}
+
+/**
+ * A point that accumulates an array of components — the panel points. Produced
+ * by {@link PluggableComponents}, registered on with
+ * {@link PluginManager.contributeToExtensionPoint}; each panel scopes itself
+ * and draws its own chrome.
+ */
+export interface ComponentList<P> {
+  args: ComponentType<P>[]
+  result: ComponentType<P>[]
+  props: P
+  /** type-only, see {@link ComponentSlot.kind} */
+  kind: 'componentList'
+}
+
+/**
+ * A point that accumulates already-rendered elements — the overlay points.
+ * Produced by {@link PluggableElements}, registered on with
+ * `addExtensionElement`, which fixes the React key at registration time.
+ */
+export interface ElementList<P> {
+  args: ReactNode[]
+  result: ReactNode[]
+  props: P
+  /** type-only, see {@link ComponentSlot.kind} */
+  kind: 'elementList'
+}
+// #endregion
+
+/** The names of the points declared as `K`. */
+export type PointsOfKind<K extends string> = {
+  [N in ExtensionPointName]: ExtensionPointRegistry[N] extends { kind: K }
+    ? N
+    : never
+}[ExtensionPointName]
 // a feature-detail widget carries trackId/trackType (undefined when the
 // producing track was closed), which is what lets a panel scope itself to a
 // track
@@ -271,24 +333,11 @@ export interface ExtensionPointRegistry {
     // has known the group all along; it just never said.
     props: { group: PluggableElementTypeGroup }
   }
-  // accumulates an array of panels — every callback appends its own component
-  // (scoping itself via the model) and returns the array, so multiple plugins
-  // compose instead of overwriting one another
-  'Core-extraFeaturePanel': {
-    args: ComponentType<FeaturePanelProps>[]
-    result: ComponentType<FeaturePanelProps>[]
-    props: FeaturePanelProps
-  }
-  // singular: one widget renders, so this stays a single-component fold. A
-  // callback returns its own component to replace/wrap the default, or the
-  // default unchanged to opt out. Fired via PluggableComponent's `name` prop
-  // (no string-literal call site), so the docs tag lives here at the contract.
+  'Core-extraFeaturePanel': ComponentList<FeaturePanelProps>
+  // Fired via PluggableComponent's `name` prop (no string-literal call site),
+  // so the docs tag lives here at the contract.
   /** #extensionPoint Core-replaceWidget | sync | Replace or wrap the component that renders a widget */
-  'Core-replaceWidget': {
-    args: ComponentType<ReplaceWidgetProps>
-    result: ComponentType<ReplaceWidgetProps>
-    props: ReplaceWidgetProps
-  }
+  'Core-replaceWidget': ComponentSlot<ReplaceWidgetProps>
 }
 
 export type ExtensionPointName = keyof ExtensionPointRegistry

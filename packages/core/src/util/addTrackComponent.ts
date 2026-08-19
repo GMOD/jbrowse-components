@@ -26,11 +26,7 @@ export interface AddTrackComponentProps {
 // component otherwise.
 declare module '../PluginManager.ts' {
   interface ExtensionPointRegistry {
-    'Core-addTrackComponent': {
-      args: ComponentType<AddTrackComponentProps>
-      result: ComponentType<AddTrackComponentProps>
-      props: AddTrackComponentProps
-    }
+    'Core-addTrackComponent': ComponentSlot<AddTrackComponentProps>
     // The `ownsAssembly` claims from the point above, as a plain list. The fold
     // there can only answer "which component for this model", which needs a
     // model — and a caller asking whether a format is configurable at all has an

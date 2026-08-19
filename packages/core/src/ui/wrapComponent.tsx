@@ -3,36 +3,18 @@ import { wrappedComponent } from '../PluginManager.ts'
 import type PluginManager from '../PluginManager.ts'
 import type {
   ExtensionPointArgs,
-  ExtensionPointName,
-  ExtensionPointProps,
   ExtensionPointRegistry,
+  PointsOfKind,
 } from '../PluginManager.ts'
 import type { Attributes, ComponentType } from 'react'
 
 /**
- * The extension points that resolve to a single component — a slot with a
- * default, which a plugin wraps or replaces. `Core-replaceWidget`,
- * `Core-replaceAbout` and the desktop start-screen panels are all this shape;
- * {@link PluggableComponent} is the producer side.
- *
- * Matching on the point's declared props as well as its args is what keeps a
- * point whose value merely *looks* callable out: a bare `ComponentType<never>`
- * test admits `Core-guessTrackTypeForLocation`, whose guesser takes arguments
- * and returns a string, both of which a function component may also do.
+ * The extension points that resolve to a single component — every point
+ * declared `ComponentSlot`. {@link PluggableComponent} is the producer side.
  */
-export type SlotExtensionPointName = {
-  [N in ExtensionPointName]: 'props' extends keyof ExtensionPointRegistry[N]
-    ? ExtensionPointArgs<N> extends ComponentType<ExtensionPointProps<N>>
-      ? N
-      : never
-    : never
-}[ExtensionPointName]
+export type SlotExtensionPointName = PointsOfKind<'componentSlot'>
 
-/**
- * The props the component in slot `N` is rendered with. Read off the registry
- * entry rather than inferred back out of the component type, so it stays an
- * object type a wrapper's props can be spread from.
- */
+/** The props the component in slot `N` is rendered with. */
 export type SlotProps<N extends SlotExtensionPointName> =
   ExtensionPointRegistry[N]['props']
 

@@ -1,23 +1,17 @@
 import type PluginManager from '../PluginManager.ts'
 import type {
   ExtensionPointEntry,
-  ExtensionPointName,
   ExtensionPointProps,
-  ExtensionPointRegistry,
+  PointsOfKind,
 } from '../PluginManager.ts'
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType } from 'react'
 
 /**
- * The extension points that accumulate an array of rendered elements (the LGV
- * and dotplot overlay points). Points accumulating an array of *components*
- * (`Core-extraFeaturePanel` and friends) are excluded: a component is not a
- * `ReactNode`, so they do not match.
+ * The extension points that accumulate an array of rendered elements — every
+ * point declared `ElementList`, the LGV and dotplot overlays.
+ * {@link PluggableElements} is the producer side.
  */
-export type ElementExtensionPointName = {
-  [
-    N in ExtensionPointName
-  ]: ExtensionPointRegistry[N]['args'] extends ReactNode[] ? N : never
-}[ExtensionPointName]
+export type ElementExtensionPointName = PointsOfKind<'elementList'>
 
 /**
  * Render `component` into an overlay extension point, passing it the point's

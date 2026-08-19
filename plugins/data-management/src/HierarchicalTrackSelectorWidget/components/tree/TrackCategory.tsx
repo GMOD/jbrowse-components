@@ -24,7 +24,6 @@ import type {
   TreeCategoryNode,
   TreeTrackNode,
 } from '../../types.ts'
-import type { ComponentType } from 'react'
 
 // #region folderDialogProps
 export interface FolderDialogProps {
@@ -41,11 +40,7 @@ export interface FolderDialogProps {
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
-    'TrackSelector-folderDialog': {
-      args: ComponentType<FolderDialogProps>
-      result: ComponentType<FolderDialogProps>
-      props: FolderDialogProps
-    }
+    'TrackSelector-folderDialog': ComponentSlot<FolderDialogProps>
   }
 }
 

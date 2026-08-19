@@ -9,7 +9,6 @@ import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { ComponentType } from 'react'
 
 // #region aboutPanelProps
 export type AboutConfig = AnyConfigurationModel | Record<string, unknown>
@@ -27,26 +26,11 @@ export interface AboutPanelProps {
 // below, which then needs no cast on the Core-customizeAbout result.
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
-    // accumulates an array of panels, so panels from multiple plugins compose
-    // instead of clobbering one another. The array-valued args is what makes
-    // contributeToExtensionPoint the registration method: a plugin returns its
-    // own component and never sees the array. Each renders its own BaseCard
-    // chrome
-    'Core-extraAboutPanel': {
-      args: ComponentType<AboutPanelProps>[]
-      result: ComponentType<AboutPanelProps>[]
-      props: AboutPanelProps
-    }
-    // singular: one dialog body renders, so this stays a single-component fold —
-    // return your own component to replace/wrap the default, or the default to
-    // opt out. Fired via PluggableComponent's `name` prop (no string-literal
-    // call site), so the docs tag lives here at the contract.
+    'Core-extraAboutPanel': ComponentList<AboutPanelProps>
+    // fired via PluggableComponent's `name` prop, so there is no string-literal
+    // call site and the docs tag lives here at the contract
     /** #extensionPoint Core-replaceAbout | sync | Replace or wrap a track's About dialog body */
-    'Core-replaceAbout': {
-      args: ComponentType<AboutPanelProps>
-      result: ComponentType<AboutPanelProps>
-      props: AboutPanelProps
-    }
+    'Core-replaceAbout': ComponentSlot<AboutPanelProps>
     // data transform: mutate the config object shown in the dialog
     'Core-customizeAbout': {
       args: { config: Record<string, unknown> }

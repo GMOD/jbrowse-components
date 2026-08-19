@@ -1,6 +1,5 @@
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { ComponentType } from 'react'
 
 // What a start screen extension needs to open a session itself:
 // loadPluginManager builds the manager for a config path, setPluginManager
@@ -27,16 +26,8 @@ declare module '@jbrowse/core/PluginManager' {
       props: StartScreenMenuItemsProps
     }
     /** #extensionPoint Desktop-StartScreenLaunchPanel | sync | Replace or wrap the "Launch new session" panel */
-    'Desktop-StartScreenLaunchPanel': {
-      args: ComponentType<StartScreenPanelProps>
-      result: ComponentType<StartScreenPanelProps>
-      props: StartScreenPanelProps
-    }
+    'Desktop-StartScreenLaunchPanel': ComponentSlot<StartScreenPanelProps>
     /** #extensionPoint Desktop-StartScreenRecentSessionsPanel | sync | Replace or wrap the recent sessions panel */
-    'Desktop-StartScreenRecentSessionsPanel': {
-      args: ComponentType<StartScreenPanelProps>
-      result: ComponentType<StartScreenPanelProps>
-      props: StartScreenPanelProps
-    }
+    'Desktop-StartScreenRecentSessionsPanel': ComponentSlot<StartScreenPanelProps>
   }
 }

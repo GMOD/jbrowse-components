@@ -92,6 +92,73 @@ see [`Core-replaceWidget`](#core-replacewidget) for one that has it. And the
 `declare module` block goes in any file that is part of your plugin's
 compilation; putting it beside the registration keeps the two from drifting.
 
+### Points that resolve to UI
+
+A point whose value is a component or an element names one of three shapes
+instead of spelling the triple out, so a seam is one line —
+`'Core-extraFeaturePanel': ComponentList<FeaturePanelProps>` is the whole
+declaration. The shape is also what decides which producer renders the point and
+which helper registers on it:
+
+<!-- include: packages/core/src/PluginManager.ts#uiShapes -->
+
+```typescript
+/**
+ * A point that resolves to one component — a slot with a default, which a
+ * plugin wraps or replaces. Declared as
+ * `'Core-replaceWidget': ComponentSlot<ReplaceWidgetProps>`, produced by
+ * {@link PluggableComponent}, registered on with `wrapComponent`.
+ */
+export interface ComponentSlot<P> {
+  args: ComponentType<P>
+  result: ComponentType<P>
+  props: P
+  /**
+   * Type-only: never present at runtime, and what makes the shape *declared*
+   * rather than guessed. Reading it off the value cannot work — a
+   * `TrackTypeGuesser` takes an argument and returns a string, which is also
+   * what a function component does, so a structural test admits it as a slot.
+   */
+  kind: 'componentSlot'
+}
+
+/**
+ * A point that accumulates an array of components — the panel points. Produced
+ * by {@link PluggableComponents}, registered on with
+ * {@link PluginManager.contributeToExtensionPoint}; each panel scopes itself
+ * and draws its own chrome.
+ */
+export interface ComponentList<P> {
+  args: ComponentType<P>[]
+  result: ComponentType<P>[]
+  props: P
+  /** type-only, see {@link ComponentSlot.kind} */
+  kind: 'componentList'
+}
+
+/**
+ * A point that accumulates already-rendered elements — the overlay points.
+ * Produced by {@link PluggableElements}, registered on with
+ * `addExtensionElement`, which fixes the React key at registration time.
+ */
+export interface ElementList<P> {
+  args: ReactNode[]
+  result: ReactNode[]
+  props: P
+  /** type-only, see {@link ComponentSlot.kind} */
+  kind: 'elementList'
+}
+```
+
+Say the shape rather than leaving it to be read off `args`, because it cannot be
+read off `args` reliably: a `TrackTypeGuesser` takes an argument and returns a
+string, which is what a function component does too, so a structural test admits
+it as a wrappable slot. `kind` exists only in the type — nothing sets it at
+runtime, and nothing reads it. `extensionPointShapes.test.ts` pins each seam
+against the points of the other shapes, and fails a new `ComponentList` or
+`ElementList` declared the long way, which would otherwise be a point no
+producer accepts.
+
 ## API
 
 ```typescript
@@ -300,28 +367,28 @@ plugin before you put there.
 <!-- prettier-ignore -->
 | Extension point | Type | Shape | Description |
 | --- | --- | --- | --- |
-| `Core-addTrackComponent` | sync | single | Inject a custom React component into the add-track widget |
+| `Core-addTrackComponent` | sync |  | Inject a custom React component into the add-track widget |
 | `Core-addTrackComponentAdapterTypes` | sync | list | Adapter types whose add-track picker supplies the assembly |
 | `Core-customizeAbout` | sync | single | Transform the config shown in a track's About dialog |
 | `Core-extendPluggableElement` | sync | single | Mutate any pluggable element after it is created |
 | `Core-extendSession` | sync | single | Extend the session model with extra state or actions |
 | `Core-extendWorker` | sync | single | Register extra RPC methods on the web worker. Fired once per booted worker, not per call |
-| `Core-extraAboutPanel` | sync | list | Add extra panels to a track's About dialog |
-| `Core-extraFeaturePanel` | sync | list | Add extra panels to the feature details widget |
+| `Core-extraAboutPanel` | sync |  | Add extra panels to a track's About dialog |
+| `Core-extraFeaturePanel` | sync |  | Add extra panels to the feature details widget |
 | `Core-extraTrackMenuItems` | sync | list | Add items to a single track's menu |
 | `Core-guessAdapterForLocation` | sync | single | Guess an adapter config from a file location |
 | `Core-guessTrackTypeForLocation` | sync | single | Guess a track type from a file location |
 | `Core-handleUnrecognizedAssembly` | sync | notify | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, which is what lets waitForAssembly stop waiting without a timeout |
 | `Core-preferencesDialogPanels` | sync | list | Add panels to the preferences dialog |
 | `Core-preProcessTrackConfig` | sync | single | Rewrite a track config snapshot before it is instantiated |
-| `Core-replaceAbout` | sync | single | Replace or wrap a track's About dialog body |
-| `Core-replaceWidget` | sync | single | Replace or wrap the component that renders a widget |
-| `Desktop-StartScreenLaunchPanel` | sync | single | Replace or wrap the "Launch new session" panel |
+| `Core-replaceAbout` | sync |  | Replace or wrap a track's About dialog body |
+| `Core-replaceWidget` | sync |  | Replace or wrap the component that renders a widget |
+| `Desktop-StartScreenLaunchPanel` | sync |  | Replace or wrap the "Launch new session" panel |
 | `Desktop-StartScreenMenuItems` | sync | list | Add items to the start screen menu |
-| `Desktop-StartScreenRecentSessionsPanel` | sync | single | Replace or wrap the recent sessions panel |
+| `Desktop-StartScreenRecentSessionsPanel` | sync |  | Replace or wrap the recent sessions panel |
 | `DotplotView-ImportFormSyntenyOptions` | sync | list | Add options to the dotplot view import form |
-| `DotplotView-OverlayHTMLComponent` | sync | list | Add an HTML overlay component to the dotplot view |
-| `DotplotView-OverlaySVGComponent` | sync | list | Add an SVG overlay component to the dotplot view |
+| `DotplotView-OverlayHTMLComponent` | sync |  | Add an HTML overlay component to the dotplot view |
+| `DotplotView-OverlaySVGComponent` | sync |  | Add an SVG overlay component to the dotplot view |
 | `DotplotView-SyntenyFileFormats` | sync | list | Add synteny file formats to the dotplot import form |
 | `LaunchView-BreakpointSplitView` | async | single | Programmatically launch a breakpoint split view |
 | `LaunchView-CircularView` | async | single | Programmatically launch a circular view |
@@ -330,14 +397,14 @@ plugin before you put there.
 | `LaunchView-LinearSyntenyView` | async | single | Programmatically launch a linear synteny view |
 | `LaunchView-SpreadsheetView` | async | single | Programmatically launch a spreadsheet view |
 | `LaunchView-SvInspectorView` | async | single | Programmatically launch the SV inspector view |
-| `LinearGenomeView-HighlightSVGComponent` | sync | list | Add an SVG highlight overlay in the LGV SVG export |
-| `LinearGenomeView-OverviewScalebarComponent` | sync | list | Add a component to the overview scalebar |
-| `LinearGenomeView-ScalebarHighlightComponent` | sync | list | Add a highlight component to the scalebar |
+| `LinearGenomeView-HighlightSVGComponent` | sync |  | Add an SVG highlight overlay in the LGV SVG export |
+| `LinearGenomeView-OverviewScalebarComponent` | sync |  | Add a component to the overview scalebar |
+| `LinearGenomeView-ScalebarHighlightComponent` | sync |  | Add a highlight component to the scalebar |
 | `LinearGenomeView-searchResultSelected` | async | notify | Invoked when a search result is selected |
-| `LinearGenomeView-TracksContainerComponent` | sync | list | Add a component into the LGV tracks container |
+| `LinearGenomeView-TracksContainerComponent` | sync |  | Add a component into the LGV tracks container |
 | `LinearSyntenyView-ImportFormSyntenyOptions` | sync | list | Add options to the linear synteny view import form |
 | `LinearSyntenyView-SyntenyFileFormats` | sync | list | Add synteny file formats to the linear synteny import form |
-| `TrackSelector-folderDialog` | sync | single | Replace the dialog shown when a folder category is clicked |
+| `TrackSelector-folderDialog` | sync |  | Replace the dialog shown when a folder category is clicked |
 | `TrackSelector-multiTrackMenuItems` | sync | list | Add items to the multi-track (shopping cart) menu |
 | `TrackSelector-trackRowAdornment` | sync | single | Add a glyph, a short suffix and a tooltip line to a track's row in the hierarchical track selector |
 
@@ -540,26 +607,11 @@ value:
 // below, which then needs no cast on the Core-customizeAbout result.
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
-    // accumulates an array of panels, so panels from multiple plugins compose
-    // instead of clobbering one another. The array-valued args is what makes
-    // contributeToExtensionPoint the registration method: a plugin returns its
-    // own component and never sees the array. Each renders its own BaseCard
-    // chrome
-    'Core-extraAboutPanel': {
-      args: ComponentType<AboutPanelProps>[]
-      result: ComponentType<AboutPanelProps>[]
-      props: AboutPanelProps
-    }
-    // singular: one dialog body renders, so this stays a single-component fold —
-    // return your own component to replace/wrap the default, or the default to
-    // opt out. Fired via PluggableComponent's `name` prop (no string-literal
-    // call site), so the docs tag lives here at the contract.
+    'Core-extraAboutPanel': ComponentList<AboutPanelProps>
+    // fired via PluggableComponent's `name` prop, so there is no string-literal
+    // call site and the docs tag lives here at the contract
     /** #extensionPoint Core-replaceAbout | sync | Replace or wrap a track's About dialog body */
-    'Core-replaceAbout': {
-      args: ComponentType<AboutPanelProps>
-      result: ComponentType<AboutPanelProps>
-      props: AboutPanelProps
-    }
+    'Core-replaceAbout': ComponentSlot<AboutPanelProps>
     // data transform: mutate the config object shown in the dialog
     'Core-customizeAbout': {
       args: { config: Record<string, unknown> }
@@ -1159,11 +1211,9 @@ div:
 
 ```typescript
 /** #extensionPoint LinearGenomeView-TracksContainerComponent | sync | Add a component into the LGV tracks container */
-'LinearGenomeView-TracksContainerComponent': {
-  args: ReactNode[]
-  result: ReactNode[]
-  props: { model: LinearGenomeViewModel }
-}
+'LinearGenomeView-TracksContainerComponent': ElementList<{
+  model: LinearGenomeViewModel
+}>
 ```
 
 Render a custom overlay inside the LinearGenomeView TracksContainer, e.g.
@@ -1182,11 +1232,10 @@ scalebar:
 
 ```typescript
 /** #extensionPoint LinearGenomeView-OverviewScalebarComponent | sync | Add a component to the overview scalebar */
-'LinearGenomeView-OverviewScalebarComponent': {
-  args: ReactNode[]
-  result: ReactNode[]
-  props: { model: LinearGenomeViewModel; overview: ViewLayout }
-}
+'LinearGenomeView-OverviewScalebarComponent': ElementList<{
+  model: LinearGenomeViewModel
+  overview: ViewLayout
+}>
 ```
 
 Render custom overlays inside the overview scalebar, e.g. bookmark highlights.

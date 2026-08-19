@@ -5,38 +5,20 @@ import { observer } from 'mobx-react'
 import type PluginManager from '../PluginManager.ts'
 import type {
   ExtensionPointArgs,
-  ExtensionPointName,
-  ExtensionPointProps,
   ExtensionPointPropsArgs,
   ExtensionPointRegistry,
+  PointsOfKind,
 } from '../PluginManager.ts'
 import type { ComponentType } from 'react'
 
 /**
- * The extension points that accumulate an array of *components* — the panel
- * points. Points accumulating rendered `ReactNode`s belong to
- * {@link PluggableElements}, and the two sets cannot overlap: a `ReactNode` is
- * never a component.
- *
- * The props the components take have to be the ones the point declares, which
- * is also what keeps a point whose entries merely *look* callable out. A bare
- * `ComponentType<never>` test admits any one-argument function returning a
- * string, `Core-guessTrackTypeForLocation` among them.
+ * The extension points that accumulate an array of components — every point
+ * declared `ComponentList`. Points accumulating rendered `ReactNode`s are
+ * `ElementList` instead, and belong to {@link PluggableElements}.
  */
-export type ComponentExtensionPointName = {
-  [N in ExtensionPointName]: 'props' extends keyof ExtensionPointRegistry[N]
-    ? ExtensionPointArgs<N> extends ComponentType<ExtensionPointProps<N>>[]
-      ? N
-      : never
-    : never
-}[ExtensionPointName]
+export type ComponentExtensionPointName = PointsOfKind<'componentList'>
 
-/**
- * The props a component point hands its panels. Read off the registry entry
- * rather than through `ExtensionPointProps`, whose fallback branch for an
- * undeclared point widens this to `Record<string, unknown>` — which then cannot
- * be spread into a component, since every point here declares its props.
- */
+/** The props a component point hands each of its panels. */
 export type PanelProps<N extends ComponentExtensionPointName> =
   ExtensionPointRegistry[N]['props']
 

@@ -7,7 +7,6 @@ import { stateModelFactory } from './model.ts'
 import type { LinearGenomeViewModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
-import type { ReactNode } from 'react'
 
 declare module '@jbrowse/core/PluginManager' {
   // The two container points render through PluggableElements' `name` prop, so
@@ -16,31 +15,25 @@ declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
     // #region tracksContainer
     /** #extensionPoint LinearGenomeView-TracksContainerComponent | sync | Add a component into the LGV tracks container */
-    'LinearGenomeView-TracksContainerComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: LinearGenomeViewModel }
-    }
+    'LinearGenomeView-TracksContainerComponent': ElementList<{
+      model: LinearGenomeViewModel
+    }>
     // #endregion
     /** #extensionPoint LinearGenomeView-ScalebarHighlightComponent | sync | Add a highlight component to the scalebar */
-    'LinearGenomeView-ScalebarHighlightComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: LinearGenomeViewModel }
-    }
+    'LinearGenomeView-ScalebarHighlightComponent': ElementList<{
+      model: LinearGenomeViewModel
+    }>
     /** #extensionPoint LinearGenomeView-HighlightSVGComponent | sync | Add an SVG highlight overlay in the LGV SVG export */
-    'LinearGenomeView-HighlightSVGComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: LinearGenomeViewModel; height: number }
-    }
+    'LinearGenomeView-HighlightSVGComponent': ElementList<{
+      model: LinearGenomeViewModel
+      height: number
+    }>
     // #region overviewScalebar
     /** #extensionPoint LinearGenomeView-OverviewScalebarComponent | sync | Add a component to the overview scalebar */
-    'LinearGenomeView-OverviewScalebarComponent': {
-      args: ReactNode[]
-      result: ReactNode[]
-      props: { model: LinearGenomeViewModel; overview: ViewLayout }
-    }
+    'LinearGenomeView-OverviewScalebarComponent': ElementList<{
+      model: LinearGenomeViewModel
+      overview: ViewLayout
+    }>
     // #endregion
   }
 }
