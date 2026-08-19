@@ -9,7 +9,7 @@ import { getNiceScale } from '@jbrowse/wiggle-core'
 export function getHicScaleLabels(score: number, useLogScale: boolean) {
   const { min, max } = getNiceScale(score, useLogScale)
   return {
-    minLabel: min !== undefined ? toLocale(min) : '',
-    maxLabel: `${max !== undefined ? toLocale(max) : ''}${useLogScale ? ' (log)' : ''}`,
+    minLabel: toLocale(min),
+    maxLabel: `${toLocale(max)}${useLogScale ? ' (log)' : ''}`,
   }
 }
