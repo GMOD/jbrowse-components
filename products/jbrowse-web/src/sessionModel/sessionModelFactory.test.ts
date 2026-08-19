@@ -320,6 +320,44 @@ describe('JBrowseWebSessionModel', () => {
       ).toBe(20)
     })
 
+    // The Preferences "Display defaults" section asks the session for the
+    // inventory rather than filtering `getPreferenceChanges` on a path head,
+    // precisely so the composite-key layout stays this model's business.
+    it('lists every promoted default, and drops one when it is cleared', () => {
+      const session = createTestSession()
+      expect(session.getDisplayTypeDefaults()).toEqual([])
+
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      session.setDisplayTypeDefault('LinearArcDisplay', 'displayMode', 'arcs')
+      // a scalar preference sharing the store is not a display-type default
+      session.setScrollZoom(true)
+      expect(session.getDisplayTypeDefaults()).toEqual([
+        {
+          displayType: 'LinearBasicDisplay',
+          slot: 'displayMode',
+          value: 'compact',
+        },
+        { displayType: 'LinearArcDisplay', slot: 'displayMode', value: 'arcs' },
+      ])
+
+      session.setDisplayTypeDefault(
+        'LinearArcDisplay',
+        'displayMode',
+        undefined,
+      )
+      expect(session.getDisplayTypeDefaults()).toEqual([
+        {
+          displayType: 'LinearBasicDisplay',
+          slot: 'displayMode',
+          value: 'compact',
+        },
+      ])
+    })
+
     it('freezes an object-valued promoted default, which is shared by reference', () => {
       const session = createTestSession()
       session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy', {

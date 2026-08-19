@@ -274,6 +274,32 @@ export function BaseSessionModel<
       },
       /**
        * #method
+       * every per-display-type default the user has promoted, as
+       * `{ displayType, slot, value }` — the inventory the Preferences dialog
+       * lists and clears one at a time (`setDisplayTypeDefault(…, undefined)`).
+       *
+       * Here rather than filtered out of `getPreferenceChanges` by the dialog,
+       * because the composite-key layout is this file's: a consumer that
+       * recognized these rows by matching the path head is exactly the coupling
+       * `DISPLAY_TYPE_DEFAULTS_PATH_HEAD` stopped being exported over, where a
+       * rename on one side alone silently no-ops the other.
+       */
+      getDisplayTypeDefaults(): {
+        displayType: string
+        slot: string
+        value: unknown
+      }[] {
+        const found = []
+        for (const [key, value] of self.preferencesOverrides.entries()) {
+          const parsed = parseDisplayTypeDefaultKey(key)
+          if (parsed) {
+            found.push({ ...parsed, value })
+          }
+        }
+        return found
+      },
+      /**
+       * #method
        * every runtime preference-override that currently differs from its
        * config/admin default, as `{ path, from, to }` rows — the exact set
        * `clearPreferenceOverrides` reverts. Backs the confirmation diff shown

@@ -18,6 +18,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import DisplayDefaultsSection from './DisplayDefaultsSection.tsx'
 import PreferencesResetDialog from './PreferencesResetDialog.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -59,6 +60,16 @@ export interface PreferencesDialogSession {
   clearPreferenceOverrides: () => void
   getPreferenceChanges: () => TrackConfigChange[]
   resetPreferenceChange: (path: string[]) => void
+  getDisplayTypeDefaults: () => {
+    displayType: string
+    slot: string
+    value: unknown
+  }[]
+  setDisplayTypeDefault: (
+    displayType: string,
+    slot: string,
+    value: unknown,
+  ) => void
 }
 
 // The preference subsystems whose reset doesn't reduce to dropping a key from
@@ -296,6 +307,14 @@ const PreferencesDialog = observer(function PreferencesDialog({
             }}
           />
         </FormGroup>
+        <Divider />
+        <Typography variant="subtitle1" className={classes.panelHeading}>
+          Display defaults
+        </Typography>
+        <DisplayDefaultsSection
+          session={session}
+          pluginManager={pluginManager}
+        />
         {extraPanels.map(({ name, Component }) => (
           <div key={name}>
             <Divider />

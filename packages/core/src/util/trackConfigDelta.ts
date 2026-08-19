@@ -169,9 +169,22 @@ export function mergeTrackConfig(
 
 /** A single overridden slot: the dotted `path`, its base `from` and edited `to`. */
 export interface TrackConfigChange {
+  /**
+   * Where the setting lives, and — for a row a UI can revert — its **address**:
+   * `resetPreferenceChange` parses a promoted display-type default's path back
+   * into the type and slot it clears. So a producer that wants a friendlier
+   * heading sets `label` and leaves this alone.
+   */
   path: string[]
   from: Json
   to: Json
+  /**
+   * What to head the row with, when the path is an address rather than
+   * something to read. `SettingsChangesTable` falls back to the joined path,
+   * which is what every delta row still wants — a config path IS the readable
+   * thing there.
+   */
+  label?: string
 }
 
 // Keys that identify a config node rather than record a user edit: trackId, kept

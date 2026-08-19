@@ -33,6 +33,8 @@ function stubSession(
     clearPreferenceOverrides: jest.fn(),
     getPreferenceChanges: (): TrackConfigChange[] => [],
     resetPreferenceChange: jest.fn(),
+    getDisplayTypeDefaults: () => [],
+    setDisplayTypeDefault: jest.fn(),
     ...overrides,
   }
 }

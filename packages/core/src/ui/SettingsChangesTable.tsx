@@ -78,7 +78,7 @@ const SettingsChangesTable = observer(function SettingsChangesTable({
         {changes.map(change => (
           <TableRow key={change.path.join('.')}>
             <TableCell className={classes.path}>
-              {change.path.join(' › ')}
+              {change.label ?? change.path.join(' › ')}
             </TableCell>
             <TableCell className={`${classes.value} ${classes.defaultCell}`}>
               {formatSettingValue(change.from)}

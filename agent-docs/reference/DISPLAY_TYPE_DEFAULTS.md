@@ -44,6 +44,7 @@ read one section, read [The cascade](#the-cascade).
 | About "Copy config" flatten (`getTrackConfigWithPromotables`) | `packages/core/src/configuration/promotableDefaults.ts`, consumed in `packages/product-core/src/ui/{AboutDialogContents,HeaderButtons}.tsx` |
 | Session/display type surface | `packages/core/src/util/types/index.ts` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
+| Preferences inventory (`getDisplayTypeDefaults`, list + per-row clear) | `packages/product-core/src/{Session/BaseSession.ts,ui/DisplayDefaultsSection.tsx}` |
 | Pin adornment + row builders | `packages/core/src/ui/{PinAdornment.tsx,promotableMenuItems.ts}` |
 | Config-editor view of a promotable slot (`SlotFacade.promotedBase`, consumed by `BooleanEditor` / `JsonEditor` / `StringEnumEditor`) | `packages/core/src/configuration/slotFacade.ts`, `plugins/config/src/ConfigurationEditorWidget/components/` |
 | `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
@@ -405,10 +406,9 @@ One consequence is worth knowing rather than fixing. A promoted default that
 fails the gate goes *invisible* in the track UI: `isPromotableDefault` compares
 the raw stored value, so no row's pin fills (an unregistered scheme has no row at
 all), and every track resolves to base so `getDisplayTypeDefaultChanges` is empty
-and no badge appears. The stale key is still listed and individually clearable in
-Preferences → "Reset to defaults", which is the intended escape hatch — the
-alternative, deleting the key from inside `resolveSlot`, would mean writing
-observable state from a MobX computed.
+and no badge appears. Preferences → "Display defaults" lists and clears it, which
+is the intended escape hatch — the alternative, deleting the key from inside
+`resolveSlot`, would mean writing observable state from a MobX computed.
 
 `resolveConf` on a promotable slot **always returns a real value**, never the
 unset sentinel, so the display getter needs no post-guard — and its read type
@@ -756,6 +756,25 @@ same property `DisabledTooltip` exists to work around), so the pin took no click
 while looking exactly like a live one. It stays drawn rather than vanishing, so
 the trailing column keeps its alignment. The alignments feature-height presets
 are the rows that reach this, gated row by row on `needsContent`.
+
+**Inventory** (`DisplayDefaultsSection.tsx`, Preferences dialog): every promoted
+default, what it overrides, and a per-row clear. The pin is easy to set and was
+hard to find again — the badge below shows one only on an **open** track it
+moves, so a default affecting nothing currently open, one promoted to a value
+equal to `promotedBase`, and one the gate refuses appeared nowhere but the
+"Reset preferences to defaults" confirmation. It asks the session for
+`getDisplayTypeDefaults()` rather than filtering `getPreferenceChanges` on a path
+head, so the composite-key layout stays `BaseSession`'s.
+
+Its display-type lookup builds a map from `getDisplayElements()` and **does not
+call `getDisplayType`, which throws** on an unregistered name. That is not a
+hypothetical: `preferencesOverrides` is localStorage per *origin* while the
+registered display set is per *session* — a runtime plugin uninstalled from the
+plugin store, or simply a second config on the same host, strands keys naming
+display types this build has never heard of. `DisplayType.aliases` renames a
+display type for track configs and reaches nothing here, so a rename strands them
+too. The row renders the raw type name and a `(default)` base; the section is the
+only surface that can show it at all.
 
 **Badge** (`OverrideBadge.tsx`, track selector): the same pencil that marks a
 per-track config edit also shows when `getDisplayTypeDefaultChanges(display)` is
