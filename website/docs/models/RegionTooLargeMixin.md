@@ -14,7 +14,7 @@ Shared mixin owning "region too large" state and force-load UI.
 Composed by MultiRegionDisplayMixin (canvas/GPU displays like
 LinearAlignmentsDisplay, LinearWiggleDisplay, LinearBasicDisplay) and directly
 by the SVG arc displays (LinearArcDisplay, LinearPairedArcDisplay), which do
-their own byte-estimate gating in fetchArcFeatures.
+their own byte-estimate gating in arcFetchPhases.
 
 Owns the state that TooLargeMessage reads: regionTooLarge, regionTooLargeReason,
 forceLoad.

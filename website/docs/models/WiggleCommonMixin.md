@@ -34,11 +34,10 @@ the whole surface.
 ## Volatiles
 
 <!-- prettier-ignore -->
-| Member | Description | Defined by |
-| --- | --- | --- |
-| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;WiggleDataResult&gt;()</code> |  | WiggleCommonMixin |
-| <span id="volatile-hoveredwigglefeature">**hoveredWiggleFeature**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hoveredWiggleFeature: undefined as WiggleHoveredFeature &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hoveredWiggleFeature: undefined as WiggleHoveredFeature &#124; undefined</code></pre></dialog></span> | The stored hit. Named apart from the `hoveredFeature` getter below it fills, because `BaseDisplay` declares that hook as a computed and MST refuses to instantiate a volatile over one — a display filling it stores under its own name and exposes a getter, which is what canvas, alignments and the variant displays already did. | WiggleCommonMixin |
-| <span id="volatile-loadedbpperpx">**loadedBpPerPx**</span><br><code>loadedBpPerPx: undefined as number &#124; undefined</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#volatile-loadedbpperpx) |
+| Member | Description |
+| --- | --- |
+| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;WiggleDataResult&gt;()</code> |  |
+| <span id="volatile-hoveredwigglefeature">**hoveredWiggleFeature**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hoveredWiggleFeature: undefined as WiggleHoveredFeature &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hoveredWiggleFeature: undefined as WiggleHoveredFeature &#124; undefined</code></pre></dialog></span> | The stored hit. Named apart from the `hoveredFeature` getter below it fills, because `BaseDisplay` declares that hook as a computed and MST refuses to instantiate a volatile over one — a display filling it stores under its own name and exposes a getter, which is what canvas, alignments and the variant displays already did. |
 
 ## Getters
 
@@ -46,6 +45,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>WiggleHoveredFeature &#124; undefined</code> | Fills `BaseDisplay`'s cross-display hover hook. | WiggleCommonMixin |
+| <span id="getter-regionfetchkey">**regionFetchKey**</span><br><code>string</code> | Strict zoom equality (adr-008): the worker bins scores to the requested bpPerPx, so data fetched at another zoom is the wrong summary, however well the viewport still sits inside it.<br><br>On this mixin, not the score-config one below it: the rule is about what a fetch returns, and `LinearManhattanDisplay` composes that mixin for the score axis while fetching untransformed SNPs. | WiggleCommonMixin |
 | <span id="getter-poscolor">**posColor**</span><br><code>string</code> |  | WiggleCommonMixin |
 | <span id="getter-negcolor">**negColor**</span><br><code>string</code> |  | WiggleCommonMixin |
 | <span id="getter-bicolorpivot">**bicolorPivot**</span><br><code>number</code> |  | WiggleCommonMixin |
@@ -75,13 +75,6 @@ the whole surface.
 | <span id="getter-minscorebound">**minScoreBound**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>Resolved lower bound; `undefined` means autoscale this end.</span> | [ScoreScaleMixin](../scorescalemixin#getter-minscorebound) |
 | <span id="getter-maxscorebound">**maxScoreBound**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>Resolved upper bound; `undefined` means autoscale this end.</span> | [ScoreScaleMixin](../scorescalemixin#getter-maxscorebound) |
 
-## Methods
-
-<!-- prettier-ignore -->
-| Member | Description | Defined by |
-| --- | --- | --- |
-| <span id="method-iscachevalid">**isCacheValid**</span><br><code>(_displayedRegionIndex: number) =&gt; boolean</code> | <span data-pagefind-ignore>Strict zoom equality: see adr-008. A view, not an action, so the `view.bpPerPx` read below actually registers as a dependency of whoever calls it (see MultiRegionDisplayMixin's hook block).</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#method-iscachevalid) |
-
 ## Actions
 
 <!-- prettier-ignore -->
@@ -99,7 +92,6 @@ the whole surface.
 | <span id="action-setlinewidth">**setLineWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-clearhoveredfeature">**clearHoveredFeature**</span><br><code>() =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-togglecrosshatches">**toggleCrossHatches**</span><br><code>() =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-togglecrosshatches) |
-| <span id="action-setloadedbpperpx">**setLoadedBpPerPx**</span><br><code>(bpPerPx: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setloadedbpperpx) |
 | <span id="action-setscatterpointsize">**setScatterPointSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setscatterpointsize) |
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscaletype) |
 | <span id="action-setautoscale">**setAutoscale**</span><br><code>(val?: string &#124; undefined) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setautoscale) |

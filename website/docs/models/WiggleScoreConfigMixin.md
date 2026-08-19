@@ -10,14 +10,18 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts).
 
 The score-PLOT config every wiggle-family display shares: the score axis
-(`ScoreScaleMixin`), the cross-hatch toggle, the scatter point size and the
-zoom-staleness cache test. Deliberately NOT the wiggle-specific palette,
-rendering-type, summary-mode and resolution config — those moved to
-`WiggleCommonMixin`, which composes this, when it became clear that
-`LinearManhattanDisplay` (the other composer) reads none of them and was
-inheriting a config schema that advertised twelve slots doing nothing on a
-Manhattan plot. Relocation rather than a new mixin layer: `types.compose` depth
-is a real ceiling in these chains (ADR-041).
+(`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size. Config
+only. The strict-`bpPerPx` fetch rule (adr-008) belongs to `WiggleCommonMixin`,
+as its `regionFetchKey`, because it describes what a fetch returns rather than
+how a plot is drawn — `LinearManhattanDisplay` composes this mixin for the score
+axis and fetches untransformed SNPs.
+
+Deliberately NOT the wiggle-specific palette, rendering-type, summary-mode and
+resolution config either — those moved to `WiggleCommonMixin`, which composes
+this, when it became clear that `LinearManhattanDisplay` (the other composer)
+reads none of them and was inheriting a config schema that advertised twelve
+slots doing nothing on a Manhattan plot. Relocation rather than a new mixin
+layer: `types.compose` depth is a real ceiling in these chains (ADR-041).
 
 A display that owns its own rpcDataMap type composes this; a wiggle-shaped one
 composes `WiggleCommonMixin`.
@@ -28,13 +32,6 @@ band, which wants that axis and none of the color/resolution config here.
 
 Members a composed model contributes are listed here too, so these tables are
 the whole surface.
-
-## Volatiles
-
-<!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="volatile-loadedbpperpx">**loadedBpPerPx**</span><br><code>loadedBpPerPx: undefined as number &#124; undefined</code> |  |
 
 ## Getters
 
@@ -55,20 +52,12 @@ the whole surface.
 | <span id="getter-minscorebound">**minScoreBound**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>Resolved lower bound; `undefined` means autoscale this end.</span> | [ScoreScaleMixin](../scorescalemixin#getter-minscorebound) |
 | <span id="getter-maxscorebound">**maxScoreBound**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>Resolved upper bound; `undefined` means autoscale this end.</span> | [ScoreScaleMixin](../scorescalemixin#getter-maxscorebound) |
 
-## Methods
-
-<!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="method-iscachevalid">**isCacheValid**</span><br><code>(_displayedRegionIndex: number) =&gt; boolean</code> | Strict zoom equality: see adr-008. A view, not an action, so the `view.bpPerPx` read below actually registers as a dependency of whoever calls it (see MultiRegionDisplayMixin's hook block). |
-
 ## Actions
 
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-togglecrosshatches">**toggleCrossHatches**</span><br><code>() =&gt; void</code> |  | WiggleScoreConfigMixin |
-| <span id="action-setloadedbpperpx">**setLoadedBpPerPx**</span><br><code>(bpPerPx: number &#124; undefined) =&gt; void</code> |  | WiggleScoreConfigMixin |
 | <span id="action-setscatterpointsize">**setScatterPointSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleScoreConfigMixin |
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscaletype) |
 | <span id="action-setautoscale">**setAutoscale**</span><br><code>(val?: string &#124; undefined) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setautoscale) |

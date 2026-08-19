@@ -20,8 +20,8 @@ Unlike MultiRegionDisplayMixin, it owns no per-region state and installs no
 autoruns. Fetch triggering is left to the display's own afterAttach autorun so
 each display can express its own trigger conditions (HiC: viewport change; LD:
 viewport + showLDTriangle + etc). The shared skeleton of that autorun lives in
-`installGlobalFetchAutorun` (below) — a display supplies only its own
-`shouldFetch` gate + `fetch` action.
+`installGlobalFetchAutorun` (below) — a display supplies only its own `prepare`
+/ `run` / `commit` phases.
 
 Members a composed model contributes are listed here too, so these tables are
 the whole surface.
