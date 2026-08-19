@@ -265,11 +265,14 @@ export function applyChainStrandFrames(
   if (!framed) {
     return reconciled
   }
-  // The consensus takes one flat map and treats each entry as a locus-bucketing
-  // unit, so the groups are flattened into a private key space and split back
-  // out. The keys are this function's alone — nothing downstream sees them —
-  // which is why a running counter is enough and no stride namespacing is
-  // needed.
+  // The groups are flattened into a private key space and split back out again.
+  // The keys are this function's alone — nothing downstream sees them — so a
+  // running counter is enough to name them, but it is NOT what says which of
+  // them share a locus: the consensus buckets by overlap within one locus, and
+  // two lanes of one region are one locus. `locusOf` hands it back the region
+  // index, without which two lanes at the same breakpoint share no bucket,
+  // contribute nothing to each other's objective, and settle on opposite signs
+  // — the very thing this pass runs across all the groups to prevent.
   const flat = new Map<number, LaidOutPileupData>()
   const origin: { key: string; idx: number }[] = []
   for (const [key, map] of reconciled) {
@@ -278,7 +281,10 @@ export function applyChainStrandFrames(
       origin.push({ key, idx })
     }
   }
-  const framedFlat = consensusChainStrandFrames(flat)
+  const framedFlat = consensusChainStrandFrames(
+    flat,
+    flatKey => origin[flatKey]!.idx,
+  )
   if (framedFlat === flat) {
     return reconciled
   }

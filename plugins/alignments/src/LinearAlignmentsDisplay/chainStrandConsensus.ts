@@ -2,6 +2,7 @@ import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 
 import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { chainFrame, chainHasSupp, withChainFrame } from '../shared/types.ts'
+import { getOrCreate } from '../shared/util.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 
@@ -43,10 +44,15 @@ interface Seg {
  * itself, so a wide window holding two distant pileups still poses two separate
  * questions; and per region rather than per refName, because two windows on one
  * chromosome are two questions as well.
+ *
+ * A bucket never spans two entries of `byLocus`, which is why the caller decides
+ * what an entry is (`locusOf`) rather than getting one per map key: chains that
+ * share no bucket contribute nothing to the pairwise objective, so grouping
+ * lanes arriving as separate keys would silently stop being compared.
  */
-function assignBuckets(byRegion: Seg[][]) {
+function assignBuckets(byLocus: Seg[][]) {
   let next = 0
-  for (const segs of byRegion) {
+  for (const segs of byLocus) {
     const order = segs
       .map((_, i) => i)
       .sort((a, b) => segs[a]!.start - segs[b]!.start)
@@ -207,17 +213,23 @@ function solveFrames(
  * Runs after `reconcileChainSuppAcrossRegions`, whose per-chain answer is this
  * one's starting point, and only when `flipStrandLongReadChains` is on and the
  * scheme actually reads the framing (see `framesUnpairedChainStrand`).
+ *
+ * `locusOf` names which entries share a locus, defaulting to one locus per entry
+ * — the single-lane case, where an entry IS a displayed region. A grouped
+ * display hands over one entry per (lane, region) and must map them back onto
+ * the region, or the lanes at one locus share no bucket and the comparison this
+ * pass exists to make never happens between them.
  */
 // Generic in the entry type for the reason `reconcileChainSuppAcrossRegions` is.
 export function consensusChainStrandFrames<T extends WorkerPileupData>(
   map: Map<number, T>,
+  locusOf: (key: number) => number = key => key,
 ): Map<number, T> {
   const chainIds = new Map<string, number>()
-  const byRegion: Seg[][] = []
+  const byLocus = new Map<number, Seg[]>()
   let numSegs = 0
-  for (const data of map.values()) {
-    const segs: Seg[] = []
-    byRegion.push(segs)
+  for (const [key, data] of map) {
+    const segs = getOrCreate(byLocus, locusOf(key), () => [])
     if (!isChainData(data)) {
       continue
     }
@@ -255,8 +267,9 @@ export function consensusChainStrandFrames<T extends WorkerPileupData>(
     return map
   }
 
-  const numBuckets = assignBuckets(byRegion)
-  const all = byRegion.flat()
+  const loci = [...byLocus.values()]
+  const numBuckets = assignBuckets(loci)
+  const all = loci.flat()
   const frames = new Int8Array(chainIds.size).fill(1)
   for (const data of map.values()) {
     if (!isChainData(data)) {
