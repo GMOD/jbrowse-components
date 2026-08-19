@@ -100,8 +100,7 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
 }: {
   model: LinearHicDisplayModel
 }) {
-  const { height, lgv } = model
-  const width = lgv.totalWidthPx
+  const { height, canvasWidth: width } = model
   return (
     <DisplayChrome
       model={model}

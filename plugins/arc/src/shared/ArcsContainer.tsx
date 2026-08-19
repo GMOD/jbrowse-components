@@ -41,7 +41,7 @@ const ArcsContainer = observer(function ArcsContainer({
   return exportSVG ? (
     <>{arcs}</>
   ) : (
-    <svg width={view.totalWidthPx} height={model.height}>
+    <svg width={model.canvasWidth} height={model.height}>
       {arcs}
     </svg>
   )

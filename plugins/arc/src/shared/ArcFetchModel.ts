@@ -67,6 +67,21 @@ export function ArcFetchModel() {
       .views(self => ({
         /**
          * #getter
+         * The box the arcs are laid out in: the on-screen `<svg>` and the
+         * export's clip rect have to be one number, or a bezier that legitimately
+         * bows outside the viewport is clipped on one path and not the other.
+         * Same name and same reason as the LD display's, over `totalWidthPx`
+         * because arcs span the whole scrolled content rather than the content
+         * width alone.
+         *
+         * Not the `canvasWidth` an SVG body gets from `renderDisplaySvg`, which
+         * is the viewport width the shell paints at — see `renderArcSvg`.
+         */
+        get canvasWidth() {
+          return self.lgv.totalWidthPx
+        },
+        /**
+         * #getter
          * fresh only when `features` were fetched for the current static-block set;
          * overrides GlobalFetchMixin's default so `svgReady` can resolve on load
          */

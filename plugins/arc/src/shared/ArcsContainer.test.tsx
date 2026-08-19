@@ -11,14 +11,22 @@ const { createDisplay } = createTestEnvironment()
 // answering it for themselves. The export snapshot in
 // products/jbrowse-web/src/tests/ExportSvgDisplayTypes.test.tsx covers the
 // export half end-to-end; nothing covered the on-screen half.
-test('on screen the arcs get their own <svg>', () => {
-  const { display } = createDisplay()
+test('on screen the arcs get their own <svg>, sized off the display', () => {
+  const { display, view } = createDisplay()
+  // scrolled past an end, so the boundary padding blocks make the display's
+  // `canvasWidth` differ from the content width a second spelling might take
+  view.scrollTo(-200)
   const { container } = render(
     <ArcsContainer model={display}>
       {() => <path d="M 0 0 L 1 1" />}
     </ArcsContainer>,
   )
-  expect(container.querySelector('svg')).not.toBeNull()
+  const svg = container.querySelector('svg')
+  expect(svg).not.toBeNull()
+  // the model's getter, which `renderArcSvg` clips the export to as well — the
+  // two halves of one number
+  expect(svg!.getAttribute('width')).toBe(`${display.canvasWidth}`)
+  expect(display.canvasWidth).toBeGreaterThan(view.totalWidthPxWithoutBorders)
 })
 
 // the export shell has already opened one (renderDisplaySvg → SvgChrome →

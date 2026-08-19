@@ -313,6 +313,22 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           triangleWidth: self.lgv.totalWidthPxWithoutBorders,
         })
       },
+      /**
+       * #getter
+       * The box the matrix is drawn in: the canvas element's CSS width and the
+       * backing store the rendering backends resize to (`renderState`) have to
+       * be one number, or the drawn matrix is stretched against the box it sits
+       * in. Same name and same reason as the LD display's.
+       *
+       * `totalWidthPx` here and `totalWidthPxWithoutBorders` for the triangle's
+       * base above, which is the whole difference between the two: the canvas
+       * covers the scrolled content including the boundary padding blocks, and
+       * the apex height is set by the span the worker can put contacts on. They
+       * agree except when scrolled past an end.
+       */
+      get canvasWidth() {
+        return self.lgv.totalWidthPx
+      },
     }))
     .views(self => ({
       /**
@@ -410,7 +426,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         const { scale, viewOffsetX } = self.renderTransform
         return {
           yScalar: self.yScalar,
-          canvasWidth: self.lgv.totalWidthPx,
+          canvasWidth: self.canvasWidth,
           canvasHeight: self.height,
           colorMaxScore: self.colorMaxScore,
           useLogScale: self.useLogScale,

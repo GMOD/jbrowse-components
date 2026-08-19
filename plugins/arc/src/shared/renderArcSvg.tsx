@@ -30,13 +30,14 @@ export async function renderArcSvg<M extends ArcDisplayModel>(
     model,
     undefined,
     function ArcsSvgBody(props: LgvSvgBodyProps<M>) {
-      // clipped to totalWidthPx, not the shell's canvasWidth: arcs are laid out
-      // across the whole scrolled content and a bezier legitimately bows outside
-      // the viewport on its way between two endpoints inside it
+      // the display's own `canvasWidth`, not the shell's viewport-width prop of
+      // the same name: arcs are laid out across the whole scrolled content and a
+      // bezier legitimately bows outside the viewport on its way between two
+      // endpoints inside it
       return (
         <SvgClipRect
           id={`arc-${svgNodeId(props.model)}`}
-          width={props.view.totalWidthPx}
+          width={props.model.canvasWidth}
           height={props.height}
         >
           <Arcs model={props.model} exportSVG />
