@@ -25,6 +25,9 @@ FillVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(FillVsOut fragIn) : SV_Target {
-  float t = clamp(fragIn.localPos.y / u.height, 0.0, 1.0);
+  // NOT clamped: straightGeometry extrapolates the quad's two rows to the
+  // blend at their own y, so the ribbon's edges continue past both ends and
+  // the polygon bounds them there too. vertCoverage is what ends the ribbon.
+  float t = fragIn.localPos.y / u.height;
   return strokeFs(fragIn, t, 1.0, u.height, u);
 }

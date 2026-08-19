@@ -430,16 +430,33 @@ static const float STROKE_ALPHA = 0.4;
 // exactly the whole-genome case it exists for — and the sides came out
 // hard-cut instead of antialiased.
 //
-// Bounded by the ribbon's MINIMUM horizontal width (see ribbonWidths, which is
-// where the "only the two ends matter" argument lives), so a ribbon wider than
-// perpFactor px gets no extra pad at all and the per-segment saving in
-// syntenyFillCurve is untouched.
+// Bounded by the MINIMUM horizontal width over `[s0, s1]`, the X-blend range the
+// calling quad's own fragments span (see ribbonWidths, which is where the "only
+// the two ends matter" argument lives), so a ribbon wider than perpFactor px
+// gets no extra pad at all and the per-segment saving in syntenyFillCurve is
+// untouched.
 // SYNC: mirrored by `padExtra` in syntenyFillPad.test.ts.
-public float thinRibbonPad(float perpFactor, float4 c) {
-  float2 w = ribbonWidths(c);
+public float thinRibbonPad(float perpFactor, float4 c, float s0, float s1) {
+  float2 w = ribbonWidths(c, s0, s1);
   float wMin = w.x * w.y < 0.0 ? 0.0 : min(abs(w.x), abs(w.y));
   return max(perpFactor * 0.5 - 0.5 * wMin, 0.0);
 }
+
+// Float32 headroom on both pads below, and nothing else.
+//
+// It was 1.0, described as a fourth term for "AA fade at the boundary" — which
+// term (1) already covers: the ramp is aaHalf = 0.5/dpr PERPENDICULAR px
+// (aaHalfPx), maximal at dpr=1, and perpFactor·0.5 is exactly that projected
+// onto x. `syntenyFillPad.test.ts` measures the two pads against the coverage
+// footprint at every row of every shape it sweeps and the worst case comes out
+// at exactly -slack, i.e. the whole pixel went unused in all of them. On the
+// thin near-vertical ribbons a whole-genome view is mostly made of, 1px on each
+// side of a ~2px-wide quad was most of what the rasterizer walked: dropping it
+// to float slop cuts their rasterized area to 83.7% with the footprint still
+// fully contained. The vertex pad and the fragment's edges are computed from the
+// same float32 corners, so the two only disagree by arithmetic rounding, which
+// at |x| ~ 4000px is ~1e-4.
+static const float PAD_SLACK_PX = 0.25;
 
 // The two ribbon edges at X-blend `s`, ordered left/right — they swap on a
 // crossed "bowtie" ribbon, which is why the geometry sorts them here rather than
@@ -592,16 +609,36 @@ public void straightGeometry(inout FillVsOut o, float4 c, uint vid,
   bool isTop = (vid == 0u || vid == 1u || vid == 4u);
   bool isRight = (vid == 1u || vid == 4u || vid == 5u);
 
-  // The ribbon's left/right x at this end of the trapezoid (s=0 top, s=1
-  // bottom), ordered so a crossed ribbon still gets a forward-facing quad.
-  float2 span = edgeSpan(c, isTop ? 0.0 : 1.0);
+  // The quad's two rows sit an AA pixel BEYOND each end of the ribbon (y = -1
+  // and y = height + 1) so vertCoverage has somewhere to ramp, and the blend
+  // extrapolates to match: s = -1/height at the top row, 1 + 1/height at the
+  // bottom. In straight mode x is affine in t and t is affine in screen y, so
+  // those two blends put the quad's sides exactly ON the ribbon's own edge
+  // lines, offset by `pad`. Containment is then a property of `pad` alone, at
+  // every row, with nothing left for the endpoints to get wrong.
+  //
+  // Holding the rows at s=0 and s=1 while moving them in y is what this
+  // replaced, and it SHEARED the quad: the sides then ran over height+2 px of y
+  // while the ribbon ran over height, so at y=0 the boundary already sat
+  // ΔspanL/(height+2) along the ribbon's travel — up to a full perpendicular
+  // pixel, which is the whole footprint. It ate the outer AA over roughly the
+  // top and bottom quarter of every slanted ribbon (and, where the 1px minimum
+  // footprint was the only thing drawing it, the ribbon): measured 11.5% of a
+  // sub-pixel steep ribbon's total ink and 11.7% of a 3000px-run / 20px-tall
+  // one, hard-cut rather than faded. syntenyFillPad.test.ts could not see it —
+  // it modelled the quad as spanning exactly [y(t0), y(t1)] — and now models the
+  // rows the shader actually emits.
+  float dy = 1.0 / u.height;
+  float sTop = -dy;
+  float sBot = 1.0 + dy;
+  // Ordered left/right, so a crossed ribbon still gets a forward-facing quad.
+  float2 span = edgeSpan(c, isTop ? sTop : sBot);
 
   // Perpendicular pad (in horizontal pixels). Accommodates:
   //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5.
   //   (2) perpCoverage's sub-pixel `expand`, via thinRibbonPad — zero for any
   //       ribbon wider than perpFactor px.
   //   (3) the caller's extraPerpPx, projected onto x at this slope.
-  //   (4) AA fade at the boundary: 1 px.
   //
   // Term (1) scales with the slope of the STEEPER edge, not the centerline
   // average. The average under-pads whichever edge travels further on a
@@ -615,8 +652,8 @@ public void straightGeometry(inout FillVsOut o, float4 c, uint vid,
   float2 d = ribbonEdgeDeltas(c);
   float slope = max(abs(d.x), abs(d.y)) / u.height;
   float perpFactor = sqrt(1.0 + slope * slope);
-  float pad = perpFactor * (0.5 + extraPerpPx) + thinRibbonPad(perpFactor, c)
-            + 1.0;
+  float pad = perpFactor * (0.5 + extraPerpPx)
+            + thinRibbonPad(perpFactor, c, sTop, sBot) + PAD_SLACK_PX;
 
   fillVsEmit(o,
              isRight ? span.y + pad : span.x - pad,
@@ -643,9 +680,18 @@ public void curveGeometry(inout FillVsOut o, float4 c, uint vid,
   float t1 = float(seg + 1u) * invN;
   float t = isTop ? t0 : t1;
 
-  float2 span = edgeSpan(c, sBlend(t));
+  float s0 = sBlend(t0);
+  float s1 = sBlend(t1);
+  float2 span = edgeSpan(c, isTop ? s0 : s1);
   float y = u.height * yCurve(t);
 
+  // The straight pass extrapolates its rows' blend to match their ±1px AA
+  // offset; this one does not, and does not need to. The x-curve is momentarily
+  // vertical at t=0 and t=1, so the first and last segment's rows barely move in
+  // x — the shear that costs straight mode a perpendicular pixel is under
+  // 0.26·Δ/h here against a pad of 0.28·Δ/h before the bulge term. Undoing it
+  // would mean inverting yCurve per vertex, i.e. a Newton solve on all 48.
+  //
   // Perpendicular pad (in horizontal pixels). Accommodates:
   //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5, at THIS
   //       segment's steepest slope.
@@ -654,7 +700,6 @@ public void curveGeometry(inout FillVsOut o, float4 c, uint vid,
   //   (3) the caller's extraPerpPx, projected onto x at this segment's slope.
   //   (4) bezier bulge within the segment: max|s''|·dt²/8 in s-units, scaled
   //       by max edge Δ.
-  //   (5) AA fade at the boundary: 1 px.
   //
   // Term (1) is per-segment. It used to use the ribbon-wide maximum, which
   // over-pads every segment but the middle one: local dx/dy peaks at 2× the
@@ -688,8 +733,8 @@ public void curveGeometry(inout FillVsOut o, float4 c, uint vid,
                  / yCurveDeriv(tPeak);
   float perpFactor = sqrt(1.0 + segSlope * segSlope);
   float bulgeX = maxEdgeDx * invN * invN * 0.75;
-  float pad = perpFactor * (0.5 + extraPerpPx) + thinRibbonPad(perpFactor, c)
-            + bulgeX + 1.0;
+  float pad = perpFactor * (0.5 + extraPerpPx)
+            + thinRibbonPad(perpFactor, c, s0, s1) + bulgeX + PAD_SLACK_PX;
 
   // AA y-pad only at the first segment's top and last segment's bottom; the
   // shared boundaries between adjacent segments must match exactly.
@@ -758,13 +803,19 @@ float2 ribbonEdgeDeltas(float4 c) {
   return ribbonEdges(c, 1.0) - ribbonEdges(c, 0.0);
 }
 
-// The ribbon's SIGNED horizontal width at its top and bottom: (x2-x1, x3-x4).
+// The ribbon's SIGNED horizontal width at two X-blend values, as (w(s0), w(s1)).
 // Signed on purpose — opposite signs mean the edges cross, so the width passes
 // through zero somewhere between, which is the bowtie case thinRibbonPad has to
-// pad for. Width is edge1 - edge0 = lerp(x2-x1, x3-x4, s), monotonic in s, so
-// these two ends bound it everywhere and no interior sample is needed.
-float2 ribbonWidths(float4 c) {
-  float2 top = ribbonEdges(c, 0.0);
-  float2 bot = ribbonEdges(c, 1.0);
-  return float2(top.y - top.x, bot.y - bot.x);
+// pad for. Width is edge1 - edge0 = lerp(x2-x1, x3-x4, s), affine in s, so these
+// two ends bound it everywhere between and no interior sample is needed.
+//
+// The blends are the CALLER'S, not 0 and 1, because a quad has to be padded for
+// the widths its own fragments see and no others. Straight mode's rows sit an AA
+// pixel beyond each end (s slightly outside [0,1]); a curve segment sees only
+// its own slice. Reading the whole ribbon for both under-padded the first and
+// over-padded the second.
+float2 ribbonWidths(float4 c, float s0, float s1) {
+  float2 a = ribbonEdges(c, s0);
+  float2 b = ribbonEdges(c, s1);
+  return float2(a.y - a.x, b.y - b.x);
 }
