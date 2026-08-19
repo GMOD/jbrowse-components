@@ -16,7 +16,7 @@
 // on the CPU (float64) from a SMALL delta (see GpuDotplotRenderer.render), then
 // expands the line into a screen-space quad with rounded caps, matching
 // Canvas2D's lineCap:'round' behavior. The quad is extended by
-// lineWidth/2 + aaHalf along both the tangent and the normal, and a capsule SDF
+// lineWidth/2 + the AA half-width along both the tangent and the normal, and a capsule SDF
 // in the fragment shader produces circular caps so short alignments render as
 // dots that grow isotropically with lineWidth.
 //
@@ -30,6 +30,7 @@
 //! targets: wgsl, glsl
 //! blend: premultiplied
 
+import antialias;
 import colorPack;
 import hpmath;
 
@@ -57,29 +58,10 @@ struct Uniforms {
   // Plot-wide opacity (the view's slider), multiplied into every fragment.
   float  alpha;
   // getDpr() (capped at MAX_DPR). Needed because this shader measures in CSS px
-  // but rasterizes on the device-px grid — see aaHalf.
+  // but rasterizes on the device-px grid — see antialias.slang.
   float  devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
-
-// Half-width of the capsule's antialiasing ramp, in CSS px, so the ramp covers
-// exactly one OUTPUT pixel. `resolution` and every coordinate here are CSS px
-// while the viewport is device px, so one output sample spans 1/dpr CSS px.
-// The same constant, for the same reason, as syntenyTypes.slang's aaHalfPx.
-//
-// This is analytic rather than measured, which it can be because the fragment's
-// `d` is a TRUE Euclidean distance in CSS px: |grad d| = 1 everywhere, so the
-// ramp width is a known constant at every angle and there is nothing to
-// differentiate. It used to be `fwidth(d)`, which is wrong three ways at once.
-// fwidth is |ddx| + |ddy|, so it overshoots a true gradient by up to sqrt(2) —
-// worst exactly on the diagonals a dotplot is made of. It was then used as the
-// ramp's HALF-width, doubling it again: the ramp came out 2 to 2.83 device px
-// instead of 1, which is why lines read soft next to the Canvas2D twin they are
-// supposed to match. And `d` comes off a clamp, so at the 2x2 quads straddling
-// the cap/body junction the derivative is of a discontinuous quantity.
-float aaHalf() {
-  return 0.5 / u.devicePixelRatio;
-}
 
 struct VsOut {
   float4 position : SV_Position;
@@ -124,12 +106,12 @@ VsOut vs_main(DotplotInstance inst, uint vid : SV_VertexID) {
 
   // Extend the quad past the capsule so the rounded caps have geometry to shade
   // AND the AA ramp has somewhere to land. The fragment ramps out to
-  // halfWidth + aaHalf, so a quad that stopped at halfWidth cropped the ramp's
+  // halfWidth + aaHalfPx, so a quad that stopped at halfWidth cropped the ramp's
   // outer half: coverage fell to 0.5 at the geometry boundary and was then cut
   // to 0 by the rasterizer. That is a hard 50%-alpha edge — an aliased one, on
   // the diagonals that are most of a dotplot — around a line that also came out
   // ~1px narrower than lineWidth asked for.
-  float ext = halfWidth + aaHalf();
+  float ext = halfWidth + aaHalfPx(u.devicePixelRatio);
   float capDir = t * 2.0 - 1.0;
   float2 center = lerp(float2(sx1, sy1), float2(sx2, sy2), t);
   float2 pos = center + tangent * capDir * ext + normal * side * ext;
@@ -154,11 +136,14 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float halfWidth = fragIn.dims.y;
   float cx = clamp(fragIn.uv.x, 0.0, segLen);
   float d = length(float2(fragIn.uv.x - cx, fragIn.uv.y));
-  // One output pixel of ramp, centered on the capsule's edge. The vertex stage
-  // pads the quad by the same aaHalf, so the ramp reaches zero inside the
-  // geometry rather than being cut off half way down.
-  float aa = aaHalf();
-  float edgeAlpha = 1.0 - smoothstep(halfWidth - aa, halfWidth + aa, d);
+  // One output pixel of ramp, centred on the capsule's edge. Analytic rather
+  // than measured: `d` is a TRUE Euclidean distance in CSS px, so |grad d| = 1
+  // at every angle and there is nothing to differentiate — and `d` comes off a
+  // clamp, so at the 2x2 quads straddling the cap/body junction a derivative
+  // would be of a discontinuous quantity. The vertex stage pads the quad by the
+  // same half-width, so the ramp reaches zero inside the geometry rather than
+  // being cut off half way down.
+  float edgeAlpha = aaSmoothRamp(halfWidth - d, aaHalfPx(u.devicePixelRatio));
   // The packed color's own alpha, the plot-wide slider, and the SDF edge, in
   // that order. Premultiplied output, so the slider scales rgb with it.
   float finalAlpha = fragIn.color.a * u.alpha * edgeAlpha;

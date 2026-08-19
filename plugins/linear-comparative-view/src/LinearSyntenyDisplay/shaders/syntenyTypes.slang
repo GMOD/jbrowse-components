@@ -32,8 +32,10 @@ module syntenyTypes;
 // with the dotplot / hic renderers, so it must not be re-spelled here.
 __exported import hpmath;
 
-// Not re-exported: the shared vertex prologue unpacks the instance color, so
-// this module owns the dependency and no pass needs to import it.
+// Not re-exported for the same reason: the shared vertex prologue unpacks the
+// instance color and the shared fragments own every AA ramp, so this module
+// holds both dependencies and no pass needs to import either.
+import antialias;
 import colorPack;
 
 public struct Instance {
@@ -114,25 +116,9 @@ public struct Uniforms {
   public float  yTop;
   public float  fadeThinAlignments;
   // getDpr() (capped at MAX_DPR), needed because these shaders measure in CSS
-  // px but rasterize on the device-px grid — see aaHalfPx.
+  // px but rasterize on the device-px grid — see antialias.slang.
   public float  devicePixelRatio;
 };
-
-// Half-width of every antialiasing ramp in these shaders, in CSS px.
-//
-// The HAL sizes the backing store by getDpr() and sets the viewport to
-// canvas.width/height (DEVICE px), while `resolution` and every coordinate here
-// are CSS px. So one output sample spans 1/dpr CSS px, and a ramp that should
-// cover exactly one output pixel is 1/dpr CSS px wide — not 1.
-//
-// This used to arrive implicitly: ddx/ddy differentiate against the device-px
-// grid, so `length(ddx(d), ddy(d))` on a CSS-px distance returned 1/dpr and the
-// ramp came out one device pixel wide for free. That is the ONE thing the
-// derivative was still buying once the distances were perpendicular-normalized
-// (see perpCoverage), so dropping it means supplying the ratio explicitly.
-public float aaHalfPx(Uniforms u) {
-  return 0.5 / u.devicePixelRatio;
-}
 
 // The four projected corner X positions in CSS-px screen space, held as a plain
 // float4 with lanes (x1, x2, x3, x4) — x/y are the top view's corners, z/w the
@@ -303,7 +289,7 @@ float perpCoverage(float x, float edge0, float edge1, float pf0, float pf1,
   // corners are deliberately different quantities; the fade curve applied to
   // them is not, so only that is shared.
   float widthFade = thinWidthFade(perpW, fadeApplies);
-  // Per-edge AA, one output pixel each (aaHalf; see aaHalfPx). dL/dR are
+  // Per-edge AA, one output pixel each. dL/dR are
   // constructed as TRUE perpendicular distances — each divided by its own edge's
   // foreshortening — so the ramp width is a known constant at every slope rather
   // than something to measure. NOT fwidth (=|ddx|+|ddy|), which overshoots by up
@@ -317,8 +303,7 @@ float perpCoverage(float x, float edge0, float edge1, float pf0, float pf1,
   // value on slanted ribbons) — a near-hard side edge on the ribbon's top and
   // bottom rows. At a bowtie's pinch the 2x2 quad straddles the edge-identity
   // swap and reads 0.707. aaHalf is right in both.
-  return smoothstep(-aaHalf, aaHalf, dL)
-       * smoothstep(-aaHalf, aaHalf, dR) * widthFade;
+  return aaSmoothRamp(dL, aaHalf) * aaSmoothRamp(dR, aaHalf) * widthFade;
 }
 
 // Ribbon edge X positions + per-edge slope foreshortening at a point along the
@@ -527,7 +512,7 @@ public void fillVsEmit(inout FillVsOut o, float vx, float y, Uniforms u) {
 // applies, which is what `fadeApplies` carries into perpCoverage.
 public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   FillEdges e = fillEdges(i.corners, s, sd, dydt);
-  float aaHalf = aaHalfPx(u);
+  float aaHalf = aaHalfPx(u.devicePixelRatio);
   bool fadeApplies = !isCigarKind(i.kind) && !isMarkerKind(i.kind)
                   && u.fadeThinAlignments >= 0.5;
   float coverage =
@@ -565,9 +550,9 @@ public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   // at any dpr) with a one-output-pixel ramp. The ramp reaches zero at
   // STROKE_HALF_PX + aaHalf ≤ STROKE_PERP_PX, which is what the geometry's
   // extraPerpPx guarantees room for.
-  float aaHalf = aaHalfPx(u);
-  float band = max(clamp((STROKE_HALF_PX - d0) / (2.0 * aaHalf) + 0.5, 0.0, 1.0),
-                   clamp((STROKE_HALF_PX - d1) / (2.0 * aaHalf) + 0.5, 0.0, 1.0));
+  float aaHalf = aaHalfPx(u.devicePixelRatio);
+  float band = max(aaRamp(STROKE_HALF_PX - d0, 2.0 * aaHalf),
+                   aaRamp(STROKE_HALF_PX - d1, 2.0 * aaHalf));
   // Capped at the ribbon's top and bottom by the SAME vertical AA fillFs
   // applies, so the outline ends exactly where the fill does.
   float alpha = band * vertCoverage(i.localPos.y, u.height, aaHalf)
@@ -768,11 +753,10 @@ public float curveParamAtY(float yLocal, Uniforms u) {
 // construction, no derivative to take.
 //
 // Shared by fillFs and strokeFs rather than spelled in both: the outline
-// has to end exactly where the fill does, and two copies of the same two
-// smoothsteps is precisely the shape that drifts.
+// has to end exactly where the fill does, and two copies of the same two ramps
+// is precisely the shape that drifts.
 public float vertCoverage(float yLocal, float h, float aaHalf) {
-  return smoothstep(-aaHalf, aaHalf, yLocal)
-       - smoothstep(h - aaHalf, h + aaHalf, yLocal);
+  return aaSmoothRamp(yLocal, aaHalf) - aaSmoothRamp(yLocal - h, aaHalf);
 }
 
 // ---------------------------------------------------------------------------

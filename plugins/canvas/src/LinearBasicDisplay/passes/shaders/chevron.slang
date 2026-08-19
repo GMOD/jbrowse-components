@@ -10,6 +10,7 @@
 //! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX, CHEVRON_VERTS
 //! js-export: showChevrons, chevronCount, chevronOffset, chevronFirstVisible, chevronLastVisible
 
+import antialias;
 import hpmath;
 import colorPack;
 import lineInstance;
@@ -164,10 +165,10 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float aaPad = pxToClipH(1.0, u);
   float extHalfThickness = coreHalfThickness + aaPad;
   // Half-extent of the `dist` varying: signed *vertical* px offset from the
-  // arm's centerline, ±(core half-thickness + aaPad). The fragment's fwidth
-  // divide converts it to a screen-space distance, which folds in the arm's
-  // slant, so the drawn arm lands within a few hundredths of a px of the
-  // Canvas2D path's CHEVRON_THICKNESS_PX stroke.
+  // arm's centerline, ±(core half-thickness + aaPad). The fragment divides by
+  // the measured gradient, which folds in the arm's slant, so the drawn arm
+  // lands within a few hundredths of a px of the Canvas2D path's
+  // CHEVRON_THICKNESS_PX stroke.
   float armHalfPx = CHEVRON_THICKNESS_PX * 0.5 + 1.0;
   float dir = flipX(inst.direction, u);
 
@@ -201,7 +202,22 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
+  // `dist` is a vertical offset, not a perpendicular distance, so the ramp
+  // width has to be measured — with `aaGradient`, not `fwidth`. The arms run at
+  // 45 degrees (CHEVRON_W_PX == CHEVRON_H_PX), so |ddx| == |ddy| and fwidth
+  // returns exactly sqrt(2) times the true gradient: the widest it is ever
+  // wrong, at the one slope this glyph has.
+  //
+  // The half-max contour does not move — that is `coreHalfPx - |dist| == 0`,
+  // which no ramp width touches. What moves is how much of the arm reaches full
+  // ink: a 0.5px arm peaked at alpha 0.625 instead of 0.677 at dpr 1, and 0.75
+  // instead of 0.854 at dpr 2, with the fade spreading sqrt(2) further to
+  // compensate. So the chevrons read washed out rather than fat.
+  //
+  // Measured rather than analytic because this shader has no dpr uniform —
+  // see antialias.slang for which of the two a shader gets to use.
   float coreHalfPx = CHEVRON_THICKNESS_PX * 0.5;
-  float alpha = clamp((coreHalfPx - abs(fragIn.dist)) / fwidth(fragIn.dist) + 0.5, 0.0, 1.0);
+  float alpha =
+    aaRamp(coreHalfPx - abs(fragIn.dist), aaGradient(fragIn.dist));
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

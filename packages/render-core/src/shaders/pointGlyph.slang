@@ -12,6 +12,8 @@
 //! js-skip: discExpand — expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand
 module pointGlyph;
 
+import antialias;
+
 // 1px device pad around a disc so the smoothstep edge has room to fade without
 // being clipped by the quad.
 public static const float AA_PAD_PX = 1.0;
@@ -58,45 +60,6 @@ public float2 crispSquareCornerPx(float2 centerPx, float diameterPx, float2 q) {
 // branch on a varying.
 public float discCoverage(float2 localPos) {
   return 1.0 - length(localPos);
-}
-
-// One OUTPUT pixel of antialiasing on a glyph SDF's edge, whatever units that
-// SDF is in. `coverage` is positive inside and zero on the edge.
-//
-// The ramp's width cannot be a constant here, the way it can for an SDF already
-// measured in pixels (compare syntenyTypes.slang's `aaHalfPx` and
-// dotplot.slang's `aaHalf`). These SDFs are in quad-local units, and the
-// conversion to pixels is the SDF's own gradient — which differs per shape. The
-// disc and the triangle carry unit gradients; the diamond's does not, because
-// `1 - (|x| + |y|)` is the L1 norm and so sqrt(2) times the true perpendicular
-// distance to the edge. Measuring the gradient covers all three with no
-// per-shape constant, and covers the next shape for free.
-//
-// `length(ddx, ddy)` is the true gradient magnitude per DEVICE pixel, so it IS
-// the coverage-space width of one output pixel and the ramp is exactly that
-// wide. Two things it is not:
-//
-//   - not `fwidth`, which is |ddx| + |ddy| and overshoots a true gradient by up
-//     to sqrt(2) on diagonals. Around a disc that is a fade whose width varies
-//     with position on its own circumference.
-//   - not used as the smoothstep's HALF-width, which doubled it again. Between
-//     them the ramp spanned 2 to 2.83 output pixels instead of 1, which is why
-//     these glyphs read soft, and it reached further out than the quad has room
-//     for: `discExpand` leaves AA_PAD_PX = 1 CSS px, and at dpr 1 the old ramp
-//     wanted sqrt(2) of them on the diagonals. So the fade was also clipped,
-//     precisely where it was widest.
-//
-// The floor is for SHAPE_BAR, whose SDF is the constant 1: zero gradient, so
-// without it the ramp is zero-wide and the smoothstep is 0/0. A degenerate ramp
-// there saturates to alpha 1, which is the solid fill that shape wants.
-//
-// Takes derivatives, so uniform control flow only. That is exactly why
-// discCoverage is exposed apart from discAlpha: a caller selecting between
-// several SDFs picks its coverage in a branch, then calls this once after it.
-public float glyphEdgeAlpha(float coverage) {
-  float halfRamp =
-    0.5 * max(length(float2(ddx(coverage), ddy(coverage))), 1e-5);
-  return smoothstep(-halfRamp, halfRamp, coverage);
 }
 
 // Antialiased disc coverage → alpha, for callers that draw only a disc and can

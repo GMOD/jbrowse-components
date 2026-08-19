@@ -17,6 +17,7 @@
 //! targets: wgsl, glsl
 //! export-consts: STEP_LINE_VERTS
 
+import antialias;
 import hpmath;
 import colorPack;
 // for AA_PAD_PX, the capsule's antialias pad — same constant the disc uses
@@ -188,20 +189,15 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     // the max-blend pass union adjacent capsules into a seamless round join at
     // any angle.
     //
-    // Do NOT "simplify" this to a constant on the grounds that a proper SDF has
-    // unit gradient. It does — but per CSS px, and ddx/ddy differentiate against
-    // the DEVICE-px grid (the HAL sizes the backing store by getDpr() and sets
-    // the viewport to canvas.width/height, while localPos is CSS px because
-    // viewportWidth and canvasHeight both are). So this returns 1/dpr, and that
-    // is the point: it is what keeps the ramp one OUTPUT pixel wide instead of
-    // one CSS pixel, i.e. crisp rather than dpr-times softer on HiDPI. Replacing
-    // it needs a devicePixelRatio uniform, which this shader does not have.
-    // The synteny fill shaders hit exactly this and now pass one explicitly
-    // (aaHalfPx in syntenyTypes.slang).
+    // Measured, not the analytic `aaHalfPx`, and do NOT "simplify" it to a
+    // constant on the grounds that a proper SDF has unit gradient. It does —
+    // but per CSS px, while ddx/ddy differentiate against the DEVICE-px grid,
+    // so the measurement returns 1/dpr and keeps the ramp one OUTPUT pixel wide
+    // instead of one CSS pixel. Going analytic needs a devicePixelRatio
+    // uniform, which this shader does not have.
     float alongOver = max(abs(fragIn.localPos.x) - fragIn.segHalfLen, 0.0);
     float dist = length(float2(alongOver, fragIn.localPos.y));
-    float aa = max(length(float2(ddx(dist), ddy(dist))), 1e-4);
-    float alpha = clamp((u.lineWidth * 0.5 - dist) / aa + 0.5, 0.0, 1.0);
+    float alpha = aaRamp(u.lineWidth * 0.5 - dist, aaGradient(dist));
     if (alpha <= 0.0) {
       discard;
     }

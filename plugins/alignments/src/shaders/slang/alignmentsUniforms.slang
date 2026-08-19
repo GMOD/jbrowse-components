@@ -19,10 +19,10 @@
 // resolves through imports, so a constant declared here still reaches it).
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
 //! js-skip: expandMinWidthX — widens about the midpoint in clip space, and has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth). A different rule, not a twin
-//! js-skip: aaRamp — the stroke antialiasing ramp, measured per fragment; Canvas2D and SVG get their edge AA from the rasterizer. Split from strokeAaRamp for the referee, not for a consumer: check-oracle sweeps by signature, so a scalar core is swept whether or not anything imports it
 //! js-skip: dashCoverageAt — same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already
 module alignmentsUniforms;
 
+import antialias;
 import colorPack;
 import hpmath;
 
@@ -248,14 +248,10 @@ public float strokeCoverage(float d, float halfWidthPx, Uniforms u) {
   return strokeAaRamp(halfWidthPx - d, u);
 }
 
-// The ramp itself, given a signed distance INTO the ink. Split out because the
+// The ramp width these passes use, given a signed distance INTO the ink. The
 // dash pattern below wants the same ramp along the mark that `strokeCoverage`
 // gives across it — the two ends of a dash should be exactly as soft as the two
-// sides of the stroke they interrupt.
-public float aaRamp(float signedInk, float aaPx) {
-  return clamp(signedInk / aaPx + 0.5, 0.0, 1.0);
-}
-
+// sides of the stroke they interrupt — so both go through here.
 public float strokeAaRamp(float signedInk, Uniforms u) {
   return aaRamp(signedInk, STROKE_AA_PX / max(u.dpr, 1.0));
 }

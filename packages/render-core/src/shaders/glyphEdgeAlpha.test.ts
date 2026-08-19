@@ -1,4 +1,4 @@
-// `glyphEdgeAlpha` (pointGlyph.slang) sizes the antialiasing ramp on a glyph's
+// `glyphEdgeAlpha` (antialias.slang) sizes the antialiasing ramp on a glyph's
 // edge from the SDF's own gradient, so that one ramp covers one output pixel for
 // every shape the Manhattan and wiggle point modes draw. Two things have to hold
 // for that, and neither is checked by the compiler:
@@ -19,7 +19,8 @@
 // The shader isn't unit-testable, so this models it. Same approach, and same
 // reason, as LinearSyntenyDisplay/shaders/syntenyFillPad.test.ts and
 // DotplotDisplay/shaders/dotplotCapsulePad.test.ts.
-// SYNC: keep in step with glyphEdgeAlpha and with the SDFs in manhattan.slang.
+// SYNC: keep in step with antialias.slang's glyphEdgeAlpha and with the SDFs
+// in manhattan.slang.
 import { AA_PAD_PX } from './pointGlyph.generated.ts'
 
 const INV_SQRT5 = 1 / Math.sqrt(5)
