@@ -199,6 +199,21 @@ describe('findRowHit', () => {
     })
   })
 
+  // getRowHeight is canvasHeight / numRows with no floor, so a cohort-sized
+  // track is sub-pixel per row. Pixel 2 was filled from its centre, 2.5, which
+  // lands in row 6 of a 0.4px stack — measuring from 2.0 named row 5, a source
+  // whose plot is not the one drawn there.
+  test('a sub-pixel row stack picks the source drawn at that pixel', () => {
+    const many = Array.from({ length: 10 }, (_, i) => ({ name: `s${i}` }))
+    const data = {
+      sources: many.map((s, i) =>
+        makeSource(s.name, [{ start: 0, end: 100, score: i }]),
+      ),
+    }
+    const result = findRowHit(data, many, 50, 2, 0.4, 'chr1', 'avg')
+    expect(result?.rows).toEqual([{ source: 's6', score: 6 }])
+  })
+
   test('returns undefined when offsetY is outside the rows', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])],
