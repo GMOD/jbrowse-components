@@ -21,14 +21,22 @@ that outlives its thread is a stale copy of one:
 | what a session did, and which commits | git already holds it |
 
 So a thread is closed by filing its remainder into those and removing the file,
-not by letting it accumulate. Eight existed on 2026-08-19 and seven closed that
-way, several having already drifted against the docs that overtook them — a
-handoff is the fastest agent-doc to go stale, because it is the only one whose
-subject is still moving.
+not by letting it accumulate. Eight existed on 2026-08-19 and all eight closed
+that way the same day, several having already drifted against the docs that
+overtook them — a handoff is the fastest agent-doc to go stale, because it is
+the only one whose subject is still moving. **The directory being empty is the
+normal state**, not a sign the index is broken.
 
 The commonest thing a stale handoff turns out to be holding is a **worked
-proposal**, which belongs in `ideas/` where the index will surface it. Three of
-the seven closed by moving one, and one of them by moving three.
+proposal**, which belongs in `ideas/` where the index will surface it. Four of
+the eight closed by moving one, and one of them by moving five — the v5.0.0
+release triage, whose thirteen open findings split into six fixed outright, six
+parked as ideas (`refname-mismatch-warning-visibility`,
+`credential-aware-chunk-cache`, `url-params-consumed-but-not-applied`,
+`single-tier-pif-refetches-at-the-threshold`,
+`clustering-without-a-named-region`,
+`track-y-offset-cannot-see-the-label-box`) and one measurement in
+[TODO.md](../TODO.md).
 
 The table below is generated from each doc's `description:` frontmatter by
 `website/scripts/generate-doc-indexes.ts`, and `pnpm autogen --check` fails on a
@@ -39,5 +47,4 @@ doc that carries none. Don't edit between the markers; write the doc's
 
 | Doc | What it is waiting on |
 | --- | --- |
-| [handoff-v5-release-triage](v5-release-triage.md) | The thirteen findings left open by the eight-lane correctness review of the v5.0.0 branch, each as a file:line and its mechanism, plus the two decisions that are Colin's. The four blockers and the release-note corrections have landed. Read before re-reviewing any of these subsystems. |
 <!-- END GENERATED HANDOFFS INDEX -->

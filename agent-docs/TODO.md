@@ -87,6 +87,7 @@ before anyone noticed.
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
 | [The config-read baseline's remaining 125](#the-config-read-baselines-remaining-125-is-mostly-not-display-debt) | config, types | 72 of them are track/assembly reads; confirm that before estimating any of it |
 | [makePin checks the slot name, not the value](#makepin-checks-the-slot-name-but-not-the-value) | config, menus | decide whether the runtime throw is already enough |
+| [What the two-tier PIF saves a reader](#measure-what-the-two-tier-pif-actually-saves-a-reader) | synteny, PIF | the only PIF measurement is on-disk size; take bytes-over-the-wire and time-to-settled |
 
 ## Ready to build: small and self-contained
 
@@ -2262,3 +2263,39 @@ Whatever the verdict, the tool belongs in `pnpm check-docs`'s neighbourhood only
 if it is quiet on a clean tree. A gate that reports 600 findings teaches everyone
 to skip it.
 
+
+### Measure what the two-tier PIF actually saves a reader
+
+The v5.0.0 draft carried a two-tier benchmark table and nothing in-repo backs
+it, so the paragraph came out and this is what would let it go back.
+
+The only PIF measurement that exists is
+[measurements/pif-coarse-tier-bytes.json](measurements/pif-coarse-tier-bytes.json)
+(`hand`), and it answers a different question: **on-disk size ratios per block
+length** — what the coarse tier costs the file — rather than what a reader
+downloads or how long the view takes to settle. Those are the two numbers a
+release note about tiering is making a claim about, and neither has been taken.
+
+The claimed table also could not have come from the run its caption described:
+it named a UCSC liftOver chain, `ChainAdapter` declares no tiering slot at all,
+and `make-pif` takes PAF. So do not try to reproduce the removed numbers —
+take new ones.
+
+What to run, on one PIF built both ways (`jbrowse make-pif <paf>` against
+`jbrowse make-pif --no-coarse <paf>`) at a block length where the ratio above
+says the tier is worth something (50 kb or wider):
+
+- **Bytes over the wire** for one whole-genome view and one zoomed-in view, per
+  tier. `RemoteFileWithRangeCache` is where a counter goes, or read it off the
+  network panel — a range request per chunk makes the sum easy to get wrong by
+  hand.
+- **Time to settled**, using the same `data-app-phase="ready"` gate the figure
+  captures use, so it is the number a reader experiences rather than a fetch
+  timing.
+- **The crossing cost**, since it is the same run: zooming across
+  `coarseBpPerPxThreshold` refetches, and on a single-tier file it refetches
+  identical bytes — see
+  [ideas/single-tier-pif-refetches-at-the-threshold.md](ideas/single-tier-pif-refetches-at-the-threshold.md).
+
+Land it as a `measurements/` record with a `repro`, so the next release note
+quotes it through the generator rather than retyping it.
