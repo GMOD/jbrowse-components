@@ -222,6 +222,14 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // the back/base edge (bary.x≈0), so it reads as ">" not a filled triangle.
   // fwidth converts the barycentric gradient to pixel units so the line width is
   // screen-stable.
+  //
+  // The one `fwidth` left in the tree, and deliberately: this is the standard
+  // barycentric wireframe estimator, not a distance field, and `minBary` is a
+  // MIN of two coordinates whose gradient is discontinuous along their ridge, so
+  // neither estimator is exact where they meet. antialias.slang's `aaGradient`
+  // would narrow the line by up to sqrt(2) on the diagonals — a look decision
+  // the Canvas2D twin (Canvas2DFeatureRenderer's continuation marker) has a
+  // stake in, so it wants a capture and not a refactor.
   float minBary = min(fragIn.bary.y, fragIn.bary.z);
   float edgePx = minBary / fwidth(minBary);
   float edgeAlpha = 1.0 - smoothstep(0.5, 1.5, edgePx);

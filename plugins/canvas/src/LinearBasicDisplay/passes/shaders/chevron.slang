@@ -160,7 +160,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
   float halfW = pxToClipW(CHEVRON_W_PX * 0.5, u);
   float halfH = pxToClipH(CHEVRON_H_PX * 0.5, u);
-  // Extrude geometry 1px per side for fwidth-based AA in the fragment.
+  // Extrude geometry 1px per side so the fragment's AA ramp has room.
   float coreHalfThickness = pxToClipH(CHEVRON_THICKNESS_PX * 0.5, u);
   float aaPad = pxToClipH(1.0, u);
   float extHalfThickness = coreHalfThickness + aaPad;
