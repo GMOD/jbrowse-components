@@ -107,3 +107,61 @@ test('opens a bigwig track that needs external token authentication', async () =
   const display = await findAnyDisplayPainted(delay)
   expectCanvasMatch(findCanvasIn(display))
 }, 25000)
+
+// The mixin's own rule is pinned in
+// packages/product-core/src/RootModel/InternetAccounts.test.ts against stand-in
+// account types. This is the same rule against the accounts that ship, because
+// what the rule prevents is a real one's real probe: getPreAuthorizationInformation
+// validates the token by requesting the URL with the credential attached, so an
+// account matched on an attacker's URL hands it over from the main thread before
+// the worker is involved at all.
+test('a location naming an account cannot send its token off-origin', async () => {
+  const { rootModel } = await createView({
+    ...config,
+    internetAccounts: [
+      {
+        type: 'ExternalTokenInternetAccount',
+        internetAccountId: 'ExternalTokenTest',
+        name: 'External token',
+        description: 'External Token for testing',
+        domains: ['data.mylab.org'],
+      },
+    ],
+  })
+  await waitFor(() => {
+    expect(
+      rootModel.internetAccounts.some(
+        a => a.internetAccountId === 'ExternalTokenTest',
+      ),
+    ).toBe(true)
+  })
+  const account = rootModel.internetAccounts.find(
+    a => a.internetAccountId === 'ExternalTokenTest',
+  )!
+  account.storeToken('SECRET-LAB-TOKEN')
+
+  const requests: string[] = []
+  const spy = jest
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation(async (input, init) => {
+      const auth = new Headers(init?.headers).get('Authorization')
+      if (auth) {
+        requests.push(`${auth} -> ${String(input)}`)
+      }
+      return new Response('', { status: 200 })
+    })
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  try {
+    const evil = {
+      locationType: 'UriLocation' as const,
+      uri: 'https://evil.example.com/attacker.bam',
+      internetAccountId: 'ExternalTokenTest',
+    }
+    const claimed = rootModel.findAppropriateInternetAccount(evil)
+    await claimed?.getPreAuthorizationInformation(evil).catch(() => {})
+    expect(requests).toEqual([])
+  } finally {
+    warn.mockRestore()
+    spy.mockRestore()
+  }
+}, 25000)
