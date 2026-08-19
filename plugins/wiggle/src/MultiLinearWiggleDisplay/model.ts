@@ -591,9 +591,6 @@ export default function stateModelFactory(
             onResult: (idx, result) => {
               self.setRpcData(idx, result)
             },
-            onComplete: () => {
-              self.setLoadedBpPerPx(bpPerPx)
-            },
           })
         },
 

@@ -1,11 +1,9 @@
 import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 
 import type { WiggleConfigModel } from './wiggleConfigSchemaFields.ts'
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The mixin composes onto a display that supplies these props, but they're
 // declared by the concrete display, not here, so `self` isn't typed with them.
@@ -38,8 +36,12 @@ export const RESOLUTION_STEP = 2
  * #category display
  *
  * The score-PLOT config every wiggle-family display shares: the score axis
- * (`ScoreScaleMixin`), the cross-hatch toggle, the scatter point size and the
- * zoom-staleness cache test. Deliberately NOT the wiggle-specific palette,
+ * (`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size.
+ * Config only — the strict-`bpPerPx` fetch rule (adr-008) that used to sit here
+ * is `WiggleCommonMixin`'s `regionFetchKey`, because it describes a fetch and
+ * not a plot, and `LinearManhattanDisplay` composes this for the score axis and
+ * had to state `isCacheValid` by hand to shake it off. Deliberately NOT the
+ * wiggle-specific palette,
  * rendering-type, summary-mode and resolution config — those moved to
  * `WiggleCommonMixin`, which composes this, when it became clear that
  * `LinearManhattanDisplay` (the other composer) reads none of them and was
@@ -57,12 +59,6 @@ export const RESOLUTION_STEP = 2
 export function WiggleScoreConfigMixin() {
   return types
     .compose('WiggleScoreConfigMixin', ScoreScaleMixin(), types.model({}))
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      loadedBpPerPx: undefined as number | undefined,
-    }))
     .views(self => ({
       /**
        * #getter
@@ -121,30 +117,11 @@ export function WiggleScoreConfigMixin() {
       /**
        * #action
        */
-      setLoadedBpPerPx(bpPerPx: number | undefined) {
-        self.loadedBpPerPx = bpPerPx
-      },
-      /**
-       * #action
-       */
       setScatterPointSize(val?: number) {
         setConf(confNode(self), 'scatterPointSize', val)
       },
     }))
     .views(self => ({
-      /**
-       * #method
-       * Strict zoom equality: see adr-008. A view, not an action, so the
-       * `view.bpPerPx` read below actually registers as a dependency of whoever
-       * calls it (see MultiRegionDisplayMixin's hook block).
-       */
-      isCacheValid(_displayedRegionIndex: number) {
-        if (self.loadedBpPerPx === undefined) {
-          return true
-        }
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return view.bpPerPx === self.loadedBpPerPx
-      },
       /**
        * #getter
        * Whether the score-axis cross hatches draw. Density spends color, not

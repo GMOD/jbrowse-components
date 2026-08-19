@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
+import { untracked } from 'mobx'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
@@ -40,8 +41,8 @@ export { isBlockCovered, planRegionFetch } from './planRegionFetch.ts'
  *
  * Per-region fetch lifecycle for LGV-based GPU displays. Installs the fetch
  * autoruns in `afterAttach` and exposes overridable hooks (`fetchNeeded`,
- * `rpcProps`, `isCacheValid`, `measuresBytesPreFlight`) plus the `fetchRegions`
- * / `loadedRegions` machinery.
+ * `rpcProps`, `regionFetchKey`, `regionHasData`, `measuresBytesPreFlight`) plus
+ * the `fetchRegions` / `loadedRegions` machinery.
  */
 export default function MultiRegionDisplayMixin() {
   return (
@@ -61,6 +62,14 @@ export default function MultiRegionDisplayMixin() {
          * returns
          */
         loadedRegions: regionDataMap<Region>(),
+        /**
+         * #volatile
+         * The `regionFetchKey` each loaded region's fetch was issued under,
+         * keyed by displayedRegionIndex. Written by `setLoadedRegion` beside
+         * `loadedRegions`, so the two never disagree about a region, and read
+         * only by `isCacheValid`.
+         */
+        loadedFetchKeys: regionDataMap<string>(),
         /**
          * #volatile
          * Bumped by `reload()` and read unconditionally by the fetch autorun,
@@ -201,6 +210,47 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
+         * Overridable hook (default `''`): what a fetch issued right now would
+         * produce for a region, as a string — the display's per-region content
+         * axis. `fetchRegions` captures it before it issues the RPC and stamps
+         * it beside the loaded region; `isCacheValid` refetches a region whose
+         * stamp no longer matches. Wiggle returns `String(view.bpPerPx)`
+         * (adr-008), canvas the peptide-overlay threshold, the variant matrix
+         * its zoom in matrix mode only.
+         *
+         * NOT an `rpcProps()` field: this invalidates one region's held data
+         * where `rpcProps` invalidates all of it, and a zoom-swinging value in
+         * the RPC payload blanks the display at the force-load floor — see
+         * REGION_TOO_LARGE.md §"How the verdict is built".
+         *
+         * A getter, so the observables it reads register as dependencies of
+         * `FetchVisibleRegions`; MobX runs an action untracked and the autorun
+         * would keep a stale answer.
+         */
+        get regionFetchKey(): string {
+          return ''
+        },
+
+        /**
+         * #method
+         * Overridable hook (default true): whether the last fetch actually
+         * stored data for this region. `fetchRegions` marks every needed region
+         * loaded once the work callback returns, including one the worker
+         * refused for size, so a display holding a per-region data map answers
+         * off that map and the region refetches the moment the gate releases.
+         *
+         * Separate from `regionFetchKey` on purpose: the mixin cannot see a
+         * display's data map, and a key that changed when data arrived would be
+         * the `rpcProps()` loop in different clothes.
+         *
+         * A view, not an action, for the reason `regionFetchKey` is a getter.
+         */
+        regionHasData(_displayedRegionIndex: number): boolean {
+          return true
+        },
+
+        /**
+         * #getter
          * Shared cached view for every LGV-based GPU display. A single
          * displayedRegion may produce multiple render blocks (shared GPU
          * buffer, different scissor clips on screen). Plugins that want to
@@ -275,10 +325,27 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #action
          * Action wrapper so callers after async boundaries stay in MST strict
-         * mode.
+         * mode. Stamps the region with the fetch key its data came back under —
+         * `fetchRegions` passes the key it captured before issuing the RPC, and
+         * the default serves a caller committing a region it holds right now.
          */
-        setLoadedRegion(displayedRegionIndex: number, region: Region) {
+        setLoadedRegion(
+          displayedRegionIndex: number,
+          region: Region,
+          fetchKey = self.regionFetchKey,
+        ) {
           self.loadedRegions.set(displayedRegionIndex, region)
+          self.loadedFetchKeys.set(displayedRegionIndex, fetchKey)
+        },
+
+        /**
+         * #action
+         * Forget one region, both halves together, so a display pruning what has
+         * scrolled off screen cannot leave a key behind its data.
+         */
+        dropLoadedRegion(displayedRegionIndex: number) {
+          self.loadedRegions.delete(displayedRegionIndex)
+          self.loadedFetchKeys.delete(displayedRegionIndex)
         },
 
         /**
@@ -300,6 +367,7 @@ export default function MultiRegionDisplayMixin() {
           self.cancelFetch()
           self.setError(undefined)
           self.loadedRegions.clear()
+          self.loadedFetchKeys.clear()
           self.clearDisplaySpecificData()
           self.resetCanvasDrawn()
         },
@@ -340,15 +408,30 @@ export default function MultiRegionDisplayMixin() {
       // That worked only by accident — the autorun happened to read
       // `view.visibleRegions`, which moves in lockstep — which made "don't let
       // this be your only dependency" an unwritten precondition on every
-      // override. Overrides must stay views for the same reason.
-      .views(() => ({
+      // override. `regionFetchKey` and `regionHasData` are views for the same
+      // reason.
+      .views(self => ({
         /**
          * #method
-         * Overridable hook: return `false` to force re-fetch at the current
-         * zoom (wiggle uses this for zoom-level changes).
+         * Whether the data held for a region still answers the current view.
+         * Not overridable any more: a display states its rule as
+         * `regionFetchKey` (what a fetch now would produce) and `regionHasData`
+         * (did the last one store anything), and this compares the key against
+         * the one the region was fetched under. A subclass that changes what it
+         * fetches spells the change in the key, and one that forgets gets a
+         * redundant fetch rather than a cached answer for a zoom the data was
+         * never fetched at.
+         *
+         * The stamp is read `untracked` for the reason the autorun reads
+         * `loadedRegions` untracked: this autorun is what writes it, and the
+         * `fetchGeneration` bump at fetch end is the re-trigger.
          */
-        isCacheValid(_displayedRegionIndex: number): boolean {
-          return true
+        isCacheValid(displayedRegionIndex: number): boolean {
+          return (
+            self.regionHasData(displayedRegionIndex) &&
+            untracked(() => self.loadedFetchKeys.get(displayedRegionIndex)) ===
+              self.regionFetchKey
+          )
         },
       }))
       .actions(self => ({
@@ -358,11 +441,18 @@ export default function MultiRegionDisplayMixin() {
          * loaded only AFTER the work callback has populated display-specific
          * data (rpcDataMap, cellData, etc) so the GPU upload autorun sees
          * committed data when it observes loadedRegions.
+         *
+         * The fetch key is captured here, at issue, and committed below — never
+         * re-read after the await. `ctx.isStale()` trips on a newer fetch or a
+         * cancel, not on a viewport that moved under a fetch that is still
+         * current, so a key read at commit would stamp this data with a zoom it
+         * was not fetched at.
          */
         async fetchRegions(
           needed: IndexedRegion[],
           work: (ctx: FetchContext) => Promise<void>,
         ) {
+          const fetchKey = self.regionFetchKey
           await self.runFetch(async ctx => {
             // No-op unless the display set `measuresBytesPreFlight` — see
             // RegionTooLargeMixin
@@ -377,7 +467,7 @@ export default function MultiRegionDisplayMixin() {
             await work(ctx)
             if (!ctx.isStale()) {
               for (const { displayedRegionIndex, region } of needed) {
-                self.setLoadedRegion(displayedRegionIndex, region)
+                self.setLoadedRegion(displayedRegionIndex, region, fetchKey)
               }
             }
           })

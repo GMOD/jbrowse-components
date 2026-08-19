@@ -622,20 +622,6 @@ export function stateModelFactory(
           ]
         },
       }))
-      .views(() => ({
-        /**
-         * #method
-         * Manhattan features are 1:1 with the underlying SNPs (pre-transformed
-         * -log10 p values) and don't downsample by zoom, so cached data is valid
-         * at any bpPerPx. Stated outright rather than left to
-         * `WiggleScoreConfigMixin`'s strict-equality version short-circuiting on an
-         * unset `loadedBpPerPx` — that made "never call setLoadedBpPerPx" a silent
-         * precondition of correct caching.
-         */
-        isCacheValid(_displayedRegionIndex: number) {
-          return true
-        },
-      }))
       .actions(self => ({
         /**
          * #action

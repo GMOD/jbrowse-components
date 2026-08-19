@@ -138,6 +138,21 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
+       * Strict zoom equality (adr-008): the worker bins scores to the requested
+       * bpPerPx, so data fetched at another zoom is the wrong summary, however
+       * well the viewport still sits inside it.
+       *
+       * On this mixin, not the score-config one below it: the rule is about
+       * what a fetch returns, and `LinearManhattanDisplay` composes that mixin
+       * for the score axis while fetching untransformed SNPs.
+       */
+      get regionFetchKey(): string {
+        return String(
+          (getContainingView(self) as LinearGenomeViewModel).bpPerPx,
+        )
+      },
+      /**
+       * #getter
        */
       get posColor(): string {
         return getConf(confNode(self), 'posColor')
@@ -292,7 +307,6 @@ export function WiggleCommonMixin() {
        */
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
-        self.setLoadedBpPerPx(undefined)
       },
       /**
        * #action

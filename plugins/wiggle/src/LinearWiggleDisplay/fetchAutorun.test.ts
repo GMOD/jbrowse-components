@@ -94,6 +94,31 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
   })
 
+  // adr-008: the worker bins scores to the requested bpPerPx, so a zoom that
+  // stays spatially inside the fetched region still holds the wrong summary.
+  // `viewportWithinLoadedData` is asserted first so the refetch can only be
+  // `regionFetchKey` — coverage would explain it otherwise.
+  it('refetches after a zoom that stays inside the loaded region', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
+    const { display, view } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    view.zoomTo(view.bpPerPx / 2)
+    expect(display.viewportWithinLoadedData).toBe(true)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+  })
+
   // gpuProps fields (color, summaryScoreMode, renderingType, ...) re-fire the
   // per-region encode autoruns → re-upload only. The worker output doesn't
   // change, so no refetch should happen.
