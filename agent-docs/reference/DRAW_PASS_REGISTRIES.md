@@ -98,8 +98,9 @@ consumer**, whatever the draw mechanism. Not about GPU passes.
 
 ## Where it stops
 
-`ideas/canvas-glyph-system.md` rejects a `Record<GlyphType, {layout, emit}>`
-registry for the canvas plugin's glyphs, and those grounds hold. They are a
+[REJECTED_IDEAS.md](REJECTED_IDEAS.md) rejects a
+`Record<GlyphType, {layout, emit}>` registry for the canvas plugin's glyphs, and
+those grounds hold. They are a
 different argument, worth keeping distinct: that one is about **co-locating two
 phases** across a real one-way layer boundary (`glyphs/` imports zero rendering
 helpers), and it fails the precondition at (3) — detection is centralized in

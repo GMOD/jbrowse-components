@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The per-gene isoform cap collapses in the worker's layoutSubfeatures and puts the expanded-gene set in the RPC cache key, reversing the main-thread design ideas/canvas-glyph-system.md argued for — the worker→main boundary carries no isoform structure to relayout over"
+summary: "The per-gene isoform cap collapses in the worker's layoutSubfeatures and puts the expanded-gene set in the RPC cache key, reversing the main-thread design the parked canvas-glyph proposal argued for — the worker→main boundary carries no isoform structure to relayout over"
 ---
 
 # ADR-075: The isoform cap runs in the worker
@@ -13,8 +13,9 @@ Accepted (2026-08). The mechanism is `collapseIsoforms` in
 
 ## Context
 
-`agent-docs/ideas/canvas-glyph-system.md` designed this feature before it was
-built and recommended the opposite placement: **"the cap belongs on the main
+A parked proposal designed this feature before it was built and recommended the
+opposite placement (`agent-docs/ideas/canvas-glyph-system.md`, since retired
+into [REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md)): **"the cap belongs on the main
 thread, not in `layoutSubfeatures`"**, with the worker emitting every isoform
 carrying a rank and the main thread summing only the visible ones. Its objection
 was the RPC cache key — `rpcProps()` invalidates on every field it carries, and

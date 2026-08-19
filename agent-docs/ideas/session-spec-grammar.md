@@ -1,6 +1,6 @@
 ---
 name: session-spec-grammar
-description: A Vega-Lite-style channel grammar for the session spec, in six parts: versioning the format, a uniform encoding block, reusable scales, collapsing three dialects to one canonical form, view combinators, and no sentinels in the public form.
+description: A Vega-Lite-style channel grammar for the session spec, in six parts: versioning the format, a uniform encoding block, reusable scales, collapsing three dialects to one canonical form, view combinators, and no sentinels in the public form. Plus the two config-layer proposals that outlived the note this grew out of.
 ---
 
 # Session-spec expressiveness: a Vega-Lite-style channel grammar
@@ -8,8 +8,9 @@ description: A Vega-Lite-style channel grammar for the session spec, in six part
 Six changes that would make the session/figure spec behave like a published
 visualization grammar rather than an internal MST serialization. Written against
 the jb2export figure corpus, which is where the drift shows up. This is the
-worked-out version of the **Declarative JBrowse spec** note under
-[Configuration & spec layer](#configuration--spec-layer).
+worked-out version of a two-line "declarative JBrowse spec" note that used to
+sit in a `configuration-spec-layer` doc; that doc is gone and its two surviving
+proposals are at the bottom of this one.
 
 ### 1. Version + schema the session format (the #1 stability gap)
 
@@ -80,3 +81,26 @@ Your own CLAUDE.md flags `rowHeight === 0` = fit-to-height →
 `effectiveRowHeight`. A public schema must not leak that. Offer a
 `getResolvedSession()` that emits explicit resolved values — which is exactly
 what a portable, reproducible figure spec wants anyway. Keep sentinels internal.
+
+### Two config-layer proposals that outlived their own doc
+
+Neither is part of the six above; both were folded in when
+`configuration-spec-layer.md` retired, its other three entries having shipped or
+been superseded (the bare-`{ uri }` shorthand and the Jupyter/R hosts both
+landed, and the R export has its own doc at [r-export](r-export.md)).
+
+**ConfigurationLayer (fanciful).** A construct that acts as a "layer over"
+another config schema: same slots and types, but every slot's default is
+whatever the parent schema's *current value* happens to be. Use case: cascading
+config for subtracks, where a child overrides a handful of slots and inherits
+the rest dynamically. Never built; the current `baseConfiguration` extension
+covers most of the practical need, inheriting the *schema* rather than the live
+values.
+
+**Adapter-type inference from a file extension** (`fasta: 'foo.fa.gz'` → infer
+`BgzipFastaAdapter`). This is the riskier half of a pair whose other half
+shipped: `refNameAliases` and `cytobands` both take a bare `{ uri }` now, via
+the `preProcessSnapshot` idiom in `assemblyConfigSchema.ts`. Extension-sniffing
+is implicit magic — do it only if comfortable with that, and note the same
+inference is what a `formatVersion` (§1 above) would have to keep stable across
+releases.

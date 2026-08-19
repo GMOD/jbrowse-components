@@ -46,8 +46,9 @@ the same placement, which means the solver output is layout data, not a paint-ti
 decision. The main thread's `packRef` (`LinearBasicDisplay/layout.ts`) is where it
 belongs for the same reason the compact subfeature-label reservation does — the
 mode and `labelFontPx` are known there and the worker is deliberately
-mode-agnostic. See [canvas-glyph-system](canvas-glyph-system.md) for that
-boundary and [display-height-redesign](display-height-redesign.md) for the
+mode-agnostic. See
+[REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md)'s canvas-glyph entry for
+that boundary and [display-height-redesign](display-height-redesign.md) for the
 height side of the same problem.
 
 ## What not to re-propose

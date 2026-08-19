@@ -508,4 +508,26 @@ not as a data-loading walkthrough.
 **Fiber-seq.** Already covered as a section of `methylation.md`, including the
 no-enzyme control figure. Not a separate tutorial.
 
-byo session save/restore, linked views, and base-level sequence
+**`tutorials/rnaseq.md` still ends on a tour, and the finding it wanted went
+somewhere else.** The 2026-08 focus pass asked that page to end on something
+biologically interesting rather than "here is some stuff", and named
+differential isoform usage with transcript glyphs coloured by a pipeline's call
+as the strongest and most mechanically ready option. That option **shipped as
+its own page** — `tutorials/dtu.md` builds the GFF3 attribute from ENCODE ENTEx
+quantifications through satuRn and paints it with a `jexl:` callback. So the
+strongest candidate is spent, `rnaseq.md` closes on "Loading your own RNA-seq
+data", and it does not so much as link `dtu.md` from its See also. Either find a
+different finding for it or accept it as the tour and make the handoff to
+`dtu.md` explicit; do not re-propose the DTU one.
+
+**`tutorials/pangenome_hprc.md` carries both HPRC release 1 and release 2
+figures.** Splitting is optional and lowest priority, since the two releases are
+the same project.
+
+**Three bring-your-own examples nobody has written**, from a headless one-line
+note (`064dd09cca`): session save/restore, linked views, and base-level
+sequence. None of the eighteen pages under
+`products/jbrowse-build-your-own/examples-site/src/examples/` covers any of
+them. That site's arc is one page adds one thing, so each is a page rather than
+a section — see [lightweight-toolkit](lightweight-toolkit.md) for what the
+ceremony on each of those pages costs before deciding to add three more.

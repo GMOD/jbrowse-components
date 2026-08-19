@@ -1,17 +1,9 @@
 ---
 name: ui-ux
-description: Loose UI threads: the CSS Custom Highlight API for search text, height-resize gestures, a canvas offscreen buffer, super-compact mode, side labels for genes, global scrollZoom, init/loading feedback, and a search advanced panel whose surface was never decided.
+description: Loose UI threads: height-resize gestures, a canvas offscreen buffer, super-compact mode, side labels for genes, global scrollZoom, and a search advanced panel whose surface was never decided.
 ---
 
 # UI / UX
-
-**CSS Custom Highlight API for search text.** `HighlightText` in `FacetedSelector`
-manually splits strings and wraps matches in `<mark>` tags. The
-[CSS Custom Highlight API](https://developer.mozilla.org/en-US/docs/Web/API/Highlight)
-highlights `Range` objects without touching the DOM (no extra elements, no re-render on
-query change); jbrowse-desktop already uses it. Complication in the faceted selector:
-virtual rows mount/unmount on scroll, so ranges must be re-registered in a scroll-aware
-effect. Firefox ≥117, Chrome ≥105, Safari ≥17.2.
 
 **Height resize.** Double-click resize handle, drag to resize, prevent shrinking,
 auto-shrink toggle.
@@ -24,8 +16,6 @@ pans/zooms (like `plugins/sequence`).
 **Side labels for genes.** Gene-name labels in the left/right margin instead of inline.
 
 **Global scrollZoom.** Per-view → global setting.
-
-**Init/loading feedback.** Distinguish initialized vs loading state in LinearGenomeView.
 
 **A search advanced panel.** Carried over from a two-line `search-misc` note that
 said it "may need a pagefind inverted index". If that meant the *website* docs

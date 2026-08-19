@@ -22,17 +22,19 @@ gap from the same pass is tracked in TODO.md.
   getter" cleanly, and [ADR-041](../architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
   rules out the composition trick that would express it. Deferred; the default
   is fail-hung rather than fail-stale, which is the safe side.
-- **The chrome could own the container `height`.** Eleven displays pass
-  `style={{ height: model.height }}` to `DisplayChrome`, which already takes the
-  model and already supplies `position: relative` as a caller-overridable default
-  in the same object literal.
+- **The chrome could own the container `height`.** Four displays still pass
+  `style={{ height: model.height }}` to `DisplayChrome` (maf, multi-sample
+  variant, multi-row feature, basic feature), which already takes the model and
+  already supplies `position: relative` as a caller-overridable default in the
+  same object literal. It was eleven when this was written; the shrinkage is
+  other work happening to touch them, not this item being taken.
 
   Parked because **this is duplication, not drift** — every one is
   `model.height`, so unlike `canvasWidthPx` there is no second spelling to
   disagree later. The two that would newly *gain* a height are the two where the
   absence looks deliberate: alignments uses `minHeight: '100%'`, and arc's
   `DisplayStatusChrome` passes no style and sizes intrinsically. Do those two
-  first, with a browser check; the other nine are the easy part.
+  first, with a browser check; the rest are the easy part.
 
 ### One loose end from the bring-your-own chrome pass
 
