@@ -52,7 +52,7 @@ describe('computeVariantHitQuery genomicPos', () => {
 describe('computeVariantHitQuery row band clamps at the top', () => {
   test('a cursor in the first sub-pixel rows never asks for a negative row', () => {
     const { rowNearest, rowLowest } = computeVariantHitQuery(fwd, 0, 1, 0, 0.5)
-    expect(rowNearest).toBe(2)
+    expect(rowNearest).toBe(3)
     expect(rowLowest).toBe(0)
   })
 })
@@ -79,11 +79,11 @@ describe('computeVariantHitQuery row band', () => {
   })
 
   test('sub-pixel rows: one cursor pixel spans a band of many rows', () => {
-    // rowHeight 0.5 draws at the 2px minimum, so the drawn cells for rows 47..50
-    // all cover content-Y 25. Row 50 is the row the cursor is actually in and the
-    // last painted there, so it is tried first.
+    // rowHeight 0.5 draws at the 2px minimum, and pixel 25 was filled from its
+    // centre — 25.5 — so the drawn cells for rows 48..51 are the ones covering
+    // it. Row 51 is the last painted there, so it is tried first.
     const { rowNearest, rowLowest } = computeVariantHitQuery(fwd, 0, 25, 0, 0.5)
-    expect(rowNearest).toBe(50)
-    expect(rowLowest).toBe(47)
+    expect(rowNearest).toBe(51)
+    expect(rowLowest).toBe(48)
   })
 })

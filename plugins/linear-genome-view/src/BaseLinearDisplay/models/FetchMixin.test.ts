@@ -336,10 +336,12 @@ describe('FetchMixin: progress reporting', () => {
     expect(m.statusProgress).toBeCloseTo(0.2)
   })
 
-  // The regression this replaces a hand-called setter to catch: a finished
-  // region charged as still in flight made the bar run *backwards* as regions
-  // completed, 50/200 where the one region still working was at 50/100.
-  it("a region's phase clear drops it from the aggregate", () => {
+  // A region's phase clear means its work is DONE, so it is charged in full to
+  // both halves of the fraction. The two readings this is not: charged at its
+  // last in-flight number (50/200, no movement at all for work that completed),
+  // or dropped outright — which loses the denominator too, and is what made the
+  // bar run backwards as a batch landed.
+  it("a region's phase clear charges it as complete", () => {
     const { m, ctxs } = twoRegions()
     const [a, b] = ctxs
     a!.statusCallback({ message: 'Downloading', current: 50, total: 100 })
@@ -348,7 +350,7 @@ describe('FetchMixin: progress reporting', () => {
     expect(m.statusProgress).toBeCloseTo(0.25)
     step()
     b!.statusCallback('')
-    expect(m.statusProgress).toBeCloseTo(0.5)
+    expect(m.statusProgress).toBeCloseTo(0.75)
   })
 
   // A region reporting no total is still a region in flight, so it is charged
