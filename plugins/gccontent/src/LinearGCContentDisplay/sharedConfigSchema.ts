@@ -1,6 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
+import {
+  linearWiggleDisplayConfigSchema,
+  summaryScoreModeConfigSchemaFields,
+} from '@jbrowse/plugin-wiggle'
 
 // Deliberately carries no `#example` — the two concrete types do. `isBaseSchema`
 // in the doc generator reads "extended by others, not itself registered as a
@@ -48,23 +51,11 @@ export default function sharedGCContentConfigSchema() {
         model: types.enumeration('gcMode', ['content', 'skew']),
         defaultValue: 'content',
       },
-      /**
-       * #slot
-       * GCContentAdapter never emits real per-bin min/max, so the inherited
-       * 'whiskers' default has no summary to draw — it just forces posColor-only
-       * rendering (buildSourceRenderData skips the bicolor pos/neg split for
-       * whiskers) and hides negative GC-skew as if it were positive.
-       */
-      summaryScoreMode: {
-        type: 'stringEnum',
-        model: types.enumeration('Score type', [
-          'max',
-          'min',
-          'avg',
-          'whiskers',
-        ]),
-        defaultValue: 'avg',
-      },
+      ...summaryScoreModeConfigSchemaFields({
+        defaultMode: 'avg',
+        description:
+          "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces posColor-only rendering (buildSourceRenderData skips the bicolor pos/neg split for whiskers) and hides negative GC-skew as if it were positive",
+      }),
     },
     {
       /**

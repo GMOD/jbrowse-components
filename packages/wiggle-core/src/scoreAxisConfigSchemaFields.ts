@@ -27,12 +27,14 @@ export const scoreAxisConfigSchemaFields = {
       'Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning "unset, use autoscale"',
     advanced: true,
   },
+  // #region stringEnumSlot
   scaleType: {
     type: 'stringEnum',
     model: types.enumeration('Scale type', ['linear', 'log']),
     defaultValue: 'linear',
     description: 'Scale type (linear or log)',
   },
+  // #endregion
   autoscale: {
     type: 'stringEnum',
     model: types.enumeration('Autoscale type', [

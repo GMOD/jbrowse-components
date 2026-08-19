@@ -167,18 +167,17 @@ inherits the base's value and the slot is never unset. State
 `frozen` and `maybeFrozen` hold arbitrary JSON. The value is not deeply
 reactive, and reads are typed `any` — the shape is the caller's to assert.
 
-For enums, use `type: 'stringEnum'` and add a `model` field. The wiggle
-display's `summaryScoreMode` slot:
+For enums, use `type: 'stringEnum'` and add a `model` field. The score axis's
+`scaleType` slot:
 
-<!-- include: plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts#stringEnumSlot -->
+<!-- include: packages/wiggle-core/src/scoreAxisConfigSchemaFields.ts#stringEnumSlot -->
 
 ```ts
-summaryScoreMode: {
+scaleType: {
   type: 'stringEnum',
-  model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
-  description:
-    'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
-  defaultValue: 'whiskers',
+  model: types.enumeration('Scale type', ['linear', 'log']),
+  defaultValue: 'linear',
+  description: 'Scale type (linear or log)',
 },
 ```
 

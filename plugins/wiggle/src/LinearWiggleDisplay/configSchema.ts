@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { colorImpliesSolid } from '../shared/colorImpliesSolid.ts'
 import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
+import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
 
@@ -118,18 +119,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       description: 'Draw only the min/max Y-axis ticks',
       advanced: true,
     },
-    /**
-     * #slot
-     */
-    // #region stringEnumSlot
-    summaryScoreMode: {
-      type: 'stringEnum',
-      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
-      description:
-        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
-      defaultValue: 'whiskers',
-    },
-    // #endregion
+    ...summaryScoreModeConfigSchemaFields({ defaultMode: 'whiskers' }),
   },
   {
     explicitlyTyped: true,

@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
 
 import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
+import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { MULTI_WIGGLE_RENDERING_TYPES } from '../util.ts'
 
@@ -111,16 +112,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: 200,
       description: 'Default height of the track',
     },
-    /**
-     * #slot
-     */
-    summaryScoreMode: {
-      type: 'stringEnum',
-      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
-      description:
-        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
-      defaultValue: 'avg',
-    },
+    ...summaryScoreModeConfigSchemaFields({ defaultMode: 'avg' }),
     /**
      * #slot
      * Default rendering type. Multi-row modes (`multirowxy`, `multirowdensity`,
