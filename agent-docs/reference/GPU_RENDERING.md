@@ -1139,10 +1139,10 @@ Layout: display-specific shaders in
 `plugins/<plugin>/src/<display>/shaders/<name>.slang`; per-plugin shared in
 `plugins/<plugin>/src/shared/shaders/`; cross-plugin modules in
 `packages/render-core/src/shaders/` — the atoms (`hpmath.slang`,
-`colorPack.slang`) plus the shared *shapes* two or more plugins draw
-identically (`pointGlyph.slang` disc/square markers, `diagonalGrid.slang` the
-45°-rotated Hi-C / LD cell transform, `rowRect.slang` the MAF / multi-row
-colored-row rectangle). A shape module earns its place on the `pointGlyph` bar —
+`antialias.slang`, `colorPack.slang`) plus the shared *shapes* two or more
+plugins draw identically (`pointGlyph.slang` disc/square markers,
+`diagonalGrid.slang` the 45°-rotated Hi-C / LD cell transform, `rowRect.slang`
+the MAF / multi-row colored-row rectangle). A shape module earns its place on the `pointGlyph` bar —
 two real consumers with a live drift hazard — not on surface similarity; see
 [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md).
 `slangPass()` turns a generated module into a `PipelineDescriptor`, with overrides for
@@ -1190,32 +1190,49 @@ backend path; standalone overlay components must replicate it.
 
 ## Antialiasing ramps: how wide, and where the width comes from
 
-Four shaders were fixed for one bug — synteny, dotplot, the point glyphs, hi-C —
-and it is the same bug every time: **an AA ramp whose width was measured with
-`fwidth`, and/or whose geometry had no room for it.**
+**`packages/render-core/src/shaders/antialias.slang` is the rule.** It holds
+both ramp widths, both ramp shapes and `glyphEdgeAlpha`, and its header says
+which width a shader gets to use. What follows is why there is a module at all.
+
+Five shaders were fixed for one bug — synteny, dotplot, the point glyphs, hi-C,
+and chevron — and it is the same bug every time: **an AA ramp whose width was
+measured with `fwidth`, and/or whose geometry had no room for it.**
 
 `fwidth` is `|ddx| + |ddy|`, which overshoots a true gradient by up to √2, worst
 on diagonals, which is what these marks are made of. Where it was *also* the
 smoothstep's half-width, the ramp came out 2–2.83 output pixels instead of 1.
 
+The first four were each found by someone looking at the mark. Chevron was found
+by asking which shaders still called `fwidth` after the fourth, which is the
+sweep worth repeating: its arms run at exactly 45°, so it took the full √2, and
+nobody had reported it because a too-wide LINEAR ramp does not thicken a mark —
+it dilutes it. The half-max contour does not move. That is the failure mode to
+look for, not a fat line.
+
 The right width depends on what the SDF is measured in, and the three cases are
 genuinely different:
 
 - **Distance already in pixels** (synteny `perpCoverage`, the dotplot capsule):
-  `|∇d| = 1`, so the half-width is the constant `0.5/dpr` and there is nothing to
+  `|∇d| = 1`, so the half-width is `aaHalfPx(dpr)` and there is nothing to
   differentiate. Needs a `devicePixelRatio` uniform.
-- **SDF in quad-local units** (`pointGlyph`, manhattan): the conversion to pixels
-  *is* the gradient, and it differs per shape — the disc and triangle carry unit
-  gradients, the diamond's L1 norm carries √2. Must be measured, as
-  `length(ddx, ddy)`, taken as the **full** width.
+- **Not a perpendicular distance in known units** — an SDF in quad-local units
+  whose scale differs per shape (`pointGlyph`, manhattan: the disc and triangle
+  carry unit gradients, the diamond's L1 norm carries √2), or a varying carrying
+  a foreshortening the shader cannot state (chevron's vertical `dist`). Must be
+  measured, as `aaGradient`, taken as the **full** width. This is also the only
+  option for a shader with no `devicePixelRatio` uniform, which is why wiggle's
+  capsule and chevron both measure.
 - **Tiled cells** (hi-C bins): no per-quad AA at all, deliberately. Bins share
   exact edges after a linear transform, and antialiasing them individually
   produces seams.
 
-`wiggle.slang`'s capsule already had this right, in a comment that names synteny.
+The tree runs both ramp SHAPES, and `antialias.slang` does not pick between
+them: `aaRamp` is linear, which is what a box filter — and so Canvas2D —
+produces on a straight edge; `aaSmoothRamp` is cubic and reads softer on a
+curve. Switching one is a visual change, not a cleanup.
 
 **A ramp needs geometry to live in.** Widening one without padding the quad
-clips it: the dotplot capsule quad is now `halfWidth + aaHalf` on both axes, with
+clips it: the dotplot capsule quad is now `halfWidth + aaHalfPx` on both axes, with
 a `discard` for the fragments the pad introduces. The tests for this
 (`shaders/dotplotCapsulePad.test.ts`, `shaders/glyphEdgeAlpha.test.ts`, and the
 pre-existing `syntenyFillPad.test.ts`) mirror the shader in TS and assert the
