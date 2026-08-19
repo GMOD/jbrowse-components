@@ -357,8 +357,9 @@ A concept shared by convention decays silently, since nothing renders both
 versions side by side. Alignment with the chrome should cost a display a prop,
 not a copy.
 
-Arc's fetch autorun is `error`-gated, so its `reload()` clears `error` to re-fire
-it. Without that override the shared error bar's retry would be dead.
+Arc's fetch autorun declines while its data is current, so `reload()` drops
+`loadedRegionSignature` as well as clearing `error`. Without that override the
+shared error bar's retry would be dead.
 
 ## The retry contract
 
@@ -367,8 +368,8 @@ it.** `DisplayErrorBar`'s only action is `model.reload()`, so every state that
 can raise the error bar must be one `reload()` actually undoes — otherwise the
 button is present, looks live, and does nothing. Two shapes have failed it:
 
-- **A gate `reload()` doesn't clear.** Arc, above: `shouldFetch` is
-  `!dataCurrent`, so the base `reload()`'s `reloadCounter` bump refires the
+- **A gate `reload()` doesn't clear.** Arc, above: its `prepare` declines while
+  `dataCurrent`, so the base `reload()`'s `reloadCounter` bump refires the
   autorun into a no-op until `loadedRegionSignature` is dropped too.
 - **Work `reload()` never re-runs.** HiC's normalization/binsize header read was
   a bare `afterAttach` IIFE, so a retry cleared the error and dropped straight
@@ -423,13 +424,16 @@ costs at the one call site: HiC's predicate is `!hasResolutions` and its gate is
 is what both read — so every HiC decline defers and the report is unreachable for
 that display. There is nothing narrower to say — the gate and the
 prerequisite are one condition there — so HiC's retry is pinned by
-`LinearHicDisplay/infoFetchFailure.test.ts` and not by this check. A display whose
-predicate is strictly narrower than `!shouldFetch` keeps the coverage; one that
-restates the gate has opted out, and should say which test covers it instead.
+`LinearHicDisplay/infoFetchFailure.test.ts` and not by this check. A display
+whose predicate is strictly narrower than the decline its own gate can produce
+keeps the coverage; one that restates the gate has opted out, and should say
+which test covers it instead.
 
 **The two families classify a run differently, and only that part is per
-family.** The global one asks its `shouldFetch()`, which returns a boolean. The
-per-region one has no such boolean: its gate is block coverage — a `reload()`
+family.** The global one reads what `prepare()` returned — `runGlobalFetch`
+answers `undefined` exactly when the display declined — so the classification is
+a return value rather than a second call to the gate. The per-region one has no
+such answer: its gate is block coverage — a `reload()`
 that invalidates nothing leaves `needed` empty — plus a `fetchNeeded` override
 that can decline inside an async body whose return value says nothing. So the
 foundation watches the fetch instead: `FetchMixin.runFetch` is where every fetch
@@ -466,9 +470,9 @@ compose, and the check reads them off the node. That is the same argument the
 `loadingSuppressed` docstring makes about its own home, and `awaitingPrerequisite`
 briefly ignored it: it shipped as an `installGlobalFetchAutorun` option on one
 side and a `MultiRegionDisplayMixin` getter on the other, which is one concept in
-two spellings and a third surface on the check's own signature. `shouldFetch` and
-`fetch` stay options because they really are autorun wiring; these two describe
-the display.
+two spellings and a third surface on the check's own signature. The three fetch
+phases stay options because they really are what the autorun runs; these two
+describe the display.
 
 Two neighbours were converged on the same rule at the same time, because the
 families had drifted into saying one thing two ways:

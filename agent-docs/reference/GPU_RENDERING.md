@@ -671,13 +671,11 @@ its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixi
 `linearWiggleDisplayConfigSchema` as its `baseConfiguration`. It ships its own
 `GetManhattanData` RPC (per-feature points, not pre-binned density), implements
 its own `ManhattanRenderingBackend` with its own pass, and is zoom-independent:
-it overrides `isCacheValid` to a bare `return true` rather than relying on the
-inherited strict-`bpPerPx` version short-circuiting on an unset `loadedBpPerPx`,
-which would quietly make "never call `setLoadedBpPerPx`" a precondition of
-correct caching. (The first fetch still fires: `FetchVisibleRegions` gates it on
-`isBlockCovered` — empty `loadedRegions` ⇒ not covered ⇒ fetch — and only
-consults `isCacheValid` for covered blocks, so an always-`true` `isCacheValid`
-suppresses only *re*-fetches.)
+it overrides neither per-region cache hook, so it sits on the empty
+`regionFetchKey` and no zoom invalidates a region it has loaded. That falls out
+of which mixin it composes rather than needing a statement of its own — the
+strict-`bpPerPx` rule is `WiggleCommonMixin`'s, and Manhattan composes only the
+score config `WiggleCommonMixin` itself sits on top of.
 
 ### Upload patterns
 
@@ -1438,16 +1436,21 @@ does the Canvas2D-only version); keep them in step with any change here.
     in `RenderLifecycleMixin`, `FetchMixin`, `RegionTooLargeMixin`, the five fetch
     autoruns, and `rpcProps()`→refetch wiring).
   - Compose `GlobalDataDisplayMixin()` for displays that hold a single
-    non-regional dataset (HiC contact matrix, LD triangle, variant matrix). Same
-    slot mixin + `FetchMixin` + `RegionTooLargeMixin` plumbing, but **no** fetch
-    autoruns — the display installs its own in `afterAttach` via
-    `installGlobalFetchAutorun(self, { shouldFetch, fetch, delay, name })`. The
-    helper owns the skeleton every global trigger shares (skip while minimized or
-    with no content blocks; track `rpcProps()` + `reloadCounter`; run through
-    `autorunOnReadyView`; debounce); the display supplies only its `shouldFetch`
-    gate (a pure predicate reading its display-specific fetch inputs so MobX tracks
-    them — e.g. HiC `effectiveResolution !== undefined`; LD `showLDTriangle &&
-    !regionTooLarge`) and its `fetch` action.
+    non-regional dataset (HiC contact matrix, LD triangle; arc reaches the same
+    autorun over the bare `GlobalFetchMixin`). Same slot mixin + `FetchMixin` +
+    `RegionTooLargeMixin` plumbing, but **no** fetch autoruns — the display
+    installs its own in `afterAttach` via
+    `installGlobalFetchAutorun(self, { prepare, run, commit, delay, name })`.
+    The helper owns the skeleton every global trigger shares (read the viewport,
+    `isMinimized`, `rpcProps()` and `reloadCounter` unconditionally; skip a
+    viewport the byte gate already measured; run through `autorunOnReadyView`;
+    debounce); the display supplies the three phases. `prepare` runs
+    synchronously in the autorun and returning `undefined` from it is the
+    display's gate, so what it read to decline stays tracked (HiC declines until
+    `effectiveResolution` lands, LD while `showLDTriangle` is off); `run` owns
+    every await and writes nothing; `commit` writes while the fetch is still
+    current. `runGlobalFetch(self, phases)` is that body without the trigger,
+    for a caller wanting one round trip on demand.
   - Compose `RenderLifecycleMixin()` directly only when neither fetch surface is
     needed (rare).
   - Add a cached `renderState` view.
@@ -1477,7 +1480,9 @@ does the Canvas2D-only version); keep them in step with any change here.
   `linearWiggleDisplayModelFactory` from `@jbrowse/plugin-wiggle` (see
   `plugins/gccontent`). To borrow only the score machinery, compose
   `WiggleScoreConfigMixin` + `makeScoreSubMenu` (see `plugins/gwas` Manhattan).
-  Implement `WiggleRenderingBackend` (typed from `@jbrowse/wiggle-core`); override
-  `isCacheValid` to `() => true` if the display is zoom-independent.
+  Implement `WiggleRenderingBackend` (typed from `@jbrowse/wiggle-core`). A
+  zoom-independent display needs no cache override: the strict-`bpPerPx`
+  `regionFetchKey` rides on `WiggleCommonMixin`, so composing the score config
+  alone inherits no rule about what a fetch returns.
 - **Tests** — unit (`MockHal`); browser (Puppeteer,
   `--backend=webgl|webgpu|canvas2d`).

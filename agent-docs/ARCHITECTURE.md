@@ -602,7 +602,7 @@ inheritors in a composer table.
 
 What that inheritance *does* demand is checking what you got: the hooks come with
 it, and what you inherit may not be the mixin's default. GC-content inherits
-wiggle's strict-`bpPerPx` `isCacheValid`; whether that is right for a new
+wiggle's strict-`bpPerPx` `regionFetchKey`; whether that is right for a new
 subclass is a question the tag table can't answer for you (see "Per-region
 zoom-staleness").
 
@@ -702,15 +702,21 @@ connector to an off-screen position.
 `installGlobalFetchAutorun` reads the viewport, `isMinimized`, the
 `rpcProps()` cache key (a `computed`, for the reason in "the cache key is the
 return value, not the reads") and `reloadCounter` at the top of its body,
-*before* the display's `shouldFetch()`
-gate, and that ordering is load-bearing. MobX rebuilds the dependency set on
-every run, so a read placed inside the gate drops out of it on any run that
-decides not to fetch — and can then never wake the autorun again. Arc is the
-shape that exposes this: its `shouldFetch` is `!dataCurrent`, so it goes false on
-every successful fetch, and with `reloadCounter` read under the gate `reload()`
-was silently dead. The display's own `shouldFetch` is the
-only gate in the skeleton; each display's `fetch` re-checks `isMinimized` /
-`view.initialized` / an empty viewport for its direct callers.
+*before* the display's `prepare()`, and that ordering is load-bearing. MobX
+rebuilds the dependency set on every run, so a read placed inside the gate drops
+out of it on any run that decides not to fetch — and can then never wake the
+autorun again. Arc is the shape that exposes this: its `prepare` declines while
+`dataCurrent`, which goes true on every successful fetch, so with
+`reloadCounter` read under the gate `reload()` was silently dead.
+
+**`prepare` returning `undefined` is the display's gate**, and it is one
+function rather than a predicate plus a bail-out prefix inside the fetch — the
+two used to answer the same question in two places, one of them tracked and one
+not. It runs synchronously in the autorun body, so whatever it read to decline
+stays in the dependency set and the autorun rewakes on it; and it runs under
+`autorunOnReadyView`, so a `prepare` restating `view.initialized` is restating
+the skeleton. What it must not do is move a trigger read of its own under a
+bail-out, which is the failure this section exists for.
 
 The general rule, which the other fetch autoruns already satisfy: **a gated
 trigger read is safe only if the gate is itself an observable that flips on the
@@ -721,9 +727,9 @@ un-minimizing re-runs the body and re-reads everything. A pure signal like
 is the dangerous case: nothing else will ever re-run the body on its behalf.
 `installGlobalFetchAutorun.test.ts` pins this.
 
-A global display whose `shouldFetch` gates on its own `dataCurrent` must also
+A global display whose `prepare` gates on its own `dataCurrent` must also
 invalidate that freshness signal in `reload()` — bumping `reloadCounter` alone
-re-runs the autorun but leaves `shouldFetch` false. `ArcFetchModel.reload()`
+re-runs the autorun but leaves `prepare` declining. `ArcFetchModel.reload()`
 clears `loadedRegionSignature` for exactly this reason (keeping `features`, so
 the stale arcs stay under the loading overlay instead of blanking).
 
@@ -1020,7 +1026,7 @@ and model-scoped clip ids — is in
 must be terminal.** A correct `dataCurrent` says whether held data is current; it
 cannot say whether data will ever arrive. So read a display's fetch gate and ask
 what leaves it false indefinitely — a user toggle inside it (LD's
-`showLDTriangle`), an unmet prerequisite (HiC's `shouldFetch` needs an
+`showLDTriangle`), an unmet prerequisite (HiC's `prepare` needs an
 `effectiveResolution`, which `CoreGetInfo` supplies), a static "zoom in" mode
 (sequence). Each such state has to reach `svgReady` through `error`,
 `regionTooLarge`, or `svgReadyExtraTerminal`, or one track hangs the whole
@@ -1061,15 +1067,19 @@ Domain-named methods that enumerate **what affects rendering output**. Both are
 MST view methods (not getters), so subclasses extend them via the standard
 `super` capture pattern spelled out below.
 
-**`rpcProps` and `isCacheValid` must live in `.views()`, never `.actions()`.**
-MobX runs an action inside `untracked`, so declaring either as an action makes
-its reads register no dependency and every caller silently keeps a stale answer
-— no error, no crash, and it has regressed twice. That is what
-`assertDisplayContract` checks: dev-only, and `console.error` rather than
-`throw` (an error escaping `afterAttach` reads as an invalid track and the
-display is dropped, hiding the very violation it reports). It also catches a
-display that wrongly chains to `super` in its own `afterAttach`, which re-enters
-the mixin's hook and installs the fetch autoruns twice.
+**The method-shaped fetch hooks must live in `.views()`, never `.actions()`.**
+MobX runs an action inside `untracked`, so declaring `rpcProps` or
+`regionHasData` as an action makes its reads register no dependency and every
+caller silently keeps a stale answer — no error, no crash, and it has regressed
+twice. That is what `assertDisplayContract` checks: dev-only, and
+`console.error` rather than `throw` (an error escaping `afterAttach` reads as an
+invalid track and the display is dropped, hiding the very violation it reports).
+Its list still carries `isCacheValid`, which nothing in tree overrides now the
+mixin computes it, for an out-of-tree display that shadows it through `compose`.
+`regionFetchKey` needs no entry: MST throws on a getter declared inside
+`.actions()`, so only the method-shaped hooks can regress this way. The check
+also catches a display that wrongly chains to `super` in its own `afterAttach`,
+which re-enters the mixin's hook and installs the fetch autoruns twice.
 
 **All three fetch families call it**, once per display, from whichever installed
 that display's autoruns: `installPerRegionFetchAutoruns` for the per-region
@@ -1348,46 +1358,78 @@ canvas display puts in `rpcProps()` so worker-baked colors honor the config
 ## Per-region zoom-staleness
 
 All worker position output is **absolute genomic uint32**, so data stays valid
-under zoom. The exceptions are for zoom-dependent *content*, not coords:
+under zoom. The exceptions are for zoom-dependent *content*, not coords.
 
-- **Wiggle**: BigWig has discrete zoom levels; the worker picks one based on
-  `bpPerPx / resolution`. `isCacheValid` uses strict equality (`view.bpPerPx ===
-  loadedBpPerPx`) — any zoom change refetches all visible regions together. See
+No display writes the cache predicate. `MultiRegionDisplayMixin` computes
+`isCacheValid(idx)` from two terms: `regionHasData(idx)`, and whether the fetch
+key stamped on that region still equals `regionFetchKey`. `FetchVisibleRegions`
+calls it per region and refetches the ones that fail. A display states its rule
+as those two hooks, which are two different questions:
+
+- **`regionFetchKey`** (default `''`) — what a fetch issued *right now* would
+  produce, as a string. `fetchRegions` reads it in its synchronous prefix,
+  before the RPC goes out, and stamps that value beside the loaded region; a
+  region whose stamp no longer matches is stale.
+- **`regionHasData(idx)`** (default `true`) — whether the last fetch stored
+  anything. `fetchRegions` marks a region loaded even where the byte gate
+  refused it, so a display holding a per-region data map answers off that map.
+
+Keeping them apart is what lets a display say "the data is fine, it just isn't
+here" without inventing a key value for absence — a key that changed when data
+arrived would be the `rpcProps()` loop in different clothes.
+
+**Three declarations key on zoom:**
+
+- **Wiggle**: BigWig has discrete zoom levels; the worker picks one from
+  `bpPerPx / resolution`, so the key is `String(view.bpPerPx)` and any zoom
+  change refetches all visible regions together. See
   [ADR-008](architecture-decision-records/adr-008-wiggle-strict-bpperpx-equality.md).
-- **Canvas**: the amino-acid overlay is the only `bpPerPx`-dependent worker
-  decision. `isCacheValid` returns `false` when `rpcDataMap` has no entry for the
-  region, and otherwise refetches only when the viewport crosses
-  `shouldRenderPeptideBackground`'s discrete threshold. `laidOutDataMap` uses
-  `coarseBpPerPx` (debounced 500ms) so Y-row packing doesn't recompute on every
-  animation frame during smooth zoom.
+  It sits on `WiggleCommonMixin`, the wiggle-shaped-*fetch* mixin, rather than
+  on the `WiggleScoreConfigMixin` that mixin composes: the rule is about what a
+  fetch returns, and `LinearManhattanDisplay` composes the score config alone
+  while fetching untransformed SNPs.
+- **Canvas** (`LinearBasicDisplay`): the amino-acid overlay is the only
+  `bpPerPx`-dependent worker decision, so the key is that discrete threshold —
+  `String(shouldRenderPeptideBackground(view.bpPerPx))` — and every other zoom
+  change reuses the cached features. `laidOutDataMap` uses `coarseBpPerPx`
+  (debounced 500ms) so Y-row packing doesn't recompute on every animation frame
+  during smooth zoom.
+- **Multi-sample variant matrix**: columns lay out by feature index across the
+  visible width, so which features show is a function of the current zoom even
+  when the viewport stays spatially inside loaded data. The key is
+  `cellDataMode === 'matrix' ? String(bpPerPx) : ''` — wiggle's rule in matrix
+  mode only, since the *regular* variant display draws each variant at its
+  genomic position.
+
+**Three answer presence instead**, and the last of them is the zoom case that
+looks most like a key:
+
+- `LinearMultiRowFeatureDisplay` and canvas both return `rpcDataMap.has(idx)`,
+  so a too-large region — marked loaded, holding no data — refetches the moment
+  the gate releases.
 - **MAF**: zoom picks *which fetch runs*, not a resolution — zoomed out with a
   configured summary adapter it pulls cheap per-species summary rows, zoomed in
   the full alignment. Crossing that threshold inside an already-loaded region
-  wouldn't move the region bounds, so `isCacheValid` keys on which map holds the
-  region (`summaryDataMap` vs `rpcDataMap`).
-- **Multi-sample variant matrix**: columns lay out by feature index across the
-  visible width, so which features show is a function of the current zoom even
-  when the viewport stays spatially inside loaded data. Strict `bpPerPx`
-  equality, same rule as wiggle. The *regular* variant display draws each variant
-  at its genomic position and keeps the default.
+  wouldn't move the region bounds, so MAF keeps the empty key and answers
+  `showSummary ? summaryDataMap.has(idx) : rpcDataMap.has(idx)`.
 
-Those are the only four *zoom*-dependent overrides. The rest fall into two other
-shapes:
+  A `summary`/`detail` *key* would be a regression rather than a tidier
+  spelling of the same thing. The two tiers cache side by side:
+  `clearAlignmentData` runs one way only, so a detail fetch keeps the summary
+  records and zooming back out reuses them. Under a tier key the stamp reads
+  `detail`, every zoom-out reads as stale, and the byte-gated summary adapter is
+  re-read each time. `LinearMafDisplay/summaryTierSwap.test.ts` pins both
+  directions. Worth stating once, since the shape recurs: **"which map holds it"
+  is a presence question, not a staleness one.**
 
-- **Presence alone.** `LinearMultiRowFeatureDisplay` returns
-  `rpcDataMap.has(idx)`, so a too-large region — marked loaded but holding no
-  data — refetches the moment the gate releases. Canvas folds the same
-  presence test in ahead of its peptide-threshold compare.
-- **Overriding back to `true`.** `isCacheValid` is inherited, so a display that
-  composes a *wiggle* mixin inherits wiggle's strict-`bpPerPx` version whether or
-  not its data is zoom-dependent. `LinearManhattanDisplay` is 1:1 with its SNPs
-  and doesn't downsample, so it states `return true` outright rather than relying
-  on that version short-circuiting on an unset `loadedBpPerPx` — which quietly
-  made "never call `setLoadedBpPerPx`" a precondition of correct caching. Check
-  what you inherit before leaving the hook alone.
-
-`MultiRegionDisplayMixin`'s `FetchVisibleRegions` autorun calls the override per
-region and refetches stale ones.
+**`regionFetchKey` is a getter, so MST makes it a computed.** That is the point
+— the observables it reads join `FetchVisibleRegions`' dependency set, where an
+action's reads would be untracked and the autorun would keep a stale answer. The
+cost runs the other way: a key that reads anything *non*-observable is memoized
+for the display's life and never invalidates, so the display caches its first
+fetch forever and nothing refetches it. It caught the foundation's own test
+harness first, where the knob behind the key had to become a volatile rather
+than a closure value (`perRegionTestEnv.ts`).
 
 ## What not to do
 
@@ -1437,10 +1479,10 @@ and 12 lines — and both have since been given the sections they wanted.
 - Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
   `rpcProps()`; it is an infinite fetch loop. See
   [the trap](#rpcprops-loop-trap-and-how-to-break-it).
-- Don't declare `rpcProps` or `isCacheValid` in `.actions()`. MST runs an action
-  `untracked`, so their reads register no dependency and callers silently keep a
-  stale answer; `assertDisplayContract` `console.error`s on it in dev. See
-  [the pattern](#rpcprops--gpuprops-pattern).
+- Don't declare `rpcProps` or `regionHasData` in `.actions()`. MST runs an
+  action `untracked`, so their reads register no dependency and callers silently
+  keep a stale answer; `assertDisplayContract` `console.error`s on it in dev.
+  See [the pattern](#rpcprops--gpuprops-pattern).
 - Don't put a pure "go again" signal under a fetch gate. `reloadCounter` and
   friends must be read unconditionally, above the bail-outs — a read inside the
   gate drops out of the dependency set on the run that declines, and nothing
@@ -1480,10 +1522,14 @@ and 12 lines — and both have since been given the sections they wanted.
   real work — but the order is a permutation the main thread applies for free,
   and sent unsorted it re-enters the cache key anyway. See [row
   order](#row-order-is-not-a-fetch-input).
-- Don't leave `isCacheValid` alone without checking what you inherit. A display
-  composing a wiggle mixin gets wiggle's strict-`bpPerPx` version whether or not
-  its data is zoom-dependent. See
-  [per-region zoom-staleness](#per-region-zoom-staleness), and [the hook
+- Don't write a `regionFetchKey` that reads no observable. The hook is a getter,
+  so MST makes it a computed, and a key over non-observable state is memoized
+  for the display's life — the first fetch is cached forever and nothing
+  refetches it. See [per-region zoom-staleness](#per-region-zoom-staleness).
+- Don't answer "which map holds this region" with `regionFetchKey`. Presence is
+  `regionHasData`; a key spelling it reads as stale the moment the display swaps
+  tiers, and refetches the tier it already holds. See [per-region
+  zoom-staleness](#per-region-zoom-staleness), and [the hook
   table](#the-hooks-and-who-is-sitting-on-a-default) for what every other
   unoverridden hook leaves you with.
 

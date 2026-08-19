@@ -205,7 +205,7 @@ means deciding whether `FetchVisibleRegions` re-running off the released
 copying either onto the other.
 
 Losing a budget swing as an invalidation trigger loses no protection. A region
-the worker rejected stores nothing, so `isCacheValid` is already false and it
+the worker rejected stores nothing, so `regionHasData` is already false and it
 refetches once the gate releases. Zooming back *out* re-gates from the live
 main-thread verdict, since `densityStatsPerRegion` is committed on every
 successful fetch regardless of budget and the byte estimate survives a no-budget
@@ -565,15 +565,16 @@ byte-only gating.
 
 A display opts in by composing the mixin, calling `commitGateMeasurements` from
 its fetch (with the `visibleBp` captured *before* the fetch), and overriding
-`isCacheValid` to require committed data. That last part matters because a
-too-large region is marked loaded but stores nothing, so without the override it
-would never refetch once the gate released. The mixin's own `afterAttach` clears
-stale stats on chromosome navigation, so a composing display can't forget it and
-mis-gate a reused `displayedRegionIndex`.
+`regionHasData` to answer off the map that fetch fills. That last part matters
+because a too-large region is marked loaded but stores nothing, so without the
+override it would never refetch once the gate released. The mixin's own
+`afterAttach` clears stale stats on chromosome navigation, so a composing
+display can't forget it and mis-gate a reused `displayedRegionIndex`.
 `baseModel` keeps only what is genuinely its own: the per-region
 `RenderFeatureData` fetch and `applyFetchResults`, its peptide-aware
-`isCacheValid`, and `pruneRpcDataMapToVisible`, which trims
-`densityStatsPerRegion` alongside `rpcDataMap`.
+`regionFetchKey` and the `regionHasData` beside it, and
+`pruneRpcDataMapToVisible`, which trims `densityStatsPerRegion` alongside
+`rpcDataMap`.
 
 While `regionTooLarge` holds, `laidOutDataMap` returns empty, so the GPU upload
 pushes nothing and there's no stale-feature flash.

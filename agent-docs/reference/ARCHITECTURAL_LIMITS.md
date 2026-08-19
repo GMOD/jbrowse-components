@@ -879,11 +879,12 @@ only on a real violation):
   lifecycle hooks, so capturing and calling it double-installs all five autoruns
   (`models/afterAttachAutoChain.test.ts`). A `WeakSet` of nodes the foundation's
   hook has already run on catches the re-entry.
-- **`isCacheValid` / `rpcProps` must be `.views()`, not `.actions()`.** MobX runs
-  actions untracked, so the reads register no dependency and callers keep a stale
-  answer. Was a hand-copied `getMembers(display).actions` assertion per display
-  family; now checked once for every display that composes the foundation,
-  including ones not yet written.
+- **`rpcProps` / `regionHasData` must be `.views()`, not `.actions()`.** MobX
+  runs actions untracked, so the reads register no dependency and callers keep a
+  stale answer. Was a hand-copied `getMembers(display).actions` assertion per
+  display family; now checked once for every display that composes the
+  foundation, including ones not yet written. `regionFetchKey` is spared by
+  being a getter — MST throws on one declared inside `.actions()`.
 - **`HeightModeMixin()` must compose after `TrackHeightMixin()`**, whose `height`
   and `resizeHeight` it overrides, so the wrong order silently leaves grow mode
   inert. This looked uncheckable — both members are legitimately defined on both
@@ -922,13 +923,15 @@ only on a real violation):
   list must be read unconditionally"). This one is a *shape*, not a state, so no
   attach-time read can see it.
 
-  **Narrower than it reads.** `installGlobalFetchAutorun` reads all four of its
-  triggers itself and calls `shouldFetch()` on every run, so everything the
-  display's gate reads is tracked even on the run that declines — HiC's
-  `effectiveResolution` looks like a counterexample and is not, since the gate
-  expression reads it. What is exposed is `installComparativeFetchAutorun`, whose
-  `prepare()` may `return undefined` above its own reads; held today only by the
-  convention that whatever it bails on is itself observable.
+  **Narrower than it reads, and now the same shape in both families.** Each
+  installer reads its own trigger list unconditionally above the display's
+  `prepare()` — four of them for `installGlobalFetchAutorun` (viewport,
+  `isMinimized`, the `rpcProps()` key, `reloadCounter`), `reloadCounter` alone
+  for `installComparativeFetchAutorun` — so what is exposed is a `prepare` that
+  returns `undefined` above a read only it makes. HiC's `effectiveResolution`
+  looks like that and is not: its `prepare` reads it before deciding. The rest
+  is held by convention — every in-tree `prepare` bails on something the
+  skeleton already tracks, or on an observable of its own that it read first.
 - **An `installPerRegionLifecycle` `encode` must read a narrow inputs getter,
   never `renderState`.** The encode body runs inside the per-key autorun, so
   every observable it touches re-encodes *every* region — and a `renderState`

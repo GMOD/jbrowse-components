@@ -6,9 +6,9 @@
 
 The composition and fetch rules a display must not break are in
 `agent-docs/ARCHITECTURE.md` ("What not to do"): mixin order, `afterAttach`
-super-chaining, `rpcProps`/`isCacheValid` in `.actions()`, the `rpcProps()` loop
-trap, picking the payload out of a snapshot, unconditional trigger reads. What
-follows is local.
+super-chaining, `rpcProps`/`regionHasData` in `.actions()`, the `rpcProps()`
+loop trap, picking the payload out of a snapshot, unconditional trigger reads.
+What follows is local.
 
 ## Attach
 
@@ -20,16 +20,18 @@ follows is local.
 
 ## Contract checks
 
-`assertDisplayContract` covers the two method-shaped hooks in dev.
-`makeRetryContractCheck` is the same idea for retry: it reports when a
-`reloadCounter` bump re-runs the autorun and the gate still declines — the dead
-Retry button. Both foundations install it. Opt out with `loadingSuppressed` if
-the display deliberately isn't fetching. A two-stage `reload()` says
-`awaitingPrerequisite` instead (HiC, whose contacts fetch declines until the
-header lands; variants, until `sourcesBase` does), which **defers** the verdict
-to the run after the prerequisite arrives rather than waiving it. Reports reach
-the jest gate through `console.error`, so a harness replacing it opts itself
-out; a test provoking a violation calls `takeDisplayContractReports()`.
+`assertDisplayContract` covers the three method-shaped hooks in dev;
+`regionFetchKey` needs no entry, because MST throws on a getter declared inside
+`.actions()`. `makeRetryContractCheck` is the same idea for retry: it reports
+when a `reloadCounter` bump re-runs the autorun and the gate still declines —
+the dead Retry button. Both foundations install it. Opt out with
+`loadingSuppressed` if the display deliberately isn't fetching. A two-stage
+`reload()` says `awaitingPrerequisite` instead (HiC, whose contacts fetch
+declines until the header lands; variants, until `sourcesBase` does), which
+**defers** the verdict to the run after the prerequisite arrives rather than
+waiving it. Reports reach the jest gate through `console.error`, so a harness
+replacing it opts itself out; a test provoking a violation calls
+`takeDisplayContractReports()`.
 
 Both flags are getters on `FetchMixin`, declared once for all three foundations
 and read off the node — not options either foundation passes in, because they

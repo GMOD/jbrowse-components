@@ -14,8 +14,9 @@ not, and the exception in both cases is the same pair of displays:
 | Pan and zoom are a redraw, not a refetch | **not HiC, not LD** — every pan refetches |
 
 HiC sends `viewBlocks` (`calcViewBlocks(contentBlocks, offsetPx)`) plus
-`bpPerPx`, and records `setLastDrawnViewport(offsetPx, bpPerPx)` after
-committing (`plugins/hic/src/LinearHicDisplay/model.ts`). Its worker output is,
+`bpPerPx`, and hands `commitDrawnViewport` the `captureViewport()` snapshot its
+`prepare` took, after committing
+(`plugins/hic/src/LinearHicDisplay/model.ts`). Its worker output is,
 in `renderTransform.ts`' own words, "fetch-time pixel space relative to the
 first visible block's start". LD is the same shape.
 
@@ -53,7 +54,7 @@ the matrix.
 
 **Can the binsize decision stay viewport-derived while the coordinates go
 absolute?** It reads `effectiveResolution`, which `CoreGetInfo` supplies. If it
-can, the fetch stops being viewport-keyed and `isCacheValid` handles the
+can, the fetch stops being viewport-keyed and a `regionFetchKey` handles the
 resolution axis the way wiggle handles BigWig zoom levels
 ([ADR-008](../architecture-decision-records/adr-008-wiggle-strict-bpperpx-equality.md)).
 

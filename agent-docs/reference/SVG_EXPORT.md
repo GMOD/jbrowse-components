@@ -243,8 +243,9 @@ their terminals differently and keep their own call.
   'loading'` test would capture an empty render. `dataCurrent` is an overridable
   getter (default `false`) each display must implement. HiC and LD return
   `rpcData !== null && self.viewportFresh` — the mixin-owned half comparing the
-  `setLastDrawnViewport` snapshot committed alongside `setRpcData` to the live
-  `offsetPx`/`bpPerPx`; arc compares a region signature. Presence alone
+  pre-fetch `captureViewport()` snapshot, which `commitDrawnViewport` records
+  alongside `setRpcData`, against the live `offsetPx`/`bpPerPx`; arc compares a
+  region signature. Presence alone
   (`rpcData !== null`) would leave an in-place-refetch gap: a pan/zoom export
   resolving on the pre-pan matrix during the debounce+RPC window, since neither
   fetch clears `rpcData` at refetch start. A display that forgets to override
@@ -291,13 +292,13 @@ is false, that state has to reach `svgReady` some other way** — `error`,
 whole view's export, because `renderToSvg` awaits every display and
 `awaitSvgReady` has no time bound.
 
-Read a global display's `shouldFetch` and ask what leaves it false forever. Three
-shapes have shipped this bug:
+Read a global display's `prepare` and ask what leaves it declining forever.
+Three shapes have shipped this bug:
 
-- **A user toggle in the gate.** LD's `shouldFetch` is
-  `showLDTriangle && !regionTooLarge`, so with the triangle off nothing ever
-  loads. It now overrides `svgReadyExtraTerminal` to `!showLDTriangle` — the
-  same hook, and the same reason, as sequence's `zoomedOut`.
+- **A user toggle in the gate.** LD's `prepare` returns `undefined` while
+  `showLDTriangle` is off, so with the triangle off nothing ever loads. It now
+  overrides `svgReadyExtraTerminal` to `!showLDTriangle` — the same hook, and
+  the same reason, as sequence's `zoomedOut`.
 - **A failed prerequisite fetch.** HiC gates on `effectiveResolution`, which
   exists only once a one-shot `CoreGetInfo` lands. That failure used to go to a
   session snackbar, leaving `error` unset — permanent loading scrim, permanently
