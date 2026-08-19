@@ -630,10 +630,12 @@ export function bpAtPx(px: number, bounds: BpRegionBounds) {
  * subtraction and an addition, and the caller wants the anchor's fraction kept,
  * not discarded. Neither function is the other's implementation.
  *
- * Adopting this changed no output, and that is the point rather than a caveat.
- * Against the same exact-rational oracle `bpAtPx` was measured on, over 300000
- * fractional-anchor samples, all three spellings it replaced land within 1 ulp
- * of the exactly-rounded value and agree with this one on 299886 of them. The
+ * Adopting this moved no consumer's answer, which is the point rather than a
+ * caveat. Against the same exact-rational oracle `bpAtPx` was measured on, over
+ * 300000 fractional-anchor samples, this and all three spellings it replaced
+ * land within 1 ulp of the exactly-rounded value; it returns a different double
+ * from the `frac` spelling on 114 of them and from gwas' `bpPerPx` spelling on
+ * 289, by at most 7.5e-9 bp, against hit radii measured in whole pixels. The
  * duplication was never producing a wrong number — it was three chances for the
  * reversed pivot to be edited in two places and not the third.
  */

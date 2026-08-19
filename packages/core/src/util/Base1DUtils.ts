@@ -156,11 +156,13 @@ function regionBase0(r: RegionSnap, bp: number) {
  * projection and is mostly about the float behaviour of that projection; this
  * takes an offset already in bp and has no projection. Feeding `bpAtPx`
  * synthetic bounds to fake one computes `(offsetBp * span) / span`, which is
- * not exactly `offsetBp`: over a whole-chromosome region it names the wrong
- * base on 6885 of 3000000 boundary samples. What is left to share is the two
- * lines below, and only render-core could hold them — it must not import core —
- * which would put a pixel-free function downstream of the renderer and split it
- * from its own forward twin, `bpOffsetInRegion` at the top of this file.
+ * not exactly `offsetBp` at genome scale: over a 3000000-sample sweep of base
+ * boundaries the perturbation named the wrong base 6885 times, every one of
+ * them on a 248956422 bp region (1.9% of that span's samples) and none on any
+ * span at or below 133797422. What is left to share is the two lines below, and
+ * only render-core could hold them — it must not import core — which would put
+ * a pixel-free function downstream of the renderer and split it from its own
+ * forward twin, `bpOffsetInRegion` at the top of this file.
  */
 export function basePaintedAt(
   r: { start: number; end: number; reversed?: boolean },
