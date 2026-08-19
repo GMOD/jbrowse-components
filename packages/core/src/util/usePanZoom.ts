@@ -459,22 +459,96 @@ export function useScrollZoomHintState({
 }
 
 /**
+ * Reports a dead wheel from an element *around* the one the gestures are bound
+ * to — a view's chrome, where the wheel is left to the page on purpose.
+ *
+ * Left to the page is not the same as taken by it. A view with no tracks open
+ * is ~170px of which the tracks area is 73, and on a page with nothing below
+ * the fold a wheel over the header scrolls nothing, zooms nothing, and says
+ * nothing: the gesture the prompt exists to answer, on most of the view's
+ * surface. That is measured, not hypothetical —
+ * `products/jbrowse-web/browser-tests/probe-hint-zones.ts` wheels at three
+ * heights and prints which raise it.
+ *
+ * Reporting is all it does. Whether the page *did* scroll is
+ * `useScrollZoomHintState`'s own gate, and it is what keeps the chrome reading
+ * as a gutter on a long page: there the same wheel moves the page and the
+ * prompt stays down.
+ *
+ * Passive, and it takes only what the gesture binding would have taken — a
+ * plain vertical wheel, nothing nested having claimed it, scroll-to-zoom off
+ * (with it on, this element is the deliberate way out and has nothing to
+ * teach). Events from inside `innerRef` are already the controller's.
+ */
+function useOuterDeadWheels(
+  outerRef: React.RefObject<HTMLElement | null>,
+  innerRef: React.RefObject<HTMLElement | null>,
+  view: PanZoomView,
+  note: (event: WheelEvent) => void,
+) {
+  const notify = useEventCallback(note)
+  useEffect(() => {
+    const element = outerRef.current
+    if (!element) {
+      return
+    }
+    const onWheel = (event: WheelEvent) => {
+      const inner = innerRef.current
+      if (
+        event.defaultPrevented ||
+        view.scrollZoom ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        Math.abs(event.deltaY) <= Math.abs(event.deltaX) ||
+        (inner && event.target instanceof Node && inner.contains(event.target))
+      ) {
+        return
+      }
+      notify(event)
+    }
+    element.addEventListener('wheel', onWheel, { passive: true })
+    return () => {
+      element.removeEventListener('wheel', onWheel)
+    }
+  }, [outerRef, innerRef, view, notify])
+}
+
+/**
  * `useScrollZoomHintState` plus the gestures, for the usual case: one element,
  * one view. Binds what `useWheelZoom` binds — call this *or* that, never both.
  *
  * `usePanZoom` and JBrowse's own LinearGenomeView both come through here, so
  * the two prompts differ only in what they draw: a caption for the embedder, a
  * portalled card with the setting on it for the app.
+ *
+ * `outerRef` is for a host that binds the gestures to part of its view — see
+ * `useOuterDeadWheels`, which is the whole of what it does.
  */
 export function useScrollZoomHint(
   ref: React.RefObject<HTMLElement | null>,
   view: PanZoomView,
-  opts: Parameters<typeof useScrollZoomHintState>[0] = {},
+  {
+    outerRef,
+    ...opts
+  }: Parameters<typeof useScrollZoomHintState>[0] & {
+    outerRef?: React.RefObject<HTMLElement | null>
+  } = {},
 ) {
   const hint = useScrollZoomHintState(opts)
   useWheelZoom(ref, view, hint.noteDeadWheel)
+  useOuterDeadWheels(
+    outerRef ?? NO_OUTER_ELEMENT,
+    ref,
+    view,
+    hint.noteDeadWheel,
+  )
   return hint
 }
+
+// a stable empty ref, so the hook above can call the outer binding
+// unconditionally for a host that passes none
+const NO_OUTER_ELEMENT: React.RefObject<HTMLElement | null> = { current: null }
 
 /**
  * Every navigation gesture for a view, on one element: wheel zoom, side-scroll,

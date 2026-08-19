@@ -460,3 +460,70 @@ test('a pending verdict is dropped on unmount', () => {
   // nothing left pending to fire against a gone component
   expect(jest.getTimerCount()).toBe(0)
 })
+
+// The gestures bind to part of the view (JBrowse's tracks area) and the chrome
+// around them is left to the page on purpose. These pin the difference between
+// "left to the page" and "taken by it" — see useOuterDeadWheels.
+
+function OuterHarness({ view }: { view: ReturnType<typeof makeView> }) {
+  const outerRef = useRef<HTMLDivElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
+  const { showZoomHint } = useScrollZoomHint(innerRef, view, {
+    lingerMs: LINGER_MS,
+    outerRef,
+  })
+  return (
+    <div ref={outerRef} data-testid="outer">
+      {showZoomHint ? 'hint' : ''}
+      <div data-testid="chrome" />
+      <div ref={innerRef} data-testid="inner" />
+    </div>
+  )
+}
+
+function setupOuter(view = makeView()) {
+  const utils = render(<OuterHarness view={view} />)
+  return { ...utils, chrome: utils.getByTestId('chrome') }
+}
+
+test('a wheel over the chrome that moved nothing raises the prompt', () => {
+  const { chrome, getByTestId } = setupOuter()
+  wheel(chrome)
+  settle()
+  expect(getByTestId('outer').textContent).toBe('hint')
+})
+
+test('a wheel over the chrome the page scrolled stays quiet', () => {
+  const { chrome, getByTestId } = setupOuter()
+  wheel(chrome)
+  pageScrolls()
+  settle()
+  expect(getByTestId('outer').textContent).toBe('')
+})
+
+test('the chrome says nothing once scroll-to-zoom is on', () => {
+  const { chrome, getByTestId } = setupOuter(makeView(true))
+  wheel(chrome)
+  settle()
+  expect(getByTestId('outer').textContent).toBe('')
+})
+
+test('a wheel over the chrome a display consumed raises nothing', () => {
+  const { chrome, getByTestId } = setupOuter()
+  wheel(chrome, { consumed: true })
+  settle()
+  expect(getByTestId('outer').textContent).toBe('')
+})
+
+test('a gesture the tracks released is not re-reported by the chrome', () => {
+  const { getByTestId } = setupOuter()
+  const inner = getByTestId('inner')
+  // the pointer left the tracks, so the controller stops taking the wheel
+  // events the browser keeps latching there (see trackPointerPresence)
+  act(() => {
+    inner.dispatchEvent(new MouseEvent('mouseleave'))
+  })
+  wheel(inner)
+  settle()
+  expect(getByTestId('outer').textContent).toBe('')
+})

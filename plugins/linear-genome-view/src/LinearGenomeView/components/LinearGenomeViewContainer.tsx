@@ -90,6 +90,11 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
     setZoomHintHeld,
   } = useScrollZoomHint(tracksRef, model, {
     lingerMs: HINT_LINGER_MS,
+    // The gesture is the tracks area's; the *prompt* is the whole view's. The
+    // chrome is a gutter only where there is page to scroll, and where there
+    // isn't — an empty view, a short page — a wheel over it does nothing at
+    // all, which on a view with no tracks open is most of its surface.
+    outerRef: ref,
     // one budget for the whole session, not one per view: a synteny view is
     // three of these side by side
     enabled: session.canShowScrollZoomHint,
