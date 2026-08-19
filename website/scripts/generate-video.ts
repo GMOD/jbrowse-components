@@ -304,6 +304,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
   // document never reports being taller than the viewport even when the graph is
   // visibly cut in half. Same measurement, and the same reason, as the
   // screenshot run's below-the-fold report.
+  //
   const contentHeight = () =>
     stage.evaluate(() =>
       Math.round(
@@ -316,12 +317,33 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
         ),
       ),
     )
+  // How far an open drawer's content runs, which is a DIFFERENT number and is
+  // reported as one. A widget panel is laid out to the window's full height
+  // whatever is in it, so its rect says nothing and its scrollHeight is what it
+  // holds — and unlike a view, it is meant to scroll, so a panel taller than the
+  // frame is the panel working. What it must not do is read as slack: a tour
+  // whose whole subject is a drawer (a bookmark table, a feature-details
+  // sequence panel) has views a third the height of its frame, and measuring
+  // only those advised cutting the frame down onto the panel.
+  const drawerHeight = () =>
+    stage.evaluate(() =>
+      Math.round(
+        Math.max(
+          0,
+          ...Array.from(
+            document.querySelectorAll('[data-testid="drawer-widget"]'),
+            el => el.getBoundingClientRect().top + el.scrollHeight,
+          ),
+        ),
+      ),
+    )
   const openedAt = await contentHeight()
   // Sampled after every step, not only at the ends: a tour that switches layouts
   // and switches back is at its tallest in the middle, and a first/last reading
   // reports the frame as roomy while the state the tour was filmed for is cut
   // off the bottom.
   let tallest = openedAt
+  let drawer = await drawerHeight()
   // Steps the camera stayed on for while the app was busy, which is what a
   // reader watches as a spinner. Named by what the step says or looks for, so
   // the report points at a line of the spec rather than at an index.
@@ -373,6 +395,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
         slowSteps.push([describeStep(step), took])
       }
       tallest = Math.max(tallest, await contentHeight())
+      drawer = Math.max(drawer, await drawerHeight())
     }
     if (!cam.recording) {
       await cam.start()
@@ -384,7 +407,9 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
     const endedAt = await contentHeight()
     log(
       `  content ${openedAt}px at the first frame, ${endedAt}px at the last, ` +
-        `${tallest}px at its tallest, in a ${height}px frame`,
+        `${tallest}px at its tallest` +
+        (drawer > 0 ? `, drawer content ${drawer}px` : '') +
+        `, in a ${height}px frame`,
     )
     return {
       segments: cam.segments,
@@ -393,7 +418,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       // the cues are scaled onto the clip with.
       cues: captions.end(filmedMs()),
       filmedMs: cam.filmed,
-      content: { first: openedAt, last: endedAt, tallest },
+      content: { first: openedAt, last: endedAt, tallest, drawer },
       // Read here rather than after the encode: the tail is the last thing on
       // camera and the frame the poster comes from, and by the time ffmpeg has
       // run the page is closed.

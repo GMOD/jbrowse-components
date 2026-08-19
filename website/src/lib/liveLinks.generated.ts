@@ -485,7 +485,8 @@ export const videoLiveRefs: Record<string, string> = {
   "synteny/three_strain_import": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fhpylori%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22views%22%3A%5B%7B%7D%2C%7B%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv/inspector_route": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
   "ui/bookmark_region": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr10%3A89%2C613%2C000-89%2C740%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
-  "ui/open_track_url": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes%22%5D%7D%5D%7D&sessionName=Screenshot"
+  "ui/open_track_url": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "ui/feature_sequence_types": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A17200-23200%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22gff3tabix_genes%22%2C%22height%22%3A300%7D%5D%7D%5D%7D&sessionName=Screenshot"
 }
 
 // Each tour's pixel size, which is its capture viewport: the encode preserves
@@ -563,7 +564,11 @@ export const videoFrames: Record<
   },
   "ui/open_track_url": {
     "width": 1920,
-    "height": 500
+    "height": 640
+  },
+  "ui/feature_sequence_types": {
+    "width": 1920,
+    "height": 900
   }
 }
 
@@ -588,5 +593,6 @@ export const videoCaptioned: string[] = [
   "tcga/cohort_cnv_clustering",
   "tcga/mutations_collapse_introns",
   "ui/bookmark_region",
+  "ui/feature_sequence_types",
   "ui/open_track_url"
 ]

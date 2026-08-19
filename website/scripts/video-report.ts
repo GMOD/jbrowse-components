@@ -23,6 +23,11 @@ export interface ContentHeights {
   first: number
   last: number
   tallest: number
+  // how far an open drawer's content runs, at its longest. Kept apart from
+  // `tallest` because a drawer scrolls by design where a view does not: it can
+  // exceed the frame without anything being wrong, but it also means the blank
+  // under a short view is not slack the frame can give back.
+  drawer: number
 }
 
 export interface FilmedTour {
@@ -88,8 +93,9 @@ function printFrames() {
     `FRAMES (${filmed.length}) — the app's height at the first frame, its tallest, and the frame it was filmed in`,
     filmed.map(
       ({ name, frame, content, seconds, mp4Bytes }) =>
-        `• ${name}: ${content.first}px → ${content.last}px, ${content.tallest}px tallest, ` +
-        `in ${frame.width}×${frame.height} — ${seconds.toFixed(1)}s, ${mb(mp4Bytes)}`,
+        `• ${name}: ${content.first}px → ${content.last}px, ${content.tallest}px tallest` +
+        (content.drawer > 0 ? `, drawer ${content.drawer}px` : '') +
+        `, in ${frame.width}×${frame.height} — ${seconds.toFixed(1)}s, ${mb(mp4Bytes)}`,
     ),
   )
 }
@@ -116,22 +122,20 @@ export function printVideoSummary(failures: string[]) {
       ),
     )
   }
+  // What the frame is actually being asked for: the views, or a drawer beside
+  // them that has more to show than the frame holds. A drawer that overflows
+  // means there is no slack to give back, however short the views are.
+  const filled = ({ content, frame }: FilmedTour) =>
+    Math.max(content.tallest, Math.min(content.drawer, frame.height))
   const slack = filmed
-    .filter(
-      ({ content, frame }) => frame.height - content.tallest > SLACK_WARN_PX,
-    )
-    .sort(
-      (a, b) =>
-        b.frame.height -
-        b.content.tallest -
-        (a.frame.height - a.content.tallest),
-    )
+    .filter(tour => tour.frame.height - filled(tour) > SLACK_WARN_PX)
+    .sort((a, b) => b.frame.height - filled(b) - (a.frame.height - filled(a)))
   if (slack.length > 0) {
     printReport(
       `PAGE BACKGROUND UNDER THE APP (${slack.length}) — the frame is taller than anything the tour reached; lower the spec's viewportHeight by about this much`,
       slack.map(
-        ({ name, content, frame }) =>
-          `• ${name}: ${frame.height - content.tallest}px of blank under the tallest state`,
+        tour =>
+          `• ${tour.name}: ${tour.frame.height - filled(tour)}px of blank under the tallest state`,
       ),
     )
   }

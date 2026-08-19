@@ -154,10 +154,11 @@ export const uiVideos: VideoSpec[] = [
     description:
       'Opening a track from a URL: File, Open track..., a bigwig url typed into the form, the adapter and name it resolves for itself, and the track drawing under the genes',
     url: addTrackSession,
-    // A gene lane, then a wiggle lane under it, with the form in a drawer
-    // beside both. The run reports 306px of app before the track arrives and
-    // 445px after.
-    viewportHeight: 500,
+    // A gene lane, then a wiggle lane under it, with the form in a drawer beside
+    // both. The run reports 306px of app before the track arrives and 445px
+    // after, and the form's own drawer wants 621 — so the frame is the drawer's
+    // number rather than the views'.
+    viewportHeight: 640,
     readySelector: '::-p-text(ctgA)',
     readyTimeout: 60000,
     settleMs: 4000,
@@ -213,8 +214,11 @@ export const uiVideos: VideoSpec[] = [
     description:
       "Three sequence types for one volvox transcript: open the feature details, show the feature sequence, and take CDS, Protein and genomic-with-flanks from the panel's own dropdown",
     url: sequencePanelSession,
-    // Provisional: the details drawer is taller than the view beside it and the
-    // panel grows with the sequence in it. Sized from the run's own report.
+    // Sized to the PANEL, which is a drawer and therefore scrolls: the run
+    // reports 506px of views beside it and 2437px of drawer content, and no
+    // frame holds the second. 900 puts the dropdown and the first screenful of
+    // sequence under it in the same picture, which is what the tour is about,
+    // and the blank under the views is the drawer's rather than slack.
     viewportHeight: 900,
     readySelector: '::-p-text(ctgA)',
     readyTimeout: 60000,

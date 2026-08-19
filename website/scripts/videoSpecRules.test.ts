@@ -67,12 +67,12 @@ test('a viewport past the delivery width', () => {
 test('a drag that names only one of its two ends', () => {
   expect(
     problems([spec({ steps: [{ type: 'drag', from: { x: 1, y: 2 } }] })]),
-  ).toMatch('names only one of its two ends')
+  ).toMatch('name only one of their two ends')
   expect(
     problems([
       spec({ steps: [{ type: 'drag', toAnchor: { locus: 'ctgA:100' } }] }),
     ]),
-  ).toMatch('names only one of its two ends')
+  ).toMatch('name only one of their two ends')
 })
 
 test('a drag with an end of each kind', () => {

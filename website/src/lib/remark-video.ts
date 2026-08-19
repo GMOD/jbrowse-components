@@ -69,8 +69,14 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
     // mp4 and the store carries it. Emitted only for the tours that have one,
     // since a <track> whose src 404s leaves the control on with nothing behind
     // it.
+    //
+    // NOT `default`. The clip already draws each line into its own lower left,
+    // so a track that came on by itself would put the same words on screen
+    // twice, in the same corner. What the element is for is that the text
+    // EXISTS — selectable, readable by a screen reader, and offered by the
+    // player's own captions control to anyone who wants it larger.
     const captions = videoCaptioned.includes(name)
-      ? `<track kind="captions" srclang="en" label="Steps" default src="${withBase(rawSrc.replace(/\.mp4$/, '.vtt'))}"/>`
+      ? `<track kind="captions" srclang="en" label="Steps" src="${withBase(rawSrc.replace(/\.mp4$/, '.vtt'))}"/>`
       : ''
     // The tour's own frame, so the box is the right shape from the first paint.
     // Without it a <video> is 300x150 until its metadata arrives and then jumps
