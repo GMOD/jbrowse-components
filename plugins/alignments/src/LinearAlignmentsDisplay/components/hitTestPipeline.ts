@@ -1,4 +1,4 @@
-import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
+import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
 import { hitTestClip } from '../../features/clip/hitTest.ts'
 import { hitTestCoverage } from '../../features/coverage/hitTest.ts'
@@ -317,17 +317,23 @@ function hitTestCigarItem(
   )
 }
 
-// Single site for the canvas-X → genomicPos transform; `reversed` is handled
-// here and nowhere else. The result is FRACTIONAL — a position along the block,
-// not a base. That's what the distance-based hit tests want (interbase
-// triangles, modification centers, insertion markers, read containment), since
-// they measure against a bp coordinate rather than indexing a base.
+function boundsOf(resolved: ResolvedBlock) {
+  return {
+    start: resolved.bpRange[0],
+    end: resolved.bpRange[1],
+    screenStartPx: resolved.blockStartPx,
+    screenEndPx: resolved.blockStartPx + resolved.blockWidth,
+    reversed: resolved.reversed,
+  }
+}
+
+// The FRACTIONAL position along the block under canvasX — what the
+// distance-based hit tests want (interbase triangles, modification centers,
+// insertion markers, read containment), since they measure against a bp
+// coordinate rather than indexing a base. `bpAtPxExact` owns the reversed
+// pivot.
 export function canvasXToGenomicPos(canvasX: number, resolved: ResolvedBlock) {
-  const bpSpan = resolved.bpRange[1] - resolved.bpRange[0]
-  const frac = (canvasX - resolved.blockStartPx) / resolved.blockWidth
-  return resolved.reversed
-    ? resolved.bpRange[1] - frac * bpSpan
-    : resolved.bpRange[0] + frac * bpSpan
+  return bpAtPxExact(canvasX, boundsOf(resolved))
 }
 
 // The INTEGER base under canvasX — what anything indexing a base wants (a
@@ -338,13 +344,7 @@ export function canvasXToGenomicPos(canvasX: number, resolved: ResolvedBlock) {
 // `b+1` on base b's leftmost pixel column. bpAtPx owns that pivot — it is the
 // inverse of the makeCellLeftMapper the per-base painters use.
 export function canvasXToBasePos(canvasX: number, resolved: ResolvedBlock) {
-  return bpAtPx(canvasX, {
-    start: resolved.bpRange[0],
-    end: resolved.bpRange[1],
-    screenStartPx: resolved.blockStartPx,
-    screenEndPx: resolved.blockStartPx + resolved.blockWidth,
-    reversed: resolved.reversed,
-  })
+  return bpAtPx(canvasX, boundsOf(resolved))
 }
 
 // Runs the priority chain for a cursor known to be over a fetched block. The

@@ -1,3 +1,5 @@
+import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
+
 import { contentSampleY, rowsUnderCursor } from './variantCellLookup.ts'
 import { MAX_INSERTION_MARKER_WIDTH_PX } from './variantCellSpan.ts'
 
@@ -52,14 +54,9 @@ export function computeVariantHitQuery(
   scrollTop: number,
   effectiveRowHeight: number,
 ): VariantHitQuery {
-  const blockWidth = region.screenEndPx - region.screenStartPx
-  const regionLengthBp = region.end - region.start
-  const bpPerPx = regionLengthBp / blockWidth
-
-  const frac = (mouseX - region.screenStartPx) / blockWidth
-  const genomicPos = region.reversed
-    ? region.end - frac * regionLengthBp
-    : region.start + frac * regionLengthBp
+  const bpPerPx =
+    (region.end - region.start) / (region.screenEndPx - region.screenStartPx)
+  const genomicPos = bpAtPxExact(mouseX, region)
 
   const { nearest, lowest } = rowsUnderCursor(
     contentSampleY(mouseY, scrollTop),

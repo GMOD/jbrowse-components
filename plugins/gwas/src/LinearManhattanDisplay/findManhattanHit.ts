@@ -1,4 +1,4 @@
-import { bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
+import { bpAtPxExact, bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
 
 import { scoreToY, yToScore } from './manhattanRenderingBackendTypes.ts'
 
@@ -57,9 +57,7 @@ export function findManhattanHit(
       continue
     }
     const bpPerPx = (end - start) / blockWidthPx
-    const mouseBp = reversed
-      ? start + (screenEndPx - mouseX) * bpPerPx
-      : start + (mouseX - screenStartPx) * bpPerPx
+    const mouseBp = bpAtPxExact(mouseX, block)
     const halfBp = HIT_RADIUS_PX * bpPerPx
     const candBpMin = mouseBp - halfBp
     const candBpMax = mouseBp + halfBp
