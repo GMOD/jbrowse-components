@@ -61,20 +61,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         return self.configuration
       },
     }))
-    .views(() => {
-      // Closure variable rather than MST state so it survives model re-renders
-      // without being serialized to the snapshot.
-      let codeVerifier: string | undefined
-      return {
-        /**
-         * #getter
-         */
-        get codeVerifierPKCE() {
-          codeVerifier ??= toBase64Url(randomBytes(32))
-          return codeVerifier
-        },
-      }
-    })
     .views(self => ({
       /**
        * #getter
@@ -218,15 +204,14 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         async exchangeAuthorizationForAccessToken(
           code: string,
           redirectUri: string,
+          codeVerifier?: string,
         ) {
           return self.postTokenGrant(
             {
               grant_type: 'authorization_code',
               code,
               redirect_uri: redirectUri,
-              ...(self.needsPKCE
-                ? { code_verifier: self.codeVerifierPKCE }
-                : {}),
+              ...(codeVerifier ? { code_verifier: codeVerifier } : {}),
             },
             response =>
               getResponseError({ response, reason: 'Failed to obtain token' }),
@@ -336,8 +321,16 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         // constant and so guessable — generate a per-flow nonce unless one was
         // set explicitly. Providers are required to echo it back.
         const state = self.state || toBase64Url(randomBytes(16))
-        const codeChallenge = self.needsPKCE
-          ? await sha256Base64Url(self.codeVerifierPKCE)
+        // RFC 7636 §4.1 wants one verifier per authorization request, and this
+        // is the request — so it lives here rather than on the model, where a
+        // single lazily-created one was shared by every flow the account ever
+        // ran. `state` immediately above was already rotating for the same
+        // reason.
+        const codeVerifier = self.needsPKCE
+          ? toBase64Url(randomBytes(32))
+          : undefined
+        const codeChallenge = codeVerifier
+          ? await sha256Base64Url(codeVerifier)
           : undefined
         const data: Record<string, string> = {
           client_id: self.clientId,
@@ -357,7 +350,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           internetAccountId: self.internetAccountId,
           expectedState: state,
           exchangeAuthorizationCode: async (code, uri) =>
-            self.exchangeAuthorizationForAccessToken(code, uri),
+            self.exchangeAuthorizationForAccessToken(code, uri, codeVerifier),
           storeToken: token => {
             self.storeToken(token)
           },

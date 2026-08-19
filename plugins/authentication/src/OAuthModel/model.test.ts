@@ -1,7 +1,7 @@
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.tsx'
 
-function makeAccount() {
+function makeAccount(extraConf: Record<string, unknown> = {}) {
   return stateModelFactory(configSchema).create({
     type: 'OAuthInternetAccount',
     // a snapshot, not configSchema.create: ConfigurationReference stores an
@@ -13,6 +13,7 @@ function makeAccount() {
       authEndpoint: 'https://provider.example.com/authorize',
       tokenEndpoint: 'https://provider.example.com/token',
       domains: ['data.example.com'],
+      ...extraConf,
     },
   })
 }
@@ -153,4 +154,65 @@ test('a token that fails validation is dropped, so the next read re-prompts', as
   await Promise.resolve()
   await Promise.resolve()
   expect(opened).toHaveLength(1)
+})
+
+// Runs one authorization-code flow and reports the challenge the auth window
+// was opened with alongside the verifier the exchange sent back.
+async function runAuthFlow(
+  account: ReturnType<typeof makeAccount>,
+  code: string,
+) {
+  let authUrl = ''
+  window.open = jest.fn(url => {
+    authUrl = String(url)
+    return { closed: false, close: () => {} } as Window
+  })
+  // a fresh Response per call: a body can only be read once, and an earlier
+  // test in this file leaves an unsettled flow whose listener also answers the
+  // message dispatched below
+  fetchMock.mockImplementation(
+    async () =>
+      new Response(JSON.stringify({ access_token: `token-for-${code}` })),
+  )
+  const flow = account.getTokenViaAuthFlow()
+  // polled rather than ticked a fixed number of times: computing the challenge
+  // is a real WebCrypto digest, so the window opens some way into the flow
+  for (let i = 0; i < 100 && !authUrl; i++) {
+    await new Promise(resolve => {
+      setTimeout(resolve, 0)
+    })
+  }
+  expect(authUrl).toContain('code_challenge')
+  const state = new URL(authUrl).searchParams.get('state')
+  window.dispatchEvent(
+    new MessageEvent('message', {
+      origin: window.location.origin,
+      data: {
+        name: 'JBrowseAuthWindow-testOAuth',
+        redirectUri: `${window.location.origin}/?code=${code}&state=${state}`,
+      },
+    }),
+  )
+  await flow
+  const [, init] = fetchMock.mock.calls.at(-1)!
+  return {
+    challenge: new URL(authUrl).searchParams.get('code_challenge'),
+    verifier: new URLSearchParams(String(init?.body)).get('code_verifier'),
+  }
+}
+
+test('each authorization request gets its own PKCE verifier', async () => {
+  const account = makeAccount({ needsPKCE: true })
+
+  const first = await runAuthFlow(account, 'code-one')
+  account.removeToken()
+  const second = await runAuthFlow(account, 'code-two')
+
+  expect(first.verifier).toBeTruthy()
+  expect(first.challenge).toBeTruthy()
+  expect(second.verifier).toBeTruthy()
+  expect(second.challenge).toBeTruthy()
+  // a second flow reuses neither half of the first
+  expect(second.verifier).not.toBe(first.verifier)
+  expect(second.challenge).not.toBe(first.challenge)
 })
