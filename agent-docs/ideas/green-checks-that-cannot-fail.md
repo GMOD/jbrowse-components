@@ -1,12 +1,12 @@
 ---
 name: green-checks-that-cannot-fail
-description: Four checks in this repo passed for structural reasons rather than real ones — a compiler standing in for the memo a sabotage deleted, a census that sampled only while the page was quiet, a drift check silent because all fourteen copies were wrong identically, and a branch every page rendered that no page could reach. The catch for each, and why the class is worth naming outside genomics.
+description: Five checks in this repo passed for structural reasons rather than real ones — a compiler standing in for the memo a sabotage deleted, a census that sampled only while the page was quiet, a drift check silent because all fourteen copies were wrong identically, a branch every page rendered that no page could reach, and a geometry invariant held against a polygon the shader does not emit. The catch for each, and why the class is worth naming outside genomics.
 ---
 
 # Green checks that could not have failed
 
 A check that cannot fail is indistinguishable, from the outside, from a check
-that passes. This repo has now hit four of them from four different directions,
+that passes. This repo has now hit five of them from five different directions,
 which is enough to name the class rather than treat each as its own bug.
 Audience and framing: [upstreamable-ideas](upstreamable-ideas.md).
 
@@ -92,11 +92,45 @@ the thing being taught had no demo anywhere.
 before believing the case is demonstrated, and it applies to any docs site whose
 examples are also its tests.
 
+## 5. An invariant held against a polygon the shader does not emit
+
+`syntenyFillPad.test.ts` asserts the one property the synteny fill shaders
+cannot be unit-tested for: that the padded polygon the vertex stage emits
+contains every pixel where the fragment's coverage is non-zero. It sweeps
+thousands of ribbon geometries, samples hundreds of rows in each, and carries
+three counterexample tests showing that pads it has rejected do crop.
+
+It modelled the polygon as spanning exactly the ribbon, `[y(t0), y(t1)]`. The
+shader emits its two rows a pixel FURTHER OUT than that, at `y = -1` and
+`y = height + 1`, so vertCoverage has somewhere to ramp — and kept their x at
+the blend belonging to the ribbon's ends. A quad's sides are straight in screen
+y, so running them over `height + 2` px while the ribbon runs over `height`
+leans them across its travel: up to a full perpendicular pixel, which is the
+whole footprint. Roughly the top and bottom quarter of every slanted ribbon lost
+its outer antialiasing, and a sub-pixel one lost the 1px minimum band that is
+the only thing drawing it at whole-genome zoom — 11.5% of such a ribbon's total
+ink. **The pad was never the thing that was wrong**, which is why the file could
+sweep the pad this hard and still read zero.
+
+The catch was to model the emitted vertices rather than the shape they are
+meant to bound, i.e. to take the polygon's two rows from the same expression the
+shader hands to `fillVsEmit`. A `Geometry` now carries its rows alongside its
+pad, and the old spelling is a counterexample beside the three that were already
+there.
+
+**Why it travels:** a check on a rasterized invariant almost always models the
+ideal shape, because that is what the property is about, while the bug lives in
+the difference between the ideal shape and the primitive actually submitted. The
+general rule is that a geometry check has to be built from the vertex
+expressions, not from the curve they approximate — and that a sweep's breadth
+says nothing about whether it is sweeping the right object.
+
 ## Publishing this
 
 This is the most distinctive of the three general-audience groups and the
 hardest to write, because each item needs its failure narrated to land. The
-first two stand alone; items 3 and 4 are one post about examples-as-tests. Item 4
+first two stand alone; items 3 and 4 are one post about examples-as-tests, and
+item 5 stands alone for a graphics audience. Item 4
 also appears in
 [mobx-state-patterns-to-publish](mobx-state-patterns-to-publish.md) as the
 argument for naming a lifecycle state — tell it once, from whichever goes out

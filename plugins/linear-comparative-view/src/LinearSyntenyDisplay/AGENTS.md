@@ -39,6 +39,16 @@
 - The vertex pads are pinned by `shaders/syntenyFillPad.test.ts`, which mirrors
   both `pad` blocks plus `perpCoverage`'s footprint and asserts the padded
   polygon never crops coverage. Change a pad, run it.
+- **A quad's two rows sit a pixel outside the ribbon, and the pad is only half
+  of what the test has to model.** The other half is which X-blend each row
+  takes its x from, because a quad's sides are straight in SCREEN Y: rows at
+  s=0/s=1 but y=-1/height+1 lean across the ribbon's travel by up to a full
+  perpendicular pixel, which is the entire coverage footprint.
+  `straightGeometry` extrapolates (s=-1/height and 1+1/height) and its fragment
+  does not clamp `t`; `curveGeometry` does not need to, because its end segments
+  sit where the x-curve is momentarily vertical. The test modelled the rows as
+  spanning exactly `[y(t0), y(t1)]` and read zero over all of it for as long as
+  that was wrong.
 - `GpuSyntenyRenderer.ts` wires the four passes (`fillStraight`, `fillCurve`,
   `edgeStraight`, `edgeCurve` — curve vs straight live in separate shader files
   so there are no `isCurve` branches) via `slangPass()` from
