@@ -1,6 +1,7 @@
 // Generates the index of each agent-docs directory that is a flat pile of docs
-// — `reference/` and `ideas/` — from the docs' own frontmatter, so a directory
-// can be scanned in one read instead of fifty.
+// — `reference/`, `ideas/` and `handoffs/` — from the docs' own frontmatter, so
+// a directory can be scanned in one read instead of fifty. The list is INDEXES
+// below; add a directory there and give it a README with the marker pair.
 //
 // agent-docs/CLAUDE.md already makes the rule: every doc outside
 // architecture-decision-records/ carries `name:` / `description:` frontmatter,
