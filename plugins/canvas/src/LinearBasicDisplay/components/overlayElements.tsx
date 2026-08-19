@@ -32,6 +32,10 @@ import type {
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
+import type {
+  MoreResolvedLabel,
+  PlainResolvedLabel,
+} from './labelPositioning.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { CSSProperties } from 'react'
@@ -137,6 +141,93 @@ function moreIsoformsTitle({ hidden, expanded }: MoreIsoformsLabel) {
   return expanded
     ? `Collapse this gene, hiding ${isoforms} again`
     : `${isoforms} not shown — click to expand this gene`
+}
+
+type LabelClasses = Record<
+  'clickable' | 'static',
+  Record<'overlay' | 'plain', string>
+>
+
+// The isoform badge, and the only label here that is a control. It carries the
+// `more` marker the layer's delegated handlers route on, and stays clickable
+// whether or not its gene resolves to an openable feature — expanding reads the
+// id straight off the attribute. Its baked width is measured at the scale it
+// draws at, so the room the packer reserved is the room it takes.
+//
+// It carries the region index like a name does, because the layer's other two
+// pointer paths still treat it as its gene's: right-clicking it opens the gene's
+// context menu, and half those rows need a region to resolve against.
+function MoreIsoformsBadge({
+  resolved,
+  featureId,
+  displayedRegionIndex,
+  labelFontSize,
+  className,
+}: {
+  resolved: MoreResolvedLabel
+  featureId: string
+  displayedRegionIndex: number
+  labelFontSize: number
+  className: string
+}) {
+  const { label, labelX, labelY } = resolved
+  return (
+    <div
+      title={moreIsoformsTitle(label)}
+      data-testid={`feature-more-isoforms-${featureId}`}
+      data-feature-id={featureId}
+      data-more-isoforms=""
+      data-region-index={displayedRegionIndex}
+      className={className}
+      style={{
+        color: label.color,
+        fontSize: labelFontSize * MORE_ISOFORMS_FONT_SCALE,
+        transform: `translate(${labelX}px, ${moreBadgeTop(labelY, labelFontSize)}px)`,
+      }}
+    >
+      {label.text}
+    </div>
+  )
+}
+
+// A gene's name, its description, or a subfeature's name. Carries its ids as
+// data attributes for the layer's delegated handlers, so rebuilding every label
+// each frame allocates no per-label closure.
+function FloatingLabel({
+  resolved,
+  featureId,
+  displayedRegionIndex,
+  labelFontSize,
+  clickable,
+  labelClasses,
+}: {
+  resolved: PlainResolvedLabel
+  featureId: string
+  displayedRegionIndex: number
+  labelFontSize: number
+  clickable: boolean
+  labelClasses: LabelClasses
+}) {
+  const { label, labelX, labelY, kind } = resolved
+  return (
+    <div
+      data-testid={clickable ? `feature-${kind}-${label.text}` : undefined}
+      data-feature-id={clickable ? featureId : undefined}
+      data-region-index={clickable ? displayedRegionIndex : undefined}
+      className={
+        labelClasses[clickable ? 'clickable' : 'static'][
+          label.isOverlay ? 'overlay' : 'plain'
+        ]
+      }
+      style={{
+        color: label.color,
+        fontSize: labelFontSize,
+        transform: `translate(${labelX}px, ${labelY}px)`,
+      }}
+    >
+      {label.text}
+    </div>
+  )
 }
 
 // Whether two regions are the same reference sequence — assembly AND refName.
@@ -374,55 +465,27 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       const clickable = featureItemMap.get(featureId)?.kind === 'feature'
       for (const resolved of labels) {
         const key = `${displayedRegionIndex}-${featureId}-${resolved.kind}`
-        if (resolved.kind === 'more') {
-          // A control rather than a name: it carries the `more` marker the
-          // delegated handlers below route on and stays clickable whether or not
-          // the feature resolves to an openable one, since expanding reads the
-          // id straight off the attribute. Its baked width is measured at the
-          // scale it draws at, so the room the packer reserved is the room it
-          // takes.
-          const { label, labelX, labelY } = resolved
-          elements.push(
-            <div
-              key={key}
-              title={moreIsoformsTitle(label)}
-              data-testid={`feature-more-isoforms-${featureId}`}
-              data-feature-id={featureId}
-              data-more-isoforms=""
-              className={cx(classes.floatingLabel, classes.floatingLabelMore)}
-              style={{
-                color: label.color,
-                fontSize: labelFontSize * MORE_ISOFORMS_FONT_SCALE,
-                transform: `translate(${labelX}px, ${moreBadgeTop(labelY, labelFontSize)}px)`,
-              }}
-            >
-              {label.text}
-            </div>,
-          )
-          continue
-        }
-        const { label, labelX, labelY, kind } = resolved
         elements.push(
-          <div
-            key={key}
-            data-testid={
-              clickable ? `feature-${kind}-${label.text}` : undefined
-            }
-            data-feature-id={clickable ? featureId : undefined}
-            data-region-index={clickable ? displayedRegionIndex : undefined}
-            className={
-              labelClasses[clickable ? 'clickable' : 'static'][
-                label.isOverlay ? 'overlay' : 'plain'
-              ]
-            }
-            style={{
-              color: label.color,
-              fontSize: labelFontSize,
-              transform: `translate(${labelX}px, ${labelY}px)`,
-            }}
-          >
-            {label.text}
-          </div>,
+          resolved.kind === 'more' ? (
+            <MoreIsoformsBadge
+              key={key}
+              resolved={resolved}
+              featureId={featureId}
+              displayedRegionIndex={displayedRegionIndex}
+              labelFontSize={labelFontSize}
+              className={cx(classes.floatingLabel, classes.floatingLabelMore)}
+            />
+          ) : (
+            <FloatingLabel
+              key={key}
+              resolved={resolved}
+              featureId={featureId}
+              displayedRegionIndex={displayedRegionIndex}
+              labelFontSize={labelFontSize}
+              clickable={clickable}
+              labelClasses={labelClasses}
+            />
+          ),
         )
       }
     },

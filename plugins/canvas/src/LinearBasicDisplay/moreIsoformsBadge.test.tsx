@@ -455,6 +455,22 @@ describe('the badge in the label layer', () => {
     expect(toggleSoloFeature).not.toHaveBeenCalled()
   })
 
+  // Three pointer paths cross this badge and only the left click is special: the
+  // hover suppresses the gene's tooltip, but the right click still opens the
+  // gene's context menu, because the badge sits on the gene's own label. That
+  // path reads the region off the element, and half the menu's rows resolve a
+  // region against it — a badge without one handed them `Number(undefined)`.
+  it('right-clicks through to its gene, with a region the menu can use', () => {
+    const openContextMenu = jest.fn()
+    const { getByTestId } = renderLabelLayer({ openContextMenu })
+
+    fireEvent.contextMenu(getByTestId('feature-more-isoforms-gene1'))
+    expect(openContextMenu).toHaveBeenCalledTimes(1)
+    const { displayedRegionIndex } = openContextMenu.mock.calls[0]![0]
+    expect(displayedRegionIndex).toBe(0)
+    expect(Number.isNaN(displayedRegionIndex)).toBe(false)
+  })
+
   it('draws the badge beside the name, after it', () => {
     const { getByTestId } = renderLabelLayer({})
     const name = getByTestId('feature-name-GENE1')

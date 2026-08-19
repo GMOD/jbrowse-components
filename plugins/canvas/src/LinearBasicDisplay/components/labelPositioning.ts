@@ -218,14 +218,14 @@ export function computeLabelPosition(
 // optionals: the badge and a name are different things sharing a position, and
 // only the union lets a consumer that has checked `kind` read `hidden` without
 // a fallback for a case the worker never emits.
-interface PlainResolvedLabel {
+export interface PlainResolvedLabel {
   label: LabelItem & { isOverlay?: boolean }
   labelX: number
   labelY: number
   kind: 'name' | 'desc' | 'sub'
 }
 
-interface MoreResolvedLabel {
+export interface MoreResolvedLabel {
   label: MoreIsoformsLabel
   labelX: number
   labelY: number
