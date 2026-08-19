@@ -108,10 +108,30 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
      would fail on every push. `check-release-drafts` rejects a name no release
      fills, since a misspelled one publishes literally and there is no number
      there to proofread.
-   - A chart is a script. `pnpm loc-chart` re-renders the lines-of-code figure;
-     run it, then `pnpm figures:push --filter loc_over_time` and commit
-     `figures.lock`. It reads git, so like the diffstat it is a release-day step
-     rather than an autogen entry.
+   - A chart is a script, and one that reads git is a release-day step rather
+     than an autogen entry: its last point moves with every commit, so a check
+     would fail on every push. `pnpm loc-chart` re-renders the lines-of-code
+     figure here. The two charts the v5.0.0 changelog carries come from a
+     sibling checkout the way the renderer benchmarks do, and write straight
+     into `website/static/img/blog/v5.0.0/`:
+
+     | Figure             | Run in `~/agent-docs-backup/theseus`                                                               |
+     | ------------------ | -------------------------------------------------------------------------------------------------- |
+     | `code_age`         | `collect_blame_cohorts.py`, then `Rscript R/plot_theseus.R` — about an hour to blame 115 snapshots |
+     | `code_composition` | `node composition/generate-composition-chart.ts` — a few minutes                                   |
+
+     Then `pnpm figures:push --filter <name>` here and commit `figures.lock`.
+     The code-age collector's dev-line CSV ends at the snapshot it was built
+     from, so extend it with `git log` before re-running or the chart stops
+     where the last run did.
+
+   **A figure in the changelog file needs an absolute URL.** `release.ts` drops
+   that file in verbatim: only the notes get their image paths rewritten, by
+   `prepareDraftNotes` for the blog and `absolutizeImages` for the GitHub
+   release body. So `/img/...` renders on the site and 404s on GitHub, and
+   `../static/img/...` misses both. Write `https://jbrowse.org/jb2/img/...` —
+   `check-release-drafts` validates figure paths in the notes and does not look
+   at the changelog.
 
 2. **Look first** — `pnpm release <patch|minor|major> --dry-run`.
 
