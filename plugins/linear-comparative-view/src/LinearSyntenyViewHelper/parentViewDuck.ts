@@ -16,6 +16,9 @@ export interface ParentViewDuck {
   overdrawPx: number
   initPending: boolean
   pendingAutoDiagonalize: boolean
+  // paint the stubs for alignments whose mate is on a contig the facing row is
+  // not displaying — a repaint, never a refetch
+  showOffscreenMates: boolean
 }
 
 // One level of the stack, as seen from a synteny display nested inside it. Same

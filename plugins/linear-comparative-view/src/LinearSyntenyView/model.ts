@@ -21,6 +21,7 @@ import { doAfterAttach } from './afterAttach.ts'
 import {
   autoScaleMenuItems,
   cigarModeMenuItems,
+  offscreenMateMenuItems,
   displayCanShowCigar,
   genomeViewsMenuItems,
   removeRowMenuItems,
@@ -116,6 +117,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * alignment pairs it with.
          */
         drawLocationMarkers: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * Mark, on the query axis, the alignments whose mate is on a contig the
+         * facing row is not displaying — real synteny a ribbon has nowhere to
+         * land, which the view otherwise draws nothing for.
+         */
+        // A PROPERTY, NOT A FETCH INPUT. The worker counts and places these
+        // whichever way this sits, so toggling repaints and never refetches;
+        // `drawLocationMarkers` above is in the fetch key's history for exactly
+        // the mistake this avoids.
+        showOffscreenMates: types.stripDefault(types.boolean, false),
         /**
          * #property
          * pixels beyond the visible viewport edge that synteny lines are still
@@ -266,6 +278,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get hasCigarData() {
         return self.allSyntenyDisplays.some(displayCanShowCigar)
+      },
+      /**
+       * #getter
+       * The contigs this view has alignments to and cannot draw, largest first.
+       * A locus can be syntenic to a contig you did not stack, and a view
+       * showing no ribbon for it looks exactly like one where it is syntenic to
+       * nothing; this is what the header reports instead.
+       */
+      // Summed across levels rather than reported per level, because the answer
+      // a reader wants is about the view: a contig missing from two levels is
+      // one contig to go add. The case for the whole feature, with the numbers,
+      // is agent-docs/ideas/offscreen-synteny-mates.md.
+      get offscreenMateTally() {
+        const totals = new Map<string, number>()
+        for (const d of self.allSyntenyDisplays) {
+          for (const { refName, count } of d.offscreenMateTally) {
+            totals.set(refName, (totals.get(refName) ?? 0) + count)
+          }
+        }
+        return [...totals]
+          .map(([refName, count]) => ({ refName, count }))
+          .sort((a, b) => b.count - a.count || (a.refName < b.refName ? -1 : 1))
       },
       /**
        * #getter
@@ -505,6 +539,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setShowOffscreenMates(arg: boolean) {
+        self.showOffscreenMates = arg
+      },
+      /**
+       * #action
+       */
       setOverdrawPx(arg: number) {
         self.overdrawPx = arg
       },
@@ -676,6 +716,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...autoScaleMenuItems(self),
             ...genomeViewsMenuItems(self),
             ...cigarModeMenuItems(self),
+            ...offscreenMateMenuItems(self),
             ...lodMenuItems(self),
             ...rowSyncMenuItems(self),
             {

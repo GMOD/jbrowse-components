@@ -1,9 +1,17 @@
 ---
 name: offscreen-synteny-mates
-description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a stub/box rather than a ribbon. These are already fetched and are discarded one line into the worker's decorate loop — measured at 73% of peach chr1's anchors in the grape_peach_cacao demo — so the cheap half needs no fetch change at all. Read alongside two-axis-synteny-fetch.md, which is the expensive other half.
+description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a stub/box rather than a ribbon. Stages 1 and 2 SHIPPED 2026-08-19 — the worker counts them and the view marks them behind a toggle; what is left is labelling and hit-testing. Read alongside two-axis-synteny-fetch.md, which is the expensive other half and is untouched by this.
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
+
+**Stages 1 and 2 shipped on 2026-08-19.** `collectOffscreenMates` tallies the
+class-A drops per contig and places them on the query axis;
+`offscreenMateMenuItems` reports the count and the contigs; `showOffscreenMates`
+turns `OffscreenMateOverlay` on, which marks each one as a stub at the top of
+the band. Stage 3 (labels) and hit-testing are the remainder, below. The rest of
+this file is the case for it and the reasoning the implementation followed —
+kept because the *class B* half is still open.
 
 A synteny band draws a ribbon only when **both** ends land on a displayed
 region. When peach chr1 is stacked against grape chr1 and a peach locus is
@@ -86,7 +94,12 @@ only stage with no rendering question in it. It also gives the row-launching
 machinery (`syntenyTrackRows`, `connectedEndpoints`) an obvious hook: those
 contig names are exactly the rows worth offering to add.
 
-**2. Draw the stub.** Harder than it looks, and the reason to stage it. The
+**2. Draw the stub.** Harder than it looks, and the reason to stage it. **Taken
+via the overlay**, which is the alternative priced two paragraphs down —
+`OffscreenMateOverlay` is a second 2D canvas over the level's, `pointerEvents:
+none`, and the shader is untouched. The level's own canvas belongs to the
+rendering backend and may be a WebGPU surface, so there is no drawing on it
+afterwards; a stacked canvas is what a non-instance element costs. The
 shader takes four cumBp corners and interpolates vertically over `u.height`
 (`y = u.height * yCurve(t)`), so every instance spans the full gap between the two
 axes by construction. A stub that descends only part way is a new kind with a
@@ -121,16 +134,24 @@ reports nothing.
 
 ## What has to be decided before stage 2
 
-- **Which axis owns a stub.** Class A stubs hang off v1. If class B ever lands,
-  its stubs hang off v2, and the two must be visually distinguishable from each
-  other and from a ribbon whose far end is merely panned off the left/right edge
-  (which already draws correctly today and is *not* this).
-- **Whether stubs obey `minAlignmentLength`.** They carry an alignment length and
-  it means the same thing, so probably yes.
-- **What happens on hover/click.** These have real feature ids and a real mate
-  locus, so `SyntenyResolveMatchingRegion` already answers "where does this go" —
-  which makes "click to add that contig as a row" a natural and cheap action, and
-  arguably the whole point of the feature.
+- **Which axis owns a stub.** Settled for class A: `offscreenMateStubs` reads
+  `views[level]`, the level's upper row, and its test says why — the lower row's
+  ruler puts every stub at a believable wrong offset. If class B ever lands, its
+  stubs hang off v2 and the two must be distinguishable from each other and from
+  a ribbon whose far end is merely panned off the left/right edge (which already
+  draws correctly and is *not* this).
+- **Whether stubs obey `minAlignmentLength`.** Open. They carry an alignment
+  length and it means the same thing, so probably yes; today they do not, and a
+  sub-pixel one is floored to a visible tick instead.
+- **What happens on hover/click.** Open, and the piece with the most left in it.
+  These have real feature ids and a real mate locus, so
+  `SyntenyResolveMatchingRegion` already answers "where does this go" — which
+  makes "click to add that contig as a row" natural and cheap. The overlay
+  deliberately does not hit-test; that belongs in the level's own pick engine,
+  not a second hit path.
+- **The lanes needed for both are already shipped.** `mateRefNameIds` indexes
+  `mateRefNameDict` per placed stub, so the contig a stub points at is in hand
+  and nothing reads it yet — it is there for the label and the click.
 
 ## Cheaper thing this is not
 

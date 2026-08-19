@@ -31,6 +31,7 @@ import {
   clipLargeBlockToWindow,
   clipSyntenyFeature,
 } from './clipSyntenyFeature.ts'
+import { createOffscreenMateCollector } from './collectOffscreenMates.ts'
 import { compareDrawOrder, drawTier } from './syntenyDrawOrder.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
@@ -170,15 +171,16 @@ export async function executeSyntenyFeaturesAndPositions({
   // projection loop skipped these anyway (never incremented validCount), so the
   // featureId→index mapping is unchanged.
   //
-  // The v2 half of that test is also where the view's largest silent omission
-  // happens, and unlike the fetch-scoping class above these features are ALREADY
-  // IN HAND: an alignment anchored in the visible v1 window whose mate lands on a
-  // contig v2 is not displaying is fetched, decoded, and dropped right here with
-  // nothing said. It is not a rare edge — on demos/grape_peach_cacao, peach chr1
-  // against grape chr1 draws 1029 of its 3796 anchors and discards the other 2767
-  // (73%), which run to nine other grape contigs in clean paleopolyploid blocks.
-  // Surfacing them needs no fetch change; see
-  // agent-docs/ideas/offscreen-synteny-mates.md.
+  // The v2 half of that test still shrinks the sort input, but it no longer
+  // DISCARDS what it drops: an alignment anchored in the visible v1 window whose
+  // mate lands on a contig v2 is not displaying is fetched and decoded either
+  // way, and it is not a rare edge — on demos/grape_peach_cacao, peach chr1
+  // against grape chr1 draws 1029 of its 3796 anchors and the other 2767 (73%)
+  // run to nine other grape contigs in clean paleopolyploid blocks. Those go to
+  // `collectOffscreenMates` in the loop below, which is what lets the view say
+  // so. The OTHER class — anchored on the target axis, mate outside the query
+  // window — is never requested at all; see
+  // agent-docs/ideas/two-axis-synteny-fetch.md.
   const v1Index = buildBpRegionIndex(v1)
   const v2Index = buildBpRegionIndex(v2)
   const v1RefNames = v1Index.entries
@@ -196,12 +198,22 @@ export async function executeSyntenyFeaturesAndPositions({
   // too. The decorated records are also what the projection loop iterates, so
   // refName/start/end/strand/mate aren't re-fetched per feature.
   const decorated: DecoratedFeature[] = []
+  // The v2 half of the test above is not just a filter — see
+  // `collectOffscreenMates`. Split out so what it drops can be counted and
+  // placed on the query axis instead of vanishing.
+  const offscreenMates = createOffscreenMateCollector(v1Index)
   for (const f of deduped) {
     const refName = f.get('refName')
     const mate = getMate(f)
-    if (mate && v1RefNames.has(refName) && v2RefNames.has(mate.refName)) {
+    if (mate && v1RefNames.has(refName)) {
       const start = f.get('start')
       const end = f.get('end')
+      // before the draw-order tier below, which is about how a ribbon stacks
+      // against the others — this one gets no ribbon
+      if (!v2RefNames.has(mate.refName)) {
+        offscreenMates.add(refName, start, end, mate.refName)
+        continue
+      }
       const px = Math.max(
         (end - start) / v1.bpPerPx,
         (mate.end - mate.start) / v2.bpPerPx,
@@ -543,6 +555,7 @@ export async function executeSyntenyFeaturesAndPositions({
     mateAssemblyNameDict: mateAssemblyNameDict.dict,
     mateAssemblyNameIds: mateAssemblyNameIds.subarray(0, validCount),
     hasCigar,
+    offscreenMates: offscreenMates.finish(),
   }
 
   // colorBy lives on the main thread; the worker emits geometry +

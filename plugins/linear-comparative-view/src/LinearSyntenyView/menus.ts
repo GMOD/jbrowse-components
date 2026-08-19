@@ -232,6 +232,49 @@ export function displayCanShowCigar(display: {
 
 // Gated on data, not config: coarse-tier PIF and CIGAR-less PAF have no ops to
 // display, so the whole section would be inert.
+interface OffscreenMateModel {
+  showOffscreenMates: boolean
+  offscreenMateTally: { refName: string; count: number }[]
+  setShowOffscreenMates: (arg: boolean) => void
+}
+
+// Locale-grouped, because these run to five figures on a whole chromosome and
+// "2767" reads as a coordinate in a menu full of them.
+function formatCount(n: number) {
+  return n.toLocaleString()
+}
+
+/**
+ * The item's label IS the finding. A checkbox reading "Show unpaired
+ * alignments" tells a reader nothing they can act on, where "2,767 alignments
+ * map to 9 contigs not shown" is the whole point of the feature — a locus that
+ * looks syntenic to nothing here is syntenic to something the view is not
+ * displaying, and the contig names underneath are the rows worth adding.
+ *
+ * GATED ON THERE BEING SOME, so a two-contig comparison with nothing hidden
+ * carries no menu item claiming there might be. That also means the item
+ * appears only once a fetch has landed, which is right: before then the honest
+ * answer is not zero, it is unknown.
+ */
+export function offscreenMateMenuItems(model: OffscreenMateModel): MenuItem[] {
+  const { offscreenMateTally: tally } = model
+  if (tally.length === 0) {
+    return []
+  }
+  const total = tally.reduce((sum, e) => sum + e.count, 0)
+  const contigs = tally.length === 1 ? '1 contig' : `${tally.length} contigs`
+  return [
+    {
+      label: `${formatCount(total)} alignments map to ${contigs} not shown`,
+      type: 'checkbox' as const,
+      checked: model.showOffscreenMates,
+      onClick: () => {
+        model.setShowOffscreenMates(!model.showOffscreenMates)
+      },
+    },
+  ]
+}
+
 export function cigarModeMenuItems(model: CigarModeModel): MenuItem[] {
   return model.hasCigarData
     ? [

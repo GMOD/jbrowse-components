@@ -11,6 +11,7 @@ import { observer } from 'mobx-react'
 
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
 import { syntenyWidgetFeature } from '../LinearSyntenyDisplay/syntenyWidgetFeature.ts'
+import OffscreenMateOverlay from './OffscreenMateOverlay.tsx'
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
@@ -321,6 +322,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
           cursor: model.hoveringFeature ? 'pointer' : 'default',
         }}
       />
+      <OffscreenMateOverlay model={model} />
       {combinedError ? (
         // One banner stacks the GPU error and every display's fetch error, so
         // Retry has to undo whichever are present: `retry()` re-inits the

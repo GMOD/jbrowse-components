@@ -65,6 +65,16 @@ export interface FeatureBlock {
   mateAssembly?: string
 }
 
+export function emptyOffscreenMates(): SyntenyFeatureData['offscreenMates'] {
+  return {
+    mateRefNameDict: [],
+    counts: new Uint32Array(0),
+    starts: new Float64Array(0),
+    ends: new Float64Array(0),
+    mateRefNameIds: new Uint32Array(0),
+  }
+}
+
 /**
  * Pack blocks the way the RPC hands them over: parallel typed arrays and
  * dictionary-encoded string lanes, not objects.
@@ -77,7 +87,16 @@ export interface FeatureBlock {
  */
 export function packSyntenyFeatureData(
   blocks: FeatureBlock[],
-  { hasCigar = true } = {},
+  {
+    hasCigar = true,
+    // The alignments a fetch could not pair, which every caller so far has none
+    // of — an empty tally is the answer for a comparison where both rows show
+    // every contig, and a suite that wants some builds them.
+    offscreenMates = emptyOffscreenMates(),
+  }: {
+    hasCigar?: boolean
+    offscreenMates?: SyntenyFeatureData['offscreenMates']
+  } = {},
 ): SyntenyFeatureData {
   const lane = (values: string[]) => {
     const d = makeStringDict()
@@ -91,6 +110,7 @@ export function packSyntenyFeatureData(
   )
   const mateAssemblies = lane(blocks.map(b => b.mateAssembly ?? 'hg002pat'))
   return {
+    offscreenMates,
     strands: Int8Array.from(blocks, b => b.strand ?? 1),
     starts: Uint32Array.from(blocks, b => b.start),
     ends: Uint32Array.from(blocks, b => b.end),

@@ -22,12 +22,14 @@ import {
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 
+import { offscreenMateTally } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
@@ -92,6 +94,11 @@ export interface SyntenyFeatureData {
   // string. Used to gate CIGAR-related menu items so they don't appear when
   // the resolved tier (coarse PIF, or a CIGAR-less PAF) has no per-row ops.
   hasCigar: boolean
+  // The alignments this level FETCHED and could not draw a ribbon for, because
+  // their mate is on a contig the facing row is not displaying. Counted per
+  // contig and placed on the query axis. Not a subset of anything above: no
+  // entry here has a row in the per-feature lanes.
+  offscreenMates: OffscreenMateData
 }
 
 export interface FeatPos {
@@ -341,6 +348,29 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        */
       get numFeats() {
         return self.featureData?.featureIds.length ?? 0
+      },
+      /**
+       * #getter
+       * The contigs this level fetched alignments to but cannot draw a ribbon
+       * for, largest first, because the facing row is not displaying them.
+       *
+       * A getter rather than shipped as objects: the tally is one entry per
+       * contig, so sorting it is over a scaffold count, while the lanes it is
+       * built from are one entry per contig too. What the reader is shown, and
+       * what names the rows worth offering to add.
+       */
+      get offscreenMateTally() {
+        const { featureData } = self
+        return featureData ? offscreenMateTally(featureData.offscreenMates) : []
+      },
+      /**
+       * #getter
+       * How many alignments this level is not drawing at all. The headline
+       * number, and the one a user needs before concluding a locus is syntenic
+       * to nothing.
+       */
+      get offscreenMateCount() {
+        return this.offscreenMateTally.reduce((sum, e) => sum + e.count, 0)
       },
       /**
        * #getter
