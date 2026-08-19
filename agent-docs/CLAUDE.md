@@ -7,8 +7,9 @@ is filed:
   measurement, the datasets behind the figures.
 - `ideas/` — a proposal parked, one per file.
 - `architecture-decision-records/` — *why*, one per file.
-- `handoffs/` — live state of an unfinished thread. **Pointers, not content.**
-  Delete when the thread lands.
+- `handoffs/` — live state of an unfinished thread, usually a review whose
+  findings nobody has committed to. **Pointers, not content.** Delete when the
+  thread lands.
 - Tried and declined → `reference/REJECTED_IDEAS.md`.
 - Work someone intends to do → `TODO.md`, in the order to take it.
 - What a session did and which commits → **git already holds it.**
@@ -18,6 +19,15 @@ That last one applies to `CLAUDE.md` files too and is the rule they break most.
 
 `TODO.md` vs `ideas/` is commitment, not size. Read a parked proposal before
 re-proposing it.
+
+**A handoff is the one file here whose subject is still moving, so it goes stale
+faster than anything else** — its state snapshots drift, and the reference doc it
+points at overtakes it. Close a thread by filing its remainder into the homes
+above and deleting the file, in the same pass; a *worked proposal* left inside a
+handoff is the commonest way that fails, and it belongs in `ideas/`, one per file.
+Eight existed on 2026-08-19 and seven closed once their remainder was filed;
+several had already drifted — a stale count, a seam marked untouched that a
+reference doc had since measured, a subject rewritten out from under the file.
 
 **A perf measurement has a public reader as well as this one.**
 `website/docs/developer_guides/optimizations.md` digests what is in `reference/`
@@ -78,8 +88,9 @@ sat at a pre-ADR-0010 value there while `cram-js` had moved on.
 
 - **Every doc outside `architecture-decision-records/` carries `name:` /
   `description:` frontmatter** — `pnpm autogen --check` fails without it. Find
-  docs through [reference/README.md](reference/README.md) /
-  [ideas/README.md](ideas/README.md), not `ls`.
+  docs through [reference/README.md](reference/README.md),
+  [ideas/README.md](ideas/README.md) and
+  [handoffs/README.md](handoffs/README.md), not `ls`.
 - Those indexes and every `<!-- NAME START/END -->` block are generated; don't
   hand-edit between the markers.
 - **If a sentence tells the reader to go look at a file, generate the table

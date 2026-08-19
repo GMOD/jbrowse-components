@@ -54,6 +54,17 @@ const INDEXES = [
     // written as the hook you pick one up by.
     heading: 'What it covers',
   },
+  {
+    // `handoffs/` was the one directory here you had to `ls`, which is the
+    // state agent-docs/CLAUDE.md tells everyone else not to be in. It is also
+    // the directory that most needs the discipline: a handoff's subject is
+    // still moving, so it goes stale faster than anything in reference/, and
+    // seven of the eight that existed on 2026-08-19 closed in a day.
+    dir: 'handoffs',
+    marker: 'HANDOFFS INDEX',
+    label: 'Handoffs index',
+    heading: 'What it is waiting on',
+  },
 ]
 
 interface Doc {

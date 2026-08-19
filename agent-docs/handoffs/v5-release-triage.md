@@ -115,9 +115,11 @@ wrong within the week.
 **Desktop `contextIsolation`.** The release-notes paragraph describing it as done
 is out of the draft; the window is still `nodeIntegration: true,
 contextIsolation: false, webSecurity: false` and `electron/preload.ts` says so in
-its own header. The workstream is planned, not abandoned — `handoffs/desktop-audit.md`
-§1 and `reference/DESKTOP_CONTEXT_ISOLATION.md` hold the plan and the probe that
-gates it. This only records that the notes had run ahead of it.
+its own header. The workstream is planned, not abandoned —
+`reference/DESKTOP_CONTEXT_ISOLATION.md` holds the plan, the ordering and the
+worker probe that gates the whole thing, and `ideas/plugin-main-process-bridge.md`
+holds the crossing its step 2 is waiting on. This only records that the notes had
+run ahead of it.
 
 **The two-tier benchmark table.** Removed from the draft, marker left in place.
 Nothing in-repo records that run — the only PIF measurement is

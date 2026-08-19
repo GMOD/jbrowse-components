@@ -4,6 +4,9 @@ Data is fetched in RPC workers, rendered on the main thread (WebGPU → WebGL �
 Canvas2D). Worker output is **absolute genomic uint32**.
 
 Background: `agent-docs/` — `ARCHITECTURE.md`, then `reference/` and the ADRs.
+Skim the three generated `README.md` indexes (`reference/`, `ideas/`,
+`handoffs/`) before proposing or re-reviewing: a parked proposal often kills the
+obvious version already, and an open handoff often has the bug.
 
 Rules live here only while nothing in the tree enforces them. Once a check
 exists, this file points at the check.

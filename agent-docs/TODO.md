@@ -28,6 +28,9 @@ before anyone noticed.
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
+| [The desktop autosave interval](#decide-the-desktop-autosave-interval-or-scale-it-with-the-session) | desktop | a call about unsaved work; the flush paths already narrowed the window |
+| [Factory reset leaves the BLAT partition](#have-desktops-factory-reset-clear-the-blat-partition) | desktop, BLAT | two lines; `Partitions/jbrowse-blat` survives reset |
+| [Whether the web export pins its deployment](#decide-whether-the-web-export-pins-the-deployment-it-opens) | desktop, export | a deployment decision; the link already records what made it |
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
@@ -69,6 +72,7 @@ before anyone noticed.
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [Take the MSAA target's size on a retina display](#take-the-msaa-targets-size-on-a-retina-display) | GPU, limits | run the probe at dpr 2; the 640 MiB is arithmetic, not measurement |
+| [Does a sixth track want a sixth RPC worker](#does-a-sixth-alignments-track-want-a-sixth-rpc-worker) | RPC, limits | one `workerCount` line to try; the answer is a memory measurement, not a stopwatch |
 | [Cross-region arc count at 300x](#read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
 | [Does a quality floor still buy anything on the band](#does-a-base-quality-floor-still-buy-anything-on-the-coverage-band) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
@@ -192,6 +196,34 @@ missing in the canonical config too, so both are inherited rather than drift. A
 gate has to exempt them, which is its own small design question — and `vvx`
 reports as a missing assembly when it is an assembly *alias*, which is a
 validator gap rather than a config error.
+
+### Decide the desktop autosave interval, or scale it with the session
+
+`autorun`'s `delay` is a throttle rather than a debounce, so the 1 s autosave
+fires for as long as anything keeps changing — panning included. The data-loss
+window that number was chosen against is much smaller now: `closeGuard` flushes
+on window close, and Exit, return-to-start-screen and session-swap all flush too.
+
+The version worth proposing is an interval that scales with the serialized size,
+so a large session stops paying a small one's cadence. It is a judgment call
+about someone's unsaved work rather than an optimization, which is why it is
+written down instead of changed.
+
+### Have desktop's factory reset clear the BLAT partition
+
+Reset prunes the userData directories but not `Partitions/jbrowse-blat`, so a
+solved CAPTCHA's `cf_clearance` survives it. Two lines. It was judged out of
+scope alongside the partition itself (`electron/blatSession.ts`); take it if
+reset should mean reset.
+
+### Decide whether the web export pins the deployment it opens
+
+`DEFAULT_WEB_BASE_URL` is `.../jb2/latest/`, and the hosted base config a link
+diffs against is fetched fresh on both ends, so an export made today opens
+against whatever is deployed when someone follows it. The link records what
+produced it — `exportedFrom=jbrowse-desktop@<version>` — which closes the
+diagnosis half; what is open is whether it should also pin what it opens, and
+that is a deployment decision rather than a code one.
 
 ### Decide whether `bezierRadiusRatio` becomes a config slot
 
@@ -1839,6 +1871,26 @@ by shipping a second per-segment field (the high-quality count beside the total)
 which is 4 bytes a segment for a setting most users will never touch. A config
 slot with no menu entry is the honest middle, and it is what to reach for unless
 the measurement says people will move it.
+
+### Does a sixth alignments track want a sixth RPC worker
+
+`WorkerPoolRpcDriver` sizes its pool `clamp(detectHardwareConcurrency() - 1, 1,
+5)` and `rpcSessionId` is per-track, so tracks round-robin — which puts two of a
+six-track session's tracks on one worker. Raising the ceiling is one line through
+the `workerCount` config slot, which already overrides the hardware default.
+
+The reason it is not obviously right is **memory, not speed**: each worker holds
+its own BAM chunk caches and its own bgzf pool, so a sixth worker is a sixth copy
+of both. That makes this the same measurement as
+[BGZF_WORKER_POOL.md](reference/BGZF_WORKER_POOL.md) and
+[ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md)'s per-context entry
+rather than a stopwatch — and wasm memory is outside `Runtime.getHeapUsage`, so
+it wants process-level RSS per target.
+
+Do not reach for a wall-clock A/B first. Tracks do **not** serialise on one RPC
+worker (the pool round-robins on a per-track `rpcSessionId`), and every RPC
+worker profiles 100% idle through a six-track pan, so there is no queueing for
+more workers to relieve.
 
 ### Read the cross-region arc count at 300x, which the arc cap is sized from
 

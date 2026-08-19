@@ -249,7 +249,18 @@ embedded credentials, response size and a timeout are checked there too.
 
 ## Suggested order
 
-Do the bundling first. It is the one that decides whether this is feasible at
+**Probe before any of it: can page-thread JS build its own Worker and inherit
+node integration?** The flip exists to stop *injected* content reaching Node. If
+Electron grants `nodeIntegrationInWorker` to any Worker the renderer constructs
+rather than only to same-origin script urls, then after the flip injected content
+still reaches `child_process` through `new Worker(blobUrl)`, and the whole
+workstream buys much less than it costs. Same minimal probe-app shape as the
+three rows in the table above, an afternoon at most. If it comes back badly the
+fallback is `nodeIntegrationInWorker: false` plus the IPC-backed filehandle
+serving the worker too — a larger version of already-planned work rather than a
+new design. Nobody has run it.
+
+Then the bundling. It is the one that decides whether the rest is feasible at
 all, and every later step is unverifiable while the renderer won't boot.
 
 1. **Get `fs` out of the renderer's module graph** (blocker 2). The spike is
@@ -262,10 +273,10 @@ all, and every later step is unverifiable while the renderer won't boot.
    anything, since an empty array literal satisfies every array type, and it hid
    two unlisted channels for as long as they existed. What is left is the four
    callers outside the product that still hand-roll `window.require('electron')`
-   and restate the contract with casts; see
-   [handoffs/desktop-audit.md](../handoffs/desktop-audit.md). Doing that is what
-   makes step 5's validation type-checked, and what keeps the allowlist from
-   drifting again.
+   and restate the contract with casts; the shape for those is
+   [ideas/plugin-main-process-bridge.md](../ideas/plugin-main-process-bridge.md).
+   Doing that is what makes step 5's validation type-checked, and what keeps the
+   allowlist from drifting again.
 3. IPC-backed `GenericFilehandle` behind `openLocation` + the capability check.
 4. Plugin loading off `node:fs`/`require`.
 5. Argument validation on the channels above.

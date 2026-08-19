@@ -27,6 +27,20 @@ components that re-render each zoom frame. Pinning down which ones needs a
 React-render-level measurement (React DevTools profiler or render counters), not
 a CPU flame graph — that's the right tool for "who re-rendered and why."
 
+**Everything on this page was measured on ONE track, and the tax scales per
+track**: each one mounts its own overlay and chrome subtree, so a six-track
+session pays it six times. Since `computeVisibleLabels` stopped deciding its walk
+from the data's longest feature, this is the entire residual —
+`jb2bench/scripts/render/multibam.ts` sweeps the track count with region, zoom,
+viewport, gesture and frame count held fixed. The two directions parked at one
+track are the two to take at N: reposition overlays by CSS transform during a
+gesture, and hoist static styles out of the per-frame render.
+
+**It is blocked on a quiet machine, and demonstrably so** — see the periodicity
+section below, where the same gesture profiles at 83% `(program)` with every
+worker idle. Attribution is worthless in that state and the inflation is not
+uniform across frames.
+
 **Measured culprit (2026-07-11): the LGV coordinate ruler, not the alignments overlays.** A `MutationObserver` attributing every DOM mutation during a 5× zoom to its nearest `data-testid` subtree found ~2056 mutations dominated by `rubberband_controls` (the ScaleBar): 719 structural node add/remove + 439 style-attr, vs **2 of 2056** in the alignments overlays. The alignments display overlays are already zoom-invariant (`highlightBoxes` short-circuits to `[]` when nothing hovered; `renderSections`/`sections`/`groupLaidOutMap` read only vertical layout, never `offsetPx`/`bpPerPx`; sashimi/bezier default-off) — **do not chase them.** `VisibleLabelsOverlay` is a canvas, so it contributes no DOM churn.
 
 The churn was `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../ScalebarCoordinateLabels.tsx`): it created and destroyed ~144 tick `<div>` nodes per zoom click. Its `key`-by-base reuse works for *pan* and not *zoom*, which is the wrong way round — `scalebarLabels` is **unchanged** during a pan (the labels live in the staticBlocks frame, and only the container transform moves), so there was nothing there to save; a zoom moves the whole tick set, so every key changed and React rebuilt the list, each new node paying the emotion/tss `tickLabel` styling cost.
@@ -116,3 +130,15 @@ to this tick at all.
 
 Measuring it also confirms the ~500 ms period by a second route: 4 ticks over
 ~2.2 s of frames, arrived at with no reference to the frame gaps.
+
+## The stop-token probe, for whoever finds it in a trace next
+
+`probeBlobUrl` (`packages/core/src/util/stopToken.ts`) is a **synchronous XHR**
+per throttled check, and it was 408 ms across six tracks' cold load. It looks
+like an obvious target and is not one: the cheap path is the `SharedArrayBuffer`
+branch, which needs COOP/COEP cross-origin isolation — which a browser fetching
+arbitrary remote BAMs over CORS probably cannot require of its host page.
+
+`stopToken.ts`'s own header records that the probe was deleted once and had to be
+restored. Recorded here so the next person who sees it in a profile recognises it
+and moves on.

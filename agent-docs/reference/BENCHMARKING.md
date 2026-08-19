@@ -118,6 +118,15 @@ early ones are 2-3x slower than steady state. A min over a series that has not
 plateaued is not a min of anything. Watch the spread: `5418, 4506, 2263` in one
 3-round run gives it away.
 
+**A window small enough to sit in cache.** Every modification bench on the
+alignments path ran `chr22_mask:124000-143000` — 285 reads, 0.24M calls — which
+is cache-resident, so it priced arithmetic and said nothing about allocation rate
+or residency. Re-running the combined-code change at the file's full extent, 3.1x
+the size, moved it **2.07x → 1.86x**. A too-small window does not widen the error
+bars, it **moves the answer** — and here it moved it in the direction that
+flattered the change. Size the window from the working set, not from what runs
+fast.
+
 **A degenerate microbench.** A pure-allocation microbench claimed **5.2x** for
 removing two throwaway objects per record. The same change on a real 300x BAM
 measured **1.013x**. Microbenches are for finding a mechanism, never for sizing
