@@ -259,7 +259,7 @@ Takes no jexl `args`, unlike `getConf`: a promotable slot cannot hold a callback
 
 ```js
 // type signature
-<…>(model: IStateTreeNode<...> & ... 1 more ... & { ...; }, slot: SLOT) => ConfigurationSlotValueResolved<...>
+<…>(model: ResolvableDisplay<...>, slot: SLOT) => ConfigurationSlotValueResolved<...>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -281,8 +281,8 @@ schema doesn't declare returns `undefined` and reports nothing, at any layer, so
 the slot keeps reading as its default forever. Which makes the compile-time
 constraint worth keeping _reachable_: it is only as good as the schema of the
 holder handed in, and a holder widened to `AnyConfigurationModel` switches it
-off entirely — the trap a mixin casting to reach its host walks into
-(`RowHeightMixin`'s `confNode` narrows to dodge it; the sibling mixins do not).
+off entirely — the trap a mixin casting to reach its host walks into. Every such
+cast here names its own field table instead (`ConfigModelForFields`).
 
 A wrong _value_ type still throws at runtime (MST type-checks the assignment)
 rather than at compile time. `value` is deliberately `unknown` because the

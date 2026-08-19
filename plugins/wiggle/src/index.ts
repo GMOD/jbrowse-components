@@ -89,7 +89,10 @@ export {
 // The score axis alone, for a display that has one without wiggle's palette and
 // rendering vocabulary (GWAS Manhattan), plus the snapshot remap that keeps
 // retired autoscale values loading.
-export { scoreAxisConfigSchemaFields } from './shared/wiggleConfigSchemaFields.ts'
+// re-exported from `@jbrowse/wiggle-core`, where it moved to sit beside the
+// `ScoreScaleMixin` that reads it. Kept here because it is this plugin's
+// published surface and gwas imports it by this path.
+export { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
 export { remapRetiredAutoscale } from './shared/remapRetiredAutoscale.ts'
 export { WiggleScoreConfigMixin } from './shared/WiggleScoreConfigMixin.ts'
 export {

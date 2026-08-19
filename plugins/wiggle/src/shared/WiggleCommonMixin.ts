@@ -17,15 +17,37 @@ import {
   RESOLUTION_MAX,
   RESOLUTION_MIN,
   WiggleScoreConfigMixin,
-  confNode,
 } from './WiggleScoreConfigMixin.ts'
 import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
 import type { WiggleHoveredFeature } from '../util.ts'
+import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
+import type {
+  ConfigModelForFields,
+  ResolvableDisplay,
+} from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 import type { ObservableMap } from 'mobx'
+
+// This mixin reads two slots past the shared table, and they are restated here
+// rather than moved into it because the two wiggle displays genuinely disagree
+// about them: `defaultRendering` takes a different enum and default in each
+// (`xyplot` vs `multirowxy`), and `summaryScoreMode` a different default
+// (`whiskers` vs `avg`). Naming them costs a line each and keeps the other six
+// slot names below checked; widening the cast to cover them would give up all
+// eight. gccontent hand-declares `summaryScoreMode` a third time, so a
+// parameterized field table is the eventual fix.
+type WiggleCommonConfigModel = ConfigModelForFields<
+  typeof wiggleConfigSchemaFields & {
+    summaryScoreMode: { type: 'stringEnum'; defaultValue: string }
+    defaultRendering: { type: 'stringEnum'; defaultValue: string }
+  }
+>
+
+const confNode = (self: object) =>
+  self as ResolvableDisplay<WiggleCommonConfigModel>
 
 // The visible per-source feature arrays that feed autoscale, clipped to the
 // coarse (500ms debounced) blocks so the domain doesn't recompute on every

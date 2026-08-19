@@ -20,11 +20,18 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - Keep the main model chain in one file.
 - Write config with `setConf`, not `configuration.setSlot`. Promotable slots
   resolve only via `resolveConf`.
-- **A mixin's host cast names the sibling field table, not
-  `AnyConfigurationModel`** — the widened form silently switches off
-  `getConf`/`setConf`'s slot-name check, and a misspelled _read_ has no
-  diagnostic at any layer. `RowHeightMixin`'s `confNode` is the worked example;
-  26 accesses across the five sibling mixins are still widened.
+- **A mixin's host cast names its own field table, not `AnyConfigurationModel`**
+  — `ConfigModelForFields<ReturnType<typeof xConfigSchemaFields>>`. The widened
+  form silently switches off `getConf`/`setConf`'s slot-name check, and a
+  misspelled _read_ has no diagnostic at any layer. All six mixin casts are
+  narrowed; a seventh reads two slots its table can't hold and says why.
+- **Needing the cascade too, write `ResolvableDisplay<XConfigModel>`** — never
+  `ResolvableDisplay & { configuration: XConfigModel }`. The intersection reads
+  identical and re-widens the slot names back to `string`, because
+  `ResolvableDisplay` declares `configuration: AnyConfigurationModel`. Two
+  mixins shipped that spelling and were checking nothing; the widened form has
+  no symptom, so only a sabotage finds it. Pinned in
+  `configTypeNarrowing.test.ts`.
 - A bare getter returns a resolved value, never `undefined` — a sentinel prop
   gets a distinct resolved getter (`effectiveRowHeight`).
 - In React, `autorun` inside `useEffect`, not `reaction`.

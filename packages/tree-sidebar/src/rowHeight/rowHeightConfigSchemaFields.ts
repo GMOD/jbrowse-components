@@ -1,5 +1,4 @@
-import type { ConfigurationSchema } from '@jbrowse/core/configuration'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 /**
  * The config slot a display owes `RowHeightMixin`, so composing the mixin and
@@ -57,8 +56,6 @@ export function rowHeightConfigSchemaFields({
  * runtime diagnostic anywhere. Deriving the type from the fields keeps the two
  * in step — rename the slot and every accessor over it stops compiling.
  */
-export type RowHeightConfigModel = Instance<
-  ReturnType<
-    typeof ConfigurationSchema<ReturnType<typeof rowHeightConfigSchemaFields>>
-  >
+export type RowHeightConfigModel = ConfigModelForFields<
+  ReturnType<typeof rowHeightConfigSchemaFields>
 >

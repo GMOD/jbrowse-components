@@ -5,6 +5,7 @@ import { reaction } from 'mobx'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { HeightMode } from './heightMode.ts'
+import type { HeightModeConfigModel } from './heightModeConfigSchemaFields.ts'
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { IReactionDisposer } from 'mobx'
 
@@ -13,13 +14,21 @@ import type { IReactionDisposer } from 'mobx'
 // reference and give it a minimal module-scoped type for tsc.
 declare const process: { env: { NODE_ENV?: string } }
 
+/**
+ * The whole of what `HeightModeMixin` needs a composing display to be. It keeps
+ * `ResolvableDisplay` because the promotable `heightMode` read goes through the
+ * cascade, which keys its session-wide tier on `type`; what changed is the
+ * `configuration`, narrowed from `AnyConfigurationModel` to this mixin's own
+ * field table so the four slot names below are checked again.
+ */
+export type HeightModeHost = ResolvableDisplay<HeightModeConfigModel>
+
 // The mixin's own `self` is the empty model it declares, so it can't see the
-// props the concrete display supplies. `ResolvableDisplay` is what the promotable
-// `heightMode` read needs (type + configuration); every display composing this is
-// a BaseDisplay, so both are really there. The mixin took a
+// props the concrete display supplies; every display composing this is a
+// BaseDisplay, so they are really there. The mixin took a
 // `TConf extends ResolvableDisplay` type parameter for this, but no caller ever
 // passed one — it only ever resolved to its own default.
-const confNode = (self: object) => self as ResolvableDisplay
+const confNode = (self: object) => self as HeightModeHost
 
 // The `TrackHeightMixin` members this one drives. Composed before it by every
 // user (the `height` and `resizeHeight` overrides below depend on that order),
@@ -83,7 +92,7 @@ export default function HeightModeMixin() {
        * (`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
        */
       get fitTargetHeight(): number {
-        return getConf(confNode(self), 'height') as number
+        return getConf(confNode(self), 'height')
       },
       /**
        * #getter
@@ -93,7 +102,7 @@ export default function HeightModeMixin() {
        * this, so the two can't diverge.
        */
       get growMaxHeight(): number {
-        return getConf(confNode(self), 'growMaxHeight') as number
+        return getConf(confNode(self), 'growMaxHeight')
       },
     }))
     .views(self => ({

@@ -9,9 +9,12 @@ import { getConf, readConfObject, resolveConf, setConf } from './index.ts'
 
 import type { FileLocation } from '../util/types/index.ts'
 import type { IConfigurationReference } from './configurationSchema.ts'
+import type { ResolvableDisplay } from './promotableResolve.ts'
 import type {
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
+  ConfigurationSchemaForModel,
+  ConfigurationSlotName,
   ConfigurationSnapshot,
 } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -382,6 +385,45 @@ describe('getConf slot-value type narrowing', () => {
       },
     }
     void subSchemaTypo
+    expect(true).toBe(true)
+  })
+})
+
+// A cross-cutting mixin can't see the `configuration` its composing display
+// supplies, so it casts to reach it. **What it casts to decides whether the
+// slot names below it are checked at all**, and the two spellings that look
+// equivalent are not: `ResolvableDisplay<X>` narrows, and
+// `ResolvableDisplay & { configuration: X }` re-widens, because
+// `ResolvableDisplay` declares `configuration: AnyConfigurationModel` and the
+// intersection keeps it. `HeightModeMixin` and `WiggleScoreConfigMixin` both
+// shipped the intersection spelling and neither was checking anything; only a
+// sabotage found it, since the widened form has no symptom at all.
+describe('a mixin host type narrows the slot names, or silently does not', () => {
+  it('narrows through the type parameter', () => {
+    type Names = ConfigurationSlotName<
+      ConfigurationSchemaForModel<
+        ResolvableDisplay<Instance<typeof schema>>['configuration']
+      >
+    >
+    assertType<Equal<string extends Names ? true : false, false>>()
+    const slot: Names = 'color'
+    void slot
+    expect(true).toBe(true)
+  })
+
+  it('does NOT narrow through an intersection', () => {
+    type Names = ConfigurationSlotName<
+      ConfigurationSchemaForModel<
+        (ResolvableDisplay & {
+          configuration: Instance<typeof schema>
+        })['configuration']
+      >
+    >
+    // the failing half, asserted rather than described: widened to `string`, so
+    // every slot name typechecks. If this ever flips to `false`, the
+    // intersection spelling became safe and the guidance on `ResolvableDisplay`
+    // should be revisited.
+    assertType<Equal<string extends Names ? true : false, true>>()
     expect(true).toBe(true)
   })
 })

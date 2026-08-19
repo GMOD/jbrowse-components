@@ -5,14 +5,25 @@ import { applySubtreeFilter, buildTree } from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
+import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
 import type { HoveredTreeNode, RowSource } from './types.ts'
-import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+
+/**
+ * The whole of what `TreeSidebarMixin` needs a composing display to be.
+ * Exported because it is the mixin's contract and `TreeSidebarMixin.test.ts`
+ * pins it: widen it and the `@ts-expect-error`s there go unused.
+ */
+export interface TreeSidebarHost {
+  configuration: TreeSidebarConfigModel
+}
 
 // The mixin's own `self` is the model it declares, so it cannot see the
 // `configuration` the concrete display supplies — every display composing this
 // is a BaseDisplay, so it is really there. Same idiom, and the same reason, as
-// `HeightModeMixin`'s `confNode`.
-const confNode = (self: object) => self as ResolvableDisplay
+// `HeightModeMixin`'s `confNode`. Narrowed to the sibling field table rather
+// than `AnyConfigurationModel`, which is what keeps the three slot names below
+// checked; `ConfigModelForFields` has the why.
+const confNode = (self: object) => self as TreeSidebarHost
 
 /**
  * #stateModel TreeSidebarMixin

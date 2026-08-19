@@ -2,6 +2,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { GROW_MAX_HEIGHT, HEIGHT_MODE_VALUES } from './heightMode.ts'
 
+import type baseLinearDisplayConfigSchema from './configSchema.ts'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+
 /**
  * The config slots a display owes `HeightModeMixin` — which strategy, and how
  * tall `grow` is allowed to get.
@@ -64,3 +67,17 @@ export function heightModeConfigSchemaFields({
     },
   } as const
 }
+
+/**
+ * What `HeightModeMixin` asks a composing display's `configuration` to be. The
+ * two slots above, **plus whatever `baseLinearDisplayConfigSchema` declares** —
+ * `ConfigurationSlotName` walks the base chain, and the mixin reads `height`
+ * off it because a grow strategy starts from the configured height. Narrow so
+ * `getConf`/`resolveConf`/`setConf` still check the slot name, and so their
+ * results come back typed: the two `as number` casts this replaced were there
+ * only because a widened read returns `any`. See `ConfigModelForFields`.
+ */
+export type HeightModeConfigModel = ConfigModelForFields<
+  ReturnType<typeof heightModeConfigSchemaFields>,
+  typeof baseLinearDisplayConfigSchema
+>

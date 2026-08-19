@@ -10,6 +10,7 @@ export type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
+  ConfigModelForFields,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotValue,

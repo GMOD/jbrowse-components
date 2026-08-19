@@ -96,8 +96,10 @@ export function resolveConf<
   // keys the session-wide tier on `type` and reaches the session through the
   // node. Asking for that shape is what keeps this cast-free — hand it a bare
   // config holder and tsc names the missing members instead of failing at the
-  // first read
-  model: ResolvableDisplay & { configuration: CONFMODEL },
+  // first read. `ResolvableDisplay<CONFMODEL>`, never
+  // `ResolvableDisplay & { configuration: CONFMODEL }`: the intersection
+  // re-widens the slot names to `string` (see `ResolvableDisplay`)
+  model: ResolvableDisplay<CONFMODEL>,
   slot: SLOT,
 ): ConfigurationSlotValueResolved<
   ConfigurationSchemaForModel<CONFMODEL>,
@@ -128,8 +130,8 @@ export function resolveConf<
  * compile-time constraint worth keeping *reachable*: it is only as good as the
  * schema of the holder handed in, and a holder widened to
  * `AnyConfigurationModel` switches it off entirely — the trap a mixin casting
- * to reach its host walks into (`RowHeightMixin`'s `confNode` narrows to dodge
- * it; the sibling mixins do not).
+ * to reach its host walks into. Every such cast here names its own field table
+ * instead (`ConfigModelForFields`).
  *
  * A wrong *value* type still throws at runtime (MST type-checks the assignment)
  * rather than at compile time. `value` is deliberately `unknown` because the

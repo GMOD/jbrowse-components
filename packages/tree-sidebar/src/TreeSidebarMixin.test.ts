@@ -1,8 +1,14 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
+
+import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
 
 interface Src {
   name: string
@@ -196,4 +202,24 @@ describe('the tree toggles', () => {
       expect(m[other]).toBe(true)
     }
   })
+})
+
+// Typecheck-only, the way `extensionPoints.test.ts` asserts its guarantee: an
+// unused @ts-expect-error fails `pnpm typecheck`. It asks `TreeSidebarHost`
+// rather than a composed model on purpose — a test model's own schema is
+// concrete and checks the name itself, so asking that passes whatever the mixin
+// casts to. Widen the host back to `AnyConfigurationModel` and the three toggle
+// names above stop being checked, with a misspelled read reporting nothing at
+// any layer.
+test('the host type checks the slot names the mixin reads through it', () => {
+  const host = {} as TreeSidebarHost
+  const read = () => {
+    // @ts-expect-error
+    return getConf(host, 'showTrea')
+  }
+  const write = () => {
+    // @ts-expect-error
+    setConf(host, 'showTrea', true)
+  }
+  expect([read, write]).toHaveLength(2)
 })

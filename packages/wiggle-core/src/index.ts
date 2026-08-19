@@ -1,3 +1,6 @@
+export { scoreAxisConfigSchemaFields } from './scoreAxisConfigSchemaFields.ts'
+export type { ScoreAxisConfigModel } from './scoreAxisConfigSchemaFields.ts'
+
 export { getNiceDomain, getNiceScale, getOrigin, getScale } from './scale.ts'
 export type { ScaleOpts } from './scale.ts'
 export { toP } from './formatNumber.ts'

@@ -1,5 +1,6 @@
 import type { FileLocation } from '../util/types/index.ts'
 import type {
+  ConfigurationSchemaDefinition,
   ConfigurationSchemaOptions,
   ConfigurationSchemaType,
 } from './configurationSchema.ts'
@@ -278,6 +279,31 @@ export type ConfigurationSlotValueResolved<SCHEMA, K extends string> =
  */
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
+
+/**
+ * The `XConfigModel` for a **field table** — a `*ConfigSchemaFields` export —
+ * rather than for a whole assembled schema. What it is for is the cast a
+ * cross-cutting mixin uses to reach the `configuration` its composing display
+ * supplies but its own `self` cannot see: cast to `AnyConfigurationModel` there
+ * and `getConf`/`setConf` derive their slot-name constraint from a schema
+ * widened to `any`, so every name typechecks and a misspelled *read* returns
+ * `undefined` with no diagnostic at any layer. Name the mixin's own field table
+ * instead and the check comes back, scoped to exactly the slots that mixin owns.
+ *
+ * `BASE` is for the mixin that also reads a slot off the schema its displays
+ * inherit from — `ConfigurationSlotName` walks the base chain, so passing it
+ * admits those names too and nothing else (`HeightModeMixin` and `height`).
+ *
+ * The pairing this depends on is a mixin and its field table living together:
+ * `RowHeightMixin` + `rowHeightConfigSchemaFields` is the worked example, and
+ * `packages/tree-sidebar/CLAUDE.md` has the reasoning.
+ */
+export type ConfigModelForFields<
+  FIELDS extends ConfigurationSchemaDefinition,
+  BASE extends AnyConfigurationSchemaType | undefined = undefined,
+> = Instance<
+  ConfigurationSchemaType<FIELDS, ConfigurationSchemaOptions<BASE, undefined>>
+>
 
 /** a plain-object snapshot of a configuration model (not a live MST node) */
 export type AnyConfigurationSnapshot = SnapshotOut<AnyConfigurationModel>

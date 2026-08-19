@@ -41,10 +41,22 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * the received-session opt-out); with that flag gone the subsystem writes
  * nothing to a display but a config slot, which `setConf` reaches through
  * `configuration`.
+ *
+ * **`CONF` is a parameter rather than always `AnyConfigurationModel` because
+ * intersecting is not narrowing.** A caller wanting the cascade's members *and*
+ * a concrete schema — a mixin casting to reach its host — writes
+ * `ResolvableDisplay<XConfigModel>`. Spelling it
+ * `ResolvableDisplay & { configuration: XConfigModel }` instead reads identical
+ * and silently does the opposite: the intersected `configuration` is
+ * `AnyConfigurationModel & XConfigModel`, `ConfigurationSchemaForModel` infers
+ * the widened brand off it, and every slot name typechecks again. Two mixins
+ * shipped that spelling and only a sabotage found it.
  */
-export type ResolvableDisplay = IStateTreeNode & {
+export type ResolvableDisplay<
+  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+> = IStateTreeNode & {
   type: string
-  configuration: AnyConfigurationModel
+  configuration: CONF
 }
 
 /**

@@ -1,15 +1,23 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ScoreAxisConfigModel } from './scoreAxisConfigSchemaFields.ts'
 
-// The mixin composes onto a display that declares these, not the other way
-// round, so its own `self` isn't typed with them. Cast once — the same idiom
-// `TrackHeightMixin` and `WiggleScoreConfigMixin` use. Slot names go unchecked
-// through the widened `AnyConfigurationModel`, unlike in a display whose factory
-// pins its schema.
-const confNode = (self: object) =>
-  self as { configuration: AnyConfigurationModel }
+/**
+ * The whole of what `ScoreScaleMixin` needs a composing display to be. Exported
+ * because it is the mixin's contract and `ScoreScaleMixin.test.ts` pins it:
+ * widen it and the `@ts-expect-error`s there go unused.
+ */
+export interface ScoreScaleHost {
+  configuration: ScoreAxisConfigModel
+}
+
+// The mixin composes onto a display that declares this, not the other way
+// round, so its own `self` isn't typed with it. Cast once — the same idiom
+// `TrackHeightMixin` and `WiggleScoreConfigMixin` use — and narrowed to the
+// field table beside it rather than `AnyConfigurationModel`, which is what
+// keeps the slot names below checked.
+const confNode = (self: object) => self as ScoreScaleHost
 
 /**
  * #stateModel ScoreScaleMixin

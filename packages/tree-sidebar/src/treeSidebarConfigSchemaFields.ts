@@ -1,3 +1,5 @@
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+
 /**
  * The config slots a display owes `TreeSidebarMixin` — one object, so a display
  * composing the mixin cannot ship two of the three.
@@ -58,3 +60,12 @@ export function treeSidebarConfigSchemaFields({
     },
   } as const
 }
+
+/**
+ * What `TreeSidebarMixin` asks a composing display's `configuration` to be — the
+ * three slots above and nothing else, which is all the mixin touches. Narrow so
+ * `getConf`/`setConf` still check the slot name; see `ConfigModelForFields`.
+ */
+export type TreeSidebarConfigModel = ConfigModelForFields<
+  ReturnType<typeof treeSidebarConfigSchemaFields>
+>
