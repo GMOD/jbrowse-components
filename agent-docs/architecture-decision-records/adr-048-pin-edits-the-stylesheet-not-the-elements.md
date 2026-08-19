@@ -61,6 +61,32 @@ in `onClick`, not captured:
   clearing their own values would strand them on whatever replaced it, discarding
   customizations to reach a value nobody asked for.
 
+### Amended 2026-08-19: "Apply to N open tracks" is back, as a second action
+
+The name above was rejected for the *override* action because it described a
+bulk clear. It now names a second snackbar action that genuinely applies:
+**"Apply to N open tracks instead"** writes the value into every open track of
+the type and clears the promoted default it was offered from.
+
+This does not reopen the rejected behavior above. The pin's own click still
+writes only the session default, so it stays symmetric and pin-then-unpin still
+discards nothing. The snackbar is still the only place in the subsystem that
+rewrites a track, and both of its actions re-derive their target set inside
+`onClick` for the reasons this ADR already gives.
+
+What the second action buys is a **scope choice**. A promoted default outlives
+the tracks it was set for and governs every track of the type opened later; a
+user who wanted the six tracks in front of them changed had no way to say only
+that. The action is offered only when more than one track of the type is open —
+with a single track the two scopes name the same set, so the toast stays
+auto-hiding as it was.
+
+The two actions read different track sets, and conflating them is the mistake to
+avoid: override reads each track's *resolved* value (a follower already shows the
+value and needs no clearing), while apply reads the *stored* value, because that
+same follower holds nothing of its own and would be dropped to `promotedBase` the
+moment the default was cleared.
+
 ## Consequences
 
 - The pin is safe to click and safe to un-click. That is what makes it

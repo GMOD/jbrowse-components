@@ -1,6 +1,6 @@
 ---
 name: how-permanent-a-promoted-default-is
-description: A promoted display-type default is permanent on three axes at once — it outlives the session, it travels into a share, and it governs tracks the user has not opened yet — and the subsystem's cost sits almost entirely in the localStorage tier the first axis needs. Two independent ways to reduce it: move the store into the session snapshot, or give the pin a scope so "apply to the tracks I have open" is expressible. Read before reopening either; the session move acquired a blocker on 2026-08-19 that its own step order does not survive.
+description: A promoted display-type default is permanent on three axes at once — it outlives the session, it travels into a share, and it governs tracks the user has not opened yet — and the subsystem's cost sits almost entirely in the localStorage tier the first axis needs. The scope choice at the pin shipped 2026-08-19; what is left is moving the store into the session snapshot, which acquired a blocker the same day that its own step order does not survive. Read before reopening it.
 ---
 
 # How permanent a promoted default is
@@ -207,51 +207,32 @@ path-scoped runs skip it.
   ever have. Re-run the check against whatever tag exists at landing time rather
   than trusting this paragraph.
 
-## Option B — give the pin a scope
+## Option B — give the pin a scope — **shipped 2026-08-19**
 
-Takes the third axis at the level of the gesture rather than the mechanism: the
-pin stays what it is, and a peer action offers the smaller commitment. "Apply
-this to the tracks I have open" is the case the pin is most often reached for,
-and today it is only expressible as a permanent default plus a second click.
+Took the third axis at the level of the gesture rather than the mechanism: the
+pin is unchanged, and a peer action offers the smaller commitment. The toast the
+pin raises now carries **"Apply to N open tracks instead"**, which writes the
+value into every open track of the type and clears the default it was offered
+from. Mechanism: [DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md)
+§"UI surface"; the decision and why it does not reopen the pin question:
+[ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md),
+amended.
 
-### Almost all of it exists
+Placement went to the snackbar rather than to a menu row. The gesture is
+per-value, and a row per value doubles a menu that already carries a pin on every
+row; `promotableRadioItems` could have taken one trailing row per group, but the
+checkbox rows (`promotableToggleItem`, most of alignments) have no group to hang
+it on and would have been left out. Every promotable row already raises this
+toast, so the snackbar reaches both shapes and adds no rows anywhere.
 
-- the walk — `openDisplaysOfType` / `openPromotableDisplays`
-- the count — `tracksDifferingFrom`, which `d5b47dd04c` made dedupe by config
-  node on 2026-08-19, so a track open in two views of a breakpoint-split counts
-  once. That is exactly the count this action wants
-- the write — `setConf(display, slot, value)`, the same call every value row
-  already makes for one track
-- the mirror — `resetSlotToInherit` is this function with the value dropped
-
-What is missing is the additive bulk write, around ten lines, and a place to put
-the row.
-
-### It adds no state and no tier
-
-An applied value is an ordinary customized track value. It already travels in
-`trackConfigDeltas`, already resolves into the worker payload, already copies out
-of the About dialog. None of the ~1,290 lines of persistence machinery in Option
-A applies to it, and neither does any part of the cascade.
-
-### Where it stands with the ADRs
-
-ADR-063 rejects apply-time as a **replacement** for the read-time cascade, on the
-grounds that it destroys retroactive revert-on-clear. A separately-labelled peer
-action is not that; it is the shape ADR-048 already blessed for "Override N
-customized tracks", where the pin edits the stylesheet and one explicit gesture
-edits the elements.
-
-Two things to get right:
-
-- **The name is already spent.** ADR-048 renamed "Apply to N open tracks" →
-  "Override N customized tracks" because the old name read as additive over an
-  action that was a bulk *clear*. A genuinely additive apply reclaims the name
-  honestly, but that needs an ADR-048 amendment or someone will revert it as a
-  regression. The two actions must never appear in the same snackbar.
-- **This one is destructive where the pin is not.** Applying overwrites each open
-  track's own value, so it takes the count in its label and no toggle affordance.
-  Pin-safety is what lets the pin sit on every row; this cannot sit there.
+The one thing worth knowing before touching it: **the two actions read different
+track sets**, and conflating them is the bug. Override reads each track's
+*resolved* value, so a follower already showing the value is correctly absent.
+Apply reads the *stored* value, because that same follower holds nothing of its
+own and would drop to `promotedBase` the moment the default was cleared. The
+canary is `promotableDefaults.test.ts`'s "leaves a follower holding the value
+once the default is gone", which is red against the differing set and green
+against nothing else.
 
 ### The caveat the delta layer imposes
 
@@ -260,31 +241,19 @@ changes but never deletions, so *unsetting* a slot an admin `config.json`
 declares diffs to nothing and does not survive a reload — the no-tombstones
 limitation in `trackConfigDelta.ts`.
 
-Applying a value is an add or a change, so this action records and reloads
+Applying a value is an add or a change, so the shipped action records and reloads
 correctly. The gap is in the undo direction: putting such a track back on the
-cascade holds for the session and reverts on reload. Pre-existing, not introduced
-here, but it means "fully reversible per track" is too strong a claim to put in
-the UI.
-
-### Placement is the open product decision
-
-The gesture is per-value, and a row per value doubles a menu that already carries
-a pin on every row. `promotableRadioItems` builds a whole group in one call and is
-the natural home for a single trailing row per group — which reaches all four
-groups structurally, the same argument that module already makes for the pin. The
-checkbox rows (`promotableToggleItem`, most of alignments) have no group to hang
-it on and are the unsolved half.
+cascade holds for the session and reverts on reload. Pre-existing rather than
+introduced here, and the reason no UI copy claims this is reversible per track.
 
 ## How they relate
 
-Option B is much smaller, needs no ADR overturned, and covers the common case.
-Option A is the one that changes what a pin *is*.
-
-Do B first and independently. It changes the evidence for A: if the scoped action
-is what people reach for, the pin is a power-user affordance, and keeping it
-localStorage-backed *and* baked into every share is much harder to justify — an
-argument from use rather than from line counts. Doing A first settles the
-question with neither.
+B shipped first, deliberately, and it is what should now decide A. If the scoped
+action is what people reach for, the pin is a power-user affordance, and keeping
+it localStorage-backed *and* baked into every share is much harder to justify —
+an argument from use rather than from line counts. A is still the one that
+changes what a pin *is*, and it is worth revisiting once there is any evidence of
+which scope people actually pick.
 
 ## Open questions
 

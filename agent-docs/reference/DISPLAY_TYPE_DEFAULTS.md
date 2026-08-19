@@ -460,7 +460,7 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
 | `getTrackConfigWithPromotables(session, trackConfig)` | a whole track's config snapshot with every display's promotable slots resolved, plus the `<displayType>.<slot>` list of what came from a session default. Takes a config, not a display — no open track required | the About dialog's "Copy config" (see [Serialization boundaries](#serialization-boundaries-getcomputedstyle)) |
 
-`Pin` is `{ slot: string; active: boolean; toggle: () => void }`.
+`Pin` is `{ slot: string; onValue: unknown; active: boolean; toggle: () => void }`.
 `active` = this value is the current default (filled pin); `toggle` sets or
 clears it. There is no disabled state — a pin always has a value to promote (see
 [No callbacks](#no-callbacks-jexl)).
@@ -468,10 +468,33 @@ clears it. There is no disabled state — a pin always has a value to promote (s
 **`toggle` writes the session default and nothing else.** No track's own value is
 ever touched — the pin edits the stylesheet, never the elements. Following tracks
 pick the new value up via `resolveConf`; customized tracks keep theirs. It raises
-a snackbar `"Set as the default"` carrying an **"Override N customized tracks"**
-action for any open track (across all views) not already showing this value, and
-*that* action — the one explicit gesture — clears their own value so they follow.
-On **clear**, `"Cleared the default"`.
+a snackbar `"Set as the default"` carrying up to two actions, and those are the
+subsystem's only writes to a track. On **clear**, `"Cleared the default"`, with
+no action.
+
+**"Override N customized tracks"** — for any open track (across all views) not
+already showing this value, clears its own value so it follows the default.
+
+**"Apply to N open tracks instead"** — the scope choice. Writes the value into
+every open track of the type and then clears the default it was offered from, so
+the tracks in front of the user take the value and nothing governs the ones they
+open later. Offered only when more than one track of the type is open: with a
+single track, "these tracks" and "this display type" name the same set, so there
+is no choice to make and the toast stays auto-hiding.
+
+**The two actions want different track sets, and that is the whole of what
+separates them.** Override reads each track's **resolved** value, so a track
+merely *following* the default already shows the value and is correctly absent —
+it needs no clearing. Apply reads the **stored** value, and has to: that same
+follower holds nothing of its own, so writing only the tracks that *differ* and
+then clearing the default would drop it to `promotedBase` — the opposite of what
+was asked for. Reading the stored value is also what lets a `jexl:` slot answer
+"is this already what we would write?" without being evaluated, the reason
+`resetSlotToInherit` reads the same field. `applySlotToOpenTracks` is the
+additive mirror of `resetSlotToInherit`; the canary that holds the distinction is
+`promotableDefaults.test.ts`'s "leaves a follower holding the value once the
+default is gone", which goes red against the differing set and against nothing
+else.
 
 **The override is a removal, and a `trackConfigDeltas` track could not keep
 one.** Clearing a slot is the whole of what the action does, and
@@ -485,17 +508,20 @@ editor, which edits a separate temporary node, still needs the revert). The
 removal still doesn't survive a reload — that is `trackConfigDelta.ts`'s stated
 no-tombstones limitation, not this subsystem's.
 
-**N counts tracks, and `tracksDifferingFrom` dedupes to make that true.** The
-walk yields *displays*, and one track open in two views is two of them over one
-config node (`TrackConfigurationReference` resolves both through the hydration
-cache) — so the count read `2` for a single track, which is the ordinary case in
-a breakpoint-split view. `promotableDefaults.test.ts`'s own fakes compose a fresh
-config into each display and cannot express it; the canary is
-`PromotedDefaultTrackCount.test.ts` in jbrowse-web.
+**N counts tracks, and `openTracksOfType` dedupes to make that true.** The walk
+yields *displays*, and one track open in two views is two of them over one config
+node (`TrackConfigurationReference` resolves both through the hydration cache) —
+so the count read `2` for a single track, which is the ordinary case in a
+breakpoint-split view. Both actions take their set from that one deduped walk, so
+the number the label states and the number of tracks written cannot disagree.
+`promotableDefaults.test.ts`'s own fakes compose a fresh config into each display
+and cannot express it; the canary is `PromotedDefaultOverride.test.ts` in
+jbrowse-web.
 
-That the pin stays symmetric, that the action is named for the bulk discard it
-performs, and that it re-derives its whole target set inside `onClick` rather
-than capturing it, are all
+That the pin stays symmetric, that the override action is named for the bulk
+discard it performs, that the scoped action reclaims the "apply" wording because
+it is the one that genuinely applies, and that both re-derive their whole target
+set inside `onClick` rather than capturing it, are all
 [ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md).
 Read it before making the pin do more.
 
@@ -741,7 +767,8 @@ The three **slider** rows (wiggle point size, wiggle/arc line width) do have one
 because a slider has no "untouched" position to leave alone: the reset button is
 enabled off `isSlotCustomized` and writes `undefined`. When a value-group track
 *is* customized and the user wants it back on the cascade, the paths are the
-snackbar's "Override N customized tracks" (offered whenever a default is set) and
+snackbar's "Override N customized tracks" (offered whenever a default is set
+and some track differs) and
 the
 track-selector badge's "Reset to default", which drops the whole
 `trackConfigDeltas` entry.
