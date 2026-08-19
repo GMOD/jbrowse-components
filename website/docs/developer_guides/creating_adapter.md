@@ -158,25 +158,29 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
 For an API instead of a file, only the callback body changes: `fetch` with
 `opts?.signal`, then `observer.next(new SimpleFeature(...))` per hit.
 
-To wrap another adapter (e.g. a sequence adapter for a feature adapter that
-needs the reference), resolve it lazily with `this.getSubAdapter` — it is
-`async`, so it cannot be called from a constructor:
+To wrap another adapter, resolve it lazily with `this.getSubAdapter` — it is
+`async`, so it cannot be called from a constructor. For the reference sequence
+specifically, don't ask the config for it: JBrowse primes every feature
+adapter's `sequenceAdapterConfig` from the assembly the track is displayed
+against, and `getSequenceSubAdapter` reads that, falling back to a configured
+slot only when one is set. A track then needs no `sequenceAdapter` of its own,
+which is the point — configs that wrote one were copying their own assembly's
+FASTA locations into a track:
 
 <!-- include: plugins/gccontent/src/GCContentAdapter/GCContentAdapter.ts#subAdapter -->
 
 ```ts
 public async configure() {
-  const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
-  if (!adapter) {
-    throw new Error('Error getting subadapter')
-  }
-  return adapter.dataAdapter as BaseSequenceAdapter
+  // the assembly's sequence, unless the config names another one
+  return getSequenceSubAdapter(this, this.getConf('sequenceAdapter'))
 }
 ```
 
-`getSubAdapter` is optional on the base class, hence the `?.` and the check;
-`dataAdapter` is the base union, so cast it. Resolve it in one `configure()` the
-other methods await rather than in each of them.
+Resolve it in one `configure()` the other methods await rather than in each of
+them. Reaching for `getSubAdapter` directly is what you want for any subadapter
+that is genuinely part of the track's own configuration — there `getSubAdapter`
+is optional on the base class, so it needs the `?.` and a check, and
+`dataAdapter` is the base union, so cast it.
 
 Larger example:
 [`MCScanAnchorsAdapter`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanAnchorsAdapter/MCScanAnchorsAdapter.ts).

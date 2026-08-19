@@ -46,6 +46,7 @@
     "./data_adapters/BaseAdapter/types": "./src/data_adapters/BaseAdapter/types.ts",
     "./data_adapters/dataAdapterCache": "./src/data_adapters/dataAdapterCache.ts",
     "./data_adapters/getFeatureAdapter": "./src/data_adapters/getFeatureAdapter.ts",
+    "./data_adapters/getSequenceSubAdapter": "./src/data_adapters/getSequenceSubAdapter.ts",
     "./pluggableElementTypes": "./src/pluggableElementTypes/index.ts",
     "./pluggableElementTypes/AdapterType": "./src/pluggableElementTypes/AdapterType.ts",
     "./pluggableElementTypes/ConnectionType": "./src/pluggableElementTypes/ConnectionType.ts",
@@ -367,6 +368,10 @@
       "./data_adapters/getFeatureAdapter": {
         "types": "./esm/data_adapters/getFeatureAdapter.d.ts",
         "import": "./esm/data_adapters/getFeatureAdapter.js"
+      },
+      "./data_adapters/getSequenceSubAdapter": {
+        "types": "./esm/data_adapters/getSequenceSubAdapter.d.ts",
+        "import": "./esm/data_adapters/getSequenceSubAdapter.js"
       },
       "./pluggableElementTypes": {
         "types": "./esm/pluggableElementTypes/index.d.ts",
@@ -1116,6 +1121,9 @@
         ],
         "data_adapters/getFeatureAdapter": [
           "esm/data_adapters/getFeatureAdapter.d.ts"
+        ],
+        "data_adapters/getSequenceSubAdapter": [
+          "esm/data_adapters/getSequenceSubAdapter.d.ts"
         ],
         "pluggableElementTypes": [
           "esm/pluggableElementTypes/index.d.ts"

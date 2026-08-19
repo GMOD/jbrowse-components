@@ -21,14 +21,7 @@ its own track):
   trackId: 'gc',
   name: 'GC content',
   assemblyNames: ['hg38'],
-  adapter: {
-    type: 'GCContentAdapter',
-    sequenceAdapter: {
-      type: 'IndexedFastaAdapter',
-      fastaLocation: { uri: 'https://example.com/genome.fa' },
-      faiLocation: { uri: 'https://example.com/genome.fa.fai' },
-    },
-  },
+  adapter: { type: 'GCContentAdapter' },
   displays: [
     {
       type: 'LinearGCContentTrackDisplay',

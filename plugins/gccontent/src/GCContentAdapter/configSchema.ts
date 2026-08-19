@@ -10,17 +10,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #fileFormat quantitative | GC content | Computed from the assembly sequence, no data file
  * #category adapter
  * Computes GC content (or GC skew) from an assembly's sequence at render time,
- * so there is no data file to prepare. `sequenceAdapter` is required and is
- * normally a copy of the assembly's own sequence adapter.
+ * so there is no data file to prepare, and nothing to configure: the sequence
+ * comes from the assembly the track is displayed against.
  *
  * #example
  * ```js
  * {
  *   type: 'GCContentAdapter',
- *   sequenceAdapter: {
- *     type: 'BgzipFastaAdapter',
- *     uri: 'https://example.com/hg38.fa.gz',
- *   },
  * }
  * ```
  */
@@ -31,13 +27,15 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
     {
       /**
        * #slot
-       * the sequence GC is computed from, as a plain adapter snapshot — usually
-       * a copy of the assembly's own `sequence.adapter`. Required: unlike the
-       * alignments adapters, nothing fills this in automatically.
+       * don't set this — JBrowse computes GC from the assembly the track is
+       * displayed against. It stays as an escape hatch for scoring some *other*
+       * sequence, and setting it pins the track to that source even when the
+       * assembly's own sequence changes
        */
       sequenceAdapter: {
         type: 'frozen',
         defaultValue: null,
+        advanced: true,
       },
       /**
        * #slot

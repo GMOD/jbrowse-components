@@ -79,14 +79,15 @@ describe('validateConfig', () => {
     }
     const [error] = errorsOf(config)
     expect(error?.where).toBe('tracks[0].adapter.sequenceAdapter')
-    expect(error?.message).toContain('supplies the sequence from the assembly')
+    expect(error?.message).toContain('takes the sequence from the assembly')
     expect(error?.message).not.toContain('did you mean')
   })
 
-  // The other half, and the reason this is keyed on the key rather than applied
-  // to every adapter: GCContentAdapter reads the slot directly instead of
-  // falling back to the assembly, so there it is required.
-  it('leaves sequenceAdapter alone on an adapter that declares it', () => {
+  // The other half. Where the slot IS declared the config works, so this is a
+  // warning rather than an error — but writing one by hand is still backwards,
+  // and three configs here were copying their own assembly's FASTA urls into a
+  // GC track.
+  it('warns when a declared sequenceAdapter is set by hand', () => {
     const config = baseConfig()
     config.tracks[0]!.type = 'QuantitativeTrack'
     config.tracks[0]!.adapter = {
@@ -95,6 +96,30 @@ describe('validateConfig', () => {
       sequenceAdapter: { type: 'BgzipFastaAdapter', uri: 'hg38.fa.gz' },
     }
     expect(errorsOf(config)).toEqual([])
+    const [warning] = warningsOf(config)
+    expect(warning?.where).toBe('tracks[0].adapter.sequenceAdapter')
+    expect(warning?.message).toContain(
+      'only needed to read some OTHER sequence',
+    )
+  })
+
+  // A GC track needs nothing but its type now, which is the shape the warning
+  // above is steering authors towards.
+  it('accepts a GC content track with no sequenceAdapter at all', () => {
+    const config = baseConfig()
+    config.tracks[0]!.type = 'QuantitativeTrack'
+    // @ts-expect-error the point of the test: this adapter needs no other key
+    config.tracks[0]!.adapter = { type: 'GCContentAdapter' }
+    expect(validateConfig(config).problems).toEqual([])
+  })
+
+  // JSON has no comments, so an author annotating a config reaches for a key
+  // like this. MST drops it, which is what they wanted.
+  it('says nothing about a _comment key', () => {
+    const config = baseConfig()
+    // @ts-expect-error deliberately not a slot
+    config.tracks[0]!._comment_assemblyNames = 'hg19 was here'
+    expect(validateConfig(config).problems).toEqual([])
   })
 
   it('reports an unknown display slot', () => {

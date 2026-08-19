@@ -11,9 +11,9 @@ plugin.
 
 ## Example usage
 
-A standalone `GCContentTrack` whose `GCContentAdapter` wraps a sequence adapter
-(use this instead of the `ReferenceSequenceTrack` display when you want GC as
-its own track):
+A standalone `GCContentTrack` (use this instead of the `ReferenceSequenceTrack`
+display when you want GC as its own track). The sequence comes from the assembly
+named in `assemblyNames`, so the adapter needs nothing but its type:
 
 ```js
 {
@@ -21,14 +21,7 @@ its own track):
   trackId: 'gc',
   name: 'GC content',
   assemblyNames: ['hg38'],
-  adapter: {
-    type: 'GCContentAdapter',
-    sequenceAdapter: {
-      type: 'IndexedFastaAdapter',
-      fastaLocation: { uri: 'https://example.com/genome.fa' },
-      faiLocation: { uri: 'https://example.com/genome.fa.fai' },
-    },
-  },
+  adapter: { type: 'GCContentAdapter' },
 }
 ```
 
@@ -45,14 +38,7 @@ array. See
   trackId: 'gc',
   name: 'GC skew',
   assemblyNames: ['hg38'],
-  adapter: {
-    type: 'GCContentAdapter',
-    sequenceAdapter: {
-      type: 'IndexedFastaAdapter',
-      fastaLocation: { uri: 'https://example.com/genome.fa' },
-      faiLocation: { uri: 'https://example.com/genome.fa.fai' },
-    },
-  },
+  adapter: { type: 'GCContentAdapter' },
   displayDefaults: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
 }
 ```

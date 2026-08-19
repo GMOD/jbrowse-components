@@ -51,6 +51,48 @@ test('getRefNames delegates to the sequence subadapter', async () => {
   expect(await makeAdapter('ACGT').getRefNames()).toEqual(['ctgA'])
 })
 
+// The shape a config should be written in: no `sequenceAdapter` at all. The RPCs
+// prime `sequenceAdapterConfig` from the assembly the track is displayed
+// against, and this adapter reads it through `getSequenceSubAdapter` like every
+// other one that scans the reference. Before that it read its own slot and
+// nothing else, so a GC track had to copy the assembly's sequence adapter into
+// itself — five configs in this repo did, two of them repeating the assembly's
+// own FASTA urls.
+test('scores off the assembly when no sequenceAdapter is configured', async () => {
+  const adapter = new GCContentAdapter(
+    configSchema.create({
+      type: 'GCContentAdapter',
+      windowSize: 10,
+      windowDelta: 10,
+    }),
+    async () => ({
+      dataAdapter: {
+        getRefNames: async () => ['ctgA'],
+        getSequence: async () => 'G'.repeat(200),
+      } as unknown as BaseSequenceAdapter,
+      sessionIds: new Set<string>(),
+    }),
+  )
+  adapter.setSequenceAdapterConfig({ type: 'FromTheAssembly' })
+  expect(await getScores(adapter)).not.toHaveLength(0)
+  expect(new Set(await getScores(adapter))).toEqual(new Set([1]))
+})
+
+// The failure it used to give was `Error getting subadapter`, which named
+// neither the track nor what to do about it.
+test('says what is missing when neither the assembly nor the slot supplies one', async () => {
+  const adapter = new GCContentAdapter(
+    configSchema.create({ type: 'GCContentAdapter' }),
+    async () => ({
+      dataAdapter: {} as unknown as BaseSequenceAdapter,
+      sessionIds: new Set<string>(),
+    }),
+  )
+  await expect(adapter.getRefNames()).rejects.toThrow(
+    /No sequence adapter available/,
+  )
+})
+
 test('all-GC sequence gives score 1', async () => {
   const scores = await getScores(makeAdapter('G'.repeat(200)))
   expect(scores.length).toBeGreaterThan(0)

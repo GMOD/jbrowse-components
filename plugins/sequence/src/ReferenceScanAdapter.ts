@@ -1,8 +1,7 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { getSequenceSubAdapter } from '@jbrowse/core/data_adapters/getSequenceSubAdapter'
 import { SimpleFeature, doesIntersect2 } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-
-import { getSequenceSubAdapter } from './getSequenceSubAdapter.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'

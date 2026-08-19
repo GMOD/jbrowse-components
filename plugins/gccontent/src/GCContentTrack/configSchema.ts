@@ -8,23 +8,17 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * used for having a gc content track outside of the "reference sequence display"
  *
  * #example
- * A standalone `GCContentTrack` whose `GCContentAdapter` wraps a sequence
- * adapter (use this instead of the `ReferenceSequenceTrack` display when you
- * want GC as its own track):
+ * A standalone `GCContentTrack` (use this instead of the
+ * `ReferenceSequenceTrack` display when you want GC as its own track). The
+ * sequence comes from the assembly named in `assemblyNames`, so the adapter
+ * needs nothing but its type:
  * ```js
  * {
  *   type: 'GCContentTrack',
  *   trackId: 'gc',
  *   name: 'GC content',
  *   assemblyNames: ['hg38'],
- *   adapter: {
- *     type: 'GCContentAdapter',
- *     sequenceAdapter: {
- *       type: 'IndexedFastaAdapter',
- *       fastaLocation: { uri: 'https://example.com/genome.fa' },
- *       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
- *     },
- *   },
+ *   adapter: { type: 'GCContentAdapter' },
  * }
  * ```
  *
@@ -40,14 +34,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *   trackId: 'gc',
  *   name: 'GC skew',
  *   assemblyNames: ['hg38'],
- *   adapter: {
- *     type: 'GCContentAdapter',
- *     sequenceAdapter: {
- *       type: 'IndexedFastaAdapter',
- *       fastaLocation: { uri: 'https://example.com/genome.fa' },
- *       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
- *     },
- *   },
+ *   adapter: { type: 'GCContentAdapter' },
  *   displayDefaults: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
  * }
  * ```

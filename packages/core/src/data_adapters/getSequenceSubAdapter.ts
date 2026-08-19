@@ -1,18 +1,20 @@
-import type {
-  BaseAdapter,
-  BaseSequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseAdapter, BaseSequenceAdapter } from './BaseAdapter/index.ts'
 
 /**
- * Resolves the reference sequence a scan adapter reads from.
+ * Resolves the reference sequence an adapter reads from.
  *
- * The assembly is the normal source: the feature RPCs prime
- * `sequenceAdapterConfig` from the displayed track's assembly (see
- * getFeatureAdapter), which is what lets a scan track be declared without
- * copying a sequence adapter into it. The `sequenceAdapter` slot is a
- * discouraged escape hatch for scanning some *other* sequence — setting it pins
- * the track to that source even when the assembly's own sequence changes — so
- * it wins only when explicitly present.
+ * **The assembly is the source, and a hand-written `sequenceAdapter` slot is an
+ * anti-pattern.** `getFeatureAdapter` and `CoreGetRefNames` prime every feature
+ * adapter's `sequenceAdapterConfig` from the assembly the track is displayed
+ * against, so no config has to copy a sequence adapter into a track. The slot
+ * survives as an escape hatch for reading some *other* sequence, and setting it
+ * pins the track to that source even when the assembly's own sequence changes —
+ * so it wins only when explicitly present, and `jbrowse validate` warns about it.
+ *
+ * In core rather than beside one of its callers because the field it reads is
+ * `BaseAdapter`'s. Deliberately NOT in `BaseAdapter/index.ts`: that barrel is a
+ * `@jbrowse/core/*` re-export, and a name published there can only be removed
+ * through `KNOWN_REMOVALS`.
  *
  * `configured` is passed in rather than read here so each adapter reads its own
  * slot through its own config type.

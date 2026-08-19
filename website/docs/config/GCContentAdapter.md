@@ -19,10 +19,6 @@ plugin.
   assemblyNames: ['hg38'],
   adapter: {
     type: 'GCContentAdapter',
-    sequenceAdapter: {
-      type: 'BgzipFastaAdapter',
-      uri: 'https://example.com/hg38.fa.gz',
-    },
   },
 }
 ```
@@ -30,8 +26,8 @@ plugin.
 _See the **Config slots** section below for all available configuration fields._
 
 Computes GC content (or GC skew) from an assembly's sequence at render time, so
-there is no data file to prepare. `sequenceAdapter` is required and is normally
-a copy of the assembly's own sequence adapter.
+there is no data file to prepare, and nothing to configure: the sequence comes
+from the assembly the track is displayed against.
 
 ## Related links
 
@@ -51,7 +47,7 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | the sequence GC is computed from, as a plain adapter snapshot — usually a copy of the assembly's own `sequence.adapter`. Required: unlike the alignments adapters, nothing fills this in automatically. |
+| <span id="slot-sequenceadapter">**sequenceAdapter**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>null</code> | don't set this — JBrowse computes GC from the assembly the track is displayed against. It stays as an escape hatch for scoring some *other* sequence, and setting it pins the track to that source even when the assembly's own sequence changes<br>_advanced_ |
 | <span id="slot-windowsize">**windowSize**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | width in bp of the window each score is computed over, centered on the position. 1 scores single bases; wider windows smooth the signal<br>_advanced_ |
 | <span id="slot-windowdelta">**windowDelta**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | step in bp between successive windows. Equal to `windowSize` (the default) the windows tile without overlapping; smaller values overlap them, giving a denser, smoother signal for proportionally more work<br>_advanced_ |
 | <span id="slot-gcmode">**gcMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (content, skew) = <code>'content'</code> | calculate GC content fraction or GC skew (G-C)/(G+C) |

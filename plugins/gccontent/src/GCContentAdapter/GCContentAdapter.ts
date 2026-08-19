@@ -1,4 +1,5 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { getSequenceSubAdapter } from '@jbrowse/core/data_adapters/getSequenceSubAdapter'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
@@ -7,20 +8,14 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import type { GCContentAdapterConfig } from './configSchema.ts'
-import type {
-  BaseOptions,
-  BaseSequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAdapterConfig> {
   // #region subAdapter
   public async configure() {
-    const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
-    if (!adapter) {
-      throw new Error('Error getting subadapter')
-    }
-    return adapter.dataAdapter as BaseSequenceAdapter
+    // the assembly's sequence, unless the config names another one
+    return getSequenceSubAdapter(this, this.getConf('sequenceAdapter'))
   }
   // #endregion
 

@@ -104,24 +104,31 @@ function acceptedKeys(entry: { slots: SlotEntry[]; shorthandKeys?: string[] }) {
   return [...entry.slots.map(s => s.name), ...(entry.shorthandKeys ?? [])]
 }
 
-// An unknown key that JBrowse fills in for itself, so the answer is "delete it"
-// rather than "you misspelled something". Left as errors — the key does nothing
-// where it is written, which is this validator's definition of an error — but
-// the generic message sends the author looking for a typo in a key that is
-// spelled correctly and simply belongs to no schema.
+// A key JBrowse fills in for itself, so writing one by hand is an anti-pattern
+// whether or not the schema happens to declare a slot for it. Both halves get a
+// message that says so, because the generic ones send the author looking for a
+// typo in a key that is spelled correctly.
 //
-// `sequenceAdapter` is the standing case. `getFeatureAdapter` and
-// `CoreGetRefNames` prime every feature adapter's `sequenceAdapterConfig` from
-// the assembly the track is displayed against, so a CRAM track needs no sequence
-// of its own; two tracks in `demos/hg002/config-chr22.json` carried one anyway,
-// pointing at a per-haplotype FASTA that nothing read. Adapters that DO declare
-// the slot are unaffected: it is a legal override on the scan adapters and
-// genuinely required on `GCContentAdapter`, which reads the slot directly
-// instead of falling back to the assembly.
-const AUTO_SUPPLIED: Record<string, string> = {
-  sequenceAdapter:
-    'JBrowse supplies the sequence from the assembly the track is displayed against, so this adapter declares no `sequenceAdapter` slot and the one written here is never read — delete it',
-}
+// `sequenceAdapter` is the standing case, and it is now uniform:
+// `getFeatureAdapter` and `CoreGetRefNames` prime every feature adapter's
+// `sequenceAdapterConfig` from the assembly the track is displayed against, and
+// `getSequenceSubAdapter` is what every adapter that reads a sequence resolves
+// through. So no track has to carry one — three grape/peach/volvox configs were
+// copying their own assembly's FASTA urls into a GC track, and two hg002 tracks
+// carried one on a `CramAdapter`, which declares no such slot at all.
+//
+// Two levels, and the split is this validator's own rule: an undeclared key does
+// nothing where it is written (error), a declared one works and is simply the
+// wrong way round (warning).
+const SELF_SUPPLIED: Record<string, { undeclared: string; declared: string }> =
+  {
+    sequenceAdapter: {
+      undeclared:
+        'JBrowse takes the sequence from the assembly the track is displayed against, and this adapter declares no `sequenceAdapter` slot, so the one written here is never read — delete it',
+      declared:
+        '`sequenceAdapter` is set by hand. JBrowse takes the sequence from the assembly the track is displayed against, so this is only needed to read some OTHER sequence — and it pins the track to that source even when the assembly changes. Delete it unless that is what you meant',
+    },
+  }
 
 function checkSlots(
   obj: Record<string, unknown>,
@@ -137,6 +144,17 @@ function checkSlots(
   const legacyKeys = entry.legacyKeys ?? []
   for (const key of Object.keys(obj)) {
     if (accepted.includes(key)) {
+      const selfSupplied = SELF_SUPPLIED[key]
+      if (selfSupplied) {
+        report.warn(`${where}.${key}`, selfSupplied.declared)
+      }
+      continue
+    }
+    // JSON has no comments, so people reach for a `_comment` key. MST drops it
+    // like any other undeclared key, which is what the author wanted — calling
+    // that "silently does nothing" is true and useless, and a validator that
+    // cries wolf on a deliberate annotation is one an author learns to ignore.
+    if (/^_+comment/i.test(key)) {
       continue
     }
     // A legacy key is consumed by the schema's own preProcessSnapshot and
@@ -149,10 +167,9 @@ function checkSlots(
       )
       continue
     }
-    const supplied = AUTO_SUPPLIED[key]
     report.error(
       `${where}.${key}`,
-      supplied ??
+      SELF_SUPPLIED[key]?.undeclared ??
         `unknown slot "${key}"${didYouMean(key, accepted)} — JBrowse ignores keys it does not declare, so this setting silently does nothing`,
     )
   }
