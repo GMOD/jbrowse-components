@@ -1,6 +1,6 @@
 // #exampleFile shared | adds a panel to the feature details widget
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { ForTrack } from '@jbrowse/core/ui'
+import { matchesTrackSelector } from '@jbrowse/core/ui'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FeaturePanelProps } from '@jbrowse/core/PluginManager'
@@ -18,12 +18,12 @@ import type { FeaturePanelProps } from '@jbrowse/core/PluginManager'
 // #region panel
 function ScoreFeaturePanel(props: FeaturePanelProps) {
   const { feature, depth } = props
-  return depth === 0 && feature.score !== undefined ? (
-    <ForTrack {...props} select={{ trackType: 'FeatureTrack' }}>
-      <BaseCard title="Score">
-        <div>{String(feature.score)}</div>
-      </BaseCard>
-    </ForTrack>
+  return depth === 0 &&
+    feature.score !== undefined &&
+    matchesTrackSelector({ trackType: 'FeatureTrack' }, props) ? (
+    <BaseCard title="Score">
+      <div>{String(feature.score)}</div>
+    </BaseCard>
   ) : null
 }
 // #endregion

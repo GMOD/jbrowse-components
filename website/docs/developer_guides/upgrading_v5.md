@@ -134,12 +134,12 @@ shape. A single-component slot — `Core-replaceWidget`, `Core-replaceAbout`, th
 desktop start-screen panels — is filled with `wrapComponent`, which hands your
 component whatever fills the slot so far, so replacing is wrapping without
 rendering what you were handed and wrappers from two plugins nest instead of one
-disappearing. Which tracks any of them applies to is `ForTrack`, a component
-your contribution renders around what it draws, and it matches a track config as
+disappearing. Which tracks any of them applies to is `matchesTrackSelector`, one
+predicate your contribution asks before it draws, and it reads a track config as
 readily as a widget model — so an About panel now gets the copy-safe `trackId`
-matching only feature panels used to have. Both come from `@jbrowse/core/ui`,
-and between them they replace `addFeaturePanel`, `addReplaceWidget` and
-`addWidgetWrapper`.
+matching only feature panels used to have, and so does `Core-customizeAbout`,
+which renders nothing at all. Both come from `@jbrowse/core/ui`, and between
+them they replace `addFeaturePanel`, `addReplaceWidget` and `addWidgetWrapper`.
 
 Extending a view or display has its own entry point now.
 `Core-extendPluggableElement` fires for every kind of pluggable element there

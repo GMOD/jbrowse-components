@@ -3,7 +3,7 @@ import { matchTrackId } from '../util/matchTrackId.ts'
 /**
  * Which tracks a contribution is for. Every track-scoped extension point fires
  * for every track, so a contribution with no selector applies to all of them.
- * {@link ForTrack} is what applies one.
+ * {@link matchesTrackSelector} is what applies one.
  */
 // #region fields
 export interface TrackSelector {
@@ -66,11 +66,10 @@ function selectorMatchesModel(
  * model or track config in `subject` satisfies every field of `select`. Every
  * field given must match, and an empty selector matches everything.
  *
- * {@link ForTrack} is this as a component, and is what a contribution that
- * renders should use. Reach for the predicate where there is nothing to render
- * — `Core-customizeAbout` transforms a config rather than drawing anything, and
- * hand-writing `config.trackId === 'x'` there is what silently stops applying
- * the first time a user copies the track.
+ * Every one of those points fires for every track, so a contribution that does
+ * not call this applies to all of them. Hand-writing `config.trackId === 'x'`
+ * instead is what silently stops applying the first time a user copies the
+ * track: `copyTrackSnapshot` suffixes the id, and this knows that.
  *
  * Not to be confused with {@link matchTrackId}, which tests an id against
  * patterns you supply and so leaves that normalization to you.

@@ -31,8 +31,8 @@ export type PanelProps<N extends ComponentExtensionPointName> =
  * the `Suspense` boundary, the keys and the legacy normalization — each of
  * which was wrong in one of the two producers that used to hand-roll it.
  *
- * A contributed panel scopes itself, rendering `null` when it does not apply;
- * {@link ForTrack} is the declarative way to say so. It also draws its own card
+ * A contributed panel scopes itself, rendering `null` when it does not apply —
+ * {@link matchesTrackSelector} is what decides that. It also draws its own card
  * chrome, since only the panel knows whether it wants a title.
  */
 const PluggableComponents = observer(function PluggableComponents<

@@ -34,15 +34,13 @@ export type WrapperProps<N extends SlotExtensionPointName> = SlotProps<N> & {
  * plain conditional:
  *
  * ```tsx
- * wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...props }) => (
- *   <ForTrack
- *     {...props}
- *     select={{ trackId: 'volvox.inv.vcf' }}
- *     fallback={<DefaultComponent {...props} />}
- *   >
+ * wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...props }) =>
+ *   matchesTrackSelector({ trackId: 'volvox.inv.vcf' }, props) ? (
  *     <MyWidget {...props} />
- *   </ForTrack>
- * ))
+ *   ) : (
+ *     <DefaultComponent {...props} />
+ *   ),
+ * )
  * ```
  *
  * Wrapping is the only operation these points have, because replacing is

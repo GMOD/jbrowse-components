@@ -4,8 +4,8 @@ import { fireEvent, render } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import PluginManager from '../PluginManager.ts'
-import ForTrack from './ForTrack.tsx'
 import PluggableComponent from './PluggableComponent.tsx'
+import { matchesTrackSelector } from './extensionSelectors.ts'
 import { wrapComponent } from './wrapComponent.tsx'
 
 import type { ReplaceWidgetProps } from '../PluginManager.ts'
@@ -154,15 +154,13 @@ test('wrappers from two plugins nest instead of clobbering', () => {
 
 // #region replaceWidget
 function scopedToOneTrack(pm: PluginManager) {
-  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
-    <ForTrack
-      {...rest}
-      select={{ trackId: 'volvox.inv.vcf' }}
-      fallback={<DefaultComponent {...rest} />}
-    >
+  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) =>
+    matchesTrackSelector({ trackId: 'volvox.inv.vcf' }, rest) ? (
       <div>mine</div>
-    </ForTrack>
-  ))
+    ) : (
+      <DefaultComponent {...rest} />
+    ),
+  )
 }
 // #endregion
 

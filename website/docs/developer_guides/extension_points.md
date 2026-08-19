@@ -636,15 +636,12 @@ function addReplaceAbout(pluginManager: PluginManager) {
   wrapComponent(
     pluginManager,
     'Core-replaceAbout',
-    ({ DefaultComponent, ...rest }) => (
-      <ForTrack
-        {...rest}
-        select={{ trackId: 'volvox_sv_test' }}
-        fallback={<DefaultComponent {...rest} />}
-      >
+    ({ DefaultComponent, ...rest }) =>
+      matchesTrackSelector({ trackId: 'volvox_sv_test' }, rest) ? (
         <div>my about dialog</div>
-      </ForTrack>
-    ),
+      ) : (
+        <DefaultComponent {...rest} />
+      ),
   )
 }
 ```
@@ -673,11 +670,9 @@ Example: adds an extra about dialog panel for a particular track ID
 
 ```tsx
 function ExtraAboutPanel(props: AboutPanelProps) {
-  return (
-    <ForTrack {...props} select={{ trackId: 'volvox_sv_test' }}>
-      <BaseCard title="Extra">…</BaseCard>
-    </ForTrack>
-  )
+  return matchesTrackSelector({ trackId: 'volvox_sv_test' }, props) ? (
+    <BaseCard title="Extra">…</BaseCard>
+  ) : null
 }
 
 function addExtraAboutPanel(pluginManager: PluginManager) {
@@ -697,10 +692,10 @@ inside a `<Suspense>`, so `React.lazy` is fine.
 
 The dialog fires this for whatever track was opened, so a panel that renders
 unconditionally lands on every track's About dialog.
-[`ForTrack`](#fortrack-which-tracks-a-contribution-is-for) is how it says which
-tracks it is for, the same way a feature panel does — and it reads the track
-config these points carry rather than a widget model, so a `trackId` selector
-here also matches the user's copies of that track.
+[`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for)
+is how it says which tracks it is for, the same way a feature panel does — and
+it reads the track config these points carry rather than a widget model, so a
+`trackId` selector here also matches the user's copies of that track.
 
 ### Core-customizeAbout
 
@@ -722,8 +717,7 @@ Example: add a derived field to a particular track's about dialog
 ```typescript
 function addCustomizeAbout(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) =>
-    // this point transforms the config rather than rendering, so it scopes
-    // itself with the predicate ForTrack is built on
+    // every track-scoped point scopes itself with the same predicate
     matchesTrackSelector({ trackId: 'volvox_sv_test' }, { config })
       ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
       : arg,
@@ -766,9 +760,9 @@ this point to replace a widget you do **not** own.
 
 This point fires whenever **any** widget opens, so a callback that does not
 scope itself takes over the drawer, the modal, and every feature details panel.
-Rather than write that scoping by hand, use `wrapComponent` and `ForTrack`,
-below. They are the supported way to use this point; reach for
-`addToExtensionPoint` directly only for something neither one expresses.
+Rather than write that scoping by hand, use `wrapComponent` and
+`matchesTrackSelector`, below. They are the supported way to use this point;
+reach for `addToExtensionPoint` directly only for something neither expresses.
 
 #### wrapComponent: the one way to fill a slot
 
@@ -796,26 +790,24 @@ Wrappers from different plugins nest, so two plugins can both add content
 without either one disappearing. Two callbacks registered on the point by hand
 cannot, and JBrowse logs a warning naming the slot when that happens.
 
-#### ForTrack: which tracks a contribution is for
+#### matchesTrackSelector: which tracks a contribution is for
 
-A wrapper with no condition takes over every widget that opens. `ForTrack`
-renders its children for the tracks `select` matches and its `fallback`
-otherwise — and passing the component you were handed as the fallback is what
-leaves the widget alone on the tracks you did not select.
+A wrapper with no condition takes over every widget that opens.
+`matchesTrackSelector` answers whether the props you were handed belong to a
+track `select` names — and rendering the component you were handed when it says
+no is what leaves the widget alone on the tracks you did not select.
 
 <!-- include: packages/core/src/ui/PluggableComponent.test.tsx#replaceWidget -->
 
 ```tsx
 function scopedToOneTrack(pm: PluginManager) {
-  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
-    <ForTrack
-      {...rest}
-      select={{ trackId: 'volvox.inv.vcf' }}
-      fallback={<DefaultComponent {...rest} />}
-    >
+  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) =>
+    matchesTrackSelector({ trackId: 'volvox.inv.vcf' }, rest) ? (
       <div>mine</div>
-    </ForTrack>
-  ))
+    ) : (
+      <DefaultComponent {...rest} />
+    ),
+  )
 }
 ```
 
@@ -841,18 +833,15 @@ item appends a timestamp to the id), so scoping by id does not silently stop
 applying the first time someone copies the track. Pass a `RegExp` if you want to
 control the matching yourself.
 
-`ForTrack` reads either the widget model these points carry or the track config
-the About points carry, so the same selector scopes a contribution to any of
-them. Anything the fields cannot express is an ordinary React condition around
-the same children — the panel below is scoped by `depth` that way.
+It reads either the widget model these points carry or the track config the
+About points carry, so one call scopes a contribution to any of them — including
+[`Core-customizeAbout`](#core-customizeabout), which transforms a config and
+renders nothing. Anything the fields cannot express joins the same condition;
+the panel below adds `depth` to it.
 
-At a point that transforms data rather than rendering, there is nothing to wrap:
-call `matchesTrackSelector(select, { model })` or `{ config }`, which is what
-`ForTrack` is built on and takes the same selector.
-[`Core-customizeAbout`](#core-customizeabout) is the one such point, and its
-example below uses it. Don't reach for `matchTrackId` from `@jbrowse/core/util`
-here — that one tests an id against patterns you supply, so the copy-track
-normalization is back to being yours to remember.
+Don't reach for `matchTrackId` from `@jbrowse/core/util` instead — that one
+tests an id against patterns you supply, so the copy-track normalization is back
+to being yours to remember.
 
 We match on the model rather than on the config because the config that produced
 a feature details widget isn't always retrievable.
@@ -910,21 +899,22 @@ export default function ScoreFeaturePanelF(pluginManager: PluginManager) {
 Return value: your component, or `undefined` to add no panel.
 
 The point fires for every feature details widget there is, so the panel says
-which tracks it belongs on itself, with the
-[`ForTrack`](#fortrack-which-tracks-a-contribution-is-for) the widget points
-use. It renders its own card chrome too, so it starts at `BaseCard`:
+which tracks it belongs on itself, with the same
+[`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for)
+the widget points use. It renders its own card chrome too, so it starts at
+`BaseCard`:
 
 <!-- include: example-plugins/score-example/src/ScoreFeaturePanel/index.tsx#panel -->
 
 ```tsx
 function ScoreFeaturePanel(props: FeaturePanelProps) {
   const { feature, depth } = props
-  return depth === 0 && feature.score !== undefined ? (
-    <ForTrack {...props} select={{ trackType: 'FeatureTrack' }}>
-      <BaseCard title="Score">
-        <div>{String(feature.score)}</div>
-      </BaseCard>
-    </ForTrack>
+  return depth === 0 &&
+    feature.score !== undefined &&
+    matchesTrackSelector({ trackType: 'FeatureTrack' }, props) ? (
+    <BaseCard title="Score">
+      <div>{String(feature.score)}</div>
+    </BaseCard>
   ) : null
 }
 ```

@@ -5,7 +5,6 @@ import {
   FormatAboutConfigSchemaFactory,
 } from '@jbrowse/core/configuration'
 import {
-  ForTrack,
   PluggableComponent,
   matchesTrackSelector,
   wrapComponent,
@@ -58,11 +57,9 @@ function OtherPanel() {
 
 // #region extraAboutPanel
 function ExtraAboutPanel(props: AboutPanelProps) {
-  return (
-    <ForTrack {...props} select={{ trackId: 'volvox_sv_test' }}>
-      <BaseCard title="Extra">…</BaseCard>
-    </ForTrack>
-  )
+  return matchesTrackSelector({ trackId: 'volvox_sv_test' }, props) ? (
+    <BaseCard title="Extra">…</BaseCard>
+  ) : null
 }
 
 function addExtraAboutPanel(pluginManager: PluginManager) {
@@ -78,15 +75,12 @@ function addReplaceAbout(pluginManager: PluginManager) {
   wrapComponent(
     pluginManager,
     'Core-replaceAbout',
-    ({ DefaultComponent, ...rest }) => (
-      <ForTrack
-        {...rest}
-        select={{ trackId: 'volvox_sv_test' }}
-        fallback={<DefaultComponent {...rest} />}
-      >
+    ({ DefaultComponent, ...rest }) =>
+      matchesTrackSelector({ trackId: 'volvox_sv_test' }, rest) ? (
         <div>my about dialog</div>
-      </ForTrack>
-    ),
+      ) : (
+        <DefaultComponent {...rest} />
+      ),
   )
 }
 // #endregion
@@ -94,8 +88,7 @@ function addReplaceAbout(pluginManager: PluginManager) {
 // #region customizeAbout
 function addCustomizeAbout(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) =>
-    // this point transforms the config rather than rendering, so it scopes
-    // itself with the predicate ForTrack is built on
+    // every track-scoped point scopes itself with the same predicate
     matchesTrackSelector({ trackId: 'volvox_sv_test' }, { config })
       ? { config: { ...arg.config, 'Custom field': 'Custom value' } }
       : arg,
@@ -176,8 +169,7 @@ test('customizeAbout adds a field to the config the dialog shows', () => {
   ).not.toHaveProperty('Custom field')
 })
 
-// the same copy-track normalization the rendering points get. This point is not
-// React, so it reaches the predicate rather than ForTrack — and it is the one
+// the same copy-track normalization the rendering points get; this is the one
 // place a hand-written `config.trackId === 'x'` survived the sweep
 test('customizeAbout applies to the users copy of the track it names', () => {
   const pluginManager = new PluginManager([]).createPluggableElements()
