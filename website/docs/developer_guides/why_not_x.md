@@ -2,7 +2,8 @@
 title: Why not deck.gl, Pixi, Rust or wgpu
 description:
   The rendering engines and languages we evaluated instead of writing our own
-  backend, what each one measured or cost, and where Rust does earn its place
+  backend, why the ladder targets WebGPU rather than WebGL2 alone, what we took
+  from GenomeSpy, and where Rust does earn its place
 guide_category: Advanced topics
 ---
 
@@ -10,9 +11,10 @@ guide_category: Advanced topics
 deck.gl, Pixi, Three.js or wgpu, and its hot loops are TypeScript rather than
 Rust. Each of those was evaluated against the constraints this renderer actually
 has — a Canvas2D floor, typed arrays that are never converted, and genomic
-coordinates too large for float32 — and none of them covered those. Rust is in
-the tree in three places, all of them where a compiled binary costs the page
-nothing.
+coordinates too large for float32 — and none of them covered those. WebGPU is on
+the ladder above WebGL2 because a page gets sixteen WebGL2 contexts and one
+linear view can spend them all. Rust is in the tree in three places, all of them
+where a compiled binary costs the page nothing.
 
 Each candidate below solves a real problem well. What this page records is which
 problem that is, and which of ours it leaves for us.
@@ -42,10 +44,11 @@ per frame — is the shape that breaks it.
 **Coordinates are absolute genomic `uint32`, split in the shader.** float32
 cannot hold a position above about 16 Mbp exactly, so the shader
 [cuts each coordinate into a high and a low half](/docs/developer_guides/optimizations#coordinates-are-absolute-uint32-split-in-the-shader)
-and subtracts them separately. Any candidate library either has its own
-double-single emulation, in which case it solved a problem we had already
-solved, or it does not, in which case chromosome-scale positions come out wrong
-in a way that looks like jitter.
+and subtracts them separately. A candidate library either carries its own
+double-single emulation or it does not, and without one chromosome-scale
+positions come out wrong in a way that reads as jitter rather than as an error.
+GenomeSpy is the project that had it, and taking that one piece from it is what
+the section below describes.
 
 ## The rendering libraries
 
@@ -91,11 +94,72 @@ calls, so in a page it buys an indirection rather than a capability. Measured as
 a candidate it costs roughly ten megabytes of wasm and brings a WebGL fallback
 we would own the bugs in. We do use the wgpu project, though — see below.
 
+**[GenomeSpy](https://genomespy.app/) is the one on this list that had already
+hit the same wall**, and its answer is in our shaders. It is a WebGL2 toolkit
+for genomic visualization built around a declarative grammar, and it solved the
+float32 coordinate problem with the same high/low split described above. We
+adopted that technique directly rather than reimplementing it —
+`packages/render-core/src/shaders/hpmath.slang` carries the attribution and the
+MIT notice, and `hpSplitUint` is the function. What we did not adopt is the
+layer above it: a grammar is a language you author a visualization in, and
+JBrowse's rendering sits underneath a plugin-registered display API, where the
+thing being composed is a track someone else's plugin contributed. Borrowing the
+kernel and leaving the composition model is the shape most of this page argues
+for.
+
 **A note on rewriting from scratch.** A previous attempt wrote its own
 mini-compiler for the dual-shader problem, shipped malformed syntax, and was
 abandoned. That is on the record here because it is the failure mode of the
 "just write it ourselves" instinct that this page could otherwise be read as
 endorsing.
+
+## Why WebGPU, and not WebGL2 on its own
+
+WebGL2 is the older API, it is available on more machines, and JBrowse ships a
+complete WebGL2 backend — so targeting WebGPU as well is a cost that has to earn
+itself. It does, and the first reason is a hard ceiling rather than a
+preference.
+
+**A page gets sixteen WebGL2 contexts.** One display owns one canvas and one
+context, with no pooling, so contexts are open GPU tracks and the ceiling is a
+track budget. Past it the browser evicts a context, the display re-acquires,
+that acquisition evicts another, and the cascade wedges the main thread instead
+of degrading. **A single ordinary linear view reaches it** at seventeen GPU
+tracks — no many-view session, nothing synthetic. View-level lazy mounting
+bounds the common case, and bounds nothing in a multi-panel workspace where
+every panel is on screen at once.
+
+WebGPU has no equivalent cap. `packages/render-core/src/gpuDevice.ts` holds one
+page-wide `GPUDevice`, and every display's canvas is configured against it, so
+adding a track costs a swap chain rather than a driver context. That is the
+primary motivation for targeting WebGPU at all, and
+[GPU_CONTEXT_BUDGET.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_CONTEXT_BUDGET.md)
+owns the measurement, along with the four alternative fixes that were tried and
+eliminated.
+
+Three more differences matter to the code that sits on top:
+
+- **Instance data has no size cliff.** WGSL reads per-instance data out of a
+  storage buffer, and GLSL ES 3.00 has no storage buffers at all — the
+  alternatives are vertex attributes or a uniform block capped near 64 KB, which
+  a realistic render passes at a few thousand instances. That split is what
+  makes the two shaders structurally different, and it is why the shader source
+  is cross-compiled rather than shared at runtime.
+- **Antialiasing exists.** The WebGPU backend renders 4x MSAA through a resolve
+  texture. WebGL2 has no equivalent here, so a diagonal edge is simply harder.
+- **Limits are queryable.** The WebGPU HAL reads every limit it depends on from
+  `device.limits` at runtime and reports the two its guards trip on. WebGL2 can
+  ask for neither of the ones this tree needs, so it hardcodes a 256 MiB vertex
+  buffer refusal and an 8192 canvas dimension that no spec floor backs. Guessing
+  is not a style choice there; there is no call to make.
+
+**The trade runs the other way too, and it is worth knowing for triage.** One
+shared device means one `device.lost` takes down every display at once, and the
+per-device limits are a single budget rather than a per-track one. So the two
+backends fail in opposite directions: _one track broke_ points at WebGL2 and its
+per-canvas context, _every track broke at once_ points at WebGPU and its shared
+device. Neither replaces the other, which is why the ladder is WebGPU → WebGL2 →
+Canvas2D rather than a choice.
 
 ## Why not Rust in the browser
 
