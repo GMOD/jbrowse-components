@@ -1,6 +1,5 @@
 import PluginManager from './PluginManager.ts'
 import { addExtensionElement } from './ui/addExtensionElement.tsx'
-import { addFeaturePanel } from './ui/addFeaturePanel.ts'
 
 import type { FeaturePanelProps } from './PluginManager.ts'
 
@@ -68,14 +67,6 @@ test('a contributor is handed the props and nothing else', () => {
   // the guarantee, stated as arity: no second argument carries [A], so there is
   // nothing for this callback to drop
   expect(contribute.mock.calls[0]).toHaveLength(1)
-})
-
-test('addFeaturePanel scopes without touching other plugins entries', () => {
-  const pm = new PluginManager([])
-  addFeaturePanel(pm, { panel: A })
-  addFeaturePanel(pm, { select: { trackType: 'VariantTrack' }, panel: B })
-  expect(fireFeaturePanels(pm, { trackType: 'VariantTrack' })).toEqual([A, B])
-  expect(fireFeaturePanels(pm, { trackType: 'AlignmentsTrack' })).toEqual([A])
 })
 
 // typecheck-only: the guarantee above is only real if the by-hand route is shut.

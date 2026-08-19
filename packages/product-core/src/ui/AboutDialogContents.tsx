@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react'
+import { useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
@@ -6,6 +6,7 @@ import {
   getTrackConfigWithPromotables,
   hydrateTrackConfig,
 } from '@jbrowse/core/configuration'
+import { PluggableComponents } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -63,15 +64,6 @@ const AboutDialogContents = observer(function AboutDialogContents({
     pluginManager,
   })
 
-  // each registered panel scopes itself (returns null when it doesn't apply)
-  // and owns its own BaseCard chrome
-  const extraPanels = pluginManager.evaluateExtensionPoint(
-    /** #extensionPoint Core-extraAboutPanel | sync | Add extra panels to a track's About dialog */
-    'Core-extraAboutPanel',
-    [],
-    { session, config },
-  )
-
   return (
     <div className={classes.content}>
       <BaseCard title="Configuration">
@@ -95,15 +87,12 @@ const AboutDialogContents = observer(function AboutDialogContents({
           <Attributes attributes={shown.metadata} hideUris={hideUris} />
         </BaseCard>
       ) : null}
-      {extraPanels.map((Panel, i) => (
-        <Suspense
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- panels are registration-ordered, stable across renders
-          key={i}
-          fallback={null}
-        >
-          <Panel session={session} config={config} />
-        </Suspense>
-      ))}
+      <PluggableComponents
+        pluginManager={pluginManager}
+        /** #extensionPoint Core-extraAboutPanel | sync | Add extra panels to a track's About dialog */
+        name="Core-extraAboutPanel"
+        props={{ session, config }}
+      />
       {/* A file header is a location channel of its own: a BAM's `@SQ UR:` and
           `@PG CL:` carry the server's absolute paths, which is exactly what a
           deployment setting hideUris is trying not to publish. Hiding the

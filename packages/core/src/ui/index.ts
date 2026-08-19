@@ -99,18 +99,19 @@ export { default as SanitizedHTML } from './SanitizedHTML.tsx'
 // re-export alone held that dependency on the startup path. Every consumer
 // deep-imports '@jbrowse/core/ui/BaseTooltip' instead.
 export { default as PluggableComponent } from './PluggableComponent.tsx'
+export { default as PluggableComponents } from './PluggableComponents.tsx'
+export type { ComponentExtensionPointName } from './PluggableComponents.tsx'
 export { default as PluggableElements } from './PluggableElements.tsx'
+export { default as ForTrack } from './ForTrack.tsx'
 export { addExtensionElement } from './addExtensionElement.tsx'
 export type { ElementExtensionPointName } from './addExtensionElement.tsx'
-export { addFeaturePanel } from './addFeaturePanel.ts'
-export type { FeaturePanelSelector } from './addFeaturePanel.ts'
-export {
-  addReplaceWidget,
-  addWidgetWrapper,
-  widgetSelectorMatches,
-} from './addReplaceWidget.tsx'
-export type { WidgetSelector, WidgetWrapperProps } from './addReplaceWidget.tsx'
-export type { TrackSelectorFields } from './extensionSelectors.ts'
+export { wrapComponent } from './wrapComponent.tsx'
+export type {
+  SlotExtensionPointName,
+  SlotProps,
+  WrapperProps,
+} from './wrapComponent.tsx'
+export type { TrackSelector } from './extensionSelectors.ts'
 export type {
   BaseMenuItem,
   CheckboxMenuItem,

@@ -4,8 +4,9 @@ import { fireEvent, render } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import PluginManager from '../PluginManager.ts'
+import ForTrack from './ForTrack.tsx'
 import PluggableComponent from './PluggableComponent.tsx'
-import { addReplaceWidget, addWidgetWrapper } from './addReplaceWidget.tsx'
+import { wrapComponent } from './wrapComponent.tsx'
 
 import type { ReplaceWidgetProps } from '../PluginManager.ts'
 
@@ -73,9 +74,8 @@ beforeEach(() => {
   mounts = 0
 })
 
-test('a stable replacement component survives a parent rerender', () => {
+test('the default renders when nothing wraps the slot', () => {
   const pm = new PluginManager([])
-  addReplaceWidget(pm, { component: DefaultWidget })
   const { getByText } = render(<Harness pluginManager={pm} />)
   fireEvent.click(getByText('count 0'))
   fireEvent.click(getByText('rerender'))
@@ -83,7 +83,7 @@ test('a stable replacement component survives a parent rerender', () => {
   expect(getByText('count 1')).toBeTruthy()
 })
 
-// the reason addWidgetWrapper exists. The point is re-evaluated in
+// the reason wrapComponent exists. The point is re-evaluated in
 // PluggableComponent's render body, so a callback that declares its component
 // inline gives React a new element type every render and the default widget's
 // whole subtree is thrown away along with its state
@@ -111,17 +111,15 @@ test('a callback that declares its component inline remounts every render', () =
   expect(getByText('count 0')).toBeTruthy()
 })
 
-test('addWidgetWrapper keeps the wrapped widget mounted across renders', () => {
+test('wrapComponent keeps the wrapped widget mounted across renders', () => {
   const pm = new PluginManager([])
-  // #region widgetWrapper
-  addWidgetWrapper(pm, {
-    wrapper: ({ DefaultWidget: Widget, ...rest }) => (
-      <div>
-        <div>custom</div>
-        <Widget {...rest} />
-      </div>
-    ),
-  })
+  // #region wrapComponent
+  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
+    <div>
+      <div>custom</div>
+      <DefaultComponent {...rest} />
+    </div>
+  ))
   // #endregion
   const { getByText } = render(<Harness pluginManager={pm} />)
   fireEvent.click(getByText('count 0'))
@@ -133,22 +131,18 @@ test('addWidgetWrapper keeps the wrapped widget mounted across renders', () => {
 
 test('wrappers from two plugins nest instead of clobbering', () => {
   const pm = new PluginManager([])
-  addWidgetWrapper(pm, {
-    wrapper: ({ DefaultWidget: Widget, ...rest }) => (
-      <div>
-        <div>first</div>
-        <Widget {...rest} />
-      </div>
-    ),
-  })
-  addWidgetWrapper(pm, {
-    wrapper: ({ DefaultWidget: Widget, ...rest }) => (
-      <div>
-        <div>second</div>
-        <Widget {...rest} />
-      </div>
-    ),
-  })
+  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
+    <div>
+      <div>first</div>
+      <DefaultComponent {...rest} />
+    </div>
+  ))
+  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
+    <div>
+      <div>second</div>
+      <DefaultComponent {...rest} />
+    </div>
+  ))
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const { getByText } = render(<Harness pluginManager={pm} />)
   expect(getByText('first')).toBeTruthy()
@@ -158,14 +152,23 @@ test('wrappers from two plugins nest instead of clobbering', () => {
   warn.mockRestore()
 })
 
+// #region replaceWidget
+function scopedToOneTrack(pm: PluginManager) {
+  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
+    <ForTrack
+      {...rest}
+      select={{ trackId: 'volvox.inv.vcf' }}
+      fallback={<DefaultComponent {...rest} />}
+    >
+      <div>mine</div>
+    </ForTrack>
+  ))
+}
+// #endregion
+
 test('a selector scopes a replacement to one track and leaves others alone', () => {
   const pm = new PluginManager([])
-  // #region replaceWidget
-  addReplaceWidget(pm, {
-    select: { trackId: 'volvox.inv.vcf' },
-    component: () => <div>mine</div>,
-  })
-  // #endregion
+  scopedToOneTrack(pm)
   const a = render(
     <Harness pluginManager={pm} model={{ trackId: 'volvox.inv.vcf' }} />,
   )
@@ -180,10 +183,7 @@ test('a selector scopes a replacement to one track and leaves others alone', () 
 // applying to the user's copy is the footgun the framework matcher removes
 test('a bare trackId selector still matches a copy of that track', () => {
   const pm = new PluginManager([])
-  addReplaceWidget(pm, {
-    select: { trackId: 'volvox.inv.vcf' },
-    component: () => <div>mine</div>,
-  })
+  scopedToOneTrack(pm)
   const { getByText } = render(
     <Harness
       pluginManager={pm}
@@ -195,20 +195,21 @@ test('a bare trackId selector still matches a copy of that track', () => {
 
 test('a bare trackId selector does not match an unrelated longer id', () => {
   const pm = new PluginManager([])
-  addReplaceWidget(pm, {
-    select: { trackId: 'volvox.inv.vcf' },
-    component: () => <div>mine</div>,
-  })
+  scopedToOneTrack(pm)
   const { getByText } = render(
     <Harness pluginManager={pm} model={{ trackId: 'volvox.inv.vcf-extra' }} />,
   )
   expect(getByText('count 0')).toBeTruthy()
 })
 
-test('two plugins replacing the same slot warns once', () => {
+// wrapComponent's contribution records what it wrapped, so nesting is not a
+// clobber. Registering on the point by hand still is, and still says so
+test('two raw callbacks replacing the same slot warns once', () => {
   const pm = new PluginManager([])
-  addReplaceWidget(pm, { component: () => <div>first</div> })
-  addReplaceWidget(pm, { component: () => <div>second</div> })
+  const First = () => <div>first</div>
+  const Second = () => <div>second</div>
+  pm.addToExtensionPoint('Core-replaceWidget', () => First)
+  pm.addToExtensionPoint('Core-replaceWidget', () => Second)
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const { getByText } = render(<Harness pluginManager={pm} />)
   fireEvent.click(getByText('rerender'))

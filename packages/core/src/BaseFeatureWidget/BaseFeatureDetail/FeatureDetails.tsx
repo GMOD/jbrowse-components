@@ -1,9 +1,10 @@
-import { Fragment, Suspense } from 'react'
+import { Fragment } from 'react'
 
 import { Divider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { ErrorBoundary } from '../../ui/ErrorBoundary.tsx'
+import PluggableComponents from '../../ui/PluggableComponents.tsx'
 import { ErrorBanner } from '../../ui/index.ts'
 import { getEnv } from '../../util/index.ts'
 import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
@@ -77,19 +78,11 @@ const FeatureDetails = observer(function FeatureDetails(
     subfeatures,
     uniqueId,
   } = feature
-  const pm = getEnv(model).pluginManager
   // resolved rather than raw props: `depth` is what tells a registered panel
   // whether it is under the clicked feature (0) or a nested subfeature card, and
   // it is only defaulted here -- passing raw props left it undefined at the top
-  // level, so a `where: p => p.depth === 0` selector could never match
+  // level, so a panel selecting on `depth === 0` could never match
   const panelProps = { ...props, depth }
-  // each registered panel scopes itself (returns null when it doesn't apply)
-  // and owns its own BaseCard/Divider chrome. [x].flat() tolerates a legacy
-  // callback that returned a single component instead of appending to the array
-  const extraPanels = [
-    /** #extensionPoint Core-extraFeaturePanel | sync | Add extra panels to the feature details widget */
-    pm.evaluateExtensionPoint('Core-extraFeaturePanel', [], panelProps),
-  ].flat()
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       {joinByDivider(
@@ -124,15 +117,12 @@ const FeatureDetails = observer(function FeatureDetails(
         <SequenceFeatureDetails {...props} />
       </ErrorBoundary>
 
-      {extraPanels.map((Panel, i) => (
-        <Suspense
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- panels are registration-ordered, stable across renders
-          key={i}
-          fallback={null}
-        >
-          <Panel {...panelProps} />
-        </Suspense>
-      ))}
+      <PluggableComponents
+        pluginManager={getEnv(model).pluginManager}
+        /** #extensionPoint Core-extraFeaturePanel | sync | Add extra panels to the feature details widget */
+        name="Core-extraFeaturePanel"
+        props={panelProps}
+      />
 
       {depth < maxDepth && subfeatures?.length ? (
         <BaseCard

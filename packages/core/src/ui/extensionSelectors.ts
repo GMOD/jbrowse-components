@@ -1,16 +1,18 @@
 import { matchTrackId } from '../util/matchTrackId.ts'
 
 /**
- * The track-scoping fields every extension point selector shares. Both points
- * they scope (`Core-replaceWidget`, `Core-extraFeaturePanel`) fire for every
- * track, so without a selector a contribution applies to all of them.
+ * Which tracks a contribution is for. Every track-scoped extension point fires
+ * for every track, so a contribution with no selector applies to all of them.
+ * {@link ForTrack} is what applies one.
  */
 // #region fields
-export interface TrackSelectorFields {
+export interface TrackSelector {
   /** track type, e.g. `'VariantTrack'`, usually what "for my tracks" means */
   trackType?: string | string[]
   /** track id; a plain string also matches the user's copies of that track */
   trackId?: string | RegExp | (string | RegExp)[]
+  /** widget model type, e.g. `'AlignmentsFeatureWidget'`, for the slot points */
+  widgetType?: string | string[]
 }
 // #endregion
 
@@ -43,15 +45,9 @@ function matchesOneOf(value: string | undefined, expected: string | string[]) {
     : expected.includes(value ?? '')
 }
 
-/**
- * Whether `model` satisfies every declarative field of `select`. A selector's
- * `where` predicate is applied by its own helper, which knows the props type it
- * receives.
- */
+/** Whether `model` satisfies every declarative field of `select`. */
 export function selectorMatchesModel(
-  select:
-    | (TrackSelectorFields & { widgetType?: string | string[] })
-    | undefined,
+  select: TrackSelector | undefined,
   model: SelectableModel,
 ) {
   const { widgetType, trackType, trackId } = select ?? {}
