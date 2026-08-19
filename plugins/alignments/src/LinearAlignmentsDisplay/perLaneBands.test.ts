@@ -2,8 +2,8 @@ import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 
 import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
-import { makeEmptyPileupData } from './testUtils.ts'
 import {
+  makeEmptyPileupData,
   bootAlignmentsDisplay,
   oneReadWithMate as oneRead,
 } from './testUtils.ts'
