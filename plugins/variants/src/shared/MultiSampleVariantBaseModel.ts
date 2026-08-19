@@ -848,8 +848,8 @@ export default function MultiSampleVariantBaseModelF(
            * #action
            * Drag-resize the track. In fit-to-display-height mode the new height
            * flows straight into `autoRowHeight`, so the rows stretch with the
-           * drag. With a pinned `rowHeight` the rows keep the size the user
-           * pinned and the drag reveals more of them — scaling the pin by the
+           * drag. With a fixed `rowHeight` the rows keep the size the user
+           * chose and the drag reveals more of them — scaling that value by the
            * same ratio instead would keep content and viewport locked together,
            * so dragging a track taller could not show one extra sample.
            */
@@ -1250,7 +1250,7 @@ export default function MultiSampleVariantBaseModelF(
          * `availableHeight` floors at 0, so a `lineZoneHeight` that swallows
          * the whole display makes this exactly 0.
          *
-         * A **pinned** height goes the other way and is used as-is however many
+         * A **fixed** height goes the other way and is used as-is however many
          * samples there are — the rows area is a scroll viewport, so rows that
          * don't fit cost scroll extent rather than a resize.
          */

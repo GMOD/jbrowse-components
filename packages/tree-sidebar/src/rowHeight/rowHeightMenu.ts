@@ -50,7 +50,7 @@ export interface RowHeightPreset {
  * variants offered no presets at all, and its dialog seeded from
  * `effectiveRowHeight` — the exact trap the other two dialogs carry comments
  * warning against — so opening "Custom..." in fit mode and pressing submit
- * pinned the computed fractional height.
+ * fixed the rows at the computed fractional height.
  *
  * A display with no presets gets fit + Custom, which is what variants shows
  * today; passing a table adds the middle radios.

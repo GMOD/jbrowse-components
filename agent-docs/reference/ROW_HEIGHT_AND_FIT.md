@@ -19,12 +19,12 @@ the shared spelling, and the two places a display legitimately differs.
 | resolved px height | `effectiveRowHeight` | what every consumer reads; never `0`, never `undefined` |
 | enter fit mode | `setFitToHeight(): void` | writes `rowHeight = 0` |
 | pin a height | `setRowHeight(n: number)` | |
-| menu row | `'Squeeze to fit view'`, radio | mutually exclusive with the pinned presets |
+| menu row | `'Squeeze to fit view'`, radio | mutually exclusive with the fixed presets |
 
 Fit-to-height is the default everywhere — the slot ships at `0`.
 
 **"Pinned" means the user chose a px height**, and it is the whole opposite of
-fit: a pinned row keeps the height it was given when the track is dragged, and
+fit: a fixed row keeps the height it was given when the track is dragged, and
 the drag reveals more rows instead of restretching the ones on screen.
 
 The slot and the three members over it are **one mixin**, not a per-display
@@ -43,7 +43,7 @@ has it: expose the `rowProportion` / `setRowProportion` pair and the dialog
 grows a second field, omit it and the dialog is one field. That optionality is
 the whole reason the three copies existed, and the copies had drifted — variants
 offered no presets and its dialog seeded from `effectiveRowHeight`, so
-"Custom..." in fit mode pinned the computed fractional height on submit.
+"Custom..." in fit mode fixed the computed fractional height on submit.
 
 **`sources` is the row list, and it is a resolved array on every row display** —
 never `undefined`, so the count these heights divide is always readable. maf and
@@ -68,7 +68,7 @@ rather than one they compose.
 Displays implementing this: `variants/MultiSampleVariantBaseModel` (both the
 regular and matrix multi-sample variant displays), `maf/LinearMafDisplay`,
 `canvas/LinearMultiRowFeatureDisplay`. `wiggle/MultiLinearWiggleDisplay` is
-always-fit — it has no pinned-height setting and therefore no `rowHeight`
+always-fit — it has no fixed-height setting and therefore no `rowHeight`
 sentinel — but exposes `effectiveRowHeight` under the same name.
 `alignments/LinearAlignmentsDisplay`'s `rowHeight` is a per-read pitch, an
 unrelated concept; don't treat it as precedent.
@@ -92,7 +92,7 @@ two-rules-pulling-opposite-ways invariant invites.
 Per-display coverage of those two rules was uneven, measured by sabotage: drop
 the floor and only the multi-sample variants' `rowHeightResolution.test.ts`
 fails; floor the sub-pixel case as well and that one plus canvas's
-`trackHeightFloor.test.ts` fail. maf pinned neither.
+`trackHeightFloor.test.ts` fail. maf covers neither.
 `packages/tree-sidebar/src/rowHeight/RowHeightMixin.test.ts` is where one
 implementation gets one set of assertions.
 
@@ -113,11 +113,11 @@ display has**, not which neighbour it resembles. That is why `setFitToHeight`
 stays per display while `setRowHeight` moved onto the mixin — the two look like
 a pair and only one of them is display-independent.
 
-### Drag-resize leaves a pinned height alone
+### Drag-resize leaves a fixed height alone
 
 Resizing the track writes `height` and nothing else. In fit mode the rows
-restretch to the new height; with a pinned `rowHeight` the rows keep the size
-the user pinned and the drag reveals more of them. Scaling the pin by the same
+restretch to the new height; with a fixed `rowHeight` the rows keep the size
+the user fixed and the drag reveals more of them. Scaling that value by the same
 ratio instead keeps content and viewport locked together, so dragging a track
 taller cannot show one extra row — that was maf's bug before it stopped
 rescaling, and variants' before this convention landed.
@@ -126,7 +126,7 @@ rescaling, and variants' before this convention landed.
 derived (`nrow * effectiveRowHeight`): the display grows to its content instead
 of scrolling a fixed viewport, so there is no viewport/content split for a drag
 to change the ratio of. A fixed-mode drag there has nothing to write but the row
-height, and `setHeight` re-pins `newHeight / nrow` deliberately. Adopting the
+height, and `setHeight` re-fixes it at `newHeight / nrow` deliberately. Adopting the
 rule above would mean giving canvas a scroll viewport, which is a different
 change.
 
@@ -189,7 +189,7 @@ helper to migrate, which it was not before this convention was consolidated.
 
 `rowHeight` is a config slot, not a display-instance MST prop, for the same
 reason `height` and `lineZoneHeight` are: the config node outlives the display
-instance, so a pinned height survives unticking and reticking the track.
+instance, so a fixed height survives unticking and reticking the track.
 Pinned by a test in `plugins/variants/src/shared/rowHeightResolution.test.ts`
 asserting the value lands on `configuration.rowHeight` and not in the display
 snapshot.

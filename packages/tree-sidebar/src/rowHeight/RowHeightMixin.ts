@@ -52,10 +52,10 @@ export function RowHeightMixin() {
       /**
        * #getter
        * Raw per-row height setting: `0` is fit-to-display-height, any positive
-       * value is a pinned px height. The resolved value is
+       * value is a fixed px height. The resolved value is
        * `effectiveRowHeight` — consumers read that, never this. On the config
        * rather than the display snapshot for the same reason `height` is: the
-       * config node outlives the display instance, so a pinned height survives
+       * config node outlives the display instance, so a fixed height survives
        * unticking and reticking the track.
        */
       get rowHeight(): number {
@@ -66,7 +66,7 @@ export function RowHeightMixin() {
       /**
        * #getter
        * Resolved per-row height. `rowHeight === 0` divides the display's own
-       * `autoRowHeight` across the rows; any positive value is the pinned px
+       * `autoRowHeight` across the rows; any positive value is the fixed px
        * height, used as-is however many rows there are.
        *
        * Sub-pixel is legitimate and deliberately not floored here — a cohort

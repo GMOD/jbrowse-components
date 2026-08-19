@@ -506,7 +506,7 @@ export default function stateModelFactory(
        * Ceiling on the whole row stack in CSS px, because this display sizes its
        * canvas to its *content* and never scrolls: `height` is the canvas, so
        * nothing downstream bounds it. What goes wrong past it, and why it is a
-       * function rather than a constant, is `maxCanvasCssPx`'s. A pinned 14px
+       * function rather than a constant, is `maxCanvasCssPx`'s. A fixed 14px
        * row height over a 1,987-row cohort — two clicks in the Row height menu
        * — is 27,818 CSS px, well past it.
        *
@@ -1042,7 +1042,7 @@ export default function stateModelFactory(
       /**
        * #action
        * Set the track height. In auto-fit mode the rows restretch to it; in fixed
-       * mode it's distributed across the current rows as a pinned row height.
+       * mode it's distributed across the current rows as a fixed row height.
        */
       // Both branches floor the TRACK at MIN_DISPLAY_HEIGHT, never the row.
       // Flooring the row instead (`Math.max(1, newHeight / nrow)`) got both ends

@@ -983,7 +983,7 @@ export default function stateModelFactory(
          * stacked bands, which is exactly the rows canvas. Zero when alignments
          * are hidden, collapsing the display to the coverage band.
          *
-         * This is the viewport, not the content: with a pinned `rowHeight` the
+         * This is the viewport, not the content: with a fixed `rowHeight` the
          * rows can add up to far more than this and the extra is reached by
          * scrolling (`rowsContentHeight` / `scrollableHeight`), never by growing
          * the canvas. Capped at `maxRowsHeight` so even a deliberate drag can't
@@ -1036,7 +1036,7 @@ export default function stateModelFactory(
          * divide by. Same rule, and same regression, as the multi-sample variant
          * display's `autoRowHeight`.
          *
-         * A **pinned** height goes the other way and is used as-is however many
+         * A **fixed** height goes the other way and is used as-is however many
          * species there are: the rows canvas is the viewport (`rowsHeight`), so
          * hundreds of tall rows cost scroll extent, not backing store. The
          * canvas-size ceiling that `effectiveRowHeight` used to apply —
@@ -1052,7 +1052,7 @@ export default function stateModelFactory(
          * #getter
          * Height the per-sample rows add up to — the scrolled content behind the
          * `rowsHeight` viewport. Equal to it in fit-to-height mode (which is what
-         * makes that mode never scroll); larger whenever a pinned `rowHeight`
+         * makes that mode never scroll); larger whenever a fixed `rowHeight`
          * asks for more rows than the track shows.
          */
         get rowsContentHeight() {
@@ -1124,8 +1124,8 @@ export default function stateModelFactory(
          * #action
          * Drag-resize the track. In fit-to-height mode the new height flows
          * straight into `autoRowHeight`, so the rows stretch with the drag. With
-         * a pinned `rowHeight` the rows keep the size the user pinned and the
-         * drag reveals more of them — the pinned height used to be scaled by the
+         * a fixed `rowHeight` the rows keep the size the user chose and the
+         * drag reveals more of them — the fixed height used to be scaled by the
          * same ratio, which kept content and viewport locked together and made
          * dragging a track taller unable to show a single extra species.
          *
