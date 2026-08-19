@@ -122,6 +122,7 @@ export {
   fetchAllRegions,
   fetchEachRegion,
   foundationDisplayStatusPhase,
+  legendMixinSlots,
   squashToHeightCheckboxItem,
   getHeightModeOptions,
   heightModeConfigSchemaFields,

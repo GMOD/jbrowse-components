@@ -31,19 +31,27 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 import type { ObservableMap } from 'mobx'
 
-// This mixin reads two slots past the shared table, and they are restated here
-// rather than moved into it because the two wiggle displays genuinely disagree
-// about them: `defaultRendering` takes a different enum and default in each
-// (`xyplot` vs `multirowxy`), and `summaryScoreMode` a different default
-// (`whiskers` vs `avg`). Naming them costs a line each and keeps the other six
-// slot names below checked; widening the cast to cover them would give up all
-// eight. gccontent hand-declares `summaryScoreMode` a third time, so a
-// parameterized field table is the eventual fix.
+/**
+ * The two slots this mixin reads past the shared table, restated rather than
+ * moved into it because the two wiggle displays genuinely disagree about them:
+ * `defaultRendering` takes a different enum and default in each (`xyplot` vs
+ * `multirowxy`), and `summaryScoreMode` a different default (`whiskers` vs
+ * `avg`). gccontent hand-declares `summaryScoreMode` a third time, so a
+ * parameterized field table is the eventual fix. Naming them keeps the other six
+ * slot names below checked; widening the cast to cover them gives up all eight.
+ *
+ * A runtime value rather than a bare type so the restatement can be checked
+ * against the real declarations — see `legendMixinSlots` for why, and
+ * `RestatedMixinSlots.test.ts` for the comparison. `defaultValue` is a
+ * placeholder; the test checks the key's presence and its `type`.
+ */
+export const wiggleCommonExtraSlots = {
+  summaryScoreMode: { type: 'stringEnum', defaultValue: '' },
+  defaultRendering: { type: 'stringEnum', defaultValue: '' },
+} as const
+
 type WiggleCommonConfigModel = ConfigModelForFields<
-  typeof wiggleConfigSchemaFields & {
-    summaryScoreMode: { type: 'stringEnum'; defaultValue: string }
-    defaultRendering: { type: 'stringEnum'; defaultValue: string }
-  }
+  typeof wiggleConfigSchemaFields & typeof wiggleCommonExtraSlots
 >
 
 /** The whole of what `WiggleCommonMixin` needs a composing display to be. */

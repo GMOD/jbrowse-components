@@ -6,17 +6,31 @@ import type {
   ResolvableDisplay,
 } from '@jbrowse/core/configuration'
 
-// `showLegend` is restated here rather than moved into a shared field table
-// because the six composing schemas genuinely disagree about it: `promotedBase`
-// is off for a Hi-C color scale and on for a variant genotype key, and each
-// description describes a different legend (see the docstring below). Only the
-// *type* is common, and typing it is all the cast needs — `ConfigModelForFields`
-// has the why. The alternative, `ResolvableDisplay` alone, widens
-// `configuration` to `AnyConfigurationModel` and switches the slot-name check
-// off entirely.
-type LegendConfigModel = ConfigModelForFields<{
-  showLegend: { type: 'maybeBoolean'; promotedBase: boolean }
-}>
+/**
+ * The slot this mixin reads, restated rather than moved into a shared field
+ * table because the six composing schemas genuinely disagree about it:
+ * `promotedBase` is off for a Hi-C color scale and on for a variant genotype
+ * key, and each description describes a different legend (see the docstring
+ * below). Only the **type** is common, and typing it is all the cast needs.
+ *
+ * A runtime value rather than a bare type so it can be checked against the real
+ * declarations — a restatement nothing compares to the thing it restates is a
+ * copy, and copies drift. `RestatedMixinSlots.test.ts` in jbrowse-web is the
+ * comparison; it is there because that is the only place every schema is
+ * registered at once.
+ *
+ * `promotedBase` is a placeholder: what the *type* needs is that the key is
+ * present (that is what drops the inherit sentinel from a `resolveConf` read),
+ * and what each schema sets it to is the thing that legitimately varies. The
+ * test checks presence and `type`, never this value.
+ */
+export const legendMixinSlots = {
+  showLegend: { type: 'maybeBoolean', promotedBase: false },
+} as const
+
+// `ResolvableDisplay` alone would widen `configuration` to
+// `AnyConfigurationModel` and switch the slot-name check off entirely.
+type LegendConfigModel = ConfigModelForFields<typeof legendMixinSlots>
 
 /** The whole of what `LegendMixin` needs a composing display to be. */
 export type LegendHost = ResolvableDisplay<LegendConfigModel>
