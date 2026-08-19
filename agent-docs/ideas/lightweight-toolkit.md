@@ -139,8 +139,9 @@ subtraction** — `!showLoading && !this.error` — and the subtraction is being
 re-encoded in every host instead of every display.
 
 A `view.status` getter of the same shape makes the gate a `switch`, makes the
-two-state trap unrepresentable, and tells a reader the states exist. It is
-finishing a pattern rather than introducing one.
+trap unrepresentable, and tells a reader the states exist. It is finishing a
+pattern rather than introducing one. **Landed** — see item 3 below, including
+the fourth state the two-state framing above misses.
 
 ### 5. The engine kernel is the most reusable thing here, and it is 404 on npm
 
@@ -190,8 +191,19 @@ coordinate-system concepts. That is the differentiator.
    becomes a preset over it. Export the view and session types — all 18 examples
    write `type BrowserView = ReturnType<typeof makeView>['view']` because there
    is no name to import.
-3. **`view.status`**, shaped like `displayPhase`. Retires the most-copied wrong
-   block on the site.
+3. ~~**`view.status`**, shaped like `displayPhase`.~~ **Done**, on
+   `LinearGenomeView` and `LinearSyntenyView`. `computeViewStatus` in
+   `@jbrowse/core/util/viewStatus` holds the precedence and takes the loading
+   term as a thunk, so dotplot and circular — which re-spell the same four
+   getters, `loadingMessage` and `loadingProgress` character-identical across
+   all four — adopt it in eight lines whenever someone touches them.
+
+   Two things came out of building it that reading did not. `noRegions` is a
+   fourth state, not a rename: `view.ready` is true when nothing has navigated
+   the view, so a host gating on it mounts tracks over an empty view. And that
+   state was unreachable on the whole examples site, because all eighteen
+   `createViewState` calls passed `init` — including on the page whose argument
+   for `status` over `ready` is that state.
 4. **Publish the display-mount contract.** `check-duplication.mjs`'s `COPIED`
    entry calls `TrackRow` the reader's own to write, which conflates the box
    (theirs, to style) with the slot/containment/Suspense contract (not theirs).
