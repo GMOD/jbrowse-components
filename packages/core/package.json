@@ -114,7 +114,6 @@
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
     "./ui/ScrollZoomHint": "./src/ui/ScrollZoomHint.tsx",
     "./ui/ScrollZoomToggle": "./src/ui/ScrollZoomToggle.tsx",
-    "./ui/scrollZoomLabels": "./src/ui/scrollZoomLabels.ts",
     "./ui/ShareLinkField": "./src/ui/ShareLinkField.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
@@ -127,6 +126,7 @@
     "./ui/legendSpec": "./src/ui/legendSpec.ts",
     "./ui/menuItems": "./src/ui/menuItems.ts",
     "./ui/palette": "./src/ui/palette.ts",
+    "./ui/scrollZoomLabels": "./src/ui/scrollZoomLabels.ts",
     "./ui/showSubMenu": "./src/ui/showSubMenu.ts",
     "./ui/styleTheme": "./src/ui/styleTheme.ts",
     "./ui/theme": "./src/ui/theme.ts",
@@ -646,10 +646,6 @@
         "types": "./esm/ui/ScrollZoomToggle.d.ts",
         "import": "./esm/ui/ScrollZoomToggle.js"
       },
-      "./ui/scrollZoomLabels": {
-        "types": "./esm/ui/scrollZoomLabels.d.ts",
-        "import": "./esm/ui/scrollZoomLabels.js"
-      },
       "./ui/ShareLinkField": {
         "types": "./esm/ui/ShareLinkField.d.ts",
         "import": "./esm/ui/ShareLinkField.js"
@@ -697,6 +693,10 @@
       "./ui/palette": {
         "types": "./esm/ui/palette.d.ts",
         "import": "./esm/ui/palette.js"
+      },
+      "./ui/scrollZoomLabels": {
+        "types": "./esm/ui/scrollZoomLabels.d.ts",
+        "import": "./esm/ui/scrollZoomLabels.js"
       },
       "./ui/showSubMenu": {
         "types": "./esm/ui/showSubMenu.d.ts",
@@ -1347,9 +1347,6 @@
         "ui/ScrollZoomToggle": [
           "esm/ui/ScrollZoomToggle.d.ts"
         ],
-        "ui/scrollZoomLabels": [
-          "esm/ui/scrollZoomLabels.d.ts"
-        ],
         "ui/ShareLinkField": [
           "esm/ui/ShareLinkField.d.ts"
         ],
@@ -1385,6 +1382,9 @@
         ],
         "ui/palette": [
           "esm/ui/palette.d.ts"
+        ],
+        "ui/scrollZoomLabels": [
+          "esm/ui/scrollZoomLabels.d.ts"
         ],
         "ui/showSubMenu": [
           "esm/ui/showSubMenu.d.ts"
