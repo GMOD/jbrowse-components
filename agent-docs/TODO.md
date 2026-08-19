@@ -886,6 +886,39 @@ takes the same treatment as the tick arm. **This changes what every published
 translocation figure looks like**, so land it deliberately and re-render the
 `cancer_sv` set: `reference/DEMO_DATASETS.md`.
 
+**Do not read the `arcKey` rule across to argue against merging.** That rule
+refuses to merge DISTINCT junctions on a tolerance, and it is right — five
+events inside 2.3 kb are five events. Here the same pass has already decided,
+on both sides, with the floor spending that decision, that the cluster is one
+event. Drawing it as N marks is refusing to act on a conclusion already drawn.
+
+**And "make the clustering zoom-dependent" is the right instinct aimed at the
+wrong pass.** Two questions get conflated. *What is one event* is a
+library-scale fact in bp, zoom-independent, and belongs exactly where it is.
+*What should be drawn as one mark* is a rendering fact in px, zoom-dependent,
+and belongs at draw time. `arcsResult` deliberately does not read
+`view.bpPerPx`: it is invalidation tier 4 (rebuilt on data, settings and
+navigation) where zoom is tier 5 (repaint), so feeding zoom into it reruns
+`groupReadsByName`, the SA walk and the whole per-read connection resolution on
+every zoom step — the display's CLAUDE.md names that tier boundary as the thing
+not to break, and this would break it for every lane at once. The zoom-dependent
+half, if wanted at all, is a **draw-time coalescer**: given marks already
+carrying a cluster id, collapse those closer than a few px. That is a
+render-tier pass over the packed feed, costs no refetch, and is strictly
+optional — one mark per cluster fixes the wrong-picture problem on its own, at
+every zoom.
+
+**The surface it crosses**, which is why this is not small: `arcMark`'s
+`ArcDome` has one x per foot, so a mark gains an extent rather than a
+coordinate; `hitTestArcBand` scans per-instance arrays, so what an index means
+and what `arcLinePositions` holds both change; `formatArcTooltip` reports two
+exact bp and would report a range; and a cluster's members can disagree on arm
+direction where today each mark carries its own read's. Take it with a real
+dataset open rather than off the fixtures — `cancer_sv/k562_bcr_abl_split` and
+the HG002 300x window at 1:2,000,000 (`reference/DEEP_COVERAGE.md`), in that
+order. Every argument here is an argument about what a reader concludes, and
+the fixture tests cannot settle it.
+
 ### Bound an interchromosomal cluster's diameter
 
 `clusteredInterchromSupport` is single-linkage, so the window bounds the GAP

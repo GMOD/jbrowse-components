@@ -57,3 +57,11 @@ store in the test matrix. `share-` is that plus a fetch and a decrypt.
 
 Whatever ships must **fail loudly on a key it cannot translate** rather than
 inheriting MST's silent drop — that is the actual bug hiding behind this feature.
+
+Half of that loudness has since landed, at the link level rather than the
+snapshot level: `parseSessionSpecUrl` matches `share|encoded|local|json` and
+throws naming the kind ("only the JBrowse Web instance that created it can open
+it"), so a user pasting one now gets a sentence instead of nothing. That is the
+diagnostic, not the feature — the three translations above are still the work,
+and the silent `sessionTracks` drop is still what happens the moment a snapshot
+does get applied.

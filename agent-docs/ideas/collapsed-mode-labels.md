@@ -48,8 +48,9 @@ belongs for the same reason the compact subfeature-label reservation does — th
 mode and `labelFontPx` are known there and the worker is deliberately
 mode-agnostic. See
 [REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md)'s canvas-glyph entry for
-that boundary and [display-height-redesign](display-height-redesign.md) for the
-height side of the same problem.
+that boundary. The height side of the same problem has since been settled:
+`TrackHeightMixin` stores the display height directly on the `height` config
+slot, so there is no `heightOverride` to reconcile a label reservation against.
 
 ## What not to re-propose
 
