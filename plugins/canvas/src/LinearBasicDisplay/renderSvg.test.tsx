@@ -405,6 +405,54 @@ describe('renderSvg', () => {
     expect(html).toContain('GENE1')
   })
 
+  // The badge is an affordance on screen and a caption in an export. "+3 more"
+  // survives the change of medium — it says what the picture leaves out — while
+  // its expanded form says "show fewer", which addresses a control the file does
+  // not carry, over a gene the export has already drawn in full.
+  it('exports the collapsed badge and drops the expanded one', async () => {
+    const withBadge = async (expanded: boolean) => {
+      const data = makeFeatureData({
+        ...packFixtureRects([{ startBp: 1400, endBp: 1600 }]),
+        flatbushItems: [
+          makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
+        ],
+        floatingLabelsData: {
+          f0: {
+            featureId: 'f0',
+            minX: 1400,
+            maxX: 1600,
+            topY: 0,
+            featureHeight: 10,
+            nameLabel: {
+              text: 'GENE1',
+              relativeY: 0,
+              color: '#000',
+              textWidth: 40,
+            },
+            moreIsoformsLabel: {
+              text: expanded ? 'show fewer' : '+3 more',
+              relativeY: 0,
+              color: '#888',
+              textWidth: 30,
+              hidden: 3,
+              expanded,
+            },
+          },
+        },
+        featureCount: 1,
+      })
+      return renderResult(
+        await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
+      )
+    }
+    const collapsed = await withBadge(false)
+    expect(collapsed).toContain('GENE1')
+    expect(collapsed).toContain('+3 more')
+    const expanded = await withBadge(true)
+    expect(expanded).toContain('GENE1')
+    expect(expanded).not.toContain('show fewer')
+  })
+
   // A feature ending exactly at the region start is the normal shape at a
   // displayed-region boundary: it is drawn entirely in the previous region and
   // contributes no pixels here. The on-screen overlay drops it (overlayItemRect

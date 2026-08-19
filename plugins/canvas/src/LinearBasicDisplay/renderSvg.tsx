@@ -64,21 +64,30 @@ export interface RenderSvgModel extends SvgExportable {
 // reassign per label here — the export's ctx is an SvgCanvas, which stores the
 // shorthand and parses it at serialize time.
 function paintLabels(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
-  for (const { label, labelX, labelY, kind } of labels) {
-    const isMore = kind === 'more'
-    const size = isMore ? fontSize * MORE_ISOFORMS_FONT_SCALE : fontSize
-    ctx.font = `${isMore ? 'italic ' : ''}${size}px sans-serif`
-    if (label.isOverlay) {
-      ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
-      // The baked textWidth is measured at the base font size; scale it to what
-      // this mode draws so the backing rect hugs the text like the on-screen DOM
-      // version (a CSS background on the label div) does.
-      ctx.fillRect(
-        labelX - 1,
-        labelY,
-        renderedTextWidth(label.textWidth, fontSize) + 2,
-        fontSize + 1,
-      )
+  for (const resolved of labels) {
+    const { label, labelX, labelY } = resolved
+    if (resolved.kind === 'more') {
+      // "+20 more" is a fact about the picture and belongs in it. Its expanded
+      // form reads "show fewer", an instruction to a control the export does not
+      // carry, over a gene the export has already drawn in full.
+      if (resolved.label.expanded) {
+        continue
+      }
+      ctx.font = `italic ${fontSize * MORE_ISOFORMS_FONT_SCALE}px sans-serif`
+    } else {
+      ctx.font = `${fontSize}px sans-serif`
+      if (resolved.label.isOverlay) {
+        ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
+        // The baked textWidth is measured at the base font size; scale it to
+        // what this mode draws so the backing rect hugs the text like the
+        // on-screen DOM version (a CSS background on the label div) does.
+        ctx.fillRect(
+          labelX - 1,
+          labelY,
+          renderedTextWidth(label.textWidth, fontSize) + 2,
+          fontSize + 1,
+        )
+      }
     }
     ctx.fillStyle = label.color
     // labelY is the label's TOP (the DOM overlay positions the div by it), so
@@ -89,8 +98,8 @@ function paintLabels(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
     // because SvgCanvas interpolates coordinates raw — the unrounded product
     // serializes as y="21.240000000000002" for no visible gain.
     //
-    // Off the label's OWN size, so the badge sits on the name's baseline rather
-    // than a smaller one of its own — they share a line.
+    // Off the shared line's size rather than each label's own, so the smaller
+    // badge sits on the name's baseline instead of a lower one of its own.
     ctx.fillText(
       label.text,
       labelX,
