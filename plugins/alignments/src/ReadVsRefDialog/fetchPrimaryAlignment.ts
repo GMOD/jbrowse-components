@@ -2,7 +2,6 @@ import {
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
-import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -51,14 +50,8 @@ export async function fetchPrimaryAlignment(
   const adapterConfig = getConf(track, 'adapter')
   const sessionId = getRpcSessionId(track)
   const [asm] = getConf(track, 'assemblyNames') as string[]
-  // CRAM/BAM must decode the primary read's SEQ against the reference; the
-  // adapter config doesn't carry it, so pass the assembly's sequence adapter.
-  const sequenceAdapter = getSequenceAdapterConfig(
-    asm ? session.assemblyManager.get(asm) : undefined,
-  )
   const feats: Feature[] = await rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
-    sequenceAdapter,
     regions: [
       {
         refName: saRef,

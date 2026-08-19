@@ -9,11 +9,15 @@ export default abstract class RpcMethodTypeWithRenameRegion<
   MethodName extends string = string,
 > extends RpcMethodType<MethodName> {
   async serializeArguments<T extends RenameRegionArgs>(args: T) {
-    // adapt the singular `region` to the plural renameRegions helper
-    const { regions } = await this.renameRegions({
+    // adapt the singular `region` to the plural renameRegions helper.
+    // `rest`, not `args` — spreading the ORIGINAL back over the result drops
+    // everything renaming adds beside the regions, silently. That is how
+    // `sequenceAdapter` would reach a worker undefined on exactly the
+    // single-region methods while the plural ones got it.
+    const { regions, ...rest } = await this.renameRegions({
       ...args,
       regions: [args.region],
     })
-    return super.serializeArguments({ ...args, region: regions[0]! })
+    return super.serializeArguments({ ...rest, region: regions[0]! })
   }
 }

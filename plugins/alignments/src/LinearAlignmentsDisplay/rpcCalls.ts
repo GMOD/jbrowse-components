@@ -1,26 +1,14 @@
-import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import { SimpleFeature, getRpcSessionId, getSession } from '@jbrowse/core/util'
 
 import type { RenderAlignmentDataArgs } from '../RenderAlignmentDataRPC/types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 // The right-click feature-details fetch, and the sequence adapter both of this
 // display's RPCs hand the worker. Out of the model because it reads none of its
 // state beyond what it is given — which is what lets it state its `self` as a
 // duck type rather than as the whole display.
-
-export function getSequenceAdapter(
-  session: AbstractSessionModel,
-  region: Region,
-) {
-  return getSequenceAdapterConfig(
-    region.assemblyName
-      ? session.assemblyManager.get(region.assemblyName)
-      : undefined,
-  )
-}
 
 export interface FetchFeatureDetailsSelf {
   adapterConfig: Record<string, unknown>
@@ -61,7 +49,6 @@ export async function fetchFeatureDetails(
     start: info.start,
     end: info.start + 1,
   }
-  const sequenceAdapter = getSequenceAdapter(session, region)
   const sessionId = getRpcSessionId(self)
   const { feature } = await session.rpcManager.call(
     sessionId,
@@ -72,7 +59,6 @@ export async function fetchFeatureDetails(
     // eslint-disable-next-line no-restricted-syntax
     {
       adapterConfig: self.adapterConfig,
-      sequenceAdapter,
       regions: [region],
       featureId,
       // The tier the pileup was fetched at. A tiered PIF adapter numbers its
@@ -120,7 +106,6 @@ export function fetchFeaturesForRegion(
   const session = getSession(self)
   return session.rpcManager.call(getRpcSessionId(self), 'RenderAlignmentData', {
     adapterConfig,
-    sequenceAdapter: getSequenceAdapter(session, region),
     regions: [region],
     ...self.rpcProps(),
     stopToken: ctx.stopToken,

@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   ConfigurationReference,
   getConf,
@@ -2606,16 +2605,12 @@ export default function baseStateModelFactory(
           // Per-region translation table from the assembly's geneticCodes
           // config (alias-bridged via getGeneticCodeId), so the worker can
           // translate peptides on contigs whose features carry no transl_table.
-          // The sequence adapter comes off the same handle: this fetch is per
-          // region, so the region's assembly is the one that owns the reference
-          // it decodes against.
           const assembly = session.assemblyManager.get(region.assemblyName)
           const result = await session.rpcManager.call(
             sessionId,
             'RenderFeatureData',
             {
               adapterConfig: self.adapterConfig,
-              sequenceAdapter: getSequenceAdapterConfig(assembly),
               geneticCodeId: assembly?.getGeneticCodeId(region.refName),
               ...self.rpcProps(),
               region,

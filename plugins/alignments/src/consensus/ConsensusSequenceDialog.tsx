@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import { variantsToVcf } from '@jbrowse/alignments-core'
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
-import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   CopyToClipboardButton,
   ErrorBanner,
@@ -163,9 +162,6 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
       statusCallback,
     ): Promise<ConsensusData> => {
       const sessionId = getRpcSessionId(display)
-      // every parsed region belongs to the dialog's one assembly, so the
-      // sequence adapter is resolved once rather than per region
-      const sequenceAdapter = getSequenceAdapterConfig(assembly)
       // one status slot per region, so N concurrent consensus calls aggregate
       // into one bar instead of the last writer winning
       const slot = createStatusFanOut(statusCallback)
@@ -176,7 +172,6 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
             'GetConsensusSequence',
             {
               adapterConfig: params.adapterConfig,
-              sequenceAdapter,
               regions: [region],
               filterBy: params.filterBy,
               minDepth: params.minDepth,

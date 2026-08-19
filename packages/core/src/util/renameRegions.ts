@@ -1,5 +1,7 @@
 import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+import { getSequenceAdapterConfig } from '../assemblyManager/getSequenceAdapterConfig.ts'
+
 import type { StatusCallback } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
 import type { AssemblyManager, Region } from './types/index.ts'
@@ -58,11 +60,13 @@ export function renameRegionIfNeeded(
   return region
 }
 
-// What a single assembly contributes to a rename: the adapter refName map, and
-// the FASTA-name lookup CRAM/BAM need for originalRefName.
+// What a single assembly contributes to a rename: the adapter refName map, the
+// FASTA-name lookup CRAM/BAM need for originalRefName, and the sequence adapter
+// config those two are names *into*.
 interface AssemblyRenameData {
   refNameMap: Record<string, string>
   getSeqAdapterRefName: ((refName: string) => string) | undefined
+  sequenceAdapter: Record<string, unknown> | undefined
 }
 
 // Region-shaped enough that, if it slipped through under a `region` key, it was
@@ -147,6 +151,7 @@ export async function renameRegionsIfNeeded<
               getSeqAdapterRefName: assembly
                 ? (r: string) => assembly.getSeqAdapterRefName(r)
                 : undefined,
+              sequenceAdapter: getSequenceAdapterConfig(assembly),
             },
           ] as const
         }),
@@ -155,6 +160,13 @@ export async function renameRegionsIfNeeded<
 
   return {
     ...args,
+    // Supplied here, not by each caller: this is the one place that has already
+    // resolved the assembly a fetch is against, and it is the same handle
+    // `originalRefName` is a name into. Every caller that passed its own wrote
+    // these same two lines, and the three that forgot — `CoreGetExportData`,
+    // `BreakpointGetFeatures`, `fetchTrackData` — failed silently, saved only by
+    // whichever call happened to prime the adapter instance first.
+    sequenceAdapter: assemblyData[assemblyNames[0]!]?.sequenceAdapter,
     regions: regions.map((region, i) => {
       const data = assemblyData[assemblyNames[i]!]
       return renameRegionIfNeeded(
