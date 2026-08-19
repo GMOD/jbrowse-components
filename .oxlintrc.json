@@ -42,6 +42,10 @@
 
     "react/rules-of-hooks": "error",
     "react/no-unstable-nested-components": ["error", { "allowAsProps": true }],
+    "react/refs": "off",
+    "react/immutability": "off",
+    "react/set-state-in-effect": "off",
+    "react/static-components": "off",
     "oxc/no-accumulating-spread": "error",
     "eslint/preserve-caught-error": "error",
     "typescript/no-confusing-non-null-assertion": "error",
@@ -90,6 +94,12 @@
     "typescript/return-await": "off"
   },
   "overrides": [
+    {
+      "files": ["**/*.test.{ts,tsx}"],
+      "rules": {
+        "react/globals": "off"
+      }
+    },
     {
       "files": ["packages/sv-core/src/**/*.{ts,tsx}"],
       "rules": {

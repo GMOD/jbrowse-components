@@ -18,7 +18,28 @@ import tseslint from 'typescript-eslint'
 // version — the things it enforces (react-compiler, the unicorn denylist,
 // @eslint-react, react-refresh, the no-restricted-syntax guards, astro) are all
 // syntactic. See agent-docs and .oxlintrc.json for the division of labor.
+//
+// This import is why .oxlintrc.json must stay strict JSON. oxlint reads it as
+// JSONC and a `//` comment there lints clean, but node's JSON module loader
+// throws `Expected double-quoted property name`, which fails this whole config
+// rather than the one file. Rule reasons for oxlint therefore live here.
 import oxlintConfig from './.oxlintrc.json' with { type: 'json' }
+
+// oxlint 1.79 promoted the React Compiler diagnostics into its `correctness`
+// category, raising 60 errors on a tree nobody had touched. Four are off in
+// .oxlintrc.json and the fifth, react/globals, is off for tests only:
+//
+// - react/refs, 42 sites. Nearly all are the latest-ref pattern —
+//   `fooRef.current = foo` beside the useRef, so an effect can depend on a
+//   serialized key rather than an inline callback's identity. The rest is ref
+//   forwarding, where display-ui's Tooltip writes the caller's ref object.
+// - react/immutability, 2 sites, that same ref merge seen from the prop side.
+// - react/set-state-in-effect and react/static-components duplicate
+//   @eslint-react rules this config already read site by site and turned off;
+//   the reasons are on those two entries below.
+// - react/globals, 10 sites, every one a test capturing a render-time value
+//   into an outer `let` to read what the component saw. Scoped to
+//   `**/*.test.{ts,tsx}` rather than off, so it still runs on components.
 
 // Shared no-restricted-syntax selectors. Flat config *overrides* (not merges)
 // the rule when a later block re-declares it, so any block that needs its own
