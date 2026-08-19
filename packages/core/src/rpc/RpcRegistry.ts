@@ -44,10 +44,9 @@ export interface RpcRegistry {
     args: {
       regions: RegionLike[]
       adapterConfig: Record<string, unknown>
-      // Not dead, and grepping for a caller will say it is: nobody passes this.
-      // `renameRegionsIfNeeded` adds it during serialization, from the assembly
-      // it resolved to rename the regions. Delete it and every CRAM fetch loses
-      // its reference — silently, since the args still type-check.
+      // Not dead, though grepping for a caller says it is: renameRegionsIfNeeded
+      // adds it during serialization. Deleting it costs every CRAM fetch its
+      // reference, silently, with the args still type-checking.
       sequenceAdapter?: Record<string, unknown>
       opts?: Record<string, unknown>
     }

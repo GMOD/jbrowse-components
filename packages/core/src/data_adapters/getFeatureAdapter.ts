@@ -9,10 +9,9 @@ export interface GetFeatureAdapterArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   // Reference-sequence adapter config for adapters that decode against the
-  // reference (BAM/CRAM). Read straight off the RPC args and forwarded — no
-  // execute builds one, because `renameRegionsIfNeeded` derives it from the
-  // assembly it already resolved. Optional because the RPCs that don't rename
-  // regions have no assembly context to derive it from.
+  // reference (BAM/CRAM). Every execute reads it straight off its RPC args and
+  // forwards it; renameRegionsIfNeeded is what put it there. Optional because
+  // the RPCs that rename no regions have no assembly to derive it from.
   sequenceAdapter?: Record<string, unknown>
 }
 

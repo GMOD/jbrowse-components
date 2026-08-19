@@ -18,6 +18,17 @@ export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
       adapterConfig,
     )
 
+    // Primes BEFORE it asks: a ReferenceScanAdapter answers `getRefNames` by
+    // asking the reference, and this line is what tells it where that is.
+    // Pinned by sequenceAdapterPriming.test.ts, because reversing the two left
+    // 3,015 tests green.
+    //
+    // The one call that still passes `sequenceAdapter` by hand — it is what
+    // `renameRegionsIfNeeded` CALLS, so the derivation cannot reach it.
+    if (isFeatureAdapter(dataAdapter)) {
+      dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
+    }
+
     // Gated on isRefNameSource rather than isFeatureAdapter: any adapter that
     // can name its own contigs needs them reconciled with the assembly's,
     // whether or not it serves features. PlinkLDTabixAdapter serves precomputed
@@ -27,19 +38,6 @@ export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
     // test. The symptom was a blank LD track with no error whenever the file's
     // contig names differed from the assembly's canonical ones (an Ensembl-named
     // .ld file against a UCSC-named hub, say).
-    // Primes BEFORE it asks, and the order is load-bearing. A
-    // ReferenceScanAdapter (motif, CRISPR guide, sequence search) has no file of
-    // its own, so it answers `getRefNames` by asking the reference — and the
-    // only thing that has told it where the reference is, is this line. Swap the
-    // two and every scan track throws "No sequence adapter available" on the
-    // first refName map it needs, before anything is on screen to hint at why.
-    //
-    // This is also the one call that still passes `sequenceAdapter` explicitly:
-    // it is what `renameRegionsIfNeeded` CALLS, so it cannot be fed by the
-    // derivation that serves everything else. `loadRefNameMap` supplies it.
-    if (isFeatureAdapter(dataAdapter)) {
-      dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
-    }
     return isRefNameSource(dataAdapter) ? dataAdapter.getRefNames(args) : []
   }
 }
