@@ -33,8 +33,8 @@ function regionData() {
 
 function setup() {
   const { createDisplay } = createTestEnvironment()
-  const { display, view } = createDisplay()
-  display.setRpcData(0, regionData(), view.bpPerPx, {
+  const { display } = createDisplay()
+  display.setRpcData(0, regionData(), {
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,

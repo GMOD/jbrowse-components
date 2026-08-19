@@ -55,7 +55,7 @@ function scrolledStack() {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay({ heightMode: 'scroll', height: 100 })
   const data = stackedData(40)
-  display.setRpcData(0, data, 12.5, ctgA)
+  display.setRpcData(0, data, ctgA)
   display.setLoadedRegion(0, ctgA)
   const deepest = data.flatbushItems.at(-1)!
   display.setScrollTop(topOf(display, deepest.featureId))
@@ -118,7 +118,7 @@ describe('right-click actions that move a row', () => {
     const { display } = createDisplay({
       featureHighlights: [{ refName: 'ctgA', start: 100, end: 900 }],
     })
-    display.setRpcData(0, stackedData(3), 12.5, ctgA)
+    display.setRpcData(0, stackedData(3), ctgA)
     display.setLoadedRegion(0, ctgA)
 
     expect([...display.layoutPinnedFeatureIdSet].sort()).toEqual([

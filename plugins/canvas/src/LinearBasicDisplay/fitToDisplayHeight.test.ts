@@ -257,10 +257,10 @@ describe('canvas display fit-to-display-height', () => {
 
   it('entering fit mode resets scroll; leaving it re-enables scrolling', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     // Overflow content so there is a real scroll range (scrollTop is clamped to
     // the content, so a bare display with maxY 0 can't hold a nonzero scroll).
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, {
+    display.setRpcData(0, stackedRegionData(12, 20), {
       assemblyName: 'volvox',
       refName: 'ctgA',
       start: 0,
@@ -337,8 +337,8 @@ describe('canvas display fit-to-display-height', () => {
 
   it('fitted content fits the track exactly (no float-epsilon overflow)', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, {
+    const { display } = createDisplay()
+    display.setRpcData(0, stackedRegionData(12, 20), {
       assemblyName: 'volvox',
       refName: 'ctgA',
       start: 0,
@@ -376,12 +376,12 @@ describe('canvas display fit-to-display-height', () => {
   // height into a saved snapshot.
   it('grow mode drives height from content without writing the height slot', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     const slotBefore = readConfObject(display.configuration, 'height')
     expect(slotBefore).toBe(100)
 
     display.setHeightMode('grow')
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
 
     // height tracks the grown content (taller than the 100px slot default)...
     expect(display.height).toBe(display.grownHeight)
@@ -393,11 +393,11 @@ describe('canvas display fit-to-display-height', () => {
   // The reactive path recomputes as content changes — no autorun needed.
   it('grow height grows as more content stacks', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setHeightMode('grow')
-    display.setRpcData(0, stackedRegionData(3, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(3, 20), ctgA)
     const small = display.height
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     expect(display.height).toBeGreaterThan(small)
   })
 
@@ -415,9 +415,9 @@ describe('canvas display fit-to-display-height', () => {
 
   it('grow pins at growMaxHeight, and follows content when it is raised', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setHeightMode('grow')
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     const content = display.growTargetHeight
 
     display.configuration.setSlot('growMaxHeight', content - 30)
@@ -432,9 +432,9 @@ describe('canvas display fit-to-display-height', () => {
   // slot default. After the switch the height stops tracking content.
   it('leaving grow mode bakes the grown height into the slot', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setHeightMode('grow')
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     const grown = display.grownHeight
     expect(display.height).toBe(grown)
 
@@ -443,7 +443,7 @@ describe('canvas display fit-to-display-height', () => {
     expect(display.height).toBe(grown)
 
     // Fixed no longer tracks content: more rows don't change the height.
-    display.setRpcData(0, stackedRegionData(30, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(30, 20), ctgA)
     expect(display.height).toBe(grown)
   })
 
@@ -452,9 +452,9 @@ describe('canvas display fit-to-display-height', () => {
   // change. The bake is a reaction on the resolved mode, so that exit bakes too.
   it('bakes on a cascade-driven grow exit, not just the menu action', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setHeightMode('grow')
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     const grown = display.grownHeight
     expect(display.height).toBe(grown)
 
@@ -471,9 +471,9 @@ describe('canvas display fit-to-display-height', () => {
   // frame must not be swallowed by the bake.
   it('a manual drag-resize leaves grow mode so the height sticks', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setHeightMode('grow')
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     const grown = display.grownHeight
     expect(display.autoHeight).toBe(true)
 
@@ -488,8 +488,8 @@ describe('canvas display fit-to-display-height', () => {
   // stranded at an offset the reconfigured height no longer supports.
   it('entering grow mode resets scroll to the top', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     display.setHeight(97)
     display.setScrollTop(120)
     expect(display.scrollTop).toBe(120)
@@ -505,8 +505,8 @@ describe('canvas display fit-to-display-height', () => {
   // for the morph's duration and then collapse.
   it('grow height ignores the morph hold that maxY applies', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, stackedRegionData(6, 20), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, stackedRegionData(6, 20), ctgA)
     display.setHeight(400)
 
     const settled = display.settledMaxY
@@ -534,8 +534,8 @@ describe('canvas display fit-to-display-height', () => {
 describe('canvas display fit escalation ladder', () => {
   it('climbs the ladder as the track height shrinks', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
     const fullH = maxBottom(display.baseLaidOutDataMap)
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
@@ -575,8 +575,8 @@ describe('canvas display fit escalation ladder', () => {
   // than ballooning the bodies (the resize-taller regression).
   it('does not grow features past the normal feature height', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, labeledStackedRegionData(3, 10), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(3, 10), ctgA)
     const fullH = maxBottom(display.baseLaidOutDataMap)
     expect(display.fitMaxScale).toBe(1)
     display.setHeightMode('fit')
@@ -596,8 +596,8 @@ describe('canvas display fit escalation ladder', () => {
   // packs back up against the top instead of jumping to a re-centered offset.
   it('top-anchors a short fit stack in the track', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, labeledStackedRegionData(3, 10), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(3, 10), ctgA)
     const fullH = maxBottom(display.baseLaidOutDataMap)
     display.setHeightMode('fit')
 
@@ -622,9 +622,9 @@ describe('canvas display fit escalation ladder', () => {
   // height (fitMaxScale = 1 / multiplier), never taller.
   it('grows compact bodies only up to the normal feature height', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setDisplayMode('compact')
-    display.setRpcData(0, labeledStackedRegionData(3, 10), view.bpPerPx, ctgA)
+    display.setRpcData(0, labeledStackedRegionData(3, 10), ctgA)
     // compact multiplier 0.6 → bodies start at 0.6× normal, so grow tops out at
     // 1 / 0.6 to reach (not exceed) the normal height.
     expect(display.fitMaxScale).toBeCloseTo(1 / 0.6)
@@ -648,13 +648,8 @@ describe('canvas display fit escalation ladder', () => {
   it('never grows the unscaled stack when a reservation is dropped', () => {
     for (const rows of [1, 2, 5, 15, 40]) {
       const { createDisplay } = createTestEnvironment()
-      const { display, view } = createDisplay()
-      display.setRpcData(
-        0,
-        labeledStackedRegionData(rows, 10),
-        view.bpPerPx,
-        ctgA,
-      )
+      const { display } = createDisplay()
+      display.setRpcData(0, labeledStackedRegionData(rows, 10), ctgA)
       const fullH = maxBottom(display.baseLaidOutDataMap)
       const labelsH = maxBottom(display.fitLabelsOnlyLayout)
       const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
@@ -672,8 +667,8 @@ describe('canvas display fit escalation ladder', () => {
   // more than the active layout reserved.
   it('holds its invariants at every track height', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
     const fullH = maxBottom(display.baseLaidOutDataMap)
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
@@ -777,12 +772,12 @@ describe('canvas display fit escalation ladder', () => {
   // `decimated`, never regressing to `bodies`.
   it('fills the decimated rung with more names as the track grows', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     const total = 40
     // Pin a rung with names: the auto density gate (orthogonal to the fit
     // ladder) would otherwise hide all labels at this feature count.
     display.setShowLabels('nameAndDescription')
-    display.setRpcData(0, mixedWidthRegionData(total), view.bpPerPx, ctgA)
+    display.setRpcData(0, mixedWidthRegionData(total), ctgA)
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
     // Decimation must actually bite: the all-names stack towers over bodies.
@@ -829,8 +824,8 @@ describe('canvas display fit escalation ladder', () => {
   // rather than packing the boxes down to invisibility.
   it('stops the squeeze at the min-box floor and scrolls the surplus', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, labeledStackedRegionData(40, 10), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(40, 10), ctgA)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
     const minScale = display.fitMinScale
     display.setHeightMode('fit')
@@ -855,8 +850,8 @@ describe('canvas display fit escalation ladder', () => {
   // by entering fit mode.
   it('keeps subfeature labels wherever the fit is not squeezing', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, labeledStackedRegionData(4, 10), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(4, 10), ctgA)
     expect(display.renderedShowSubfeatureLabels).toBe(true)
 
     display.setHeightMode('fit')
@@ -872,13 +867,8 @@ describe('canvas display fit escalation ladder', () => {
   // slot's 10px basis would have let squeeze to a fifth of a pixel.
   it('floors the squeeze on the shortest body, not the configured height', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(
-      0,
-      mixedHeightRegionData([20, 20, 2, 20]),
-      view.bpPerPx,
-      ctgA,
-    )
+    const { display } = createDisplay()
+    display.setRpcData(0, mixedHeightRegionData([20, 20, 2, 20]), ctgA)
     display.setHeightMode('fit')
     expect(readConfObject(display.configuration, 'featureHeight')).toBe(10)
     expect(display.fitSmallestBoxPx).toBe(2)
@@ -888,7 +878,7 @@ describe('canvas display fit escalation ladder', () => {
     // Same stack without the short feature: the floor relaxes to what a 20px body
     // can give up, so this isn't vacuously pinned at 1.
     const { display: tall } = createDisplay()
-    tall.setRpcData(0, mixedHeightRegionData([20, 20, 20]), view.bpPerPx, ctgA)
+    tall.setRpcData(0, mixedHeightRegionData([20, 20, 20]), ctgA)
     tall.setHeightMode('fit')
     expect(tall.fitSmallestBoxPx).toBe(20)
     expect(tall.fitMinScale).toBeCloseTo(0.1)
@@ -902,11 +892,10 @@ describe('canvas display fit escalation ladder', () => {
   // numbers equal, so only a gene-shaped one can tell them apart.
   it('floors on the transcript rect a gene draws, not the gene it stacks them in', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setRpcData(
       0,
       geneStackRegionData({ genes: 6, isoformsPerGene: 10, isoformPx: 10 }),
-      view.bpPerPx,
       ctgA,
     )
     display.setHeightMode('fit')
@@ -949,9 +938,9 @@ describe('canvas display fit escalation ladder', () => {
   // this test is what says which transitions change.
   it('snaps across a rung boundary and morphs within one', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setShowLabels('nameAndDescription')
-    display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
+    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
     display.setHeightMode('fit')
 
     const signature = () =>
@@ -1002,13 +991,8 @@ describe('canvas display fit escalation ladder', () => {
 
   it('lays out under fit mode with a per-feature featureHeight callback', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(
-      0,
-      mixedHeightRegionData([20, 20, 20]),
-      view.bpPerPx,
-      ctgA,
-    )
+    const { display } = createDisplay()
+    display.setRpcData(0, mixedHeightRegionData([20, 20, 20]), ctgA)
     setConf(display, 'featureHeight', "jexl:get(feature,'score') > 5 ? 20 : 8")
     display.setHeightMode('fit')
     display.setHeight(30)
@@ -1024,9 +1008,9 @@ describe('canvas display fit escalation ladder', () => {
   // shortcut that reuses the base layout.
   it('with descriptions off, the full and labels stages coincide', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setShowLabels('name')
-    display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
+    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
     expect(display.effectiveShowDescriptions).toBe(false)
 
     const labelsH = maxBottom(display.baseLaidOutDataMap)
@@ -1050,9 +1034,9 @@ describe('canvas display fit escalation ladder', () => {
   // bodies-only shortcut that reuses the labels-only layout.
   it('with labels and descriptions off, only a uniform squeeze remains', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setShowLabels('none')
-    display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
+    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
     expect(display.showLabels).toBe(false)
 
     const h = maxBottom(display.baseLaidOutDataMap)
@@ -1091,8 +1075,8 @@ describe('canvas display fit escalation ladder', () => {
   // it measured as fitting and then renders one that overflows.
   it('the probed height equals the committed layout height', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, mixedWidthRegionData(60), ctgA)
     display.setHeightMode('fit')
     // A height between the all-names stack and the bodies stack, so the ladder
     // lands on `decimated` and the solve actually runs.
@@ -1120,8 +1104,8 @@ describe('canvas display fit escalation ladder', () => {
   // to prevent on the other three rungs, and the reason this rung has one too.
   it('reuses the committed decimated stack when the factor is unchanged', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, mixedWidthRegionData(60), ctgA)
     display.setHeightMode('fit')
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
@@ -1146,8 +1130,8 @@ describe('canvas display fit escalation ladder', () => {
   // reference so a stray height read inside it can't quietly reintroduce the cost.
   it('holds one height probe across a track-height change', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, mixedWidthRegionData(60), ctgA)
     display.setHeightMode('fit')
     display.setHeight(120)
     // Observed by a reaction, so MobX keeps the computed alive between reads —
@@ -1169,8 +1153,8 @@ describe('canvas display fit escalation ladder', () => {
   // itself prove factor 0 overflows — hence probing it instead of assuming.
   it('solves to factor 0 when every name already fits', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, mixedWidthRegionData(30), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, mixedWidthRegionData(30), ctgA)
     display.setHeightMode('fit')
     const roomy = maxBottom(display.fitLabelsOnlyLayout) + 500
     expect(display.solveLabelRoomFactor(roomy)).toBe(0)
@@ -1186,10 +1170,10 @@ describe('canvas display fit escalation ladder', () => {
   // check the solve end-to-end there rather than only the keep/drop rule.
   it('solves and commits consistently in a reversed region', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     // `reversedRegions` is derived from the region each fetch was loaded with, not
     // from the view, so the flag has to ride in on setRpcData.
-    display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, {
+    display.setRpcData(0, mixedWidthRegionData(60), {
       ...ctgA,
       reversed: true,
     })
@@ -1220,8 +1204,8 @@ describe('canvas display fit escalation ladder', () => {
   it('packs a monotone non-increasing stack as the factor rises', () => {
     for (const reversed of [false, true]) {
       const { createDisplay } = createTestEnvironment()
-      const { display, view } = createDisplay()
-      display.setRpcData(0, mixedWidthRegionData(60), view.bpPerPx, {
+      const { display } = createDisplay()
+      display.setRpcData(0, mixedWidthRegionData(60), {
         ...ctgA,
         reversed,
       })
@@ -1245,12 +1229,12 @@ describe('canvas display fit escalation ladder', () => {
   // otherwise report a tidy fitted track while silently withholding data.
   it('counts features the layout could not place', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setHeightMode('fit')
     display.setHeight(200)
     // 800 mutually-overlapping features each need their own row, which passes the
     // 10000px row limit well before the last of them is placed.
-    display.setRpcData(0, stackedRegionData(800, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(800, 20), ctgA)
 
     expect(display.truncatedFeatureCount).toBeGreaterThan(0)
     const placed = 800 - display.truncatedFeatureCount
@@ -1262,10 +1246,10 @@ describe('canvas display fit escalation ladder', () => {
 
   it('reports nothing truncated on a stack that fits the row limit', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
+    const { display } = createDisplay()
     display.setHeightMode('fit')
     display.setHeight(100)
-    display.setRpcData(0, stackedRegionData(20, 20), view.bpPerPx, ctgA)
+    display.setRpcData(0, stackedRegionData(20, 20), ctgA)
     expect(display.truncatedFeatureCount).toBe(0)
   })
 })
@@ -1379,7 +1363,6 @@ describe('canvas display fit measures the visible window', () => {
         genesOver('left', 62_000, 98_000, offscreenGenes),
         genesOver('right', 182_000, 218_000, offscreenGenes),
       ]),
-      view.bpPerPx,
       { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
     )
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -1434,7 +1417,6 @@ describe('canvas display fit measures the visible window', () => {
         genesOver('vis', 120_000, 160_000, 4),
         genesOver('right', 182_000, 218_000, 12),
       ]),
-      view.bpPerPx,
       { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
     )
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -1469,7 +1451,6 @@ describe('canvas display fit measures the visible window', () => {
         genesOver('vis', 120_000, 160_000, 12, 20),
         genesOver('left', 62_000, 98_000, 4, 2),
       ]),
-      view.bpPerPx,
       { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
     )
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -1506,7 +1487,6 @@ describe('canvas display fit measures the visible window', () => {
         // the on-screen four sit beside them in X and keep their rows
         stackedGenesAt('left', 62_000, 98_000, 800),
       ]),
-      view.bpPerPx,
       { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
     )
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -1535,7 +1515,6 @@ describe('canvas display fit measures the visible window', () => {
         genesOver('vis', 120_000, 160_000, 4),
         genesOver('right', 182_000, 218_000, 12),
       ]),
-      view.bpPerPx,
       { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
     )
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -1569,7 +1548,6 @@ describe('canvas display scrolls over the visible window', () => {
         genesOver('vis', 120_000, 160_000, 4),
         genesOver('right', 182_000, 218_000, offscreen),
       ]),
-      view.bpPerPx,
       { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
     )
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -1643,8 +1621,8 @@ describe('canvas display scrolls over the visible window', () => {
   // extent is the whole pack — the behavior every consumer had.
   it('falls back to the whole pack with no coarse blocks', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, view } = createDisplay()
-    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    const { display } = createDisplay()
+    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     display.setHeight(97)
     expect(display.onScreenFeatureIds).toBeUndefined()
     expect(display.scrollExtentMaxY).toBe(display.maxY)

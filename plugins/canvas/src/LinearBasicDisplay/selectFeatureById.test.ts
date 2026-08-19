@@ -34,7 +34,7 @@ function setup() {
   const { createDisplay } = createTestEnvironment()
   const { display, mockRpcCall } = createDisplay()
   mockRpcCall.mockResolvedValue({ feature: undefined })
-  display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), 10, ctgA)
+  display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
   display.setLoadedRegion(0, ctgA)
   return { display, mockRpcCall }
 }

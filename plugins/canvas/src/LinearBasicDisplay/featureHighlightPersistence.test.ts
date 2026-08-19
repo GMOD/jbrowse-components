@@ -31,7 +31,6 @@ function loadFeature(
   display.setRpcData(
     0,
     makeFeatureData({ flatbushItems: [makeFlatbushItem(item)] }),
-    10,
     ctgA,
   )
 }
@@ -60,7 +59,6 @@ function loadGeneWithTranscript(display: Display) {
         },
       ],
     }),
-    10,
     ctgA,
   )
 }
@@ -277,7 +275,6 @@ describe('feature highlight declarative persistence', () => {
           },
         ],
       }),
-      10,
       ctgA,
     )
 
@@ -344,7 +341,6 @@ describe('feature highlight declarative persistence', () => {
           }),
         ],
       }),
-      10,
       ctgA,
     )
 
@@ -521,7 +517,6 @@ describe('feature highlight declarative persistence', () => {
             }),
           ],
         }),
-        10,
         elsewhere,
       )
       display.setLoadedRegion(0, elsewhere)

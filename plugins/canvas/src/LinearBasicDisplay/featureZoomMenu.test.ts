@@ -30,7 +30,7 @@ const splitRegions = [
 ]
 
 function loadGene(display: TestDisplay) {
-  display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), 10, ctgA)
+  display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
   display.setLoadedRegion(0, ctgA)
 }
 

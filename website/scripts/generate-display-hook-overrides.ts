@@ -55,11 +55,18 @@ interface Hook {
 // distinguishable from any other getter.
 const HOOKS: Hook[] = [
   {
-    name: 'isCacheValid',
+    name: 'regionFetchKey',
     owner:
       'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
     ifNotOverridden:
-      'loaded regions never go stale — correct unless the worker output is zoom-dependent, and **inherited**, so a display composing a wiggle mixin gets wiggle’s strict-`bpPerPx` version whether or not it wants it',
+      'the empty key, so loaded regions never go stale on zoom — correct unless the worker output is zoom-dependent. A subclass that changes what it fetches and forgets the key gets a redundant fetch, not a cached answer for a zoom the data was never fetched at',
+  },
+  {
+    name: 'regionHasData',
+    owner:
+      'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
+    ifNotOverridden:
+      'true — `fetchRegions` marks a region loaded even where the worker refused it for size, so a display holding a per-region data map and sitting on this default never refetches one the gate has since released',
   },
   {
     name: 'rpcProps',

@@ -29,7 +29,7 @@ const genes = ['a', 'b', 'c'].map((id, i) =>
 const [geneA, geneB] = genes
 
 function load(display: TestDisplay) {
-  display.setRpcData(0, makeFeatureData({ flatbushItems: genes }), 10, ctgA)
+  display.setRpcData(0, makeFeatureData({ flatbushItems: genes }), ctgA)
   display.setLoadedRegion(0, ctgA)
 }
 

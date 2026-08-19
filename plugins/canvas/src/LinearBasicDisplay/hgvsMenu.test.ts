@@ -40,7 +40,6 @@ function open(display: TestDisplay, hgvsLabel?: string, tooltipText?: string) {
   display.setRpcData(
     0,
     makeFeatureData({ flatbushItems: [gene], subfeatureInfos: [transcript] }),
-    10,
     ctgA,
   )
   display.setLoadedRegion(0, ctgA)

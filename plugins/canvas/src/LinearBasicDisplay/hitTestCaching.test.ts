@@ -38,7 +38,7 @@ function regionData(n: number) {
 function setup() {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
-  display.setRpcData(0, regionData(50), view.bpPerPx, {
+  display.setRpcData(0, regionData(50), {
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
@@ -109,9 +109,9 @@ describe('flatbushIndexes caching', () => {
   })
 
   it('rebuilds when the laid-out data changes', () => {
-    const { display, view, index, dispose } = setup()
+    const { display, index, dispose } = setup()
     const first = index()
-    display.setRpcData(0, regionData(60), view.bpPerPx, {
+    display.setRpcData(0, regionData(60), {
       assemblyName: 'volvox',
       refName: 'ctgA',
       start: 0,
@@ -126,7 +126,7 @@ describe('flatbushIndexes caching', () => {
     const first = index()
     display.pruneRpcDataMapToVisible(new Set())
     expect(display.flatbushIndexes.size).toBe(0)
-    display.setRpcData(0, regionData(50), 1, {
+    display.setRpcData(0, regionData(50), {
       assemblyName: 'volvox',
       refName: 'ctgA',
       start: 0,

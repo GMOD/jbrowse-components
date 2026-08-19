@@ -1397,8 +1397,8 @@ describe('region identity is stored with the data it describes', () => {
       end: 100,
       reversed: true,
     }
-    display.setRpcData(0, makeFeatureData(), 1, regionA)
-    display.setRpcData(1, makeFeatureData(), 1, regionB)
+    display.setRpcData(0, makeFeatureData(), regionA)
+    display.setRpcData(1, makeFeatureData(), regionB)
 
     // No setLoadedRegion was called — this is exactly the post-clear refetch
     // window where rpcDataMap holds data but loadedRegions is empty.

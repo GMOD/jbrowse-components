@@ -59,7 +59,6 @@ function loadGene(display: TestDisplay, subfeatureInfos: SubfeatureInfo[]) {
   display.setRpcData(
     0,
     makeFeatureData({ flatbushItems: [gene], subfeatureInfos }),
-    10,
     ctgA,
   )
   // the menu's handlers resolve the refName to store on a highlight through
@@ -172,7 +171,6 @@ describe('transcript highlight context menu', () => {
     display.setRpcData(
       0,
       makeFeatureData({ flatbushItems: [repeat], subfeatureInfos: [ltr] }),
-      10,
       ctgA,
     )
     display.setLoadedRegion(0, ctgA)

@@ -39,7 +39,6 @@ function loadGene(display: TestDisplay, subfeatureInfos: SubfeatureInfo[]) {
   display.setRpcData(
     0,
     makeFeatureData({ flatbushItems: [gene], subfeatureInfos }),
-    10,
     ctgA,
   )
   display.setLoadedRegion(0, ctgA)

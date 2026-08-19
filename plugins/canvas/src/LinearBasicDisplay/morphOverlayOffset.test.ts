@@ -45,8 +45,8 @@ function regionWith(featureIds: string[]): FeatureDataResult {
 
 function setUp(featureIds: string[]) {
   const { createDisplay } = createTestEnvironment()
-  const { display, view } = createDisplay()
-  display.setRpcData(0, regionWith(featureIds), view.bpPerPx, REGION)
+  const { display } = createDisplay()
+  display.setRpcData(0, regionWith(featureIds), REGION)
   return display
 }
 

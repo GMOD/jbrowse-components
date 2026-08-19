@@ -166,7 +166,6 @@ type LGV = LinearGenomeViewModel
 // populated one action after setRpcData. During that gap every region would
 // collapse to one layout group and features from different refs would mis-stack.
 type LoadedFeatureData = FeatureDataResult & {
-  loadedBpPerPx: number
   regionKey: string
   // canonical refName, kept alongside the raw features so a highlight can be
   // resolved to its uniqueId *before* layout (see highlightedFeatureIdSet)
@@ -1864,12 +1863,10 @@ export default function baseStateModelFactory(
         setRpcData(
           displayedRegionIndex: number,
           data: FeatureDataResult,
-          loadedBpPerPx: number,
           region: Region,
         ) {
           self.rpcDataMap.set(displayedRegionIndex, {
             ...data,
-            loadedBpPerPx,
             regionKey: `${region.assemblyName}:${region.refName}`,
             refName: region.refName,
             reversed: !!region.reversed,
@@ -2581,7 +2578,6 @@ export default function baseStateModelFactory(
         interface RegionFetch {
           displayedRegionIndex: number
           region: Region
-          bpPerPx: number
           result: RenderFeatureDataResult
         }
 
@@ -2619,21 +2615,16 @@ export default function baseStateModelFactory(
               statusCallback,
             },
           )
-          return { displayedRegionIndex, region, bpPerPx, result }
+          return { displayedRegionIndex, region, result }
         }
 
         function applyFetchResults(
           fetches: RegionFetch[],
           issued: GateFetchState,
         ) {
-          for (const {
-            displayedRegionIndex,
-            region,
-            bpPerPx,
-            result,
-          } of fetches) {
+          for (const { displayedRegionIndex, region, result } of fetches) {
             if (!('regionTooLarge' in result)) {
-              self.setRpcData(displayedRegionIndex, result, bpPerPx, region)
+              self.setRpcData(displayedRegionIndex, result, region)
             }
           }
           // Commit the per-region byte/density estimates to the shared gate (byte

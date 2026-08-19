@@ -66,7 +66,7 @@ function setUp(regions: [number, FeatureDataResult][]) {
     ).size,
   ).toBe(2)
   for (const [index, data] of regions) {
-    display.setRpcData(index, data, 1, {
+    display.setRpcData(index, data, {
       refName: 'ctgA',
       start: 0,
       end: 10_000,

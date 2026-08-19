@@ -27,7 +27,6 @@ describe('gene-glyph collapse notice', () => {
     display.setRpcData(
       0,
       makeFeatureData({ hasMultiIsoformGenes: false }),
-      1,
       region,
     )
     expect(display.showGeneGlyphNotice).toBe(false)
@@ -36,7 +35,6 @@ describe('gene-glyph collapse notice', () => {
     display.setRpcData(
       0,
       makeFeatureData({ hasMultiIsoformGenes: true }),
-      1,
       region,
     )
     expect(display.showGeneGlyphNotice).toBe(true)
@@ -56,7 +54,6 @@ describe('gene-glyph collapse notice', () => {
     display.setRpcData(
       0,
       makeFeatureData({ hasMultiIsoformGenes: true }),
-      1,
       region,
     )
 
@@ -83,7 +80,6 @@ describe('gene-glyph collapse notice', () => {
     display.setRpcData(
       0,
       makeFeatureData({ hasMultiIsoformGenes: false }),
-      1,
       region,
     )
     expect(display.geneGlyphNotice).toBeUndefined()
@@ -91,7 +87,6 @@ describe('gene-glyph collapse notice', () => {
     display.setRpcData(
       0,
       makeFeatureData({ hasMultiIsoformGenes: true }),
-      1,
       region,
     )
     expect(display.geneGlyphNotice).toEqual({
@@ -130,7 +125,6 @@ describe('gene-glyph collapse notice', () => {
           hasMultiIsoformGenes: true,
           isoformPicks: { byTag, byLength: 1 },
         }),
-        1,
         { ...region, start: num * 100, end: num * 100 + 100 },
       )
     }
@@ -155,7 +149,6 @@ describe('gene-glyph collapse notice', () => {
     display.setRpcData(
       0,
       makeFeatureData({ hasMultiIsoformGenes: true }),
-      1,
       region,
     )
     expect(display.geneGlyphIsoformCap).toBeUndefined()
@@ -167,7 +160,6 @@ describe('gene-glyph collapse notice', () => {
         hasMultiIsoformGenes: true,
         isoformPicks: { byTag: {}, byLength: 1 },
       }),
-      1,
       region,
     )
     expect(display.geneGlyphIsoformCap).toBe(cap)
