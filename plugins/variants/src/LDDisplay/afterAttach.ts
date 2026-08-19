@@ -3,27 +3,25 @@ import {
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { ldFetchPhases } from './ldFetchPhases.ts'
 
-// `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any` and
-// silently turns off checking for every member below. See the note on
-// `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
-interface LDModel extends IStateTreeNode {
-  showLDTriangle: boolean
-  isMinimized: boolean
+import type { LDFetchSelf } from './ldFetchPhases.ts'
+import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
+
+// The skeleton's own hosting requirements, on top of what the fetch phases need.
+interface LDModel extends LDFetchSelf {
   reloadCounter: number
   // The retry check's two hooks, both `FetchMixin`'s. LD is the reason the
-  // first exists: with the triangle off `shouldFetch` is false forever, so a
-  // reload legitimately reaches no fetch, and LD answers `!showLDTriangle`
-  // there off the same slot. It takes the default `false` for the second — its
-  // fetch waits on no other autorun.
+  // first exists: with the triangle off `prepare` declines forever, so a reload
+  // legitimately reaches no fetch, and LD answers `!showLDTriangle` there off
+  // the same slot. It takes the default `false` for the second — its fetch
+  // waits on no other autorun.
   loadingSuppressed: boolean
   awaitingPrerequisite: boolean
-  rpcProps(): Record<string, unknown>
-  // `FetchMixin`'s serialization of the above, which is what the skeleton
+  // `FetchMixin`'s serialization of `rpcProps()`, which is what the skeleton
   // tracks — the payload's own reads must not enter the dependency set.
   rpcPropsCacheKey: string
-  performLDFetch(): void
+  runFetch: (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
   clearByteEstimate(): void
   // `RegionTooLargeMixin`'s combined skip, which is what the skeleton reads —
   // its two terms are deliberately not named here, so no local expression can
@@ -32,19 +30,10 @@ interface LDModel extends IStateTreeNode {
 }
 
 export function doAfterAttach(self: LDModel) {
-  // `regionTooLarge` is deliberately NOT a term here. The skeleton owns the
-  // too-large skip, because a blocked display still has to run its fetch once
-  // per settled viewport to re-measure — `byteGateBlocksFetch` measures and
-  // stops, so it costs an index read, not a download. Restating it here would
-  // skip that and freeze the estimate at the viewport it was captured over,
-  // which is what used to leave the banner to be released by arithmetic.
   // `reload()` refires through `reloadCounter`, which the skeleton reads above
-  // its gate.
+  // the phases.
   installGlobalFetchAutorun(self, {
-    shouldFetch: () => self.showLDTriangle,
-    fetch: () => {
-      self.performLDFetch()
-    },
+    ...ldFetchPhases(self),
     delay: 500,
     name: 'LDDisplayRender',
   })

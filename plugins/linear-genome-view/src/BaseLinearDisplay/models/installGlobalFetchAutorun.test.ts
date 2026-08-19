@@ -3,22 +3,23 @@
 //
 // The invariant under test: the trigger reads (viewport, isMinimized,
 // rpcProps(), reloadCounter) happen unconditionally, ABOVE the display's
-// `shouldFetch()` gate. MobX rebuilds an autorun's dependency set on every run,
-// so a trigger read placed inside the gate silently falls out of that set on
-// the first run that decides not to fetch — and can then never wake the autorun
-// again. A display whose `shouldFetch` goes false once its data has loaded
-// (arc: `!regionTooLarge && !dataCurrent`) hits that on every successful fetch,
-// which is how `reload()` came to be a no-op there.
+// `prepare()`. MobX rebuilds an autorun's dependency set on every run, so a
+// trigger read placed inside a bail-out silently falls out of that set on the
+// first run that decides not to fetch — and can then never wake the autorun
+// again. A display whose `prepare` declines once its data has loaded (arc:
+// `dataCurrent`) hits that on every successful fetch, which is how `reload()`
+// came to be a no-op there.
 //
-// So these assert on how often the BODY re-evaluated (shouldFetch call count),
-// not on how often it fetched: re-running the body is the thing the trigger
-// reads buy, and a gate that stays false is allowed to keep declining.
+// So these assert on how often the BODY re-evaluated (prepare call count), not
+// on how often it fetched: re-running the body is the thing the trigger reads
+// buy, and a gate that stays shut is allowed to keep declining.
 
-import { types } from '@jbrowse/mobx-state-tree'
+import { flow, types } from '@jbrowse/mobx-state-tree'
 
 import { installGlobalFetchAutorun } from './GlobalDataDisplayMixin.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
+import type { FetchContext } from './FetchMixin.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const DELAY = 10
@@ -61,7 +62,7 @@ const TestDisplay = types
     // plain closure variable flips silently and reproduces nothing.
     loaded: false,
     // RegionTooLargeMixin's two, which the skeleton reads directly rather than
-    // leaving to each composer's `shouldFetch` — see the too-large test below.
+    // leaving to each composer's `prepare` — see the too-large test below.
     regionTooLarge: false,
     gateMeasurementStale: true,
     // FetchMixin's, and the retry check's "deliberately not fetching" exemption
@@ -71,6 +72,9 @@ const TestDisplay = types
     // check's reads leak into the autorun's dependency set. See the two
     // dependency-set tests at the bottom.
     prereqPending: false,
+    // what `FetchMixin.runFetch`'s own `isStale` answers once a newer fetch or a
+    // cancel has superseded this one
+    stale: false,
   }))
   .views(self => ({
     rpcProps() {
@@ -91,6 +95,18 @@ const TestDisplay = types
     get rpcPropsCacheKey() {
       return serializeRpcProps(this as never)
     },
+  }))
+  .actions(self => ({
+    // `FetchMixin.runFetch`, cut down to what the skeleton uses of it: it runs
+    // the work and hands it a context. Cancellation and error capture are that
+    // mixin's own tests' business, not this file's.
+    runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
+      yield work({
+        stopToken: '',
+        isStale: () => self.stale,
+        statusCallback: () => {},
+      })
+    }),
   }))
   .actions(self => ({
     setMinimized(flag: boolean) {
@@ -115,6 +131,9 @@ const TestDisplay = types
     setPrereqPending(flag: boolean) {
       self.prereqPending = flag
     },
+    setStale(flag: boolean) {
+      self.stale = flag
+    },
     reload() {
       self.reloadCounter += 1
     },
@@ -124,24 +143,79 @@ const TestDisplay = types
 // itself owns that observable
 type TestDisplayModel = Instance<typeof TestDisplay>
 
+// `shouldFetch` reads as `prepare` returning undefined, which is the whole of
+// the phase collapse from this file's point of view: `gateCalls` counts the
+// runs that reached `prepare`, `fetched` the ones that reached `run`.
 function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
   const view = TestView.create({ display: {} })
   const { display } = view
   const gateCalls = { count: 0 }
   const fetched = { count: 0 }
   installGlobalFetchAutorun(display, {
-    shouldFetch: () => {
+    prepare: () => {
       gateCalls.count += 1
-      return shouldFetch(display)
+      return shouldFetch(display) ? {} : undefined
     },
-    fetch: () => {
+    run: async () => {
       fetched.count += 1
+      return undefined
     },
+    commit: () => {},
     delay: DELAY,
     name: 'TestGlobalFetch',
   })
   return { view, display, gateCalls, fetched }
 }
+
+// The phases, with their own fixture: `setup` above collapses `prepare` to a
+// boolean, and these are about what the skeleton does with what the phases
+// return. Each is a rule the three displays used to write out themselves.
+function setupPhases({ run }: { run: () => unknown }) {
+  const view = TestView.create({ display: {} })
+  const { display } = view
+  const committed: { result: unknown; args: unknown }[] = []
+  installGlobalFetchAutorun(display, {
+    prepare: () => ({ issuedAt: display.setting }),
+    run: async () => run(),
+    commit: (result, args) => {
+      committed.push({ result, args })
+    },
+    delay: DELAY,
+    name: 'TestPhases',
+  })
+  return { view, display, committed }
+}
+
+describe('the phases', () => {
+  it('hands the commit what prepare captured, not a live re-read', async () => {
+    const { display, committed } = setupPhases({ run: () => 'data' })
+    // the setting the fetch was issued at moves while the RPC is out
+    display.setSetting('b')
+    await settle()
+
+    expect(committed[0]).toEqual({
+      result: 'data',
+      args: { issuedAt: 'a' },
+    })
+  })
+
+  // the byte-gate shape: the pre-flight stopped this fetch, so there is nothing
+  // to commit and the model must not be written
+  it('skips the commit when run yields nothing', async () => {
+    const { committed } = setupPhases({ run: () => undefined })
+    await settle()
+    expect(committed).toEqual([])
+  })
+
+  // a superseded fetch resolving late, which is the write every display used to
+  // guard with its own `if (ctx.isStale()) return`
+  it('skips the commit when the fetch went stale', async () => {
+    const { display, committed } = setupPhases({ run: () => 'data' })
+    display.setStale(true)
+    await settle()
+    expect(committed).toEqual([])
+  })
+})
 
 // the first run is leading-edge; every later one waits out `delay`
 async function settle() {
@@ -165,9 +239,9 @@ describe('installGlobalFetchAutorun', () => {
     expect(fetched.count).toBe(1)
   })
 
-  // HiC (`effectiveResolution !== undefined`) and LD (`showLDTriangle &&
-  // !regionTooLarge`) both keep their gate open after loading, which is why
-  // reload always worked for them even with the trigger reads under the gate.
+  // HiC (`effectiveResolution !== undefined`) and LD (`showLDTriangle`) both
+  // keep their gate open after loading, which is why reload always worked for
+  // them even with the trigger reads under the gate.
   it('refetches on reload() when the gate stays open', async () => {
     const { display, fetched } = setup(() => true)
     expect(fetched.count).toBe(1)
@@ -395,8 +469,8 @@ describe('the retry contract', () => {
   })
 })
 
-// The too-large skip lives in the skeleton, not in each composer's
-// `shouldFetch`, and it is "don't fetch a viewport you have already measured"
+// The too-large skip lives in the skeleton, not in each composer's `prepare`,
+// and it is "don't fetch a viewport you have already measured"
 // rather than "don't fetch". A blocked display has to run its fetch once per
 // settled viewport, because that fetch IS the re-measure — every gated display
 // measures first and stops there when the answer is over budget — and it is the
@@ -429,10 +503,10 @@ describe('a blocked display still re-measures', () => {
 // test can see. `untracked` is what prevents it; these are what prove it, one
 // per observable the check reads.
 //
-// Both probes mutate an observable that NOTHING in the trigger list, the gate or
-// `rpcProps()` reads, so a re-run can only mean the check leaked it. Asserted on
-// `gateCalls` rather than on fetches, because the leak re-runs the body whether
-// or not the gate then opens.
+// Both probes mutate an observable that NOTHING in the trigger list, `prepare`
+// or `rpcProps()` reads, so a re-run can only mean the check leaked it. Asserted
+// on `gateCalls` rather than on fetches, because the leak re-runs the body
+// whether or not `prepare` then returns args.
 describe('the retry check leaks nothing into the dependency set', () => {
   it('does not track awaitingPrerequisite', async () => {
     const { display, gateCalls } = setup(() => false)

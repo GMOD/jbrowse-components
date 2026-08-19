@@ -5,7 +5,7 @@ import { createTestEnvironment } from './testEnv.ts'
 // indefinitely has to be terminal for `svgReady`, or one track hangs the whole
 // view's SVG export with the dialog spinner up and nothing said.
 //
-// LD has such a state: with the triangle toggled off `shouldFetch` is false
+// LD has such a state: with the triangle toggled off `prepare` declines
 // forever, so `rpcData` stays null and `dataCurrent` never flips. That is the
 // same shape the sequence display's `svgReadyExtraTerminal` exists for.
 describe('LD svgReady terminal states', () => {

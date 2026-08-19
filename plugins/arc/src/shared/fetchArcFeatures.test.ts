@@ -95,8 +95,8 @@ describe('arc derived regionTooLarge', () => {
   })
 })
 
-// The fetchArcFeatures flow (density probe → commit → derived gate → feature
-// download) mirrors LD's performLDFetch and is driven by the shared
+// The arcFetchPhases flow (density probe → commit → derived gate → feature
+// download) mirrors LD's, and both run through the shared
 // installGlobalFetchAutorun; it isn't unit-tested in isolation here because the
 // direct call races the async afterAttach autoruns (which clear the estimate on
 // install). Browser tests cover the end-to-end path via the arc-display-done
@@ -139,7 +139,7 @@ describe('arc displayPhase', () => {
 // fetch commits. That is the shape that breaks a naive reload: the skeleton
 // autorun stops re-reading `reloadCounter` once it settles into "nothing to
 // fetch", so bumping the counter can't wake it, and the signature still matches
-// so `shouldFetch` would stay false anyway. Covers both halves of the fix —
+// so `prepare` would decline anyway. Covers both halves of the fix —
 // unconditional trigger reads in installGlobalFetchAutorun, and ArcFetchModel's
 // reload() dropping loadedRegionSignature.
 describe('arc reload', () => {

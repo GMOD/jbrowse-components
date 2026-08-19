@@ -165,17 +165,17 @@ export function takeFetchStarted(self: object) {
  * `model.reload()`, so every state that can raise the error bar has to be one
  * `reload()` actually undoes; otherwise the button is present, looks live, and
  * does nothing. It has failed three times, and the shape this catches is the one
- * that recurs on its own: a `shouldFetch` gate that goes false the moment data
- * lands. `GlobalFetchMixin.reload()` clears the error and bumps `reloadCounter`,
+ * that recurs on its own: a gate that goes shut the moment data lands.
+ * `GlobalFetchMixin.reload()` clears the error and bumps `reloadCounter`,
  * `installGlobalFetchAutorun` reads that counter unconditionally so the autorun
  * re-runs — and then the gate declines, because from its point of view nothing
- * has changed. Arc shipped exactly that: `shouldFetch: () => !dataCurrent`, with
- * the error clearing on click and no arcs ever coming back. Its `reload()`
+ * has changed. Arc shipped exactly that: a `prepare` declining on `dataCurrent`,
+ * with the error clearing on click and no arcs ever coming back. Its `reload()`
  * override drops `loadedRegionSignature` so `dataCurrent` goes false, which is
  * the fix this message asks for.
  *
  * Detected at the moment it happens rather than statically, because the relation
- * between `reload()` and `shouldFetch` is semantic: a run that follows a
+ * between `reload()` and the gate is semantic: a run that follows a
  * `reloadCounter` bump and declines to fetch IS the dead button.
  *
  * **The bump is the only thing that arms this**, so a `reload()` override that
@@ -186,8 +186,8 @@ export function takeFetchStarted(self: object) {
  * which reads every `reload()` in the tree.
  *
  * **Both fetch foundations install it**, and what counts as the gate differs.
- * The global family has a literal `shouldFetch()` returning a boolean, so its
- * run classifies itself. The per-region family's gate is block coverage — a
+ * The global family's `prepare()` returns the fetch's args or `undefined`, so
+ * its run classifies itself. The per-region family's gate is block coverage — a
  * `reload()` that invalidates nothing leaves `needed` empty — plus the
  * `fetchNeeded` override, which can decline inside an async body the foundation
  * cannot read a return value from. So `MultiRegionDisplayMixin` classifies on
@@ -223,13 +223,13 @@ export function takeFetchStarted(self: object) {
  *
  * Both flags are read off the node, and both are declared once on `FetchMixin`
  * — the one mixin all three display foundations compose. Neither foundation
- * passes them in: the global family's `shouldFetch` and `fetch` are autorun
- * options because that is what they are, and these two are properties of the
+ * passes them in: the global family's three phases are autorun options because
+ * that is what they are, and these two are properties of the
  * display, which is why an earlier arrangement that made this one an option
  * there and a getter on the per-region mixin had one concept in two spellings.
  *
- * **The predicate has to be strictly narrower than `!shouldFetch` to be a
- * deferral at all.** One that restates the gate's negation makes every decline a
+ * **The predicate has to be strictly narrower than the gate's own decline to be
+ * a deferral at all.** One that restates the gate's negation makes every decline a
  * deferred one, so no run is ever judged and the display has opted out — an
  * exemption by another name. HiC's is that shape, because its gate and its
  * prerequisite are the same condition, and what covers HiC's retry instead is
@@ -272,9 +272,9 @@ export function makeRetryContractCheck(
       if (retried && outcome === 'declined' && !self.loadingSuppressed) {
         report(
           `${getMembers(self).name}: reload() bumped reloadCounter but the ` +
-            `fetch autorun's shouldFetch() is still false, so Retry is a dead ` +
+            `fetch autorun's gate still declines, so Retry is a dead ` +
             `button — it clears the error and nothing refetches. reload() has ` +
-            `to invalidate whatever shouldFetch gates on, not just bump the ` +
+            `to invalidate whatever that gate reads, not just bump the ` +
             `counter (ArcFetchModel.reload drops loadedRegionSignature so its ` +
             `dataCurrent goes false). If this display is deliberately not ` +
             `fetching, say so with loadingSuppressed — the loading scrim reads ` +

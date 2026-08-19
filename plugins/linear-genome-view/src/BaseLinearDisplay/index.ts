@@ -66,8 +66,10 @@ export {
 export {
   GlobalFetchMixin,
   type GlobalFetchMixinType,
+  type GlobalFetchPhases,
   default as GlobalDataDisplayMixin,
   installGlobalFetchAutorun,
+  runGlobalFetch,
 } from './models/GlobalDataDisplayMixin.ts'
 export {
   type FetchMixinType,

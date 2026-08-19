@@ -41,8 +41,8 @@ ever judged and the display has opted out — HiC is in that shape deliberately,
 and `LinearHicDisplay/infoFetchFailure.test.ts` is what covers its retry
 instead.
 
-This family has no `shouldFetch()` to ask, so the classification is: `needed`
-empty is the decline, and reaching `FetchMixin.runFetch` is the fetch. Every
+This family has no `prepare()` to ask, so the classification is: `needed` empty
+is the decline, and reaching `FetchMixin.runFetch` is the fetch. Every
 `fetchNeeded` override gets there in its synchronous prefix, which is what makes
 that readable without awaiting the override. A new override that awaits first
 gets a false report, not silence.

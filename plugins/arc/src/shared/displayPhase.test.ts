@@ -27,7 +27,7 @@ describe('arc displayPhase', () => {
   // The regression this file was added for. `cancelFetchByUser` drops the stop
   // token synchronously, so `isLoading` goes false the instant the user clicks
   // Cancel — and the overlay that unmounts on it is the one carrying Retry.
-  // Nothing else restarts an arc fetch (`shouldFetch` reads `dataCurrent`, which
+  // Nothing else restarts an arc fetch (`prepare` reads `dataCurrent`, which
   // a cancel doesn't move), so a `ready` phase here means a stopped, empty
   // display offering the user no way back. Every other family already spelled
   // `fetchCanceled` into its loading term; arc read a bare `isLoading`.

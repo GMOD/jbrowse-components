@@ -24,7 +24,7 @@ display except this one.
 ## Fetch and readiness
 
 - **`reload()` must invalidate `dataCurrent`, not just bump the counter** —
-  arc's `shouldFetch` reads it, so a bump alone refires into a no-op.
+  arc's `prepare` reads it, so a bump alone refires into a no-op.
   `ArcFetchModel` also drops `loadedRegionSignature`. `features` deliberately
   survives, so stale arcs stay under the loading overlay instead of blanking.
 - **Two readiness flags, don't conflate**: `svgReady` is the SVG-export terminal

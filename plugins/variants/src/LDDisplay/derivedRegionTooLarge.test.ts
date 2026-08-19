@@ -1,5 +1,7 @@
 import { getMembers } from '@jbrowse/mobx-state-tree'
+import { runGlobalFetch } from '@jbrowse/plugin-linear-genome-view'
 
+import { ldFetchPhases } from './ldFetchPhases.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // Derived regionTooLarge: a pure function of the cached byte estimate scaled to
@@ -138,9 +140,11 @@ describe('LD derived regionTooLarge', () => {
   // setByteEstimate: `installGlobalFetchAutorun` skips only on `regionTooLarge
   // && !gateMeasurementStale`, so a blocked display still runs one fetch per
   // settled viewport and that fetch's pre-flight is what re-measures. This
-  // pins that `performLDFetch` does not restate the too-large skip itself —
-  // when it did, the gate RPC was never reached and no amount of zooming could
-  // clear the banner (only force-load or chromosome nav could).
+  // pins that `ldFetchPhases` does not restate the too-large skip itself — when
+  // it did, the gate RPC was never reached and no amount of zooming could clear
+  // the banner (only force-load or chromosome nav could). Driven through the
+  // production runner over the production phases, which is what the autorun
+  // installs, so nothing here is a transcription of either.
   it('still measures while the banner holds, so a fresh estimate releases it', async () => {
     const { display, view, mockRpcCall } =
       createTestEnvironment().createDisplay()
@@ -168,7 +172,7 @@ describe('LD derived regionTooLarge', () => {
     // counted from here, since the autorun installed above has already run one
     // fetch of its own against the default (undefined-returning) mock
     mockRpcCall.mockClear()
-    await display.performLDFetch()
+    await runGlobalFetch(display, ldFetchPhases(display))
 
     expect(
       mockRpcCall.mock.calls.filter(c => c[1] === 'CoreGetRegionByteEstimate'),
@@ -207,7 +211,7 @@ describe('LD derived regionTooLarge', () => {
       method === 'CoreGetRegionByteEstimate' ? 6_000_000 : null,
     )
     mockRpcCall.mockClear()
-    await display.performLDFetch()
+    await runGlobalFetch(display, ldFetchPhases(display))
 
     const estimateCalls = mockRpcCall.mock.calls.filter(
       c => c[1] === 'CoreGetRegionByteEstimate',

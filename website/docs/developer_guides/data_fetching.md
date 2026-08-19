@@ -253,9 +253,9 @@ worth keeping straight:
 is the full account, including the four bugs the predecessor had from an axis
 name claiming a term it did not have.
 
-A display that fetches outside `fetchRegions` calls the same gate itself with
-`if (await self.byteGateBlocksFetch(regions, ctx)) return` (see arc's
-`fetchArcFeatures`, which fetches through `GlobalFetchMixin` rather than
+A display that fetches outside `fetchRegions` calls the same gate itself in its
+`run` phase, returning `undefined` — nothing to commit — when it blocks (see
+arc's `arcFetchPhases`, which fetches through `GlobalFetchMixin` rather than
 `MultiRegionDisplayMixin`'s `fetchRegions`).
 
 ## FetchMixin: cancellation and staleness

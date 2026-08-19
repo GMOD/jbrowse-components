@@ -1,3 +1,6 @@
+import { runGlobalFetch } from '@jbrowse/plugin-linear-genome-view'
+
+import { ldFetchPhases } from './ldFetchPhases.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // What `captureViewport()` buys at the call site. `ctx.isStale()` trips only on
@@ -21,7 +24,7 @@ test('a pan during the RPC leaves the fetch stamped with the issued viewport', a
   )
 
   const issuedOffsetPx = view.offsetPx
-  const fetching = display.performLDFetch()
+  const fetching = runGlobalFetch(display, ldFetchPhases(display))
   // the byte-gate pre-flight resolves first, so the matrix RPC is a few
   // microtasks out; nothing here waits long enough to reach the 500ms debounce
   while (!landData) {

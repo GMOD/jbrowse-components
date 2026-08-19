@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
-import { getRpcSessionId, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -283,7 +283,7 @@ export default function sharedModelFactory(
       /**
        * #getter
        * The same toggle, answering the *export* question rather than the scrim
-       * one. With the triangle off `shouldFetch` is false forever, so `rpcData`
+       * one. With the triangle off `prepare` declines forever, so `rpcData`
        * stays null and `dataCurrent` can never flip — and `awaitSvgReady` is an
        * unbounded `when`, so one such track hangs the whole view's SVG export.
        * Marking it terminal lets the export proceed; `LdSvgBody` already returns
@@ -719,63 +719,6 @@ export default function sharedModelFactory(
         },
       }
     })
-    .actions(self => ({
-      /**
-       * #action
-       * Re-fetches LD matrix for the current viewport. Driven by the
-       * `afterAttach` autorun; `reload()` reaches it by bumping
-       * `reloadCounter`, which that autorun tracks.
-       */
-      async performLDFetch() {
-        if (self.isMinimized) {
-          return
-        }
-        const view = self.lgv
-        if (!view.initialized) {
-          return
-        }
-        const regions = view.dynamicBlocks.contentBlocks
-        // `regionTooLarge` is deliberately NOT a term here — see afterAttach.ts
-        // and RegionTooLargeMixin §"Measurement follows the viewport".
-        // `installGlobalFetchAutorun` owns that skip (`regionTooLarge &&
-        // !gateMeasurementStale`), which lets a blocked display run this once
-        // per settled viewport so `byteGateBlocksFetch` below can re-measure and
-        // release the banner. Restating it here returned before the gate, so the
-        // estimate froze at the viewport it was captured over and zooming in
-        // could never clear the banner.
-        if (!self.showLDTriangle || !regions.length) {
-          return
-        }
-        const drawn = self.captureViewport()
-        const { bpPerPx } = drawn
-        const { adapterConfig } = self
-        await self.runFetch(async ctx => {
-          const { rpcManager } = getSession(self)
-          const sessionId = getRpcSessionId(self)
-          // RegionTooLargeMixin's shared pre-flight gate (a no-op when
-          // `measuresBytesPreFlight` is off), called directly because LD fetches
-          // through GlobalFetchMixin rather than MultiRegionDisplayMixin's
-          // fetchRegions
-          if (await self.byteGateBlocksFetch([...regions], ctx)) {
-            return
-          }
-
-          const result = await rpcManager.call(sessionId, 'RenderLDData', {
-            adapterConfig,
-            regions: [...regions],
-            bpPerPx,
-            ...self.rpcProps(),
-            stopToken: ctx.stopToken,
-            statusCallback: ctx.statusCallback,
-          })
-          if (ctx.isStale()) {
-            return
-          }
-          self.setRpcData(result)
-          self.commitDrawnViewport(drawn)
-        })
-      },
-    }))
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

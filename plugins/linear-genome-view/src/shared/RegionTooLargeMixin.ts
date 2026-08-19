@@ -113,7 +113,7 @@ function host(self: object) {
  * Composed by MultiRegionDisplayMixin (canvas/GPU displays like
  * LinearAlignmentsDisplay, LinearWiggleDisplay, LinearBasicDisplay) and
  * directly by the SVG arc displays (LinearArcDisplay, LinearPairedArcDisplay),
- * which do their own byte-estimate gating in fetchArcFeatures.
+ * which do their own byte-estimate gating in arcFetchPhases.
  *
  * Owns the state that TooLargeMessage reads: regionTooLarge,
  * regionTooLargeReason, forceLoad.

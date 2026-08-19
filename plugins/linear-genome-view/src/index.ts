@@ -133,6 +133,7 @@ export {
   installGrowExitBake,
   onDisplayedRegionsChange,
   plainTrackControl,
+  runGlobalFetch,
   useTrackControlMenu,
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
@@ -145,6 +146,7 @@ export type {
   DisplayStatusPhaseFoundation,
   DrawnViewport,
   FetchContext,
+  GlobalFetchPhases,
   HeightMode,
   HeightModeMenuModel,
   StatusChromeModel,

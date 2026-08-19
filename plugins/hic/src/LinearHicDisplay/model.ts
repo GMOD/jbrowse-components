@@ -128,7 +128,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * HiC does want the scrim meanwhile.
        *
        * This is the header not having landed, which is also exactly when
-       * `shouldFetch` is false: HiC's gate and its prerequisite are one
+       * `prepare` declines: HiC's gate and its prerequisite are one
        * condition, so every decline defers and the check can never report on
        * this display. Deliberate, and the cost is that `infoFetchFailure.test.ts`
        * is what pins HiC's retry. See `FetchMixin.awaitingPrerequisite`.
@@ -607,57 +607,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
     .actions(self => ({
       /**
        * #action
-       * Re-fetches contact matrix for the current viewport. Driven by the
-       * `afterAttach` autorun, which also re-fires on `reload()` (it tracks
-       * `reloadCounter`).
-       */
-      async performHicFetch() {
-        if (self.isMinimized) {
-          return
-        }
-        const view = self.lgv
-        if (!view.initialized) {
-          return
-        }
-        const contentBlocks = view.dynamicBlocks.contentBlocks
-        if (!contentBlocks.length) {
-          return
-        }
-        const resolution = self.effectiveResolution
-        if (resolution === undefined) {
-          return
-        }
-        const drawn = self.captureViewport()
-        const { bpPerPx, offsetPx } = drawn
-        const { adapterConfig } = self
-        // Capture what only the view knows, alongside the viewport capture and
-        // for the same reason — the worker sees neither the block layout nor the
-        // pre-rename refNames. See HicViewBlock.
-        const viewBlocks = calcViewBlocks(contentBlocks, offsetPx)
-        await self.runFetch(async ctx => {
-          const sessionId = getRpcSessionId(self)
-          const { rpcManager } = getSession(self)
-          const result = await rpcManager.call(sessionId, 'RenderHicData', {
-            adapterConfig,
-            regions: [...contentBlocks],
-            viewBlocks,
-            bpPerPx,
-            resolution,
-            ...self.rpcProps(),
-            stopToken: ctx.stopToken,
-            statusCallback: ctx.statusCallback,
-          })
-          if (ctx.isStale()) {
-            return
-          }
-          self.setRpcData(result)
-          self.commitDrawnViewport(drawn)
-        })
-      },
-      /**
-       * #action
        * One-shot header read: the file's normalization and binsize lists. Every
-       * contact fetch is gated on it (`shouldFetch` requires
+       * contact fetch is gated on it (`prepare` requires
        * `effectiveResolution`, which only exists once `availableResolutions`
        * lands), so a failure here is terminal for this display, not a
        * degradation — hence `setError` rather than a session snackbar. Without
@@ -675,7 +626,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             // Reports (see below) but takes no stop token, deliberately: every
             // contact fetch is gated on this one-shot read, so a cancel would
             // not free the display, it would strand it — `effectiveResolution`
-            // stays undefined, `shouldFetch` stays false with no error set, and
+            // stays undefined, `prepare` declines forever with no error set, and
             // `svgReady` never settles.
             // eslint-disable-next-line no-restricted-syntax
             {
@@ -704,7 +655,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             }
             // An empty (or absent) binsize list is terminal for the same reason
             // a thrown CoreGetInfo is, and needs saying just as loudly: it
-            // leaves `effectiveResolution` undefined, so `shouldFetch` is false
+            // leaves `effectiveResolution` undefined, so `prepare` declines
             // forever with no error set — the display would sit on the loading
             // scrim and `svgReady` would never settle, hanging the whole view's
             // export on an unbounded `awaitSvgReady`. Every resting state that
@@ -752,11 +703,48 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         installGlobalFetchAutorun(self, {
           // effectiveResolution is undefined until availableResolutions arrives
           // from CoreGetInfo; reading it gates the fetch and tracks resolution
-          // (bpPerPx + resolutionBias) so a zoom or step refires. The helper
-          // tracks rpcProps() (normalization) + reloadCounter for us.
-          shouldFetch: () => self.effectiveResolution !== undefined,
-          fetch: () => {
-            void self.performHicFetch()
+          // (bpPerPx + resolutionBias) so a zoom or step refires. The skeleton
+          // tracks rpcProps() (normalization), reloadCounter, the viewport and
+          // isMinimized for us, so the reads below that repeat one of those cost
+          // nothing and the rest are what this display alone knows.
+          prepare: () => {
+            const resolution = self.effectiveResolution
+            if (self.isMinimized || resolution === undefined) {
+              return undefined
+            }
+            const contentBlocks = self.lgv.dynamicBlocks.contentBlocks
+            if (!contentBlocks.length) {
+              return undefined
+            }
+            const drawn = self.captureViewport()
+            return {
+              drawn,
+              resolution,
+              regions: [...contentBlocks],
+              // What only the view knows, captured with the viewport and for the
+              // same reason — the worker sees neither the block layout nor the
+              // pre-rename refNames. See HicViewBlock.
+              viewBlocks: calcViewBlocks(contentBlocks, drawn.offsetPx),
+            }
+          },
+          run: async ({ drawn, resolution, regions, viewBlocks }, ctx) =>
+            await getSession(self).rpcManager.call(
+              getRpcSessionId(self),
+              'RenderHicData',
+              {
+                adapterConfig: self.adapterConfig,
+                regions,
+                viewBlocks,
+                bpPerPx: drawn.bpPerPx,
+                resolution,
+                ...self.rpcProps(),
+                stopToken: ctx.stopToken,
+                statusCallback: ctx.statusCallback,
+              },
+            ),
+          commit: (result, { drawn }) => {
+            self.setRpcData(result)
+            self.commitDrawnViewport(drawn)
           },
           delay: 1000,
           name: 'LinearHicDisplayRender',
