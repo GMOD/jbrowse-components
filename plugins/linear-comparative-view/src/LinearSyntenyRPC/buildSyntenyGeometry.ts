@@ -590,22 +590,16 @@ export function buildSyntenyGeometry({
     )
   }
 
-  // ONE PASS, so a feature's whole shape — its base trapezoid and then its own
-  // CIGAR quads — is contiguous in the array, and therefore contiguous in draw
-  // order and in what the pick engine walks.
+  // ONE PASS, so a feature's base trapezoid and its own CIGAR quads stay
+  // contiguous in the array and therefore in draw and pick order. DON'T SPLIT IT
+  // BACK: a base pass followed by a quad pass puts every quad above every base
+  // whatever feature each belongs to, which no ordering upstream can correct —
+  // `compareDrawOrder` sorts a small inversion above a large match and the
+  // match's own deletion quads still land on top of it and take the hover.
   //
-  // This used to be two passes, every feature's base and then every feature's
-  // CIGAR quads. That put EVERY quad above EVERY base regardless of which
-  // feature each belonged to, which is a z-order no ordering upstream can
-  // correct: `compareDrawOrder` sorts a small inversion above a large match, and
-  // the large match's own deletion quads still landed on top of it and took the
-  // hover across their whole width. Sorted feature order only reaches the
-  // drawing if the drawing keeps features whole.
-  //
-  // A feature's indels still paint over its own base — that is the pass ordering
-  // the two passes were really for, and emitting the base first preserves it.
-  // What is given up is indels painting over OTHER features' bases, which is
-  // the bug.
+  // Emitting the base first keeps a feature's indels over its own base, the one
+  // thing the two passes were for. What they also did, and this deliberately
+  // does not, is paint them over other features' bases.
   for (let i = 0; i < featureCount; i++) {
     const x11 = p11_cumBp[i]!
     const x12 = p12_cumBp[i]!
