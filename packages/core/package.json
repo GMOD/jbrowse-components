@@ -105,6 +105,7 @@
     "./ui/Logo": "./src/ui/Logo.tsx",
     "./ui/Menu": "./src/ui/Menu.tsx",
     "./ui/PaletteContext": "./src/ui/PaletteContext.tsx",
+    "./ui/PluggableComponents": "./src/ui/PluggableComponents.tsx",
     "./ui/PluginStoreCard": "./src/ui/PluginStoreCard.tsx",
     "./ui/PopoverPicker": "./src/ui/PopoverPicker.tsx",
     "./ui/ProgressChip": "./src/ui/ProgressChip.tsx",
@@ -608,6 +609,10 @@
       "./ui/PaletteContext": {
         "types": "./esm/ui/PaletteContext.d.ts",
         "import": "./esm/ui/PaletteContext.js"
+      },
+      "./ui/PluggableComponents": {
+        "types": "./esm/ui/PluggableComponents.d.ts",
+        "import": "./esm/ui/PluggableComponents.js"
       },
       "./ui/PluginStoreCard": {
         "types": "./esm/ui/PluginStoreCard.d.ts",
@@ -1314,6 +1319,9 @@
         ],
         "ui/PaletteContext": [
           "esm/ui/PaletteContext.d.ts"
+        ],
+        "ui/PluggableComponents": [
+          "esm/ui/PluggableComponents.d.ts"
         ],
         "ui/PluginStoreCard": [
           "esm/ui/PluginStoreCard.d.ts"

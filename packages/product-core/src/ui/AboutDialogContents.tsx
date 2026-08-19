@@ -6,7 +6,7 @@ import {
   getTrackConfigWithPromotables,
   hydrateTrackConfig,
 } from '@jbrowse/core/configuration'
-import { PluggableComponents } from '@jbrowse/core/ui'
+import PluggableComponents from '@jbrowse/core/ui/PluggableComponents'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'

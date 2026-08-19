@@ -1,4 +1,4 @@
-import { Suspense, createElement } from 'react'
+import { Suspense } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -32,6 +32,15 @@ export type ComponentExtensionPointName = {
 }[ExtensionPointName]
 
 /**
+ * The props a component point hands its panels. Read off the registry entry
+ * rather than through `ExtensionPointProps`, whose fallback branch for an
+ * undeclared point widens this to `Record<string, unknown>` — which then cannot
+ * be spread into a component, since every point here declares its props.
+ */
+export type PanelProps<N extends ComponentExtensionPointName> =
+  ExtensionPointRegistry[N]['props']
+
+/**
  * Render every component contributed to an accumulating point, in registration
  * order, each with the point's props.
  *
@@ -53,7 +62,7 @@ const PluggableComponents = observer(function PluggableComponents<
 }: {
   pluginManager: PluginManager
   name: N
-  props: ExtensionPointProps<N>
+  props: PanelProps<N>
 }) {
   // restated for the same reason as PluggableElements: neither the empty
   // accumulator nor the props narrow through the generic key. [x].flat()
@@ -64,7 +73,7 @@ const PluggableComponents = observer(function PluggableComponents<
       [] as ExtensionPointArgs<N>,
       ...([props] as ExtensionPointPropsArgs<N>),
     ),
-  ].flat() as ComponentType<object>[]
+  ].flat() as ComponentType<PanelProps<N>>[]
   return (
     <>
       {components.map((Component, i) => (
@@ -73,10 +82,7 @@ const PluggableComponents = observer(function PluggableComponents<
           key={i}
           fallback={null}
         >
-          {/* createElement rather than a spread, which does not resolve
-              through the generic key. The signature above is what types these
-              against the point, not this call */}
-          {createElement(Component, props as object)}
+          <Component {...props} />
         </Suspense>
       ))}
     </>

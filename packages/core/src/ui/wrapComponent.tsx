@@ -1,5 +1,3 @@
-import { createElement } from 'react'
-
 import { wrappedComponent } from '../PluginManager.ts'
 
 import type PluginManager from '../PluginManager.ts'
@@ -9,7 +7,7 @@ import type {
   ExtensionPointProps,
   ExtensionPointRegistry,
 } from '../PluginManager.ts'
-import type { ComponentType } from 'react'
+import type { Attributes, ComponentType } from 'react'
 
 /**
  * The extension points that resolve to a single component — a slot with a
@@ -30,9 +28,13 @@ export type SlotExtensionPointName = {
     : never
 }[ExtensionPointName]
 
-/** The props the component in slot `N` is rendered with. */
+/**
+ * The props the component in slot `N` is rendered with. Read off the registry
+ * entry rather than inferred back out of the component type, so it stays an
+ * object type a wrapper's props can be spread from.
+ */
 export type SlotProps<N extends SlotExtensionPointName> =
-  ExtensionPointArgs<N> extends ComponentType<infer P> ? P : never
+  ExtensionPointRegistry[N]['props']
 
 export type WrapperProps<N extends SlotExtensionPointName> = SlotProps<N> & {
   /**
@@ -87,13 +89,17 @@ export function wrapComponent<N extends SlotExtensionPointName>(
     const Default = accumulated as ComponentType<SlotProps<N>>
     let built = cache.get(Default)
     if (!built) {
-      // createElement rather than JSX: neither the spread of the slot props nor
-      // the spread into the wrapper resolves through the generic key
-      const made = (slotProps: SlotProps<N>) =>
-        createElement(Wrapper, {
-          ...(slotProps as object),
+      const made = (slotProps: SlotProps<N>) => {
+        // the literal is what checks the wrapper's props. The assertion is for
+        // JSX alone: it checks attributes against a type made entirely of
+        // optionals, and through `N` tsc cannot see this one has any property in
+        // common with it, so a plain spread reads as the weak-type mistake
+        const wrapperProps: WrapperProps<N> = {
+          ...slotProps,
           DefaultComponent: Default,
-        } as WrapperProps<N>)
+        }
+        return <Wrapper {...(wrapperProps as WrapperProps<N> & Attributes)} />
+      }
       made.displayName = `${Wrapper.displayName ?? Wrapper.name}(${
         Default.displayName ?? Default.name
       })`

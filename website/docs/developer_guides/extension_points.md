@@ -696,10 +696,17 @@ Both helpers come from `@jbrowse/core/ui`.
 <!-- include: packages/core/src/ui/PluggableComponent.test.tsx#replaceWidget -->
 
 ```tsx
-addReplaceWidget(pm, {
-  select: { trackId: 'volvox.inv.vcf' },
-  component: () => <div>mine</div>,
-})
+function scopedToOneTrack(pm: PluginManager) {
+  wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
+    <ForTrack
+      {...rest}
+      select={{ trackId: 'volvox.inv.vcf' }}
+      fallback={<DefaultComponent {...rest} />}
+    >
+      <div>mine</div>
+    </ForTrack>
+  ))
+}
 ```
 
 `select` accepts any combination of the fields below, and all of the ones you
@@ -710,11 +717,13 @@ Two fields are shared with `addFeaturePanel`:
 <!-- include: packages/core/src/ui/extensionSelectors.ts#fields -->
 
 ```typescript
-export interface TrackSelectorFields {
+export interface TrackSelector {
   /** track type, e.g. `'VariantTrack'`, usually what "for my tracks" means */
   trackType?: string | string[]
   /** track id; a plain string also matches the user's copies of that track */
   trackId?: string | RegExp | (string | RegExp)[]
+  /** widget model type, e.g. `'AlignmentsFeatureWidget'`, for the slot points */
+  widgetType?: string | string[]
 }
 ```
 
@@ -808,20 +817,10 @@ value its display draws:
 
 ```tsx
 export default function ScoreFeaturePanelF(pluginManager: PluginManager) {
-  addFeaturePanel(pluginManager, {
-    select: {
-      // the track type this plugin's display attaches to
-      trackType: 'FeatureTrack',
-      // `where` reaches what the declarative fields cannot: the feature itself,
-      // and how deep in the subfeature tree this card is. depth 0 is the
-      // feature that was clicked — without it the panel repeats on every
-      // subfeature card. The score check keeps it off features that have none,
-      // since one FeatureTrack's features may carry a score and another's may
-      // not.
-      where: ({ feature, depth }) => depth === 0 && feature.score !== undefined,
-    },
-    panel: ScoreFeaturePanel,
-  })
+  pluginManager.contributeToExtensionPoint(
+    'Core-extraFeaturePanel',
+    () => ScoreFeaturePanel,
+  )
 }
 ```
 
@@ -834,12 +833,15 @@ Your panel renders its own card chrome, so start at `BaseCard`:
 <!-- include: example-plugins/score-example/src/ScoreFeaturePanel/index.tsx#panel -->
 
 ```tsx
-function ScoreFeaturePanel({ feature }: FeaturePanelProps) {
-  return (
-    <BaseCard title="Score">
-      <div>{String(feature.score)}</div>
-    </BaseCard>
-  )
+function ScoreFeaturePanel(props: FeaturePanelProps) {
+  const { feature, depth } = props
+  return depth === 0 && feature.score !== undefined ? (
+    <ForTrack {...props} select={{ trackType: 'FeatureTrack' }}>
+      <BaseCard title="Score">
+        <div>{String(feature.score)}</div>
+      </BaseCard>
+    </ForTrack>
+  ) : null
 }
 ```
 
