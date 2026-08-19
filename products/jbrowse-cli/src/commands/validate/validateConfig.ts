@@ -104,6 +104,25 @@ function acceptedKeys(entry: { slots: SlotEntry[]; shorthandKeys?: string[] }) {
   return [...entry.slots.map(s => s.name), ...(entry.shorthandKeys ?? [])]
 }
 
+// An unknown key that JBrowse fills in for itself, so the answer is "delete it"
+// rather than "you misspelled something". Left as errors — the key does nothing
+// where it is written, which is this validator's definition of an error — but
+// the generic message sends the author looking for a typo in a key that is
+// spelled correctly and simply belongs to no schema.
+//
+// `sequenceAdapter` is the standing case. `getFeatureAdapter` and
+// `CoreGetRefNames` prime every feature adapter's `sequenceAdapterConfig` from
+// the assembly the track is displayed against, so a CRAM track needs no sequence
+// of its own; two tracks in `demos/hg002/config-chr22.json` carried one anyway,
+// pointing at a per-haplotype FASTA that nothing read. Adapters that DO declare
+// the slot are unaffected: it is a legal override on the scan adapters and
+// genuinely required on `GCContentAdapter`, which reads the slot directly
+// instead of falling back to the assembly.
+const AUTO_SUPPLIED: Record<string, string> = {
+  sequenceAdapter:
+    'JBrowse supplies the sequence from the assembly the track is displayed against, so this adapter declares no `sequenceAdapter` slot and the one written here is never read — delete it',
+}
+
 function checkSlots(
   obj: Record<string, unknown>,
   entry: {
@@ -130,9 +149,11 @@ function checkSlots(
       )
       continue
     }
+    const supplied = AUTO_SUPPLIED[key]
     report.error(
       `${where}.${key}`,
-      `unknown slot "${key}"${didYouMean(key, accepted)} — JBrowse ignores keys it does not declare, so this setting silently does nothing`,
+      supplied ??
+        `unknown slot "${key}"${didYouMean(key, accepted)} — JBrowse ignores keys it does not declare, so this setting silently does nothing`,
     )
   }
   // Recurse into sub-schemas the config actually filled in. One it omits is

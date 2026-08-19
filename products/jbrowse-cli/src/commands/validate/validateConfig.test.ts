@@ -66,6 +66,37 @@ describe('validateConfig', () => {
     expect(error?.message).toContain('did you mean "bamLocation"')
   })
 
+  // A key that is spelled correctly and belongs to no schema, because JBrowse
+  // fills it in for itself. The generic message sends the author hunting for a
+  // typo; two tracks in the hg002 demo carried one for a year.
+  it('says a sequenceAdapter on a CRAM track comes from the assembly', () => {
+    const config = baseConfig()
+    config.tracks[0]!.adapter = {
+      type: 'CramAdapter',
+      uri: 'sample.cram',
+      // @ts-expect-error the point of the test: CramAdapter declares no such slot
+      sequenceAdapter: { type: 'IndexedFastaAdapter', uri: 'hg38.fa' },
+    }
+    const [error] = errorsOf(config)
+    expect(error?.where).toBe('tracks[0].adapter.sequenceAdapter')
+    expect(error?.message).toContain('supplies the sequence from the assembly')
+    expect(error?.message).not.toContain('did you mean')
+  })
+
+  // The other half, and the reason this is keyed on the key rather than applied
+  // to every adapter: GCContentAdapter reads the slot directly instead of
+  // falling back to the assembly, so there it is required.
+  it('leaves sequenceAdapter alone on an adapter that declares it', () => {
+    const config = baseConfig()
+    config.tracks[0]!.type = 'QuantitativeTrack'
+    config.tracks[0]!.adapter = {
+      type: 'GCContentAdapter',
+      // @ts-expect-error a declared slot on this adapter
+      sequenceAdapter: { type: 'BgzipFastaAdapter', uri: 'hg38.fa.gz' },
+    }
+    expect(errorsOf(config)).toEqual([])
+  })
+
   it('reports an unknown display slot', () => {
     const config = baseConfig()
     // @ts-expect-error deliberately unknown

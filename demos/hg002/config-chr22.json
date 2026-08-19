@@ -56,17 +56,6 @@
         "craiLocation": {
           "uri": "out_PATERNAL.cram.crai",
           "locationType": "UriLocation"
-        },
-        "sequenceAdapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "chr22_PATERNAL.fasta",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "chr22_PATERNAL.fasta.fai",
-            "locationType": "UriLocation"
-          }
         }
       },
       "assemblyNames": ["chr22_PATERNAL"]
@@ -84,17 +73,6 @@
         "craiLocation": {
           "uri": "out_MATERNAL.cram.crai",
           "locationType": "UriLocation"
-        },
-        "sequenceAdapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "chr22_MATERNAL.fasta",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "chr22_MATERNAL.fasta.fai",
-            "locationType": "UriLocation"
-          }
         }
       },
       "assemblyNames": ["chr22_MATERNAL"]
