@@ -2,7 +2,7 @@ import path from 'node:path'
 
 import { isURL } from '../../types/common.ts'
 import { parseCommaSeparatedString } from '../../utils.ts'
-import { displayDefaultKeysForTrackType } from '../validate/displayDefaultKeys.ts'
+import { displayDefaultsForTrackType } from '../validate/displayDefaultKeys.ts'
 import { suggest } from '../validate/suggest.ts'
 import { syntenyAdapterTypes } from './adapter-utils.ts'
 import { parseJsonFlag } from './validators.ts'
@@ -96,21 +96,27 @@ export function mergeDisplayDefaults({
 
 // An unknown track type accepts everything: it is a plugin's, and this manifest
 // is only the core plugins'.
+//
+// The message names the display when the track offers one — which most do, and
+// AlignmentsTrack is the case that matters here, since `--color` is the
+// reachable mistake and LinearAlignmentsDisplay is the only place to go look.
 function checkDisplayDefaultKeys(
   merged: Record<string, unknown>,
   trackType: string,
 ) {
-  const accepted = displayDefaultKeysForTrackType(trackType)
-  if (accepted.length === 0) {
+  const { displayTypes, keys } = displayDefaultsForTrackType(trackType)
+  if (keys.length === 0) {
     return
   }
-  const unknown = Object.keys(merged).filter(key => !accepted.includes(key))
+  const unknown = Object.keys(merged).filter(key => !keys.includes(key))
   if (unknown.length > 0) {
+    const declarer =
+      displayTypes.length === 1 ? displayTypes[0] : `any ${trackType} display`
     throw new Error(
       unknown
         .map(key => {
-          const hit = suggest(key, accepted)
-          return `no ${trackType} display declares "${key}"${hit ? `, did you mean "${hit}"?` : ''}`
+          const hit = suggest(key, keys)
+          return `"${key}" is not a setting ${declarer} declares${hit ? `, did you mean "${hit}"?` : ''}`
         })
         .join('\n'),
     )

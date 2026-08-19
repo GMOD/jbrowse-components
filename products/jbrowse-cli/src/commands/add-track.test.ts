@@ -357,7 +357,7 @@ test('--color on a track whose displays do not declare it is refused', async () 
     ])
 
     expect(error?.message).toContain(
-      'no AlignmentsTrack display declares "color"',
+      '"color" is not a setting LinearAlignmentsDisplay declares',
     )
     expect(error?.message).toContain('did you mean "colorBy"')
     expect(readConf(ctx).tracks).toEqual([])

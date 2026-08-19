@@ -16,14 +16,23 @@ export function displayDefaultKeys(
 }
 
 // The same set for a track type named rather than resolved — add-track knows
-// the type it is writing, not a manifest entry. Empty for a type the manifest
-// does not carry (a plugin's), which no check here can speak to.
-export function displayDefaultKeysForTrackType(
+// the type it is writing, not a manifest entry. The display types come back
+// alongside, because most tracks offer exactly one and naming it is the whole
+// difference between a message someone can act on and one they cannot: an
+// AlignmentsTrack has only LinearAlignmentsDisplay, so "no AlignmentsTrack
+// display declares color" sends the reader looking for the other displays.
+//
+// Both empty for a type the manifest does not carry (a plugin's), which no
+// check here can speak to.
+export function displayDefaultsForTrackType(
   trackType: string,
   manifest: ConfigManifest = configManifest,
 ) {
   const entry = lookup(manifest.tracks, trackType)
-  return entry ? displayDefaultKeys(entry, manifest) : []
+  return {
+    displayTypes: entry?.displayTypes ?? [],
+    keys: entry ? displayDefaultKeys(entry, manifest) : [],
+  }
 }
 
 function lookup(group: TypeGroup, typeName: string) {
