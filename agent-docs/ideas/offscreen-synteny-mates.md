@@ -1,17 +1,18 @@
 ---
 name: offscreen-synteny-mates
-description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a stub/box rather than a ribbon. Stages 1 and 2 SHIPPED 2026-08-19 — the worker counts them and the view marks them behind a toggle; what is left is labelling and hit-testing. Read alongside two-axis-synteny-fetch.md, which is the expensive other half and is untouched by this.
+description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a stub/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, and clickable to show that contig. Class B is untouched and needs two-axis-synteny-fetch.md; read this first for what class A settled, which constrains it.
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
 
-**Stages 1 and 2 shipped on 2026-08-19.** `collectOffscreenMates` tallies the
-class-A drops per contig and places them on the query axis;
-`offscreenMateMenuItems` reports the count and the contigs; `showOffscreenMates`
-turns `OffscreenMateOverlay` on, which marks each one as a stub at the top of
-the band. Stage 3 (labels) and hit-testing are the remainder, below. The rest of
-this file is the case for it and the reasoning the implementation followed —
-kept because the *class B* half is still open.
+**Class A shipped on 2026-08-19, all three stages.**
+`collectOffscreenMates` tallies the drops per contig and places them on the
+query axis; `offscreenMateMenuItems` reports the count and the contigs;
+`showOffscreenMates` turns `OffscreenMateOverlay` on, which draws each as a stub
+at the top of the band, labelled with the contig it points at, and clicking one
+shows that contig on the facing row. The rest of this file is the case for it
+and the reasoning the implementation followed — kept because **class B is still
+open**, and because what it decided constrains what class B may do.
 
 A synteny band draws a ribbon only when **both** ends land on a displayed
 region. When peach chr1 is stacked against grape chr1 and a peach locus is
@@ -117,7 +118,11 @@ ribbons. 2767 boxes is nothing for Canvas2D and it keeps a visually distinct
 element out of the instance format.
 
 **3. Label it.** Needs text, which the instance renderer has none of, so this is
-the overlay path whatever stage 2 chose. Probably only at low instance counts.
+the overlay path whatever stage 2 chose. Not gated on a count in the end: a
+label goes on wherever it FITS, which is what "too many to label" actually
+means, and one label per *stretch* rather than per anchor, since a block is
+dozens of anchors a few px apart. Haloed, because the label sits below the stub
+over whatever the renderer painted.
 
 ## Behind a toggle, decided
 
@@ -132,7 +137,7 @@ Default off is not implied by that and is not obvious. 73% of peach chr1's
 anchors on a demo we ship argues the other way, and a feature nobody finds
 reports nothing.
 
-## What has to be decided before stage 2
+## What class A settled, and what class B inherits
 
 - **Which axis owns a stub.** Settled for class A: `offscreenMateStubs` reads
   `views[level]`, the level's upper row, and its test says why — the lower row's
@@ -140,18 +145,28 @@ reports nothing.
   stubs hang off v2 and the two must be distinguishable from each other and from
   a ribbon whose far end is merely panned off the left/right edge (which already
   draws correctly and is *not* this).
-- **Whether stubs obey `minAlignmentLength`.** Open. They carry an alignment
-  length and it means the same thing, so probably yes; today they do not, and a
-  sub-pixel one is floored to a visible tick instead.
-- **What happens on hover/click.** Open, and the piece with the most left in it.
-  These have real feature ids and a real mate locus, so
-  `SyntenyResolveMatchingRegion` already answers "where does this go" — which
-  makes "click to add that contig as a row" natural and cheap. The overlay
-  deliberately does not hit-test; that belongs in the level's own pick engine,
-  not a second hit path.
-- **The lanes needed for both are already shipped.** `mateRefNameIds` indexes
-  `mateRefNameDict` per placed stub, so the contig a stub points at is in hand
-  and nothing reads it yet — it is there for the label and the click.
+- **Whether stubs obey `minAlignmentLength`.** Settled: yes, on the same
+  reasoning the ribbons do. A sub-pixel stub that survives the floor is still
+  floored to a visible tick, since a stub carries no width a reader could act
+  on.
+- **What happens on hover/click.** Settled for the pairwise case, which is the
+  one class A produces: the mate contig belongs to the facing row's own
+  assembly, it is simply not displayed, so a click navigates that row to it and
+  the stubs become ribbons. `SyntenyResolveMatchingRegion` was the other
+  candidate — it answers "where exactly does this go" — and it is not needed to
+  make the contig visible, only to land on the right locus within it. Worth
+  revisiting if landing whole-contig turns out too coarse.
+
+  The click is `navToLocString`, which REPLACES the facing row's displayed
+  regions — the exact narrowing the follow must never do to itself. Here it is
+  the request, not a side effect, and the row's own header undoes it.
+- **Where the hit test lives.** In the level's pointer handlers, before the
+  ribbon pick, answering only within the stub strip. The overlay stays
+  `pointerEvents: none`: two hit paths over one band is how a click comes to
+  mean different things depending on which element received it. Draw and hit
+  test share `offscreenMateRects`, so they cannot disagree the way the ribbons
+  can — `syntenyPickRenderAgreement.test.ts` exists because those are two code
+  paths.
 
 ## Cheaper thing this is not
 
