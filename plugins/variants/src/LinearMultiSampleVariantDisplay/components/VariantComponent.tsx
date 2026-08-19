@@ -1,7 +1,11 @@
 import { useState } from 'react'
 
 import { hoverBoxStyle } from '@jbrowse/core/ui'
-import { makeBpMapper, pxPerBpOf } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  makeBpMapper,
+  pxPerBpOf,
+  regionAtPixel,
+} from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import {
@@ -53,9 +57,7 @@ function getHoveredFeature(
   const mouseX = eventClientX - rect.left
   const mouseY = eventClientY - rect.top
 
-  const region = model.visibleRegions.find(
-    r => mouseX >= r.screenStartPx && mouseX < r.screenEndPx,
-  )
+  const region = regionAtPixel(model.visibleRegions, mouseX)
   if (!region) {
     return undefined
   }

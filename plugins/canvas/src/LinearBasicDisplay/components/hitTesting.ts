@@ -1,5 +1,5 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
+import { bpAtPx, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
 import { computeLabelExtraWidth } from './labelPositioning.ts'
 
@@ -211,17 +211,6 @@ function resolveSubfeature(
     i => data.subfeatureInfos[i]!.parentFeatureId === feature.featureId,
   )
   return idx === undefined ? null : data.subfeatureInfos[idx]!
-}
-
-// The region a pixel belongs to, or undefined off the end of the last one. The
-// upper bound is exclusive so adjacent regions (regionA.screenEndPx ===
-// regionB.screenStartPx) can't both match at the shared pixel — the earlier one
-// would always win and steal clicks meant for the later one. Exactly one region
-// can match, so this answers with a region rather than a list.
-function regionAtPixel(visibleRegions: VisibleRegion[], mouseXPx: number) {
-  return visibleRegions.find(
-    vr => mouseXPx >= vr.screenStartPx && mouseXPx < vr.screenEndPx,
-  )
 }
 
 export function performMultiRegionHitDetection(

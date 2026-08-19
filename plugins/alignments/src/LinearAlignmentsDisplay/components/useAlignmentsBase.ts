@@ -4,6 +4,7 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
 import { arcColorLegendCategory } from '../../features/arcs/arcColors.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
@@ -143,15 +144,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     })
   }
 
-  // The visible region the cursor is over. Regions don't overlap in screen x, so
-  // at most one matches. Split out because the arc band needs the region itself —
-  // its `displayedRegionIndex` keys the per-region arc feed, and its bp/px edges
-  // are the projection — while the pileup path only wants the block.
+  // Split out because the arc band needs the region itself — its
+  // `displayedRegionIndex` keys the per-region arc feed, and its bp/px edges are
+  // the projection — while the pileup path only wants the block.
   function visibleRegionAt(canvasX: number) {
     return view.initialized
-      ? view.visibleRegions.find(
-          r => canvasX >= r.screenStartPx && canvasX < r.screenEndPx,
-        )
+      ? regionAtPixel(view.visibleRegions, canvasX)
       : undefined
   }
 

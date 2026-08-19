@@ -2,7 +2,7 @@
 // bp, and the tooltip/feature-widget payloads built from the hit. Shared by
 // single-wiggle and multi-wiggle so hover, the cursor guides and
 // click-to-select can't disagree about what is under the pointer.
-import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
+import { bpAtPx, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
 import type { WiggleHoveredFeature, WiggleTooltipRow } from '../util.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
@@ -138,17 +138,15 @@ export interface MouseRegion {
 // dividing and is exact; see its JSDoc for why.
 //
 // The clamp that stood around the local floor went with it. It was insurance
-// against exactly the float error that is now gone, and the region lookup below
-// already guarantees `screenStartPx <= offsetX < screenEndPx`, so the offset
-// lands in `[0, span)` by construction.
+// against exactly the float error that is now gone, and `regionAtPixel` already
+// guarantees `screenStartPx <= offsetX < screenEndPx`, so the offset lands in
+// `[0, span)` by construction.
 export function hitTestMouse<R extends MouseRegion, D>(
   regions: R[],
   rpcDataMap: ReadonlyMap<number, D>,
   offsetX: number,
 ) {
-  const region = regions.find(
-    r => offsetX >= r.screenStartPx && offsetX < r.screenEndPx,
-  )
+  const region = regionAtPixel(regions, offsetX)
   if (!region) {
     return undefined
   }
