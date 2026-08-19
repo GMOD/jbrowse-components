@@ -464,6 +464,17 @@ export function getSavedSvg(): string {
   return svgs[0]!
 }
 
+// How many snapshots have failed to match so far in this file. `expect.getState`
+// is jest's own handle on the state its snapshot reporter reads at the end of
+// the run, which is where a mismatch is recorded — the matcher itself does not
+// throw.
+function snapshotMismatches() {
+  const { snapshotState } = expect.getState() as unknown as {
+    snapshotState: { unmatched: number }
+  }
+  return snapshotState.unmatched
+}
+
 export async function exportAndVerifySvg({
   findByTestId,
   findByText,
@@ -498,16 +509,21 @@ export async function exportAndVerifySvg({
   const svg = getSavedSvg()
   assertNoDuplicateSvgIds(svg)
   assertNoDanglingSvgRefs(svg)
+  // ONLY WHEN THE SNAPSHOT ACCEPTED THESE BYTES. The golden `.svg` and the
+  // `.snap` hold the same string for two readers — the golden is the one a
+  // human diffs, the `.snap` is what fails a run — so a golden the `.snap`
+  // rejected is a picture of the bug, and it reads in `git status` as somebody's
+  // pending snapshot update rather than as red CI.
+  //
+  // Sequencing alone does not buy that: `toMatchSnapshot` records its verdict
+  // and RETURNS, so everything after it runs on a red run too. Count the
+  // mismatch instead.
+  const before = snapshotMismatches()
   expect(svg).toMatchSnapshot()
-  // AFTER the match, not before. The golden `.svg` and the `.snap` hold the
-  // same bytes for two readers — the golden is the one a human diffs, the
-  // `.snap` is what fails a run — and writing unconditionally let the two
-  // disagree: a render change rewrote the golden, the .snap kept the old bytes,
-  // and the failing test read in `git status` as somebody's pending snapshot
-  // update rather than as red CI. Written here, the golden only moves when the
-  // assertion it is a copy of has accepted the same string.
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
+  if (snapshotMismatches() === before) {
+    const dir = path.dirname(module.filename)
+    fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
+  }
   return svg
 }
 
