@@ -311,6 +311,23 @@ of what remains:
    than a patch — but it is the only option that stops the seventh plugin
    inventing a seventh answer, and synteny's fix did nothing to make that less
    likely. If anything it made it likelier: the class now looks handled.
+
+   Two things are settled about it even though the design is not, and they are
+   worth not re-deriving. **Per method rather than blanket**, mirroring
+   `RpcMethodTypeWithRenameRegions` on the way out: most RPC returns carry no
+   refName at all, and `resolveMatchingSpan`'s `regions[]` is the worked example
+   of a return that deliberately passes a name back OUT and would break under a
+   blanket pass. And **start from the alias table, not from the outbound map** —
+   three of the six workarounds now resolve on receipt through
+   `getCanonicalRefName2` (or synteny's `getCanonicalRefNameFn` around it) rather
+   than inverting the map, which is the shape to build, because the outbound map
+   is keyed by canonical name and inverting it keeps only one file spelling per
+   contig and so is not total.
+
+   **It is not urgent**, because every plugin that needs it now has a working
+   answer, and the case for doing it rests entirely on that seventh plugin, which
+   by definition has not been written yet. That is why it is recorded here rather
+   than in `TODO.md`.
 3. **The display-text half, repo-wide.** Independent of both of the above, and
    the one still unopened because nobody has decided it is work. A refName used as
    tooltip or feature-detail text shows the file's spelling in every plugin. The

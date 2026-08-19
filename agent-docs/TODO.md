@@ -52,7 +52,6 @@ before anyone noticed.
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | delete half done; the implement half goes in `RpcHandles` |
 | [Brand the out-of-request refNames](#brand-the-out-of-request-refnames) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
 | [Give `session.jbrowse` a real type](#give-sessionjbrowse-a-real-type) | core types, MST | pick one interface or two BEFORE touching any of the 36 sites |
-| [Rename RPC results, once, for all six plugins](#rename-rpc-results-once-for-all-six-plugins) | RPC | read REFNAME_NAMESPACES.md; a design pass, not a patch |
 | [The swapped track resolves to a point](#the-swapped-assembly-track-resolves-to-a-point) | synteny | the hang is fixed; what is left is the swap, still not isolated |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Verify the shared rect buffer headed](#verify-the-shared-rectcontinuation-buffer-on-real-hardware) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
@@ -69,7 +68,6 @@ before anyone noticed.
 | [Observer reactions leak from discarded renders](#destroying-an-mst-tree-that-something-still-observes) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
-| [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
 | [Take the MSAA target's size on a retina display](#take-the-msaa-targets-size-on-a-retina-display) | GPU, limits | run the probe at dpr 2; the 640 MiB is arithmetic, not measurement |
 | [Cross-region arc count at 300x](#read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
@@ -683,33 +681,6 @@ first spelling is not the one to discover at site 20.
 
 Pin the result with `AssertNotAny<IsAny<...>>` when it lands, the way the
 embedded products' `session`/`session.view` already are.
-
-### Rename RPC results, once, for all six plugins
-
-The layer-level version of the whole class, and the only option that stops the
-seventh plugin inventing a seventh answer. Read
-[reference/REFNAME_NAMESPACES.md](reference/REFNAME_NAMESPACES.md), whose table
-of six workarounds is the argument for it.
-
-A return-direction rename **declared per method**, mirroring
-`RpcMethodTypeWithRenameRegions` on the way out. Per-method rather than blanket
-because most RPC returns carry no refName at all and a few carry one that must
-stay adapter-space — `renameRegionsIfNeeded`'s own outbound contract is the
-model, and the synteny site that deliberately passes a name back OUT
-(`resolveMatchingSpan`'s `regions[]`) is the worked example of a return that
-would break under a blanket pass.
-
-**The mechanism is settled even though the design is not.** Three of the six
-workarounds now resolve on receipt through the assembly's alias table
-(`getCanonicalRefName2`, or synteny's `getCanonicalRefNameFn` around it) rather
-than inverting the outbound map, which is the shape to build: the outbound map is
-keyed by canonical name, so inverting it keeps only one file spelling per contig
-and is not total. Start from the alias table.
-
-**Wants a design pass rather than a patch**, and it is not urgent, because every
-plugin that needs it now has a working answer. That is also the hazard worth
-naming: the class now looks handled, so the case for doing this rests on the
-seventh plugin, which by definition has not been written yet.
 
 ### Give the comparative displays a cancel and a retry
 
@@ -1835,12 +1806,6 @@ read of ~1.2 MB against a 5 Mb budget. The gap is the one
 [reference/MAF_LARGE_BLOCKS.md](reference/MAF_LARGE_BLOCKS.md) §"What the LOD
 lesson actually points at" predicted; HPRC_RELEASE2.md says why it is a design
 question rather than a one-liner.
-
-### A TPA reader
-
-HPRC ships 466 TPA files as a first-class alternative to the PAFs and nothing
-reads the format. Of everything on the HPRC list this is the one integration
-that would be genuinely differentiating rather than catching up.
 
 ### Does a base-quality floor still buy anything on the coverage band
 

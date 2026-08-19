@@ -22,6 +22,11 @@ The alignment/MAF side of the HPRC data. The graph view's own queue is in
 | per-chromosome pggb `.gfa.zst` | **no** — see the memory measurement below |
 | impg TPA (466 files, one per haplotype) | **no reader** |
 
+Of everything on that list the TPA row is the one integration that would be
+genuinely differentiating rather than catching up — 466 files ship as a
+first-class alternative to the PAFs and nothing anywhere reads the format. It is
+recorded here rather than in `TODO.md` because nobody has scoped a reader.
+
 The human-pangenomics bucket serves `Access-Control-Allow-Origin: *` with
 `Content-Range` exposed, so browsers can range-request all of it.
 

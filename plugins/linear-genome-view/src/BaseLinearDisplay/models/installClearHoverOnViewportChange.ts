@@ -34,9 +34,31 @@ interface HoverHost extends IStateTreeNode {
  *
  * **There is a fifth way the content moves, deliberately not watched:** a track
  * above this one changing height slides this display's whole box down the page
- * under a stationary cursor. `view.trackHeights` would catch it and over-clear —
- * see `agent-docs/ideas/hover-clear-on-track-reflow.md` for why that trade went
- * the other way, and read it before adding the term.
+ * under a stationary cursor — an alignments display fitting its pileup as reads
+ * arrive, a track shown or hidden, someone dragging a resize handle.
+ *
+ * `view.trackHeights` is the tempting term, and it over-clears: that sum also
+ * moves when a track BELOW the hovered one grows, which moves nothing the cursor
+ * is over, and it moves once per frame while a grow-to-fit display settles. So
+ * hovering a gene on track 1 while an alignments track further down fills in
+ * would blink the tooltip out several times a second — trading a staleness that
+ * fixes itself on the next mouse move for a flicker during exactly the moments a
+ * user is watching data land. The precise term is the sum of the heights ABOVE
+ * this display, which each display can compute from its index in `view.tracks`,
+ * but that makes every display's hover reaction depend on every earlier track's
+ * height — a far wider dependency graph than the four axes it would join, and
+ * O(tracks²) for a reflow that moves everything.
+ *
+ * A `ResizeObserver` on the display's own box sidesteps the choice by measuring
+ * the thing that actually matters, at the cost of putting DOM into a gate that
+ * is currently pure model state. Weigh that against how little goes wrong: the
+ * staleness self-heals on the very next `mousemove`, the highlight box travels
+ * with the canvas so nothing on screen looks wrong, only the tooltip's text is
+ * stale, and nobody has reported it. The dotplot's version of this bug was worse
+ * (its tooltip is anchored to the pointer while the restroke is anchored to the
+ * plot, so the two visibly separate) and its fix was free, because `viewHeight`
+ * was already an input to the projection everything else read. Neither holds
+ * here. Read all of that before adding the term.
  *
  * **The fetch foundations install this, so a display does not.** It clears
  * through `BaseDisplay.clearHoveredFeature`, whose default is a no-op, so a
