@@ -81,6 +81,7 @@ export { foundationDisplayStatusPhase } from './models/foundationDisplayPhase.ts
 export type { DisplayStatusPhaseFoundation } from './models/foundationDisplayPhase.ts'
 export { default as LegendMixin } from './models/LegendMixin.ts'
 export { default as StaleViewportRescaleMixin } from './models/StaleViewportRescaleMixin.ts'
+export type { DrawnViewport } from './models/StaleViewportRescaleMixin.ts'
 export { squashToHeightCheckboxItem } from './models/squashToHeightMenuItem.ts'
 export {
   computeRenderTransform,

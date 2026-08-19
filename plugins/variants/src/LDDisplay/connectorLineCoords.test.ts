@@ -26,7 +26,7 @@ function ldData(n: number, width: number): LDDataResult {
 }
 
 // A display holding a 4-SNP result fetched for the current viewport, i.e. what
-// the model looks like the instant after setRpcData/setLastDrawnViewport.
+// the model looks like the instant after setRpcData/commitDrawnViewport.
 function loadedDisplay({ scrollToEnd = false } = {}) {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
@@ -37,7 +37,7 @@ function loadedDisplay({ scrollToEnd = false } = {}) {
   view.scrollTo(scrollToEnd ? 1_000_000 - 700 : 0)
   const width = view.dynamicBlocks.totalWidthPxWithoutBorders
   display.setRpcData(ldData(4, width))
-  display.setLastDrawnViewport(view.offsetPx, view.bpPerPx)
+  display.commitDrawnViewport(display.captureViewport())
   return { display, view, width }
 }
 

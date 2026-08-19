@@ -236,7 +236,7 @@ export default function sharedModelFactory(
        * data was fetched for the current viewport. Gating on freshness — not
        * merely `rpcData !== null` — keeps off-screen `svgReady` from resolving on
        * data left over from the pre-pan/zoom viewport during the debounced-refetch
-       * window (`setLastDrawnViewport` runs right after `setRpcData`). Without the
+       * window (`commitDrawnViewport` runs right after `setRpcData`). Without the
        * override the mixin default (`false`) leaves `svgReady` unable to resolve
        * on a successful load, hanging SVG export.
        */
@@ -746,14 +746,8 @@ export default function sharedModelFactory(
         if (!self.showLDTriangle || !regions.length) {
           return
         }
-        // Capture the viewport this fetch is issued for. `setLastDrawnViewport`
-        // below must record *these* values, not a live re-read: `ctx.isStale()`
-        // only trips on a newer fetch or a cancel, so a pan/zoom during the RPC
-        // would otherwise stamp the new viewport onto a matrix packed for the
-        // old one — `renderTransform` would then read scale 1 and leave the
-        // stale pixels un-rescaled, and the freshness getter above (and so
-        // `svgReady`) would call them current.
-        const { bpPerPx, offsetPx } = view
+        const drawn = self.captureViewport()
+        const { bpPerPx } = drawn
         const { adapterConfig } = self
         await self.runFetch(async ctx => {
           const { rpcManager } = getSession(self)
@@ -778,7 +772,7 @@ export default function sharedModelFactory(
             return
           }
           self.setRpcData(result)
-          self.setLastDrawnViewport(offsetPx, bpPerPx)
+          self.commitDrawnViewport(drawn)
         })
       },
     }))

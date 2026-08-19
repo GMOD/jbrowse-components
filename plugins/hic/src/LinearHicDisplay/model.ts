@@ -206,7 +206,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * that data was fetched for the current viewport. Gating on freshness —
        * not merely `rpcData !== null` — keeps off-screen `svgReady` from
        * resolving on a matrix left over from the pre-pan/zoom viewport during
-       * the debounced-refetch window (`setLastDrawnViewport` runs right after
+       * the debounced-refetch window (`commitDrawnViewport` runs right after
        * `setRpcData`, so the two move together).
        */
       get dataCurrent(): boolean {
@@ -627,14 +627,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (resolution === undefined) {
           return
         }
-        // Capture the viewport this fetch is issued for. `setLastDrawnViewport`
-        // below must record *these* values, not a live re-read: `ctx.isStale()`
-        // only trips on a newer fetch or a cancel, so a pan/zoom during the RPC
-        // would otherwise stamp the new viewport onto a matrix packed for the
-        // old one — `renderTransform` would then read scale 1 and leave the
-        // stale pixels un-rescaled, and the freshness getter below (and so
-        // `svgReady`) would call them current.
-        const { bpPerPx, offsetPx } = view
+        const drawn = self.captureViewport()
+        const { bpPerPx, offsetPx } = drawn
         const { adapterConfig } = self
         // Capture what only the view knows, alongside the viewport capture and
         // for the same reason — the worker sees neither the block layout nor the
@@ -657,7 +651,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             return
           }
           self.setRpcData(result)
-          self.setLastDrawnViewport(offsetPx, bpPerPx)
+          self.commitDrawnViewport(drawn)
         })
       },
       /**

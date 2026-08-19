@@ -10,6 +10,16 @@ import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { RenderTransform } from './renderTransform.ts'
 
 /**
+ * The pan/zoom pair a fetch is issued at, and the only thing
+ * `commitDrawnViewport` accepts — so a commit cannot be handed a live re-read
+ * of the two numbers. See `captureViewport`.
+ */
+export interface DrawnViewport {
+  offsetPx: number
+  bpPerPx: number
+}
+
+/**
  * #stateModel StaleViewportRescaleMixin
  * #category display
  * #crossCuttingMixin Stale-pixel rescaling for a display whose worker output is in fetch-time pixel space. Nothing — the display records `lastDrawnOffsetPx`/`lastDrawnBpPerPx` from its render callback. Brings the `renderTransform` that keeps stale pixels aligned during a pan-during-fetch and the `viewportFresh` half of `dataCurrent`
@@ -46,6 +56,30 @@ export default function StaleViewportRescaleMixin() {
     }))
     .views(self => ({
       /**
+       * #method
+       * The viewport as it is right now. **Calling it is the capture**, which is
+       * why it is a method and not a getter — the same reason
+       * `RegionTooLargeMixin.gateFetchState()` is one.
+       *
+       * A fetch takes this before its first await and hands that value to
+       * `commitDrawnViewport` after, never a live re-read: `ctx.isStale()` trips
+       * only on a newer fetch or a cancel, so a pan or zoom during the RPC would
+       * otherwise stamp the moved viewport onto data packed for the old one.
+       * `renderTransform` would then read scale 1 and leave the stale pixels
+       * un-rescaled, while `viewportFresh` — and so `svgReady` — called them
+       * current.
+       *
+       * In `.views()`, never `.actions()`: the two getters below compare against
+       * it, and MobX runs an action untracked, so as an action it would leave
+       * them blind to every pan and zoom.
+       */
+      captureViewport(): DrawnViewport {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return { offsetPx: view.offsetPx, bpPerPx: view.bpPerPx }
+      },
+    }))
+    .views(self => ({
+      /**
        * #getter
        * True only when the held data was drawn at exactly the current viewport.
        * The freshness half of a global display's `dataCurrent` — the display
@@ -55,12 +89,12 @@ export default function StaleViewportRescaleMixin() {
        * matrix fetched for the pre-pan viewport.
        */
       get viewportFresh(): boolean {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const { offsetPx, bpPerPx } = self.captureViewport()
         return viewportMatchesLastDrawn({
           lastDrawnOffsetPx: self.lastDrawnOffsetPx,
           lastDrawnBpPerPx: self.lastDrawnBpPerPx,
-          viewOffsetPx: view.offsetPx,
-          viewBpPerPx: view.bpPerPx,
+          viewOffsetPx: offsetPx,
+          viewBpPerPx: bpPerPx,
         })
       },
       /**
@@ -71,20 +105,23 @@ export default function StaleViewportRescaleMixin() {
        * identity (`scale` 1) while `viewportFresh`.
        */
       get renderTransform(): RenderTransform {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const { offsetPx, bpPerPx } = self.captureViewport()
         return computeRenderTransform({
           lastDrawnOffsetPx: self.lastDrawnOffsetPx,
           lastDrawnBpPerPx: self.lastDrawnBpPerPx,
-          viewOffsetPx: view.offsetPx,
-          viewBpPerPx: view.bpPerPx,
+          viewOffsetPx: offsetPx,
+          viewBpPerPx: bpPerPx,
         })
       },
     }))
     .actions(self => ({
       /**
        * #action
+       * Record the viewport a just-committed fetch was issued at. Takes
+       * `captureViewport()`'s return value, so there is no pair of loose numbers
+       * a caller could fill from the live view instead.
        */
-      setLastDrawnViewport(offsetPx: number, bpPerPx: number) {
+      commitDrawnViewport({ offsetPx, bpPerPx }: DrawnViewport) {
         self.lastDrawnOffsetPx = offsetPx
         self.lastDrawnBpPerPx = bpPerPx
       },

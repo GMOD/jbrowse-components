@@ -143,6 +143,7 @@ export type {
   DisplayErrorBarModel,
   DisplayLoadingOverlayModel,
   DisplayStatusPhaseFoundation,
+  DrawnViewport,
   FetchContext,
   HeightMode,
   HeightModeMenuModel,

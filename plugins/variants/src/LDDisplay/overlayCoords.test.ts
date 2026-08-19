@@ -41,7 +41,7 @@ function loadedDisplay({ scrollTo = 0, data = {} } = {}) {
   view.scrollTo(scrollTo)
   const width = view.dynamicBlocks.totalWidthPxWithoutBorders
   display.setRpcData(ldData(4, width, data))
-  display.setLastDrawnViewport(view.offsetPx, view.bpPerPx)
+  display.commitDrawnViewport(display.captureViewport())
   return { display, view, width }
 }
 

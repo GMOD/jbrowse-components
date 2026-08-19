@@ -58,7 +58,7 @@ export function computeRenderTransform({
  * Freshness test for the single-global-RPC-result displays: true only when the
  * committed data was drawn at exactly the current viewport (same `offsetPx` +
  * `bpPerPx`). The fetch autorun refetches on any pan/zoom and records the
- * viewport via `setLastDrawnViewport` *after* committing, so throughout the
+ * viewport via `commitDrawnViewport` *after* committing, so throughout the
  * debounce+RPC window that follows a viewport change these disagree. `renderTransform`
  * exploits that gap to reposition stale pixels for the *live* canvas; off-screen
  * SVG export must not — it gates `dataCurrent`/`svgReady` on this so it never
