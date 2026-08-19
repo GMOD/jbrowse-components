@@ -1,5 +1,9 @@
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
+  SCROLL_ZOOM_HELP,
+  SCROLL_ZOOM_LABEL,
+} from '@jbrowse/core/ui/scrollZoomLabels'
+import {
   getSession,
   isSessionWithAddTracks,
   toLocale,
@@ -13,13 +17,13 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import LaunchIcon from '@mui/icons-material/Launch'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import MouseIcon from '@mui/icons-material/Mouse'
 import PaletteIcon from '@mui/icons-material/Palette'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 
 import {
   ExportSvgDialog,
@@ -50,15 +54,14 @@ function toLocaleRounded(n: number) {
  */
 export function scrollZoomMenuItem(self: LinearGenomeViewModel): MenuItem {
   return {
-    label: 'Scroll wheel zooms',
+    label: SCROLL_ZOOM_LABEL,
     type: 'checkbox',
     checked: self.scrollZoom,
-    icon: MouseIcon,
+    icon: ZoomInMapIcon,
     onClick: () => {
       self.setScrollZoom(!self.scrollZoom)
     },
-    helpText:
-      'When enabled, the mouse wheel zooms in and out over a view instead of scrolling the page, and shift+scroll scrolls the page. When disabled, ctrl+scroll (⌘+scroll on a Mac) still zooms. Applies to every view in the app.',
+    helpText: SCROLL_ZOOM_HELP,
   }
 }
 

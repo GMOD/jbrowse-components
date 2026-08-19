@@ -1,10 +1,10 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { HeaderSearchBoxRow } from '@jbrowse/plugin-linear-genome-view'
 import LinkIcon from '@mui/icons-material/Link'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import TuneIcon from '@mui/icons-material/Tune'
-import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -46,19 +46,7 @@ const Header = observer(function Header({
         >
           <MoreVertIcon />
         </CascadingMenuButton>
-        <Tooltip title="Scroll wheel zooms instead of scrolls">
-          <ToggleButton
-            value="scrollZoom"
-            selected={model.scrollZoom}
-            onChange={() => {
-              model.setScrollZoom(!model.scrollZoom)
-            }}
-            className={classes.toggleButton}
-            size="small"
-          >
-            <ZoomInMapIcon />
-          </ToggleButton>
-        </Tooltip>
+        <ScrollZoomToggle model={model} iconOnly />
         <Tooltip title="Link views (sync scroll/zoom across views)">
           <ToggleButton
             value="linkViews"

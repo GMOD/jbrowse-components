@@ -1,4 +1,4 @@
-import MouseIcon from '@mui/icons-material/Mouse'
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { Button, Fade, Paper, Typography } from '@mui/material'
 import { createPortal } from 'react-dom'
 
@@ -114,7 +114,9 @@ function ScrollZoomHint({
           onHeldChange(false)
         }}
       >
-        <MouseIcon fontSize="small" className={classes.icon} />
+        {/* the glyph on the header control this offers, so the card
+        points at where the setting lives once it has faded */}
+        <ZoomInMapIcon fontSize="small" className={classes.icon} />
         <Typography variant="body2">
           {ZOOM_MODIFIER} + scroll to zoom
         </Typography>

@@ -112,6 +112,8 @@
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
     "./ui/ScrollZoomHint": "./src/ui/ScrollZoomHint.tsx",
+    "./ui/ScrollZoomToggle": "./src/ui/ScrollZoomToggle.tsx",
+    "./ui/scrollZoomLabels": "./src/ui/scrollZoomLabels.ts",
     "./ui/ShareLinkField": "./src/ui/ShareLinkField.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
@@ -634,6 +636,14 @@
       "./ui/ScrollZoomHint": {
         "types": "./esm/ui/ScrollZoomHint.d.ts",
         "import": "./esm/ui/ScrollZoomHint.js"
+      },
+      "./ui/ScrollZoomToggle": {
+        "types": "./esm/ui/ScrollZoomToggle.d.ts",
+        "import": "./esm/ui/ScrollZoomToggle.js"
+      },
+      "./ui/scrollZoomLabels": {
+        "types": "./esm/ui/scrollZoomLabels.d.ts",
+        "import": "./esm/ui/scrollZoomLabels.js"
       },
       "./ui/ShareLinkField": {
         "types": "./esm/ui/ShareLinkField.d.ts",
@@ -1325,6 +1335,12 @@
         ],
         "ui/ScrollZoomHint": [
           "esm/ui/ScrollZoomHint.d.ts"
+        ],
+        "ui/ScrollZoomToggle": [
+          "esm/ui/ScrollZoomToggle.d.ts"
+        ],
+        "ui/scrollZoomLabels": [
+          "esm/ui/scrollZoomLabels.d.ts"
         ],
         "ui/ShareLinkField": [
           "esm/ui/ShareLinkField.d.ts"

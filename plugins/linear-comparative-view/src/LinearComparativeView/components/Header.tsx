@@ -1,9 +1,9 @@
+import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { HeaderSearchBoxRow } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
-import ScrollZoomToggle from './ScrollZoomToggle.tsx'
 import SyntenyHeaderControls from './SyntenyHeaderControls.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'
 import TrackSelectorMenuButton from './TrackSelectorMenuButton.tsx'
@@ -34,7 +34,7 @@ const Header = observer(function Header({
     <div className={classes.headerBar}>
       <TrackSelectorMenuButton model={model} />
       <ViewOptionsMenuButton model={model} prefs={prefs} />
-      <ScrollZoomToggle model={model} />
+      <ScrollZoomToggle model={model} iconOnly />
 
       {syntenyModel ? <SyntenyHeaderControls model={syntenyModel} /> : null}
 

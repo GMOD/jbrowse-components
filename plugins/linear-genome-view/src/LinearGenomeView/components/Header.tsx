@@ -1,6 +1,5 @@
+import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
-import { ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
@@ -24,10 +23,6 @@ const useStyles = makeStyles()({
   spacer: {
     flexGrow: 1,
   },
-  scrollZoomButton: {
-    border: 'none',
-    textTransform: 'none',
-  },
 })
 
 const Controls = observer(function Controls({
@@ -39,18 +34,7 @@ const Controls = observer(function Controls({
   return (
     <div className={classes.headerBar}>
       <HeaderTrackSelectorButton model={model} />
-      <ToggleButton
-        value="scrollZoom"
-        selected={model.scrollZoom}
-        title="Toggle scroll wheel zoom"
-        className={classes.scrollZoomButton}
-        size="small"
-        onChange={() => {
-          model.setScrollZoom(!model.scrollZoom)
-        }}
-      >
-        <ZoomInMapIcon />
-      </ToggleButton>
+      <ScrollZoomToggle model={model} />
       <div className={classes.spacer} />
       <HeaderPanControls model={model} />
       <SearchBox model={model} />

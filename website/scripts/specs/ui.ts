@@ -1227,11 +1227,10 @@ export const uiSpecs: ScreenshotSpec[] = [
         tailDx: 3,
       }),
       ...toolbarCallout({
-        selector: 'button[title="Toggle scroll wheel zoom"]',
-        text: 'Toggle scroll-zoom',
-        // this control is 38px from the one before it and its label is 150px
-        // wide, so the pill sits well right of it and the arrow is a long
-        // diagonal back — the one callout here that isn't short
+        // the control carries its own label now, so this callout names the
+        // gesture rather than repeating the button's words back at it
+        selector: 'button[value="scrollZoom"]',
+        text: 'Wheel zooms, not scrolls',
         pillDx: 125,
         tailDx: 144,
       }),
@@ -1283,14 +1282,14 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'circle',
         anchor: {
-          selector: 'button[title="Toggle scroll wheel zoom"]',
+          selector: 'button[value="scrollZoom"]',
         },
       },
       {
         type: 'text',
         text: 'Click to enable scroll-to-zoom',
         anchor: {
-          selector: 'button[title="Toggle scroll wheel zoom"]',
+          selector: 'button[value="scrollZoom"]',
         },
         dx: 70,
       },
