@@ -67,6 +67,7 @@ const MAFTooltip = observer(function ({
           p2.index,
           basePaintedAt(p2, p2.offset),
           view.bpPerPx,
+          p2.reversed,
         )
     return bin ? (
       <BaseTooltip clientPoint={clientPoint}>

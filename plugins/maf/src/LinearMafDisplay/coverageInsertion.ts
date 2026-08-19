@@ -1,5 +1,7 @@
 import {
+  SNP_TOOLTIP_SNAP_FLOOR,
   buildCoverageTooltipBin,
+  findSignificantInBin,
   insertionBarWidth,
 } from '@jbrowse/alignments-core'
 
@@ -108,4 +110,51 @@ export function coverageInsertionAt(
     }
   }
   return hit
+}
+
+/**
+ * Genomic position of the most significant SNP in the pixel under the cursor,
+ * or undefined at base-level zoom and where nothing in the pixel qualifies.
+ *
+ * Zoomed out a pixel spans many bp, so the exact cursor position rarely lands on
+ * the SNP coordinate; the tooltip reports the dominant event in the pixel
+ * instead (mirrors alignments' `hitTestCoverage`), and depth still falls back to
+ * the exact position when none qualifies.
+ *
+ * `basePos` is the base painted under the cursor (`basePaintedAt`), and
+ * `reversed` is the region's orientation, which decides which SIDE of it the
+ * pixel's other bp lie on: a forward region's pixel runs right from that base, a
+ * reversed one's runs left. Widening rightward either way searched the
+ * neighbouring pixel's bp on a flipped region and named a SNP the cursor was not
+ * over, silently, because a plausible SNP came back.
+ *
+ * The threshold is the shared floor, not a second literal `0.05` under a comment
+ * saying it mirrors alignments. This band has no allele-fraction setting to
+ * raise it with, so the floor is the whole threshold here — where alignments
+ * also passes its band's own floor per allele.
+ */
+export function coverageSnpSnap(
+  coverage: Pick<
+    MafCoverageRegion,
+    'mismatchPositions' | 'coverageDepths' | 'coverageStartPos'
+  >,
+  basePos: number,
+  bpPerPx: number,
+  reversed = false,
+) {
+  if (bpPerPx <= 1) {
+    return undefined
+  }
+  // Half-open [from, to) over the bp this pixel covers, anchored on the base
+  // under the cursor and extending away from it in the direction bp runs.
+  const width = Math.ceil(bpPerPx)
+  const from = reversed ? basePos - width + 1 : basePos
+  return findSignificantInBin(
+    coverage.mismatchPositions,
+    coverage.coverageDepths,
+    coverage.coverageStartPos,
+    from,
+    from + width,
+    SNP_TOOLTIP_SNAP_FLOOR,
+  )
 }

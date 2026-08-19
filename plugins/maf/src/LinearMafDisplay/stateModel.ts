@@ -1,9 +1,7 @@
 import {
-  SNP_TOOLTIP_SNAP_FLOOR,
   buildCoverageTooltipBin,
   computeCoverageTicks,
   computeVisibleCoverageStats,
-  findSignificantInBin,
 } from '@jbrowse/alignments-core'
 import {
   ConfigurationReference,
@@ -70,7 +68,7 @@ import {
 } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { findRowSpan } from './components/findRowSpan.ts'
-import { coverageInsertionAt } from './coverageInsertion.ts'
+import { coverageInsertionAt, coverageSnpSnap } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
@@ -1521,36 +1519,27 @@ export default function stateModelFactory(
          * alignments display uses. Insertions are reported separately via
          * `coverageInsertionHit`, so they never mix into the depth/SNP table.
          * Returns undefined when the region has no fetched data or depth is zero.
+         *
+         * `reversed` is the region's orientation, and the SNP snap below needs it
+         * for the reason alignments' `hitTestCoverage` does: the snap widens
+         * `position` into the bp the CURSOR'S PIXEL covers, and which side of
+         * `position` those bp lie on is what the orientation decides. `position`
+         * itself already comes through `basePaintedAt`, so it is the right base
+         * either way — widening rightward regardless searched the neighbouring
+         * pixel's bp on a flipped region, and reported a SNP the cursor was not
+         * over.
          */
         coverageTooltipBin(
           displayedRegionIndex: number,
           position: number,
           bpPerPx: number,
+          reversed = false,
         ) {
           const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
           if (!coverage) {
             return undefined
           }
-          // Zoomed out a pixel spans many bp, so the exact cursor position rarely
-          // lands on the SNP coordinate. Tooltip the most significant SNP in the
-          // pixel's bp range instead (mirrors alignments' `hitTestCoverage`);
-          // depth still falls back to the exact position when none qualifies.
-          //
-          // The threshold is the shared floor, not a second literal `0.05` under
-          // a comment saying it mirrors alignments. This band has no
-          // allele-fraction setting to raise it with, so the floor is the whole
-          // threshold here.
-          const snpPos =
-            bpPerPx > 1
-              ? findSignificantInBin(
-                  coverage.mismatchPositions,
-                  coverage.coverageDepths,
-                  coverage.coverageStartPos,
-                  position,
-                  position + Math.ceil(bpPerPx),
-                  SNP_TOOLTIP_SNAP_FLOOR,
-                )
-              : undefined
+          const snpPos = coverageSnpSnap(coverage, position, bpPerPx, reversed)
           const bin = buildCoverageTooltipBin(
             snpPos ?? position,
             {
