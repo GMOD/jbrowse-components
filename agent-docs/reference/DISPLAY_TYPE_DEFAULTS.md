@@ -755,9 +755,17 @@ renders nothing at all.
 Each `maybe*` editor has to say so in its own vocabulary, and the two that
 didn't both mis-reported an unset slot as a concrete value:
 
-- `StringEnumEditor` prepends an `<em>default</em>` choice for
-  `maybeStringEnum` — the model the others follow.
-- `NumberEditor` shows an empty field for an unset `maybeNumber`.
+- `StringEnumEditor` prepends an `<em>default (fixed)</em>` choice for
+  `maybeStringEnum` — the model the others follow. It names the `promotedBase`
+  member rather than saying a bare "default", because every other choice in that
+  list is a value the user can read off the plot and this was the only one that
+  said nothing about what picking it draws.
+- `NumberEditor` shows an empty field for an unset `maybeNumber` — right, since
+  a number field has a state for "nothing" where a checkbox does not — with
+  `promotedBase` as its **placeholder**, so a blank `featureHeight` still says
+  reads are 7px. A labelled MUI field draws no placeholder unless the label is
+  shrunk, hence the `slotProps.inputLabel` that `ConfigurationTextField` now
+  merges rather than replaces.
 - `BooleanEditor` coerced with `!!`, so every unset slot read *unchecked* — the
   opposite of the truth for the three whose base is `true`
   (`displayDirectionalChevrons`, `showSashimiArcs`, `readConnectionsDown`).

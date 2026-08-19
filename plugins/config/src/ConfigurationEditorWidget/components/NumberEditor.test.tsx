@@ -52,3 +52,48 @@ test('integer mode rejects non-integer input', () => {
   fireEvent.change(getByDisplayValue('1.5'), { target: { value: '100' } })
   expect(slot.set).toHaveBeenCalledWith(100)
 })
+
+// An unset `maybeNumber` is a promotable slot's inherit sentinel. The empty box
+// is right; saying nothing about what the track therefore draws at was not.
+test('an unset promotable slot states what unset resolves to', () => {
+  const slot = {
+    name: 'featureHeight',
+    value: undefined,
+    description: 'test',
+    promotedBase: 7,
+    set: jest.fn(),
+  }
+  const { container, getByLabelText } = render(<NumberEditor slot={slot} />)
+  expect(getByLabelText('featureHeight').getAttribute('placeholder')).toBe('7')
+  // MUI hides a placeholder behind an unshrunk label, so the field would show
+  // nothing without the shrink — which `ConfigurationTextField` used to drop by
+  // replacing the caller's whole `slotProps` bag rather than merging it
+  expect(container.querySelector('label')?.className).toMatch(
+    /MuiInputLabel-shrink/,
+  )
+})
+
+test('a customized promotable slot shows its own value, not the base', () => {
+  const slot = {
+    name: 'featureHeight',
+    value: 11,
+    description: 'test',
+    promotedBase: 7,
+    set: jest.fn(),
+  }
+  const { getByDisplayValue } = render(<NumberEditor slot={slot} />)
+  expect(getByDisplayValue('11').getAttribute('placeholder')).toBeNull()
+})
+
+test('a plain number slot gets no placeholder', () => {
+  const slot = {
+    name: 'coverageHeight',
+    value: undefined,
+    description: 'test',
+    set: jest.fn(),
+  }
+  const { getByLabelText } = render(<NumberEditor slot={slot} />)
+  expect(
+    getByLabelText('coverageHeight').getAttribute('placeholder'),
+  ).toBeNull()
+})

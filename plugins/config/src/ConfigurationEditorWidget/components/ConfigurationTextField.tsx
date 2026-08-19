@@ -8,13 +8,18 @@ import type { TextFieldProps } from '@mui/material'
 export default function ConfigurationTextField(
   props: { helperText?: string } & TextFieldProps,
 ) {
-  const { helperText } = props
+  const { helperText, slotProps, ...rest } = props
   return (
     <TextField
-      {...props}
+      {...rest}
       helperText={<SanitizedHTML html={helperText || ''} />}
       fullWidth
+      // merged, not replaced: this component owns `formHelperText` (the div
+      // above needs it) while a caller owns the rest, and setting the whole bag
+      // here dropped a caller's `inputLabel` silently — the shrink that lets a
+      // labelled field draw its placeholder
       slotProps={{
+        ...slotProps,
         formHelperText: {
           component: 'div',
         },

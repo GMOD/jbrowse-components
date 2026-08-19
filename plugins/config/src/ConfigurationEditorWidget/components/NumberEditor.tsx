@@ -13,6 +13,8 @@ const NumberEditor = observer(function NumberEditor({
     name?: string
     value: number | undefined
     description?: string
+    // what unset resolves to on a promotable slot, absent on a plain one
+    promotedBase?: unknown
     set: (val: number) => void
   }
   integer?: boolean
@@ -20,10 +22,22 @@ const NumberEditor = observer(function NumberEditor({
   const [val, setVal] = useState(
     slot.value === undefined ? '' : String(slot.value),
   )
+  // An unset `maybeNumber` is a promotable slot's inherit sentinel, and an
+  // empty box is the honest rendering of it — a number field, unlike a
+  // checkbox, has a state for "nothing". What it did not say is what the track
+  // is therefore drawing at, so `featureHeight` read as a blank with no clue
+  // that reads are 7px tall. The placeholder is that, in the affordance meant
+  // for it; the label has to float for MUI to draw one over a labelled field.
+  const placeholder =
+    slot.value === undefined && slot.promotedBase !== undefined
+      ? String(slot.promotedBase)
+      : undefined
   return (
     <ConfigurationTextField
       label={slot.name}
       helperText={slot.description}
+      placeholder={placeholder}
+      slotProps={placeholder ? { inputLabel: { shrink: true } } : undefined}
       value={val}
       onChange={evt => {
         const v = evt.target.value
