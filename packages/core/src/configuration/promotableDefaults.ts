@@ -30,7 +30,11 @@ import type {
   PromotedDefaultStore,
   ResolvableDisplay,
 } from './promotableResolve.ts'
-import type { AnyConfigurationModel } from './types.ts'
+import type {
+  AnyConfigurationModel,
+  ConfigurationSchemaForModel,
+  ConfigurationSlotName,
+} from './types.ts'
 
 /**
  * #api core/configuration
@@ -39,11 +43,16 @@ import type { AnyConfigurationModel } from './types.ts'
  * default" predicate for a promotable slot: comparing the resolved value to the
  * base instead reads as at-default for a track merely *following* a non-base
  * promoted default, so the reset control lights up on a no-op.
+ *
+ * `SLOT` is constrained the way `getConf`'s is. A pin or a reset over a slot
+ * name the schema does not declare is inert and silent — `resolveSlot` answers
+ * about nothing, so the control draws outline forever — and a widened `self`
+ * switches the check off (`HostChecksSlotNames`).
  */
-export function isSlotCustomized(
-  self: ResolvableDisplay,
-  slot: string,
-): boolean {
+export function isSlotCustomized<
+  CONFMODEL extends AnyConfigurationModel,
+  SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT): boolean {
   return resolveSlot(self, slot).customized
 }
 
@@ -334,9 +343,12 @@ function applyDefaultToggle(
  * one function plus a doc section explaining which name to reach for; omitting
  * the argument now says what the longer name said.
  */
-export function makePin(
-  self: ResolvableDisplay,
-  slot: string,
+export function makePin<
+  CONFMODEL extends AnyConfigurationModel,
+  SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(
+  self: ResolvableDisplay<CONFMODEL>,
+  slot: SLOT,
   ...value: [] | [unknown]
 ): Pin {
   // One walk of the cascade feeds both halves. The value-omitted form's

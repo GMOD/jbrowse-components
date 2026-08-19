@@ -8,6 +8,11 @@ import { INLINE_MENU_ROW_WIDTH } from './inlineMenuRowWidth.ts'
 
 import type { Pin } from '../configuration/promotableDefaults.ts'
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
+import type {
+  AnyConfigurationModel,
+  ConfigurationSchemaForModel,
+  ConfigurationSlotName,
+} from '../configuration/types.ts'
 import type { MenuItem } from './MenuTypes.ts'
 import type { SliderScale } from './sliderScale.ts'
 
@@ -89,8 +94,14 @@ export function makeSizeMenu(
 //
 // Naming the slot once is the point: the call sites used to spell it twice, in
 // `isDefault` and again in the pin, with nothing checking the two agreed.
-export function makePromotableSizeMenu(
-  opts: SizeMenuOptions & { display: ResolvableDisplay; slot: string },
+export function makePromotableSizeMenu<
+  CONFMODEL extends AnyConfigurationModel,
+  SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(
+  opts: SizeMenuOptions & {
+    display: ResolvableDisplay<CONFMODEL>
+    slot: SLOT
+  },
 ): MenuItem {
   const { display, slot } = opts
   return sizeMenu(

@@ -16,7 +16,10 @@ import {
 } from './WiggleScoreConfigMixin.ts'
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
-import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+import type {
+  ConfigModelForFields,
+  ResolvableDisplay,
+} from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 import type { ElementType } from 'react'
@@ -103,7 +106,11 @@ export function makeLineWidthMenuItems(
     renderingType: string
     lineWidth: number
     setLineWidth: (n?: number) => void
-  } & ResolvableDisplay,
+  } & ResolvableDisplay<
+    ConfigModelForFields<{
+      lineWidth: { type: 'maybeNumber'; promotedBase: number }
+    }>
+  >,
 ): MenuItem[] {
   return sizeSubMenu(
     isLineMode(self.renderingType),

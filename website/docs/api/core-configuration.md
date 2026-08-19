@@ -136,9 +136,14 @@ default" predicate for a promotable slot: comparing the resolved value to the
 base instead reads as at-default for a track merely _following_ a non-base
 promoted default, so the reset control lights up on a no-op.
 
+`SLOT` is constrained the way `getConf`'s is. A pin or a reset over a slot name
+the schema does not declare is inert and silent — `resolveSlot` answers about
+nothing, so the control draws outline forever — and a widened `self` switches
+the check off (`HostChecksSlotNames`).
+
 ```js
 // type signature
-(self: ResolvableDisplay, slot: string) => boolean
+<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT) => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -167,7 +172,7 @@ argument now says what the longer name said.
 
 ```js
 // type signature
-(self: ResolvableDisplay, slot: string, ...value: [] | [unknown]) => Pin
+<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...value: [] | [...]) => Pin
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
