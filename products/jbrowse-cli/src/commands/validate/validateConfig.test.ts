@@ -277,7 +277,7 @@ describe('validateConfig', () => {
     config.tracks[0]!.assemblyNames = ['volvox_del2']
     const [error] = errorsOf(config)
     expect(error?.where).toBe('tracks[0].assemblyNames')
-    expect(error?.message).toContain('one added at runtime still could')
+    expect(error?.message).toContain('a connection added at runtime can')
     expect(error?.message.indexOf('connection')).toBeLessThan(
       error!.message.indexOf('did you mean'),
     )

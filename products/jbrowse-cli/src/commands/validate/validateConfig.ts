@@ -227,22 +227,16 @@ function checkPluggable(
   obj: unknown,
   group: TypeGroup,
   groupLabel: string,
-  manifestWhere: string,
+  where: string,
   report: Report,
 ) {
   if (!isRecord(obj)) {
-    report.error(manifestWhere, `${groupLabel} must be an object`)
+    report.error(where, `${groupLabel} must be an object`)
     return
   }
-  const entry = resolveType(
-    obj,
-    group,
-    groupLabel,
-    `${manifestWhere}.type`,
-    report,
-  )
+  const entry = resolveType(obj, group, groupLabel, `${where}.type`, report)
   if (entry) {
-    checkSlots(obj, entry, manifestWhere, report)
+    checkSlots(obj, entry, where, report)
   }
 }
 
@@ -322,7 +316,7 @@ function checkTrack(
         // and `did you mean "volvox_del"?` called a working config a typo.
         report.error(
           `${where}.assemblyNames`,
-          `assembly "${name}" is not defined in this config and no connection here supplies one, though one added at runtime still could${didYouMean(name, [...ctx.assemblyNames])}`,
+          `assembly "${name}" is not defined in this config, and no connection here supplies one — though a connection added at runtime can${didYouMean(name, [...ctx.assemblyNames])}`,
         )
       }
     }
