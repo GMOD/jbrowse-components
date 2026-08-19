@@ -204,7 +204,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         async exchangeAuthorizationForAccessToken(
           code: string,
           redirectUri: string,
-          codeVerifier?: string,
+          // required, not optional: an omitted verifier is a silently
+          // PKCE-less exchange, and the caller running the flow is the only
+          // thing that knows whether this one used PKCE
+          codeVerifier: string | undefined,
         ) {
           return self.postTokenGrant(
             {
