@@ -1,13 +1,31 @@
 import { makePin, resolveConf, setConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+import type {
+  ConfigModelForFields,
+  ResolvableDisplay,
+} from '@jbrowse/core/configuration'
+
+// `showLegend` is restated here rather than moved into a shared field table
+// because the six composing schemas genuinely disagree about it: `promotedBase`
+// is off for a Hi-C color scale and on for a variant genotype key, and each
+// description describes a different legend (see the docstring below). Only the
+// *type* is common, and typing it is all the cast needs — `ConfigModelForFields`
+// has the why. The alternative, `ResolvableDisplay` alone, widens
+// `configuration` to `AnyConfigurationModel` and switches the slot-name check
+// off entirely.
+type LegendConfigModel = ConfigModelForFields<{
+  showLegend: { type: 'maybeBoolean'; promotedBase: boolean }
+}>
+
+/** The whole of what `LegendMixin` needs a composing display to be. */
+export type LegendHost = ResolvableDisplay<LegendConfigModel>
 
 // The mixin's own `self` is the model it declares, so it cannot see the
 // `configuration` the concrete display supplies — every display composing this
 // is a BaseDisplay, so it is really there. Same idiom, and the same reason, as
 // `HeightModeMixin`'s `confNode`.
-const confNode = (self: object) => self as ResolvableDisplay
+const confNode = (self: object) => self as LegendHost
 
 /**
  * #stateModel LegendMixin

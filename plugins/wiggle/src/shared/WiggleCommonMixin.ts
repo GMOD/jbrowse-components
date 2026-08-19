@@ -46,8 +46,10 @@ type WiggleCommonConfigModel = ConfigModelForFields<
   }
 >
 
-const confNode = (self: object) =>
-  self as ResolvableDisplay<WiggleCommonConfigModel>
+/** The whole of what `WiggleCommonMixin` needs a composing display to be. */
+export type WiggleCommonHost = ResolvableDisplay<WiggleCommonConfigModel>
+
+const confNode = (self: object) => self as WiggleCommonHost
 
 // The visible per-source feature arrays that feed autoscale, clipped to the
 // coarse (500ms debounced) blocks so the domain doesn't recompute on every

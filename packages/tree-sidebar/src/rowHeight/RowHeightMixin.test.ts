@@ -10,6 +10,7 @@ import { RowHeightMixin } from './RowHeightMixin.ts'
 import { rowHeightConfigSchemaFields } from './rowHeightConfigSchemaFields.ts'
 
 import type { RowHeightHost } from './RowHeightMixin.ts'
+import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 
 // The two rules `resolveRowHeight` carries pull in opposite directions — a
 // sub-pixel fit height passes through untouched, a non-positive one is floored
@@ -148,7 +149,11 @@ describe('what the mixin assumes of its host', () => {
   // The two runtime behaviours are why the compile-time check earns its place.
   // The write is loud and the read is not, so a typo'd read is a row height
   // silently stuck at its default with nothing to grep for.
+  // The type-level half, greppable across every mixin: `HostChecksSlotNames`
+  // resolves to `false` the moment the cast widens.
   it('checks the slot name against the host type the mixin casts to', () => {
+    const pin: HostChecksSlotNames<RowHeightHost> = true
+    expect(pin).toBe(true)
     const host = makeDisplay() as unknown as RowHeightHost
     expect(() => {
       // @ts-expect-error

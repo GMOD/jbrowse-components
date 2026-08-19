@@ -15,6 +15,7 @@ export type {
   ConfigurationSlotName,
   ConfigurationSlotValue,
   ConfigurationSnapshot,
+  HostChecksSlotNames,
 } from './types.ts'
 
 export { getConfigurationSchemaDefinition } from './schemaRegistry.ts'

@@ -4,6 +4,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 import HeightModeMixin from './HeightModeMixin.ts'
 import TrackHeightMixin from './TrackHeightMixin.tsx'
 
+import type { HeightModeHost } from './HeightModeMixin.ts'
+import type { TrackHeightHost } from './TrackHeightMixin.tsx'
+import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
+
 const configSchema = ConfigurationSchema('TestHeight', {
   height: { type: 'number', defaultValue: 100 },
 })
@@ -177,4 +181,15 @@ test('the wrong order reports itself at attach', () => {
   expect(takeDisplayContractReports().join('\n')).toContain(
     'must be composed AFTER TrackHeightMixin()',
   )
+})
+
+// One line per mixin, and the whole point of it: a host cast widened back to
+// `AnyConfigurationModel` — or written as the `ResolvableDisplay & { … }`
+// intersection, which re-widens — compiles and checks nothing, so every slot
+// name below it typechecks and a misspelled read reports nothing at any layer.
+// `HostChecksSlotNames` resolves to `false` there, and this annotation fails.
+const trackHeightPin: HostChecksSlotNames<TrackHeightHost> = true
+const heightModePin: HostChecksSlotNames<HeightModeHost> = true
+test('both height mixins check the slot names they read', () => {
+  expect([trackHeightPin, heightModePin]).toEqual([true, true])
 })

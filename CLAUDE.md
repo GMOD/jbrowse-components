@@ -5,6 +5,9 @@ Canvas2D). Worker output is **absolute genomic uint32**.
 
 Background: `agent-docs/` — `ARCHITECTURE.md`, then `reference/` and the ADRs.
 
+Rules live here only while nothing in the tree enforces them. Once a check
+exists, this file points at the check.
+
 ## Git
 
 Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
@@ -20,18 +23,9 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - Keep the main model chain in one file.
 - Write config with `setConf`, not `configuration.setSlot`. Promotable slots
   resolve only via `resolveConf`.
-- **A mixin's host cast names its own field table, not `AnyConfigurationModel`**
-  — `ConfigModelForFields<ReturnType<typeof xConfigSchemaFields>>`. The widened
-  form silently switches off `getConf`/`setConf`'s slot-name check, and a
-  misspelled _read_ has no diagnostic at any layer. All six mixin casts are
-  narrowed; a seventh reads two slots its table can't hold and says why.
-- **Needing the cascade too, write `ResolvableDisplay<XConfigModel>`** — never
-  `ResolvableDisplay & { configuration: XConfigModel }`. The intersection reads
-  identical and re-widens the slot names back to `string`, because
-  `ResolvableDisplay` declares `configuration: AnyConfigurationModel`. Two
-  mixins shipped that spelling and were checking nothing; the widened form has
-  no symptom, so only a sabotage finds it. Pinned in
-  `configTypeNarrowing.test.ts`.
+- **A mixin casting to reach its host names a concrete schema** — see
+  `HostChecksSlotNames`, which fails the build for the widened spellings and
+  says why.
 - A bare getter returns a resolved value, never `undefined` — a sentinel prop
   gets a distinct resolved getter (`effectiveRowHeight`).
 - In React, `autorun` inside `useEffect`, not `reaction`.
@@ -40,13 +34,11 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - **An `autorun` must do its own reads** — MST actions run untracked, and a
   direct observable write inside an autorun body silently fails.
 - **A NEW MST model exports `interface X extends Instance<…> {}`**, not a type
-  alias. ADR-055 decided against retrofitting the ~107 existing aliases, so one
-  in a file you are reading is not a finding — convert it when that model grows
-  a mutual reference, which is the case the alias form cannot compile.
+  alias. ADR-055 kept the ~107 existing aliases, so one you are reading is not a
+  finding.
 - Duck-typed `interface XSelf` extends `IStateTreeNode`, never
-  `IAnyStateTreeNode` (which is `any`). **Duck-type across a lazy boundary too**
-  — importing an MST model type across a lazy import is a circular-reference
-  trap.
+  `IAnyStateTreeNode` (which is `any`) — **across a lazy boundary too**, where
+  importing the model type is a circular-reference trap.
 - Write observers inline — `observer(function(){})`. The `observer(F)` form gets
   compiled by React Compiler and can stale a MobX read.
 
@@ -73,7 +65,7 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
   and **check its exit code** — a failed compile leaves the stale
   `.generated.ts` and tsc/jest pass off it.
 - `typescript` 6.x lints, `typescript7` typechecks.
-- Removals fail quietly on three plugin surfaces: `ReExports/modules.ts`, the
-  session, and the accumulating extension points, where the guard is a TYPE and
-  a prebuilt v4 bundle carries none — `reference/PLUGIN_ABI_STABILITY.md`.
+- Removals fail quietly on three plugin surfaces — `ReExports/modules.ts`, the
+  session, and the accumulating extension points:
+  `reference/PLUGIN_ABI_STABILITY.md`.
 - Deploy demos with `scripts/deploy-demo.sh`, never `aws s3 cp` (no versioning).

@@ -17,13 +17,13 @@ import {
 } from './regionTooLargeUtils.ts'
 
 import type { FetchContext } from '../BaseLinearDisplay/models/FetchMixin.ts'
+import type { BaseLinearDisplayConfigModel } from '../BaseLinearDisplay/models/configSchema.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 import type {
   ByteEstimate,
   GateFetchState,
   GateViewport,
 } from './regionTooLargeUtils.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // This ESM package builds without @types/node, but consuming bundlers still
@@ -90,15 +90,21 @@ export function reportRenamedHooks(self: IAnyStateTreeNode) {
 // that composes it has both (BaseDisplay via MultiRegionDisplayMixin, or the SVG
 // arc displays directly). Cast once so the config-slot defaults below read them
 // type-safely — the same pattern CanvasFeatureGateMixin uses.
+/** The whole of what `RegionTooLargeMixin` needs a composing display to be. */
+export interface RegionTooLargeHost {
+  // `baseLinearDisplayConfigSchema` rather than `AnyConfigurationModel`: the
+  // widened form switches off `getConf`'s slot-name check, and the two slots
+  // this mixin reads (`fetchSizeLimit`, `forceLoad`) are that schema's own
+  configuration: BaseLinearDisplayConfigModel
+  // A resolved snapshot (`getConf(track, 'adapter')`), not a config node —
+  // which is why `adapterFetchSizeLimit` below reads its slot off the track's
+  // live config instead. Typed as what it is, so `byteGateAdapterConfig` can
+  // be overridden with a sub-adapter snapshot without a cast.
+  adapterConfig: Record<string, unknown>
+}
+
 function host(self: object) {
-  return self as {
-    configuration: AnyConfigurationModel
-    // A resolved snapshot (`getConf(track, 'adapter')`), not a config node —
-    // which is why `adapterFetchSizeLimit` below reads its slot off the track's
-    // live config instead. Typed as what it is, so `byteGateAdapterConfig` can
-    // be overridden with a sub-adapter snapshot without a cast.
-    adapterConfig: Record<string, unknown>
-  }
+  return self as RegionTooLargeHost
 }
 
 /**

@@ -136,6 +136,7 @@ export {
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {
+  BaseLinearDisplayConfigModel,
   DisplayBackgroundProgressModel,
   DisplayChromeOverlays,
   DisplayErrorBarModel,

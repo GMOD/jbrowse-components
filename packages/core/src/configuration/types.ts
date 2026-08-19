@@ -305,6 +305,30 @@ export type ConfigModelForFields<
   ConfigurationSchemaType<FIELDS, ConfigurationSchemaOptions<BASE, undefined>>
 >
 
+/**
+ * `true` when HOST's `configuration` still narrows slot names, `false` when it
+ * has widened them back to `string`. One line per mixin pins it:
+ *
+ * ```ts
+ * const pin: HostChecksSlotNames<HeightModeHost> = true
+ * ```
+ *
+ * Worth a named type because the widened form has **no symptom** — a mixin host
+ * cast to `AnyConfigurationModel`, or to the `ResolvableDisplay & { … }`
+ * intersection that re-widens, compiles and runs and checks nothing. Every
+ * misspelled slot name below it typechecks, and a misspelled *read* returns
+ * `undefined` with no diagnostic at any layer, so only a sabotage or this
+ * assertion tells the two apart.
+ */
+export type HostChecksSlotNames<
+  HOST extends { configuration: AnyConfigurationModel },
+> =
+  string extends ConfigurationSlotName<
+    ConfigurationSchemaForModel<HOST['configuration']>
+  >
+    ? false
+    : true
+
 /** a plain-object snapshot of a configuration model (not a live MST node) */
 export type AnyConfigurationSnapshot = SnapshotOut<AnyConfigurationModel>
 

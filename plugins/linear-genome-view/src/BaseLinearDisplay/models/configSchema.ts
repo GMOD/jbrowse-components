@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BaseLinearDisplay
  * #category display
@@ -105,3 +107,15 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
 )
 
 export default baseLinearDisplayConfigSchema
+
+/**
+ * What a mixin reading a base slot asks a composing display's `configuration`
+ * to be. Narrow on purpose: `getConf`/`setConf` check a slot name against the
+ * schema of the model handed to them, so a mixin reaching its host through
+ * `AnyConfigurationModel` gets no check and every name typechecks. See
+ * `ConfigModelForFields`, whose `BASE` parameter is the same idea for a mixin
+ * that owns a field table as well.
+ */
+export type BaseLinearDisplayConfigModel = Instance<
+  typeof baseLinearDisplayConfigSchema
+>

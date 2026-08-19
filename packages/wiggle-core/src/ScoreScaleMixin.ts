@@ -13,10 +13,9 @@ export interface ScoreScaleHost {
 }
 
 // The mixin composes onto a display that declares this, not the other way
-// round, so its own `self` isn't typed with it. Cast once — the same idiom
-// `TrackHeightMixin` and `WiggleScoreConfigMixin` use — and narrowed to the
-// field table beside it rather than `AnyConfigurationModel`, which is what
-// keeps the slot names below checked.
+// round, so its own `self` isn't typed with it. Cast once, narrowed to the
+// field table beside it rather than `AnyConfigurationModel`, which is what keeps
+// the slot names below checked.
 const confNode = (self: object) => self as ScoreScaleHost
 
 /**

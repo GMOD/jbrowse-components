@@ -9,6 +9,8 @@ import type {
   PerRegionTestDisplay,
 } from '../BaseLinearDisplay/models/perRegionTestEnv.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
+import type { RegionTooLargeHost } from './RegionTooLargeMixin.ts'
+import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 
 // The mixin's own tests. `regionTooLargeUtils.test.ts` covers the comparison
 // half — which axis is over budget, given numbers. This covers the half that
@@ -372,4 +374,14 @@ describe('an ungated display evaluates nothing below the opt-in', () => {
     expect(display.regionTooLargeReason).toBe('')
     expect(display.resolvedByteLimit()).toBeUndefined()
   })
+})
+
+// One line per mixin, and the whole point of it: a host cast widened back to
+// `AnyConfigurationModel` — or written as the `ResolvableDisplay & { … }`
+// intersection, which re-widens — compiles and checks nothing, so every slot
+// name below it typechecks and a misspelled read reports nothing at any layer.
+// `HostChecksSlotNames` resolves to `false` there, and this annotation fails.
+const regionTooLargePin: HostChecksSlotNames<RegionTooLargeHost> = true
+test('the mixin checks the slot names it reads', () => {
+  expect(regionTooLargePin).toBe(true)
 })

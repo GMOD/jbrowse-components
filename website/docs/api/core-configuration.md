@@ -282,7 +282,8 @@ the slot keeps reading as its default forever. Which makes the compile-time
 constraint worth keeping _reachable_: it is only as good as the schema of the
 holder handed in, and a holder widened to `AnyConfigurationModel` switches it
 off entirely — the trap a mixin casting to reach its host walks into. Every such
-cast here names its own field table instead (`ConfigModelForFields`).
+cast names a concrete schema instead (`ConfigModelForFields`, or the base schema
+when the slot is the base's), and `HostChecksSlotNames` pins each one.
 
 A wrong _value_ type still throws at runtime (MST type-checks the assignment)
 rather than at compile time. `value` is deliberately `unknown` because the

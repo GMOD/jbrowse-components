@@ -4,6 +4,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import LegendMixin from './LegendMixin.ts'
 
+import type { LegendHost } from './LegendMixin.ts'
+import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
+
 // The six displays composing this had, between them, tests that would notice a
 // wrong `showLegend` on two — alignments and the multi-sample variants. Hi-C,
 // multi-row features, multi-wiggle and LD had none, so the getter could have
@@ -143,4 +146,14 @@ describe.each([true, false])('with promotedBase %p', promotedBase => {
     ).toBe(!promotedBase)
     expect(display.showLegendDisplayTypeDefault.active).toBe(true)
   })
+})
+
+// One line per mixin, and the whole point of it: a host cast widened back to
+// `AnyConfigurationModel` — or written as the `ResolvableDisplay & { … }`
+// intersection, which re-widens — compiles and checks nothing, so every slot
+// name below it typechecks and a misspelled read reports nothing at any layer.
+// `HostChecksSlotNames` resolves to `false` there, and this annotation fails.
+const legendPin: HostChecksSlotNames<LegendHost> = true
+test('the mixin checks the slot name it reads', () => {
+  expect(legendPin).toBe(true)
 })

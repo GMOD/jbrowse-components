@@ -9,6 +9,7 @@ import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
+import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 
 interface Src {
   name: string
@@ -211,7 +212,12 @@ describe('the tree toggles', () => {
 // casts to. Widen the host back to `AnyConfigurationModel` and the three toggle
 // names above stop being checked, with a misspelled read reporting nothing at
 // any layer.
+// The type-level half, greppable across every mixin: `HostChecksSlotNames`
+// resolves to `false` the moment the cast widens.
+const treeSidebarPin: HostChecksSlotNames<TreeSidebarHost> = true
+
 test('the host type checks the slot names the mixin reads through it', () => {
+  expect(treeSidebarPin).toBe(true)
   const host = {} as TreeSidebarHost
   const read = () => {
     // @ts-expect-error

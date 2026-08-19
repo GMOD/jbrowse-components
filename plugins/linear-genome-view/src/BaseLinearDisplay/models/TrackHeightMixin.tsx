@@ -5,7 +5,18 @@ import { autorun } from 'mobx'
 
 import { MIN_DISPLAY_HEIGHT } from './const.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseLinearDisplayConfigModel } from './configSchema.ts'
+
+// What this mixin needs a composing display to be: `height` is
+// `baseLinearDisplayConfigSchema`'s slot, so the base schema is the whole
+// contract. Not a `TConf extends { configuration: AnyConfigurationModel }` type
+// parameter — a generic body is checked against the constraint, so however
+// narrow the default is, `getConf(self, 'heigth')` still compiles.
+export interface TrackHeightHost {
+  configuration: BaseLinearDisplayConfigModel
+}
+
+const confNode = (self: object) => self as TrackHeightHost
 
 /**
  * #stateModel TrackHeightMixin
@@ -28,11 +39,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  * self-correct" paragraph; a display now opts into all of it by overriding one
  * getter.
  */
-export default function TrackHeightMixin<
-  TConf extends { configuration: AnyConfigurationModel } = {
-    configuration: AnyConfigurationModel
-  },
->() {
+export default function TrackHeightMixin() {
   return types
     .model({})
     .volatile(() => ({
@@ -56,7 +63,7 @@ export default function TrackHeightMixin<
     }))
     .views(self => ({
       get height() {
-        return getConf(self as unknown as TConf, 'height') as number
+        return getConf(confNode(self), 'height')
       },
       /**
        * #getter
@@ -119,7 +126,7 @@ export default function TrackHeightMixin<
        */
       setHeight(displayHeight: number) {
         const height = Math.max(displayHeight, MIN_DISPLAY_HEIGHT)
-        setConf(self as unknown as TConf, 'height', height)
+        setConf(confNode(self), 'height', height)
         return height
       },
       /**
@@ -128,7 +135,7 @@ export default function TrackHeightMixin<
       resizeHeight(distance: number) {
         const oldHeight = self.height
         const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
-        setConf(self as unknown as TConf, 'height', newHeight)
+        setConf(confNode(self), 'height', newHeight)
         return newHeight - oldHeight
       },
     }))

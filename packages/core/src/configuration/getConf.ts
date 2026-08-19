@@ -130,8 +130,9 @@ export function resolveConf<
  * compile-time constraint worth keeping *reachable*: it is only as good as the
  * schema of the holder handed in, and a holder widened to
  * `AnyConfigurationModel` switches it off entirely — the trap a mixin casting
- * to reach its host walks into. Every such cast here names its own field table
- * instead (`ConfigModelForFields`).
+ * to reach its host walks into. Every such cast names a concrete schema instead
+ * (`ConfigModelForFields`, or the base schema when the slot is the base's), and
+ * `HostChecksSlotNames` pins each one.
  *
  * A wrong *value* type still throws at runtime (MST type-checks the assignment)
  * rather than at compile time. `value` is deliberately `unknown` because the

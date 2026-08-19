@@ -8,8 +8,8 @@ import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { screenDensity } from './regionDensity.ts'
 
 import type { RegionDensityStats } from './regionDensity.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
+  BaseLinearDisplayConfigModel,
   GateFetchState,
   GateViewport,
   LinearGenomeViewModel,
@@ -28,8 +28,10 @@ declare const process: { env: { NODE_ENV?: string } }
  * every getter — the runtime instance has them because the final model also
  * composes `MultiRegionDisplayMixin`, which brings `RegionTooLargeMixin`.
  */
-interface GateHost {
-  configuration: AnyConfigurationModel
+export interface GateHost {
+  // Narrow, not `AnyConfigurationModel`, so `maxFeatureScreenDensity` below
+  // keeps its slot-name check — the widened form switches it off silently
+  configuration: BaseLinearDisplayConfigModel
   gateActive: boolean
   densityGateActive: boolean
   setByteEstimate: (measurement: {
