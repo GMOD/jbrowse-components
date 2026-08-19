@@ -751,6 +751,28 @@ export default defineConfig(
       ],
     },
   },
+  // The one file that has to reach another package's src: it pins the app's
+  // format guesser to the CLI's, and @jbrowse/cli publishes a binary rather
+  // than an importable entry point, so there is no public API to compare
+  // against. The useEffectEvent path stays on.
+  {
+    files: ['products/jbrowse-web/src/addTrackFormats.test.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react',
+              importNames: ['useEffectEvent'],
+              message:
+                'useEffectEvent reads stale state inside mobx-react observer() components. Use useEventCallback from @jbrowse/core/util/useEventCallback instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
   // The frontmatter of .astro files needs the TS parser to read TypeScript
   // (interface/`!`/etc.); the astro recommended preset doesn't set this, so
   // frontmatter would otherwise parse as plain JS. Must come last so it wins.
