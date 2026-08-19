@@ -106,6 +106,19 @@ element out of the instance format.
 **3. Label it.** Needs text, which the instance renderer has none of, so this is
 the overlay path whatever stage 2 chose. Probably only at low instance counts.
 
+## Behind a toggle, decided
+
+Colin, 2026-08-19: pursue this, with a switch to turn it on. Which settles the
+question stage 2 would otherwise have raised at review — whether a whole second
+class of element appearing in every synteny view is a change everyone wants —
+without settling it the expensive way, and it gives stage 1's count somewhere
+obvious to lead: a number that says how much is being hidden is also the control
+that shows it.
+
+Default off is not implied by that and is not obvious. 73% of peach chr1's
+anchors on a demo we ship argues the other way, and a feature nobody finds
+reports nothing.
+
 ## What has to be decided before stage 2
 
 - **Which axis owns a stub.** Class A stubs hang off v1. If class B ever lands,
