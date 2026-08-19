@@ -5,6 +5,7 @@ import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,
+  ScoreRules,
   YSCALEBAR_LABEL_OFFSET,
   YScaleBarOverlay,
   axisPlotBox,
@@ -16,7 +17,6 @@ import { findManhattanHit } from '../findManhattanHit.ts'
 import HoverHighlight from './HoverHighlight.tsx'
 import LdColorLegend from './LdColorLegend.tsx'
 import LdIndexWarning from './LdIndexWarning.tsx'
-import SignificanceLine from './SignificanceLine.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanHit } from '../findManhattanHit.ts'
@@ -135,7 +135,7 @@ const ManhattanBody = observer(function ManhattanBody({
     hoveredFeature,
     showCrossHatches,
     ldColoringActive,
-    significanceLineY,
+    scoreRuleMarks,
   } = model
   const ldMode = ldColoringActive && model.canvasDrawn && model.showLdLegend
   const plotBox = axisPlotBox(height)
@@ -161,9 +161,9 @@ const ManhattanBody = observer(function ManhattanBody({
       {showCrossHatches && ticks ? (
         <CrossHatches ticks={ticks} width={width} height={height} />
       ) : null}
-      {significanceLineY === undefined ? null : (
-        <SignificanceLine y={significanceLineY} width={width} height={height} />
-      )}
+      {scoreRuleMarks.length > 0 ? (
+        <ScoreRules marks={scoreRuleMarks} width={width} height={height} />
+      ) : null}
       {hoveredFeature ? (
         <HoverHighlight
           screenX={hoveredFeature.screenX}

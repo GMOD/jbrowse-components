@@ -5,10 +5,13 @@ import {
   svgLegendRightPx,
   svgScalebarLeftPx,
 } from '@jbrowse/plugin-wiggle'
-import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
+import {
+  ScoreRuleLines,
+  YSCALEBAR_LABEL_OFFSET,
+  YScaleBar,
+} from '@jbrowse/wiggle-core'
 
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
-import { SignificanceLineMark } from './components/SignificanceLine.tsx'
 import SvgLdLegend from './components/SvgLdLegend.tsx'
 
 import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
@@ -51,14 +54,11 @@ function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       }}
       // Over the plot rather than inside `paint`: the threshold is an
       // annotation on the axis, so it comes off the model's own
-      // significanceLineY, which is the same number the screen overlay draws.
+      // scoreRuleMarks, the same marks the screen overlay draws.
       overlay={
-        model.significanceLineY === undefined ? null : (
-          <SignificanceLineMark
-            y={model.significanceLineY}
-            width={canvasWidth}
-          />
-        )
+        model.scoreRuleMarks.length > 0 ? (
+          <ScoreRuleLines marks={model.scoreRuleMarks} width={canvasWidth} />
+        ) : null
       }
       // left y-axis (Manhattan is always linear, never density) plus the r² key
       // when LD coloring is active

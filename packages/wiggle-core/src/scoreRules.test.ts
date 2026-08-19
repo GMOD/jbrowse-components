@@ -53,6 +53,24 @@ describe('scoreRuleMarks', () => {
     expect(mark!.label).toBe('2 copies')
   })
 
+  // Carried over from GWAS's significanceLine, which this replaced: the ends of
+  // the domain have to reach the ends of the plot box, and the bottom one is
+  // clamped a stroke inside the axis the same way a tick is, so a rule at the
+  // domain minimum cannot render half outside the plot.
+  test('puts the domain ends at the plot box ends', () => {
+    const box = axisPlotBox(height)
+    const at = (value: number) =>
+      scoreRuleMarks({
+        rules: [{ value }],
+        domain,
+        box,
+        normalize: linear(0, 60),
+      })[0]!.y
+    expect(at(60)).toBeCloseTo(box.yTop, 6)
+    expect(at(0)).toBeLessThanOrEqual(box.yBottom)
+    expect(at(0)).toBeGreaterThan(box.yBottom - 2)
+  })
+
   test('drops rules outside the domain rather than pinning them to an edge', () => {
     const marks = scoreRuleMarks({
       rules: [{ value: -5 }, { value: 30 }, { value: 500 }],

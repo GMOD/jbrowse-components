@@ -25,20 +25,22 @@ import {
   regionDataMap,
 } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
+  SCALE_TYPE_LINEAR,
   axisPlotBox,
   computeYTicks,
   getNiceDomain,
   makeCrossHatchItem,
   makeScatterPointSizeMenuItem,
+  makeScoreNormalizer,
   makeScoreSubMenu,
   resolveRenderState,
+  scoreRuleMarks,
 } from '@jbrowse/wiggle-core'
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun } from 'mobx'
 
-import { significanceLineY } from './components/significanceLineY.ts'
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -61,6 +63,11 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
 const SetSignificanceLineDialog = lazy(
   () => import('./components/SetSignificanceLineDialog.tsx'),
 )
+
+// Red, where a configured wiggle rule defaults to grey: this one is a
+// significance threshold rather than a reference level the reader chose, and it
+// is the only rule this display draws.
+const SIGNIFICANCE_LINE_COLOR = 'rgb(200,60,60)'
 
 /**
  * #stateModel LinearManhattanDisplay
@@ -275,18 +282,29 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * screen y of the `significanceLine` score, or undefined when the slot
-         * is unset or the score falls outside the loaded regions' domain. Both
-         * the on-screen overlay and the SVG export take the line from here, so
-         * an exported figure cannot draw it at a different height than the
-         * screen did.
+         * The threshold as a score rule, or `[]` when the slot is unset or the
+         * score falls outside the loaded regions' domain. Both the on-screen
+         * overlay and the SVG export take the line from here, so an exported
+         * figure cannot draw it at a different height than the screen did.
+         *
+         * A one-element read of the same `scoreRuleMarks` the wiggle displays
+         * place their configured rules with: this display's threshold is a rule
+         * at a chosen score, which is what that helper is. Manhattan pins its
+         * axis linear (see `domain`), so the normalizer is the linear one.
          */
-        get significanceLineY() {
-          return significanceLineY(
-            this.significanceLine,
-            self.domain,
-            self.height,
-          )
+        get scoreRuleMarks() {
+          const line = this.significanceLine
+          const domain = self.domain
+          if (line === undefined || !domain) {
+            return []
+          }
+          const [min, max] = domain
+          return scoreRuleMarks({
+            rules: [{ value: line, color: SIGNIFICANCE_LINE_COLOR }],
+            domain,
+            box: axisPlotBox(self.height),
+            normalize: makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR),
+          })
         },
         /**
          * #method

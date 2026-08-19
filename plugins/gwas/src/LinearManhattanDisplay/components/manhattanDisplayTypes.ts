@@ -8,6 +8,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { ScoreRuleMark } from '@jbrowse/wiggle-core'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled because
@@ -32,7 +33,8 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   indexSnpMissing: boolean
   indexSnpOffscreen: boolean
   showLdLegend: boolean
-  significanceLineY: number | undefined
+  // the significance threshold as a score rule, [] when unset or off-domain
+  scoreRuleMarks: ScoreRuleMark[]
   setHoveredFeature: (hit: ManhattanHit | undefined) => void
   selectFeature: (hit: ManhattanHit) => void
   contextMenuItems: (hit: ManhattanHit) => MenuItem[]
