@@ -110,7 +110,7 @@ function checkDisplayDefaultKeys(
       unknown
         .map(key => {
           const hit = suggest(key, accepted)
-          return `no display of a ${trackType} declares "${key}"${hit ? `, did you mean "${hit}"?` : ''}`
+          return `no ${trackType} display declares "${key}"${hit ? `, did you mean "${hit}"?` : ''}`
         })
         .join('\n'),
     )
