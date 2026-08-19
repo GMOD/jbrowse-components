@@ -74,6 +74,14 @@ describe('mafPointerAt', () => {
     expect(mafPointerAt(model, 0, 55).rowIndex).toBe(1)
   })
 
+  // sub-pixel rows are where the half-pixel matters: pixel 45 shows whichever
+  // row covers 45.5, and measuring from 45.0 named the row above it
+  test('a sub-pixel row height resolves the row the pixel was painted from', () => {
+    const model = makeModel({ effectiveRowHeight: 0.1 })
+    expect(mafPointerAt(model, 0, 45).rowIndex).toBe(5)
+    expect(mafPointerAt(model, 0, 46).rowIndex).toBe(15)
+  })
+
   test('scrollTop shifts the rows under the cursor', () => {
     const model = makeModel({ scrollTop: 20 })
     expect(mafPointerAt(model, 0, 45).rowIndex).toBe(2)

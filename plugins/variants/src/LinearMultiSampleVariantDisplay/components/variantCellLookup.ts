@@ -92,14 +92,23 @@ export function findCellIndex(
  * one row and the band collapses; only sub-pixel rows stack several under one
  * drawn pixel.
  *
- * `nearest` is the row whose own band contains the cursor, which is also the
- * last one painted there, so preferring it makes the pick both cursor-anchored
- * and consistent with what is visibly on top. Walking down to `lowest` keeps
- * sub-pixel rows hoverable when the nearest row happens to have no cell.
+ * **The band is resolved at the centre of the pixel the cursor is in, not at
+ * `contentY` itself.** Rasterization fills a pixel when its centre falls inside
+ * the rect, so the centre is where the colours the user is picking from were
+ * decided; asking at the pixel's top edge answers about a scanline nothing was
+ * sampled on, and misses by `0.5 / rowHeight` rows — three of them at the
+ * default fit height with 2,504 samples.
+ *
+ * `nearest` is the row whose own band contains that sample point, which is also
+ * the last one painted there, so preferring it makes the pick both
+ * cursor-anchored and consistent with what is visibly on top. Walking down to
+ * `lowest` keeps sub-pixel rows hoverable when the nearest row happens to have
+ * no cell.
  */
 export function rowsUnderCursor(contentY: number, rowHeight: number) {
   const drawnHeight = drawnCellHeightPx(rowHeight)
-  const nearest = Math.floor(contentY / rowHeight)
-  const lowest = Math.floor((contentY - drawnHeight) / rowHeight) + 1
+  const sampleY = Math.floor(contentY) + 0.5
+  const nearest = Math.floor(sampleY / rowHeight)
+  const lowest = Math.floor((sampleY - drawnHeight) / rowHeight) + 1
   return { nearest, lowest: Math.max(lowest, 0) }
 }

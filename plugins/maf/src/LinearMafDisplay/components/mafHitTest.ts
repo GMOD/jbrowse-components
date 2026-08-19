@@ -56,7 +56,12 @@ export function mafPointerAt(
     // The base *painted* at this pixel, which on a reversed region is not the
     // floor of `gposFrac` — see `HoverBp`.
     baseBp: basePaintedAt(pos, pos.offset),
-    rowIndex: Math.floor(rowAtY(model, mouseY)),
+    // At the centre of the pixel the cursor is in, for the same reason baseBp
+    // is the base *painted* there: rasterization fills a pixel from its centre,
+    // so that is where the row the reader is pointing at was decided. Asking at
+    // the pixel's top edge misses by `0.5 / effectiveRowHeight` rows, which is
+    // nothing at a 10px row and several once the rows go sub-pixel.
+    rowIndex: Math.floor(rowAtY(model, Math.floor(mouseY) + 0.5)),
     inBands: mouseY < model.rowsTopOffset,
   }
 }

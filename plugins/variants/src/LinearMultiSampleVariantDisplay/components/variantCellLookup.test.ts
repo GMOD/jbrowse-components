@@ -87,12 +87,14 @@ describe('rowsUnderCursor', () => {
   })
 
   test('sub-pixel rows stack a band under one drawn pixel', () => {
-    // rowHeight 0.5 draws at the 2px floor, so rows 47..50 all cover Y 25.
-    expect(rowsUnderCursor(25, 0.5)).toEqual({ nearest: 50, lowest: 47 })
+    // rowHeight 0.5 draws at the 2px floor, so a row r covers [0.5r, 0.5r + 2).
+    // Pixel 25 was filled from its centre, 25.5, which rows 48..51 cover —
+    // answering at 25.0 named 47..50 and picked the row below the drawn one.
+    expect(rowsUnderCursor(25, 0.5)).toEqual({ nearest: 51, lowest: 48 })
   })
 
   test('the band never runs off the top of the content', () => {
-    expect(rowsUnderCursor(1, 0.5)).toEqual({ nearest: 2, lowest: 0 })
-    expect(rowsUnderCursor(0, 0.5)).toEqual({ nearest: 0, lowest: 0 })
+    expect(rowsUnderCursor(1, 0.5)).toEqual({ nearest: 3, lowest: 0 })
+    expect(rowsUnderCursor(0, 0.5)).toEqual({ nearest: 1, lowest: 0 })
   })
 })
