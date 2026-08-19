@@ -134,10 +134,10 @@ export function comparativeSurfacePhase(
   if (displays.length === 0) {
     return surface.initPending ? 'loading' : 'ready'
   }
-  const phases = displays.map(d => comparativeDisplayPhase(d, surface))
-  return phases.includes('error')
+  const phases = new Set(displays.map(d => comparativeDisplayPhase(d, surface)))
+  return phases.has('error')
     ? 'error'
-    : phases.includes('loading')
+    : phases.has('loading')
       ? 'loading'
       : 'ready'
 }

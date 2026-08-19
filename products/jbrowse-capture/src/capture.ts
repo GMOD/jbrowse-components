@@ -305,12 +305,12 @@ function unsettledMessage(
   pending: PendingDisplay[],
 ) {
   return (
-    `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ` +
-    (pending.length > 0
-      ? `Still unpainted: ${describePendingDisplays(pending)}. `
-      : '') +
-    'Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ' +
-    'capture the frame as it stands.'
+    `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ${
+      pending.length > 0
+        ? `Still unpainted: ${describePendingDisplays(pending)}. `
+        : ''
+    }Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ` +
+    `capture the frame as it stands.`
   )
 }
 

@@ -46,7 +46,7 @@ await new Promise(r => setTimeout(r, 3000))
 const kinds = await page.evaluate(() => {
   const out: string[] = []
   document.querySelectorAll('canvas').forEach((c, i) => {
-    c.setAttribute('data-probe', String(i))
+    c.dataset.probe = String(i)
     let isGl = false
     try {
       isGl = !!c.getContext('webgl2')

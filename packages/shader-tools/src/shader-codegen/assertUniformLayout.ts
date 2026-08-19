@@ -340,11 +340,11 @@ const signatureOf = (b: SharedUniformBlock) =>
     `${b.totalBytes} bytes`,
     ...b.fields.map(
       f =>
-        `${f.name}@${f.offsetBytes}` +
-        (f.elementCount === undefined
-          ? ''
-          : `[${f.elementCount}x${f.strideBytes}]`) +
-        (f.view === undefined ? '' : `:${f.view}`),
+        `${f.name}@${f.offsetBytes}${
+          f.elementCount === undefined
+            ? ''
+            : `[${f.elementCount}x${f.strideBytes}]`
+        }${f.view === undefined ? '' : `:${f.view}`}`,
     ),
   ].join(' ')
 
@@ -356,11 +356,11 @@ function firstDisagreement(a: SharedUniformBlock, b: SharedUniformBlock) {
     const describe = (f?: SharedUniformBlock['fields'][number]) =>
       f === undefined
         ? 'absent'
-        : `byte ${f.offsetBytes}` +
-          (f.elementCount === undefined
-            ? ''
-            : `, ${f.elementCount} elements striding ${f.strideBytes}`) +
-          (f.view === undefined ? '' : `, ${f.view}`)
+        : `byte ${f.offsetBytes}${
+            f.elementCount === undefined
+              ? ''
+              : `, ${f.elementCount} elements striding ${f.strideBytes}`
+          }${f.view === undefined ? '' : `, ${f.view}`}`
     if (describe(x) !== describe(y)) {
       return `field '${name}' is ${describe(x)} in ${a.shader} and ${describe(y)} in ${b.shader}`
     }

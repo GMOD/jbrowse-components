@@ -7,8 +7,7 @@ import { makeDensityRgbStringFn } from './getDensityColor.ts'
 
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { WiggleScaleType } from '@jbrowse/wiggle-core'
-import type { SourceRenderData } from '@jbrowse/wiggle-core'
+import type { WiggleScaleType, SourceRenderData } from '@jbrowse/wiggle-core'
 
 // One source's features painted into one block's row. Shared by every render
 // mode; each mode adds its own color/size fields (see the per-fn args below).

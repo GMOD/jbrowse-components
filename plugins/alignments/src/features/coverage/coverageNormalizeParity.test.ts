@@ -2,14 +2,13 @@ import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
-  resolveSymlogConstant,
+  resolveSymlogConstant, makeScoreNormalizer 
 } from '@jbrowse/wiggle-core'
 
 import {
   computeCoverageTicks,
   coverageDepthDomain,
 } from '@jbrowse/alignments-core'
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { normalizeDepthScalar } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { makeCoverageScale } from './coverageScale.ts'

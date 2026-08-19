@@ -62,9 +62,8 @@ Key technologies include:
 
 SVG export calls the same draw function the screen does, so a Canvas2D path is a
 requirement and none of those libraries has one.
-[](/docs/developer_guides/why_not_x) covers
-each candidate, and why the hot loops are TypeScript while the decompression
-kernel is Rust.
+[](/docs/developer_guides/why_not_x) covers each candidate, and why the hot
+loops are TypeScript while the decompression kernel is Rust.
 
 ### How do I write a plugin
 

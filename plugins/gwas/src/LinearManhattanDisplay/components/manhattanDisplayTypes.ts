@@ -8,8 +8,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { ScoreRuleMark } from '@jbrowse/wiggle-core'
-import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
+import type { ScoreRuleMark, WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled because
 // `renderSvg.tsx` intersects this with the wiggle-family SVG contract and

@@ -17,10 +17,10 @@ all of them before the page loads.
 ## The three constraints
 
 **Canvas2D is the floor, not a fallback.** Every canvas-drawing display ships a
-Canvas2D draw function, and [](/docs/developer_guides/svg_export)
-calls that function rather than the shader, so exported and on-screen pixels
-cannot drift. A GPU library is a third path to keep in parity with those two.
-Canvas2D is also what runs with no usable GPU, where it is the faster path.
+Canvas2D draw function, and [](/docs/developer_guides/svg_export) calls that
+function rather than the shader, so exported and on-screen pixels cannot drift.
+A GPU library is a third path to keep in parity with those two. Canvas2D is also
+what runs with no usable GPU, where it is the faster path.
 
 **The bytes are never converted.** A track's data is decoded in an RPC worker
 into
@@ -150,8 +150,7 @@ enough that its bytes disappear.
 
 Identify which clock a change lands on, measure it against the code it would
 replace, and keep the result when it is a loss.
-[](/docs/developer_guides/optimizations) publishes those beside the
-wins and
+[](/docs/developer_guides/optimizations) publishes those beside the wins and
 [REJECTED_IDEAS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/REJECTED_IDEAS.md)
 is the longer list. If a library now clears the three constraints at the top,
 that is a measurement worth taking, and
