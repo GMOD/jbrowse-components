@@ -62,6 +62,24 @@ function selectAllOption(matches: string[], pattern: string): Option {
 }
 
 /**
+ * The refName the typed text names outright, canonicalized — or undefined.
+ *
+ * Reading the name out of `allRefNames` before canonicalizing is what keeps
+ * `getCanonicalRefName`, which throws before aliases load, off a name the
+ * assembly never listed.
+ */
+function literalRefName(
+  assembly: RefNameMatchSource | undefined,
+  inputValue: string,
+) {
+  const query = inputValue.toLowerCase()
+  const named = assembly?.allRefNames?.find(n => n.toLowerCase() === query)
+  return named === undefined
+    ? undefined
+    : (assembly?.getCanonicalRefName(named) ?? named)
+}
+
+/**
  * The browse/pre-fetch fallback list, shown while a typed query is in flight and
  * when it comes back empty (typed queries otherwise resolve through
  * fetchResults).
@@ -70,6 +88,14 @@ function selectAllOption(matches: string[], pattern: string): Option {
  * because Enter answers for the same typed text and the two must not each grow
  * their own reading of it. What is left here is presentation: how many rows to
  * materialize, and the bulk row.
+ *
+ * **AN EXACT REFNAME BEATS THE GLOB READING here too**, the rule
+ * `selectNamedRegions` states and `searchUtils` orders its glob branch after.
+ * `*` is a legal refName character and GRCh38's ALT decoys are HLA allele names,
+ * so `HLA-A*01:01:01:01` is a contig somebody typed in full — offering "Show all
+ * 4 regions matching HLA-A*01:01:01:01" above it is the box promising a set that
+ * Enter, on the same text, does not open. The individual matches still list: the
+ * pattern reading is not wrong, it is just not what leads.
  *
  * A glob may gather up to MAX_GLOB_REGIONS for that bulk row; a plain query
  * never needs more than the visible list, so it keeps the tighter bound and the
@@ -80,13 +106,21 @@ export function getRefNameOptions(
   assembly: RefNameMatchSource | undefined,
   inputValue: string,
 ) {
-  const isGlob = inputValue.includes('*')
+  const literal = literalRefName(assembly, inputValue)
+  const isGlob = literal === undefined && inputValue.includes('*')
   const matches = matchRefNames(
     assembly,
     inputValue,
     isGlob ? MAX_GLOB_REGIONS : MAX_OPTIONS,
   )
-  const options: Option[] = matches.slice(0, MAX_OPTIONS + 1).map(refName => ({
+  // hoisted only when the scan actually reached it — past the ceiling
+  // `matchRefNames` stops early, and a name with no region behind it is not an
+  // option anyone can pick
+  const ordered =
+    literal !== undefined && matches.includes(literal)
+      ? [literal, ...matches.filter(refName => refName !== literal)]
+      : matches
+  const options: Option[] = ordered.slice(0, MAX_OPTIONS + 1).map(refName => ({
     result: new RefSequenceResult({ refName, label: refName }),
   }))
   return isGlob && matches.length > 1 && matches.length <= MAX_GLOB_REGIONS

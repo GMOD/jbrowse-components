@@ -148,7 +148,25 @@ describe('getRefNameOptions globs', () => {
     // is the only reason it is still offered
     expect(
       labels(getRefNameOptions(regions(['a*b', 'xxa*byy']), 'a*b')),
-    ).toEqual(['Show all 2 regions matching a*b', 'a*b', 'xxa*byy'])
+    ).toEqual(['a*b', 'xxa*byy'])
+  })
+
+  // Enter checks the refName reading before its glob branch, so a box offering
+  // "Show all N regions matching …" above the contig that text names is
+  // promising a set the same keystroke does not open
+  it('withholds the bulk row when the text names a refName outright', () => {
+    const options = getRefNameOptions(hla, 'HLA-A*24:01:01:01')
+    expect(labels(options)).toEqual(['HLA-A*24:01:01:01'])
+    expect(options.some(o => o.result.getLocation()?.includes(' '))).toBe(false)
+  })
+
+  it('leads with the refName the text names, not with assembly order', () => {
+    const embedded = regions(['xxa*byy', 'a*b', 'zza*bzz'])
+    expect(labels(getRefNameOptions(embedded, 'a*b'))).toEqual([
+      'a*b',
+      'xxa*byy',
+      'zza*bzz',
+    ])
   })
 
   it('withholds the bulk row past the ceiling rather than truncating it', () => {
