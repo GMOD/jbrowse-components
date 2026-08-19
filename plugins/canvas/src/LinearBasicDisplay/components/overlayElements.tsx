@@ -373,19 +373,19 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       // event time, so rebuilding a label allocates no handler.
       const clickable = featureItemMap.get(featureId)?.kind === 'feature'
       for (const resolved of labels) {
-        const { label, labelX, labelY, kind } = resolved
-        const key = `${displayedRegionIndex}-${featureId}-${kind}`
-        elements.push(
-          resolved.kind === 'more' ? (
-            // A control rather than a name: it carries the `more` marker the
-            // delegated handlers below route on and stays clickable whether or
-            // not the feature resolves to an openable one, since expanding
-            // reads the id straight off the attribute. Its baked width is
-            // measured at the scale it draws at, so the room the packer
-            // reserved is the room it takes.
+        const key = `${displayedRegionIndex}-${featureId}-${resolved.kind}`
+        if (resolved.kind === 'more') {
+          // A control rather than a name: it carries the `more` marker the
+          // delegated handlers below route on and stays clickable whether or not
+          // the feature resolves to an openable one, since expanding reads the
+          // id straight off the attribute. Its baked width is measured at the
+          // scale it draws at, so the room the packer reserved is the room it
+          // takes.
+          const { label, labelX, labelY } = resolved
+          elements.push(
             <div
               key={key}
-              title={moreIsoformsTitle(resolved.label)}
+              title={moreIsoformsTitle(label)}
               data-testid={`feature-more-isoforms-${featureId}`}
               data-feature-id={featureId}
               data-more-isoforms=""
@@ -397,29 +397,32 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
               }}
             >
               {label.text}
-            </div>
-          ) : (
-            <div
-              key={key}
-              data-testid={
-                clickable ? `feature-${kind}-${label.text}` : undefined
-              }
-              data-feature-id={clickable ? featureId : undefined}
-              data-region-index={clickable ? displayedRegionIndex : undefined}
-              className={
-                labelClasses[clickable ? 'clickable' : 'static'][
-                  resolved.label.isOverlay ? 'overlay' : 'plain'
-                ]
-              }
-              style={{
-                color: label.color,
-                fontSize: labelFontSize,
-                transform: `translate(${labelX}px, ${labelY}px)`,
-              }}
-            >
-              {label.text}
-            </div>
-          ),
+            </div>,
+          )
+          continue
+        }
+        const { label, labelX, labelY, kind } = resolved
+        elements.push(
+          <div
+            key={key}
+            data-testid={
+              clickable ? `feature-${kind}-${label.text}` : undefined
+            }
+            data-feature-id={clickable ? featureId : undefined}
+            data-region-index={clickable ? displayedRegionIndex : undefined}
+            className={
+              labelClasses[clickable ? 'clickable' : 'static'][
+                label.isOverlay ? 'overlay' : 'plain'
+              ]
+            }
+            style={{
+              color: label.color,
+              fontSize: labelFontSize,
+              transform: `translate(${labelX}px, ${labelY}px)`,
+            }}
+          >
+            {label.text}
+          </div>,
         )
       }
     },

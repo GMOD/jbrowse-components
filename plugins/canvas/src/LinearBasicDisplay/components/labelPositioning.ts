@@ -111,7 +111,7 @@ function maxRenderedLabelWidth(
 ) {
   const { nameLabel, descriptionLabel, subfeatureLabel, moreIsoformsLabel } =
     renderedLabelSet(labelData, showLabels, showDescriptions, true)
-  const rendered = (label: LabelMetrics | undefined) =>
+  const rendered = (label: { textWidth: number } | undefined) =>
     label ? renderedTextWidth(label.textWidth, fontSize) : 0
   // Rendered rather than baked, so the gap the badge sits after can be added
   // here: resolveFeatureLabels spends a LABEL_PADDING_PX between the name and
@@ -218,14 +218,14 @@ export function computeLabelPosition(
 // optionals: the badge and a name are different things sharing a position, and
 // only the union lets a consumer that has checked `kind` read `hidden` without
 // a fallback for a case the worker never emits.
-export interface PlainResolvedLabel {
+interface PlainResolvedLabel {
   label: LabelItem & { isOverlay?: boolean }
   labelX: number
   labelY: number
   kind: 'name' | 'desc' | 'sub'
 }
 
-export interface MoreResolvedLabel {
+interface MoreResolvedLabel {
   label: MoreIsoformsLabel
   labelX: number
   labelY: number

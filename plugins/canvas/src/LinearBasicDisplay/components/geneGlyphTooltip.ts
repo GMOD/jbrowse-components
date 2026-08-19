@@ -7,8 +7,10 @@ import {
 import type { IsoformPicks } from '../../RenderFeatureDataRPC/isoformPicks.ts'
 import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 
-// The loud chip's text. Beside the tooltip, and tested with it, because the two
-// describe the same state.
+// The loud chip's text. Beside the tooltip, and tested with it, because a gene
+// drawn with 7 of its 28 transcripts looks exactly like a gene with 7 — the
+// collapse is invisible in the rendering, so the chip has to name which one this
+// is rather than leaving it to a tooltip nobody has hovered.
 //
 // Every branch names the RULE, never a count: a count is the one number a reader
 // already has by looking at a gene, and it says nothing about the 22 isoforms
