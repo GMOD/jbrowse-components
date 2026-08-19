@@ -450,13 +450,9 @@ describe('computeLabelExtraWidth', () => {
 // The invariant `renderedLabelSet` exists to hold: the horizontal room reserved
 // for a feature's labels and the labels actually emitted are the same decision.
 //
-// It could not be asserted before, because the two answered it separately —
-// `computeLabelExtraWidth` through a `maxLabelTextWidth` over in rpcTypes.ts,
-// `forEachRenderedLabel` through three inline conditions of its own — so a test
-// over either told you nothing about the other. Drift between them is silent and
-// costs either a strip of reserved whitespace with no text in it, or a label
-// overhanging the box the packer, the hit test and the SVG export all sized for
-// it.
+// Drift between them is silent and costs either a strip of reserved whitespace
+// with no text in it, or a label overhanging the box the packer, the hit test
+// and the SVG export all sized for it.
 describe('the reservation and the ink agree', () => {
   const NAME = 'a-name-of-some-length'
   const DESC = 'a-description-that-is-much-longer-than-the-name'

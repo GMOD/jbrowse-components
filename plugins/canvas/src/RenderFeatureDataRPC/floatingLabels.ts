@@ -12,8 +12,8 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // Single constructor for a LabelItem so textWidth is always the measured width
 // of `text` at the base size this label DRAWS at — the invariant the
-// layout/hit-test reservations rely on (see maxLabelTextWidth), since every one
-// of them converts with `renderedTextWidth`, which scales from LABEL_FONT_SIZE.
+// layout/hit-test reservations rely on (see maxRenderedLabelWidth), since every
+// one converts with `renderedTextWidth`, which scales from LABEL_FONT_SIZE.
 // `fontSize` is that base size, and only the isoform badge passes anything but
 // the default (see MORE_ISOFORMS_FONT_SCALE). relativeY defaults to 0; the main
 // thread (labelPositioning) sets the final name→description gap.

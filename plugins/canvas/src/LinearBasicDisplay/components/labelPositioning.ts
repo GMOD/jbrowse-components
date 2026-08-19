@@ -69,13 +69,11 @@ export function labelCullBand(
 // (`showSubfeatureLabels`, i.e. `model.renderedShowSubfeatureLabels`).
 //
 // Three callers, and they have to agree or the space reserved for a label
-// disagrees with the label drawn in it: `maxLabelTextWidth` reserves horizontal
-// room (which the packer spends on row placement, and the hit box, the highlight
-// overlay and the SVG export's highlight boxes all re-derive),
+// disagrees with the label drawn in it: `maxRenderedLabelWidth` reserves
+// horizontal room (which the packer spends on row placement, and the hit box,
+// the highlight overlay and the SVG export's highlight boxes all re-derive),
 // `forEachRenderedLabel` skips a feature this yields nothing for, and
-// `resolveFeatureLabels` positions what it yields. All three spelled the same
-// three conditions out separately, and the one in `maxLabelTextWidth` carried a
-// comment pointing at a fourth location that no longer had them.
+// `resolveFeatureLabels` positions what it yields.
 function renderedLabelSet(
   labelData: FeatureLabelData,
   showLabels: boolean,
