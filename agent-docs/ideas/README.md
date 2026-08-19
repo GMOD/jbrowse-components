@@ -76,6 +76,5 @@ section title. Renaming one is still a grep.
 | [vertical-real-estate](vertical-real-estate.md) | The "scrolls within scrolls" problem: a goodness hierarchy for the fixes, what the wheel/scroll machinery already does that you should not reinvent, a view-level height allocator, reclaiming non-data chrome, the publisher's own filter as a footprint lever, and an honest floor on what any of it buys. |
 | [web-export-uncarried-state](web-export-uncarried-state.md) | Three things desktop's "export to web" can only report, not carry — a track delta it cannot tell from hub drift, an assembly edit, an internet account. Read before adding a carrier or a pristine-base snapshot. |
 | [web-share-link-in-desktop](web-share-link-in-desktop.md) | Measured: the snapshot applies but drops `sessionTracks` in silence, so this is a translation problem and not a decode problem. |
-| [website-screenshot-staleness](website-screenshot-staleness.md) | A spec edited without regenerating its PNG makes reviewers re-flag already-fixed figures — one batch went 8 specs, 0 PNGs. Hash the render inputs beside the committed PNG and fail CI when they drift. |
 | [workspace-layout](workspace-layout.md) | Panel maximize and where its flag must not live, a tab overflow menu and what has to measure for it, and the drag gesture having no keyboard equivalent. |
 <!-- END GENERATED IDEAS INDEX -->
