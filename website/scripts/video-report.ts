@@ -93,9 +93,9 @@ function printFrames() {
     `FRAMES (${filmed.length}) — the app's height at the first frame, its tallest, and the frame it was filmed in`,
     filmed.map(
       ({ name, frame, content, seconds, mp4Bytes }) =>
-        `• ${name}: ${content.first}px → ${content.last}px, ${content.tallest}px tallest` +
-        (content.drawer > 0 ? `, drawer ${content.drawer}px` : '') +
-        `, in ${frame.width}×${frame.height} — ${seconds.toFixed(1)}s, ${mb(mp4Bytes)}`,
+        `• ${name}: ${content.first}px → ${content.last}px, ${content.tallest}px tallest${
+          content.drawer > 0 ? `, drawer ${content.drawer}px` : ''
+        }, in ${frame.width}×${frame.height} — ${seconds.toFixed(1)}s, ${mb(mp4Bytes)}`,
     ),
   )
 }

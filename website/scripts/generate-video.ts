@@ -407,9 +407,9 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
     const endedAt = await contentHeight()
     log(
       `  content ${openedAt}px at the first frame, ${endedAt}px at the last, ` +
-        `${tallest}px at its tallest` +
-        (drawer > 0 ? `, drawer content ${drawer}px` : '') +
-        `, in a ${height}px frame`,
+        `${tallest}px at its tallest${
+          drawer > 0 ? `, drawer content ${drawer}px` : ''
+        }, in a ${height}px frame`,
     )
     return {
       segments: cam.segments,
