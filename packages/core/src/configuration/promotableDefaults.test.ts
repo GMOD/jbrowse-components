@@ -4,6 +4,7 @@ import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import { getConf, resolveConf } from './getConf.ts'
 import {
+  applySlotToOpenTracks,
   getDisplayTypeDefaultChanges,
   isPromotableDefault,
   isSlotCustomized,
@@ -193,6 +194,41 @@ describe('apply a promoted default to open tracks', () => {
     expect(isSlotCustomized(stillOpen, 'customHeight')).toBe(false)
   })
 
+  // The additive mirror of resetSlotToInherit, and it takes the same hazard from
+  // the same caller: the snackbar outlives the click, so one of the displays it
+  // is handed can be a destroyed node by the time it runs.
+  test('applying a value skips a display closed while the snackbar was up', () => {
+    const { session, displays } = createDisplays(configSchema, [
+      { customHeight: 10 },
+      { customHeight: 20 },
+    ])
+    const stillOpen = displays[0]!
+    const closed = displays[1]!
+
+    unprotect(session)
+    destroy(closed)
+    expect(isAlive(closed)).toBe(false)
+
+    expect(() => {
+      applySlotToOpenTracks([stillOpen, closed], 'customHeight', 30)
+    }).not.toThrow()
+    expect(resolveConf(stillOpen, 'customHeight')).toBe(30)
+  })
+
+  test('applying a value writes a track that holds nothing of its own', () => {
+    const { displays } = createDisplays(configSchema, [
+      { customHeight: 10 },
+      {},
+    ])
+    const follower = displays[1]!
+    expect(isSlotCustomized(follower, 'customHeight')).toBe(false)
+
+    applySlotToOpenTracks(displays, 'customHeight', 10)
+
+    expect(isSlotCustomized(follower, 'customHeight')).toBe(true)
+    expect(resolveConf(follower, 'customHeight')).toBe(10)
+  })
+
   // Session shaped as the real one is (isViewContainer + tracks-with-displays),
   // so the dialog helpers exercise the full path across EVERY open view.
   function createViews(displayConfigsPerView: Record<string, unknown>[][]) {
@@ -220,7 +256,10 @@ describe('apply a promoted default to open tracks', () => {
       // asserted and its onClick invoked (mirrors the real SnackbarModel path)
       .volatile(() => ({
         lastNotify: undefined as
-          | { message: string; action?: { name: string; onClick: () => void } }
+          | {
+              message: string
+              actions: { name: string; onClick: () => void }[]
+            }
           | undefined,
       }))
       .views(self => ({
@@ -248,9 +287,16 @@ describe('apply a promoted default to open tracks', () => {
         notify(
           message: string,
           _level?: string,
-          action?: { name: string; onClick: () => void },
+          action?:
+            | { name: string; onClick: () => void }
+            | { name: string; onClick: () => void }[],
         ) {
-          self.lastNotify = { message, action }
+          // normalized the way the real SnackbarModel does, so a test can ask
+          // which actions the toast offered rather than only whether it had one
+          self.lastNotify = {
+            message,
+            actions: action ? (Array.isArray(action) ? action : [action]) : [],
+          }
         },
         // no-ops that just make the session shape match isViewContainer
         removeView() {},
@@ -269,6 +315,25 @@ describe('apply a promoted default to open tracks', () => {
     const displayOf = (view: number, track: number) =>
       session.views[view]!.tracks[track]!.displays[0]!
     return { session, displayOf }
+  }
+
+  type Notified =
+    | { message: string; actions: { name: string; onClick: () => void }[] }
+    | undefined
+
+  const actionNames = (notify: Notified) => notify?.actions.map(a => a.name)
+
+  // Addressed by prefix rather than by index: the toast carries the override
+  // action and the scoped one in a fixed order, and a test that reached for
+  // `actions[0]` would still pass while asserting about the other one.
+  function actionNamed(notify: Notified, prefix: string) {
+    const found = notify?.actions.find(a => a.name.startsWith(prefix))
+    if (!found) {
+      throw new Error(
+        `no snackbar action starting "${prefix}", offered: ${JSON.stringify(actionNames(notify))}`,
+      )
+    }
+    return found
   }
 
   test('setting the default is non-destructive: a customized track keeps its value', () => {
@@ -317,9 +382,9 @@ describe('apply a promoted default to open tracks', () => {
 
     // the snackbar offered "Override N customized tracks"; running it makes the one
     // track not already showing 10 follow the new default
-    const action = session.lastNotify?.action
-    expect(action?.name).toBe('Override 1 customized track')
-    action!.onClick()
+    const action = actionNamed(session.lastNotify, 'Override')
+    expect(action.name).toBe('Override 1 customized track')
+    action.onClick()
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(false)
     expect(resolveConf(otherView, 'customHeight')).toBe(10)
   })
@@ -343,9 +408,10 @@ describe('apply a promoted default to open tracks', () => {
     expect(isSlotCustomized(self, 'customHeight')).toBe(true)
     expect(resolveConf(self, 'customHeight')).toBe(20)
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
-    expect(session.lastNotify?.action?.name).toBe(
+    expect(actionNames(session.lastNotify)).toEqual([
       'Override 2 customized tracks',
-    )
+      'Apply to 2 open tracks instead',
+    ])
   })
 
   test('pin then unpin leaves the clicked track exactly as it was', () => {
@@ -370,7 +436,10 @@ describe('apply a promoted default to open tracks', () => {
     makePin(self, 'customHeight', 10).toggle()
 
     expect(resolveConf(follower, 'customHeight')).toBe(10)
-    expect(session.lastNotify?.action).toBeUndefined()
+    // nothing to override — but two tracks are open, so the scope choice stands
+    expect(actionNames(session.lastNotify)).toEqual([
+      'Apply to 2 open tracks instead',
+    ])
   })
 
   test('toggling on with every open track already showing it offers no action', () => {
@@ -380,13 +449,13 @@ describe('apply a promoted default to open tracks', () => {
     makePin(self, 'customHeight', 10).toggle()
 
     expect(session.lastNotify?.message).toBe('Set as the default')
-    expect(session.lastNotify?.action).toBeUndefined()
+    expect(actionNames(session.lastNotify)).toEqual([])
   })
 
   // The snackbar action outlives the click that raised it, so it must re-derive
   // the track set rather than close over MST nodes: a display destroyed by the
   // user closing its track throws on any read or write.
-  test('"apply to open tracks" survives a track closed while the snackbar is up', () => {
+  test('"Override N customized tracks" survives a track closed while the snackbar is up', () => {
     const { session, displayOf } = createViews([
       [{ customHeight: 20 }],
       [{ customHeight: 20 }, { customHeight: 30 }],
@@ -396,18 +465,18 @@ describe('apply a promoted default to open tracks', () => {
 
     makePin(self, 'customHeight', 10).toggle()
     // all three open tracks hold their own value, `self` included
-    expect(session.lastNotify?.action?.name).toBe(
+    expect(actionNamed(session.lastNotify, 'Override').name).toBe(
       'Override 3 customized tracks',
     )
 
     // user closes one of the tracks the action was offered for
     session.views[1]!.closeTrack(0)
 
-    session.lastNotify!.action!.onClick()
+    actionNamed(session.lastNotify, 'Override').onClick()
     expect(resolveConf(survivor, 'customHeight')).toBe(10)
   })
 
-  test('"apply to open tracks" is a no-op once the clicked track itself is gone', () => {
+  test('"Override N customized tracks" is a no-op once the clicked track itself is gone', () => {
     const { session, displayOf } = createViews([
       [{ customHeight: 20 }],
       [{ customHeight: 30 }],
@@ -421,7 +490,7 @@ describe('apply a promoted default to open tracks', () => {
     session.views[0]!.closeTrack(0)
 
     expect(() => {
-      session.lastNotify!.action!.onClick()
+      actionNamed(session.lastNotify, 'Override').onClick()
     }).not.toThrow()
     // the promoted default stands; the other track just keeps its own value
     expect(resolveConf(other, 'customHeight')).toBe(30)
@@ -431,7 +500,7 @@ describe('apply a promoted default to open tracks', () => {
   // set". Unpinning before the snackbar is clicked takes that default away, and
   // clearing the tracks' own values then would discard customizations to strand
   // them on whatever is left — a value nobody asked for.
-  test('"apply to open tracks" is a no-op once the default it offered is gone', () => {
+  test('"Override N customized tracks" is a no-op once the default it offered is gone', () => {
     const { session, displayOf } = createViews([
       [{ customHeight: 20 }],
       [{ customHeight: 30 }],
@@ -440,9 +509,69 @@ describe('apply a promoted default to open tracks', () => {
     const other = displayOf(1, 0)
 
     makePin(self, 'customHeight', 10).toggle()
-    const apply = session.lastNotify!.action!
+    const apply = actionNamed(session.lastNotify, 'Override')
 
     // user unpins (a fresh control reads as active, so its toggle clears)
+    makePin(self, 'customHeight', 10).toggle()
+    expect(isPromotableDefault(self, 'customHeight', 10)).toBe(false)
+
+    apply.onClick()
+    expect(resolveConf(self, 'customHeight')).toBe(20)
+    expect(resolveConf(other, 'customHeight')).toBe(30)
+  })
+
+  // The scope choice: take the value on the tracks in front of me, without
+  // leaving a default behind for the ones I open later.
+  //
+  // This is the case that decides which track set the action writes, and the
+  // reason it cannot reuse `tracksDifferingFrom`. A follower holds nothing of
+  // its own and is showing the value only by way of the default that is about
+  // to be cleared, so the override action's set — the tracks that *differ* —
+  // leaves it out, and clearing the default then drops it to `promotedBase`.
+  test('"Apply to N open tracks" leaves a follower holding the value once the default is gone', () => {
+    const { session, displayOf } = createViews([[{ customHeight: 10 }], [{}]])
+    const self = displayOf(0, 0)
+    const follower = displayOf(1, 0)
+
+    makePin(self, 'customHeight', 10).toggle()
+    expect(resolveConf(follower, 'customHeight')).toBe(10)
+
+    actionNamed(session.lastNotify, 'Apply to').onClick()
+
+    expect(isPromotableDefault(self, 'customHeight', 10)).toBe(false)
+    expect(isSlotCustomized(follower, 'customHeight')).toBe(true)
+    expect(resolveConf(follower, 'customHeight')).toBe(10)
+  })
+
+  test('"Apply to N open tracks" overwrites a track customized to something else', () => {
+    const { session, displayOf } = createViews([
+      [{ customHeight: 10 }],
+      [{ customHeight: 20 }],
+    ])
+    const self = displayOf(0, 0)
+    const other = displayOf(1, 0)
+
+    makePin(self, 'customHeight', 10).toggle()
+    actionNamed(session.lastNotify, 'Apply to').onClick()
+
+    expect(resolveConf(other, 'customHeight')).toBe(10)
+    expect(isPromotableDefault(self, 'customHeight', 10)).toBe(false)
+  })
+
+  // Same guard, same reason as its sibling: the action means "instead of the
+  // default I just set", so once that default is gone it must write nothing
+  // rather than stamp a value over tracks the user never offered it to.
+  test('"Apply to N open tracks" is a no-op once the default it offered is gone', () => {
+    const { session, displayOf } = createViews([
+      [{ customHeight: 20 }],
+      [{ customHeight: 30 }],
+    ])
+    const self = displayOf(0, 0)
+    const other = displayOf(1, 0)
+
+    makePin(self, 'customHeight', 10).toggle()
+    const apply = actionNamed(session.lastNotify, 'Apply to')
+
     makePin(self, 'customHeight', 10).toggle()
     expect(isPromotableDefault(self, 'customHeight', 10)).toBe(false)
 
@@ -466,7 +595,7 @@ describe('apply a promoted default to open tracks', () => {
     expect(isPromotableDefault(self, 'customHeight', 10)).toBe(false)
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
     expect(session.lastNotify?.message).toBe('Cleared the default')
-    expect(session.lastNotify?.action).toBeUndefined()
+    expect(actionNames(session.lastNotify)).toEqual([])
   })
 })
 

@@ -200,7 +200,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   notify: (
     message: string,
     level?: NotificationLevel,
-    action?: SnackAction,
+    // `SnackbarModel.notify` has always normalized an array here; this
+    // declaration said singular, so the one caller that needs to offer a
+    // choice (the promoted-default pin's two scopes) could not say so without
+    // a cast. Widening, so every existing single-action caller still fits.
+    action?: SnackAction | SnackAction[],
   ) => void
   notifyError: (
     message: string,

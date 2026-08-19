@@ -25,6 +25,7 @@ import { promotableSlotNames } from './promotableSlots.ts'
 import { isConfigurationModel } from './schemaTypes.ts'
 
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
+import type { SnackAction } from '../util/types/index.ts'
 import type {
   CascadeContext,
   PromotedDefaultStore,
@@ -230,10 +231,30 @@ export interface Pin {
   toggle: () => void
 }
 
-function openDisplaysOfType(self: ResolvableDisplay): ResolvableDisplay[] {
-  return openPromotableDisplays(getSession(self)).filter(
-    display => display.type === self.type,
-  )
+/**
+ * Open displays of this display's type, **one entry per track**.
+ *
+ * A track open in two views is two display *models* over one display *config* —
+ * `TrackConfigurationReference` resolves both through the hydration cache
+ * (ADR-031) — so the raw walk yields it twice. That is the ordinary case in a
+ * breakpoint-split view, which shows the same track in both halves and is one of
+ * the composite shapes `openPromotableDisplays` recurses into. Every caller here
+ * either counts these or writes their config, and both go wrong on a duplicate:
+ * the snackbar offered to act on "2 customized tracks" over a single track, and
+ * the second write was a no-op against a node the first had already set.
+ *
+ * Keying on the config node rather than on `trackId` is what keeps this
+ * cast-free: the node is a member of `ResolvableDisplay`, and within one display
+ * type it is 1:1 with the track.
+ */
+function openTracksOfType(self: ResolvableDisplay): ResolvableDisplay[] {
+  const byTrack = new Map<AnyConfigurationModel, ResolvableDisplay>()
+  for (const display of openPromotableDisplays(getSession(self))) {
+    if (display.type === self.type) {
+      byTrack.set(display.configuration, display)
+    }
+  }
+  return [...byTrack.values()]
 }
 
 /**
@@ -281,36 +302,54 @@ export function isPromotableDefault(
 
 /**
  * Open tracks (across all views) whose resolved value for `slot` differs from
- * `value` — the ones "apply to open tracks" would visibly change by resetting
- * them to follow the default. Drives that action's count. Module-internal
+ * `value` — the ones "Override N customized tracks" would visibly change by
+ * clearing their own values. Drives that action's count. Module-internal
  * (exercised by promotableDefaults.test.ts); not part of the public barrel.
  *
- * **One entry per track, not per display.** A track open in two views is two
- * display *models* over one display *config* — `TrackConfigurationReference`
- * resolves both through the hydration cache to the identical node (ADR-031) —
- * so the raw walk counted it twice and the snackbar offered to "Override 2
- * customized tracks" over a single track. That is the ordinary case in a
- * breakpoint-split view, which shows the same track in both halves and is one
- * of the composite shapes `openPromotableDisplays` recurses into.
- *
- * Keying on the config node rather than on `trackId` is what keeps this
- * cast-free: the node is a member of `ResolvableDisplay`, and within one display
- * type it is 1:1 with the track. Deduping the returned displays rather than only
- * the count is what stops the two from disagreeing — clearing the slot on either
- * one writes the same node, so the extra pass was a no-op anyway.
+ * Reads the **resolved** value, which is what makes this the *override* set
+ * rather than the *apply* set: a track merely following the promoted default
+ * already resolves to `value` and so is absent here, correctly — it needs no
+ * clearing. {@link applySlotToOpenTracks} wants the opposite question and asks
+ * it of the stored value.
  */
 export function tracksDifferingFrom(
   self: ResolvableDisplay,
   slot: string,
   value: unknown,
 ): ResolvableDisplay[] {
-  const byTrack = new Map<AnyConfigurationModel, ResolvableDisplay>()
-  for (const display of openDisplaysOfType(self)) {
-    if (!deepEqual(resolveSlot(display, slot).value, value)) {
-      byTrack.set(display.configuration, display)
+  return openTracksOfType(self).filter(
+    display => !deepEqual(resolveSlot(display, slot).value, value),
+  )
+}
+
+/**
+ * Write `value` into each display's own config for `slot`, so the track *holds*
+ * it rather than resolving it through the cascade. The additive mirror of
+ * {@link resetSlotToInherit}, and the write behind the snackbar's "apply to N
+ * open tracks instead" — those tracks keep the value once the promoted default
+ * that offered it is gone.
+ *
+ * **A track already showing `value` still has to be written**, which is why this
+ * compares the *stored* value and not the resolved one. A follower stores
+ * nothing and resolves `value` only through the promoted default, so skipping it
+ * and then clearing that default would strand it at base — the exact opposite of
+ * what the user asked for. Comparing the stored value is also what lets a
+ * `jexl:` value answer "is this already what we would write?" without being
+ * evaluated, the reason `resetSlotToInherit` reads the same field.
+ *
+ * Skips dead displays, since the caller supplies the list and MST throws on any
+ * read or write to a destroyed node.
+ */
+export function applySlotToOpenTracks(
+  displays: ResolvableDisplay[],
+  slot: string,
+  value: unknown,
+): void {
+  for (const display of displays.filter(display => isAlive(display))) {
+    if (!deepEqual(storedSlotValue(display.configuration, slot), value)) {
+      setConf(display, slot, value)
     }
   }
-  return [...byTrack.values()]
 }
 
 /**
@@ -319,7 +358,12 @@ export function tracksDifferingFrom(
  * the pin stays symmetric and pin-then-unpin can't discard one (ADR-048: the pin
  * edits the stylesheet, never the elements). Followers pick the new value up on
  * their next `resolveConf` read; customized tracks keep theirs, and the snackbar
- * action is the one gesture in the subsystem that rewrites them.
+ * is the one place in the subsystem that rewrites them.
+ *
+ * The snackbar carries up to two actions, and they are the subsystem's two ways
+ * of spending the same click. Both re-derive everything inside `onClick` rather
+ * than closing over it, because the snackbar outlives the click that raised it —
+ * ADR-048 has the three ways that goes wrong.
  */
 function applyDefaultToggle(
   self: ResolvableDisplay,
@@ -329,29 +373,54 @@ function applyDefaultToggle(
 ): void {
   const session = getSession(self)
   session.setDisplayTypeDefault(self.type, slot, on ? value : undefined)
-  if (on) {
-    // includes the display the pin was clicked from, when it holds its own value
-    const n = tracksDifferingFrom(self, slot, value).length
-    if (n) {
-      session.notify('Set as the default', 'info', {
-        // named for what it does: this clears those tracks' own values, a bulk
-        // non-undoable discard. "Apply to N open tracks" read as additive
-        name: `Override ${n} customized ${pluralize(n, 'track')}`,
-        // re-derived on click, never captured — the snackbar outlives the click
-        // that raised it, so both the target set and the default itself can have
-        // moved by now. ADR-048 for the three ways that goes wrong.
-        onClick: () => {
-          if (isAlive(self) && isPromotableDefault(self, slot, value)) {
-            resetSlotToInherit(tracksDifferingFrom(self, slot, value), slot)
-          }
-        },
-      })
-    } else {
-      session.notify('Set as the default', 'info')
-    }
-  } else {
+  if (!on) {
     session.notify('Cleared the default', 'info')
+    return
   }
+  const actions: SnackAction[] = []
+  // includes the display the pin was clicked from, when it holds its own value
+  const differing = tracksDifferingFrom(self, slot, value).length
+  if (differing) {
+    actions.push({
+      // named for what it does: this clears those tracks' own values, a bulk
+      // non-undoable discard. "Apply to N open tracks" read as additive, and
+      // now names the action below, which genuinely is
+      name: `Override ${differing} customized ${pluralize(differing, 'track')}`,
+      onClick: () => {
+        if (isAlive(self) && isPromotableDefault(self, slot, value)) {
+          resetSlotToInherit(tracksDifferingFrom(self, slot, value), slot)
+        }
+      },
+    })
+  }
+  // The scope choice: take the value without taking the default. Offered only
+  // with a sibling to apply it to — with one track open, "these tracks" and
+  // "this display type" name the same set, so the distinction the action exists
+  // to offer isn't there, and the toast stays auto-hiding as it was.
+  const open = openTracksOfType(self).length
+  if (open > 1) {
+    actions.push({
+      name: `Apply to ${open} open ${pluralize(open, 'track')} instead`,
+      onClick: () => {
+        // same guard as its sibling, and for the same reason: the action means
+        // "instead of the default I just set", so with that default already
+        // gone or moved it must do nothing rather than write a value nobody
+        // asked for.
+        if (isAlive(self) && isPromotableDefault(self, slot, value)) {
+          // write first, then clear: the followers are only holding `value`
+          // by way of the default, so clearing it first would drop them to
+          // base and the write would be re-adding what the user could see
+          applySlotToOpenTracks(openTracksOfType(self), slot, value)
+          session.setDisplayTypeDefault(self.type, slot, undefined)
+        }
+      },
+    })
+  }
+  session.notify(
+    'Set as the default',
+    'info',
+    actions.length ? actions : undefined,
+  )
 }
 
 /**
