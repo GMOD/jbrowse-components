@@ -28,7 +28,9 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
-const SIZES = [
+import type { AddressInfo } from 'node:net'
+
+const SIZES: [string, number][] = [
   ['256 KB', 1 << 18],
   ['1 MB', 1 << 20],
   ['4 MB', 4 << 20],
@@ -108,7 +110,7 @@ self.onmessage = async e => {
 `
 
 const server = createServer((req, res) => {
-  const path = decodeURIComponent(req.url.slice(1))
+  const path = decodeURIComponent((req.url ?? '/').slice(1))
   if (path === 'worker.js') {
     res.writeHead(200, { 'content-type': 'text/javascript' })
     res.end(WORKER_SRC)
@@ -133,10 +135,12 @@ const server = createServer((req, res) => {
   })
   res.end(body)
 })
-await new Promise(r => {
-  server.listen(0, '127.0.0.1', r)
+await new Promise<void>(r => {
+  server.listen(0, '127.0.0.1', () => {
+    r()
+  })
 })
-const { port } = server.address()
+const { port } = server.address() as AddressInfo
 const origin = `http://127.0.0.1:${port}`
 
 const browser = await launch({
@@ -147,10 +151,11 @@ const browser = await launch({
 const page = await browser.newPage()
 await page.goto(`${origin}/`)
 
-const med = a => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]
+const med = (a: number[]) =>
+  [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]!
 const rows = []
 for (const [label] of SIZES) {
-  const out = await page.evaluate(
+  const out = (await page.evaluate(
     async (origin, label, runs) => {
       const w = new Worker(`${origin}/worker.js`)
       const p = new Promise((resolve, reject) => {
@@ -172,7 +177,12 @@ for (const [label] of SIZES) {
     origin,
     label,
     RUNS,
-  )
+  )) as {
+    plain: number[]
+    progress: number[]
+    chunks: number
+    hasBytes: boolean
+  }
   rows.push({
     label,
     plainMs: med(out.plain),
@@ -187,7 +197,7 @@ for (const [label] of SIZES) {
 await browser.close()
 server.close()
 
-console.log(`Response.prototype.bytes available: ${rows[0].hasBytes}`)
+console.log(`Response.prototype.bytes available: ${rows[0]!.hasBytes}`)
 console.log(
   [
     'size',
