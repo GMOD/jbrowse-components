@@ -212,6 +212,11 @@ coordinate-system concepts. That is the differentiator.
    agreed and every copy was wrong.
 5. **Narrow the session at the display boundary** — finding 2. This is what
    makes a small host possible rather than merely tidy.
+   [barrels-block-extraction](barrels-block-extraction.md) reaches the same
+   `util/types/index.ts` split from the packaging side, where the blocker is
+   that a 300-line coordinate utility cannot leave `@jbrowse/core` while
+   `Region` shares a file with `AbstractSessionModel`. Two independent arguments
+   for one move, so this ranks above its position here.
 6. **Make `queueDialog` and `notify` seams rather than calls** — finding 3.
    Highest effort here, and it decides whether "your own UI" is true below the
    view.
