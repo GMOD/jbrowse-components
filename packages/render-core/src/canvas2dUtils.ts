@@ -611,33 +611,27 @@ export function bpAtPx(px: number, bounds: BpRegionBounds) {
  * rather than index a base (the alignments interbase triangles and modification
  * centers, the variant cell's bp padding, the Manhattan point's ±radius query).
  *
- * Ask `bpAtPx` instead the moment the answer indexes per-base data. **Do not
- * floor this** — flooring an already-divided fraction is the double rounding
- * `bpAtPx`'s JSDoc argues against at length, and on a reversed block flooring
- * also names the neighbouring base.
+ * Ask `bpAtPx` instead the moment the answer indexes per-base data, and **do
+ * not floor this** — flooring an already-divided fraction is the double
+ * rounding `bpAtPx`'s JSDoc argues against at length, and reversed it names the
+ * neighbouring base as well. `end - offset` reversed, not `start + offset`: bp
+ * runs leftward there, and each of the three plugins that spelled this out
+ * locally had to rediscover that.
  *
- * `end - offset` reversed, not `start + offset`: bp runs leftward there, and
- * every plugin that spelled this out locally had to rediscover the pivot. Same
- * multiply-before-dividing as `bpAtPx` — `(px - screenStartPx) * span` is exact,
- * so the following division is the only rounding — but for a different reason.
- * There is no floor here to protect, only a value a caller subtracts from
- * another; forming `frac` first and multiplying costs a second rounding for
- * nothing.
+ * **Neither function is the other's implementation.** This multiplies before
+ * dividing for the same reason `bpAtPx` does — `(px - screenStartPx) * span` is
+ * exact, so the division is the only rounding — but it does not split the
+ * anchor into whole and remainder the way `bpAtPx` does. That split keeps the
+ * genome-scale addend out of a *rounded* expression, and there is no rounding
+ * here to protect; the caller wants the anchor's fraction kept, not floored
+ * away.
  *
- * The anchor deliberately does NOT split into whole and remainder the way
- * `bpAtPx`'s does. That split exists to keep the genome-scale addend out of a
- * *rounded* expression; with no rounding to protect it would only add a
- * subtraction and an addition, and the caller wants the anchor's fraction kept,
- * not discarded. Neither function is the other's implementation.
- *
- * Adopting this moved no consumer's answer, which is the point rather than a
- * caveat. Against the same exact-rational oracle `bpAtPx` was measured on, over
- * 300000 fractional-anchor samples, this and all three spellings it replaced
- * land within 1 ulp of the exactly-rounded value; it returns a different double
- * from the `frac` spelling on 114 of them and from gwas' `bpPerPx` spelling on
- * 289, by at most 7.5e-9 bp, against hit radii measured in whole pixels. The
- * duplication was never producing a wrong number — it was three chances for the
- * reversed pivot to be edited in two places and not the third.
+ * Adopting it moved no consumer's answer, which is the point rather than a
+ * caveat. Over 300000 fractional-anchor samples against the exact-rational
+ * oracle `bpAtPx` was measured on, it and all three spellings it replaced land
+ * within 1 ulp of the exactly-rounded value; it returns a different double from
+ * the `frac` spelling on 114 and from gwas' `bpPerPx` spelling on 289, by at
+ * most 7.5e-9 bp against hit radii measured in whole pixels.
  */
 export function bpAtPxExact(px: number, bounds: BpRegionBounds) {
   const { start, end, screenStartPx, screenEndPx, reversed } = bounds
@@ -650,16 +644,15 @@ export function bpAtPxExact(px: number, bounds: BpRegionBounds) {
  * The region owning screen pixel `px`, or undefined past the last one — the
  * range check `bpAtPx` and `bpAtPxExact` leave to their callers, answered once.
  *
- * **The upper bound is exclusive, and that is the whole content of this.**
- * Adjacent regions share a pixel (`regionA.screenEndPx ===
- * regionB.screenStartPx`), so an inclusive bound matches both and `find` hands
- * back the earlier one — which then steals every click meant for the later
- * region's first column. Half-open, exactly one region can match, so this
- * answers with a region rather than a list.
+ * **The exclusive upper bound is the whole content of this.** Adjacent regions
+ * share a pixel (`regionA.screenEndPx === regionB.screenStartPx`), so an
+ * inclusive bound matches both and `find` hands back the earlier one — which
+ * then steals every click meant for the later region's first column. Half-open,
+ * exactly one region can match, so this answers with a region rather than a
+ * list.
  *
- * Generic over the region so callers get their own type back: what they want
- * from the match is a `displayedRegionIndex` to key per-region data with, or the
- * bp/px edges to hand to a mapper.
+ * Generic so a caller gets its own region type back, since what it wants from
+ * the match is a `displayedRegionIndex` or the bp/px edges for a mapper.
  */
 export function regionAtPixel<
   R extends { screenStartPx: number; screenEndPx: number },
