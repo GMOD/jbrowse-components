@@ -17,6 +17,52 @@ import type { TestCase, TestSuite } from '../types.ts'
 // session's one synteny track makes Quick start the opening mode with that track
 // already selected, so the rows it implies (volvox_snp / volvox) are shown up
 // front and Launch alone renders the view.
+// ADR-076: the shared canvas publishes `data-display-phase` beside
+// `data-display-drawn`, so `displaySettled` and every other DOM-level doneness
+// wait works on a comparative page. It could not before — those waits key on an
+// attribute this canvas did not carry, which makes each of them an assertion
+// about an absent selector, satisfied by a canvas that has not begun.
+//
+// This has to run in a browser: `painted` never flips without a compositor, so
+// the jsdom tests that pin the model side call `markCanvasDrawn()` by hand and
+// cannot see whether the attribute reaches the DOM at all.
+const phaseTest: TestCase = {
+  name: 'a synteny level publishes a settled display phase',
+  fn: async page => {
+    await navigateWithSessionSpec(
+      page,
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            tracks: [['volvox_snp_synteny']],
+            views: [{ assembly: 'volvox' }, { assembly: 'volvox_snp' }],
+          },
+        ],
+      },
+      'test_data/volvox/config_synteny_snp.json',
+    )
+    const canvas = await findDisplayPainted(page, 'synteny_canvas', 60000)
+    await waitForDataLoaded(page, 60000)
+    const ready = await page
+      .waitForFunction(
+        () =>
+          document.querySelector<HTMLElement>('[data-testid="synteny_canvas"]')
+            ?.dataset.displayPhase === 'ready' || undefined,
+        { timeout: 60000 },
+      )
+      .catch(() => undefined)
+    if (!ready) {
+      const actual = await canvas.evaluate(
+        e => (e as HTMLElement).dataset.displayPhase,
+      )
+      throw new Error(
+        `synteny_canvas never reported phase=ready (saw ${actual ?? 'no attribute'})`,
+      )
+    }
+  },
+}
+
 const quickStartTest: TestCase = {
   name: 'import form quick start launches from a synteny track',
   fn: async page => {
@@ -137,6 +183,7 @@ const suite: TestSuite = {
   name: 'Synteny Views',
   tests: [
     quickStartTest,
+    phaseTest,
     quickStartHandoffTest,
     identityLegendTest,
     syntenyTest(

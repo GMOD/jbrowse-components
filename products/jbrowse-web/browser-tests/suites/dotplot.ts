@@ -3,6 +3,7 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 import {
   delay,
   findByTestId,
+  findDisplayPainted,
   navigateToUrl,
   navigateWithSessionSpec,
   waitForDataLoaded,
@@ -10,7 +11,7 @@ import {
 } from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
 
-import type { TestSuite } from '../types.ts'
+import type { TestCase, TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
 
 async function openPaletteMenu(page: Page) {
@@ -113,9 +114,57 @@ const TWO_TRACK_SESSION = {
   ],
 }
 
+// ADR-076: the shared canvas publishes `data-display-phase` beside
+// `data-display-drawn`, so `displaySettled` and every other DOM-level doneness
+// wait works on a comparative page. It could not before — those waits key on an
+// attribute this canvas did not carry, which makes each of them an assertion
+// about an absent selector, satisfied by a canvas that has not begun.
+//
+// This has to run in a browser: `painted` never flips without a compositor, so
+// the jsdom tests that pin the model side call `markCanvasDrawn()` by hand and
+// cannot see whether the attribute reaches the DOM at all.
+const phaseTest: TestCase = {
+  name: 'a dotplot publishes a settled display phase',
+  fn: async page => {
+    await navigateWithSessionSpec(
+      page,
+      {
+        views: [
+          {
+            type: 'DotplotView',
+            tracks: ['grape_peach_synteny_mcscan'],
+            views: [{ assembly: 'grape' }, { assembly: 'peach' }],
+          },
+        ],
+      },
+      'test_data/config_dotplot.json',
+    )
+    const canvas = await findDisplayPainted(page, 'dotplot_webgl_canvas', 60000)
+    await waitForDataLoaded(page, 60000)
+    const ready = await page
+      .waitForFunction(
+        () =>
+          document.querySelector<HTMLElement>(
+            '[data-testid="dotplot_webgl_canvas"]',
+          )?.dataset.displayPhase === 'ready' || undefined,
+        { timeout: 60000 },
+      )
+      .catch(() => undefined)
+    if (!ready) {
+      const actual = await canvas.evaluate(
+        e => (e as HTMLElement).dataset.displayPhase,
+      )
+      throw new Error(
+        `dotplot_webgl_canvas never reported phase=ready (saw ${actual ?? 'no attribute'})`,
+      )
+    }
+  },
+}
+
 const suite: TestSuite = {
   name: 'Dotplot View',
   tests: [
+    phaseTest,
     {
       // A synteny track is queryable in either direction, so the axes Quick
       // start derives are a starting point, not a fact about the track. Swap
