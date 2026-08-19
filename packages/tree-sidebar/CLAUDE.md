@@ -134,11 +134,23 @@ overlay only under `showTree`).
 `rowHeightConfigSchemaFields` + `RowHeightMixin` (in `src/rowHeight/`, beside
 the menu and dialog) are the slot and the three members over it: the raw
 `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight`. Three
-displays hand-wrote all four. What a display still owes is `autoRowHeight` — the
-rows viewport is a different quantity in each — and `setFitToHeight`, which is
-required to seed the `height` slot exactly where the `height` getter is
-content-derived. Canvas overrides `effectiveRowHeight` to cap the stack at the
-canvas limit.
+displays hand-wrote all four. What a display still owes is a **value** for
+`autoRowHeight` — the rows viewport is a different quantity in each — and
+`setFitToHeight`, which is required to seed the `height` slot exactly where the
+`height` getter is content-derived. Canvas overrides `effectiveRowHeight` to cap
+the stack at the canvas limit.
+
+`autoRowHeight` is **declared** by the mixin and overridden by each display, so
+`effectiveRowHeight` reads a member of its own type. Override it with a getter:
+mobx refuses to write a volatile over a computed, so a `.volatile` of that name
+throws at `create`. The mixin's other host member, `configuration`, cannot be
+declared the same way — a prop would collide with the one BaseDisplay already
+supplies — so it stays a cast, narrowed to `RowHeightHost`. **Narrow is the
+point**: a mixin reaching its host through `AnyConfigurationModel` gets no
+slot-name check at all, and a misspelled read is the half with no runtime
+diagnostic anywhere. `RowHeightMixin.test.ts` pins that with `@ts-expect-error`,
+against the host type rather than against a test display — a test display's own
+schema is concrete and checks the name itself, so asking it passes either way.
 
 `TreeDrawingModel` takes **`effectiveRowHeight`**, never a raw `rowHeight` —
 variants and MAF keep `rowHeight` raw, where `0` means fit-to-height, so reading

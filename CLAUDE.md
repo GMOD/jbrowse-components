@@ -20,6 +20,11 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - Keep the main model chain in one file.
 - Write config with `setConf`, not `configuration.setSlot`. Promotable slots
   resolve only via `resolveConf`.
+- **A mixin's host cast names the sibling field table, not
+  `AnyConfigurationModel`** — the widened form silently switches off
+  `getConf`/`setConf`'s slot-name check, and a misspelled _read_ has no
+  diagnostic at any layer. `RowHeightMixin`'s `confNode` is the worked example;
+  26 accesses across the five sibling mixins are still widened.
 - A bare getter returns a resolved value, never `undefined` — a sentinel prop
   gets a distinct resolved getter (`effectiveRowHeight`).
 - In React, `autorun` inside `useEffect`, not `reaction`.

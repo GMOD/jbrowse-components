@@ -2,15 +2,26 @@ import { getConf, setConf } from '@jbrowse/core/configuration'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { RowHeightConfigModel } from './rowHeightConfigSchemaFields.ts'
 
-// The mixin's own `self` is the empty model it declares, so it can see neither
-// the `configuration` the concrete display supplies nor the `autoRowHeight` it
-// computes — every display composing this is a BaseDisplay declaring both, so
-// they are really there. Same idiom, and the same reason, as
-// `TreeSidebarMixin`'s `confNode` and `HeightModeMixin`'s `heightHost`.
-const rowHost = (self: object) =>
-  self as { configuration: AnyConfigurationModel; autoRowHeight: number }
+/**
+ * The whole of what `RowHeightMixin` needs a composing display to be. Exported
+ * because it is the mixin's contract and `RowHeightMixin.test.ts` pins it:
+ * widen it and the `@ts-expect-error`s there go unused, which `pnpm typecheck`
+ * fails.
+ */
+export interface RowHeightHost {
+  configuration: RowHeightConfigModel
+}
+
+// The mixin's own `self` is the empty model it declares, so it cannot see the
+// `configuration` the concrete display supplies — every display composing this
+// is a BaseDisplay, so it is really there. Same idiom, and the same reason, as
+// `TreeSidebarMixin`'s and `ScoreScaleMixin`'s `confNode`. What it is narrowed
+// **to** is the part worth copying: the sibling slot table rather than
+// `AnyConfigurationModel`, so the reads and writes below still get their slot
+// name checked.
+const confNode = (self: object) => self as RowHeightHost
 
 /**
  * #stateModel RowHeightMixin
@@ -34,9 +45,9 @@ const rowHost = (self: object) =>
  * accessors now move together, matching `treeSidebarConfigSchemaFields` +
  * `TreeSidebarMixin`.
  *
- * **What stays per display is what genuinely differs**, and the doc says which:
- * `autoRowHeight`, because the height available to rows is a different quantity
- * in each (canvas's `fitTargetHeight`, maf's `rowsHeight`, variants'
+ * **What stays per display is the value, not the declaration**, and the doc says
+ * which: `autoRowHeight`, because the height available to rows is a different
+ * quantity in each (canvas's `fitTargetHeight`, maf's `rowsHeight`, variants'
  * `availableHeight`), and `setFitToHeight`, because seeding the `height` slot on
  * the way in is required exactly where the `height` getter is content-derived
  * and wrong where it is the slot itself.
@@ -59,7 +70,26 @@ export function RowHeightMixin() {
        * unticking and reticking the track.
        */
       get rowHeight(): number {
-        return getConf(rowHost(self), 'rowHeight')
+        return getConf(confNode(self), 'rowHeight')
+      },
+      /**
+       * #getter
+       * The height fit mode divides between the rows, declared here and
+       * **overridden by every display** — the quantity differs in each, so this
+       * stub is a slot for the answer rather than an answer. Declaring it is
+       * what lets `effectiveRowHeight` below read a member of its own type
+       * instead of one asserted onto `self`.
+       *
+       * A display that composes the mixin and supplies no override resolves to
+       * a 1px row, exactly as it did when this getter did not exist and the
+       * read found `undefined`: `resolveRowHeight` floors both.
+       *
+       * Supply it as a **getter**, the way all three displays do. Mobx refuses
+       * to write a volatile over a computed, so a `.volatile` of this name
+       * throws at `create` — loudly, and before any row is drawn.
+       */
+      get autoRowHeight(): number {
+        return 0
       },
     }))
     .views(self => ({
@@ -76,7 +106,7 @@ export function RowHeightMixin() {
        * result, which consumers divide by.
        */
       get effectiveRowHeight(): number {
-        return resolveRowHeight(self.rowHeight, rowHost(self).autoRowHeight)
+        return resolveRowHeight(self.rowHeight, self.autoRowHeight)
       },
     }))
     .actions(self => ({
@@ -88,7 +118,7 @@ export function RowHeightMixin() {
        * what the action is for.
        */
       setRowHeight(n: number) {
-        setConf(rowHost(self), 'rowHeight', n)
+        setConf(confNode(self), 'rowHeight', n)
       },
     }))
 }

@@ -117,13 +117,19 @@ export function resolveConf<
  *
  * **Prefer this over a bare `self.configuration.setSlot('x', v)`.** The
  * constraint here mirrors `getConf`'s, so on a model with a concrete schema an
- * unknown slot name is a compile error. The raw `setSlot` action takes a plain
- * `string`, and a typo there fails *completely silently*: the assignment lands
- * on an undeclared property, so nothing throws, nothing persists, and the
- * matching `getConf` read keeps returning the default. That is the one config
- * mistake with no diagnostic at any layer. `setSlot` itself stays untyped on
- * purpose. The config editor's slot facade routes dynamic slot names through it
- * (`configurationSchema.ts`).
+ * unknown slot name is a compile error. `setSlot` itself stays untyped on
+ * purpose — the config editor's slot facade routes dynamic slot names through
+ * it (`configurationSchema.ts`) — and guards the name at runtime instead
+ * (ADR-052), so a misspelled write is diagnosed one way or the other.
+ *
+ * **The read is the half with no diagnostic at all.** `getConf` for a name the
+ * schema doesn't declare returns `undefined` and reports nothing, at any layer,
+ * so the slot keeps reading as its default forever. Which makes the
+ * compile-time constraint worth keeping *reachable*: it is only as good as the
+ * schema of the holder handed in, and a holder widened to
+ * `AnyConfigurationModel` switches it off entirely — the trap a mixin casting
+ * to reach its host walks into (`RowHeightMixin`'s `confNode` narrows to dodge
+ * it; the sibling mixins do not).
  *
  * A wrong *value* type still throws at runtime (MST type-checks the assignment)
  * rather than at compile time. `value` is deliberately `unknown` because the
