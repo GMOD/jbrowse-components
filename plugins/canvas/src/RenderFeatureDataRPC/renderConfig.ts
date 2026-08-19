@@ -1,7 +1,20 @@
 import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configuration'
 
+import type { SubfeatureLabels } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+
+// An unset displayMode inherits the session-wide type default (see getConf /
+// promotable slots), which resolves to `normal`; every preset pins an explicit
+// height.
+export {
+  DISPLAY_MODES,
+  DISPLAY_MODE_OPTIONS,
+  SUBFEATURE_LABELS,
+  SUBFEATURE_LABEL_OPTIONS,
+  isDisplayMode,
+} from './displayModes.ts'
+export type { DisplayMode, SubfeatureLabels } from './displayModes.ts'
 
 // DisplayConfig-typed wrapper over the core reader. The core reader takes a
 // `Record<string, unknown>` for generic config snapshots; the single cast here
@@ -59,32 +72,6 @@ export function resolveThemeColor(value: string, fallback: string) {
   return value === THEME_DERIVED_COLOR ? fallback : value
 }
 
-// The height presets plus `collapsed`. An unset slot inherits the session-wide
-// type default (see getConf / promotable slots), which resolves to `normal`;
-// every preset here pins an explicit height. `collapsed` packs every feature
-// onto a single row and suppresses all labels (name, description, and
-// subfeature) for a dense one-line overview.
-//
-// Also the `displayMode` config enumeration — one source so the schema and the
-// resolved type can't drift. The unset inherit state is not a member (the slot
-// is a promotable `maybeStringEnum`).
-// The `subfeatureLabels` config enumeration + the resolved DisplayConfig field
-// type, one source. The unset inherit state (resolving to 'none') is not a
-// member — the slot is a promotable `maybeStringEnum`.
-export const SUBFEATURE_LABELS = ['none', 'below', 'overlay'] as const
-
-export const DISPLAY_MODES = [
-  'normal',
-  'compact',
-  'superCompact',
-  'collapsed',
-] as const
-export type DisplayMode = (typeof DISPLAY_MODES)[number]
-
-export function isDisplayMode(value: unknown): value is DisplayMode {
-  return (DISPLAY_MODES as readonly string[]).includes(value as string)
-}
-
 // Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on
 // any property is a type error rather than silently typing as `unknown`. The
 // widening to `Record<string, unknown>` that the core config reader wants is
@@ -101,7 +88,7 @@ export interface DisplayConfig {
   // slot — the display derives it from its track height (`effectiveMaxIsoforms`)
   // and substitutes it into the payload the way `geneGlyphMode` is substituted.
   maxIsoforms: number | undefined
-  subfeatureLabels: (typeof SUBFEATURE_LABELS)[number]
+  subfeatureLabels: SubfeatureLabels
   transcriptTypes: string[]
   // the attribute an isoform's curated "represents the gene" tag rides in, and
   // the values of it that count — `rankIsoforms` puts a tagged isoform ahead of

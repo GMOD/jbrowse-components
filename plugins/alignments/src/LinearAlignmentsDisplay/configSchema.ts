@@ -5,6 +5,7 @@ import {
   heightModeConfigSchemaFields,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { ARC_COLOR_TYPES } from '../shared/arcColorOptions.ts'
 import { isRegisteredColorScheme } from '../shared/colorSchemes.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
 import {
@@ -508,11 +509,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       arcColorByType: {
         type: 'stringEnum',
-        model: types.enumeration('ArcColorByType', [
-          'insertSizeAndOrientation',
-          'insertSize',
-          'orientation',
-        ]),
+        model: types.enumeration('ArcColorByType', [...ARC_COLOR_TYPES]),
         defaultValue: 'insertSizeAndOrientation',
         description: 'How to color read-connection arcs',
       },

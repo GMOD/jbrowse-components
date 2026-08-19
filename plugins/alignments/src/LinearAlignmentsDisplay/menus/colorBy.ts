@@ -8,6 +8,7 @@ import {
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
+import { ARC_COLOR_OPTIONS } from '../../shared/arcColorOptions.ts'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import { bisulfiteItem } from './bisulfiteMenu.ts'
 import { modificationsMenu } from './modificationsMenu.ts'
@@ -90,35 +91,6 @@ interface ColorByMenuOptions {
 // placement + shader path), in registry order so the menu is unchanged.
 const basicColorOptions = radioColorOptions('basic')
 const pairedEndColorOptions = radioColorOptions('pairedEnd')
-
-const arcColorOptions: {
-  value: ArcColorByType
-  label: string
-  subLabel?: string
-  helpText?: string
-}[] = [
-  {
-    value: 'insertSizeAndOrientation',
-    label: 'Insert size and orientation',
-    subLabel: 'short=pink, then orientation, then long',
-    helpText:
-      'Combined SV view. A short insert always paints pink regardless of orientation — at a short insert the useful signal is just "something is here", so orientation is not worth distinguishing. Otherwise an abnormal pair orientation wins (inversion, tandem duplication), and a large insert with normal orientation paints as a long insert (the classic deletion signature). Insert-size thresholds are robust to the long tail of large inserts (median ± 3·1.4826·MAD) so the short-insert signal is not washed out by a few very large outliers.',
-  },
-  {
-    value: 'insertSize',
-    label: 'Insert size',
-    subLabel: 'short=pink, long=red',
-    helpText:
-      'Colors only by template length: short inserts pink, long inserts red, normal grey — orientation ignored. Thresholds use a robust median ± 3·1.4826·MAD spread so a tight insert-size distribution with a few very large outliers still flags genuinely short inserts.',
-  },
-  {
-    value: 'orientation',
-    label: 'Orientation',
-    subLabel: 'color by pair orientation only',
-    helpText:
-      'Colors only by pair orientation (LR/RL/RR/LL), ignoring insert size. Useful when you only care about inversion/duplication signatures.',
-  },
-]
 
 // --- menu sections ----------------------------------------------------------
 //
@@ -224,7 +196,7 @@ function arcColorItem(
     type: 'subMenu',
     helpText:
       'How paired-end arcs and the read cloud overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
-    subMenu: radioItems(arcColorOptions, arcColor.current, arcColor.setColor),
+    subMenu: radioItems(ARC_COLOR_OPTIONS, arcColor.current, arcColor.setColor),
   }
 }
 

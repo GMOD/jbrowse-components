@@ -10,10 +10,7 @@ import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 import type React from 'react'
 
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
-
-// CIGAR display mode: 'full' colors indel wedges, 'matches' leaves indels
-// see-through (transparent), 'off' draws blocks only.
-export type CigarMode = 'off' | 'matches' | 'full'
+export type { CigarMode } from './cigarModes.ts'
 
 // Sub-pixel width fade: 'auto' turns on once the view is dense enough to tangle.
 export type FadeThinMode = 'auto' | 'on' | 'off'

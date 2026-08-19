@@ -19,8 +19,15 @@ import {
 } from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
 import { GROUP_BY_LABELS } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
 import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/autoscale.ts'
+import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
+import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
+import { SHOW_LABELS_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts'
+import {
+  DISPLAY_MODE_OPTIONS,
+  SUBFEATURE_LABEL_OPTIONS,
+} from '../../../../plugins/canvas/src/RenderFeatureDataRPC/displayModes.ts'
 import { getHeightModeOptions } from '../../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
 import {
   MULTI_WIGGLE_RENDERING_GROUPS,
@@ -384,14 +391,12 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMultiRowFeatureDisplay',
 ])
 
-// CIGAR_MODES in the synteny view's menus.ts, whose submenu sits in
-// headerMenuItems beside Re-order chromosomes. The section is gated on the data
-// (coarse-tier PIF and CIGAR-less PAF have no ops), not on config.
-const CIGAR_MODES: Record<string, string> = {
-  full: 'Colored indels',
-  matches: 'Transparent indels',
-  off: 'None',
-}
+// The synteny view's 'CIGAR display mode' radios, imported. Its submenu sits in
+// headerMenuItems beside Re-order chromosomes, gated on the data (coarse-tier
+// PIF and CIGAR-less PAF have no ops), not on config.
+const CIGAR_MODES: Record<string, string> = Object.fromEntries(
+  CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
+)
 
 // The two wiggle displays each open their own color editor from their own menu
 // item, and the two dialogs are not the same component: the single-wiggle one
@@ -528,12 +533,11 @@ function filterStep(
     : undefined
 }
 
-// arcColorOptions (menus/colorBy.ts), the radios inside its 'Arc color' submenu.
-const ARC_COLORS: Record<string, string> = {
-  insertSizeAndOrientation: 'Insert size and orientation',
-  insertSize: 'Insert size',
-  orientation: 'Orientation',
-}
+// The radios inside the alignments display's 'Arc color' submenu, imported so a
+// renamed radio changes this table with it.
+const ARC_COLORS: Record<string, string> = Object.fromEntries(
+  ARC_COLOR_OPTIONS.map(o => [o.value, o.label]),
+)
 
 // The alignments 'Sort by...' radios (menus/sortGroup.ts). The strand row is
 // titled from the track's noun, as the height submenus are.
@@ -607,13 +611,11 @@ function geneGlyphStep(value: unknown): FieldStep | undefined {
     : undefined
 }
 
-// values from SUBFEATURE_LABEL_OPTIONS in the canvas display's model.ts, which
-// doesn't export them ('none' reads as "Off" in the menu)
-const SUBFEATURE_LABELS: Record<string, string> = {
-  none: 'Off',
-  below: 'Below',
-  overlay: 'Overlay',
-}
+// The canvas display's "Subfeature labels" radios, imported ('none' reads as
+// "Off" in the menu).
+const SUBFEATURE_LABELS: Record<string, string> = Object.fromEntries(
+  SUBFEATURE_LABEL_OPTIONS.map(o => [o.value, o.label]),
+)
 
 // The two displays that own a per-feature size submenu title it differently:
 // the canvas display hard-codes 'Set feature height' (its trackMenus.ts), while
@@ -630,19 +632,13 @@ const heightMenu = (noun: string, displayType?: string) =>
     ? `${TRACK_MENU} → Set feature height`
     : `${TRACK_MENU} → ${noun.charAt(0).toUpperCase()}${noun.slice(1)} height`
 
-// The canvas display's two flat radio groups. Like SPECIAL_COLOR_MENUS these
-// labels are inline in canvas/LinearBasicDisplay/trackMenus.ts
-// (displayModeOptions, SHOW_LABELS_OPTION_LABELS) rather than in a registry the
-// website can import, so they are verified by hand and cited. Both recipes are
+// The canvas display's two flat radio groups, both imported. Both recipes are
 // gated on the display type because both field names mean a different menu
 // elsewhere — the alignments display has its own displayMode, and showLabels on
 // an LD display is a 'Show variant labels' checkbox.
-const DISPLAY_MODES: Record<string, string> = {
-  normal: 'Normal',
-  compact: 'Compact',
-  superCompact: 'Super-compact',
-  collapsed: 'Collapsed',
-}
+const DISPLAY_MODES: Record<string, string> = Object.fromEntries(
+  DISPLAY_MODE_OPTIONS.map(o => [o.value, o.label]),
+)
 
 // The arc display's `displayMode`, a different setting under the same name:
 // what an arc is drawn as. Imported rather than copied, so a renamed radio
@@ -651,13 +647,9 @@ const ARC_DISPLAY_MODES: Record<string, string> = Object.fromEntries(
   ARC_DISPLAY_MODE_OPTIONS,
 )
 
-const SHOW_LABELS_MODES: Record<string, string> = {
-  auto: 'Auto',
-  nameAndDescription: 'Name + description',
-  name: 'Name only',
-  description: 'Description only',
-  none: 'None',
-}
+const SHOW_LABELS_MODES: Record<string, string> = Object.fromEntries(
+  SHOW_LABELS_OPTIONS.map(o => [o.value, o.label]),
+)
 
 const SASHIMI_PLACEMENT: Record<string, string> = {
   auto: 'Auto (minimize overlap)',

@@ -2,6 +2,8 @@ import { radioItems } from '@jbrowse/core/ui/menuItems'
 import LinkIcon from '@mui/icons-material/Link'
 import RemoveIcon from '@mui/icons-material/Remove'
 
+import { CIGAR_MODE_OPTIONS } from './cigarModes.ts'
+
 import type { CigarMode } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LodTier } from '@jbrowse/synteny-core'
@@ -228,12 +230,6 @@ export function displayCanShowCigar(display: {
   )
 }
 
-const CIGAR_MODES: { label: string; mode: CigarMode }[] = [
-  { label: 'Colored indels', mode: 'full' },
-  { label: 'Transparent indels', mode: 'matches' },
-  { label: 'None', mode: 'off' },
-]
-
 // Gated on data, not config: coarse-tier PIF and CIGAR-less PAF have no ops to
 // display, so the whole section would be inert.
 export function cigarModeMenuItems(model: CigarModeModel): MenuItem[] {
@@ -241,7 +237,7 @@ export function cigarModeMenuItems(model: CigarModeModel): MenuItem[] {
     ? [
         {
           label: 'CIGAR display mode',
-          subMenu: CIGAR_MODES.map(({ label, mode }) => ({
+          subMenu: CIGAR_MODE_OPTIONS.map(({ label, value: mode }) => ({
             label,
             type: 'radio' as const,
             checked: model.cigarMode === mode,

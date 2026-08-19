@@ -12,15 +12,23 @@
 // `showLabels` / `effectiveShowDescriptions`) for all downstream consumers —
 // layout, RPC, SVG export, hit testing — so the enum itself never crosses the
 // worker boundary.
-export const SHOW_LABELS_MODES = [
-  'auto',
-  'nameAndDescription',
-  'name',
-  'description',
-  'none',
+// 'auto' leads because it's the default and the mode that needs no thought; the
+// four pinned rungs then read most-to-least text.
+//
+// The labels ride here rather than beside the radio that renders them because
+// the website's figure recipes name them in a click path, and the node script
+// that builds those cannot load a module importing React, MUI or a lazy `.tsx`.
+export const SHOW_LABELS_OPTIONS = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'nameAndDescription', label: 'Name + description' },
+  { value: 'name', label: 'Name only' },
+  { value: 'description', label: 'Description only' },
+  { value: 'none', label: 'None' },
 ] as const
 
-export type ShowLabelsMode = (typeof SHOW_LABELS_MODES)[number]
+export type ShowLabelsMode = (typeof SHOW_LABELS_OPTIONS)[number]['value']
+
+export const SHOW_LABELS_MODES = SHOW_LABELS_OPTIONS.map(o => o.value)
 
 // Whether the mode admits each label kind at all. 'auto' admits both and defers
 // to the density thresholds; the model combines these with the density gate,

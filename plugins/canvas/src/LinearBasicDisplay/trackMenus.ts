@@ -11,8 +11,9 @@ import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
 
+import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
-import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
+import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasColorLegend } from './baseModel.ts'
@@ -22,15 +23,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { HeightModeMenuModel } from '@jbrowse/plugin-linear-genome-view'
-
-// Single source for the size-preset radio options and their labels, so a
-// fourth mode can't drift between the menu and the label lookup.
-const displayModeOptions: { value: DisplayMode; label: string }[] = [
-  { value: 'normal', label: 'Normal' },
-  { value: 'compact', label: 'Compact' },
-  { value: 'superCompact', label: 'Super-compact' },
-  { value: 'collapsed', label: 'Collapsed' },
-]
 
 // What the recovery rows (clear highlights, unpin, the filter family) carry so
 // they sort to the bottom of the track menu. Every menu level sorts by
@@ -141,17 +133,6 @@ export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   ]
 }
 
-// Wording for the label radio, and the single place the mode order is fixed.
-// 'auto' leads because it's the default and the mode that needs no thought; the
-// four pinned rungs then read most-to-least text.
-const SHOW_LABELS_OPTION_LABELS: Record<ShowLabelsMode, string> = {
-  auto: 'Auto',
-  nameAndDescription: 'Name + description',
-  name: 'Name only',
-  description: 'Description only',
-  none: 'None',
-}
-
 // The radio groups of the "Show..." submenu, each a subHeader + inline radios.
 // Rendered after the checkboxes; subclasses override to append.
 export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
@@ -159,9 +140,9 @@ export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
   return inlineRadioGroup(
     'Labels',
     self.showLabelsMode,
-    SHOW_LABELS_MODES.map(value => ({
+    SHOW_LABELS_OPTIONS.map(({ value, label }) => ({
       value,
-      label: SHOW_LABELS_OPTION_LABELS[value],
+      label,
       subLabel:
         inert && value === self.showLabelsMode && value !== 'none'
           ? 'Hidden while collapsed'
@@ -231,7 +212,7 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
         // is a sentinel promotable slot, so every preset — `normal`
         // included — is customizable back over another session default.
         ...promotableRadioItems(
-          displayModeOptions,
+          DISPLAY_MODE_OPTIONS,
           self.displayMode,
           mode => {
             self.setDisplayMode(mode)

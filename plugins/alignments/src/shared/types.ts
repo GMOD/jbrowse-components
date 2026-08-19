@@ -2,17 +2,7 @@ import { defaultFilterFlags } from './util.ts'
 
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
-// Coloring mode for paired-end arcs / read cloud. A deliberately smaller,
-// separately-persisted vocabulary than the read-fill `ColorSchemeType`: arcs
-// support only these three, and `'orientation'` is the arc name for the read
-// scheme's `'pairOrientation'`. Kept distinct because it is a saved config value
-// (renaming would need a migration) and the arc menu carries its own richer
-// help text (see arcColorOptions in menus/colorBy.tsx). getArcColorType
-// (features/arcs/arcColors.ts) mirrors the matching read-fill logic.
-export type ArcColorByType =
-  | 'insertSizeAndOrientation'
-  | 'insertSize'
-  | 'orientation'
+export type { ArcColorByType } from './arcColorOptions.ts'
 
 // Minimum modification-call probability (%) shown by default. Stored threshold
 // is omitted at this value so default sessions don't carry a redundant field.

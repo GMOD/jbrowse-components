@@ -17,6 +17,7 @@ import SegmentIcon from '@mui/icons-material/Segment'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import { autorun } from 'mobx'
 
+import { SUBFEATURE_LABEL_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
 import { budgetFeatureHeightPx } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
   anyIsoformsHidden,
@@ -36,18 +37,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 export type { Region } from '@jbrowse/core/util'
-
-// Radio options for the "Subfeature labels" submenu. 'none' is the promotedBase
-// of the promotable slot; every option is still customizable so any mode can be
-// promoted back over another session default (mirrors the displayMode menu).
-const SUBFEATURE_LABEL_OPTIONS = [
-  { value: 'none', label: 'Off' },
-  { value: 'below', label: 'Below' },
-  { value: 'overlay', label: 'Overlay' },
-] as const satisfies readonly {
-  value: DisplayConfig['subfeatureLabels']
-  label: string
-}[]
 
 // How long a track height has to hold still before the isoform cap follows it.
 const HEIGHT_SETTLE_MS = 300

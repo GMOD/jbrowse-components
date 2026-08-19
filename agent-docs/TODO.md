@@ -1260,11 +1260,14 @@ that builds the recipes cannot load a module importing React, MUI or a lazy
 that move is the worked example, and `ARC_DISPLAY_MODE_OPTIONS` is the case that
 needed nothing.
 
-Three more cite a registry that exists but is not exported, so each is a one-word
-change plus the same leaf test: `arcColorOptions`
-(alignments/LinearAlignmentsDisplay/menus/colorBy.ts), `SUBFEATURE_LABEL_OPTIONS`
-and `displayModeOptions` (canvas/LinearBasicDisplay, model.ts and trackMenus.ts).
-All three modules build menus, so expect to extract rather than just export.
+**The three that cited an unexported registry are done**, and all three needed
+the extraction rather than an export, as expected — every one of their modules
+imports MUI. `arcColorOptions` became `shared/arcColorOptions.ts` (which now also
+feeds the config schema's `types.enumeration`), `displayModeOptions` and
+`SUBFEATURE_LABEL_OPTIONS` became `RenderFeatureDataRPC/displayModes.ts`, and two
+more went with them for free: `SHOW_LABELS_OPTION_LABELS` into the leaf
+`showLabelsMode.ts` already beside it, and the synteny view's `CIGAR_MODES` into
+`LinearSyntenyView/cigarModes.ts`.
 
 The rest of the ~20 tables have no cited registry at all, and several are not
 convertible in principle — `SETTINGS_POPOVERS` and the `GRAPH_*` tables name
