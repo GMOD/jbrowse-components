@@ -299,10 +299,30 @@ async function waitForCaptureSettled(page: Page) {
 // through the compositor, so the two answers separate the causes:
 //
 //   canvas has content, screenshot blank -> the CAPTURE path (compositing)
-//   canvas also blank                    -> the RENDER (or, on WebGL with the
-//                                           default preserveDrawingBuffer:false,
-//                                           a buffer already cleared — those two
-//                                           stay indistinguishable from here)
+//   canvas also blank                    -> the RENDER path, but ONLY on a
+//                                           canvas whose backing store survives
+//                                           presentation — see below
+//
+// **On a WebGL canvas the blank branch is the only branch.** Nothing in this
+// repo passes `preserveDrawingBuffer`, so every GPU display's context takes the
+// default `false` and its backing store is emptied the moment the frame is
+// presented. `toDataURL` after that is byte-identical to a blank canvas whether
+// the display drew a full screen of ribbons or nothing at all —
+// `probe-canvas-selfreport.ts` renders the LGV synteny track and prints both
+// notes, and on a real GPU, in a run whose screenshot has content and whose
+// test passes, the WebGL canvas still reads back blank.
+//
+// CROSS_BACKEND_GATE.md has said so since the 34-blank survey ("every blank that
+// *can* be attributed points at the capture path, and every webgl one tells you
+// nothing") while this string said `-> render side` and the assertion below
+// named a shader regression. The doc is not what a reader hits at 2am; the
+// failure message is. So the note carries the doc's finding now — a verdict
+// reached the same way on every input, trusted because it looks specific, sends
+// whoever hit a compositing blank into the shaders.
+//
+// What separates the two is a second run: `--real-gpu` on the one failing test,
+// since a SwiftShader compositing blank does not survive it. NOT
+// `preserveDrawingBuffer` — tested as a fix and refuted, same doc.
 //
 // Comparing against a same-size blank canvas is exact, rather than guessing a
 // byte-length threshold. The data URL comes back with the verdict so that
@@ -323,6 +343,23 @@ export async function canvasSelfReport(
       if (!canvas) {
         return { note: ' [self-report: no canvas element found]' }
       }
+      // Whether this canvas's backing store outlives presentation at all. A
+      // context that is already 2d always does; a WebGL one does only with
+      // preserveDrawingBuffer, which nothing here sets. `getContext` returns the
+      // context the canvas already carries and null for a different type, so
+      // this asks rather than creating anything.
+      let volatileBuffer = false
+      for (const type of ['webgl2', 'webgl'] as const) {
+        try {
+          const gl = canvas.getContext(type) as WebGLRenderingContext | null
+          if (gl) {
+            volatileBuffer = !gl.getContextAttributes()?.preserveDrawingBuffer
+            break
+          }
+        } catch {
+          // a canvas of another context type — not a WebGL one, keep looking
+        }
+      }
       const blank = document.createElement('canvas')
       blank.width = canvas.width
       blank.height = canvas.height
@@ -330,7 +367,13 @@ export async function canvasSelfReport(
       const size = `${canvas.width}x${canvas.height}`
       return url === blank.toDataURL()
         ? {
-            note: ` [self-report: canvas ${size} is ALSO blank -> render side]`,
+            note: volatileBuffer
+              ? ` [self-report: canvas ${size} reads back blank, but it is a WebGL ` +
+                `canvas with preserveDrawingBuffer:false — a presented frame reads ` +
+                `blank here whether or not it drew, so this says NOTHING about which ` +
+                `side failed. Re-run this one test with --real-gpu: a SwiftShader ` +
+                `compositing blank does not survive it, a render one does]`
+              : ` [self-report: canvas ${size} is ALSO blank -> render side]`,
           }
         : {
             note:

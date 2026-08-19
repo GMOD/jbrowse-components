@@ -90,6 +90,15 @@ blanks self-report "ALSO blank", which is not, because a cleared drawing buffer
 reads identically. So every blank that *can* be attributed points at the capture
 path, and every webgl one tells you nothing.
 
+That paragraph was true here and false in the failure message for as long as
+both existed. `canvasSelfReport` spelled the webgl branch `-> render side` and
+`assertNonBlank` closed with "usually means a shader/upload regression", so the
+one artifact a reader actually meets named the half this section rules out —
+a conclusion no input could have changed, since the branch is the only one a
+WebGL canvas reaches. Both strings carry the finding now, and
+`probe-canvas-selfreport.ts` prints the two notes side by side on a page that is
+demonstrably rendering: run it before trusting any future readback verdict.
+
 The durable capture-side mechanics are in
 [SCREENSHOT_CAPTURE_RACE.md](SCREENSHOT_CAPTURE_RACE.md).
 

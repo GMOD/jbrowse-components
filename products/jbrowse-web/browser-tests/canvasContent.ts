@@ -56,8 +56,15 @@ export function assertNonBlank(
         `(need ${minDistinctColors}), ` +
         `${(stats.nonBgFraction * 100).toFixed(3)}% non-background pixels ` +
         `(need ${(minNonBgFraction * 100).toFixed(3)}%). ` +
-        `A GPU display that renders blank usually means a shader/upload ` +
-        `regression, not a snapshot drift.`,
+        // Was "usually means a shader/upload regression, not a snapshot drift",
+        // which is the wrong half to name first under `--swiftshader`: a
+        // SwiftShader screenshot of a WebGL canvas comes back empty for a
+        // compositing reason, and the self-report cannot contradict it (see
+        // canvasSelfReport). Read the note this label carries, then re-run the
+        // one test with `--real-gpu` before opening a shader.
+        `A shader/upload regression looks like this, and so does a SwiftShader ` +
+        `compositing blank — read the self-report note above, then re-run this ` +
+        `one test with --real-gpu, which only the first survives.`,
     )
   }
 }
