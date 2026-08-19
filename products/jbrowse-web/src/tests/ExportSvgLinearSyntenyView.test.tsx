@@ -232,3 +232,102 @@ test('export svg of synteny bakes in the color-by legend', async () => {
     expect(svg).toContain('reverse')
   })
 }, 45000)
+
+// Two volvox rows over volvox_fake_synteny, which pairs ctgA with ctgA and ctgB
+// with ctgB. The lower row shows ctgA alone, so all six ctgB alignments lose
+// their second endpoint and become the class the stubs mark.
+const offscreenMateSession = {
+  ...syntenySession,
+  views: [
+    {
+      ...syntenySession.views[0],
+      showOffscreenMates: true,
+      tracks: [
+        {
+          id: 's1',
+          type: 'SyntenyTrack',
+          configuration: 'volvox_fake_synteny',
+          minimized: false,
+          displays: [
+            {
+              id: 's1-display',
+              type: 'LinearSyntenyDisplay',
+              configuration: 'volvox_fake_synteny-LinearSyntenyDisplay',
+              height: 100,
+            },
+          ],
+        },
+      ],
+      views: [
+        {
+          id: 'view1',
+          minimized: false,
+          type: 'LinearGenomeView',
+          offsetPx: 0,
+          bpPerPx: 100,
+          displayedRegions: [
+            {
+              refName: 'ctgA',
+              start: 0,
+              end: 50001,
+              reversed: false,
+              assemblyName: 'volvox',
+            },
+            {
+              refName: 'ctgB',
+              start: 0,
+              end: 6079,
+              reversed: false,
+              assemblyName: 'volvox',
+            },
+          ],
+          tracks: [],
+        },
+        {
+          id: 'view2',
+          minimized: false,
+          type: 'LinearGenomeView',
+          offsetPx: 0,
+          bpPerPx: 100,
+          displayedRegions: [
+            {
+              refName: 'ctgA',
+              start: 0,
+              end: 50001,
+              reversed: false,
+              assemblyName: 'volvox',
+            },
+          ],
+          tracks: [],
+        },
+      ],
+    },
+  ],
+}
+
+// `showOffscreenMates` is a menu setting like the color-by legend, so a figure
+// taken with it on has to carry it — otherwise the export of a view reporting
+// what it cannot draw is the export that does not draw it.
+test('export svg of synteny bakes in the off-screen mate stubs', async () => {
+  await mockConsoleWarn(async () => {
+    const { findByTestId, findAllByText, findByText } = await createView({
+      ...volvoxConfig,
+      defaultSession: offscreenMateSession,
+    })
+
+    const svg = await exportAndVerifySvg({
+      findByTestId,
+      findAllByText,
+      findByText,
+      filename: 'synteny_offscreen_mates',
+      delay,
+    })
+    // the top row's ruler prints "ctgB" too, so this asks for the stub layer's
+    // own marks: one tick per dropped alignment along the band's top edge, and
+    // ONE haloed label for the stretch they form
+    expect(
+      svg.match(/<rect x="[\d.]+" y="0" width="[\d.]+" height="6"/g),
+    ).toHaveLength(6)
+    expect(svg.match(/stroke-linejoin="round"[^>]*>ctgB</g)).toHaveLength(1)
+  })
+}, 45000)

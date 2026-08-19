@@ -5,7 +5,10 @@ import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { drawOffscreenMates } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
+import {
+  drawOffscreenMates,
+  offscreenMateColors,
+} from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import { offscreenMateStubs } from './offscreenMateStubs.ts'
 
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
@@ -20,8 +23,13 @@ import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
  * thousands of rects, not the millions the instance path exists for.
  *
  * `pointerEvents: none`, so every hit test still reaches the level's canvas
- * underneath. A stub is not pickable yet; when it becomes so, that belongs in
- * the level's own pick engine rather than a second hit path here.
+ * underneath. A stub IS clickable, and that hit test lives in the level's own
+ * pointer handlers (`offscreenMateHit`) rather than here: two hit paths over one
+ * band is how a click comes to mean different things depending on which element
+ * received it.
+ *
+ * The SVG export runs the same draw through `SVGOffscreenMates`, so a figure
+ * carries whatever this shows.
  */
 const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
   model,
@@ -29,11 +37,7 @@ const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
   model: LinearSyntenyViewHelperModel
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
-  const theme = useTheme()
-  const color = theme.palette.text.secondary
-  // the band's own ground, so a label over a ribbon stays readable — see
-  // drawOffscreenMates' LABEL_HALO_PX
-  const haloColor = theme.palette.background.paper
+  const { color, haloColor } = offscreenMateColors(useTheme())
 
   useEffect(() => {
     // autorun rather than a dep array: what this draws from is MST state

@@ -22,6 +22,7 @@ function renderLevel() {
             { key: 'a', node: <rect data-testid="ribbons-a" /> },
             { key: 'b', node: <rect data-testid="ribbons-b" /> },
           ]}
+          offscreenMates={<rect data-testid="stubs" />}
           legend={<text>legend</text>}
         />
       </svg>
@@ -42,4 +43,16 @@ test('keeps the color-by legend outside the clip', () => {
   const clipped = container.querySelector('g[clip-path]')
   expect(clipped?.textContent).not.toContain('legend')
   expect(container.textContent).toContain('legend')
+})
+
+// On screen the stubs are a canvas stacked over every display's ribbons, so the
+// figure has to stack them the same way — under the next display's band instead
+// and a two-track level hides half of them.
+test('draws the off-screen mate stubs over the ribbons, inside the clip', () => {
+  const { container } = renderLevel()
+  const clipped = container.querySelector('g[clip-path]')
+  const ids = [...clipped!.querySelectorAll('[data-testid]')].map(e =>
+    e.getAttribute('data-testid'),
+  )
+  expect(ids).toEqual(['ribbons-a', 'ribbons-b', 'stubs'])
 })

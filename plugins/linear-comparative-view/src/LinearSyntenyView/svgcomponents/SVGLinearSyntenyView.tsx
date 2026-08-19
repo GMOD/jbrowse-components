@@ -18,9 +18,11 @@ import {
 import { SVGColorByLegend } from '@jbrowse/synteny-core'
 
 import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
+import SVGOffscreenMates from './SVGOffscreenMates.tsx'
 import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
+import type { StubSource } from '../../LinearSyntenyViewHelper/offscreenMateStubs.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
 
@@ -29,7 +31,7 @@ import type { ExportSvgOptions } from '../types.ts'
 // model), so everything read off one is `any` — naming the shape here keeps that
 // out of the layout math below, where an undefined height would silently make
 // the running offset NaN.
-interface SyntenyLevel {
+interface SyntenyLevel extends StubSource {
   height: number
   linearSyntenyDisplays: LinearSyntenyDisplayModel[]
 }
@@ -172,6 +174,14 @@ export async function renderToSvg(
                 levelHeight={level.height}
                 trackLabelOffset={trackLabelOffset}
                 rendering={renderings[i]!}
+                offscreenMates={
+                  <SVGOffscreenMates
+                    level={level}
+                    width={width}
+                    height={level.height}
+                    opts={opts}
+                  />
+                }
                 // one legend for the whole view, in the topmost ribbon band —
                 // the same placement the on-screen LevelSection uses
                 legend={

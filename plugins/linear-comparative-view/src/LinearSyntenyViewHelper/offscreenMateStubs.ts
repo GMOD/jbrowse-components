@@ -9,9 +9,10 @@ export interface OffscreenMateStubs {
   minAlignmentLength: number
 }
 
-// The structural slice the overlay reads, so what decides where a stub lands is
-// checkable without a canvas — which jsdom does not give one of anyway.
-interface StubSource {
+// The structural slice the overlay and the SVG export read, so what decides
+// where a stub lands is checkable without a canvas — which jsdom does not give
+// one of anyway.
+export interface StubSource {
   level: number
   linearSyntenyDisplays: {
     featureData?: { offscreenMates: OffscreenMateData }

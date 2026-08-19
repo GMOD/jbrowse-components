@@ -1,4 +1,6 @@
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { Theme } from '@mui/material'
 
 // Tall enough to see against a scalebar, short enough that it visibly STOPS.
 // The whole risk in drawing these is that a mark spanning the band reads as an
@@ -39,6 +41,17 @@ const LABEL_BASELINE_PX = 16
 // label per anchor is a wall of the same word; a label per STRETCH is the
 // annotation a reader wanted.
 const LABEL_MERGE_GAP_PX = 20
+
+// One source for both surfaces. The screen overlay and the SVG export run the
+// same draw, and a figure whose stubs are a different grey from the ones the
+// user turned on is a difference nothing would report.
+export function offscreenMateColors(theme: Theme) {
+  return {
+    color: theme.palette.text.secondary,
+    // the band's own ground, so a label over a ribbon stays readable
+    haloColor: theme.palette.background.paper,
+  }
+}
 
 interface LabelRun {
   refName: string
@@ -212,7 +225,7 @@ export function offscreenMateAt(
  * whose neighbours would have overprinted it.
  */
 export function drawOffscreenMates(
-  ctx: CanvasRenderingContext2D,
+  ctx: Ctx2D,
   layout: OffscreenMateLayout & { color: string; haloColor: string },
 ) {
   const rects = offscreenMateRects(layout)

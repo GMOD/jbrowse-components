@@ -1,3 +1,5 @@
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+
 import {
   MIN_OFFSCREEN_MATE_WIDTH_PX,
   OFFSCREEN_MATE_HEIGHT_PX,
@@ -290,4 +292,22 @@ test('a label is haloed before it is filled', () => {
   drawOffscreenMates(ctx, { ...params, data: data([[0, 1000]], ['ctgB']) })
   expect(strokes).toEqual(texts)
   expect(strokes).toHaveLength(1)
+})
+
+// The export runs this same function against SvgCanvas rather than a real
+// context, which is the first draw path in the repo to call `ctx.measureText`
+// (see SvgCanvas's own note on it) — so a missing method here is a figure with
+// no stubs in it, and nothing else would report that.
+test('the same draw emits stubs and labels through SvgCanvas', () => {
+  const svg = new SvgCanvas()
+  drawOffscreenMates(svg, {
+    ...params,
+    width: 1000,
+    data: data([[0, 1000]], ['ctgB']),
+  })
+  const out = svg.getSerializedSvg()
+  expect(out).toContain('<rect')
+  // haloed: the stroked copy under the filled one, as on screen
+  expect(out.match(/<text/g)).toHaveLength(2)
+  expect(out).toContain('ctgB')
 })
