@@ -124,6 +124,10 @@ export interface GlobalFetchPhases<TArgs, TResult> {
    * derivation the commit needs — and writes nothing to the model. Returns
    * `undefined` for "nothing to commit", which is what a pre-flight that stopped
    * this fetch says.
+   *
+   * Reached inside `runFetch`, an MST flow, so nothing it reads is tracked: the
+   * payload it assembles cannot widen the autorun's dependency set the way
+   * calling `rpcProps()` in the body would.
    */
   run: (args: TArgs, ctx: FetchContext) => Promise<TResult | undefined>
   /**
