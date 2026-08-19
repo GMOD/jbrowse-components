@@ -60,6 +60,23 @@ interface Arm {
  * OUT table beside it in the same file is mostly refusals to draw, and PAN is
  * the both-arms-refetch comparison.
  */
+/** why this arm cannot be published as a timing, or undefined if it can */
+function unpublishable(arm: Arm) {
+  // A censored cell hit MAX_WAIT and its true figure is larger; a bailed step
+  // drew nothing. Either one published as a plain number is a claim the run did
+  // not make.
+  if (arm.censored) {
+    return 'censored at MAX_WAIT'
+  }
+  if (arm.allBailed || arm.stepsBailed > 0) {
+    return `${arm.stepsBailed} step(s) drew nothing`
+  }
+  if (arm.stepsMeasured === 0) {
+    return 'no steps measured'
+  }
+  return undefined
+}
+
 function zoomInRefetch(raw: any) {
   const cases = Object.entries(raw.results as Record<string, any>)
     .filter(([, v]) => v.in)
@@ -68,19 +85,39 @@ function zoomInRefetch(raw: any) {
     throw new Error('interaction.json has no zoom-in results')
   }
   for (const { name, arms } of cases) {
-    for (const [side, arm] of Object.entries(arms)) {
-      // A censored cell hit MAX_WAIT and its true figure is larger; a bailed
-      // step drew nothing. Either one published as a plain number is a claim
-      // the run did not make.
-      if (arm.censored || arm.stepsBailed > 0 || arm.allBailed) {
+    for (const side of ['new', 'baseline']) {
+      const why = arms[side] && unpublishable(arms[side])
+      if (why) {
         throw new Error(
-          `${name}/${side}: ${arm.censored ? 'censored at MAX_WAIT' : `${arm.stepsBailed} step(s) drew nothing`} — this run cannot be published as a timing`,
+          `${name}/${side}: ${why} — this run cannot be published as a timing`,
         )
       }
-      if (arm.stepsMeasured === 0) {
-        throw new Error(`${name}/${side}: no steps measured`)
-      }
     }
+  }
+
+  // jb2bench serves the version the 2023 paper benchmarked on port 8004 and
+  // calls that arm `published`. It is optional there and optional here: the
+  // whole matrix is not worth refusing over a column that need not exist, and a
+  // 2023 build plausibly runs the deepest long-read case past MAX_WAIT. So the
+  // column appears only when every one of its cells is publishable, and its
+  // absence leaves the two-column record byte-identical to before.
+  const publishedBuild = raw.builds.published as string | undefined
+  const publishedRefusals = publishedBuild
+    ? cases
+        .map(({ name, arms }) => {
+          const why = arms.published
+            ? unpublishable(arms.published)
+            : 'not measured'
+          return why ? `${name} (${why})` : undefined
+        })
+        .filter(x => x !== undefined)
+    : ['no published arm in this run']
+  const withPublished =
+    publishedBuild !== undefined && publishedRefusals.length === 0
+  if (publishedBuild && !withPublished) {
+    console.log(
+      `zoom-in-refetch: dropping the ${publishedBuild} column — ${publishedRefusals.join(', ')}`,
+    )
   }
   return {
     id: 'zoom-in-refetch',
@@ -93,7 +130,7 @@ function zoomInRefetch(raw: any) {
       from: 'results/interaction.json',
       repro:
         'make interaction, in ~/src/jb2bench, then `node website/scripts/import-jb2bench.ts` here',
-      notes: `${raw.loc}, ${raw.builds.new} against ${raw.builds.baseline}. time-to-content is the median wall clock a loading indicator is shown after a zoom before correct content returns; redraw is the longest frame of the GPU redraw. Every cell drew, and none was censored at MAX_WAIT — the importer refuses the file otherwise.`,
+      notes: `${raw.loc}, ${raw.builds.new} against ${raw.builds.baseline}${withPublished ? ` and ${publishedBuild}, the version the 2023 paper benchmarked` : ''}. time-to-content is the median wall clock a loading indicator is shown after a zoom before correct content returns; redraw is the longest frame of the GPU redraw. Every cell drew, and none was censored at MAX_WAIT — the importer refuses the file otherwise.`,
     },
     columns: [
       { key: 'case', label: 'case' },
@@ -109,6 +146,16 @@ function zoomInRefetch(raw: any) {
         format: 'ms',
         align: 'right',
       },
+      ...(withPublished
+        ? [
+            {
+              key: 'publishedMs',
+              label: publishedBuild,
+              format: 'ms',
+              align: 'right',
+            },
+          ]
+        : []),
       {
         key: 'redrawMs',
         label: 'longest redraw frame',
@@ -121,6 +168,9 @@ function zoomInRefetch(raw: any) {
         case: name,
         currentMs: Math.round(arms.new!.zoomTimeToContentMs),
         baselineMs: Math.round(arms.baseline!.zoomTimeToContentMs),
+        ...(withPublished
+          ? { publishedMs: Math.round(arms.published!.zoomTimeToContentMs) }
+          : {}),
         // Rounded to whole milliseconds, as jb2bench's own table writes it. The
         // raw value carries float noise (`16.700000000000728`) that the record
         // would otherwise render to fifteen decimals.
