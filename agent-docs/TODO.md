@@ -85,6 +85,9 @@ before anyone noticed.
 | [Sweep the unused exports, or close the question](#sweep-the-unused-exports-with-a-real-tool-or-close-the-question) | tooling, CI | configure knip per package; a grep returns 623 names and almost none are dead |
 | [charactersPerRow is a constant on a model](#charactersperrow-is-a-constant-living-on-a-model) | feature details | decide setting vs const; a setter with no UI is the worst option |
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
+| [The config-read baseline's remaining 125](#the-config-read-baselines-remaining-125-is-mostly-not-display-debt) | config, types | 72 of them are track/assembly reads; confirm that before estimating any of it |
+| [makePin checks the slot name, not the value](#makepin-checks-the-slot-name-but-not-the-value) | config, menus | decide whether the runtime throw is already enough |
+| [The config docs' adapter links follow scan order](#the-config-docs-adapter-links-follow-scan-order) | website, tooling | sort in `compatibleAdaptersLines`; check the whole-artifact diff first |
 
 ## Ready to build: small and self-contained
 
@@ -1277,6 +1280,65 @@ controls in a plugin this repo does not build, and the config-slot names under
 `Track menu → Settings` are generated form fields rather than labels. Read the
 comment above each table before assuming one is available; the ones worth doing
 say where their labels came from.
+
+### The config-read baseline's remaining 125 is mostly not display debt
+
+`scripts/configReadTypeGaps.txt` sits at 125 unchecked source reads, down from
+154 once every cross-cutting mixin named its own field table. The number invites
+a sweep and the sweep would mostly be the wrong work, so the split is worth
+having before anyone estimates it:
+
+- **72 are track- or assembly-schema reads** — `name` 24, `assemblyNames` 21,
+  `adapter` 14, `trackId` 13. They are filed under whichever display or widget
+  file contains them, so the list reads as display debt and isn't: naming a
+  display factory's schema cannot reach a read against the containing track. The
+  one entry still listed under a `*Mixin.ts` is one of these
+  (`getConf(getContainingTrack(self), 'adapter')` in `WiggleCommonMixin`).
+- **~12 are the root config** — `theme` x5, `defaultDriver` x3, `extraThemes`
+  x2, `workerCount`, `shareURL`. Blocked rather than small: the root schema is
+  assembled from the plugin manager at runtime, and a base taken from
+  `pluginManager.getDisplayType(…).configSchema` poisons the whole schema
+  through `GetBase`, so it wants re-plumbing before naming it buys anything.
+- The rest is a long tail of factories that left `configSchema` at
+  `AnyConfigurationSchemaType`, usually one line each.
+
+The mixin population is closed and should stay closed: `HostChecksSlotNames`
+pins each host and the baseline's own header now says so — it used to say the
+opposite ("load-bearing and ACCEPTED"), which is the sentence that had kept it
+open. **Re-baseline in the same commit as any improvement**; the gate only fails
+when the count grows, so a win nobody ratchets is a win that can be undone
+silently.
+
+### makePin checks the slot name, but not the value
+
+`makePin(self, slot, value)` constrains `slot` against the display's schema now,
+and leaves `...value: [] | [unknown]`. A wrong value builds a pin that is inert
+*and* silent in one direction — the on-value the cascade would refuse means
+clicking stores a key `resolveSlotIn` drops, so no track moves and the pin draws
+outline forever.
+
+The reason this is filed rather than done: the runtime already throws
+`cannot pin` for exactly that case and `promotableDefaults.test.ts` covers it, so
+what a type would add is moving a covered throw to compile time. Weigh that
+against the shape of the work — the value type is
+`ConfigurationSlotValueResolved<Schema, Slot>`, and several call sites pass a
+union-typed mode (`sashimiArcsMode`, `subfeatureLabels`, `colorBy`) whose
+declared union may not be identical to the slot's `stringEnum`. Start by
+checking whether those unions already match; if they do, this is small.
+
+### The config docs' adapter links follow scan order
+
+`compatibleAdaptersLines` in `website/scripts/api-docs/generateConfigDocs.ts`
+emits `links.adaptersByTrack.get(trackType)` unsorted, and that map is built in
+source-scan order. So an unrelated new export in a plugin's `index.ts` reorders
+the "Related links" block on a committed page — it moved `BigWigAdapter` on
+`LinearWiggleDisplay.md` and `QuantitativeTrack.md` in `9ce9a601ad`, which is
+diff noise that will flip back the next time someone touches an index.
+
+Sorting by adapter name fixes it. Check the whole-artifact diff before
+committing to that: a few lists may be in a deliberate primary-format-first
+order (alignments' Bam/Cram) that sorting would spoil, and if so the fix is to
+sort the registration rather than the render.
 
 ## Blocked on a visual call
 
