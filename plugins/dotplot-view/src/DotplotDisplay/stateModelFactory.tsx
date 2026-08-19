@@ -7,6 +7,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/keyedUploadSync'
 import {
   SyntenyFetchStateMixin,
+  comparativeDisplayPhase,
   getCoarseBpPerPxThreshold,
   isDataCurrent,
   resolveLodTier,
@@ -31,6 +32,7 @@ import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotHoverHighlight, DotplotRpcData } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type {
   ComparativeWarning,
   LodTier,
@@ -412,6 +414,30 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        */
       get dataCurrent(): boolean {
         return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
+      },
+      /**
+       * #getter
+       * The display's own mutually-exclusive state, the way every LGV display
+       * publishes one — so `AppReadyMarker` counts this display's fetch, and the
+       * app stops reporting itself ready over a plot that is still
+       * working. Ranked by `comparativeDisplayPhase`, off the shared canvas's
+       * `surfaceReadiness` and this display's own fetch state.
+       *
+       * `DisplayStatusPhase`, not `DisplayPhase`: the view owns the
+       * rendering backend, so this display can never be the one to report a
+       * backend failure.
+       */
+      get displayPhase(): DisplayStatusPhase {
+        return comparativeDisplayPhase(
+          {
+            error: self.error,
+            fetchInert: self.fetchInert,
+            loading: this.loading,
+            refetching: this.refetching,
+            dataCurrent: this.dataCurrent,
+          },
+          this.view.surfaceReadiness,
+        )
       },
       /**
        * #getter

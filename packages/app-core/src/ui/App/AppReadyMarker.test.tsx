@@ -69,12 +69,42 @@ test('one loading display among many holds the app loading', () => {
   ).toBe('loading')
 })
 
-// A container view (synteny, dotplot) keeps its tracks on sub-views, so a walk
-// that reads the top level only reports a loading app as ready.
+// A container view holds sub-views with track lists of their own — the synteny
+// view's genome rows — so a walk that reads the top level only reports a loading
+// app as ready.
 test('a sub-view display is reached', () => {
   expect(
     phaseOf([
       { views: [{ tracks: [{ displays: [{ displayPhase: 'loading' }] }] }] },
     ]),
   ).toBe('loading')
+})
+
+// And the other half of that view, which the sub-view walk does NOT reach: its
+// synteny tracks hang off `levels`, one list per band, published as
+// `trackContainers`. `view.tracks` is empty there, so a stack of ribbons still
+// fetching used to read as idle.
+test('a display in a track container the view owns is reached', () => {
+  expect(
+    phaseOf([
+      {
+        tracks: [],
+        trackContainers: [
+          { tracks: [{ displays: [{ displayPhase: 'loading' }] }] },
+        ],
+      },
+    ]),
+  ).toBe('loading')
+})
+
+test('a finished track container is ready', () => {
+  expect(
+    phaseOf([
+      {
+        trackContainers: [
+          { tracks: [{ displays: [{ displayPhase: 'ready' }] }] },
+        ],
+      },
+    ]),
+  ).toBe('ready')
 })

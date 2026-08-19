@@ -1,1 +1,1 @@
-export { App, DialogQueue } from './App/index.ts'
+export { App, AppReadyMarker, DialogQueue } from './App/index.ts'

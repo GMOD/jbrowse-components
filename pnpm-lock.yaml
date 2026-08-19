@@ -609,6 +609,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.3.0
         version: 6.3.0(mobx@7.0.0)
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../render-core
       '@mui/icons-material':
         specifier: ^9.3.1
         version: 9.3.1(@mui/material@9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.18)(react@19.2.8)

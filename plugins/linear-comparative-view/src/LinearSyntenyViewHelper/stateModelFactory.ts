@@ -8,7 +8,10 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
-import { displaysSettled } from '@jbrowse/synteny-core'
+import {
+  comparativeSurfacePhase,
+  comparativeSurfaceSettled,
+} from '@jbrowse/synteny-core'
 
 import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
 
@@ -23,6 +26,8 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 import type { ParentViewDuck } from './parentViewDuck.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
+import type { ComparativeSurface } from '@jbrowse/synteny-core'
 
 /**
  * #stateModel LinearSyntenyViewHelper
@@ -184,24 +189,44 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
+       * This level's band as the displays drawing onto it see it: first paint,
+       * plus the two parent-view flags that mean what is on screen is not the
+       * answer yet. Published here so a display reads one field instead of
+       * walking to the level for paint and on to the view for the init flags —
+       * and so `settled` below and every display's `displayPhase` are computed
+       * from the same three values.
+       */
+      get surfaceReadiness(): ComparativeSurface {
+        const { initPending, pendingAutoDiagonalize } = this.parentView
+        return { painted: self.painted, initPending, pendingAutoDiagonalize }
+      },
+      /**
+       * #getter
+       * What the shared canvas publishes as `data-display-phase`: the ranking
+       * over the ribbons drawing onto it. Its twin `settled` below is the
+       * stricter question — see `comparativeReadiness`.
+       */
+      get displayPhase(): DisplayStatusPhase {
+        return comparativeSurfacePhase(
+          this.surfaceReadiness,
+          this.linearSyntenyDisplays,
+        )
+      },
+      /**
+       * #getter
        * Canvas has painted and no display is still fetching, so what's on
        * screen is the final settled content. Drives `synteny_canvas`'s `data-display-drawn`
        * test-id, which screenshot capture and the browser-test suites wait on
        * before snapshotting — so it must mean "done", not just "first paint".
+       *
+       * Not the same question as "is every display finished" — see
+       * `comparativeReadiness`, which holds both and says why an error answers
+       * them differently.
        */
       get settled() {
-        const { initPending, pendingAutoDiagonalize } = this.parentView
-        return (
-          self.canvasDrawn &&
-          // a level exists from the moment the rows do, but `init` adds the
-          // synteny tracks several awaits later — and until it does, an empty
-          // level paints a cleared canvas, calls that drawn, and settles
-          // vacuously over its zero displays
-          !initPending &&
-          // a requested reorder that hasn't succeeded means what's on screen is
-          // the pre-reorder hairball, not the answer
-          !pendingAutoDiagonalize &&
-          displaysSettled(this.linearSyntenyDisplays)
+        return comparativeSurfaceSettled(
+          this.surfaceReadiness,
+          this.linearSyntenyDisplays,
         )
       },
     }))

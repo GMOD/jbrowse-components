@@ -1,12 +1,11 @@
-export {
-  captureJBrowse,
-  openJBrowse,
-  pendingDisplays,
-  waitForJBrowseReady,
-} from './capture.ts'
+export { captureJBrowse, openJBrowse, waitForJBrowseReady } from './capture.ts'
 export {
   PAINT_CONTRACT_NOTE,
+  describePendingDisplays,
   hasPaintContract,
+  pendingDisplayStates,
+  pendingDisplayStatesInPage,
+  pendingDisplays,
   readInstrumentation,
   readSessionSummary,
   waitForSession,
@@ -57,6 +56,7 @@ export type {
 } from './capture.ts'
 export type {
   Instrumentation,
+  PendingDisplay,
   SessionExpectations,
   SessionSummary,
 } from './sessionGate.ts'

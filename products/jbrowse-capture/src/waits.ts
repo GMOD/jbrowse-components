@@ -291,14 +291,21 @@ export function isPageBusyInPage(): boolean {
   interface TrackState {
     displays?: DisplayState[]
   }
-  interface ViewState {
+  interface TrackContainerState {
     tracks?: TrackState[]
+  }
+  interface ViewState extends TrackContainerState {
+    // the synteny view holds no `tracks` of its own — one list per level
+    trackContainers?: TrackContainerState[]
     views?: ViewState[]
   }
   const session = (globalThis as { JBrowseSession?: { views?: ViewState[] } })
     .JBrowseSession
+  const tracksOf = (c: TrackContainerState) =>
+    (c.tracks ?? []).flatMap(t => t.displays ?? [])
   const displaysOf = (v: ViewState): DisplayState[] => [
-    ...(v.tracks ?? []).flatMap(t => t.displays ?? []),
+    ...tracksOf(v),
+    ...(v.trackContainers ?? []).flatMap(tracksOf),
     ...(v.views ?? []).flatMap(displaysOf),
   ]
   return (session?.views ?? [])

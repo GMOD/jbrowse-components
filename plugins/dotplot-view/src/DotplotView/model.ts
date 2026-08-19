@@ -25,7 +25,8 @@ import {
   DiagonalizeProgressMixin,
   TrackColorsMixin,
   collectTrackWarnings,
-  displaysSettled,
+  comparativeSurfacePhase,
+  comparativeSurfaceSettled,
   lodMenuItems,
   regionSignature,
   releaseTemporaryAssemblies,
@@ -66,8 +67,10 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type {
   AttributeRange,
+  ComparativeSurface,
   ComparativeTrackModel,
   LodMode,
 } from '@jbrowse/synteny-core'
@@ -810,23 +813,47 @@ export default function stateModelFactory(pm: PluginManager) {
 
         /**
          * #getter
+         * The plot rect as the displays drawing onto it see it: first paint,
+         * plus the two flags that mean what is on screen is not the answer yet.
+         * Published here so a display reads one field, and so `settled` below
+         * and every display's `displayPhase` are computed from the same three
+         * values.
+         */
+        get surfaceReadiness(): ComparativeSurface {
+          return {
+            painted: self.painted,
+            initPending: this.initPending,
+            pendingAutoDiagonalize: self.pendingAutoDiagonalize,
+          }
+        },
+        /**
+         * #getter
+         * What the shared canvas publishes as `data-display-phase`: the ranking
+         * over the plots drawing onto it. Its twin `settled` below is the
+         * stricter question — see `comparativeReadiness`.
+         */
+        get displayPhase(): DisplayStatusPhase {
+          return comparativeSurfacePhase(
+            this.surfaceReadiness,
+            this.dotplotDisplays,
+          )
+        },
+        /**
+         * #getter
          * Canvas has painted and no display is still fetching, so what's on
          * screen is the final settled content. Drives the
          * `data-display-drawn` on `dotplot_webgl_canvas` that screenshot capture and the
          * browser-test suites wait on — so it must mean "done", not just
          * "first paint".
+         *
+         * Not the same question as "is every display finished" — see
+         * `comparativeReadiness`, which holds both and says why an error answers
+         * them differently.
          */
         get settled() {
-          return (
-            self.canvasDrawn &&
-            // the canvas paints from the moment the axes exist, but `init` adds
-            // the tracks and restricts the regions after that — and with no
-            // display yet there is nothing to report the plot unsettled
-            !this.initPending &&
-            // a requested reorder that hasn't succeeded means what's on screen
-            // is the pre-reorder plot, not the answer
-            !self.pendingAutoDiagonalize &&
-            displaysSettled(this.dotplotDisplays)
+          return comparativeSurfaceSettled(
+            this.surfaceReadiness,
+            this.dotplotDisplays,
           )
         },
         /**

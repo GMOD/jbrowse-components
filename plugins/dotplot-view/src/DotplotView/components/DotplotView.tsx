@@ -87,6 +87,7 @@ const DotplotCanvas = observer(function DotplotCanvas({
       <RenderCanvas
         handle={handle}
         drawn={model.settled}
+        phase={model.displayPhase}
         data-testid="dotplot_webgl_canvas"
         className={classes.canvas}
         style={{

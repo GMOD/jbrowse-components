@@ -298,6 +298,17 @@ function stateModelFactory(pluginManager: PluginManager) {
       trackContainerFor(id: string): TrackContainer | undefined {
         return self.levels.find(level => level.id === id)
       },
+      /**
+       * #getter
+       * The same track lists, for a reader with no id to ask with. This view
+       * has no `tracks` of its own, so anything walking a session for displays
+       * — `AppReadyMarker`, the capture harness's busy probe — sees an empty
+       * view and reports a still-fetching synteny stack as idle unless it asks
+       * here too.
+       */
+      get trackContainers(): TrackContainer[] {
+        return [...self.levels]
+      },
     }))
     .actions(self => ({
       /**

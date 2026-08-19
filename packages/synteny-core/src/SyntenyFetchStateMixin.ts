@@ -11,8 +11,10 @@ import { types } from '@jbrowse/mobx-state-tree'
  *
  * Composed rather than duplicated so the two displays can't drift on what
  * "loading" versus "refetching" means — the difference decides whether the user
- * gets a full overlay or a corner spinner, and both views' `settled` gate (the
- * one screenshot capture waits on) is written against these same three pieces.
+ * gets a full overlay or a corner spinner. What is computed FROM these pieces —
+ * each display's `displayPhase` and each view's `settled` gate — lives in
+ * `comparativeReadiness.ts`, as functions rather than as members here, for the
+ * `error` reason below.
  *
  * `loading`/`refetching`/`dataCurrent`/`svgReady` themselves stay on each
  * display, and the reason is **`error`**, not the inputs you would guess.
@@ -122,34 +124,6 @@ export function SyntenyFetchStateMixin() {
         self.reloadCounter += 1
       },
     }))
-}
-
-// The display half of both views' `settled` gate, written once so the two
-// can't drift on what "done" means. `dataCurrent` is what makes it a done test
-// rather than a not-busy test: in the debounce gap after a region/zoom change
-// the held data is stale yet no fetch is in flight, so loading/refetching alone
-// would report done on content drawn against the old viewport.
-//
-// `fetchInert` short-circuits that, and must: a display that will never fetch
-// can never set `loadedFetchKey`, so `dataCurrent` is false forever and the
-// whole view would never settle on account of a display that is drawing nothing
-// by design. Same terminal-state rule the SVG export's `extraTerminal` and the
-// loading overlay already answer off that one getter.
-//
-// Vacuously true on an empty list, which is correct for a level or axis that
-// legitimately has no display — the caller is responsible for not asking while
-// its init has yet to add them (both gate on `initPending` for that).
-export function displaysSettled(
-  displays: {
-    loading: boolean
-    refetching: boolean
-    dataCurrent: boolean
-    fetchInert: boolean
-  }[],
-) {
-  return displays.every(
-    d => d.fetchInert || (!d.loading && !d.refetching && d.dataCurrent),
-  )
 }
 
 /**

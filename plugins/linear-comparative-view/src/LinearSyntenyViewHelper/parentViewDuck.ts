@@ -1,4 +1,5 @@
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { ComparativeSurface } from '@jbrowse/synteny-core'
 
 // The containing LinearSyntenyView, as seen from a level (its model, its
 // canvas, and the canvas's wheel handler). Duck-typed rather than imported:
@@ -22,6 +23,9 @@ export interface ParentViewDuck {
 export interface LevelDuck {
   height: number
   level: number
+  // the shared band, joined for the display: paint from the level, the two
+  // not-the-answer-yet flags from the view above it
+  surfaceReadiness: ComparativeSurface
 }
 
 // Identify a level while walking up from a display, so the display finds it by

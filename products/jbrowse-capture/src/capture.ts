@@ -7,7 +7,9 @@ import {
 } from './browser.ts'
 import { assemblyFromSession, trackIdsFromSession } from './session.ts'
 import {
+  describePendingDisplays,
   hasPaintContract,
+  pendingDisplayStates,
   readInstrumentation,
   readSessionSummary,
   waitForSession,
@@ -25,7 +27,11 @@ import {
   waitForViewPhases,
 } from './waits.ts'
 
-import type { Instrumentation, SessionExpectations } from './sessionGate.ts'
+import type {
+  Instrumentation,
+  PendingDisplay,
+  SessionExpectations,
+} from './sessionGate.ts'
 import type { JBrowseUrlOptions } from './url.ts'
 import type { Browser, Page } from 'puppeteer'
 
@@ -75,6 +81,12 @@ export interface ReadyOptions extends SessionExpectations {
 export interface ReadyReport {
   /** Displays still reporting unpainted at the end of the wait. */
   pending: string[]
+  /**
+   * The same displays with the phase each one publishes, which is what
+   * separates a slow fetch from a display that says it finished without
+   * painting. Empty whenever `pending` is.
+   */
+  pendingStates: PendingDisplay[]
   /**
    * Whether every display's paint state was actually measurable — false when
    * tracks are open but the build publishes no `data-display-drawn`. With this
@@ -159,15 +171,16 @@ export async function waitForJBrowseReady(
     if (!ready) {
       unsettled.push('the app never reported itself ready')
     }
-    // One thing the marker does not answer, so this stage stays even here: it is
-    // computed from every display that publishes a PHASE, and the two
-    // comparative views do not publish one. A dotplot and a synteny level report
-    // paint-complete through their own `settled` getter, which reaches the DOM as
-    // `data-display-drawn` and by no other route — so on those two pages `ready`
-    // is true of a session that is finished FETCHING with the canvas still
-    // blank. Ordered after the marker rather than instead of it, which is what
-    // makes an absence meaningful (see waitForDisplaysDone), and free on a page
-    // that has no such canvas.
+    // One thing the marker does not answer, so this stage stays even here: the
+    // marker is about WORK, and a display whose fetch failed is not working. It
+    // reads `ready` over an error banner, which is a correct answer to a
+    // different question than a capture is asking. `data-display-drawn` is the
+    // stricter gate — the two comparative canvases publish it from `settled`,
+    // which holds an error open deliberately so a golden regenerated during an
+    // outage fails here instead of absorbing the banner as expected output.
+    // Ordered after the marker rather than instead of it, which is what makes an
+    // absence meaningful (see waitForDisplaysDone), and free on a page that has
+    // no such canvas.
     await stage(
       'a display never reported its first paint',
       waitForDisplaysDone(page, timeout),
@@ -175,19 +188,17 @@ export async function waitForJBrowseReady(
     if (settleMs > 0) {
       await delay(settleMs)
     }
+    const pendingStates = await pendingDisplayStates(page)
     const report = {
-      pending: await pendingDisplays(page),
+      pending: pendingStates.map(d => d.name),
+      pendingStates,
       paintContract: await hasPaintContract(page),
       unsettled,
       instrumentation: await readInstrumentation(page),
       appMarker: true,
     }
     if (!allowUnsettled && unsettled.length > 0) {
-      throw new Error(
-        `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ` +
-          'Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ' +
-          'capture the frame as it stands.',
-      )
+      throw new Error(unsettledMessage(timeout, unsettled, pendingStates))
     }
     return report
   }
@@ -261,8 +272,10 @@ export async function waitForJBrowseReady(
   if (settleMs > 0) {
     await delay(settleMs)
   }
+  const pendingStates = await pendingDisplayStates(page)
   const report = {
-    pending: await pendingDisplays(page),
+    pending: pendingStates.map(d => d.name),
+    pendingStates,
     paintContract,
     unsettled,
     instrumentation,
@@ -273,29 +286,31 @@ export async function waitForJBrowseReady(
     // slow page is not failed for being slow, which historically meant the run
     // ended with an image and an exit code of 0 whether it had settled or not.
     // A caller that genuinely wants the frame anyway asks for it by name.
-    throw new Error(
-      `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ` +
-        'Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ' +
-        'capture the frame as it stands.',
-    )
+    throw new Error(unsettledMessage(timeout, unsettled, pendingStates))
   }
   return report
 }
 
 /**
- * Displays that were still reporting unpainted at the moment of the call.
- *
- * Distinct from `unsettled`, which says a wait ran out of time. This says what
- * the page looked like when the shutter fired, and the two do not imply each
- * other: a display can go back to pending after its stage passed. An empty
- * result means nothing at all on a build with no paint contract — check
- * `paintContract` before reading it as good news.
+ * What a timed-out wait says. The stage names alone were the whole message, and
+ * they name the QUESTION rather than the answer — "a display never reported its
+ * first paint" reads identically for a slow fetch, a failed one and a display
+ * that never had a canvas to paint. Appending the census answers it, and the
+ * `ready` case is the one that most changes what a reader does next: a longer
+ * timeout is the fix for `loading` and never the fix for that.
  */
-export function pendingDisplays(page: Page): Promise<string[]> {
-  return page.evaluate(() =>
-    [
-      ...document.querySelectorAll<HTMLElement>('[data-display-drawn="false"]'),
-    ].map(el => el.dataset.testid ?? (el.id || 'unnamed display')),
+function unsettledMessage(
+  timeout: number,
+  unsettled: string[],
+  pending: PendingDisplay[],
+) {
+  return (
+    `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ` +
+    (pending.length > 0
+      ? `Still unpainted: ${describePendingDisplays(pending)}. `
+      : '') +
+    'Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ' +
+    'capture the frame as it stands.'
   )
 }
 

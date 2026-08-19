@@ -306,6 +306,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       <RenderCanvas
         handle={{ canvasRef, canvasKey }}
         drawn={model.settled}
+        phase={model.displayPhase}
         data-testid="synteny_canvas"
         onPointerMove={handlePointerMove}
         onPointerLeave={handlePointerLeave}

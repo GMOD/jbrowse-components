@@ -1,4 +1,4 @@
-import { displaysSettled } from './SyntenyFetchStateMixin.ts'
+import { displaysSettled } from './comparativeReadiness.ts'
 
 // The `settled` half of both comparative views' done-gate. These pin the two
 // properties the views depend on and that are easy to break together: a stale

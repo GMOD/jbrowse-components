@@ -613,6 +613,14 @@ export interface AbstractViewModel {
    * the view itself.
    */
   trackContainerFor?: (id: string) => TrackContainer | undefined
+  /**
+   * every track container this view owns INSTEAD of a `tracks` array of its
+   * own. The synteny view is the only one: its tracks hang off the levels, one
+   * per band, so anything walking `view.tracks` to reach a display finds
+   * nothing there and reads a still-fetching synteny view as idle.
+   * `trackContainerFor` cannot answer that — a walker has no id to ask with.
+   */
+  trackContainers?: TrackContainer[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (

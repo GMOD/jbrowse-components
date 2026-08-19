@@ -263,3 +263,80 @@ export function readInstrumentationInPage(): Instrumentation {
 export function readInstrumentation(page: Page): Promise<Instrumentation> {
   return page.evaluate(readInstrumentationInPage)
 }
+
+/**
+ * Displays that were still reporting unpainted at the moment of the call.
+ *
+ * Distinct from `unsettled`, which says a wait ran out of time. This says what
+ * the page looked like when the shutter fired, and the two do not imply each
+ * other: a display can go back to pending after its stage passed. An empty
+ * result means nothing at all on a build with no paint contract — check
+ * `paintContract` before reading it as good news.
+ */
+export function pendingDisplays(page: Page): Promise<string[]> {
+  return page.evaluate(() =>
+    [
+      ...document.querySelectorAll<HTMLElement>('[data-display-drawn="false"]'),
+    ].map(el => el.dataset.testid ?? (el.id || 'unnamed display')),
+  )
+}
+
+/** One unpainted display and what it says about itself. */
+export interface PendingDisplay {
+  /** the display TYPE, shared by every instance of it */
+  name: string
+  /** which instance, where the display publishes `data-display-id` */
+  id?: string
+  /**
+   * Its own phase, or undefined on a build too old to publish one. `loading` is
+   * a display still fetching; `ready` is the one that earns this census, since
+   * a display that says it has finished while reporting no paint is a bug in
+   * the display rather than a slow page.
+   */
+  phase?: string
+}
+
+/**
+ * The same census, with each display's own account of itself.
+ *
+ * `pendingDisplays` above answers WHICH, and that was the whole report: every
+ * timeout read the same however it was caused. The phase separates the cases a
+ * bare name runs together —
+ *
+ *   `loading`   still fetching. A slow page or a fetch that never returns.
+ *   `error`     finished, badly. Nothing is coming; the picture is a banner.
+ *   `ready`     it says it is done and reports no paint. That is the display's
+ *               bug, not the wait's, and it is the one a longer timeout will
+ *               never fix.
+ *   absent      the element publishes no phase: a build older than the
+ *               attribute, or a surface that never grew one.
+ *
+ * Serialized into the page, so a test can call the real function. Read fresh
+ * from the DOM at report time rather than from handles the waits held. A handle to an element that has since re-rendered throws
+ * `Node is detached from document`, which is how the previous attempt at this
+ * turned four diagnosable timeouts into nine opaque puppeteer errors (reverted
+ * in 28c6ee6d90).
+ */
+export function pendingDisplayStatesInPage(): PendingDisplay[] {
+  return [
+    ...document.querySelectorAll<HTMLElement>('[data-display-drawn="false"]'),
+  ].map(el => ({
+    name: el.dataset.testid ?? (el.id || 'unnamed display'),
+    id: el.dataset.displayId,
+    phase: el.dataset.displayPhase,
+  }))
+}
+
+export function pendingDisplayStates(page: Page): Promise<PendingDisplay[]> {
+  return page.evaluate(pendingDisplayStatesInPage)
+}
+
+/** `pendingDisplayStates` as one line for an error message. */
+export function describePendingDisplays(pending: PendingDisplay[]) {
+  return pending
+    .map(
+      d =>
+        `${d.name}${d.id ? ` (${d.id})` : ''} is ${d.phase ?? 'in an unpublished phase'}`,
+    )
+    .join('; ')
+}

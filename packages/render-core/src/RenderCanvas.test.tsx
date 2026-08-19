@@ -48,6 +48,7 @@ function Harness({
       <RenderCanvas
         handle={{ canvasRef, canvasKey }}
         drawn={done}
+        phase={done ? 'ready' : 'loading'}
         data-testid={done ? 'demo_canvas_painted' : 'demo_canvas'}
       />
     </>
@@ -111,7 +112,11 @@ test('forwards data-testid verbatim rather than composing one', () => {
 
 test('emits no testid attribute when none is passed', () => {
   const { container } = render(
-    <RenderCanvas handle={{ canvasRef: jest.fn(), canvasKey: 0 }} drawn />,
+    <RenderCanvas
+      handle={{ canvasRef: jest.fn(), canvasKey: 0 }}
+      drawn
+      phase="ready"
+    />,
   )
   expect(container.querySelector('canvas')?.hasAttribute('data-testid')).toBe(
     false,
@@ -124,6 +129,7 @@ test('forwards the caller half — sizing, class and handlers', () => {
     <RenderCanvas
       handle={{ canvasRef: jest.fn(), canvasKey: 0 }}
       drawn
+      phase="ready"
       className="lvl"
       style={{ width: 120, height: 40 }}
       onMouseMove={onMouseMove}
@@ -148,4 +154,21 @@ test('publishes the paint state the readiness waits select on', () => {
 
   fireEvent.click(getByTestId('toggle-drawn'))
   expect(canvas()?.dataset.displayDrawn).toBe('true')
+})
+
+// The half a shared canvas could not answer before: `drawn` is finished content
+// and `phase` is still-working, and every DOM-level doneness wait keys on the
+// second. A view that published only the first turned `waitForDisplayPhases`
+// and the busy selector into assertions about an absent element.
+test('publishes the phase beside the paint flag', () => {
+  const { container } = render(
+    <RenderCanvas
+      handle={{ canvasRef: jest.fn(), canvasKey: 0 }}
+      drawn={false}
+      phase="loading"
+    />,
+  )
+  const canvas = container.querySelector('canvas')!
+  expect(canvas.dataset.displayDrawn).toBe('false')
+  expect(canvas.dataset.displayPhase).toBe('loading')
 })

@@ -9,11 +9,21 @@ interface DisplayLike {
 interface TrackLike {
   displays?: DisplayLike[]
 }
-interface ViewLike {
+/** a view's own track list, or one of the several it owns instead. */
+interface TrackContainerLike {
+  tracks?: TrackLike[]
+}
+interface ViewLike extends TrackContainerLike {
   showLoading?: boolean
   initialized?: boolean
-  tracks?: TrackLike[]
+  trackContainers?: TrackContainerLike[]
   views?: ViewLike[]
+}
+
+function containerLoading(container: TrackContainerLike): boolean {
+  return (container.tracks ?? []).some(track =>
+    (track.displays ?? []).some(d => d.displayPhase === 'loading'),
+  )
 }
 
 /**
@@ -29,9 +39,11 @@ function anythingLoading(views: ViewLike[]): boolean {
     view =>
       view.showLoading === true ||
       view.initialized === false ||
-      (view.tracks ?? []).some(track =>
-        (track.displays ?? []).some(d => d.displayPhase === 'loading'),
-      ) ||
+      containerLoading(view) ||
+      // A view whose tracks hang off something else — the synteny view's are on
+      // its levels, one list per band. `view.tracks` is empty there, so without
+      // this a stack of ribbons still fetching reads as idle.
+      (view.trackContainers ?? []).some(containerLoading) ||
       anythingLoading(view.views ?? []),
   )
 }
@@ -56,14 +68,14 @@ function anythingLoading(views: ViewLike[]): boolean {
  * marker that is never drawn cannot be mistaken for UI or shift a layout. It is
  * still found by `querySelector`, which is what reads it.
  *
- * **What it is silent about**: a display that publishes no `displayPhase`. The
- * two comparative views are the ones that do not — a dotplot and a synteny level
- * report paint-complete through their own `settled` getter, which reaches the DOM
- * as `data-display-drawn` and by no other route — so on those pages this reads
- * `ready` over a canvas that is finished FETCHING and still blank. A capture
- * there wants `waitForDisplaysDone` after this, which is what both harnesses do;
- * `agent-docs/TODO.md` carries the other half, which is to give those two a
- * phase.
+ * **What it is silent about**: a display in a TERMINAL state. `error` is a
+ * finished state, so this reads `ready` over a display whose fetch failed —
+ * correctly, since nothing is still working. A capture wants more than that: it
+ * wants a picture, and an error banner is not one. `waitForDisplaysDone` after
+ * this is what draws that line, keying on the `data-display-drawn` the two
+ * comparative canvases publish from their stricter `settled` gate (see
+ * `comparativeReadiness` in `@jbrowse/synteny-core`, which holds both answers
+ * and says why an error separates them). Both harnesses do it in that order.
  */
 const AppReadyMarker = observer(function AppReadyMarker({
   session,

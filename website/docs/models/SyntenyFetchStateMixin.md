@@ -16,8 +16,10 @@ reversed-assembly flag.
 
 Composed rather than duplicated so the two displays can't drift on what
 "loading" versus "refetching" means — the difference decides whether the user
-gets a full overlay or a corner spinner, and both views' `settled` gate (the one
-screenshot capture waits on) is written against these same three pieces.
+gets a full overlay or a corner spinner. What is computed FROM these pieces —
+each display's `displayPhase` and each view's `settled` gate — lives in
+`comparativeReadiness.ts`, as functions rather than as members here, for the
+`error` reason below.
 
 `loading`/`refetching`/`dataCurrent`/`svgReady` themselves stay on each display,
 and the reason is **`error`**, not the inputs you would guess. `ready` (each

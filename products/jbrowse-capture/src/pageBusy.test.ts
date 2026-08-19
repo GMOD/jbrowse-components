@@ -82,3 +82,23 @@ test('the exported selector matches what the predicate looks for', () => {
     expect(isPageBusyInPage()).toBe(true)
   }
 })
+
+// A view whose tracks hang off something else. The synteny view holds one track
+// list per level and none of its own, so a walk of `view.tracks` alone found
+// nothing that could be busy — the same hole `AppReadyMarker` had, in the
+// fallback path that has no attributes to fall back on.
+test("a display in a view's own track container is busy", () => {
+  stubSession({
+    views: [
+      {
+        tracks: [],
+        trackContainers: [
+          {
+            tracks: [{ displays: [{ statusMessage: 'Downloading features' }] }],
+          },
+        ],
+      },
+    ],
+  })
+  expect(isPageBusyInPage()).toBe(true)
+})

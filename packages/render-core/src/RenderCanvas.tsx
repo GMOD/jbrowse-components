@@ -1,3 +1,4 @@
+import type { DisplayStatusPhase } from './displayPhase.ts'
 import type { ComponentPropsWithoutRef } from 'react'
 
 /**
@@ -46,6 +47,7 @@ export interface RenderCanvasHandle {
 export default function RenderCanvas({
   handle,
   drawn,
+  phase,
   ...canvasProps
 }: {
   handle: RenderCanvasHandle
@@ -62,10 +64,27 @@ export default function RenderCanvas({
    * drop-to-primitive view would have been forgotten the same way.
    */
   drawn: boolean
+  /**
+   * The surface's own mutually-exclusive state, published as
+   * `data-display-phase` — the same attribute `DisplayStatusChrome` gives every
+   * LGV display, and the same split of meaning: `drawn` above is FINISHED
+   * CONTENT, this is still WORKING, and an error separates them.
+   *
+   * Required for the reason `drawn` is. Every DOM-level doneness wait
+   * (`waitForDisplayPhases`, the busy selector, `Instrumentation.displayPhase`)
+   * keys on `[data-display-phase]`, and a view that published none turned each
+   * of them into an assertion about an absent selector — satisfied by a canvas
+   * that had not begun to draw. That was true of both of these views.
+   *
+   * A shared canvas carries the ranking over its displays rather than one
+   * display's phase; `comparativeSurfacePhase` is where that ranking lives.
+   */
+  phase: DisplayStatusPhase
 } & Omit<ComponentPropsWithoutRef<'canvas'>, 'ref'>) {
   return (
     <canvas
       data-display-drawn={drawn}
+      data-display-phase={phase}
       // A changed key remounts the element, which is the whole point — see the
       // context-loss note above. React compares keys for a single child too, so
       // this does not need to sit in an array to take effect.

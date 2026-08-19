@@ -12,6 +12,7 @@ import {
   NO_CIGAR_OPS,
   SyntenyFetchStateMixin,
   bucketBpPerPx,
+  comparativeDisplayPhase,
   featureAttributes,
   getCoarseBpPerPxThreshold,
   isDataCurrent,
@@ -32,6 +33,7 @@ import type { ClickCoord } from './components/util.ts'
 import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type {
   AttributeRange,
   CigarOpMask,
@@ -561,6 +563,30 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
             extraTerminal: this.fetchInert,
           },
           () => this.ready && !this.refetching && this.dataCurrent,
+        )
+      },
+      /**
+       * #getter
+       * The display's own mutually-exclusive state, the way every LGV display
+       * publishes one — so `AppReadyMarker` counts this display's fetch, and the
+       * app stops reporting itself ready over a ribbon that is still
+       * working. Ranked by `comparativeDisplayPhase`, off the shared canvas's
+       * `surfaceReadiness` and this display's own fetch state.
+       *
+       * `DisplayStatusPhase`, not `DisplayPhase`: the level owns the
+       * rendering backend, so this display can never be the one to report a
+       * backend failure.
+       */
+      get displayPhase(): DisplayStatusPhase {
+        return comparativeDisplayPhase(
+          {
+            error: self.error,
+            fetchInert: this.fetchInert,
+            loading: this.loading,
+            refetching: this.refetching,
+            dataCurrent: this.dataCurrent,
+          },
+          this.parentHelper.surfaceReadiness,
         )
       },
       /**

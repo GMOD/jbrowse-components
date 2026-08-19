@@ -158,9 +158,18 @@ export { withDiagonalizeProgress } from './withDiagonalizeProgress.ts'
 export { DiagonalizeProgressMixin } from './DiagonalizeProgressMixin.ts'
 export {
   SyntenyFetchStateMixin,
-  displaysSettled,
   swappedAssembliesWarning,
 } from './SyntenyFetchStateMixin.ts'
+export {
+  comparativeDisplayPhase,
+  comparativeSurfacePhase,
+  comparativeSurfaceSettled,
+  displaysSettled,
+} from './comparativeReadiness.ts'
+export type {
+  ComparativeDisplayFetchState,
+  ComparativeSurface,
+} from './comparativeReadiness.ts'
 export type { ComparativeWarning } from './SyntenyFetchStateMixin.ts'
 // Warning rows named by the track that raised them, and the one report both
 // views open over them — shared so a report cannot say different things
