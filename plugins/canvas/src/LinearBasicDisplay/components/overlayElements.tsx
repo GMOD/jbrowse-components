@@ -26,6 +26,7 @@ import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
+  MoreIsoformsLabel,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
@@ -122,20 +123,18 @@ type _ModelSatisfiesHighlightBoxes = AssignableTo<
 // `labelY` therefore stays the shared line's top, which is what the SVG export
 // wants: `paintLabels` converts to a baseline with the NAME's size for every
 // label, arriving at the same place from the other side.
-function moreBaselineTop(isMore: boolean, labelY: number, fontSize: number) {
-  return isMore
-    ? labelY + fontSize * (1 - MORE_ISOFORMS_FONT_SCALE) * LABEL_BASELINE_RATIO
-    : labelY
+function moreBadgeTop(labelY: number, fontSize: number) {
+  return (
+    labelY + fontSize * (1 - MORE_ISOFORMS_FONT_SCALE) * LABEL_BASELINE_RATIO
+  )
 }
 
-// The isoform badge's hover sentence. The badge itself has one short row to
-// live in, so its text is terse ("+3 more") and this spells it out — a title
-// rather than the model hover the rest of the layer sets, since that one
-// describes the FEATURE and this is the layer's one control.
-function moreIsoformsTitle(label: { hidden?: number; expanded?: boolean }) {
-  const n = label.hidden ?? 0
-  const isoforms = `${n} ${pluralize(n, 'isoform')}`
-  return label.expanded
+// The badge has one short row to live in, so its text is terse ("+3 more") and
+// this spells it out — a title rather than the model hover the rest of the layer
+// sets, since that one describes the FEATURE and this is the layer's one control.
+function moreIsoformsTitle({ hidden, expanded }: MoreIsoformsLabel) {
+  const isoforms = `${hidden} ${pluralize(hidden, 'isoform')}`
+  return expanded
     ? `Collapse this gene, hiding ${isoforms} again`
     : `${isoforms} not shown — click to expand this gene`
 }
@@ -373,45 +372,54 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       // attributes; the layer's delegated handler (below) resolves them at
       // event time, so rebuilding a label allocates no handler.
       const clickable = featureItemMap.get(featureId)?.kind === 'feature'
-      for (const { label, labelX, labelY, kind } of labels) {
-        // The badge is a control rather than a name, so it carries the
-        // `more` marker the delegated handlers below route on, and stays
-        // clickable whether or not the feature resolves to an openable one —
-        // expanding reads the id straight off the attribute.
-        const isMore = kind === 'more'
+      for (const resolved of labels) {
+        const { label, labelX, labelY, kind } = resolved
+        const key = `${displayedRegionIndex}-${featureId}-${kind}`
         elements.push(
-          <div
-            key={`${displayedRegionIndex}-${featureId}-${kind}`}
-            title={isMore ? moreIsoformsTitle(label) : undefined}
-            data-testid={
-              isMore
-                ? `feature-more-isoforms-${featureId}`
-                : clickable
-                  ? `feature-${kind}-${label.text}`
-                  : undefined
-            }
-            data-feature-id={clickable || isMore ? featureId : undefined}
-            data-more-isoforms={isMore ? '' : undefined}
-            data-region-index={clickable ? displayedRegionIndex : undefined}
-            className={
-              isMore
-                ? cx(classes.floatingLabel, classes.floatingLabelMore)
-                : labelClasses[clickable ? 'clickable' : 'static'][
-                    label.isOverlay ? 'overlay' : 'plain'
-                  ]
-            }
-            style={{
-              color: label.color,
-              // the badge's baked width is measured at this same scale, so the
-              // room reserved for it is the room it takes (see the constant)
-              fontSize: isMore
-                ? labelFontSize * MORE_ISOFORMS_FONT_SCALE
-                : labelFontSize,
-              transform: `translate(${labelX}px, ${moreBaselineTop(isMore, labelY, labelFontSize)}px)`,
-            }}
-          >
-            {label.text}
-          </div>,
+          resolved.kind === 'more' ? (
+            // A control rather than a name: it carries the `more` marker the
+            // delegated handlers below route on and stays clickable whether or
+            // not the feature resolves to an openable one, since expanding
+            // reads the id straight off the attribute. Its baked width is
+            // measured at the scale it draws at, so the room the packer
+            // reserved is the room it takes.
+            <div
+              key={key}
+              title={moreIsoformsTitle(resolved.label)}
+              data-testid={`feature-more-isoforms-${featureId}`}
+              data-feature-id={featureId}
+              data-more-isoforms=""
+              className={cx(classes.floatingLabel, classes.floatingLabelMore)}
+              style={{
+                color: label.color,
+                fontSize: labelFontSize * MORE_ISOFORMS_FONT_SCALE,
+                transform: `translate(${labelX}px, ${moreBadgeTop(labelY, labelFontSize)}px)`,
+              }}
+            >
+              {label.text}
+            </div>
+          ) : (
+            <div
+              key={key}
+              data-testid={
+                clickable ? `feature-${kind}-${label.text}` : undefined
+              }
+              data-feature-id={clickable ? featureId : undefined}
+              data-region-index={clickable ? displayedRegionIndex : undefined}
+              className={
+                labelClasses[clickable ? 'clickable' : 'static'][
+                  resolved.label.isOverlay ? 'overlay' : 'plain'
+                ]
+              }
+              style={{
+                color: label.color,
+                fontSize: labelFontSize,
+                transform: `translate(${labelX}px, ${labelY}px)`,
+              }}
+            >
+              {label.text}
+            </div>
+          ),
         )
       }
     },

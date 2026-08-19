@@ -162,8 +162,12 @@ describe('forEachRenderedLabel', () => {
       showLabels: true,
       showDescriptions: true,
     })
-    expect(emitted!.labels[0]!.kind).toBe('sub')
-    expect(emitted!.labels[0]!.label.isOverlay).toBe(true)
+    const resolved = emitted!.labels[0]!
+    if (resolved.kind === 'more') {
+      throw new Error('expected the subfeature label, got the isoform badge')
+    }
+    expect(resolved.kind).toBe('sub')
+    expect(resolved.label.isOverlay).toBe(true)
   })
 
   // A subfeature label outlives both feature-label flags — it is a worker-baked

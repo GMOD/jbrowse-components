@@ -335,9 +335,17 @@ export interface FeatureLabelData {
   // a control: it needs its own color, its own hit target, and — for the packer
   // — its own width beside the name's, which `renderedLabelWidths` adds to the
   // name row (the two share one line, so one reservation covers both).
-  moreIsoformsLabel?: LabelItem & { hidden: number; expanded: boolean }
+  moreIsoformsLabel?: MoreIsoformsLabel
   parentFeatureId?: string
   subfeatureLabel?: LabelItem & { isOverlay: boolean }
+}
+
+// The isoform badge. `hidden` and `expanded` are what its hover sentence is
+// written from, and both are always there — the worker emits the badge only
+// where the collapse left an isoform out (see createMoreIsoformsLabel).
+export type MoreIsoformsLabel = LabelItem & {
+  hidden: number
+  expanded: boolean
 }
 
 export type FloatingLabelsDataMap = Record<string, FeatureLabelData>
