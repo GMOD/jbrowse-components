@@ -1,3 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+
 import type { ScoreRuleMark } from './scoreRules.ts'
 
 const DEFAULT_RULE_COLOR = 'rgb(120,120,120)'
@@ -13,6 +15,12 @@ export function ScoreRuleLines({
   width: number
   offsetY?: number
 }) {
+  // A caption sits over the plot, not beside it, so it needs the halo the tick
+  // labels next to it already draw (YScaleBar) — without one a rule crossing
+  // filled bars captions itself in grey on the fill and cannot be read. From
+  // the palette rather than a hardcoded white, which inverts into a glare in
+  // dark mode.
+  const haloColor = usePalette().background.default
   return (
     <>
       {marks.map(({ value, label, color, y }) => {
@@ -40,8 +48,13 @@ export function ScoreRuleLines({
                 y={lineY - 2}
                 textAnchor="end"
                 fontSize={10}
+                // full alpha, unlike the line: 0.9 is there to let the rule
+                // recede into the plot, and a caption that has to be read wants
+                // the opposite
                 fill={stroke}
-                fillOpacity={0.9}
+                stroke={haloColor}
+                strokeWidth={2.5}
+                paintOrder="stroke"
               >
                 {label}
               </text>
