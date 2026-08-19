@@ -1209,6 +1209,19 @@ nobody had reported it because a too-wide LINEAR ramp does not thicken a mark �
 it dilutes it. The half-max contour does not move. That is the failure mode to
 look for, not a fat line.
 
+The sweep is one line, so run it rather than reasoning about it:
+
+```sh
+grep -rn 'fwidth(' --include='*.slang' packages plugins example-plugins
+```
+
+It returns one line today: `continuation.slang`'s barycentric wireframe
+estimator, whose own comment says why it stays and what would decide otherwise.
+The paren in the pattern is what keeps the prose mentions — this section
+included — out of the answer. A second call site is the thing to look at, and a
+second is also what would make a `//! fwidth-ok: <reason>` directive worth
+building. At one, the grep is cheaper than the machinery to enforce it.
+
 The right width depends on what the SDF is measured in, and the three cases are
 genuinely different:
 
