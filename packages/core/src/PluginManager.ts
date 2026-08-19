@@ -1177,7 +1177,7 @@ export default class PluginManager {
    * render, so a plugin that returns its own discards whatever the plugin
    * before it returned. Same fold as {@link evaluateExtensionPoint}, plus a
    * one-time warning naming the point when more than one callback genuinely
-   * takes the slot. A component built by `addWidgetWrapper` still renders the
+   * takes the slot. A component built by `wrapComponent` still renders the
    * one it wrapped, so it composes and is not counted.
    *
    * Used by {@link PluggableComponent}; producers should render through that
