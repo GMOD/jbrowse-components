@@ -259,9 +259,13 @@ const LeftPanel = observer(function LeftPanel({
     setSelectedRow(nextSelectedPair)
   }
 
-  // default the new row to an assembly that already has a synteny track to the
-  // current bottom row, so the added pair actually draws ribbons rather than
-  // stacking blank
+  // Default the new row to an assembly connected to the current bottom row, so
+  // the added pair draws ribbons rather than stacking blank — but one the stack
+  // doesn't already hold. A two-row A/B form is connected only back to A, and
+  // defaulting to it made "Add row" produce A/B/A: the same alignment a second
+  // time, upside down, which is never what the button was clicked for. A new
+  // assembly with no dataset yet is the honest answer instead, and the row's own
+  // broken-link icon says so.
   function addRow() {
     const bottom = selectedAssemblyNames.at(-1)!
     const connected = getConnectedAssemblies(
@@ -269,10 +273,13 @@ const LeftPanel = observer(function LeftPanel({
       bottom,
       session.assemblyManager,
     )
+    const notInStack = (name: string) => !selectedAssemblyNames.includes(name)
     applyRows(
       [
         ...selectedAssemblyNames,
-        connected[0] ?? session.assemblyNames[0] ?? bottom,
+        [...connected, ...session.assemblyNames].find(notInStack) ??
+          connected[0] ??
+          bottom,
       ],
       // select the pair it created, so the track panel is already showing the
       // thing the user just asked for rather than the pair they had been on

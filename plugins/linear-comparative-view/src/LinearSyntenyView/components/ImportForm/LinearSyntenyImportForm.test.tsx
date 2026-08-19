@@ -370,6 +370,21 @@ test('a mode the user picked survives a connection loading', () => {
   )
 })
 
+// The rows are hg38/mm39 and the one dataset connects them, so the only
+// connected assembly is hg38 — already row 1. Defaulting to it made Add row
+// produce hg38/mm39/hg38: the same alignment again, upside down. A row nobody
+// has a dataset for yet is the honest answer, and its own broken-link icon says
+// so.
+test('Add row does not default to an assembly the stack already holds', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
+  })
+  goManual()
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39', 'rn7'])
+})
+
 test('Add row defaults to an assembly connected to the current bottom row', () => {
   setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],

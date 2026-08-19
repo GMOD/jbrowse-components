@@ -113,20 +113,25 @@ export function connectedEndpoints(
   )
   return {
     canonicalAssembly,
-    datasets: getSyntenyTracks(tracks, [assembly], assemblyManager).map(
-      track => {
-        const others = canonicalAssemblyNames(
-          readConfObject(track, 'assemblyNames') as string[],
-          assemblyManager,
-        ).filter(name => name !== canonicalAssembly)
-        return {
-          track,
-          newAssemblies: others.length
-            ? others.filter(name => assemblyManager.has(name))
-            : [canonicalAssembly],
-        }
-      },
-    ),
+    // An anchor with no name reaches nothing, and says so here rather than
+    // through getSyntenyTracks, whose empty *request* deliberately matches
+    // every synteny track: a row that has not loaded its regions yet names no
+    // assembly, and the add-row dialog asking about it used to be answered with
+    // the whole session's datasets.
+    datasets: !canonicalAssembly
+      ? []
+      : getSyntenyTracks(tracks, [assembly], assemblyManager).map(track => {
+          const others = canonicalAssemblyNames(
+            readConfObject(track, 'assemblyNames') as string[],
+            assemblyManager,
+          ).filter(name => name !== canonicalAssembly)
+          return {
+            track,
+            newAssemblies: others.length
+              ? others.filter(name => assemblyManager.has(name))
+              : [canonicalAssembly],
+          }
+        }),
   }
 }
 

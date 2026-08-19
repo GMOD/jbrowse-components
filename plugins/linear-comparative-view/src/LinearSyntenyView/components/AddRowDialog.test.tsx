@@ -9,6 +9,7 @@ import { when } from 'mobx'
 import AddRowDialog from './AddRowDialog.tsx'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -32,10 +33,10 @@ const assembly = (name: string) => ({
   },
 })
 
-// A two-row volvox/volvox2 view. `datasets` are extra synteny tracks the
-// session holds; the view itself is opened without one, so what the dialog
-// offers is decided purely by them.
-async function openDialog(datasets: string[][]) {
+// A two-row volvox/volvox2 view. `datasets` are the synteny tracks the session
+// holds, and `openTracks` names the ones the view itself opens on its band, so
+// a test can say both what exists and what is already drawn.
+async function openDialog(datasets: string[][], openTracks: string[] = []) {
   const session = createTestSession()
   session.addAssemblyConf(assembly('volvox'))
   session.addAssemblyConf(assembly('volvox2'))
@@ -55,12 +56,18 @@ async function openDialog(datasets: string[][]) {
     })
   }
   const view = session.addView('LinearSyntenyView', {
-    init: { views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }] },
+    init: {
+      views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
+      tracks: openTracks,
+    },
   }) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length > 0 && view.views.every(v => v.initialized),
   )
+  await when(() => bandTracks(view).length === openTracks.length, {
+    timeout: 5000,
+  })
 
   const closed = { yes: false }
   render(
@@ -75,6 +82,13 @@ async function openDialog(datasets: string[][]) {
   )
   return { view, closed }
 }
+
+// a level's `tracks` is a pluggableMstType array, so its element type is loose;
+// naming the one member this reads keeps it checked without a cast
+const bandTracks = (view: LinearSyntenyViewModel) =>
+  view.levels.flatMap(
+    l => l.tracks as { configuration: AnyConfigurationModel }[],
+  )
 
 // The note lived inside the `existing` branch, which is the one branch a
 // session with nothing to offer never reaches: the mode starts on 'custom'
@@ -96,7 +110,7 @@ test('a session with no dataset for the bottom row says so', async () => {
 test('a session with a connecting dataset offers it instead', async () => {
   await openDialog([['volvox2', 'volvox3']])
 
-  expect(screen.getByRole('combobox', { name: 'Synteny dataset' })).toBeTruthy()
+  expect(screen.getByRole('combobox', { name: 'Assembly to add' })).toBeTruthy()
   expect(screen.queryByText(/No synteny dataset in this session/)).toBeNull()
 })
 
@@ -108,7 +122,10 @@ test('a session with a connecting dataset offers it instead', async () => {
 test('a dataset naming an unloaded assembly is not offered', async () => {
   await openDialog([['volvox2', 'ghost']])
 
-  expect(screen.queryByRole('combobox', { name: 'Synteny dataset' })).toBeNull()
+  // "via <dataset>" is the dataset picker's own text, and the assembly Select
+  // the custom branch falls back to shares its label — one field, one name for
+  // it, whichever mode answers it
+  expect(screen.queryByText(/via/)).toBeNull()
   expect(
     screen.getByText(/No synteny dataset in this session connects to volvox2/),
   ).toBeTruthy()
@@ -143,4 +160,53 @@ test('Add is disabled with no dataset and no upload', async () => {
   await openDialog([])
 
   expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled()
+})
+
+// What a plain two-row view opened on its own synteny track offered: that
+// track, back to the assembly already at the top. Picking it stacked the same
+// alignment a second time upside down, and it was the *only* thing on offer, so
+// the dialog read as if adding a row meant repeating one.
+test('the dataset already drawn above is not offered back', async () => {
+  await openDialog([['volvox', 'volvox2']], ['dataset0'])
+
+  expect(screen.queryByText(/via/)).toBeNull()
+  expect(
+    screen.getByText(/dataset 0 already draws the band above volvox2/),
+  ).toBeTruthy()
+  // and not the note that claims nothing connects, which is the other reason a
+  // list can be empty and a different thing to do about it
+  expect(screen.queryByText(/No synteny dataset in this session/)).toBeNull()
+})
+
+// Two aligners' takes on one pair is a real stack — a band each — so a second
+// dataset back to the row above stays on offer. It says where that assembly
+// already is rather than pretending the row is new.
+test('a second dataset back to the row above is offered, and flagged', async () => {
+  await openDialog(
+    [
+      ['volvox', 'volvox2'],
+      ['volvox', 'volvox2'],
+    ],
+    ['dataset0'],
+  )
+
+  expect(
+    screen.getByRole('combobox', { name: 'Assembly to add' }),
+  ).toHaveTextContent('volvox — via dataset 1 (already row 1)')
+})
+
+// A row names its assembly through its displayed regions, so the row this
+// dialog has just added names none until it navigates — only its pending `init`
+// does. Anchored to the blank name instead, the dialog matched every synteny
+// dataset in the session (an empty request matches all of them) and offered to
+// add the row it had just added, again.
+test('the row just added anchors the dialog before it has loaded', async () => {
+  const { view } = await openDialog([['volvox2', 'volvox3']])
+
+  fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+
+  expect(view.views.at(-1)!.assemblyNames).toEqual([])
+  expect(
+    screen.getByText(/dataset 0 already draws the band above volvox3/),
+  ).toBeTruthy()
 })

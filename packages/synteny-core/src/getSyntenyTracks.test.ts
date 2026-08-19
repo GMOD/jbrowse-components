@@ -86,4 +86,12 @@ describe('getConnectedAssemblies', () => {
       getConnectedAssemblies([cross], 'a', loadingAssemblyManager),
     ).toEqual(['b'])
   })
+
+  // A caller reads the anchor off a row, and a row that has not navigated yet
+  // names no assembly. getSyntenyTracks answers an empty *request* with every
+  // synteny track, deliberately, so without the guard a blank anchor reports
+  // the whole session as connected to it.
+  test('an unnamed anchor is connected to nothing', () => {
+    expect(connected([cross, selfA], '')).toEqual([])
+  })
 })
