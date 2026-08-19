@@ -473,6 +473,14 @@ action for any open track (across all views) not already showing this value, and
 *that* action — the one explicit gesture — clears their own value so they follow.
 On **clear**, `"Cleared the default"`.
 
+**N counts tracks, and `tracksDifferingFrom` dedupes to make that true.** The
+walk yields *displays*, and one track open in two views is two of them over one
+config node (`TrackConfigurationReference` resolves both through the hydration
+cache) — so the count read `2` for a single track, which is the ordinary case in
+a breakpoint-split view. `promotableDefaults.test.ts`'s own fakes compose a fresh
+config into each display and cannot express it; the canary is
+`PromotedDefaultTrackCount.test.ts` in jbrowse-web.
+
 That the pin stays symmetric, that the action is named for the bulk discard it
 performs, and that it re-derives its whole target set inside `onClick` rather
 than capturing it, are all

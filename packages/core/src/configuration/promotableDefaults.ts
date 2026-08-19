@@ -284,15 +284,33 @@ export function isPromotableDefault(
  * `value` — the ones "apply to open tracks" would visibly change by resetting
  * them to follow the default. Drives that action's count. Module-internal
  * (exercised by promotableDefaults.test.ts); not part of the public barrel.
+ *
+ * **One entry per track, not per display.** A track open in two views is two
+ * display *models* over one display *config* — `TrackConfigurationReference`
+ * resolves both through the hydration cache to the identical node (ADR-031) —
+ * so the raw walk counted it twice and the snackbar offered to "Override 2
+ * customized tracks" over a single track. That is the ordinary case in a
+ * breakpoint-split view, which shows the same track in both halves and is one
+ * of the composite shapes `openPromotableDisplays` recurses into.
+ *
+ * Keying on the config node rather than on `trackId` is what keeps this
+ * cast-free: the node is a member of `ResolvableDisplay`, and within one display
+ * type it is 1:1 with the track. Deduping the returned displays rather than only
+ * the count is what stops the two from disagreeing — clearing the slot on either
+ * one writes the same node, so the extra pass was a no-op anyway.
  */
 export function tracksDifferingFrom(
   self: ResolvableDisplay,
   slot: string,
   value: unknown,
 ): ResolvableDisplay[] {
-  return openDisplaysOfType(self).filter(
-    display => !deepEqual(resolveSlot(display, slot).value, value),
-  )
+  const byTrack = new Map<AnyConfigurationModel, ResolvableDisplay>()
+  for (const display of openDisplaysOfType(self)) {
+    if (!deepEqual(resolveSlot(display, slot).value, value)) {
+      byTrack.set(display.configuration, display)
+    }
+  }
+  return [...byTrack.values()]
 }
 
 /**
