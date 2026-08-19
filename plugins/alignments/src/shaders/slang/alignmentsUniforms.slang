@@ -101,7 +101,10 @@ public struct Uniforms {
   public int colorScheme;
   public int chainMode;
   public int showStroke;
-  public int coverageScaleType; // 0 = linear, 1 = log2
+  public int coverageScaleType; // 0 = linear, 1 = log2, 2 = symlog
+  // symlog's linear-region width, already resolved from the domain on the JS
+  // side (see resolveSymlogConstant). Unread by the other two scales.
+  public float coverageSymlogConstant;
   // 1 = filter low-freq mismatches/insertions/gaps by coverage depth (default);
   // 0 = show all at full alpha (user has disabled frequency filtering)
   public int filterMismatchesByFrequency;
@@ -806,8 +809,21 @@ public float covBottom(Uniforms u) {
 // The log branch floors at the domain's own min, not at 1, and falls back to 1
 // only where that min is non-positive; see makeScoreNormalizer for why
 // (a domain sitting entirely under 1 otherwise collapses to a flat baseline).
-public float normalizeDepthScalar(float rawDepth, float domainMin, float domainMax, bool isLog) {
-  if (isLog) {
+// The symlog branch floors nothing — that is the whole reason it exists on a
+// coverage track, where 0 is a real, common and meaningful depth that the log
+// branch cannot separate from 1.
+public float normalizeDepthScalar(float rawDepth, float domainMin, float domainMax, int scaleType, float symlogConstant) {
+  if (scaleType == 2) {
+    // symlog: defined at 0, so nothing is floored and a zero-depth base keeps
+    // its own height instead of sharing the baseline with a depth of 1.
+    float tMin = sign(domainMin) * log(1.0 + abs(domainMin / symlogConstant));
+    float tMax = sign(domainMax) * log(1.0 + abs(domainMax / symlogConstant));
+    float t = sign(rawDepth) * log(1.0 + abs(rawDepth / symlogConstant));
+    float tRange = tMax - tMin;
+    if (tRange <= 0.0) { return 0.0; }
+    return clamp((t - tMin) / tRange, 0.0, 1.0);
+  }
+  if (scaleType == 1) {
     float floorV = domainMin > 0.0 ? domainMin : 1.0;
     float logMin = log2(floorV);
     float logMax = log2(max(domainMax, floorV));
@@ -829,7 +845,8 @@ public float normalizeDepthScalar(float rawDepth, float domainMin, float domainM
 public float normalizeDepth(float relDepth, Uniforms u) {
   float rawDepth = relDepth * u.depthScale * u.depthDomainMax;
   return normalizeDepthScalar(
-    rawDepth, u.depthDomainMin, u.depthDomainMax, u.coverageScaleType == 1);
+    rawDepth, u.depthDomainMin, u.depthDomainMax, u.coverageScaleType,
+    u.coverageSymlogConstant);
 }
 
 // Below one 8-bit alpha step a mark is not representable, so sizeAlpha() snaps

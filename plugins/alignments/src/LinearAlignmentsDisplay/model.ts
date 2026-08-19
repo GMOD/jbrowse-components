@@ -41,6 +41,8 @@ import {
   ScoreScaleMixin,
   domainFromStats,
   getNiceDomain,
+  resolveSymlogConstant,
+  scaleTypeFromString,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, observable, reaction } from 'mobx'
@@ -949,8 +951,8 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get coverageIsLog() {
-          return self.scaleType === 'log'
+        get coverageScaleType() {
+          return scaleTypeFromString(self.scaleType)
         },
 
         /**
@@ -2530,7 +2532,15 @@ export default function stateModelFactory(
             coverageYOffset: YSCALEBAR_LABEL_OFFSET,
             coverageMinDepth: self.coverageDepthDomain?.[0],
             coverageMaxDepth: self.coverageDepthDomain?.[1],
-            coverageIsLog: self.coverageIsLog,
+            coverageScaleType: self.coverageScaleType,
+            // Resolved here rather than in a getter: the raw slot means "derive
+            // from the domain", and this is the one place the resolved domain
+            // is in hand. Every backend then normalizes with this one number.
+            coverageSymlogConstant: resolveSymlogConstant(
+              self.coverageDepthDomain?.[0] ?? 0,
+              self.coverageDepthDomain?.[1] ?? 0,
+              getConf(self, 'symlogConstant'),
+            ),
             coverageSnpMinFrequency: self.coverageSnpMinFrequency,
             showMismatches: self.showMismatches,
             filterMismatchesByFrequency: self.filterMismatchesByFrequency,

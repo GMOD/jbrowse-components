@@ -3080,6 +3080,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | Coverage scale type)"
         },
         {
+          "name": "symlogConstant",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "numStdDev",
           "type": "(JexlString | number)"
         },
@@ -3384,6 +3388,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "scaleType",
           "type": "(JexlString | Coverage scale type)"
+        },
+        {
+          "name": "symlogConstant",
+          "type": "(JexlString | number)"
         },
         {
           "name": "numStdDev",

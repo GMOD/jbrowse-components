@@ -1,4 +1,9 @@
-import { SCALE_TYPE_LINEAR, SCALE_TYPE_LOG } from '@jbrowse/wiggle-core'
+import {
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+  SCALE_TYPE_SYMLOG,
+  resolveSymlogConstant,
+} from '@jbrowse/wiggle-core'
 
 import {
   computeCoverageTicks,
@@ -30,6 +35,37 @@ const DOMAINS: [number, number][] = [
 
 const DEPTHS = [0, 0.5, 1, 5, 9, 10, 11, 37, 60, 99, 100, 1024, 5000]
 
+// symlog's case on a coverage band: the depths log cannot separate. On a log
+// domain floored to [1, max] a depth of 1 normalizes to 0 — the same height as
+// no coverage at all — so a single-read position is invisible. These sweep the
+// GPU twin against the CPU one across exactly that range.
+describe.each(DOMAINS)('symlog domain [%f, %f]', (min, max) => {
+  const c = resolveSymlogConstant(min, max, 0)
+  test('shader twin matches makeScoreNormalizer', () => {
+    const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_SYMLOG, c)
+    for (const depth of DEPTHS) {
+      expect(
+        normalizeDepthScalar(depth, min, max, SCALE_TYPE_SYMLOG, c),
+      ).toBeCloseTo(normalize(depth), 6)
+    }
+  })
+
+  // Only where the domain actually starts below a depth of 1. Where it starts
+  // AT 1 (a `minScore` bound of 1, say) a depth of 1 is the baseline on every
+  // scale, and drawing it flat is correct rather than a bug.
+  test('a depth of 1 is not flattened onto the baseline', () => {
+    if (max <= 1 || min >= 1) {
+      return
+    }
+    const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_SYMLOG, c)
+    // what log does with the same domain: floored to [1, max], so a depth of 1
+    // lands on 0 — indistinguishable from a position with no reads at all
+    const log = makeScoreNormalizer(Math.max(min, 1), max, SCALE_TYPE_LOG)
+    expect(log(1)).toBe(0)
+    expect(normalize(1)).toBeGreaterThan(0)
+  })
+})
+
 describe.each(DOMAINS)('domain [%f, %f]', (min, max) => {
   test.each([false, true])('shader twin matches makeScoreNormalizer (log %s)', isLog => {
     const normalize = makeScoreNormalizer(
@@ -38,7 +74,13 @@ describe.each(DOMAINS)('domain [%f, %f]', (min, max) => {
       isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
     )
     for (const depth of DEPTHS) {
-      expect(normalizeDepthScalar(depth, min, max, isLog)).toBeCloseTo(
+      expect(normalizeDepthScalar(
+        depth,
+        min,
+        max,
+        isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+        1,
+      )).toBeCloseTo(
         normalize(depth),
         6,
       )
@@ -51,7 +93,8 @@ describe.each(DOMAINS)('domain [%f, %f]', (min, max) => {
       const scale = makeCoverageScale({
         coverageMinDepth: min,
         coverageMaxDepth: max,
-        coverageIsLog: isLog,
+        coverageScaleType: isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+        coverageSymlogConstant: 1,
       })!
       const normalize = makeScoreNormalizer(
         min,
@@ -90,7 +133,8 @@ test('there is no scale until the debounced autoscale resolves', () => {
     makeCoverageScale({
       coverageMinDepth: undefined,
       coverageMaxDepth: undefined,
-      coverageIsLog: false,
+      coverageScaleType: 0 as const,
+    coverageSymlogConstant: 1,
     }),
   ).toBeUndefined()
 })
@@ -102,7 +146,8 @@ describe('a minScore bound', () => {
     const scale = makeCoverageScale({
       coverageMinDepth: 10,
       coverageMaxDepth: 60,
-      coverageIsLog: false,
+      coverageScaleType: 0 as const,
+    coverageSymlogConstant: 1,
     })!
     expect(scale.normalize(10)).toBe(0)
     expect(scale.normalize(60)).toBe(1)

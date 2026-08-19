@@ -155,6 +155,7 @@ export function computeCoverageTicks(
   domain: readonly [number, number],
   coverageHeight: number,
   scaleType = 'linear',
+  symlogConstant = 1,
 ): YScaleTicks {
   // The box the coverage marks are drawn in, not a second spelling of it: the
   // bars measure up from `bottom` over `effectiveH` (rendererUtils, and the
@@ -176,6 +177,7 @@ export function computeCoverageTicks(
     domainMin,
     max,
     scaleTypeFromString(scaleType),
+    symlogConstant,
   )
   const yOf = (value: number) => yBottom - normalize(value) * effectiveH
 

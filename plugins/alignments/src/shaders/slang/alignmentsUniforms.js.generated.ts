@@ -76,8 +76,17 @@ export function linkedReadColorSlot(idx: number): number {
   return _min(idx, 7)
 }
 
-export function normalizeDepthScalar(rawDepth: number, domainMin: number, domainMax: number, isLog: boolean): number {
-  if (isLog) {
+export function normalizeDepthScalar(rawDepth: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
+  if ((scaleType == 2)) {
+    let tMin = ((((Math.sign(domainMin)) | 0)) * Math.log((1.0 + Math.abs((domainMin / symlogConstant)))))
+    let t = ((((Math.sign(rawDepth)) | 0)) * Math.log((1.0 + Math.abs((rawDepth / symlogConstant)))))
+    let tRange = (((((Math.sign(domainMax)) | 0)) * Math.log((1.0 + Math.abs((domainMax / symlogConstant))))) - tMin)
+    if ((tRange <= 0.0)) {
+      return 0.0
+    }
+    return _clamp(((t - tMin) / tRange), 0.0, 1.0)
+  }
+  if ((scaleType == 1)) {
     let floorV: number
     if ((domainMin > 0.0)) {
       floorV = domainMin

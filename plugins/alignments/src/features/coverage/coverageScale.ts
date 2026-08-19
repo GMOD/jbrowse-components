@@ -1,8 +1,6 @@
-import {
-  SCALE_TYPE_LINEAR,
-  SCALE_TYPE_LOG,
-  makeScoreNormalizer,
-} from '@jbrowse/wiggle-core'
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
+
+import type { WiggleScaleType } from '@jbrowse/wiggle-core'
 
 /**
  * What the coverage band's depth scale is made of. The min and the max travel
@@ -18,7 +16,12 @@ import {
 export interface CoverageScaleState {
   coverageMinDepth: number | undefined
   coverageMaxDepth: number | undefined
-  coverageIsLog: boolean
+  coverageScaleType: WiggleScaleType
+  /**
+   * symlog's linear-region width, already resolved from the domain. Unread by
+   * the other two scales.
+   */
+  coverageSymlogConstant: number
 }
 
 export interface CoverageScale {
@@ -55,12 +58,18 @@ export function makeCoverageScale(
   if (!hasCoverageScale(state)) {
     return undefined
   }
-  const { coverageMinDepth, coverageMaxDepth, coverageIsLog } = state
+  const {
+    coverageMinDepth,
+    coverageMaxDepth,
+    coverageScaleType,
+    coverageSymlogConstant,
+  } = state
   return {
     normalize: makeScoreNormalizer(
       coverageMinDepth ?? 0,
       coverageMaxDepth,
-      coverageIsLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+      coverageScaleType,
+      coverageSymlogConstant,
     ),
     domainMax: coverageMaxDepth,
   }

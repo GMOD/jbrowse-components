@@ -15,6 +15,7 @@ import type { ReadIdentity } from '../../shared/readIdentity.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
+import type { WiggleScaleType } from '@jbrowse/wiggle-core'
 
 export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
@@ -69,7 +70,8 @@ export interface RenderState {
   // `makeCoverageScale` is the one place they are read, and reads them together.
   coverageMinDepth: number | undefined
   coverageMaxDepth: number | undefined
-  coverageIsLog: boolean
+  coverageScaleType: WiggleScaleType
+  coverageSymlogConstant: number
   // Allele-fraction floor for the band's coloured segments: a segment whose
   // share of its position's depth is below this is not drawn, and the grey
   // depth bar shows through where it would have been. 0 colours every

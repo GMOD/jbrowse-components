@@ -145,7 +145,8 @@ function fillFrameUniforms(
   // The band's allele-fraction floor, tested against each segment's own
   // `segHeight` in snpCoverage.slang and in `drawSnpSegments`.
   f[U.snpMinFreq] = state.coverageSnpMinFrequency
-  i[UI.coverageScaleType] = state.coverageIsLog ? 1 : 0
+  i[UI.coverageScaleType] = state.coverageScaleType
+  f[U.coverageSymlogConstant] = state.coverageSymlogConstant
   i[UI.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
   i[UI.mismatchAlpha] = state.mismatchAlpha ? 1 : 0
   f[U.binSize] = region.binSize

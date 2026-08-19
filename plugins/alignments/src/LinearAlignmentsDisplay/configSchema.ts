@@ -243,9 +243,24 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       scaleType: {
         type: 'stringEnum',
-        model: types.enumeration('Coverage scale type', ['linear', 'log']),
+        model: types.enumeration('Coverage scale type', [
+          'linear',
+          'log',
+          'symlog',
+        ]),
         defaultValue: 'linear',
-        description: 'Coverage scale type (linear or log)',
+        description:
+          'Coverage scale type. "log" floors the domain at a depth of 1, which draws a single-read position at the same height as no coverage at all; "symlog" is log-like higher up and linear through zero, so low depths stay separable',
+      },
+      /**
+       * #slot
+       */
+      symlogConstant: {
+        type: 'number',
+        defaultValue: 0,
+        description:
+          'Width of symlog\'s linear region around zero, in depth units. The default 0 means "derive from the domain" (a thousandth of the visible max). 1 makes symlog exactly log(depth+1)',
+        advanced: true,
       },
       /**
        * #slot

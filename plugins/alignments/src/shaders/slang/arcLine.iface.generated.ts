@@ -38,7 +38,8 @@ export const UNIFORM_OFFSET_F32 = {
   pairedArcsDown: 22,
   arcsYDomainBp: 23,
   arcsYLog: 24,
-  reversed: 31,
+  coverageSymlogConstant: 29,
+  reversed: 32,
   pxPerBp: 212,
   arcBandH: 213,
   dpr: 214,
@@ -46,24 +47,24 @@ export const UNIFORM_OFFSET_F32 = {
 
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
-  colorBaseA: 32,
-  colorBaseC: 33,
-  colorBaseG: 34,
-  colorBaseT: 35,
-  colorBaseN: 36,
-  colorInsertion: 37,
-  colorDeletion: 38,
-  colorSkip: 39,
-  colorSoftclip: 40,
-  colorHardclip: 41,
-  colorInsertionIndicator: 42,
-  colorSoftclipIndicator: 43,
-  colorHardclipIndicator: 44,
-  colorCoverage: 45,
-  colorFlatConnector: 46,
-  colorConnectingLine: 47,
-  colorOverlapTint: 48,
-  colorOverlap: 49,
+  colorBaseA: 33,
+  colorBaseC: 34,
+  colorBaseG: 35,
+  colorBaseT: 36,
+  colorBaseN: 37,
+  colorInsertion: 38,
+  colorDeletion: 39,
+  colorSkip: 40,
+  colorSoftclip: 41,
+  colorHardclip: 42,
+  colorInsertionIndicator: 43,
+  colorSoftclipIndicator: 44,
+  colorHardclipIndicator: 45,
+  colorCoverage: 46,
+  colorFlatConnector: 47,
+  colorConnectingLine: 48,
+  colorOverlapTint: 49,
+  colorOverlap: 50,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
@@ -72,8 +73,8 @@ export const UNIFORM_OFFSET_I32 = {
   chainMode: 26,
   showStroke: 27,
   coverageScaleType: 28,
-  filterMismatchesByFrequency: 29,
-  mismatchAlpha: 30,
+  filterMismatchesByFrequency: 30,
+  mismatchAlpha: 31,
 } as const
 
 
@@ -166,6 +167,7 @@ export interface Uniforms {
   chainMode: number
   showStroke: number
   coverageScaleType: number
+  coverageSymlogConstant: number
   filterMismatchesByFrequency: number
   mismatchAlpha: number
   reversed: number
@@ -228,27 +230,28 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[26] = uniforms.chainMode
   i32[27] = uniforms.showStroke
   i32[28] = uniforms.coverageScaleType
-  i32[29] = uniforms.filterMismatchesByFrequency
-  i32[30] = uniforms.mismatchAlpha
-  f32[31] = uniforms.reversed
-  u32[32] = uniforms.colorBaseA
-  u32[33] = uniforms.colorBaseC
-  u32[34] = uniforms.colorBaseG
-  u32[35] = uniforms.colorBaseT
-  u32[36] = uniforms.colorBaseN
-  u32[37] = uniforms.colorInsertion
-  u32[38] = uniforms.colorDeletion
-  u32[39] = uniforms.colorSkip
-  u32[40] = uniforms.colorSoftclip
-  u32[41] = uniforms.colorHardclip
-  u32[42] = uniforms.colorInsertionIndicator
-  u32[43] = uniforms.colorSoftclipIndicator
-  u32[44] = uniforms.colorHardclipIndicator
-  u32[45] = uniforms.colorCoverage
-  u32[46] = uniforms.colorFlatConnector
-  u32[47] = uniforms.colorConnectingLine
-  u32[48] = uniforms.colorOverlapTint
-  u32[49] = uniforms.colorOverlap
+  f32[29] = uniforms.coverageSymlogConstant
+  i32[30] = uniforms.filterMismatchesByFrequency
+  i32[31] = uniforms.mismatchAlpha
+  f32[32] = uniforms.reversed
+  u32[33] = uniforms.colorBaseA
+  u32[34] = uniforms.colorBaseC
+  u32[35] = uniforms.colorBaseG
+  u32[36] = uniforms.colorBaseT
+  u32[37] = uniforms.colorBaseN
+  u32[38] = uniforms.colorInsertion
+  u32[39] = uniforms.colorDeletion
+  u32[40] = uniforms.colorSkip
+  u32[41] = uniforms.colorSoftclip
+  u32[42] = uniforms.colorHardclip
+  u32[43] = uniforms.colorInsertionIndicator
+  u32[44] = uniforms.colorSoftclipIndicator
+  u32[45] = uniforms.colorHardclipIndicator
+  u32[46] = uniforms.colorCoverage
+  u32[47] = uniforms.colorFlatConnector
+  u32[48] = uniforms.colorConnectingLine
+  u32[49] = uniforms.colorOverlapTint
+  u32[50] = uniforms.colorOverlap
   f32[52] = uniforms.arcColor[0][0]
   f32[53] = uniforms.arcColor[0][1]
   f32[54] = uniforms.arcColor[0][2]
