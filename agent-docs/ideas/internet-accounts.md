@@ -127,7 +127,10 @@ and uses jbrowse-desktop's `openAuthWindow` IPC directly, including its
 resolves-`undefined`-on-close contract. It touches **none** of
 `handlesLocation`, `addAuthHeaderToInit`, `validateToken`,
 `getPreAuthorizationInformation`, `authHeader`, or any FileSelector getter — so
-moves 2 and 3 are invisible to it.
+moves 2 and 3 are invisible to it. The negatives were re-grepped 2026-08-19,
+all eight at zero across their `src/`, and the positives re-confirmed; `domains`
+is the one they never name in the plugin, because their *server* emits it
+(`apollo-collaboration-server/src/jbrowse/jbrowse.service.ts:145`).
 
 **Move 1 is the one it constrains**, because its `getToken` override reads
 `location?.internetAccountPreAuthorization?.authInfo?.token` verbatim.
@@ -155,12 +158,40 @@ If step 1 does not happen first, move 1 needs the slot kept as a deprecated read
 path and the whole saving is the ordering. Confirm with whoever owns the Apollo
 bump before committing to the unphased version.
 
-Their OAuth popup is separately a fork of ours carrying the bugs we fixed —
-notably **no `event.origin` check**, so any page holding a handle to the window
-can post a `redirectUri` and have its `access_token` stored as the user's. Their
-flow is an ordinary implicit grant with a custom endpoint and could be
-`OAuthInternetAccount` with an overridden `authEndpoint`, `responseType:
-'token'` and `authFlowParams` — which needs their server to echo `state` back.
+### Their OAuth popup is a fork of ours carrying four bugs we fixed
+
+Re-read 2026-08-19 against `ApolloInternetAccount/model.ts:168-224`. Their
+`finishOAuthWindow` is ours from before the hardening, and it diverges on more
+than the doc used to say:
+
+- **No `event.origin` check.** The handler tests `event.data.name` and nothing
+  else, so any page holding a handle to that window can post a `redirectUri` and
+  have its `access_token` stored as the user's. Ours refuses a foreign origin in
+  `getOAuthRedirectUri`, with a comment saying why.
+- **No `state` at all** — not a missing echo check, an absent parameter. Their
+  authorization request sends `type` and `redirect_uri` only, so there is
+  nothing to verify a redirect against. Compounds the one above rather than
+  duplicating it.
+- **`event.data.name` read unguarded.** An unrelated `postMessage(null)` throws
+  a TypeError inside the listener. That is the bug our `getOAuthRedirectUri`
+  shape-checks for, where it used to fail the login outright.
+- **`redirectUri.replace('#', '?')`.** Exactly what `finishOAuthRedirect`'s
+  comment describes: a redirect carrying both a query and a fragment gets a
+  second `?`, and one parameter that can never be split.
+
+And the desktop path does *not* handle the IPC contract it uses. `ipcRenderer.
+invoke('openAuthWindow')` resolves `undefined` when the user closes the window;
+that goes straight into `.replace('#', '?')`, so closing it throws a TypeError
+instead of cancelling the flow.
+
+**Not ours to fix, and worth telling them.** The first two together are the
+serious pair.
+
+Their flow is otherwise an ordinary implicit grant with a custom endpoint and
+could be `OAuthInternetAccount` with an overridden `authEndpoint`,
+`responseType: 'token'` and `authFlowParams` — which needs their server to echo
+`state` back, and would take all five of these off their plate at once. That is
+the strongest thing to say to them about adopting it.
 
 ## Two things wrong with the current code that no move here fixes
 
