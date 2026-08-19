@@ -206,9 +206,19 @@ const repoLabels = new Set(
 const authored = authoredText(
   join(repoRoot, 'website/src/lib/spec-recipe/fields.ts'),
 )
+// A graph-view path names rows only the plugin renders, so without its checkout
+// every one of them reads as unrendered. CI has no checkout, which made this a
+// blocking job nothing in the repo could turn green. Skipped rather than
+// exempted: the block above already refuses to run without the source, and an
+// entry in PATH_PROSE would go on claiming the label was checked.
+const graphSegmentsUncheckable = !existsSync(graphSrc)
+const namesGraphView = (path: string) =>
+  path.includes('Graph view') || path.includes('Graph genome view')
+
 const unrendered = new Map<string, number>()
 const exemptionsUsed = new Set<string>()
 for (const path of recipePaths) {
+  const uncheckable = graphSegmentsUncheckable && namesGraphView(path)
   for (const raw of path.split('→')) {
     const segment = stripState(raw)
     // not the author's text, so not a claim about the app
@@ -219,7 +229,7 @@ for (const path of recipePaths) {
       exemptionsUsed.add(segment)
       continue
     }
-    if (!repoLabels.has(norm(segment))) {
+    if (!uncheckable && !repoLabels.has(norm(segment))) {
       unrendered.set(segment, (unrendered.get(segment) ?? 0) + 1)
     }
   }
@@ -253,7 +263,9 @@ if (deadExemptions.length > 0) {
   process.exit(1)
 }
 console.log(
-  `${recipePaths.size} recipe click path(s); every hand-written segment names a row the app renders`,
+  `${recipePaths.size} recipe click path(s); every hand-written segment names a row the app renders${
+    graphSegmentsUncheckable ? ', graph-view paths aside' : ''
+  }`,
 )
 
 // A broken desktop link is always an error: it means a figure's "Open in
