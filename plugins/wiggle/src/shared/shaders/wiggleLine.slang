@@ -110,7 +110,7 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
     float clipScoreY = rowScoreToClipY(inst.score,     rowTop, rowHeight, pxToClip);
     float clipPrevY  = rowScoreToClipY(inst.prevScore, rowTop, rowHeight, pxToClip);
     float clipNextY  = rowScoreToClipY(inst.nextScore, rowTop, rowHeight, pxToClip);
-    float hwx = u.lineWidth * 0.5 * 2.0 / u.viewportWidth;
+    float hwx = pxToClipLen(u.lineWidth * 0.5, u.viewportWidth);
     float hwy = u.lineWidth * 0.5 * pxToClip;
     if (seg == 0u) {
       sx = lerp(sx1 - hwx, sx1 + hwx, q.x);
@@ -165,7 +165,7 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
     float2 q = quadLocal(vid);
     float la = (q.x * 2.0 - 1.0) * (len * 0.5 + halfExtent);
     float lp = (q.y * 2.0 - 1.0) * halfExtent;
-    sx = centerClipX + (dir.x * la + nrm.x * lp) * 2.0 / u.viewportWidth;
+    sx = centerClipX + pxToClipLen(dir.x * la + nrm.x * lp, u.viewportWidth);
     sy = 1.0 - (centerYpx + dir.y * la + nrm.y * lp) * pxToClip;
     localPos = float2(la, lp);
     segHalfLen = len * 0.5;

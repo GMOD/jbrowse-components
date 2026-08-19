@@ -13,7 +13,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 90 functions
+Scanned 42 shaders with entry points. 92 functions
 are inside the emitter's subset, of which **66 are exported**.
 
 ## Candidates
@@ -23,9 +23,7 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-| Function | Signature | Shaders |
-| --- | --- | --- |
-| `symlogTransform` | `(f32, f32) -> f32` | wiggle, wiggleLine |
+_None._
 
 ## Declined
 
@@ -39,6 +37,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `aaRamp` | `(f32, f32) -> f32` | the stroke antialiasing ramp, measured per fragment; Canvas2D and SVG get their edge AA from the rasterizer. Split from strokeAaRamp for the referee, not for a consumer: check-oracle sweeps by signature, so a scalar core is swept whether or not anything imports it |
 | `aaSmoothRamp` | `(f32, f32) -> f32` | the cubic form of the same per-fragment edge ramp, for the same reason |
 | `arcIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides |
+| `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
 | `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already |
 | `discExpand` | `(f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
@@ -48,6 +47,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `ldFinalize` | `(f32, f32, f32, f32, f32, u32, u32) -> f32` | picks one metric for the heatmap; the CPU path returns r2 AND dprime because the tooltip shows both, so it has no single value to pick. Everything ldFinalize dispatches to is exported |
 | `ldGenotypeCovariance` | `(f32, f32, f32, f32) -> f32` | reached as a private helper inside the generated ldGenotypeD and ldGenotypeCorrelation, so it is already shared without being public |
 | `perpCoverage` | `(f32, f32, f32, f32, f32, bool, f32) -> f32` | measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function |
+| `pxToClipLen` | `(f32, f32) -> f32` | the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert |
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
 | `quadLocal` | `(u32) -> vec2f` | maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect |
 | `sBlendDeriv` | `(f32) -> f32` | the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative |
@@ -55,6 +55,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `snapBoxCenterY` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported snapBoxCenterYPx |
 | `snapCellEdgePx` | `(f32, f32) -> f32` | reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor |
 | `snapToPixelX` | `(f32, f32) -> f32` | clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin |
+| `symlogTransform` | `(f32, f32) -> f32` | the JS twin (wiggle-core normalize.ts) spells it Math.log1p, which is accurate near zero where the shader's log(1.0 + x) is not; a generated twin would be a faithful copy of the worse of the two. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts |
 | `vertCoverage` | `(f32, f32, f32) -> f32` | the top/bottom antialiasing ramp, measured per fragment; Canvas2D gets its edge AA from the rasterizer |
 | `yCurveDeriv` | `(f32) -> f32` | same as sBlendDeriv, the other half of the tangent |
 | `yPxToClipY` | `(f32, f32) -> f32` | clip space is the GPU coordinate system; the px-space decision it wraps is what gets exported (snapBoxCenterYPx and friends) |
@@ -70,7 +71,7 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 21 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `covAreaTop`, … |
-| type 'vec2' is outside the supported scalar subset | 20 | `arcBandClipPos`, `covSegQuad`, `crispSquareCornerPx`, `diagonalCellToClip`, `discAlpha`, `discCoverage`, … |
+| type 'vec2' is outside the supported scalar subset | 21 | `arcBandClipPos`, `covSegQuad`, `crispSquareCornerClip`, `crispSquareCornerPx`, `diagonalCellToClip`, `discAlpha`, … |
 | type 'ptr' is outside the supported scalar subset | 9 | `bpToClipX`, `curveGeometry`, `curveParamAtY`, `fillVsEmit`, `flipX`, `ldRampColor`, … |
 | type 'vec3' is outside the supported scalar subset | 9 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `clipKindColor`, `hueRampHalfSat`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |

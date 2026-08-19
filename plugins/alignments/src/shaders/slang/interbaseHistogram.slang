@@ -42,15 +42,15 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 local = quadLocal(vid);
 
   float cx = bpToClipX(inst.position, u);
-  float barW = 2.0 / u.canvasW;
+  float barW = pxToClipLen(1.0, u.canvasW);
 
   // Hang from the coverage-area top, starting just below the indicator
   // triangle row (TRIANGLE_H is the same const indicator.slang draws with).
   // Both edges snap to whole pixels BEFORE the clip-space conversion.
   float topPx = interbaseEdgePx(inst.yOffset, u.interbaseHeight);
   float botPx = interbaseEdgePx(inst.yOffset + inst.segHeight, u.interbaseHeight);
-  float sTop = covAreaTop(u) - topPx * 2.0 / u.canvasH;
-  float sBot = covAreaTop(u) - botPx * 2.0 / u.canvasH;
+  float sTop = covAreaTop(u) - pxToClipLen(topPx, u.canvasH);
+  float sBot = covAreaTop(u) - pxToClipLen(botPx, u.canvasH);
 
   o.position = flippedQuadPos(cx - barW * 0.5, cx + barW * 0.5, sBot, sTop, local, u);
   o.color = float4(clipKindColor(inst.colorType, u), 1.0);

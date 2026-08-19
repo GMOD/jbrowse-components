@@ -45,16 +45,15 @@ public float bpToClipX(uint bp, FeatureGlyphUniforms u) {
 public float hpClipX(float2 splitPos, FeatureGlyphUniforms u) {
   return hpToClipX(splitPos, u.bpRangeX, u.zero);
 }
-// CSS px → clip-space *length*. Clip spans 2 units across the block's visible
-// width / the canvas height, so a px length is `px * 2 / size`. Spell every px
-// dimension through these: writing `HALF_W_PX / u.canvasWidth` gives the same
-// number but silently folds the ÷2 into the conversion, so the constant reads
-// as a full width while meaning a half one.
+// CSS px → clip-space *length*, against this block's visible width (see
+// `canvasWidth` above) and the canvas height. `pxToClipLen` in hpmath owns the
+// conversion and the reason to spell px dimensions through one; these two bind
+// it to the axis so a call site names neither the 2 nor the uniform.
 public float pxToClipW(float px, FeatureGlyphUniforms u) {
-  return px * 2.0 / u.canvasWidth;
+  return pxToClipLen(px, u.canvasWidth);
 }
 public float pxToClipH(float px, FeatureGlyphUniforms u) {
-  return px * 2.0 / u.canvasHeight;
+  return pxToClipLen(px, u.canvasHeight);
 }
 // Flip a value's sign when the block is reversed (branchless lerp). Used for
 // both clip-space positions and direction scalars (+1/-1).

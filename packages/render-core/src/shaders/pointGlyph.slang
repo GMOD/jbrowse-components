@@ -13,6 +13,7 @@
 module pointGlyph;
 
 import antialias;
+import hpmath;
 
 // 1px device pad around a disc so the smoothstep edge has room to fade without
 // being clipped by the quad.
@@ -50,6 +51,24 @@ public float2 crispSquareCornerPx(float2 centerPx, float diameterPx, float2 q) {
     crispSquareTopLeftPx(centerPx.y, diameterPx)
   );
   return topLeft + q * diameterPx;
+}
+
+// The same corner in clip space, for a marker whose centre arrives as a clip x
+// and a screen y — which is how both callers hold it, since x comes off the hp
+// bp conversion and y off a score scale.
+//
+// The round trip is the point: the snap has to happen in px, so the caller
+// converts out and back, and doing that in each of the two shaders is two
+// chances to convert one of the four edges differently. `viewportWidth` and
+// `canvasHeight` are whatever spans clip [-1,1] covers for the caller.
+public float4 crispSquareCornerClip(
+  float centerClipX, float centerYPx, float diameterPx, float2 q,
+  float viewportWidth, float canvasHeight
+) {
+  float2 centerPx = float2(clipXToPx(centerClipX, viewportWidth), centerYPx);
+  float2 vPx = crispSquareCornerPx(centerPx, diameterPx, q);
+  return float4(pxToClipX(vPx.x, viewportWidth),
+                yPxToClipY(vPx.y, canvasHeight), 0.0, 1.0);
 }
 
 // Disc SDF, positive inside. localPos is the expanded quad-local coord

@@ -113,7 +113,7 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
   // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).
   // abs() because reversal is baked into bpRangeX (negated length), so
   // endClipX < startClipX on reversed regions — matches wiggle.slang.
-  float spanPx = abs(endClipX - startClipX) * 0.5 * u.viewportWidth;
+  float spanPx = clipLenToPx(abs(endClipX - startClipX), u.viewportWidth);
   bool isBar = spanPx > u.pointRadius * 2.0;
 
   VsOut o;
@@ -121,13 +121,13 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
   if (isBar) {
     // Horizontal bar from start→end, height 2*pointRadius px, centered on the
     // score. 1px AA pad on each x edge so adjacent bars don't shimmer.
-    float padClipX = AA_PAD_PX * 2.0 / u.viewportWidth;
+    float padClipX = pxToClipLen(AA_PAD_PX, u.viewportWidth);
     // min/max so a reversed region (endClipX < startClipX) still spans the full
     // bar extent instead of drawing an inverted quad — matches wiggle.slang.
     float x = xZero ? (min(startClipX, endClipX) - padClipX)
                     : (max(startClipX, endClipX) + padClipX);
     float halfBandPx = u.pointRadius;
-    float y = centerClipY + local.y * halfBandPx * 2.0 / u.canvasHeight;
+    float y = centerClipY + pxToClipLen(local.y * halfBandPx, u.canvasHeight);
     o.position = float4(x, y, 0.0, 1.0);
     o.localPos = local;
     o.shape = SHAPE_BAR;
@@ -135,18 +135,16 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
     // tiny SNP point: pixel-snapped crisp filled square (no AA disc). Insertions
     // and the LD index/lead SNP keep their distinct marker even when small.
     float diamPx = u.pointRadius * 2.0;
-    float2 centerPx = float2((startClipX + 1.0) * 0.5 * u.viewportWidth, scoreYPx);
-    float2 vPx = crispSquareCornerPx(centerPx, diamPx, q);
-    o.position = float4(vPx.x / u.viewportWidth * 2.0 - 1.0,
-                        yPxToClipY(vPx.y, u.canvasHeight), 0.0, 1.0);
+    o.position = crispSquareCornerClip(startClipX, scoreYPx, diamPx, q,
+                                       u.viewportWidth, u.canvasHeight);
     o.localPos = local;
     o.shape = SHAPE_BAR;
   } else {
     float expand = discExpand(u.pointRadius);
     float glyphScale = inst.glyph == GLYPH_INDEX ? INDEX_GLYPH_SCALE : 1.0;
     float halfPx = u.pointRadius * expand * glyphScale;
-    float dx = local.x * halfPx * 2.0 / u.viewportWidth;
-    float dy = local.y * halfPx * 2.0 / u.canvasHeight;
+    float dx = pxToClipLen(local.x * halfPx, u.viewportWidth);
+    float dy = pxToClipLen(local.y * halfPx, u.canvasHeight);
     o.position = float4(startClipX + dx, centerClipY + dy, 0.0, 1.0);
     o.localPos = local * expand;
     o.shape = inst.glyph == GLYPH_INSERTION ? SHAPE_TRI

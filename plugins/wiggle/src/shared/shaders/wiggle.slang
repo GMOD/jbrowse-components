@@ -76,15 +76,15 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       float2 local = q * 2.0 - float2(1.0, 1.0);
       float expand = discExpand(radiusPx);
       float halfPx = radiusPx * expand;
-      sx = midX + local.x * halfPx * 2.0 / u.viewportWidth;
+      sx = midX + pxToClipLen(local.x * halfPx, u.viewportWidth);
       sy = (1.0 - scoreYPx * pxToClip) + local.y * halfPx * pxToClip;
       localPos = local * expand;
     } else {
       // tiny point: pixel-snapped crisp filled square, no AA disc
-      float2 centerPx = float2((midX + 1.0) * 0.5 * u.viewportWidth, scoreYPx);
-      float2 vPx = crispSquareCornerPx(centerPx, u.scatterPointSize, q);
-      sx = vPx.x / u.viewportWidth * 2.0 - 1.0;
-      sy = 1.0 - vPx.y * pxToClip;
+      float4 p = crispSquareCornerClip(midX, scoreYPx, u.scatterPointSize, q,
+                                       u.viewportWidth, u.canvasHeight);
+      sx = p.x;
+      sy = p.y;
     }
   } else {
     // The min-width floor, anchored at the bin's start so it grows the way the

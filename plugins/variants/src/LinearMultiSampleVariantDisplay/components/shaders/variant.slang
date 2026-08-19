@@ -131,7 +131,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   // length), so clipX2 < clipX1 on a reversed region, and that is exactly what
   // snappedCellLeftPx needs to know. Ordering them left/right first would throw
   // the orientation away before the pivot could read it.
-  float pxSize = 2.0 / u.canvasWidth;
+  float pxSize = pxToClipLen(1.0, u.canvasWidth);
   float halfW = u.canvasWidth * 0.5;
   float rx1 = clipX1 / pxSize + halfW;
   float rx2 = clipX2 / pxSize + halfW;

@@ -5,6 +5,7 @@
 //! layout-out: packages/alignments-core/src/indicatorLayout.generated.ts
 
 import alignmentsUniforms;
+import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 3u;
@@ -30,8 +31,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   uint v = vid % 3u;
 
   float cx = bpToClipX(inst.position, u);
-  float tw = TRIANGLE_HW * 2.0 * 2.0 / u.canvasW;  // full triangle width in clip-x
-  float th = TRIANGLE_H * 2.0 / u.canvasH;
+  float tw = pxToClipLen(TRIANGLE_HW * 2.0, u.canvasW);  // full triangle width
+  float th = pxToClipLen(TRIANGLE_H, u.canvasH);
 
   float top = covAreaTop(u);
   float sx, sy;

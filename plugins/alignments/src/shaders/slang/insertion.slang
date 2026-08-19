@@ -131,9 +131,9 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   bool isLong = inst.length >= LONG_INSERTION_MIN_LENGTH;
   float rectW = insertionBarWidthPx(inst.length, pxPerBp, u.featHeight);
 
-  float rectWClip = rectW * 2.0 / u.canvasW;
-  float serifHalfWClip = SERIF_HALF_W_PX * 2.0 / u.canvasW;
-  float serifHClip = SERIF_H_PX * 2.0 / u.canvasH;
+  float rectWClip = pxToClipLen(rectW, u.canvasW);
+  float serifHalfWClip = pxToClipLen(SERIF_HALF_W_PX, u.canvasW);
+  float serifHClip = pxToClipLen(SERIF_H_PX, u.canvasH);
 
   float2 yy = pileupY(float(inst.y), u);
   float syTop = yy.x;

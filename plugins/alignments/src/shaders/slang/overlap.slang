@@ -74,7 +74,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   // Clip-space width → CSS px (clip spans [-1,1] across canvasW). flipX doesn't
   // change width, so it's safe to measure before flipping.
-  float pxW = (sx2 - sx1) * 0.5 * u.canvasW;
+  float pxW = clipLenToPx(sx2 - sx1, u.canvasW);
   float fade = overlapFade(pxW);
   if (fade <= 0.0) { return discardVertex(); }
 

@@ -76,7 +76,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   // pixel(s) whose center is actually inside the span (crisp opaque columns).
   float ex1 = floor(x1px);
   float ex2 = max(ceil(x2px), ex1 + 1.0);
-  float clipX = lerp(ex1 / widthPx, ex2 / widthPx, lx) * 2.0 - 1.0;
+  float clipX = pxToClipX(lerp(ex1, ex2, lx), widthPx);
 
   // Fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
   // during resize); max(...,1) is the minimum quad height to avoid

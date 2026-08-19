@@ -14,6 +14,8 @@
 //! js-skip: yPxToClipY — clip space is the GPU coordinate system; the px-space decision it wraps is what gets exported (snapBoxCenterYPx and friends)
 //! js-skip: clipXToPx — the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space
 //! js-skip: pxToClipX — the inverse of clipXToPx, same reason
+//! js-skip: pxToClipLen — the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert
+//! js-skip: clipLenToPx — the inverse of pxToClipLen, same reason
 //! js-skip: extendToMinWidthX — clip-space wrapper over the exported extendToMinWidthPx, which is the decision
 //! js-skip: snapToPixelX — clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin
 //! js-skip: snapBoxCenterY — clip-space wrapper over the exported snapBoxCenterYPx
@@ -173,4 +175,23 @@ public float clipXToPx(float clipX, float canvasWidth) {
 
 public float pxToClipX(float xPx, float canvasWidth) {
   return xPx / canvasWidth * 2.0 - 1.0;
+}
+
+// The LENGTH pair, as against the POSITION pair above: clip spans 2 units
+// across `size`, so a px span is `px * 2 / size` with no origin term. `size` is
+// the canvas width or height, or whatever span clip [-1,1] covers for the
+// caller — the same argument `clipXToPx` and `yPxToClipY` take.
+//
+// Spell every px dimension through these. Writing `HALF_W_PX / u.canvasWidth`
+// gives the same number but folds the /2 into the conversion, so the constant
+// reads as a full width while meaning a half one; and `TRIANGLE_HW * 2.0 * 2.0
+// / u.canvasW` (indicator.slang, before this existed) leaves a reader to work
+// out which 2.0 doubles the half-width and which one is the clip span.
+// (Appended, per the note on screenToClip.)
+public float pxToClipLen(float px, float size) {
+  return px * 2.0 / size;
+}
+
+public float clipLenToPx(float clipLen, float size) {
+  return clipLen * 0.5 * size;
 }
