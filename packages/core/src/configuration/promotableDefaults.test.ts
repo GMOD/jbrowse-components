@@ -15,14 +15,16 @@ import {
 import { readConfObject } from './readConfObject.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 
+import type { ResolvableDisplay } from './promotableResolve.ts'
+import type { AnyConfigurationSchemaType } from './types.ts'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
 // The display shim the cascade operates on: the `type` + `configuration` it
 // reads, which is the whole of `ResolvableDisplay`.
-function testDisplayModel(
-  configSchema: ReturnType<typeof ConfigurationSchema>,
-) {
+function testDisplayModel(configSchema: AnyConfigurationSchemaType) {
   return types.model('TestDisplay', {
     type: types.literal('TestDisplay'),
     configuration: configSchema,
@@ -33,8 +35,11 @@ function testDisplayModel(
 // "ConfigurationReference" describe block): isSessionModel only needs
 // `rpcManager` + `configuration`; promotableDefaults reads/writes
 // get/setDisplayTypeDefault off that session ancestor.
-function createDisplay(
-  configSchema: ReturnType<typeof ConfigurationSchema>,
+// Generic over the schema, and the returned `display` carries it: the widened
+// `ReturnType<typeof ConfigurationSchema>` parameter erased the slot value
+// types, so every `makePin` value below checked against `any`.
+function createDisplay<SCHEMA extends AnyConfigurationSchemaType>(
+  configSchema: SCHEMA,
   displayConfig: Record<string, unknown> = {},
 ) {
   const Display = testDisplayModel(configSchema)
@@ -72,7 +77,10 @@ function createDisplay(
     { display: { type: 'TestDisplay', configuration: displayConfig } },
     { pluginManager },
   )
-  return { session, display: session.display }
+  return {
+    session,
+    display: session.display as ResolvableDisplay<Instance<SCHEMA>>,
+  }
 }
 
 // Session holding several sibling displays of one type, so resetSlotToInherit
@@ -991,11 +999,13 @@ describe('makePin refuses an on-value the cascade could never store', () => {
   // like the current default and clears nothing when clicked
   test('the inherit sentinel, passed explicitly', () => {
     const { display } = createDisplay(schema)
+    // @ts-expect-error the sentinel is exactly what the value type excludes
     expect(() => makePin(display, 'mode', undefined)).toThrow(/cannot pin/)
   })
 
   test('a value outside a maybeStringEnum vocabulary', () => {
     const { display } = createDisplay(schema)
+    // @ts-expect-error 'gone' is not one of the enumeration's members
     expect(() => makePin(display, 'mode', 'gone')).toThrow(/cannot pin/)
   })
 

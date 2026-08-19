@@ -86,7 +86,6 @@ before anyone noticed.
 | [charactersPerRow is a constant on a model](#charactersperrow-is-a-constant-living-on-a-model) | feature details | decide setting vs const; a setter with no UI is the worst option |
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
 | [The config-read baseline's remaining 125](#the-config-read-baselines-remaining-125-is-mostly-not-display-debt) | config, types | 72 of them are track/assembly reads; confirm that before estimating any of it |
-| [makePin checks the slot name, not the value](#makepin-checks-the-slot-name-but-not-the-value) | config, menus | decide whether the runtime throw is already enough |
 | [Time a two-tier PIF to settled](#time-a-two-tier-pif-to-settled-in-a-browser) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
 
 ## Ready to build: small and self-contained
@@ -1354,23 +1353,6 @@ opposite ("load-bearing and ACCEPTED"), which is the sentence that had kept it
 open. **Re-baseline in the same commit as any improvement**; the gate only fails
 when the count grows, so a win nobody ratchets is a win that can be undone
 silently.
-
-### makePin checks the slot name, but not the value
-
-`makePin(self, slot, value)` constrains `slot` against the display's schema now,
-and leaves `...value: [] | [unknown]`. A wrong value builds a pin that is inert
-*and* silent in one direction — the on-value the cascade would refuse means
-clicking stores a key `resolveSlotIn` drops, so no track moves and the pin draws
-outline forever.
-
-The reason this is filed rather than done: the runtime already throws
-`cannot pin` for exactly that case and `promotableDefaults.test.ts` covers it, so
-what a type would add is moving a covered throw to compile time. Weigh that
-against the shape of the work — the value type is
-`ConfigurationSlotValueResolved<Schema, Slot>`, and several call sites pass a
-union-typed mode (`sashimiArcsMode`, `subfeatureLabels`, `colorBy`) whose
-declared union may not be identical to the slot's `stringEnum`. Start by
-checking whether those unions already match; if they do, this is small.
 
 ## Blocked on a visual call
 

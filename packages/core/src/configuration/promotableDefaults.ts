@@ -34,6 +34,7 @@ import type {
   AnyConfigurationModel,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
+  ConfigurationSlotValueResolved,
 } from './types.ts'
 
 /**
@@ -349,7 +350,14 @@ export function makePin<
 >(
   self: ResolvableDisplay<CONFMODEL>,
   slot: SLOT,
-  ...value: [] | [unknown]
+  ...value:
+    | []
+    | [
+        ConfigurationSlotValueResolved<
+          ConfigurationSchemaForModel<CONFMODEL>,
+          SLOT
+        >,
+      ]
 ): Pin {
   // One walk of the cascade feeds both halves. The value-omitted form's
   // on-value IS the settled value, and `active` compares against the raw
@@ -368,10 +376,11 @@ export function makePin<
   // itself (`makePin(self, slot, undefined)`, which additionally reads as the
   // default the moment nothing is promoted, so it draws *filled* and does
   // nothing), a non-finite number, and a value outside a `maybeStringEnum`'s
-  // vocabulary. Every in-tree caller passes a literal option value or a
-  // hand-guarded one (`tagItem` in the alignments colorBy menu), so this throws
-  // only on a genuine authoring mistake — the same bargain `ConfigSlot` strikes
-  // over `promotedBase`, which is this gate at the other end of the cascade.
+  // vocabulary. The `value` parameter's type catches those wherever the slot
+  // resolves to a real value type; what is left for runtime is the slot whose
+  // schema widened to `any` — a `frozen`/`maybeFrozen` one by design, or a
+  // display whose config model was not narrowed. Same bargain `ConfigSlot`
+  // strikes over `promotedBase`, which is this gate at the other end.
   if (!isPromotableValue(self.configuration, slot, onValue)) {
     throw new Error(
       `cannot pin ${JSON.stringify(onValue)} as the default for config slot "${slot}": the cascade refuses it, so the pin could never light up`,
