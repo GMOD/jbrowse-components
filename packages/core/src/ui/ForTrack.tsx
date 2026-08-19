@@ -41,15 +41,19 @@ const ForTrack = observer(function ForTrack({
   select: TrackSelector
   /** a widget model, if the point's props carry one */
   model?: { type?: string; trackId?: string; trackType?: string }
-  /** a track config, if they carry that instead — its `type` is the track type */
-  config?: { trackId?: string; type?: string }
+  /**
+   * a track config, if they carry that instead — its `type` is the track type.
+   * Loosely typed because the About points hand over either a live config node
+   * or the plain snapshot the hierarchical selector holds
+   */
+  config?: Record<string, unknown>
   /** what to render when the selector does not match */
   fallback?: ReactNode
   children: ReactNode
 }) {
   const subject = model ?? {
-    trackId: config?.trackId,
-    trackType: config?.type,
+    trackId: config?.trackId as string | undefined,
+    trackType: config?.type as string | undefined,
   }
   return <>{selectorMatchesModel(select, subject) ? children : fallback}</>
 })

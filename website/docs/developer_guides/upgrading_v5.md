@@ -126,8 +126,20 @@ every other plugin's contribution; both look correct in the only install their
 author can easily check, because theirs is the only plugin registered. Passing
 such a point to `addToExtensionPoint` is now a type error that names the method
 to use — unless the call pins its own type argument, which keeps the older arity
-compiling and skips the check with it. `addFeaturePanel`, `addExtensionElement`
-and `addExtraTrackMenuItems` moved with it.
+compiling and skips the check with it. `addExtensionElement` and
+`addExtraTrackMenuItems` moved with it.
+
+The UI points went the other way, from one helper per point to one mechanism per
+shape. A single-component slot — `Core-replaceWidget`, `Core-replaceAbout`, the
+desktop start-screen panels — is filled with `wrapComponent`, which hands your
+component whatever fills the slot so far, so replacing is wrapping without
+rendering what you were handed and wrappers from two plugins nest instead of one
+disappearing. Which tracks any of them applies to is `ForTrack`, a component
+your contribution renders around what it draws, and it matches a track config as
+readily as a widget model — so an About panel now gets the copy-safe `trackId`
+matching only feature panels used to have. Both come from `@jbrowse/core/ui`,
+and between them they replace `addFeaturePanel`, `addReplaceWidget` and
+`addWidgetWrapper`.
 
 Extending a view or display has its own entry point now.
 `Core-extendPluggableElement` fires for every kind of pluggable element there

@@ -119,6 +119,7 @@ pluginManager.listenToExtensionPoint(extensionPointName, props => {
 // a producer whose point resolves to UI fires it as JSX instead. One component
 // per shape — see "Firing a point that renders" below
 <PluggableComponent name={extensionPointName} component={Default} props={props} pluginManager={pluginManager} />
+<PluggableComponents name={extensionPointName} props={props} pluginManager={pluginManager} />
 <PluggableElements name={extensionPointName} props={props} pluginManager={pluginManager} />
 ```
 
@@ -221,15 +222,21 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 
 A producer whose point resolves to UI fires it as JSX from `@jbrowse/core/ui`,
 rather than calling `evaluateExtensionPoint` and rendering the result. One
-component per shape, both shown in the API block above: `PluggableComponent` for
-a `single` point, where `component` is the default the slot resolves to when no
-plugin claims it, and `PluggableElements` for a `list` point, which renders
-every contribution in registration order.
+component per shape, all three shown in the API block above:
 
-Both are observers, so a contributor that scopes itself on an observable is
-re-evaluated when that observable changes. `PluggableElements` accepts only the
-points whose `args` are `ReactNode[]`, so pointing it at a slot point is a
-compile error rather than a component that renders nothing.
+- `PluggableComponent` for a `single` point, where `component` is the default
+  the slot resolves to when no plugin claims it.
+- `PluggableComponents` for a `list` point whose entries are components — the
+  panel points. It renders each one with the point's props, inside its own
+  `<Suspense>`, so a panel can be `React.lazy`.
+- `PluggableElements` for a `list` point whose entries are already-rendered
+  `ReactNode`s — the overlay points.
+
+All three are observers, so a contributor that scopes itself on an observable is
+re-evaluated when that observable changes. Which one a point takes is decided by
+its registry entry rather than by the call site: each accepts only the points of
+its own shape, so pointing one at another's point is a compile error rather than
+a component that renders nothing.
 
 A point fired this way has no string-literal call site, so its `#extensionPoint`
 docs tag goes on its `ExtensionPointRegistry` entry instead.
@@ -565,16 +572,27 @@ declare module '@jbrowse/core/PluginManager' {
 }
 ```
 
-Example: returns a new about track dialog for a particular track
+A single-component slot, so it is filled with
+[`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) exactly as
+`Core-replaceWidget` is. Example: a new About dialog for one track, leaving
+every other track's alone.
 
 <!-- include: packages/product-core/src/ui/aboutExtensionPoints.test.tsx#replaceAbout -->
 
 ```typescript
 function addReplaceAbout(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
+  wrapComponent(
+    pluginManager,
     'Core-replaceAbout',
-    (Default, { config }) =>
-      config.trackId === 'volvox_sv_test' ? NewAboutComponent : Default,
+    ({ DefaultComponent, ...rest }) => (
+      <ForTrack
+        {...rest}
+        select={{ trackId: 'volvox_sv_test' }}
+        fallback={<DefaultComponent {...rest} />}
+      >
+        <div>my about dialog</div>
+      </ForTrack>
+    ),
   )
 }
 ```
@@ -602,11 +620,18 @@ Example: adds an extra about dialog panel for a particular track ID
 <!-- include: packages/product-core/src/ui/aboutExtensionPoints.test.tsx#extraAboutPanel -->
 
 ```tsx
+function ExtraAboutPanel(props: AboutPanelProps) {
+  return (
+    <ForTrack {...props} select={{ trackId: 'volvox_sv_test' }}>
+      <BaseCard title="Extra">…</BaseCard>
+    </ForTrack>
+  )
+}
+
 function addExtraAboutPanel(pluginManager: PluginManager) {
   pluginManager.contributeToExtensionPoint(
     'Core-extraAboutPanel',
-    ({ config }) =>
-      config.trackId === 'volvox_sv_test' ? ExtraAboutPanel : undefined,
+    () => ExtraAboutPanel,
   )
 }
 ```
@@ -618,10 +643,12 @@ section). Declaring it inside the callback instead makes it a new element type
 on each evaluation, so the panel remounts and loses its state. Panels render
 inside a `<Suspense>`, so `React.lazy` is fine.
 
-Unlike `Core-extraFeaturePanel` there is no helper doing the scoping, and the
-dialog fires this for whatever track was opened — so returning your panel
-unconditionally puts it on every track's About dialog. Read `props.config` and
-return `undefined` when it isn't yours, as above.
+The dialog fires this for whatever track was opened, so a panel that renders
+unconditionally lands on every track's About dialog.
+[`ForTrack`](#fortrack-which-tracks-a-contribution-is-for) is how it says which
+tracks it is for, the same way a feature panel does — and it reads the track
+config these points carry rather than a widget model, so a `trackId` selector
+here also matches the user's copies of that track.
 
 ### Core-customizeAbout
 
@@ -685,13 +712,42 @@ this point to replace a widget you do **not** own.
 
 This point fires whenever **any** widget opens, so a callback that does not
 scope itself takes over the drawer, the modal, and every feature details panel.
-Rather than write that scoping by hand, use the two helpers below. They are the
-supported way to use this point; reach for `addToExtensionPoint` directly only
-for something neither one expresses.
+Rather than write that scoping by hand, use `wrapComponent` and `ForTrack`,
+below. They are the supported way to use this point; reach for
+`addToExtensionPoint` directly only for something neither one expresses.
 
-#### addReplaceWidget: render something else entirely
+#### wrapComponent: the one way to fill a slot
 
-Both helpers come from `@jbrowse/core/ui`.
+`wrapComponent`, from `@jbrowse/core/ui`, hands your component whatever fills
+the slot so far as `DefaultComponent`. Render it and you have added to the
+default; leave it out and you have replaced it. There is no separate "replace"
+call, because replacing is this with the default dropped — and writing it this
+way is what lets the next plugin still wrap yours.
+
+<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#wrapComponent -->
+
+```tsx
+wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
+  <div>
+    <div>custom</div>
+    <DefaultComponent {...rest} />
+  </div>
+))
+```
+
+It takes the point's name, so the same call fills any single-component slot:
+`Core-replaceAbout` and the desktop start-screen panels work exactly like this.
+
+Wrappers from different plugins nest, so two plugins can both add content
+without either one disappearing. Two callbacks registered on the point by hand
+cannot, and JBrowse logs a warning naming the slot when that happens.
+
+#### ForTrack: which tracks a contribution is for
+
+A wrapper with no condition takes over every widget that opens. `ForTrack`
+renders its children for the tracks `select` matches and its `fallback`
+otherwise — and passing the component you were handed as the fallback is what
+leaves the widget alone on the tracks you did not select.
 
 <!-- include: packages/core/src/ui/PluggableComponent.test.tsx#replaceWidget -->
 
@@ -710,9 +766,7 @@ function scopedToOneTrack(pm: PluginManager) {
 ```
 
 `select` accepts any combination of the fields below, and all of the ones you
-give must match. Omitting `select` entirely matches every widget.
-
-Two fields are shared with `addFeaturePanel`:
+give must match. An empty selector matches everything.
 
 <!-- include: packages/core/src/ui/extensionSelectors.ts#fields -->
 
@@ -727,53 +781,21 @@ export interface TrackSelector {
 }
 ```
 
-and a widget selector adds two more:
-
-<!-- include: packages/core/src/ui/addReplaceWidget.tsx#selector -->
-
-```typescript
-export interface WidgetSelector extends TrackSelectorFields {
-  /** widget model type, e.g. `'AlignmentsFeatureWidget'` */
-  widgetType?: string | string[]
-  /** escape hatch for anything the fields above cannot express */
-  where?: (props: ReplaceWidgetProps) => boolean
-}
-```
-
 Prefer `trackType` when what you mean is "my kind of track". A plain-string
 `trackId` also matches the user's copies of that track (the "Copy track" menu
 item appends a timestamp to the id), so scoping by id does not silently stop
 applying the first time someone copies the track. Pass a `RegExp` if you want to
 control the matching yourself.
 
+`ForTrack` reads either the widget model these points carry or the track config
+the About points carry, so the same selector scopes a contribution to any of
+them. Anything the fields cannot express is an ordinary React condition around
+the same children — the panel below is scoped by `depth` that way.
+
 We match on the model rather than on the config because the config that produced
 a feature details widget isn't always retrievable.
 
-#### addWidgetWrapper: add to the default widget
-
-Most "replacements" really want to keep the default widget and put something
-around it. That is a different helper, because the wrapper has to receive the
-default rather than close over it:
-
-<!-- include: packages/core/src/ui/PluggableComponent.test.tsx#widgetWrapper -->
-
-```tsx
-addWidgetWrapper(pm, {
-  wrapper: ({ DefaultWidget: Widget, ...rest }) => (
-    <div>
-      <div>custom</div>
-      <Widget {...rest} />
-    </div>
-  ),
-})
-```
-
-Wrappers from different plugins nest, so two plugins can both add content
-without either one disappearing. Two plugins using `addReplaceWidget` on the
-same widget cannot, and JBrowse logs a warning naming the slot when that
-happens.
-
-:::caution Declare the wrapper outside the callback, or use `addWidgetWrapper`
+:::caution Declare the wrapper outside the callback, or use `wrapComponent`
 
 <!-- include: packages/core/src/ui/PluggableComponent.test.tsx#inlineComponent -->
 
@@ -791,8 +813,8 @@ pm.addToExtensionPoint('Core-replaceWidget', Default => {
 })
 ```
 
-Use [`addWidgetWrapper`](#addwidgetwrapper-add-to-the-default-widget) instead,
-which builds the wrapped component once and caches it.
+Use [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) instead, which
+builds the wrapped component once and caches it.
 
 `Core-replaceWidget` is re-evaluated on every render of the drawer, so returning
 a component declared inside the callback hands React a brand new component type
@@ -809,9 +831,8 @@ Adds panels to the feature details widget, below the built-in Attributes and
 Sequence sections. This is a `list` point: every plugin's panel is kept, in
 registration order, so panels compose rather than overwrite.
 
-Register with `addFeaturePanel`, which scopes the panel with the same selector
-`addReplaceWidget` uses. The score-example plugin's panel, which reports the
-value its display draws:
+Register with `contributeToExtensionPoint`, returning your component. The
+score-example plugin's panel, which reports the value its display draws:
 
 <!-- include: example-plugins/score-example/src/ScoreFeaturePanel/index.tsx#register -->
 
@@ -824,11 +845,12 @@ export default function ScoreFeaturePanelF(pluginManager: PluginManager) {
 }
 ```
 
-- `select` - a `FeaturePanelSelector`, below. Omit it to add the panel to every
-  track's feature details.
-- `panel` - a `React.ComponentType<FeaturePanelProps>`.
+Return value: your component, or `undefined` to add no panel.
 
-Your panel renders its own card chrome, so start at `BaseCard`:
+The point fires for every feature details widget there is, so the panel says
+which tracks it belongs on itself, with the
+[`ForTrack`](#fortrack-which-tracks-a-contribution-is-for) the widget points
+use. It renders its own card chrome too, so it starts at `BaseCard`:
 
 <!-- include: example-plugins/score-example/src/ScoreFeaturePanel/index.tsx#panel -->
 
@@ -845,26 +867,15 @@ function ScoreFeaturePanel(props: FeaturePanelProps) {
 }
 ```
 
-<!-- include: packages/core/src/ui/addFeaturePanel.ts#selector -->
+`widgetType` means nothing here: a feature detail widget's type varies by track
+type, so `trackType` is the field that means "my kind of track". A plain-string
+`trackId` matches the user's copies of that track too.
 
-```typescript
-export interface FeaturePanelSelector extends TrackSelectorFields {
-  /** escape hatch; also has the `feature` being shown */
-  where?: (props: FeaturePanelProps) => boolean
-}
-```
-
-There is no `widgetType` here, unlike `WidgetSelector`: a feature detail
-widget's type varies by track type, so `trackType` is the field that means "my
-kind of track". `trackId` and `trackType` are documented under
-[`Core-replaceWidget`](#core-replacewidget); a plain-string `trackId` matches
-the user's copies of that track too.
-
-`where` additionally receives the `feature` being shown and the `depth` of the
-card it is being shown on, neither of which the declarative fields can reach —
-both are used in the example above. The point fires once per card, including the
-nested card for every subfeature, so `depth === 0` is how a panel says "only the
-feature the user clicked".
+The `feature` being shown and the `depth` of the card showing it are what no
+selector can reach, and both are ordinary conditions around the panel's own JSX,
+as above. The point fires once per card, including the nested card for every
+subfeature, so `depth === 0` is how a panel says "only the feature the user
+clicked".
 
 Your panel receives the point's props:
 

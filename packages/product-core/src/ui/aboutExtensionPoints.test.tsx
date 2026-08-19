@@ -1,9 +1,13 @@
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   ConfigurationSchema,
   FormatAboutConfigSchemaFactory,
 } from '@jbrowse/core/configuration'
+import { ForTrack, PluggableComponent, wrapComponent } from '@jbrowse/core/ui'
+import PluggableComponents from '@jbrowse/core/ui/PluggableComponents'
 import { types } from '@jbrowse/mobx-state-tree'
+import { render } from '@testing-library/react'
 
 import { getAboutDialogConfig } from './util.ts'
 
@@ -41,34 +45,43 @@ function propsFor(c: Record<string, unknown>): AboutPanelProps {
 }
 
 function DefaultAboutComponent() {
-  return null
-}
-function NewAboutComponent() {
-  return null
-}
-function ExtraAboutPanel() {
-  return null
+  return <div>default</div>
 }
 function OtherPanel() {
-  return null
+  return <div>other</div>
 }
 
 // #region extraAboutPanel
+function ExtraAboutPanel(props: AboutPanelProps) {
+  return (
+    <ForTrack {...props} select={{ trackId: 'volvox_sv_test' }}>
+      <BaseCard title="Extra">…</BaseCard>
+    </ForTrack>
+  )
+}
+
 function addExtraAboutPanel(pluginManager: PluginManager) {
   pluginManager.contributeToExtensionPoint(
     'Core-extraAboutPanel',
-    ({ config }) =>
-      config.trackId === 'volvox_sv_test' ? ExtraAboutPanel : undefined,
+    () => ExtraAboutPanel,
   )
 }
 // #endregion
 
 // #region replaceAbout
 function addReplaceAbout(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
+  wrapComponent(
+    pluginManager,
     'Core-replaceAbout',
-    (Default, { config }) =>
-      config.trackId === 'volvox_sv_test' ? NewAboutComponent : Default,
+    ({ DefaultComponent, ...rest }) => (
+      <ForTrack
+        {...rest}
+        select={{ trackId: 'volvox_sv_test' }}
+        fallback={<DefaultComponent {...rest} />}
+      >
+        <div>my about dialog</div>
+      </ForTrack>
+    ),
   )
 }
 // #endregion
@@ -83,6 +96,30 @@ function addCustomizeAbout(pluginManager: PluginManager) {
 }
 // #endregion
 
+function renderPanels(
+  pluginManager: PluginManager,
+  c: Record<string, unknown>,
+) {
+  return render(
+    <PluggableComponents
+      pluginManager={pluginManager}
+      name="Core-extraAboutPanel"
+      props={propsFor(c)}
+    />,
+  ).container.textContent
+}
+
+function renderAbout(pluginManager: PluginManager, c: Record<string, unknown>) {
+  return render(
+    <PluggableComponent
+      pluginManager={pluginManager}
+      name="Core-replaceAbout"
+      component={DefaultAboutComponent}
+      props={propsFor(c)}
+    />,
+  ).container.textContent
+}
+
 test('extraAboutPanel keeps every plugin panel, in registration order', () => {
   const pluginManager = new PluginManager([])
   addExtraAboutPanel(pluginManager)
@@ -91,41 +128,31 @@ test('extraAboutPanel keeps every plugin panel, in registration order', () => {
     () => OtherPanel,
   )
 
+  expect(renderPanels(pluginManager, config)).toBe('Extra…other')
+  // the scoped one renders nothing, the unscoped one still shows
+  expect(renderPanels(pluginManager, otherConfig)).toBe('other')
+})
+
+// the copy the "Copy track" menu item makes carries a suffixed trackId, and a
+// selector matching only the id as written is what silently stops applying
+test('a panel scoped by trackId still shows on the users copy of that track', () => {
+  const pluginManager = new PluginManager([])
+  addExtraAboutPanel(pluginManager)
+
   expect(
-    pluginManager.evaluateExtensionPoint(
-      'Core-extraAboutPanel',
-      [],
-      propsFor(config),
-    ),
-  ).toEqual([ExtraAboutPanel, OtherPanel])
-  // the scoped one drops out, the unscoped one still contributes
-  expect(
-    pluginManager.evaluateExtensionPoint(
-      'Core-extraAboutPanel',
-      [],
-      propsFor(otherConfig),
-    ),
-  ).toEqual([OtherPanel])
+    renderPanels(pluginManager, {
+      ...config,
+      trackId: 'volvox_sv_test-1712000000000',
+    }),
+  ).toBe('Extra…')
 })
 
 test('replaceAbout swaps the dialog body for the track it names', () => {
   const pluginManager = new PluginManager([])
   addReplaceAbout(pluginManager)
 
-  expect(
-    pluginManager.evaluateComponentExtensionPoint(
-      'Core-replaceAbout',
-      DefaultAboutComponent,
-      propsFor(config),
-    ),
-  ).toBe(NewAboutComponent)
-  expect(
-    pluginManager.evaluateComponentExtensionPoint(
-      'Core-replaceAbout',
-      DefaultAboutComponent,
-      propsFor(otherConfig),
-    ),
-  ).toBe(DefaultAboutComponent)
+  expect(renderAbout(pluginManager, config)).toBe('my about dialog')
+  expect(renderAbout(pluginManager, otherConfig)).toBe('default')
 })
 
 test('customizeAbout adds a field to the config the dialog shows', () => {

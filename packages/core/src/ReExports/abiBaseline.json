@@ -100,9 +100,6 @@
     "VIEW_HEADER_HEIGHT",
     "VerticalScrollbar",
     "addExtensionElement",
-    "addFeaturePanel",
-    "addReplaceWidget",
-    "addWidgetWrapper",
     "checkboxItem",
     "colorFwdStrand",
     "colorInterchrom",
@@ -144,8 +141,7 @@
     "useCopyToClipboard",
     "useExportSvgPreference",
     "useMouseTracking",
-    "useRecentLocations",
-    "widgetSelectorMatches"
+    "useRecentLocations"
   ],
   "@jbrowse/core/ui/theme": [
     "colorFwdStrand",
