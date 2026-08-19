@@ -7,10 +7,12 @@ import type { Pin } from '@jbrowse/core/configuration'
 
 // stateful stand-in for a Pin (the menu builder and the promote
 // path only touch active/toggle; `slot` is what a built menu is later asked for
-// by promotableSlotsWithoutPin, and is unread here)
-function control(slot: string): Pin {
+// by promotableSlotsWithoutPin, and `onValue` what PinAdornment words itself
+// from — neither is read here)
+function control(slot: string, onValue: unknown = false): Pin {
   return {
     slot,
+    onValue,
     active: false,
     toggle() {
       this.active = !this.active

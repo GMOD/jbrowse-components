@@ -7,10 +7,12 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // stateful stand-in for a Pin (the menu builder only touches
 // active/toggle; `slot` is what a built menu is later asked for by
-// promotableSlotsWithoutPin, and is unread here)
-function control(slot: string): Pin {
+// promotableSlotsWithoutPin, and `onValue` what PinAdornment words itself
+// from — neither is read here)
+function control(slot: string, onValue: unknown = false): Pin {
   return {
     slot,
+    onValue,
     active: false,
     toggle() {
       this.active = !this.active
@@ -32,7 +34,8 @@ function makeModel() {
     setSashimiArcsMode(mode: SashimiArcsMode) {
       this.sashimiArcsMode = mode
     },
-    sashimiArcsModeDisplayTypeDefault: () => control('sashimiArcsMode'),
+    sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) =>
+      control('sashimiArcsMode', mode),
     minSashimiScore: DEFAULT_MIN_SASHIMI_SCORE,
     setMinSashimiScore() {},
   }

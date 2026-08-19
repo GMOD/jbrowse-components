@@ -203,7 +203,7 @@ export function getTrackConfigWithPromotables(
 export interface Pin {
   /**
    * The promotable slot this pin promotes a value of. Nothing in the UI reads
-   * it — a pin renders from `active` and the two setters alone. It is here so a
+   * it — a pin renders from `active`, `onValue` and the toggle. It is here so a
    * *built menu* can be asked which promotable slots it offers a pin for, which
    * is the only way that question has an answer: declaring `promotedBase` is a
    * schema fact and the pin is a menu fact, and a display that inherits the slot
@@ -212,6 +212,20 @@ export interface Pin {
    * `products/jbrowse-web/src/tests/PromotablePinCoverage.test.ts`).
    */
   slot: string
+  /**
+   * The value `toggle` promotes — the on-value {@link makePin} was given, or the
+   * track's current resolved value for the value-omitted form.
+   *
+   * `PinAdornment` words itself from this, and has to: a **boolean** on-value
+   * promotes a *state*, so a row whose label names the setting rather than a
+   * value ("Show legend") gets a pin that promotes hiding the legend as often as
+   * showing it. Every other on-value IS what the row's label says — a radio
+   * option, a slider's current size — so those keep the value-shaped copy.
+   *
+   * Required, like `slot`: a pin that cannot say what it promotes is what let
+   * that copy state the opposite of what the click does.
+   */
+  onValue: unknown
   active: boolean
   toggle: () => void
 }
@@ -392,6 +406,7 @@ export function makePin<
   const active = deepEqual(res.promoted, onValue)
   return {
     slot,
+    onValue,
     active,
     toggle: () => {
       applyDefaultToggle(self, slot, onValue, !active)

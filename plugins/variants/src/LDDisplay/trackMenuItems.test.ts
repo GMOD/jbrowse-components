@@ -20,6 +20,7 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     showLegend: false,
     showLegendDisplayTypeDefault: {
       slot: 'showLegend',
+      onValue: false,
       active: false,
       toggle: () => {},
     },

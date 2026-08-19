@@ -11,6 +11,7 @@ afterEach(cleanup)
 
 const noPin: Pin = {
   slot: 'unused',
+  onValue: true,
   active: false,
   toggle: () => {},
 }

@@ -17,6 +17,7 @@ function makeSelf(
     showLegend: true,
     showLegendDisplayTypeDefault: {
       slot: 'showLegend',
+      onValue: true,
       active: false,
       toggle: () => {},
     },

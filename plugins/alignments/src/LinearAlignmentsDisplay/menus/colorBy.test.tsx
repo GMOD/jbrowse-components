@@ -36,6 +36,7 @@ function fakePinFactory(model: Model) {
     const key = JSON.stringify(colorBy)
     return {
       slot: 'colorBy',
+      onValue: colorBy,
       active: model.pinned.has(key),
       toggle() {
         if (model.pinned.has(key)) {

@@ -140,6 +140,7 @@ describe('CascadingMenu endAdornment', () => {
               onClick: () => {},
               pin: {
                 slot: 'displayMode',
+                onValue: 'compact',
                 active: promoted.get() === 'compact',
                 toggle: () => {},
               },

@@ -16,6 +16,7 @@ function baseSelf() {
     showLegend: false,
     showLegendDisplayTypeDefault: {
       slot: 'showLegend',
+      onValue: false,
       active: false,
       toggle: () => {},
     },
