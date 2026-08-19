@@ -1,10 +1,32 @@
-// Vendored from d3-scale 4.0.2 + d3-array 3.2.4
-// ISC License — https://github.com/d3/d3-scale/blob/main/LICENSE
-// Only scaleLinear, scaleLog, scaleSymlog, scaleQuantize are included.
-// Unused d3-scale features (clamp, invert, interpolate, rangeRound, unknown,
-// tickFormat, copy) are omitted.
+// Derived from d3-scale 4.0.2 and d3-array 3.2.4, ISC License —
+// https://github.com/d3/d3-scale/blob/main/LICENSE
+//
+// Three scales, because `scaleType` is a stringEnum of exactly linear, log and
+// symlog. What d3 offers beyond them, and what these three offered beyond
+// `getScale`'s use of them — clamp, invert, interpolate, rangeRound, unknown,
+// tickFormat, copy, piecewise domains, quantize — is not here.
+//
+// **Pure functions over a spec**, rather than d3's chainable callable objects:
+// nothing here holds state, so a scale is a value you can compare, log and
+// build in a worker, and `scale.ts` assembles the one callable the public
+// `getScale` still returns.
+//
+// **The tick and nice arithmetic is d3's, unchanged**, and deliberately so:
+// `yScaleTicksParity.test.ts` pins the axis against what the renderer draws,
+// and a tick sequence differing in the last decimal moves a labelled line off
+// the bar it belongs to. `scaleParity.test.ts` holds it to that.
 
-// ── d3-array: ticks, tickIncrement ────────────────────────────────────────────
+export type ScaleKind = 'linear' | 'log' | 'symlog'
+
+export interface ScaleSpec {
+  kind: ScaleKind
+  domain: readonly [number, number]
+  range: readonly [number, number]
+  /** log only; 10 when unset, and every caller here passes 2 */
+  base?: number
+  /** symlog only; the half-width of the linear region around zero */
+  constant?: number
+}
 
 const e10 = Math.sqrt(50)
 const e5 = Math.sqrt(10)
@@ -50,10 +72,12 @@ function tickSpec(
   return [i1, i2, inc]
 }
 
-function d3ticks(start: number, stop: number, count: number): number[] {
-  stop = +stop
-  start = +start
-  count = +count
+/** d3-array's `ticks`: round values inside [start, stop], about `count` of them. */
+export function linearTicks(
+  start: number,
+  stop: number,
+  count: number,
+): number[] {
   if (!(count > 0)) {
     return []
   }
@@ -67,450 +91,173 @@ function d3ticks(start: number, stop: number, count: number): number[] {
   if (!(i2 >= i1)) {
     return []
   }
-  const n = i2 - i1 + 1
-  const result: number[] = new Array(n)
-  if (reverse) {
-    if (inc < 0) {
-      for (let i = 0; i < n; ++i) {
-        result[i] = (i2 - i) / -inc
-      }
-    } else {
-      for (let i = 0; i < n; ++i) {
-        result[i] = (i2 - i) * inc
-      }
-    }
-  } else {
-    if (inc < 0) {
-      for (let i = 0; i < n; ++i) {
-        result[i] = (i1 + i) / -inc
-      }
-    } else {
-      for (let i = 0; i < n; ++i) {
-        result[i] = (i1 + i) * inc
-      }
-    }
-  }
-  return result
+  // Multiply or divide by `inc` as its sign says, rather than always
+  // multiplying: for a fractional step d3 carries the reciprocal as a negative
+  // integer so the ticks land on exact decimals.
+  const at = (i: number) => (inc < 0 ? i / -inc : i * inc)
+  return Array.from({ length: i2 - i1 + 1 }, (_, i) =>
+    reverse ? at(i2 - i) : at(i1 + i),
+  )
 }
 
-function tickIncrement(start: number, stop: number, count: number): number {
-  return tickSpec(+start, +stop, +count)[2]
-}
+const tickIncrement = (start: number, stop: number, count: number) =>
+  tickSpec(start, stop, count)[2]
 
-// bisectRight for sorted ascending number arrays (subset of d3-array bisector)
-function bisectRight(a: number[], x: number, lo = 0, hi = a.length): number {
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1
-    if (a[mid]! <= x) {
-      lo = mid + 1
-    } else {
-      hi = mid
-    }
-  }
-  return lo
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function normalize(a: number, b: number) {
-  b -= a = +a
-  return b ? (x: number) => (x - a) / b : () => (Number.isNaN(b) ? NaN : 0.5)
-}
-
-function interpolateNum(a: number, b: number) {
-  return (t: number) => a * (1 - t) + b * t
-}
-
-// domain is already transform-mapped; returns a function of transformed x
-function bimap(domain: number[], range: number[]): (x: number) => number {
-  const [d0, d1, r0, r1] = [domain[0]!, domain[1]!, range[0]!, range[1]!]
-  const dn = d1 < d0 ? normalize(d1, d0) : normalize(d0, d1)
-  const rn = d1 < d0 ? interpolateNum(r1, r0) : interpolateNum(r0, r1)
-  return x => rn(dn(x))
-}
-
-function polymap(domain: number[], range: number[]): (x: number) => number {
-  const j = Math.min(domain.length, range.length) - 1
-  let d = domain.slice()
-  let r = range.slice()
-  if (d[j]! < d[0]!) {
-    d = d.reverse()
-    r = r.reverse()
-  }
-  const dn: ((x: number) => number)[] = []
-  const rn: ((t: number) => number)[] = []
-  for (let i = 0; i < j; i++) {
-    dn[i] = normalize(d[i]!, d[i + 1]!)
-    rn[i] = interpolateNum(r[i]!, r[i + 1]!)
-  }
-  return x => {
-    const i = bisectRight(d, x, 1, j) - 1
-    return rn[i]!(dn[i]!(x))
-  }
-}
-
-// ── Public interfaces ─────────────────────────────────────────────────────────
-
-export interface Scale {
-  (x: number): number
-  domain(): number[]
-  domain(d: number[]): this
-  range(): number[]
-  range(r: number[]): this
-  nice(count?: number): this
-  ticks(count?: number): number[]
-}
-
-export interface LogScale extends Scale {
-  base(): number
-  base(b: number): this
-}
-
-export interface SymlogScale extends Scale {
-  constant(): number
-  constant(c: number): this
-}
-
-// ── continuous (shared base for linear + log) ─────────────────────────────────
-
-interface InternalScale extends Scale {
-  _setXform(t: (x: number) => number): this
-}
-
-function continuous(xform: (x: number) => number = x => x): InternalScale {
-  let _domain = [0, 1]
-  let _range = [0, 1]
-  let _transform = xform
-  let _output: (x: number) => number
-
-  function rescale() {
-    const mapped = _domain.map(_transform)
-    _output =
-      _domain.length > 2 ? polymap(mapped, _range) : bimap(mapped, _range)
-    return scale
-  }
-
-  const scale = Object.assign((x: number) => _output(_transform(x)), {
-    domain(d?: number[]): any {
-      if (!d) {
-        return _domain.slice()
-      }
-      _domain = Array.from(d, Number)
-      return rescale()
-    },
-
-    range(r?: number[]): any {
-      if (!r) {
-        return _range.slice()
-      }
-      _range = Array.from(r)
-      return rescale()
-    },
-
-    // linearish.nice from d3-scale
-    nice(count = 10): any {
-      const d = _domain.slice()
-      let i0 = 0
-      let i1 = d.length - 1
-      let start = d[i0]!
-      let stop = d[i1]!
-      if (stop < start) {
-        ;[i0, i1] = [i1, i0]
-        ;[start, stop] = [stop, start]
-      }
-      let prestep: number | undefined
-      let step: number
-      let maxIter = 10
-      while (maxIter-- > 0) {
-        step = tickIncrement(start, stop, count)
-        if (step === prestep) {
-          d[i0] = start
-          d[i1] = stop
-          _domain = d
-          return rescale()
-        } else if (step > 0) {
-          start = Math.floor(start / step) * step
-          stop = Math.ceil(stop / step) * step
-        } else if (step < 0) {
-          start = Math.ceil(start * step) / step
-          stop = Math.floor(stop * step) / step
-        } else {
-          break
-        }
-        prestep = step
-      }
-      return scale
-    },
-
-    ticks(count = 10): number[] {
-      return d3ticks(_domain[0]!, _domain[_domain.length - 1]!, count)
-    },
-
-    _setXform(t: (x: number) => number): any {
-      _transform = t
-      return rescale()
-    },
-  })
-
-  rescale()
-  return scale
-}
-
-// ── scaleLinear ───────────────────────────────────────────────────────────────
-
-export function scaleLinear(): Scale {
-  return continuous()
-}
-
-// ── scaleLog ──────────────────────────────────────────────────────────────────
-
-function logp(base: number) {
-  return base === Math.E
+// Exact for the bases anyone uses. `Math.log(8) / Math.log(2)` is
+// 2.9999999999999996, and the log `nice` floors that logarithm — so the generic
+// form would round a domain endpoint down a whole decade.
+const logp = (base: number) =>
+  base === Math.E
     ? Math.log
     : base === 10
       ? Math.log10
       : base === 2
         ? Math.log2
         : (x: number) => Math.log(x) / Math.log(base)
-}
 
-function powp(base: number) {
-  return base === 10
+const powp = (base: number) =>
+  base === 10
     ? (x: number) => (Number.isFinite(x) ? +`1e${x}` : Math.max(x, 0))
     : base === Math.E
       ? Math.exp
-      : (x: number) => Math.pow(base, x)
-}
+      : (x: number) => base ** x
 
-export function scaleLog(): LogScale {
-  let base = 10
-  let logs = logp(base)
-  let pows = powp(base)
-
-  // Start with log transform; loggish rescale will flip sign for negative domains
-  const inner = continuous(Math.log)
-
-  function rescaleLog() {
-    logs = logp(base)
-    pows = powp(base)
-    const d = inner.domain()
-    const xform =
-      d[0]! < 0
-        ? (x: number) => -Math.log(-x)
-        : base === Math.E
-          ? Math.log
-          : base === 10
-            ? Math.log10
-            : base === 2
-              ? Math.log2
-              : (x: number) => Math.log(x) / Math.log(base)
-    inner._setXform(xform)
-    return scale
-  }
-
-  const scale = Object.assign((x: number) => inner(x), {
-    base(b?: number): any {
-      if (b === undefined) {
-        return base
-      }
-      base = +b
-      return rescaleLog()
-    },
-
-    domain(d?: number[]): any {
-      if (!d) {
-        return inner.domain()
-      }
-      inner.domain(d)
-      return rescaleLog()
-    },
-
-    range(r?: number[]): any {
-      if (!r) {
-        return inner.range()
-      }
-      inner.range(r)
-      return scale
-    },
-
-    nice(): any {
-      const d = inner.domain()
-      d[0] = pows(Math.floor(logs(d[0]!)))
-      d[d.length - 1] = pows(Math.ceil(logs(d[d.length - 1]!)))
-      inner.domain(d)
-      return rescaleLog()
-    },
-
-    ticks(count = 10): number[] {
-      const d = inner.domain()
-      let u = d[0]!
-      let v = d[d.length - 1]!
-      const r = v < u
-      if (r) {
-        ;[u, v] = [v, u]
-      }
-      let i = logs(u)
-      let j = logs(v)
-      const n = count
-      const z: number[] = []
-      if (!(base % 1) && j - i < n) {
-        i = Math.floor(i)
-        j = Math.ceil(j)
-        if (u > 0) {
-          for (; i <= j; ++i) {
-            for (let k = 1; k < base; ++k) {
-              const t = i < 0 ? k / pows(-i) : k * pows(i)
-              if (t < u) {
-                continue
-              }
-              if (t > v) {
-                break
-              }
-              z.push(t)
-            }
-          }
-        } else {
-          for (; i <= j; ++i) {
-            for (let k = base - 1; k >= 1; --k) {
-              const t = i > 0 ? k / pows(-i) : k * pows(i)
-              if (t < u) {
-                continue
-              }
-              if (t > v) {
-                break
-              }
-              z.push(t)
-            }
-          }
-        }
-        if (z.length * 2 < n) {
-          return d3ticks(u, v, n)
-        }
-      } else {
-        z.push(...d3ticks(i, j, Math.min(j - i, n)).map(pows))
-      }
-      return r ? z.reverse() : z
-    },
-  })
-
-  scale.domain([1, 10])
-  return scale
-}
-
-// ── scaleSymlog ───────────────────────────────────────────────────────────────
-
-// d3's symlog: sign(x) * log1p(|x / c|). Unlike scaleLog it is defined at 0 —
-// and either side of it — which is the whole reason it is here: coverage that
-// touches zero, and log-ratio data that crosses it, have no log domain at all.
+// sign(x) * log1p(|x / c|). Unlike a log scale it is defined at 0 — and either
+// side of it — which is the whole reason it is here: coverage that touches
+// zero, and log-ratio data that crosses it, have no log domain at all.
 //
 // `constant` is not decoration. At c = 1 this IS log(x + 1), which flattens any
 // data living below 1 (p-values, fractions) into the linear part of the curve
 // and throws away exactly the resolution such a track is read for. Shrinking c
 // moves the linear knee down to where the interesting values are.
-function transformSymlog(c: number) {
-  return (x: number) => Math.sign(x) * Math.log1p(Math.abs(x / c))
-}
+const symlog = (c: number) => (x: number) =>
+  Math.sign(x) * Math.log1p(Math.abs(x / c))
 
-export function scaleSymlog(): SymlogScale {
-  let c = 1
-  const inner = continuous(transformSymlog(c))
-
-  const scale = Object.assign((x: number) => inner(x), {
-    constant(c_?: number): any {
-      if (c_ === undefined) {
-        return c
-      }
-      c = +c_
-      inner._setXform(transformSymlog(c))
-      return scale
-    },
-
-    domain(d?: number[]): any {
-      if (!d) {
-        return inner.domain()
-      }
-      inner.domain(d)
-      return scale
-    },
-
-    range(r?: number[]): any {
-      if (!r) {
-        return inner.range()
-      }
-      inner.range(r)
-      return scale
-    },
-
-    // d3 composes symlog with `linearish`, so nice/ticks are the linear ones
-    // over the untransformed domain rather than decade-aligned like scaleLog's.
-    nice(count?: number): any {
-      inner.nice(count)
-      return scale
-    },
-
-    ticks(count = 10): number[] {
-      return inner.ticks(count)
-    },
-  })
-
-  return scale
-}
-
-// ── scaleQuantize ─────────────────────────────────────────────────────────────
-
-export function scaleQuantize(): Scale {
-  let x0 = 0
-  let x1 = 1
-  let n = 1
-  let thresholds = [0.5]
-  let range = [0, 1]
-
-  function rescale() {
-    thresholds = new Array(n)
-    for (let i = 0; i < n; ++i) {
-      thresholds[i] = ((i + 1) * x1 - (i - n) * x0) / (n + 1)
-    }
-    return scale
+/**
+ * The spec's transform. A wholly negative log domain maps through -log(-x),
+ * which is what lets a log scale run from -100 to -1; `getNiceDomain` floors
+ * its own log domains above zero, so that branch is for callers reaching
+ * `getScale` directly.
+ */
+function transformFor(spec: ScaleSpec): (x: number) => number {
+  if (spec.kind === 'symlog') {
+    return symlog(spec.constant ?? 1)
   }
+  if (spec.kind === 'log') {
+    return spec.domain[0] < 0 ? x => -Math.log(-x) : logp(spec.base ?? 10)
+  }
+  return x => x
+}
 
-  const scale = Object.assign(
-    (x: number) => range[bisectRight(thresholds, x, 0, n)]!,
-    {
-      domain(d?: number[]): any {
-        if (!d) {
-          return [x0, x1]
-        }
-        ;[x0, x1] = [+d[0]!, +d[1]!]
-        return rescale()
-      },
+/**
+ * Where `x` lands in the range.
+ *
+ * A zero-width domain returns the range's midpoint rather than dividing by
+ * zero, which is d3's behaviour and the one a flat track wants: every score
+ * equal means every bar at the same height, not every bar at NaN.
+ */
+export function scaleValue(spec: ScaleSpec, x: number): number {
+  const transform = transformFor(spec)
+  const [d0, d1] = [transform(spec.domain[0]), transform(spec.domain[1])]
+  const [r0, r1] = spec.range
+  const span = d1 - d0
+  if (!span) {
+    return Number.isNaN(span) ? NaN : (r0 + r1) / 2
+  }
+  return r0 + ((transform(x) - d0) / span) * (r1 - r0)
+}
 
-      range(r?: number[]): any {
-        if (!r) {
-          return range.slice()
-        }
-        n = (range = Array.from(r)).length - 1
-        return rescale()
-      },
+/** The domain rounded out to tick boundaries — d3's `nice`. */
+export function niceDomain(spec: ScaleSpec, count = 10): [number, number] {
+  if (spec.kind === 'log') {
+    const logs = logp(spec.base ?? 10)
+    const pows = powp(spec.base ?? 10)
+    return [
+      pows(Math.floor(logs(spec.domain[0]))),
+      pows(Math.ceil(logs(spec.domain[1]))),
+    ]
+  }
+  // d3's linearish.nice, which symlog composes too: widen to the tick step,
+  // then re-derive the step from the widened domain until it stops moving,
+  // because widening can change which step tickIncrement picks.
+  let [start, stop] = spec.domain
+  const flip = stop < start
+  if (flip) {
+    ;[start, stop] = [stop, start]
+  }
+  // The widened endpoints are COMMITTED only where the step converges, which
+  // is d3's own control flow and not a detail: a degenerate domain — [5, 5],
+  // what a flat coverage track hands over — drives the step to -Infinity and
+  // the endpoints to NaN on the first pass. d3 leaves such a domain alone;
+  // returning the intermediate values instead gives the axis a NaN domain.
+  let prestep: number | undefined
+  for (let iter = 0; iter < 10; iter++) {
+    const step = tickIncrement(start, stop, count)
+    if (step === prestep) {
+      return flip ? [stop, start] : [start, stop]
+    }
+    if (step > 0) {
+      start = Math.floor(start / step) * step
+      stop = Math.ceil(stop / step) * step
+    } else if (step < 0) {
+      start = Math.ceil(start * step) / step
+      stop = Math.floor(stop * step) / step
+    } else {
+      break
+    }
+    prestep = step
+  }
+  return [spec.domain[0], spec.domain[1]]
+}
 
-      // linearish.nice reused: quantize uses same linear nice logic
-      nice(count = 10): any {
-        const step = tickIncrement(x0, x1, count)
-        if (step > 0) {
-          x0 = Math.floor(x0 / step) * step
-          x1 = Math.ceil(x1 / step) * step
-        } else if (step < 0) {
-          x0 = Math.ceil(x0 * step) / step
-          x1 = Math.floor(x1 * step) / step
-        }
-        return rescale()
-      },
-
-      ticks(count = 10): number[] {
-        return d3ticks(x0, x1, count)
-      },
-    },
+/**
+ * Tick values inside the domain. Log ticks sit at every k×base^i — 2, 4, 8 for
+ * base 2 — falling back to linear ticks when the domain spans too many powers
+ * to enumerate, or too few to fill the count.
+ */
+export function scaleTicks(spec: ScaleSpec, count = 10): number[] {
+  if (spec.kind !== 'log') {
+    return linearTicks(spec.domain[0], spec.domain[1], count)
+  }
+  const base = spec.base ?? 10
+  const logs = logp(base)
+  const pows = powp(base)
+  let [u, v] = spec.domain
+  const reverse = v < u
+  if (reverse) {
+    ;[u, v] = [v, u]
+  }
+  let i = logs(u)
+  const j0 = logs(v)
+  // `!(j0 - i < count)`, not `>= count`: a negative domain makes both
+  // logarithms NaN, and every comparison against NaN is false — so the `>=`
+  // spelling falls through to the enumeration below and invents linear ticks
+  // for a domain d3 declines to tick at all.
+  if (base % 1 || !(j0 - i < count)) {
+    return linearTicks(i, j0, Math.min(j0 - i, count)).map(pows)
+  }
+  const j = Math.ceil(j0)
+  i = Math.floor(i)
+  // Ascending multipliers for a positive domain, descending for a negative one,
+  // so the ticks come out in increasing order either way.
+  const ks = Array.from({ length: base - 1 }, (_, k) =>
+    u > 0 ? k + 1 : base - 1 - k,
   )
-
-  rescale()
-  return scale
+  const out: number[] = []
+  for (; i <= j; ++i) {
+    for (const k of ks) {
+      const t = (u > 0 ? i < 0 : i > 0) ? k / pows(-i) : k * pows(i)
+      if (t < u) {
+        continue
+      }
+      if (t > v) {
+        break
+      }
+      out.push(t)
+    }
+  }
+  if (out.length * 2 < count) {
+    return linearTicks(u, v, count)
+  }
+  return reverse ? out.reverse() : out
 }

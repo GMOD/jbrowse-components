@@ -1,10 +1,30 @@
 import { resolveSymlogConstant } from './normalize.ts'
 import {
-  scaleLinear,
-  scaleLog,
-  scaleQuantize,
-  scaleSymlog,
+  type ScaleSpec,
+  niceDomain,
+  scaleTicks,
+  scaleValue,
 } from './vendor/d3-scale.ts'
+
+/**
+ * What `getScale` hands back: callable, plus the domain and ticks its callers
+ * read. The scales underneath are pure functions over a {@link ScaleSpec}, so
+ * this has no setters — the domain and range come in through `getScale`.
+ */
+export interface Scale {
+  (x: number): number
+  domain(): [number, number]
+  range(): [number, number]
+  ticks(count?: number): number[]
+}
+
+function buildScale(spec: ScaleSpec): Scale {
+  const scale = ((x: number) => scaleValue(spec, x)) as Scale
+  scale.domain = () => [...spec.domain]
+  scale.range = () => [...spec.range]
+  scale.ticks = (count?: number) => scaleTicks(spec, count)
+  return scale
+}
 
 export interface ScaleOpts {
   domain: number[]
@@ -26,28 +46,29 @@ export interface ScaleOpts {
   nice?: boolean
 }
 
-function createScaleForType(
+function specForType(
   scaleType: string,
-  domain?: readonly [number, number],
+  domain: readonly [number, number],
   symlogConstant = 0,
-) {
+): ScaleSpec {
+  const range = [0, 1] as const
   if (scaleType === 'linear') {
-    return scaleLinear()
+    return { kind: 'linear', domain, range }
   }
   if (scaleType === 'log') {
-    return scaleLog().base(2)
+    return { kind: 'log', base: 2, domain, range }
   }
   if (scaleType === 'symlog') {
     // The axis has to be built with the same constant the renderer normalizes
     // with, or the ticks label positions the bars are not drawn at. Both
     // resolve through resolveSymlogConstant from the same domain.
-    const [min, max] = domain ?? [0, 1]
-    return scaleSymlog().constant(
-      resolveSymlogConstant(min, max, symlogConstant),
-    )
-  }
-  if (scaleType === 'quantize') {
-    return scaleQuantize()
+    const [min, max] = domain
+    return {
+      kind: 'symlog',
+      constant: resolveSymlogConstant(min, max, symlogConstant),
+      domain,
+      range,
+    }
   }
   throw new Error(`undefined scaleType: ${scaleType}`)
 }
@@ -72,13 +93,12 @@ export function getScale({
   if (rangeMin === undefined || rangeMax === undefined) {
     throw new Error('invalid range')
   }
-  const scale = createScaleForType(scaleType, [min, max], symlogConstant)
-  scale.domain([min, max])
-  if (nice) {
-    scale.nice()
-  }
-  scale.range(range)
-  return scale
+  const spec = specForType(scaleType, [min, max], symlogConstant)
+  return buildScale({
+    ...spec,
+    domain: nice ? niceDomain(spec) : spec.domain,
+    range: [rangeMin, rangeMax],
+  })
 }
 
 /**
@@ -150,10 +170,7 @@ export function getNiceDomain({
     }
   }
 
-  const scale = createScaleForType(scaleType, [min, max], symlogConstant)
-  scale.domain([min, max])
-  scale.nice()
-  return scale.domain() as [number, number]
+  return niceDomain(specForType(scaleType, [min, max], symlogConstant))
 }
 
 /**
@@ -162,17 +179,10 @@ export function getNiceDomain({
  * Uses log base-2 when `useLogScale` is true (domain is clamped to [1, max]).
  */
 export function getNiceScale(maxScore: number, useLogScale?: boolean) {
-  if (useLogScale) {
-    // scaleLog needs a domain strictly inside its base, so guard against
-    // degenerate KR-normalized data where the top count is < 2.
-    const scale = scaleLog()
-      .base(2)
-      .domain([1, Math.max(2, maxScore)])
-      .nice()
-    const [min, max] = scale.domain()
-    return { min, max }
-  }
-  const scale = scaleLinear().domain([0, maxScore]).nice()
-  const [min, max] = scale.domain()
+  // A log scale needs a domain strictly inside its base, so guard against
+  // degenerate KR-normalized data where the top count is < 2.
+  const [min, max] = useLogScale
+    ? niceDomain(specForType('log', [1, Math.max(2, maxScore)]))
+    : niceDomain(specForType('linear', [0, maxScore]))
   return { min, max }
 }
