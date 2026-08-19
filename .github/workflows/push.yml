@@ -201,6 +201,12 @@ jobs:
       # stops mid-run having printed something that looks like it finished.
       - name: Check no `| head` under `set -o pipefail`
         run: pnpm check-shell-pipefail
+      # Also source-only. TypeScript 7's package entry is a stub, so a bump of
+      # the ambient `typescript` past 6.x takes out typescript-eslint, both
+      # doc generators and oxlint's type-aware pass at once — and the six
+      # manifests declaring it are easy to fix one at a time and miss five.
+      - name: Check every workspace manifest pins TypeScript 6.x
+        run: pnpm check-typescript-pin
       # Also source-only, and a static read rather than an import on purpose:
       # these lists are eager-bundle roots, so a shared array would put every
       # product's plugins in every product's graph.

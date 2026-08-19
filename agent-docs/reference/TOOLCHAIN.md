@@ -36,7 +36,16 @@ it's not a `build:esm` package.
 
 Keep `typescript` on 6.x; keep `typescript7` as the aliased 7.x. Once
 typescript-eslint ships TS7 support, drop the alias and bump `typescript`
-itself to 7.
+itself to 7 — and delete `scripts/check-typescript-pin.ts` in the same commit.
+
+`pnpm check-typescript-pin` enforces both halves over all 68 workspace
+manifests, not just the root's. Six of them declare `typescript`: the root,
+`website`, and the four `examples-site` packages. A bump moved all six to
+`^7.0.2` at once and the follow-up fix caught only the root, so the other five
+kept failing `pnpm lint` — TypeScript 7's package entry is a stub whose
+`require('typescript')` yields `{version, versionMajorMinor}` and nothing else,
+which reads to tsgolint as `ts.Node` being an error type rather than as a
+missing install.
 
 ## Project references
 

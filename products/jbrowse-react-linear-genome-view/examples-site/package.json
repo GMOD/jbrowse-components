@@ -31,6 +31,6 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@jbrowse/browser-test-utils": "workspace:*",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
   }
 }

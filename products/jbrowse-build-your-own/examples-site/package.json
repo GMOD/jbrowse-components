@@ -36,6 +36,6 @@
     "@astrojs/check": "^0.9.10",
     "@jbrowse/browser-test-utils": "workspace:*",
     "es-module-lexer": "^2.3.2",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
   }
 }

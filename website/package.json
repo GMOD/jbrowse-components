@@ -88,6 +88,6 @@
     "prettier-plugin-astro": "^0.14.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
   }
 }
