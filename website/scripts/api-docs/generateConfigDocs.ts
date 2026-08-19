@@ -1616,6 +1616,13 @@ export function missingSlotNames(slot: ManifestSlot, documented: Set<string>) {
 
 // Group every documented adapter by the track type it declares via #trackType,
 // so a track/display page can list the adapters that supply it.
+//
+// Sorted, because the input order is a source scan and the output is a committed
+// page. Unsorted, the "Related links" block on a track page reorders whenever
+// the scan does — an unrelated new export in a plugin's `index.ts` was enough —
+// and the diff flips back and forth with nothing behind it. No page's list was
+// in a meaningful order to lose: they were grouped by declaring adapter, which
+// says nothing about which format a reader should reach for first.
 function adaptersByTrackType(configs: ConfigWithHeader[]) {
   const map = new Map<string, string[]>()
   for (const config of configs) {
@@ -1623,6 +1630,9 @@ function adaptersByTrackType(configs: ConfigWithHeader[]) {
     if (trackType) {
       map.set(trackType, [...(map.get(trackType) ?? []), config.header.name])
     }
+  }
+  for (const names of map.values()) {
+    names.sort((a, b) => a.localeCompare(b))
   }
   return map
 }

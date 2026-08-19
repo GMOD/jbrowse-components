@@ -87,7 +87,6 @@ before anyone noticed.
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
 | [The config-read baseline's remaining 125](#the-config-read-baselines-remaining-125-is-mostly-not-display-debt) | config, types | 72 of them are track/assembly reads; confirm that before estimating any of it |
 | [makePin checks the slot name, not the value](#makepin-checks-the-slot-name-but-not-the-value) | config, menus | decide whether the runtime throw is already enough |
-| [The config docs' adapter links follow scan order](#the-config-docs-adapter-links-follow-scan-order) | website, tooling | sort in `compatibleAdaptersLines`; check the whole-artifact diff first |
 
 ## Ready to build: small and self-contained
 
@@ -1325,20 +1324,6 @@ against the shape of the work — the value type is
 union-typed mode (`sashimiArcsMode`, `subfeatureLabels`, `colorBy`) whose
 declared union may not be identical to the slot's `stringEnum`. Start by
 checking whether those unions already match; if they do, this is small.
-
-### The config docs' adapter links follow scan order
-
-`compatibleAdaptersLines` in `website/scripts/api-docs/generateConfigDocs.ts`
-emits `links.adaptersByTrack.get(trackType)` unsorted, and that map is built in
-source-scan order. So an unrelated new export in a plugin's `index.ts` reorders
-the "Related links" block on a committed page — it moved `BigWigAdapter` on
-`LinearWiggleDisplay.md` and `QuantitativeTrack.md` in `9ce9a601ad`, which is
-diff noise that will flip back the next time someone touches an index.
-
-Sorting by adapter name fixes it. Check the whole-artifact diff before
-committing to that: a few lists may be in a deliberate primary-format-first
-order (alignments' Bam/Cram) that sorting would spoil, and if so the fix is to
-sort the registration rather than the render.
 
 ## Blocked on a visual call
 

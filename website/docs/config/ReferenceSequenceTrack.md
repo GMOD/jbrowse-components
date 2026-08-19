@@ -43,10 +43,10 @@ that identifies it (not one of the config slots below).
 - **Display:**
   [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
   ([state model](../../models/linearreferencesequencedisplay))
-- **Adapter:** [FromConfigRegionsAdapter](../fromconfigregionsadapter)
-- **Adapter:** [FromConfigSequenceAdapter](../fromconfigsequenceadapter)
 - **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
 - **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
+- **Adapter:** [FromConfigRegionsAdapter](../fromconfigregionsadapter)
+- **Adapter:** [FromConfigSequenceAdapter](../fromconfigsequenceadapter)
 - **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
 - **Adapter:** [TwoBitAdapter](../twobitadapter)
 - **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)

@@ -70,15 +70,15 @@ identifies it (not one of the config slots below).
 - **Adapter:** [BedAdapter](../bedadapter)
 - **Adapter:** [BedTabixAdapter](../bedtabixadapter)
 - **Adapter:** [BigBedAdapter](../bigbedadapter)
+- **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
 - **Adapter:** [FromConfigAdapter](../fromconfigadapter)
 - **Adapter:** [Gff3Adapter](../gff3adapter)
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)
 - **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
 - **Adapter:** [NCListAdapter](../nclistadapter)
-- **Adapter:** [SPARQLAdapter](../sparqladapter)
-- **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
 - **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
+- **Adapter:** [SPARQLAdapter](../sparqladapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Config slots

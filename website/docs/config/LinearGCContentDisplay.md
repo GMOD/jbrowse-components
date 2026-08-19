@@ -46,10 +46,10 @@ Every slot comes from the shared base below; this display adds none of its own.
 
 ## Related links
 
-- **Adapter:** [FromConfigRegionsAdapter](../fromconfigregionsadapter)
-- **Adapter:** [FromConfigSequenceAdapter](../fromconfigsequenceadapter)
 - **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
 - **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
+- **Adapter:** [FromConfigRegionsAdapter](../fromconfigregionsadapter)
+- **Adapter:** [FromConfigSequenceAdapter](../fromconfigsequenceadapter)
 - **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
 - **Adapter:** [TwoBitAdapter](../twobitadapter)
 - **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)

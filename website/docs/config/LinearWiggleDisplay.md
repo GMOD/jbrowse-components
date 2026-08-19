@@ -56,9 +56,9 @@ array form — see
 
 ## Related links
 
-- **Adapter:** [BigWigAdapter](../bigwigadapter)
 - **Adapter:** [BedGraphAdapter](../bedgraphadapter)
 - **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
+- **Adapter:** [BigWigAdapter](../bigwigadapter)
 - **Adapter:** [GCContentAdapter](../gccontentadapter)
 - **Extended by:** [SharedGCContentDisplay](../sharedgccontentdisplay)
 - **State model:** [runtime API](../../models/linearwiggledisplay)

@@ -47,8 +47,8 @@ Every slot comes from the shared base below; this display adds none of its own.
 ## Related links
 
 - **Adapter:** [BedpeAdapter](../bedpeadapter)
-- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
 - **Adapter:** [VcfAdapter](../vcfadapter)
 - **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
 - **Base config:** [SharedLDDisplay](../sharedlddisplay)
