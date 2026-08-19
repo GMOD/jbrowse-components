@@ -291,6 +291,8 @@ importers:
         specifier: '>=19.0.0'
         version: 19.2.8
 
+  packages/add-track-core: {}
+
   packages/alignments-core:
     dependencies:
       '@jbrowse/cigar-utils':
@@ -392,6 +394,9 @@ importers:
       '@gmod/shared-read-cache':
         specifier: ^1.6.0
         version: 1.6.0
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../add-track-core
       '@jbrowse/jexl':
         specifier: ^4.0.1
         version: 4.0.1
@@ -1972,6 +1977,9 @@ importers:
 
   products/jbrowse-cli:
     dependencies:
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils

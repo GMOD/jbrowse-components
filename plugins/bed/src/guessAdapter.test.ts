@@ -1,6 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import BedPlugin from '../index.ts'
+import BedPlugin from './index.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 

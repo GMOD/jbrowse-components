@@ -403,7 +403,7 @@ function buildFileTrack({
   return {
     adapter,
     files,
-    trackType: trackType || guessTrackType(adapter.type),
+    trackType: trackType || guessTrackType(adapter.type, location),
     trackId: trackId || path.basename(location, path.extname(location)),
   }
 }

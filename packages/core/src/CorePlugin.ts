@@ -5,6 +5,7 @@ import Plugin from './Plugin.ts'
 import CytobandAdapterF from './data_adapters/CytobandAdapter/index.ts'
 import WidgetType from './pluggableElementTypes/WidgetType.ts'
 import * as coreRpcMethods from './rpc/coreRpcMethods.ts'
+import { installFormatGuessers } from './util/formatGuessers.ts'
 
 import type PluginManager from './PluginManager.ts'
 
@@ -20,6 +21,7 @@ export default class CorePlugin extends Plugin {
     }
 
     CytobandAdapterF(pluginManager)
+    installFormatGuessers(pluginManager)
 
     pluginManager.addWidgetType(() => {
       return new WidgetType({

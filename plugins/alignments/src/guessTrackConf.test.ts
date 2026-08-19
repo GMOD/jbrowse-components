@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { guessTrackConf } from '@jbrowse/core/util/tracks'
 
-import AlignmentsPlugin from '../index.ts'
+import AlignmentsPlugin from './index.ts'
 
 // guessTrackConf is generic core logic, but its inference is driven by the
 // per-format plugins' guessers; exercise it end-to-end through a real

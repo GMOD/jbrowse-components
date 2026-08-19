@@ -10,7 +10,6 @@ import ReferenceSequenceTrackF from './ReferenceSequenceTrack/index.ts'
 import SequenceSearchAdapterF from './SequenceSearchAdapter/index.ts'
 import TwoBitAdapterF from './TwoBitAdapter/index.ts'
 import UnindexedFastaAdapterF from './UnindexedFastaAdapter/index.ts'
-import createExtensionPoints from './createExtensionPoints.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -28,6 +27,5 @@ export default class SequencePlugin extends Plugin {
     MotifListAdapterF(pluginManager)
     ReferenceSequenceTrackF(pluginManager)
     LinearReferenceSequenceDisplayF(pluginManager)
-    createExtensionPoints(pluginManager)
   }
 }

@@ -15,7 +15,6 @@ import { MultiSampleVariantGetGenotypeMatrix } from './VariantRPC/MultiSampleVar
 import { MultiSampleVariantGetSources } from './VariantRPC/MultiSampleVariantGetSources.ts'
 import VariantTrackF from './VariantTrack/index.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
-import ExtensionPointsF from './VcfExtensionPoints/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { calculateAlleleCounts } from './shared/alleleCounts.ts'
 import { getAlleleLength } from './shared/alleleLength.ts'
@@ -44,7 +43,6 @@ export default class VariantsPlugin extends Plugin {
     VariantFeatureWidgetF(pluginManager)
     VariantTrackF(pluginManager)
     LDTrackF(pluginManager)
-    ExtensionPointsF(pluginManager)
     LinearVariantDisplayF(pluginManager)
     LinearMultiSampleVariantDisplayF(pluginManager)
     LinearMultiSampleVariantMatrixDisplayF(pluginManager)

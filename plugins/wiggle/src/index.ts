@@ -2,7 +2,6 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
-import GuessAdapterF from './GuessAdapter/index.ts'
 import LinearWiggleDisplayF from './LinearWiggleDisplay/index.ts'
 import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay/index.ts'
 import MigrateMultiWiggleConfigF from './MultiLinearWiggleDisplay/preProcessTrackConfig.ts'
@@ -33,7 +32,6 @@ export default class WigglePlugin extends Plugin {
     MigrateMultiWiggleConfigF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
-    GuessAdapterF(pm)
     RenderWiggleDataRPCF(pm)
     RenderMultiWiggleDataRPCF(pm)
 

@@ -4,7 +4,6 @@ import GWASAdapterF from './GWASAdapter/index.ts'
 import GWASAddTrackComponentF from './GWASAddTrackComponent/index.tsx'
 import GWASAddTrackWorkflowF from './GWASAddTrackWorkflow/index.ts'
 import GWASTrackF from './GWASTrack/index.ts'
-import GuessAdapterF from './GuessAdapter/index.ts'
 import LinearManhattanDisplayF from './LinearManhattanDisplay/index.ts'
 import ManhattanRPCF from './ManhattanRPC/index.ts'
 
@@ -18,7 +17,6 @@ export default class GWASPlugin extends Plugin {
     GWASAddTrackComponentF(pluginManager)
     GWASAddTrackWorkflowF(pluginManager)
     GWASTrackF(pluginManager)
-    GuessAdapterF(pluginManager)
     LinearManhattanDisplayF(pluginManager)
     ManhattanRPCF(pluginManager)
   }

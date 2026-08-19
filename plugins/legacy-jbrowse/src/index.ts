@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import GuessNCListF from './GuessNCList/index.ts'
 import JBrowse1ConnectionF from './JBrowse1Connection/index.ts'
 import JBrowse1TextSearchAdapterF from './JBrowse1TextSearchAdapter/index.ts'
 import NCListAdapterF from './NCListAdapter/index.ts'
@@ -12,7 +11,6 @@ export default class LegacyJBrowsePlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     NCListAdapterF(pluginManager)
-    GuessNCListF(pluginManager)
     JBrowse1TextSearchAdapterF(pluginManager)
     JBrowse1ConnectionF(pluginManager)
   }

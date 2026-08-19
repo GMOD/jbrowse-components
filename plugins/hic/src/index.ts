@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import GuessAdapterF from './GuessAdapter/index.ts'
 import HicAdapterF from './HicAdapter/index.ts'
 import HicTrackF from './HicTrack/index.ts'
 import LinearHicDisplayF from './LinearHicDisplay/index.ts'
@@ -16,7 +15,6 @@ export default class HicPlugin extends Plugin {
     HicTrackF(pluginManager)
     LinearHicDisplayF(pluginManager)
     HicDataRPCMethodsF(pluginManager)
-    GuessAdapterF(pluginManager)
   }
 }
 

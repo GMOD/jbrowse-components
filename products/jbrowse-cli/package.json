@@ -36,6 +36,7 @@
     "generate-readme": "./generate_readme.sh > README.md"
   },
   "dependencies": {
+    "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
     "cli-progress": "^3.12.0",

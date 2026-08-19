@@ -41,6 +41,7 @@ export {
   UnknownRefNameError,
   ZOOM_ACTIVE_WINDOW_MS,
   accumulateScroll,
+  adapterConfigFromSpec,
   addAdapterGuesser,
   addAddTrackComponent,
   addAndShowTrack,

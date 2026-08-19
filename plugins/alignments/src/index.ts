@@ -4,7 +4,6 @@ import AlignmentsFeatureWidgetF from './AlignmentsFeatureDetail/index.ts'
 import AlignmentsTrackF from './AlignmentsTrack/index.ts'
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
-import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
 import PileupDataRPCMethodsF from './RenderAlignmentDataRPC/index.ts'
@@ -26,7 +25,6 @@ export default class AlignmentsPlugin extends Plugin {
       PileupDataRPCMethodsF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
-      GuessAlignmentsTypesF,
       ConsensusSequenceF,
     ]) {
       f(pluginManager)

@@ -1,5 +1,15 @@
 import fs from 'node:fs'
 
+import {
+  adapterTypesToTrackTypeMap,
+  formats,
+  matchFormat,
+  resolveIndexType,
+  trackTypeForAdapter,
+} from '@jbrowse/add-track-core'
+
+import type { AdapterSpec } from '@jbrowse/add-track-core'
+
 interface UriLocation {
   uri: string
   locationType: 'UriLocation'
@@ -17,283 +27,8 @@ export interface Adapter {
   [key: string]: unknown
 }
 
-// a sidecar file sits next to the data file at `${location}${suffix}`, unless
-// it is the index and the user passed --indexFile (fromIndex)
-interface Sidecar {
-  field: string
-  suffix: string
-  fromIndex?: boolean
-}
-
-type AdapterSpec =
-  | { kind: 'single'; adapterType: string; locField: string }
-  // wrapped-index adapters: index nests under `index: { location, indexType }`
-  // (BAM + all tabix). indexType flips to CSI when the index is a .csi
-  | {
-      kind: 'indexed'
-      adapterType: string
-      locField: string
-      suffix: string
-      indexType: 'BAI' | 'TBI'
-    }
-  // flat-sidecar adapters: each sidecar is its own top-level location field
-  // (CRAM crai, (bgzip-)fasta fai/gzi)
-  | {
-      kind: 'sidecar'
-      adapterType: string
-      locField: string
-      sidecars: Sidecar[]
-    }
-  | { kind: 'anchors'; adapterType: string; locField: string }
-  | { kind: 'nclist' }
-  | { kind: 'sparql' }
-  | { kind: 'unsupported' }
-
-const formats: { regex: RegExp; spec: AdapterSpec }[] = [
-  {
-    regex: /\.bam$/i,
-    spec: {
-      kind: 'indexed',
-      adapterType: 'BamAdapter',
-      locField: 'bamLocation',
-      suffix: '.bai',
-      indexType: 'BAI',
-    },
-  },
-  {
-    regex: /\.cram$/i,
-    spec: {
-      kind: 'sidecar',
-      adapterType: 'CramAdapter',
-      locField: 'cramLocation',
-      sidecars: [{ field: 'craiLocation', suffix: '.crai', fromIndex: true }],
-    },
-  },
-  {
-    regex: /\.sam(\.gz)?$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'SamAdapter',
-      locField: 'samLocation',
-    },
-  },
-  {
-    regex: /\.gff3?\.b?gz$/i,
-    spec: {
-      kind: 'indexed',
-      adapterType: 'Gff3TabixAdapter',
-      locField: 'gffGzLocation',
-      suffix: '.tbi',
-      indexType: 'TBI',
-    },
-  },
-  {
-    regex: /\.gff3?$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'Gff3Adapter',
-      locField: 'gffLocation',
-    },
-  },
-  {
-    regex: /\.gtf\.b?gz$/i,
-    spec: {
-      kind: 'indexed',
-      adapterType: 'GtfTabixAdapter',
-      locField: 'gtfGzLocation',
-      suffix: '.tbi',
-      indexType: 'TBI',
-    },
-  },
-  {
-    regex: /\.gtf$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'GtfAdapter',
-      locField: 'gtfLocation',
-    },
-  },
-  {
-    regex: /\.vcf\.b?gz$/i,
-    spec: {
-      kind: 'indexed',
-      adapterType: 'VcfTabixAdapter',
-      locField: 'vcfGzLocation',
-      suffix: '.tbi',
-      indexType: 'TBI',
-    },
-  },
-  { regex: /\.vcf\.idx$/i, spec: { kind: 'unsupported' } },
-  {
-    regex: /\.vcf$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'VcfAdapter',
-      locField: 'vcfLocation',
-    },
-  },
-  {
-    regex: /\.bedpe(\.gz)?$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'BedpeAdapter',
-      locField: 'bedpeLocation',
-    },
-  },
-  {
-    regex: /\.bed\.b?gz$/i,
-    spec: {
-      kind: 'indexed',
-      adapterType: 'BedTabixAdapter',
-      locField: 'bedGzLocation',
-      suffix: '.tbi',
-      indexType: 'TBI',
-    },
-  },
-  {
-    regex: /\.bg\.b?gz$/i,
-    spec: {
-      kind: 'indexed',
-      adapterType: 'BedGraphTabixAdapter',
-      locField: 'bedGraphGzLocation',
-      suffix: '.tbi',
-      indexType: 'TBI',
-    },
-  },
-  {
-    regex: /\.bg$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'BedGraphAdapter',
-      locField: 'bedGraphLocation',
-    },
-  },
-  {
-    regex: /\.pif\.b?gz$/i,
-    spec: {
-      kind: 'indexed',
-      adapterType: 'PairwiseIndexedPAFAdapter',
-      locField: 'pifGzLocation',
-      suffix: '.tbi',
-      indexType: 'TBI',
-    },
-  },
-  {
-    regex: /\.bed$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'BedAdapter',
-      locField: 'bedLocation',
-    },
-  },
-  {
-    regex: /\.(bb|bigbed)$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'BigBedAdapter',
-      locField: 'bigBedLocation',
-    },
-  },
-  {
-    regex: /\.(bw|bigwig)$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'BigWigAdapter',
-      locField: 'bigWigLocation',
-    },
-  },
-  {
-    regex: /\.(fa|fasta|fna|mfa)\.b?gz$/i,
-    spec: {
-      kind: 'sidecar',
-      adapterType: 'BgzipFastaAdapter',
-      locField: 'fastaLocation',
-      sidecars: [
-        { field: 'faiLocation', suffix: '.fai' },
-        { field: 'gziLocation', suffix: '.gzi' },
-      ],
-    },
-  },
-  {
-    regex: /\.(fa|fasta|fna|mfa)$/i,
-    spec: {
-      kind: 'sidecar',
-      adapterType: 'IndexedFastaAdapter',
-      locField: 'fastaLocation',
-      sidecars: [{ field: 'faiLocation', suffix: '.fai', fromIndex: true }],
-    },
-  },
-  {
-    regex: /\.2bit$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'TwoBitAdapter',
-      locField: 'twoBitLocation',
-    },
-  },
-  { regex: /\.sizes$/i, spec: { kind: 'unsupported' } },
-  { regex: /\/trackData\.jsonz?$/i, spec: { kind: 'nclist' } },
-  { regex: /\/sparql$/i, spec: { kind: 'sparql' } },
-  {
-    regex: /\.hic$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'HicAdapter',
-      locField: 'hicLocation',
-    },
-  },
-  {
-    regex: /\.paf(\.gz)?$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'PAFAdapter',
-      locField: 'pafLocation',
-    },
-  },
-  {
-    regex: /\.out(\.gz)?$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'MashMapAdapter',
-      locField: 'outLocation',
-    },
-  },
-  {
-    regex: /\.chain(\.gz)?$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'ChainAdapter',
-      locField: 'chainLocation',
-    },
-  },
-  {
-    regex: /\.delta(\.gz)?$/i,
-    spec: {
-      kind: 'single',
-      adapterType: 'DeltaAdapter',
-      locField: 'deltaLocation',
-    },
-  },
-  {
-    regex: /\.anchors\.simple(\.gz)?$/i,
-    spec: {
-      kind: 'anchors',
-      adapterType: 'MCScanSimpleAnchorsAdapter',
-      locField: 'mcscanSimpleAnchorsLocation',
-    },
-  },
-  {
-    regex: /\.anchors(\.gz)?$/i,
-    spec: {
-      kind: 'anchors',
-      adapterType: 'MCScanAnchorsAdapter',
-      locField: 'mcscanAnchorsLocation',
-    },
-  },
-]
-
-// the adapter specs that carry a location field, keyed by their adapter type,
-// so an explicit --adapterType can be resolved back to its file-layout spec
+// the specs that carry a location field, keyed by adapter type, so an explicit
+// --adapterType can be resolved back to its file-layout spec
 type LocFieldSpec = Extract<AdapterSpec, { locField: string }>
 
 function hasLocField(spec: AdapterSpec): spec is LocFieldSpec {
@@ -302,13 +37,9 @@ function hasLocField(spec: AdapterSpec): spec is LocFieldSpec {
 
 const adapterTypeToSpec: Record<string, LocFieldSpec> = {}
 for (const { spec } of formats) {
-  if (hasLocField(spec)) {
+  if (hasLocField(spec) && !adapterTypeToSpec[spec.adapterType]) {
     adapterTypeToSpec[spec.adapterType] = spec
   }
-}
-
-function indexType(index: string | undefined, fallback: 'BAI' | 'TBI'): string {
-  return index?.toUpperCase().endsWith('CSI') ? 'CSI' : fallback
 }
 
 // What else the sidecar with this suffix can be named. `.csi` is htslib's
@@ -391,7 +122,7 @@ function buildFromSpec(
             location: makeLocation(idx),
             // the type follows the file that was CHOSEN, not the one the user
             // typed, so a detected `.csi` is opened as one
-            indexType: indexType(idx, spec.indexType),
+            indexType: resolveIndexType(idx, spec.indexType),
           },
         },
         files: [location, idx],
@@ -423,19 +154,6 @@ function buildFromSpec(
         },
         files: [location, bed1, bed2],
       }
-    case 'nclist':
-      return {
-        adapter: {
-          type: 'NCListAdapter',
-          rootUrlTemplate: makeLocation(location),
-        },
-        files: [location],
-      }
-    case 'sparql':
-      return {
-        adapter: { type: 'SPARQLAdapter', endpoint: location },
-        files: [location],
-      }
     case 'unsupported':
       return { adapter: { type: 'UNSUPPORTED' }, files: [] }
   }
@@ -453,8 +171,15 @@ export function makeLocationProtocol(protocol: string) {
   }
 }
 
-function matchFormat(location: string) {
-  return formats.find(({ regex }) => regex.test(location))?.spec
+/**
+ * The bare filename the format table matches against — the same thing
+ * `@jbrowse/core`'s `getFileName` hands the guesser chain, so a path and a URL
+ * with a presigned query string both reduce to what the regexes expect.
+ */
+export function fileNameOf(location: string) {
+  return (
+    location.replaceAll('\\', '/').split('/').at(-1)?.split(/[?#]/)[0] ?? ''
+  )
 }
 
 // resolves the file-layout spec that both the adapter config and the copied
@@ -465,7 +190,7 @@ function resolveSpec(
   location: string,
   adapterType?: string,
 ): { spec?: AdapterSpec; typeOverride?: string } {
-  const spec = matchFormat(location)
+  const spec = matchFormat(fileNameOf(location))?.spec
   if (adapterType) {
     const known = adapterTypeToSpec[adapterType]
     if (known) {
@@ -474,7 +199,7 @@ function resolveSpec(
     } else if (spec) {
       // unknown adapter type on a recognized extension: reuse that extension's
       // file layout (location field + any sidecar/index files) under the new
-      // type name, so e.g. --adapterType AllVsAllPAFAdapter on a .paf keeps its
+      // type name, so e.g. --adapterType MyPAFAdapter on a .paf keeps its
       // pafLocation instead of dropping the file. Override with --config if the
       // custom adapter uses a different field.
       return { spec, typeOverride: adapterType }
@@ -523,36 +248,11 @@ export function guessTrack({
   return { adapter: { type: typeOverride ?? 'UNKNOWN' }, files: [] }
 }
 
-const adapterTypesToTrackTypeMap: Record<string, string> = {
-  BamAdapter: 'AlignmentsTrack',
-  CramAdapter: 'AlignmentsTrack',
-  SamAdapter: 'AlignmentsTrack',
-  BgzipFastaAdapter: 'ReferenceSequenceTrack',
-  BigWigAdapter: 'QuantitativeTrack',
-  IndexedFastaAdapter: 'ReferenceSequenceTrack',
-  TwoBitAdapter: 'ReferenceSequenceTrack',
-  VcfTabixAdapter: 'VariantTrack',
-  VcfAdapter: 'VariantTrack',
-  BedpeAdapter: 'VariantTrack',
-  BedAdapter: 'FeatureTrack',
-  BedGraphAdapter: 'QuantitativeTrack',
-  BedGraphTabixAdapter: 'QuantitativeTrack',
-  HicAdapter: 'HicTrack',
-  PAFAdapter: 'SyntenyTrack',
-  DeltaAdapter: 'SyntenyTrack',
-  ChainAdapter: 'SyntenyTrack',
-  MashMapAdapter: 'SyntenyTrack',
-  PairwiseIndexedPAFAdapter: 'SyntenyTrack',
-  AllVsAllPAFAdapter: 'SyntenyTrack',
-  AllVsAllIndexedPAFAdapter: 'SyntenyTrack',
-  BlastTabularAdapter: 'SyntenyTrack',
-  MCScanAnchorsAdapter: 'SyntenyTrack',
-  MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
-  MCScanBlocksAdapter: 'SyntenyTrack',
-}
-
-export function guessTrackType(adapterType: string): string {
-  return adapterTypesToTrackTypeMap[adapterType] || 'FeatureTrack'
+export function guessTrackType(adapterType: string, location?: string): string {
+  return (
+    trackTypeForAdapter(adapterType, location && fileNameOf(location)) ||
+    'FeatureTrack'
+  )
 }
 
 // the synteny adapters are exactly those mapping to a SyntenyTrack, so derive

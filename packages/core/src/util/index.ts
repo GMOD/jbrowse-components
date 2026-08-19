@@ -471,6 +471,7 @@ export {
   adapterNeedsAddTrackComponent,
   addAddTrackComponent,
 } from './addTrackComponent.ts'
+export { adapterConfigFromSpec } from './formatGuessers.ts'
 export {
   type AdapterConfig,
   type AdapterGuesser,
