@@ -5038,7 +5038,8 @@ export const configManifest: ConfigManifest = {
           "name": "assemblyNames",
           "type": "(JexlString | string[])"
         }
-      ]
+      ],
+      "shorthandKeys": []
     },
     "TrixTextSearchAdapter": {
       "slots": [
@@ -5070,6 +5071,10 @@ export const configManifest: ConfigManifest = {
           "name": "assemblyNames",
           "type": "(JexlString | string[])"
         }
+      ],
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
       ]
     }
   },

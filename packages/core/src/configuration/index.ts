@@ -18,7 +18,14 @@ export type {
   HostChecksSlotNames,
 } from './types.ts'
 
-export { getConfigurationSchemaDefinition } from './schemaRegistry.ts'
+export {
+  getConfigurationSchemaDefinition,
+  // exported for scripts/generateConfigManifest.ts, which needs the
+  // preProcessSnapshot off a schema whose pluggable type does not expose one —
+  // TextSearchAdapterType, where the shorthand is nonetheless the documented
+  // way to write the config
+  getConfigurationSchemaMetadata,
+} from './schemaRegistry.ts'
 export {
   getTypeNamesFromExplicitlyTypedUnion,
   isBareConfigurationSchemaType,

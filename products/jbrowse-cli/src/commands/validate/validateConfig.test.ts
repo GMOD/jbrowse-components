@@ -234,6 +234,23 @@ describe('validateConfig', () => {
     expect(error?.message).toContain('did you mean "ixxFilePath"')
   })
 
+  // TrixTextSearchAdapter's preProcessSnapshot derives all three locations from
+  // one `uri`, which is how every doc writes it — the manifest recorded
+  // shorthands for the `adapters` group only, so opening this one at all
+  // reported the documented form as three unknown slots
+  it('accepts the uri shorthand a text search adapter expands', () => {
+    const config = baseConfig()
+    // @ts-expect-error shorthand, not a declared slot
+    config.tracks[0]!.textSearching = {
+      textSearchAdapter: {
+        type: 'TrixTextSearchAdapter',
+        uri: 'trix/mytrack.ix',
+        assemblyNames: ['hg38'],
+      },
+    }
+    expect(validateConfig(config).problems).toEqual([])
+  })
+
   it('opens connections', () => {
     const config = baseConfig()
     // @ts-expect-error deliberately misspelled

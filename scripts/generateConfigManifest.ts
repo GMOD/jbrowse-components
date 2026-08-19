@@ -52,6 +52,7 @@ const INDEX = path.join(
 const ENTRY = `
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MIGRATED_DISPLAY_INSTANCE_KEYS } from '@jbrowse/product-core'
+import { getConfigurationSchemaMetadata } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import corePlugins from './src/corePlugins.ts'
 
@@ -126,8 +127,22 @@ const SHORTHAND_PROBES = __SHORTHAND_PROBES__
 // Some shorthands only act as modifiers on another one — \`csi: true\` does
 // nothing by itself and rewrites the index location when \`uri\` is also present.
 // So each key is probed twice: alone, and alongside \`uri\`.
+// AdapterType exposes a \`normalizeSnapshot\` getter that already falls back to
+// the schema's own metadata; TextSearchAdapterType has no such getter and its
+// schemas carry the preprocessor all the same — TrixTextSearchAdapter's is what
+// makes \`{type, uri}\` the documented way to write one. Reading the metadata
+// here covers both without giving the second type a getter it has no other use
+// for.
+function normalizerOf(entry) {
+  return (
+    entry.normalizeSnapshot ??
+    getConfigurationSchemaMetadata(entry.configSchema)?.options
+      .preProcessSnapshot
+  )
+}
+
 function shorthandKeysOf(adapterType) {
-  const normalize = adapterType.normalizeSnapshot
+  const normalize = normalizerOf(adapterType)
   if (!normalize) {
     return []
   }
@@ -309,7 +324,7 @@ function collect(group, getType) {
     out[name] = {
       slots,
       ...(legacyKeys.length ? { legacyKeys } : {}),
-      ...(group === 'adapter'
+      ...(group === 'adapter' || group === 'text search adapter'
         ? { shorthandKeys: shorthandKeysOf(entry) }
         : {}),
       // Old type names a DisplayType still answers to. baseTrackConfig
