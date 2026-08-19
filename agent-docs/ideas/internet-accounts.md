@@ -172,18 +172,44 @@ every RPC serialization — the guard it checks,
 `loc.internetAccountPreAuthorization`, is never set on the args `ownArgs` has
 just cloned. Measured at 20 probes for 20 serializations, one extra round trip
 ahead of the real work, per *location*, so a BAM and its index are two.
-`OAuthInternetAccount` has no `validateWithHEAD` slot to turn it off either;
-only the two token-entry accounts got one. The optimization was made at the
-wrong layer and the comment explaining why it should not exist lives in the
-other function.
+`OAuthInternetAccount` has no `validateWithHEAD` slot to turn it off either, and
+adding one would not be the fix: for an OAuth account `validateToken` *is* the
+refresh path, where for the two token-entry accounts that do have the slot it is
+only a check. The optimization was made at the wrong layer and the comment
+explaining why it should not exist lives in the other function.
 
-Not fixed here, and not a one-liner: the probe is also how an expired token gets
-caught and refreshed on the main thread, since the worker cannot refresh. A
-cache needs a TTL short enough to keep that, which is a change to the auth hot
-path and wants the same "not against a release nearly out the door" treatment as
-move 1. This is the strongest argument for move 1 that move 1 does not make: a
-credential on the envelope is a per-call decision that can be cached, where a
-credential on the location forces re-validation of every location on every call.
+`rpcTokenProbe.test.ts` now pins it — 10 serializations of a BAM and its index,
+20 HEADs — and says in its header that it is a ratchet and what to lower the
+numbers to.
+
+**Size it before rushing it.** The multiplier is RPC calls, and this tree makes
+one *per region per fetch*, not one per block: `RenderAlignmentData` takes
+`regions: [region]`. So a BAM track costs two probes a navigation, and the
+"hundreds of requests" `fetchWithToken`'s comment guards against does not
+reappear here. Real, bounded, and not a reason to touch the auth hot path
+against a release.
+
+Not a one-liner either, because the probe is also how an expired token gets
+caught and refreshed on the main thread — the worker cannot refresh. A cache over
+it needs a TTL short enough to keep that.
+
+**A TTL is not the only shape, and probably not the right one.** What the probe
+is standing in for is an expiry the provider already tells us: OAuth token
+responses carry `expires_in` (RFC 6749 §5.1), and the implicit flow returns it in
+the redirect fragment. `postTokenGrant` reads only `access_token` and
+`refresh_token` and drops it on the floor; `finishOAuthRedirect` does the same.
+Capture it, and "is this token still good" becomes a local comparison — no round
+trip, no TTL guessed against a lifetime the server knows exactly. Two things to
+carry into that: a provider may omit `expires_in`, so the probe has to stay as
+the fallback for accounts with no known expiry; and the probe today also catches
+*revocation*, which an expiry check cannot — that case would degrade from a
+silent refresh to the worker's read returning a 401, which is a behaviour change
+to state rather than to slip past.
+
+Either way this remains the strongest argument for move 1 that move 1 does not
+make: a credential on the envelope is a per-call decision that can be cached,
+where a credential on the location forces re-validation of every location on
+every call.
 
 **Nothing in this repo revokes a credential.** Every `removeToken()` call site
 here is an error path, and `removeRefreshToken()` fires only on an
