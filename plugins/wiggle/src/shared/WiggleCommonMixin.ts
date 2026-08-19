@@ -11,6 +11,7 @@ import {
   autoscaleDomainFromStats,
   computeScoreStats,
   getNiceDomain,
+  widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 
 import {
@@ -244,6 +245,16 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
+       * Scores the axis must reach whatever the data does, so a rule drawn at
+       * one stays on it. `[]` here and overridden by the displays that draw
+       * score rules — MultiLinearWiggleDisplay stacks a plot box per row and
+       * draws none, so it keeps the base.
+       */
+      get scoreRuleValues(): number[] {
+        return []
+      },
+      /**
+       * #getter
        */
       get visibleScoreRange() {
         const visible = self.visibleScoreStats
@@ -269,7 +280,7 @@ export function WiggleCommonMixin() {
           return undefined
         }
         return getNiceDomain({
-          domain: range,
+          domain: widenRangeToRules(range, self.scoreRuleValues),
           bounds: [self.minScoreBound, self.maxScoreBound],
           scaleType: self.scaleType,
         })

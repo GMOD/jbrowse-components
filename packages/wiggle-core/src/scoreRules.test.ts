@@ -4,7 +4,11 @@ import {
   makeScoreNormalizer,
   resolveSymlogConstant,
 } from './normalize.ts'
-import { parseScoreRules, scoreRuleMarks } from './scoreRules.ts'
+import {
+  parseScoreRules,
+  scoreRuleMarks,
+  widenRangeToRules,
+} from './scoreRules.ts'
 import { axisPlotBox } from './yScaleTicks.ts'
 
 const linear = (min: number, max: number) =>
@@ -112,5 +116,22 @@ describe('scoreRuleMarks', () => {
     })[0]!.y
     // symlog lifts a depth of 1 well up the plot; linear leaves it on the floor
     expect(mark!.y).toBeLessThan(linearY - 0.2 * (box.yBottom - box.yTop))
+  })
+})
+
+describe('widenRangeToRules', () => {
+  test('reaches a rule above the data, and one below it', () => {
+    expect(widenRangeToRules([0, 10], [30])).toEqual([0, 30])
+    expect(widenRangeToRules([0, 10], [-4])).toEqual([-4, 10])
+  })
+
+  test('leaves a range that already covers every rule alone', () => {
+    expect(widenRangeToRules([0, 60], [15, 30])).toEqual([0, 60])
+  })
+
+  test('ignores a non-finite rule rather than poisoning the range', () => {
+    expect(
+      widenRangeToRules([0, 10], [Number.NaN, Number.POSITIVE_INFINITY]),
+    ).toEqual([0, 10])
   })
 })

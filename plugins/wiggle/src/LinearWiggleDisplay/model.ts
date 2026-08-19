@@ -130,6 +130,32 @@ export default function stateModelFactory(
       get isDensityMode() {
         return self.renderingType === 'density'
       },
+
+      /**
+       * #getter
+       * The configured rules, parsed. Config is user-authored JSON, so this is
+       * where the unusable entries are dropped rather than at each reader.
+       */
+      get scoreRules() {
+        return parseScoreRules(getConf(self, 'scoreRules'))
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Overrides WiggleCommonMixin's empty base, so the axis reaches a
+       * configured rule even where the visible data does not — see
+       * `widenRangeToRules`.
+       *
+       * Empty in density mode, and it has to be: density draws no rules
+       * (`scoreRuleMarks`) but spends the domain on its color ramp, so widening
+       * it there stretches the ramp over a range nothing on screen reaches and
+       * washes the plot out for a mark nobody can see. Same trap
+       * `effectiveSummaryScoreMode` exists for.
+       */
+      get scoreRuleValues() {
+        return self.isDensityMode ? [] : self.scoreRules.map(r => r.value)
+      },
     }))
     .views(self => ({
       /**
@@ -164,7 +190,7 @@ export default function stateModelFactory(
         }
         const [min, max] = domain
         return scoreRuleMarks({
-          rules: parseScoreRules(getConf(self, 'scoreRules')),
+          rules: self.scoreRules,
           domain,
           box: axisPlotBox(self.height),
           normalize: makeScoreNormalizer(

@@ -41,7 +41,11 @@ export type { YScaleTicks } from './yScaleTicks.ts'
 
 export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
 export { ScoreRuleLines, default as ScoreRules } from './ScoreRules.tsx'
-export { parseScoreRules, scoreRuleMarks } from './scoreRules.ts'
+export {
+  parseScoreRules,
+  scoreRuleMarks,
+  widenRangeToRules,
+} from './scoreRules.ts'
 export type { ScoreRule, ScoreRuleMark } from './scoreRules.ts'
 export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
 export { makeScatterPointSizeMenuItem } from './pointSizeMenu.tsx'

@@ -252,3 +252,26 @@ differently, and the alignments coverage band does.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRules.ts)
+
+## widenRangeToRules
+
+Widens an autoscaled range so every configured rule stays on the axis.
+
+Without this a rule silently disappears in exactly the window that makes it
+worth having. Autoscale follows the visible data, so over a homozygous deletion
+a coverage domain collapses to about `[0, 1]` and a rule at the diploid depth
+falls outside it — and "2 copies would be up there" is the most informative
+thing that view can say. The reader has no menu to check either: `scoreRules` is
+set by whoever wrote the config, so a rule that vanishes leaves nothing behind
+to notice.
+
+Applied to the raw range, before `getNiceDomain` takes the `minScore` /
+`maxScore` bounds. Those still win: a rule outside an explicitly bounded axis is
+one the config asked not to be shown, and it drops as before.
+
+```js
+// type signature
+(range: [number, number], ruleValues: readonly number[]) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRules.ts)

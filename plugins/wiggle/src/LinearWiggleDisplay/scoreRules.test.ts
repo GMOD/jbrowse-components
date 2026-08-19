@@ -65,9 +65,26 @@ it('places a configured rule on the axis its ticks were built in', () => {
   expect(marks[1]!.y).toBeCloseTo((at(10) + at(20)) / 2, 6)
 })
 
-it('drops a rule the visible domain does not reach', () => {
+// The rule is the reason the axis goes that high. Autoscale follows the visible
+// data, so without this a copy-number rule vanishes over a homozygous deletion —
+// the one window where "2 copies would be up there" is the most informative mark
+// on screen, and nothing in the UI would say it had been configured.
+it('lifts the axis to a rule the visible data never reaches', () => {
   const display = makeDisplay()
-  display.configuration.setSlot('scoreRules', [{ value: 500 }])
+  display.configuration.setSlot('scoreRules', [
+    { value: 90, label: '6 copies' },
+  ])
+  expect(display.domain).toEqual([0, 90])
+  expect(display.scoreRuleMarks).toHaveLength(1)
+})
+
+// An explicit bound is the config saying where the axis stops, so it still wins
+// and the rule drops as before.
+it('leaves an explicitly bounded axis alone', () => {
+  const display = makeDisplay()
+  display.configuration.setSlot('scoreRules', [{ value: 90 }])
+  display.configuration.setSlot('maxScore', 40)
+  expect(display.domain?.[1]).toBe(40)
   expect(display.scoreRuleMarks).toEqual([])
 })
 
@@ -83,4 +100,18 @@ it('stops drawing rules in density mode', () => {
   expect(display.isDensityMode).toBe(true)
   expect(display.domain).toBeDefined()
   expect(display.scoreRuleMarks).toEqual([])
+})
+
+// Density spends the domain on its color ramp instead of on height, so lifting
+// the axis to a rule it does not draw stretches the ramp over a range nothing
+// on screen reaches and washes the plot out — the same trap
+// effectiveSummaryScoreMode exists for.
+it('does not lift the axis for a rule density will not draw', () => {
+  const display = makeDisplay()
+  display.configuration.setSlot('scoreRules', [{ value: 90 }])
+  expect(display.domain).toEqual([0, 90])
+
+  display.setRenderingType('density')
+  expect(display.scoreRuleMarks).toEqual([])
+  expect(display.domain).toEqual([0, 30])
 })
