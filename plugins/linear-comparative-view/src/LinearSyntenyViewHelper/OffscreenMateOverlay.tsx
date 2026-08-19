@@ -31,6 +31,9 @@ const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
   const ref = useRef<HTMLCanvasElement>(null)
   const theme = useTheme()
   const color = theme.palette.text.secondary
+  // the band's own ground, so a label over a ribbon stays readable — see
+  // drawOffscreenMates' LABEL_HALO_PX
+  const haloColor = theme.palette.background.paper
 
   useEffect(() => {
     // autorun rather than a dep array: what this draws from is MST state
@@ -47,10 +50,10 @@ const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
         return
       }
       for (const stub of offscreenMateStubs(model)) {
-        drawOffscreenMates(ctx, { ...stub, width, height, color })
+        drawOffscreenMates(ctx, { ...stub, width, height, color, haloColor })
       }
     })
-  }, [model, color])
+  }, [model, color, haloColor])
 
   return (
     <canvas

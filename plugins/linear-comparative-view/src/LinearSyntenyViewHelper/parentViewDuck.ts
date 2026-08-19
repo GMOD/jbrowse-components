@@ -19,6 +19,9 @@ export interface ParentViewDuck {
   // paint the stubs for alignments whose mate is on a contig the facing row is
   // not displaying — a repaint, never a refetch
   showOffscreenMates: boolean
+  // the same floor the ribbons are culled by, applied to the stubs so filtering
+  // a hairball down does not leave a fringe of marks for what it hid
+  minAlignmentLength: number
 }
 
 // One level of the stack, as seen from a synteny display nested inside it. Same

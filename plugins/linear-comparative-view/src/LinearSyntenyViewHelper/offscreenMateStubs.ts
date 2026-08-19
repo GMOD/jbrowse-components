@@ -1,9 +1,12 @@
+import { offscreenMateAt } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
+
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
 export interface OffscreenMateStubs {
   data: OffscreenMateData
   bpPerPx: number
   offsetPx: number
+  minAlignmentLength: number
 }
 
 // The structural slice the overlay reads, so what decides where a stub lands is
@@ -15,6 +18,7 @@ interface StubSource {
   }[]
   parentView: {
     showOffscreenMates: boolean
+    minAlignmentLength: number
     views: { bpPerPx: number; offsetPx: number }[]
   }
 }
@@ -39,9 +43,38 @@ export function offscreenMateStubs(model: StubSource): OffscreenMateStubs[] {
     return []
   }
   const { bpPerPx, offsetPx } = view
+  const { minAlignmentLength } = parentView
   return model.linearSyntenyDisplays
     .map(d => d.featureData?.offscreenMates)
     .filter(data => data !== undefined)
     .filter(data => data.starts.length > 0)
-    .map(data => ({ data, bpPerPx, offsetPx }))
+    .map(data => ({ data, bpPerPx, offsetPx, minAlignmentLength }))
+}
+
+/**
+ * The contig a pointer in the stub strip is over, or undefined.
+ *
+ * ASKED BY THE LEVEL'S OWN HANDLERS, before the ribbon pick, and answered only
+ * in the few pixels the stubs occupy — which sit above where any ribbon is
+ * drawn, so the pick engine loses nothing. The overlay stays
+ * `pointerEvents: none` and does not answer this itself: two hit paths over one
+ * band is how a click comes to mean different things depending on which element
+ * happened to receive it.
+ */
+export function offscreenMateHit(
+  model: StubSource & { height: number; parentView: { width: number } },
+  x: number,
+  y: number,
+) {
+  for (const layout of offscreenMateStubs(model)) {
+    const hit = offscreenMateAt(
+      { ...layout, width: model.parentView.width, height: model.height },
+      x,
+      y,
+    )
+    if (hit?.refName !== undefined) {
+      return hit.refName
+    }
+  }
+  return undefined
 }

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useRef } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 
 import { ErrorBanner, GpuFallbackButton } from '@jbrowse/core/ui'
 import { getSession, openFeatureWidget } from '@jbrowse/core/util'
@@ -12,6 +12,7 @@ import { observer } from 'mobx-react'
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
 import { syntenyWidgetFeature } from '../LinearSyntenyDisplay/syntenyWidgetFeature.ts'
 import OffscreenMateOverlay from './OffscreenMateOverlay.tsx'
+import { offscreenMateHit } from './offscreenMateStubs.ts'
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
@@ -92,6 +93,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const dragRef = useRef<
     { startX: number; lastX: number; panned: boolean } | undefined
   >(undefined)
+  // The contig under the pointer's stub, or undefined. Local rather than on the
+  // model beside `hoveredFeature`: nothing outside this canvas reads it, and a
+  // stub is not a feature — putting it there would mean every consumer of the
+  // hovered feature learning to expect something with no feature id.
+  const [hoveredContig, setHoveredContig] = useState<string | undefined>(
+    undefined,
+  )
   // Coalesces hover picks to one per frame. A pick is under 0.1ms on collinear
   // data but ~12.5ms on an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse
   // reporting faster than the display would otherwise queue a pick per event
@@ -205,7 +213,11 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         const at = hoverRef.current?.at
         hoverRef.current = undefined
         if (at) {
-          model.setHoveredFeature(pickAt(at))
+          const contig = offscreenMateHit(model, at.x, at.y)
+          setHoveredContig(contig)
+          // a stub hovered is not a ribbon hovered, and leaving the old one lit
+          // says the pointer is somewhere it is not
+          model.setHoveredFeature(contig === undefined ? pickAt(at) : undefined)
         }
       }),
     }
@@ -215,6 +227,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   // out), and ends at whatever pointerup it gets.
   function handlePointerLeave() {
     cancelHover()
+    setHoveredContig(undefined)
     model.setHoveredFeature(undefined)
   }
 
@@ -251,6 +264,15 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!coords) {
       return
     }
+    // The stub strip first, in the few pixels above every ribbon. A stub is not
+    // a feature — it stands for alignments this level cannot draw at all — so it
+    // answers with a navigation rather than a selection, and must not fall
+    // through to clear the clicked feature on its way.
+    const contig = offscreenMateHit(model, coords.x, coords.y)
+    if (contig !== undefined) {
+      showOffscreenMateContig(contig)
+      return
+    }
     // A release outside the band answers no hit (the pick engine rejects a y
     // outside the track), which clears the selection — the same thing a click on
     // empty canvas has always done.
@@ -266,6 +288,23 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   // this the drag anchor outlives it and every later move still pans.
   function handlePointerCancel() {
     dragRef.current = undefined
+  }
+
+  /**
+   * Show the contig a stub points at, on the row that is not displaying it.
+   *
+   * `navToLocString` REPLACES that row's displayed regions, which is exactly the
+   * narrowing the synteny follow must never do to itself — but here it is the
+   * whole request. The user clicked a mark that says "these go to ctgB", and the
+   * only thing that turns those stubs into ribbons is that row showing ctgB.
+   * The row keeps its own header, so undoing it is "Show all regions".
+   */
+  function showOffscreenMateContig(refName: string) {
+    parentView.views[model.level + 1]
+      ?.navToLocString(refName)
+      .catch((e: unknown) => {
+        getSession(model).notifyError(`${e}`, e)
+      })
   }
 
   function handleContextMenu(event: React.MouseEvent<HTMLCanvasElement>) {
@@ -319,7 +358,10 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         style={{
           width,
           height,
-          cursor: model.hoveringFeature ? 'pointer' : 'default',
+          cursor:
+            model.hoveringFeature || hoveredContig !== undefined
+              ? 'pointer'
+              : 'default',
         }}
       />
       <OffscreenMateOverlay model={model} />

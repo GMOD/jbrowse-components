@@ -1,4 +1,4 @@
-import { offscreenMateStubs } from './offscreenMateStubs.ts'
+import { offscreenMateHit, offscreenMateStubs } from './offscreenMateStubs.ts'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
@@ -12,6 +12,10 @@ function mates(n: number): OffscreenMateData {
   }
 }
 
+function named(refName: string): OffscreenMateData {
+  return { ...mates(1), mateRefNameDict: [refName] }
+}
+
 const QUERY_ROW = { bpPerPx: 2, offsetPx: 10 }
 const TARGET_ROW = { bpPerPx: 99, offsetPx: 999 }
 
@@ -21,6 +25,7 @@ function source(over: Record<string, unknown> = {}) {
     linearSyntenyDisplays: [{ featureData: { offscreenMates: mates(3) } }],
     parentView: {
       showOffscreenMates: true,
+      minAlignmentLength: 0,
       views: [QUERY_ROW, TARGET_ROW],
     },
     ...over,
@@ -41,6 +46,7 @@ test('an interior level reads its own upper row', () => {
       level: 1,
       parentView: {
         showOffscreenMates: true,
+        minAlignmentLength: 0,
         views: [{ bpPerPx: 1, offsetPx: 1 }, QUERY_ROW, TARGET_ROW],
       },
     }),
@@ -54,6 +60,7 @@ test('the toggle off draws nothing', () => {
       source({
         parentView: {
           showOffscreenMates: false,
+          minAlignmentLength: 0,
           views: [QUERY_ROW, TARGET_ROW],
         },
       }),
@@ -94,8 +101,76 @@ test('a level whose row is gone draws nothing rather than throwing', () => {
   expect(
     offscreenMateStubs(
       source({
-        parentView: { showOffscreenMates: true, views: [] },
+        parentView: {
+          showOffscreenMates: true,
+          minAlignmentLength: 0,
+          views: [],
+        },
       }),
     ),
   ).toEqual([])
+})
+
+// The strip the level's own handlers ask about before they ask the pick engine.
+// `offscreenMateAt` owns the geometry; what this adds is reading it across every
+// display on the level and against the level's width and height.
+test('a pointer in the strip answers the contig that stub points at', () => {
+  expect(
+    offscreenMateHit(
+      {
+        ...source(),
+        height: 100,
+        parentView: { ...source().parentView, width: 800 },
+      },
+      1,
+      1,
+    ),
+  ).toBe('other')
+})
+
+test('below the strip answers nothing, leaving the ribbons to the pick engine', () => {
+  expect(
+    offscreenMateHit(
+      {
+        ...source(),
+        height: 100,
+        parentView: { ...source().parentView, width: 800 },
+      },
+      1,
+      50,
+    ),
+  ).toBeUndefined()
+})
+
+test('with the toggle off nothing is hittable, since nothing is drawn', () => {
+  const s = source({
+    parentView: {
+      showOffscreenMates: false,
+      minAlignmentLength: 0,
+      views: [QUERY_ROW, TARGET_ROW],
+    },
+  })
+  expect(
+    offscreenMateHit(
+      { ...s, height: 100, parentView: { ...s.parentView, width: 800 } },
+      1,
+      1,
+    ),
+  ).toBeUndefined()
+})
+
+test('a second display on the level is asked too', () => {
+  const s = source({
+    linearSyntenyDisplays: [
+      { featureData: { offscreenMates: mates(0) } },
+      { featureData: { offscreenMates: named('ctgQ') } },
+    ],
+  })
+  expect(
+    offscreenMateHit(
+      { ...s, height: 100, parentView: { ...s.parentView, width: 800 } },
+      1,
+      1,
+    ),
+  ).toBe('ctgQ')
 })
