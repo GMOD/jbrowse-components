@@ -56,7 +56,7 @@ export const pages: ExamplePage[] = [
         slug: 'one-track',
         title: 'One track, no gestures',
         description:
-          'A measured div and one track. This is the whole of what `createViewState` needs to draw.',
+          'A measured div and one track. This is the whole of what createViewState needs to draw.',
       },
     ],
   },
@@ -89,7 +89,7 @@ export const pages: ExamplePage[] = [
     slug: 'loading-and-errors',
     title: 'Loading and error states',
     description:
-      'The other two outcomes of `view.ready`, plus the notification channel a host that draws its own chrome renders nothing for.',
+      'The three view states that are not ready, plus the notification channel a host drawing its own chrome renders nothing for.',
     group: 'Your own UI',
     // Placed after the page that draws a *track's* status states, because it is
     // the same question one level up: that page swaps the components a display
@@ -100,7 +100,8 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'loading-and-errors',
-        title: 'When the view is loading, and when it fails',
+        title:
+          'When the view is loading, when it fails, and when nothing has navigated it',
       },
     ],
   },
@@ -127,7 +128,7 @@ export const pages: ExamplePage[] = [
         slug: 'track-labels',
         title: 'Track labels and resize bars',
         description:
-          '`display.height` for the labels; one core hook and two model calls for the drag.',
+          'The labels come from display.height; the drag is one core hook and two model calls.',
       },
     ],
   },
@@ -160,7 +161,7 @@ export const pages: ExamplePage[] = [
         slug: 'your-own-track-selector',
         title: 'A track selector sidebar',
         description:
-          'Categories, a filter box and checkboxes, built from `session.tracks` rather than a list beside the UI.',
+          'Categories, a filter box and checkboxes, built from session.tracks rather than a list beside the UI.',
       },
     ],
   },
@@ -178,13 +179,13 @@ export const pages: ExamplePage[] = [
         slug: 'search-by-name',
         title: 'A name instead of a locstring',
         description:
-          'One `createViewState` option, and `navToLocString` resolves names itself. Five inputs, five different paths through it.',
+          'One createViewState option, and navToLocString resolves names itself. Five inputs, five different paths through it.',
       },
       {
         slug: 'your-own-search-results',
         title: 'Your own list of hits',
         description:
-          '`fetchResults` is the search without the navigation, so the ambiguity is yours to resolve and no dialog is ever queued.',
+          'fetchResults is the search without the navigation, so the ambiguity is yours to resolve and no dialog is ever queued.',
       },
     ],
   },
