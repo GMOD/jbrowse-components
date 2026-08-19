@@ -38,6 +38,7 @@ before anyone noticed.
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
 | [Give the comparative canvases a `displayPhase`](#give-the-comparative-canvases-a-displayphase-so-the-app-marker-covers-them) | dotplot, synteny, capture | `settled` is already the same conjunction; the import-form case is the trap |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
+| [The bezier overlay draws a junction it never fetched](#the-bezier-overlay-draws-a-junction-across-segments-it-never-fetched) | alignments | feed it `unpairedReadChain` and dash the spanning arc; copy the split view, not the arc band |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
 | [Re-film the protein launch tour](#re-film-the-protein-launch-tour-once-protein3d-ships-the-a3m-removal) | figures, protein3d | waits on a protein3d release; the a3m is gone for good |
@@ -328,6 +329,71 @@ labels will overflow the boxes laid out for them.
   to letter one tooltip row is the wrong trade, so the version worth costing is
   a one-base fetch on hover, next to the widget round trip the click already
   makes.
+
+### The bezier overlay draws a junction across segments it never fetched
+
+The bezier connector overlay never reads `readSuppAlignments` — grep it across
+`features/linkedReads/`, `shared/readGroupConnections.ts` and
+`components/pileupBezierArcs.ts` and there are no hits. So it groups the
+*fetched* alignments by QNAME, sorts each read's segments by clip-at-start and
+joins consecutive ones (`splitJunctions`). When the segments between two of them
+were never fetched, it joins across the gap and marks nothing.
+
+Measured, with a COLO829-chain-1-shaped fixture — one unpaired read, chr3 fwd →
+chr10 → chr12 → chr3 rev, only the two chr3 segments fetched.
+`enumerateBezierPairs` returns one pair and `computePileupBezierArcs` returns one
+arc:
+
+```
+M 25359568 5 C … 25359111 17     label: "Split alignment (inverted)"
+```
+
+A solid inversion junction on chr3, indistinguishable from a real one, where the
+read actually foldbacks through 382 bp on two other chromosomes.
+
+The other two renderers of the same read already handle it, and neither draws
+this. The arc band suppresses the join by construction — `unpairedChainArcs`
+walks the SA-augmented chain, so the two are not adjacent and no junction is
+emitted between them, under a comment naming exactly this ("suppresses a
+misleading direct join across an off-screen segment"). The breakpoint split view
+draws it dashed: `markHiddenSegments` fills `hiddenSegmentsBetween`,
+`AlignmentConnections` sets `strokeDasharray='4 3'`, and the tooltip reads
+`hidden N segments not in view: <locstrings>`.
+
+**Copy the split view, not the arc band.** The overlay is a per-read mode where
+the user is following one molecule, so deleting the connector loses the thread;
+the arc band is an aggregate, where a wrong junction would be counted. Dash the
+arc and name the hidden loci.
+
+The seam is already there. `resolveReadGroup<E, T>` is generic over the per-mate
+chainer precisely so the two paths can differ here, and says so — *"the bezier
+path chains only the on-screen segments (`splitJunctions`), the arc path
+additionally walks off-screen SA segments."* Feed it `unpairedReadChain` instead,
+which the derivative-allele picker already calls, and the overlay learns which
+junctions span a hidden segment. `arcTooltip` → `setMouseoverExtraInformation` in
+`PileupBezierOverlay` is where the locstrings go.
+
+No new geometry, no anchor decision and no new setting — the one-ended hops
+(where the far end was never fetched at all) are a separate, additive question,
+parked in [ideas/sa-hops-in-the-bezier-overlay.md](ideas/sa-hops-in-the-bezier-overlay.md).
+
+Three things to watch:
+
+- **`unpairedReadChain` needs a `CanonicalRefName`** and the bezier path does not
+  thread one; `computePileupBezierArcsFromModel` has to pass it, the way
+  `derivativePathCandidates` does.
+- **One seam, two outputs.** The live overlay and the SVG export both go through
+  `computePileupBezierArcsFromModel` (`components/pileupBezierArcs.ts`), so the
+  dash lands in both — check `PileupBezierArcsSvg.tsx` renders `strokeDasharray`.
+- **Cost.** This adds an SA parse per read group (`featurizeSA` over
+  `readSuppAlignments`) that the arc path already pays and the overlay does not.
+  `enumerateBezierPairs` is the memoized, scroll-invariant half, so it lands
+  there rather than per frame — but measure it at depth.
+
+To see it: the COLO829 tumour ONT track in the `cancer_sv` demo
+(`https://jbrowse.org/demos/cancer_sv/config.json`). Chain 1 is a closed cycle
+chr3 → chr10 (199 bp) → chr12 (183 bp) → chr3 and the two chr3 arms **overlap**,
+so a chr3-only view fetches both and draws the false inversion.
 
 ### Verify the overlay palettes in dark mode
 
