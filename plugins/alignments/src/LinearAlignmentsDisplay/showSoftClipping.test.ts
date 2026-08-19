@@ -177,7 +177,7 @@ describe('alignments showSoftClipping session default', () => {
     )
     expect(display.showSoftClipping).toBe(true)
 
-    clearPromotedDefaults(display)
+    clearPromotedDefaults(display, ['showSoftClipping'])
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',
@@ -274,7 +274,7 @@ describe('alignments compactness session default', () => {
     expect(display.featureHeight).toBe(3)
     expect(display.showSoftClipping).toBe(true)
 
-    clearPromotedDefaults(display)
+    clearPromotedDefaults(display, ['featureHeight', 'showSoftClipping'])
     expect(display.featureHeight).toBe(7)
     expect(display.showSoftClipping).toBe(false)
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])

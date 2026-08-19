@@ -456,7 +456,7 @@ exactly one slot. Reintroduce the group only alongside a real multi-slot pin.
 | `makePin(self, slot, onValue)` | `Pin` `{ slot, active, toggle }` on one fixed value — "make arcs the default", independent of what the track shows, so two rows sharing a slot (arcs `'arc'` vs cloud `'cloud'`) stay independent | an always-visible per-value pin |
 | `makePin(self, slot)` — value omitted | same, over the track's *current* resolved value | a symmetric or continuous setting with no sensible fixed on-value (wiggle point size, arc line width, `mismatchAlpha`) |
 | `getDisplayTypeDefaultChanges(self)` | `TrackConfigChange[]` — promotable slots where a following track's resolved value differs from base | track-selector badge diff |
-| `clearPromotedDefaults(self, slots?)` | clears the named promoted defaults for this display's type (every promotable slot when `slots` is omitted) | badge "clear session default", which passes the slots it listed |
+| `clearPromotedDefaults(self, slots)` | clears the named promoted defaults for this display's type | badge "clear session default", which passes the slots it listed |
 | `isSlotCustomized(self, slot)` | whether the track holds its own value rather than following the default | a slider row's "reset to default" enablement (wiggle point size, arc line width) |
 | `getTrackConfigWithPromotables(session, trackConfig)` | a whole track's config snapshot with every display's promotable slots resolved, plus the `<displayType>.<slot>` list of what came from a session default. Takes a config, not a display — no open track required | the About dialog's "Copy config" (see [Serialization boundaries](#serialization-boundaries-getcomputedstyle)) |
 
@@ -486,6 +486,12 @@ performs, and that it re-derives its whole target set inside `onClick` rather
 than capturing it, are all
 [ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md).
 Read it before making the pin do more.
+
+`slots` is **required**, and the all-slots form it replaced was a hazard rather
+than a convenience: it reached further than any list a dialog can have shown, so
+clearing from the badge could move sibling tracks over a slot the dialog never
+listed. Clearing every promoted default at once is a preferences-scope action,
+and Preferences → "Reset to defaults" is where it lives.
 
 The low-level primitives behind the builders —
 `isPromotableDefault(self, slot, value)`,
@@ -729,7 +735,12 @@ track-selector badge's "Reset to default", which drops the whole
 parent toggle is on (the arc/read-cloud band submenu, arc coloring) stay present
 but `disabled` with a `disabledHelpText`, rather than vanishing — so they're
 discoverable. `CascadingMenu` greys a disabled submenu and blocks it from
-opening.
+opening. **A pin on such a row is greyed too**, by `menuItemAdornment` reading
+the row's own `disabled`: a disabled `MenuItem` is `pointer-events: none` (the
+same property `DisabledTooltip` exists to work around), so the pin took no click
+while looking exactly like a live one. It stays drawn rather than vanishing, so
+the trailing column keeps its alignment. The alignments feature-height presets
+are the rows that reach this, gated row by row on `needsContent`.
 
 **Badge** (`OverrideBadge.tsx`, track selector): the same pencil that marks a
 per-track config edit also shows when `getDisplayTypeDefaultChanges(display)` is

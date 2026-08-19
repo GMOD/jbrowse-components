@@ -23,7 +23,14 @@ export function menuItemAdornment(item: MenuItem) {
   if ('endAdornment' in item && item.endAdornment) {
     return item.endAdornment
   }
-  return 'pin' in item && item.pin ? <PinAdornment pin={item.pin} /> : undefined
+  // A disabled row is `pointer-events: none` (see `DisabledTooltip`, which
+  // exists because that also swallows a Tooltip's hover), so a pin drawn in one
+  // takes no click while looking exactly like a live one. Greying it is what
+  // the help "?" does on such a row by not rendering at all; the pin stays
+  // drawn so the trailing column keeps its alignment.
+  return 'pin' in item && item.pin ? (
+    <PinAdornment pin={item.pin} disabled={item.disabled} />
+  ) : undefined
 }
 
 /**

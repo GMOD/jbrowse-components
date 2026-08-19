@@ -81,6 +81,20 @@ describe('PinAdornment', () => {
     ).toBeTruthy()
   })
 
+  // A disabled menu row is `pointer-events: none`, so a pin inside it takes no
+  // click at all — it looked live and did nothing.
+  it('is disabled when its row is', () => {
+    const { getByRole } = render(
+      <ThemeProvider theme={theme}>
+        <PinAdornment
+          pin={{ control: fakeControl(false), label: 'this' }}
+          disabled
+        />
+      </ThemeProvider>,
+    )
+    expect(getByRole('button').hasAttribute('disabled')).toBe(true)
+  })
+
   it('stops click propagation so the row value is not toggled', () => {
     const rowClick = jest.fn()
     const { getByRole } = render(

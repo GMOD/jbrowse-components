@@ -460,21 +460,23 @@ export function getDisplayTypeDefaultChanges(
 
 /**
  * #api core/configuration
- * Clear promoted defaults for this display type, so every track following one
- * reverts to its own config value. Backs the badge's "clear session default"
- * action, which passes the slots it actually listed
+ * Clear the named promoted defaults for this display type, so every track
+ * following one reverts to its own config value. Backs the badge's "clear
+ * session default" action, which passes the slots it actually listed
  * (`getDisplayTypeDefaultChanges`).
  *
- * Pass `slots` whenever the UI named what it was clearing. The all-slots default
- * reaches further than any such list: a promoted default the track *customized*
- * over, or one promoted to a value equal to `promotedBase`, is invisible in the
- * badge dialog (neither is `inherited`) yet still governs sibling tracks — so
- * clearing it from a dialog that never showed it changes tracks other than the
- * one whose badge was clicked.
+ * **`slots` is required, and an all-slots default is not the convenience it
+ * looks like.** It reaches further than any list a dialog can have shown: a
+ * promoted default the track *customized* over, or one promoted to a value
+ * equal to `promotedBase`, is `inherited: false` and so appears in no row, yet
+ * still governs sibling tracks — so clearing it from a dialog that never showed
+ * it moves tracks other than the one whose badge was clicked. Clearing every
+ * promoted default at once is a preferences-scope action, and Preferences →
+ * "Reset to defaults" is where it lives (`clearPreferenceOverrides`).
  */
 export function clearPromotedDefaults(
   self: ResolvableDisplay,
-  slots: Iterable<string> = promotableSlotNames(self.configuration),
+  slots: Iterable<string>,
 ): void {
   const session = getSession(self)
   for (const slot of slots) {

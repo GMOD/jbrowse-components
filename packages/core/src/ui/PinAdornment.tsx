@@ -46,7 +46,13 @@ function pinPredicate(onValue: unknown) {
 // capability is discoverable. stopPropagation keeps the click off the row value / menu
 // dismissal. "of this type" because a promoted default is scoped to the display
 // type (e.g. every LinearAlignmentsDisplay), not literally all tracks.
-export function PinAdornment({ pin }: { pin: MenuItemPin }) {
+export function PinAdornment({
+  pin,
+  disabled,
+}: {
+  pin: MenuItemPin
+  disabled?: boolean
+}) {
   const { classes } = useStyles()
   const { label, control } = pin
   const isDefault = control.active
@@ -62,6 +68,7 @@ export function PinAdornment({ pin }: { pin: MenuItemPin }) {
       <ToggleButton
         className={classes.button}
         value="default"
+        disabled={disabled}
         selected={isDefault}
         color="primary"
         size="small"

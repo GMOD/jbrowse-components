@@ -253,7 +253,7 @@ test('every display type declaring a promotable slot is opened or exempt', () =>
   const { pluginManager } = getPluginManager()
   const covered = new Set([...FIXTURES.map(f => f.displayType), ...NO_FIXTURE])
   const declaring = displayTypesWithPromotableSlots(
-    pluginManager.getElementTypeRecord('display').all(),
+    pluginManager.getDisplayElements(),
   )
   expect(declaring.filter(t => !covered.has(t))).toEqual([])
 })
@@ -264,9 +264,7 @@ test('every display type declaring a promotable slot is opened or exempt', () =>
 test('every exemption still names a display type that needs one', () => {
   const { pluginManager } = getPluginManager()
   const declaring = new Set(
-    displayTypesWithPromotableSlots(
-      pluginManager.getElementTypeRecord('display').all(),
-    ),
+    displayTypesWithPromotableSlots(pluginManager.getDisplayElements()),
   )
   const fixtures = new Set(FIXTURES.map(f => f.displayType))
   expect(
