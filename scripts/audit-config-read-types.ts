@@ -19,10 +19,11 @@
  *
  * Both collapse the moment the schema widens to `AnyConfigurationSchemaType` —
  * `ConfigurationSlotName` degrades to `never`/`string` and the value to `any`.
- * That happens wherever a mixin casts its own `self` to a config holder
- * (`confNode(self)`, `host(self)`) because a mixin's `self` genuinely doesn't
- * know the composing display's schema. The cast is load-bearing; what is not
- * acceptable is *not knowing how much of the codebase it covers*.
+ * The mixin cast (`confNode(self)`, `host(self)`) used to be the largest source
+ * of that and is no longer any of it: a mixin cannot see the composing display's
+ * schema, but it can name the slots it owns (`ConfigModelForFields`) or the base
+ * schema a base slot lives on, and `HostChecksSlotNames` fails the build if one
+ * widens back. What is left is the three populations the baseline header names.
  *
  * `configTypeNarrowing.test.ts` guards that the machinery narrows correctly on a
  * concrete schema. This is the other half: how many real call sites reach it.
@@ -198,10 +199,14 @@ function main() {
       '#',
       '# Four populations, and they want different things:',
       '#',
-      '#   - a MIXIN casting its own `self` to a widened config holder. Load-bearing',
-      '#     and ACCEPTED: a mixin cannot know the composing schema, and generic',
-      '#     threading does not rescue it. Generating per-display accessors to close',
-      '#     these was considered and rejected — see adr-052 before re-proposing it.',
+      '#   - a MIXIN casting its own `self` to a widened config holder. **No longer',
+      '#     accepted, and no longer here**: a mixin names its own field table',
+      '#     (`ConfigModelForFields`) or, for a base slot, the base schema, and',
+      '#     `HostChecksSlotNames` pins each one. Ten mixins came off this list that',
+      '#     way. What does NOT work is threading a type parameter — a generic body',
+      '#     is checked against the constraint, so however narrow the default is the',
+      '#     typo still compiles. Generating per-display accessors is still rejected',
+      '#     (adr-052); naming the table is not that.',
       '#   - a `frozen`/`maybeFrozen` slot, which is `any` BY DESIGN — the escape',
       '#     hatch for arbitrary JSON. Accepted; it will never leave this list.',
       '#   - a read against a TRACK schema (`trackId`, `assemblyNames`, `adapter`,',

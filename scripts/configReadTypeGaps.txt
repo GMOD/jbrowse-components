@@ -13,10 +13,14 @@
 #
 # Four populations, and they want different things:
 #
-#   - a MIXIN casting its own `self` to a widened config holder. Load-bearing
-#     and ACCEPTED: a mixin cannot know the composing schema, and generic
-#     threading does not rescue it. Generating per-display accessors to close
-#     these was considered and rejected — see adr-052 before re-proposing it.
+#   - a MIXIN casting its own `self` to a widened config holder. **No longer
+#     accepted, and no longer here**: a mixin names its own field table
+#     (`ConfigModelForFields`) or, for a base slot, the base schema, and
+#     `HostChecksSlotNames` pins each one. Ten mixins came off this list that
+#     way. What does NOT work is threading a type parameter — a generic body
+#     is checked against the constraint, so however narrow the default is the
+#     typo still compiles. Generating per-display accessors is still rejected
+#     (adr-052); naming the table is not that.
 #   - a `frozen`/`maybeFrozen` slot, which is `any` BY DESIGN — the escape
 #     hatch for arbitrary JSON. Accepted; it will never leave this list.
 #   - a read against a TRACK schema (`trackId`, `assemblyNames`, `adapter`,
@@ -28,8 +32,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 154 unchecked in source, 168 in tests,
-# of 878 total config accessor calls. The gate counts source only.
+# 125 unchecked in source, 174 in tests,
+# of 889 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/Assemblies/AssembliesMixin.ts  (1)
   166	readConfObject('name')
@@ -41,12 +45,12 @@ packages/core/src/assemblyManager/assemblyManager.ts  (4)
   317	readConfObject('aliases')
   499	readConfObject('name')
 packages/core/src/configuration/configTypeNarrowing.test.ts  (6)  [test]
-  190	readConfObject('frozen')
-  191	readConfObject('maybeFrozen')
-  254	resolveConf('colorBy')
-  255	getConf('colorBy')
-  301	getConf('notASlot')
-  328	readConfObject('limit')
+  193	readConfObject('frozen')
+  194	readConfObject('maybeFrozen')
+  257	resolveConf('colorBy')
+  258	getConf('colorBy')
+  304	getConf('notASlot')
+  331	readConfObject('limit')
 packages/core/src/configuration/configurationSchema.test.ts  (7)  [test]
   573	getConf('frozenSlot')
   1325	readConfObject('a')
@@ -194,22 +198,14 @@ packages/synteny-core/src/syntenyRowAdornment.ts  (1)
   105	readConfObject('assemblyNames')
 packages/synteny-core/src/syntenyTrackRows.ts  (1)
   33	readConfObject('assemblyNames')
-packages/tree-sidebar/src/rowHeight/RowHeightMixin.ts  (1)
-  62	getConf('rowHeight')
-packages/tree-sidebar/src/TreeSidebarMixin.ts  (3)
-  99	getConf('showTree')
-  107	getConf('showBranchLength')
-  114	getConf('showRowLabels')
+packages/tree-sidebar/src/rowHeight/RowHeightMixin.test.ts  (1)  [test]
+  163	getConf('rowHieght')
+packages/tree-sidebar/src/TreeSidebarMixin.test.ts  (1)  [test]
+  224	getConf('showTrea')
 packages/web-core/src/BaseWebSession/index.ts  (1)
   142	getConf('shareURL')
-packages/wiggle-core/src/ScoreScaleMixin.ts  (7)
-  46	getConf('scaleType')
-  52	getConf('autoscale')
-  58	getConf('numStdDev')
-  65	getConf('minScore')
-  72	getConf('maxScore')
-  102	getConf('minScore')
-  110	getConf('maxScore')
+packages/wiggle-core/src/ScoreScaleMixin.test.ts  (1)  [test]
+  17	getConf('scaleTyp')
 plugins/alignments/src/consensus/index.ts  (1)
   42	getConf('name')
 plugins/alignments/src/LinearAlignmentsDisplay/model.ts  (6)
@@ -240,8 +236,8 @@ plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts  (3)
   283	readConfObject('sampleColorMap')
   299	readConfObject('rowGroups')
   445	readConfObject('legend')
-plugins/canvas/src/shared/CanvasFeatureGateMixin.ts  (1)
-  164	getConf('maxFeatureScreenDensity')
+plugins/canvas/src/shared/CanvasFeatureGateMixin.test.ts  (1)  [test]
+  16	getConf('maxFeatureScreenDensty')
 plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts  (1)
   266	getConf('adapter')
 plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (1)  [test]
@@ -328,19 +324,8 @@ plugins/linear-comparative-view/src/LinearSyntenyView/util/syntenyTracks.ts  (1)
 plugins/linear-comparative-view/src/SyntenyFeatureDetail/LinkToSyntenyView.tsx  (2)
   41	readConfObject('trackId')
   44	readConfObject('assemblyNames')
-plugins/linear-genome-view/src/BaseLinearDisplay/models/HeightModeMixin.ts  (3)
-  76	resolveConf('heightMode')
-  86	getConf('height')
-  96	getConf('growMaxHeight')
-plugins/linear-genome-view/src/BaseLinearDisplay/models/LegendMixin.ts  (1)
-  47	resolveConf('showLegend')
-plugins/linear-genome-view/src/BaseLinearDisplay/models/TrackHeightMixin.tsx  (1)
-  59	getConf('height')
 plugins/linear-genome-view/src/LinearGenomeView/components/SearchResultsTable.tsx  (1)
   42	readConfObject('name')
-plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts  (2)
-  337	getConf('fetchSizeLimit')
-  379	getConf('forceLoad')
 plugins/maf/src/BigMafAdapter/configSchema.test.ts  (4)  [test]
   8	readConfObject('summaryAdapter')
   17	readConfObject('summaryAdapter')
@@ -377,19 +362,11 @@ plugins/wiggle/src/CreateMultiWiggleExtension/index.ts  (3)
   37	readConfObject('assemblyNames')
   41	readConfObject('adapter')
   42	readConfObject('name')
-plugins/wiggle/src/shared/WiggleCommonMixin.ts  (9)
-  110	getConf('posColor')
-  116	getConf('negColor')
-  122	getConf('bicolorPivot')
-  128	getConf('numQuantile')
-  134	resolveConf('lineWidth')
-  142	getConf('maxGapMultiple')
-  148	getConf('summaryScoreMode')
-  154	getConf('defaultRendering')
-  161	getConf('adapter')
-plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts  (2)
-  75	resolveConf('scatterPointSize')
-  87	getConf('displayCrossHatches')
+plugins/wiggle/src/shared/WiggleCommonMixin.ts  (1)
+  185	getConf('adapter')
+plugins/wiggle/src/shared/wiggleMixinHosts.test.ts  (2)  [test]
+  20	getConf('posColour')
+  22	getConf('displayCrossHatche')
 products/jbrowse-react-linear-genome-view/src/UpdateTrackConfiguration.test.ts  (1)  [test]
   82	readConfObject('name')
 products/jbrowse-web/src/rootModel/rootModel.test.ts  (3)  [test]
