@@ -29,6 +29,28 @@
     "rewriteRelativeImportExtensions": true,
     "types": ["jest"]
   },
+  // Selects exactly what the implicit `**/*` does — `tsconfigInclude.test.ts`
+  // holds it to that, so a new top-level directory fails there rather than
+  // leaving the typecheck unnoticed. Naming them is what makes `--watch`
+  // usable: the implicit form registers one recursive watch on the repo root,
+  // and tsgo 7.0.2 then reports a change roughly every 1.6s with nothing on
+  // disk changing. In the primary checkout that watch also covers every
+  // worktree under `.claude/`, i.e. every other agent's live tree.
+  "include": [
+    "global.d.ts",
+    "agent-docs",
+    "config",
+    "demos",
+    "embedded_demos",
+    "example-plugins",
+    "extra_test_data",
+    "packages",
+    "plugins",
+    "products",
+    "scripts",
+    "test_data",
+    "types"
+  ],
   "exclude": [
     "products/aws/",
     "**/build/",
