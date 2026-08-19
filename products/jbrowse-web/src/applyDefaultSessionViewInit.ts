@@ -27,7 +27,8 @@ export function applyDefaultSessionViewInit(
   init: Partial<InitState>,
 ) {
   const view = session?.views.find(v => v.type === 'LinearGenomeView') as
-    LinearGenomeViewLike | undefined
+    | LinearGenomeViewLike
+    | undefined
   // The URL may omit assembly. A defaultSession view that used the `init`
   // shorthand hasn't navigated yet, so assemblyNames (derived from
   // displayedRegions) is still empty and only its pending init names one.

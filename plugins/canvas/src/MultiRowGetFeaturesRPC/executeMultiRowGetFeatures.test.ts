@@ -5,7 +5,6 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 import { executeMultiRowGetFeatures } from './executeMultiRowGetFeatures.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
   getFeatureAdapterOrThrow: jest.fn(),
@@ -49,7 +48,7 @@ function run(byteLimit?: number) {
       partitionField: 'sample',
       lengthField: '',
       colorConfig: 'goldenrod',
-    } as RpcExecuteArgs<'MultiRowGetFeatures'>,
+    },
   })
 }
 
