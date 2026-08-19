@@ -28,13 +28,17 @@ export async function fetchSeq({
   }
 
   const sessionId = 'getSequence'
-  // An assembly can be backed by an adapter that carries no residues at all —
-  // ChromSizesAdapter defines refName lengths only. Say so here: passing the
-  // undefined on fails inside getAdapterPre as "could not determine adapter
-  // type", naming neither the assembly nor what was wanted from it.
+  // Undefined here means the assembly's `configuration` safeReference is
+  // unresolved — the assembly outlived the config entry it points at. NOT an
+  // assembly whose sequence carries no residues: a ChromSizesAdapter one still
+  // has a `sequence.adapter`, and fails later, inside the adapter. Say which
+  // this is; passing the undefined on fails in getAdapterPre as "could not
+  // determine adapter type", naming neither the assembly nor what was wanted.
   const adapterConfig = getSequenceAdapterConfig(assembly)
   if (!adapterConfig) {
-    throw new Error(`assembly ${assemblyName} has no sequence to read`)
+    throw new Error(
+      `assembly ${assemblyName} has no resolved configuration, so its sequence adapter cannot be read`,
+    )
   }
 
   // Get the canonical refName, then translate to the sequence adapter refName
