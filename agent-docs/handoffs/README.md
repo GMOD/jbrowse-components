@@ -47,5 +47,4 @@ doc that carries none. Don't edit between the markers; write the doc's
 
 | Doc | What it is waiting on |
 | --- | --- |
-| [promoted-defaults-move-into-the-session](promoted-defaults-move-into-the-session.md) | Deleting the localStorage tier under promoted display-type defaults and keeping the map in the session snapshot instead, which removes the share bake outright and closes the hole that bake documents as unclosable. The order to do it in, what each step breaks, and the two guard tests that decide whether the store swap is safe. |
 <!-- END GENERATED HANDOFFS INDEX -->
