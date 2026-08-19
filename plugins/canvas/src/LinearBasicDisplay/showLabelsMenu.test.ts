@@ -42,6 +42,14 @@ function showSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
   return end === -1 ? rest : rest.slice(0, end)
 }
 
+// `label` is `ReactNode` across the MenuItem union, so narrow rather than hand a
+// `ReactNode` to `radio` below — every row of this group carries a plain string.
+function labelsOf(subMenu: MenuItem[]) {
+  return subMenu.flatMap(i =>
+    'label' in i && typeof i.label === 'string' ? [i.label] : [],
+  )
+}
+
 function radio(subMenu: MenuItem[], label: string) {
   const item = subMenu.find(i => hasLabel(i, label))
   if (item?.type === 'radio') {
@@ -57,14 +65,15 @@ describe('Labels submenu', () => {
     const { display } = createDisplay()
     const subMenu = showSubMenu(display)
 
-    expect(subMenu.flatMap(i => ('label' in i ? [i.label] : []))).toEqual([
+    const labels = labelsOf(subMenu)
+    expect(labels).toEqual([
       'Auto',
       'Name + description',
       'Name only',
       'Description only',
       'None',
     ])
-    for (const label of subMenu.flatMap(i => ('label' in i ? [i.label] : []))) {
+    for (const label of labels) {
       expect(radio(subMenu, label).pin).toBeDefined()
     }
   })
