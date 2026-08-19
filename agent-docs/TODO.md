@@ -35,7 +35,7 @@ before anyone noticed.
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Canvas2D fades a curved sub-pixel ribbon by one number](#canvas2d-fades-a-curved-sub-pixel-ribbon-by-one-number) | synteny, canvas2d | measured and understood; the cost is N strokes in the 500k-instance loop |
-| [Move the four cubic AA ramps onto the linear one](#move-the-four-cubic-aa-ramps-onto-the-linear-one) | shaders, GPU | the measurement is done; start at the dotplot capsule, and check whose reds the goldens are |
+| [Move the four cubic AA ramps onto the linear one](#move-the-four-cubic-aa-ramps-onto-the-linear-one) | shaders, GPU | the measurement is done; convert the dotplot capsule and read the cross-backend gate's drift, which should fall |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
@@ -1409,12 +1409,17 @@ reason anyone recorded, and it is the cleanest place to see what the change
 looks like. Marks thinner than a pixel move the most — they are the ones the
 cubic over-inks.
 
-The reason this is not four one-line commits is the verification.
-`browser-tests/compare-backends.ts` is the instrument, and it wants captures in
-all three backends; several golden sets are stale on an untouched tree, so
-confirm which reds are main's before reading a diff as yours. Expect the
-Canvas2D pair to get *closer*, which is the direction that says the change
-worked.
+The reason this is not four one-line commits is the verification, and the
+cross-backend gate is the instrument for it — `pnpm test:browser:gate` with
+`--drift-report`, not a golden refresh. It diffs canvas2d against the GPU render
+of the same run with canvas2d as the reference side, and `Dotplot View`,
+`Synteny Views`, `Multi-Way Synteny Views` and `GWAS Tracks` are all in its CI
+scope, so all four call sites are already watched. That makes the change
+falsifiable rather than merely reviewable: a ramp closer to exact coverage
+should move those pairs DOWN the drift distribution. Read CROSS_BACKEND_GATE.md
+for the distribution to compare against — max 0.62%, median 0.00% over 66 pairs
+— and note the wiggle line plots that sit at the top of it are already on the
+linear ramp, so they are the control rather than the target.
 
 ## Blocked on a visual call
 

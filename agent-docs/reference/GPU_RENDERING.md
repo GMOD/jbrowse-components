@@ -1261,11 +1261,20 @@ where the cubic paints a half-pixel band at 0.688 coverage instead of 0.500.
 **No pixels have moved on that finding.** Four call sites still take the cubic —
 synteny's `perpCoverage` and `vertCoverage`, the dotplot capsule, and
 `glyphEdgeAlpha` with every point glyph behind it — and each is a visual change
-wanting the backend-comparison instrument rather than a cleanup. The sharpest
-one to look at first is the dotplot capsule, because wiggle's capsule is the
-same primitive with the same SDF and already takes the linear ramp, so the two
-differ for no reason anyone recorded. `agent-docs/TODO.md` carries the
-conversion.
+rather than a cleanup. The instrument is the cross-backend gate, not a golden:
+it diffs canvas2d against the GPU render of the same run, canvas2d is the
+reference side, and `Dotplot View`, `Synteny Views` and `GWAS Tracks` are all in
+its CI scope. That turns the conversion into a falsifiable prediction — a ramp
+closer to exact coverage should move those suites DOWN the drift distribution
+`--drift-report` prints, not merely somewhere else. Read
+[CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) for the distribution to compare
+against before reading a number as an improvement.
+
+The one to convert first is the dotplot capsule. Wiggle's capsule is the same
+primitive with the same SDF and already takes the linear ramp, so the two differ
+today for no reason anyone recorded, and marks thinner than a pixel — the ones
+the cubic over-inks — are what dotplot is made of. `agent-docs/TODO.md` carries
+the conversion.
 
 **A ramp needs geometry to live in.** Widening one without padding the quad
 clips it: the dotplot capsule quad is now `halfWidth + aaHalfPx` on both axes, with
