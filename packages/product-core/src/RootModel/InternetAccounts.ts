@@ -19,6 +19,53 @@ function parseEphemeralId(internetAccountId: string) {
 }
 
 /**
+ * Whether the fetch this location describes would go to the origin serving
+ * JBrowse itself.
+ *
+ * `domains` cannot name that host. A config shipped with relative data paths
+ * (`volvox_microarray.bw`) resolves against wherever the app is deployed, which
+ * whoever wrote the config does not know — so an account for it has nothing to
+ * put in `domains`, and naming the account on the location is the only way to
+ * reach it. Safe whatever `domains` says: a link can move a same-origin
+ * location nowhere except the server already serving the page and holding the
+ * session.
+ *
+ * Resolved the way the request will be, against `baseUri` when there is one, so
+ * a spec cannot pass a relative uri under an off-origin base and read as local.
+ */
+function resolvesToAppOrigin(location: UriLocation) {
+  // typed as always present, and absent in node and in some embedded hosts
+  const here = globalThis.location as Location | undefined
+  // `null` is what an opaque origin (file:, data:) stringifies to, and two of
+  // them are not the same origin
+  if (!here?.origin || here.origin === 'null') {
+    return false
+  }
+  try {
+    return (
+      new URL(location.uri, location.baseUri ?? here.href).origin ===
+      here.origin
+    )
+  } catch {
+    return false
+  }
+}
+
+// An account named by a location it is not scoped for reads as a dead track,
+// so say which half to fix. Once per pair: the check runs on every RPC
+// serialization, and a track issues one per block.
+const warnedScopeMismatches = new Set<string>()
+function warnScopeMismatch(internetAccountId: string, uri: string) {
+  const key = `${internetAccountId}|${uri}`
+  if (!warnedScopeMismatches.has(key)) {
+    warnedScopeMismatches.add(key)
+    console.warn(
+      `Internet account "${internetAccountId}" is not used for ${uri}: the URL is outside its "domains". Add the host to that account's domains if this is your data.`,
+    )
+  }
+}
+
+/**
  * #stateModel InternetAccountsMixin
  * #category root
  */
@@ -95,8 +142,22 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           const selectedAccount = self.internetAccounts.find(account => {
             return account.internetAccountId === selectedId
           })
+          // The account still has to be scoped for the URL. Naming one used to
+          // be enough on its own, which made the field a way to redirect
+          // someone else's credential: jbrowse-web builds tracks out of
+          // `sessionTracks` in the URL, and a location there carrying
+          // `internetAccountId` sent that account's token to whatever host the
+          // link chose — first as validateToken's probe from the main thread,
+          // then as the worker's read. An OAuth account with a refresh token in
+          // localStorage needs no interaction at all to mint a fresh one for it.
           if (selectedAccount) {
-            return selectedAccount
+            if (
+              selectedAccount.handlesLocation(location) ||
+              resolvesToAppOrigin(location)
+            ) {
+              return selectedAccount
+            }
+            warnScopeMismatch(selectedId, location.uri)
           }
         }
 

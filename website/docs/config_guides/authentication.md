@@ -125,8 +125,9 @@ header the token is sent in.
 JBrowse picks an account for a file in two steps.
 
 **First, the location's own `internetAccountId`.** A file location can name its
-account outright — `internetAccountId` sits beside `uri` — and that account is
-used whatever its `domains` say:
+account outright — `internetAccountId` sits beside `uri` — which picks that
+account ahead of the `domains` walk below, so a specific file can use an account
+that is not the first one matching its host:
 
 ```json
 {
@@ -152,9 +153,19 @@ used whatever its `domains` say:
 }
 ```
 
-Use this for a host that no single `domains` entry cleanly identifies. It is
-also what the Add Track form's account picker writes, so a file whose URL
-matches no `domains` entry still authenticates.
+**The named account still has to be scoped for the URL.** Naming an account
+chooses between accounts; it does not widen the one it names. A location naming
+an account whose `domains` do not cover its host is read unauthenticated, and
+JBrowse logs which account and which URL to the console. This is also what the
+Add Track form's account picker writes, so an account offered there needs the
+host in its `domains` for the file to authenticate.
+
+**One exception, for the case `domains` cannot express**: a file served from the
+same origin as JBrowse itself. A config written with relative paths
+(`"uri": "data/x.bam"`) resolves against wherever the app is deployed, which
+whoever wrote the config does not know, so there is no host to write down. An
+account named on such a location is used whatever its `domains` say — a link
+cannot move a same-origin file anywhere but the server already serving the page.
 
 An id naming an account the config does not declare is only honoured when its
 leading segment is an account **type** — `HTTPBasicInternetAccount-myserver`,
@@ -207,15 +218,21 @@ URL that merely mentions one of your domains in a parameter does not match it.
 name a host or a path — which is nearly all of them — behave the same way now.
 Two kinds of entry no longer match: a **fragment of a hostname**
 (`domains: ["dropbox"]` no longer matches `dropbox.com`; write the whole host),
-and anything relying on the match landing in a **query string**. Both were also
-how a crafted link could aim a user's token at a server of its choosing, which
-is why this changed.
+and anything relying on the match landing in a **query string**.
+
+A location's `internetAccountId` also no longer overrides `domains`; it orders
+the choice among accounts already scoped for the URL. Both changes close the
+same hole — jbrowse-web builds tracks from `sessionTracks` in the URL, so a
+crafted link could otherwise aim a user's token at a server of its choosing. An
+account that authenticated an **off-origin** file through the id alone needs
+that file's host added to its `domains`; same-origin files are unaffected.
 
 :::
 
-An account with an empty `domains` list never matches automatically. It is still
-usable, because the user can select it explicitly when opening a file through
-the Add Track form.
+An account with an empty `domains` list matches nothing on its own. It is still
+usable for files a location names it on, but only same-origin ones — give it the
+hosts it serves for anything else, including an account the user picks by hand
+in the Add Track form.
 
 ## HTTP Basic
 
