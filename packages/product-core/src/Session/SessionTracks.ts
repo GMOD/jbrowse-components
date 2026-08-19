@@ -298,17 +298,33 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           applySnapshot(node, toPlainConfig(base))
         }
       }
-      // Single writer for trackConfigDeltas (pass undefined to clear).
+      // Single writer for trackConfigDeltas (pass undefined to clear). Clearing
+      // also reverts the working copy, which is what makes a Reset visible in an
+      // open view — except where the caller says the working copy IS the edit
+      // that produced the empty delta (`revertWorkingCopy: false`), where
+      // reverting undoes it.
       function writeDelta(
         trackId: string,
         delta: PlainTrackConfig | undefined,
+        { revertWorkingCopy = true } = {},
       ) {
         self.trackConfigDeltas = delta
           ? { ...self.trackConfigDeltas, [trackId]: delta }
           : withoutDelta(self.trackConfigDeltas, trackId)
-        if (!delta) {
+        if (!delta && revertWorkingCopy) {
           revertEditableTrackConfig(trackId)
         }
+      }
+      // Whether `trackConf` is the working copy's own current state — i.e. this
+      // update came from the track's live `setSlot` edits rather than from the
+      // config editor's separate temporary node. `syncEditableTrackConfig` below
+      // asks the same question the other way round.
+      function isWorkingCopyState(
+        trackId: string,
+        trackConf: PlainTrackConfig,
+      ) {
+        const node = self.editableTrackConfigs.get(trackId)
+        return !!node && compareStructural(getSnapshot(node), trackConf)
       }
       // Push a *programmatic* update (the config editor's Apply, or any
       // updateTrackConfiguration not driven by this node's own live edits) into
@@ -437,7 +453,25 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               }
               syncEditableTrackConfig(trackId, trackConf)
             } else if (trackId in self.trackConfigDeltas) {
-              writeDelta(trackId, undefined)
+              // An empty delta is two different situations and only one of them
+              // is a reset. `diffTrackConfig` records adds and changes, never
+              // deletions (its module note), so *unsetting* a slot the admin
+              // base sets diffs to nothing exactly as netting back to the base
+              // does — and reverting the working copy then undid the edit ~400ms
+              // after the user watched it land. The reachable case is the
+              // promoted-default snackbar's "Override N customized tracks",
+              // whose whole job is to unset a slot, over a promotable slot an
+              // admin `config.json` declares.
+              //
+              // The removal still doesn't survive a reload, which is the
+              // tombstone-free delta's documented limitation; what it no longer
+              // does is undo itself on screen. Only the working-copy-driven path
+              // skips the revert: the config editor edits a separate temporary
+              // node, so there the revert is the only thing that moves the open
+              // track back to the base.
+              writeDelta(trackId, undefined, {
+                revertWorkingCopy: !isWorkingCopyState(trackId, trackConf),
+              })
             }
           } else if (sessionIdx !== -1) {
             // a user-added session track (no admin base): edit it in place. A

@@ -15,9 +15,17 @@
  * Deliberate limitation (no tombstones): a delta records adds/changes only, not
  * deletions. If a user *resets* a slot the admin had customized (base has it,
  * edited omits it), the delta can't express "drop below the admin value", so the
- * field keeps following the base. This keeps the merge trivial and the shared
- * JSON free of deletion sentinels; the case (reset a slot the admin explicitly
- * set) is rare, and following the admin value is a defensible outcome.
+ * field keeps following the base across a reload. This keeps the merge trivial
+ * and the shared JSON free of deletion sentinels, and following the admin value
+ * is a defensible outcome.
+ *
+ * What it is NOT free to conflate is a removal with a reset. Both diff to an
+ * empty delta, and `SessionTracks.updateTrackConfiguration` used to read that as
+ * "the edit netted back to the base" and revert the track's working copy — which
+ * undid a removal on screen 400ms after it landed. Promotable slots made that
+ * reachable rather than rare: the promoted-default snackbar's "Override N
+ * customized tracks" exists to unset a slot, and an admin config is free to set
+ * one. That branch now keeps the working copy; see the comment there.
  *
  * `displays` is merged by `displayId` so an edit to one display doesn't pin the
  * others. Nested config objects (e.g. `adapter`) recurse. Any other array (value

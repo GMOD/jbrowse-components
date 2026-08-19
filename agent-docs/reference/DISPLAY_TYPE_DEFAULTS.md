@@ -473,6 +473,18 @@ action for any open track (across all views) not already showing this value, and
 *that* action — the one explicit gesture — clears their own value so they follow.
 On **clear**, `"Cleared the default"`.
 
+**The override is a removal, and a `trackConfigDeltas` track could not keep
+one.** Clearing a slot is the whole of what the action does, and
+`diffTrackConfig` records adds and changes but never deletions — so unsetting a
+promotable slot an admin `config.json` declares diffs to *nothing*, exactly as
+netting back to the base does. `updateTrackConfiguration` read that as an
+implicit reset, cleared the delta, and reverted the track's working copy to the
+base, undoing the override 400ms after the user watched it land. It now keeps the
+working copy when the update came from that working copy itself (the config
+editor, which edits a separate temporary node, still needs the revert). The
+removal still doesn't survive a reload — that is `trackConfigDelta.ts`'s stated
+no-tombstones limitation, not this subsystem's.
+
 **N counts tracks, and `tracksDifferingFrom` dedupes to make that true.** The
 walk yields *displays*, and one track open in two views is two of them over one
 config node (`TrackConfigurationReference` resolves both through the hydration

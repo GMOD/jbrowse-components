@@ -13,7 +13,16 @@ genuinely user-added tracks.
   it overrides; left in place the delta merges back over the new base and the
   admin's edit silently reverts. Canary: `UpdateTrackConfiguration.test.ts`.
 - A save that nets no change isn't stored, so editing a slot back to its base
-  value is an implicit reset.
+  value is an implicit reset. **"Nets no change" is two situations, though**,
+  and only one of them is: a delta records adds and changes and never deletions,
+  so _unsetting_ a slot the base sets diffs to nothing as well. Clearing the
+  delta therefore reverts the working copy only when the update came from
+  somewhere other than that working copy — otherwise it undid the edit ~400ms
+  after it landed. The reachable case is the promoted-default snackbar's
+  "Override N customized tracks" over a promotable slot an admin config
+  declares; canary `PromotedDefaultOverride.test.ts`. The removal still doesn't
+  survive a reload, which is `trackConfigDelta.ts`'s stated no-tombstones
+  limitation.
 
 ## Reset, not delete
 
