@@ -522,6 +522,32 @@ So: **a render fix that improves cross-backend agreement leaves the goldens of
 whichever backend moved reading as a regression.** The gate going green is not
 the end of the change.
 
+### The synteny scope was NOT in that refresh, and still is not
+
+"Refreshed 2026-08-16" is the alignments scope only. Re-measured 2026-08-19 with
+`compare-backends.ts`, which diffs the STORED goldens with no browser and no
+build, the synteny webgl set is 30-67% from its canvas2d counterpart while the
+same views agree to 1.58% live:
+
+| | stored golden | live gate |
+| --- | --- | --- |
+| `targeted_grape-peach-synteny-clean-ribbon` | 67.05% | **0.00%** |
+| `targeted_hs1-mm39-synteny-clean-ribbon` | 55.74% | 1.58% |
+| `targeted_hs1-mm39-synteny-chr1-large` | 42.91% | 0.02% |
+| `targeted_hs1-mm39-synteny-wholegenome` | 36.58% | 0.62% |
+
+That gap IS the staleness test from the section above, run the other way round.
+`targeted_multiway-dotplot-grape-peach-zoomed` is a second tell — the two stored
+goldens are different SIZES (1193x530 vs 1179x530), which no render can cause.
+
+A shader change to this scope therefore moves goldens that were already wrong by
+three orders of magnitude more than the change: the straight-mode quad fix
+(`2992682961`) moved live webgl output about 0.03%, against 30-67% of standing
+staleness. **Refreshing is its own scoped job, not a step in a synteny render
+change**, and the machine has to be quiet for it — these are the remote suites,
+and a capture degraded under load pushed as a golden is worse than a stale one.
+`--exact --filter`, never bare.
+
 ## Alignments under webgpu: 8 of 40 pairs over threshold, and it is the harness
 
 `test:browser:gate` and `:gate:ci` both pass `--skip-webgpu`, so webgpu pairs
