@@ -3,7 +3,7 @@ import { delay, waitForAppSettled } from '@jbrowse/browser-test-utils'
 import { graphNodePoint } from './graphAnchor.ts'
 import { locusPoint } from './locusAnchor.ts'
 
-import type { ScreenshotAction } from './screenshot-specs.ts'
+import type { AnnotationAnchor, ScreenshotAction } from './screenshot-specs.ts'
 import type { ElementHandle, Page } from 'puppeteer'
 
 // re-exported so generate-screenshots.ts keeps importing it from './actions'
@@ -246,23 +246,52 @@ function assertInViewport(
 // genomic locus in a linear view — else the literal `from`. An anchor that
 // resolves to nothing throws, so a moved node or a locus scrolled out of view
 // fails the spec by name instead of clicking the top-left corner of the page.
+async function anchorPoint(
+  page: Page,
+  action: ScreenshotAction,
+  anchor: AnnotationAnchor,
+) {
+  const point = anchor.graphNode
+    ? await graphNodePoint(page, anchor)
+    : await locusPoint(page, anchor)
+  if (!point) {
+    throw new Error(
+      `${action.type} anchor did not resolve: ${JSON.stringify(anchor)}`,
+    )
+  }
+  return point
+}
+
 async function actionPoint(page: Page, action: ScreenshotAction) {
-  const { anchor } = action
-  if (anchor) {
-    const point = anchor.graphNode
-      ? await graphNodePoint(page, anchor)
-      : await locusPoint(page, anchor)
-    if (!point) {
-      throw new Error(
-        `${action.type} anchor did not resolve: ${JSON.stringify(anchor)}`,
-      )
-    }
-    return point
+  if (action.anchor) {
+    return anchorPoint(page, action, action.anchor)
   }
   if (action.from) {
     assertInViewport(action, action.from, viewportBound(page))
   }
   return action.from
+}
+
+// Both ends of a drag, each from its anchor where the spec gives one. Exported
+// because generate-video.ts draws the cursor along the same two points the drag
+// runs between: a rubberband follows the real mouse, so a drawn cursor gliding
+// somewhere else would draw the selection where the pointer is not.
+export async function dragPoints(page: Page, action: ScreenshotAction) {
+  const from = action.fromAnchor
+    ? await anchorPoint(page, action, action.fromAnchor)
+    : action.from
+  const to = action.toAnchor
+    ? await anchorPoint(page, action, action.toAnchor)
+    : action.to
+  if (!from || !to) {
+    throw new Error('drag action needs both from and to')
+  }
+  // both ends, since a rubberband whose release is off the frame selects a
+  // different span than the spec wrote
+  const bound = viewportBound(page)
+  assertInViewport(action, from, bound)
+  assertInViewport(action, to, bound)
+  return { from, to }
 }
 
 // Where a filmed cursor has to travel before this action fires: the model- or
@@ -329,17 +358,10 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     }
     await page.keyboard.type(action.value ?? '')
   } else if (action.type === 'drag') {
-    if (!action.from || !action.to) {
-      throw new Error('drag action needs both from and to')
-    }
-    // both ends, since a rubberband whose release is off the frame selects a
-    // different span than the spec wrote
-    const bound = viewportBound(page)
-    assertInViewport(action, action.from, bound)
-    assertInViewport(action, action.to, bound)
-    await page.mouse.move(action.from.x, action.from.y)
+    const { from, to } = await dragPoints(page, action)
+    await page.mouse.move(from.x, from.y)
     await page.mouse.down()
-    await page.mouse.move(action.to.x, action.to.y, { steps: 20 })
+    await page.mouse.move(to.x, to.y, { steps: 20 })
     await page.mouse.up()
   } else if (action.type === 'scroll') {
     const el = await resolveTarget(page, action)

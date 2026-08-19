@@ -52,9 +52,20 @@ export interface AnnotationAnchor {
   // resolved against it lands exactly where the feature is painted. On its own
   // (no `locus`) it anchors to the whole track.
   track?: string
+  // A selector, matched INSIDE the view, whose vertical band the point lands in
+  // — the third way of choosing the y after `track` and the default tracks
+  // area. The x still comes from the locus, which is what makes it useful: the
+  // scalebar a rubberband is drawn on spans exactly the tracks' x-range and
+  // sits above them, so `{ locus, band: '[data-testid="rubberband_controls"]' }`
+  // is a drag on the ruler with no measured pixel in it.
+  //
+  // Read by `website/scripts/locusAnchor.ts`, the same way `hLocus`/`vLocus` are
+  // read by dotplotAnchor: a callout has no use for it, since what a callout
+  // points at is a track or a feature.
+  band?: string
   // '8:127,735,434' or '8:127,700,000-127,800,000' — 1-based, commas optional,
   // aliases resolved through the assembly (so 'chr8' works on a bare-named
-  // assembly). Without `track` the view's whole tracks area is used.
+  // assembly). Without `track` or `band` the view's whole tracks area is used.
   locus?: string
   // where in the track's height to put the anchor point: 0 = top, 1 = bottom.
   // Omit to anchor to the whole track band (what a `box` wants).

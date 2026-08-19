@@ -380,6 +380,21 @@ const HG008_BICSEQ2_LANE = {
   height: 130,
 }
 
+// The SKBR3 Sniffles translocation calls, which is the file
+// user_guides/sv_inspector_view.md tells the reader to paste into the import
+// form. Two of the figures below load it declaratively; the tour types it.
+const SKBR3_SNIFFLES_VCF =
+  'https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz'
+
+// What videos/sv.ts films: an app with no view in it, so the tour can take the
+// route the page's first sentence describes — the Add menu, the import form,
+// and the file the page names.
+export const svVideoFixtures = {
+  emptySession: sessionSpec(DEMO_CONFIG, { views: [] }),
+  callsetUrl: SKBR3_SNIFFLES_VCF,
+  assembly: 'hg19',
+}
+
 export const svSpecs: ScreenshotSpec[] = [
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
 
@@ -391,7 +406,7 @@ export const svSpecs: ScreenshotSpec[] = [
         {
           type: 'SvInspectorView',
           assembly: 'hg19',
-          uri: 'https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz',
+          uri: SKBR3_SNIFFLES_VCF,
         },
       ],
     }),
@@ -418,7 +433,7 @@ export const svSpecs: ScreenshotSpec[] = [
         {
           type: 'SvInspectorView',
           assembly: 'hg19',
-          uri: 'https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz',
+          uri: SKBR3_SNIFFLES_VCF,
         },
       ],
     }),

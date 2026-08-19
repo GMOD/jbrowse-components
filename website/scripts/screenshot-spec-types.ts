@@ -64,6 +64,20 @@ export interface ScreenshotAction {
   // scrollable alignment track that's otherwise off the right edge.
   from?: { x: number; y: number }
   to?: { x: number; y: number }
+  // for 'drag': the same two ends, resolved from the live model instead of
+  // written down — `anchor` for the one-point actions, these for the two-point
+  // one. A rubberband is the case that needs it most and had it least: both its
+  // ends were measured pixels, so a drag was correct only at the width, locus
+  // and layout it was measured against, and widening the video frame from 1280
+  // invalidated every one of them at once. Pair a `locus` with a `band` naming
+  // the strip to drag on:
+  //
+  //   fromAnchor: { locus: 'ctgA:4000', band: RUBBERBAND }
+  //   toAnchor:   { locus: 'ctgA:9000', band: RUBBERBAND }
+  //
+  // Each takes precedence over the matching `from`/`to`.
+  fromAnchor?: AnnotationAnchor
+  toAnchor?: AnnotationAnchor
   // for 'click'/'rightclick'/'hover': resolve the point to act on from the live
   // model instead of writing it down — the case `from` existed for (a canvas
   // with no element per feature) where the app can still say where it drew

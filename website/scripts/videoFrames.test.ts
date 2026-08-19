@@ -20,7 +20,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { videoFrames } from '../src/lib/liveLinks.generated.ts'
+import { videoCaptioned, videoFrames } from '../src/lib/liveLinks.generated.ts'
 
 const manifest = readFileSync(
   join(__dirname, '..', 'media.lock'),
@@ -52,4 +52,22 @@ test('the manifest names no clip the site cannot size', () => {
   expect(
     [...posterSizes.keys()].filter(name => !(name in videoFrames)),
   ).toEqual([])
+})
+
+/**
+ * The other half of the same drift, one file over. `videoCaptioned` is derived
+ * from the SPECS — a tour whose steps say something — while the `.vtt` only
+ * exists once that tour has been filmed since captions landed. So a spec that
+ * grows its first `say` and is not re-filmed puts a <track> on the page whose
+ * src 404s, and a 404 track leaves the caption control on with nothing behind
+ * it rather than throwing anything.
+ */
+const captionTracks = new Set(
+  manifest.flatMap(
+    line => /^website\/static\/media\/(.+)\.vtt /.exec(line)?.[1] ?? [],
+  ),
+)
+
+test('every tour the site captions has a track in the store', () => {
+  expect(videoCaptioned.filter(name => !captionTracks.has(name))).toEqual([])
 })

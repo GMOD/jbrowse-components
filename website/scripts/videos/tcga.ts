@@ -21,7 +21,6 @@ export const tcgaVideos: VideoSpec[] = [
     description:
       "Sorting a TCGA-BRCA copy-number stack by profile: 1104 tumors in barcode order, the track menu's Clustering item, and the bands that come back",
     url: tcgaVideoFixtures.unclusteredErbb2,
-    viewportWidth: 1280,
     // 906px of app at the first frame, the last and its tallest, per the run's
     // own content report, which is the whole clip: nothing here grows the app the
     // way a launch does, because a re-layout reorders the rows it already has.
@@ -85,7 +84,6 @@ export const tcgaVideos: VideoSpec[] = [
     description:
       'Reshaping a gene to its exons: right-click CDH1 in the gene lane, Collapse introns, and the 979-tumor matrix redrawn over the coding sequence',
     url: tcgaMutationVideoFixtures.cdh1WholeTranscript,
-    viewportWidth: 1280,
     // 779px of app at every frame the run measured — `Replace current view`
     // reshapes in place rather than adding a view, so nothing here grows the way
     // a launch does — and the frame is 60px taller than that ON PURPOSE. The

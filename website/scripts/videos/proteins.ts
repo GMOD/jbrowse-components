@@ -35,8 +35,8 @@ export const proteinVideos: VideoSpec[] = [
     description:
       'From a gene to its AlphaFold structure on genomes.jbrowse.org: the right-click launcher, the dialog resolving a UniProt entry, and the connected view answering a hover with a residue',
     url: `${RELEASED_CODE_BASE}${proteinTourFixtures.session}`,
-    viewportWidth: 1280,
-    // Provisional: sized from the run's own content report on the first film.
+    // The run reports 383px of app before the launch and 1397px after, so the
+    // frame is the second state and the first carries page background under it.
     viewportHeight: 1400,
     readyTimeout: 120000,
     // Long, because the readiness stack cannot see this app. Every display-level
@@ -47,10 +47,16 @@ export const proteinVideos: VideoSpec[] = [
     // failed on the launcher that never appeared.
     settleMs: 12000,
     steps: [
-      // What the settle above cannot assert, asserted: no lane still says it is
-      // loading. Cheap when it is already true, and when it is not, the run
-      // fails here rather than on a right-click that lands in empty canvas.
-      { type: 'waitForText', text: 'Loading', hidden: true, timeout: 90000 },
+      // What the settle above cannot assert, asserted POSITIVELY: the gene the
+      // tour right-clicks has drawn its label. It used to wait for no lane to
+      // say "Loading" anywhere, and an absence is the wrong shape of gate here
+      // twice over — it is equally true of an app that has not started, and it
+      // is answerable by any lane at all. The released build now leaves a
+      // "Loading" span in each of the RefSeq display's blocks after the genes
+      // have drawn (three of them, one per block, measured), so the gate could
+      // never come true again and the tour failed on it every run while the
+      // frame behind it was fine.
+      { type: 'waitForText', text: 'TP53', timeout: 90000 },
       {
         type: 'rightclick',
         anchor: {
@@ -167,12 +173,13 @@ export const proteinVideos: VideoSpec[] = [
     description:
       'A gene symbol to three connected views on the JBrowseMSA Gene Explorer: pick TP53, open the session it builds, and hover the collapsed coding exons to walk one residue through the alignment and the structure',
     url: geneExplorerTourFixtures.url,
-    viewportWidth: 1280,
-    // Sized to the SESSION, which is three stacked views: the run reports the
-    // launcher page at 689px and the session at 1755px. So the clip opens with
-    // page background under a short page, which is the same trade every launch
-    // tour here makes and the same way round — a frame sized to the launcher
-    // would cut the structure the launcher exists to produce.
+    // Sized to the SESSION, which is three stacked views: the run reports 1759px
+    // at the last frame. It reports 0 at the first, and that is the measurement
+    // working rather than failing — the content report reads JBrowse view
+    // containers, and the tour opens on the Gene Explorer's own page, which has
+    // none. So the clip opens with page background under a short page, the same
+    // trade every launch tour here makes and the same way round: a frame sized
+    // to the launcher would cut the structure the launcher exists to produce.
     viewportHeight: 1790,
     readySelector: geneExplorerTourFixtures.geneInput,
     settleMs: 4000,
@@ -245,7 +252,6 @@ export const proteinVideos: VideoSpec[] = [
     description:
       "The gene menu to a linear genome view whose genome is a protein: the launch dialog's split button, the 1D view arriving with none of its tracks on, and four of them turned on in residue coordinates",
     url: proteinLaunchFixtures.session,
-    viewportWidth: 1280,
     // the two views and the drawer open beside them
     viewportHeight: 1046,
     // the UCSC hub config is ~570 tracks and pulls four remote plugins

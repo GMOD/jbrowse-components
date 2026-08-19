@@ -24,7 +24,6 @@ export const qtlVideos: VideoSpec[] = [
     description:
       "Sorting the BXD haplotype painting by genotype at the Tyrp1 peak: the recombinant mosaic 198 strains load in, the painting's own right-click menu, and the B/D split the peak is a statement about",
     url: unsorted,
-    viewportWidth: 1280,
     // Nothing here adds a view or opens a drawer and the painting is a fixed
     // 420, so the app's height does not move across the tour; the figure beside
     // it captures the same two lanes at 840.

@@ -482,7 +482,10 @@ export const videoLiveRefs: Record<string, string> = {
   "tcga/mutations_collapse_introns": "?config=https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22tcga_brca_mutations%22%2C%22name%22%3A%22TCGA-BRCA%20somatic%20mutations%20(979%20primary%20tumors)%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22TBI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz.tbi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22samplesTsvLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_clinical.tsv%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearMultiSampleVariantMatrixDisplay%22%2C%22height%22%3A450%2C%22lineZoneHeight%22%3A130%2C%22featureColor%22%3A%22jexl%3AimpactColor(feature)%22%2C%22groupBy%22%3A%22histology%22%2C%22colorBy%22%3A%22histology%22%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%2216%3A68%2C730%2C000-68%2C842%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22MANE.GRCh38.v1.4.refseq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A84%7D%2C%7B%22trackId%22%3A%22tcga_brca_mutations%22%2C%22type%22%3A%22LinearMultiSampleVariantMatrixDisplay%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "qtl/painting_sort": "?config=test_data/config_bxd.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22mm10%22%2C%22loc%22%3A%22chr4%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22bxd_gwas_coatcolor_mm10%22%2C%22type%22%3A%22LinearManhattanDisplay%22%2C%22height%22%3A140%7D%2C%7B%22trackId%22%3A%22bxd_chromosome_painting_mm10%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22height%22%3A420%2C%22forceLoad%22%3Atrue%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "methylation/group_by_hp": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr15%3A24%2C948%2C000-24%2C962%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22cpgisland_ucsc_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22HG002_snrpn_5mC_reads%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22height%22%3A320%2C%22forceLoad%22%3Atrue%2C%22colorBy%22%3A%7B%22type%22%3A%22modifications%22%2C%22modifications%22%3A%7B%22fillUnmarked%22%3Atrue%7D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "synteny/three_strain_import": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fhpylori%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22views%22%3A%5B%7B%7D%2C%7B%7D%5D%7D%5D%7D&sessionName=Screenshot"
+  "synteny/three_strain_import": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fhpylori%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22views%22%3A%5B%7B%7D%2C%7B%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "sv/inspector_route": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
+  "ui/bookmark_region": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr10%3A89%2C613%2C000-89%2C740%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "ui/open_track_url": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes%22%5D%7D%5D%7D&sessionName=Screenshot"
 }
 
 // Each tour's pixel size, which is its capture viewport: the encode preserves
@@ -495,59 +498,95 @@ export const videoFrames: Record<
   { width: number; height: number }
 > = {
   "pangenome/pggb_subgraph_launch": {
-    "width": 1280,
+    "width": 1920,
     "height": 1060
   },
   "pangenome/pggb_layout_switch": {
-    "width": 1280,
+    "width": 1920,
     "height": 1250
   },
   "pangenome/hprc_end_to_end": {
-    "width": 1280,
+    "width": 1920,
     "height": 1120
   },
   "pangenome/pggb_out_to_strain": {
-    "width": 1280,
+    "width": 1920,
     "height": 1000
   },
   "pangenome/hprc_cluster_callset": {
-    "width": 1280,
+    "width": 1920,
     "height": 750
   },
   "proteins/genomes_protein_launch": {
-    "width": 1280,
+    "width": 1920,
     "height": 1400
   },
   "proteins/gene_explorer": {
-    "width": 1280,
+    "width": 1920,
     "height": 1790
   },
   "proteins/annotation_1d": {
-    "width": 1280,
+    "width": 1920,
     "height": 1046
   },
   "dog10k/igf1_cluster_route": {
-    "width": 1280,
+    "width": 1920,
     "height": 960
   },
   "tcga/cohort_cnv_clustering": {
-    "width": 1280,
+    "width": 1920,
     "height": 910
   },
   "tcga/mutations_collapse_introns": {
-    "width": 1280,
+    "width": 1920,
     "height": 840
   },
   "qtl/painting_sort": {
-    "width": 1280,
+    "width": 1920,
     "height": 850
   },
   "methylation/group_by_hp": {
-    "width": 1280,
+    "width": 1920,
     "height": 740
   },
   "synteny/three_strain_import": {
-    "width": 1280,
+    "width": 1920,
     "height": 600
+  },
+  "sv/inspector_route": {
+    "width": 1920,
+    "height": 640
+  },
+  "ui/bookmark_region": {
+    "width": 1920,
+    "height": 360
+  },
+  "ui/open_track_url": {
+    "width": 1920,
+    "height": 500
   }
 }
+
+// The tours whose steps say something, which are the ones generate-video writes
+// a `.vtt` beside. remark-video hangs a <track> off the clip for these and off
+// nothing else, so a tour that names none of its steps does not ship a caption
+// element pointing at a file the store has never held.
+export const videoCaptioned: string[] = [
+  "dog10k/igf1_cluster_route",
+  "methylation/group_by_hp",
+  "pangenome/hprc_cluster_callset",
+  "pangenome/hprc_end_to_end",
+  "pangenome/pggb_layout_switch",
+  "pangenome/pggb_out_to_strain",
+  "pangenome/pggb_subgraph_launch",
+  "proteins/annotation_1d",
+  "proteins/gene_explorer",
+  "proteins/genomes_protein_launch",
+  "qtl/painting_sort",
+  "sv/inspector_route",
+  "synteny/three_strain_import",
+  "tcga/cohort_cnv_clustering",
+  "tcga/mutations_collapse_introns",
+  "ui/bookmark_region",
+  "ui/open_track_url"
+]

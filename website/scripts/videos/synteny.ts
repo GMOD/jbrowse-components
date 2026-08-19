@@ -35,8 +35,7 @@ export const syntenyVideos: VideoSpec[] = [
     description:
       'Building the three-strain H. pylori stack from the import form: Manual, one genome per row, Add row for the third, each connector resolving its own alignment, and Launch',
     url: emptySyntenyForm,
-    viewportWidth: 1280,
-    // One frame serves both states, and the run reports the app at 350 on the
+    // One frame serves both states, and the run reports the app at 301 on the
     // opening form and 572 once the stack is standing, so this is the taller of
     // the two with a little margin.
     viewportHeight: 600,

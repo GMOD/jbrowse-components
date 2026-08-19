@@ -25,21 +25,22 @@ import type {
 // Repo-relative, and the only definition of "is this a media file".
 //
 // MEDIA rather than VIDEO, and the corpus already shows why: every clip ships
-// with a poster frame, which is an image. What the boundary is really about is
-// "a big binary the docs embed, kept out of git", and a caption track is the
-// next thing on the other side of it.
+// with a poster frame, which is an image, and a caption track, which is text.
+// What the boundary is really about is "a file the docs embed that git should
+// not carry".
 export const mediaRoot = 'website/static/media'
-// mp4 and the poster, which is everything a clip is: generate-video.ts writes no
-// webm (it measured larger than the h264 for this content). That also keeps the
-// per-stretch `.segN.webm` captures a clip is stitched from out of the corpus,
-// which matters because --keep-segments leaves them in this directory and a
-// store that swept one up would publish a fragment as a clip.
-export const mediaExtRe = /\.(mp4|jpe?g)$/i
+// The three files a clip is: the mp4, the poster frame and the caption track.
+// No webm — generate-video.ts writes none, since VP9 measured larger than the
+// h264 for this content. That also keeps the per-stretch `.segN.webm` captures
+// a clip is stitched from out of the corpus, which matters because
+// --keep-segments leaves them in this directory and a store that swept one up
+// would publish a fragment as a clip.
+export const mediaExtRe = /\.(mp4|jpe?g|vtt)$/i
 
 export const mediaCorpus: BlobCorpus = {
   storePrefix: 'jb2-media',
   // `website/static/media/pangenome/x.mp4` -> `pangenome/x`, and the key adds
-  // the extension back: `jb2-media/pangenome/x.<hash>.mp4`. So a clip's two
+  // the extension back: `jb2-media/pangenome/x.<hash>.mp4`. So a clip's three
   // files share a name and differ in the key, which is what `--filter x` wants
   // (it selects a clip, never one of its files).
   name: p => p.replace(`${mediaRoot}/`, '').replace(mediaExtRe, ''),
@@ -47,8 +48,8 @@ export const mediaCorpus: BlobCorpus = {
 }
 
 // What a message calls a file, where `name` is what a filter and a key use: a
-// clip's two files share a name, so a status line printed with it lists the same
-// clip twice and says nothing about which file is missing.
+// clip's three files share a name, so a status line printed with it lists the
+// same clip three times and says nothing about which file is missing.
 export const shortName = (p: string) => p.replace(`${mediaRoot}/`, '')
 
 export const manifestPath = join(repoRoot, 'website', 'media.lock')
@@ -61,6 +62,9 @@ export const contentTypes: Record<string, string> = {
   '.mp4': 'video/mp4',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
+  // charset stated: a <track> served as text/vtt with no charset is decoded by
+  // the browser's fallback, and these carry the app's own labels
+  '.vtt': 'text/vtt; charset=utf-8',
 }
 
 export const MANIFEST_HEADER = `\
@@ -68,10 +72,10 @@ export const MANIFEST_HEADER = `\
 # website/scripts/media.ts for why, including what the docs deploy would
 # otherwise delete.
 #
-# One line per file, sorted by path. A clip is two of them: the mp4 and its
-# poster frame. \`pnpm figures\` drives this store beside the figure one, and
-# \`pnpm build\` pulls what this file names before astro copies static/ into
-# dist/.
+# One line per file, sorted by path. A clip is three of them: the mp4, its
+# poster frame and its caption track. \`pnpm figures\` drives this store beside
+# the figure one, and \`pnpm build\` pulls what this file names before astro
+# copies static/ into dist/.
 #
 # <path> <width>x<height> <bytes> <sha256>
 `

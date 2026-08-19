@@ -102,7 +102,6 @@ export const pangenomeVideos: VideoSpec[] = [
     description:
       'Cutting a graph out of a locus: the pggb segments track, its launch menu, and the subgraph that comes back',
     url: pggbLinearOnly,
-    viewportWidth: 1280,
     // Sized to the state the tour ENDS in, which is the linear view plus the
     // graph pane the launch adds: the run reports 365px of app at the first
     // frame and 1053px at the last, and a video has one frame for both. The
@@ -151,7 +150,6 @@ export const pangenomeVideos: VideoSpec[] = [
       window: rowsWindow,
       mafLane: true,
     }),
-    viewportWidth: 1280,
     // Sized to the FORCE drawing, which is the tour's tallest state and not one
     // of its ends: the run reports 802px of app in sample rows at both the first
     // frame and the last, and 1242px in between. A frame sized to either end
@@ -204,7 +202,6 @@ export const pangenomeVideos: VideoSpec[] = [
     description:
       "HPRC release 2's graph from a pasted track config to an allele read off the drawing: paste, navigate, cut a subgraph, anchor it, and take one node back to its GRCh38 interval",
     url: hprcTourSession(),
-    viewportWidth: 1280,
     // Sized to the FORCE drawing, which is the tour's tallest state and neither
     // of its ends. The run reports 276px of app at the first frame (one gene
     // lane), 1103px at its tallest, and 723px at the last, because the anchored
@@ -352,7 +349,6 @@ export const pangenomeVideos: VideoSpec[] = [
     description:
       "A CFT073 allele opened on CFT073's own coordinates: right-click the node, take its Open in entry, and read the deletion from the donor's side",
     url: pggbGraphOnly,
-    viewportWidth: 1280,
     // Sized to the state the tour ENDS in: the graph pane plus the linear view
     // the launch adds under it. The run reports 736px of app at the first frame
     // and 994px at the last, so the opening state carries page background under
@@ -399,7 +395,6 @@ export const pangenomeVideos: VideoSpec[] = [
     description:
       "HPRC's 464 haplotypes clustered by genotype from the track menu, so the carriers of the MHC class II deletion gather into one block",
     url: hprcClusterFixtures.session,
-    viewportWidth: 1280,
     // The lane is a fixed 340 px and clustering adds a dendrogram beside it
     // rather than under it, so this tour is the rare one whose app height does
     // not move: the run reports 739px at the first frame, the last and its

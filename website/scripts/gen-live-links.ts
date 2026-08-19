@@ -45,6 +45,14 @@ const videoFrames = Object.fromEntries(
   videoSpecs.map(spec => [spec.name, videoFrame(spec)] as const),
 )
 
+// Read off the spec rather than off the disk, for the reason the whole file is
+// generated: a checkout that has not pulled the media corpus would answer "no
+// captions anywhere" and the site would build without a single track element.
+const videoCaptioned = videoSpecs
+  .filter(spec => spec.steps.some(step => step.say))
+  .map(spec => spec.name)
+  .sort()
+
 const outFile = join(
   dirname(fileURLToPath(import.meta.url)),
   '../src/lib/liveLinks.generated.ts',
@@ -79,6 +87,12 @@ export const videoFrames: Record<
   string,
   { width: number; height: number }
 > = ${JSON.stringify(videoFrames, null, 2)}
+
+// The tours whose steps say something, which are the ones generate-video writes
+// a \`.vtt\` beside. remark-video hangs a <track> off the clip for these and off
+// nothing else, so a tour that names none of its steps does not ship a caption
+// element pointing at a file the store has never held.
+export const videoCaptioned: string[] = ${JSON.stringify(videoCaptioned, null, 2)}
 `
 
 checkOrWrite({

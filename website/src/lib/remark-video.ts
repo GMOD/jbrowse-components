@@ -2,7 +2,11 @@ import { visit } from 'unist-util-visit'
 
 import { liveHref } from './code-base.ts'
 import { escapeAttr, escapeHtml, parseAttrs } from './inline-html.ts'
-import { videoFrames, videoLiveRefs } from './liveLinks.generated.ts'
+import {
+  videoCaptioned,
+  videoFrames,
+  videoLiveRefs,
+} from './liveLinks.generated.ts'
 
 import type { Root } from 'mdast'
 import type { Plugin } from 'unified'
@@ -29,8 +33,10 @@ import type { Plugin } from 'unified'
 //            tour with steps in it needs the controls, since a reader who missed
 //            a step has no other way back to it.
 //
-// The poster is what makes an unplayed embed a picture rather than a black
-// rectangle, so it is derived rather than left to each call site to remember.
+// The poster and the caption track are both derived from `src` rather than left
+// to each call site to remember: the poster is what makes an unplayed embed a
+// picture rather than a black rectangle, and the track is what makes the step
+// labels readable to anything but an eye.
 const videoRe = /<Video\s+([\s\S]*?)\s*\/>/g
 
 // `/media/pangenome/x.mp4` -> the spec named `pangenome/x`.
@@ -57,6 +63,15 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
     // this content rather than smaller.
     const sources = `<source src="${mp4}" type="video/mp4"/>`
     const name = specNameOf(rawSrc) ?? ''
+    // The step labels the tour draws into its own frames, as text. Burned-in
+    // words are invisible to a screen reader and to search, so the same strings
+    // ship again as a track — generate-video.ts writes the `.vtt` beside the
+    // mp4 and the store carries it. Emitted only for the tours that have one,
+    // since a <track> whose src 404s leaves the control on with nothing behind
+    // it.
+    const captions = videoCaptioned.includes(name)
+      ? `<track kind="captions" srclang="en" label="Steps" default src="${withBase(rawSrc.replace(/\.mp4$/, '.vtt'))}"/>`
+      : ''
     // The tour's own frame, so the box is the right shape from the first paint.
     // Without it a <video> is 300x150 until its metadata arrives and then jumps
     // to the column width, which on these clips is most of a screen of reflow —
@@ -66,7 +81,7 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
     const video =
       `<video${flags}${size} preload="metadata" poster="${poster}" ` +
       `aria-label="${escapeAttr(attrs.caption ?? '')}" ` +
-      `style="max-width:100%;height:auto">${sources}</video>`
+      `style="max-width:100%;height:auto">${sources}${captions}</video>`
     const ref = videoLiveRefs[name]
     const live = ref === undefined ? undefined : liveHref(ref)
     // Where the video STARTS, which for one that shows something being added is

@@ -57,15 +57,19 @@ the tour was filmed in.
   spec nothing embeds is filmed and served with nothing playing it, and an embed
   whose spec was renamed keeps playing while silently losing the live session
   link. `pnpm video` runs the spec half before it films.
+- **Width is not a per-tour decision, so a spec states only its height.**
+  `VIDEO_FRAME_DEFAULTS` is a full-screen browser on a 1080p display, which is
+  the window a reader has open; the corpus was filmed at 1280 until 2026-08-19,
+  which laid every linear view out in a column narrower than anyone runs.
 - **A viewport is even on both sides.** The scale filter's `-2` rounds an odd
   height up, so the spec's frame is a pixel off the clip every reader plays
   (`annotation_1d` said 1045 and shipped 1046) — and an odd WIDTH fails the
-  encode outright, after the filming. Even and at or under 1600 makes the
-  finished clip exactly the viewport, which is what the embed reserves its box
-  from: `videoFrames` in `liveLinks.generated.ts`, checked against the published
-  posters by `videoFrames.test.ts`. **So a re-frame needs `pnpm autogen`**, or
-  the page holds a box the wrong shape and the browser letterboxes the clip
-  inside it.
+  encode outright, after the filming. Even and at or under `VIDEO_OUTPUT_WIDTH`
+  makes the finished clip exactly the viewport, which is what the embed reserves
+  its box from: `videoFrames` in `liveLinks.generated.ts`, checked against the
+  published posters by `videoFrames.test.ts`. **So a re-frame needs
+  `pnpm autogen`**, or the page holds a box the wrong shape and the browser
+  letterboxes the clip inside it.
 - **A `<Video>` tag is one line, alone in its block, with a blank line under
   it.** A tag that wraps is not an html block, because its first line is not a
   whole tag: markdown reads it as a paragraph instead and the figure lands
@@ -83,11 +87,29 @@ the tour was filmed in.
   `pnpm build` pulls through `figures:pull` **because `rclone sync` deletes**
   what dist/ does not carry. `pnpm figures:push` publishes it beside the
   figures; push before committing a `<Video>` or the embed 404s, and
-  `check-figure-refs` is the gate. The store is media rather than video because
-  a clip already ships a poster, and a caption track is next.
+  `check-figure-refs` is the gate. A clip is three files there — the mp4, the
+  poster and the caption track — sharing one name, so `--filter` selects a clip
+  rather than one of its files.
 - **Size the viewport from the run's own content report**, which names the app's
   height at the first frame, the last and its tallest in between. A tour grows
-  the app and one frame has to serve every state.
+  the app and one frame has to serve every state. The end-of-run summary
+  (`video-report.ts`) collects that per tour and calls out the two directions —
+  `CONTENT TALLER THAN THE FRAME` and `PAGE BACKGROUND UNDER THE APP` — beside
+  `DISPLAYS NOT PAINTED AT THE LAST FRAME` (a poster of a blank track) and
+  `STEPS FILMED WHILE NOTHING HAPPENED` (a wait that wants `cut: true`). None of
+  them fails the run; a clip nothing diffs is one where a run is the only place
+  a mistake is visible at all.
+- **A step's `say` is a caption track, not just a chip.** `video-captions.ts`
+  times the lines onto the clip and writes a `.vtt` beside the mp4;
+  `videoCaptioned` in `liveLinks.generated.ts` is what makes remark-video hang a
+  `<track>` off the clip, and `videoFrames.test.ts` fails if a tour the site
+  captions has no track in `media.lock`. So **a tour that grows its first `say`
+  has to be re-filmed**, or the page carries a track whose src 404s.
+- **A rubberband names loci, not pixels.** `fromAnchor`/`toAnchor` on a `drag`
+  resolve through the same model the click anchors use, with `band` naming the
+  strip to take the y from (`rubberband_controls` for the scalebar). A measured
+  `from: {x, y}` is correct only at the width it was measured at, which is
+  exactly what a re-frame invalidates.
 - **`cut` on a step takes the camera off for its wait.** Put it on the wait, not
   on the click that starts it, or the click is off camera too. It is also how a
   paste is filmed: `type` sends a config a keystroke at a time, and cutting it

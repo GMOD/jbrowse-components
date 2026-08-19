@@ -25,8 +25,10 @@ import { methylationVideos } from './videos/methylation.ts'
 import { pangenomeVideos } from './videos/pangenome.ts'
 import { proteinVideos } from './videos/proteins.ts'
 import { qtlVideos } from './videos/qtl.ts'
+import { svVideos } from './videos/sv.ts'
 import { syntenyVideos } from './videos/synteny.ts'
 import { tcgaVideos } from './videos/tcga.ts'
+import { uiVideos } from './videos/ui.ts'
 
 import type { VideoSpec } from './video-spec-types.ts'
 
@@ -40,6 +42,8 @@ export const videoSpecs: VideoSpec[] = [
   ...qtlVideos,
   ...methylationVideos,
   ...syntenyVideos,
+  ...svVideos,
+  ...uiVideos,
 ]
 
 // The track configs a tour TYPES into the app, paired with the page that prints

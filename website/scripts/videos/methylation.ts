@@ -26,7 +26,6 @@ export const methylationVideos: VideoSpec[] = [
     description:
       'Splitting the SNRPN pileup by haplotype: the track menu, the tag dialog scanning the reads for HP, and the interleaved mix resolving into one methylated band and one unmethylated',
     url: ungrouped,
-    viewportWidth: 1280,
     // The grouped pileup stacks into three sections inside the track's own 320,
     // so the app's height does not move across the tour. 740 rather than the
     // figures' 730: those are captured at the content height and this is a fixed

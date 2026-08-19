@@ -12,6 +12,8 @@
 //   <name>.mp4   h264, what the docs <Video> plays
 //   <name>.jpg   the poster frame, so the embed is a picture before it is a play
 //                button
+//   <name>.vtt   the `say` lines, timed onto the clip (video-captions.ts), so
+//                the route a tour takes is text as well as motion
 //
 // No webm, and it was measured rather than assumed: VP9 is usually the smaller
 // codec for screen content, and at matched quality on these tours it came out
@@ -22,6 +24,12 @@
 // The bytes are gitignored and live in the media store (scripts/media-store.ts),
 // the same arrangement the figures use and for the same reason: a screencast is
 // an undeltifiable blob that git would keep forever.
+//
+// WHAT THE RUN SAYS AT THE END is video-report.ts: the frame each tour was
+// filmed in against the height the app actually reached, the displays that had
+// not painted by the last frame, and the steps the camera sat through while
+// nothing moved. Nothing diffs a clip, so a run is the only place any of that is
+// visible.
 //
 // TWO THINGS THIS DOES THAT A SCREENSHOT RUN DOES NOT, both because a film is
 // watched rather than glanced at:
@@ -47,12 +55,17 @@ import { parseArgs } from 'node:util'
 
 import { delay } from '@jbrowse/browser-test-utils'
 
-import { actionTargetPoint, runAction } from './actions.ts'
+import { actionTargetPoint, dragPoints, runAction } from './actions.ts'
 import { withHarness } from './dev-harness.ts'
 import { matchesFilterTokens, parseFilterTokens } from './filter-tokens.ts'
 import { debugDump } from './screenshot-asserts.ts'
-import { trustCapturePlugins } from './screenshot-page.ts'
+import {
+  describeNetwork,
+  trackNetwork,
+  trustCapturePlugins,
+} from './screenshot-page.ts'
 import { pinRenderer, waitForReady } from './screenshot-ready.ts'
+import { captionTrack, writeVtt } from './video-captions.ts'
 import {
   injectOverlay,
   clickPulse,
@@ -62,6 +75,11 @@ import {
   scrollPage,
   setCaption,
 } from './video-overlay.ts'
+import {
+  printVideoSummary,
+  recordFilmed,
+  unpaintedDisplays,
+} from './video-report.ts'
 import {
   VIDEO_OUTPUT_WIDTH,
   validateVideoSpecs,
@@ -131,6 +149,22 @@ const HOLD_MS = 900
 // a menu item teleport into a graph.
 const PRE_CUT_MS = 1200
 const TAIL_MS = 2500
+// Past this, a step the camera stayed on is a stretch of spinner in the finished
+// clip. Reported rather than cut automatically: which waits are worth watching
+// is the spec's call, and a slow render the tour is ABOUT would be the one thing
+// an automatic cut removed.
+const SLOW_STEP_MS = 6000
+
+// A step, in whatever it gave the report to point at. `say` first because it is
+// the line the reader saw while the step was on screen.
+function describeStep(step: VideoStep) {
+  return (
+    step.say ??
+    step.selector ??
+    step.text ??
+    (step.type === 'delay' ? `delay ${step.ms}ms` : step.type)
+  )
+}
 
 // The actions with somewhere on screen to be, which are the ones the drawn
 // cursor travels to. A wait or a keypress has no target and must not move it:
@@ -154,15 +188,24 @@ const UNHELD = new Set(['delay', 'waitForText', 'waitForSelector'])
 function camera(currentPage: () => Page, stem: string) {
   const segments: string[] = []
   let recorder: Awaited<ReturnType<Page['screencast']>> | undefined
+  // ms the camera has been on, across every segment so far. The clip's own
+  // clock: a cut costs the run wall time and the clip nothing, so this is what
+  // a caption cue has to be timed against (video-captions.ts).
+  let filmedMs = 0
+  let openedAt = 0
   return {
     get recording() {
       return recorder !== undefined
+    },
+    get filmed() {
+      return filmedMs + (recorder ? Date.now() - openedAt : 0)
     },
     segments,
     async start() {
       const file: `${string}.webm` = `${stem}.seg${segments.length}.webm`
       segments.push(file)
       recorder = await currentPage().screencast({ path: file, fps: FPS })
+      openedAt = Date.now()
     },
     async stop() {
       const active = recorder
@@ -170,6 +213,7 @@ function camera(currentPage: () => Page, stem: string) {
       if (!active) {
         return
       }
+      filmedMs += Date.now() - openedAt
       const outcome = await Promise.race([
         active
           .stop()
@@ -191,18 +235,26 @@ function camera(currentPage: () => Page, stem: string) {
 // the motion
 // ---------------------------------------------------------------------------
 
-async function filmStep(page: Page, step: VideoStep) {
+async function filmStep(
+  page: Page,
+  step: VideoStep,
+  captions: { say: (text: string, elapsed: number) => void },
+  elapsed: () => number,
+) {
   if (step.say !== undefined) {
     await setCaption(page, step.say)
+    captions.say(step.say, elapsed())
   }
   if (step.scrollTo !== undefined) {
     await scrollPage(page, step.scrollTo)
   }
-  if (step.type === 'drag' && step.from && step.to) {
+  if (step.type === 'drag') {
     // filmed rather than delegated: runAction's stepped move finishes instantly,
     // so a drawn cursor gliding after it would trail the rubberband it is
-    // supposed to be drawing
-    await dragCursor(page, step.from, step.to)
+    // supposed to be drawing. Both ends come from the same resolver the drag
+    // itself uses, so an anchored rubberband is drawn where it is dragged.
+    const { from, to } = await dragPoints(page, step)
+    await dragCursor(page, from, to)
   } else {
     if (POINTED.has(step.type)) {
       const point = await actionTargetPoint(page, step)
@@ -245,7 +297,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
   // app (a launch adds a whole view), so one viewport has to serve both states
   // and neither number is guessable from the spec: too short clips the graph the
   // tour was filmed for, too tall is a frame of page background. Reported rather
-  // than asserted, because which way to trade is the author's.
+  // than asserted (video-report.ts), because which way to trade is the author's.
   //
   // Off the view containers, never `documentElement.scrollHeight`: the app fills
   // the window and absorbs its own overflow in inner scroll containers, so the
@@ -270,11 +322,22 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
   // reports the frame as roomy while the state the tour was filmed for is cut
   // off the bottom.
   let tallest = openedAt
+  // Steps the camera stayed on for while the app was busy, which is what a
+  // reader watches as a spinner. Named by what the step says or looks for, so
+  // the report points at a line of the spec rather than at an index.
+  const slowSteps: [string, number][] = []
+  const captions = captionTrack()
+  const filmedMs = () => cam.filmed
   await injectOverlay(stage)
   await moveCursor(stage, width / 2, 90)
   await delay(500)
   try {
     for (const step of spec.steps) {
+      // ON-CAMERA ms, not wall clock. A step that takes the camera off — a
+      // `cut`, an `opensTab` — spends most of its wall time off it, and
+      // measuring that reported the tab handoff as six seconds of spinner the
+      // reader never sees.
+      const startedAt = cam.filmed
       if (step.cut) {
         if (cam.recording) {
           // the click that started this wait is still the last thing on screen;
@@ -288,7 +351,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       // Armed before the click, since chrome can hand the target over before
       // the click's own promise settles.
       const tab = step.opensTab ? pendingTab(stage) : undefined
-      await filmStep(stage, step)
+      await filmStep(stage, step, captions, filmedMs)
       if (tab) {
         // The new tab loads off camera, the way a `cut` step's wait does: what
         // it opens with is a blank tab and then an app booting, and the reader
@@ -305,12 +368,17 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
         await injectOverlay(stage)
         await moveCursor(stage, width / 2, 90)
       }
+      const took = cam.filmed - startedAt
+      if (!step.cut && took > SLOW_STEP_MS) {
+        slowSteps.push([describeStep(step), took])
+      }
       tallest = Math.max(tallest, await contentHeight())
     }
     if (!cam.recording) {
       await cam.start()
     }
     await setCaption(stage, '')
+    captions.say('', filmedMs())
     await parkCursor(stage, height)
     await delay(spec.tailMs ?? TAIL_MS)
     const endedAt = await contentHeight()
@@ -318,6 +386,20 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       `  content ${openedAt}px at the first frame, ${endedAt}px at the last, ` +
         `${tallest}px at its tallest, in a ${height}px frame`,
     )
+    return {
+      segments: cam.segments,
+      // The tail is filmed after the last line comes down, so the on-camera
+      // total is read here rather than at the last cue: it is the denominator
+      // the cues are scaled onto the clip with.
+      cues: captions.end(filmedMs()),
+      filmedMs: cam.filmed,
+      content: { first: openedAt, last: endedAt, tallest },
+      // Read here rather than after the encode: the tail is the last thing on
+      // camera and the frame the poster comes from, and by the time ffmpeg has
+      // run the page is closed.
+      unpainted: await unpaintedDisplays(stage),
+      slowSteps,
+    }
   } catch (err) {
     // The frame the tour died on, which for a step that could not find its
     // target is the whole diagnosis: a menu that opened somewhere else, an item
@@ -327,7 +409,6 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
   } finally {
     await cam.stop()
   }
-  return cam.segments
 }
 
 // ---------------------------------------------------------------------------
@@ -425,10 +506,15 @@ function encode(segments: string[], stem: string) {
 // exits non-zero, and the run fails there — after the filming, throwing away a
 // clip that was already encoded. Which is a spec edit away at all times, since
 // the number is seconds into a clip whose length no one knows until it exists.
-function poster(mp4: string, stem: string, at: number, duration: number) {
+function poster(mp4: string, stem: string, spec: VideoSpec, duration: number) {
   const jpg = `${stem}.jpg`
+  const at = spec.posterAt ?? duration
   const last = Math.max(0, duration - 0.2)
-  if (at > last) {
+  // Only when the SPEC named the second. The default is the clip's own
+  // duration, which is past `last` by construction, so reporting the clamp
+  // unconditionally printed a stale-posterAt warning under every tour that had
+  // never set one — which was all but two, and made the line say nothing.
+  if (spec.posterAt !== undefined && at > last) {
     log(
       `  posterAt ${at}s is past the ${duration.toFixed(1)}s clip; using ${last.toFixed(1)}s`,
     )
@@ -477,7 +563,10 @@ async function main() {
     : videoSpecs
   if (values.list) {
     for (const spec of videoSpecs) {
-      console.log(`${spec.name}\n    ${spec.description}`)
+      const { width, height } = videoFrame(spec)
+      console.log(
+        `${spec.name}  ${width}×${height}, ${spec.steps.length} steps\n    ${spec.description}`,
+      )
     }
     return
   }
@@ -502,6 +591,12 @@ async function main() {
         page.on('pageerror', (err: unknown) => {
           log(`PAGE ERROR: ${err instanceof Error ? err.message : String(err)}`)
         })
+        // A tour reaches further out than a figure does — a launcher on another
+        // site, a tabix index on a public host — and every one of its waits
+        // fails the same way, as a selector that never turned up. What the
+        // network was doing at that moment is the difference between a spec to
+        // fix and a host that is down.
+        const net = trackNetwork(page)
         let segments: string[] = []
         try {
           await page.setViewport({
@@ -534,18 +629,39 @@ async function main() {
             settleMs: spec.settleMs,
           })
           log(`${spec.name}: filming`)
-          segments = await film(page, spec, stem)
+          const filmed = await film(page, spec, stem)
+          segments = filmed.segments
           const { mp4, duration } = encode(segments, stem)
-          const jpg = poster(mp4, stem, spec.posterAt ?? duration, duration)
+          const jpg = poster(mp4, stem, spec, duration)
+          // The lines the tour said, onto the clip's own clock. Scaled by what
+          // the encode actually produced over what the run counted on camera —
+          // the two are the same measurement of different things, and a cue
+          // past the end of the clip is a cue that never shows.
+          writeVtt(
+            `${stem}.vtt`,
+            filmed.cues,
+            filmed.filmedMs > 0 ? (duration * 1000) / filmed.filmedMs : 1,
+          )
           const mb = (f: string) =>
             `${(fs.statSync(f).size / 1e6).toFixed(2)} MB`
           log(
             `${spec.name}: ${duration.toFixed(1)}s ${probeSize(mp4)} ` +
-              `mp4 ${mb(mp4)}, poster ${mb(jpg)}`,
+              `mp4 ${mb(mp4)}, poster ${mb(jpg)}, ` +
+              `${filmed.cues.length} caption(s)`,
           )
+          recordFilmed({
+            name: spec.name,
+            frame: videoFrame(spec),
+            content: filmed.content,
+            unpainted: filmed.unpainted,
+            slowSteps: filmed.slowSteps,
+            seconds: duration,
+            mp4Bytes: fs.statSync(mp4).size,
+            posterBytes: fs.statSync(jpg).size,
+          })
         } catch (err: unknown) {
           failures.push(spec.name)
-          log(`${spec.name}: FAILED`)
+          log(`${spec.name}: FAILED${describeNetwork(net)}`)
           console.error(err)
         } finally {
           if (!values['keep-segments']) {
@@ -558,6 +674,7 @@ async function main() {
       }
     },
   )
+  printVideoSummary(failures)
   if (failures.length) {
     console.error(
       `\n${failures.length} video(s) failed: ${failures.join(', ')}`,

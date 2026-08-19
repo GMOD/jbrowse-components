@@ -18,6 +18,10 @@ Click and drag on the top of any LGV and select "Bookmark region."
 
 <Figure caption="Create a bookmark by clicking and dragging the top of any LGV and selecting 'Bookmark region.'" src="/img/bookmark_widget_create.png"/>
 
+The whole loop, from the drag to the trip back, runs through the view menu:
+
+<Video src="/media/ui/bookmark_region.mp4" caption="A span of PTEN selected on the scalebar and bookmarked, the widget opened from the view menu, the row named, and the view sent elsewhere on chr10 before the row's link brings it back to the bookmarked span." />
+
 ### Keyboard shortcuts
 
 - Create a bookmark: `Ctrl`/`Cmd` + `Shift` + `D`

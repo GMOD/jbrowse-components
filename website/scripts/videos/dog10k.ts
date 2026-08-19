@@ -42,7 +42,6 @@ export const dog10kVideos: VideoSpec[] = [
     description:
       'Clustering the IGF1 genotype matrix from the track menu: breed-ordered rows, the run over the differentiated core, and the order holding when the window widens',
     url: igf1Unclustered(IGF1_CORE),
-    viewportWidth: 1280,
     // The matrix is a fixed 620 px whatever the window, and the tour neither adds
     // a view nor opens a drawer, so unlike the pangenome tours above there is no
     // tallest-state-in-the-middle to size for: the run reports 945px of app at

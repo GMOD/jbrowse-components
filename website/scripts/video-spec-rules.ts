@@ -11,13 +11,22 @@
 // check-docs`, and generate-video before it films anything.
 import type { VideoSpec } from './video-spec-types.ts'
 
-// What a spec that names no viewport is filmed at.
-export const VIDEO_FRAME_DEFAULTS = { width: 1280, height: 860 }
+// What a spec that names no viewport is filmed at: a full-screen browser on a
+// 1080p display, which is the window a reader watching a genome browser has
+// open.
+//
+// Width is the half that is not a per-tour decision, so no spec states it. A
+// linear view given 1280 px lays its tracks out in a column narrower than
+// anyone runs, and the film then argues about a layout the reader will not see:
+// a locus that fits in one screen at full width wraps, a feature label that has
+// room is elided, and a synteny ribbon that reads across is a diagonal. Height
+// is a decision, because a tour grows the app and one frame serves every state.
+export const VIDEO_FRAME_DEFAULTS = { width: 1920, height: 960 }
 
 // The delivery ceiling the encode scales down to. A capture at or under it is
 // never resampled, so the frame the reader plays is the frame the spec asked
-// for.
-export const VIDEO_OUTPUT_WIDTH = 1600
+// for, and the default frame sits ON the ceiling rather than under it.
+export const VIDEO_OUTPUT_WIDTH = 1920
 
 // The finished clip's pixel size, which is the capture viewport: the encode
 // preserves the ratio and `validateVideoSpecs` refuses the two cases where it
@@ -41,6 +50,9 @@ export function videoFrame(spec: VideoSpec) {
 //   after the filming, throwing away a clip that already exists
 // - a viewport past the delivery ceiling is scaled down, so the tour is filmed
 //   at a legibility the reader never gets
+// - a drag with one end missing throws inside runAction, which is after the
+//   load, the readiness wait and every step before it — the same cost as the
+//   odd viewport, one action earlier
 // - a tour that types a config the page does not print documents a route
 //   through an app the page is not showing, and only pastedTrackConfigs pairs
 //   the two texts (check-paste-configs.ts)
@@ -80,6 +92,16 @@ export function validateVideoSpecs(
     if (width > VIDEO_OUTPUT_WIDTH) {
       problems.push(
         `${spec.name}: viewportWidth ${width} is past the ${VIDEO_OUTPUT_WIDTH}px delivery width, so the clip is scaled down from what it was framed at`,
+      )
+    }
+    const halfDrags = spec.steps.filter(
+      step =>
+        step.type === 'drag' &&
+        (!(step.from ?? step.fromAnchor) || !(step.to ?? step.toAnchor)),
+    ).length
+    if (halfDrags > 0) {
+      problems.push(
+        `${spec.name}: ${halfDrags} drag step(s) name only one of their two ends, and the other is resolved at film time — after the load, the readiness wait and every step before it`,
       )
     }
     const pastes = spec.steps.filter(

@@ -23,8 +23,12 @@ import type { Page } from 'puppeteer'
 // available to a click, so a figure's action and its callout can name the same
 // locus instead of two numbers that have to be kept in sync by hand.
 //
-// Returns undefined when the view, the track or the locus doesn't resolve, so
-// the caller fails the spec by name rather than clicking (0,0).
+// `band` names a strip inside the view — the scalebar, say — to take the y
+// from, leaving the x on the locus. It is what lets a rubberband drag name two
+// loci instead of four measured pixels.
+//
+// Returns undefined when the view, the track, the band or the locus doesn't
+// resolve, so the caller fails the spec by name rather than clicking (0,0).
 export async function locusPoint(page: Page, anchor: AnnotationAnchor) {
   const path = Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0]
   const region = parseLocus(anchor.locus ?? '')
@@ -32,6 +36,7 @@ export async function locusPoint(page: Page, anchor: AnnotationAnchor) {
     (
       viewPath: number[],
       trackId: string | undefined,
+      bandSelector: string | undefined,
       want: { refName: string; start: number; end: number },
       fracY: number,
     ) => {
@@ -55,30 +60,40 @@ export async function locusPoint(page: Page, anchor: AnnotationAnchor) {
       if (!view) {
         return undefined
       }
+      const inView = (selector: string) =>
+        document.querySelector(
+          `[data-testid="view-container-${CSS.escape(view.id)}"] ${selector}`,
+        )
       // the track's rendering container when the spec names one (a click has to
       // land in the right track), else the whole tracks area
       const el = trackId
         ? view.trackRefs?.[trackId]
-        : document.querySelector(
-            `[data-testid="view-container-${CSS.escape(view.id)}"] [data-testid="tracksContainer"]`,
-          )
+        : inView('[data-testid="tracksContainer"]')
+      // `band` moves the y only. Every strip in a linear view is laid out over
+      // the same x-range as the tracks, so a locus resolved against the tracks
+      // container is already at the right x for the scalebar above them — and
+      // resolving x against the strip too would assume its content box starts
+      // where the tracks' does, which is a second thing to be right about.
+      const bandEl = bandSelector ? inView(bandSelector) : el
       const coords = view.getHighlightCoords?.({
         ...want,
         assemblyName: view.assemblyNames?.[0],
       })
-      if (!el || !coords) {
+      if (!el || !bandEl || !coords) {
         return undefined
       }
       const r = el.getBoundingClientRect()
+      const band = bandEl.getBoundingClientRect()
       return {
         // the middle of the locus: a one-base region is a ~35px column at 31bp
         // across, and its edge is a coin flip between two bases
         x: r.left + coords.left + coords.width / 2,
-        y: r.top + fracY * r.height,
+        y: band.top + fracY * band.height,
       }
     },
     path,
     anchor.track,
+    anchor.band,
     region,
     anchor.fracY ?? 0.5,
   )

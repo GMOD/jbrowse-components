@@ -59,9 +59,36 @@ test('the default frame is even on both sides', () => {
 })
 
 test('a viewport past the delivery width', () => {
-  expect(problems([spec({ viewportWidth: 1920 })])).toMatch(
-    'past the 1600px delivery width',
+  expect(problems([spec({ viewportWidth: 2560 })])).toMatch(
+    'past the 1920px delivery width',
   )
+})
+
+test('a drag that names only one of its two ends', () => {
+  expect(
+    problems([spec({ steps: [{ type: 'drag', from: { x: 1, y: 2 } }] })]),
+  ).toMatch('names only one of its two ends')
+  expect(
+    problems([
+      spec({ steps: [{ type: 'drag', toAnchor: { locus: 'ctgA:100' } }] }),
+    ]),
+  ).toMatch('names only one of its two ends')
+})
+
+test('a drag with an end of each kind', () => {
+  expect(
+    problems([
+      spec({
+        steps: [
+          {
+            type: 'drag',
+            from: { x: 1, y: 2 },
+            toAnchor: { locus: 'ctgA:100', band: '#ruler' },
+          },
+        ],
+      }),
+    ]),
+  ).toBe('')
 })
 
 test('a spec that types a config nothing pairs to a page', () => {

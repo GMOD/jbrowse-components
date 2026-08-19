@@ -104,6 +104,8 @@ For remote files, the index is inferred automatically when the filename follows
 standard conventions (e.g. `file.bam` → `file.bam.bai`), but must be supplied
 manually for local files or non-standard names.
 
+<Video src="/media/ui/open_track_url.mp4" caption="A bigwig opened by URL against the volvox test data: the File menu item, the URL typed into the form, the name and adapter the form fills in from it, and the track drawing under the gene lane." />
+
 ### Adding many tracks at once
 
 To load a batch of tracks in one step, click **Add multiple tracks** in the "Add

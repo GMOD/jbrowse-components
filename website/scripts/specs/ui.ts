@@ -75,6 +75,39 @@ function toolbarCallout(opts: {
 // it from the column header, which carries the same `data-field`.
 const BOOKMARK_LABEL_CELL = '.MuiDataGrid-cell[data-field="label"]'
 
+// The window both bookmark figures are taken in: config_demo's hg19 over PTEN,
+// wide enough that a rubberband covers a readable part of the gene rather than
+// the whole of it.
+const PTEN_WINDOW = 'chr10:89,613,000-89,740,000'
+
+// What videos/ui.ts films. The tour ends where these stills already are, so it
+// opens on the session they were captured from rather than one written again.
+export const uiVideoFixtures = {
+  bookmarkSession: lgvSession(DEMO_CONFIG, {
+    assembly: 'hg19',
+    loc: PTEN_WINDOW,
+    tracks: ['ncbi_gff_hg19'],
+  }),
+  // The span the tour rubberbands, inside the window above.
+  bookmarkSpan: { start: 'chr10:89,620,000', end: 'chr10:89,650,000' },
+  // Somewhere else on chr10, so the return has somewhere to return from.
+  elsewhere: 'chr10:100,000,000-100,200,000',
+  // A volvox window with one gene lane in it, and a file from the same test
+  // data that the config does NOT already open, for the add-track tour: the
+  // point of that tour is a track arriving, so it has to arrive.
+  addTrackSession: lgvSession(VOLVOX, {
+    assembly: 'volvox',
+    loc: 'ctgA:1-20,000',
+    tracks: ['gff3tabix_genes'],
+  }),
+  // The hosted copy of the same file the volvox config is built from, and it
+  // has to be hosted: a relative uri in the add-track form resolves against the
+  // CONFIG's directory, so `test_data/volvox/volvox.bw` typed into it asks for
+  // that path twice over and the track arrives 404ing. A reader pastes a url
+  // anyway, which is what the section is about.
+  addTrackUrl: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox.bw',
+}
+
 // The 1000 Genomes ensemble SV callset, 3202 samples, read straight from EBI.
 // Declared twice below, once per display: `showTrack` resolves by trackId and
 // hands back the open track, so two displays of one callset means two session
@@ -1578,7 +1611,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     name: 'bookmark_widget_create',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
-      loc: 'chr10:89,613,000-89,740,000',
+      loc: PTEN_WINDOW,
       tracks: ['ncbi_gff_hg19'],
     }),
     readyText: 'NCBI RefSeq',
