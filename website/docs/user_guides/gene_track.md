@@ -41,8 +41,10 @@ the badge then reads **show fewer** and closes it again. The count sits on the
 gene because that is the only place it means anything — one gene in a window can
 be missing twenty isoforms and its neighbour one, which no single number for the
 view can say. The **Gene glyph** submenu grows a row to re-collapse every gene
-opened this way. Representative transcript carries no badge: that mode is a
-choice you made, and the chip below already names it.
+opened this way. Representative transcript puts no badge on a gene you have not
+opened: that mode is a choice you made, and the chip below already names it. A
+gene you did open keeps its badge in every mode, because the badge is the only
+way back to a collapsed one.
 
 While transcripts are being left out, the track's bottom-right corner says so
 with a chip naming the rule that did it: `Isoforms trimmed to fit` where the
