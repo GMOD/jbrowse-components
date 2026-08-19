@@ -339,10 +339,12 @@ under them read as the same greys. It is the last claim in
 [ALIGNMENTS_COLOR_PARITY.md](reference/ALIGNMENTS_COLOR_PARITY.md) resting on
 reasoning rather than observation.
 
-While there: `arcColorsMatchReads` (the getter deciding whether the arc key
-folds into the read key) has no test, because it is a model getter and the
-parity tests exercise the classifiers instead. It is still load-bearing — the
-arcs can emit `splitInversion` where a non-chain-mode read scheme does not.
+The `arcColorsMatchReads` half of this entry is done: the rule moved out of the
+model getter into `arcKeyFoldsIntoReadKey` (shared/legendUtils.ts) and
+`shared/arcKeyFold.test.ts` pins both of its halves — the twin-scheme table,
+where `orientation` and `pairOrientation` are the one pair spelled differently,
+and the categories-in-hand check, which is what refuses to fold an SA-split
+pileup's `splitInversion` onto reads that never paint it.
 
 ### Give colorNeutralRead a dark variant, or fold it into colorPairLR
 

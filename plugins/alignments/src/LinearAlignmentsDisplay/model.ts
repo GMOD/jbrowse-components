@@ -65,6 +65,7 @@ import {
   normalizeGroupBy,
 } from '../shared/groupFeatures.ts'
 import {
+  arcKeyFoldsIntoReadKey,
   getArcLegendItems,
   getReadDisplayLegendItems,
   readCategoryLabelOverrides,
@@ -216,16 +217,6 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
     .filter(s => s.pairedOnly)
     .map(s => s.type),
 )
-
-// The read-fill scheme each arc coloring mode is the overlay twin of —
-// getArcColorType (features/arcs/arcColors.ts) mirrors that scheme's classifier,
-// so both paint a bucket the same color. Only 'orientation' is spelled
-// differently on the two sides.
-const ARC_SCHEME_AS_READ_SCHEME: Record<ArcColorByType, ColorSchemeType> = {
-  insertSize: 'insertSize',
-  orientation: 'pairOrientation',
-  insertSizeAndOrientation: 'insertSizeAndOrientation',
-}
 
 // Material UI 200-tone palette for color-by-tag values. The first value
 // hit gets index 0, the eleventh wraps to index 0 again.
@@ -1174,43 +1165,18 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Whether the overlay speaks the reads' own color vocabulary — arc mode
-         * against its equivalent read scheme (see ARC_SCHEME_AS_READ_SCHEME),
-         * AND every bucket the arcs are actually painting being one the reads
-         * are painting too. The swatches are then identical categories in
-         * identical palette colors, so keying both sections lists the same
-         * colors twice under two headings; the arc buckets fold into the read
-         * key instead.
-         *
-         * The second half is not belt-and-braces, it is the half that was
-         * missing. Folding drops the curve mark and renders an arc bucket as a
-         * plain read swatch, so it is an assertion that the reads paint that
-         * color — and the scheme names alone do not support it, because the arc
-         * classifier is not a re-spelling of the read one:
-         *
-         * - A SPLIT JUNCTION colors by its two segments' strands
-         *   (`splitInversion` / `splitDeletion`), whatever the mode, since it has
-         *   no TLEN and no pair orientation to classify. The read fills reach
-         *   those two categories only in chain mode, so an ordinary pileup of
-         *   SA-split long reads paints arc buckets its reads never paint.
-         * - `hasPaired` is a property of the whole fetched set, so a track with
-         *   no paired reads at all sends every arc down that same branch.
-         *
-         * (It used to name a different divergence: the arcs folded a pair whose
-         * mates were drawn far apart into `longInsert` while the reads read TLEN
-         * alone. That rule is gone — `getArcColorType` keys on TLEN and only
-         * TLEN now, for the reasons written there — but the check outlives its
-         * first example, which is exactly why it is asked of the categories in
-         * hand rather than of a table of what each scheme COULD emit.)
+         * Whether the arc key folds into the read key — the overlay speaking
+         * the reads' own vocabulary, in the categories both are actually
+         * painting. `arcKeyFoldsIntoReadKey` holds the rule and the reasons the
+         * scheme names alone do not settle it.
          */
         get arcColorsMatchReads() {
-          return (
-            ARC_SCHEME_AS_READ_SCHEME[self.arcColorByType] ===
-              this.colorBy.type &&
-            [...this.arcLegendCategories].every(c =>
-              this.colorLegendCategories.has(c),
-            )
-          )
+          return arcKeyFoldsIntoReadKey({
+            arcColorByType: self.arcColorByType,
+            readColorScheme: this.colorBy.type,
+            arcCategories: this.arcLegendCategories,
+            readCategories: this.colorLegendCategories,
+          })
         },
 
         /**

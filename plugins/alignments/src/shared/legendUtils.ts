@@ -30,7 +30,7 @@ import type {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
-import type { ColorBy, ColorSchemeType } from './types.ts'
+import type { ArcColorByType, ColorBy, ColorSchemeType } from './types.ts'
 import type {
   LegendItem,
   LegendMark,
@@ -646,6 +646,62 @@ export const SPLIT_JUNCTION_LABELS: Partial<Record<SwatchCategory, string>> = {
   // than of the mark. On a curve the mark IS the split alignment, so it takes
   // the same noun as the two above and the parenthetical carries the finding.
   interchrom: 'Split alignment (interchromosomal)',
+}
+
+// The read-fill scheme each arc coloring mode is the overlay twin of —
+// getArcColorType (features/arcs/arcColors.ts) mirrors that scheme's classifier,
+// so both paint a bucket the same color. Only 'orientation' is spelled
+// differently on the two sides.
+const ARC_SCHEME_AS_READ_SCHEME: Record<ArcColorByType, ColorSchemeType> = {
+  insertSize: 'insertSize',
+  orientation: 'pairOrientation',
+  insertSizeAndOrientation: 'insertSizeAndOrientation',
+}
+
+/**
+ * Whether the overlay speaks the reads' own color vocabulary — arc mode against
+ * its equivalent read scheme, AND every bucket the arcs are actually painting
+ * being one the reads are painting too. The swatches are then identical
+ * categories in identical palette colors, so keying both sections lists the same
+ * colors twice under two headings; the arc buckets fold into the read key
+ * instead.
+ *
+ * The second half is not belt-and-braces, it is the half that was missing.
+ * Folding drops the curve mark and renders an arc bucket as a plain read swatch,
+ * so it is an assertion that the reads paint that color — and the scheme names
+ * alone do not support it, because the arc classifier is not a re-spelling of
+ * the read one:
+ *
+ * - A SPLIT JUNCTION colors by its two segments' strands (`splitInversion` /
+ *   `splitDeletion`), whatever the mode, since it has no TLEN and no pair
+ *   orientation to classify. The read fills reach those two categories only in
+ *   chain mode, so an ordinary pileup of SA-split long reads paints arc buckets
+ *   its reads never paint.
+ * - `hasPaired` is a property of the whole fetched set, so a track with no
+ *   paired reads at all sends every arc down that same branch.
+ *
+ * (It used to name a different divergence: the arcs folded a pair whose mates
+ * were drawn far apart into `longInsert` while the reads read TLEN alone. That
+ * rule is gone — `getArcColorType` keys on TLEN and only TLEN now, for the
+ * reasons written there — but the check outlives its first example, which is
+ * exactly why it is asked of the categories in hand rather than of a table of
+ * what each scheme COULD emit.)
+ */
+export function arcKeyFoldsIntoReadKey({
+  arcColorByType,
+  readColorScheme,
+  arcCategories,
+  readCategories,
+}: {
+  arcColorByType: ArcColorByType
+  readColorScheme: ColorSchemeType
+  arcCategories: ReadonlySet<ReadColorCategory>
+  readCategories: ReadonlySet<ReadColorCategory>
+}): boolean {
+  return (
+    ARC_SCHEME_AS_READ_SCHEME[arcColorByType] === readColorScheme &&
+    [...arcCategories].every(c => readCategories.has(c))
+  )
 }
 
 /**
