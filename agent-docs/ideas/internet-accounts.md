@@ -1,13 +1,13 @@
 ---
 name: internet-accounts
-description: The internet account model does six jobs across a boundary that only needs three, and Apollo3 is the downstream consumer that decides what can be broken and when. None of it is release-blocking; read before proposing the split or a sign-out menu.
+description: The internet account model does six jobs across a boundary that only needs three, and Apollo3 is the downstream consumer that decides what can be broken and when. None of it is release-blocking; read before proposing the split, a sign-out menu, or a cache over the per-RPC token probe.
 ---
 
 # Internet accounts: the split the RPC boundary already draws
 
-~3,200 lines across the auth plugin (1,839), core plus the root-model mixin
-(665) and the FileSelector (669). Reviewed end to end in 2026-08; this is what
-came out that is not already landed.
+~3,300 lines across the auth plugin (1,858), core plus the root-model mixin
+(665) and the FileSelector (786). Reviewed end to end in 2026-08, re-read
+2026-08-19; this is what came out that is not already landed.
 
 **None of this is release-blocking, and an earlier draft of this doc was wrong
 to sequence it against v5.** The one breaking-shaped move is move 1, it wants
@@ -39,8 +39,9 @@ merely unused but unusable — `getTokenFromUser` wants `root.session`,
 That is what the `isWebWorker()` and guarded-storage calls threaded through the
 model are: **the shape of the wrong half being present.** And `corePlugins.ts`
 is the worker's plugin list too, so the RPC worker bundle carries the OAuth
-popup driver, PKCE crypto and the `window.require('electron')` branch — 659 of
-the plugin's 1,839 lines it can never reach.
+popup driver, PKCE crypto and the `window.require('electron')` branch — 668 of
+the plugin's 1,858 lines it can never reach (`OAuthModel/model.tsx` plus its
+`util.ts`, neither of which a worker can enter).
 
 ## The three moves
 
@@ -52,6 +53,14 @@ credential, and move it **off the location** onto the RPC envelope, riding the
 way `blobMap` already does. The worker's `openLocation` becomes a
 `RemoteFileWithRangeCache` whose fetch merges headers — no plugin lookup, no MST
 model, no auth plugin in the worker at all.
+
+**Key it on `internetAccountId`**, which is already on the location and already
+persisted — the envelope then carries id → headers and the location keeps only a
+name, which is what makes the slot removal a simplification rather than a
+relocation. And read what `blobMap` is before copying it: a module-level global
+the worker *replaces wholesale* per call (`util/tracks.ts:161-176`). That shape
+is right for blobs and wrong for credentials, which should not outlive the call
+that needed them.
 
 Worth doing beyond the deletion: the slot is a `types.maybe` on the **MST
 `UriLocation` type**, so the persisted location type says "may carry a bearer
@@ -85,11 +94,21 @@ Partial win only: their `validateToken` probes are genuinely cheaper than a HEAD
 
 ### 3. The HTTP Basic 401 retry stops being an "account"
 
-`createEphemeralInternetAccount` exists only so `RpcManager` can retry a 401,
-and drags along the `<TypeName>-<rest>` id encoding and the URL-prefix branch in
-`uriMatchesDomains`. It could be one non-pluggable path: on `AuthNeededError`,
-prompt, store under the origin, retry. The prefix branch dies with it, leaving a
-pure host matcher.
+`createEphemeralInternetAccount` backs `RpcManager`'s 401 retry, and could be
+one non-pluggable path: on `AuthNeededError`, prompt, store under the origin,
+retry.
+
+**Two claims an earlier draft made here are wrong**, and the move is smaller
+than they made it look:
+
+- It is not the only caller. `findAppropriateInternetAccount` calls it too
+  (`RootModel/InternetAccounts.ts:126`) for a location naming an id whose
+  leading segment is a registered type — the shared-session path, which is not
+  HTTP Basic and which depends on the same `<TypeName>-<rest>` encoding.
+- The URL-prefix branch of `uriMatchesDomains` does **not** die with it. That
+  shape is a documented user-facing feature for scoping an account to part of a
+  server (`config_guides/authentication.md`, the `data.mylab.org/public` vs
+  `/private` example), independent of ephemeral accounts.
 
 ## Apollo3 decides what can break, and when
 
@@ -142,6 +161,40 @@ flow is an ordinary implicit grant with a custom endpoint and could be
 `OAuthInternetAccount` with an overridden `authEndpoint`, `responseType:
 'token'` and `authFlowParams` — which needs their server to echo `state` back.
 
+## Two things wrong with the current code that no move here fixes
+
+**The pre-flight the base model says it avoids.** `fetchWithToken` carries a
+comment refusing a `validateToken` pre-flight per request, because "a range-read
+track issues hundreds of requests". But `getPreAuthorizationInformation` calls
+`validateToken` unconditionally and `serializeNewAuthArguments` calls that on
+every RPC serialization — the guard it checks,
+`loc.internetAccountPreAuthorization`, is never set on the args `ownArgs` has
+just cloned. Measured at 20 probes for 20 serializations, one extra round trip
+ahead of the real work, per *location*, so a BAM and its index are two.
+`OAuthInternetAccount` has no `validateWithHEAD` slot to turn it off either;
+only the two token-entry accounts got one. The optimization was made at the
+wrong layer and the comment explaining why it should not exist lives in the
+other function.
+
+Not fixed here, and not a one-liner: the probe is also how an expired token gets
+caught and refreshed on the main thread, since the worker cannot refresh. A
+cache needs a TTL short enough to keep that, which is a change to the auth hot
+path and wants the same "not against a release nearly out the door" treatment as
+move 1. This is the strongest argument for move 1 that move 1 does not make: a
+credential on the envelope is a per-call decision that can be cached, where a
+credential on the location forces re-validation of every location on every call.
+
+**Nothing revokes a credential.** `removeToken()` has no user-facing caller
+anywhere — every call site is an error path — and `removeRefreshToken()` fires
+only on an `invalid_grant`. So a session token lives until the tab closes and an
+OAuth refresh token lives in localStorage indefinitely, silently minting access
+tokens on every later visit, with no UI that clears either. Declining a global
+menu item (below) is a fine call on its own; the entry reads as though the
+alternative were "no menu item", when the state is "no revocation in any form".
+The storage split is also inverted: the short-lived access token gets
+`sessionStorage` and the long-lived, higher-privilege refresh token that can
+regenerate it gets `localStorage`.
+
 ## Declined: a global sign-out menu item
 
 Built and backed out (2026-08), filed under "Config and MST" in
@@ -158,6 +211,20 @@ on `validateToken` returning a *different* token. Accounts are matched against
 the **resolved** location. An `internetAccountId` naming an unregistered type no
 longer throws raw MST. The token-entry accounts drop a credential the server
 rejected. `SelectorComponent` is gone. See PR #5619 and the commits around it.
+
+Landed 2026-08-19, both found re-reading the code rather than the doc:
+
+- **A location's `internetAccountId` no longer overrides `domains`.** It
+  resolved by id alone, so `handlesLocation` — and with it the whole
+  `uriMatchesDomains` hardening above — was skipped whenever a location named
+  its account, which `sessionTracks` in a jbrowse-web URL can do. Same-origin
+  locations are the exception, because `domains` cannot express them: a config
+  with relative data paths resolves against wherever the app is deployed.
+  jbrowse-web's ExternalToken test is that shape and is what caught the
+  overreach.
+- **The PKCE verifier rotates per authorization request.** It was one lazily
+  created value shared by every flow the account ever ran, twelve lines under a
+  `state` that already minted a nonce per flow for the same reason.
 
 `SelectorComponent`'s removal is the one that had to be *verified* rather than
 argued, since it is an MST member and `ReExports/abi.test.ts` is name-level over
