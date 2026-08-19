@@ -8,50 +8,30 @@ import { wiggleCommonExtraSlots } from '@jbrowse/plugin-wiggle'
 
 import corePlugins from '../corePlugins.ts'
 
-// **Why this lives in jbrowse-web.** Same reason as `ConfigSlotDefaults.test.ts`
-// and `PromotablePinCoverage.test.ts` next door: the question is about every
-// registered schema at once, and this is the only place the whole plugin set is
-// assembled.
+// `LegendMixin` and `WiggleCommonMixin` reach a slot no shared field table can
+// hold, because the composing schemas disagree about the part that is genuinely
+// per display — `showLegend`'s `promotedBase`, `defaultRendering`'s enum. They
+// agree about the TYPE, which is all the mixin's host cast needs, so each mixin
+// restates that much beside itself. This is the comparison that keeps the
+// restatement honest; it lives in jbrowse-web for the same reason as
+// `ConfigSlotDefaults.test.ts` next door — the only place the whole plugin set
+// is assembled.
 //
-// **What it is for.** Two cross-cutting mixins reach slots that no shared field
-// table can hold, because the composing schemas disagree about the parts that
-// are genuinely per display — `showLegend`'s `promotedBase` (off for a Hi-C
-// colour scale, on for a variant genotype key) and `summaryScoreMode`'s default
-// (`whiskers` vs `avg`). What they agree on is the slot's TYPE, which is the
-// only part the mixin's host cast needs, so each mixin restates that much beside
-// itself.
-//
-// A restatement nothing compares to the thing it restates is a copy. Change one
-// of these schemas to a plain `boolean` and the mixin keeps compiling — the cast
-// is a cast — and the failure surfaces as `resolveConf` throwing "not
-// promotable" at the first menu click on that one display. This is the
-// comparison, so it surfaces here instead.
-//
-// **What it adds over the guards already there.** `ConfigSlot` refuses a
-// `promotedBase` the slot cannot hold, so changing a type and leaving the
-// sentinel behind already dies at plugin creation. What gets past that is a
-// change made *consistently* — `maybeNumber` with `promotedBase: 0` — and a slot
-// that quietly stops being promotable, whose only other symptom is `resolveConf`
-// throwing at the first menu click on the one display that regressed. Both are
-// checked here; both were sabotage-verified.
-//
-// A NEW display composing either mixin is the case this really guards: it
-// declares the slot by hand, nothing points it at the existing spellings, and
-// getting the type wrong is silent everywhere else.
-//
-// The counts read higher than the prose elsewhere: `showLegend` has six
-// hand-written declarations in source and ten registered display types, because
-// two of those declarations are in shared schema factories that two displays
-// each instantiate.
+// `ConfigSlot` already refuses a `promotedBase` the slot cannot hold, so
+// changing a type and leaving the sentinel dies at plugin creation. Two cases
+// get past it, and both are sabotage-verified here: a change made
+// *consistently* (`maybeNumber` with `promotedBase: 0`), and a slot that
+// quietly stops being promotable, whose only other symptom is `resolveConf`
+// throwing at the first menu click on the one display that regressed.
 const pluginManager = new PluginManager(
   corePlugins.map(P => new P()),
 ).createPluggableElements()
 
-// Every `{ slotName, declaringSchema, type }` a registered display declares,
-// including inherited slots — `getConfigurationSchemaDefinition` returns the
-// schema's own entries, which is what we want: the point is to catch a
-// hand-written declaration, and an inherited one has no second spelling to
-// disagree with.
+// `getConfigurationSchemaDefinition` merges in what `baseConfiguration`
+// declared, so a display inheriting the slot is listed alongside the one that
+// hand-wrote it. `showLegend` reaches nine displays off six declarations: two
+// of the six are shared factories two displays each instantiate, and
+// LGVSyntenyDisplay inherits the alignments one.
 function declarationsOf(slotName: string) {
   const found: { display: string; type: string; keys: string[] }[] = []
   for (const element of pluginManager.getElementTypesInGroup('display')) {
@@ -86,30 +66,28 @@ describe.each([
   ],
 ])('%s matches every real declaration', (_table, restated) => {
   for (const [slotName, shape] of Object.entries(restated)) {
-    // Not a `toBeGreaterThan(0)` buried in the loop: a slot that stopped being
-    // declared anywhere would otherwise pass by iterating zero times, which is
-    // the shape of failure this whole file exists to catch.
+    const declarations = declarationsOf(slotName)
+
+    // Its own test rather than a guard inside the next one: a slot that stopped
+    // being declared anywhere would otherwise pass by iterating zero times,
+    // which is the shape of failure this file exists to catch.
     it(`${slotName} is declared by at least one display`, () => {
-      expect(declarationsOf(slotName).length).toBeGreaterThan(0)
+      expect(declarations.length).toBeGreaterThan(0)
     })
 
     it(`${slotName} has the restated type wherever it is declared`, () => {
-      expect(
-        declarationsOf(slotName).map(d => `${d.display}: ${d.type}`),
-      ).toEqual(
-        declarationsOf(slotName).map(d => `${d.display}: ${shape.type}`),
+      expect(declarations.map(d => `${d.display}: ${d.type}`)).toEqual(
+        declarations.map(d => `${d.display}: ${shape.type}`),
       )
     })
 
-    // The mixin reads this slot through `resolveConf`, which throws on a
-    // non-promotable slot — so a promotable restatement needs `promotedBase`
-    // present on every real declaration, whatever each sets it to.
+    // The mixin reads a promotable slot through `resolveConf`, which throws on
+    // a non-promotable one — so `promotedBase` has to be present on every real
+    // declaration, whatever each sets it to.
     if ('promotedBase' in shape) {
       it(`${slotName} is promotable wherever it is declared`, () => {
         expect(
-          declarationsOf(slotName).filter(
-            d => !d.keys.includes('promotedBase'),
-          ),
+          declarations.filter(d => !d.keys.includes('promotedBase')),
         ).toEqual([])
       })
     }

@@ -8,21 +8,15 @@ import type {
 
 /**
  * The slot this mixin reads, restated rather than moved into a shared field
- * table because the six composing schemas genuinely disagree about it:
- * `promotedBase` is off for a Hi-C color scale and on for a variant genotype
- * key, and each description describes a different legend (see the docstring
- * below). Only the **type** is common, and typing it is all the cast needs.
+ * table: the composing schemas disagree about `promotedBase` (off for a Hi-C
+ * color scale, on for a variant genotype key) and each describes a different
+ * legend. Only the type is common, and typing it is all the cast needs.
  *
- * A runtime value rather than a bare type so it can be checked against the real
- * declarations — a restatement nothing compares to the thing it restates is a
- * copy, and copies drift. `RestatedMixinSlots.test.ts` in jbrowse-web is the
- * comparison; it is there because that is the only place every schema is
- * registered at once.
- *
- * `promotedBase` is a placeholder: what the *type* needs is that the key is
- * present (that is what drops the inherit sentinel from a `resolveConf` read),
- * and what each schema sets it to is the thing that legitimately varies. The
- * test checks presence and `type`, never this value.
+ * A runtime value rather than a bare type so `RestatedMixinSlots.test.ts` in
+ * jbrowse-web can compare it against the real declarations — a restatement
+ * nothing compares to the thing it restates is a copy, and copies drift. The
+ * `promotedBase` here is a placeholder; only the key's presence is what makes
+ * the type drop the inherit sentinel, and the test checks presence, not value.
  */
 export const legendMixinSlots = {
   showLegend: { type: 'maybeBoolean', promotedBase: false },
