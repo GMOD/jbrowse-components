@@ -1331,9 +1331,7 @@ having before anyone estimates it:
 - **72 are track- or assembly-schema reads** — `name` 24, `assemblyNames` 21,
   `adapter` 14, `trackId` 13. They are filed under whichever display or widget
   file contains them, so the list reads as display debt and isn't: naming a
-  display factory's schema cannot reach a read against the containing track. The
-  one entry still listed under a `*Mixin.ts` is one of these
-  (`getConf(getContainingTrack(self), 'adapter')` in `WiggleCommonMixin`).
+  display factory's schema cannot reach a read against the containing track.
 - **~12 are the root config** — `theme` x5, `defaultDriver` x3, `extraThemes`
   x2, `workerCount`, `shareURL`. Blocked rather than small: the root schema is
   assembled from the plugin manager at runtime, and a base taken from
@@ -1341,6 +1339,14 @@ having before anyone estimates it:
   through `GetBase`, so it wants re-plumbing before naming it buys anything.
 - The rest is a long tail of factories that left `configSchema` at
   `AnyConfigurationSchemaType`, usually one line each.
+
+Grepping the baseline for `*Mixin.ts` returns four entries, and none of them is
+the population the header closed — a display mixin casting its own `self` to a
+widened config holder. `WiggleCommonMixin`'s is
+`getConf(getContainingTrack(self), 'adapter')` and `AssembliesMixin`'s is
+`readConfObject(a, 'name')` off an assembly, so both are track/assembly reads;
+`EmbeddedSessionThemeMixin`'s two `getConf(self, 'theme')` reads are root-config
+ones, blocked behind the same re-plumbing as the other ~12.
 
 The mixin population is closed and should stay closed: `HostChecksSlotNames`
 pins each host and the baseline's own header now says so — it used to say the
