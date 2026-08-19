@@ -1,3 +1,5 @@
+import { sha256Base64Url } from '@jbrowse/core/util'
+
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.tsx'
 
@@ -208,11 +210,12 @@ test('each authorization request gets its own PKCE verifier', async () => {
   account.removeToken()
   const second = await runAuthFlow(account, 'code-two')
 
-  expect(first.verifier).toBeTruthy()
-  expect(first.challenge).toBeTruthy()
-  expect(second.verifier).toBeTruthy()
-  expect(second.challenge).toBeTruthy()
-  // a second flow reuses neither half of the first
+  // rotation is only half of it — the verifier the exchange sends has to be
+  // the preimage of the challenge that opened the same flow, or the provider
+  // rejects every exchange and rotating twice looks identical from here
+  expect(await sha256Base64Url(first.verifier!)).toBe(first.challenge)
+  expect(await sha256Base64Url(second.verifier!)).toBe(second.challenge)
+  // and a second flow reuses neither half of the first
   expect(second.verifier).not.toBe(first.verifier)
   expect(second.challenge).not.toBe(first.challenge)
 })
