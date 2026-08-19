@@ -10,7 +10,7 @@
 // not, since wall-clock is its only currency. CLAUDECODE is exported by the
 // Claude Code CLI into every command it runs and is in no shell profile, so it
 // marks agent runs and only agent runs.
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 
 // Reports the source actually used, not merely set: TSC_CHECKERS=abc falls
 // through to the agent tier, and naming it there would blame an unused value.
@@ -33,24 +33,49 @@ console.error(
     : 'typecheck: tsgo default checkers',
 )
 
-// No argument means the root project. Otherwise each argument is a `-p`
-// project, run one at a time — together they would restore exactly the peak the
-// checker count holds down.
-const projects = process.argv.slice(2)
-const runs = projects.length > 0 ? projects.map(p => ['-p', p]) : [[]]
+// The groups `pnpm typecheck` runs, named so package.json spells each list
+// once. Any other bare argument is a project path, and an argument starting
+// with `-` goes straight through to tsc, so `pnpm typecheck --watch` reaches
+// every project rather than reading as a path.
+const GROUPS: Record<string, string[]> = {
+  web: ['.'],
+  node: [
+    'products/jbrowse-desktop/electron',
+    'products/jbrowse-desktop/test',
+    'products/jbrowse-cli',
+  ],
+}
 
-for (const projectArgs of runs) {
-  const { status } = spawnSync(
-    process.execPath,
-    [
-      'node_modules/typescript7/bin/tsc',
-      '--noEmit',
-      ...projectArgs,
-      ...checkerArgs,
-    ],
-    { stdio: 'inherit' },
-  )
-  if (status !== 0) {
-    process.exit(status ?? 1)
+const args = process.argv.slice(2)
+const flags = args.filter(a => a.startsWith('-') && a !== '--noEmit')
+const named = args.filter(a => !a.startsWith('-'))
+const projects = (named.length > 0 ? named : Object.keys(GROUPS)).flatMap(
+  a => GROUPS[a] ?? [a],
+)
+
+const tscArgs = (project: string) => [
+  'node_modules/typescript7/bin/tsc',
+  '--noEmit',
+  '-p',
+  project,
+  ...checkerArgs,
+  ...flags,
+]
+
+// Watching starts every project at once, since the first watcher never returns.
+// Anything else runs one project at a time — together they would restore
+// exactly the peak the checker count holds down.
+if (flags.some(f => f === '--watch' || f === '-w')) {
+  for (const project of projects) {
+    spawn(process.execPath, tscArgs(project), { stdio: 'inherit' })
+  }
+} else {
+  for (const project of projects) {
+    const { status } = spawnSync(process.execPath, tscArgs(project), {
+      stdio: 'inherit',
+    })
+    if (status !== 0) {
+      process.exit(status ?? 1)
+    }
   }
 }
