@@ -84,6 +84,26 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    prereleases get no blog post, so nothing would ever consume it. Name it after
    the stable release the beta series lands on.
 
+   **A figure the draft states rather than shows goes in a marker, not in the
+   prose.** Three kinds, in order of how much the draft has to do:
+
+   - A measured table is a `<!-- BEGIN GENERATED MEASUREMENT <id> -->` block off
+     `agent-docs/measurements/<id>.json`, and a single value quoted out of one
+     is `1.4x<!--m:<id>.<row>.<column>-->`. `pnpm autogen` keeps both current
+     and `prepareDraftNotes` strips the markers on the way to the blog. The
+     v5.0.0 draft's zoom table was typed by hand beside a pan column no record
+     holds.
+   - Anything derived from `git` at the moment of release is a `${...}`
+     placeholder that `release.ts` fills — `${DIFFSTAT}` is the one that exists.
+     `pnpm autogen` cannot own these: they move under every commit, so a check
+     would fail on every push. `check-release-drafts` rejects a name no release
+     fills, since a misspelled one publishes literally and there is no number
+     there to proofread.
+   - A chart is a script. `pnpm loc-chart` re-renders the lines-of-code figure;
+     run it, then `pnpm figures:push --filter loc_over_time` and commit
+     `figures.lock`. It reads git, so like the diffstat it is a release-day step
+     rather than an autogen entry.
+
 2. **Look first** — `pnpm release <patch|minor|major> --dry-run`.
 
    It runs every check a real release runs, renders the blog post, the changelog

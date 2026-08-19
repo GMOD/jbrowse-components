@@ -61,6 +61,7 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
   and **check its exit code** — a failed compile leaves the stale
   `.generated.ts` and tsc/jest pass off it.
 - `typescript` 6.x lints, `typescript7` typechecks.
-- Removals fail quietly on two plugin surfaces: `ReExports/modules.ts` and the
-  session — `reference/PLUGIN_ABI_STABILITY.md`.
+- Removals fail quietly on three plugin surfaces: `ReExports/modules.ts`, the
+  session, and the accumulating extension points, where the guard is a TYPE and
+  a prebuilt v4 bundle carries none — `reference/PLUGIN_ABI_STABILITY.md`.
 - Deploy demos with `scripts/deploy-demo.sh`, never `aws s3 cp` (no versioning).
