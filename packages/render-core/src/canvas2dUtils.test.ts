@@ -2,6 +2,7 @@ import {
   MAX_CANVAS_DIM_PX,
   MAX_DPR,
   bpAtPx,
+  bpAtPxExact,
   devicePxSpan,
   forEachClippedBlock,
   getDpr,
@@ -9,6 +10,7 @@ import {
   makeBpMapper,
   makeCellLeftMapper,
   maxCanvasCssPx,
+  regionAtPixel,
   spanLeft,
   syncCanvasSize,
   withClip,
@@ -386,6 +388,85 @@ describe('bpAtPx', () => {
       }
     },
   )
+})
+
+describe('bpAtPxExact', () => {
+  const span: BpRegionBounds = {
+    start: 100,
+    end: 110,
+    screenStartPx: 0,
+    screenEndPx: 100,
+  }
+
+  test('inverts makeBpMapper on both orientations', () => {
+    for (const reversed of [false, true]) {
+      const bounds = { ...span, reversed }
+      const toX = makeBpMapper(bounds)
+      for (let bp = 100; bp <= 110; bp += 0.25) {
+        expect(bpAtPxExact(toX(bp), bounds)).toBeCloseTo(bp, 10)
+      }
+    }
+  })
+
+  test('runs bp leftward on a reversed block', () => {
+    expect(bpAtPxExact(0, span)).toBe(100)
+    expect(bpAtPxExact(100, span)).toBe(110)
+    expect(bpAtPxExact(0, { ...span, reversed: true })).toBe(110)
+    expect(bpAtPxExact(100, { ...span, reversed: true })).toBe(100)
+  })
+
+  test('answers a fraction where bpAtPx answers a base', () => {
+    expect(bpAtPxExact(15, span)).toBe(101.5)
+    expect(bpAtPx(15, span)).toBe(101)
+  })
+
+  // Why the two are separate functions rather than one plus a floor. Forward
+  // they agree; reversed, flooring the fractional answer names the neighbouring
+  // base on every column that is not a cell's rightmost.
+  test('flooring it stops matching bpAtPx once the block is reversed', () => {
+    for (let px = 0; px < 100; px += 0.5) {
+      expect(Math.floor(bpAtPxExact(px, span))).toBe(bpAtPx(px, span))
+    }
+    const rev = { ...span, reversed: true }
+    expect(Math.floor(bpAtPxExact(15, rev))).toBe(108)
+    expect(bpAtPx(15, rev)).toBe(108)
+    expect(Math.floor(bpAtPxExact(10, rev))).toBe(109)
+    expect(bpAtPx(10, rev)).toBe(108)
+  })
+
+  test('extrapolates past the block rather than clamping', () => {
+    expect(bpAtPxExact(-10, span)).toBe(99)
+    expect(bpAtPxExact(110, span)).toBe(111)
+  })
+})
+
+describe('regionAtPixel', () => {
+  // Adjacent regions share a pixel, which is the whole reason the upper bound
+  // is exclusive: an inclusive one matches both and `find` hands back the
+  // earlier region, which then owns every click meant for the later region's
+  // first column.
+  const first = { screenStartPx: 0, screenEndPx: 100, displayedRegionIndex: 0 }
+  const second = {
+    screenStartPx: 100,
+    screenEndPx: 200,
+    displayedRegionIndex: 1,
+  }
+
+  test('gives the shared pixel to the later region', () => {
+    expect(regionAtPixel([first, second], 99.9)).toBe(first)
+    expect(regionAtPixel([first, second], 100)).toBe(second)
+  })
+
+  test('answers undefined off either end, and for no regions at all', () => {
+    const none: (typeof first)[] = []
+    expect(regionAtPixel([first, second], -0.5)).toBeUndefined()
+    expect(regionAtPixel([first, second], 200)).toBeUndefined()
+    expect(regionAtPixel(none, 5)).toBeUndefined()
+  })
+
+  test('hands back the region object the caller passed in', () => {
+    expect(regionAtPixel([first, second], 150)).toBe(second)
+  })
 })
 
 test('syncCanvasSize keeps CSS size in step once the backing store clamps', () => {

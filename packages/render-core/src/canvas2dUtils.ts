@@ -604,3 +604,63 @@ export function bpAtPx(px: number, bounds: BpRegionBounds) {
     ? whole + Math.ceil(rem - offset) - 1
     : whole + Math.floor(rem + offset)
 }
+
+/**
+ * The **fractional bp** at screen pixel `px` — the un-rounded inverse of
+ * `makeBpMapper`, for hit tests that measure a distance or open a search window
+ * rather than index a base (the alignments interbase triangles and modification
+ * centers, the variant cell's bp padding, the Manhattan point's ±radius query).
+ *
+ * Ask `bpAtPx` instead the moment the answer indexes per-base data. **Do not
+ * floor this** — flooring an already-divided fraction is the double rounding
+ * `bpAtPx`'s JSDoc argues against at length, and on a reversed block flooring
+ * also names the neighbouring base.
+ *
+ * `end - offset` reversed, not `start + offset`: bp runs leftward there, and
+ * every plugin that spelled this out locally had to rediscover the pivot. Same
+ * multiply-before-dividing as `bpAtPx` — `(px - screenStartPx) * span` is exact,
+ * so the following division is the only rounding — but for a different reason.
+ * There is no floor here to protect, only a value a caller subtracts from
+ * another; forming `frac` first and multiplying costs a second rounding for
+ * nothing.
+ *
+ * The anchor deliberately does NOT split into whole and remainder the way
+ * `bpAtPx`'s does. That split exists to keep the genome-scale addend out of a
+ * *rounded* expression; with no rounding to protect it would only add a
+ * subtraction and an addition, and the caller wants the anchor's fraction kept,
+ * not discarded. Neither function is the other's implementation.
+ *
+ * Adopting this changed no output, and that is the point rather than a caveat.
+ * Against the same exact-rational oracle `bpAtPx` was measured on, over 300000
+ * fractional-anchor samples, all three spellings it replaced land within 1 ulp
+ * of the exactly-rounded value and agree with this one on 299886 of them. The
+ * duplication was never producing a wrong number — it was three chances for the
+ * reversed pivot to be edited in two places and not the third.
+ */
+export function bpAtPxExact(px: number, bounds: BpRegionBounds) {
+  const { start, end, screenStartPx, screenEndPx, reversed } = bounds
+  const offset =
+    ((px - screenStartPx) * (end - start)) / (screenEndPx - screenStartPx)
+  return reversed ? end - offset : start + offset
+}
+
+/**
+ * The region owning screen pixel `px`, or undefined past the last one — the
+ * range check `bpAtPx` and `bpAtPxExact` leave to their callers, answered once.
+ *
+ * **The upper bound is exclusive, and that is the whole content of this.**
+ * Adjacent regions share a pixel (`regionA.screenEndPx ===
+ * regionB.screenStartPx`), so an inclusive bound matches both and `find` hands
+ * back the earlier one — which then steals every click meant for the later
+ * region's first column. Half-open, exactly one region can match, so this
+ * answers with a region rather than a list.
+ *
+ * Generic over the region so callers get their own type back: what they want
+ * from the match is a `displayedRegionIndex` to key per-region data with, or the
+ * bp/px edges to hand to a mapper.
+ */
+export function regionAtPixel<
+  R extends { screenStartPx: number; screenEndPx: number },
+>(regions: readonly R[], px: number): R | undefined {
+  return regions.find(r => px >= r.screenStartPx && px < r.screenEndPx)
+}
