@@ -1,17 +1,18 @@
 ---
 name: sa-hops-in-the-bezier-overlay
-description: The bezier connector overlay draws only the hops whose far end it already fetched, so a split read's off-screen SA segment renders as nothing there while the arc band draws a tick and the split view dashes the pair; plus the shared `Chain` type that lost the caller it was proposed for. What is left of the SplitThreader-style multi-hop proposal after the derivative-allele picker shipped.
+description: The bezier connector overlay never reads SA tags, so a read whose middle segments are off screen gets a direct arc between the two that are left — a junction that does not exist, drawn as a plain inversion, while the arc band suppresses it and the split view dashes it. Plus the one-ended hops nobody draws, and the shared `Chain` type that lost the caller it was proposed for.
 ---
 
 # SA hops in the bezier overlay
 
 This file was `multi-hop-fusion-chaining`, a four-phase proposal for showing
 cancer multi-hop rearrangements the way
-[SplitThreader](https://github.com/marianattestad/splitthreader) does. Two of
-its phases shipped in August 2026 as the derivative-allele picker, in a shape the
+[SplitThreader](https://github.com/marianattestad/splitthreader) does. Two of its
+phases shipped in August 2026 as the derivative-allele picker, in a shape the
 proposal did not anticipate; two of its open decisions were answered by a rule
-rather than by a design. What is left is one rendering gap, one refactor whose
-justification the shipping took away, and one small live finding.
+rather than by a design. What is left is one correctness bug, one additive
+feature behind it, one refactor whose justification the shipping took away, and
+one small live finding.
 
 Read [`reference/SV_MULTIHOP.md`](../reference/SV_MULTIHOP.md) before starting
 any of it — it carries the line this feature area does not cross, and the three
@@ -47,122 +48,128 @@ because its evidence was the same chains the path came from.
 
 ---
 
-## Gap 1: the bezier overlay draws only the hops it fetched
+## Bug: the overlay draws a junction that is not there
 
-### What each renderer does with one read
+**The bezier overlay path never reads `readSuppAlignments`** — grep it across
+`features/linkedReads/`, `shared/readGroupConnections.ts` and
+`components/pileupBezierArcs.ts` and there are no hits. It groups the *fetched*
+alignments by QNAME, sorts each read's segments by clip-at-start, and joins
+consecutive ones (`splitJunctions`). When the segments between two of them were
+never fetched, it joins across the gap anyway and says nothing.
 
-A long read crossing chr3 → chr10 → chr12 with only chr3 and chr12 on screen has
-one hop whose far end nothing fetched. Three renderers see that read and give
-three different answers:
+That is not a hypothetical. Measured with a COLO829-chain-1-shaped fixture — one
+unpaired read, chr3 fwd → chr10 → chr12 → chr3 rev, with only the two chr3
+segments fetched — `enumerateBezierPairs` returns one pair and
+`computePileupBezierArcs` returns one arc:
 
-| Renderer | Off-screen hop |
-| --- | --- |
-| Coverage arcs (`features/arcs/`) | `unpairedChainArcs` inserts the SA segment into the chain; the connection becomes a **tick** at the on-screen foot naming the far chromosome (`resolveArcs`' arc-or-tick branch, `pushLine`) |
-| Breakpoint split view | `markHiddenSegments` fills `hiddenSegmentsBefore`, and `AlignmentConnections` draws the flanking pair **dashed** |
-| Bezier overlay (`features/linkedReads/`) | **nothing** |
+```
+M 25359568 5 C … 25359111 17     label: "Split alignment (inverted)"
+```
 
-The overlay's silence is not a bug against its own contract — it is the contract,
-written down in `resolveReadGroup` (`shared/readGroupConnections.ts`): *"the
-bezier path chains only the on-screen segments (`splitJunctions`), the arc path
-additionally walks off-screen SA segments"*, and `loneMateLink` defaults to
-emitting nothing *"which is what a renderer drawing between two on-screen reads
-has to do — it has no second endpoint."* The gap is that the overlay is the mode
-a user turns on to follow one read across a rearrangement, and it is the one mode
-that goes quiet exactly where the rearrangement leaves the screen.
+A single inversion junction on chr3, at full opacity, indistinguishable from a
+real one. The read's actual structure is a foldback through 382 bp on two other
+chromosomes.
 
-### The decision that has to be made first
+### The other two renderers already handle this, differently
 
-The far end has no `x` (no displayed region covers it) and no `y` (no pileup row,
-so no `readYs` entry). Everything below is downstream of picking one:
+| Renderer | Two on-screen segments with hidden ones between | A hop with only one end on screen |
+| --- | --- | --- |
+| Coverage arcs (`features/arcs/`) | **suppressed** — `unpairedChainArcs` walks the SA-augmented chain, so the two are not adjacent and no junction is emitted between them | same-chr: the arc keeps its real geometry and the leg rises at the on-screen foot, running off the block edge (`arcTouchesRegion`). Interchromosomal: a **tick** at the on-screen foot naming the far chromosome (`resolveArcs`, inside `if (p1Ref !== p2Ref)`) |
+| Breakpoint split view | **drawn dashed** — `markHiddenSegments` fills `hiddenSegmentsBetween`, `AlignmentConnections` sets `strokeDasharray='4 3'` and the tooltip reads `hidden N segments not in view: <locstrings>` | n/a — every panel is a locus somebody asked for |
+| Bezier overlay | **drawn solid, unmarked** | nothing |
 
-- **A1, baseline drop.** Curve from the read's row down to a fixed baseline at the
-  band's bottom, ending under the on-screen foot. Reads as "leaves here, goes
-  somewhere you can't see".
-- **A2, edge clamp.** Curve toward the panel edge in the direction of travel and
-  stop there. Reads as direction-of-travel, but a clamped end is a lie about
-  position, and with two regions on screen the "edge" is a boundary between two
-  real loci.
-- **A3, multi-region only.** Draw nothing in a single-region view; in a
-  multi-region view the far segment is often actually on screen, at which point
-  the existing both-present path already handles it. Cheapest, and concedes the
-  single-region case.
+So the overlay is the only one of the three that asserts an adjacency it has not
+checked. `unpairedChainArcs`' own comment names the behavior it is avoiding —
+*"this is also what suppresses a misleading direct join across an off-screen
+segment (the flanking pair are not actually read-adjacent)"* — and the overlay is
+where that join is drawn.
 
-**A fourth option now exists and did not when this was written:** do what the arc
-band does. `resolveArcs` decides *arc when both feet are on screen, ticks
-otherwise*, and its comment gives the reason — a tick's whole job is "there is a
-connection to somewhere you cannot see", which is precisely false once both feet
-are visible. A foot mark on the read's own row, labelled with the far locus,
-would make the overlay agree with the band directly above it instead of inventing
-a fourth vocabulary. Weigh it first; it is the option that needs the least new
-drawing code and the least new explanation to a user.
+### Fix it in the order the renderers disagree
 
-### Implementation sketch
+**Step 1, the correctness half.** Give the bezier path the SA-augmented chain and
+mark the arcs that span a hidden segment. The chain builder already exists —
+`unpairedReadChain(entries, canonicalRefName)` — and `resolveReadGroup<E, T>` is
+already generic over the per-mate chainer precisely so the two paths can differ
+here; its comment says so: *"the bezier path chains only the on-screen segments
+(`splitJunctions`), the arc path additionally walks off-screen SA segments."*
 
-The seam is already generic. `resolveReadGroup<E, T>` takes a per-mate
-`chainMate` and a `loneMateLink`, and the arc path overrides both while the
-bezier path takes the defaults. So the pipeline change is small and the *type*
-change is where the work is:
+Copy the split view's answer rather than the arc band's: **dash the arc and name
+the hidden loci**, because the overlay is a per-read mode where the user is
+following one molecule and deleting its connector loses the thread, whereas the
+arc band is an aggregate where a wrong junction would be counted. The overlay
+already has the tooltip channel — `arcTooltip` → `setMouseoverExtraInformation`
+in `PileupBezierOverlay` — so the locstrings have somewhere to go.
 
-1. `LinkedPair` is `{e1: ReadEntry, e2: ReadEntry, c: ClassifiedPair}`
-   (`features/linkedReads/compute.ts`). An off-screen end has no `ReadEntry` —
-   `computePileupBezierArcs`' `readScreenY` reads `e.data.readYs[e.readIdx]`. So
-   the far end becomes an anchor-plus-target: one real entry supplying the row,
-   plus `{refName, bp, strand}` for the segment that is not there. Whether that
-   is an optional field or a second variant is the call; a discriminated pair
-   type keeps `isBezierArcPair` / `isCrossRegionPair` honest, since neither
-   predicate has an answer for a one-ended connection.
-2. Give the bezier path a `chainMate` that walks the SA segments. The walk
-   already exists as `unpairedReadChain(entries, canonicalRefName)` — reuse it
-   rather than writing a second one, and note it needs a `CanonicalRefName`,
-   which the bezier path does not thread today.
-3. Project in `computePileupBezierArcs`. `bpToScreenX` returns `undefined` for
-   the far end by construction, and today that `continue`s (line ~232); the
-   anchor decision is what replaces the `continue`.
-4. Both the live overlay and the SVG export go through one function,
-   `computePileupBezierArcsFromModel` (`components/pileupBezierArcs.ts`), so a
-   correct change lands in both. Check the export
-   (`components/PileupBezierArcsSvg.tsx`) anyway — a half-arc's bounding box is
-   new and the export sizes its viewBox.
-5. Gate it on the settings that already exist rather than adding one:
-   `drawLongRange` ("Draw long-range read-connection arcs") and `drawInter`
-   ("Draw inter-chromosomal read-connection arcs"), combined by
-   `emitsOffScreenPartner` — which exists because layering them as an AND once
-   made unticking off-screen mates silently untick inter-chromosomal pairs.
-6. Legend. `bezierConnectionLegendItems` builds one row per *color*, and a
-   half-arc is a new **mark**, not a new color — see `connectionMark`, which
-   already lets a row draw itself as the connector it names.
+This needs no new geometry, no anchor decision and no new setting. It is where to
+start.
+
+**Step 2, the additive half: one-ended hops.** A hop whose far end was never
+fetched has no `x` (`bpToScreenX` returns `undefined`) and no `y` (no `readYs`
+row). Both answers already exist one band up, split by the same test the overlay
+already computes in `classifyPair` (`interchromOf` → `LINKED_READ_COLOR_INTERCHROM`):
+
+- **Same chromosome** — keep the real geometry and let the curve run off the
+  panel, as `arcTouchesRegion` does. The overlay cannot do this today for a
+  reason worth knowing: the arcs project absolute genomic bp inside a region
+  block, so an off-block coordinate lands off-block naturally, while
+  `makeBpToScreenX` delegates to `view.bpToPx`, which returns `undefined` for any
+  coordinate no displayed region covers. An extrapolating projector is the
+  concrete missing piece.
+- **Interchromosomal** — a foot mark on the read's own row naming the far
+  chromosome, the tick's job in the band above.
+
+The old A1 (baseline drop) / A2 (edge clamp) / A3 (multi-region only) options are
+superseded by that split: A2 is the same-chr answer done worse (a clamp invents a
+position where extrapolation does not), and A1 invents a fourth vocabulary for
+something the display already says twice.
 
 ### Traps
 
 - **`iterLinkedPairs` short-circuits on `entries.length >= 2`**, and its own
   comment is the warning: *"Do not grow a branch off this count: which mates are
   on screen is the mate partition's question, and answering it from an entry
-  count is what once dropped a split read's off-screen mate arc."* A read with
-  one on-screen segment and an SA tag is exactly the group this skips.
+  count is what once dropped a split read's off-screen mate arc."* Step 1 is
+  unaffected (two on-screen segments clear it); step 2's one-ended case is
+  exactly the group this skips.
 - **`enumerateBezierPairs`' `crossRegion` scope short-circuits on
-  `laidOutPileupMap.size < 2`** for the same kind of reason, and that scope is
-  *not* opt-in. An off-screen hop in a single-region view is precisely a case
-  where `size < 2` and there is still something to draw. Decide deliberately
-  whether the new marks belong to the `all` scope only.
-- **Cost.** The `crossRegion` short-circuit measures 0.0ms at 200k reads today;
-  removing it makes that path pay the full grouping (~63–80ms measured, against
-  the 587–1317ms relayout it runs beside). That is the number to re-measure, not
-  to assume.
+  `laidOutPileupMap.size < 2`**, and that scope is *not* opt-in — it is what
+  chain mode gets with curved connectors unticked. A one-ended hop in a
+  single-region view is precisely `size < 2` with something to draw. Decide
+  deliberately whether the new marks belong to the `all` scope only.
+- **Cost.** The `crossRegion` short-circuit measures 0.0ms at 200k reads; the
+  multi-region case that does enumerate is ~63–80ms, against the 587–1317ms
+  `buildLaidOutChainMap` relayout beside it. Nobody has measured the
+  single-region grouping this would newly pay for, so that is a measurement to
+  take, not a number to carry over. Step 1 adds an SA parse per read group on top
+  of it — `featurizeSA` on `readSuppAlignments`, which the arc path already pays
+  and the overlay does not.
 - **`segLocusKey` dedup is sound only because refNames are canonical**
   (`saSegments` normalizes; fetched entries already are) and because
   `readPositions` carries the read's *true* start rather than a region-clipped
   one. Anything reaching for a cheaper key re-opens both.
+- **`unpairedReadChain` needs a `CanonicalRefName`** and the bezier path does not
+  thread one today; `computePileupBezierArcsFromModel` would have to pass it, the
+  way `derivativePathCandidates` does.
+- **One seam, two outputs.** The live overlay and the SVG export both go through
+  `computePileupBezierArcsFromModel` (`components/pileupBezierArcs.ts`), so a
+  correct change lands in both — but check `PileupBezierArcsSvg.tsx` anyway,
+  since a one-ended arc's bounding box is new and the export sizes its viewBox.
+- **Legend.** `bezierConnectionLegendItems` builds one row per *color*. A dashed
+  arc and a foot mark are new **marks**, not new colors — `connectionMark`
+  already lets a row draw itself as the connector it names.
 
-### How to see the gap
+### How to see it
 
 The COLO829 tumour ONT track in the `cancer_sv` demo
-(`https://jbrowse.org/demos/cancer_sv/config.json`) is the case: chain 1 is a
-closed cycle over chr3 → chr10 (199 bp) → chr12 (183 bp) → chr3, so any view
-holding fewer than three of those loci has reads with an unfetched hop.
+(`https://jbrowse.org/demos/cancer_sv/config.json`) is the case, and it is a
+sharp one: chain 1 is a closed cycle chr3 → chr10 (199 bp) → chr12 (183 bp) →
+chr3, and the two chr3 arms **overlap**, so a chr3-only view fetches both of them
+and the overlay draws the false inversion above. Put chr3 alone on screen with
+curved connectors on and compare against the arc band in the same display, which
+draws nothing there with `drawLongRange` off and the three real hops with it on.
 `website/scripts/specs/jbrowse-img.ts`'s `svReviewHalf` documents the same
 configuration from the split view's side, where the dashed connectors are the
-visible symptom. Put chr3 alone on screen with curved connectors on, and compare
-against the arc band's ticks in the same display.
+visible symptom.
 
 ---
 
@@ -185,7 +192,8 @@ for its own sake — and it is harder than the type table makes it look:
   walk, on-screen entries merged with SA segments and deduped by locus
   (`segLocusKey`), on-screen record winning. `readChainSegments` is the
   SA-declared segments *only*, deduped by clip — its on-screen half arrives
-  separately as `LayoutMatch`. `splitJunctions` is the on-screen segments only.
+  separately as `LayoutMatch`. `splitJunctions` is the on-screen segments only,
+  which is [the bug above](#bug-the-overlay-draws-a-junction-that-is-not-there).
 - They read **different input universes**: two walk worker TypedArrays through
   `MinEntry`, one walks `Feature` objects through `getTag`. The shared layer that
   could hold a common type is `@jbrowse/cigar-utils`, which already hosts what
@@ -200,9 +208,8 @@ for its own sake — and it is harder than the type table makes it look:
 The honest version is therefore narrow: **make `ChainSegment` and `SegAln` one
 type** (the former is the latter minus `strand` and `onScreen`, with `clip`
 renamed), lift it beside `featurizeSAEntries`, and leave the three walks alone.
-That is a type-level change with no per-read cost, and it is what would have made
-Gap 1's step 2 a reuse instead of a thread-a-normalizer-through. Anyone proposing
-more owes a reason the full version lands differently from the `groupReadsByName`
+That is a type-level change with no per-read cost. Anyone proposing more owes a
+reason the full version lands differently from the `groupReadsByName`
 measurement.
 
 ---
