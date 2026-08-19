@@ -18,7 +18,7 @@
 // carries ARC_HEIGHT_MARGIN and ARC_COLOR_SHORT_INSERT this way — the evaluator
 // resolves through imports, so a constant declared here still reaches it).
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
-//! js-skip: expandMinWidthX — widens about the midpoint in clip space, and has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth). A different rule, not a twin
+//! js-skip: expandMinWidthX — this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded
 //! js-skip: dashCoverageAt — same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already
 module alignmentsUniforms;
 
@@ -697,13 +697,10 @@ public float3 clipKindColor(float ct, Uniforms u) {
 // sub-pixel-narrow features (coverage bins, gaps, insertion bars zoomed out)
 // stay visible. For a span with an anchored edge — every 1bp pileup cell — the
 // rule is `pileupCellX` below instead.
+//
+// The 1.0 is this plugin's floor; hpmath's `expandToMinWidthX` is the rule.
 public float2 expandMinWidthX(float x1, float x2, float canvasWidth) {
-  float minW = 2.0 / canvasWidth;
-  if (x2 - x1 < minW) {
-    float mid = (x1 + x2) * 0.5;
-    return float2(mid - minW * 0.5, mid + minW * 0.5);
-  }
-  return float2(x1, x2);
+  return expandToMinWidthX(x1, x2, 1.0, canvasWidth);
 }
 
 // The clip-space x span of ONE 1bp pileup cell: both edges snapped to a pixel

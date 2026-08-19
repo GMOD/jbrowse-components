@@ -17,6 +17,8 @@
 //! js-skip: pxToClipLen — the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert
 //! js-skip: clipLenToPx — the inverse of pxToClipLen, same reason
 //! js-skip: extendToMinWidthX — clip-space wrapper over the exported extendToMinWidthPx, which is the decision
+//! js-skip: expandToMinWidthPx — the midpoint rule has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth), and the variant matrix floors in physical px against a canvas the Canvas2D twin sizes itself. A different rule, not a twin
+//! js-skip: expandToMinWidthX — clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX
 //! js-skip: snapToPixelX — clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin
 //! js-skip: snapBoxCenterY — clip-space wrapper over the exported snapBoxCenterYPx
 module hpmath;
@@ -122,8 +124,8 @@ public float snapBoxCenterY(
 // Orientation-preserving on purpose: reversal is baked into bpRangeX (negated
 // length), so x2 < x1 on reversed blocks and the span must grow in the sign
 // direction of dx. Widening toward +x would flip the quad on reversed regions.
-// Contrast `expandMinWidthX` in alignmentsUniforms, which expands about the
-// midpoint (both edges move) — that one is for spans with no anchored edge.
+// Contrast `expandToMinWidthPx` below, which moves both edges about the
+// midpoint — that one is for spans with no anchored edge.
 // Unit-agnostic core: `minWidth` is in whatever space x1/x2 are. Canvas2D calls
 // this directly in screen px (paired with `spanLeft`, which owns the fill-x
 // pivot); the clip-space wrapper below converts the px floor first. Same split
@@ -137,6 +139,33 @@ public float extendToMinWidthX(
   float x1, float x2, float minWidthPx, float canvasWidth
 ) {
   return extendToMinWidthPx(x1, x2, minWidthPx * 2.0 / canvasWidth);
+}
+
+// The other min-width rule: widen a [x1, x2] span about its MIDPOINT, so both
+// edges move. For a span with no anchored edge — a coverage bin, a gap, an
+// insertion bar, a variant-matrix column — where growing off one side would
+// slide the mark away from the coordinate it reports.
+//
+// Not orientation-preserving, and deliberately not: the callers here hand it an
+// already-ordered span. `x2 - x1 < minWidth` rather than `abs(...)` means a
+// span given backwards is always widened and comes back forwards.
+//
+// Same px-core/clip-wrapper split as `extendToMinWidthPx` above, and here it is
+// what lets the alignments passes (clip space, a 1 CSS px floor) and the variant
+// matrix (physical px, its own MIN_COL_PX) run one rule instead of two spellings
+// of it.
+public float2 expandToMinWidthPx(float x1, float x2, float minWidth) {
+  if (x2 - x1 < minWidth) {
+    float mid = (x1 + x2) * 0.5;
+    return float2(mid - minWidth * 0.5, mid + minWidth * 0.5);
+  }
+  return float2(x1, x2);
+}
+
+public float2 expandToMinWidthX(
+  float x1, float x2, float minWidthPx, float canvasWidth
+) {
+  return expandToMinWidthPx(x1, x2, minWidthPx * 2.0 / canvasWidth);
 }
 
 // vid%6: 0→(0,0)  1→(1,0)  2→(0,1)  3→(0,1)  4→(1,0)  5→(1,1)

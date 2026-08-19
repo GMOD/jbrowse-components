@@ -13,7 +13,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 92 functions
+Scanned 42 shaders with entry points. 94 functions
 are inside the emitter's subset, of which **66 are exported**.
 
 ## Candidates
@@ -41,7 +41,9 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
 | `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already |
 | `discExpand` | `(f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
-| `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | widens about the midpoint in clip space, and has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth). A different rule, not a twin |
+| `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |
+| `expandToMinWidthPx` | `(f32, f32, f32) -> vec2f` | the midpoint rule has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth), and the variant matrix floors in physical px against a canvas the Canvas2D twin sizes itself. A different rule, not a twin |
+| `expandToMinWidthX` | `(f32, f32, f32, f32) -> vec2f` | clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX |
 | `extendToMinWidthX` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported extendToMinWidthPx, which is the decision |
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
 | `ldFinalize` | `(f32, f32, f32, f32, f32, u32, u32) -> f32` | picks one metric for the heatmap; the CPU path returns r2 AND dprime because the tooltip shows both, so it has no single value to pick. Everything ldFinalize dispatches to is exported |

@@ -63,13 +63,13 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   // instead of painting a solid 1px column; >=1px columns stay fully opaque.
   float colWidthPx = x2px - x1px;
 
-  // Widen sub-pixel columns to MIN_COL_PX (centered on their true center) so
-  // they still cover a pixel center and paint. Wider columns keep true edges.
-  if (x2px - x1px < MIN_COL_PX) {
-    float center = (x1px + x2px) * 0.5;
-    x1px = center - MIN_COL_PX * 0.5;
-    x2px = center + MIN_COL_PX * 0.5;
-  }
+  // Widen sub-pixel columns to MIN_COL_PX about their true center so they still
+  // cover a pixel center and paint. Wider columns keep true edges. The rule is
+  // hpmath's, shared with the alignments coverage/gap/insertion passes; the
+  // floor and the unit (physical px, see widthPx) are this shader's.
+  float2 span = expandToMinWidthPx(x1px, x2px, MIN_COL_PX);
+  x1px = span.x;
+  x2px = span.y;
 
   // Expand the drawn quad out to whole physical pixels so every pixel whose
   // center falls in the span is rasterized; the fragment then keeps only the
