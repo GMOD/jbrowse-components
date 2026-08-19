@@ -545,12 +545,10 @@ proposed to retire them, which is why they are on this page instead.
 
 ## Why not an existing engine, why not Rust
 
-A reader arriving at the list above usually has the same next question: some
-other genome browser draws through Pixi, deck.gl is right there, and a compiled
-language would surely beat a hot JavaScript loop. Each of those was evaluated,
-and [why not deck.gl, Pixi, Rust or wgpu](/docs/developer_guides/why_not_x)
-answers them one at a time — including the three places Rust is already in the
-stack, all of which run before the page does.
+Draw through Pixi or deck.gl, rewrite the hot loops in Rust: each of those was
+evaluated, and
+[why not deck.gl, Pixi, Rust or wgpu](/docs/developer_guides/why_not_x) takes
+them one at a time — including the three places Rust already is.
 
 ## Reproducing any of this
 

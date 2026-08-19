@@ -60,11 +60,11 @@ Key technologies include:
 
 ### Why doesn't JBrowse 2 render through deck.gl, Pixi or wgpu
 
-Because SVG export calls the same draw function the screen does, so a Canvas2D
-path is a requirement rather than a fallback, and none of those libraries has
-one. [Why not deck.gl, Pixi, Rust or wgpu](/docs/developer_guides/why_not_x)
-walks through each candidate, and through why the hot loops are TypeScript while
-the decompression kernel is Rust.
+SVG export calls the same draw function the screen does, so a Canvas2D path is a
+requirement and none of those libraries has one.
+[Why not deck.gl, Pixi, Rust or wgpu](/docs/developer_guides/why_not_x) covers
+each candidate, and why the hot loops are TypeScript while the decompression
+kernel is Rust.
 
 ### How do I write a plugin
 
