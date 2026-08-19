@@ -1,7 +1,6 @@
 import { parseCigar2Typed } from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
-  cmpStr,
   createProgressReporter,
   dedupe,
   updateStatus,
@@ -32,10 +31,12 @@ import {
   clipLargeBlockToWindow,
   clipSyntenyFeature,
 } from './clipSyntenyFeature.ts'
+import { compareDrawOrder, drawTier } from './syntenyDrawOrder.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { SyntenyMate } from '../syntenyMate.ts'
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
+import type { DrawOrderKey } from './syntenyDrawOrder.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
@@ -51,17 +52,12 @@ const CLIP_SPAN_RATIO = 4
 
 // Feature keys read once up front (in the decorate step) so the O(n log n) sort
 // comparator and the projection loop never re-invoke the proxied Feature.get.
-interface DecoratedFeature {
+// The sort keys are `DrawOrderKey`'s — `compareDrawOrder` is what reads them.
+interface DecoratedFeature extends DrawOrderKey {
   f: Feature
-  len: number
-  refName: string
-  start: number
   end: number
   strand: number
   mate: SyntenyMate
-  mateRefName: string
-  mateStart: number
-  id: string
 }
 
 // Fields both axes supply: the cumBp index (bpPerPx + the whole concatenated
@@ -195,15 +191,10 @@ export async function executeSyntenyFeaturesAndPositions({
   const deduped = dedupe(allFeatures, f => f.id())
 
   // Decorate with a deterministic total order so the worker's output never
-  // depends on the adapter's block-arrival order (which varies run-to-run as
-  // concurrent region fetches resolve). Length stays the primary key —
-  // small→large so big ribbons land on top of sub-pixel noise in alpha-over
-  // compositing (matches the standalone ribbon-plot script) — but ties break on
-  // position/mate/id instead of arrival order. This stabilizes alpha compositing
-  // of equal-length overlapping ribbons, the feature-index→featureId mapping
-  // (click/hover identity), and downstream diagonalize. The decorated records
-  // are also what the projection loop iterates, so refName/start/end/strand/mate
-  // aren't re-fetched per feature.
+  // depends on the adapter's block-arrival order — `compareDrawOrder` is the
+  // paint order and, through the pick engine's backwards walk, the pick order
+  // too. The decorated records are also what the projection loop iterates, so
+  // refName/start/end/strand/mate aren't re-fetched per feature.
   const decorated: DecoratedFeature[] = []
   for (const f of deduped) {
     const refName = f.get('refName')
@@ -211,9 +202,14 @@ export async function executeSyntenyFeaturesAndPositions({
     if (mate && v1RefNames.has(refName) && v2RefNames.has(mate.refName)) {
       const start = f.get('start')
       const end = f.get('end')
+      const px = Math.max(
+        (end - start) / v1.bpPerPx,
+        (mate.end - mate.start) / v2.bpPerPx,
+      )
       decorated.push({
         f,
-        len: end - start,
+        px,
+        tier: drawTier(px),
         refName,
         start,
         end,
@@ -225,15 +221,7 @@ export async function executeSyntenyFeaturesAndPositions({
       })
     }
   }
-  decorated.sort(
-    (a, b) =>
-      a.len - b.len ||
-      cmpStr(a.refName, b.refName) ||
-      a.start - b.start ||
-      cmpStr(a.mateRefName, b.mateRefName) ||
-      a.mateStart - b.mateStart ||
-      cmpStr(a.id, b.id),
-  )
+  decorated.sort(compareDrawOrder)
 
   const count = decorated.length
   // cumBp (bpBefore + bpOffset, no padding) is whole-assembly cumulative-bp,
@@ -510,7 +498,7 @@ export async function executeSyntenyFeaturesAndPositions({
     // willDrawCigar predicate in buildSyntenyGeometry via the shared
     // MIN_CIGAR_PX_WIDTH — drawCIGAR off or alignment narrower than that means
     // the visitor never fires, and the location markers walk the corners instead
-    // (`emitGridMarkers` from pass 1), which needs no CIGAR. A clipped block
+    // (`emitGridMarkers` over the whole feature), which needs no CIGAR. A clipped block
     // already carries its (short) visible-slice CIGAR from the re-anchor above.
     const widthPx0 = topMaxX - topMinX
     const widthPx1 = botMaxX - botMinX

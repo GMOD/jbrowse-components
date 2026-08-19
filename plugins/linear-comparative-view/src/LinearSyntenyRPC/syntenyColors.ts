@@ -27,7 +27,7 @@ export const KIND_BASE = 0
 export { KIND_MARKER }
 // Boundary only — the `isCigar = kind >= KIND_CIGAR_MATCH` threshold. Never
 // emitted as an instance kind: buildSyntenyGeometry paints matches as KIND_BASE
-// (transparent mode) or leaves them to the pass-1 base (colored mode).
+// (transparent mode) or leaves them to the feature's base (colored mode).
 export const KIND_CIGAR_MATCH = KIND_CIGAR_MIN
 export const KIND_CIGAR_I = KIND_CIGAR_MIN + 1
 export const KIND_CIGAR_D = KIND_CIGAR_MIN + 2

@@ -302,8 +302,9 @@ export function buildSyntenyGeometry({
   const markerGridExists = markerPitchPx > 0 && Number.isFinite(markerPitchPx)
 
   const alignmentLengths = new Float32Array(featureCount)
-  // Per-feature: did we decide to draw CIGAR detail? Pass 1 always emits
-  // KIND_BASE. When true, pass 2 runs the visitor and emits indel quads on top.
+  // Per-feature: did we decide to draw CIGAR detail? The base ribbon is always
+  // KIND_BASE. When true, the emit loop runs the visitor over the feature's
+  // CIGAR and emits its indel quads on top of that base.
   const willDrawCigarArr = new Uint8Array(featureCount)
   // Per-feature: is this feature wide enough to carry a marker ladder? Decided
   // once here from the whole feature's width so the budget below and the two
@@ -401,13 +402,11 @@ export function buildSyntenyGeometry({
   // Two cursors into one allocation. INSTANCE ORDER IS DRAW ORDER — the Canvas2D
   // loop walks it, and `interleaveInstances` packs the GPU buffer in it — so a
   // tick emitted beside its own feature is painted under every feature that comes
-  // after it. Pass 2 hid that for a CIGAR feature (its ticks are emitted after
-  // every pass-1 base, so they land on top) while pass 1 left a plain feature's
-  // ticks under the bigger ribbons, which sort last. A grid that is under the
-  // ribbons for some features and over them for others is not a ruler, so the
-  // ticks go at the END of the arrays, where both backends draw them last for
-  // free — no extra pass, no second draw call, and no re-walking the CIGARs a
-  // third pass would have cost.
+  // after it, and every feature bar the last one has something after it. A grid
+  // that is under the ribbons for some features and over them for others is not
+  // a ruler, so the ticks go at the END of the arrays, where both backends draw
+  // them last for free — no extra pass, no second draw call, and no re-walking
+  // the CIGARs a second pass would have cost.
   let idx = 0
   let markerIdx = ribbonCapacity
 
@@ -476,8 +475,8 @@ export function buildSyntenyGeometry({
   // cut into spans, which is what makes ~1px CIGAR segments and one whole-feature
   // trapezoid produce the same ticks in the same places.
   //
-  // Segments are nonetheless the better thing to feed, and are what pass 2
-  // feeds: a tick found inside one is paired using that segment's own
+  // Segments are nonetheless the better thing to feed, and are what the CIGAR
+  // branch feeds: a tick found inside one is paired using that segment's own
   // correspondence, so it lands where the CIGAR actually sends it. The
   // whole-feature interpolation only has the corners, and smears a deletion
   // evenly across the ribbon instead of shearing at it.
@@ -548,9 +547,9 @@ export function buildSyntenyGeometry({
     }
   }
 
-  // A CIGAR feature is "tiled": pass 2 paints it one quad per match segment
-  // rather than pass 1 laying down one full-span base. Only transparent-indels
-  // mode tiles — see cigarSegmentKind.
+  // A CIGAR feature is "tiled": the CIGAR walk paints it one quad per match
+  // segment instead of a single full-span base. Only transparent-indels mode
+  // tiles — see cigarSegmentKind.
   function isTiled(i: number) {
     return drawCIGARMatchesOnly && !!willDrawCigarArr[i]
   }
@@ -558,7 +557,7 @@ export function buildSyntenyGeometry({
   // The instance kind a rendered CIGAR segment contributes, or undefined to
   // skip it. The two display modes are exact complements:
   //   colored indels             -> paint indels colored; matches ride the
-  //                                  full-span base from pass 1
+  //                                  feature's own full-span base
   //   transparent (matchesOnly)  -> paint matches as base color; indels left
   //                                  unpainted (see-through)
   // No seam results from tiling matches: KIND_BASE_HIDDEN was dropped because
@@ -568,7 +567,7 @@ export function buildSyntenyGeometry({
   function cigarSegmentKind(op: number) {
     const isIndel = ((1 << op) & CIGAR_INDEL_MASK) !== 0
     // transparent: base color on matches only (indels stay see-through).
-    // colored: indelKind per indel (undefined on matches -> pass-1 base covers).
+    // colored: indelKind per indel (undefined on matches -> the base covers).
     const transparentKind = isIndel ? undefined : KIND_BASE
     return drawCIGARMatchesOnly ? transparentKind : indelKind(op)
   }
@@ -591,66 +590,71 @@ export function buildSyntenyGeometry({
     )
   }
 
-  // Pass 1: one full-span KIND_BASE trapezoid per feature for gapless
-  // match-color coverage. Tiled features skip it — pass 2 lays their base down
-  // per match segment so the intervening indels stay see-through.
+  // ONE PASS, so a feature's whole shape — its base trapezoid and then its own
+  // CIGAR quads — is contiguous in the array, and therefore contiguous in draw
+  // order and in what the pick engine walks.
+  //
+  // This used to be two passes, every feature's base and then every feature's
+  // CIGAR quads. That put EVERY quad above EVERY base regardless of which
+  // feature each belonged to, which is a z-order no ordering upstream can
+  // correct: `compareDrawOrder` sorts a small inversion above a large match, and
+  // the large match's own deletion quads still landed on top of it and took the
+  // hover across their whole width. Sorted feature order only reaches the
+  // drawing if the drawing keeps features whole.
+  //
+  // A feature's indels still paint over its own base — that is the pass ordering
+  // the two passes were really for, and emitting the base first preserves it.
+  // What is given up is indels painting over OTHER features' bases, which is
+  // the bug.
   for (let i = 0; i < featureCount; i++) {
     const x11 = p11_cumBp[i]!
     const x12 = p12_cumBp[i]!
     const x21 = p21_cumBp[i]!
     const x22 = p22_cumBp[i]!
+    // One full-span KIND_BASE trapezoid for gapless match-color coverage. Tiled
+    // features skip it — their base is laid down per match segment below so the
+    // intervening indels stay see-through.
     if (!isTiled(i)) {
       addRibbon(x11, x12, x22, x21, KIND_BASE, i)
     }
-    // Only the no-CIGAR features ladder here; pass 2 ladders the rest along
-    // their rendered segments, where the alignment is actually known.
-    if (!willDrawCigarArr[i] && wantMarkersArr[i]) {
+    const wantMarkers = !!wantMarkersArr[i]
+    if (willDrawCigarArr[i]) {
+      // The walk's start corner and per-axis direction, shared with the
+      // dotplot's `buildLineSegments` off the same p11..p22 lanes — a
+      // reverse-strand CIGAR does not begin at the (x11, x21) corner.
+      const strand = strands[i]!
+      visitCigarRenderedSegments(
+        parsedCigars[i]!,
+        cigarWalkBp1(x11, x12, strand),
+        cigarWalkBp2(x21, x22, strand),
+        bpPerPx0,
+        bpPerPx1,
+        cigarWalkRev1(x11, x12, strand),
+        cigarWalkRev2(x21, x22, strand),
+        (resolvedOp, segBp1Start, segBp1End, segBp2Start, segBp2End) => {
+          if (
+            !segmentOffScreen(segBp1Start, segBp1End, segBp2Start, segBp2End)
+          ) {
+            // cigarSegmentKind decides which segments draw and as what (colored
+            // indels vs. base-tiled matches).
+            const kind = cigarSegmentKind(resolvedOp)
+            if (kind !== undefined) {
+              addRibbon(segBp1Start, segBp1End, segBp2End, segBp2Start, kind, i)
+            }
+          }
+          // Outside the cull: a marker is culled by its own hull, not by the
+          // segment's — on a crossed ribbon a tick can leave the frame where its
+          // segment stays, and vice versa.
+          if (wantMarkers) {
+            emitGridMarkers(i, segBp1Start, segBp1End, segBp2Start, segBp2End)
+          }
+        },
+      )
+    } else if (wantMarkers) {
+      // No CIGAR, so the ladder goes over the whole feature; the branch above
+      // ladders along the rendered segments, where the alignment is known.
       emitGridMarkers(i, x11, x12, x21, x22)
     }
-  }
-
-  // Pass 2: per-segment CIGAR quads on top of pass 1. cigarSegmentKind decides
-  // which segments draw and as what (colored indels vs. base-tiled matches).
-  for (let i = 0; i < featureCount; i++) {
-    if (!willDrawCigarArr[i]) {
-      continue
-    }
-    const cigar = parsedCigars[i]!
-    const x11 = p11_cumBp[i]!
-    const x12 = p12_cumBp[i]!
-    const x21 = p21_cumBp[i]!
-    const x22 = p22_cumBp[i]!
-    // The walk's start corner and per-axis direction, shared with the dotplot's
-    // `buildLineSegments` off the same p11..p22 lanes — a reverse-strand CIGAR
-    // does not begin at the (x11, x21) corner. This loop already skips every
-    // feature that draws no CIGAR (`willDrawCigarArr`), which is the gate these
-    // want to sit behind.
-    const strand = strands[i]!
-    const wantMarkers = !!wantMarkersArr[i]
-
-    visitCigarRenderedSegments(
-      cigar,
-      cigarWalkBp1(x11, x12, strand),
-      cigarWalkBp2(x21, x22, strand),
-      bpPerPx0,
-      bpPerPx1,
-      cigarWalkRev1(x11, x12, strand),
-      cigarWalkRev2(x21, x22, strand),
-      (resolvedOp, segBp1Start, segBp1End, segBp2Start, segBp2End) => {
-        if (!segmentOffScreen(segBp1Start, segBp1End, segBp2Start, segBp2End)) {
-          const kind = cigarSegmentKind(resolvedOp)
-          if (kind !== undefined) {
-            addRibbon(segBp1Start, segBp1End, segBp2End, segBp2Start, kind, i)
-          }
-        }
-        // Outside the cull: a marker is culled by its own hull, not by the
-        // segment's — on a crossed ribbon a tick can leave the frame where its
-        // segment stays, and vice versa.
-        if (wantMarkers) {
-          emitGridMarkers(i, segBp1Start, segBp1End, segBp2Start, segBp2End)
-        }
-      },
-    )
   }
 
   // Close the gap the two regions leave. Both bounds are upper bounds, so the

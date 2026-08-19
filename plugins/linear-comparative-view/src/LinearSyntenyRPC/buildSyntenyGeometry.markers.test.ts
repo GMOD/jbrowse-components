@@ -118,13 +118,12 @@ test('feature narrower than the 30px gate emits no markers', () => {
 // INSTANCE ORDER IS DRAW ORDER — the Canvas2D loop walks it and
 // `interleaveInstances` packs the GPU buffer in it — so the ticks have to be last
 // or a feature drawn later paints over them. They used to be emitted beside their
-// own feature, which put a CIGAR feature's ticks above every base ribbon (pass 2
-// runs after pass 1) and a plain feature's under the bigger ribbons, since
-// features sort small→large. A grid that is over the ribbons for some features and
-// under them for others is not a ruler.
-test('every marker sorts after every ribbon, whichever pass emitted it', () => {
-  // Two features on the same span: one plain (pass 1 markers) and one carrying a
-  // CIGAR (pass 2 markers), so both emit paths are in one build.
+// own feature, which left every feature's ticks under whatever sorted after it. A
+// grid that is over the ribbons for some features and under them for others is not
+// a ruler.
+test('every marker sorts after every ribbon, whichever branch emitted it', () => {
+  // Two features on the same span: one plain (whole-feature markers) and one
+  // carrying a CIGAR (per-segment markers), so both emit paths are in one build.
   const cigar = Array.from({ length: 20 }, () => op(20, CIGAR_M))
   const g = buildSyntenyGeometry({
     p11_cumBp: new Float64Array([0, 0]),
@@ -137,7 +136,7 @@ test('every marker sorts after every ribbon, whichever pass emitted it', () => {
     starts: new Uint32Array([0, 0]),
     ends: new Uint32Array([400, 400]),
     drawCIGAR: true,
-    // Transparent indels, so pass 2 emits RIBBON quads too (one per match
+    // Transparent indels, so the CIGAR branch emits RIBBON quads too (one per match
     // segment) rather than only markers — the ordering claim is about ribbons
     // from both passes against ticks from both passes. It also leaves the tiled
     // feature's reserved full-span base slot unused, which is the slack the gap
@@ -179,7 +178,7 @@ test('a fine-grained CIGAR does not cost the feature its markers', () => {
   expect(markerIndices(withCigar.kinds).length).toBe(width / PITCH)
 })
 
-// And the reason pass 2 feeds the segments rather than the corners: a marker's
+// And the reason the CIGAR branch feeds the segments rather than the corners: a marker's
 // two ends are the pair the CIGAR actually aligns, so the ticks shear where the
 // alignment does. Interpolating across the corners would smear one 100bp
 // deletion evenly over the whole ribbon.
