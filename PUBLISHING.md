@@ -111,19 +111,19 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    - A chart is a script, and one that reads git is a release-day step rather
      than an autogen entry: its last point moves with every commit, so a check
      would fail on every push. `pnpm loc-chart` re-renders the lines-of-code
-     figure here. The two charts the v5.0.0 changelog carries come from a
-     sibling checkout the way the renderer benchmarks do, and write straight
-     into `website/static/img/blog/v5.0.0/`:
+     figure here. The three charts the v5.0.0 changelog carries come from a
+     sibling checkout the way the renderer benchmarks do — collected in Python,
+     plotted in ggplot2, sharing one `filters.py` and one theme:
 
-     | Figure             | Run in `~/agent-docs-backup/theseus`                                                               |
-     | ------------------ | -------------------------------------------------------------------------------------------------- |
-     | `code_age`         | `collect_blame_cohorts.py`, then `Rscript R/plot_theseus.R` — about an hour to blame 115 snapshots |
-     | `code_composition` | `node composition/generate-composition-chart.ts` — a few minutes                                   |
+     | Figure                                 | Run in `~/agent-docs-backup/theseus`                                                                                                  |
+     | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+     | `code_age`                             | `collect_blame_cohorts.py`, then `Rscript R/plot_theseus.R` — about an hour to blame 115 snapshots. Copy `plots/04_code_age.png` over |
+     | `code_composition`, `code_growth_zoom` | `collect_composition.py`, then `Rscript R/plot_composition.R`, which writes both straight into the figure tree                        |
 
-     Then `pnpm figures:push --filter <name>` here and commit `figures.lock`.
-     The code-age collector's dev-line CSV ends at the snapshot it was built
-     from, so extend it with `git log` before re-running or the chart stops
-     where the last run did.
+     Then `pnpm figures:push --filter code_` here and commit `figures.lock`. The
+     code-age collector's dev-line CSV ends at the snapshot it was built from,
+     so extend it with `git log` before re-running or the chart stops where the
+     last run did.
 
    **A figure in the changelog file needs an absolute URL.** `release.ts` drops
    that file in verbatim: only the notes get their image paths rewritten, by
