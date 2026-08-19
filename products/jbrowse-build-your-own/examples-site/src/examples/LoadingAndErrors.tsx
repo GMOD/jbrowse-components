@@ -10,16 +10,18 @@ import {
 } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-// Every page before this one gates its tracks on `view.ready`. That getter has
-// three outcomes and the gate only draws one, so this page draws the other two.
+// Every page before this one gates its tracks on `view.status`, and draws one
+// of its four values. This page draws the other three.
 //
-// - **loading** -- `view.loadingMessage` and `view.loadingProgress`. The
-//   assembly reports which of its files it is downloading, so this is
-//   "Downloading chromosome aliases", not a bare spinner.
-// - **error** -- `view.error`. A FASTA behind a 404, a CORS-blocked index, a
-//   `loc` naming a contig the assembly does not have. `ready` is false here
-//   too, so `view.ready ? tracks : null` renders an empty box forever with
-//   nothing anywhere saying why. Pick the radio below and watch it happen.
+// - **loading** -- carries `message` and `progress`. The assembly reports which
+//   of its files it is downloading, so this is "Downloading chromosome
+//   aliases", not a bare spinner.
+// - **error** -- carries `error`. A FASTA behind a 404, a CORS-blocked index, a
+//   `loc` naming a contig the assembly does not have. Pick the radio below and
+//   watch it happen.
+// - **noRegions** -- nothing has told the view where to look yet. The older
+//   `view.ready` getter reports this one as *ready*, so a host gating on that
+//   mounts its tracks over a view with no regions and draws an empty box.
 // - **ready** -- the tracks.
 //
 // And one more channel that is not on the view at all:
@@ -163,8 +165,8 @@ const TrackRow = observer(function TrackRow({
 }) {
   // `view.getTrack(id)`, not a scan of `view.tracks` comparing
   // `configuration.trackId` by hand: the view keeps a map for exactly this. The
-  // guard stays -- `view.ready` says the view can draw, not that your track is
-  // instantiated yet.
+  // guard stays -- a ready `view.status` says the view can draw, not that your
+  // track is instantiated yet.
   const track = view.getTrack(trackId)
   if (!track) {
     return null
@@ -210,26 +212,21 @@ const statusBox: React.CSSProperties = {
 }
 
 /**
- * What to draw when `view.ready` is false. Every other page on this site
- * carries a one-line `ViewStatus` doing the same job; this is the long form,
- * because this is the page about it.
+ * What to draw for the three values of `view.status.type` that are not `ready`.
+ * Every other page on this site carries a one-line `ViewStatus` doing the same
+ * job; this is the long form, because this is the page about it.
  *
- * **`ready` is `!showLoading && !error`, so its `false` covers two states, not
- * one.** That is the whole reason this component exists: `view.ready ? tracks :
- * null` is the shape everything reaches for, and it turns a failed assembly
- * load into an empty box that never fills, on a page with nothing else to say
- * so. There is no console error either -- the failure is a state on the model,
- * not a throw.
- *
- * Read `error` first, because it is the terminal one. `loadingMessage` is
- * `undefined` once the load has stopped, whether it stopped by finishing or by
- * failing, so an error checked second is an error already painted over by
+ * A `switch` rather than a chain of reads off the view, and the payload comes
+ * attached to the branch. That is what makes the ordering trap unwritable: the
+ * old shape read `error` and `loadingMessage` off the model separately, and
+ * `loadingMessage` goes `undefined` once a load stops -- however it stopped --
+ * so checking the error second showed a failure already painted over by
  * "Loading" having gone away.
  *
- * `loadingProgress` is a 0..1 fraction, and it is optional on purpose: a
- * download only reports one when the response carried a Content-Length. Draw a
- * determinate bar when it is there and an indeterminate one when it is not,
- * rather than treating `undefined` as zero.
+ * `progress` is a 0..1 fraction and is `undefined` on purpose: a download only
+ * reports one when the response carried a Content-Length. Draw a determinate
+ * bar when it is there and an indeterminate one when it is not, rather than
+ * treating `undefined` as zero.
  *
  * There is no retry here, and that is not an omission: a view-level failure is
  * a bad config or a bad URL rather than a flaky fetch, so what a user needs is
@@ -242,31 +239,47 @@ const ViewStatusPanel = observer(function ViewStatusPanel({
 }: {
   view: BrowserView
 }) {
-  const { error, loadingMessage, loadingProgress } = view
-  if (error) {
-    return (
-      <div style={{ ...statusBox, alignItems: 'flex-start' }} role="alert">
-        <div>
-          <strong>This browser could not load.</strong>
-          <div style={{ opacity: 0.8, paddingTop: 4, wordBreak: 'break-word' }}>
-            {error instanceof Error ? error.message : String(error)}
+  const { status } = view
+  switch (status.type) {
+    case 'ready':
+      return null
+    case 'error':
+      return (
+        <div style={{ ...statusBox, alignItems: 'flex-start' }} role="alert">
+          <div>
+            <strong>This browser could not load.</strong>
+            <div
+              style={{ opacity: 0.8, paddingTop: 4, wordBreak: 'break-word' }}
+            >
+              {status.error instanceof Error
+                ? status.error.message
+                : String(status.error)}
+            </div>
           </div>
         </div>
-      </div>
-    )
+      )
+    case 'loading':
+      return (
+        <div style={statusBox}>
+          <progress
+            aria-label="Loading"
+            // an indeterminate <progress> is one with no `value` at all
+            value={status.progress}
+            max={1}
+            style={{ width: 120 }}
+          />
+          <span style={{ opacity: 0.75 }}>{status.message}</span>
+        </div>
+      )
+    case 'noRegions':
+      return (
+        <div style={statusBox}>
+          <span style={{ opacity: 0.75 }}>
+            Nothing has navigated this view yet.
+          </span>
+        </div>
+      )
   }
-  return (
-    <div style={statusBox}>
-      <progress
-        aria-label="Loading"
-        // an indeterminate <progress> is one with no `value` at all
-        value={loadingProgress}
-        max={1}
-        style={{ width: 120 }}
-      />
-      <span style={{ opacity: 0.75 }}>{loadingMessage ?? 'Loading'}</span>
-    </div>
-  )
 })
 
 /**
@@ -420,7 +433,7 @@ const Browser = observer(function Browser({ engine }: { engine: Engine }) {
             Show a track that isn't in the config
           </button>
           <div ref={ref} {...containerProps} style={viewport}>
-            {view.ready ? (
+            {view.status.type === 'ready' ? (
               <TrackRow view={view} trackId={trackId} />
             ) : (
               <ViewStatusPanel view={view} />

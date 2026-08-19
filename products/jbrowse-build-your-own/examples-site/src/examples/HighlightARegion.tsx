@@ -107,28 +107,34 @@ function makeView() {
 type BrowserView = ReturnType<typeof makeView>['view']
 type BrowserSession = ReturnType<typeof makeView>['session']
 
-// `view.ready` is false in TWO states, not one: while the assembly loads, and
-// when it failed to load. Returning `null` for both -- the gate that looks
-// obviously right -- turns a 404 on a sequence file into an empty box that
-// never fills, with nothing anywhere saying why; the failure is a state on the
-// model rather than a throw, so there is no console error either. `error` is
-// read first because `loadingMessage` goes undefined once the load stops,
-// however it stopped. The Loading and error states page draws the long form of
-// this, and has a radio that breaks the assembly on purpose.
+// `view.status` is the view's whole lifecycle as one value, so this switches on
+// it rather than re-deriving which non-ready state it is out of `error` and
+// `loadingMessage`. Two of the four states are easy to leave out and both fail
+// silently: a 404 on a sequence file is `error` -- a state on the model rather
+// than a throw, so there is no console error either -- and a view nothing has
+// navigated yet is `noRegions`, which the older `view.ready` getter reports as
+// ready, so gating on that one draws an empty box that never fills. The Loading
+// and error states page draws the long form of this, and has a radio that
+// breaks the assembly on purpose.
 const ViewStatus = observer(function ViewStatus({
   view,
 }: {
   view: BrowserView
 }) {
-  const { error, loadingMessage } = view
+  const { status } = view
+  if (status.type === 'ready') {
+    return null
+  }
   return (
     <div
-      role={error ? 'alert' : 'status'}
+      role={status.type === 'error' ? 'alert' : 'status'}
       style={{ padding: '10px 12px', fontSize: '0.85rem', opacity: 0.75 }}
     >
-      {error
-        ? `Could not load: ${error instanceof Error ? error.message : String(error)}`
-        : (loadingMessage ?? 'Loading')}
+      {status.type === 'error'
+        ? `Could not load: ${status.error instanceof Error ? status.error.message : String(status.error)}`
+        : status.type === 'loading'
+          ? status.message
+          : 'Nothing to show yet'}
     </div>
   )
 })
@@ -142,8 +148,8 @@ const TrackRow = observer(function TrackRow({
 }) {
   // `view.getTrack(id)`, not a scan of `view.tracks` comparing
   // `configuration.trackId` by hand: the view keeps a map for exactly this. The
-  // guard stays -- `view.ready` says the view can draw, not that your track is
-  // instantiated yet.
+  // guard stays -- a ready `view.status` says the view can draw, not that your
+  // track is instantiated yet.
   const track = view.getTrack(trackId)
   if (!track) {
     return null
@@ -389,7 +395,7 @@ const HighlightARegion = observer(function HighlightARegion() {
           {/* `getHighlightCoords` reads block geometry, which throws until the
            * ResizeObserver has reported a width -- so the bands sit inside the
            * same gate as the tracks. See the Drive it from your app page. */}
-          {view.ready ? (
+          {view.status.type === 'ready' ? (
             <>
               <TrackRow view={view} trackId="volvox_genes" />
               <Highlights view={view} session={session} />

@@ -122,8 +122,8 @@ const TrackRow = observer(function TrackRow({
 }) {
   // `view.getTrack(id)`, not a scan of `view.tracks` comparing
   // `configuration.trackId` by hand: the view keeps a map for exactly this. The
-  // guard stays -- `view.ready` says the view can draw, not that your track is
-  // instantiated yet.
+  // guard stays -- a ready `view.status` says the view can draw, not that your
+  // track is instantiated yet.
   const track = view.getTrack(trackId)
   if (!track) {
     return null
@@ -220,14 +220,15 @@ const OneTrack = observer(function OneTrack() {
     <SessionPaletteProvider session={session} mode={mode}>
       <div ref={ref} style={{ overflow: 'hidden' }}>
         {/* `null` for the other branch is the one thing on this page that is
-         * not what you should ship. `view.ready` is false in TWO states --
-         * loading, and failed to load -- so this box stays empty forever if the
-         * assembly 404s, with nothing anywhere saying why. Every other page
-         * here draws a `ViewStatus` instead; the Loading and error states page
-         * is about it. It is left out only because this page is the floor, and
-         * the floor is allowed to name what it leaves out rather than have
-         * it. */}
-        {view.ready ? (
+         * not what you should ship. `view.status.type` has four values and this
+         * draws one of them, so an assembly that 404s leaves this box empty
+         * forever with nothing anywhere saying why -- the failure is a state on
+         * the model rather than a throw, so there is no console error either.
+         * Every other page here draws a `ViewStatus` over the other three; the
+         * Loading and error states page is about them. It is left out only
+         * because this page is the floor, and the floor is allowed to name what
+         * it leaves out rather than have it. */}
+        {view.status.type === 'ready' ? (
           <TrackRow view={view} trackId="volvox_microarray" />
         ) : null}
       </div>

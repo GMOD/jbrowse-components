@@ -1381,6 +1381,59 @@ test('init with loc keeps loading until navigation populates regions', async () 
   expect(model.showLoading).toBe(false)
 })
 
+// `status` is what a host drawing its own chrome branches on. The case worth
+// pinning is the disagreement in the first block: `ready` is true with nothing
+// on screen, so a host gating on it mounts track components over a view with no
+// regions and draws an empty box with nothing saying why.
+test('status names the state ready reports as ready', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({ id: 'testStatus', type: 'LinearGenomeView' }),
+  )
+  model.setWidth(800)
+
+  expect(model.hasSomethingToShow).toBe(false)
+  expect(model.ready).toBe(true)
+  expect(model.status).toEqual({ type: 'noRegions' })
+
+  model.setError('assembly volvox not found')
+  expect(model.status).toEqual({
+    type: 'error',
+    error: 'assembly volvox not found',
+  })
+  model.setError(undefined)
+
+  model.setDisplayedRegions(volvoxDisplayedRegions)
+  await waitFor(() => {
+    expect(model.status).toEqual({ type: 'ready' })
+  })
+})
+
+test('status carries the loading message the spinner would draw', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testStatusLoading',
+      type: 'LinearGenomeView',
+      init: { assembly: 'volvox', loc: 'ctgA:1-100' },
+    }),
+  )
+  model.setWidth(800)
+
+  expect(model.showLoading).toBe(true)
+  expect(model.status).toEqual({
+    type: 'loading',
+    message: model.loadingMessage,
+    progress: model.loadingProgress,
+  })
+
+  await waitFor(() => {
+    expect(model.status).toEqual({ type: 'ready' })
+  })
+})
+
 describe('get sequence for selected displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   /* the start of all the results should be +1

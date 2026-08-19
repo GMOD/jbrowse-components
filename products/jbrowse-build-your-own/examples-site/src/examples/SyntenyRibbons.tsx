@@ -218,8 +218,8 @@ const TrackRow = observer(function TrackRow({
 }) {
   // `view.getTrack(id)`, not a scan of `view.tracks` comparing
   // `configuration.trackId` by hand: the view keeps a map for exactly this. The
-  // guard stays -- `view.ready` says the view can draw, not that your track is
-  // instantiated yet.
+  // guard stays -- a ready `view.status` says the view can draw, not that your
+  // track is instantiated yet.
   const track = view.getTrack(trackId)
   if (!track) {
     return null
@@ -285,7 +285,7 @@ const SyntenyRow = observer(function SyntenyRow({
       >
         {label}
       </div>
-      {view.ready
+      {view.status.type === 'ready'
         ? view.tracks.map(track => (
             <TrackRow
               key={track.configuration.trackId}
@@ -435,10 +435,10 @@ const SyntenyRibbons = observer(function SyntenyRibbons() {
           ) : (
             // `initialized` waits on every row's view, so a failure in either
             // assembly leaves it false permanently -- the synteny twin of the
-            // `view.ready` hole the Loading and error states page is about, and
-            // the reason `error` is checked here rather than assuming the only
-            // reason not to be initialized is that it is still loading. This
-            // view's `error` folds in its rows' for exactly that.
+            // hole `view.status` closes on a linear view and leaves open here,
+            // and the reason `error` is checked below rather than assuming the
+            // only reason not to be initialized is that it is still loading.
+            // This view's `error` folds in its rows' for exactly that.
             <div style={{ fontSize: '0.85rem', opacity: 0.7, padding: 8 }}>
               {view.error
                 ? `Could not load: ${view.error instanceof Error ? view.error.message : String(view.error)}`

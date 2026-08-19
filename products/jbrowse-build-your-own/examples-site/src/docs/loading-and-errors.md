@@ -1,16 +1,16 @@
-`view.ready` is the gate every page here puts its tracks behind. It is
-`!showLoading && !error`, so its `false` covers **two** states, and
-`view.ready ? tracks : null` draws neither.
+`view.status` is the view's lifecycle as one value, and the gate every page here
+puts its tracks behind: `ready`, `loading` with `message` and `progress`,
+`error` with `error`, and `noRegions` — nothing has navigated the view yet,
+which the older `view.ready` getter reports as ready.
 
-That shape is fine until a sequence file 404s. Then the box stays empty, with no
-throw and no console error: the failure is a state on the model. Pick the third
-radio; the fix is the `else` branch.
+Switch on it rather than reading `view.error` and `view.loadingMessage`
+separately. That message goes `undefined` once a load stops, however it stopped,
+so an error checked second is one the loading branch has painted over. The third
+radio breaks the assembly: that failure is a state on the model, so nothing
+throws.
 
-Read `view.error` **before** `view.loadingMessage`. The message goes `undefined`
-once the load stops, however it stopped, so an error checked second is one the
-loading branch has already painted over. `view.loadingProgress` is a 0..1
-fraction, present only when the download reported a Content-Length — draw an
-indeterminate bar when it is missing, not one at zero.
+`progress` is a 0..1 fraction, present only when the download reported a
+Content-Length — draw an indeterminate bar when it is missing, not one at zero.
 
 No retry, unlike the per-track error bar on
 [Removing Material UI](../removing-material-ui/): a view-level failure is a bad

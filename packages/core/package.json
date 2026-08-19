@@ -211,6 +211,7 @@
     "./util/usePointerDrag": "./src/util/usePointerDrag.ts",
     "./util/useResizeDrag": "./src/util/useResizeDrag.ts",
     "./util/useRowVirtualScroll": "./src/util/useRowVirtualScroll.ts",
+    "./util/viewStatus": "./src/util/viewStatus.ts",
     "./util/virtualRange": "./src/util/virtualRange.ts",
     "./util/wheelZoom": "./src/util/wheelZoom.ts",
     "./util/whenViewSettled": "./src/util/whenViewSettled.ts"
@@ -1029,6 +1030,10 @@
         "types": "./esm/util/useRowVirtualScroll.d.ts",
         "import": "./esm/util/useRowVirtualScroll.js"
       },
+      "./util/viewStatus": {
+        "types": "./esm/util/viewStatus.d.ts",
+        "import": "./esm/util/viewStatus.js"
+      },
       "./util/virtualRange": {
         "types": "./esm/util/virtualRange.d.ts",
         "import": "./esm/util/virtualRange.js"
@@ -1616,6 +1621,9 @@
         ],
         "util/useRowVirtualScroll": [
           "esm/util/useRowVirtualScroll.d.ts"
+        ],
+        "util/viewStatus": [
+          "esm/util/viewStatus.d.ts"
         ],
         "util/virtualRange": [
           "esm/util/virtualRange.d.ts"

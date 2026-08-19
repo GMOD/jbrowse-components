@@ -36,6 +36,7 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
 import {
   cast,
   getParent,
@@ -97,6 +98,7 @@ import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
+import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
@@ -931,6 +933,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get ready() {
         return !this.showLoading && !this.error
+      },
+
+      /**
+       * #getter
+       * The same question as `ready` with the other three outcomes named, for a
+       * host that draws its own chrome and has to render all four. See
+       * `computeViewStatus`, whose precedence this defers to — and note its
+       * `ready` is narrower than the getter above, which is true when nothing
+       * has told the view where to look.
+       */
+      get status(): ViewStatus {
+        return computeViewStatus({
+          error: this.error,
+          hasSomethingToShow: this.hasSomethingToShow,
+          loading: () =>
+            this.showLoading
+              ? {
+                  message: this.loadingMessage ?? 'Loading',
+                  progress: this.loadingProgress,
+                }
+              : undefined,
+        })
       },
 
       /**
