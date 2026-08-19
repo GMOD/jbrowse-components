@@ -133,18 +133,33 @@ const powp = (base: number) =>
 const symlog = (c: number) => (x: number) =>
   Math.sign(x) * Math.log1p(Math.abs(x / c))
 
-/**
- * The spec's transform. A wholly negative log domain maps through -log(-x),
- * which is what lets a log scale run from -100 to -1; `getNiceDomain` floors
- * its own log domains above zero, so that branch is for callers reaching
- * `getScale` directly.
- */
+// A wholly negative log domain is handled by reflection — d3 negates the input,
+// takes the logarithm, and negates the result — which is what lets a log scale
+// run from -100 to -1. `getNiceDomain` floors its own log domains above zero,
+// so this is for callers reaching `getScale` directly.
+const reflect = (f: (x: number) => number) => (x: number) => -f(-x)
+
+const logsFor = (spec: ScaleSpec) => {
+  const log = logp(spec.base ?? 10)
+  return spec.domain[0] < 0 ? reflect(log) : log
+}
+
+const powsFor = (spec: ScaleSpec) => {
+  const pow = powp(spec.base ?? 10)
+  return spec.domain[0] < 0 ? reflect(pow) : pow
+}
+
+/** The spec's transform. */
 function transformFor(spec: ScaleSpec): (x: number) => number {
   if (spec.kind === 'symlog') {
     return symlog(spec.constant ?? 1)
   }
   if (spec.kind === 'log') {
-    return spec.domain[0] < 0 ? x => -Math.log(-x) : logp(spec.base ?? 10)
+    // Natural log whatever the base, which is what d3 maps values through:
+    // `loggish` keeps the base-specific pair for nice() and ticks() only. The
+    // base cancels in the normalized interpolation algebraically, but log2 and
+    // log disagree in the last bit and the parity table compares exactly.
+    return spec.domain[0] < 0 ? x => -Math.log(-x) : Math.log
   }
   return x => x
 }
@@ -152,26 +167,34 @@ function transformFor(spec: ScaleSpec): (x: number) => number {
 /**
  * Where `x` lands in the range.
  *
+ * The arithmetic is d3's bimap, expression for expression — normalize to t,
+ * then `r0 * (1 - t) + r1 * t`, with the endpoints swapped for a descending
+ * domain. The algebraically identical `r0 + t * (r1 - r0)` differs in the last
+ * bit, which `scaleParity.test.ts` compares exactly and rejects.
+ *
  * A zero-width domain returns the range's midpoint rather than dividing by
  * zero, which is d3's behaviour and the one a flat track wants: every score
  * equal means every bar at the same height, not every bar at NaN.
  */
 export function scaleValue(spec: ScaleSpec, x: number): number {
   const transform = transformFor(spec)
-  const [d0, d1] = [transform(spec.domain[0]), transform(spec.domain[1])]
+  const t0 = transform(spec.domain[0])
+  const t1 = transform(spec.domain[1])
   const [r0, r1] = spec.range
-  const span = d1 - d0
+  const [a, b, ra, rb] = t1 < t0 ? [t1, t0, r1, r0] : [t0, t1, r0, r1]
+  const span = b - a
   if (!span) {
-    return Number.isNaN(span) ? NaN : (r0 + r1) / 2
+    return Number.isNaN(span) ? NaN : (ra + rb) / 2
   }
-  return r0 + ((transform(x) - d0) / span) * (r1 - r0)
+  const t = (transform(x) - a) / span
+  return ra * (1 - t) + rb * t
 }
 
 /** The domain rounded out to tick boundaries — d3's `nice`. */
 export function niceDomain(spec: ScaleSpec, count = 10): [number, number] {
   if (spec.kind === 'log') {
-    const logs = logp(spec.base ?? 10)
-    const pows = powp(spec.base ?? 10)
+    const logs = logsFor(spec)
+    const pows = powsFor(spec)
     return [
       pows(Math.floor(logs(spec.domain[0]))),
       pows(Math.ceil(logs(spec.domain[1]))),
@@ -220,8 +243,8 @@ export function scaleTicks(spec: ScaleSpec, count = 10): number[] {
     return linearTicks(spec.domain[0], spec.domain[1], count)
   }
   const base = spec.base ?? 10
-  const logs = logp(base)
-  const pows = powp(base)
+  const logs = logsFor(spec)
+  const pows = powsFor(spec)
   let [u, v] = spec.domain
   const reverse = v < u
   if (reverse) {
