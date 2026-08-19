@@ -9,11 +9,19 @@ interface LinearGenomeViewLike {
   setInit: (init: InitState) => void
 }
 
+// The alias-aware half of the session the assembly comparison below needs.
+interface SessionLike {
+  views: { type: string }[]
+  assemblyManager?: {
+    getCanonicalAssemblyName: (asmName: string) => string | undefined
+  }
+}
+
 // Layers URL params onto the defaultSession's first LinearGenomeView via its
 // existing init autorun (which waits for the assembly and navigates), instead
 // of replacing the session.
 export function applyDefaultSessionViewInit(
-  session: { views: { type: string }[] } | undefined,
+  session: SessionLike | undefined,
   // the URL-param subset of InitState (assembly relaxed to optional — it falls
   // back below). Derived from InitState so it can't drift.
   init: Partial<InitState>,
@@ -36,7 +44,28 @@ export function applyDefaultSessionViewInit(
     // Unless the URL switches assemblies: the pending init's tracks and loc
     // belong to the old one, and carrying them over opens tracks whose adapters
     // resolve no refNames — an empty track, not an error.
-    const base = pending?.assembly === assembly ? pending : undefined
+    //
+    // Through the assembly manager, so the two names are compared the way the
+    // rest of the subsystem compares them: `hg38` in the URL beside `GRCh38` in
+    // the config is one assembly, and a raw `===` read it as a switch and threw
+    // the defaultSession's tracks away without a diagnostic.
+    const base = sameAssembly(session, pending?.assembly, assembly)
+      ? pending
+      : undefined
     view.setInit({ ...base, ...init, assembly })
   }
+}
+
+// Undefined either side is not a match: an absent pending assembly has nothing
+// to carry over. An unrecognized name resolves to undefined, so it falls back to
+// comparing the names as written rather than matching everything unknown.
+function sameAssembly(session: SessionLike, a: string | undefined, b: string) {
+  if (a === undefined) {
+    return false
+  }
+  const am = session.assemblyManager
+  return (
+    (am?.getCanonicalAssemblyName(a) ?? a) ===
+    (am?.getCanonicalAssemblyName(b) ?? b)
+  )
 }

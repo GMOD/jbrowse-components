@@ -6,11 +6,14 @@ import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 // the shape applyDefaultSessionViewInit duck-types. A defaultSession view that
 // used the `init` shorthand hasn't navigated yet, so assemblyNames (derived from
 // displayedRegions) is still empty and only its pending init names an assembly
-function makeSession(init?: InitState) {
+function makeSession(init?: InitState, aliases: Record<string, string> = {}) {
   const applied: InitState[] = []
   return {
     applied,
     session: {
+      assemblyManager: {
+        getCanonicalAssemblyName: (asmName: string) => aliases[asmName],
+      },
       views: [
         {
           type: 'LinearGenomeView',
@@ -73,4 +76,35 @@ test('no resolvable assembly applies nothing', () => {
   applyDefaultSessionViewInit(session, buildLgvInit({ loc: 'ctgB:1-100' }))
 
   expect(applied).toEqual([])
+})
+
+// an alias is the same assembly, so &assembly=hg38 over a defaultSession naming
+// GRCh38 is not a switch — a raw `===` read it as one and dropped every track
+test('an aliased assembly keeps the pending init', () => {
+  const { session, applied } = makeSession(
+    { assembly: 'GRCh38', tracks: ['genes'] },
+    { GRCh38: 'GRCh38', hg38: 'GRCh38' },
+  )
+
+  applyDefaultSessionViewInit(
+    session,
+    buildLgvInit({ assembly: 'hg38', loc: 'chr1:1-100' }),
+  )
+
+  expect(applied).toEqual([
+    { assembly: 'hg38', tracks: ['genes'], loc: 'chr1:1-100' },
+  ])
+})
+
+// two names the manager doesn't know fall back to comparing them as written,
+// rather than both resolving to undefined and matching each other
+test('unrecognized assembly names still compare as written', () => {
+  const { session, applied } = makeSession({
+    assembly: 'volvox',
+    tracks: ['genes'],
+  })
+
+  applyDefaultSessionViewInit(session, buildLgvInit({ assembly: 'volvox2' }))
+
+  expect(applied).toEqual([{ assembly: 'volvox2' }])
 })
