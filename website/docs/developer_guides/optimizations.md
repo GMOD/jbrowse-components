@@ -543,6 +543,15 @@ carries it beside the GPU and scoping ceilings [](/docs/developer_guides/memory)
 sends you to. The rest are measured costs of the current design with nothing yet
 proposed to retire them, which is why they are on this page instead.
 
+## Why not an existing engine, why not Rust
+
+A reader arriving at the list above usually has the same next question: some
+other genome browser draws through Pixi, deck.gl is right there, and a compiled
+language would surely beat a hot JavaScript loop. Each of those was evaluated,
+and [why not deck.gl, Pixi, Rust or wgpu](/docs/developer_guides/why_not_x)
+answers them one at a time — including the three places Rust is already in the
+stack, all of which run before the page does.
+
 ## Reproducing any of this
 
 Every number on this page names the fixture and the method in the reference doc
