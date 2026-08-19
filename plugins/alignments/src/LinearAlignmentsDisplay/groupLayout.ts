@@ -425,9 +425,12 @@ export interface FittedReadPitchInput {
   // The fit slot, never the reactive `height` getter: the same anti-cycle rule
   // `layoutGroupsToViewport`'s caller follows.
   fitTargetHeight: number
-  // One section's reserved coverage + band stack. Every section reserves its
-  // own, so the space left for reads is the target minus one per section.
-  coverageDisplayHeight: number
+  // The reserved coverage + band stack over EVERY section, already summed
+  // (`totalBelowCoverageOverhead`) — so the space left for reads is the target
+  // minus this. A sum rather than one section's cost times the count, because
+  // the strips below coverage are reserved per lane and a lane with nothing
+  // bound for one reserves none.
+  totalOverhead: number
 }
 
 /**
@@ -457,11 +460,7 @@ export function fittedReadPitch(input: FittedReadPitchInput) {
   const rows = ctx.order
     .filter(g => !collapsedKeys.has(g.key))
     .reduce((sum, { key }) => sum + (counts.get(key) ?? 0), 0)
-  // rows === 0 (no groups) already short-circuits to 0 below, so order.length is
-  // >= 1 whenever this product matters — matching the layout's
-  // `groupCount * overhead`.
-  const pileupSpace =
-    fitTargetHeight - ctx.order.length * input.coverageDisplayHeight
+  const pileupSpace = fitTargetHeight - input.totalOverhead
   return rows > 0 && pileupSpace > 0
     ? Math.min(NORMAL_PITCH, Math.max(1, pileupSpace / rows))
     : 0
@@ -474,14 +473,17 @@ export interface FitViewportInput {
   rowHeight: number
   height: number
   maxHeight: number
-  // Per-group band overhead (coverage + arc + sashimi strips) in px, as a thunk
-  // rather than a value because only the grouped branch spends it. Read eagerly,
-  // it puts every band height in the layout computed's dependency set, so an
-  // ungrouped display re-placed every row — and its renderer repacked every GPU
-  // buffer — on each frame of a coverage/arc band resize drag, to draw the rows
-  // it already had. Grouping does divide the viewport by band overhead, so there
-  // the dependency is real and the thunk is called.
-  overhead: () => number
+  // Band overhead (coverage + arc + sashimi strips) summed over every group, in
+  // px — a SUM, not one group's cost, because the strips below coverage are
+  // reserved per lane (`totalBelowCoverageOverhead`).
+  //
+  // A thunk rather than a value because only the grouped branch spends it. Read
+  // eagerly, it puts every band height in the layout computed's dependency set,
+  // so an ungrouped display re-placed every row — and its renderer repacked
+  // every GPU buffer — on each frame of a coverage/arc band resize drag, to draw
+  // the rows it already had. Grouping does divide the viewport by band overhead,
+  // so there the dependency is real and the thunk is called.
+  totalOverhead: () => number
   // Groups drawing coverage only — they cost overhead but no pileup rows.
   collapsedKeys: ReadonlySet<string>
   // Per-group pileup-height overrides in px (drag / "show all"); opt out of the
@@ -511,10 +513,9 @@ export function layoutGroupsToViewport(
   const defaultCap = grouped
     ? fitGroupMaxRows({
         height: fit.height,
-        groupCount: ctx.order.length,
         visibleGroupCount,
         rowHeight,
-        overhead: fit.overhead(),
+        totalOverhead: fit.totalOverhead(),
         maxRows: maxHeightRows,
       })
     : ceilingCap(maxHeightRows)
@@ -566,35 +567,37 @@ export function layoutGroupsToViewport(
   return result
 }
 
-// Equal-split row budget per group when grouping fits to the viewport: every
-// group still reserves its band overhead (coverage/arcs/sashimi) even when
-// collapsed, so subtract `groupCount * overhead`, then divide the remaining
-// height across only the `visibleGroupCount` groups that actually draw a pileup.
+// Equal-split row budget per group when grouping fits to the viewport: subtract
+// what the bands cost over the whole stack, then divide the remaining height
+// across only the `visibleGroupCount` groups that actually draw a pileup.
 // Collapsing a group thus hands its pileup slice back to the ones still shown,
 // keeping the stack fit to the viewport without dead space. Floored to a few
 // rows so a tiny viewport or many groups still shows pileup (the overflow then
 // scrolls), and never exceeds the display-wide `maxRows` cap. A group with fewer
 // reads than its slice simply lays out all of them — the cap only truncates
 // deeper groups.
+//
+// `totalOverhead` is already summed over every group, collapsed ones included
+// (they still show coverage). It arrives summed rather than as one group's cost
+// times the count because the two strips below coverage are reserved per lane —
+// see `totalBelowCoverageOverhead`, which is the only place that sum is spelled.
 export const MIN_FIT_ROWS = 3
 export function fitGroupMaxRows({
   height,
-  groupCount,
   visibleGroupCount,
   rowHeight,
-  overhead,
+  totalOverhead,
   maxRows,
 }: {
   height: number
-  groupCount: number
   // Non-collapsed groups sharing the pileup budget; falls back to 1 so an
   // all-collapsed stack (no pileup drawn anyway) never divides by zero.
   visibleGroupCount: number
   rowHeight: number
-  overhead: number
+  totalOverhead: number
   maxRows: number
 }) {
-  const pileupBudget = height - groupCount * overhead
+  const pileupBudget = height - totalOverhead
   const slice = pileupBudget / Math.max(1, visibleGroupCount)
   const rows = Math.max(MIN_FIT_ROWS, Math.floor(slice / rowHeight))
   return tighterCap(rows, maxRows)

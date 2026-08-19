@@ -75,15 +75,14 @@ test('buildLaidOutByGroup: a coverage-only lane is not laid out at all', () => {
 })
 
 test('fitGroupMaxRows: splits the post-overhead height evenly across groups', () => {
-  // 1000px height, 2 groups, 50px overhead each => (1000 - 100)/2 = 450px per
-  // group / 10px rows = 45 rows.
+  // 1000px height, 2 groups, 100px of overhead between them => (1000 - 100)/2 =
+  // 450px per group / 10px rows = 45 rows.
   expect(
     fitGroupMaxRows({
       height: 1000,
-      groupCount: 2,
       visibleGroupCount: 2,
       rowHeight: 10,
-      overhead: 50,
+      totalOverhead: 100,
       maxRows: 1000,
     }),
   ).toEqual({ rows: 45, source: 'budget' })
@@ -93,10 +92,9 @@ test('fitGroupMaxRows: never exceeds the display-wide cap', () => {
   expect(
     fitGroupMaxRows({
       height: 100000,
-      groupCount: 2,
       visibleGroupCount: 2,
       rowHeight: 10,
-      overhead: 0,
+      totalOverhead: 0,
       maxRows: 30,
     }),
     // and says so, which is what stops the label chip offering an expand that
@@ -105,42 +103,39 @@ test('fitGroupMaxRows: never exceeds the display-wide cap', () => {
 })
 
 test('fitGroupMaxRows: floors to MIN_FIT_ROWS when the slice is tiny', () => {
-  // Many groups / small viewport => slice goes negative; floor keeps a few rows
-  // (the stack then overflows and scrolls).
+  // Many groups / small viewport (8 groups, 45px each) => slice goes negative;
+  // floor keeps a few rows (the stack then overflows and scrolls).
   expect(
     fitGroupMaxRows({
       height: 200,
-      groupCount: 8,
       visibleGroupCount: 8,
       rowHeight: 10,
-      overhead: 45,
+      totalOverhead: 360,
       maxRows: 1000,
     }),
   ).toEqual({ rows: MIN_FIT_ROWS, source: 'budget' })
 })
 
 test('fitGroupMaxRows: a collapsed group hands its pileup slice to the rest', () => {
-  // 3 groups all reserve 50px overhead (collapsed ones still show coverage), so
+  // 3 groups reserving 50px each (collapsed ones still show coverage), so
   // 1000 - 150 = 850px of pileup budget. With one group collapsed it divides
   // across the 2 still drawing => 425px / 10px = 42 rows (vs 283 -> 28 when all
   // three share it).
   expect(
     fitGroupMaxRows({
       height: 1000,
-      groupCount: 3,
       visibleGroupCount: 3,
       rowHeight: 10,
-      overhead: 50,
+      totalOverhead: 150,
       maxRows: 1000,
     }),
   ).toEqual({ rows: 28, source: 'budget' })
   expect(
     fitGroupMaxRows({
       height: 1000,
-      groupCount: 3,
       visibleGroupCount: 2,
       rowHeight: 10,
-      overhead: 50,
+      totalOverhead: 150,
       maxRows: 1000,
     }),
   ).toEqual({ rows: 42, source: 'budget' })
@@ -151,10 +146,9 @@ test('fitGroupMaxRows: all groups collapsed never divides by zero', () => {
   expect(
     fitGroupMaxRows({
       height: 1000,
-      groupCount: 3,
       visibleGroupCount: 0,
       rowHeight: 10,
-      overhead: 50,
+      totalOverhead: 150,
       maxRows: 60,
     }),
   ).toEqual({ rows: 60, source: 'ceiling' })

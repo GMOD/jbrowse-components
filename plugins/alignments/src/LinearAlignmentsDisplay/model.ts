@@ -139,6 +139,7 @@ import {
   belowCoverageBandsGeometry,
   buildSectionRenders,
   computeStackedSections,
+  totalBelowCoverageOverhead,
 } from './sectionLayout.ts'
 
 import type {
@@ -171,7 +172,10 @@ import type {
 import type { AlignmentLane } from './lanes.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
-import type { SectionsLayout } from './sectionLayout.ts'
+import type {
+  BelowCoverageBandsSettings,
+  SectionsLayout,
+} from './sectionLayout.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -1372,16 +1376,13 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Inputs to `belowCoverageBandsGeometry` — the below-coverage band
-         * settings, plus whether any lane has arcs or a sashimi junction bound
-         * for its strip. Both data halves are pooled over the lanes, which
-         * `computeStackedSections` asks per lane: the geometry here is the one
-         * ungrouped answer, and there the lanes agree with it because there is
-         * only the one. Defined in an earlier .views block than
-         * `belowCoverageBands` so the fit-budget `laidOutByGroup` and that
-         * getter share one source.
+         * The settings half of the below-coverage band geometry — whether each
+         * strip MAY be reserved and how tall it is, with neither data half
+         * answered. Its two consumers answer those differently: the pooled
+         * `belowCoverageBandsInput` asks once for the whole stack, the fit
+         * budget once per lane.
          */
-        get belowCoverageBandsInput() {
+        get belowCoverageBandsSettings(): BelowCoverageBandsSettings {
           return {
             showCoverage: self.showCoverage,
             coverageHeight: self.coverageHeight,
@@ -1390,9 +1391,43 @@ export default function stateModelFactory(
             readConnectionsHeight: self.readConnectionsHeight,
             showSashimiArcs: self.showSashimiArcs,
             sashimiArcsHeight: self.sashimiArcsHeight,
+          }
+        },
+
+        /**
+         * #getter
+         * Inputs to `belowCoverageBandsGeometry` — the settings above, plus
+         * whether ANY lane has arcs or a sashimi junction bound for its strip.
+         * Both data halves are pooled over the lanes, which
+         * `computeStackedSections` asks per lane: the geometry here is the one
+         * ungrouped answer, and there the lanes agree with it because there is
+         * only the one. The grouped stack's own total is `totalBandOverhead`.
+         */
+        get belowCoverageBandsInput() {
+          return {
+            ...this.belowCoverageBandsSettings,
             hasArcs: this.arcsResult.inkGroupKeys.size > 0,
             hasSashimiDownArcs: this.sashimiDownArcLanes.size > 0,
           }
+        },
+
+        /**
+         * #getter
+         * What the below-coverage strips cost the fit-to-viewport row budget
+         * over the whole stack: every lane's own reserved bands, summed the way
+         * `computeStackedSections` reserves them.
+         *
+         * Pre-layout by construction — `groupOrder` and the two lane sets are
+         * all fetch-tier — which is what lets the layout spend it without
+         * routing back through itself.
+         */
+        get totalBandOverhead() {
+          return totalBelowCoverageOverhead(
+            this.belowCoverageBandsSettings,
+            this.groupOrder.map(g => g.key),
+            this.arcsResult.inkGroupKeys,
+            this.sashimiDownArcLanes,
+          )
         },
 
         /**
@@ -1417,9 +1452,8 @@ export default function stateModelFactory(
             maxHeight: this.maxHeight,
             // A thunk, so the band heights only enter this computed's
             // dependencies when grouping actually spends them — see
-            // `FitViewportInput.overhead`.
-            overhead: () =>
-              belowCoverageBandsGeometry(this.belowCoverageBandsInput).bottom,
+            // `FitViewportInput.totalOverhead`.
+            totalOverhead: () => this.totalBandOverhead,
             collapsedKeys: self.collapsedGroups,
             heightOverridesPx: self.groupMaxHeightOverrides,
           })
@@ -2490,7 +2524,7 @@ export default function stateModelFactory(
             maxHeight: self.maxHeight,
             collapsedKeys: self.collapsedGroups,
             fitTargetHeight: self.fitTargetHeight,
-            coverageDisplayHeight: self.coverageDisplayHeight,
+            totalOverhead: self.totalBandOverhead,
           })
         },
 

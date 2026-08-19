@@ -1,7 +1,46 @@
+import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
+
+import { namesToBlock } from '../shared/readNameBlock.ts'
+import { nextRefsToTable } from '../shared/readNextRefs.ts'
+import { makeEmptyPileupData } from './testUtils.ts'
 import {
   bootAlignmentsDisplay,
   oneReadWithMate as oneRead,
 } from './testUtils.ts'
+
+import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
+
+// `n` reads stacked at one position, so the lane lays out exactly `n` rows —
+// enough of them that the fit pitch lands under the Normal cap and a change in
+// the budget is visible in it. `mateBp` pairs the FIRST read, which is all
+// `computeArcsFromPileupData` needs to give the lane an arc.
+function stackedLane(n: number, mateBp?: number): WorkerPileupData {
+  const positions = new Uint32Array(n * 2)
+  for (let i = 0; i < n; i++) {
+    positions[i * 2] = 1000
+    positions[i * 2 + 1] = 1100
+  }
+  const paired = (i: number) => mateBp !== undefined && i === 0
+  return {
+    ...makeEmptyPileupData(),
+    readKeys: Array.from({ length: n }, (_, i) => `r${i}`),
+    ...namesToBlock(Array.from({ length: n }, (_, i) => `read${i}`)),
+    readPositions: positions,
+    readFlags: Uint16Array.from(
+      Array.from({ length: n }, (_, i) => (paired(i) ? SAM_FLAG_PAIRED : 0)),
+    ),
+    readMapqs: new Uint8Array(n),
+    readStrands: new Int8Array(n).fill(1),
+    readInsertSizes: new Float32Array(n).fill(500),
+    readPairOrientations: new Uint8Array(n).fill(1),
+    ...nextRefsToTable(
+      Array.from({ length: n }, (_, i) => (paired(i) ? 'ctgA' : '')),
+    ),
+    readNextPositions: Uint32Array.from(
+      Array.from({ length: n }, (_, i) => (paired(i) ? mateBp! : 0)),
+    ),
+  }
+}
 
 import type { SectionsLayout } from './sectionLayout.ts'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
@@ -285,5 +324,57 @@ describe('the pooled below-coverage bands agree with the sections', () => {
     expect(on.coverageDisplayHeight).toBe(off.coverageDisplayHeight)
     expect(on.fittedFeatureHeight).toBe(off.fittedFeatureHeight)
     expect(on.sections.contentHeight).toBe(off.sections.contentHeight)
+  })
+
+  // And the half above leaves open: the budget is a SUM over the lanes, not one
+  // lane's answer times the lane count. `computeStackedSections` reserves the
+  // strip per lane, so a stack where only one lane pairs draws one strip — and a
+  // budget charging every lane for it withholds the others' worth of viewport
+  // from the rows, which is dead space at the bottom of a mode whose whole
+  // promise is filling the display.
+  test('a strip one lane of two has is charged once, not twice', () => {
+    const seed = (secondLaneMate: number | undefined) => {
+      const { display } = createEnv()
+      display.setHeightMode('fit')
+      display.setReadConnections('arc')
+      display.setReadConnectionsDown(true)
+      display.setGroupBy({ type: 'strand' })
+      display.setRpcData(0, {
+        groups: [
+          { key: '+', label: 'Forward strand', data: stackedLane(20, 2000) },
+          {
+            key: '-',
+            label: 'Reverse strand',
+            data: stackedLane(20, secondLaneMate),
+          },
+        ],
+      })
+      display.setLoadedRegion(0, {
+        refName: 'ctgA',
+        start: 0,
+        end: 10_000,
+        assemblyName: 'volvox',
+      })
+      return display
+    }
+    const bothPaired = seed(3000)
+    const onePaired = seed(undefined)
+    // The premise: two strips drawn against one.
+    expect(bothPaired.sections.sections.map(s => s.hasArcsBand)).toEqual([
+      true,
+      true,
+    ])
+    expect(onePaired.sections.sections.map(s => s.hasArcsBand)).toEqual([
+      true,
+      false,
+    ])
+    // So the lane without one hands its strip's height back to the rows. Both
+    // stacks have the same 40 rows, so the pitch grows by exactly the strip
+    // spread over them.
+    const rows = 40
+    expect(onePaired.fittedFeatureHeight).toBeCloseTo(
+      bothPaired.fittedFeatureHeight + onePaired.readConnectionsHeight / rows,
+      6,
+    )
   })
 })

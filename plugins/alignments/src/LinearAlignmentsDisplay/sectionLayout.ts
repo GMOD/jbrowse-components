@@ -150,6 +150,42 @@ export function reservesSashimiBand(s: {
   return s.showSashimiArcs && s.showCoverage && s.hasSashimiDownArcs
 }
 
+// The settings half alone, with neither data half answered. The pooled geometry
+// takes it plus one answer for the whole stack; the fit budget takes it once per
+// lane, with that lane's own — see `totalBelowCoverageOverhead`.
+export type BelowCoverageBandsSettings = Omit<
+  BelowCoverageBandsInput,
+  'hasArcs' | 'hasSashimiDownArcs'
+>
+
+// What the below-coverage strips cost the fit-to-viewport row budget across the
+// whole stack: each lane's own reserved bands, SUMMED.
+//
+// Not one lane's answer times the lane count, which is what this was and which
+// only agrees with the sections where every lane reserves the same strips. A
+// grouping routinely leaves lanes with nothing bound for one — the 'Not split'
+// lane has no arc, an unspliced lane no junction — and `computeStackedSections`
+// gives those lanes no strip. Charging them for it withholds
+// `readConnectionsHeight` (or `sashimiArcsHeight`) per arc-less lane from the
+// rows and leaves exactly that much dead space at the bottom of a mode whose
+// promise is filling the display.
+export function totalBelowCoverageOverhead(
+  settings: BelowCoverageBandsSettings,
+  keys: readonly string[],
+  arcLanes: ReadonlySet<string>,
+  sashimiDownLanes: ReadonlySet<string>,
+) {
+  let total = 0
+  for (const key of keys) {
+    total += belowCoverageBandsGeometry({
+      ...settings,
+      hasArcs: arcLanes.has(key),
+      hasSashimiDownArcs: sashimiDownLanes.has(key),
+    }).bottom
+  }
+  return total
+}
+
 export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
   const coverageBand = s.showCoverage ? s.coverageHeight : 0
   const hasArcsBand = reservesArcsBand(s) && s.hasArcs

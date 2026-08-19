@@ -34,7 +34,10 @@ function pitch(
   groups: { key: string; rows: number }[],
   opts: {
     fitTargetHeight: number
-    coverageDisplayHeight?: number
+    // Summed over every group by the caller in production
+    // (`totalBelowCoverageOverhead`), so a per-group figure is spelled here as
+    // the product it used to be computed as.
+    totalOverhead?: number
     collapsedKeys?: Set<string>
   },
 ) {
@@ -43,7 +46,7 @@ function pitch(
     maxHeight: 10000,
     collapsedKeys: opts.collapsedKeys ?? new Set(),
     fitTargetHeight: opts.fitTargetHeight,
-    coverageDisplayHeight: opts.coverageDisplayHeight ?? 0,
+    totalOverhead: opts.totalOverhead ?? 0,
   })
 }
 
@@ -54,7 +57,7 @@ test('divides the pileup space by the total row count, fractionally', () => {
 })
 
 // Every section reserves its own coverage + band stack, so the space left for
-// reads is the target minus one per section.
+// reads is the target minus every section's.
 test('one section of overhead is charged per group, not once for the display', () => {
   expect(
     pitch(
@@ -62,10 +65,24 @@ test('one section of overhead is charged per group, not once for the display', (
         { key: 'a', rows: 5 },
         { key: 'b', rows: 5 },
       ],
-      { fitTargetHeight: 90, coverageDisplayHeight: 15 },
+      { fitTargetHeight: 90, totalOverhead: 30 },
     ),
   ).toBe(6)
-  // Charging it once for the display instead would leave 75px and fit 7.5.
+  // Charging 15px once for the display instead would leave 75px and fit 7.5.
+})
+
+// The sum is the caller's, and it is a sum rather than a product because the
+// strips below coverage are reserved per lane: the lane with no arc of its own
+// reserves none, and the budget has to hand that height back to the rows.
+test('an overhead only some lanes pay leaves the rest of them more room', () => {
+  const groups = [
+    { key: 'a', rows: 5 },
+    { key: 'b', rows: 5 },
+  ]
+  // 15px of coverage each, plus a 20px arc strip on one lane only.
+  expect(pitch(groups, { fitTargetHeight: 90, totalOverhead: 50 })).toBe(4)
+  // Charging both lanes for the strip is 70px of overhead, leaving 20px — half
+  // the room, for a strip only one of them draws.
 })
 
 // Choosing "fit" overrides the compactness preset, so the cap is the Normal
@@ -91,7 +108,7 @@ test('0 when there are no rows, and when the overhead eats the whole target', ()
   expect(
     pitch([{ key: 'a', rows: 4 }], {
       fitTargetHeight: 30,
-      coverageDisplayHeight: 30,
+      totalOverhead: 30,
     }),
   ).toBe(0)
 })
