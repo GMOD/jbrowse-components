@@ -5,7 +5,7 @@ description: The internet account model does six jobs across a boundary that onl
 
 # Internet accounts: the split the RPC boundary already draws
 
-~3,300 lines across the auth plugin (1,858), core plus the root-model mixin
+~3,300 lines across the auth plugin (1,851), core plus the root-model mixin
 (665) and the FileSelector (786). Reviewed end to end in 2026-08, re-read
 2026-08-19; this is what came out that is not already landed.
 
@@ -39,8 +39,8 @@ merely unused but unusable — `getTokenFromUser` wants `root.session`,
 That is what the `isWebWorker()` and guarded-storage calls threaded through the
 model are: **the shape of the wrong half being present.** And `corePlugins.ts`
 is the worker's plugin list too, so the RPC worker bundle carries the OAuth
-popup driver, PKCE crypto and the `window.require('electron')` branch — 668 of
-the plugin's 1,858 lines it can never reach (`OAuthModel/model.tsx` plus its
+popup driver, PKCE crypto and the `window.require('electron')` branch — 661 of
+the plugin's 1,851 lines it can never reach (`OAuthModel/model.tsx` plus its
 `util.ts`, neither of which a worker can enter).
 
 ## The three moves
@@ -102,9 +102,10 @@ retry.
 than they made it look:
 
 - It is not the only caller. `findAppropriateInternetAccount` calls it too
-  (`RootModel/InternetAccounts.ts:126`) for a location naming an id whose
-  leading segment is a registered type — the shared-session path, which is not
-  HTTP Basic and which depends on the same `<TypeName>-<rest>` encoding.
+  (`packages/product-core/src/RootModel/InternetAccounts.ts:187`) for a location
+  naming an id whose leading segment is a registered type — the shared-session
+  path, which is not the HTTP Basic 401 retry and which depends on the same
+  `<TypeName>-<rest>` encoding.
 - The URL-prefix branch of `uriMatchesDomains` does **not** die with it. That
   shape is a documented user-facing feature for scoping an account to part of a
   server (`config_guides/authentication.md`, the `data.mylab.org/public` vs
@@ -184,16 +185,27 @@ move 1. This is the strongest argument for move 1 that move 1 does not make: a
 credential on the envelope is a per-call decision that can be cached, where a
 credential on the location forces re-validation of every location on every call.
 
-**Nothing revokes a credential.** `removeToken()` has no user-facing caller
-anywhere — every call site is an error path — and `removeRefreshToken()` fires
-only on an `invalid_grant`. So a session token lives until the tab closes and an
-OAuth refresh token lives in localStorage indefinitely, silently minting access
-tokens on every later visit, with no UI that clears either. Declining a global
-menu item (below) is a fine call on its own; the entry reads as though the
-alternative were "no menu item", when the state is "no revocation in any form".
-The storage split is also inverted: the short-lived access token gets
-`sessionStorage` and the long-lived, higher-privilege refresh token that can
-regenerate it gets `localStorage`.
+**Nothing in this repo revokes a credential.** Every `removeToken()` call site
+here is an error path, and `removeRefreshToken()` fires only on an
+`invalid_grant`. So a session token lives until the tab closes and an OAuth
+refresh token lives in localStorage indefinitely, silently minting access tokens
+on every later visit, with no UI that clears either. Declining a global menu item
+(below) is a fine call on its own; the entry reads as though the alternative were
+"no menu item", when the state is "no revocation in any form". The storage split
+is also inverted: the short-lived access token gets `sessionStorage` and the
+long-lived, higher-privilege refresh token that can regenerate it gets
+`localStorage`.
+
+"Nothing anywhere" would be too strong: Apollo3 has an "Apollo → Log out" menu
+item that opens a dialog and calls `removeToken()` on the account picked
+(`menus/topLevelMenu.ts:51`, `components/LogOut.tsx`). REJECTED_IDEAS already
+weighed that and ruled it evidence about Apollo rather than demand here, so this
+is not a reason to reopen the menu item. Two mechanics from it are still worth
+having in hand: their handler follows the call with `globalThis.location.reload()`,
+because dropping the credential does not unwind whatever was opened with it; and
+they **override** `removeToken`, so a core revocation routed through a *new*
+method instead of through `removeToken` does nothing for the one consumer that
+already revokes.
 
 ## Declined: a global sign-out menu item
 
