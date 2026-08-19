@@ -15,7 +15,7 @@
     "probe-eager-graph": "node scripts/eagerGraph.mjs"
   },
   "dependencies": {
-    "@astrojs/react": "^6.0.2",
+    "@astrojs/react": "^6.0.4",
     "@jbrowse/core": "workspace:*",
     "@jbrowse/display-ui": "workspace:*",
     "@jbrowse/mobx-state-tree": "^6.3.0",
@@ -26,7 +26,7 @@
     "@jbrowse/react-app2": "workspace:*",
     "@jbrowse/react-linear-genome-view2": "workspace:*",
     "@mui/material": "^9.3.1",
-    "astro": "^7.2.2",
+    "astro": "^7.2.4",
     "mobx": "^7.0.0",
     "mobx-react": "^10.0.0",
     "react": "^19.2.8",
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@jbrowse/browser-test-utils": "workspace:*",
-    "es-module-lexer": "^2.3.1",
-    "typescript": "^6.0.3"
+    "es-module-lexer": "^2.3.2",
+    "typescript": "^7.0.2"
   }
 }

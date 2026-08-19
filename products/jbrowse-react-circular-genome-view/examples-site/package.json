@@ -13,13 +13,13 @@
     "check-links": "node scripts/check-doc-links.mjs"
   },
   "dependencies": {
-    "@astrojs/react": "^6.0.2",
+    "@astrojs/react": "^6.0.4",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@jbrowse/core": "workspace:*",
     "@jbrowse/mobx-state-tree": "^6.3.0",
     "@jbrowse/react-circular-genome-view2": "workspace:*",
-    "astro": "^7.2.2",
+    "astro": "^7.2.4",
     "mobx": "^7.0.0",
     "mobx-react": "^10.0.0",
     "react": "^19.2.8",
@@ -28,6 +28,6 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@jbrowse/browser-test-utils": "workspace:*",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   }
 }

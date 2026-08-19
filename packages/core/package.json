@@ -239,7 +239,7 @@
     "@emotion/utils": "^1.4.2",
     "@floating-ui/react": "^0.27.20",
     "@gmod/bgzf-filehandle": "^6.6.0",
-    "@gmod/range-cache-filehandle": "^1.1.0",
+    "@gmod/range-cache-filehandle": "^1.2.0",
     "@gmod/shared-read-cache": "^1.6.0",
     "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/jexl": "^4.0.1",
