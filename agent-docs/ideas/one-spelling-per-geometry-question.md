@@ -5,6 +5,10 @@ description: canvas2dUtils holds the forward bp→px mapper, the scale and the i
 
 # One spelling per geometry question
 
+**Status: sections 1, 2 and 4 are built; section 3 is not.** Each section below
+carries what the implementation found where it differed from the proposal — read
+those before acting on the prose around them.
+
 `packages/render-core/src/canvas2dUtils.ts` is where a geometry number goes when
 two paths have to agree on it, and each entry's docstring says what happened
 before it existed: `makeBpMapper` (:447) and `makeCellLeftMapper` (:497) own the
@@ -31,8 +35,17 @@ share a pixel (`regionA.screenEndPx === regionB.screenStartPx`), so an inclusive
 bound lets the earlier region win and steal clicks meant for the later one.
 
 Wiggle's copy is already generic (`hitTestMouse<R extends MouseRegion, D>`) and
-already returns the region, its data and the bp — it is the extraction, sitting
-in a plugin with three in-plugin callers.
+already returns the region, its data and the bp.
+
+**Built, and this paragraph used to call `hitTestMouse` "the extraction", which
+was wrong.** The shared thing is the bare predicate, and the three non-wiggle
+sites say so unanimously: alignments splits `visibleRegionAt` out precisely
+*because* its arc band needs the region with no data map in scope
+(`useAlignmentsBase.ts:147`), the variant display wants a **fractional** bp
+rather than `hitTestMouse`'s `bpAtPx`, and canvas keys two maps off the match
+behind a `?.feature` guard. What `hitTestMouse` adds is a single-data-map lookup,
+which is exactly what none of them has. It stays wiggle's own composition and now
+calls `regionAtPixel`.
 
 ## 2. The fractional pixel→bp inverse — three spellings
 
@@ -43,7 +56,16 @@ fractional bp is here", which is what a search window or a distance test needs:
 | --- | --- |
 | `plugins/alignments/src/LinearAlignmentsDisplay/components/hitTestPipeline.ts:325` | `frac * bpSpan`, added to `bpRange[0]` or subtracted from `bpRange[1]` |
 | `plugins/variants/src/LinearMultiSampleVariantDisplay/components/variantHitTest.ts:48` | `frac * regionLengthBp`, same two branches |
-| `plugins/gwas/src/LinearManhattanDisplay/findManhattanHit.ts:60` | `(screenEndPx - mouseX) * bpPerPx` / `(mouseX - screenStartPx) * bpPerPx` |
+| `plugins/gwas/src/LinearManhattanDisplay/findManhattanHit.ts:60` | `start + (screenEndPx - px) * bpPerPx` reversed, `start + (px - screenStartPx) * bpPerPx` forward |
+
+**The gwas row anchors on `start` in BOTH branches**, which this table got wrong
+by dropping the anchor. Algebraically it lands where the other two do; as
+floating point it is a *third distinct spelling*, not a copy, and it is the one
+whose value moves most — against an exact-rational BigInt oracle over 300,000
+fractional-anchor samples the shared function returns a different double from
+the gwas spelling on 289 of them and from the `frac` spelling on 114, by at most
+7.5e-9 bp. Every one stays within 1 ulp of the exactly-rounded value, which is
+what makes this a de-duplication rather than a fix.
 
 **This is not a live bug.** Every consumer compares or measures a distance
 rather than flooring, so the double rounding `bpAtPx`'s docstring argues against
@@ -95,10 +117,50 @@ shared because core does not depend on render-core."
 
 The arithmetic risk is low and should be stated as such: `pxToBp` walks
 `displayedRegions`, whose bounds are whole bases, so the fractional-anchor case
-`bpAtPx` was hardened for does not arise on that path. What is left is a comment
-citing a blocker that is not there — the class
+`bpAtPx` was hardened for does not arise on that path. (Confirmed while
+building: `diagonalizeRegions` spreads `...region` and flips only `reversed`, and
+no other `setDisplayedRegions` path reshapes start or end.) What is left is a
+comment citing a blocker that is not there — the class
 `website/scripts/check-rename-archaeology.ts` was built for, one axis over.
-Either share the pivot or restate the reason as the choice it now is.
+
+**Built, and the answer is neither of the two this section offered.** "Share the
+pivot or restate the reason" was a false pair; the outcome is *restate the
+reason and pin the duplication with a test*.
+
+Both blockers a reader would reach for are false. The declared one is:
+`packages/core` declares `@jbrowse/render-core`, `tsconfig.build.esm.json:5`
+already references it, and three core modules import it at runtime. The one this
+doc's own review reached for next — that pulling a canvas module into core's
+coordinate path would cost a worker bundle — is false too: `canvas2dUtils` has
+exactly one import and it is a type import, no module-scope DOM, and it is
+*already* in every RPC worker's graph through `plugins/canvas/src/index.ts` →
+`labelPositioning.ts`, beside a `Base1DUtils` that genuinely executes in a worker
+via `RenderLDData` → `ldLayout.ts`. The
+[barrels-block-extraction](barrels-block-extraction.md) cost of the import is
+nil.
+
+**What kills the share is that there is no shared call to make.**
+`bpAtPx(px, bounds)` takes a screen pixel plus a px→bp projection and is mostly
+about that projection's float behaviour; `basePaintedAt(r, offsetBp)` takes an
+offset already in bp. Feeding `bpAtPx` synthetic bounds to fake a projection
+computes `(offsetBp * span) / span`, which is not exactly `offsetBp` at genome
+scale: over a 3,000,000-sample boundary sweep it named the wrong base 6,885
+times, every one of them on a 248,956,422 bp region (1.9% of that span's
+samples) and none at or below 133,797,422. A regression, bought with a
+de-duplication. What is genuinely common is two lines, and only render-core could
+hold them — which would put a pixel-free function downstream of the renderer and
+split it from its forward twin `bpOffsetInRegion`, eleven lines up in its own
+file.
+
+So the duplication stays and becomes *checked*: a parity block in
+`Base1DUtils.test.ts` drives both production paths and asserts they agree, which
+is what neither option above would have bought. **A pivot gate has to sample base
+BOUNDARIES**: `Math.ceil(x) - 1` and `Math.floor(x)` part company only where `x`
+is whole, so a first draft over cell interiors stayed green through both
+sabotages. Sampling boundaries in turn needs geometries where both paths land on
+one exactly — `pxToBp` forms `px * bpPerPx`, `bpAtPx` forms `px * span / width` —
+so the boundary block uses power-of-two `bpPerPx` and a second block sweeps
+interiors on the fractional geometries a real view produces.
 
 ## Why none of this is visible
 
