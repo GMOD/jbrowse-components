@@ -240,6 +240,19 @@ const GENERATORS: Generator[] = [
     argv: api('markers.ts'),
   },
   {
+    // The adapter -> track type map the add-track guessers and `jbrowse
+    // add-track` share, from the `#trackType` tag on each adapter's config
+    // schema. The map used to be hand-written beside the format table, which is
+    // the drift the table was extracted to end.
+    name: 'adapter track type map',
+    argv: [
+      'node',
+      '--experimental-strip-types',
+      'scripts/generateTrackTypeMap.ts',
+    ],
+    diffPaths: ['packages/add-track-core/src/trackTypes.generated.ts'],
+  },
+  {
     // The config-slot manifest `jbrowse validate` checks against, read out of
     // the live ConfigurationSchema objects. It rides autogen so a new slot (or a
     // renamed one) can't leave the validator reporting a correct config as

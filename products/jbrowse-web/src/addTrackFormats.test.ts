@@ -1,4 +1,8 @@
-import { formats, matchFormat } from '@jbrowse/add-track-core'
+import {
+  adapterTypesToTrackTypeMap,
+  formats,
+  matchFormat,
+} from '@jbrowse/add-track-core'
 import {
   guessTrack,
   guessTrackType as cliGuessTrackType,
@@ -124,6 +128,16 @@ test('every format table entry names a registered adapter', () => {
     .map(f => ('adapterType' in f.spec ? f.spec.adapterType : undefined))
     .filter(t => t && !pluginManager.hasAdapterType(t))
   expect(unowned).toEqual([])
+})
+
+// Losing the tag has no symptom: `trackTypeForAdapter` returns undefined and
+// the guessers fall back to FeatureTrack, which is a plausible answer for most
+// of the table.
+test('every format table entry carries a #trackType tag', () => {
+  const untagged = formats
+    .map(f => ('adapterType' in f.spec ? f.spec.adapterType : undefined))
+    .filter(t => t && !adapterTypesToTrackTypeMap[t])
+  expect(untagged).toEqual([])
 })
 
 test('every regex entry has a sample filename', () => {

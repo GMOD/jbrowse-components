@@ -1,3 +1,5 @@
+import { adapterTypesToTrackTypeMap } from './trackTypes.generated.ts'
+
 /**
  * A sidecar file sits next to the data file at `${location}${suffix}`, unless it
  * is the index and the caller was handed one explicitly (`fromIndex`).
@@ -408,38 +410,6 @@ export const formats: FormatEntry[] = [
   },
 ]
 
-export const adapterTypesToTrackTypeMap: Record<string, string> = {
-  BamAdapter: 'AlignmentsTrack',
-  CramAdapter: 'AlignmentsTrack',
-  SamAdapter: 'AlignmentsTrack',
-  BgzipFastaAdapter: 'ReferenceSequenceTrack',
-  IndexedFastaAdapter: 'ReferenceSequenceTrack',
-  TwoBitAdapter: 'ReferenceSequenceTrack',
-  BigWigAdapter: 'QuantitativeTrack',
-  BedGraphAdapter: 'QuantitativeTrack',
-  BedGraphTabixAdapter: 'QuantitativeTrack',
-  VcfTabixAdapter: 'VariantTrack',
-  VcfAdapter: 'VariantTrack',
-  BedpeAdapter: 'VariantTrack',
-  StarFusionAdapter: 'VariantTrack',
-  BedAdapter: 'FeatureTrack',
-  GWASAdapter: 'GWASTrack',
-  PlinkLDAdapter: 'LDTrack',
-  PlinkLDTabixAdapter: 'LDTrack',
-  HicAdapter: 'HicTrack',
-  PAFAdapter: 'SyntenyTrack',
-  DeltaAdapter: 'SyntenyTrack',
-  ChainAdapter: 'SyntenyTrack',
-  MashMapAdapter: 'SyntenyTrack',
-  PairwiseIndexedPAFAdapter: 'SyntenyTrack',
-  AllVsAllPAFAdapter: 'SyntenyTrack',
-  AllVsAllIndexedPAFAdapter: 'SyntenyTrack',
-  BlastTabularAdapter: 'SyntenyTrack',
-  MCScanAnchorsAdapter: 'SyntenyTrack',
-  MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
-  MCScanBlocksAdapter: 'SyntenyTrack',
-}
-
 function matchesRegex(fileName: string, regex: RegExp | RegExp[]) {
   return Array.isArray(regex)
     ? regex.every(r => r.test(fileName))
@@ -460,8 +430,9 @@ export function matchFormat(fileName: string, adapterHint?: string) {
 }
 
 /**
- * The track type to draw `adapterType` with. `fileName` distinguishes the
- * formats that share an adapter, so pass it whenever it is known.
+ * The track type to draw `adapterType` with, from its config schema's
+ * `#trackType` tag. `fileName` is what distinguishes the formats that share an
+ * adapter — a `.bedmethyl.gz` from a plain `.bed.gz` — so pass it when known.
  */
 export function trackTypeForAdapter(adapterType: string, fileName?: string) {
   const entry = fileName ? matchFormat(fileName) : undefined
