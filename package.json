@@ -20,6 +20,7 @@
     "check-shell-pipefail": "node --experimental-strip-types scripts/check-shell-pipefail.ts",
     "check-demo-configs": "node --experimental-strip-types scripts/check-demo-configs.ts",
     "check-core-plugin-sets": "node --experimental-strip-types scripts/check-core-plugin-sets.ts",
+    "check-published-plugins": "node --experimental-strip-types scripts/check-published-plugins.ts",
     "check-config-read-types": "node --experimental-strip-types scripts/audit-config-read-types.ts",
     "check-deferred-slot-reads": "node --experimental-strip-types scripts/audit-deferred-slot-reads.ts",
     "validate-built-config": "node --experimental-strip-types scripts/validate-built-config.ts",

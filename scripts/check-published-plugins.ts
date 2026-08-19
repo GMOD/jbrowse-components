@@ -3,9 +3,24 @@
 //
 //   node --experimental-strip-types scripts/check-published-plugins.ts
 //   node --experimental-strip-types scripts/check-published-plugins.ts --json
+//   node --experimental-strip-types scripts/check-published-plugins.ts --check
+//   node --experimental-strip-types scripts/check-published-plugins.ts --write
 //
-// Needs the network, so it is a manual pre-release check rather than a test.
+// Needs the network, so it is not a test and cannot ride `pnpm autogen`.
 // Run it before tagging, and again after any affected plugin is rebuilt.
+//
+// **`--check` against a committed baseline is what makes it schedulable.** Both
+// sides of the answer move without a commit here: a plugin author rebuilds, or
+// the store gains an entry. So the useful signal is not "does anything break"
+// (something usually does) but "did the answer change since anyone last looked",
+// and abi-watch.yml runs `--check` weekly for exactly that. `--write` refreshes
+// the baseline; commit it with a message saying which plugin moved and why.
+//
+// The baseline is also the only committed copy of a number the release
+// announcement quotes. It said "one of the fourteen breaks against this build:
+// Apollo, on BaseTooltip, isContainedWithin and getParentRenderProps", which
+// nothing in the repo could confirm — the same shape of claim as the six typed
+// figures that this release's draft got wrong.
 //
 // Why bundles: a plugin externalizes `@jbrowse/core/*`, so at runtime a bare
 // import is a property read on the host's JBrowseExports. Nothing about that is
@@ -155,7 +170,59 @@ for (const p of plugins) {
   })
 }
 
-if (process.argv.includes('--json')) {
+// Sorted, so a store that reorders its list is not a change. Only the fields
+// that carry meaning: a version bump on a plugin that still breaks the same way
+// is not news, and putting it in here would make the weekly run cry wolf.
+const BASELINE = 'packages/core/src/ReExports/publishedPluginBreaks.json'
+const baselineShape = () =>
+  `${JSON.stringify(
+    [...report]
+      .sort((a, b) => a.plugin.localeCompare(b.plugin))
+      .map(({ plugin, breaks }) => ({ plugin, breaks })),
+    null,
+    2,
+  )}\n`
+
+if (process.argv.includes('--write')) {
+  fs.writeFileSync(BASELINE, baselineShape())
+  console.log(`wrote ${BASELINE}`)
+} else if (process.argv.includes('--check')) {
+  const fresh = baselineShape()
+  const committed = fs.existsSync(BASELINE)
+    ? fs.readFileSync(BASELINE, 'utf8')
+    : ''
+  if (fresh === committed) {
+    const broken = report.filter(r => r.breaks.length > 0)
+    console.log(
+      `unchanged: ${broken.length} of ${report.length} break against this build`,
+    )
+  } else {
+    // Both directions matter, and the good one more: a plugin that stopped
+    // breaking means an author rebuilt, which is the moment to drop it from the
+    // upgrade advice in the release notes.
+    const was = new Map<string, string[]>(
+      (committed ? JSON.parse(committed) : []).map(
+        (r: { plugin: string; breaks: string[] }) => [r.plugin, r.breaks],
+      ),
+    )
+    const now = new Map(report.map(r => [r.plugin, r.breaks]))
+    console.error(`${BASELINE} is out of date:`)
+    for (const plugin of new Set([...was.keys(), ...now.keys()])) {
+      const before = was.get(plugin)
+      const after = now.get(plugin)
+      if (JSON.stringify(before) !== JSON.stringify(after)) {
+        console.error(
+          `  ${plugin}: ${before === undefined ? '(not in the store before)' : before.join(', ') || 'ok'}` +
+            ` -> ${after === undefined ? '(gone from the store)' : after.join(', ') || 'ok'}`,
+        )
+      }
+    }
+    console.error(
+      '\nRefresh with `node --experimental-strip-types scripts/check-published-plugins.ts --write`',
+    )
+    process.exit(1)
+  }
+} else if (process.argv.includes('--json')) {
   console.log(JSON.stringify(report, null, 2))
 } else {
   for (const { plugin, ranges, breaks } of report) {

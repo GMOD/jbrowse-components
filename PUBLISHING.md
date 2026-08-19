@@ -33,14 +33,23 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    "gone, and the draft says so on purpose" or "stale claim". A checker was
    tried for this and is in `agent-docs/reference/REJECTED_IDEAS.md`.
 
-   Check the published plugins too, on a major release — nothing else does:
+   Check the published plugins too, on a major release:
 
    ```bash
-   node --experimental-strip-types scripts/check-published-plugins.ts
+   pnpm check-published-plugins
    ```
 
    It reports which plugin-store plugins read a `@jbrowse/core/*` name this
-   build no longer serves. Needs the network, so it isn't a test.
+   build no longer serves — read off the shipped bundles, since nothing about
+   that break is visible in a plugin's source. Needs the network, so it isn't a
+   test and cannot ride `pnpm autogen`.
+
+   `abi-watch.yml` runs it weekly as `--check`, against the committed baseline
+   in `packages/core/src/ReExports/publishedPluginBreaks.json`, so the answer is
+   already current when you get here and a plugin that started or stopped
+   breaking has been reported since. If you quote the number in the draft, quote
+   that file. Refresh it with `pnpm check-published-plugins --write` and say in
+   the commit message which plugin moved.
 
    **If a package is publishing for the first time**, grep the docs for the
    sentence that says it isn't. Nothing else catches this: the manifests are

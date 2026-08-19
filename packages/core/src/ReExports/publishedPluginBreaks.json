@@ -1,0 +1,62 @@
+[
+  {
+    "plugin": "Apollo",
+    "breaks": [
+      "@jbrowse/core/ui#BaseTooltip",
+      "@jbrowse/core/util#isContainedWithin",
+      "@jbrowse/core/util/tracks#getParentRenderProps"
+    ]
+  },
+  {
+    "plugin": "Biothings",
+    "breaks": []
+  },
+  {
+    "plugin": "CIVIC",
+    "breaks": []
+  },
+  {
+    "plugin": "Hubs",
+    "breaks": []
+  },
+  {
+    "plugin": "Ideogram",
+    "breaks": []
+  },
+  {
+    "plugin": "Linkout",
+    "breaks": []
+  },
+  {
+    "plugin": "MsaView",
+    "breaks": []
+  },
+  {
+    "plugin": "Protein3d",
+    "breaks": []
+  },
+  {
+    "plugin": "Quantseq",
+    "breaks": []
+  },
+  {
+    "plugin": "Reactome",
+    "breaks": []
+  },
+  {
+    "plugin": "RefGet",
+    "breaks": []
+  },
+  {
+    "plugin": "TrackHubRegistry",
+    "breaks": []
+  },
+  {
+    "plugin": "TView",
+    "breaks": []
+  },
+  {
+    "plugin": "UCSC",
+    "breaks": []
+  }
+]

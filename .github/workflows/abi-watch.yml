@@ -1,0 +1,46 @@
+# Weekly watch on what the published plugins actually take off the `@jbrowse/core/*`
+# re-export ABI.
+#
+# Every other ABI check here runs against this tree: `abi.test.ts` pins the
+# surface going forward, `abiPreviousRelease.test.ts` pins it against the last
+# published release. Neither can see the half that matters most — a removed name
+# is `undefined` inside a plugin bundle nobody is going to rebuild, so whether it
+# hurts depends on bundles hosted somewhere else.
+#
+# Off the PR path for the reason links.yml and figures.yml are: it reads the
+# plugin store over the network, so a required check built on it fails on
+# somebody else's outage. And the state it watches moves without a commit here —
+# an author rebuilds, the store gains an entry — which is precisely what a
+# schedule is for and a gate is not.
+#
+# `--check` compares against the committed baseline, so this is quiet until the
+# answer changes. Until it existed, the number lived in prose: the v5.0.0
+# announcement said "one of the fourteen breaks against this build" and nothing
+# in the repo could confirm it.
+name: ABI watch
+
+on:
+  schedule:
+    # Mondays 08:00 UTC, after the link sweep, so the three weekly jobs stagger
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  published-plugins:
+    name: Published plugins against this ABI
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Read every store bundle and diff against the baseline
+        run: pnpm check-published-plugins --check
