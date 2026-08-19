@@ -62,7 +62,7 @@ Key technologies include:
 
 SVG export calls the same draw function the screen does, so a Canvas2D path is a
 requirement and none of those libraries has one.
-[Why not deck.gl, Pixi, Rust or wgpu](/docs/developer_guides/why_not_x) covers
+[](/docs/developer_guides/why_not_x) covers
 each candidate, and why the hot loops are TypeScript while the decompression
 kernel is Rust.
 
