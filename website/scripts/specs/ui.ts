@@ -106,6 +106,22 @@ export const uiVideoFixtures = {
   // that path twice over and the track arrives 404ing. A reader pastes a url
   // anyway, which is what the section is about.
   addTrackUrl: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox.bw',
+  // The session `upstream_downstream_details` is captured in, so the tour
+  // cycles the dropdown in the same panel that page's stills each freeze one
+  // state of.
+  sequencePanelSession: lgvSession(VOLVOX, {
+    assembly: 'volvox',
+    loc: 'ctgA:17200-23200',
+    tracks: [{ trackId: 'gff3tabix_genes', height: 300 }],
+  }),
+  // Where that figure clicks to select the mRNA, resolved against the track's
+  // own band rather than off the page.
+  sequencePanelGene: {
+    track: 'gff3tabix_genes',
+    locus: 'ctgA:17,400-23,000',
+    fracY: 0,
+    dy: 121,
+  },
 }
 
 // The 1000 Genomes ensemble SV callset, 3202 samples, read straight from EBI.

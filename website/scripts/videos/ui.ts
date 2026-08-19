@@ -11,7 +11,16 @@ const {
   bookmarkSession,
   bookmarkSpan,
   elsewhere,
+  sequencePanelGene,
+  sequencePanelSession,
 } = uiVideoFixtures
+
+// The dropdown at the top of the feature-details sequence panel, and its
+// options. Each option carries a testid built from its mode key, so a tour
+// picking one does not have to spell out a label the panel composes out of the
+// reader's own configured flank sizes.
+const SEQUENCE_TYPE = '[aria-label="Sequence type"]'
+const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 
 // The scalebar strip a rubberband is drawn on. Naming it as a `band` puts the
 // drag's y here while its x still comes from the locus, so the tour says which
@@ -184,6 +193,68 @@ export const uiVideos: VideoSpec[] = [
       },
       { type: 'waitForAppSettled', timeout: 60000 },
       { type: 'delay', ms: 2500 },
+    ],
+    tailMs: 3500,
+  },
+
+  // A RE-LAYOUT, three times over, out of one control. feature_sequence.md
+  // lists eight sequence types in prose and then shows three stills, each
+  // frozen on one of them; what a reader cannot see is that they are the SAME
+  // panel under the same dropdown, so the page reads as three features rather
+  // than as one control with settings. The clip is that panel repainting under
+  // a cursor that never leaves the select.
+  //
+  // The order carries the point: CDS is the coding sequence alone, Protein is
+  // that translated, and the genomic type puts the introns and the flanks back
+  // around it — each pick restores something the one before it dropped, and the
+  // color key under the panel moves with them.
+  {
+    name: 'ui/feature_sequence_types',
+    description:
+      "Three sequence types for one volvox transcript: open the feature details, show the feature sequence, and take CDS, Protein and genomic-with-flanks from the panel's own dropdown",
+    url: sequencePanelSession,
+    // Provisional: the details drawer is taller than the view beside it and the
+    // panel grows with the sequence in it. Sized from the run's own report.
+    viewportHeight: 900,
+    readySelector: '::-p-text(ctgA)',
+    readyTimeout: 60000,
+    settleMs: 4000,
+    steps: [
+      { type: 'delay', ms: 1500 },
+      {
+        type: 'click',
+        anchor: sequencePanelGene,
+        say: 'Click the transcript',
+        hold: 1400,
+      },
+      { type: 'waitForText', text: 'Show feature sequence' },
+      {
+        type: 'click',
+        text: 'Show feature sequence',
+        say: 'Show feature sequence',
+        hold: 2200,
+      },
+      {
+        type: 'click',
+        selector: SEQUENCE_TYPE,
+        say: 'Sequence type',
+        hold: 1200,
+      },
+      { type: 'click', selector: sequenceType('cds'), say: 'CDS', hold: 3000 },
+      { type: 'click', selector: SEQUENCE_TYPE, hold: 900 },
+      {
+        type: 'click',
+        selector: sequenceType('protein'),
+        say: 'Protein',
+        hold: 3000,
+      },
+      { type: 'click', selector: SEQUENCE_TYPE, hold: 900 },
+      {
+        type: 'click',
+        selector: sequenceType('gene_updownstream'),
+        say: 'Genomic w/ full introns +/- up+down stream',
+        hold: 3500,
+      },
     ],
     tailMs: 3500,
   },

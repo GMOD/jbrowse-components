@@ -45,6 +45,10 @@ annotated as `transl_except=(...,aa:Sec)` and translate to selenocysteine (U).
 
 <Figure caption="Choosing the sequence type for a volvox gene: the dropdown is set to 'Genomic w/ full introns +/- 100bp up+down stream', so the panel shows the upstream flank, the exons and introns, and the downstream flank." src="/img/upstream_downstream_details.png" />
 
+Every type above comes out of that one dropdown, in the same panel:
+
+<Video src="/media/ui/feature_sequence_types.mp4" caption="A volvox transcript selected, its feature sequence shown, and three types taken from the dropdown in turn: the coding sequence, its translation, and the genomic sequence with introns and flanks around it." />
+
 ## Other feature types
 
 For non-gene features, the "Feature sequence" button shows the literal sequence
