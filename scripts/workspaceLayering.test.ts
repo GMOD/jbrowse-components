@@ -11,9 +11,10 @@ import { join } from 'node:path'
 // It resolves for two reasons that have nothing to do with intent. pnpm links
 // every workspace package into the root `node_modules`, so an undeclared import
 // of any of them typechecks and runs; and a `dependencies` entry is a one-line
-// edit that no reviewer reads as an architectural change. `@jbrowse/web` was
-// imported by 50 test files across seven plugins while being declared by none
-// of them.
+// edit that no reviewer reads as an architectural change. `@jbrowse/web` is
+// imported by 50 test files across seven plugins, and the root `package.json`
+// is where it is declared for them — a repo-level test dependency on a private
+// product, not seven package-level ones.
 //
 // So this pins the edges that cross a tier upward, symmetrically: a new one
 // fails here, and so does removing one without deleting its entry below. The
@@ -100,9 +101,7 @@ describe('workspace layering', () => {
     // is a library a third party installs, and a product is a whole application.
     // A runtime edge here would put an app in a plugin's dependency closure.
     //
-    // Test-only edges are a separate question, answered below — those do not
-    // ship, and every one of them today is a plugin's integration test building
-    // a real session.
+    // Test-only edges are a separate question, answered below.
     expect(edges([...RUNTIME], 'plugin', 'product')).toEqual([])
   })
 
@@ -133,22 +132,15 @@ describe('workspace layering', () => {
     ])
   })
 
-  it('confines test-only edges into a product to @jbrowse/web', () => {
-    // Deliberately a shape rather than a list: a plugin whose integration test
-    // builds a session needs `createTestSession` from `@jbrowse/web`, and a new
-    // one doing that should not have to edit this file. What it does catch is a
-    // dev edge onto a *different* product — desktop, jbrowse-img, react-app —
-    // which would mean a plugin's tests had grown a dependency on an
-    // application nobody decided to couple them to.
-    //
-    // `@jbrowse/web` is `private: true`, so none of this reaches a tarball.
-    const products = [
-      ...new Set(
-        edges(['devDependencies'], 'plugin', 'product').map(
-          e => e.split(' -> ')[1]!,
-        ),
-      ),
-    ]
-    expect(products).toEqual(['@jbrowse/web'])
+  it('lets no plugin take a test-only edge into a product either', () => {
+    // Seven plugins used to declare `@jbrowse/web` for the `createTestSession`
+    // their integration tests build a session with. Every one of those tests
+    // resolves it through the root `node_modules` link the root
+    // `package.json` already asks for, so the per-plugin copies changed no
+    // resolution and closed 125 workspace cycles — `@jbrowse/web` depends on
+    // every plugin. `disallowWorkspaceCycles` in `pnpm-workspace.yaml` fails
+    // the install on the next one; this says the same thing to a reader who
+    // came here to find out which direction the tiers run.
+    expect(edges(['devDependencies'], 'plugin', 'product')).toEqual([])
   })
 })
