@@ -16,9 +16,14 @@ import { captureHandlers, makeTestPaths } from './testUtil.ts'
 import type { AppPaths } from '../paths.ts'
 import type { SessionSnap } from './channelTypes.ts'
 
+const mockClearStorageData = jest.fn(async () => {})
+
 jest.mock('electron', () => ({
   ipcMain: { handle: jest.fn() },
   shell: { showItemInFolder: jest.fn() },
+  session: {
+    fromPartition: () => ({ clearStorageData: mockClearStorageData }),
+  },
 }))
 
 let dir: string
@@ -388,7 +393,7 @@ test('loadThumbnail returns undefined when there is no thumbnail at all', async 
   ).toBeUndefined()
 })
 
-test('reset clears the list, autosaves, thumbnails, fai indexes and global plugins', async () => {
+test('reset clears the list, autosaves, thumbnails, fai indexes, global plugins and the BLAT cookie jar', async () => {
   fs.mkdirSync(paths.autosaveDir, { recursive: true })
   fs.mkdirSync(paths.faiDir, { recursive: true })
   const autosave = path.join(paths.autosaveDir, '1.json')
@@ -415,6 +420,9 @@ test('reset clears the list, autosaves, thumbnails, fai indexes and global plugi
   expect(fs.existsSync(autosave)).toBe(false)
   expect(fs.existsSync(thumbnail)).toBe(false)
   expect(fs.existsSync(fai)).toBe(false)
+  // persist: partition, so a solved Cloudflare challenge's cf_clearance would
+  // otherwise outlive the reset
+  expect(mockClearStorageData).toHaveBeenCalled()
 })
 
 // saveSession is also the quit flush (rootModel.flushSession), the one save

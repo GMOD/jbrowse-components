@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import { shell } from 'electron'
 
+import { blatSession } from '../blatSession.ts'
 import {
   ENCODING,
   getLegacyThumbnailPath,
@@ -409,6 +410,9 @@ export function registerSessionHandlers(
       // makes the app unusable and a reset that left it installed would come
       // back to the same crash having cost the user their sessions
       writeGlobalPlugins(paths),
+      // the BLAT partition is persistent, so a solved Cloudflare challenge's
+      // cf_clearance outlives a reset unless this clears it
+      blatSession().clearStorageData().catch(logError),
       // rm, not unlink: a trix output is a directory, and unlink refuses one —
       // so the entries this handler most needs to remove are the ones a plain
       // unlink would have logged an EISDIR for and left in place
