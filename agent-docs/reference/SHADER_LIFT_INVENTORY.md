@@ -13,7 +13,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 87 functions
+Scanned 42 shaders with entry points. 88 functions
 are inside the emitter's subset, of which **66 are exported**.
 
 ## Candidates
@@ -23,7 +23,9 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-_None._
+| Function | Signature | Shaders |
+| --- | --- | --- |
+| `symlogTransform` | `(f32, f32) -> f32` | wiggle, wiggleLine |
 
 ## Declined
 
@@ -47,7 +49,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
 | `quadLocal` | `(u32) -> vec2f` | maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect |
 | `sBlendDeriv` | `(f32) -> f32` | the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative |
-| `scoreToY` | `(f32, f32, f32, f32, i32) -> f32` | diverges from JS makeScoreNormalizer on a degenerate (min == max) domain on purpose — JS returns 0, the shader avoids NaN. Unifying them is a product decision, not a codegen one; the part both backends must share is normalizeScore, which is exported |
+| `scoreToY` | `(f32, f32, f32, f32, i32, f32) -> f32` | diverges from JS makeScoreNormalizer on a degenerate (min == max) domain on purpose — JS returns 0, the shader avoids NaN. Unifying them is a product decision, not a codegen one; the part both backends must share is normalizeScore, which is exported |
 | `snapBoxCenterY` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported snapBoxCenterYPx |
 | `snapCellEdgePx` | `(f32, f32) -> f32` | reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor |
 | `snapToPixelX` | `(f32, f32) -> f32` | clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin |

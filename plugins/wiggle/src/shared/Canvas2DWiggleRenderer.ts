@@ -36,6 +36,7 @@ function drawWiggleBlocks(
     canvasWidth,
     canvasHeight,
     scaleType,
+    symlogConstant,
     domainY,
     numRows,
     scatterPointSize,
@@ -72,6 +73,7 @@ function drawWiggleBlocks(
           rowTop,
           domainY,
           scaleType,
+          symlogConstant,
           origin,
         }
 

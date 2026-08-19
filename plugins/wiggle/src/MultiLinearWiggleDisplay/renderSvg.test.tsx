@@ -108,6 +108,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     renderState: {
       domainY: [0, 10],
       scaleType: 0,
+      symlogConstant: 1,
       renderingType: 0,
       canvasWidth: 800,
       canvasHeight: 100,

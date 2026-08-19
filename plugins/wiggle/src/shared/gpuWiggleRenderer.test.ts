@@ -58,6 +58,7 @@ const DEFAULT_STATE = {
   canvasHeight: 400,
   renderingType: RENDERING_TYPE_XYPLOT,
   scaleType: SCALE_TYPE_LINEAR,
+  symlogConstant: 1,
   domainY: [0, 20] as [number, number],
   numRows: 1,
   scatterPointSize: 2,
@@ -430,6 +431,7 @@ describe('GpuWiggleRenderer', () => {
     renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       scaleType: SCALE_TYPE_LOG,
+      symlogConstant: 1,
       domainY: [1, 1000],
     })
 

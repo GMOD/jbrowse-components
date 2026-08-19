@@ -13,6 +13,8 @@ export const RENDERING_TYPE_LINE_CENTER = 4
 
 export const SCALE_TYPE_LOG = 1
 
+export const SCALE_TYPE_SYMLOG = 2
+
 export const NO_PREV_START = 4294967295
 
 export const MIN_FILL_WIDTH_PX = 1.5

@@ -23,6 +23,7 @@ export const UNIFORM_OFFSET_F32 = {
   scatterPointSize: 11,
   lineWidth: 12,
   origin: 13,
+  symlogConstant: 14,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
@@ -45,6 +46,7 @@ export interface Uniforms {
   scatterPointSize: number
   lineWidth: number
   origin: number
+  symlogConstant: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -64,6 +66,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[11] = uniforms.scatterPointSize
   f32[12] = uniforms.lineWidth
   f32[13] = uniforms.origin
+  f32[14] = uniforms.symlogConstant
 }
 
 export const INSTANCE_STRIDE_BYTES = 40

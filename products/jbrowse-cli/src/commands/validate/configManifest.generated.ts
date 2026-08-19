@@ -4200,6 +4200,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "symlogConstant",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "posColor",
           "type": "(JexlString | string)"
         },
@@ -4276,6 +4280,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "symlogConstant",
+          "type": "(JexlString | number)"
         },
         {
           "name": "posColor",
@@ -4408,6 +4416,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "symlogConstant",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "posColor",
           "type": "(JexlString | string)"
         },
@@ -4512,6 +4524,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayCrossHatches",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "symlogConstant",
+          "type": "(JexlString | number)"
         },
         {
           "name": "posColor",

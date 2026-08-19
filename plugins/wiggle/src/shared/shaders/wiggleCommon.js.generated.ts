@@ -20,7 +20,15 @@ export function densityGradientT(norm: number, zeroNorm: number): number {
   return (Math.abs((norm - zeroNorm)) / _max(_max(zeroNorm, (1.0 - zeroNorm)), 0.00009999999747379))
 }
 
-export function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number): number {
+function symlogTransform(x: number, c: number): number {
+  return ((((Math.sign(x)) | 0)) * Math.log((1.0 + Math.abs((x / c)))))
+}
+
+export function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
+  if ((scaleType == 2)) {
+    let tMin = symlogTransform(domainMin, symlogConstant)
+    return _clamp(((symlogTransform(score, symlogConstant) - tMin) / _max((symlogTransform(domainMax, symlogConstant) - tMin), 9.99999997475242708e-07)), 0.0, 1.0)
+  }
   if ((scaleType == 1)) {
     let lo: number
     if ((domainMin > 0.0)) {

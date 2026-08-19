@@ -1,9 +1,20 @@
-import { scaleLinear, scaleLog, scaleQuantize } from './vendor/d3-scale.ts'
+import { resolveSymlogConstant } from './normalize.ts'
+import {
+  scaleLinear,
+  scaleLog,
+  scaleQuantize,
+  scaleSymlog,
+} from './vendor/d3-scale.ts'
 
 export interface ScaleOpts {
   domain: number[]
   range: number[]
   scaleType: string
+  /**
+   * symlog's linear-region width. `0` (the config default) resolves from the
+   * domain — see {@link resolveSymlogConstant}. Ignored by the other scales.
+   */
+  symlogConstant?: number
   /**
    * Round the domain to nice endpoints before building the scale. Defaults to
    * true, which is what a caller handing over raw data wants. Pass false when
@@ -15,12 +26,25 @@ export interface ScaleOpts {
   nice?: boolean
 }
 
-function createScaleForType(scaleType: string) {
+function createScaleForType(
+  scaleType: string,
+  domain?: readonly [number, number],
+  symlogConstant = 0,
+) {
   if (scaleType === 'linear') {
     return scaleLinear()
   }
   if (scaleType === 'log') {
     return scaleLog().base(2)
+  }
+  if (scaleType === 'symlog') {
+    // The axis has to be built with the same constant the renderer normalizes
+    // with, or the ticks label positions the bars are not drawn at. Both
+    // resolve through resolveSymlogConstant from the same domain.
+    const [min, max] = domain ?? [0, 1]
+    return scaleSymlog().constant(
+      resolveSymlogConstant(min, max, symlogConstant),
+    )
   }
   if (scaleType === 'quantize') {
     return scaleQuantize()
@@ -33,7 +57,13 @@ function createScaleForType(scaleType: string) {
  * Builds a d3 scale (linear/log/quantize) from a `ScaleOpts`, nicing the domain
  * unless `nice: false` says it is already the one being drawn with.
  */
-export function getScale({ domain, range, scaleType, nice = true }: ScaleOpts) {
+export function getScale({
+  domain,
+  range,
+  scaleType,
+  symlogConstant,
+  nice = true,
+}: ScaleOpts) {
   const [min, max] = domain
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')
@@ -42,7 +72,7 @@ export function getScale({ domain, range, scaleType, nice = true }: ScaleOpts) {
   if (rangeMin === undefined || rangeMax === undefined) {
     throw new Error('invalid range')
   }
-  const scale = createScaleForType(scaleType)
+  const scale = createScaleForType(scaleType, [min, max], symlogConstant)
   scale.domain([min, max])
   if (nice) {
     scale.nice()
@@ -53,7 +83,8 @@ export function getScale({ domain, range, scaleType, nice = true }: ScaleOpts) {
 
 /**
  * #api
- * The axis-origin baseline: `1` for log, `0` otherwise.
+ * The axis-origin baseline: `1` for log, `0` otherwise — symlog included, since
+ * it can represent 0 and that is where a bar should sit from.
  */
 export function getOrigin(scaleType: string) {
   if (scaleType === 'log') {
@@ -71,15 +102,20 @@ export function getNiceDomain({
   scaleType,
   domain,
   bounds,
+  symlogConstant,
 }: {
   scaleType: string
   domain: readonly [number, number]
   bounds: readonly [number | undefined, number | undefined]
+  symlogConstant?: number
 }) {
   const [minScore, maxScore] = bounds
   let [min, max] = domain
 
-  if (scaleType === 'linear') {
+  // symlog joins linear here rather than log: its origin is 0 (getOrigin), it
+  // is defined there, so the domain should reach the baseline its bars grow
+  // from instead of being floored off it the way a log domain has to be.
+  if (scaleType === 'linear' || scaleType === 'symlog') {
     if (max < 0) {
       max = 0
     }
@@ -114,7 +150,7 @@ export function getNiceDomain({
     }
   }
 
-  const scale = createScaleForType(scaleType)
+  const scale = createScaleForType(scaleType, [min, max], symlogConstant)
   scale.domain([min, max])
   scale.nice()
   return scale.domain() as [number, number]

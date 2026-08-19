@@ -132,6 +132,7 @@ export default function stateModelFactory(
        */
       get ticks() {
         return computeYTicks({
+          symlogConstant: self.symlogConstant,
           height: self.height,
           domain: self.domain,
           scaleType: self.scaleType,

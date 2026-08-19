@@ -1,4 +1,8 @@
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
+import {
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+  makeScoreNormalizer,
+} from '@jbrowse/wiggle-core'
 
 import { featuresToRaw, processFeaturesFromArrays } from './util.ts'
 
@@ -7,7 +11,12 @@ const normalizeScore = (
   min: number,
   max: number,
   isLog: boolean,
-) => makeScoreNormalizer(min, max, isLog)(score)
+) =>
+  makeScoreNormalizer(
+    min,
+    max,
+    isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+  )(score)
 
 describe('processFeaturesFromArrays', () => {
   test('produces same output as featuresToRaw + processFeaturesFromArrays for basic features', () => {

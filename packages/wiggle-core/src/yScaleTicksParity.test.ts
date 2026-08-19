@@ -1,5 +1,9 @@
 import { computeYTicks } from './computeYTicks.ts'
-import { makeScoreNormalizer } from './normalize.ts'
+import {
+  makeScoreNormalizer,
+  resolveSymlogConstant,
+  scaleTypeFromString,
+} from './normalize.ts'
 import { getNiceDomain } from './scale.ts'
 import {
   axisPlotBox,
@@ -52,6 +56,26 @@ const CASES = [
     raw: [0.00001, 0.02],
     height: 200,
   },
+  // symlog's reason to exist: a domain that reaches 0, and one that crosses it.
+  // scaleLog cannot hold either, so neither appears above.
+  {
+    name: 'symlog reaching zero',
+    scaleType: 'symlog',
+    raw: [0, 1000],
+    height: 200,
+  },
+  {
+    name: 'symlog crossing zero',
+    scaleType: 'symlog',
+    raw: [-40, 60],
+    height: 200,
+  },
+  {
+    name: 'symlog entirely under 1',
+    scaleType: 'symlog',
+    raw: [0, 0.05],
+    height: 200,
+  },
   // short track: computeYTicks falls back to the domain endpoints
   { name: 'short track', scaleType: 'linear', raw: [0, 30], height: 60 },
 ] as const
@@ -73,7 +97,8 @@ describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
     const normalize = makeScoreNormalizer(
       domain[0],
       domain[1],
-      scaleType === 'log',
+      scaleTypeFromString(scaleType),
+      resolveSymlogConstant(domain[0], domain[1], 0),
     )
     expect(ticks.items.length).toBeGreaterThan(0)
     expect(ticks.yTop).toBe(box.yTop)
@@ -87,7 +112,8 @@ describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
     const normalize = makeScoreNormalizer(
       domain[0],
       domain[1],
-      scaleType === 'log',
+      scaleTypeFromString(scaleType),
+      resolveSymlogConstant(domain[0], domain[1], 0),
     )
     // the shape of the sub-1 log bug: normalize collapsed to `() => 0`, so
     // every score pinned to the baseline under a fully populated axis
@@ -129,7 +155,8 @@ describe('a raw, un-niced domain', () => {
     const normalize = makeScoreNormalizer(
       domain[0],
       domain[1],
-      scaleType === 'log',
+      scaleTypeFromString(scaleType),
+      resolveSymlogConstant(domain[0], domain[1], 0),
     )
     for (const { value, y } of ticks.items) {
       expect(y).toBeCloseTo(scoreToAxisY(normalize(value), box), 9)

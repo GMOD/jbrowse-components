@@ -1,16 +1,13 @@
 import { abgrToCssRgba, setAbgrFill } from '@jbrowse/core/util/colorBits'
 import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
-import {
-  appendPointMarker,
-  makeScoreNormalizer,
-  SCALE_TYPE_LOG,
-} from '@jbrowse/wiggle-core'
+import { appendPointMarker, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_FUDGE_FACTOR, WIGGLE_MIN_PX } from '../util.ts'
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
 
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { WiggleScaleType } from '@jbrowse/wiggle-core'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 // One source's features painted into one block's row. Shared by every render
@@ -23,7 +20,11 @@ interface RowDraw {
   rowHeight: number
   rowTop: number
   domainY: [number, number]
-  scaleType: number
+  scaleType: WiggleScaleType
+  // symlog's linear-region width, already resolved from the domain. Unread by
+  // the other scales, but carried on every row draw so the Canvas2D fallback
+  // and the SVG export normalize with the number the shader was handed.
+  symlogConstant: number
   // Score the bars pivot around / density gradient centers on (bicolorPivot).
   origin: number
 }
@@ -38,12 +39,14 @@ const NO_COLOR = -1
 function makeScoreToY(
   rowHeight: number,
   domainY: [number, number],
-  scaleType: number,
+  scaleType: WiggleScaleType,
+  symlogConstant: number,
 ) {
   const normalize = makeScoreNormalizer(
     domainY[0],
     domainY[1],
-    scaleType === SCALE_TYPE_LOG,
+    scaleType,
+    symlogConstant,
   )
   return (score: number) => (1 - normalize(score)) * rowHeight
 }
@@ -56,10 +59,11 @@ export function drawXYPlot({
   rowTop,
   domainY,
   scaleType,
+  symlogConstant,
   origin,
   rgb,
 }: RowDraw & { rgb: string }) {
-  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
+  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const originY = scoreToY(origin) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
@@ -100,6 +104,7 @@ export function drawDensity({
   rowTop,
   domainY,
   scaleType,
+  symlogConstant,
   origin,
   r,
   g,
@@ -108,11 +113,12 @@ export function drawDensity({
   const colorFn = makeDensityRgbStringFn(
     domainY[0],
     domainY[1],
-    scaleType === SCALE_TYPE_LOG,
+    scaleType,
     r,
     g,
     b,
     origin,
+    symlogConstant,
   )
   const positions = source.featurePositions
   const scores = source.featureScores
@@ -147,6 +153,7 @@ export function drawLine({
   rowTop,
   domainY,
   scaleType,
+  symlogConstant,
   rgb,
   lineWidth,
 }: RowDraw & { rgb: string; lineWidth: number }) {
@@ -160,7 +167,7 @@ export function drawLine({
   }
   ctx.lineWidth = lineWidth
   ctx.beginPath()
-  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
+  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const zeroY = scoreToY(0) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
@@ -233,6 +240,7 @@ export function drawLineCenter({
   rowTop,
   domainY,
   scaleType,
+  symlogConstant,
   rgb,
   lineWidth,
 }: RowDraw & { rgb: string; lineWidth: number }) {
@@ -249,7 +257,7 @@ export function drawLineCenter({
   ctx.lineJoin = 'round'
   ctx.lineCap = 'round'
   ctx.beginPath()
-  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
+  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
@@ -306,6 +314,7 @@ export function drawScatter({
   rowTop,
   domainY,
   scaleType,
+  symlogConstant,
   rgb,
   pointSize,
 }: RowDraw & { rgb: string; pointSize: number }) {
@@ -313,7 +322,7 @@ export function drawScatter({
   if (!colorsAbgr) {
     ctx.fillStyle = rgb
   }
-  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
+  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)

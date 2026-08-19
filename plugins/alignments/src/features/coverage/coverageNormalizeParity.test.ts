@@ -1,3 +1,5 @@
+import { SCALE_TYPE_LINEAR, SCALE_TYPE_LOG } from '@jbrowse/wiggle-core'
+
 import {
   computeCoverageTicks,
   coverageDepthDomain,
@@ -30,7 +32,11 @@ const DEPTHS = [0, 0.5, 1, 5, 9, 10, 11, 37, 60, 99, 100, 1024, 5000]
 
 describe.each(DOMAINS)('domain [%f, %f]', (min, max) => {
   test.each([false, true])('shader twin matches makeScoreNormalizer (log %s)', isLog => {
-    const normalize = makeScoreNormalizer(min, max, isLog)
+    const normalize = makeScoreNormalizer(
+      min,
+      max,
+      isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+    )
     for (const depth of DEPTHS) {
       expect(normalizeDepthScalar(depth, min, max, isLog)).toBeCloseTo(
         normalize(depth),
@@ -47,7 +53,11 @@ describe.each(DOMAINS)('domain [%f, %f]', (min, max) => {
         coverageMaxDepth: max,
         coverageIsLog: isLog,
       })!
-      const normalize = makeScoreNormalizer(min, max, isLog)
+      const normalize = makeScoreNormalizer(
+        min,
+        max,
+        isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+      )
       for (const depth of DEPTHS) {
         expect(scale.normalize(depth)).toBeCloseTo(normalize(depth), 9)
       }
@@ -59,7 +69,11 @@ describe.each(DOMAINS)('domain [%f, %f]', (min, max) => {
   test.each(['linear', 'log'])('every tick lands on its own data (%s)', scaleType => {
     const height = 150
     const { items, yBottom } = computeCoverageTicks([min, max], height, scaleType)
-    const normalize = makeScoreNormalizer(min, max, scaleType === 'log')
+    const normalize = makeScoreNormalizer(
+      min,
+      max,
+      scaleType === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+    )
     // effectiveH for a 150px band with the 5px label inset at both ends
     const effectiveH = height - 10
     expect(items.length).toBeGreaterThan(0)

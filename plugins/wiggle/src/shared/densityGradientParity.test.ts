@@ -1,3 +1,5 @@
+import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core'
+
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
 import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 
@@ -65,7 +67,7 @@ test('the string LUT quantizes the shared ramp, not a second copy of it', () => 
   // The generated t is what indexes the 256-bucket color cache, so a divergence
   // would show as an SVG export a bucket off from the screen. Pin the end
   // points through the public factory.
-  const f = makeDensityRgbStringFn(0, 100, false, 0, 0, 255)
+  const f = makeDensityRgbStringFn(0, 100, SCALE_TYPE_LINEAR, 0, 0, 255)
   expect(f(0)).toBe('rgb(255,255,255)')
   expect(f(100)).toBe('rgb(0,0,255)')
 })

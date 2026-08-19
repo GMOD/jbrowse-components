@@ -68,7 +68,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     // never a bar (unlike manhattan.slang, which bars wide bins). scatterPointSize
     // is the disc diameter; tiny points draw as a crisp square like manhattan.
     float midX = (sx1 + sx2) * 0.5;
-    float scoreYPx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
+    float scoreYPx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
     float2 q = quadLocal(vid);
     if (drawsDisc()) {
       // expand the quad by the AA pad so the disc's fade edge isn't clipped
@@ -103,8 +103,8 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       topPx = rowTop;
       botPx = rowTop + rowHeight;
     } else {
-      float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
-      float originY = scoreToY(u.origin,   u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
+      float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
+      float originY = scoreToY(u.origin,   u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
       topPx = min(scoreY, originY) + rowTop;
       botPx = max(scoreY, originY) + rowTop;
     }
@@ -114,8 +114,8 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   float4 instColor = unpackRGBA(inst.color);
   float4 outColor;
   if (u.renderingType == RENDERING_TYPE_DENSITY) {
-    float norm = normalizeScore(inst.score, u.domainYMin, u.domainYMax, u.scaleType);
-    float zeroNorm = normalizeScore(u.origin, u.domainYMin, u.domainYMax, u.scaleType);
+    float norm = normalizeScore(inst.score, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
+    float zeroNorm = normalizeScore(u.origin, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
     outColor = float4(lerp(float3(1.0), instColor.rgb, densityGradientT(norm, zeroNorm)), 1.0);
   } else {
     outColor = float4(instColor.rgb, 1.0);

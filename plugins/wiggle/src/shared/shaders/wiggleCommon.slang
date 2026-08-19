@@ -21,7 +21,7 @@
 // Generated into @jbrowse/wiggle-core (see consts-out) because that is where
 // `WiggleRenderingType` and `WiggleScaleType` are declared, and the plugin reads
 // them back from there.
-//! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, SCALE_TYPE_LOG, NO_PREV_START, MIN_FILL_WIDTH_PX
+//! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG, NO_PREV_START, MIN_FILL_WIDTH_PX
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
 //! js-export: densityGradientT, normalizeScore
 //! js-skip: scoreToY — diverges from JS makeScoreNormalizer on a degenerate (min == max) domain on purpose — JS returns 0, the shader avoids NaN. Unifying them is a product decision, not a codegen one; the part both backends must share is normalizeScore, which is exported
@@ -35,6 +35,7 @@ public static const int RENDERING_TYPE_LINE = 2;
 public static const int RENDERING_TYPE_SCATTER = 3;
 public static const int RENDERING_TYPE_LINE_CENTER = 4;
 public static const int SCALE_TYPE_LOG = 1;
+public static const int SCALE_TYPE_SYMLOG = 2;
 
 // prevStartEnd.x sentinel: no previous feature (source start). Larger than any
 // genomic coordinate, so it never collides with a real start. Only
@@ -65,13 +66,30 @@ public struct Uniforms {
   // Score the xyplot bars pivot around and the density gradient centers on
   // (= bicolorPivot). Default 0 keeps the fixed-at-zero baseline.
   public float  origin;
+  // symlog's linear-region width, already resolved on the JS side (a 0 in the
+  // config means "derive from the domain", and that rule lives there so both
+  // backends normalize against the same number). Unread for the other scales.
+  public float  symlogConstant;
 };
 
 public float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
 }
 
-public float normalizeScore(float score, float domainMin, float domainMax, int scaleType) {
+public float symlogTransform(float x, float c) {
+  return sign(x) * log(1.0 + abs(x / c));
+}
+
+public float normalizeScore(float score, float domainMin, float domainMax, int scaleType, float symlogConstant) {
+  if (scaleType == SCALE_TYPE_SYMLOG) {
+    // Defined at and either side of zero, so unlike the log branch there is
+    // nothing to floor: the domain arrives as-is and 0 lands where it belongs
+    // instead of on the baseline with everything else below the floor.
+    float tMin = symlogTransform(domainMin, symlogConstant);
+    float tMax = symlogTransform(domainMax, symlogConstant);
+    float t = symlogTransform(score, symlogConstant);
+    return clamp((t - tMin) / max(tMax - tMin, 1e-6), 0.0, 1.0);
+  }
   // `max(range, 1e-6)` guards a degenerate (min==max) domain from dividing by
   // zero — the JS makeScoreNormalizer returns 0 in that case; here we just
   // avoid NaN propagating into the vertex position.
@@ -92,8 +110,8 @@ public float normalizeScore(float score, float domainMin, float domainMax, int s
   return clamp((score - domainMin) / max(domainMax - domainMin, 1e-6), 0.0, 1.0);
 }
 
-public float scoreToY(float score, float domainMin, float domainMax, float h, int scaleType) {
-  return (1.0 - normalizeScore(score, domainMin, domainMax, scaleType)) * h;
+public float scoreToY(float score, float domainMin, float domainMax, float h, int scaleType, float symlogConstant) {
+  return (1.0 - normalizeScore(score, domainMin, domainMax, scaleType, symlogConstant)) * h;
 }
 
 // Density mode's gradient position: how far this score sits from the pivot,

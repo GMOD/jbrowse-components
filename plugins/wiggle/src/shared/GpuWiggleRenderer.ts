@@ -126,6 +126,7 @@ export class GpuWiggleRenderer
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,
       scaleType: state.scaleType,
+      symlogConstant: state.symlogConstant,
       // The layers' rendering, for the same reason the pass is: it is what the
       // shader branches on, so taking it from `state` could tell a fill shader
       // to draw a rendering its module no longer contains. Buffer, pass and

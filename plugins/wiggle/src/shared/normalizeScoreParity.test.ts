@@ -1,8 +1,10 @@
 import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
+  SCALE_TYPE_SYMLOG,
   getNiceDomain,
   makeScoreNormalizer,
+  resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
 
 import { normalizeScore } from './shaders/wiggleCommon.js.generated.ts'
@@ -34,6 +36,14 @@ const LINEAR_DOMAINS = [
   nice('linear', [-40, 60]),
   nice('linear', [0, 1]),
 ]
+// symlog exists for the domains scaleLog cannot hold at all: reaching 0, and
+// crossing it.
+const SYMLOG_DOMAINS = [
+  nice('symlog', [0, 1000]),
+  nice('symlog', [0, 1]),
+  nice('symlog', [-40, 60]),
+  nice('symlog', [0, 0.05]),
+]
 const LOG_DOMAINS = [
   nice('log', [1, 1000]),
   nice('log', [1, 2]),
@@ -53,9 +63,9 @@ function samples([min, max]: [number, number]) {
 }
 
 describe.each(LINEAR_DOMAINS)('linear domain %j', (min, max) => {
-  const normalize = makeScoreNormalizer(min, max, false)
+  const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR)
   test.each(samples([min, max]))('score %p', score => {
-    expect(normalizeScore(score, min, max, SCALE_TYPE_LINEAR)).toBeCloseTo(
+    expect(normalizeScore(score, min, max, SCALE_TYPE_LINEAR, 1)).toBeCloseTo(
       normalize(score),
       6,
     )
@@ -63,21 +73,42 @@ describe.each(LINEAR_DOMAINS)('linear domain %j', (min, max) => {
 })
 
 describe.each(LOG_DOMAINS)('log domain %j', (min, max) => {
-  const normalize = makeScoreNormalizer(min, max, true)
+  const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LOG)
   test.each(samples([min, max]))('score %p', score => {
     // 6 places, not bit equality: slangc emits the 1e-6 divide-by-zero floor as
     // its f32 value. It is never the max on a non-degenerate domain, so this is
     // exact in practice; the tolerance is the standing rule for generated
     // float32 literals.
-    expect(normalizeScore(score, min, max, SCALE_TYPE_LOG)).toBeCloseTo(
+    expect(normalizeScore(score, min, max, SCALE_TYPE_LOG, 1)).toBeCloseTo(
       normalize(score),
       6,
     )
   })
 
   test('the domain spans the whole plot', () => {
-    expect(normalizeScore(min, min, max, SCALE_TYPE_LOG)).toBeCloseTo(0, 6)
-    expect(normalizeScore(max, min, max, SCALE_TYPE_LOG)).toBeCloseTo(1, 6)
+    expect(normalizeScore(min, min, max, SCALE_TYPE_LOG, 1)).toBeCloseTo(0, 6)
+    expect(normalizeScore(max, min, max, SCALE_TYPE_LOG, 1)).toBeCloseTo(1, 6)
+  })
+})
+
+describe.each(SYMLOG_DOMAINS)('symlog domain %j', (min, max) => {
+  const c = resolveSymlogConstant(min, max, 0)
+  const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_SYMLOG, c)
+  test.each(samples([min, max]))('score %p', score => {
+    expect(normalizeScore(score, min, max, SCALE_TYPE_SYMLOG, c)).toBeCloseTo(
+      normalize(score),
+      6,
+    )
+  })
+
+  test('zero is a real position, not the floor', () => {
+    // the whole point over scaleLog: 0 normalizes to where the domain puts it,
+    // and on a domain that crosses zero that is somewhere up the plot.
+    const atZero = normalizeScore(0, min, max, SCALE_TYPE_SYMLOG, c)
+    expect(atZero).toBeCloseTo(normalize(0), 6)
+    if (min < 0) {
+      expect(atZero).toBeGreaterThan(0)
+    }
   })
 })
 
@@ -86,8 +117,8 @@ describe.each(LOG_DOMAINS)('log domain %j', (min, max) => {
 // anyone who unifies them has to come here and say so.
 describe('a degenerate domain is the documented divergence', () => {
   test('JS answers 0, the shader saturates', () => {
-    expect(makeScoreNormalizer(5, 5, false)(9)).toBe(0)
-    expect(normalizeScore(9, 5, 5, SCALE_TYPE_LINEAR)).toBe(1)
+    expect(makeScoreNormalizer(5, 5, SCALE_TYPE_LINEAR)(9)).toBe(0)
+    expect(normalizeScore(9, 5, 5, SCALE_TYPE_LINEAR, 1)).toBe(1)
   })
 
   test('getNiceDomain never hands a log display one', () => {

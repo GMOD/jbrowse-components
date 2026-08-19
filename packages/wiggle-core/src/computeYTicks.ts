@@ -13,6 +13,13 @@ export function computeYTicks(opts: {
   scaleType: string
   minimalTicks: boolean
   offset?: number
+  /**
+   * Raw config value for symlog; `0` means "derive from the domain". Passed
+   * through to `getScale` so the axis is built with the constant the renderer
+   * normalizes with — resolving them separately would label ticks at heights
+   * the bars are not drawn at.
+   */
+  symlogConstant?: number
 }): YScaleTicks | undefined {
   const {
     height,
@@ -20,6 +27,7 @@ export function computeYTicks(opts: {
     scaleType,
     minimalTicks,
     offset = YSCALEBAR_LABEL_OFFSET,
+    symlogConstant,
   } = opts
   const domainMin = domain?.[0]
   const domainMax = domain?.[1]
@@ -41,6 +49,7 @@ export function computeYTicks(opts: {
     scaleType,
     domain: [domainMin, domainMax],
     range: [yBottom, yTop],
+    symlogConstant,
     nice: false,
   })
   const values =

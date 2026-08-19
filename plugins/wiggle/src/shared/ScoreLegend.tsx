@@ -3,9 +3,15 @@ import { measureLegendText } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { stripAlpha } from '@jbrowse/core/util'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
+import {
+  resolveSymlogConstant,
+  scaleTypeFromString,
+} from '@jbrowse/wiggle-core'
 
 import { formatScore } from '../util.ts'
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
+
+import type { WiggleScaleType } from '@jbrowse/wiggle-core'
 
 // Density mode spends color on the score, so `[min, max]` alone says which
 // numbers are in play but not which end is which color, nor where the pivot
@@ -41,12 +47,35 @@ export function scoreLegendHeight(ramp: ScoreRamp | undefined) {
 // domain 0..6 with the pivot at 2, the loss side tops out at half saturation.
 // A hand-written neg-white-pos gradient would show both ends fully saturated
 // and so overstate the short side.
-function rampStops(domain: [number, number], ramp: ScoreRamp, isLog: boolean) {
+function rampStops(
+  domain: [number, number],
+  ramp: ScoreRamp,
+  scaleType: WiggleScaleType,
+  symlogConstant: number,
+) {
   const [min, max] = domain
   const [pr, pg, pb] = cssColorToRgb(ramp.posColor)
   const [nr, ng, nb] = cssColorToRgb(ramp.negColor)
-  const pos = makeDensityRgbStringFn(min, max, isLog, pr, pg, pb, ramp.pivot)
-  const neg = makeDensityRgbStringFn(min, max, isLog, nr, ng, nb, ramp.pivot)
+  const pos = makeDensityRgbStringFn(
+    min,
+    max,
+    scaleType,
+    pr,
+    pg,
+    pb,
+    ramp.pivot,
+    symlogConstant,
+  )
+  const neg = makeDensityRgbStringFn(
+    min,
+    max,
+    scaleType,
+    nr,
+    ng,
+    nb,
+    ramp.pivot,
+    symlogConstant,
+  )
   const steps = 16
   return Array.from({ length: steps + 1 }, (_, i) => {
     const offset = i / steps
@@ -91,13 +120,15 @@ function ScoreRampLegend({
   suffix,
   canvasWidth,
   ramp,
-  isLog,
+  scaleType,
+  symlogConstant,
 }: {
   domain: [number, number]
   suffix: string
   canvasWidth: number
   ramp: ScoreRamp
-  isLog: boolean
+  scaleType: WiggleScaleType
+  symlogConstant: number
 }) {
   const palette = usePalette()
   const [min, max] = domain
@@ -135,7 +166,7 @@ function ScoreRampLegend({
     <g>
       <defs>
         <linearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
-          {rampStops(domain, ramp, isLog).map(s => (
+          {rampStops(domain, ramp, scaleType, symlogConstant).map(s => (
             <stop key={s.offset} offset={s.offset} stopColor={s.color} />
           ))}
         </linearGradient>
@@ -204,25 +235,33 @@ function ScoreRampLegend({
 export default function ScoreLegend({
   domain,
   scaleType,
+  symlogConstant = 0,
   canvasWidth,
   ramp,
 }: {
   domain: [number, number]
   scaleType: string
+  // raw config value; 0 means "derive from the domain"
+  symlogConstant?: number
   canvasWidth: number
   // omitted outside density mode, and when rows carry their own colors (there
   // is then no single ramp to draw)
   ramp?: ScoreRamp
 }) {
   const isLog = scaleType === 'log'
-  const suffix = isLog ? ' (log)' : ''
+  const suffix = isLog ? ' (log)' : scaleType === 'symlog' ? ' (symlog)' : ''
   return ramp ? (
     <ScoreRampLegend
       domain={domain}
       suffix={suffix}
       canvasWidth={canvasWidth}
       ramp={ramp}
-      isLog={isLog}
+      scaleType={scaleTypeFromString(scaleType)}
+      symlogConstant={resolveSymlogConstant(
+        domain[0],
+        domain[1],
+        symlogConstant,
+      )}
     />
   ) : (
     <ScoreTextLegend

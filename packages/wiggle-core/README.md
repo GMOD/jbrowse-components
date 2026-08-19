@@ -126,7 +126,7 @@ explicit `bounds`.
 
 ```js
 // type signature
-({ scaleType, domain, bounds, }: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; }) => [number, number]
+({…}: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; symlogConstant?: number | undefined; }) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
@@ -145,7 +145,8 @@ when `useLogScale` is true (domain is clamped to [1, max]).
 
 ### getOrigin
 
-The axis-origin baseline: `1` for log, `0` otherwise.
+The axis-origin baseline: `1` for log, `0` otherwise — symlog included, since it
+can represent 0 and that is where a bar should sit from.
 
 ```js
 // type signature
@@ -161,7 +162,7 @@ unless `nice: false` says it is already the one being drawn with.
 
 ```js
 // type signature
-({ domain, range, scaleType, nice }: ScaleOpts) => Scale
+({ domain, range, scaleType, symlogConstant, nice, }: ScaleOpts) => Scale
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
@@ -170,16 +171,41 @@ unless `nice: false` says it is already the one being drawn with.
 
 Returns a loop-hoistable function normalizing a score to [0,1].
 
+`symlogConstant` is only read for `SCALE_TYPE_SYMLOG`, and is expected to be
+already resolved by resolveSymlogConstant — the shader gets the same resolved
+number as a uniform, so the "auto" rule lives on this side only and the two
+backends compare like for like.
+
 ```js
 // type signature
-(min: number, max: number, isLog: boolean) => (score: number) => number
+(min: number, max: number, scaleType: WiggleScaleType, symlogConstant?: number) => (score: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
+
+### resolveSymlogConstant
+
+The symlog constant actually used for a domain. `0` (the config default) means
+"pick one from the domain": a thousandth of its largest magnitude, so the
+log-ish part of the curve covers the top three decades of whatever the track
+holds and the linear knee sits below the data rather than through it.
+
+The alternative — d3's default of 1 — is `log(x + 1)`, which is fine for read
+depth and useless for anything living below 1, because the entire domain then
+falls in the linear part of the curve. A p-value track configured that way is
+just a linear track wearing a log label, which is the reason this is resolved
+rather than hard-coded.
+
+```js
+// type signature
+(min: number, max: number, configured: number) => number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
 
 ### scaleTypeFromString
 
-Maps the `'log'`/`'linear'` string to the numeric `WiggleScaleType`.
+Maps the `'log'`/`'symlog'`/`'linear'` string to the numeric `WiggleScaleType`.
 
 ```js
 // type signature

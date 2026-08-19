@@ -1,6 +1,6 @@
 // Vendored from d3-scale 4.0.2 + d3-array 3.2.4
 // ISC License — https://github.com/d3/d3-scale/blob/main/LICENSE
-// Only scaleLinear, scaleLog, scaleQuantize are included.
+// Only scaleLinear, scaleLog, scaleSymlog, scaleQuantize are included.
 // Unused d3-scale features (clamp, invert, interpolate, rangeRound, unknown,
 // tickFormat, copy) are omitted.
 
@@ -164,6 +164,11 @@ export interface Scale {
 export interface LogScale extends Scale {
   base(): number
   base(b: number): this
+}
+
+export interface SymlogScale extends Scale {
+  constant(): number
+  constant(c: number): this
 }
 
 // ── continuous (shared base for linear + log) ─────────────────────────────────
@@ -389,6 +394,65 @@ export function scaleLog(): LogScale {
   })
 
   scale.domain([1, 10])
+  return scale
+}
+
+// ── scaleSymlog ───────────────────────────────────────────────────────────────
+
+// d3's symlog: sign(x) * log1p(|x / c|). Unlike scaleLog it is defined at 0 —
+// and either side of it — which is the whole reason it is here: coverage that
+// touches zero, and log-ratio data that crosses it, have no log domain at all.
+//
+// `constant` is not decoration. At c = 1 this IS log(x + 1), which flattens any
+// data living below 1 (p-values, fractions) into the linear part of the curve
+// and throws away exactly the resolution such a track is read for. Shrinking c
+// moves the linear knee down to where the interesting values are.
+function transformSymlog(c: number) {
+  return (x: number) => Math.sign(x) * Math.log1p(Math.abs(x / c))
+}
+
+export function scaleSymlog(): SymlogScale {
+  let c = 1
+  const inner = continuous(transformSymlog(c))
+
+  const scale = Object.assign((x: number) => inner(x), {
+    constant(c_?: number): any {
+      if (c_ === undefined) {
+        return c
+      }
+      c = +c_
+      inner._setXform(transformSymlog(c))
+      return scale
+    },
+
+    domain(d?: number[]): any {
+      if (!d) {
+        return inner.domain()
+      }
+      inner.domain(d)
+      return scale
+    },
+
+    range(r?: number[]): any {
+      if (!r) {
+        return inner.range()
+      }
+      inner.range(r)
+      return scale
+    },
+
+    // d3 composes symlog with `linearish`, so nice/ticks are the linear ones
+    // over the untransformed domain rather than decade-aligned like scaleLog's.
+    nice(count?: number): any {
+      inner.nice(count)
+      return scale
+    },
+
+    ticks(count = 10): number[] {
+      return inner.ticks(count)
+    },
+  })
+
   return scale
 }
 

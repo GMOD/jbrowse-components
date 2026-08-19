@@ -123,6 +123,7 @@ describe('Canvas2DWiggleRenderer', () => {
   const defaultState = {
     domainY: [0, 10] as [number, number],
     scaleType: SCALE_TYPE_LINEAR,
+    symlogConstant: 1,
     renderingType: RENDERING_TYPE_XYPLOT,
     canvasWidth: 800,
     canvasHeight: 200,
@@ -453,6 +454,7 @@ const lineBlock = {
 const lineState = {
   domainY: [0, 10] as [number, number],
   scaleType: SCALE_TYPE_LINEAR,
+  symlogConstant: 1,
   renderingType: RENDERING_TYPE_LINE,
   canvasWidth: 800,
   canvasHeight: 200,
@@ -712,6 +714,7 @@ describe('a log domain entirely under 1', () => {
   const logState = {
     domainY,
     scaleType: SCALE_TYPE_LOG,
+    symlogConstant: 1,
     renderingType: RENDERING_TYPE_XYPLOT,
     canvasWidth: 800,
     canvasHeight: 200,

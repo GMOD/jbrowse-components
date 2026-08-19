@@ -1,3 +1,4 @@
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   DEFAULT_GAP_BREAK_MULTIPLE,
   scoreAxisConfigSchemaFields,
@@ -9,6 +10,25 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 export const wiggleConfigSchemaFields = {
   ...scoreAxisConfigSchemaFields,
+  // Widens the shared axis slot rather than living in it: `symlog` is only
+  // offered where something implements it, and that is the wiggle shaders.
+  // LinearManhattanDisplay spreads the same shared fields and its shader has no
+  // scaleType branch at all, so listing symlog there would advertise a scale it
+  // silently draws linear.
+  scaleType: {
+    type: 'stringEnum',
+    model: types.enumeration('Scale type', ['linear', 'log', 'symlog']),
+    defaultValue: 'linear',
+    description:
+      'Scale type. "log" cannot represent 0 or negative scores and floors the domain above them; "symlog" is log-like away from zero and linear through it, so a track whose scores touch or cross 0 keeps them',
+  },
+  symlogConstant: {
+    type: 'number',
+    defaultValue: 0,
+    description:
+      'Width of symlog\'s linear region around zero. The default 0 means "derive from the domain" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead',
+    advanced: true,
+  },
   posColor: {
     type: 'color',
     defaultValue: WIGGLE_POS_COLOR_DEFAULT,

@@ -52,6 +52,12 @@ export const MIN_FILL_WIDTH_PX = GENERATED_MIN_FILL_WIDTH_PX
 export interface WiggleGPURenderState {
   domainY: [number, number]
   scaleType: WiggleScaleType
+  /**
+   * symlog's linear-region width, already resolved from the domain by
+   * `resolveSymlogConstant`. Both backends read this one number so the axis,
+   * the shader and the Canvas2D fallback agree; unread by the other scales.
+   */
+  symlogConstant: number
   renderingType: WiggleRenderingType
   canvasWidth: number
   canvasHeight: number

@@ -9,6 +9,7 @@ import {
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   resolveRenderState,
+  resolveSymlogConstant,
   scaleTypeFromString,
 } from '@jbrowse/wiggle-core'
 
@@ -94,6 +95,7 @@ export function renderingTypeToInt(type: string): WiggleRenderingType {
 interface WiggleRenderStateModel {
   domain: [number, number] | undefined
   scaleType: string
+  symlogConstant: number
   renderingType: string
   scatterPointSize: number
   lineWidth: number
@@ -115,6 +117,11 @@ export function makeWiggleRenderState(
   return resolveRenderState(self.domain, domainY => ({
     domainY,
     scaleType: scaleTypeFromString(self.scaleType),
+    symlogConstant: resolveSymlogConstant(
+      domainY[0],
+      domainY[1],
+      self.symlogConstant,
+    ),
     renderingType: renderingTypeToInt(self.renderingType),
     canvasWidth: width,
     canvasHeight: height,

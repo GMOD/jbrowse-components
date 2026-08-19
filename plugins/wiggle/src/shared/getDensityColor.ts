@@ -2,6 +2,8 @@ import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 
+import type { WiggleScaleType } from '@jbrowse/wiggle-core'
+
 // Density-color factory: maps a score to an "rgb(r,g,b)" string that fades
 // from white at the pivot (`origin`, default 0) toward the (r,g,b) color as
 // |score - origin| grows toward the bigger end of the domain. Caches 256 string
@@ -9,13 +11,19 @@ import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 export function makeDensityRgbStringFn(
   domainMin: number,
   domainMax: number,
-  isLog: boolean,
+  scaleType: WiggleScaleType,
   r: number,
   g: number,
   b: number,
   origin = 0,
+  symlogConstant = 1,
 ) {
-  const normalize = makeScoreNormalizer(domainMin, domainMax, isLog)
+  const normalize = makeScoreNormalizer(
+    domainMin,
+    domainMax,
+    scaleType,
+    symlogConstant,
+  )
   const zeroNorm = normalize(origin)
   // The ramp position is wiggle.slang's own `densityGradientT`, generated into
   // TS (adr-051). Only the *normalizers* differ between the backends, and they

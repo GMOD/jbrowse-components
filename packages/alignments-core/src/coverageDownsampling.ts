@@ -5,7 +5,10 @@
 // alignments-core. The type imports below are erased, so they can keep using the
 // barrel.
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core/normalize'
+import {
+  makeScoreNormalizer,
+  scaleTypeFromString,
+} from '@jbrowse/wiggle-core/normalize'
 
 import { coverageLayout } from './coverageBandBox.ts'
 import { forEachAtPosition, lowerBound } from './positionIndex.ts'
@@ -169,7 +172,11 @@ export function computeCoverageTicks(
   }
 
   const baseline = coverageBaseline(domainMin, scaleType)
-  const normalize = makeScoreNormalizer(domainMin, max, scaleType === 'log')
+  const normalize = makeScoreNormalizer(
+    domainMin,
+    max,
+    scaleTypeFromString(scaleType),
+  )
   const yOf = (value: number) => yBottom - normalize(value) * effectiveH
 
   // A domain whose bound swallows the data (minScore above the visible peak)

@@ -1,4 +1,8 @@
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
+import {
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+  makeScoreNormalizer,
+} from '@jbrowse/wiggle-core'
 
 /**
  * What the coverage band's depth scale is made of. The min and the max travel
@@ -56,7 +60,7 @@ export function makeCoverageScale(
     normalize: makeScoreNormalizer(
       coverageMinDepth ?? 0,
       coverageMaxDepth,
-      coverageIsLog,
+      coverageIsLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
     ),
     domainMax: coverageMaxDepth,
   }

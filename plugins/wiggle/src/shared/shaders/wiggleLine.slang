@@ -72,7 +72,7 @@ bool drawsCapsule() {
 // Score → clip-space Y within a single row (line mode). Reads the y domain and
 // scale type from the global uniforms.
 float rowScoreToClipY(float score, float rowTop, float rowHeight, float pxToClip) {
-  float yPx = scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
+  float yPx = scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
   return 1.0 - yPx * pxToClip;
 }
 
@@ -143,9 +143,9 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
     float midPrevX = hasPrev
       ? (bpToClipX(inst.prevStartEnd.x, u) + bpToClipX(inst.prevStartEnd.y, u)) * 0.5
       : midCurrX;
-    float currYpx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
+    float currYpx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
     float prevYpx = hasPrev
-      ? scoreToY(inst.prevScoreLine, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop
+      ? scoreToY(inst.prevScoreLine, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop
       : currYpx;
     // Build the capsule in px space (clip x → px via viewportWidth) so it stays
     // isotropic despite the differing per-axis px→clip scales, then convert the

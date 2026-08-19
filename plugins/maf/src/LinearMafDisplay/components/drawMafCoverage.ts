@@ -9,7 +9,7 @@ import {
   forEachClippedBlock,
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
+import { SCALE_TYPE_LINEAR, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -39,7 +39,7 @@ export function drawMafCoverage(
   if (!domainMax) {
     return
   }
-  const normalize = makeScoreNormalizer(0, domainMax, false)
+  const normalize = makeScoreNormalizer(0, domainMax, SCALE_TYPE_LINEAR)
   const coverageColor = theme.palette.coverage
   const snpColors = {
     baseA: theme.palette.bases.A.main,

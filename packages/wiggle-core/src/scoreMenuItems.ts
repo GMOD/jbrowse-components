@@ -41,6 +41,7 @@ export function makeScaleTypeSubMenu(self: {
       [
         { value: 'linear', label: 'Linear scale' },
         { value: 'log', label: 'Log scale' },
+        { value: 'symlog', label: 'Symlog scale (allows zero)' },
       ],
       self.scaleType,
       v => {

@@ -8,7 +8,9 @@ export { toP } from './formatNumber.ts'
 export {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
+  SCALE_TYPE_SYMLOG,
   makeScoreNormalizer,
+  resolveSymlogConstant,
   scaleTypeFromString,
 } from './normalize.ts'
 export type { WiggleScaleType } from './normalize.ts'
