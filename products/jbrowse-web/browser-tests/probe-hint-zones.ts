@@ -16,7 +16,11 @@
 import { BASE_CHROME_ARGS } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
-import { navigateWithSessionSpec, setPort } from './helpers.ts'
+import {
+  navigateWithSessionSpec,
+  setPort,
+  waitForDataLoaded,
+} from './helpers.ts'
 import { startServerOnFreePort } from './server.ts'
 
 const CONFIG = 'test_data/grape_peach_synteny/config.json'
@@ -60,7 +64,13 @@ try {
   for (const [name, spec] of specs) {
     const page = await browser.newPage()
     await navigateWithSessionSpec(page, spec, CONFIG)
-    await delay(10000)
+    // the zones are measured off laid-out boxes, so wait for the tracks rather
+    // than sleeping at one — a track that has not arrived reads as no view
+    await page.waitForSelector('[data-testid="tracksContainer"]', {
+      timeout: 90000,
+    })
+    await waitForDataLoaded(page, 90000)
+    await delay(1000)
     const zones = await page.evaluate(() => {
       const tracks = document.querySelector('[data-testid="tracksContainer"]')!
       const t = tracks.getBoundingClientRect()
