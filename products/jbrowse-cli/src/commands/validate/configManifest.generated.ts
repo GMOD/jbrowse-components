@@ -2761,7 +2761,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLabels",
-          "type": "(JexlString | showLabels)"
+          "type": "(JexlString | (showLabels | undefined))"
         },
         {
           "name": "maxLabelFeatureDensity",
@@ -3618,7 +3618,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLabels",
-          "type": "(JexlString | showLabels)"
+          "type": "(JexlString | (showLabels | undefined))"
         },
         {
           "name": "maxLabelFeatureDensity",
