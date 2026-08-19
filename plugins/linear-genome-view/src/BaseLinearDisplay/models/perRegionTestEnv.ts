@@ -33,16 +33,16 @@ function makeConfigSchema() {
 
 /**
  * The knobs a test needs on the display's fetch, held in a closure rather than
- * as volatiles. `isCacheValid` must stay a **view** — as an action MobX runs it
+ * as volatiles. `regionHasData` must stay a **view** — as an action MobX runs it
  * untracked and the autorun keeps a stale answer (see the hook block in
  * `MultiRegionDisplayMixin`) — and a view may not write, so its call counter
  * cannot live in the tree.
  */
 export interface PerRegionTestControl {
-  /** how many times the fetch autorun has asked `isCacheValid` */
+  /** how many times the fetch autorun has asked `regionHasData` */
   cacheValidCalls: number
   /**
-   * How many further `isCacheValid` calls answer false, decremented each time.
+   * How many further `regionHasData` calls answer false, decremented each time.
    * Bounded on purpose: a permanently-invalid cache refetches forever, which is
    * correct behavior and an unfalsifiable test.
    */
@@ -95,8 +95,15 @@ function makeStateModel(
       /** every `fetchNeeded` call, as the region list it was handed */
       fetchLog: [] as IndexedRegion[][],
       loadedData: new Map<number, string>(),
+      /**
+       * What `regionFetchKey` answers. A volatile, not a `control` knob, and
+       * that is the point: a real display's key reads view state, so the
+       * autorun re-runs when it moves. A plain closure value would be memoized
+       * by the computed and never invalidate.
+       */
+      fetchKey: '',
     }))
-    .views(() => ({
+    .views(self => ({
       get measuresBytesPreFlight() {
         return gate.measuresBytesPreFlight ?? false
       },
@@ -109,7 +116,10 @@ function makeStateModel(
       get densityTooLarge() {
         return control.densityTooLarge
       },
-      isCacheValid(_displayedRegionIndex: number) {
+      get regionFetchKey() {
+        return self.fetchKey
+      },
+      regionHasData(_displayedRegionIndex: number) {
         control.cacheValidCalls += 1
         if (control.staleAnswers > 0) {
           control.staleAnswers -= 1
@@ -119,6 +129,9 @@ function makeStateModel(
       },
     }))
     .actions(self => ({
+      setFetchKey(key: string) {
+        self.fetchKey = key
+      },
       setLoaded(displayedRegionIndex: number, value: string) {
         self.loadedData.set(displayedRegionIndex, value)
       },

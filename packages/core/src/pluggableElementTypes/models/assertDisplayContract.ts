@@ -14,10 +14,14 @@ declare const process: { env: { NODE_ENV?: string } }
 const attached = new WeakSet<object>()
 
 // Hooks that MUST be `.views()`. MobX runs an action inside `untracked`, so
-// declaring either in `.actions()` makes its reads register no dependency and
-// the caller silently keeps a stale answer. It has regressed twice, because
+// declaring one of these in `.actions()` makes its reads register no dependency
+// and the caller silently keeps a stale answer. It has regressed twice, because
 // each caller independently reads something that moves in lockstep.
-const MUST_BE_VIEWS = ['isCacheValid', 'rpcProps'] as const
+//
+// `regionFetchKey`, the third term the per-region cache rule reads, needs no
+// entry: MST throws on a getter inside `.actions()`, so it cannot regress this
+// way. Only the method-shaped hooks can.
+const MUST_BE_VIEWS = ['isCacheValid', 'regionHasData', 'rpcProps'] as const
 
 function report(message: string) {
   // `console.error`, never `throw`: an error escaping `afterAttach` is read by

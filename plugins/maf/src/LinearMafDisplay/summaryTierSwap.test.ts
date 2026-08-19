@@ -105,7 +105,7 @@ describe('the summary bars stand in until the alignment lands', () => {
     expect(display.visibleSummaryBars.map(b => b.start)).toEqual([5100])
   })
 
-  // Zooming back out reuses the summary cache — `isCacheValid` is satisfied, so
+  // Zooming back out reuses the summary cache — `regionHasData` is satisfied, so
   // no fetch runs and `clearAlignmentData` never does either. Both maps then
   // hold the region, and the bars are what is on screen, so the presence of
   // alignment data must not suppress them there.
@@ -122,6 +122,44 @@ describe('the summary bars stand in until the alignment lands', () => {
     expect(display.showSummary).toBe(true)
     expect(display.rpcDataMap.size).toBe(1)
     expect(display.visibleSummaryBars).toHaveLength(2)
+  })
+
+  // The tier is the presence hook (`regionHasData`), not `regionFetchKey`,
+  // which stays empty here. A summary/detail key would read as stale the moment
+  // the tier flipped and re-read the summary adapter on every zoom back out —
+  // the retention `clearAlignmentData`'s one-directional clear exists to buy.
+  it('leaves both tiers cache-valid, so the zoom back out refetches nothing', () => {
+    const { display, view } = env().createDisplay()
+    seedSources(display)
+    display.setLoadedRegion(0, view.displayedRegions[0])
+    seedSummary(display)
+    seedAlignment(display)
+
+    view.zoomTo(1)
+    expect(display.showSummary).toBe(false)
+    expect(display.isCacheValid(0)).toBe(true)
+
+    view.zoomTo(100)
+    expect(display.showSummary).toBe(true)
+    expect(display.isCacheValid(0)).toBe(true)
+  })
+
+  // ...and the tier the zoom asks for is the one that has to hold it: a
+  // too-large region is marked loaded and stores nothing, and that is what
+  // refetches it when the gate releases.
+  it('is cache-invalid on the tier whose map is empty', () => {
+    const { display, view } = env().createDisplay()
+    seedSources(display)
+    display.setLoadedRegion(0, view.displayedRegions[0])
+    seedSummary(display)
+
+    view.zoomTo(100)
+    expect(display.showSummary).toBe(true)
+    expect(display.isCacheValid(0)).toBe(true)
+
+    view.zoomTo(1)
+    expect(display.showSummary).toBe(false)
+    expect(display.isCacheValid(0)).toBe(false)
   })
 
   // A track with no summary file has nothing to stand in with, and must not

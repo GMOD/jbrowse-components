@@ -2,6 +2,24 @@ import { getMembers } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
+
+// A committed region with nothing on it — presence is the whole question here.
+function emptyRegionData(): MultiRowRegionData {
+  return {
+    featureStarts: new Uint32Array(0),
+    featureEnds: new Uint32Array(0),
+    featureColors: new Uint32Array(0),
+    featureDeltas: new Int32Array(0),
+    partitionValues: [],
+    featurePartitionIndex: new Uint32Array(0),
+    featureNames: [],
+    featureIds: [],
+    usedItemRgb: false,
+    partitionCandidates: [],
+  }
+}
+
 // CanvasFeatureGateMixin never sets `measuresBytesPreFlight` (it folds the byte check
 // into its feature RPC instead of running the pre-flight), so the opt-in comes
 // entirely from `measuresBytesInFetch`, which RegionTooLargeMixin ORs into
@@ -21,7 +39,30 @@ test('the reactive method hooks are views, not actions', () => {
   const { display } = createTestEnvironment().createDisplay()
   const { actions } = getMembers(display)
   expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('regionHasData')
   expect(actions).not.toContain('rpcProps')
+})
+
+// A too-large region is marked loaded so the fetch autorun doesn't spin, and
+// stores no rpcData — the presence hook is what refetches it once the gate
+// releases. No zoom rule beside it: `regionFetchKey` stays at the mixin's empty
+// default, so a zoom inside a loaded region reuses the features.
+describe('the presence hook is the whole cache rule', () => {
+  it('is invalid for a region the fetch stored nothing for', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    display.setLoadedRegion(0, view.displayedRegions[0])
+    expect(display.isCacheValid(0)).toBe(false)
+  })
+
+  it('stays valid through a zoom once the features are committed', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    display.setLoadedRegion(0, view.displayedRegions[0])
+    display.setRpcData(0, emptyRegionData())
+    expect(display.isCacheValid(0)).toBe(true)
+
+    view.zoomTo(view.bpPerPx / 4)
+    expect(display.isCacheValid(0)).toBe(true)
+  })
 })
 
 describe('multi-row derived regionTooLarge (byte axis)', () => {

@@ -1121,15 +1121,16 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #method
-       * A region is cache-valid only once its features are committed. A too-large
-       * region is marked loaded (so the fetch autorun doesn't spin) but stores no
-       * rpcData, so this returns false and the region refetches the moment the
-       * gate releases (zoom-in or force-load).
+       * A too-large region is marked loaded (so the fetch autorun doesn't spin)
+       * but stores no rpcData, so this answers false and the region refetches
+       * the moment the gate releases (zoom-in or force-load). No zoom rule
+       * beside it: the worker's output is absolute genomic uint32, so
+       * `regionFetchKey` stays at its empty default.
        *
        * A view, not an action: as an action MobX untracks the `rpcDataMap` read
        * and `FetchVisibleRegions` keeps a stale answer.
        */
-      isCacheValid(displayedRegionIndex: number) {
+      regionHasData(displayedRegionIndex: number) {
         return self.rpcDataMap.has(displayedRegionIndex)
       },
     }))

@@ -25,6 +25,7 @@ test('the reactive method hooks are views, not actions', () => {
   const { display } = createMafTestEnvironment().createDisplay()
   const { actions } = getMembers(display)
   expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('regionHasData')
   expect(actions).not.toContain('rpcProps')
 })
 

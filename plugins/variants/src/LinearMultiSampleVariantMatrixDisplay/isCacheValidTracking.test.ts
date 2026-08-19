@@ -3,35 +3,41 @@ import { autorun } from 'mobx'
 
 import { createTestEnvironment } from './testEnv.ts'
 
-// `isCacheValid` and `rpcProps` are read from reactive contexts — the
-// `FetchVisibleRegions` autorun and the `rpcPropsCacheKey` computed. Declared in
-// an `.actions()` block they become MST actions, MobX runs them untracked, the
-// observables they read (`view.bpPerPx` here, settings in `rpcProps`) register no
-// dependency, and the caller silently keeps a stale answer. That is how this
-// display's byte gate went dead when `getByteEstimateConfig` landed in an
-// `.actions()` block.
+// `isCacheValid`, `regionHasData` and `rpcProps` are read from reactive
+// contexts — the `FetchVisibleRegions` autorun and the `rpcPropsCacheKey`
+// computed. Declared in an `.actions()` block they become MST actions, MobX runs
+// them untracked, the observables they read (`view.bpPerPx` here, settings in
+// `rpcProps`) register no dependency, and the caller silently keeps a stale
+// answer. That is how this display's byte gate went dead when
+// `getByteEstimateConfig` landed in an `.actions()` block.
 //
 // Nothing else in the suite catches it: `FetchVisibleRegions` independently reads
 // `view.visibleRegions`, which changes on every zoom, so the missing dependency
 // is masked. Two pins, then — the declaration site below, and the tracking
 // behavior it buys further down. Getters can't regress this way (MST throws on a
 // getter inside `.actions()`), which is why the gate's opt-in is now the boolean
-// getter `measuresBytesPreFlight`. See BaseLinearDisplay/CLAUDE.md.
+// getter `measuresBytesPreFlight` and the zoom rule the getter
+// `regionFetchKey`. See BaseLinearDisplay/CLAUDE.md.
 test('the reactive method hooks are views, not actions', () => {
   const { display } = createTestEnvironment().createDisplay()
   const { actions } = getMembers(display)
   expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('regionHasData')
   expect(actions).not.toContain('rpcProps')
 })
 
 test('isCacheValid re-evaluates for callers when bpPerPx changes', () => {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
-  view.setDisplayedRegions([
-    { assemblyName: 'volvox', start: 0, end: 8000, refName: 'ctgA' },
-  ])
+  const region = {
+    assemblyName: 'volvox',
+    start: 0,
+    end: 8000,
+    refName: 'ctgA',
+  }
+  view.setDisplayedRegions([region])
   view.zoomTo(10)
-  display.setLoadedBpPerPx(view.bpPerPx)
+  display.setLoadedRegion(0, region)
 
   const seen: boolean[] = []
   const stop = autorun(() => {

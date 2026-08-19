@@ -166,7 +166,7 @@ describe('MAF fetch progress reporting', () => {
 
 // The swap is one-directional on purpose. Entering summary mode drops the
 // alignment blocks so the GPU sequence canvas paints nothing under the summary
-// overlay; zooming back in keeps the summary records, because `isCacheValid`
+// overlay; zooming back in keeps the summary records, because `regionHasData`
 // tests `summaryDataMap` in summary mode and that retention is what lets the
 // zoom back out reuse the cache rather than re-read the summary adapter.
 describe('summary/detail data swap', () => {

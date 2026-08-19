@@ -154,6 +154,44 @@ describe('the trigger list', () => {
   })
 })
 
+// The third invalidation axis, and the one this mixin owns: the display says
+// what a fetch issued now would produce, `fetchRegions` stamps that beside the
+// region it loads, and a region whose stamp no longer matches refetches.
+// `regionHasData` stays true throughout, so nothing but the key explains either
+// result.
+describe('the region fetch key', () => {
+  it('refetches a covered block whose key moved', async () => {
+    const { display } = setup()
+    await quiet(display)
+
+    // no viewport move: `regionFetchKey` is a view, so what it reads is in this
+    // autorun's dependency set and moving the key is the whole trigger. As an
+    // action MobX would run it untracked and this would never re-run.
+    display.setFetchKey('zoomed')
+    expect(await quiet(display)).toBe(2)
+  })
+
+  // The key is read before the RPC, not after it. `ctx.isStale()` trips on a
+  // newer fetch or a cancel, never on a viewport that moved under a fetch that
+  // is still current — so a key read at commit would stamp this data with the
+  // zoom the user has since reached, and the region would read as fresh at a
+  // resolution it was never fetched at. Read at issue, the same move leaves a
+  // stale stamp and one redundant fetch, which is the failure worth having.
+  it('captures the key at issue, so one that moves mid-fetch refetches', async () => {
+    const { display, control } = setup()
+    control.fetchDelayMs = 300
+    await waitFor(
+      () => {
+        expect(display.isLoading).toBe(true)
+      },
+      { timeout: 5000, interval: 20 },
+    )
+
+    display.setFetchKey('moved')
+    expect(await quiet(display)).toBe(2)
+  })
+})
+
 // A failed fetch leaves the block uncovered, so nothing but the error itself
 // stops the autorun retrying it — which is the state these are about. Note
 // `clearAllRpcData` clears the error as part of the reset, so it cannot be used

@@ -1911,7 +1911,7 @@ export default function baseStateModelFactory(
           // sees boundsValid=true with missing rpcData (blank-region on pan-back).
           for (const key of self.loadedRegions.keys()) {
             if (!visibleDisplayedRegionIndices.has(key)) {
-              self.loadedRegions.delete(key)
+              self.dropLoadedRegion(key)
             }
           }
         },
@@ -2515,28 +2515,26 @@ export default function baseStateModelFactory(
       }))
       .views(self => ({
         /**
-         * #method
+         * #getter
          */
         // The only bpPerPx-dependent worker decision is the amino-acid overlay
-        // (gated by shouldRenderPeptideBackground). Refetch when crossing that
-        // discrete threshold; otherwise the cached data stays valid.
+        // (gated by shouldRenderPeptideBackground), so the key is that discrete
+        // threshold rather than the zoom itself — every other zoom change reuses
+        // the cached features.
         //
-        // Missing rpcData (regionData === undefined) means the region was
-        // pruned off-screen or not yet fetched — always refetch. The
+        // A getter, not an action: an action would untrack the view.bpPerPx read.
+        get regionFetchKey(): string {
+          return String(shouldRenderPeptideBackground(getView(self).bpPerPx))
+        },
+        /**
+         * #method
+         */
+        // Missing rpcData means the region was pruned off-screen, or the fetch
+        // came back too-large and stored nothing — refetch either way. The
         // FetchVisibleRegions autorun gates on regionTooLarge before calling
         // this, so the density-blocking case is handled there, not here.
-        //
-        // A view, not an action: an action would untrack the view.bpPerPx read.
-        isCacheValid(displayedRegionIndex: number) {
-          const view = getView(self)
-          const regionData = self.rpcDataMap.get(displayedRegionIndex)
-          if (regionData === undefined) {
-            return false
-          }
-          return (
-            shouldRenderPeptideBackground(view.bpPerPx) ===
-            shouldRenderPeptideBackground(regionData.loadedBpPerPx)
-          )
+        regionHasData(displayedRegionIndex: number) {
+          return self.rpcDataMap.has(displayedRegionIndex)
         },
       }))
       .actions(self => ({

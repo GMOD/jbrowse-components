@@ -2166,7 +2166,7 @@ export default function stateModelFactory(
         // canvas paints nothing under the summary overlay.
         //
         // Deliberately one-directional: there is no twin on the alignment path.
-        // `summaryDataMap` is what `isCacheValid` tests in summary mode, so
+        // `summaryDataMap` is what `regionHasData` tests in summary mode, so
         // keeping it through a zoom-in is exactly what lets the zoom back out
         // reuse the cache instead of re-reading the summary adapter. It doesn't
         // accumulate either — it only ever holds the buffered regions of the
@@ -2280,12 +2280,17 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Force a refetch when the loaded data is the wrong kind for the current
-         * zoom: crossing the summary↔detail threshold within an already-loaded
-         * region wouldn't trip the bounds-based coverage check, so the mode is
-         * keyed on which map holds the region.
+         * Whether the tier the current zoom needs holds this region: crossing
+         * the summary↔detail threshold inside an already-loaded region wouldn't
+         * trip the bounds-based coverage check, so the answer is which map has
+         * it.
+         *
+         * The presence hook rather than `regionFetchKey`, which stays empty,
+         * because the two tiers cache side by side: the detail fetch keeps the
+         * summary records (`clearAlignmentData` runs one way only), and a
+         * summary/detail key would refetch the summary on every zoom back out.
          */
-        isCacheValid(displayedRegionIndex: number) {
+        regionHasData(displayedRegionIndex: number) {
           return self.showSummary
             ? self.summaryDataMap.has(displayedRegionIndex)
             : self.rpcDataMap.has(displayedRegionIndex)

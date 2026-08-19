@@ -90,6 +90,7 @@ test('the reactive method hooks are views, not actions', () => {
   const { display } = createTestEnvironment().createDisplay()
   const { actions } = getMembers(display)
   expect(actions).not.toContain('isCacheValid')
+  expect(actions).not.toContain('regionHasData')
   expect(actions).not.toContain('rpcProps')
 })
 
@@ -339,6 +340,55 @@ describe('FetchVisibleRegions autorun', () => {
     await waitFor(() => {
       expect(display.error).toBeFalsy()
       expect(display.loadedRegions.size).toBe(1)
+    })
+  })
+
+  // The one bpPerPx-dependent worker decision is the amino-acid overlay, so
+  // `regionFetchKey` is that threshold rather than the zoom — a zoom staying on
+  // one side of it reuses the features, and one crossing it refetches. Both
+  // zoom IN from a coarser first fetch, so the viewport stays inside the loaded
+  // region and `viewportWithinLoadedData` cannot be what explains either result.
+  describe('the peptide threshold is the only zoom that refetches', () => {
+    // 2 bp/px is above PEPTIDE_BACKGROUND_MAX_BP_PER_PX, so the first fetch
+    // carries no amino-acid overlay
+    async function loadedAboveTheThreshold() {
+      const { createDisplay, mockRpcCall } = createTestEnvironment()
+      mockRpcCall.mockResolvedValue(makeFeatureData())
+      const { display, view } = createDisplay()
+      view.zoomTo(2)
+
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+      await waitFor(() => {
+        expect(display.loadedRegions.size).toBe(1)
+      })
+      return { display, view, mockRpcCall }
+    }
+
+    it('does not refetch on a zoom that stays above it', async () => {
+      const { display, view, mockRpcCall } = await loadedAboveTheThreshold()
+      const callsBefore = mockRpcCall.mock.calls.length
+
+      view.zoomTo(1.5)
+      expect(display.viewportWithinLoadedData).toBe(true)
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+
+      expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    })
+
+    it('refetches on a zoom that crosses it', async () => {
+      const { display, view, mockRpcCall } = await loadedAboveTheThreshold()
+      const callsBefore = mockRpcCall.mock.calls.length
+
+      view.zoomTo(0.5)
+      expect(display.viewportWithinLoadedData).toBe(true)
+      jest.advanceTimersByTime(800)
+      await jest.runAllTimersAsync()
+
+      await waitFor(() => {
+        expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+      })
     })
   })
 

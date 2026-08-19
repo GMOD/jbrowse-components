@@ -442,12 +442,6 @@ export default function MultiSampleVariantBaseModelF(
          * — fetchNeeded only needs to call setCellData(result).
          */
         cellData: undefined as CellDataResult | undefined,
-        // bpPerPx the current cellData was fetched at. Matrix mode lays columns
-        // out by feature index across the full width, so the displayed feature
-        // set is the visible region at *this* zoom; a zoom change invalidates
-        // the cache even when the viewport is still spatially covered. See the
-        // isCacheValid override below.
-        loadedBpPerPx: undefined as number | undefined,
         // Bumped by reload() to retrigger the sources autorun. Sources is a
         // one-shot fetch (per adapter, not per viewport), so it doesn't go
         // through FetchMixin and can't watch fetchGeneration — that would
@@ -461,9 +455,6 @@ export default function MultiSampleVariantBaseModelF(
         },
         setContextMenuFeature(feature?: Feature) {
           self.contextMenuFeature = feature
-        },
-        setLoadedBpPerPx(bpPerPx: number | undefined) {
-          self.loadedBpPerPx = bpPerPx
         },
       }))
       .views(self => ({
@@ -1465,25 +1456,22 @@ export default function MultiSampleVariantBaseModelF(
         },
 
         /**
-         * #method
+         * #getter
          * Matrix mode draws columns by feature index across the full width, so
          * the set of features belongs to the visible region at the *current*
          * zoom — zooming in/out changes which features show even when the
          * viewport stays spatially inside loaded data, so cached cells at a
          * different bpPerPx are stale (wiggle uses the same strict-zoom rule,
          * adr-008). Regular mode draws each variant at its genomic position, so
-         * spatial coverage alone suffices and the default (always valid) holds.
+         * spatial coverage alone suffices and the empty key holds every region
+         * a fetch has loaded.
          *
-         * A view, not an action: as an action MobX untracks the `bpPerPx` read
-         * and `FetchVisibleRegions` keeps a stale answer
+         * A getter, not an action: as an action MobX untracks the `bpPerPx`
+         * read and `FetchVisibleRegions` keeps a stale answer
          * (`isCacheValidTracking.test.ts`).
          */
-        isCacheValid(_displayedRegionIndex: number) {
-          if (cellDataMode !== 'matrix' || self.loadedBpPerPx === undefined) {
-            return true
-          }
-          const view = self.lgv
-          return view.bpPerPx === self.loadedBpPerPx
+        get regionFetchKey(): string {
+          return cellDataMode === 'matrix' ? String(self.lgv.bpPerPx) : ''
         },
 
         /**
@@ -1566,7 +1554,6 @@ export default function MultiSampleVariantBaseModelF(
           // hasPhased / sampleInfo / featuresVolatile are derived from cellData
           // via getters, so clearing cellData clears all of them.
           self.cellData = undefined
-          self.loadedBpPerPx = undefined
         },
 
         // Ignores `needed` and refetches all visible regions because the
@@ -1585,7 +1572,6 @@ export default function MultiSampleVariantBaseModelF(
           if (regions.length === 0) {
             return
           }
-          const bpPerPx = view.bpPerPx
           // Resolved before the await, so the RPC sends exactly what
           // `fetchNeeded` is about to mark loaded — no second view read across
           // the async boundary.
@@ -1612,7 +1598,6 @@ export default function MultiSampleVariantBaseModelF(
             )
             if (!ctx.isStale() && isAlive(self)) {
               self.setCellData(result)
-              self.setLoadedBpPerPx(bpPerPx)
             }
           })
         },
