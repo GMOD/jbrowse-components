@@ -23,6 +23,18 @@ import corePlugins from '../corePlugins.ts'
 // *consistently* (`maybeNumber` with `promotedBase: 0`), and a slot that
 // quietly stops being promotable, whose only other symptom is `resolveConf`
 // throwing at the first menu click on the one display that regressed.
+//
+// **One direction only, and deliberately.** This asks whether every display
+// that DECLARES the slot spells it the way the mixin assumes. It does not ask
+// the converse — whether every display composing the mixin declares the slot at
+// all — because MST erases the composition (a composed model keeps neither its
+// parts' names nor their member lists, so no runtime walk can recover it) and
+// because that direction does not need catching here: the mixin's getter is
+// `resolveConf`, which throws on a missing or non-promotable slot, and
+// `MultiSampleVariantOverlay` reads it every render. A display composing
+// without declaring throws the first time it draws. `PromotablePinCoverage.test.ts`
+// is where that becomes a CI failure rather than a first-use one — it opens a
+// live display per type and builds its menu, which reads the slot.
 const pluginManager = new PluginManager(
   corePlugins.map(P => new P()),
 ).createPluggableElements()

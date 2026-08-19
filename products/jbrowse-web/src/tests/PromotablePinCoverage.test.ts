@@ -75,6 +75,9 @@ interface Fixture {
   displayType: string
   trackId: string
   states?: ((display: any) => void)[]
+  // Display-level config the fixture opens with, where a row is gated on a
+  // *configured* state rather than on a state an action can enter.
+  displaySnapshot?: Record<string, unknown>
 }
 
 const FIXTURES: Fixture[] = [
@@ -109,6 +112,26 @@ const FIXTURES: Fixture[] = [
     trackId: 'volvox_refseq',
     states: wiggleRenderingStates(),
   },
+  {
+    // The legend row is gated on the display having a key to show, and a
+    // configured `legend` is one of the two things that gives it one —
+    // `colorLegend` reads the slot before it derives anything from data. That
+    // is the honest way in here, the way `overlayWithSources` is for
+    // multi-wiggle: the pin is reachable in any session with a legend, and
+    // would otherwise read as missing because this test never fetches.
+    displayType: 'LinearMultiRowFeatureDisplay',
+    trackId: 'gff3tabix_genes',
+    displaySnapshot: { legend: [{ label: 'a', color: 'red' }] },
+  },
+  {
+    displayType: 'LinearMultiSampleVariantDisplay',
+    trackId: 'volvox multi-sample sv',
+  },
+  {
+    displayType: 'LinearMultiSampleVariantMatrixDisplay',
+    trackId: 'volvox multi-sample sv',
+  },
+  { displayType: 'LDDisplay', trackId: 'volvox multi-sample sv' },
 ]
 
 // The wiggle family gates its two size rows on the rendering type, and the two
@@ -152,10 +175,10 @@ beforeEach(() => {
 // Open `trackId` showing `displayType`, and return the display. Passing the
 // display type is what reaches a track's non-default displays — the SV arcs on a
 // VariantTrack, GC content on a ReferenceSequenceTrack.
-function openDisplay({ displayType, trackId }: Fixture) {
+function openDisplay({ displayType, trackId, displaySnapshot }: Fixture) {
   const { rootModel } = getPluginManager()
   const view = rootModel.session!.views[0] as unknown as TestView
-  view.showTrack(trackId, {}, { type: displayType })
+  view.showTrack(trackId, {}, { type: displayType, ...displaySnapshot })
   const display = view.tracks
     .flatMap(t => t.displays)
     .find(d => d.type === displayType)
