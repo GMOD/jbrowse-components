@@ -149,13 +149,32 @@ carries, since it keeps every other field:
 
 <!-- END GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
-The last column is what carrying both copies costs the file; the
-`coarse/fine bytes` column beside it is what reading the coarse one saves. With
-1.5 kb alignment blocks it gives up indel detail for almost nothing; at 5 Mb it
-is the difference between reading the CIGARs and not. **The coarse copy makes
-each alignment cheaper and does not make them fewer**, so it suits a few huge
-alignments with megabase CIGARs, and does little for a dense all-vs-all
-comparison, where the cost is the number of alignments.
+That table is what carrying both copies costs the file. What reading the coarse
+one saves is a different measurement, taken on a real hosted alignment — a
+human/mouse liftOver chain converted to a PIF — by counting the bytes the server
+actually sent for one whole-genome pass:
+
+<!-- BEGIN GENERATED MEASUREMENT pif-tier-wire-bytes -->
+
+| one whole-genome pass, hs1 vs mm39 | bytes over the wire | rows returned | range requests | bytes/row |
+| ---------------------------------- | ------------------: | ------------: | -------------: | --------: |
+| coarse (no CIGAR)                  |         **1.31 MB** |        43,839 |              6 |        30 |
+| fine (per-row CIGAR)               |            64.23 MB |        75,076 |             22 |       856 |
+
+<!-- END GENERATED MEASUREMENT pif-tier-wire-bytes -->
+
+Both arms read every row of their own tier out of the same file, so this is not
+a comparison of two differently-built files. The `bytes/row` column is the one
+to read: the coarse copy does not return far fewer alignments, it returns
+alignments that are far smaller, and what separates them is the CIGAR.
+
+Back to the file-size table: the last column is what carrying both copies costs
+the file; the `coarse/fine bytes` column beside it is what reading the coarse
+one saves. With 1.5 kb alignment blocks it gives up indel detail for almost
+nothing; at 5 Mb it is the difference between reading the CIGARs and not. **The
+coarse copy makes each alignment cheaper and does not make them fewer**, so it
+suits a few huge alignments with megabase CIGARs, and does little for a dense
+all-vs-all comparison, where the cost is the number of alignments.
 
 Binning alignments together as they are read is the obvious answer to that, and
 it is capped. Profiling a whole-genome fetch of a human-vs-mouse-scale PIF puts

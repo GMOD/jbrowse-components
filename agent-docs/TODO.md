@@ -87,7 +87,7 @@ before anyone noticed.
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
 | [The config-read baseline's remaining 125](#the-config-read-baselines-remaining-125-is-mostly-not-display-debt) | config, types | 72 of them are track/assembly reads; confirm that before estimating any of it |
 | [makePin checks the slot name, not the value](#makepin-checks-the-slot-name-but-not-the-value) | config, menus | decide whether the runtime throw is already enough |
-| [What the two-tier PIF saves a reader](#measure-what-the-two-tier-pif-actually-saves-a-reader) | synteny, PIF | the only PIF measurement is on-disk size; take bytes-over-the-wire and time-to-settled |
+| [Time a two-tier PIF to settled](#time-a-two-tier-pif-to-settled-in-a-browser) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
 
 ## Ready to build: small and self-contained
 
@@ -2264,37 +2264,35 @@ if it is quiet on a clean tree. A gate that reports 600 findings teaches everyon
 to skip it.
 
 
-### Measure what the two-tier PIF actually saves a reader
+### Time a two-tier PIF to settled, in a browser
 
-The v5.0.0 draft carried a two-tier benchmark table and nothing in-repo backs
-it, so the paragraph came out and this is what would let it go back.
+The v5.0.0 draft carried a two-tier benchmark table nothing in-repo backed, so
+the paragraph came out. **The bytes half is now taken** —
+[measurements/pif-tier-wire-bytes.json](measurements/pif-tier-wire-bytes.json)
+(`bench`), one whole-genome pass over the hosted hs1-vs-mm39 PIF with the bytes
+counted by the server the adapter fetches from. What is left is the half a
+stopwatch answers.
 
-The only PIF measurement that exists is
-[measurements/pif-coarse-tier-bytes.json](measurements/pif-coarse-tier-bytes.json)
-(`hand`), and it answers a different question: **on-disk size ratios per block
-length** — what the coarse tier costs the file — rather than what a reader
-downloads or how long the view takes to settle. Those are the two numbers a
-release note about tiering is making a claim about, and neither has been taken.
+Do **not** repeat the reasoning that wrote this off. The removed caption named a
+UCSC liftOver chain, and the objection was that `ChainAdapter` declares no
+tiering slot while `make-pif` takes PAF — but a chain is a *source format*, not
+the adapter: `chain2paf` then `make-pif` gives a two-tier PIF that loads through
+`PairwiseIndexedPAFAdapter`, which does declare the slot.
+`~/data/hs1ToMm39/hs1ToMm39.over.chain.pif.gz` is one, and
+[reference/HOSTING.md](reference/HOSTING.md) has recorded the hosted copy as
+two-tier since 2026-08-02.
 
-The claimed table also could not have come from the run its caption described:
-it named a UCSC liftOver chain, `ChainAdapter` declares no tiering slot at all,
-and `make-pif` takes PAF. So do not try to reproduce the removed numbers —
-take new ones.
+What is still owed:
 
-What to run, on one PIF built both ways (`jbrowse make-pif <paf>` against
-`jbrowse make-pif --no-coarse <paf>`) at a block length where the ratio above
-says the tier is worth something (50 kb or wider):
-
-- **Bytes over the wire** for one whole-genome view and one zoomed-in view, per
-  tier. `RemoteFileWithRangeCache` is where a counter goes, or read it off the
-  network panel — a range request per chunk makes the sum easy to get wrong by
-  hand.
 - **Time to settled**, using the same `data-app-phase="ready"` gate the figure
   captures use, so it is the number a reader experiences rather than a fetch
-  timing.
-- **The crossing cost**, since it is the same run: zooming across
-  `coarseBpPerPxThreshold` refetches, and on a single-tier file it refetches
-  identical bytes — see
+  timing. The measurement above deliberately publishes no wall-clock: served
+  over loopback it is parse time, and it moved 27% between two runs of one arm.
+- **The zoomed-in view**, where the fine tier is what should be served and the
+  coarse tier's advantage ought to vanish. Only whole-genome is measured, and a
+  release note claiming a win needs the case where there isn't one.
+- **The crossing cost**: zooming across `coarseBpPerPxThreshold` refetches, and
+  on a single-tier file it refetches identical bytes — see
   [ideas/single-tier-pif-refetches-at-the-threshold.md](ideas/single-tier-pif-refetches-at-the-threshold.md).
 
 Land it as a `measurements/` record with a `repro`, so the next release note

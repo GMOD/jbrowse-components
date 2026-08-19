@@ -211,8 +211,34 @@ through every optional tag and drops only the CIGAR. So the tier's value is
 
 <!-- END GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
-At the top of that table `auto` gives up the indel wedges to read 11% fewer
-bytes — a bad trade in *fidelity*, independent of whether the file size is
+That table is about **disk**: what the tier costs the file, per block length.
+What it saves a *reader* is a different number, taken on one hosted file at
+whole-genome zoom rather than across synthetic block lengths:
+
+<!-- BEGIN GENERATED MEASUREMENT pif-tier-wire-bytes -->
+
+| one whole-genome pass, hs1 vs mm39 | bytes over the wire | rows returned | range requests | bytes/row |
+| ---------------------------------- | ------------------: | ------------: | -------------: | --------: |
+| coarse (no CIGAR)                  |         **1.31 MB** |        43,839 |              6 |        30 |
+| fine (per-row CIGAR)               |            64.23 MB |        75,076 |             22 |       856 |
+
+<!-- END GENERATED MEASUREMENT pif-tier-wire-bytes -->
+
+Both arms fetch every row of their own tier, so this is the whole file, and the
+two tiers are the same file's — nothing here is a `--no-coarse` build. The
+`bytes/row` column is the point: the coarse tier does not return far fewer rows,
+it returns rows that are far smaller, and the difference between the two is the
+CIGAR.
+
+hs1 vs mm39 is a liftOver chain converted with `chain2paf` and then `make-pif`,
+which is worth saying because it has been written off as impossible: **the chain
+is a source format, not the adapter**. Once it is a PIF it loads through
+`PairwiseIndexedPAFAdapter`, which declares `coarseBpPerPxThreshold` — that
+`ChainAdapter` has no tiering slot says nothing about a chain-derived PIF, and
+HOSTING.md has recorded this file as two-tier since 2026-08-02.
+
+Back to the disk table: at the top of it `auto` gives up the indel wedges to read
+11% fewer bytes — a bad trade in *fidelity*, independent of whether the file size is
 affordable. At the bottom the tier is free and cuts the read by 200×. The
 crossover is around 30–50 kb blocks, i.e. where CIGAR bytes start to exceed the
 rest of the row (~150 bytes of tags + columns).

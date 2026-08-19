@@ -1,0 +1,47 @@
+{
+  "id": "pif-tier-wire-bytes",
+  "measured": "2026-08-19",
+  "source": {
+    "kind": "bench",
+    "repro": "PIF_PATH=/path/to/hs1ToMm39.over.chain.pif.gz PIF_ASSEMBLIES=hs1,mm39 npx jest plugins/comparative-adapters/src/pifTierBytes — the test skips without PIF_PATH. The file is hosted at jbrowse.org/genomes/hs1_vs_mm39/ (HOSTING.md); it is 130 MB, so it is fetched rather than committed.",
+    "notes": "Both tiers of ONE file, which is the comparison a reader experiences — `--no-coarse` against the default is a question about disk, and pif-coarse-tier-bytes answers that one. Bytes are counted by the local server the adapter fetches from, so they are what the socket carried rather than the size of the parsed rows; they came back byte-identical across runs. Every row of each tier is returned at this zoom, so `rows returned` is the whole tier. Index bytes (709 kB of .tbi) are excluded, being identical for both arms. Wall-clock is deliberately not a column: over loopback it is parse time, it moved 27% between two runs of the same arm, and a real time-to-settled wants a browser."
+  },
+  "columns": [
+    { "key": "tier", "label": "one whole-genome pass, hs1 vs mm39" },
+    {
+      "key": "wireBytes",
+      "label": "bytes over the wire",
+      "format": "MB",
+      "precision": 2,
+      "align": "right"
+    },
+    {
+      "key": "rows",
+      "label": "rows returned",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "requests",
+      "label": "range requests",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "bytesPerRow",
+      "label": "bytes/row",
+      "format": "int",
+      "align": "right",
+      "derived": "wireBytes * 1000000 / rows"
+    }
+  ],
+  "rows": [
+    {
+      "values": { "tier": "coarse (no CIGAR)", "wireBytes": 1.31, "rows": 43839, "requests": 6 },
+      "emphasize": ["wireBytes"]
+    },
+    {
+      "values": { "tier": "fine (per-row CIGAR)", "wireBytes": 64.23, "rows": 75076, "requests": 22 }
+    }
+  ]
+}
