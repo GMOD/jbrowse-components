@@ -1,4 +1,4 @@
-import { getType } from '@jbrowse/mobx-state-tree'
+import { getType, isType } from '@jbrowse/mobx-state-tree'
 
 import { getConfigurationSchemaDefinition } from './schemaRegistry.ts'
 import { isSlotDefinitionEntry } from './schemaTypes.ts'
@@ -24,16 +24,25 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
 // note on that export in `ui/index.ts`.
 const promotableSlotsByType = new WeakMap<IAnyType, Set<string>>()
 
+/**
+ * Takes a live config node *or* the schema type itself, for the reason
+ * `getConfigurationSchemaDefinition` does: every resolver here holds a node,
+ * while a caller enumerating registered display types
+ * (`displayTypesWithPromotableSlots`) holds only `DisplayType.configSchema` and
+ * has nothing to create a node from. Caching under whichever handle it was
+ * given is safe — a schema registers both its outer `stripDefault` wrapper and
+ * its inner model against the same slot table, so the two entries agree.
+ */
 export function promotableSlotNames(
-  config: AnyConfigurationModel,
+  configOrType: AnyConfigurationModel | IAnyType,
 ): ReadonlySet<string> {
-  const type = getType(config)
+  const type = isType(configOrType) ? configOrType : getType(configOrType)
   const cached = promotableSlotsByType.get(type)
   if (cached) {
     return cached
   }
   const names = new Set<string>()
-  const table = getConfigurationSchemaDefinition(config)
+  const table = getConfigurationSchemaDefinition(configOrType)
   for (const [name, def] of Object.entries(table ?? {})) {
     if (isSlotDefinitionEntry(def) && def.promotedBase !== undefined) {
       names.add(name)

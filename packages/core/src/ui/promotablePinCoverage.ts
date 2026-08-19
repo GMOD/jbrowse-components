@@ -26,6 +26,30 @@ import { promotableSlotNames } from '../configuration/promotableSlots.ts'
 
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type { MenuItem } from './MenuTypes.ts'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
+
+/**
+ * The registered display types whose config schema declares a promotable slot,
+ * sorted — the set a pin-coverage check has to reach, answered off the
+ * `DisplayType`s themselves before anything is opened.
+ *
+ * The other half of the same gap `promotableSlotsWithoutPin` covers, and the
+ * half that has no symptom at all: that function reports on a display it was
+ * *given*, so a display type no fixture ever opens is not checked and does not
+ * say so. Six display types declaring `showLegend` sat outside the check's
+ * reach with nothing recording it.
+ *
+ * Takes the display types rather than a `PluginManager`, so core doesn't have
+ * to name a plugin registry to answer a question about config schemas.
+ */
+export function displayTypesWithPromotableSlots(
+  displayTypes: readonly { name: string; configSchema: IAnyType }[],
+): string[] {
+  return displayTypes
+    .filter(d => promotableSlotNames(d.configSchema).size > 0)
+    .map(d => d.name)
+    .sort((a, b) => a.localeCompare(b))
+}
 
 /**
  * Every promotable slot some row of `items` carries a pin for, submenus

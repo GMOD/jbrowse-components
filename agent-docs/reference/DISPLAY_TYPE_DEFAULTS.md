@@ -85,6 +85,18 @@ menu, and `LinearVariantDisplay`, which inherits two transcript-structure settin
 that draw nothing on a VCF feature. The baseline names the slots and says why, per
 entry; a second copy here is a copy to drift.
 
+**Its reach is checked too, and that half had no symptom at all.** The
+per-display test only reports on the display types `FIXTURES` names, so one
+declaring a promotable slot with no fixture was simply not checked and said
+nothing about it — six were in that position, every one of them a `showLegend`
+arriving through `LegendMixin`. `displayTypesWithPromotableSlots` asks the
+registered `DisplayType`s themselves, before anything is opened, and the answer
+has to be covered by a fixture or named in `NO_FIXTURE` with the reason (today:
+Hi-C and `LDTrackDisplay`, neither of which volvox has a track for). A stale
+exemption fails the other way. This matters because `promotedBase` travels down
+`baseConfiguration`: giving a shared base schema a promotable slot enrols every
+display composing it, including ones whose author never opened that file.
+
 The mechanism the check reads: `Pin` carries the `slot` it
 promotes (nothing draws it — the pin renders from `active`/`toggle` alone), so a
 built menu can be walked for the slots it offers. A `type: 'custom'` row —
@@ -202,16 +214,18 @@ alignments doctrine — display options are config slots, volatiles are for
 hover/selection/scroll — puts every such row on the config side, so a volatile
 one is usually a slot that was never made.
 
-Four of the nine are in `PromotablePinCoverage.test.ts`'s fixtures (alignments,
-LGVSynteny, multi-wiggle, Manhattan); the rest have no fixture there for
-unrelated reasons, so their pins are checked only by their own menu tests. Two
-needed care to be checked at all: multi-wiggle's row is gated on
+All but Hi-C are in `PromotablePinCoverage.test.ts`'s fixtures. Three needed
+care to be checked at all: multi-wiggle's row is gated on
 `overlayLegendApplies`, which wants an overlay rendering **and** sources, and
 sources arrive with data the test never fetches — hence a fixture state that
-seeds them. Manhattan's row is `disabled` without LD coloring but still built
-and still pinned, which is what lets the walk (which runs in the default
-`colorBy: 'normal'` state) find it; gating the row out entirely would have
-hidden the pin.
+seeds them. Multi-row features gates its row on having a legend at all, so its
+fixture is `volvox_mouse_inheritance_painting`, the one volvox track that
+*configures* a legend rather than deriving one from a fetch. Manhattan's row is
+`disabled` without LD coloring but still built and still pinned, which is what
+lets the walk (which runs in the default `colorBy: 'normal'` state) find it;
+gating the row out entirely would have hidden the pin. Hi-C needs a `HicTrack`
+and volvox has no `.hic` file, so it is in that file's `NO_FIXTURE` — see
+[the reach check](#promotable-is-a-schema-fact-the-pin-is-a-menu-fact).
 
 ## The cascade
 

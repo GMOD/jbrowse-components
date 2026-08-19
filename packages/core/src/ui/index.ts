@@ -151,7 +151,10 @@ export {
 // caller has is "which promotable slots does this menu miss", and answering the
 // half of it that lists what a menu *does* offer needs the schema's slot table
 // to mean anything.
-export { promotableSlotsWithoutPin } from './promotablePinCoverage.ts'
+export {
+  displayTypesWithPromotableSlots,
+  promotableSlotsWithoutPin,
+} from './promotablePinCoverage.ts'
 export const VIEW_HEADER_HEIGHT = 28
 export {
   GRADIENT_LEGEND_HEIGHT,

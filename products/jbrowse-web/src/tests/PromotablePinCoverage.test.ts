@@ -1,4 +1,7 @@
-import { promotableSlotsWithoutPin } from '@jbrowse/core/ui'
+import {
+  displayTypesWithPromotableSlots,
+  promotableSlotsWithoutPin,
+} from '@jbrowse/core/ui'
 
 import { doBeforeEach, getPluginManager } from './util.tsx'
 
@@ -134,6 +137,20 @@ const FIXTURES: Fixture[] = [
   { displayType: 'LDDisplay', trackId: 'volvox multi-sample sv' },
 ]
 
+// Display types that declare a promotable slot and have no fixture above,
+// each because this config has no track it can open on. Every one is a
+// `showLegend` declared through `LegendMixin`, whose pin its own menu test
+// checks — so the gap is this file's reach, not a missing pin.
+//
+// Adding volvox test data for either is the fix; naming them here is what stops
+// a *new* display type from joining them in silence.
+const NO_FIXTURE = new Set([
+  // needs a HicTrack, and volvox has no .hic file
+  'LinearHicDisplay',
+  // the LDTrack twin of LDDisplay, which the VariantTrack fixture above covers
+  'LDTrackDisplay',
+])
+
 // The wiggle family gates its two size rows on the rendering type, and the two
 // are mutually exclusive, so both have to be visited.
 function wiggleRenderingStates(scatter = 'scatter', line = 'line') {
@@ -221,4 +238,38 @@ test.each(FIXTURES.map(f => [f.displayType, f] as const))(
 test('every baseline entry names a display type this test opens', () => {
   const covered = new Set(FIXTURES.map(f => f.displayType))
   expect(Object.keys(KNOWN_UNPINNED).filter(t => !covered.has(t))).toEqual([])
+})
+
+// The negative of the check above, and the one with no symptom: the tests
+// themselves only report on the display types FIXTURES names, so a display type
+// that declares a promotable slot and has no fixture is not checked and says
+// nothing about it. Six were in that position — all six do build their pin, but
+// nothing here could have told you.
+//
+// `promotedBase` travels down `baseConfiguration`, so this grows on its own:
+// giving a shared base schema a promotable slot enrols every display composing
+// it, including ones whose author never read this file.
+test('every display type declaring a promotable slot is opened or exempt', () => {
+  const { pluginManager } = getPluginManager()
+  const covered = new Set([...FIXTURES.map(f => f.displayType), ...NO_FIXTURE])
+  const declaring = displayTypesWithPromotableSlots(
+    pluginManager.getElementTypeRecord('display').all(),
+  )
+  expect(declaring.filter(t => !covered.has(t))).toEqual([])
+})
+
+// A stale exemption is the other direction, and the one the prose table got
+// wrong: an entry left behind after the display type gained a fixture, was
+// renamed, or stopped declaring a promotable slot.
+test('every exemption still names a display type that needs one', () => {
+  const { pluginManager } = getPluginManager()
+  const declaring = new Set(
+    displayTypesWithPromotableSlots(
+      pluginManager.getElementTypeRecord('display').all(),
+    ),
+  )
+  const fixtures = new Set(FIXTURES.map(f => f.displayType))
+  expect(
+    [...NO_FIXTURE].filter(t => !declaring.has(t) || fixtures.has(t)),
+  ).toEqual([])
 })
