@@ -136,11 +136,11 @@ test('every marker sorts after every ribbon, whichever branch emitted it', () =>
     starts: new Uint32Array([0, 0]),
     ends: new Uint32Array([400, 400]),
     drawCIGAR: true,
-    // Transparent indels, so the CIGAR branch emits RIBBON quads too (one per match
-    // segment) rather than only markers — the ordering claim is about ribbons
-    // from both passes against ticks from both passes. It also leaves the tiled
-    // feature's reserved full-span base slot unused, which is the slack the gap
-    // between the two regions is made of.
+    // Transparent indels, so the CIGAR branch emits RIBBON quads too (one per
+    // match segment) rather than only markers — the ordering claim is about
+    // ribbons from both branches against ticks from both branches. It also
+    // leaves the tiled feature's reserved full-span base slot unused, which is
+    // the slack the gap between the two regions is made of.
     drawCIGARMatchesOnly: true,
     bpPerPx0: 1,
     bpPerPx1: 1,
@@ -178,10 +178,10 @@ test('a fine-grained CIGAR does not cost the feature its markers', () => {
   expect(markerIndices(withCigar.kinds).length).toBe(width / PITCH)
 })
 
-// And the reason the CIGAR branch feeds the segments rather than the corners: a marker's
-// two ends are the pair the CIGAR actually aligns, so the ticks shear where the
-// alignment does. Interpolating across the corners would smear one 100bp
-// deletion evenly over the whole ribbon.
+// And the reason the CIGAR branch feeds the segments rather than the corners: a
+// marker's two ends are the pair the CIGAR actually aligns, so the ticks shear
+// where the alignment does. Interpolating across the corners would smear one
+// 100bp deletion evenly over the whole ribbon.
 test('markers follow the CIGAR through a deletion', () => {
   // Query spans 400, target 360: 200M, 40D (query only), 160M.
   const g = buildSyntenyGeometry({

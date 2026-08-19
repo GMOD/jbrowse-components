@@ -498,8 +498,9 @@ export async function executeSyntenyFeaturesAndPositions({
     // willDrawCigar predicate in buildSyntenyGeometry via the shared
     // MIN_CIGAR_PX_WIDTH — drawCIGAR off or alignment narrower than that means
     // the visitor never fires, and the location markers walk the corners instead
-    // (`emitGridMarkers` over the whole feature), which needs no CIGAR. A clipped block
-    // already carries its (short) visible-slice CIGAR from the re-anchor above.
+    // (`emitGridMarkers` over the whole feature), which needs no CIGAR. A
+    // clipped block already carries its (short) visible-slice CIGAR from the
+    // re-anchor above.
     const widthPx0 = topMaxX - topMinX
     const widthPx1 = botMaxX - botMinX
     const willNeedCigar =
