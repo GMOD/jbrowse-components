@@ -3,7 +3,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
-  PENDING_DISPLAYS,
+  describePendingDisplays,
+  pendingDisplayStatesInPage,
   waitForDisplayPhases,
   waitForDisplaysDone,
 } from '@jbrowse/browser-test-utils'
@@ -262,8 +263,15 @@ async function waitForCaptureSettled(page: Page) {
   await waitForDisplaysDone(page, 30000)
   await waitForMorphIdle(page)
 
+  // Report-only, and re-read from the DOM here rather than off handles the waits
+  // held. Holding one across a re-render is what turned the previous attempt at
+  // timeout attribution into nine `Node is detached from document` errors and got
+  // it reverted (28c6ee6d90).
+  const pending = await page
+    .evaluate(pendingDisplayStatesInPage)
+    .catch(() => [])
   return page
-    .evaluate(pendingSelector => {
+    .evaluate(() => {
       const unsettled: string[] = []
       if (document.querySelectorAll('[data-testid="loading-overlay"]').length) {
         unsettled.push('loading-overlay')
@@ -271,16 +279,18 @@ async function waitForCaptureSettled(page: Page) {
       if (document.querySelector('[data-display-phase="loading"]')) {
         unsettled.push('display-phase=loading')
       }
-      const pending = document.querySelectorAll<HTMLElement>(pendingSelector)
-      if (pending.length) {
-        unsettled.push(
-          `${pending.length} display(s) never reported done: ${[...pending]
-            .map(e => e.dataset.testid)
-            .join(', ')}`,
-        )
-      }
       return unsettled
-    }, PENDING_DISPLAYS)
+    })
+    .then(unsettled =>
+      pending.length
+        ? [
+            ...unsettled,
+            // the phase is what separates a slow fetch from a display that says
+            // it finished without painting, which no longer timeout will fix
+            `${pending.length} display(s) never reported done: ${describePendingDisplays(pending)}`,
+          ]
+        : unsettled,
+    )
     .catch(() => [] as string[])
 }
 
