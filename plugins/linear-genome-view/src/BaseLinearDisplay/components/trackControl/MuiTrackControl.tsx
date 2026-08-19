@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { CascadingMenu, CascadingMenuButton } from '@jbrowse/core/ui'
+import { emphasize } from '@jbrowse/core/util/color'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CancelIcon from '@mui/icons-material/Cancel'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
@@ -8,6 +9,7 @@ import HeightIcon from '@mui/icons-material/Height'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import { Chip, IconButton, Tooltip } from '@mui/material'
 
+import type { JBrowseStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import type { TrackControlIcon, TrackControlProps } from '@jbrowse/display-ui'
 
 // JBrowse's own look for an ambient track control, and the only reason a stock
@@ -36,6 +38,16 @@ const DISMISS_TESTID = 'track-control-dismiss'
 // exists to avoid it.
 const trackControlTestId = (icon: TrackControlIcon) => `track-control-${icon}`
 
+// `action.hover` is a translucent overlay meant to sit on a known surface. These
+// controls sit on the rendered canvas, so taking it as the background let
+// features show through on hover — the hover state has to stay as opaque as the
+// resting one, hence emphasizing the paper color rather than veiling it.
+const hoverBackground = (theme: JBrowseStyleTheme) =>
+  emphasize(
+    theme.palette.background.paper,
+    theme.palette.action.hoverOpacity * 2,
+  )
+
 const useStyles = makeStyles()(theme => ({
   // Subtle bordered look for the icon-button form, so the always-present
   // controls read as one quiet system rather than a row of bright buttons.
@@ -48,7 +60,7 @@ const useStyles = makeStyles()(theme => ({
       fontSize: 14,
     },
     '&:hover': {
-      background: theme.palette.action.hover,
+      background: hoverBackground(theme),
     },
   },
   warning: {
@@ -59,8 +71,10 @@ const useStyles = makeStyles()(theme => ({
   // features showing through the label made it hard to read.
   chip: {
     background: theme.palette.background.paper,
-    '&:hover': {
-      background: theme.palette.action.hover,
+    // `&&` doubles the class, because Chip's own clickable hover rule carries
+    // two classes and outranks a single one
+    '&&:hover': {
+      background: hoverBackground(theme),
     },
   },
 }))

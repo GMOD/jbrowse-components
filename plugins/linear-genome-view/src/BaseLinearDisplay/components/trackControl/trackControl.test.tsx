@@ -106,3 +106,36 @@ describe('plainTrackControl', () => {
 // implementations behave alike, and that swapping one in leaks no Material UI
 // through the resolver. Restating the dismissal cases in both packages only
 // buys two places to update them.
+
+// The controls sit on the rendered canvas, so a translucent hover state lets
+// features show through the control — a chip that looks like it is dissolving
+// as you reach for it. Material UI's own hover colors are exactly that, and
+// Chip's carries two classes, so what matters is which rule *wins*: this asks
+// the cascade rather than trusting the declaration we wrote.
+describe.each([
+  ['icon-button', { icon: 'height', tooltip: 'Track sizing' }],
+  ['chip', { icon: 'height', tooltip: 'Track sizing', label: 'Fit to height' }],
+] as const)('Material UI hover — %s form', (_name, props) => {
+  it('stays opaque', () => {
+    renderMui({ ...props, options: options(() => {}) })
+    const element = screen.getByTestId('track-control-height')
+    // emotion inserts through the CSSOM here, so the <style> tag's text is
+    // empty and the rules have to be read off the sheet
+    const applicable = [...document.styleSheets]
+      .flatMap(sheet => [...sheet.cssRules])
+      .filter((rule): rule is CSSStyleRule => 'selectorText' in rule)
+      .filter(
+        rule =>
+          rule.selectorText.endsWith(':hover') &&
+          element.matches(rule.selectorText.replaceAll(':hover', '')),
+      )
+    const specificity = (rule: CSSStyleRule) =>
+      rule.selectorText.split('.').length
+    const rank = Math.max(...applicable.map(specificity))
+    const winner = applicable.filter(rule => specificity(rule) === rank).at(-1)
+    expect(winner).toBeDefined()
+    expect(
+      winner!.style.background || winner!.style.backgroundColor,
+    ).not.toMatch(/rgba|transparent|color-mix/)
+  })
+})
