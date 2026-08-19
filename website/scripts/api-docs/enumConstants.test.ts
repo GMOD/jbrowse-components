@@ -87,6 +87,34 @@ describe('enumConstantValues, derived constants', () => {
     expect(enumConstantValues('VALUES_T9')).toEqual(['a', 'b'])
   })
 
+  // A menu option table whose rows carry more than a label — a subLabel, help
+  // text — cannot be a pair, so it is objects. The enum still spreads a
+  // projection of it, and the values still have to reach the page.
+  test('a projection of an object table resolves to the value properties', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'objects.ts',
+        `const OPTIONS_T20 = [
+           { value: 'a', label: 'A', helpText: 'why a' },
+           { value: 'b', label: 'B' },
+         ] as const
+         const VALUES_T20 = OPTIONS_T20.map(o => o.value)`,
+      ),
+    ])
+    expect(enumConstantValues('VALUES_T20')).toEqual(['a', 'b'])
+  })
+
+  test('an object table missing a value on one row resolves to nothing', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'objects-partial.ts',
+        `const PARTIAL_T21 = [{ value: 'a' }, { label: 'B' }] as const
+         const VALUES_T21 = PARTIAL_T21.map(o => o.value)`,
+      ),
+    ])
+    expect(enumConstantValues('VALUES_T21')).toBeUndefined()
+  })
+
   test('a flatMap over a grouped table resolves to every inner head', () => {
     buildEnumConstantIndex([
       sourceFile(

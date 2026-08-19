@@ -143,7 +143,7 @@ the whole surface.
 | <span id="action-clearimportformsyntenytracks">**clearImportFormSyntenyTracks**</span><br><code>() =&gt; void</code> | Drop every pending pair-selection. The import form rewrites the whole list through this whenever its assembly rows change (a selection is about a pair of assemblies, not a row index — see `remapSelectionsToPairs`), and again once they have been applied. | LinearSyntenyView |
 | <span id="action-setimportformsyntenytrack">**setImportFormSyntenyTrack**</span><br><code>(arg: number, val: ImportFormSyntenyTrack) =&gt; void</code> |  | LinearSyntenyView |
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearSyntenyView |
-| <span id="action-setcigarmode">**setCigarMode**</span><br><code>(arg: CigarMode) =&gt; void</code> |  | LinearSyntenyView |
+| <span id="action-setcigarmode">**setCigarMode**</span><br><code>(arg: "full" &#124; "matches" &#124; "off") =&gt; void</code> |  | LinearSyntenyView |
 | <span id="action-setdrawlocationmarkers">**setDrawLocationMarkers**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearSyntenyView |
 | <span id="action-setoverdrawpx">**setOverdrawPx**</span><br><code>(arg: number) =&gt; void</code> |  | LinearSyntenyView |
 | <span id="action-setalpha">**setAlpha**</span><br><code>(arg: number) =&gt; void</code> |  | LinearSyntenyView |

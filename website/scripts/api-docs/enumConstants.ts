@@ -16,6 +16,7 @@
 //   const A = ['x', 'y'] as const
 //   const B = A.map(([value]) => value)                 // tuple table -> values
 //   const C = G.flatMap(([, opts]) => opts.map(([v]) => v))  // grouped table
+//   const D = O.map(o => o.value)                       // object table -> values
 //
 // The file grew three more indexes on the same principle — one fact, written
 // once, and the docs following the indirection rather than the author retyping
@@ -325,6 +326,37 @@ function tupleHeads(node: ts.Expression): string[] | undefined {
     : undefined
 }
 
+// The `value` of each entry in `[{ value: 'a', label: 'A' }, ...]`, the other
+// shape a menu's option table takes — the one whose rows carry more than a label
+// (a subLabel, help text) and so cannot be a pair.
+function objectValueHeads(node: ts.Expression): string[] | undefined {
+  if (!ts.isArrayLiteralExpression(node)) {
+    return undefined
+  }
+  const values = node.elements
+    .map(el =>
+      ts.isObjectLiteralExpression(el)
+        ? el.properties.find(
+            pr =>
+              ts.isPropertyAssignment(pr) &&
+              ts.isIdentifier(pr.name) &&
+              pr.name.text === 'value',
+          )
+        : undefined,
+    )
+    .map(pr =>
+      pr &&
+      ts.isPropertyAssignment(pr) &&
+      ts.isStringLiteralLike(pr.initializer)
+        ? pr.initializer.text
+        : undefined,
+    )
+    .filter(v => v !== undefined)
+  return values.length === node.elements.length && values.length
+    ? values
+    : undefined
+}
+
 // Nested tables: `[['Group', [['a', 'A'], ...]], ...]` -> every inner head.
 function groupedTupleHeads(node: ts.Expression): string[] | undefined {
   if (!ts.isArrayLiteralExpression(node)) {
@@ -347,8 +379,9 @@ interface Projection {
 
 // `X.map(...)` / `X.flatMap(...)` -> the name of X, so a derived constant can be
 // resolved from the table it projects. The projection itself isn't interpreted:
-// every such table in the codebase maps to its tuple heads, and a table that
-// didn't would surface as a wrong list, so we only accept the two shapes above.
+// a table is tuples or objects, never both, so the shape of X decides what a
+// flat map projects to. A table that mapped to something else would surface as a
+// wrong list, so we only accept the shapes above.
 function projectionSource(node: ts.Expression): Projection | undefined {
   return ts.isCallExpression(node) &&
     ts.isPropertyAccessExpression(node.expression) &&
@@ -474,6 +507,7 @@ function samePairs(a: [string, string][], b: [string, string][]) {
 interface TableProjections {
   heads: string[] | undefined
   groupedHeads: string[] | undefined
+  valueProps: string[] | undefined
 }
 
 // The table map feeding derived resolution needs the same conflict rule as the
@@ -489,6 +523,7 @@ function recordTable(
   const projections = {
     heads: tupleHeads(value),
     groupedHeads: groupedTupleHeads(value),
+    valueProps: objectValueHeads(value),
   }
   const prior = tables.get(name)
   if (prior === undefined) {
@@ -496,7 +531,8 @@ function recordTable(
   } else if (
     prior === null ||
     prior.heads?.join('\0') !== projections.heads?.join('\0') ||
-    prior.groupedHeads?.join('\0') !== projections.groupedHeads?.join('\0')
+    prior.groupedHeads?.join('\0') !== projections.groupedHeads?.join('\0') ||
+    prior.valueProps?.join('\0') !== projections.valueProps?.join('\0')
   ) {
     tables.set(name, null)
   }
@@ -567,7 +603,11 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
             } else if (direct) {
               record(name, direct)
               recordTable(tables, name, value)
-            } else if (tupleHeads(value) ?? groupedTupleHeads(value)) {
+            } else if (
+              tupleHeads(value) ??
+              groupedTupleHeads(value) ??
+              objectValueHeads(value)
+            ) {
               recordTable(tables, name, value)
             } else {
               const projection = projectionSource(value)
@@ -607,7 +647,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
       const values = table
         ? projection.grouped
           ? table.groupedHeads
-          : table.heads
+          : (table.heads ?? table.valueProps)
         : undefined
       if (values) {
         record(name, values)
