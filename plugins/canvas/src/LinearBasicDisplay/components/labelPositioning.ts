@@ -11,6 +11,7 @@ import type {
   FeatureDataResult,
   FeatureLabelData,
   LabelItem,
+  MoreIsoformsLabel,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
@@ -97,30 +98,35 @@ function renderedLabelSet(
   }
 }
 
-// Max rendered width of any label that will actually display for this feature.
-// Every width is the true measured width of the (already-truncated) label text,
-// so a reservation computed here always matches what is drawn.
+// The widest label row this feature actually draws, at the size it draws it —
+// what every box covering the labels has to span.
 //
-// Lives here rather than beside `FeatureLabelData` in rpcTypes.ts, where it was:
-// nothing in the worker calls it, and it is one of the three readings of
-// `renderedLabelSet` above.
 // The subfeature label counts unconditionally here, and only here: the packer
 // reserves its overhang whether or not it draws (see decideLabelReservations),
 // and every consumer of this width is mirroring that reservation. Hiding it under
 // a fit squeeze narrows the text, never the row it was packed into.
-function maxLabelTextWidth(
+function maxRenderedLabelWidth(
   labelData: FeatureLabelData,
   showLabels: boolean,
   showDescriptions: boolean,
+  fontSize: number,
 ) {
   const { nameLabel, descriptionLabel, subfeatureLabel, moreIsoformsLabel } =
     renderedLabelSet(labelData, showLabels, showDescriptions, true)
+  const rendered = (label: LabelMetrics | undefined) =>
+    label ? renderedTextWidth(label.textWidth, fontSize) : 0
+  // Rendered rather than baked, so the gap the badge sits after can be added
+  // here: resolveFeatureLabels spends a LABEL_PADDING_PX between the name and
+  // the badge, and that gap is added AFTER the scale (paddedLabelWidthPx), so a
+  // sum of baked widths scaled as a whole comes out one padding short of the
+  // row it is meant to cover.
+  const nameRow =
+    rendered(nameLabel) +
+    (moreIsoformsLabel ? LABEL_PADDING_PX + rendered(moreIsoformsLabel) : 0)
   return Math.max(
-    // summed, not maxed: the badge is drawn AFTER the name on the same row, so
-    // the row is as wide as both (matching renderedLabelWidths' reservation)
-    (nameLabel?.textWidth ?? 0) + (moreIsoformsLabel?.textWidth ?? 0),
-    descriptionLabel?.textWidth ?? 0,
-    subfeatureLabel?.textWidth ?? 0,
+    nameRow,
+    rendered(descriptionLabel),
+    rendered(subfeatureLabel),
   )
 }
 
@@ -139,8 +145,10 @@ export function computeLabelExtraWidth(
   showDescriptions = true,
   fontSize = LABEL_FONT_SIZE,
 ) {
-  const widest = renderedTextWidth(
-    maxLabelTextWidth(labelData, showLabels, showDescriptions),
+  const widest = maxRenderedLabelWidth(
+    labelData,
+    showLabels,
+    showDescriptions,
     fontSize,
   )
   return Math.max(0, widest - featureWidthPx)
@@ -208,17 +216,25 @@ export function computeLabelPosition(
   }
 }
 
-export interface ResolvedLabel {
-  label: LabelItem & {
-    isOverlay?: boolean
-    // the isoform badge's two extra fields, for the layer that draws it
-    hidden?: number
-    expanded?: boolean
-  }
+// A union on `kind` rather than one shape with the badge's fields bolted on as
+// optionals: the badge and a name are different things sharing a position, and
+// only the union lets a consumer that has checked `kind` read `hidden` without
+// a fallback for a case the worker never emits.
+export interface PlainResolvedLabel {
+  label: LabelItem & { isOverlay?: boolean }
   labelX: number
   labelY: number
-  kind: 'name' | 'desc' | 'sub' | 'more'
+  kind: 'name' | 'desc' | 'sub'
 }
+
+export interface MoreResolvedLabel {
+  label: MoreIsoformsLabel
+  labelX: number
+  labelY: number
+  kind: 'more'
+}
+
+export type ResolvedLabel = PlainResolvedLabel | MoreResolvedLabel
 
 // The label render context threaded through both label consumers (the DOM
 // overlay in overlayElements and the SVG export in renderSvg): which labels
@@ -261,9 +277,9 @@ function resolveFeatureLabels(
     )
   const out: ResolvedLabel[] = []
   const add = (
-    label: ResolvedLabel['label'],
+    label: PlainResolvedLabel['label'],
     padding: number,
-    kind: ResolvedLabel['kind'],
+    kind: PlainResolvedLabel['kind'],
   ) => {
     const resolved = {
       label,

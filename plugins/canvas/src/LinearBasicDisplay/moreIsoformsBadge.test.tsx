@@ -9,6 +9,7 @@ import { collectRenderData } from '../RenderFeatureDataRPC/collectRenderData.ts'
 import {
   LABEL_BASELINE_RATIO,
   LABEL_FONT_SIZE,
+  LABEL_PADDING_PX,
   MORE_ISOFORMS_FONT_SCALE,
 } from '../RenderFeatureDataRPC/constants.ts'
 import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
@@ -270,8 +271,29 @@ describe('the badge rides the gene name label', () => {
       0,
     )
     expect(withBadge).toBeGreaterThan(withoutBadge)
+    // the badge AND the gap it sits after (resolveFeatureLabels places it at
+    // the name's end plus a LABEL_PADDING_PX), or every box built off this
+    // width stops one padding short of the text it covers
     expect(withBadge - withoutBadge).toBeCloseTo(
-      data.moreIsoformsLabel!.textWidth,
+      data.moreIsoformsLabel!.textWidth + LABEL_PADDING_PX,
+    )
+  })
+
+  it('reserves the gap at the drawn size in a compact mode', () => {
+    const data = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!
+    const fontSize = LABEL_FONT_SIZE / 2
+    const withBadge = computeLabelExtraWidth(data, 0, true, true, fontSize)
+    const withoutBadge = computeLabelExtraWidth(
+      { ...data, moreIsoformsLabel: undefined },
+      0,
+      true,
+      true,
+      fontSize,
+    )
+    // the text halves with the mode, the padding does not — it is added after
+    // the scale everywhere else too (paddedLabelWidthPx)
+    expect(withBadge - withoutBadge).toBeCloseTo(
+      data.moreIsoformsLabel!.textWidth / 2 + LABEL_PADDING_PX,
     )
   })
 })
