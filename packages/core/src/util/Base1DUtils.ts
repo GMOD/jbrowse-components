@@ -147,8 +147,20 @@ function regionBase0(r: RegionSnap, bp: number) {
  *
  * This is the same one-base pivot as render-core's `makeCellLeftMapper` /
  * `bpAtPx`, which is what the per-base painters draw with, so this is the
- * readout that agrees with what is on screen. The pivot is spelled out again
- * here rather than shared because core does not depend on render-core.
+ * readout that agrees with what is on screen. The parity block in
+ * `Base1DUtils.test.ts` holds the two together.
+ *
+ * They stay two spellings because there is no shared call to make, not because
+ * of the package graph — core declares `@jbrowse/render-core` and imports it
+ * from three modules already. `bpAtPx` takes a screen pixel plus a px/bp
+ * projection and is mostly about the float behaviour of that projection; this
+ * takes an offset already in bp and has no projection. Feeding `bpAtPx`
+ * synthetic bounds to fake one computes `(offsetBp * span) / span`, which is
+ * not exactly `offsetBp`: over a whole-chromosome region it names the wrong
+ * base on 6885 of 3000000 boundary samples. What is left to share is the two
+ * lines below, and only render-core could hold them — it must not import core —
+ * which would put a pixel-free function downstream of the renderer and split it
+ * from its own forward twin, `bpOffsetInRegion` at the top of this file.
  */
 export function basePaintedAt(
   r: { start: number; end: number; reversed?: boolean },

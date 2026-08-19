@@ -1,3 +1,5 @@
+import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
+
 import {
   basePaintedAt,
   bpToPx,
@@ -244,6 +246,70 @@ describe('basePaintedAt', () => {
     const snap = makeSnap([region(true)], { bpPerPx: 0.1 })
     expect(pxToBp(snap, 0).coord0).toBe(1010)
     expect(at(0, true)).toBe(1009)
+  })
+})
+
+// basePaintedAt and render-core's bpAtPx are two spellings of one pivot, kept
+// apart for the reasons in basePaintedAt's JSDoc. Editing one alone is the
+// drift nothing else would catch: the sequence display reads its letters
+// through this one and the pileup indexes its mismatch columns through the
+// other, so they would disagree by a base, on flipped regions only.
+describe('basePaintedAt parity with render-core bpAtPx', () => {
+  function bothWays(
+    geometry: { start: number; end: number; widthPx: number },
+    samplesInCell: number[],
+  ) {
+    const { start, end, widthPx } = geometry
+    for (const reversed of [false, true]) {
+      const region = { refName: 'chr1', start, end, reversed }
+      const snap = makeSnap([region], { bpPerPx: (end - start) / widthPx })
+      const pxPerBase = widthPx / (end - start)
+      for (let i = 0; i < end - start; i++) {
+        for (const into of samplesInCell) {
+          const px = (i + into) * pxPerBase
+          const { offset, oob } = pxToBp(snap, px)
+          expect(oob).toBe(false)
+          expect(basePaintedAt(region, offset)).toBe(
+            bpAtPx(px, {
+              start,
+              end,
+              screenStartPx: 0,
+              screenEndPx: widthPx,
+              reversed,
+            }),
+          )
+        }
+      }
+    }
+  }
+
+  // The pivot gate. `Math.ceil(x) - 1` and `Math.floor(x)` part company only
+  // where x is a whole number, so a sample taken inside a cell cannot see a
+  // pivot edited on one side — the first draft of this block sampled interiors
+  // and stayed green through exactly that sabotage.
+  //
+  // Sampling a boundary means both paths have to land on it exactly, and they
+  // form it differently: pxToBp computes `px * bpPerPx` while bpAtPx computes
+  // `px * span / width`. These four geometries put bpPerPx on a power of two,
+  // where both are exact and any disagreement is the pivot.
+  test.each([
+    { start: 1000, end: 1008, widthPx: 1024 },
+    { start: 0, end: 32, widthPx: 1024 },
+    { start: 55000000, end: 55000064, widthPx: 512 },
+    { start: 249250000, end: 249250016, widthPx: 128 },
+  ])('base boundaries of $start-$end over $widthPx px', geometry => {
+    bothWays(geometry, [0])
+  })
+
+  // Fractional bpPerPx, sampled inside each cell so the two paths' rounding
+  // cannot decide the answer. Covers the geometries a view actually produces,
+  // which the exact ones above do not.
+  test.each([
+    { start: 1000, end: 1010, widthPx: 100 },
+    { start: 14469, end: 14500, widthPx: 1088 },
+    { start: 55000000, end: 55003000, widthPx: 1920 },
+  ])('cell interiors of $start-$end over $widthPx px', geometry => {
+    bothWays(geometry, [0.25, 0.5, 0.75])
   })
 })
 
