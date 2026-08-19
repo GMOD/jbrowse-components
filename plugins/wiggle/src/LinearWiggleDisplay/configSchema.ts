@@ -99,6 +99,18 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     ...wiggleConfigSchemaFields,
     /**
      * #slot
+     * Not in the shared wiggle fields: `MultiLinearWiggleDisplay` spreads those
+     * and stacks a plot box per row, so one rule list has no single axis to sit
+     * on there.
+     */
+    scoreRules: {
+      type: 'frozen',
+      defaultValue: [],
+      description:
+        'Horizontal reference lines across the plot, as [{"value": 30, "label": "2 copies"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule',
+    },
+    /**
+     * #slot
      */
     minimalTicks: {
       type: 'boolean',

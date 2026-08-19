@@ -5,6 +5,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   CrossHatches,
+  ScoreRules,
   YScaleBarOverlay,
   axisPlotBox,
 } from '@jbrowse/wiggle-core'
@@ -143,6 +144,13 @@ const WiggleBody = observer(function WiggleBody({
       ) : null}
       {model.showCrossHatches && model.ticks ? (
         <CrossHatches ticks={model.ticks} width={width} height={height} />
+      ) : null}
+      {model.scoreRuleMarks.length > 0 ? (
+        <ScoreRules
+          marks={model.scoreRuleMarks}
+          width={width}
+          height={height}
+        />
       ) : null}
       {/* no mouseY, so no horizontal guide: y here is the score axis, which
           CrossHatches above already rules, and a second line at the cursor would

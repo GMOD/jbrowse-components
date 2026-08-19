@@ -1,6 +1,6 @@
 import type { ScoreRamp } from '../../shared/ScoreLegend.tsx'
 import type { WiggleHoveredFeature } from '../../util.ts'
-import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
+import type { ScoreRuleMark, WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
 // What WiggleComponent reads off the display. NOT `WiggleGpuProps` (the
 // GPU-encode input contract): the single-wiggle model exposes those only through
@@ -20,6 +20,8 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   effectiveSummaryScoreMode: string
   isDensityMode: boolean
   scoreRamp: ScoreRamp | undefined
+  // resolved screen positions for the configured reference rules, [] when none
+  scoreRuleMarks: ScoreRuleMark[]
   hoveredFeature?: WiggleHoveredFeature
   setHoveredFeature: (feat?: WiggleHoveredFeature) => void
   selectFeature: (feat: WiggleHoveredFeature) => void

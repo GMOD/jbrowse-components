@@ -4240,6 +4240,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "scoreRules",
+          "type": "(JexlString | frozen)"
+        },
+        {
           "name": "minimalTicks",
           "type": "(JexlString | boolean)"
         },
@@ -4456,6 +4460,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "scoreRules",
+          "type": "(JexlString | frozen)"
+        },
+        {
           "name": "minimalTicks",
           "type": "(JexlString | boolean)"
         },
@@ -4564,6 +4572,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "maxGapMultiple",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "scoreRules",
+          "type": "(JexlString | frozen)"
         },
         {
           "name": "minimalTicks",

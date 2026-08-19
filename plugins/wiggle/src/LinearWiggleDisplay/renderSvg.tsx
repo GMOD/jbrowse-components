@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
+import { ScoreRuleLines } from '@jbrowse/wiggle-core'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import {
@@ -42,6 +43,11 @@ function WiggleSvgBody(props: LgvSvgBodyProps<LinearWiggleDisplayModel>) {
           { ...model.renderState, canvasWidth: w, canvasHeight: drawHeight },
         )
       }}
+      overlay={
+        model.scoreRuleMarks.length > 0 ? (
+          <ScoreRuleLines marks={model.scoreRuleMarks} width={canvasWidth} />
+        ) : null
+      }
       legend={
         <WiggleSvgScale
           model={model}

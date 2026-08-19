@@ -19,6 +19,11 @@ import {
   axisPlotBox,
   computeYTicks,
   makeCrossHatchItem,
+  makeScoreNormalizer,
+  parseScoreRules,
+  resolveSymlogConstant,
+  scaleTypeFromString,
+  scoreRuleMarks,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 
@@ -137,6 +142,37 @@ export default function stateModelFactory(
           domain: self.domain,
           scaleType: self.scaleType,
           minimalTicks: getConf(self, 'minimalTicks'),
+        })
+      },
+
+      /**
+       * #getter
+       * Screen positions for the configured reference rules, or `[]`. Built
+       * from the display's own normalizer rather than a linear read of the
+       * domain, so a rule stays on the data it is meant to be read against when
+       * the axis is log or symlog.
+       *
+       * Empty in density mode for the reason `showCrossHatches` is false there:
+       * density spends color rather than height on the score, so there is no
+       * axis for a rule to sit on and a line across it would read as a
+       * threshold in a picture that has none.
+       */
+      get scoreRuleMarks() {
+        const domain = self.domain
+        if (!domain || self.isDensityMode) {
+          return []
+        }
+        const [min, max] = domain
+        return scoreRuleMarks({
+          rules: parseScoreRules(getConf(self, 'scoreRules')),
+          domain,
+          box: axisPlotBox(self.height),
+          normalize: makeScoreNormalizer(
+            min,
+            max,
+            scaleTypeFromString(self.scaleType),
+            resolveSymlogConstant(min, max, self.symlogConstant),
+          ),
         })
       },
 
