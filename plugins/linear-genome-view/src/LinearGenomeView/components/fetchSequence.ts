@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import { getSession } from '@jbrowse/core/util'
 
 import type { StatusCallback } from '@jbrowse/core/util'
@@ -27,7 +27,14 @@ export async function fetchSequence(
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)
   }
-  const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
+  // An assembly can be backed by an adapter that carries no residues at all —
+  // ChromSizesAdapter defines refName lengths only. Say so here: passing the
+  // undefined on fails inside getAdapterPre as "could not determine adapter
+  // type", naming neither the assembly nor what was wanted from it.
+  const adapterConfig = getSequenceAdapterConfig(assembly)
+  if (!adapterConfig) {
+    throw new Error(`assembly ${assemblyName} has no sequence to read`)
+  }
 
   const sessionId = 'getSequence'
   return rpcManager.call(sessionId, 'CoreGetFeatures', {

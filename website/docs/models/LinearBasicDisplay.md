@@ -142,7 +142,6 @@ the whole surface.
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-selectedfeatureid) |
 | <span id="getter-colorbycds">**colorByCDS**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-colorbycds) |
 | <span id="getter-showaminoacids">**showAminoAcids**</span><br><code>boolean</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-showaminoacids) |
-| <span id="getter-sequenceadapter">**sequenceAdapter**</span><br><code>any</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-sequenceadapter) |
 | <span id="getter-reversedregions">**reversedRegions**</span><br><code>Set&lt;number&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-reversedregions) |
 | <span id="getter-pinnedfeatureidset">**pinnedFeatureIdSet**</span><br><code>ReadonlySet&lt;string&gt;</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-pinnedfeatureidset) |
 | <span id="getter-canonicalfeaturehighlights">**canonicalFeatureHighlights**</span><br><code>FeatureHighlight[]</code> |  | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay#getter-canonicalfeaturehighlights) |

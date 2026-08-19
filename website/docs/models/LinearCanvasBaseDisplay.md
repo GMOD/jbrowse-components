@@ -102,7 +102,6 @@ the whole surface.
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-colorbycds">**colorByCDS**</span><br><code>boolean</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-showaminoacids">**showAminoAcids**</span><br><code>boolean</code> |  | LinearCanvasBaseDisplay |
-| <span id="getter-sequenceadapter">**sequenceAdapter**</span><br><code>any</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-reversedregions">**reversedRegions**</span><br><code>Set&lt;number&gt;</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-pinnedfeatureidset">**pinnedFeatureIdSet**</span><br><code>ReadonlySet&lt;string&gt;</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-canonicalfeaturehighlights">**canonicalFeatureHighlights**</span><br><code>FeatureHighlight[]</code> |  | LinearCanvasBaseDisplay |

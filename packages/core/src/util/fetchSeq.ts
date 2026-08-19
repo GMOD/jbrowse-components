@@ -1,4 +1,4 @@
-import { getConf } from '../configuration/index.ts'
+import { getSequenceAdapterConfig } from '../assemblyManager/getSequenceAdapterConfig.ts'
 
 import type { StatusCallback } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
@@ -28,7 +28,14 @@ export async function fetchSeq({
   }
 
   const sessionId = 'getSequence'
-  const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
+  // An assembly can be backed by an adapter that carries no residues at all —
+  // ChromSizesAdapter defines refName lengths only. Say so here: passing the
+  // undefined on fails inside getAdapterPre as "could not determine adapter
+  // type", naming neither the assembly nor what was wanted from it.
+  const adapterConfig = getSequenceAdapterConfig(assembly)
+  if (!adapterConfig) {
+    throw new Error(`assembly ${assemblyName} has no sequence to read`)
+  }
 
   // Get the canonical refName, then translate to the sequence adapter refName
   // (in FASTA). These may differ when refNameAliases override.

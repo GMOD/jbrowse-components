@@ -873,17 +873,34 @@ prologue that resolves the feature adapter and primes it in one step.
 The subtlety: **the adapter cache (`dataAdapterCache`) keys on `adapterConfig`
 alone, not on the sequence adapter.** So the *first* RPC to resolve a given
 adapter primes its sequence config for the lifetime of that cached instance
-(`setSequenceAdapterConfig` is set-once). This is why `CoreGetRefNames` — usually
-the first call for a track — passes it, and why every reference-needing fetch also
-passes it rather than relying on ordering. A fetch that legitimately doesn't need
-the reference (e.g. `PileupGetGlobalValueForTag`, which reads BAM tags directly)
-omits it.
+(`setSequenceAdapterConfig` is set-once — one `??=`, which both refuses to clear
+the field and refuses to replace it). `CoreGetRefNames` is reliably that first
+call: `renameRegionsIfNeeded` runs inside `serializeArguments`, so every renaming
+RPC resolves a refName map — and therefore primes — before its own args reach a
+worker. A fetch that legitimately doesn't need the reference (e.g.
+`PileupGetGlobalValueForTag`, which reads BAM tags directly) omits it.
 
-**Invariant: any feature RPC that decodes against the reference must pass
-`sequenceAdapter`.** Don't assume a prior call primed the instance. Note that
-`setSequenceAdapterConfig` does **not** propagate through wrapper adapters (there
-is no wrapper-over-BAM/CRAM today; if one is reintroduced, plumb inheritance
-through `getSubAdapter`).
+**Rule: a feature RPC that decodes against the reference should pass
+`sequenceAdapter` rather than rely on that ordering.** It is a rule, not a
+description — `CoreGetExportData`, `BreakpointGetFeatures`, and
+`fetchTrackData`'s `CoreGetFeatures` all omit it and work only because the
+priming got there first. Each can reach a CRAM, which throws without a reference
+rather than degrading.
+
+The priming itself is pinned by
+`packages/core/src/data_adapters/sequenceAdapterPriming.test.ts`, which primes
+through `CoreGetRefNames` and then fetches with no sequence adapter of its own.
+Write that test's coverage off at your peril: it is the only thing that reds when
+the priming breaks, and it exists because the alternative — `SaveTrackData`'s
+CRAM case in `products/jbrowse-web` — covers the mechanism only by virtue of
+being one of the three callers breaking the rule above.
+
+What set-once does not settle is *which* config wins. `renameRegionsIfNeeded`
+resolves one refName map per assembly through `Promise.all`, each priming the
+same cached instance, so an adapter config displayed against two assemblies takes
+whichever call resolves first. No adapter that reads the reference is displayed
+that way today; making the cache key `(adapterConfig, sequenceAdapter)` is the
+fix if one ever is, and it is only safe once every caller passes it.
 
 ## GPU rendering architecture
 
@@ -1452,7 +1469,8 @@ and 12 lines — and both have since been given the sections they wanted.
 - Don't let a feature RPC that decodes against the reference omit
   `sequenceAdapter`. `dataAdapterCache` keys on `adapterConfig` alone, so the
   first call to resolve an adapter primes it for that instance's lifetime — don't
-  assume a prior call did it.
+  assume a prior call did it. Three callers do; see [sequence-adapter
+  injection](#sequence-adapter-injection-is-instance-primed-and-order-dependent).
 - Don't override `adapterConfig` to *annotate* it; only to change what the
   adapter is. The cache keys on the config object, so a key the adapter never
   reads still forks the cache into a second instance and a second parse of the

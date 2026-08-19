@@ -1,9 +1,9 @@
 import { lazy } from 'react'
 
+import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   ConfigurationReference,
   getConf,
-  readConfObject,
   resolveConf,
   getConfigSnapshotWithPromotables,
   setConf,
@@ -15,7 +15,6 @@ import {
   canonicalizeViewRefName,
   clamp,
   createStatusFanOut,
-  getContainingTrack,
   getContainingView,
   getSession,
   isFeature,
@@ -718,22 +717,6 @@ export default function baseStateModelFactory(
          */
         activeFilters(): string[] {
           return activeJexlFilters(self)
-        },
-
-        /**
-         * #getter
-         */
-        get sequenceAdapter() {
-          const { assemblyManager } = getSession(self)
-          const track = getContainingTrack(self)
-          const assemblyNames = readConfObject(
-            track.configuration,
-            'assemblyNames',
-          ) as string[]
-          const assembly = assemblyManager.get(assemblyNames[0]!)
-          return assembly
-            ? getConf(assembly, ['sequence', 'adapter'])
-            : undefined
         },
 
         /**
@@ -2623,13 +2606,16 @@ export default function baseStateModelFactory(
           // Per-region translation table from the assembly's geneticCodes
           // config (alias-bridged via getGeneticCodeId), so the worker can
           // translate peptides on contigs whose features carry no transl_table.
+          // The sequence adapter comes off the same handle: this fetch is per
+          // region, so the region's assembly is the one that owns the reference
+          // it decodes against.
           const assembly = session.assemblyManager.get(region.assemblyName)
           const result = await session.rpcManager.call(
             sessionId,
             'RenderFeatureData',
             {
               adapterConfig: self.adapterConfig,
-              sequenceAdapter: self.sequenceAdapter,
+              sequenceAdapter: getSequenceAdapterConfig(assembly),
               geneticCodeId: assembly?.getGeneticCodeId(region.refName),
               ...self.rpcProps(),
               region,
