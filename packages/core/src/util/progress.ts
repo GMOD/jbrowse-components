@@ -78,10 +78,11 @@ export async function updateStatus<U>(
   stopToken?: StopToken,
 ) {
   const endPhase = openPhase(cb, msg)
-  cb?.(msg)
-  // finally, so a throwing `fn` doesn't leave its phase label sitting on the
-  // channel forever — the error surfaces under a stale "Downloading file"
+  // everything after the open is inside the try, the announcing write included,
+  // so a throw anywhere cannot leave this phase's label sitting on the channel
+  // forever — the error surfaces under a stale "Downloading file"
   try {
+    cb?.(msg)
     return await withStopTokenCheck(stopToken, fn)
   } finally {
     endPhase()
@@ -148,19 +149,6 @@ export function statusFraction(status: RpcStatus | undefined) {
 }
 
 /**
- * One owner's outlet for a progress stream: a throttle window, and the guarded
- * callbacks that share it.
- *
- * The two are one object because they were never separable. Every owner of a
- * status field wants the same pair — thin the stream, and drop what a
- * superseded or torn-down operation writes — and the pairing carries a
- * cardinality rule that two functions could not state: **one window per owner,
- * N sinks on it**, which is what makes a display's parallel per-region fetches
- * thin to one stream between them rather than to N. As a `throttle` argument
- * that rule lived in a paragraph asking callers not to pass a fresh one; here
- * the wrong thing has no spelling.
- */
-/**
  * One operation's stream through a {@link StatusWindow}, and the last word that
  * ends it. They come back together because they are not separable in practice:
  * the shared bar's whole design rests on **every owner clearing its own field
@@ -188,6 +176,19 @@ export interface StatusStream {
   clear: () => void
 }
 
+/**
+ * One owner's outlet for a progress stream: a throttle window, and the guarded
+ * streams that share it.
+ *
+ * The two are one object because they were never separable. Every owner of a
+ * status field wants the same pair — thin the stream, and drop what a
+ * superseded or torn-down operation writes — and the pairing carries a
+ * cardinality rule that two functions could not state: **one window per owner,
+ * N streams on it**, which is what makes a display's parallel per-region fetches
+ * thin to one flow between them rather than to N. As a `throttle` argument that
+ * rule lived in a paragraph asking callers not to pass a fresh one; here the
+ * wrong thing has no spelling.
+ */
 export interface StatusWindow {
   /**
    * Open a stream for one operation: a {@link StatusCallback} writing through
@@ -841,8 +842,14 @@ export async function withProgress<T>(
     stopToken,
   })
   const endPhase = openPhase(statusCallback, label)
-  report(0)
   try {
+    // inside the try, because `report` checks the stop token before it emits:
+    // on a token already stopped it throws here, and outside the try that threw
+    // past the close and left this phase open on the channel forever. A slot
+    // that ends on a label rather than the `''` is one {@link aggregateStatus}
+    // counts as in flight for the rest of the batch, so a single cancelled
+    // region pinned the shared bar to a phase nothing was running.
+    report(0)
     return await withStopTokenCheck(stopToken, () => fn(report))
   } finally {
     endPhase()

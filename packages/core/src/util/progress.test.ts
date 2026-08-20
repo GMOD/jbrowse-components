@@ -11,6 +11,7 @@ import {
   updateStatus,
   withProgress,
 } from './progress.ts'
+import { markStopTokenStopped } from './stopToken.ts'
 
 import type { RpcStatus, StatusCallback } from './progress.ts'
 
@@ -622,6 +623,39 @@ describe('withProgress', () => {
       ),
     ).rejects.toThrow('nope')
     expect(seen.at(-1)).toBe('')
+  })
+
+  // The kickoff `report(0)` checks the stop token before it emits, so a token
+  // already stopped throws there rather than out of the work — and outside the
+  // try that threw straight past the close, leaving the phase open on the
+  // channel. Its cost is not the missing `''`: a slot whose last word is a
+  // label is one aggregateStatus counts as in flight for the rest of the batch,
+  // so one cancelled region pinned the shared bar to a phase nothing was in.
+  //
+  // A string token because that is the path a deployment without cross-origin
+  // isolation takes, and the only one whose check fires on the first call — a
+  // SharedArrayBuffer token reads its atomic once every 10.
+  it('closes its phase when the token was stopped before it started', async () => {
+    const seen: RpcStatus[] = []
+    const cb = (s: RpcStatus) => {
+      seen.push(s)
+    }
+    const stopToken = 'blob:stopped-before-withProgress'
+    markStopTokenStopped(stopToken)
+    await updateStatus('Downloading features', cb, async () => {
+      await expect(
+        withProgress(
+          {
+            label: 'Computing layout',
+            total: 2,
+            statusCallback: cb,
+            stopToken,
+          },
+          () => {},
+        ),
+      ).rejects.toThrow()
+    })
+    expect(seen).toEqual(['Downloading features', 'Downloading features', ''])
   })
 })
 
