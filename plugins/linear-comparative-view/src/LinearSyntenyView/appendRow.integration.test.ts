@@ -131,3 +131,24 @@ test('a track added in the same tick shows on the level it was added for', async
   expect(view.levels[1]!.tracks.length).toBe(1)
   expect(view.levels[0]!.tracks.length).toBe(0)
 })
+
+const menuLabels = (view: LinearSyntenyViewModel) =>
+  view.headerMenuItems().map(item => ('label' in item ? item.label : ''))
+
+// A row is appended to the stack the user is looking at, and the import form is
+// what they are looking at when there is no stack. Anchored to a view with no
+// rows, the dialog read the bottom row's assembly as '' — which matches every
+// synteny dataset in the session rather than none — and appending then showed
+// the chosen one on a level that does not exist.
+test('the header menu offers Add assembly row only once there is a row', async () => {
+  const session = createTestSession()
+  session.addAssemblyConf(assembly('volvox0'))
+  const empty = session.addView('LinearSyntenyView') as LinearSyntenyViewModel
+  openViews.push({ session, view: empty })
+
+  expect(empty.showImportForm).toBe(true)
+  expect(menuLabels(empty)).not.toContain('Add assembly row...')
+
+  const { view } = await openStack(2)
+  expect(menuLabels(view)).toContain('Add assembly row...')
+})
