@@ -49,23 +49,29 @@
 //
 // ---------------------------------------------------------------------------
 // WHAT IT SAYS, measured 2026-08-20 on a box under load from other agents (load
-// average ~7 of 16 cores). Ranges over the runs whose control landed in
-// 0.98-1.05; a run outside that measured nothing and is not quoted.
+// average ~7 of 16 cores, all session). Ranges span every sample whose control
+// landed in 0.98-1.05 — six on the first row, five on each of the others — and a
+// sample outside that measured nothing and is not in them.
 //
 //   fixture                          offsets      both         control
-//   minimap2, 1,000 rows, 10 tags    1.13-1.16x   1.72-1.77x   0.98-0.99x
-//   fine PIF, 4,000 rows, ~1.8kB     1.30-1.41x   1.60-2.19x   0.99-1.03x
-//   coarse PIF, 4,000 rows, 2 tags   1.11-1.21x   2.02-2.12x   1.04x
+//   minimap2, 1,000 rows, 10 tags    1.10-1.20x   1.62-1.78x   0.98-1.02x
+//   fine PIF, 4,000 rows, ~1.8kB     1.15-1.41x   1.60-2.19x   0.99-1.05x
+//   coarse PIF, 4,000 rows, 2 tags   1.11-1.58x   1.55-2.34x   0.99-1.05x
 //
-// So both changes pay on every shape, and the feature build is the larger of the
-// two everywhere — which was the surprise, since the parse is the half ADR-039's
-// cost note was written about. The `both` range is wide because the box was
-// busy; the ordering never moved across any run with a good control.
+// **These are the spread actually observed, not a tightened quote.** A run on a
+// quiet box should land inside them and probably near the top; publishing the
+// narrow version would have made a re-run look like a regression, which it did
+// on the first attempt at writing this table.
 //
-// The parse on its own, measured without building a feature at all, is
-// 1.49x (minimap2) to 1.84x (either PIF tier). That arm is not here because it
-// would be a fifth pipeline to keep symmetric for a number this file's `offsets`
-// row already implies.
+// What did not move: both changes helped on every sample, and `both` beat
+// `offsets` on every sample but one — the coarse row where they crossed at
+// 1.58/1.55. The feature build being the larger half is the surprise, since the
+// parse is the half ADR-039's cost note was written about.
+//
+// The parse on its own, measured without building a feature at all, is 1.4-2.0x
+// across the same three fixtures. That arm is not here because it would be a
+// fifth pipeline to keep symmetric for a number this file's `offsets` row
+// already implies.
 //
 // THE BIG FIXTURE IS NOT COMMITTED. It wants a eukaryote-scale PIF; the file
 // behind `agent-docs/measurements/pif-tier-wire-bytes.json` is the one to use:

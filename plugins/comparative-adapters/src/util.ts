@@ -496,8 +496,8 @@ function parseShortPAFLine(line: string) {
 // six of them, and on a fine-tier PIF row it did that around a CIGAR that is
 // most of the line: `hs1ToMm39.over.chain.pif.gz` averages 1,789 bytes a row, so
 // the split was scanning and re-wrapping ~1.7kB per row to read twelve short
-// fields off the front. Measured 1.84x on that file's fine and coarse tiers and
-// 1.49x on a 10-tag minimap2 PAF —
+// fields off the front. The parse on its own measured 1.4-2.0x across a 10-tag
+// minimap2 PAF and both PIF tiers —
 // `plugins/comparative-adapters/benches/pafLineParse.bench.ts`.
 //
 // The offsets must strictly increase, and testing that is not decoration:
@@ -951,9 +951,9 @@ export function resolveCoarseTier({
  * builders used to write. A spread in the MIDDLE of an object literal is what
  * costs: V8 cannot give the literal a static hidden class, so every field after
  * the spread is added dynamically, once per feature. Building the whole literal
- * statically and copying the tags on afterwards measured 2.0-5.2x on the object
- * construction alone (`benches/pafLineParse.bench.ts`), which is the larger half
- * of the read path — bigger than the parse it follows.
+ * statically and copying the tags on afterwards is worth another 1.4-1.8x on top
+ * of the tab-offset parse (`benches/pafLineParse.bench.ts`), which makes it the
+ * larger of the two — bigger than the parse it follows.
  *
  * `cg`/`cs` are excluded because the caller has already turned them into
  * `CIGAR`/`cs`, and `id` (odgi untangle's identity tag) because `pafIdentity`

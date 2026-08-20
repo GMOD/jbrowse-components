@@ -4,8 +4,8 @@
   "published": false,
   "source": {
     "kind": "bench",
-    "repro": "node --expose-gc plugins/comparative-adapters/benches/pafLineParse.bench.ts --rounds=25 for the minimap2 row, and the same with --only=big and PAF_BENCH_PATH set for the two PIF rows — the bench header carries the recipe that cuts those fixtures out of hs1ToMm39.over.chain.pif.gz. One process per fixture. Min of rounds, ranges over the runs whose control landed in 0.98-1.05; a run outside that measured nothing and is not quoted.",
-    "notes": "One line of text to one SyntenyFeature — the read path of both in-memory PAF adapters and both indexed PIF adapters. Two changes landed together and the bench reads them apart: `parsePAFLine` walking tab offsets instead of `line.split('\\t')`, and the two feature builders dropping a `...rest` spread from the middle of their data-object literal.\n\nThe box was under load from other agents (load average ~7 of 16 cores), which is why the `both` column is a range rather than a figure; the ordering never moved across any run with a good control.\n\nThe feature build is the larger of the two changes on every fixture, which is the surprise — the cost model above, and ADR-039's note about it, are both written about the parse. Measured on their own, the parse is 1.49x (minimap2) to 1.84x (either PIF tier) and the data-object construction is 2.0-5.2x.\n\nRow count is this harness's ceiling and it is low: past ~4,000 rows per arm the control falls to 0.63-0.79x while the candidate arms keep reporting plausible ratios. See BENCHMARKING.md; the bench warns above 6,000."
+    "repro": "node --expose-gc plugins/comparative-adapters/benches/pafLineParse.bench.ts --rounds=30 for the minimap2 row, and the same with --only=big and PAF_BENCH_PATH set for the two PIF rows — the bench header carries the recipe that cuts those fixtures out of hs1ToMm39.over.chain.pif.gz. One process per fixture. Min of rounds; the ranges span every sample whose control landed in 0.98-1.05, and a sample outside that measured nothing and is not in them. Six samples on the minimap2 row, five on each PIF row.",
+    "notes": "One line of text to one SyntenyFeature — the read path of both in-memory PAF adapters and both indexed PIF adapters. Two changes landed together and the bench reads them apart: `parsePAFLine` walking tab offsets instead of `line.split('\\t')`, and the two feature builders dropping a `...rest` spread from the middle of their data-object literal.\n\nTHE RANGES ARE WIDE BECAUSE THE MACHINE WAS BUSY — load average ~7 of 16 cores from other agents, for the whole session. They are the spread actually observed rather than a tightened quote, so a re-run on a quiet box should land inside them and probably near the top. What did not move: both changes helped on every sample, and `both` beat `offsets` on every sample but one (the coarse row where they crossed at 1.58/1.55).\n\nThe feature build is the larger of the two changes, which is the surprise — the cost model above, and ADR-039's note about it, are both written about the parse. Reading the two columns against each other per sample, the parse change is 1.10-1.41x and the spread removal is worth another 1.4-1.8x on top of it. The parse measured on its own, with no feature built at all, is 1.4-2.0x.\n\nRow count is this harness's ceiling and it is low: past ~4,000 rows per arm the control falls to 0.63-0.79x while the candidate arms keep reporting plausible ratios. See BENCHMARKING.md; the bench warns above 6,000."
   },
   "columns": [
     { "key": "fixture", "label": "one row parsed and built" },
@@ -24,18 +24,18 @@
       "values": {
         "fixture": "minimap2 PAF, 10 tags",
         "rows": 1000,
-        "offsets": "1.13-1.16x",
-        "both": "1.72-1.77x",
-        "control": "0.98-0.99x"
+        "offsets": "1.10-1.20x",
+        "both": "1.62-1.78x",
+        "control": "0.98-1.02x"
       }
     },
     {
       "values": {
         "fixture": "fine PIF tier, ~1.8kB rows",
         "rows": 4000,
-        "offsets": "1.30-1.41x",
+        "offsets": "1.15-1.41x",
         "both": "1.60-2.19x",
-        "control": "0.99-1.03x"
+        "control": "0.99-1.05x"
       },
       "emphasize": ["both"]
     },
@@ -43,9 +43,9 @@
       "values": {
         "fixture": "coarse PIF tier, no CIGAR",
         "rows": 4000,
-        "offsets": "1.11-1.21x",
-        "both": "2.02-2.12x",
-        "control": "1.04x"
+        "offsets": "1.11-1.58x",
+        "both": "1.55-2.34x",
+        "control": "0.99-1.05x"
       },
       "emphasize": ["both"]
     }

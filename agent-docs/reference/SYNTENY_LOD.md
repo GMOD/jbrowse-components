@@ -164,9 +164,9 @@ the synthetic PIF above:
 
 | one row parsed and built   |  rows | tab offsets | offsets + no spread |    control |
 | -------------------------- | ----: | ----------: | ------------------: | ---------: |
-| minimap2 PAF, 10 tags      | 1,000 |  1.13-1.16x |          1.72-1.77x | 0.98-0.99x |
-| fine PIF tier, ~1.8kB rows | 4,000 |  1.30-1.41x |      **1.60-2.19x** | 0.99-1.03x |
-| coarse PIF tier, no CIGAR  | 4,000 |  1.11-1.21x |      **2.02-2.12x** |      1.04x |
+| minimap2 PAF, 10 tags      | 1,000 |  1.10-1.20x |          1.62-1.78x | 0.98-1.02x |
+| fine PIF tier, ~1.8kB rows | 4,000 |  1.15-1.41x |      **1.60-2.19x** | 0.99-1.05x |
+| coarse PIF tier, no CIGAR  | 4,000 |  1.11-1.58x |      **1.55-2.34x** | 0.99-1.05x |
 
 <!-- END GENERATED MEASUREMENT paf-line-read-path -->
 
