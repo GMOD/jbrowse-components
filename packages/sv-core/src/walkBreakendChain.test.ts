@@ -235,3 +235,65 @@ describe('nextJunctionFrom', () => {
     ).toBeUndefined()
   })
 })
+
+// COLO829's chain is a closed triangle, so every record of it reaches the same
+// three loci going one way round. A LINEAR chain is the case that separates a
+// walk that goes outward from one that only goes forward: chr1 -j1- chr2 -j2-
+// chr3 -j3- chr4, where the reader may click any of the three records and every
+// one of them is equally the event.
+describe('walkBreakendChain over a linear chain', () => {
+  const J1 = j('j1', 'j1_m', 'chr1', 1000, 'chr2', 2001)
+  const J2 = j('j2', 'j2_m', 'chr2', 2100, 'chr3', 3001)
+  const J3 = j('j3', 'j3_m', 'chr3', 3100, 'chr4', 4001)
+  const CHAIN = [J1, J2, J3]
+
+  function nearby(region: { refName: string; start: number; end: number }) {
+    return Promise.resolve(
+      CHAIN.filter(
+        x =>
+          (x.refName === region.refName &&
+            x.pos >= region.start &&
+            x.pos <= region.end) ||
+          (x.mateRefName === region.refName &&
+            x.matePos >= region.start &&
+            x.matePos <= region.end),
+      ),
+    )
+  }
+
+  it('shows the whole chain from any of its records', async () => {
+    for (const start of CHAIN) {
+      const stops = await walkBreakendChain({
+        start,
+        findJunctionsNear: nearby,
+      })
+      expect(stops.map(s => s.refName)).toEqual([
+        'chr1',
+        'chr2',
+        'chr3',
+        'chr4',
+      ])
+    }
+  })
+
+  it('names the junction crossed INTO each stop, prepended ones included', async () => {
+    // Reading the list top to bottom, a stop added at the front takes the
+    // arrival from the stop it displaced, and the new head has nothing above it.
+    const stops = await walkBreakendChain({
+      start: J3,
+      findJunctionsNear: nearby,
+    })
+    expect(stops.map(s => s.viaId)).toEqual([undefined, 'j1', 'j2', 'j3'])
+  })
+
+  it('spends the panel budget forward first', async () => {
+    // What the walk always did, unchanged: the backward half only gets a turn
+    // once the forward one has stopped on its own.
+    const stops = await walkBreakendChain({
+      start: J2,
+      findJunctionsNear: nearby,
+      maxStops: 3,
+    })
+    expect(stops.map(s => s.refName)).toEqual(['chr2', 'chr3', 'chr4'])
+  })
+})

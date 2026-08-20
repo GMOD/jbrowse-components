@@ -237,6 +237,19 @@ export function nextJunctionFrom({
  * record came from — the walk does no fetching of its own, which is what keeps
  * `nextJunctionFrom` a pure decision the tests can hold.
  *
+ * OUTWARD MEANS BOTH WAYS, and it did not. The walk only ever extended past the
+ * record's MATE end, so which of a chain's records a reader clicked decided how
+ * much of the chain they were shown: on a four-locus chromoplexy the first
+ * record returns all four panels and the last returns two, with nothing saying
+ * a shorter answer was the shorter one. Every record of an event is equally the
+ * event, so the walk now also extends past the record's own end and puts those
+ * stops in front. A closed cycle is unaffected — COLO829's der(3) triangle
+ * comes back the way round it always did, because the backward step's only
+ * candidate leads to a locus the forward walk already has.
+ *
+ * Forward first, so the budget below is spent the way it always was whenever
+ * the forward walk alone can fill it.
+ *
  * Bounded by `maxStops` because the input is somebody's VCF: a callset dense in
  * breakends within a kilobase of each other (an amplicon, a chromothriptic
  * shard) is a chain the walk can follow much further than a reader can take in,
@@ -257,26 +270,38 @@ export async function walkBreakendChain({
     { refName: start.refName, pos: start.pos },
     { refName: start.mateRefName, pos: start.matePos, viaId: start.id },
   ]
-  let arrivedBy = start
-  while (stops.length < maxStops) {
-    const stop = stops.at(-1)!
-    const candidates = await findJunctionsNear({
-      refName: stop.refName,
-      start: Math.max(0, stop.pos - tolerance),
-      end: stop.pos + tolerance,
-    })
-    const hop = nextJunctionFrom({
-      stop,
-      arrivedBy,
-      candidates,
-      visited: stops,
-      tolerance,
-    })
-    if (!hop) {
-      break
+  // `viaId` is which junction was crossed to ARRIVE at a stop, reading the list
+  // top to bottom — so a stop added to the front takes over the one in front of
+  // it, and the new head has nothing above it to have been reached from.
+  const extend = async (backwards: boolean) => {
+    let arrivedBy = start
+    while (stops.length < maxStops) {
+      const stop = backwards ? stops[0]! : stops.at(-1)!
+      const candidates = await findJunctionsNear({
+        refName: stop.refName,
+        start: Math.max(0, stop.pos - tolerance),
+        end: stop.pos + tolerance,
+      })
+      const hop = nextJunctionFrom({
+        stop,
+        arrivedBy,
+        candidates,
+        visited: stops,
+        tolerance,
+      })
+      if (!hop) {
+        break
+      }
+      if (backwards) {
+        stop.viaId = hop.junction.id
+        stops.unshift({ ...hop.next })
+      } else {
+        stops.push({ ...hop.next, viaId: hop.junction.id })
+      }
+      arrivedBy = hop.junction
     }
-    stops.push({ ...hop.next, viaId: hop.junction.id })
-    arrivedBy = hop.junction
   }
+  await extend(false)
+  await extend(true)
   return stops
 }
