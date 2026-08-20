@@ -1,6 +1,6 @@
 ---
 name: offscreen-synteny-mates
-description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, named on hover, clickable to show that contig, and carried into an SVG export. Class B is untouched and needs two-axis-synteny-fetch.md; read this first for what class A settled, which constrains it.
+description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, named on hover, clickable to show that contig, and carried into an SVG export. Class B shipped the same day behind `bidirectionalFetch` (two-axis-synteny-fetch.md), on the terms this file settled: its marks hang off the target axis and its click navigates the row above.
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
@@ -13,8 +13,8 @@ at the top of the band, labelled with the contig it points at; hovering one name
 that contig whether or not the run is wide enough to be labelled, and clicking
 one shows it on the facing row. An SVG export carries the same marks. The
 rest of this file is the case for it and the reasoning the implementation
-followed — kept because **class B is still open**, and because what it decided
-constrains what class B may do.
+followed — kept because it is the reasoning class B was then built on, the same
+day and to the terms set out at the bottom of this file.
 
 A synteny band draws a ribbon only when **both** ends land on a displayed
 region. When peach chr1 is stacked against grape chr1 and a peach locus is
@@ -42,8 +42,10 @@ discarded by the `&& v2RefNames.has(mate.refName)` conjunct — which is doing
 legitimate work for the sort-size reduction it was written for, and incidentally
 eating this class.
 
-Class B is [two-axis-synteny-fetch](two-axis-synteny-fetch.md), which is a real
-architecture change with a real blocker. Nothing here depends on it.
+Class B is [two-axis-synteny-fetch](two-axis-synteny-fetch.md), which was
+believed to be a real architecture change with a real blocker and turned out to
+need neither — see that file. Nothing here depended on it, and what shipped
+there is the mirror of what shipped here.
 
 **Which genome is on top therefore decides how much is free**, because v1 is the
 query axis. That asymmetry is not small — see the numbers below.
@@ -143,10 +145,11 @@ reports nothing.
 
 - **Which axis owns a mark.** Settled for class A: `offscreenMateStrip` reads
   `views[level]`, the level's upper row, and its test says why — the lower row's
-  ruler puts every mark at a believable wrong offset. If class B ever lands, its
-  marks hang off v2 and the two must be distinguishable from each other and from
-  a ribbon whose far end is merely panned off the left/right edge (which already
-  draws correctly and is *not* this).
+  ruler puts every mark at a believable wrong offset. Class B's marks hang off
+  v2, and they are told apart by the edge of the band they hang from — the two
+  strips are at opposite edges, which is also what lets one hit test answer for
+  both. Neither is a ribbon whose far end is merely panned off the left/right
+  edge, which already drew correctly and is *not* this.
 - **Whether marks obey `minAlignmentLength`.** Settled: yes, on the same
   reasoning the ribbons do. A sub-pixel mark that survives the floor is still
   floored to a visible tick, since a mark carries no width a reader could act
@@ -186,8 +189,10 @@ reports nothing.
   cannot draw is the figure that does not draw it. `SVGOffscreenMates` is one
   layer per level, after every display's ribbons and inside the band's clip,
   running the same `drawOffscreenMates` through `PaintLayer`. Class B's marks
-  hang off v2 and need their own layer; they must not be folded into this one,
-  which is positioned against `views[level]` alone.
+  hang off v2, and share the layer rather than getting their own: one strip per
+  axis, each positioned against its own row, drawn by the same call with a
+  `side`. What must not be shared is the RULER, which is the mistake this
+  section opens with.
 
 ## What it costs the frame it runs in
 
