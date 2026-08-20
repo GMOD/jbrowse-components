@@ -1540,21 +1540,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDisplayedRegions(regions: Region[]) {
-        self.displayedRegions = cast(regions)
-        // new regions move both bounds: zoomTo re-clamps bpPerPx into the new
-        // [minBpPerPx, maxBpPerPx], scrollTo re-clamps offsetPx into the new
-        // [minOffset, maxOffset]. scrollTo is called explicitly rather than
-        // left to zoomTo's internal scrollTo, which is skipped when bpPerPx
-        // is already in range — shrinking the region set would otherwise
-        // strand the view scrolled past the end, on blank space.
-        self.zoomTo(self.bpPerPx)
-        self.scrollTo(self.offsetPx)
-      },
-
-      /**
-       * #action
-       */
       activateTrackSelector() {
         const { session, selector } = openTrackSelectorWidget(self)
         session.showWidget(selector)
@@ -1633,16 +1618,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       */
-      showAllRegions() {
-        self.windowWidthBp = self.maxBpPerPx * self.width
-        self.scrollTo(
-          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
-        )
-      },
-
-      /**
-       * #action
        * Fit the displayed regions to the width exactly, edge to edge.
        *
        * Not the same as `showAllRegions`, which goes to `maxBpPerPx` — the
@@ -1701,29 +1676,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      showAllRegionsInAssembly(assemblyName?: string) {
-        const session = getSession(self)
-        const { assemblyManager } = session
-        const { assemblyNames } = self
-        if (!assemblyName && assemblyNames.length > 1) {
-          session.notify(
-            `Can't perform operation with multiple assemblies currently`,
-          )
-        } else {
-          const resolvedName = assemblyName ?? assemblyNames[0]
-          const regions = resolvedName
-            ? assemblyManager.get(resolvedName)?.regions
-            : undefined
-          if (regions) {
-            this.setDisplayedRegions(regions)
-            this.showAllRegions()
-          }
-        }
-      },
-
-      /**
-       * #action
-       */
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
         if (idx === undefined) {
@@ -1759,20 +1711,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           }
         }
-      },
-
-      /**
-       * #action
-       * this "clears the view" and makes the view return to the import form
-       */
-      clearView() {
-        this.setDisplayedRegions([])
-        self.tracks.clear()
-        // it is necessary to run these after setting displayed regions empty
-        // or else model.offsetPx gets set to Infinity and breaks
-        // @jbrowse/mobx-state-tree snapshot
-        self.scrollTo(0)
-        self.zoomTo(10)
       },
 
       /**
@@ -2546,7 +2484,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * autorun's own follow-up run costs nothing.
        *
        * Nothing makes a new discrete placer call it. `index.test.ts` §"a jump
-       * settles the coarse blocks" is the list, on both sides.
+       * settles the coarse blocks" is the list, on both sides — and it is why
+       * every placer sits in this block rather than beside `zoomTo`: settling
+       * reads `dynamicBlocks`, which is declared after that one.
        */
       settleCoarseBlocks() {
         if (self.initialized) {
@@ -2590,6 +2530,73 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.zoomTo(windowWidthBp / self.width)
         self.scrollToBp(windowStartBp)
         this.settleCoarseBlocks()
+      },
+
+      /**
+       * #action
+       * The region list itself, which is a jump by definition — the blocks are
+       * keyed by `displayedRegionIndex`, and that index names a different contig
+       * afterwards.
+       */
+      setDisplayedRegions(regions: Region[]) {
+        self.displayedRegions = cast(regions)
+        // new regions move both bounds: zoomTo re-clamps bpPerPx into the new
+        // [minBpPerPx, maxBpPerPx], scrollTo re-clamps offsetPx into the new
+        // [minOffset, maxOffset]. scrollTo is called explicitly rather than
+        // left to zoomTo's internal scrollTo, which is skipped when bpPerPx
+        // is already in range — shrinking the region set would otherwise
+        // strand the view scrolled past the end, on blank space.
+        self.zoomTo(self.bpPerPx)
+        self.scrollTo(self.offsetPx)
+        this.settleCoarseBlocks()
+      },
+
+      /**
+       * #action
+       */
+      showAllRegions() {
+        self.windowWidthBp = self.maxBpPerPx * self.width
+        self.scrollTo(
+          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
+        )
+        this.settleCoarseBlocks()
+      },
+
+      /**
+       * #action
+       */
+      showAllRegionsInAssembly(assemblyName?: string) {
+        const session = getSession(self)
+        const { assemblyManager } = session
+        const { assemblyNames } = self
+        if (!assemblyName && assemblyNames.length > 1) {
+          session.notify(
+            `Can't perform operation with multiple assemblies currently`,
+          )
+        } else {
+          const resolvedName = assemblyName ?? assemblyNames[0]
+          const regions = resolvedName
+            ? assemblyManager.get(resolvedName)?.regions
+            : undefined
+          if (regions) {
+            this.setDisplayedRegions(regions)
+            this.showAllRegions()
+          }
+        }
+      },
+
+      /**
+       * #action
+       * this "clears the view" and makes the view return to the import form
+       */
+      clearView() {
+        this.setDisplayedRegions([])
+        self.tracks.clear()
+        // it is necessary to run these after setting displayed regions empty
+        // or else model.offsetPx gets set to Infinity and breaks
+        // @jbrowse/mobx-state-tree snapshot
+        self.scrollTo(0)
+        self.zoomTo(10)
       },
 
       /**
@@ -2673,7 +2680,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const { reversed, parentRegion, start, end } = location
 
           // Set the displayed region based on the parent region
-          self.setDisplayedRegions([
+          this.setDisplayedRegions([
             {
               ...parentRegion,
               reversed,
@@ -2706,7 +2713,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // displayedRegions, and stays clamped to the chromosome bounds that
         // `grow` may have pushed it past.
         else {
-          self.setDisplayedRegions(
+          this.setDisplayedRegions(
             locations.map(({ start, end, reversed, parentRegion }) =>
               start === undefined || end === undefined
                 ? { ...parentRegion, reversed }

@@ -3018,8 +3018,20 @@ describe('coarse dynamic blocks', () => {
   // The window between a view initializing and the coarse autorun's first run.
   // A debounced scan clipped to an EMPTY block list yields no entries, and no
   // entries is not a stale domain but the fallback one — a blank wiggle plot.
+  //
+  // Regions in the SNAPSHOT, which is what a restored session does and the way
+  // the window is still reachable: every placement action settles the coarse
+  // blocks itself now, and a view that was never placed ran none of them.
   test('settledDynamicBlocks is the live set until the coarse one exists', () => {
-    const model = makeView()
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: volvoxDisplayedRegions,
+      }),
+    )
+    model.setWidth(800)
+
     expect(model.coarseDynamicBlocks).toHaveLength(0)
     expect(model.settledDynamicBlocks).toEqual(
       model.dynamicBlocks.contentBlocks,
@@ -3081,18 +3093,37 @@ describe('a jump settles the coarse blocks', () => {
         )
       },
     ],
+    // The worst of them if it were missed: the blocks are keyed by
+    // `displayedRegionIndex`, so a coarse set that outlives the region list
+    // names one contig while another is on screen, and a consumer keyed by that
+    // index reads one region's data against the other's blocks.
+    [
+      'setDisplayedRegions',
+      model => {
+        model.setDisplayedRegions([volvoxDisplayedRegions[1]!])
+      },
+    ],
+    [
+      'showAllRegions',
+      model => {
+        model.showAllRegions()
+      },
+    ],
   ]
 
   test.each(jumps)('%s brings them to the new viewport', (_name, jump) => {
     const model = makeView()
-    // the debounced autorun has not run, so nothing is settled yet
-    expect(model.coarseDynamicBlocks).toHaveLength(0)
+    // settled where the view starts, so a jump that failed to settle would leave
+    // a non-empty set describing the wrong place rather than an empty one
+    const before = keys(model.coarseDynamicBlocks)
+    expect(before.length).toBeGreaterThan(0)
 
     jump(model)
 
     expect(keys(model.coarseDynamicBlocks)).toEqual(
       keys(model.dynamicBlocks.contentBlocks),
     )
+    expect(keys(model.coarseDynamicBlocks)).not.toEqual(before)
     expect(model.coarseBpPerPx).toBe(model.bpPerPx)
   })
 
@@ -3103,9 +3134,8 @@ describe('a jump settles the coarse blocks', () => {
   // leading edge.
   test.each(jumps)('%s leaves no per-bp scan on the old window', (_n, jump) => {
     const model = makeView()
-    // settle at the starting viewport first, so the coarse blocks are non-empty
-    // and `settledDynamicBlocks` cannot fall through on emptiness alone
-    model.setCoarseDynamicBlocks(model.dynamicBlocks, model.bpPerPx)
+    // non-empty at the start, so `settledDynamicBlocks` cannot pass this by
+    // falling through on emptiness
     const before = keys(model.settledDynamicBlocks)
 
     jump(model)
