@@ -64,7 +64,7 @@ test('a query-axis mark shows its contig on the row below the level', async () =
   const { view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', level.level + 1)
-  await when(() => refNames(view, 1).join() === 'ctgB', { timeout: 5000 })
+  await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
   // and only that row: the query row is where the marks were measured, so
   // rewriting it would move every mark out from under the pointer that clicked
@@ -78,7 +78,7 @@ test('a target-axis mark shows its contig on the row above the level', async () 
   const { view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', level.level)
-  await when(() => refNames(view, 0).join() === 'ctgB', { timeout: 5000 })
+  await when(() => refNames(view, 0).join(',') === 'ctgB', { timeout: 5000 })
 
   expect(refNames(view, 1)).toEqual(['ctgA'])
 }, 20000)

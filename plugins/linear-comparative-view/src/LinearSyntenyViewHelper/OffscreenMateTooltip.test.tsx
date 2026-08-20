@@ -31,12 +31,12 @@ function source(counts: Record<string, number>) {
   } as OffscreenMateSource
 }
 
-function draw(model: OffscreenMateSource, refName: string) {
+function draw(model: OffscreenMateSource, refName: string, navRow = 1) {
   const { getByRole } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <OffscreenMateTooltip
         model={model}
-        hover={{ refName, clientX: 40, clientY: 12 }}
+        hover={{ refName, navRow, level: 0, clientX: 40, clientY: 12 }}
       />
     </ThemeProvider>,
   )
@@ -60,7 +60,19 @@ test('and how many alignments go to it', () => {
 // Clicking REPLACES the facing panel's regions, so the hover has to say what
 // the click will do before it is the only way to find out.
 test('and says what clicking it does', () => {
-  expect(draw(source({ ctgB: 1 }), 'ctgB')).toContain('Click to show it')
+  expect(draw(source({ ctgB: 1 }), 'ctgB')).toContain(
+    'Click to show it on the panel below',
+  )
+})
+
+// ...and WHICH panel, because the band has a strip on each edge once the view
+// fetches both rows. A mark on the lower edge names a contig the panel ABOVE is
+// not showing, and a tooltip promising the one below describes a click that
+// then rewrites the other panel's regions.
+test('a mark on the target axis names the panel above instead', () => {
+  expect(draw(source({ ctgB: 1 }), 'ctgB', 0)).toContain(
+    'Click to show it on the panel above',
+  )
 })
 
 test('a contig no display counted is named without a number', () => {

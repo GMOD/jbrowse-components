@@ -247,6 +247,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
           setHoveredContig(
             mate && {
               refName: mate.refName,
+              navRow: mate.navRow,
+              level: model.level,
               clientX: at.clientX,
               clientY: at.clientY,
             },
