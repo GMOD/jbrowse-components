@@ -1,6 +1,6 @@
 ---
 name: offscreen-synteny-mates
-description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, clickable to show that contig, and carried into an SVG export. Class B is untouched and needs two-axis-synteny-fetch.md; read this first for what class A settled, which constrains it.
+description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, named on hover, clickable to show that contig, and carried into an SVG export. Class B is untouched and needs two-axis-synteny-fetch.md; read this first for what class A settled, which constrains it.
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
