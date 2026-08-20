@@ -2,15 +2,20 @@ import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMate
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { Theme } from '@mui/material'
 
+// A MARK is one short tick at the top of the band, standing for an alignment
+// the level cannot draw a ribbon for. The STRIP is the row of them across the
+// query axis, which is the whole of what this file paints — marks, plus a
+// contig name over each run of them. Same words the user guide uses.
+
 // Tall enough to see against a scalebar, short enough that it visibly STOPS.
 // The whole risk in drawing these is that a mark spanning the band reads as an
 // alignment to the locus directly below it, which is the one thing they must
-// not say — so a stub goes a fixed few pixels down whatever the band's height,
+// not say — so a mark goes a fixed few pixels down whatever the band's height,
 // and the gap under it is the message.
 export const OFFSCREEN_MATE_HEIGHT_PX = 6
 
 // A sub-pixel alignment still has to be a mark. The ribbons fade thin ones
-// instead, but a stub carries no width information a reader could act on — it
+// instead, but a mark carries no width information a reader could act on — it
 // is a tick saying "something here goes elsewhere" — so it gets a floor.
 export const MIN_OFFSCREEN_MATE_WIDTH_PX = 1.5
 
@@ -18,43 +23,39 @@ export const MIN_OFFSCREEN_MATE_WIDTH_PX = 1.5
 // solid bar with the ribbons hidden under it.
 const MAX_BAND_FRACTION = 1 / 3
 
-// Below this a label is a smudge, and the stub alone says "something here goes
+// Below this a label is a smudge, and the mark alone says "something here goes
 // elsewhere" perfectly well. Measured against the drawn text, not guessed from
 // the character count, since a scaffold name is not a fixed width.
 const MIN_LABEL_PADDING_PX = 6
 
 const LABEL_FONT = '10px sans-serif'
 
-// The label sits BELOW the stub, over whatever the renderer drew — a ribbon, a
+// The label sits BELOW the mark, over whatever the renderer drew — a ribbon, a
 // pale fill, the empty band — so it is grey-on-anything and needs the halo the
-// rest of the app's over-plot text uses. Only rendering it shows this: on a
-// white band the plain fill reads fine, which is the state a test fixture is in.
+// rest of the app's over-plot text uses.
 const LABEL_HALO_PX = 3
 
-// Clear of the stub, which occupies the top few pixels, and clear of the
-// ribbons, which start below. Tight, because the band between two rows is the
-// one place in this view with no vertical room to spare.
+// Clear of the mark above and the ribbons below. Tight, because the band
+// between two rows is the one place in this view with no vertical room to
+// spare.
 const LABEL_BASELINE_PX = 16
 
-// Stubs to one contig nearer than this are one stretch as far as a label is
+// Marks to one contig nearer than this are one stretch as far as a label is
 // concerned. A paleopolyploid block is dozens of anchors a few px apart, and a
-// label per anchor is a wall of the same word; a label per STRETCH is the
-// annotation a reader wanted.
+// label per anchor is a wall of the same word.
 const LABEL_MERGE_GAP_PX = 20
 
-// Line pitch when a stretch's label cannot go on the row above it.
 const LABEL_ROW_PX = 12
 
-// How deep the labels may stack. The case this whole feature exists for is one
-// query segment with SEVERAL counterparts — peach chr1 has about three grape
-// chromosomes over each of its segments — so those stretches overlap in x by
-// construction, and one row of labels can only ever name one of them. Three
-// rows names the paleohexaploid case; past that the band is a wall of grey text
-// over the ribbons, and a stretch with nowhere to go goes unlabelled.
+// The case this feature exists for is one query segment with SEVERAL
+// counterparts — peach chr1 has about three grape chromosomes over each of its
+// segments — so those stretches overlap in x by construction and one row of
+// labels can only ever name one of them. Three rows names the paleohexaploid
+// case; past that the band is a wall of grey text over the ribbons.
 const MAX_LABEL_ROWS = 3
 
-// One source for both surfaces. The screen overlay and the SVG export run the
-// same draw, and a figure whose stubs are a different grey from the ones the
+// One source for both surfaces: the screen overlay and the SVG export run the
+// same draw, and a figure whose marks are a different grey from the ones the
 // user turned on is a difference nothing would report.
 export function offscreenMateColors(theme: Theme) {
   return {
@@ -71,21 +72,15 @@ interface LabelRun {
 }
 
 /**
- * The stretches worth naming: each contig's stubs, joined where they sit close
+ * The stretches worth naming: each contig's marks, joined where they sit close
  * together, so a run of anchors to one contig is one label rather than one per
  * anchor — and a contig appearing in two separate places is still named twice,
  * which naming each contig once would lose.
  */
-function labelRuns(
-  rects: OffscreenMateRect[],
-  data: OffscreenMateData,
-): LabelRun[] {
+function labelRuns(rects: OffscreenMateRect[]): LabelRun[] {
   const byContig = new Map<string, OffscreenMateRect[]>()
   for (const r of rects) {
-    const refName = data.mateRefNameDict[data.mateRefNameIds[r.index]!]
-    if (refName === undefined) {
-      continue
-    }
+    const refName = offscreenMateRefName(r)
     let list = byContig.get(refName)
     if (!list) {
       list = []
@@ -120,26 +115,28 @@ interface PlacedLabel {
  * Where each stretch's name goes, on the first row it does not collide on.
  *
  * TWO STRETCHES CAN COVER THE SAME PIXELS, and in the case this feature exists
- * for they usually do: a query segment with three counterparts is three runs
- * over one span. Drawn on one baseline they land within a few pixels of each
- * other, the last one's halo erases the two before it, and the figure then names
- * one contig where three apply — with nothing to say two are missing.
+ * for they usually do. Drawn on one baseline they land within a few pixels of
+ * each other, the last one's halo erases the two before it, and the figure then
+ * names one contig where three apply — with nothing to say two are missing.
  *
- * Placement is left to right so it does not depend on the adapter's order, and a
- * stretch with no free row goes unlabelled rather than on top of another name.
+ * Placement is left to right so it does not depend on the adapter's order, and
+ * a stretch with no free row goes unlabelled rather than on top of another
+ * name.
  */
 function placeLabels(
   runs: LabelRun[],
   measure: (text: string) => number,
   height: number,
 ): PlacedLabel[] {
-  const maxRows = Math.max(
-    1,
-    Math.min(
-      MAX_LABEL_ROWS,
-      Math.floor((height - LABEL_BASELINE_PX) / LABEL_ROW_PX) + 1,
-    ),
+  const maxRows = Math.min(
+    MAX_LABEL_ROWS,
+    Math.floor((height - LABEL_BASELINE_PX) / LABEL_ROW_PX) + 1,
   )
+  // a band with no room for the first baseline gets no labels, rather than a
+  // row drawn past its bottom edge for the canvas and the export clip to eat
+  if (maxRows < 1) {
+    return []
+  }
   const rows: { x: number; end: number }[][] = []
   const placed: PlacedLabel[] = []
   for (const run of [...runs].sort((a, b) => a.x - b.x)) {
@@ -175,7 +172,10 @@ function placeLabels(
 }
 
 export interface OffscreenMateLayout {
-  data: OffscreenMateData
+  // one per synteny display on the level, drawn and hit-tested as one strip:
+  // they share a band, so labels that avoid each other within a display have to
+  // avoid the neighbouring display's too
+  datasets: OffscreenMateData[]
   // the QUERY axis, which is the only axis these have
   bpPerPx: number
   offsetPx: number
@@ -183,15 +183,23 @@ export interface OffscreenMateLayout {
   height: number
   // The view-wide alignment-length floor, applied here for the same reason the
   // shader applies it to ribbons: a whole-genome hairball filtered down to its
-  // real blocks should not keep a fringe of stubs for the noise it just hid.
+  // real blocks should not keep a fringe of marks for the noise it just hid.
   minAlignmentLength?: number
 }
 
 export interface OffscreenMateRect {
+  // the dataset and lane index it came from, rather than the contig name it
+  // points at: the hover scan builds one of these per candidate and reads the
+  // name only for the one it answers with
+  data: OffscreenMateData
   index: number
   x: number
   width: number
   height: number
+}
+
+export function offscreenMateRefName(r: OffscreenMateRect) {
+  return r.data.mateRefNameDict[r.data.mateRefNameIds[r.index]!]!
 }
 
 // Same expression the ribbons project with, written out rather than reused:
@@ -204,53 +212,50 @@ function screenX(cumBp: number, bpPerPx: number, offsetPx: number) {
 }
 
 /**
- * Where each stub lands on screen, in the order it is drawn.
+ * Where each mark lands on screen, in the order it is drawn.
  *
  * ONE FUNCTION BECAUSE DRAW AND HIT TEST HAVE TO AGREE. The ribbons keep that
  * agreement under test (`syntenyPickRenderAgreement.test.ts`) precisely because
- * their two paths are separate code; these have one path, so a stub the eye can
+ * their two paths are separate code; these have one path, so a mark the eye can
  * see and the pointer cannot is not a shape this can take.
  */
 export function offscreenMateRects(
   layout: OffscreenMateLayout,
 ): OffscreenMateRect[] {
-  const { width, height, data } = layout
+  const { width, height, datasets } = layout
   if (width <= 0 || height <= 0) {
     return []
   }
-  const stubHeight = offscreenMateStripHeight(height)
+  const markHeight = offscreenMateMarkHeight(height)
   const out: OffscreenMateRect[] = []
-  for (let i = 0; i < data.starts.length; i++) {
-    const rect = offscreenMateRectAt(layout, i, stubHeight)
-    if (rect) {
-      out.push(rect)
+  for (const data of datasets) {
+    for (let i = 0; i < data.starts.length; i++) {
+      const rect = offscreenMateRectAt(layout, data, i, markHeight)
+      if (rect) {
+        out.push(rect)
+      }
     }
   }
   return out
 }
 
-// Every stub in a level is the same height, so the strip is a constant the hit
+// Every mark in a level is the same height, so the strip is a constant the hit
 // test can reject a whole pointer position against before it looks at any
 // alignment.
-function offscreenMateStripHeight(height: number) {
+function offscreenMateMarkHeight(height: number) {
   return Math.max(
     1,
     Math.min(OFFSCREEN_MATE_HEIGHT_PX, height * MAX_BAND_FRACTION),
   )
 }
 
-// The one place a stub's geometry is decided, so the array the canvas paints and
+// The one place a mark's geometry is decided, so the array the canvas paints and
 // the scan the pointer runs cannot describe different rectangles.
 function offscreenMateRectAt(
-  {
-    data,
-    bpPerPx,
-    offsetPx,
-    width,
-    minAlignmentLength = 0,
-  }: OffscreenMateLayout,
+  { bpPerPx, offsetPx, width, minAlignmentLength = 0 }: OffscreenMateLayout,
+  data: OffscreenMateData,
   i: number,
-  stubHeight: number,
+  markHeight: number,
 ): OffscreenMateRect | undefined {
   const start = data.starts[i]!
   const end = data.ends[i]!
@@ -263,24 +268,25 @@ function offscreenMateRectAt(
     return undefined
   }
   return {
+    data,
     index: i,
     x: x1,
     width: Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1),
-    height: stubHeight,
+    height: markHeight,
   }
 }
 
 /**
- * The stub under a point, or undefined.
+ * The mark under a point, or undefined.
  *
  * LAST MATCH WINS, so the answer is whatever a reader sees on top where two
- * stubs overlap — the scan runs backwards over the array the canvas paints
+ * marks overlap — the scan runs backwards over the datasets the canvas paints
  * forwards, and later paints over earlier.
  *
- * THE STRIP IS TESTED BEFORE ANY ALIGNMENT IS. Every stub has the same height,
+ * THE STRIP IS TESTED BEFORE ANY ALIGNMENT IS. Every mark has the same height,
  * and the strip is a few pixels of a band ~100 tall, so the overwhelming
  * majority of pointer positions this is asked about are not in it. Answering
- * those with one comparison rather than by laying out every stub first is what
+ * those with one comparison rather than by laying out every mark first is what
  * keeps a hover over the ribbons costing nothing, whatever the level fetched.
  */
 export function offscreenMateAt(
@@ -288,20 +294,20 @@ export function offscreenMateAt(
   x: number,
   y: number,
 ) {
-  const { width, height, data } = layout
+  const { width, height, datasets } = layout
   if (width <= 0 || height <= 0) {
     return undefined
   }
-  const stubHeight = offscreenMateStripHeight(height)
-  if (y < 0 || y > stubHeight) {
+  const markHeight = offscreenMateMarkHeight(height)
+  if (y < 0 || y > markHeight) {
     return undefined
   }
-  for (let i = data.starts.length - 1; i >= 0; i--) {
-    const rect = offscreenMateRectAt(layout, i, stubHeight)
-    if (rect && x >= rect.x && x <= rect.x + rect.width) {
-      return {
-        refName: data.mateRefNameDict[data.mateRefNameIds[i]!],
-        rect,
+  for (let d = datasets.length - 1; d >= 0; d--) {
+    const data = datasets[d]!
+    for (let i = data.starts.length - 1; i >= 0; i--) {
+      const rect = offscreenMateRectAt(layout, data, i, markHeight)
+      if (rect && x >= rect.x && x <= rect.x + rect.width) {
+        return { refName: offscreenMateRefName(rect), rect }
       }
     }
   }
@@ -313,20 +319,20 @@ export function offscreenMateAt(
  *
  * These are real alignments whose mate is on a contig the facing row is not
  * displaying, so there is no second endpoint to run a ribbon to. Drawn as a
- * stub hanging off the query axis rather than as a degenerate ribbon with both
+ * mark hanging off the query axis rather than as a degenerate ribbon with both
  * bottom corners equal, which draws a full-height vertical band and asserts an
  * alignment to whatever sits directly below.
  *
  * A SEPARATE OVERLAY RATHER THAN AN INSTANCE KIND. The instance format carries
  * four cumBp corners and the shader interpolates vertically over the full band
- * by construction, so a stub that descends part way is a new kind with a
+ * by construction, so a mark that descends part way is a new kind with a
  * per-kind vertical clamp in `.slang` AND its counterpart in
  * `syntenyRibbonPath.ts`, which have to agree or the Canvas2D fallback disagrees
  * with WebGPU. These need none of what that buys — no pick index, no CIGAR
  * tiling, no alpha compositing against ribbons — and there are thousands of
  * them, not millions. See `agent-docs/ideas/offscreen-synteny-mates.md`.
  *
- * THE LABEL IS THE ACTIONABLE HALF, and it names a STRETCH rather than a stub —
+ * THE LABEL IS THE ACTIONABLE HALF, and it names a STRETCH rather than a mark —
  * one per run of nearby anchors to the same contig. It goes on wherever it fits
  * rather than under a count threshold: fitting is what "too many to label"
  * actually means, and a run too narrow for its contig name is exactly the one
@@ -340,10 +346,10 @@ export function drawOffscreenMates(
   if (rects.length === 0) {
     return
   }
-  const { color, haloColor, data } = layout
-  // ONE PATH, NOT A FILL EACH. The stub color carries alpha, so overlapping
-  // stubs filled separately composite against each other and the strip darkens
-  // with density — at whole-chromosome zoom there are more stubs than pixels, so
+  const { color, haloColor } = layout
+  // ONE PATH, NOT A FILL EACH. The mark color carries alpha, so overlapping
+  // marks filled separately composite against each other and the strip darkens
+  // with density — at whole-chromosome zoom there are more marks than pixels, so
   // it saturates to near-black and reads as a solid ideogram rather than as
   // marks. Filled as one path they take the color once. It is also what the SVG
   // export wants: one `<path>` instead of a `<rect>` per alignment.
@@ -360,7 +366,7 @@ export function drawOffscreenMates(
   ctx.lineJoin = 'round'
   ctx.strokeStyle = haloColor
   const labels = placeLabels(
-    labelRuns(rects, data),
+    labelRuns(rects),
     text => ctx.measureText(text).width,
     layout.height,
   )

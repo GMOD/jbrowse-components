@@ -1,6 +1,6 @@
 ---
 name: offscreen-synteny-mates
-description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a stub/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, clickable to show that contig, and carried into an SVG export. Class B is untouched and needs two-axis-synteny-fetch.md; read this first for what class A settled, which constrains it.
+description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, clickable to show that contig, and carried into an SVG export. Class B is untouched and needs two-axis-synteny-fetch.md; read this first for what class A settled, which constrains it.
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
@@ -8,7 +8,7 @@ description: Showing alignments whose mate lands on a contig the facing view is 
 **Class A shipped on 2026-08-19, all three stages.**
 `collectOffscreenMates` tallies the drops per contig and places them on the
 query axis; `offscreenMateMenuItems` reports the count and the contigs;
-`showOffscreenMates` turns `OffscreenMateOverlay` on, which draws each as a stub
+`showOffscreenMates` turns `OffscreenMateOverlay` on, which draws each as a mark
 at the top of the band, labelled with the contig it points at, and clicking one
 shows that contig on the facing row; an SVG export carries the same marks. The
 rest of this file is the case for it and the reasoning the implementation
@@ -20,7 +20,7 @@ region. When peach chr1 is stacked against grape chr1 and a peach locus is
 syntenic to grape chr5, there is no ribbon and no marker and no count — the view
 is identical to one where that locus is syntenic to nothing.
 
-The proposal is to draw those as a **non-ribbon element**: a box or stub hanging
+The proposal is to draw those as a **non-ribbon element**: a box or mark hanging
 off the anchor's axis, labelled with the contig the mate is actually on.
 
 ## Two classes, and only one of them is expensive
@@ -96,7 +96,7 @@ only stage with no rendering question in it. It also gives the row-launching
 machinery (`syntenyTrackRows`, `connectedEndpoints`) an obvious hook: those
 contig names are exactly the rows worth offering to add.
 
-**2. Draw the stub.** Harder than it looks, and the reason to stage it. **Taken
+**2. Draw the mark.** Harder than it looks, and the reason to stage it. **Taken
 via the overlay**, which is the alternative priced two paragraphs down —
 `OffscreenMateOverlay` is a second 2D canvas over the level's, `pointerEvents:
 none`, and the shader is untouched. The level's own canvas belongs to the
@@ -104,7 +104,7 @@ rendering backend and may be a WebGPU surface, so there is no drawing on it
 afterwards; a stacked canvas is what a non-instance element costs. The
 shader takes four cumBp corners and interpolates vertically over `u.height`
 (`y = u.height * yCurve(t)`), so every instance spans the full gap between the two
-axes by construction. A stub that descends only part way is a new kind with a
+axes by construction. A mark that descends only part way is a new kind with a
 per-kind vertical clamp — contained, but it is a `.slang` change plus its
 Canvas2D counterpart in `syntenyRibbonPath.ts`, and the two must agree or the
 fallback path disagrees with WebGPU. Do **not** approximate it by emitting a
@@ -122,7 +122,7 @@ element out of the instance format.
 the overlay path whatever stage 2 chose. Not gated on a count in the end: a
 label goes on wherever it FITS, which is what "too many to label" actually
 means, and one label per *stretch* rather than per anchor, since a block is
-dozens of anchors a few px apart. Haloed, because the label sits below the stub
+dozens of anchors a few px apart. Haloed, because the label sits below the mark
 over whatever the renderer painted.
 
 ## Behind a toggle, decided
@@ -140,20 +140,20 @@ reports nothing.
 
 ## What class A settled, and what class B inherits
 
-- **Which axis owns a stub.** Settled for class A: `offscreenMateStubs` reads
+- **Which axis owns a mark.** Settled for class A: `offscreenMateStrip` reads
   `views[level]`, the level's upper row, and its test says why — the lower row's
-  ruler puts every stub at a believable wrong offset. If class B ever lands, its
-  stubs hang off v2 and the two must be distinguishable from each other and from
+  ruler puts every mark at a believable wrong offset. If class B ever lands, its
+  marks hang off v2 and the two must be distinguishable from each other and from
   a ribbon whose far end is merely panned off the left/right edge (which already
   draws correctly and is *not* this).
-- **Whether stubs obey `minAlignmentLength`.** Settled: yes, on the same
-  reasoning the ribbons do. A sub-pixel stub that survives the floor is still
-  floored to a visible tick, since a stub carries no width a reader could act
+- **Whether marks obey `minAlignmentLength`.** Settled: yes, on the same
+  reasoning the ribbons do. A sub-pixel mark that survives the floor is still
+  floored to a visible tick, since a mark carries no width a reader could act
   on.
 - **What happens on hover/click.** Settled for the pairwise case, which is the
   one class A produces: the mate contig belongs to the facing row's own
   assembly, it is simply not displayed, so a click navigates that row to it and
-  the stubs become ribbons. `SyntenyResolveMatchingRegion` was the other
+  the marks become ribbons. `SyntenyResolveMatchingRegion` was the other
   candidate — it answers "where exactly does this go" — and it is not needed to
   make the contig visible, only to land on the right locus within it. Worth
   revisiting if landing whole-contig turns out too coarse.
@@ -162,7 +162,7 @@ reports nothing.
   regions — the exact narrowing the follow must never do to itself. Here it is
   the request, not a side effect, and the row's own header undoes it.
 - **Where the hit test lives.** In the level's pointer handlers, before the
-  ribbon pick, answering only within the stub strip. The overlay stays
+  ribbon pick, answering only within the mark strip. The overlay stays
   `pointerEvents: none`: two hit paths over one band is how a click comes to
   mean different things depending on which element received it. Draw and hit
   test share `offscreenMateRects`, so they cannot disagree the way the ribbons
@@ -173,7 +173,7 @@ reports nothing.
   taken with it on has to have it, or the figure of a view reporting what it
   cannot draw is the figure that does not draw it. `SVGOffscreenMates` is one
   layer per level, after every display's ribbons and inside the band's clip,
-  running the same `drawOffscreenMates` through `PaintLayer`. Class B's stubs
+  running the same `drawOffscreenMates` through `PaintLayer`. Class B's marks
   hang off v2 and need their own layer; they must not be folded into this one,
   which is positioned against `views[level]` alone.
 
@@ -181,7 +181,7 @@ reports nothing.
 
 <!-- BEGIN GENERATED MEASUREMENT offscreen-mate-overlay -->
 
-|   stubs | hover over ribbons | hover, before | hover in the strip | one repaint | SVG export layer |
+|   marks | hover over ribbons | hover, before | hover in the strip | one repaint | SVG export layer |
 | ------: | -----------------: | ------------: | -----------------: | ----------: | ---------------: |
 |   2,767 |           <0.001ms |       0.034ms |            0.027ms |      0.21ms |            90 KB |
 |  50,000 |           <0.001ms |        1.06ms |              0.5ms |      3.08ms |         1.302 MB |
@@ -193,24 +193,24 @@ On the shape this was designed against the overlay is free: a repaint is a fifth
 of a millisecond, against the 12.5ms the pick engine's own warm hover costs on an
 all-vs-all PAF (`reference/SYNTENY_PICKING.md`).
 
-**The hover is independent of the stub count, and deliberately.** The strip is a
+**The hover is independent of the mark count, and deliberately.** The strip is a
 few pixels of a band ~100 tall, so nearly every pointer position `offscreenMateHit`
 is asked about is not in it — and it runs ahead of the ribbon pick on every
 mousemove. Testing the strip height before any alignment is what collapses that
 column; laying the level out first to answer "no" is what the `hover, before`
-column is, and at 250k stubs it was 6ms of every frame the pointer moved.
+column is, and at 250k marks it was 6ms of every frame the pointer moved.
 
-**The strip is one path, not a fill per stub.** The stub color carries alpha, so
+**The strip is one path, not a fill per mark.** The mark color carries alpha, so
 filling each separately composites them against each other and the strip darkens
-with density — at whole-chromosome zoom there are more stubs than pixels, so it
+with density — at whole-chromosome zoom there are more marks than pixels, so it
 saturated to near-black and read as a solid ideogram rather than as marks.
 Filling one path takes the color once. The export column is the same change seen
 from the other side: one `<path>` where a figure used to carry a `<rect>` per
 alignment.
 
 **The repaint column is layout and path building, not rasterization** — the
-bench's context is a stub, so nothing there measures what the GPU or Canvas2D
-does with the path. What it does bound is the per-frame JS, and at 250k stubs
+bench's context is a mark, so nothing there measures what the GPU or Canvas2D
+does with the path. What it does bound is the per-frame JS, and at 250k marks
 that alone is a frame. Reaching that takes a query row on the whole genome with
 the target row narrowed to one contig, and the toggle is off by default, so
 nothing pays it without asking.

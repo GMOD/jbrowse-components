@@ -28,7 +28,7 @@ export default function SVGSyntenyLevel({
   trackLabelOffset: number
   rendering: { key: string; node: ReactNode }[]
   // over every display's ribbons, as the screen overlay is, and inside the clip
-  // because a stub is laid out in the same overdrawn view coordinates they are
+  // because a mark is laid out in the same overdrawn view coordinates they are
   offscreenMates?: ReactNode
   // the color-by key, floated over the band as it is on screen. Outside the
   // clip so a legend taller than a short level isn't cropped.

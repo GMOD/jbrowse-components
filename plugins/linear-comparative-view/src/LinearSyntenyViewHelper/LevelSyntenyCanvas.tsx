@@ -12,7 +12,7 @@ import { observer } from 'mobx-react'
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
 import { syntenyWidgetFeature } from '../LinearSyntenyDisplay/syntenyWidgetFeature.ts'
 import OffscreenMateOverlay from './OffscreenMateOverlay.tsx'
-import { offscreenMateHit } from './offscreenMateStubs.ts'
+import { offscreenMateHit } from './offscreenMateStrip.ts'
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
@@ -93,9 +93,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const dragRef = useRef<
     { startX: number; lastX: number; panned: boolean } | undefined
   >(undefined)
-  // The contig under the pointer's stub, or undefined. Local rather than on the
+  // The contig under the pointer's mark, or undefined. Local rather than on the
   // model beside `hoveredFeature`: nothing outside this canvas reads it, and a
-  // stub is not a feature — putting it there would mean every consumer of the
+  // mark is not a feature — putting it there would mean every consumer of the
   // hovered feature learning to expect something with no feature id.
   const [hoveredContig, setHoveredContig] = useState<string | undefined>(
     undefined,
@@ -215,7 +215,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         if (at) {
           const contig = offscreenMateHit(model, at.x, at.y)
           setHoveredContig(contig)
-          // a stub hovered is not a ribbon hovered, and leaving the old one lit
+          // a mark hovered is not a ribbon hovered, and leaving the old one lit
           // says the pointer is somewhere it is not
           model.setHoveredFeature(contig === undefined ? pickAt(at) : undefined)
         }
@@ -264,7 +264,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!coords) {
       return
     }
-    // The stub strip first, in the few pixels above every ribbon. A stub is not
+    // The mark strip first, in the few pixels above every ribbon. A mark is not
     // a feature — it stands for alignments this level cannot draw at all — so it
     // answers with a navigation rather than a selection, and must not fall
     // through to clear the clicked feature on its way.
@@ -291,12 +291,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   /**
-   * Show the contig a stub points at, on the row that is not displaying it.
+   * Show the contig a mark points at, on the row that is not displaying it.
    *
    * `navToLocString` REPLACES that row's displayed regions, which is exactly the
    * narrowing the synteny follow must never do to itself — but here it is the
    * whole request. The user clicked a mark that says "these go to ctgB", and the
-   * only thing that turns those stubs into ribbons is that row showing ctgB.
+   * only thing that turns those marks into ribbons is that row showing ctgB.
    * The row keeps its own header, so undoing it is "Show all regions".
    */
   function showOffscreenMateContig(refName: string) {

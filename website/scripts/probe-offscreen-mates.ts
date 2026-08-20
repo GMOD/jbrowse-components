@@ -118,7 +118,7 @@ try {
     }
   })
 
-  console.log(`view ${out.width}px wide, ${out.placed} stubs placed`)
+  console.log(`view ${out.width}px wide, ${out.placed} marks placed`)
   // the CSS box is what has to match the band; the backing store is DPR-scaled
   // and is always the larger of the two
   console.log(`overlay canvas: ${JSON.stringify(out.overlay)}`)

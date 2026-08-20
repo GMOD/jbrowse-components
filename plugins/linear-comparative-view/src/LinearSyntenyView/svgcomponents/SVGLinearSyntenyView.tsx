@@ -22,7 +22,7 @@ import SVGOffscreenMates from './SVGOffscreenMates.tsx'
 import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
-import type { StubSource } from '../../LinearSyntenyViewHelper/offscreenMateStubs.ts'
+import type { OffscreenMateSource } from '../../LinearSyntenyViewHelper/offscreenMateStrip.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
 
@@ -31,7 +31,7 @@ import type { ExportSvgOptions } from '../types.ts'
 // model), so everything read off one is `any` — naming the shape here keeps that
 // out of the layout math below, where an undefined height would silently make
 // the running offset NaN.
-interface SyntenyLevel extends StubSource {
+interface SyntenyLevel extends OffscreenMateSource {
   height: number
   linearSyntenyDisplays: LinearSyntenyDisplayModel[]
 }

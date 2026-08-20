@@ -11,17 +11,17 @@
 // read in a loop, the exact shape jest inflates 6-30x and not uniformly.
 //
 // THE QUESTION. `offscreenMateHit` runs on every pointer move in a synteny band,
-// AHEAD of the ribbon pick, and again on every pointer up. The stubs it scans are
+// AHEAD of the ribbon pick, and again on every pointer up. The marks it scans are
 // unbounded in the same way the ribbons are — no cap, and `minAlignmentLength` is
 // applied at draw time rather than at fetch time — so a level whose target row is
-// narrowed to one contig can carry a stub per alignment in the whole query
+// narrowed to one contig can carry a mark per alignment in the whole query
 // genome. The overlay's own repaint is on the same budget.
 //
 // ARMS, per fixture:
 //   hover-ribbons      pointer where it nearly always is: over the ribbons, below
 //                      the strip. What ships tests the strip height first.
 //   hover-ribbons-old  the same position through the pre-2026-08-19 shape:
-//                      lay out every stub, then test each one's y. Transcribed
+//                      lay out every mark, then test each one's y. Transcribed
 //                      here because src/ no longer has it.
 //   control            a second, separately-declared copy of hover-ribbons-old.
 //                      A row whose control is far from 1.00 measured nothing.
@@ -99,7 +99,7 @@ const FIXTURES = [
 
 function layoutFor(data: OffscreenMateData): OffscreenMateLayout {
   return {
-    data,
+    datasets: [data],
     bpPerPx: GENOME_BP / WIDTH,
     offsetPx: 0,
     width: WIDTH,
@@ -110,14 +110,15 @@ function layoutFor(data: OffscreenMateData): OffscreenMateLayout {
 // The pre-change hit test, transcribed. Deliberately written out longhand rather
 // than sharing anything with the arm above it: a shared driver goes polymorphic
 // and every arm pays for it (BENCHMARKING.md).
-const STUB_H = 6
+const MARK_H = 6
 const MIN_W = 1.5
 function hitOld(layout: OffscreenMateLayout, x: number, y: number) {
-  const { data, bpPerPx, offsetPx, width, height } = layout
+  const { bpPerPx, offsetPx, width, height } = layout
+  const data = layout.datasets[0]!
   if (width <= 0 || height <= 0) {
     return undefined
   }
-  const stubHeight = Math.max(1, Math.min(STUB_H, height / 3))
+  const markHeight = Math.max(1, Math.min(MARK_H, height / 3))
   const rects: { index: number; x: number; width: number; height: number }[] =
     []
   for (let i = 0; i < data.starts.length; i++) {
@@ -130,7 +131,7 @@ function hitOld(layout: OffscreenMateLayout, x: number, y: number) {
       index: i,
       x: x1,
       width: Math.max(MIN_W, x2 - x1),
-      height: stubHeight,
+      height: markHeight,
     })
   }
   for (let i = rects.length - 1; i >= 0; i--) {
@@ -145,11 +146,12 @@ function hitOld(layout: OffscreenMateLayout, x: number, y: number) {
 // The control: the same code as hitOld, declared a second time so it gets its own
 // inline caches. Sharing the source text would put them back together.
 function hitControl(layout: OffscreenMateLayout, x: number, y: number) {
-  const { data, bpPerPx, offsetPx, width, height } = layout
+  const { bpPerPx, offsetPx, width, height } = layout
+  const data = layout.datasets[0]!
   if (width <= 0 || height <= 0) {
     return undefined
   }
-  const stubHeight = Math.max(1, Math.min(STUB_H, height / 3))
+  const markHeight = Math.max(1, Math.min(MARK_H, height / 3))
   const rects: { index: number; x: number; width: number; height: number }[] =
     []
   for (let i = 0; i < data.starts.length; i++) {
@@ -162,7 +164,7 @@ function hitControl(layout: OffscreenMateLayout, x: number, y: number) {
       index: i,
       x: x1,
       width: Math.max(MIN_W, x2 - x1),
-      height: stubHeight,
+      height: markHeight,
     })
   }
   for (let i = rects.length - 1; i >= 0; i--) {
@@ -208,9 +210,9 @@ const IDENTITY_Y = [
 ]
 function checkIdentity(layout: OffscreenMateLayout, name: string) {
   // the sweep is O(y * x * n), so the stress fixtures get the boundary rows only
-  const ys =
-    layout.data.starts.length > 10_000 ? [0, 3, 5.9, 6, 6.1, 60] : IDENTITY_Y
-  const step = layout.data.starts.length > 10_000 ? 97 : 7
+  const n = layout.datasets[0]!.starts.length
+  const ys = n > 10_000 ? [0, 3, 5.9, 6, 6.1, 60] : IDENTITY_Y
+  const step = n > 10_000 ? 97 : 7
   for (const y of ys) {
     for (let x = -20; x <= WIDTH + 20; x += step) {
       const a = offscreenMateAt(layout, x, y)?.refName

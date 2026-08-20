@@ -6,7 +6,7 @@ import {
   drawOffscreenMates,
   offscreenMateColors,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
-import { offscreenMateStubs } from './offscreenMateStubs.ts'
+import { offscreenMateStrip } from './offscreenMateStrip.ts'
 
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 
@@ -19,21 +19,25 @@ import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
  * canvas is what a non-instance element costs, and it is cheap: these are
  * thousands of rects, not the millions the instance path exists for.
  *
+ * NO MARKS, NO CANVAS. The setting is off by default, so mounting this
+ * unconditionally allocated a band-sized DPR-scaled backing store per level for
+ * a strip nobody had asked for. The SVG export has always been gated this way.
+ *
  * `OverlayCanvas` rather than a `<canvas>` of its own, which is what this was
  * and is what got it wrong: a canvas is a REPLACED element, so `inset: 0` does
  * not stretch it the way it stretches a div — with no CSS width it takes its
  * intrinsic size, which `prepareCanvas` has just set to the DPR-scaled backing
- * store. On a retina display that is twice the band, so every stub and label
+ * store. On a retina display that is twice the band, so every mark and label
  * drew at twice its x and the right half of the level fell off the edge. It
  * looked plausible: a strip of marks spanning the axis, just the wrong marks.
  *
  * `pointerEvents: none`, so every hit test still reaches the level's canvas
- * underneath. A stub IS clickable, and that hit test lives in the level's own
+ * underneath. A mark IS clickable, and that hit test lives in the level's own
  * pointer handlers (`offscreenMateHit`) rather than here: two hit paths over one
  * band is how a click comes to mean different things depending on which element
  * received it. That also means the pointer used the level's geometry while the
  * paint used the overlay's, so the bug above put the mark a reader saw and the
- * stub their click resolved in different places.
+ * mark their click resolved in different places.
  *
  * The SVG export runs the same draw through `SVGOffscreenMates`, sized from the
  * export's own width rather than from a canvas, so it was right throughout.
@@ -49,26 +53,18 @@ const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
   // read here rather than inside the draw: this is an observer, so what the
   // component reads while rendering is what re-renders it, and the draw closure
   // then changes identity exactly when the marks do
-  const stubs = offscreenMateStubs(model)
+  const strip = offscreenMateStrip(model)
 
-  return (
+  return strip ? (
     <OverlayCanvas
       data-testid="offscreen_mate_overlay"
       width={width}
       height={height}
       draw={ctx => {
-        for (const stub of stubs) {
-          drawOffscreenMates(ctx, {
-            ...stub,
-            width,
-            height,
-            color,
-            haloColor,
-          })
-        }
+        drawOffscreenMates(ctx, { ...strip, width, height, color, haloColor })
       }}
     />
-  )
+  ) : null
 })
 
 export default OffscreenMateOverlay

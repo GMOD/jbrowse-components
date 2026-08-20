@@ -5,13 +5,13 @@ import {
   drawOffscreenMates,
   offscreenMateColors,
 } from '../../LinearSyntenyDisplay/drawOffscreenMates.ts'
-import { offscreenMateStubs } from '../../LinearSyntenyViewHelper/offscreenMateStubs.ts'
+import { offscreenMateStrip } from '../../LinearSyntenyViewHelper/offscreenMateStrip.ts'
 
-import type { StubSource } from '../../LinearSyntenyViewHelper/offscreenMateStubs.ts'
+import type { OffscreenMateSource } from '../../LinearSyntenyViewHelper/offscreenMateStrip.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
 /**
- * The stubs for this level's off-screen mates, baked into the figure.
+ * The marks for this level's off-screen mates, baked into the figure.
  *
  * `showOffscreenMates` is a menu setting, so an export taken with it on has to
  * carry it — the same rule the color-by legend follows. Without this a figure
@@ -29,29 +29,27 @@ export default function SVGOffscreenMates({
   height,
   opts,
 }: {
-  level: StubSource
+  level: OffscreenMateSource
   width: number
   height: number
   opts?: PaintLayerOpts
 }) {
   const theme = useTheme()
-  const stubs = offscreenMateStubs(level)
+  const strip = offscreenMateStrip(level)
   // nothing to mark, so no layer at all: the raster branch would otherwise put
   // a full-band transparent PNG in every level of every export
-  return stubs.length > 0 ? (
+  return strip ? (
     <PaintLayer
       width={width}
       height={height}
       opts={opts}
       paint={ctx => {
-        for (const stub of stubs) {
-          drawOffscreenMates(ctx, {
-            ...stub,
-            width,
-            height,
-            ...offscreenMateColors(theme),
-          })
-        }
+        drawOffscreenMates(ctx, {
+          ...strip,
+          width,
+          height,
+          ...offscreenMateColors(theme),
+        })
       }}
     />
   ) : null

@@ -16,10 +16,10 @@ export interface ParentViewDuck {
   overdrawPx: number
   initPending: boolean
   pendingAutoDiagonalize: boolean
-  // paint the stubs for alignments whose mate is on a contig the facing row is
+  // paint the marks for alignments whose mate is on a contig the facing row is
   // not displaying — a repaint, never a refetch
   showOffscreenMates: boolean
-  // the same floor the ribbons are culled by, applied to the stubs so filtering
+  // the same floor the ribbons are culled by, applied to the marks so filtering
   // a hairball down does not leave a fringe of marks for what it hid
   minAlignmentLength: number
 }

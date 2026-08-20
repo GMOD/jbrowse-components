@@ -1,4 +1,4 @@
-import { offscreenMateHit, offscreenMateStubs } from './offscreenMateStubs.ts'
+import { offscreenMateHit, offscreenMateStrip } from './offscreenMateStrip.ts'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
@@ -34,29 +34,32 @@ function source(over: Record<string, unknown> = {}) {
 
 // The one mistake here that draws something plausible instead of nothing: these
 // have no position on the row below, so measuring them against its ruler puts
-// every stub at a believable wrong offset.
-test('stubs are measured against the query row, not the row below', () => {
-  const [stub] = offscreenMateStubs(source())
-  expect(stub).toMatchObject({ bpPerPx: 2, offsetPx: 10 })
+// every mark at a believable wrong offset.
+test('marks are measured against the query row, not the row below', () => {
+  expect(offscreenMateStrip(source())).toMatchObject({
+    bpPerPx: 2,
+    offsetPx: 10,
+  })
 })
 
 test('an interior level reads its own upper row', () => {
-  const [stub] = offscreenMateStubs(
-    source({
-      level: 1,
-      parentView: {
-        showOffscreenMates: true,
-        minAlignmentLength: 0,
-        views: [{ bpPerPx: 1, offsetPx: 1 }, QUERY_ROW, TARGET_ROW],
-      },
-    }),
-  )
-  expect(stub).toMatchObject({ bpPerPx: 2, offsetPx: 10 })
+  expect(
+    offscreenMateStrip(
+      source({
+        level: 1,
+        parentView: {
+          showOffscreenMates: true,
+          minAlignmentLength: 0,
+          views: [{ bpPerPx: 1, offsetPx: 1 }, QUERY_ROW, TARGET_ROW],
+        },
+      }),
+    ),
+  ).toMatchObject({ bpPerPx: 2, offsetPx: 10 })
 })
 
 test('the toggle off draws nothing', () => {
   expect(
-    offscreenMateStubs(
+    offscreenMateStrip(
       source({
         parentView: {
           showOffscreenMates: false,
@@ -65,41 +68,41 @@ test('the toggle off draws nothing', () => {
         },
       }),
     ),
-  ).toEqual([])
+  ).toBeUndefined()
 })
 
 test('a display that has not fetched contributes nothing', () => {
-  expect(offscreenMateStubs(source({ linearSyntenyDisplays: [{}] }))).toEqual(
-    [],
-  )
+  expect(
+    offscreenMateStrip(source({ linearSyntenyDisplays: [{}] })),
+  ).toBeUndefined()
 })
 
 test('a display with nothing hidden contributes nothing to draw', () => {
   expect(
-    offscreenMateStubs(
+    offscreenMateStrip(
       source({
         linearSyntenyDisplays: [{ featureData: { offscreenMates: mates(0) } }],
       }),
     ),
-  ).toEqual([])
+  ).toBeUndefined()
 })
 
 test('every display on the level is drawn, not just the first', () => {
   expect(
-    offscreenMateStubs(
+    offscreenMateStrip(
       source({
         linearSyntenyDisplays: [
           { featureData: { offscreenMates: mates(3) } },
           { featureData: { offscreenMates: mates(2) } },
         ],
       }),
-    ),
+    )?.datasets,
   ).toHaveLength(2)
 })
 
 test('a level whose row is gone draws nothing rather than throwing', () => {
   expect(
-    offscreenMateStubs(
+    offscreenMateStrip(
       source({
         parentView: {
           showOffscreenMates: true,
@@ -108,13 +111,13 @@ test('a level whose row is gone draws nothing rather than throwing', () => {
         },
       }),
     ),
-  ).toEqual([])
+  ).toBeUndefined()
 })
 
 // The strip the level's own handlers ask about before they ask the pick engine.
 // `offscreenMateAt` owns the geometry; what this adds is reading it across every
 // display on the level and against the level's width and height.
-test('a pointer in the strip answers the contig that stub points at', () => {
+test('a pointer in the strip answers the contig that mark points at', () => {
   expect(
     offscreenMateHit(
       {
