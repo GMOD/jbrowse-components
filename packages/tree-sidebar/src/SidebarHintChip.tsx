@@ -8,8 +8,6 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     zIndex: 100,
     padding: '1px 6px',
-    fontSize: 11,
-    lineHeight: '15px',
     borderBottomRightRadius: 4,
     color: theme.palette.text.secondary,
     background: theme.palette.background.paper,
@@ -20,6 +18,27 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     cursor: 'pointer',
+    // a real button, so the chip is reachable by Tab and dismissable by Enter
+    // or Space — as a div with onClick it could only be got rid of by mouse.
+    // `font` before the two that refine it: the shorthand resets both
+    font: 'inherit',
+    fontSize: 11,
+    lineHeight: '15px',
+    textAlign: 'left',
+    display: 'block',
+    // the dismiss affordance. Drawn rather than a child so the chip's text
+    // content stays the message, and the whole chip is the hit target anyway —
+    // a 7px glyph would be a worse one than the thing it sits on
+    '&::after': {
+      content: '" ✕"',
+      opacity: 0.6,
+    },
+    '&:hover': {
+      background: theme.palette.action.hover,
+    },
+    '&:hover::after': {
+      opacity: 1,
+    },
     // click-to-dismiss, and `TreeSidebar` portals this into the track overlay
     // node, which is pointer-events:none so it doesn't eat canvas events
     pointerEvents: 'auto',
@@ -39,6 +58,11 @@ const useStyles = makeStyles()(theme => ({
  * same corner — and because dismissal has to behave identically: neither is a
  * notification, both describe a condition that still holds, so clicking hides
  * this mount and nothing more.
+ *
+ * Getting rid of it is the one thing this has to be good at, since it sits over
+ * a row's own label: the whole chip is the button, it carries a ✕ so that reads
+ * as true before you hover it, and it is in the tab order for anyone not
+ * reaching for a mouse.
  *
  * `hint` undefined is the nothing-to-say state, and the chip stays mounted
  * through it, so a dismissal survives the condition going away and coming back.
@@ -61,7 +85,8 @@ export function SidebarHintChip({
   const { classes, cx } = useStyles()
   const [dismissed, setDismissed] = useState(false)
   return hint && !dismissed ? (
-    <div
+    <button
+      type="button"
       className={warning ? cx(classes.chip, classes.warning) : classes.chip}
       style={{ top, maxWidth }}
       data-testid={testId}
@@ -71,6 +96,6 @@ export function SidebarHintChip({
       }}
     >
       {hint.text}
-    </div>
+    </button>
   ) : null
 }

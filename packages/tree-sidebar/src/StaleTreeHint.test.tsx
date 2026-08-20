@@ -83,4 +83,14 @@ describe('StaleTreeHint', () => {
     fireEvent.click(hint!)
     expect(view.queryByTestId('stale_tree_hint')).toBeNull()
   })
+
+  // It sits over a row's own label, so getting rid of it must not require a
+  // mouse. A button rather than a clickable div is what puts it in the tab order
+  // and makes Enter and Space dismiss it, which jsdom does not simulate.
+  it('is a button, so the keyboard can dismiss it too', () => {
+    const { hint } = drawWithView({ root: buildTree('((c,a),b);') })
+    expect(hint!.tagName).toBe('BUTTON')
+    hint!.focus()
+    expect(document.activeElement).toBe(hint)
+  })
 })
