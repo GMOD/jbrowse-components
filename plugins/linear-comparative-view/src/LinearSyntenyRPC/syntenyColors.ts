@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/synteny-core'
 
 import {
+  KIND_BASE_TILE,
   KIND_CIGAR_MIN,
   KIND_MARKER,
 } from '../LinearSyntenyDisplay/shaders/syntenyTypes.generated.ts'
@@ -29,9 +30,14 @@ import type {
 // than by a comment asking for it.
 export const KIND_BASE = 0
 export { KIND_MARKER }
+// One match segment of a tiled ribbon (transparent-indel mode). Colors as
+// KIND_BASE — the `else` arm below is the one that paints both — and differs
+// only in the renderers' sub-pixel width fade; see thinWidthFade.
+export { KIND_BASE_TILE }
 // Boundary only — the `isCigar = kind >= KIND_CIGAR_MATCH` threshold. Never
-// emitted as an instance kind: buildSyntenyGeometry paints matches as KIND_BASE
-// (transparent mode) or leaves them to the feature's base (colored mode).
+// emitted as an instance kind: buildSyntenyGeometry paints matches as
+// KIND_BASE_TILE (transparent mode) or leaves them to the feature's base
+// (colored mode).
 export const KIND_CIGAR_MATCH = KIND_CIGAR_MIN
 export const KIND_CIGAR_I = KIND_CIGAR_MIN + 1
 export const KIND_CIGAR_D = KIND_CIGAR_MIN + 2

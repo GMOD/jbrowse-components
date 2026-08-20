@@ -243,13 +243,15 @@ export function drawSyntenyTrack(
     // fallback backend besides. But if a Canvas2D-only view ever measures slow
     // in curve mode, start here.
     //
-    // The BASE alpha fade is the shader's own `thinWidthFade` — a lone thin
-    // ribbon stays a faint locatable line while a whole-genome tangle fades
-    // instead of stacking hard full-opacity lines. CIGAR keeps full alpha
-    // (indel detail stays solid), as it does in fillFs. What is NOT
-    // shared is `perpW` itself: perpCoverage measures a per-fragment width from
-    // the two edges' own foreshortenings, this measures the whole ribbon's from
-    // its corners, and each is right for the decision it feeds.
+    // The alpha fade is the shader's own `thinWidthFade`, handed the same kind
+    // the fragment stage reads — a lone thin ribbon stays a faint locatable
+    // line while a whole-genome tangle fades instead of stacking hard
+    // full-opacity lines, CIGAR keeps full alpha, and a match tile fades by its
+    // own width so a tiled feature's stack of 1px strokes adds up to the
+    // feature. What is NOT shared is `perpW` itself: perpCoverage measures a
+    // per-fragment width from the two edges' own foreshortenings, this measures
+    // the whole ribbon's from its corners, and each is right for the decision
+    // it feeds.
     // Deliberate divergence: the clicked outline is drawn only on the fill
     // branch. The GPU edge pass has no thinness gate, but a sub-pixel ribbon's
     // two side edges coincide, so outlining one here would just overstrike the
@@ -257,7 +259,7 @@ export function drawSyntenyTrack(
     // place, so it can only be the clicked one after a zoom-out.
     if (ribbonMaxPerpWidth(c, height, drawCurves) < 1) {
       const perpW = ribbonPerpWidth(c, height)
-      const widthFade = thinWidthFade(perpW, fadeThinAlignments && !isCigar)
+      const widthFade = thinWidthFade(perpW, kind, fadeThinAlignments)
       style.stroke(ctx, r, g, b, fa * widthFade)
       strokeCenterline(ctx, c, yTop, height, drawCurves)
     } else {

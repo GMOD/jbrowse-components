@@ -1,5 +1,6 @@
 import {
   KIND_BASE,
+  KIND_BASE_TILE,
   KIND_CIGAR_D,
   KIND_CIGAR_I,
   KIND_CIGAR_MATCH,
@@ -11,6 +12,7 @@ import {
   hoverDarken,
   isCigarKind,
   isMarkerKind,
+  isTileKind,
   sBlend,
   thinWidthFade,
   yCurve,
@@ -161,9 +163,9 @@ function retiredWidthFade(perpW: number, applies: boolean) {
 
 test('thinWidthFade matches the max(perpW, floor) spelling it replaced', () => {
   for (const perpW of [0, 0.01, 0.14, 0.15, 0.16, 0.5, 0.999]) {
-    for (const applies of [false, true]) {
-      expect(thinWidthFade(perpW, applies)).toBeCloseTo(
-        retiredWidthFade(perpW, applies),
+    for (const fadeThin of [false, true]) {
+      expect(thinWidthFade(perpW, KIND_BASE, fadeThin)).toBeCloseTo(
+        retiredWidthFade(perpW, fadeThin),
         7,
       )
     }
@@ -173,13 +175,50 @@ test('thinWidthFade matches the max(perpW, floor) spelling it replaced', () => {
 test('the fade floors a hairline ribbon and caps at full opacity', () => {
   // Floor: a whole-genome PAF is almost entirely sub-pixel, and an unfloored
   // fade takes the whole view to nearly blank.
-  expect(thinWidthFade(0, true)).toBeCloseTo(0.15, 7)
-  expect(thinWidthFade(0.001, true)).toBeCloseTo(0.15, 7)
+  expect(thinWidthFade(0, KIND_BASE, true)).toBeCloseTo(0.15, 7)
+  expect(thinWidthFade(0.001, KIND_BASE, true)).toBeCloseTo(0.15, 7)
   // Cap: the shader calls this for wide ribbons too, where it must not brighten
   // them past 1. Canvas2D reaches it only below 1, so the cap is what lets the
   // two callers share one function.
-  expect(thinWidthFade(1, true)).toBe(1)
-  expect(thinWidthFade(50, true)).toBe(1)
+  expect(thinWidthFade(1, KIND_BASE, true)).toBe(1)
+  expect(thinWidthFade(50, KIND_BASE, true)).toBe(1)
+})
+
+test('an indel quad and a marker tick take no fade at all', () => {
+  for (const kind of [KIND_CIGAR_I, KIND_CIGAR_D, KIND_CIGAR_N, KIND_MARKER]) {
+    for (const fadeThin of [false, true]) {
+      expect(thinWidthFade(0.01, kind, fadeThin)).toBe(1)
+    }
+  }
+})
+
+// The three things that separate a match tile from the whole-span base it is
+// otherwise painted as. Each is what stops N tiles packed a perpendicular width
+// apart, every one of them drawn over a 1px minimum footprint, from compositing
+// to more ink than the one ribbon they partition.
+test('a match tile fades by its own width, unfloored and unswitchable', () => {
+  // Unswitchable: the display toggle is about whether each ALIGNMENT is drawn
+  // at full alpha, and a tile is not an alignment.
+  for (const fadeThin of [false, true]) {
+    expect(thinWidthFade(0.4, KIND_BASE_TILE, fadeThin)).toBeCloseTo(0.4, 7)
+  }
+  // Unfloored: a whole-ribbon floor keeps a lone hairline locatable, and a tile
+  // is locatable through its neighbours. Floored, 20 of these per pixel would
+  // stack to 2.3x the ink of the ribbon they tile.
+  expect(thinWidthFade(0.05, KIND_BASE_TILE, true)).toBeCloseTo(0.05, 7)
+  // Capped like every other kind — a tile wide enough to fill a pixel is a
+  // plain fill, and must not be brightened past it.
+  expect(thinWidthFade(9, KIND_BASE_TILE, true)).toBe(1)
+})
+
+test('the tile kind is its own kind, not a CIGAR or marker one', () => {
+  expect(isTileKind(KIND_BASE_TILE)).toBe(true)
+  for (const kind of [KIND_BASE, KIND_MARKER, KIND_CIGAR_I, KIND_CIGAR_D]) {
+    expect(isTileKind(kind)).toBe(false)
+  }
+  // It colors and outlines as a base ribbon, which is what these two decide.
+  expect(isCigarKind(KIND_BASE_TILE)).toBe(false)
+  expect(isMarkerKind(KIND_BASE_TILE)).toBe(false)
 })
 
 // --- the curve equivalence, checked instead of asserted in prose -------------

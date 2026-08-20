@@ -1472,6 +1472,9 @@ importers:
       '@jbrowse/display-test-utils':
         specifier: workspace:^
         version: link:../../packages/display-test-utils
+      canvas:
+        specifier: ^3.2.3
+        version: 3.2.3
 
   plugins/linear-genome-view:
     dependencies:

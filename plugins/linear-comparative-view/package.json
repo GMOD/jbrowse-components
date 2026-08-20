@@ -60,6 +60,7 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@jbrowse/display-test-utils": "workspace:^"
+    "@jbrowse/display-test-utils": "workspace:^",
+    "canvas": "^3.2.3"
   }
 }

@@ -13,8 +13,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 94 functions
-are inside the emitter's subset, of which **66 are exported**.
+Scanned 42 shaders with entry points. 95 functions
+are inside the emitter's subset, of which **67 are exported**.
 
 ## Candidates
 
@@ -48,7 +48,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
 | `ldFinalize` | `(f32, f32, f32, f32, f32, u32, u32) -> f32` | picks one metric for the heatmap; the CPU path returns r2 AND dprime because the tooltip shows both, so it has no single value to pick. Everything ldFinalize dispatches to is exported |
 | `ldGenotypeCovariance` | `(f32, f32, f32, f32) -> f32` | reached as a private helper inside the generated ldGenotypeD and ldGenotypeCorrelation, so it is already shared without being public |
-| `perpCoverage` | `(f32, f32, f32, f32, f32, bool, f32) -> f32` | measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function |
+| `perpCoverage` | `(f32, f32, f32, f32, f32, f32, bool, f32) -> f32` | measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function |
 | `pxToClipLen` | `(f32, f32) -> f32` | the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert |
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
 | `quadLocal` | `(u32) -> vec2f` | maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect |
@@ -107,6 +107,7 @@ is no longer shared with anything.
 | --- | --- |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
+| `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `normalizeDepthScalar` | tests only — `coverageNormalizeParity.test.ts` |
 | `normalizeScore` | tests only — `normalizeScoreParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |

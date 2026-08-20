@@ -15,6 +15,7 @@ import { syntenyPanBufferPx } from '@jbrowse/synteny-core'
 import { spanOutsideBand } from '../LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
 import {
   KIND_BASE,
+  KIND_BASE_TILE,
   KIND_CIGAR_D,
   KIND_CIGAR_I,
   KIND_CIGAR_N,
@@ -635,11 +636,17 @@ export function buildSyntenyGeometry({
   // *seamless* coverage needed every quad to tile perfectly (sub-pixel FP gaps
   // showed as stripes), whereas match segments only ever abut across a real
   // (>1px) indel — exactly where a gap is wanted.
+  //
+  // A match tile is KIND_BASE_TILE rather than KIND_BASE, which paints the same
+  // and fades differently: a tile is one of many packed a perpendicular width
+  // apart, so the renderers' 1px minimum footprint makes them overlap unless
+  // each carries its own width in its alpha. thinWidthFade is where that is
+  // spelled out.
   function cigarSegmentKind(op: number) {
     const isIndel = ((1 << op) & CIGAR_INDEL_MASK) !== 0
     // transparent: base color on matches only (indels stay see-through).
     // colored: indelKind per indel (undefined on matches -> the base covers).
-    const transparentKind = isIndel ? undefined : KIND_BASE
+    const transparentKind = isIndel ? undefined : KIND_BASE_TILE
     return drawCIGARMatchesOnly ? transparentKind : indelKind(op)
   }
 

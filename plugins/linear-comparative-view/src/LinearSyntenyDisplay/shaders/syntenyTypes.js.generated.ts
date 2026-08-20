@@ -24,6 +24,10 @@ export function isMarkerKind(kind: number): boolean {
   return (Math.abs((kind - 2.0)) < 0.5)
 }
 
+export function isTileKind(kind: number): boolean {
+  return (Math.abs((kind - 1.0)) < 0.5)
+}
+
 export function spanOutsideBand(lo: number, hi: number, w: number, pad: number): boolean {
   let _t0: boolean
   if ((hi < -pad)) {
@@ -59,7 +63,21 @@ export function hoverDarken(isHovered: boolean): number {
   return _t0
 }
 
-export function thinWidthFade(perpW: number, applies: boolean): number {
+export function thinWidthFade(perpW: number, kind: number, fadeThinAlignments: boolean): number {
+  if (isTileKind(kind)) {
+    return _min(perpW, 1.0)
+  }
+  let applies: boolean
+  if (!isCigarKind(kind)) {
+    applies = !isMarkerKind(kind)
+  } else {
+    applies = false
+  }
+  if (applies) {
+    applies = fadeThinAlignments
+  } else {
+    applies = false
+  }
   let _t0: number
   if (applies) {
     _t0 = _clamp(perpW, 0.15000000596046448, 1.0)

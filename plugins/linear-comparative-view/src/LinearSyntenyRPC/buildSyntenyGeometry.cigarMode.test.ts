@@ -1,7 +1,12 @@
 import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
-import { KIND_BASE, KIND_CIGAR_D, KIND_MARKER } from './syntenyColors.ts'
+import {
+  KIND_BASE,
+  KIND_BASE_TILE,
+  KIND_CIGAR_D,
+  KIND_MARKER,
+} from './syntenyColors.ts'
 
 // One feature, CIGAR M50 D50 M50 at bpPerPx=1. The deletion consumes the top
 // (query) axis but not the bottom (target) axis, so on the top axis it occupies
@@ -72,8 +77,10 @@ test('transparent indels: match segments only, deletion region left unpainted', 
   const ribbons = ribbonKinds(g)
 
   // No colored indel quads, and no full-span base — only per-match-segment
-  // KIND_BASE tiles.
-  expect(ribbons.every(e => e.k === KIND_BASE)).toBe(true)
+  // tiles, which carry their own kind precisely so the renderers can fade them
+  // by width where a whole-span base is not faded at all.
+  expect(ribbons.every(e => e.k === KIND_BASE_TILE)).toBe(true)
+  expect(ribbons.some(e => e.k === KIND_BASE)).toBe(false)
 
   // No instance covers bp 75 (mid-deletion) on the top axis: the indel shows
   // through. The two match runs [0,50] and [100,150] are drawn.

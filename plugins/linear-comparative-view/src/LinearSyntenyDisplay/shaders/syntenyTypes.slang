@@ -19,8 +19,8 @@
 // The two kind predicates are pure scalar decisions the Canvas2D renderer and
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
-//! js-export: isCigarKind, isMarkerKind, spanOutsideBand, markerTravelsTooFar, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
-//! export-consts: KIND_CIGAR_MIN, KIND_MARKER
+//! js-export: isCigarKind, isMarkerKind, isTileKind, spanOutsideBand, markerTravelsTooFar, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
+//! export-consts: KIND_CIGAR_MIN, KIND_MARKER, KIND_BASE_TILE
 //! js-skip: sBlendDeriv — the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative
 //! js-skip: yCurveDeriv — same as sBlendDeriv, the other half of the tangent
 //! js-skip: vertCoverage — the top/bottom antialiasing ramp, measured per fragment; Canvas2D gets its edge AA from the rasterizer
@@ -73,6 +73,15 @@ public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
 public static const float KIND_MARKER = 2.0;
 public bool isMarkerKind(float kind) { return abs(kind - KIND_MARKER) < 0.5; }
 
+// One match segment of a TILED ribbon. Transparent-indel mode paints a feature
+// as one quad per match segment instead of one full-span base, so the indels
+// between them stay see-through — `isTiled` in buildSyntenyGeometry.ts is what
+// emits these. Colored and picked exactly as KIND_BASE; the only thing this tag
+// changes is the width fade, which for a tile is a density term rather than a
+// display option (see thinWidthFade).
+public static const float KIND_BASE_TILE = 1.0;
+public bool isTileKind(float kind) { return abs(kind - KIND_BASE_TILE) < 0.5; }
+
 // Floor for the density-honest sub-pixel fade below (widthFade). Without a
 // floor, a whole-genome view with no minAlignmentLength filter (e.g. a raw
 // minimap2 PAF) is almost entirely sub-pixel-thin, so every ribbon fades
@@ -82,12 +91,39 @@ public bool isMarkerKind(float kind) { return abs(kind - KIND_MARKER) < 0.5; }
 public static const float WIDTH_FADE_FLOOR = 0.15;
 
 // The fade curve itself, as both backends apply it: identity unless the ribbon
-// is a fadeable BASE one, then its perpendicular width floored and capped.
-// `applies` is passed in rather than derived from `kind` because the two
-// callers reach the same answer by different routes — the fragment shader tests
-// the kind it was handed, while Canvas2D has already `continue`d past markers
-// and knows `isCigar` — and because the decision is a product one either way.
-public float thinWidthFade(float perpW, bool applies) {
+// is a fadeable one, then its perpendicular width capped at 1.
+//
+// A TILE fades unconditionally and with NO floor, and both differences are
+// arithmetic rather than taste. A sub-pixel ribbon paints a 1px band it does
+// not fill (perpCoverage's `expand`, and the Canvas2D centerline stroke that
+// stands in for it), so its alpha has to carry the width the band overstates —
+// that is what the fade is. For an untiled ribbon each feature lays down one
+// such band, so leaving the fade off just means "every alignment at full
+// alpha", which is a look someone can want. A tiled feature lays down one per
+// match segment, packed a perpendicular width apart, so the SAME 1px minimum
+// makes them overlap each other: at full alpha, N tiles per pixel composite to
+// 1-(1-a)^N instead of a. Measured on a ribbon sheared 9x its own height, that
+// was 2.75x the ink of the same feature in colored-indel mode, which reads as
+// the fans going dark on nothing but a change of CIGAR display mode.
+//
+// Fading each tile by its own width is what makes them add back up: N tiles of
+// width w over one pixel composite to 1-(1-w*a)^(1/w), just under `a`, at any
+// w. The FLOOR is what would break that again — it is there so a lone thin
+// ribbon stays locatable rather than fading toward invisible, and a tile is
+// locatable through the ribbon its neighbours build, so below the floor it
+// would only re-inflate the same product (0.05px tiles: 20 per pixel at a
+// floored 0.15 each, 2.3x). So the floor stays a whole-ribbon affordance.
+//
+// The kind is passed rather than a precomputed bool because the two callers
+// otherwise reach these three cases by different routes — the fragment shader
+// has the kind it was handed, while Canvas2D has already `continue`d past
+// markers — and this is the decision, not the conversion (adr-051).
+public float thinWidthFade(float perpW, float kind, bool fadeThinAlignments) {
+  if (isTileKind(kind)) {
+    return min(perpW, 1.0);
+  }
+  bool applies = !isCigarKind(kind) && !isMarkerKind(kind)
+              && fadeThinAlignments;
   return applies ? clamp(perpW, WIDTH_FADE_FLOOR, 1.0) : 1.0;
 }
 
@@ -263,9 +299,8 @@ public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
 // Perpendicular coverage cx for a fill fragment at screen X `x`. `edge0`/`edge1`
 // are the two ribbon edges at this y (screen X); `pf0`/`pf1` are EACH edge's own
 // slope foreshortening (sqrt(1+slope²) of that edge's tangent, not the
-// centerline's). `fadeApplies` is the caller's answer to "is this a fadeable BASE
-// ribbon" — see thinWidthFade for why that decision is passed rather than
-// re-derived from the kind here.
+// centerline's). `kind` and `fadeThin` are what thinWidthFade reads to decide
+// how much of a fade this fragment's ribbon takes.
 //
 // Using per-edge slopes is the fix for boundary fuzz on curved ribbons: the old
 // model measured distance from the centerline with one shared perpFactor, but
@@ -275,7 +310,7 @@ public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
 // opaque base in colored mode). Measuring each edge's own signed perpendicular
 // distance keeps the transition ~1px on both edges regardless of curvature.
 float perpCoverage(float x, float edge0, float edge1, float pf0, float pf1,
-                   bool fadeApplies, float aaHalf) {
+                   float kind, bool fadeThin, float aaHalf) {
   float xL = min(edge0, edge1);
   float xR = max(edge0, edge1);
   float pfL = (edge0 <= edge1) ? pf0 : pf1;
@@ -291,11 +326,11 @@ float perpCoverage(float x, float edge0, float edge1, float pf0, float pf1,
   float expand = max(0.5 - 0.5 * perpW, 0.0);
   dL += expand;
   dR += expand;
-  // Density-honest sub-pixel fade, BASE ribbons only — see thinWidthFade. The
-  // per-fragment perpW here and the whole-ribbon one Canvas2D measures from the
-  // corners are deliberately different quantities; the fade curve applied to
-  // them is not, so only that is shared.
-  float widthFade = thinWidthFade(perpW, fadeApplies);
+  // Density-honest sub-pixel fade — see thinWidthFade. The per-fragment perpW
+  // here and the whole-ribbon one Canvas2D measures from the corners are
+  // deliberately different quantities; the fade curve applied to them is not,
+  // so only that is shared.
+  float widthFade = thinWidthFade(perpW, kind, fadeThin);
   // Per-edge AA, one output pixel each. dL/dR are
   // constructed as TRUE perpendicular distances — each divided by its own edge's
   // foreshortening — so the ramp width is a known constant at every slope rather
@@ -515,16 +550,14 @@ public void fillVsEmit(inout FillVsOut o, float vx, float y, Uniforms u) {
 //
 // BASE ribbons and CIGAR indel tiles run the identical analytic per-edge AA, so
 // both trace the smooth bezier edges with antialiased rather than stair-stepped
-// sides. The ONLY thing the kind decides here is whether the density width-fade
-// applies, which is what `fadeApplies` carries into perpCoverage.
+// sides. The ONLY thing the kind decides here is how much of the density
+// width-fade applies, which thinWidthFade answers inside perpCoverage.
 public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   FillEdges e = fillEdges(i.corners, s, sd, dydt);
   float aaHalf = aaHalfPx(u.devicePixelRatio);
-  bool fadeApplies = !isCigarKind(i.kind) && !isMarkerKind(i.kind)
-                  && u.fadeThinAlignments >= 0.5;
   float coverage =
-    perpCoverage(i.localPos.x, e.edge0, e.edge1, e.pf0, e.pf1, fadeApplies,
-                 aaHalf)
+    perpCoverage(i.localPos.x, e.edge0, e.edge1, e.pf0, e.pf1, i.kind,
+                 u.fadeThinAlignments >= 0.5, aaHalf)
     * vertCoverage(i.localPos.y, u.height, aaHalf);
   if (coverage <= 0.0) {
     discard;
