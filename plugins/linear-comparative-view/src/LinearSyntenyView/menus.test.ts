@@ -47,15 +47,18 @@ describe('rowSyncMenuItems', () => {
   test('exactly one mode is checked at a time', () => {
     const modes = [
       'Independent',
-      'Link - rows move together by pixels',
-      'Follow - rows move to what aligns to the anchor',
+      'Locked together - rows move together pixel-by-pixel',
+      'Follow - auto-aligns views together based on visible features',
     ]
     for (const [state, expected] of [
       [{}, 'Independent'],
-      [{ linkViews: true }, 'Link - rows move together by pixels'],
+      [
+        { linkViews: true },
+        'Locked together - rows move together pixel-by-pixel',
+      ],
       [
         { followSynteny: true },
-        'Follow - rows move to what aligns to the anchor',
+        'Follow - auto-aligns views together based on visible features',
       ],
     ] as const) {
       const { subMenu } = build(state)
@@ -66,14 +69,17 @@ describe('rowSyncMenuItems', () => {
   })
 
   test('the two couplings say how they differ in the label itself', () => {
-    // by pixels vs by the alignment is the whole distinction, and bare "Link"
-    // next to bare "Follow" does not carry it
+    // by pixels vs by the alignment is the whole distinction, and two bare
+    // names next to each other do not carry it
     const { subMenu } = build()
-    const labels = subMenu.flatMap(i =>
-      'label' in i && typeof i.label === 'string' ? [i.label] : [],
+    const coupled = subMenu.flatMap(i =>
+      'label' in i && typeof i.label === 'string' && i.label !== 'Independent'
+        ? [i.label]
+        : [],
     )
-    expect(labels.find(l => l.startsWith('Link'))).toMatch(/pixel/)
-    expect(labels.find(l => l.startsWith('Follow'))).toMatch(/align/)
+    expect(coupled).toHaveLength(2)
+    expect(coupled.filter(l => l.includes('pixel'))).toHaveLength(1)
+    expect(coupled.filter(l => l.includes('align'))).toHaveLength(1)
     expect(subMenu.every(i => !('subLabel' in i && i.subLabel))).toBe(true)
   })
 
@@ -104,7 +110,7 @@ describe('rowSyncMenuItems', () => {
     const { subMenu, calls } = build()
     labelled(
       subMenu,
-      'Follow - rows move to what aligns to the anchor',
+      'Follow - auto-aligns views together based on visible features',
     )?.onClick?.()
     expect(calls).toEqual(['follow'])
   })

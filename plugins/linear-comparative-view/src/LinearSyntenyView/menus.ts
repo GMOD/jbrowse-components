@@ -190,13 +190,16 @@ interface RowSyncModel {
 
 const ROW_SYNC_MODES = [
   { value: 'independent', label: 'Independent' },
-  { value: 'link', label: 'Link - rows move together by pixels' },
+  {
+    value: 'link',
+    label: 'Locked together - rows move together pixel-by-pixel',
+  },
   {
     // "matching", not "syntenic", because at whole-genome zoom a CIGAR-less
     // tier is interpolated across the block rather than walked — close enough
     // to follow by, not a base-level correspondence
     value: 'follow',
-    label: 'Follow - rows move to what aligns to the anchor',
+    label: 'Follow - auto-aligns views together based on visible features',
   },
 ] as const
 
@@ -207,8 +210,8 @@ const ROW_SYNC_MODES = [
  * and a synteny follow disagree about where a row belongs the moment an indel
  * separates them, and with both on the row is placed twice per pan. The two
  * couplings are told apart by their dash clauses and nothing else — the whole
- * difference is *by pixels* vs *by the alignment*, which bare "Link" and
- * "Follow" do not carry.
+ * difference is *by pixels* vs *by the alignment*, which two bare
+ * names next to each other do not carry.
  *
  * ONE SUBMENU, ANCHOR ROWS INLINE UNDER A SUBHEADER, rather than a nested
  * "Anchor row" submenu: which row drives is half of what there is to set here,
@@ -225,7 +228,7 @@ export function rowSyncMenuItems(model: RowSyncModel): MenuItem[] {
   const mode = followSynteny ? 'follow' : linkViews ? 'link' : 'independent'
   return [
     {
-      label: 'Row sync',
+      label: 'Link views',
       icon: LinkIcon,
       subMenu: [
         ...radioItems(ROW_SYNC_MODES, mode, m => {
