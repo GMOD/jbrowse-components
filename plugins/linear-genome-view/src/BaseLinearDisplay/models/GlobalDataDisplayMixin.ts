@@ -2,7 +2,6 @@ import {
   assertDisplayContract,
   makeRetryContractCheck,
 } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
-import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
@@ -245,14 +244,6 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     name: string
   },
 ) {
-  // Leading-edge on the *first* fetch, trailing-edge (debounced) after, so
-  // track-open doesn't spend a full `delay` waiting for no interaction to
-  // coalesce (HiC additionally can't fetch until `CoreGetInfo` resolves, so the
-  // delay would stack on that RTT). Priming only once a fetch has actually run
-  // means the handful of pre-fetch runs (view-init, resolution-list-arrives)
-  // stay immediate while zoom/pan refetches after it debounce exactly as
-  // `{ delay }` did. See leadingEdgeDebounce for why MobX's own `{ delay }`
-  // can't do this.
   // Same dev-only contract check the per-region foundation runs from its
   // `afterAttach`. This is that family's equivalent install point, and the
   // check matters at least as much here: `rpcPropsCacheKey` below is this
@@ -264,7 +255,6 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
   // the run reaches a fetch. See makeRetryContractCheck.
   const noteFetchAutorunRun = makeRetryContractCheck(self)
 
-  const debounce = leadingEdgeDebounce(opts.delay)
   autorunOnReadyView(
     self,
     view => {
@@ -296,22 +286,20 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
       // `regionTooLarge` as a literal false, so it is never true here.
       if (self.gateSkipsMeasuredViewport) {
         noteFetchAutorunRun('gated')
-        return
+        return false
       }
 
       // The only gate below the skeleton's is the display's own `prepare`, and
       // it is one function rather than a gate plus a bail-out prefix: the two
       // used to answer the same question in two places, one tracked and one not.
-      const fetching = runGlobalFetch(self, opts)
-      const started = fetching !== undefined
+      const started = runGlobalFetch(self, opts) !== undefined
       noteFetchAutorunRun(started ? 'fetched' : 'declined')
-      if (started) {
-        debounce.prime()
-      }
+      // arms the debounce — the pre-fetch runs (view-init, the resolution list
+      // arriving) return false and stay on the leading edge, so track-open
+      // never spends a full `delay` with nothing to coalesce. HiC would
+      // otherwise stack it on the `CoreGetInfo` round trip.
+      return started
     },
-    {
-      scheduler: debounce.scheduler,
-      name: opts.name,
-    },
+    { name: opts.name, delay: opts.delay },
   )
 }

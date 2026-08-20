@@ -1,10 +1,10 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { IAutorunOptions } from 'mobx'
 
 // This ESM package builds without @types/node, but consuming bundlers
 // (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
@@ -19,21 +19,27 @@ declare const process: { env: { NODE_ENV?: string } }
  * reads them must not run yet. `initialized` is observable, so the body re-runs
  * automatically the moment the view becomes ready. The view is passed in so
  * callers don't re-fetch it.
+ *
+ * **`delay` is leading-edge**, not MobX's trailing-edge `{ delay }`: the first
+ * run is immediate and the debounce arms only once the body returns `true`.
+ * A pre-init run therefore costs nothing rather than a full delay, which is
+ * also why the not-initialized branch cannot report work. See
+ * {@link leadingEdgeAutorun}.
  */
 export function autorunOnReadyView(
   self: IAnyStateTreeNode,
-  fn: (view: LinearGenomeViewModel) => void,
-  opts?: IAutorunOptions,
+  fn: (view: LinearGenomeViewModel) => boolean | void,
+  { name, delay }: { name: string; delay?: number },
 ) {
-  addDisposer(
-    self,
-    autorun(() => {
-      const view = getContainingView(self) as LinearGenomeViewModel
-      if (view.initialized) {
-        fn(view)
-      }
-    }, opts),
-  )
+  const body = () => {
+    const view = getContainingView(self) as LinearGenomeViewModel
+    return view.initialized ? fn(view) : false
+  }
+  if (delay === undefined) {
+    addDisposer(self, autorun(body, { name }))
+  } else {
+    leadingEdgeAutorun(self, body, { name, delay })
+  }
 }
 
 /**

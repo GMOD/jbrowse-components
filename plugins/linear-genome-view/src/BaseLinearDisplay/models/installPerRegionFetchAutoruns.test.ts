@@ -37,7 +37,7 @@ function expectFetchErrorLogged() {
   }
 }
 
-function setup(opts?: { measuresBytes?: boolean }) {
+function setup(opts?: { measuresBytes?: boolean; estimateBytes?: number }) {
   const env = createPerRegionTestEnvironment(opts)
   const created = env.createDisplay() as {
     display: PerRegionTestDisplay
@@ -285,22 +285,24 @@ describe('DisplayedRegionsChange', () => {
 // too-large region stores nothing and the fetchGeneration bump re-fires the
 // autorun. Only canvas's own suite covered this before.
 describe('the too-large gate re-measures once per settled viewport', () => {
-  function overBudget(control: { estimateBytes: number }) {
-    // comfortably past the default fetchSizeLimit
-    control.estimateBytes = 1_000_000_000
-  }
+  // comfortably past the default fetchSizeLimit
+  const OVER_BUDGET = 1_000_000_000
 
   it('raises the banner and stops before any features are fetched', async () => {
-    const { display, control } = setup({ measuresBytes: true })
-    overBudget(control)
+    const { display } = setup({
+      measuresBytes: true,
+      estimateBytes: OVER_BUDGET,
+    })
     await quiet(display)
     expect(display.regionTooLarge).toBe(true)
     expect(display.loadedRegions.size).toBe(0)
   })
 
   it('does not re-measure while the viewport holds still', async () => {
-    const { display, control } = setup({ measuresBytes: true })
-    overBudget(control)
+    const { display, control } = setup({
+      measuresBytes: true,
+      estimateBytes: OVER_BUDGET,
+    })
     await quiet(display)
     const measured = control.estimateCalls
     expect(await quiet(display)).toBe(display.fetchLog.length)
@@ -308,8 +310,10 @@ describe('the too-large gate re-measures once per settled viewport', () => {
   })
 
   it('re-measures once the viewport moves under it', async () => {
-    const { display, view, control } = setup({ measuresBytes: true })
-    overBudget(control)
+    const { display, view, control } = setup({
+      measuresBytes: true,
+      estimateBytes: OVER_BUDGET,
+    })
     await quiet(display)
     const measured = control.estimateCalls
 
@@ -319,8 +323,10 @@ describe('the too-large gate re-measures once per settled viewport', () => {
   })
 
   it('releases the banner when the new measurement fits', async () => {
-    const { display, view, control } = setup({ measuresBytes: true })
-    overBudget(control)
+    const { display, view, control } = setup({
+      measuresBytes: true,
+      estimateBytes: OVER_BUDGET,
+    })
     await quiet(display)
     expect(display.regionTooLarge).toBe(true)
 
@@ -332,8 +338,10 @@ describe('the too-large gate re-measures once per settled viewport', () => {
   })
 
   it('force-load exempts the track and the data lands', async () => {
-    const { display, control } = setup({ measuresBytes: true })
-    overBudget(control)
+    const { display } = setup({
+      measuresBytes: true,
+      estimateBytes: OVER_BUDGET,
+    })
     await quiet(display)
     expect(display.regionTooLarge).toBe(true)
 

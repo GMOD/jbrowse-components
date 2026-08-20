@@ -35,8 +35,8 @@ carte:
   SVG export section).
 - `createStopTokenRotation` (core) does latest-wins token rotation plus the
   `isCurrent()` guard every post-await write is gated on.
-- The debounce is `leadingEdgeDebounce`, the same scheduler
-  `installGlobalFetchAutorun` uses.
+- The autorun is `leadingEdgeAutorun`, the same leading-edge scheduler the
+  other two fetch installers run on.
 
 `installComparativeFetchAutorun` (`@jbrowse/synteny-core`) welds those together
 with the loading/error flags and the refName rename into one skeleton both

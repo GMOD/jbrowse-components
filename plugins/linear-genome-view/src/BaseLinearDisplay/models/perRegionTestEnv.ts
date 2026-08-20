@@ -170,19 +170,28 @@ export type PerRegionTestDisplay = Instance<ReturnType<typeof makeStateModel>>
 export function createPerRegionTestEnvironment({
   measuresBytes = false,
   gate,
+  estimateBytes = 100,
   ...opts
 }: Partial<Parameters<typeof createDisplayTestEnvironment>[0]> & {
   /** shorthand for `gate: { measuresBytesPreFlight: true }` */
   measuresBytes?: boolean
   /** which of the gate's opt-in hooks the display overrides */
   gate?: GateOptIns
+  /**
+   * What `CoreGetRegionByteEstimate` answers, set before the display exists.
+   * A test that wants the banner has to pass it here rather than raise
+   * `control.estimateBytes` afterwards: the fetch autorun is leading-edge, so
+   * the first fetch runs the moment the display attaches, and a later write
+   * would be measuring a display that had already loaded at the default.
+   */
+  estimateBytes?: number
 } = {}) {
   const control: PerRegionTestControl = {
     cacheValidCalls: 0,
     staleAnswers: 0,
     failNextFetch: false,
     fetchDelayMs: 0,
-    estimateBytes: 100,
+    estimateBytes,
     estimateCalls: 0,
     densityTooLarge: false,
   }

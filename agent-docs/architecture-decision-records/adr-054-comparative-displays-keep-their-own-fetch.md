@@ -86,7 +86,7 @@ MST's type-inference depth budget.
 ADR-041's conclusion is that cross-cutting display policy at this level is a
 plain function, not a mixin. Everything drift-prone here already is one:
 `isDataCurrent`, `computeSvgReady`, `displaysSettled`, `createStopTokenRotation`,
-`createStatusThrottle`, `leadingEdgeDebounce`, `syntenyFetchRegions`,
+`createStatusThrottle`, `leadingEdgeAutorun`, `syntenyFetchRegions`,
 `swappedAssembliesWarning`, and the entire `installComparativeFetchAutorun`
 skeleton — which already owns token rotation, debounce, loading/error flags,
 refName reconciliation and the commit-only-if-current rule.

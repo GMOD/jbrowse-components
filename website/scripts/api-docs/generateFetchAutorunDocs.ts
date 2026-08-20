@@ -170,7 +170,8 @@ export function collectAutoruns(): Autorun[] {
 
 // The count leads the table, so "the five autoruns" can't outlive a sixth. The
 // debounce rides the trigger cell for the same reason: 600 is a number in the
-// source, not one to retype.
+// source, not one to retype. It reads "immediate, then debounced" because
+// `autorunOnReadyView`'s `delay` is leading-edge — see leadingEdgeAutorun.
 function render(autoruns: Autorun[]) {
   const count = COUNTS[autoruns.length] ?? String(autoruns.length)
   return [
@@ -181,7 +182,7 @@ function render(autoruns: Autorun[]) {
       autoruns.map(
         a =>
           `| \`${a.name}\` | ${a.firesOn}${
-            a.delay ? ` (debounced ${a.delay} ms)` : ''
+            a.delay ? ` (immediate, then debounced ${a.delay} ms)` : ''
           } | ${a.action} |`,
       ),
     ),

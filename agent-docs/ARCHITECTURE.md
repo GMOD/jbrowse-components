@@ -24,7 +24,7 @@ collected under [See also](#see-also) at the end.
   (per region, its own autoruns) and `GlobalFetchMixin` (one dataset, display
   installs its own autorun). The non-LGV views (synteny, dotplot) compose
   neither: they run a bare fetch autorun over shared parts —
-  `SyntenyFetchStateMixin`, `createStopTokenRotation`, `leadingEdgeDebounce`,
+  `SyntenyFetchStateMixin`, `createStopTokenRotation`, `leadingEdgeAutorun`,
   `isDataCurrent`.
 - Every display answers one `displayPhase` getter naming its terminal state —
   `loading` / `error` / `tooLarge` / `ready`, plus `renderError` where there is a
@@ -467,7 +467,7 @@ which is the thing to read before re-proposing it. Both comparative displays
 (`LinearSyntenyDisplay`, `DotplotDisplay`) compose `BaseDisplay` +
 `SyntenyFetchStateMixin` (`@jbrowse/synteny-core`) and own their fetch in a bare
 autorun, assembled from shared parts — `createStopTokenRotation`,
-`leadingEdgeDebounce`, `isDataCurrent`, `syntenyFetchRegions` — that
+`leadingEdgeAutorun`, `isDataCurrent`, `syntenyFetchRegions` — that
 `installComparativeFetchAutorun` welds into one skeleton. And both put their
 `RenderLifecycleMixin` *above* the display, so one canvas is shared by several
 displays and is laid out by the model that owns it.
@@ -641,7 +641,7 @@ call to `installPerRegionFetchAutoruns`, which installs these:
 | Autorun | Fires on | Action |
 | --- | --- | --- |
 | `DisplayedRegionsChange` | `view.displayedRegions` changes | `clearAllRpcData()` **+ `clearByteEstimate()`** — one of the two places the cached byte estimate is dropped (the other is a tier swap) |
-| `FetchVisibleRegions` | the viewport, `fetchGeneration` after a fetch ends, or `reloadCounter` on a user retry (debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
+| `FetchVisibleRegions` | the viewport, `fetchGeneration` after a fetch ends, or `reloadCounter` on a user retry (immediate, then debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
 | `SettingsInvalidate` | `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()` |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself |
 

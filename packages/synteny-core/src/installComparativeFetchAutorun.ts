@@ -4,10 +4,9 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
-import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
+import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
 
 import { renameRegionsForAdapter } from './renameRegionsForAdapter.ts'
 
@@ -97,76 +96,77 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
   assertDisplayContract(self, `${name}'s installComparativeFetchAutorun`)
 
   const fetch = createStopTokenRotation(self, self)
-  // Leading edge on the first fetch, debounced after. MobX's own `{ delay }`
-  // schedules even the initial run, so opening a view waited a full `delay`
-  // before the RPC started with nothing to coalesce. Priming after the fetch
-  // begins keeps the runs `prepare` bails on (pre-init, minimized) on the
-  // leading edge, so the first real fetch is immediate while zoom/pan
-  // refetches debounce as before.
-  const debounce = leadingEdgeDebounce(delay)
 
-  addDisposer(
+  // The awaits live in here, not in the autorun body. An async autorun stops
+  // tracking at its first await, so a read moved below one silently leaves the
+  // dependency set — and every read that decides anything here is already above
+  // the first await. Splitting says so structurally rather than by luck.
+  async function runFetch(args: TArgs) {
+    const { adapterConfig } = self
+    const { stopToken, isCurrent, statusCallback, end } = fetch.begin()
+    // clear any prior error as the new fetch begins, so a stale banner
+    // never lingers over freshly-loaded data
+    self.setError(undefined)
+    self.setFetching(true)
+    try {
+      const sessionId = getRpcSessionId(self)
+      const { assemblyManager } = getSession(self)
+      const result = await run(args, {
+        adapterConfig,
+        sessionId,
+        stopToken,
+        statusCallback,
+        assemblyManager,
+        rename: regions =>
+          renameRegionsForAdapter({
+            assemblyManager,
+            sessionId,
+            adapterConfig,
+            regions,
+          }),
+      })
+      if (isCurrent()) {
+        commit(result, args)
+      }
+    } catch (e) {
+      if (isCurrent() && !isAbortException(e)) {
+        console.error(e)
+        self.setError(e)
+      }
+    } finally {
+      // the fetching flag under the staleness guard, the status through
+      // `end()` — which closes that guard, so it goes last
+      if (isCurrent()) {
+        self.setFetching(false)
+      }
+      end()
+    }
+  }
+
+  leadingEdgeAutorun(
     self,
-    autorun(
-      async function comparativeFetchAutorun() {
-        // Tracked unconditionally, and BEFORE the `prepare()` bail-outs: after
-        // an error every fetch input is unchanged, so `prepare` recomputes the
-        // same key and nothing refires the autorun — `reload()` bumping this is
-        // the only thing that can. Reading it here rather than inside each
-        // display's `prepare` is what makes the error banner's Retry real for
-        // both of them at once. (`void` because the value is never used; the
-        // read is the point.)
-        void self.reloadCounter
-        // Teardown mutates observables `prepare` reads before the disposers
-        // run, and getContainingView on a detached node warns then throws —
-        // here into an unawaited promise.
-        const args = isAlive(self) ? prepare() : undefined
-        if (args !== undefined) {
-          const { adapterConfig } = self
-          const { stopToken, isCurrent, statusCallback, end } = fetch.begin()
-          // clear any prior error as the new fetch begins, so a stale banner
-          // never lingers over freshly-loaded data
-          self.setError(undefined)
-          self.setFetching(true)
-          debounce.prime()
-
-          try {
-            const sessionId = getRpcSessionId(self)
-            const { assemblyManager } = getSession(self)
-            const result = await run(args, {
-              adapterConfig,
-              sessionId,
-              stopToken,
-              statusCallback,
-              assemblyManager,
-              rename: regions =>
-                renameRegionsForAdapter({
-                  assemblyManager,
-                  sessionId,
-                  adapterConfig,
-                  regions,
-                }),
-            })
-            if (isCurrent()) {
-              commit(result, args)
-            }
-          } catch (e) {
-            if (isCurrent() && !isAbortException(e)) {
-              console.error(e)
-              self.setError(e)
-            }
-          } finally {
-            // the fetching flag under the staleness guard, the status through
-            // `end()` — which closes that guard, so it goes last
-            if (isCurrent()) {
-              self.setFetching(false)
-            }
-            end()
-          }
-        }
-      },
-      { name, scheduler: debounce.scheduler },
-    ),
+    function comparativeFetchAutorun() {
+      // Tracked unconditionally, and BEFORE the `prepare()` bail-outs: after
+      // an error every fetch input is unchanged, so `prepare` recomputes the
+      // same key and nothing refires the autorun — `reload()` bumping this is
+      // the only thing that can. Reading it here rather than inside each
+      // display's `prepare` is what makes the error banner's Retry real for
+      // both of them at once. (`void` because the value is never used; the
+      // read is the point.)
+      void self.reloadCounter
+      // Teardown mutates observables `prepare` reads before the disposers
+      // run, and getContainingView on a detached node warns then throws.
+      const args = isAlive(self) ? prepare() : undefined
+      if (args === undefined) {
+        return false
+      }
+      void runFetch(args)
+      // arms the debounce; the runs `prepare` bails on (pre-init, minimized)
+      // return false and stay on the leading edge, so the first real fetch is
+      // immediate while zoom/pan refetches debounce
+      return true
+    },
+    { name, delay },
   )
 
   addDisposer(self, () => {

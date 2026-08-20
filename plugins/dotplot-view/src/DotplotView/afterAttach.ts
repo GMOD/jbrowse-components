@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/core/util/applyInitSettings'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
-import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
+import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
 import { autorun, reaction, when } from 'mobx'
@@ -430,25 +430,23 @@ function setupRegionsAutorun(self: DotplotViewModel) {
   // is trustworthy on the first run: useWidthSetter only ever reports a
   // laid-out, non-zero content-box width. Later runs (setAssemblyNames clears
   // the regions to force a re-init) still debounce.
-  const debounce = leadingEdgeDebounce(1000)
-  addDisposer(
+  leadingEdgeAutorun(
     self,
-    autorun(
-      function dotplotRegionsAutorun() {
-        // assemblyNames.length > 0 both tracks the array (so MobX re-runs when
-        // names change) and guards against vacuous truth from every() on an
-        // empty array after clearView().
-        if (
-          self.volatileWidth !== undefined &&
-          self.assemblyNames.length > 0 &&
-          self.assembliesInitialized
-        ) {
-          self.initializeDisplayedRegions()
-          debounce.prime()
-        }
-      },
-      { name: 'DotplotRegions', scheduler: debounce.scheduler },
-    ),
+    function dotplotRegionsAutorun() {
+      // assemblyNames.length > 0 both tracks the array (so MobX re-runs when
+      // names change) and guards against vacuous truth from every() on an
+      // empty array after clearView().
+      if (
+        self.volatileWidth !== undefined &&
+        self.assemblyNames.length > 0 &&
+        self.assembliesInitialized
+      ) {
+        self.initializeDisplayedRegions()
+        return true
+      }
+      return false
+    },
+    { name: 'DotplotRegions', delay: 1000 },
   )
 }
 

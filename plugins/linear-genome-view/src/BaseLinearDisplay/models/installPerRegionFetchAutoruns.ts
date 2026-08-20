@@ -168,8 +168,12 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
         // synchronous prefix has run by the time it hands back a promise, and
         // reaching `FetchMixin.runFetch` is what every one of them does there.
         self.fetchNeeded(plan.needed)
-        noteFetchAutorunRun(takeFetchStarted(self) ? 'fetched' : 'declined')
-        return
+        const started = takeFetchStarted(self)
+        noteFetchAutorunRun(started ? 'fetched' : 'declined')
+        // arms the debounce, and only here: a run that planned nothing, or an
+        // override that declined inside `fetchNeeded`, has coalesced nothing
+        // and must stay on the leading edge
+        return started
       }
 
       if (plan.kind === 'assemblyMismatch') {
@@ -179,6 +183,7 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
       // `retryOutcomeForPlan` says which, in one place rather than at each of
       // the five returns that used to carry its own call.
       noteFetchAutorunRun(retryOutcomeForPlan(plan))
+      return false
     },
     // the debounce stays a literal here: `generateFetchAutorunDocs` reads it off
     // this call to write the docs' autorun table, so a named constant would put
