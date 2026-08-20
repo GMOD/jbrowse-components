@@ -82,6 +82,47 @@ function trimToCount(
   }
 }
 
+// Upper bound on the segments `buildLineSegments` can emit: one per feature,
+// plus what its CIGAR can contribute.
+//
+// TAKEN AGAINST THE PIXELS AS WELL AS THE OPS, which is the whole of this
+// function. `visitCigarRenderedSegments` emits at most one segment per packed
+// op, but it also emits only once either axis has advanced past a pixel, so a
+// feature's emissions are bounded by its two on-screen widths no matter how many
+// ops it carries — the same pair of bounds `buildSyntenyGeometry`'s
+// `cigarBudget` takes the min of. Counting ops alone reserved a slot per op: one
+// 40Mb block with a 1M-op CIGAR across a 1400px axis asked for 1,000,001 slots
+// (37MB over the six lanes) to emit 1,399 segments, and a liftOver chain block
+// is exactly that shape.
+//
+// Summed per feature rather than as one min over the totals, because that is the
+// tighter of the two and costs a loop over `count` reading lanes already in
+// memory.
+//
+// `+ 4` is slack for the visitor's final flush and for the segments' floating
+// point not summing to exactly the corner span. It matters because the emit
+// drops silently past capacity, and it is why this is exported: a test that
+// recomputed the bound could not notice this one moving.
+export function segmentCapacity(
+  data: Pick<DotplotRpcData, 'p11' | 'p12' | 'p21' | 'p22' | 'cigarOffsets'>,
+  drawCigar: boolean,
+  bpPerPxHInv: number,
+  bpPerPxVInv: number,
+) {
+  const { p11, p12, p21, p22, cigarOffsets } = data
+  const count = p11.length
+  let capacity = count
+  if (drawCigar) {
+    for (let i = 0; i < count; i++) {
+      const ops = cigarOffsets[i + 1]! - cigarOffsets[i]!
+      const wH = Math.abs(p12[i]! - p11[i]!) * bpPerPxHInv
+      const wV = Math.abs(p22[i]! - p21[i]!) * bpPerPxVInv
+      capacity += Math.min(ops, Math.ceil(wH + wV) + 4)
+    }
+  }
+  return capacity
+}
+
 export function buildLineSegments(
   data: DotplotRpcData,
   drawCigar: boolean,
@@ -105,9 +146,7 @@ export function buildLineSegments(
   const bpPerPxHInv = 1 / bpPerPxH
   const bpPerPxVInv = 1 / bpPerPxV
 
-  // Upper bound: one segment per feature, plus one per CIGAR op if drawing.
-  // visitCigarRenderedSegments emits at most one segment per packed op.
-  const maxSegments = count + (drawCigar ? cigarData.length : 0)
+  const maxSegments = segmentCapacity(data, drawCigar, bpPerPxHInv, bpPerPxVInv)
 
   const buf = allocBuffers(maxSegments)
   let n = 0
@@ -148,8 +187,15 @@ export function buildLineSegments(
         cigarWalkRev1(x1, x2, strand),
         cigarWalkRev2(y1, y2, strand),
         (op, seg1Start, seg1End, seg2Start, seg2End) => {
-          writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, i, op)
-          n++
+          // The bound above is strict, so this never trips. It is here because
+          // the failure mode otherwise is silent and far away: a typed-array
+          // write past the end is a no-op while `n` keeps counting, so
+          // `trimToCount` would hand the renderer a short array and every read
+          // past the end would project as NaN.
+          if (n < maxSegments) {
+            writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, i, op)
+            n++
+          }
         },
       )
     } else {

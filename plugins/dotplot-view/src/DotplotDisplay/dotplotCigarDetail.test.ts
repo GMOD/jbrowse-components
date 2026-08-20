@@ -3,7 +3,7 @@ import {
   cigarWorthParsing,
   segmentCigarOp,
 } from './dotplotCigarDetail.ts'
-import { buildLineSegments } from './dotplotGeometry.ts'
+import { buildLineSegments, segmentCapacity } from './dotplotGeometry.ts'
 import { fakeDotplotRpcData } from './testUtils.ts'
 
 import type { DotplotRpcData } from './types.ts'
@@ -120,5 +120,56 @@ describe('segmentCigarOp', () => {
 
   it('reports nothing for a segment index past the end', () => {
     expect(segmentCigarOp(data, 9)).toBeUndefined()
+  })
+})
+
+// The budget the walk above is allocated against, which is bounded by the two
+// on-screen widths and not only by the op count. `visitCigarRenderedSegments`
+// emits only once an axis has advanced past a pixel, so a fine-grained CIGAR
+// collapses to about as many segments as the feature is wide — counting ops
+// alone reserved a slot per op, and a liftOver chain block is millions of them.
+//
+// Read off `segmentCapacity` rather than the returned buffers, because the
+// reservation is not observable from those: `trimToCount` copies out whenever
+// the slack exceeds the data, so an over-reservation lands as a memcpy in the
+// worker and an honest-looking result on the other side.
+describe('segmentCapacity', () => {
+  const span = 40_000_000
+  const ops = 200_000
+  const bpPerPx = span / 1400
+  const wide = () =>
+    fakeDotplotRpcData({
+      p11: new Float64Array([0]),
+      p12: new Float64Array([span]),
+      p21: new Float64Array([0]),
+      p22: new Float64Array([span]),
+      alignmentLengths: new Uint32Array([span]),
+      cigarData: Uint32Array.from({ length: ops }, () => M(span / ops)),
+      cigarOffsets: new Uint32Array([0, ops]),
+    })
+
+  it('budgets a fine-grained CIGAR by its pixels, not its op count', () => {
+    const cap = segmentCapacity(wide(), true, 1 / bpPerPx, 1 / bpPerPx)
+    expect(cap).toBeLessThan(4000)
+    // and it is still an upper bound on what the walk actually emits
+    const g = buildLineSegments(wide(), true, 0, bpPerPx, bpPerPx, 0, 0)
+    expect(g.instanceCount).toBeLessThanOrEqual(cap)
+  })
+
+  it('budgets a coarse CIGAR by its ops, which is then the smaller', () => {
+    // Same feature, four ops. Pixels would allow ~2800; the ops bound is 4.
+    const coarse = fakeDotplotRpcData({
+      p11: new Float64Array([0]),
+      p12: new Float64Array([span]),
+      p21: new Float64Array([0]),
+      p22: new Float64Array([span]),
+      cigarData: Uint32Array.from([M(1e7), D(1e7), M(1e7), M(1e7)]),
+      cigarOffsets: new Uint32Array([0, 4]),
+    })
+    expect(segmentCapacity(coarse, true, 1 / bpPerPx, 1 / bpPerPx)).toBe(1 + 4)
+  })
+
+  it('reserves one slot per feature when CIGAR detail is off', () => {
+    expect(segmentCapacity(wide(), false, 1 / bpPerPx, 1 / bpPerPx)).toBe(1)
   })
 })
