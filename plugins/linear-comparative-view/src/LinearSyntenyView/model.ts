@@ -738,22 +738,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #method
-         * The header menu, in four divided groups — reach a row, reframe the
-         * view, restructure the stack, choose what the ribbons carry — because
-         * up to thirteen of these are live at once and an undivided list of
-         * that length is read by hunting rather than by looking.
-         *
          * Still a subset of `menuItems()`: the full list is overwhelming.
          */
         headerMenuItems(): MenuItem[] {
           return [
             ...superHeaderMenuItems(),
             ...rowViewMenuItems(self),
-            { type: 'divider' },
             ...scaleRowsMenuItems(self),
             ...autoScaleMenuItems(self),
             ...genomeViewsMenuItems(self),
-            { type: 'divider' },
             // A row is appended to the stack the user is looking at, so there
             // is nothing to append to while the import form is up — that form
             // is how the stack gets built, and the dialog anchored to a view
@@ -790,12 +783,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               },
               icon: ShuffleIcon,
             },
-            { type: 'divider' },
             ...rowSyncMenuItems(self),
             ...cigarModeMenuItems(self),
             ...lodMenuItems(self),
             ...offscreenMateMenuItems(self),
-            { type: 'divider' },
             exportSvgMenuItem,
           ]
         },
