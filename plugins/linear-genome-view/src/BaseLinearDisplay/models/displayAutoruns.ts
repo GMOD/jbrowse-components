@@ -21,8 +21,8 @@ declare const process: { env: { NODE_ENV?: string } }
  * callers don't re-fetch it.
  *
  * **`delay` is leading-edge**, not MobX's trailing-edge `{ delay }`: the first
- * run is immediate and the debounce arms only once the body returns `true`.
- * A pre-init run therefore costs nothing rather than a full delay, which is
+ * run is one microtask away rather than a full delay, and the debounce arms only
+ * once the body returns `true`. A pre-init run therefore costs nothing, which is
  * also why the not-initialized branch cannot report work. See
  * {@link leadingEdgeAutorun}.
  */
