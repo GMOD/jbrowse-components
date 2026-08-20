@@ -197,19 +197,26 @@ export function useRenderingBackend<
   // inheriting the old display's `gaveUp` latch would leave the new one unable
   // to recover at all.
   //
-  // Reachable, and not exotic: a container that renders its children by position
-  // hands this hook a new model whenever its list is rebuilt.
-  // `LinearComparativeView.setViews` empties and re-reconciles `levels`, so every
-  // synteny band's model is replaced while its canvas element survives — and the
-  // launch path fires it more than once. Before this, the band re-initialized on
-  // the element it was already using: a `dispose()` (which unconfigures the
-  // canvas's WebGPU swap chain) racing a `create()` on the same context, and
-  // whichever landed last decided whether the band could draw again.
+  // Re-initializing on the element it was already using is a `dispose()` — which
+  // unconfigures the canvas's WebGPU swap chain — racing a `create()` on the same
+  // context, and whichever lands last decides whether the display can draw again.
+  //
+  // Defensive: no consumer reaches it today, because all three remount instead.
+  // A synteny band's section sits inside a Fragment keyed on `view.id`, and the
+  // `setViews` that replaces the levels mints fresh view ids along with them; a
+  // dotplot's model is its own view; and a display-type swap changes the element
+  // type, since no two display types registered for one track type share a
+  // `ReactComponent`. Each of those is one edit away from not being true, and
+  // what this costs is a ref and a compare.
   //
   // During render rather than in an effect, because the effect below must never
   // observe the mismatched pair — a new model with the previous one's element.
   // This is React's documented "adjust state when a prop changes": the render
   // whose output is discarded is this one, before anything commits.
+  //
+  // The backoff a departing model armed is cancelled by the effect below, not
+  // here: a `clearTimeout` during render is a side effect, which `retry()` and
+  // `onRestored` can do and this cannot.
   const lastModelRef = useRef(model)
   if (lastModelRef.current !== model) {
     lastModelRef.current = model
@@ -261,6 +268,17 @@ export function useRenderingBackend<
     }
     return undefined
   }, [canvas, model])
+
+  // The third site that resets the recovery state, alongside `retry()` and
+  // `onRestored`, and like them it cancels the pending backoff first. A timer
+  // armed for the model that left bumps `contextVersion` when it fires, which
+  // rebuilds a device, pipeline set and swap chain for a display with nothing
+  // wrong with it — and until it fires it occupies the one-pending-timer guard
+  // below, so the arriving model cannot arm the recovery it is owed.
+  useEffect(() => {
+    clearTimeout(recoverTimerRef.current)
+    recoverTimerRef.current = undefined
+  }, [model])
 
   // Auto-recover a context-loss-induced error: re-init on bounded backoff. Gated
   // on `contextLostRef` so non-GPU render errors are never auto-retried, and on

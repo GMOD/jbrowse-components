@@ -586,37 +586,88 @@ describe('useRenderingBackend', () => {
     expect(second.renderError).toBeUndefined()
   })
 
-  test('a superseded canvas element is not initialized', async () => {
-    // The stale pairing this hook used to act on: a `contextVersion` bump
-    // remounts the canvas in the commit phase, but the ref callback's
-    // `setCanvas` lands in a later render — so the init effect fires once with
-    // the new version still holding the previous element. That built a whole
-    // backend on an element nothing shows and threw it away, which is the second
-    // of the two overlapping inits.
-    const canvas1 = document.createElement('canvas')
-    const canvas2 = document.createElement('canvas')
-    const factory = jest
-      .fn()
-      .mockResolvedValue({ dispose: jest.fn(), setErrorHandler: jest.fn() })
-    const model = createMockModel()
+  test('a recovery backoff armed for the old model does not outlive the swap', async () => {
+    // `retry()` and the browser's own restore both cancel the pending timers
+    // before they reset the recovery state. A model swap is the third site that
+    // resets it and it was skipping the cancel, so a backoff armed for the
+    // display that left fired for the one that replaced it — bumping
+    // `contextVersion` and rebuilding a device, pipeline set and swap chain for
+    // a display with nothing wrong with it.
+    const factory = jest.fn().mockRejectedValue(new Error('context lost'))
+    const first = createReactiveModel()
+    const second = createReactiveModel()
+    const canvas = document.createElement('canvas')
 
-    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    const { result, rerender } = renderHook(
+      ({ model }) => useRenderingBackend(factory, model),
+      { initialProps: { model: first } },
+    )
     act(() => {
-      result.current.canvasRef(canvas1)
-    })
-    await act(async () => {})
-    expect(factory).toHaveBeenCalledTimes(1)
-
-    // retry() bumps the version; the element it remounts is already superseded
-    // by the time the effect runs, which is what the ref callback records.
-    act(() => {
-      result.current.canvasRef(canvas2)
-      result.current.retry()
+      result.current.canvasRef(canvas)
     })
     await act(async () => {})
 
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+    })
+    // arms the 1s backoff for `first`, and leaves it pending
+    rerender({ model: first })
+    await wait(400)
+
+    // 1 initial init + the swap's own re-init, and nothing else is owed
+    rerender({ model: second })
+    await act(async () => {})
     expect(factory).toHaveBeenCalledTimes(2)
-    expect(factory).toHaveBeenLastCalledWith(canvas2)
+
+    // outrun every backoff the old display could have had left
+    await wait(30_000)
+    expect(factory).toHaveBeenCalledTimes(2)
+  })
+
+  test('the arriving model still gets the recovery the old one left pending', async () => {
+    // The other half of cancelling on swap. Leaving the stale timer to
+    // early-return on fire clears the bump but not the one-pending-timer guard
+    // it occupies until then, so a display that loses its context inside the
+    // departing backoff's window is refused the attempt, and nothing re-renders
+    // to offer it again — MAX_RECOVERIES of 2 spent as 1, silently, leaving only
+    // the manual Retry.
+    const factory = jest.fn().mockRejectedValue(new Error('context lost'))
+    const first = createReactiveModel()
+    const second = createReactiveModel()
+    const canvas = document.createElement('canvas')
+
+    const { result, rerender } = renderHook(
+      ({ model }) => useRenderingBackend(factory, model),
+      { initialProps: { model: first } },
+    )
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+    })
+    rerender({ model: first })
+    await wait(100)
+
+    // swapped while `first`'s 1s backoff is still pending
+    rerender({ model: second })
+    await act(async () => {})
+    expect(factory).toHaveBeenCalledTimes(2)
+
+    // and `second` loses its own context inside that window
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+    })
+    await wait(CONTEXT_LOST_REPORT_GRACE_MS)
+    rerender({ model: second })
+    await wait(RECOVERY_WINDOW_MS)
+    rerender({ model: second })
+    await wait(RECOVERY_WINDOW_MS)
+
+    // 1 initial init + the swap's re-init + both of `second`'s own attempts
+    expect(factory).toHaveBeenCalledTimes(4)
   })
 
   test('cleans up device lost listener on unmount', () => {
