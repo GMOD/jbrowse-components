@@ -130,18 +130,6 @@ when `useLogScale` is true (domain is clamped to [1, max]).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
 
-### getOrigin
-
-The axis-origin baseline: `1` for log, `0` otherwise — symlog included, since it
-can represent 0 and that is where a bar should sit from.
-
-```js
-// type signature
-(scaleType: string) => 1 | 0
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
-
 ### getScale
 
 Builds a d3 scale (linear/log/symlog) from a `ScaleOpts`, nicing the domain

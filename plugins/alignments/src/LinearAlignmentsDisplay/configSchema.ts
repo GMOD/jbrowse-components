@@ -257,9 +257,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       symlogConstant: {
         type: 'number',
-        defaultValue: 0,
+        defaultValue: 1,
         description:
-          'Width of symlog\'s linear region around zero, in depth units. The default 0 means "derive from the domain" (a thousandth of the visible max). 1 makes symlog exactly log(depth+1)',
+          'Width of symlog\'s linear region around zero, in depth units. The default 1 makes symlog exactly log(depth+1), which is the transform read depth wants: the knee sits at one read, the smallest depth there is. 0 means "derive from the domain" (a thousandth of the visible max) — right for a wiggle track, whose units are its own, and wrong here, since it puts the knee a tenth of a read below zero and draws a single stray read a third of the way up a depth-100 band',
         advanced: true,
       },
       /**

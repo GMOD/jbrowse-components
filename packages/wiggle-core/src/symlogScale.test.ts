@@ -3,7 +3,7 @@ import {
   makeScoreNormalizer,
   resolveSymlogConstant,
 } from './normalize.ts'
-import { getNiceDomain, getOrigin, getScale } from './scale.ts'
+import { getNiceDomain, getScale } from './scale.ts'
 
 // What symlog is FOR, as opposed to how it is wired. `log` cannot hold a domain
 // that reaches zero — `getNiceDomain` floors it away, and the normalizer floors
@@ -29,11 +29,6 @@ describe('a domain that reaches zero', () => {
         bounds: noBounds,
       })[0],
     ).toBe(0)
-  })
-
-  test('bars grow from 0, not from 1', () => {
-    expect(getOrigin('log')).toBe(1)
-    expect(getOrigin('symlog')).toBe(0)
   })
 
   test('zero sits on the baseline and nothing else does', () => {

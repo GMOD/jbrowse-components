@@ -31,6 +31,11 @@ export interface ScoreScaleModel extends IStateTreeNode {
   setMaxScore: (n?: number) => void
 }
 
+// All three scales, so a display offering this menu at all must hold all three
+// in its own `scaleType` enum. `scoreAxisConfigSchemaFields` deliberately does
+// not — symlog is widened in by whoever implements it — so a display that spreads
+// the shared axis fields unchanged has to opt out with `scaleType: false` the way
+// manhattan does, or the radio writes a value its enumeration rejects.
 export function makeScaleTypeSubMenu(self: {
   scaleType: string
   setScaleType: (v: string) => void

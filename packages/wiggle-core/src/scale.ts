@@ -116,18 +116,6 @@ export function getScale({
 
 /**
  * #api
- * The axis-origin baseline: `1` for log, `0` otherwise — symlog included, since
- * it can represent 0 and that is where a bar should sit from.
- */
-export function getOrigin(scaleType: string) {
-  if (scaleType === 'log') {
-    return 1
-  }
-  return 0
-}
-
-/**
- * #api
  * Rounds a domain to "nice" endpoints, clamped to the origin. An end given an
  * explicit `bounds` value keeps that value exactly — only an autoscaled end is
  * rounded. A log scale's floor still outranks a bound it cannot hold.
@@ -147,9 +135,9 @@ export function getNiceDomain({
   const [minScore, maxScore] = bounds
   let [min, max] = domain
 
-  // symlog joins linear here rather than log: its origin is 0 (getOrigin), it
-  // is defined there, so the domain should reach the baseline its bars grow
-  // from instead of being floored off it the way a log domain has to be.
+  // symlog joins linear here rather than log: it is defined at 0, so the
+  // domain should reach the baseline its bars grow from instead of being
+  // floored off it the way a log domain has to be.
   if (scaleType === 'linear' || scaleType === 'symlog') {
     if (max < 0) {
       max = 0
