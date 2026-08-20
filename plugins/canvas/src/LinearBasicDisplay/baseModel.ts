@@ -2631,7 +2631,7 @@ export default function baseStateModelFactory(
             // covered against a payload nobody received. See RegionFetchContext.
             if (!isRegionRefused(result)) {
               self.setRpcData(displayedRegionIndex, result, region)
-              ctx.commitRegion(displayedRegionIndex, region)
+              ctx.commitRegion(displayedRegionIndex)
             }
           }
           // Commit the per-region byte/density estimates to the shared gate (byte

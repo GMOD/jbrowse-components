@@ -3665,12 +3665,12 @@ export default function stateModelFactory(
               for (const r of results) {
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
-              for (const { region, displayedRegionIndex } of needed) {
+              for (const { displayedRegionIndex } of needed) {
                 const data = newDataMap.get(displayedRegionIndex)
                 if (data) {
                   // beside the store — see RegionFetchContext
                   self.setRpcData(displayedRegionIndex, data)
-                  ctx.commitRegion(displayedRegionIndex, region)
+                  ctx.commitRegion(displayedRegionIndex)
                 }
               }
             })

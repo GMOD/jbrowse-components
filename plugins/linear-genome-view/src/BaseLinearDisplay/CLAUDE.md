@@ -91,11 +91,13 @@ re-remembering the cancel term — one edit from the dead-Retry bug.
   `fetchAllRegions` (batched), `callEachRegion` (fan-out only). The first two
   own the `ctx.isStale()` guard; forgetting it is a stale-data write.
 - **`loadedRegions` is written where the payload is stored**, through
-  `ctx.commitRegion` — the two helpers above call it for you, and skip a region
-  the worker refused for size (`isRegionRefused`). A display calling
-  `fetchRegions` directly puts the call beside its own store. Marking a region
-  loaded that holds nothing for that span is what froze canvas displays until a
-  page reload: REGION_TOO_LARGE.md, and `RegionFetchContext`.
+  `ctx.commitRegion(displayedRegionIndex)` — the two helpers above call it for
+  you, and skip a region the worker refused for size (`isRegionRefused`). A
+  display calling `fetchRegions` directly puts the call beside its own store. It
+  takes an index and no span: `fetchRegions` resolves that against the regions
+  it issued, so claiming a span the fetch never asked for is not expressible.
+  Marking a region loaded that holds nothing for that span is what froze canvas
+  displays until a page reload: REGION_TOO_LARGE.md, and `RegionFetchContext`.
 - `bufferedVisibleRegions` carries `reversed` alongside the widened bounds, and
   that is load-bearing — canvas stamps it onto `rpcDataMap`, and unit tests hand
   `setRpcData` a region by hand, so it went missing once uncaught.

@@ -232,6 +232,15 @@ a re-measure the banner is waiting on (`gateBlocked` in `planRegionFetch`).
 `LinearBasicDisplay/loadedRegionCoverage.test.ts` carries both, as two scenarios
 and as a seeded random walk over zoom and pan.
 
+`commitRegion` takes an index and no span, deliberately: `fetchRegions` resolves
+it against the `needed` list it issued, so a display can say that a region landed
+and cannot say what it landed over. The direction that froze a track is not
+expressible. What is left is forgetting the call, which spins rather than
+freezing — a dev-only check reports three consecutive fetches that store nothing
+while nothing is gating them. The global family reaches the same invariant from
+the other side, since `GlobalFetchPhases.commit` runs only when `run` produced a
+result.
+
 ## The sub-floor budget tier
 
 Below `AUTO_FORCE_LOAD_BP` the byte budget is multiplied by

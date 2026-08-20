@@ -136,6 +136,14 @@ export interface GlobalFetchPhases<TArgs, TResult> {
    * would reopen exactly that window, which is why it may not await. It takes
    * `args` back, so what it stamps onto the committed data is what the fetch was
    * issued for and not a live re-read.
+   *
+   * **Reached only when `run` produced a result**, which is what keeps this
+   * family from ever recording data it did not receive. The per-region family
+   * gets the same invariant from `RegionFetchContext.commitRegion` instead —
+   * N regions stream and four displays decide something across them mid-fetch,
+   * so there is nowhere to put a single phase — and the note there is worth
+   * reading beside this one: it is the same rule, and per-region learned it the
+   * hard way.
    */
   commit: (result: TResult, args: TArgs) => void
 }

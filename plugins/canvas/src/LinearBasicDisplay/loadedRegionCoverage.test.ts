@@ -223,6 +223,43 @@ describe('a region refused for size over data already held', () => {
   })
 })
 
+// `regionHasData` is the reader-side check of the write-side rule, and a check
+// nothing can trip is worth as much as no check. This is the state the rule
+// forbids — a region marked loaded with nothing behind it — reached the only way
+// left to reach it, by writing it directly. The display has to notice and
+// refetch rather than read the viewport as covered, which is the whole
+// difference between a redundant fetch and a track frozen until reload.
+describe('a loaded region with no data behind it', () => {
+  it('refetches instead of reading as covered', async () => {
+    const env = createTestEnvironment()
+    const { display, view, mockRpcCall } = env.createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 5_000_000, refName: 'ctgA' },
+    ])
+    mockRpcCall.mockImplementation(byteGatedRender(BYTES_PER_BP))
+    view.zoomTo(WARM_BP_PER_PX)
+    await settle()
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    // the forbidden state: the claim stays, the payload goes
+    display.pruneRpcDataMapToVisible(new Set())
+    display.setLoadedRegion(0, view.displayedRegions[0])
+    expect(display.viewportWithinLoadedData).toBe(true)
+    expect(display.regionHasData(0)).toBe(false)
+    expect(display.isCacheValid(0)).toBe(false)
+
+    const before = mockRpcCall.mock.calls.length
+    view.scrollTo(200)
+    await settle()
+    await settle()
+
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(before)
+    expect(heldExtent(display)).toBeDefined()
+  })
+})
+
 // The same invariant as a property over a random walk, because the two scenarios
 // above are the two that were reported rather than the two that exist. What a
 // pure function cannot state is here and nowhere else: which reads MobX tracks,

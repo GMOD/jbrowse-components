@@ -96,7 +96,7 @@ describe('a region is marked loaded only when its data lands', () => {
     await display.fetchRegions([region], async ctx => {
       loadedBeforeStore = display.loadedRegions.size
       display.setLoaded(0, 'data')
-      ctx.commitRegion(0, region.region)
+      ctx.commitRegion(0)
     })
     expect(loadedBeforeStore).toBe(0)
     expect(display.loadedRegions.size).toBe(1)
@@ -135,6 +135,74 @@ describe('a region is marked loaded only when its data lands', () => {
     expect(display.loadedRegions.size).toBe(0)
   })
 
+  // `commitRegion` names an index and nothing else, and the span comes from the
+  // `needed` list the fetch issued. So a display can say "this region landed"
+  // and cannot say what it landed over — the direction that froze a track is not
+  // expressible, rather than merely discouraged.
+  it('marks the span the fetch asked for, whatever the caller knows', async () => {
+    const { display } = setup()
+    await afterFirstFetch(display)
+
+    await display.fetchRegions([region], async ctx => {
+      display.setLoaded(0, 'data')
+      ctx.commitRegion(0)
+    })
+    expect(display.loadedRegions.get(0)).toMatchObject(region.region)
+  })
+
+  // ...and an index the fetch never asked for has no span to be marked over, so
+  // it is dropped and reported rather than guessed at.
+  it('drops and reports a commit for a region it never fetched', async () => {
+    const { display } = setup()
+    await afterFirstFetch(display)
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    await display.fetchRegions([region], async ctx => {
+      ctx.commitRegion(7)
+    })
+    expect(display.loadedRegions.size).toBe(0)
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('commitRegion(7)'))
+    spy.mockRestore()
+  })
+
+  // The one way left to get the rule wrong is forgetting the call, and it spins
+  // rather than freezing: nothing reads as covered, so the plan asks again. Dev
+  // only, and on the third consecutive run so a single ungated empty fetch —
+  // which the worker/main-thread bpPerPx skew can produce for one settled cycle
+  // — stays quiet.
+  it('reports a work callback that keeps storing without committing', async () => {
+    const { display } = setup()
+    await afterFirstFetch(display)
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    for (let i = 0; i < 2; i++) {
+      await display.fetchRegions([region], async () => {})
+    }
+    expect(spy).not.toHaveBeenCalled()
+
+    await display.fetchRegions([region], async () => {})
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('stored data for no region'),
+    )
+    spy.mockRestore()
+  })
+
+  it('forgets the run of empty fetches as soon as one commits', async () => {
+    const { display } = setup()
+    await afterFirstFetch(display)
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    await display.fetchRegions([region], async () => {})
+    await display.fetchRegions([region], async () => {})
+    await display.fetchRegions([region], async ctx => {
+      ctx.commitRegion(0)
+    })
+    await display.fetchRegions([region], async () => {})
+
+    expect(spy).not.toHaveBeenCalled()
+    spy.mockRestore()
+  })
+
   it('does not mark it when the fetch was superseded mid-work', async () => {
     const { display } = setup()
     await afterFirstFetch(display)
@@ -145,7 +213,7 @@ describe('a region is marked loaded only when its data lands', () => {
       // trusted to a caller's own guard
       display.cancelFetch()
       expect(ctx.isStale()).toBe(true)
-      ctx.commitRegion(0, region.region)
+      ctx.commitRegion(0)
     })
     expect(display.loadedRegions.size).toBe(0)
   })

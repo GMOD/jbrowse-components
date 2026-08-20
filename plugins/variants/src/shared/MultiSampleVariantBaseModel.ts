@@ -1600,8 +1600,8 @@ export default function MultiSampleVariantBaseModelF(
               self.setCellData(result)
               // beside the store: one RPC serves every region, so the whole
               // batch is held or none of it is
-              for (const { displayedRegionIndex, region } of regions) {
-                ctx.commitRegion(displayedRegionIndex, region)
+              for (const { displayedRegionIndex } of regions) {
+                ctx.commitRegion(displayedRegionIndex)
               }
             }
           })

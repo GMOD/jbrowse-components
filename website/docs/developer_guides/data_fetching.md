@@ -145,8 +145,8 @@ await self.fetchRegions(needed, async (ctx: RegionFetchContext) => {
   // beside the store, and every region gets one: MAF's size gate is the
   // pre-flight kind, so a refusal returns from `fetchRegions` before this
   // callback runs at all and nothing here can arrive empty-handed.
-  for (const { displayedRegionIndex, region } of needed) {
-    ctx.commitRegion(displayedRegionIndex, region)
+  for (const { displayedRegionIndex } of needed) {
+    ctx.commitRegion(displayedRegionIndex)
   }
 })
 ```

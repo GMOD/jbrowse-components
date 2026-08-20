@@ -125,7 +125,7 @@ export async function fetchEachRegion<R>(
           // viewport reads as covered against a payload nobody received. See
           // RegionFetchContext.
           if (!isRegionRefused(result)) {
-            ctx.commitRegion(displayedRegionIndex, region)
+            ctx.commitRegion(displayedRegionIndex)
           }
         }
       }),
@@ -169,11 +169,11 @@ export async function fetchAllRegions<R>(
           `fetchAllRegions: adapter returned ${results.length} results for ${needed.length} regions`,
         )
       }
-      needed.forEach(({ displayedRegionIndex, region }, i) => {
+      needed.forEach(({ displayedRegionIndex }, i) => {
         const result = results[i]!
         opts.onResult(displayedRegionIndex, result)
         if (!isRegionRefused(result)) {
-          ctx.commitRegion(displayedRegionIndex, region)
+          ctx.commitRegion(displayedRegionIndex)
         }
       })
       opts.onComplete?.()
