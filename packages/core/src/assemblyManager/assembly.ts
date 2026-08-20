@@ -302,14 +302,17 @@ export default function assemblyFactory(
         // node. That is the case this sink's second isCurrent read exists for.
         const statusWindow = createStatusWindow()
         let loading = true
-        const fanOut = createStatusFanOut(
-          statusWindow.sink({
-            isCurrent: () => loading && isAlive(self),
-            write: status => {
+        const stream = statusWindow.open({
+          isCurrent: () => loading && isAlive(self),
+          // the one writer, so the clear below is guarded by the same `isAlive`
+          // its statuses are — it used to reach the field unguarded
+          write: status => {
+            if (isAlive(self)) {
               self.setStatus(status)
-            },
-          }),
-        )
+            }
+          },
+        })
+        const fanOut = createStatusFanOut(stream.statusCallback)
         const optsFor = (): BaseOptions => ({ statusCallback: fanOut() })
 
         try {
@@ -360,16 +363,15 @@ export default function assemblyFactory(
             geneticCodes,
           })
         } finally {
-          // `flush`, not a sink and not a bare write: the clear has to land
-          // (a sink inside a closed window would only queue it) AND it has to
-          // drop what is queued behind it, or the trailing timer puts the last
-          // "Downloading …" back on screen after the load has ended. Closing
-          // the guard first is what stops a still-running sibling load from
-          // writing over it — see the `loading` flag above.
+          // the stream's own clear, not a bare write: it has to land (a status
+          // inside a closed window would only queue) AND drop what is queued
+          // behind it, or the trailing timer puts the last "Downloading …" back
+          // on screen after the load has ended. Closing the guard first is what
+          // stops a still-running sibling load from writing over it — see the
+          // `loading` flag above, and note `clear` deliberately does not consult
+          // it.
           loading = false
-          statusWindow.flush(() => {
-            self.setStatus(undefined)
-          })
+          stream.clear()
         }
       },
     }))

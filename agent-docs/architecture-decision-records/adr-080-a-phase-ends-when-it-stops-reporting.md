@@ -194,10 +194,16 @@ and over steps it every time.
   stream ends with the fetch that aborted it.
 - **Renames, for anyone following an older ADR to a symbol that has gone.**
   `createStatusThrottle` + `createGuardedStatusSink` became one
-  `createStatusWindow()`, whose `sink({isCurrent, write})` is the old guarded
-  sink, `flush` the old `runNow`, and `reset` the old `reset`; the sinks come off
-  the window rather than taking one as an argument, so the one-window-per-owner
-  rule that ADR-071 and ADR-041 argue for in prose has no way left to break.
+  `createStatusWindow()`, whose `open({isCurrent, write})` is the old guarded
+  sink and `reset` the old `reset`; the streams come off the window rather than
+  taking one as an argument, so the one-window-per-owner rule that ADR-071 and
+  ADR-041 argue for in prose has no way left to break. `open` returns the old
+  `runNow` clear beside the callback, as `clear`, because **this ADR's decision
+  makes that clear load-bearing** — a fan-out no longer guesses at the end of a
+  batch, so a stream nobody closes leaves its last label up for good.
+  `useMateDiscovery` was that stream: it cleared at the start of its effect and
+  never at the end, and only the panel gating its render on `loading` kept it
+  off screen.
   `StatusReporter`'s `makeStatusCallback` + `flushStatus` pair became one
   `statusWindow`, which is that same rule for a host lending its window — two
   optional members that had to co-vary were two chances to supply half.

@@ -342,13 +342,15 @@ export default function FetchMixin() {
        */
       makeStatusCallback(isCurrent: () => boolean) {
         // off the model-wide window, so N of these thin to one stream between
-        // them rather than N
-        return self.statusWindow.sink({
+        // them rather than N. The stream's `clear` is not the one used here:
+        // `resetStatus` is the display's own clear and covers every fetch on the
+        // model, including the paths that end without a stream of their own.
+        return self.statusWindow.open({
           isCurrent,
           write: status => {
             self.setStatusMessage(status)
           },
-        })
+        }).statusCallback
       },
     }))
     .actions(self => ({

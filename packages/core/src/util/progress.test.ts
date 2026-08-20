@@ -141,23 +141,24 @@ describe('createStatusWindow', () => {
     jest.restoreAllMocks()
   })
 
-  // a live sink on a fresh window: the shape every one of these cases wants,
-  // and the shape a caller can no longer get wrong by opening a window per sink
-  function openSink() {
-    const seen: RpcStatus[] = []
+  // a live stream on a fresh window: the shape every one of these cases wants,
+  // and the shape a caller can no longer get wrong by opening a window per
+  // stream, or by taking a callback without the clear that ends it
+  function openStream() {
+    const seen: (RpcStatus | undefined)[] = []
     const statusWindow = createStatusWindow()
     const guard = { current: true }
-    const report = statusWindow.sink({
+    const { statusCallback: report, clear } = statusWindow.open({
       isCurrent: () => guard.current,
       write: s => {
         seen.push(s)
       },
     })
-    return { seen, statusWindow, report, guard }
+    return { seen, statusWindow, report, clear, guard }
   }
 
   it('writes the first status of a burst and drops the rest', () => {
-    const { seen, report } = openSink()
+    const { seen, report } = openStream()
     for (const n of ['1', '2', '3']) {
       report(n)
     }
@@ -165,7 +166,7 @@ describe('createStatusWindow', () => {
   })
 
   it('passes statuses spaced beyond the window', () => {
-    const { seen, report } = openSink()
+    const { seen, report } = openStream()
     report('1')
     clock += 150
     report('2')
@@ -175,7 +176,7 @@ describe('createStatusWindow', () => {
   })
 
   it('reset reopens the window, so the next fetch reports at once', () => {
-    const { seen, statusWindow, report } = openSink()
+    const { seen, statusWindow, report } = openStream()
     report('1')
     clock += 10
     report('2')
@@ -187,23 +188,23 @@ describe('createStatusWindow', () => {
   // one window per owner, not per callback: N parallel per-region fetches must
   // thin to one stream between them rather than N, which is the whole reason
   // the sinks come off the window rather than taking one as an argument
-  it('thins every sink on one window to one stream between them', () => {
-    const seen: RpcStatus[] = []
+  it('thins every stream on one window to one flow between them', () => {
+    const seen: (RpcStatus | undefined)[] = []
     const statusWindow = createStatusWindow()
     const isCurrent = () => true
-    const write = (s: RpcStatus) => {
+    const write = (s: RpcStatus | undefined) => {
       seen.push(s)
     }
-    const a = statusWindow.sink({ isCurrent, write })
-    const b = statusWindow.sink({ isCurrent, write })
-    a('from a')
-    b('from b')
+    const a = statusWindow.open({ isCurrent, write })
+    const b = statusWindow.open({ isCurrent, write })
+    a.statusCallback('from a')
+    b.statusCallback('from b')
     expect(seen).toEqual(['from a'])
   })
 
   it('keeps separate windows independent', () => {
-    const a = openSink()
-    const b = openSink()
+    const a = openStream()
+    const b = openStream()
     a.report('from a')
     b.report('from b')
     expect(a.seen).toEqual(['from a'])
@@ -216,7 +217,7 @@ describe('createStatusWindow', () => {
   it('delivers the last dropped write of a burst on the trailing edge', () => {
     jest.useFakeTimers()
     try {
-      const { seen, report } = openSink()
+      const { seen, report } = openStream()
       for (const n of ['1', '2', '3']) {
         report(n)
       }
@@ -230,23 +231,35 @@ describe('createStatusWindow', () => {
     }
   })
 
-  it('flush lands immediately and cancels what was queued', () => {
+  // The stream's last word, and the reason it comes back beside the callback:
+  // the shared bar's design rests on every owner blanking its own field when its
+  // work ends, and a fan-out cannot see the end of a batch (ADR-080).
+  it('clear blanks the field immediately and cancels what was queued', () => {
     jest.useFakeTimers()
     try {
-      const { seen, statusWindow, report } = openSink()
+      const { seen, report, clear } = openStream()
       report('1')
       report('2')
-      statusWindow.flush(() => {
-        seen.push('clear')
-      })
-      expect(seen).toEqual(['1', 'clear'])
+      clear()
+      expect(seen).toEqual(['1', undefined])
       clock += 100
       jest.advanceTimersByTime(100)
       // the queued 2 is gone rather than landing after the clear
-      expect(seen).toEqual(['1', 'clear'])
+      expect(seen).toEqual(['1', undefined])
     } finally {
       jest.useRealTimers()
     }
+  })
+
+  // A run that has just finished is no longer current, and closing the guard
+  // before clearing is how an owner stops a still-running sibling from writing
+  // over the clear — `assembly.loadPre` does exactly that.
+  it('clear lands even once the guard has closed', () => {
+    const { seen, report, clear, guard } = openStream()
+    report('Downloading')
+    guard.current = false
+    clear()
+    expect(seen).toEqual(['Downloading', undefined])
   })
 
   // `''` is how every phase helper says "this phase is over", and it is thinned
@@ -257,7 +270,7 @@ describe('createStatusWindow', () => {
   it('does not restore a queued progress value after the clear', () => {
     jest.useFakeTimers()
     try {
-      const { seen, report } = openSink()
+      const { seen, report } = openStream()
       report({ message: 'Downloading', current: 1, total: 10 })
       report({ message: 'Downloading', current: 9, total: 10 })
       report('')
@@ -286,7 +299,7 @@ describe('createStatusWindow', () => {
   it('paints nothing for phases that open and close inside one window', () => {
     jest.useFakeTimers()
     try {
-      const { seen, report } = openSink()
+      const { seen, report } = openStream()
       report('Downloading features')
       // the tail of a warm fetch, all of it inside the first write's window
       report('')
@@ -309,7 +322,7 @@ describe('createStatusWindow', () => {
   it('drops a trailing write whose operation ended', () => {
     jest.useFakeTimers()
     try {
-      const { seen, report, guard } = openSink()
+      const { seen, report, guard } = openStream()
       report('Downloading')
       report('Parsing')
       expect(seen).toEqual(['Downloading'])
@@ -1078,11 +1091,11 @@ describe('createStatusFanOut', () => {
 })
 
 // The shape `assembly.loadPre` runs on: a fan-out slot per concurrent file,
-// every slot behind ONE of the window's sinks, and a `flush` clear at the end.
+// every slot behind ONE of the window's streams, and its `clear` at the end.
 // The two halves are separable and each fails on its own, so both are pinned
 // here — a hand-assembled fan-out with a bare clear beside it had both faults
 // and neither was visible in the passing state.
-describe('a fan-out behind one window sink', () => {
+describe('a fan-out behind one window stream', () => {
   let clock = 0
   beforeEach(() => {
     clock = 1_000_000
@@ -1100,16 +1113,15 @@ describe('a fan-out behind one window sink', () => {
   // had neither half and neither fault was visible in the passing state.
   it('lands the final clear through the owner, not the retiring slots', () => {
     const statusWindow = createStatusWindow()
-    const seen: RpcStatus[] = []
+    const seen: (RpcStatus | undefined)[] = []
     let loading = true
-    const slot = createStatusFanOut(
-      statusWindow.sink({
-        isCurrent: () => loading,
-        write: s => {
-          seen.push(s)
-        },
-      }),
-    )
+    const stream = statusWindow.open({
+      isCurrent: () => loading,
+      write: s => {
+        seen.push(s)
+      },
+    })
+    const slot = createStatusFanOut(stream.statusCallback)
     const a = slot()
     const b = slot()
     a({ message: 'Downloading', current: 1, total: 2 })
@@ -1120,9 +1132,7 @@ describe('a fan-out behind one window sink', () => {
     expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 2 }])
     // the shape of `loadPre`'s finally
     loading = false
-    statusWindow.flush(() => {
-      seen.push(undefined as unknown as RpcStatus)
-    })
+    stream.clear()
     expect(seen.at(-1)).toBeUndefined()
   })
 
@@ -1132,17 +1142,16 @@ describe('a fan-out behind one window sink', () => {
   it('drops a still-running sibling load once the owner has finished', () => {
     jest.useFakeTimers()
     try {
-      const seen: RpcStatus[] = []
+      const seen: (RpcStatus | undefined)[] = []
       let loading = true
       const statusWindow = createStatusWindow()
-      const slot = createStatusFanOut(
-        statusWindow.sink({
-          isCurrent: () => loading,
-          write: s => {
-            seen.push(s)
-          },
-        }),
-      )
+      const stream = statusWindow.open({
+        isCurrent: () => loading,
+        write: s => {
+          seen.push(s)
+        },
+      })
+      const slot = createStatusFanOut(stream.statusCallback)
       const failed = slot()
       const stillGoing = slot()
       failed({ message: 'Downloading', current: 1, total: 2 })
@@ -1150,13 +1159,11 @@ describe('a fan-out behind one window sink', () => {
 
       // the `finally` of a load that threw: close the guard, then clear
       loading = false
-      statusWindow.flush(() => {
-        seen.push('cleared')
-      })
+      stream.clear()
       stillGoing({ message: 'Downloading', current: 2, total: 2 })
       clock += 100
       jest.advanceTimersByTime(100)
-      expect(seen.at(-1)).toBe('cleared')
+      expect(seen.at(-1)).toBeUndefined()
     } finally {
       jest.useRealTimers()
     }
@@ -1171,16 +1178,16 @@ describe('a fan-out behind one window sink', () => {
   it('drops a trailing write when the owner died before its finally ran', () => {
     jest.useFakeTimers()
     try {
-      const seen: RpcStatus[] = []
+      const seen: (RpcStatus | undefined)[] = []
       let alive = true
       const statusWindow = createStatusWindow()
       const slot = createStatusFanOut(
-        statusWindow.sink({
+        statusWindow.open({
           isCurrent: () => alive,
           write: s => {
             seen.push(s)
           },
-        }),
+        }).statusCallback,
       )
       const load = slot()
       load({ message: 'Downloading', current: 1, total: 2 })

@@ -32,7 +32,7 @@ const useStyles = makeStyles()({
 // booleans has to be reasoned about.
 type RunState =
   | { phase: 'idle' }
-  | { phase: 'running'; stopToken: StopToken; status: RpcStatus }
+  | { phase: 'running'; stopToken: StopToken; status: RpcStatus | undefined }
   | { phase: 'done'; summary: string }
   | { phase: 'failed'; error: unknown }
 
@@ -104,14 +104,14 @@ export default function DiagonalizeDialog({
         // Stop may have been pressed: the outer read said "not stopped" when the
         // write was queued, and the label it restored was the one "Stopping" had
         // just replaced.
-        statusCallback: statusWindow.sink({
+        statusCallback: statusWindow.open({
           isCurrent: () => !runRef.current.stopped,
           write: status => {
             setState(prev =>
               prev.phase === 'running' ? { ...prev, status } : prev,
             )
           },
-        }),
+        }).statusCallback,
       })
       setState({ phase: 'done', summary: summarize(stats) })
     } catch (error) {

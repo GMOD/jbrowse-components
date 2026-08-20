@@ -209,18 +209,18 @@ describe('createStatusChannel', () => {
 // through one and flushing another unspellable.
 describe('a host that owns its own window', () => {
   test('reports and flushes through the host window, not a second one', () => {
-    const seen: RpcStatus[] = []
+    const seen: (RpcStatus | undefined)[] = []
     // stands in for FetchMixin, which opens its window in a volatile and hands
     // the same object to every fetch on the display
     const hostWindow = createStatusWindow()
     const host = Model.volatile(() => ({ statusWindow: hostWindow })).create({})
     const rotation = createStopTokenRotation(host, host)
-    const other = hostWindow.sink({
+    const other = hostWindow.open({
       isCurrent: () => true,
       write: s => {
         seen.push(s)
       },
-    })
+    }).statusCallback
     const fetch = rotation.begin()
     // the rotation's own sink and a sibling on the same window share one stream:
     // the sibling's write falls inside the window the rotation's just opened

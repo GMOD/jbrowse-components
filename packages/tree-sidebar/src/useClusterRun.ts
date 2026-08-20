@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { isAbortException } from '@jbrowse/core/util'
+import { createStatusWindow, isAbortException } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
@@ -70,8 +70,21 @@ export function useClusterRun({
       // registered before the await, so an unmount mid-run has a live token to
       // abort
       setStopToken(token)
+      // Owned like every other progress stream, which this one was not: the
+      // clustering RPC reports at download granularity and `setStatus` went
+      // straight to React, so every one of those ~40 a second re-rendered the
+      // dialog. And nothing narrowed them to the run in flight — an RPC resolves
+      // its status channel asynchronously, so one arriving after the `finally`
+      // put a finished run's label back under an idle dialog.
+      //
+      // One window per run, because a run is what it describes.
+      let running = true
+      const { statusCallback, clear } = createStatusWindow().open({
+        isCurrent: () => running && isAlive(model),
+        write: setStatus,
+      })
       try {
-        await run({ stopToken: token, statusCallback: setStatus })
+        await run({ stopToken: token, statusCallback })
         onSuccess()
       } catch (e) {
         if (!isAbortException(e) && isAlive(model)) {
@@ -82,9 +95,12 @@ export function useClusterRun({
         // every exit, not just the failures: `onSuccess` closing the dialog is
         // the caller's business, and a hook that only returns to idle when its
         // caller happens to unmount is one reuse away from a dialog stuck
-        // showing a finished run's progress bar
+        // showing a finished run's progress bar. The guard closes first so a
+        // late status cannot land on top of the clear — which `clear` itself
+        // deliberately does not consult.
+        running = false
         setLoading(false)
-        setStatus(undefined)
+        clear()
         setStopToken(undefined)
       }
     },

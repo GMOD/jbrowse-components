@@ -54,11 +54,16 @@ export function useMateDiscovery({
     // guarded and throttled like every other owner of a progress stream: the
     // RPC emits at download granularity and each write re-renders the dialog.
     // One window per effect run, ended with it, so a trailing write cannot
-    // outlive the discovery it describes
+    // outlive the discovery it describes — and one stream, cleared when the
+    // discovery settles however it settles
     const statusWindow = createStatusWindow()
-    const statusCallback = statusWindow.sink({
+    const { statusCallback, clear } = statusWindow.open({
       isCurrent: () => alive,
-      write: setStatus,
+      write: status => {
+        if (alive) {
+          setStatus(status)
+        }
+      },
     })
     discoverMatesFor(trackId)(stopToken, statusCallback)
       .then(result => {
@@ -71,6 +76,14 @@ export function useMateDiscovery({
         if (alive && !isAbortException(e)) {
           setError(e)
         }
+      })
+      // the discovery's last status describes work that is over, and nothing
+      // else drops it: the RPC reports through `getFeaturesInMultipleRegions`'s
+      // fan-out, which no longer ends on the `''` this used to clear itself with
+      // (ADR-080). Invisible while the panel gates on `loading`, and a label
+      // waiting for the next reader either way.
+      .finally(() => {
+        clear()
       })
     return () => {
       alive = false

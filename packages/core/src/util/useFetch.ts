@@ -155,9 +155,12 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
     } else {
       let alive = true
       // `alive` is about this effect run; `settled` is about this fetch. They
-      // differ for exactly one thing, the throttled status sink below: its
-      // trailing write lands on a timer, so without a second term a status
-      // queued just before the fetch resolved reappears after it and sticks
+      // differ for exactly one thing, the status stream below: an RPC resolves
+      // its status channel asynchronously, so a status can arrive after the
+      // fetch it describes has resolved — and without a second term it lands on
+      // top of the clear and sticks. (The trailing write queued *before* the
+      // fetch resolved is a different case, and the stream's own `clear` drops
+      // that one.)
       let settled = false
       const stopToken = createStopToken()
       // A refetch under the same key — mutate(), or the cross-component
@@ -192,9 +195,15 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       // re-renders the dialog holding this hook
       // one fetch is one stream, so the window is this effect run's
       const statusWindow = createStatusWindow()
-      const statusCallback = statusWindow.sink({
+      const { statusCallback, clear: clearStatus } = statusWindow.open({
         isCurrent: () => alive && !settled,
-        write: setStatus,
+        // the one writer, so the settle below clears through the same guard its
+        // statuses pass
+        write: status => {
+          if (alive) {
+            setStatus(status)
+          }
+        },
       })
       const args = [...keyArgs, stopToken, statusCallback]
       const call = fetcher as (...args: unknown[]) => Promise<Data>
@@ -216,9 +225,7 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
           // however it settled, the progress it reported describes work that is
           // over
           settled = true
-          if (alive) {
-            setStatus(undefined)
-          }
+          clearStatus()
         })
       return () => {
         alive = false

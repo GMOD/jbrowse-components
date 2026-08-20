@@ -160,11 +160,40 @@ export function statusFraction(status: RpcStatus | undefined) {
  * that rule lived in a paragraph asking callers not to pass a fresh one; here
  * the wrong thing has no spelling.
  */
+/**
+ * One operation's stream through a {@link StatusWindow}, and the last word that
+ * ends it. They come back together because they are not separable in practice:
+ * the shared bar's whole design rests on **every owner clearing its own field
+ * when its work ends** — a fan-out cannot see the end of a batch and no longer
+ * guesses at one (ADR-080), so a stream nobody closes leaves its last label on
+ * screen for good. That used to be a list of owners in a doc comment, and one of
+ * them was not on it.
+ */
+export interface StatusStream {
+  /** The RPC `statusCallback` for this operation. */
+  statusCallback: StatusCallback
+  /**
+   * The owner's last word: blanks the field, lands whatever the window state,
+   * and drops what was queued behind it. Call it once, in the `finally` of the
+   * operation this stream describes.
+   *
+   * It must land, because nothing else is coming to displace the last label of a
+   * fetch that is over; it must supersede what is queued, or the trailing timer
+   * puts that label back a window later. It is **not** guarded by `isCurrent` —
+   * a run that has just finished is no longer current, and closing the guard
+   * before clearing is exactly how an owner stops a still-running sibling from
+   * writing over the clear. `write` is the one place that decides whether the
+   * field can be touched at all.
+   */
+  clear: () => void
+}
+
 export interface StatusWindow {
   /**
-   * An {@link StatusCallback} writing to `write`, thinned through this window
-   * and skipped entirely once `isCurrent()` goes false — a superseded fetch, or
-   * a torn-down model.
+   * Open a stream for one operation: a {@link StatusCallback} writing through
+   * `write`, thinned by this window and skipped entirely once `isCurrent()` goes
+   * false — a superseded fetch, or a torn-down model — plus the `clear` that
+   * ends it.
    *
    * `isCurrent` is read twice on purpose. Once before the window, so a
    * superseded fetch's late status can't consume the slot a live one is waiting
@@ -172,35 +201,26 @@ export interface StatusWindow {
    * it belongs to can be gone by then. That second read is the load-bearing one
    * — without it a trailing status lands on a destroyed MST node.
    *
+   * `write` takes the clear's `undefined` as well as a status, so **the field
+   * has exactly one writer**. Whatever guards it — `isAlive(self)`, a React
+   * `alive` flag — guards the clear too, by construction rather than by a second
+   * copy of the check at the `finally`.
+   *
    * **Every status goes through the window, the `''` closing a phase
    * included** — so a phase that opens and closes inside it paints nothing.
    * ADR-071. The `''` still displaces the percentage queued behind it, because
    * the window holds one pending write, so a finished phase's progress cannot
-   * reappear; it just lands on the trailing edge. Every owner ends its stream
-   * with a {@link StatusWindow.flush} clear of its own, so nothing waits on that
-   * write.
+   * reappear; it just lands on the trailing edge, where {@link
+   * StatusStream.clear} supersedes it in turn.
    */
-  sink: (args: {
+  open: (args: {
     isCurrent: () => boolean
-    write: (status: RpcStatus) => void
-  }) => StatusCallback
+    write: (status: RpcStatus | undefined) => void
+  }) => StatusStream
   /**
-   * Write now, dropping anything queued behind it, and reopen. For the
-   * **hand-written** clear an owner runs at the ends of its stream —
-   * `createStopTokenRotation`'s `clearStatus`, `assembly.loadPre`'s `finally`.
-   * Such a clear must land, because nothing else is coming to displace the last
-   * label of a fetch that is over, and must supersede whatever the window still
-   * holds from it.
-   *
-   * **Not for the `''` a phase helper closes with** — that goes through a sink
-   * like every other status, so a phase shorter than the window paints nothing.
-   * ADR-071.
-   */
-  flush: (apply: () => void) => void
-  /**
-   * Reopen, so the next fetch reports its first status at once, and drop any
+   * Reopen, so the next operation reports its first status at once, and drop any
    * queued trailing write — a reset accompanies clearing the status, which a
-   * late write from the fetch being reset would undo.
+   * late write from the operation being reset would undo.
    *
    * Reopening is the half that is easy to leave out: an owner clears at the
    * *start* of a fetch too, and charging that clear a full window would delay
@@ -279,29 +299,31 @@ export function createStatusWindow(): StatusWindow {
       }, wait)
     }
   }
+  const reset = () => {
+    clearPending()
+    lastMs = 0
+  }
   return {
-    sink({ isCurrent, write }) {
-      return status => {
-        if (isCurrent()) {
-          // re-read inside, because a trailing write fires on a timer and the
-          // operation it belongs to can be gone by then
-          run(() => {
-            if (isCurrent()) {
-              write(status)
-            }
-          })
-        }
+    open({ isCurrent, write }) {
+      return {
+        statusCallback: status => {
+          if (isCurrent()) {
+            // re-read inside, because a trailing write fires on a timer and the
+            // operation it belongs to can be gone by then
+            run(() => {
+              if (isCurrent()) {
+                write(status)
+              }
+            })
+          }
+        },
+        clear() {
+          reset()
+          write(undefined)
+        },
       }
     },
-    flush(apply) {
-      clearPending()
-      lastMs = 0
-      apply()
-    },
-    reset() {
-      clearPending()
-      lastMs = 0
-    },
+    reset,
   }
 }
 

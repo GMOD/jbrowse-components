@@ -285,17 +285,25 @@ An adapter emits progress ~40/s and each observable write repaints the overlay
 exactly the one a leading-edge-only gate drops, which froze a determinate bar at
 whatever percentage happened to land on a boundary. Because a trailing write
 fires on a timer, its guard has to be re-read inside the throttled body — which
-is what `window.sink({isCurrent, write})` does, and why nothing else builds a
+is what `window.open({isCurrent, write})` does, and why nothing else builds a
 status callback by hand.
 
-**One per owner**, and the sinks come off the window rather than taking one as
-an argument, so N parallel region fetches thin to one stream between them rather
+**One per owner**, and the streams come off the window rather than taking one as
+an argument, so N parallel region fetches thin to one flow between them rather
 than N. That used to be a paragraph asking callers not to pass a fresh throttle
-per sink; a per-sink window now has no spelling short of
-`createStatusWindow().sink(…)`. `window.flush(apply)` is the escape for the
-hand-written clear an owner runs when its stream ends, and `window.reset()`
-reopens without writing. The owners, so progress cadence is uniform whichever
-path a status took:
+per callback; a per-callback window now has no spelling short of
+`createStatusWindow().open(…)`.
+
+`open` returns `{statusCallback, clear}` together, because a stream nobody
+closes is the failure mode the rest of this design rests on not happening: a
+fan-out cannot see the end of a batch and no longer guesses at one (ADR-080), so
+**the owner blanking its own field when its work ends is what ends the stream**.
+Call `clear()` in the `finally` of the operation. `write` takes that
+`undefined` as well as a status, so the field has exactly one writer and
+whatever guards it — `isAlive(self)`, a React `alive` flag — guards the clear by
+construction. `window.reset()` reopens without writing, for the start of the
+next operation. The owners, so progress cadence is uniform whichever path a
+status took:
 
 - `FetchMixin` — the LGV displays
 - `createStopTokenRotation` — the bare-autorun fetches (dotplot, synteny,
@@ -304,6 +312,8 @@ path a status took:
   which drives a spinner and a dialog rather than a display's status fields
 - `useFetch` — every dialog and widget fetch, one window per effect run
 - `assembly.loadPre` — the four concurrent startup files (see above)
+- `useMateDiscovery` — the synteny launch dialog's mate discovery
+- `useClusterRun` — a "Run clustering" dialog, one window per run
 
 They are listed rather than counted for the reason
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) states at "ordering is the
@@ -314,13 +324,15 @@ Two rules the shape enforces:
 - **`setStatusMessage` itself is never throttled.** A display writing a phase
   label by hand ("Downloading" → "Parsing") is a sequence of distinct labels, and
   a trailing edge only guarantees the *last* of a burst, not each one in turn.
-- **A `''` is not throttled, and it reopens the window.** It is how every phase
-  helper says the phase is over, so it has to land, and it has to cancel the
-  progress value queued behind it — otherwise the trailing timer puts a
-  percentage back on screen after the work it measured has ended. Reopening is
-  the half that is easy to leave out: a phase boundary is immediately followed by
-  the next phase's label, so charging the clear a full window delays every label
-  by up to one and drops outright the label of any phase shorter than one.
+- **The `''` a phase helper closes with IS throttled — the owner's `clear` is
+  not.** They are easy to conflate and ADR-071 turns on the difference. The `''`
+  goes through the stream like every other status, so a phase that opens and
+  closes inside one window paints nothing; it still displaces the percentage
+  queued behind it, because the window holds one pending write, so a finished
+  phase's progress can never come back. `clear()` is the other thing: the owner's
+  last word when its work ends, which has to *land* — nothing is coming to
+  displace it — and has to reopen the window, or the next operation's first label
+  is charged a full window it did nothing to earn.
 
 ## A silent `rpcManager.call` is a lint error, not a judgement call
 

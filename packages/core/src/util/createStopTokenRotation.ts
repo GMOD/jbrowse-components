@@ -162,12 +162,12 @@ export function createStopTokenRotation(
   // mixin-based display thins to 10/s, and the overlay repainted faster than the
   // view animated.
   const statusWindow = report.statusWindow ?? createStatusWindow()
-  const clearStatus = () => {
-    statusWindow.flush(() => {
-      if (isAlive(self)) {
-        report.setStatusMessage(undefined)
-      }
-    })
+  // the one place the field is touched, so the liveness check covers a stream's
+  // statuses and the clear that ends it alike
+  const write = (status: RpcStatus | undefined) => {
+    if (isAlive(self)) {
+      report.setStatusMessage(status)
+    }
   }
   return {
     begin(): ActiveFetch {
@@ -189,20 +189,16 @@ export function createStopTokenRotation(
       // SUPERSEDED one is caught by the token comparison, but a fetch that
       // simply finished still holds the current token, so without this its
       // guard stays open and a trailing status write lands after the run that
-      // owned it is over. Read by the sink as well as by the caller's commit
+      // owned it is over. Read by the stream as well as by the caller's commit
       // guard, which is why both go through this one closure.
       let ended = false
       const isCurrent = () =>
         !ended && stopToken === currentStopToken && isAlive(self)
+      const stream = statusWindow.open({ isCurrent, write })
       return {
         stopToken,
         isCurrent,
-        statusCallback: statusWindow.sink({
-          isCurrent,
-          write: status => {
-            report.setStatusMessage(status)
-          },
-        }),
+        statusCallback: stream.statusCallback,
         end() {
           // Only the run that still owns the field clears it. A SUPERSEDED run
           // reaches its `finally` too — it unwinds on the abort the rotation
@@ -211,7 +207,7 @@ export function createStopTokenRotation(
           const owned = isCurrent()
           ended = true
           if (owned) {
-            clearStatus()
+            stream.clear()
           }
         },
       }
