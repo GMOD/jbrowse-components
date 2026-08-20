@@ -10,8 +10,8 @@ entries actually disagree on. Roughly two fifths are ordinary build work; a
 quarter carry a design that survived a rejected alternative and needs following
 rather than re-deriving; most of the rest open with an instruction to go measure
 something, because the premise or the cost attribution is not established and
-building first would be guessing. Five are blocked on a visual call that is not
-the implementer's to make.
+building first would be guessing. Seven are blocked on a visual call that is
+not the implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
 [ideas/](ideas/README.md), one file per proposal.
@@ -44,6 +44,8 @@ before anyone noticed.
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
 | [Re-film the protein launch tour](#re-film-the-protein-launch-tour-once-protein3d-ships-the-a3m-removal) | figures, protein3d | waits on a protein3d release; the a3m is gone for good |
+| [Should chromosome painting colour a same-chromosome mate](#should-chromosome-painting-colour-a-mate-on-the-same-chromosome) | alignments | a visual call; any gate has to spare LGVSyntenyDisplay's Query name, which must paint every block |
+| [Chain mode flags an unmapped mate, not an interchromosomal one](#chain-mode-flags-an-unmapped-mate-but-not-an-interchromosomal-one) | alignments | decide whether the asymmetry is deliberate; `colorUtils.test.ts` pins neither half |
 | [What colour is an arc with no pair orientation](#what-colour-is-an-arc-with-no-pair-orientation) | alignments | a visual call, then one of two edits |
 | [Midnight primary is invisible on dark stock](#midnight-primary-is-invisible-on-the-dark-stock-ground) | palette, theme | pick one of three; never re-tint a single component |
 | [The interbase stack overruns its half-band](#the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint) | alignments | a visual call; the overflow is measured, no fix is chosen |

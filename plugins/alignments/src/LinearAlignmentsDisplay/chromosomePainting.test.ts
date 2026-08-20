@@ -1,6 +1,5 @@
 import { refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
-import { packAbgr } from '@jbrowse/core/util/colorBits'
-import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
+import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 import { waitFor } from '@testing-library/react'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'

@@ -224,10 +224,11 @@ for (const [label, shape] of shapes) {
   const describe = (got: { featureIds: string[] }) =>
     JSON.stringify(got.featureIds) === JSON.stringify(expected.featureIds)
       ? undefined
-      : `${expected.featureIds.length} vs ${got.featureIds.length} features` +
-        (expected.featureIds.length === got.featureIds.length
-          ? `, first differing id ${expected.featureIds.find((id: string, i: number) => id !== got.featureIds[i])}`
-          : '')
+      : `${expected.featureIds.length} vs ${got.featureIds.length} features${
+          expected.featureIds.length === got.featureIds.length
+            ? `, first differing id ${expected.featureIds.find((id: string, i: number) => id !== got.featureIds[i])}`
+            : ''
+        }`
   const diffAfter = describe(gotAfter)
   const diffControl = describe(gotControl)
   if ((diffAfter ?? diffControl) !== undefined) {

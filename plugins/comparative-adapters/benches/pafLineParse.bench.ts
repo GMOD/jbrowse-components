@@ -193,7 +193,7 @@ function featureSpreadA(row: Row, offset: number) {
         ? csToCigar(cs)
         : undefined
   return new SyntenyFeature({
-    uniqueId: offset + 'asm',
+    uniqueId: `${offset}asm`,
     assemblyName: 'asm',
     start: indexedStart,
     end: indexedEnd,
@@ -303,7 +303,7 @@ function featureSpreadB(row: Row, at: number) {
         ? csToCigar(cs)
         : undefined
   return new SyntenyFeature({
-    uniqueId: at + 'asm',
+    uniqueId: `${at}asm`,
     assemblyName: 'asm',
     start: indexedStart,
     end: indexedEnd,
@@ -379,7 +379,7 @@ function featureSpreadC(rec: Row, idx: number) {
         ? csToCigar(cs)
         : undefined
   return new SyntenyFeature({
-    uniqueId: idx + 'asm',
+    uniqueId: `${idx}asm`,
     assemblyName: 'asm',
     start: indexedStart,
     end: indexedEnd,
