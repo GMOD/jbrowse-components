@@ -27,6 +27,7 @@ import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
+import { FADE_AUTO_MIN_FEATURES } from './fadeThin.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
@@ -42,15 +43,6 @@ import type {
   LodTier,
   SyntenyColorBy,
 } from '@jbrowse/synteny-core'
-
-// 'auto' fade-thin (see autoFadeThinAlignments): fade on when the mean on-screen
-// alignment-block width is below this many pixels — i.e. thin ribbons dominate,
-// which is precisely when width-proportional fade declutters. Matches the
-// perpW < 1 sub-pixel boundary the renderer fades at.
-const FADE_AUTO_SUBPIXEL_PX = 1
-// ...and only once there are at least this many blocks, so a lone thin ribbon in
-// a sparse view keeps full alpha instead of being faded toward invisibility.
-const FADE_AUTO_MIN_FEATURES = 10
 
 export interface SyntenyFeatureData {
   strands: Int8Array
@@ -417,20 +409,25 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           : 0
       },
       /**
-       * #getter
+       * #method
        * 'auto' fade-thin signal for this display: on when the ribbons are
-       * predominantly sub-pixel (`meanAlignmentPx` < 1) and there are enough of
-       * them to form a hairball. Many sub-pixel ribbons stacked at full alpha
-       * read as false-dark fans; fading them width-proportionally declutters into
-       * clean blocks (the historical default-on look). A sparse handful stays
-       * unfaded so a lone thin ribbon keeps full alpha, and the whole thing
-       * relaxes automatically on zoom-in as ribbons widen past 1px.
+       * predominantly sub-pixel (`meanAlignmentPx` below `thresholdPx`) and
+       * there are enough of them to form a hairball. Many sub-pixel ribbons
+       * stacked at full alpha read as false-dark fans; fading them
+       * width-proportionally declutters into clean blocks (the historical
+       * default-on look). A sparse handful stays unfaded so a lone thin ribbon
+       * keeps full alpha, and the whole thing relaxes automatically on zoom-in
+       * as ribbons widen.
+       *
+       * The threshold is the caller's because the view asks this twice, at
+       * `FADE_AUTO_ENGAGE_PX` and `FADE_AUTO_RELEASE_PX` — see
+       * `LinearSyntenyView.fadeThinAlignments` for what the deadband is for.
        */
-      get autoFadeThinAlignments() {
+      wantsThinFade(thresholdPx: number) {
         return (
           this.numFeats >= FADE_AUTO_MIN_FEATURES &&
           this.meanAlignmentPx > 0 &&
-          this.meanAlignmentPx < FADE_AUTO_SUBPIXEL_PX
+          this.meanAlignmentPx < thresholdPx
         )
       },
       /**

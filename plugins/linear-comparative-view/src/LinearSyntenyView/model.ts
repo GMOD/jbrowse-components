@@ -16,6 +16,10 @@ import ShuffleIcon from '@mui/icons-material/Shuffle'
 import { observable } from 'mobx'
 
 import baseModel from '../LinearComparativeView/model.ts'
+import {
+  FADE_AUTO_ENGAGE_PX,
+  FADE_AUTO_RELEASE_PX,
+} from '../LinearSyntenyDisplay/fadeThin.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import {
   autoScaleMenuItems,
@@ -200,7 +204,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * width (see WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered
          * whole-genome view doesn't read as a hard full-opacity hairball.
          * 'auto' enables the fade once a display is dominated by sub-pixel
-         * ribbons (see LinearSyntenyDisplay.autoFadeThinAlignments); a genuinely
+         * ribbons (see LinearSyntenyDisplay.wantsThinFade); a genuinely
          * sparse comparison (only a handful of ribbons) keeps full alpha so the
          * fade doesn't wash it out. 'on'/'off' pin it. Resolved view-wide by the
          * `fadeThinAlignments` getter, so all levels fade together.
@@ -235,6 +239,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       importFormSyntenyTrackSelections:
         observable.array<ImportFormSyntenyTrack>(),
+      /**
+       * #volatile
+       * Latched 'auto' thin-fade decision, or undefined before the first pass
+       * has run. Held rather than recomputed per read because the decision has
+       * hysteresis, and hysteresis is a memory — see `fadeThinAlignments`.
+       */
+      fadeThinLatch: undefined as boolean | undefined,
     }))
     .views(self => ({
       /**
@@ -366,19 +377,50 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * Resolved fade-thin flag that every display's renderParams reads. In
        * 'auto' mode the fade turns on once ANY loaded synteny display is
-       * dominated by sub-pixel ribbons (`autoFadeThinAlignments` — a thin
-       * hairball that benefits from decluttering); a sparse view keeps its few
-       * ribbons at full alpha. 'on'/'off' pin it.
+       * dominated by sub-pixel ribbons (a thin hairball that benefits from
+       * decluttering); a sparse view keeps its few ribbons at full alpha.
+       * 'on'/'off' pin it.
+       *
+       * LATCHED, with a deadband: it engages at `autoFadeEngages` and lets go
+       * only once `autoFadeHolds` has gone false too. The signal underneath is a
+       * mean over the features the current fetch window holds, and a pan rolls
+       * that window over every half-viewport or so, stepping the mean; on a
+       * single threshold a view sitting near it flipped every ribbon in the
+       * stack between full alpha and WIDTH_FADE_FLOOR while the reader was
+       * merely scrolling. `installAutoFadeLatch` is what moves the latch, and
+       * this resolves the before-it-has-run state to the plain answer so an SVG
+       * export taken on the first frame is not a different picture.
        *
        * Deliberately view-wide rather than per display: stacked levels are read
        * as one picture, so levels resolving the fade independently would paint
        * the same ribbon density differently from row to row.
        */
       get fadeThinAlignments(): boolean {
-        const { fadeThinAlignmentsMode } = self
+        const { fadeThinAlignmentsMode, fadeThinLatch } = self
         return fadeThinAlignmentsMode === 'auto'
-          ? self.allSyntenyDisplays.some(d => d.autoFadeThinAlignments)
+          ? (fadeThinLatch ?? this.autoFadeEngages)
           : fadeThinAlignmentsMode === 'on'
+      },
+      /**
+       * #getter
+       * Any loaded display is dense enough with sub-pixel ribbons to turn the
+       * fade ON.
+       */
+      get autoFadeEngages(): boolean {
+        return self.allSyntenyDisplays.some(d =>
+          d.wantsThinFade(FADE_AUTO_ENGAGE_PX),
+        )
+      },
+      /**
+       * #getter
+       * Any loaded display is still dense enough to HOLD a fade that is already
+       * on. The wider threshold of the pair: what turns the fade on is
+       * `autoFadeEngages`, and only ribbons wider than that let it go.
+       */
+      get autoFadeHolds(): boolean {
+        return self.allSyntenyDisplays.some(d =>
+          d.wantsThinFade(FADE_AUTO_RELEASE_PX),
+        )
       },
       /**
        * #getter
@@ -647,6 +689,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setFadeThinAlignmentsMode(arg: FadeThinMode) {
         self.fadeThinAlignmentsMode = arg
+      },
+      /**
+       * #action
+       * Move the latched 'auto' thin-fade decision. `installAutoFadeLatch` is
+       * the only caller — the hysteresis rule lives there, next to the autorun
+       * that feeds it.
+       */
+      setFadeThinLatch(arg: boolean) {
+        self.fadeThinLatch = arg
       },
       /**
        * #action

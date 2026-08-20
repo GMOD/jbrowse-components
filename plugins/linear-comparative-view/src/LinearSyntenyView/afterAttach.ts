@@ -11,6 +11,7 @@ import {
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
 import { when } from 'mobx'
 
+import { installAutoFadeLatch } from './installAutoFadeLatch.ts'
 import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
 
 import type { LinearSyntenyViewModel } from './model.ts'
@@ -292,4 +293,5 @@ export function doAfterAttach(self: LinearSyntenyViewModel) {
     materialized: () => self.views.length > 0,
     apply: (init, ctx) => applyInit(self, init, ctx),
   })
+  installAutoFadeLatch(self)
 }
