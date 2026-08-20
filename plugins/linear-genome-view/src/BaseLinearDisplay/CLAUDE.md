@@ -24,18 +24,19 @@ What follows is local.
 `regionFetchKey` needs no entry, because MST throws on a getter declared inside
 `.actions()`. `makeRetryContractCheck` is the same idea for retry: it reports
 when a `reloadCounter` bump re-runs the autorun and the gate still declines —
-the dead Retry button. Both foundations install it. Opt out with
-`loadingSuppressed` if the display deliberately isn't fetching. A two-stage
-`reload()` says `awaitingPrerequisite` instead (HiC, whose contacts fetch
-declines until the header lands; variants, until `sourcesBase` does), which
-**defers** the verdict to the run after the prerequisite arrives rather than
-waiving it. Reports reach the jest gate through `console.error`, so a harness
-replacing it opts itself out; a test provoking a violation calls
-`takeDisplayContractReports()`.
+the dead Retry button. All three fetch installers install it. Opt out with
+`fetchInert` if the display deliberately isn't fetching — the loading scrim and
+the SVG export read the same hook (ADR-081). A two-stage `reload()` says
+`awaitingPrerequisite` instead (HiC, whose contacts fetch declines until the
+header lands; variants, until `sourcesBase` does), which **defers** the verdict
+to the run after the prerequisite arrives rather than waiving it. Reports reach
+the jest gate through `console.error`, so a harness replacing it opts itself
+out; a test provoking a violation calls `takeDisplayContractReports()`.
 
-Both flags are getters on `FetchMixin`, declared once for all three foundations
-and read off the node — not options either foundation passes in, because they
-describe the display rather than its autorun.
+Both flags are getters on `FetchMixin` — and `fetchInert` on
+`SyntenyFetchStateMixin` too, for the family that composes no mixin in common
+with these — declared once per family and read off the node, not options an
+installer passes in, because they describe the display rather than its autorun.
 
 **A predicate has to be strictly narrower than the gate it explains.** One that
 restates the gate's negation makes every decline a deferred one, so no run is

@@ -40,10 +40,16 @@ carte:
 
 `installComparativeFetchAutorun` (`@jbrowse/synteny-core`) welds those together
 with the loading/error flags and the refName rename into one skeleton both
-displays install, so each supplies only a `prepare` gate (the tracked reads), a
-`run` (every await), and a synchronous `commit` the skeleton calls only while the
-fetch is still current. The skeleton logs whatever it `setError`s, so neither
-display overrides `setError` to log it a second time.
+displays install, so each supplies only the three `FetchPhases` — the same
+contract the LGV global family runs on, over this family's own context. The
+skeleton logs whatever it `setError`s, so neither display overrides `setError` to
+log it a second time. Its autorun body is synchronous and kicks the awaits off
+into their own function: an async body stops tracking at its first await, and
+saying so structurally beats every read here happening to sit above it.
+
+It installs `makeRetryContractCheck` too, so this family's Retry is watched like
+the other two — `fetchInert` is the exemption, and it is the same field name the
+LGV displays publish (ADR-081).
 
 `installAssemblySwapCheck` is the companion installer for the one-shot
 reversed-assembly check, off the fetch path — shared for its two `isAlive`
