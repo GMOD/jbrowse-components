@@ -15,9 +15,18 @@
 // anything: SvgCanvas emits `fill="none"` for a stroke and `stroke="none"` for a
 // fill, and the synteny ribbons are the only thing in the level's group.
 //
+// ONLY IF THE EXPORT IS VECTOR, and by default it is not — the dialog's
+// "Rasterize canvas based tracks?" defaults to on, and `renderSvg` then sends the
+// whole level through a 2x raster `PaintLayer` instead of `SvgCanvas`. The
+// default export of a whole-genome hs1/mm39 view is 2 paths and one 3.7MB
+// base64 PNG. So `--vector` unchecks it, and the counts below are the figure
+// author's case rather than the default one.
+//
 //   --loc=<a>,<b>   zoom the two rows (default: whole genomes)
 //   --dataset=hs1|grape
 //   --straight      drawCurves off (default on)
+//   --vector        uncheck "Rasterize canvas based tracks?", so the ribbons
+//                   come out as paths and can be counted at all
 //   --out=<file>    also write the exported SVG
 import fs from 'node:fs'
 
@@ -111,6 +120,22 @@ try {
       b => b.textContent === 'Submit',
     ),
   )
+  if (args.includes('--vector')) {
+    const unchecked = await page.evaluate(() => {
+      const label = [...document.querySelectorAll('label')].find(l =>
+        l.textContent.startsWith('Rasterize canvas based tracks?'),
+      )
+      const box = label?.querySelector<HTMLInputElement>('input[type=checkbox]')
+      if (!box?.checked) {
+        return false
+      }
+      box.click()
+      return true
+    })
+    if (!unchecked) {
+      throw new Error('could not uncheck rasterize — is the box already off?')
+    }
+  }
   await page.evaluate(() => {
     ;[...document.querySelectorAll('button')]
       .find(b => b.textContent === 'Submit')
@@ -136,11 +161,15 @@ try {
   const filled = paths.filter(p => p.includes('stroke="none"')).length
   console.log(
     `dataset ${key}, ${view.drawCurves ? 'curves' : 'straight'}, ` +
-      (locs ? `loc ${locs.join(' / ')}` : 'whole genome'),
+      (locs ? `loc ${locs.join(' / ')}` : 'whole genome') +
+      (args.includes('--vector') ? ', vector' : ', rasterized (the default)'),
   )
   console.log(`  <path> total          ${paths.length}`)
   console.log(`  centerline strokes N  ${stroked}   <- the parked item's N`)
   console.log(`  filled silhouettes    ${filled}`)
+  console.log(
+    `  <image> (rasterized)  ${(svg.match(/<image\b/g) ?? []).length}`,
+  )
   console.log(`  svg size              ${(svg.length / 1024).toFixed(0)}KB`)
 } finally {
   await browser.close()
