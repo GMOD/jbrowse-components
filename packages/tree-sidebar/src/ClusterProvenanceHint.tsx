@@ -1,9 +1,7 @@
-import { useState } from 'react'
-
 import { getContainingView } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { SidebarHintChip } from './SidebarHintChip.tsx'
 import {
   clusterProvenanceDrifted,
   clusterProvenanceLocLabel,
@@ -13,34 +11,6 @@ import { treeIsShowing } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-const useStyles = makeStyles()(theme => ({
-  chip: {
-    position: 'absolute',
-    left: 0,
-    zIndex: 100,
-    padding: '1px 6px',
-    fontSize: 11,
-    lineHeight: '15px',
-    borderBottomRightRadius: 4,
-    color: theme.palette.text.secondary,
-    background: theme.palette.background.paper,
-    border: `1px solid ${theme.palette.divider}`,
-    borderTop: 'none',
-    borderLeft: 'none',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    cursor: 'pointer',
-    // click-to-dismiss, and `TreeSidebar` portals this into the track overlay
-    // node, which is pointer-events:none so it doesn't eat canvas events
-    pointerEvents: 'auto',
-  },
-  drifted: {
-    color: theme.palette.warning.dark,
-    borderColor: theme.palette.warning.main,
-  },
-}))
 
 /**
  * Warns that the dendrogram beside it was computed somewhere else.
@@ -63,8 +33,8 @@ const useStyles = makeStyles()(theme => ({
  * this chip appearing always means something.
  *
  * Click-to-dismiss for the same reason `StaleTreeHint` is: it sits over the row
- * labels. Dismissal is local component state, so it returns on remount — the
- * tree's locus is a property of the tree, not a notification to be cleared.
+ * labels. Dismissal is local to the chip, so it returns on remount — the tree's
+ * locus is a property of the tree, not a notification to be cleared.
  */
 export const ClusterProvenanceHint = observer(function ClusterProvenanceHint({
   model,
@@ -76,48 +46,42 @@ export const ClusterProvenanceHint = observer(function ClusterProvenanceHint({
   // whatever the display reserves above it.
   top?: number
 }) {
-  const { classes, cx } = useStyles()
-  const [dismissed, setDismissed] = useState(false)
   const { clusterProvenance, treeAreaWidth } = model
   const view = getContainingView(model) as LinearGenomeViewModel
-
   // Gate on the *positioned* tree: a tree that isn't drawn has no locus worth
   // captioning, and `StaleTreeHint` is already explaining that case. Through
   // `treeIsShowing`, which is what "positioned" means — spelled out here as
   // `!hierarchy || !showTree` it was a fourth copy of a predicate the package
   // keeps in one place precisely because the gutter and what draws in it must
   // not disagree.
-  if (!clusterProvenance || !treeIsShowing(model) || dismissed) {
-    return null
-  }
-  const drifted = clusterProvenanceDrifted(
-    clusterProvenance,
-    view.dynamicBlocks.contentBlocks,
-  )
+  //
   // ONLY the drifted state draws. The quiet one used to as well, and on a figure
   // it is noise sitting over the rows — "i dont want the tree 'context' text to
   // be displayed, that is just like...extra info for the track menu" (review).
   // It is genuinely extra there: a tree computed on what you are looking at is
   // the case a reader already assumes. Drift is the case that is silently wrong,
-  // so that one keeps its chip. The locus is still always available, in the
-  // Clustering submenu (`clusterProvenanceMenuItems`) and in the SVG export's
-  // caption, which are the two places it is asked for rather than imposed.
-  if (!drifted) {
-    return null
-  }
-  const description = describeClusterProvenance(clusterProvenance)
+  // so that one keeps its chip.
+  const drifted =
+    !!clusterProvenance &&
+    treeIsShowing(model) &&
+    clusterProvenanceDrifted(
+      clusterProvenance,
+      view.dynamicBlocks.contentBlocks,
+    )
   return (
-    <div
-      className={cx(classes.chip, classes.drifted)}
-      data-testid="cluster_provenance_hint"
-      title={`${description}. You have navigated away from that region, so this tree does not describe what is on screen. Re-run clustering here, or reset the row order. Click to dismiss.`}
-      style={{ top, maxWidth: treeAreaWidth }}
-      onClick={() => {
-        setDismissed(true)
-      }}
-    >
-      {'\u26A0 '}
-      {clusterProvenanceLocLabel(clusterProvenance)}
-    </div>
+    <SidebarHintChip
+      warning
+      top={top}
+      maxWidth={treeAreaWidth}
+      testId="cluster_provenance_hint"
+      hint={
+        clusterProvenance && drifted
+          ? {
+              title: `${describeClusterProvenance(clusterProvenance)}. You have navigated away from that region, so this tree does not describe what is on screen. Re-run clustering here, or reset the row order. Click to dismiss.`,
+              text: `⚠ ${clusterProvenanceLocLabel(clusterProvenance)}`,
+            }
+          : undefined
+      }
+    />
   )
 })

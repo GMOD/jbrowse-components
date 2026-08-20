@@ -1,33 +1,9 @@
-import { useState } from 'react'
-
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { SidebarHintChip } from './SidebarHintChip.tsx'
 import { treeDescribesRows } from './clusterUtils.ts'
 
 import type { TreeSidebarModel } from './types.ts'
-
-const useStyles = makeStyles()(theme => ({
-  hint: {
-    position: 'absolute',
-    left: 0,
-    zIndex: 100,
-    padding: '1px 6px',
-    fontSize: 11,
-    lineHeight: '15px',
-    borderBottomRightRadius: 4,
-    color: theme.palette.text.secondary,
-    background: theme.palette.background.paper,
-    border: `1px solid ${theme.palette.divider}`,
-    borderTop: 'none',
-    borderLeft: 'none',
-    whiteSpace: 'nowrap',
-    cursor: 'pointer',
-    // click-to-dismiss, and `TreeSidebar` portals this into the track overlay
-    // node, which is pointer-events:none so it doesn't eat canvas events
-    pointerEvents: 'auto',
-  },
-}))
 
 /**
  * Says why the dendrogram isn't there, when the reason is that it no longer
@@ -49,8 +25,8 @@ const useStyles = makeStyles()(theme => ({
  * display the state is permanent rather than transient: multi-row features'
  * `rowGroups` regroups `sources` downstream of `layout`, so a track configured
  * with both that and clustering can never position its tree. Dismissal is local
- * component state — it comes back on remount, since the condition genuinely
- * still holds.
+ * to the chip — it comes back on remount, since the condition genuinely still
+ * holds.
  */
 export const StaleTreeHint = observer(function StaleTreeHint({
   model,
@@ -65,8 +41,6 @@ export const StaleTreeHint = observer(function StaleTreeHint({
   // `ClusterProvenanceHint`, which is its sibling in that gutter.
   top?: number
 }) {
-  const { classes } = useStyles()
-  const [dismissed, setDismissed] = useState(false)
   const { root, sources, showTree } = model
   // `hierarchy` being undefined is not enough on its own — multi-wiggle's
   // overlay modes drop it deliberately, having no row axis to align to.
@@ -76,17 +50,19 @@ export const StaleTreeHint = observer(function StaleTreeHint({
     !!sources?.length &&
     !model.hierarchy &&
     !treeDescribesRows(root, sources)
-  return stale && !dismissed ? (
-    <div
-      className={classes.hint}
-      style={{ top }}
-      data-testid="stale_tree_hint"
-      title="Re-run clustering, or reset the row order, to bring the tree back. Click to dismiss."
-      onClick={() => {
-        setDismissed(true)
-      }}
-    >
-      Tree hidden — rows changed since clustering
-    </div>
-  ) : null
+  return (
+    <SidebarHintChip
+      top={top}
+      testId="stale_tree_hint"
+      hint={
+        stale
+          ? {
+              title:
+                'Re-run clustering, or reset the row order, to bring the tree back. Click to dismiss.',
+              text: 'Tree hidden — rows changed since clustering',
+            }
+          : undefined
+      }
+    />
+  )
 })
