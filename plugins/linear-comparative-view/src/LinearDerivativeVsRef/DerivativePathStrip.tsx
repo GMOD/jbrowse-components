@@ -24,7 +24,7 @@ const MIN_CHEVRON_WIDTH = 13
 const MIN_LABEL_WIDTH = 30
 
 function blockFill(colorIndex: number) {
-  return tagColorPalette[colorIndex % tagColorPalette.length]!
+  return tagColorPalette[colorIndex % tagColorPalette.length]
 }
 
 // Reversed segments point back the way they came, which is what makes a
