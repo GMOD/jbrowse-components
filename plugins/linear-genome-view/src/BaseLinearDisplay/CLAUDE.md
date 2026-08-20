@@ -95,9 +95,11 @@ re-remembering the cancel term — one edit from the dead-Retry bug.
   you, and skip a region the worker refused for size (`isRegionRefused`). A
   display calling `fetchRegions` directly puts the call beside its own store. It
   takes an index and no span: `fetchRegions` resolves that against the regions
-  it issued, so claiming a span the fetch never asked for is not expressible.
-  Marking a region loaded that holds nothing for that span is what froze canvas
-  displays until a page reload: REGION_TOO_LARGE.md, and `RegionFetchContext`.
+  it issued, so a fetch cannot claim a span it never asked for. The raw writer
+  under it, `setLoadedRegion`, does take one — tests stage a loaded display with
+  it, and production has no reason to. Marking a region loaded that holds
+  nothing for that span is what froze canvas displays until a page reload:
+  REGION_TOO_LARGE.md, and `RegionFetchContext`.
 - `bufferedVisibleRegions` carries `reversed` alongside the widened bounds, and
   that is load-bearing — canvas stamps it onto `rpcDataMap`, and unit tests hand
   `setRpcData` a region by hand, so it went missing once uncaught.

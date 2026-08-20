@@ -49,10 +49,16 @@ export interface LoadedRegion extends Region {
  * **The span is not a parameter**, and that is the half that makes the rule
  * structural rather than advisory: `commitRegion` names an index, and
  * `fetchRegions` resolves it against the very `needed` list it issued. A display
- * can say "this region landed" and nothing else — it cannot name a span, so it
- * cannot claim one the fetch never asked for. What is left to get wrong is
- * forgetting the call, which costs a redundant refetch; the direction that cost
- * a display frozen until reload is now unreachable.
+ * writing through this context can say "this region landed" and nothing else —
+ * it cannot name a span, so it cannot claim one the fetch never asked for. What
+ * is left to get wrong is forgetting the call, which costs a redundant refetch.
+ *
+ * Through this context, and only through it. `setLoadedRegion` is the raw write
+ * underneath and does take a span, because the tests that stage an
+ * already-loaded display need one. Nothing in production calls it directly, and
+ * a display that starts to is precisely the case above — so the boundary is
+ * written on that action too, rather than left for a reader to infer from this
+ * paragraph being silent about it.
  *
  * The global family reached the same property from the other side.
  * `GlobalFetchPhases.commit` is a phase the skeleton invokes only when `run`

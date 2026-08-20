@@ -330,15 +330,26 @@ export default function MultiRegionDisplayMixin() {
       .actions(self => ({
         /**
          * #action
-         * Action wrapper so callers after async boundaries stay in MST strict
-         * mode. Stamps the region with the fetch key its data came back under —
-         * `fetchRegions` passes the key it captured before issuing the RPC, and
-         * the default serves a caller committing a region it holds right now.
+         * The raw write behind `ctx.commitRegion`, and **not what a fetch should
+         * call**: a display naming its own span is the bug this family spent a
+         * release on, and going through the context is what makes that
+         * inexpressible — see {@link RegionFetchContext}. Direct callers are
+         * tests staging an already-loaded display.
+         *
+         * An action so callers after an async boundary stay in MST strict mode.
+         * Stamps the region with the fetch key its data came back under.
+         * `fetchRegions` passes the key it captured before issuing the RPC; the
+         * default reads it *now*, which is right for a caller holding the region
+         * already and wrong for anything resuming after an await, where the
+         * viewport may have moved under the fetch.
          */
         setLoadedRegion(
           displayedRegionIndex: number,
           region: Region,
-          fetchKey = self.regionFetchKey,
+          // annotated, not inferred: `self` here is mid-composition, so the
+          // default's type lands as `any` and the published signature stopped
+          // constraining the one field `isCacheValid` compares
+          fetchKey: string = self.regionFetchKey,
         ) {
           self.loadedRegions.set(displayedRegionIndex, { ...region, fetchKey })
         },
