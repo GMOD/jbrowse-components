@@ -153,6 +153,42 @@ indel CIGAR each), `sort -k1,1 -k3,3n | bgzip` + `tabix -s1 -b3 -e4 -0`, open a
 with a noop / `parsePifLine` / `parsePifLine`+`makeIndexedSyntenyFeature`
 callback, then time dedupe + decorate + sort on the result.
 
+### Both of its middle rows moved in 2026-08-20, and the shares above did not
+
+The percentages above are still the ones to reason about binning with — see the
+caveat at the end of this section — but the two phases they measure are no longer
+the code that was profiled. Both got faster, on real hs1-vs-mm39 rows rather than
+the synthetic PIF above:
+
+<!-- BEGIN GENERATED MEASUREMENT paf-line-read-path -->
+
+| one row parsed and built   |  rows | tab offsets | offsets + no spread |    control |
+| -------------------------- | ----: | ----------: | ------------------: | ---------: |
+| minimap2 PAF, 10 tags      | 1,000 |  1.13-1.16x |          1.72-1.77x | 0.98-0.99x |
+| fine PIF tier, ~1.8kB rows | 4,000 |  1.30-1.41x |      **1.60-2.19x** | 0.99-1.03x |
+| coarse PIF tier, no CIGAR  | 4,000 |  1.11-1.21x |      **2.02-2.12x** |      1.04x |
+
+<!-- END GENERATED MEASUREMENT paf-line-read-path -->
+
+`parsePAFLine` — which every PIF row goes through, since `parsePifLine` only
+renames its fields — walks tab offsets instead of `line.split('\t')`. On a fine
+row the split was scanning and re-wrapping ~1.7kB of CIGAR to read twelve short
+fields off the front of it. And both feature builders stopped spreading `...rest`
+into the middle of their data-object literal, which denied V8 a static hidden
+class and made every field after the spread a dynamic add, once per feature.
+
+**The `new SyntenyFeature` row was the larger of the two, which contradicts the
+17% the table gives it.** The two profiles disagree because they are different
+files — the synthetic rows above carry one short indel CIGAR each, where a real
+fine row carries 1.8kB of one — so neither share is wrong, and the ranking is
+what a reader should carry away rather than either number.
+
+**Binning's ceiling did not improve.** Deflating the two rows by what they
+measured leaves the removable fraction at 27-34% against the 34% above, i.e. the
+~1.5x cap in the next section stands, or tightens slightly. That is the direction
+worth noticing: making the unavoidable half cheaper is what ADR-039 argued for,
+and it does not make the removable half worth more.
+
 ## Density: the layer that matters
 
 Two things reduce cost, at different ceilings:
