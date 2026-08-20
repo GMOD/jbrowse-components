@@ -2,9 +2,10 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 
 import DotplotHighlightBands from './DotplotHighlightBands.tsx'
+import DotplotHighlightChipOverlay from './DotplotHighlightChipOverlay.tsx'
 import DotplotHighlights from './DotplotHighlights.tsx'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -90,4 +91,35 @@ test('native highlights render and respect highlightsVisible', () => {
     </ThemeProvider>,
   )
   expect(container.querySelectorAll('rect')).toHaveLength(0)
+})
+
+// The chip's menu did nothing at all on click, and the cause is not in the
+// menu: the plot takes POINTER CAPTURE on pointerdown for its drag, and a
+// captured pointer drags the compatibility mouse events with it, so `click`
+// lands on the plot rather than the button. jsdom implements neither capture
+// nor that retargeting, so it cannot reproduce the symptom — what is testable
+// is the fix, that the press never reaches the plot to start a drag at all.
+test('a press on a highlight chip never reaches the plot', () => {
+  const model = setup()
+  model.addToHighlights({
+    refName: 'ctgA',
+    start: 100,
+    end: 200,
+    assemblyName: 'volvox',
+  })
+  model.setShowHighlightChips(true)
+  const onPointerDown = jest.fn()
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <div onPointerDown={onPointerDown}>
+        <DotplotHighlightChipOverlay model={model} />
+      </div>
+    </ThemeProvider>,
+  )
+  const button = container.querySelector('button')!
+  fireEvent.pointerDown(button)
+  expect(onPointerDown).not.toHaveBeenCalled()
+
+  fireEvent.click(button)
+  expect(screen.getByText('Dismiss highlight')).toBeTruthy()
 })

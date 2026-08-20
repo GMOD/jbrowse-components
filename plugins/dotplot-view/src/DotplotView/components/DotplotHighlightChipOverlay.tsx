@@ -51,15 +51,32 @@ const HighlightChip = observer(function HighlightChip({
       </Tooltip>
     </CascadingMenuButton>
   )
+  // The plot starts a drag on pointerdown and takes POINTER CAPTURE for it, and
+  // a captured pointer retargets the compatibility mouse events with it — so
+  // `click` is delivered to the plot rather than to the chip's button, and the
+  // menu silently never opened. Stopping the pointerdown means a press that
+  // starts on a chip never captures, the same fix `JBrowseTabMenu` carries.
   return (
     <>
       {h ? (
-        <div className={classes.chip} style={{ left: h.left, top: 0 }}>
+        <div
+          className={classes.chip}
+          style={{ left: h.left, top: 0 }}
+          onPointerDown={event => {
+            event.stopPropagation()
+          }}
+        >
           {chip}
         </div>
       ) : null}
       {v ? (
-        <div className={classes.chip} style={{ left: 0, top: v.top }}>
+        <div
+          className={classes.chip}
+          style={{ left: 0, top: v.top }}
+          onPointerDown={event => {
+            event.stopPropagation()
+          }}
+        >
           {chip}
         </div>
       ) : null}
