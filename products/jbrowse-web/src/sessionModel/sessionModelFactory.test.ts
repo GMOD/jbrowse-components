@@ -554,31 +554,52 @@ describe('JBrowseWebSessionModel', () => {
     })
   })
 
-  describe('scroll-to-zoom hint budget', () => {
+  describe('scroll-to-zoom hint pacing', () => {
     beforeEach(() => {
       localStorage.clear()
+      jest.useFakeTimers()
+    })
+    afterEach(() => {
+      jest.useRealTimers()
     })
 
-    it('starts with a budget and spends it a raise at a time', () => {
+    it('goes quiet on a raise and speaks again on its own', () => {
       const session = createTestSession()
       expect(session.canShowScrollZoomHint).toBe(true)
-      session.setScrollZoomHintCount(session.scrollZoomHintCount + 1)
+      session.noteScrollZoomHintShown()
+      expect(session.canShowScrollZoomHint).toBe(false)
+      jest.advanceTimersByTime(30_000)
       expect(session.canShowScrollZoomHint).toBe(true)
     })
 
-    it('setting the preference ends it, from wherever it was set', () => {
-      // the view menu, the Preferences dialog and the prompt's own button all
-      // land here, and all of them mean the same thing: they found the setting
+    it('each raise buys a longer quiet than the last', () => {
+      const session = createTestSession()
+      session.noteScrollZoomHintShown()
+      jest.advanceTimersByTime(30_000)
+      session.noteScrollZoomHintShown()
+      jest.advanceTimersByTime(30_000)
+      // the second pause is twice the first, so half of it is not enough
+      expect(session.canShowScrollZoomHint).toBe(false)
+      jest.advanceTimersByTime(30_000)
+      expect(session.canShowScrollZoomHint).toBe(true)
+    })
+
+    it('an answer buys the longest quiet there is, and still not silence', () => {
+      const session = createTestSession()
+      session.snoozeScrollZoomHints()
+      jest.advanceTimersByTime(9 * 60_000)
+      expect(session.canShowScrollZoomHint).toBe(false)
+      jest.advanceTimersByTime(60_000)
+      expect(session.canShowScrollZoomHint).toBe(true)
+    })
+
+    it('setting the preference leaves the prompt free to speak', () => {
+      // it can't fire while scroll-to-zoom is on — the wheel zooms, so no wheel
+      // is dead — but turning it back off is the user who most needs the reply
       const session = createTestSession()
       session.setScrollZoom(true)
-      expect(session.canShowScrollZoomHint).toBe(false)
-    })
-
-    it('turning it back off ends it too', () => {
-      // the one user who most obviously does not need to be told again
-      const session = createTestSession()
       session.setScrollZoom(false)
-      expect(session.canShowScrollZoomHint).toBe(false)
+      expect(session.canShowScrollZoomHint).toBe(true)
     })
   })
 

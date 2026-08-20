@@ -7,10 +7,11 @@
 // stage; the interesting transition is `bottomed` (scrolls still arriving, no
 // hint) to `dead wheel` (nothing scrolling, hint up).
 //
-// The prompt is budgeted session-wide (BaseSessionModel's
-// `canShowScrollZoomHint`), so a run that pokes at it more than a few times
-// stops seeing it — that is the budget working, not a failure. Reload for a
-// fresh one; the count is volatile.
+// A raise quiets the prompt session-wide for 30s, and for twice as long after
+// each further raise (BaseSessionModel's `canShowScrollZoomHint`), so a run
+// that pokes at it repeatedly stops seeing it — that is the pacing working,
+// not a failure. Reload, or call `JBrowseSession.setScrollZoomHintPaused(false)`
+// from the console, for a prompt that will speak again.
 //
 //     node browser-tests/probe-scrollzoom.ts
 //     OUT=/tmp/shots HEADLESS=0 node browser-tests/probe-scrollzoom.ts

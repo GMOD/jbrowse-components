@@ -146,8 +146,8 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 
   // The prompt for a wheel the band ate and did nothing with — see
   // useWheelScrollZoom, where that is a guaranteed outcome rather than a
-  // conditional one. Same session-wide budget the genome views spend from, so
-  // a synteny view's three wheel surfaces can't interrupt three times over.
+  // conditional one. Same session-wide pacing the genome views keep, so a
+  // synteny view's three wheel surfaces can't interrupt three times over.
   const session = getSession(model)
   const {
     showZoomHint,
@@ -160,12 +160,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     lingerMs: HINT_LINGER_MS,
     enabled: session.canShowScrollZoomHint,
     onShow: () => {
-      session.setScrollZoomHintCount(session.scrollZoomHintCount + 1)
+      session.noteScrollZoomHintShown()
     },
-    // they replied, so the budget's remaining raises would be asking a question
-    // that has been answered
+    // they replied, so the next raise is the long way off rather than the
+    // backoff's next step
     onAnswered: () => {
-      session.endScrollZoomHints()
+      session.snoozeScrollZoomHints()
     },
   })
   const { scrollingRef } = useWheelScrollZoom(canvas, parentView, noteDeadWheel)

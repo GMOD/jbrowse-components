@@ -171,13 +171,13 @@ const SCROLL_LAG_MS = 100
  * is released by a `mouseleave` that a backgrounded tab never dispatches.
  *
  * Of those, escape is the one that also says something about the *next* raise,
- * and is reported as `onAnswered` for the caller's budget to act on. The rest
+ * and is reported as `onAnswered` for the caller's pacing to act on. The rest
  * are silence: a timer ran out, a tab went away, a press landed on whatever the
- * user was reaching for. Only silence should be answered by asking again.
+ * user was reaching for. Only silence should be answered by asking again soon.
  *
  * How often it may fire is the caller's to decide, through `enabled`/`onShow`.
- * That policy is deliberately not here: the budget worth enforcing is
- * session-wide (JBrowse spends one across every view — see the session's
+ * That policy is deliberately not here: the pacing worth keeping is session-wide
+ * (JBrowse holds one across every view — see the session's
  * `canShowScrollZoomHint`), and this hook is duck-typed on the view, like the
  * rest of the wheel-zoom layer, so it can't see a session and shouldn't learn
  * to.
@@ -195,15 +195,16 @@ export function useScrollZoomHintState({
   onAnswered,
 }: {
   lingerMs?: number
-  /** false to stop raising it at all — a spent budget, usually */
+  /** false to stop raising it at all — a caller keeping it quiet, usually */
   enabled?: boolean
-  /** one raise, for the caller to charge against whatever budget it keeps */
+  /** one raise, for the caller to pace against whatever quiet it keeps */
   onShow?: () => void
   /**
    * The user replied to the prompt rather than letting it time out: escape, or
-   * a press somewhere else. A budget is for someone who might not have noticed
-   * it, and this is the caller's signal that they did — see `dismissZoomHint`,
-   * which reports the host's own reply (its button) the same way.
+   * a press somewhere else. A raise going unanswered may simply not have been
+   * noticed, and this is the caller's signal that this one was — see
+   * `dismissZoomHint`, which reports the host's own reply (its button) the same
+   * way.
    */
   onAnswered?: () => void
 } = {}) {

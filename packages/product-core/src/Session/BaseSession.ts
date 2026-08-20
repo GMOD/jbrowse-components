@@ -4,7 +4,12 @@ import { setNumberGrouping } from '@jbrowse/core/util'
 import { freezeDeep } from '@jbrowse/core/util/freezeDeep'
 import { isFeature, unwrapFeature } from '@jbrowse/core/util/simpleFeature'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import {
+  getParent,
+  isAlive,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
 import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
@@ -26,9 +31,14 @@ function isAnimationMode(val: unknown): val is AnimationMode {
   return val === 'system' || val === 'enabled' || val === 'disabled'
 }
 
-// How many times a session will raise the scroll-to-zoom prompt before it stops
-// offering (see `canShowScrollZoomHint`).
-const MAX_SCROLL_ZOOM_HINTS = 3
+// How long the scroll-to-zoom prompt stays down after a raise, and the ceiling
+// that doubling walks up to (see `noteScrollZoomHintShown`). The first pause is
+// short because the prompt answers a gesture that just failed, and a wheel that
+// did nothing is still a wheel that did nothing on the fourth try — this used to
+// be a budget of three raises and then silence for the session, which left a
+// user who had met the prompt and forgotten it with a dead wheel and no reply.
+const SCROLL_ZOOM_HINT_PAUSE_MS = 30_000
+const SCROLL_ZOOM_HINT_MAX_PAUSE_MS = 10 * 60_000
 
 // Promoted per-display-type slot defaults live flat in `preferencesOverrides`
 // under one composite key each (`displayTypeDefault\0<type>\0<slot>`), not under
@@ -162,20 +172,29 @@ export function BaseSessionModel<
       }),
       /**
        * #volatile
-       * how many times the scroll-to-zoom prompt has been raised this session
-       * (see `canShowScrollZoomHint`).
+       * how many times the scroll-to-zoom prompt has been raised this session.
+       * Each raise buys a longer quiet than the last (see
+       * `noteScrollZoomHintShown`), so this is the backoff's exponent as well
+       * as a count.
        *
-       * Session-wide rather than per view, because the thing being budgeted is
-       * the user's attention and they only have one: a synteny view is two
-       * genome views and a ribbon band, each with its own copy of the prompt,
-       * and three independent counters would spend the budget three times over.
+       * Session-wide rather than per view, because the thing being paced is the
+       * user's attention and they only have one: a synteny view is two genome
+       * views and a ribbon band, each with its own copy of the prompt, and
+       * three independent counters would interrupt three times over.
        *
        * Volatile, so it resets on reload. That is the intent — a persisted
-       * count would silence the prompt for good after one afternoon of
-       * ignoring it, and a user who never enabled the preference is exactly the
-       * one who might still want to know.
+       * count would carry one afternoon's backoff into every session after it,
+       * and a user who never enabled the preference is exactly the one who
+       * might still want to know.
        */
       scrollZoomHintCount: 0,
+      /**
+       * #volatile
+       * whether the scroll-to-zoom prompt is currently quiet — see
+       * `canShowScrollZoomHint`, which is this read the right way round, and
+       * `noteScrollZoomHintShown`, whose block owns the timer that lifts it.
+       */
+      scrollZoomHintPaused: false,
     }))
     .views(self => ({
       /**
@@ -356,17 +375,20 @@ export function BaseSessionModel<
       },
       /**
        * #getter
-       * whether the scroll-to-zoom prompt may still be raised. It is shown for
-       * a wheel that did nothing at all, which in a view that has run out of
-       * page to scroll is *every* wheel — so without a budget the prompt is not
-       * a hint, it is a recurring interruption for anyone who has decided they
+       * whether the scroll-to-zoom prompt may be raised right now. It is shown
+       * for a wheel that did nothing at all, which in a view that has run out
+       * of page to scroll is *every* wheel — so unpaced the prompt is not a
+       * hint, it is a recurring interruption for anyone who has decided they
        * don't want the preference.
        *
-       * A few is the whole design: enough that missing the first one doesn't
-       * mean never being told, few enough that ignoring them ends it.
+       * Paced rather than budgeted, and the difference is the point: a budget
+       * spent is silence for the rest of the session, and the gesture it
+       * answers goes on being dead long after that. Knowing the preference
+       * exists is not the same as remembering where it lives, or as expecting
+       * the wheel to do nothing on this particular view.
        */
       get canShowScrollZoomHint(): boolean {
-        return self.scrollZoomHintCount < MAX_SCROLL_ZOOM_HINTS
+        return !self.scrollZoomHintPaused
       },
       /**
        * #getter
@@ -494,34 +516,16 @@ export function BaseSessionModel<
        */
       setScrollZoom(flag: boolean) {
         this.setPreferenceOverride('scrollZoom', flag)
-        // Whoever just set this has found the preference, which is the one
-        // thing the prompt exists to tell them — including the user turning it
-        // back *off*, who is the last person who should be offered it again.
-        // Here rather than in the prompt's own button so it covers the view
-        // menu and the Preferences dialog too.
-        this.endScrollZoomHints()
       },
       /**
        * #action
-       * spend one of the scroll-to-zoom prompt's showings (see
-       * `canShowScrollZoomHint`). A setter rather than an increment so a test
-       * can put the budget wherever it needs it.
+       * quiet the scroll-to-zoom prompt, or let it speak again. The pacing
+       * that calls this — `noteScrollZoomHintShown` and
+       * `snoozeScrollZoomHints` — owns the timer that lifts it; this is the
+       * plain write, and the seam a probe or a test sets by hand.
        */
-      setScrollZoomHintCount(n: number) {
-        self.scrollZoomHintCount = n
-      },
-      /**
-       * #action
-       * stop offering the scroll-to-zoom prompt for the rest of the session.
-       *
-       * For an answer, as opposed to a raise going unanswered: the user found
-       * the setting, or waved the prompt away rather than letting it time out.
-       * The budget is for a user who might not have noticed, and none of those
-       * is that user — spending it a raise at a time would go on interrupting
-       * someone who has already replied.
-       */
-      endScrollZoomHints() {
-        self.scrollZoomHintCount = MAX_SCROLL_ZOOM_HINTS
+      setScrollZoomHintPaused(flag: boolean) {
+        self.scrollZoomHintPaused = flag
       },
       /**
        * #action
@@ -564,6 +568,68 @@ export function BaseSessionModel<
         self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]
       },
     }))
+    // The scroll-to-zoom prompt's pacing, in a block of its own because it is
+    // the one thing here holding a timer.
+    .actions(self => {
+      let resumeTimer: ReturnType<typeof setTimeout> | undefined
+      function pauseFor(ms: number) {
+        clearTimeout(resumeTimer)
+        self.setScrollZoomHintPaused(true)
+        resumeTimer = setTimeout(() => {
+          // a session can be torn down inside a pause — a test, or the app
+          // loading another session — and an action on a dead node throws.
+          // Also the backstop for a mixin composed over this one that declares
+          // its own `beforeDestroy`, which would replace the one below
+          if (isAlive(self)) {
+            self.setScrollZoomHintPaused(false)
+          }
+        }, ms)
+      }
+      return {
+        /**
+         * #action
+         * the prompt has just been raised: count it, and quiet it for a while.
+         *
+         * The while doubles with each raise, up to
+         * SCROLL_ZOOM_HINT_MAX_PAUSE_MS. Backoff rather than a budget because
+         * the two failure modes pull opposite ways — a user who ignores the
+         * prompt is being interrupted and wants it to stop, and a user who
+         * ignores it is also the one most likely to still not know what the
+         * wheel is doing. Doubling serves both and never reaches never: 30s, a
+         * minute, two, four, and by then anyone still seeing it is meeting a
+         * dead wheel every few minutes, which is a real problem the prompt is
+         * the answer to.
+         */
+        noteScrollZoomHintShown() {
+          self.scrollZoomHintCount += 1
+          pauseFor(
+            Math.min(
+              SCROLL_ZOOM_HINT_PAUSE_MS * 2 ** (self.scrollZoomHintCount - 1),
+              SCROLL_ZOOM_HINT_MAX_PAUSE_MS,
+            ),
+          )
+        },
+        /**
+         * #action
+         * the user replied to the prompt rather than letting it lapse — escape,
+         * or a press somewhere else. Straight to the longest quiet, without
+         * spending the backoff on the way: an answer is "not now", which is
+         * worth more than a raise that may not have been read at all.
+         *
+         * Not "never" any more, and deliberately. Setting the preference from
+         * anywhere used to end the prompt for the session, on the reasoning
+         * that whoever set it had found it — but the gesture goes on being dead
+         * for the user who turned it back *off*, and knowing a preference
+         * exists is not the same as remembering where it lives.
+         */
+        snoozeScrollZoomHints() {
+          pauseFor(SCROLL_ZOOM_HINT_MAX_PAUSE_MS)
+        },
+        beforeDestroy() {
+          clearTimeout(resumeTimer)
+        },
+      }
+    })
 
   return types.compose(baseModel, SnackbarModel())
 }

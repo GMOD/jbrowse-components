@@ -95,16 +95,16 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
     // isn't — an empty view, a short page — a wheel over it does nothing at
     // all, which on a view with no tracks open is most of its surface.
     outerRef: ref,
-    // one budget for the whole session, not one per view: a synteny view is
+    // one pacing for the whole session, not one per view: a synteny view is
     // three of these side by side
     enabled: session.canShowScrollZoomHint,
     onShow: () => {
-      session.setScrollZoomHintCount(session.scrollZoomHintCount + 1)
+      session.noteScrollZoomHintShown()
     },
-    // they replied, so the budget's remaining raises would be asking a question
-    // that has been answered
+    // they replied, so the next raise is the long way off rather than the
+    // backoff's next step
     onAnswered: () => {
-      session.endScrollZoomHints()
+      session.snoozeScrollZoomHints()
     },
   })
   useEffect(() => {

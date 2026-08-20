@@ -4,10 +4,13 @@
 // test there can dispatch a scroll event but not tell you whether the page
 // produces one (see useScrollZoomHint.test's header).
 //
-// Three gestures per page load, because the session budget is three raises
-// (BaseSessionModel's `canShowScrollZoomHint`): over the view header, over the
-// tracks area, and over the app below the view. `scrollY: 0` beside `hint: 0`
-// is the case worth reading — the wheel moved nothing and said nothing.
+// Three gestures per page load: over the view header, over the tracks area, and
+// over the app below the view. `scrollY: 0` beside `hint: 0` is the case worth
+// reading — the wheel moved nothing and said nothing.
+//
+// A raise quiets the prompt for 30s and longer each time (BaseSessionModel's
+// `canShowScrollZoomHint`), which is longer than this probe wants to wait, so
+// each zone lifts the pause by hand before the next one.
 //
 // Run against the built app; it starts its own server.
 //
@@ -106,6 +109,11 @@ try {
       console.log(' ', name, which, JSON.stringify(at), JSON.stringify(state))
       // outlast the prompt's linger, so the next zone starts from nothing up
       await delay(6200)
+      // ...and lift the pacing the raise just bought, which is the one thing
+      // between zones that a page this probe drives cannot wait out
+      await page.evaluate(() => {
+        ;(window as any).JBrowseSession?.setScrollZoomHintPaused(false)
+      })
     }
     await page.close()
   }

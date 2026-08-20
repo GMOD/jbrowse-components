@@ -346,15 +346,15 @@ test('dismissing clears it immediately', () => {
   expect(el.textContent).toBe('')
 })
 
-// The caller owns the budget (JBrowse spends one session-wide across every
+// The caller owns the pacing (JBrowse keeps one session-wide across every
 // view), so what is checked here is that the hook asks and reports honestly.
-test('a spent budget raises nothing', () => {
+test('a caller holding it quiet raises nothing', () => {
   const { getByTestId } = render(<Harness view={makeView()} enabled={false} />)
   const el = getByTestId('c')
   wheel(el)
   settle()
   expect(el.textContent).toBe('')
-  // and nothing is left pending to fire if the budget comes back
+  // and nothing is left pending to fire once the caller speaks again
   expect(jest.getTimerCount()).toBe(0)
 })
 
@@ -367,7 +367,7 @@ test('one raise is charged once, however long the user keeps pushing', () => {
   expect(onShow).toHaveBeenCalledTimes(1)
 
   // still pushing at the bottom of the page: the prompt is held up, not
-  // re-raised, so the budget is not spent again mid-gesture
+  // re-raised, so one gesture is one interruption
   for (let i = 0; i < 5; i++) {
     wheel(el)
     advance(100)
@@ -383,10 +383,10 @@ test('one raise is charged once, however long the user keeps pushing', () => {
   expect(onShow).toHaveBeenCalledTimes(2)
 })
 
-// The budget exists for a user who might not have noticed the prompt. An answer
-// says they did, and is worth more than one raise — but only escape and the
-// card's own button are answers, and the caller is the one that decides what an
-// answer costs.
+// A raise going unanswered may not have been noticed at all. An answer says it
+// was, and is worth more quiet than a raise — but only escape and the card's own
+// button are answers, and the caller is the one that decides what an answer
+// buys.
 test('escape is an answer; timing out and a tab switch are not', () => {
   const onAnswered = jest.fn()
   const { getByTestId } = render(
