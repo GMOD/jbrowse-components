@@ -414,16 +414,11 @@ function offscreenMateRectAt(
   markHeight: number,
   markY: number,
 ): OffscreenMateRect | undefined {
-  // The block's own length, NOT `ends - starts`: those are clamped to the
+  // the block's own length, NOT `ends - starts`: those are clamped to the
   // displayed region, and the ribbons' own cull reads the unclamped extent
   // (`alignmentLengths`), so measuring the clamp here hid a mark whose ribbon
-  // the same setting kept.
-  //
-  // Guarded on the floor being set, which is the DEFAULT state: this loop runs
-  // once per mark and the marks are unbounded, so reading a third typed array
-  // per mark to compare it against zero cost the 250k repaint about a quarter
-  // of its time for an answer that cannot change.
-  if (minAlignmentLength > 0 && data.lengths[i]! < minAlignmentLength) {
+  // the same setting kept
+  if (data.lengths[i]! < minAlignmentLength) {
     return undefined
   }
   const x1 = screenX(data.starts[i]!, bpPerPx, offsetPx)
