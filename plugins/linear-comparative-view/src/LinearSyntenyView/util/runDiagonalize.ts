@@ -21,16 +21,24 @@ function levelStatusCallback(
   level: number,
   levelCount: number,
 ): StatusCallback | undefined {
-  return statusCallback === undefined || levelCount < 2
-    ? statusCallback
-    : status => {
-        const prefix = `Level ${level + 1}/${levelCount}: `
-        statusCallback(
-          typeof status === 'string'
-            ? `${prefix}${status}`
-            : { ...status, message: `${prefix}${status.message}` },
-        )
-      }
+  if (statusCallback === undefined || levelCount < 2) {
+    return statusCallback
+  }
+  const prefix = `Level ${level + 1}/${levelCount}: `
+  return status => {
+    // `''` is the phase-over sentinel, not a label, so it goes through
+    // unprefixed. Prefixed it becomes `"Level 1/3: "` — a status every consumer
+    // reads as a phase still running, which left the reordering spinner showing
+    // a bare level number between one level's last phase and the next level's
+    // first.
+    if (status === '') {
+      statusCallback(status)
+    } else if (typeof status === 'string') {
+      statusCallback(`${prefix}${status}`)
+    } else {
+      statusCallback({ ...status, message: `${prefix}${status.message}` })
+    }
+  }
 }
 
 // Runs the DiagonalizeSynteny RPC (one call per level — the worker fetches the

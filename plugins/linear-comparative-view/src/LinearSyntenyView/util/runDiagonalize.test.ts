@@ -3,7 +3,7 @@ import { getSession } from '@jbrowse/core/util'
 import { runDiagonalize } from './runDiagonalize.ts'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, RpcStatus } from '@jbrowse/core/util'
 
 // jest hoists these mocks above the imports. prepareDiagonalizeAdapter only
 // does refName reconciliation, irrelevant to the sweep order, so stub it to a
@@ -62,6 +62,7 @@ function setupRpc() {
       args: {
         referenceRegions: Region[]
         currentRegions: Region[]
+        statusCallback?: (status: RpcStatus) => void
       },
     ) => {
       seenReferenceRegions.push(args.referenceRegions)
@@ -118,6 +119,44 @@ describe('runDiagonalize cascade', () => {
     // wrong and the adapter defaults the mate to the first other assembly, and
     // the reordered row's alignments match nothing.
     expect(seenTargets).toEqual(['cacao', 'grape'])
+  })
+
+  // Only a stacked view prefixes at all, so this is where the sentinel goes
+  // through the rewrite. `statusMessageText` reads `''` as "no phase" and every
+  // other spelling as one that is running, so a prefixed sentinel is a status
+  // that never ends.
+  test('labels each level, and leaves the phase-over sentinel alone', async () => {
+    const { call } = setupRpc()
+    const seen: RpcStatus[] = []
+    const model = {
+      views: [
+        makeView([region('p1', 'peach')]),
+        makeView([region('c1', 'cacao')]),
+        makeView([region('g1', 'grape')]),
+      ],
+      levels: [makeLevel(), makeLevel()],
+    }
+
+    await runDiagonalize(model as unknown as LinearSyntenyViewModel, {
+      statusCallback: s => {
+        seen.push(s)
+      },
+    })
+
+    for (const [i] of model.levels.entries()) {
+      const cb = call.mock.calls[i]![2].statusCallback!
+      cb('Fetching features')
+      cb({ message: 'Grouping alignments', current: 1, total: 4 })
+      cb('')
+    }
+    expect(seen).toEqual([
+      'Level 1/2: Fetching features',
+      { message: 'Level 1/2: Grouping alignments', current: 1, total: 4 },
+      '',
+      'Level 2/2: Fetching features',
+      { message: 'Level 2/2: Grouping alignments', current: 1, total: 4 },
+      '',
+    ])
   })
 
   test('returns undefined for a single-view stack', async () => {
