@@ -1,4 +1,4 @@
-import { getBpDisplayStr } from '@jbrowse/core/util'
+import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
 
 import type { DerivativeSegment } from '@jbrowse/plugin-alignments'
 
@@ -138,9 +138,19 @@ export function pathStripBlocks(
       refName: seg.refName,
       strand: seg.strand,
       colorIndex,
-      title: `${seg.refName}:${seg.start.toLocaleString()}-${seg.end.toLocaleString()} (${getBpDisplayStr(
-        segmentLength(seg),
-      )}${seg.strand === -1 ? ', inverted' : ''})`,
+      // `assembleLocString`, not the coordinates spelled out here. A segment is
+      // half-open and 0-based in this file and every other one that computes on
+      // it; the hand-rolled string printed that interior form, so the same
+      // segment read one base lower in the tooltip than in the label the drawn
+      // view puts under it (`buildDerivativeVsRefSpec`) and than in the
+      // locstring the location box takes.
+      title: `${assembleLocString({
+        refName: seg.refName,
+        start: seg.start,
+        end: seg.end,
+      })} (${getBpDisplayStr(segmentLength(seg))}${
+        seg.strand === -1 ? ', inverted' : ''
+      })`,
     }
     x += blockWidth + gap
     return block

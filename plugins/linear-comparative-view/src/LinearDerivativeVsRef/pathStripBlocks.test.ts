@@ -47,10 +47,14 @@ describe('pathStripBlocks', () => {
   })
 
   it('carries strand and a full hover title per block', () => {
+    // 1-based inclusive, through `assembleLocString`: a segment is half-open and
+    // 0-based everywhere that computes on it, and printing that interior form
+    // put the tooltip one base under the label the drawn view gives the same
+    // segment and under the locstring the location box takes.
     const blocks = pathStripBlocks(der3, { width: 460 })
     expect(blocks[2]!.strand).toBe(-1)
-    expect(blocks[2]!.title).toBe('12:72,273,111-72,273,294 (183bp, inverted)')
-    expect(blocks[0]!.title).toBe('3:25,307,233-25,359,568 (52.3Kbp)')
+    expect(blocks[2]!.title).toBe('12:72,273,112..72,273,294 (183bp, inverted)')
+    expect(blocks[0]!.title).toBe('3:25,307,234..25,359,568 (52.3Kbp)')
   })
 
   it('falls back to equal blocks when the floor cannot be met', () => {
