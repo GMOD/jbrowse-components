@@ -222,7 +222,7 @@ const suite: TestSuite = {
         // The dotplot names its two axes rather than Loc1/Loc2 — it has axes,
         // where a stacked view has rows — but the channels below are the same
         // builder as synteny's, and the labels have to match.
-        for (const line of ['x - ', 'y - ', 'Identity:', 'Mapping quality:']) {
+        for (const line of ['x: ', 'y: ', 'Identity:', 'Mapping quality:']) {
           assert(
             tooltip.text.includes(line),
             `dotplot tooltip has no ${line} line: ${JSON.stringify(tooltip.text)}`,
