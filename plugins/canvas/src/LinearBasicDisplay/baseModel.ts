@@ -1928,7 +1928,6 @@ export default function baseStateModelFactory(
           // rows re-upload each frame (and once more on settle).
           installPerRegionLifecycle(self, backend, {
             data: () => self.renderDataMap,
-            encode: data => data,
             render: b =>
               b.renderBlocks(
                 self.renderBlocks,

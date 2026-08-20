@@ -653,7 +653,6 @@ export function stateModelFactory(
         startRenderingBackend(backend: ManhattanRenderingBackend) {
           installPerRegionLifecycle(self, backend, {
             data: () => self.rpcDataMap,
-            encode: data => data,
             render: b =>
               b.renderBlocks(
                 self.renderBlocks,

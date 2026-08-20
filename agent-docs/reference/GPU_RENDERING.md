@@ -771,8 +771,8 @@ collapses to a single call:
 startRenderingBackend(backend: XxxRenderingBackend) {
   installPerRegionLifecycle(self, self.rpcDataMap, backend, {
     inputs: () => self.gpuProps(),     // omit for an encode that needs nothing
-    encode: (data, props) => encode(data, props),
-    render: (b, encoded) =>
+    encode: (data, props) => encode(data, props),  // omit if there is nothing
+    render: (b, encoded) =>            // to encode — see below
       b.renderBlocks(
         self.renderBlocks,
         /* rpcDataMap or `encoded` */,
@@ -781,6 +781,14 @@ startRenderingBackend(backend: XxxRenderingBackend) {
   })
 }
 ```
+
+**Omit `encode` when the payload the display holds is the payload the backend
+takes**, which four of the seven per-region displays are. It is not the same code
+with an identity default filled in: the helper skips the encode step, so the two
+mirror maps it otherwise keeps — one payload reference and one source reference
+per loaded region — are never allocated, and `render` receives the display's own
+map. The four each wrote `encode: data => data` and then ignored `render`'s
+second argument, reading their own map instead.
 
 One upload autorun runs over the whole map with two reference diffs under it: a
 region re-encodes when its own entry is replaced or when `inputs` changes
@@ -829,9 +837,9 @@ regions' features. For alignments that placement is settled by
 which also says what to attack instead when the main-thread pack shows up in a
 trace.
 
-The whole-map form takes the **same installer** as the streamed one, with the
-identity encode: `installPerRegionLifecycle(self, backend, { data: () =>
-self.renderDataMap, encode: data => data, render })`. It diffs the computed map
+The whole-map form takes the **same installer** as the streamed one, with no
+encode: `installPerRegionLifecycle(self, backend, { data: () =>
+self.renderDataMap, render })`. It diffs the computed map
 against the last upload by reference, so only regions whose data object actually
 changed re-upload, and it owns the prune plus the re-upload-all on backend swap.
 Canvas and `LinearMultiSampleVariantDisplay` are the two.

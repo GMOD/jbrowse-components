@@ -414,3 +414,63 @@ test('encode returning undefined leaves the cached encoded entry untouched', () 
   })
   expect(lastEncoded?.get(0)).toEqual({ value: 99, marker: 0 })
 })
+
+// Omitting `encode` is not the same code with an identity default filled in:
+// the helper keeps no mirror maps, uploads the display's own payloads, and hands
+// `render` the display's own map.
+describe('the identity path, with no encode', () => {
+  interface IdentityBackend {
+    uploadRegion(key: number, payload: FakeEncoded): void
+    pruneRegions(active: Iterable<number>): void
+  }
+
+  function setup() {
+    const model = TestModel.create()
+    const uploads: UploadCall[] = []
+    const rendered: (ReadonlyMap<number, FakeEncoded> | undefined)[] = []
+    const backend: IdentityBackend = {
+      uploadRegion(key, payload) {
+        uploads.push({ key, payload })
+      },
+      pruneRegions() {},
+    }
+    const data = observable.map<number, FakeEncoded>(undefined, { deep: false })
+    installPerRegionLifecycle(model, backend, {
+      data: () => data,
+      render: (_b, encoded) => {
+        rendered.push(encoded)
+        return true
+      },
+    })
+    return { data, uploads, rendered }
+  }
+
+  it('uploads the display payload itself, by reference', () => {
+    const { data, uploads } = setup()
+    const payload = { value: 1, marker: 0 }
+    runInAction(() => {
+      data.set(0, payload)
+    })
+    expect(uploads).toHaveLength(1)
+    expect(uploads[0]!.payload).toBe(payload)
+  })
+
+  it('re-uploads only the region whose reference changed', () => {
+    const { data, uploads } = setup()
+    runInAction(() => {
+      data.set(0, { value: 1, marker: 0 })
+    })
+    runInAction(() => {
+      data.set(1, { value: 2, marker: 0 })
+    })
+    expect(uploads.map(u => u.key)).toEqual([0, 1])
+  })
+
+  it('hands render the display map, not a copy', () => {
+    const { data, rendered } = setup()
+    runInAction(() => {
+      data.set(0, { value: 1, marker: 0 })
+    })
+    expect(rendered.at(-1)).toBe(data)
+  })
+})

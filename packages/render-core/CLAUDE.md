@@ -69,10 +69,13 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   _every_ region, and a `renderState` carries the canvas box and row geometry,
   which move on each frame of a height drag — rebuilding byte-identical output
   at tens of MB per frame. Omitting `inputs` is the other safe shape, for an
-  encode that needs nothing (`encode: data => data`). Reading an observable
-  inside `encode` is no longer the trap it was (ADR-078: it invalidates
-  nothing), but state the dependency in `inputs` or a settings change will not
-  reach the buffer.
+  encode that needs nothing. Reading an observable inside `encode` is no longer
+  the trap it was (ADR-078: it invalidates nothing), but state the dependency in
+  `inputs` or a settings change will not reach the buffer.
+- **Omit `encode` outright when the display's payload is what the backend
+  uploads** — four of the seven per-region displays. The helper then keeps no
+  mirror maps and hands `render` the display's own map, which is what those four
+  were reading anyway while passing `encode: data => data` beside it.
 - **Don't guard an empty upload.** Every HAL deletes the pass's prior buffer
   before it looks at the count, so an empty pack IS the release.
 

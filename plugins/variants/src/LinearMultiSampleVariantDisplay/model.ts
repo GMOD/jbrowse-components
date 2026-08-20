@@ -379,7 +379,6 @@ export function stateModelFactory(
           // to declare `inputs` for.
           installPerRegionLifecycle(self, backend, {
             data: () => self.perRegionCellMap,
-            encode: data => data,
             render: b =>
               b.renderBlocks(
                 self.renderBlocks,

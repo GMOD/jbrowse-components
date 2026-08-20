@@ -88,8 +88,16 @@ export interface PerRegionUpload<Data, Props, Encoded, B> {
    * — only `data` and `inputs` do. Return `undefined` to skip this region for
    * now, keeping any payload it already has; the run re-fires once whatever
    * `inputs` reads changes.
+   *
+   * **Omit it when the payload the display holds is the payload the backend
+   * takes.** Four of the seven per-region displays are in that shape, and each
+   * wrote `encode: data => data` and then ignored `render`'s second argument,
+   * reading its own map instead. Omitting is not the same code with a default
+   * filled in: the helper skips the encode step entirely, so the two mirror maps
+   * it keeps — one payload reference and one source reference per loaded region
+   * — are never allocated, and `render` receives the display's own map.
    */
-  encode: (data: Data, props: Props) => Encoded | undefined
+  encode?: (data: Data, props: Props) => Encoded | undefined
   render: PerRegionRender<B, Encoded>
 }
 
@@ -130,6 +138,34 @@ export interface PerRegionUpload<Data, Props, Encoded, B> {
  * @see ADR-078 — why this is one autorun and a diff rather than ADR-017's
  * autorun per key.
  */
+// The identity overload, so omitting `encode` is a type error unless the
+// display's own payload is what the backend uploads. Without it `Encoded` would
+// be inferred as `unknown` and every `render` would take an unusable map.
+export function installPerRegionLifecycle<
+  Data,
+  B extends UploadableRenderingBackend<Data>,
+>(
+  self: LifecycleHost,
+  backend: B,
+  opts: {
+    data: () => ReadonlyMap<number, Data>
+    render: PerRegionRender<B, Data>
+    // `never`, so a call that DOES encode falls through to the overload below
+    // rather than being matched here and reported against the wrong signature
+    encode?: never
+    inputs?: never
+  },
+): void
+export function installPerRegionLifecycle<
+  Data,
+  Props,
+  Encoded,
+  B extends UploadableRenderingBackend<Encoded>,
+>(
+  self: LifecycleHost,
+  backend: B,
+  opts: PerRegionUpload<Data, Props, Encoded, B>,
+): void
 export function installPerRegionLifecycle<
   Data,
   Props,
@@ -141,6 +177,18 @@ export function installPerRegionLifecycle<
   { data, inputs, encode, render }: PerRegionUpload<Data, Props, Encoded, B>,
 ) {
   self.attachRenderingBackend<B>(backend, () => {
+    if (!encode) {
+      // No encode step and so no mirror maps: the display's own map is what the
+      // diff compares and what `render` is handed.
+      const syncIdentity = createRegionUploadSync<Encoded, B>()
+      return {
+        upload: b => {
+          syncIdentity(b, data() as unknown as ReadonlyMap<number, Encoded>)
+        },
+        render: b =>
+          render(b, data() as unknown as ReadonlyMap<number, Encoded>),
+      }
+    }
     const encoded = new Map<number, Encoded>()
     const encodedFrom = new Map<number, Data>()
     const syncRegions = createRegionUploadSync<Encoded, B>()

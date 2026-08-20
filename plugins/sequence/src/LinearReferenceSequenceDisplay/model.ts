@@ -367,7 +367,6 @@ export function modelFactory(
       startRenderingBackend(backend: Canvas2DSequenceRenderer) {
         installPerRegionLifecycle(self, backend, {
           data: () => self.sequenceData,
-          encode: data => data,
           render: (b, regions) =>
             self.rendersCanvas &&
             b.renderBlocks(self.renderBlocks, regions, self.renderState),
