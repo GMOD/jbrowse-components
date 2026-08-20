@@ -3,10 +3,10 @@ import {
   displayCanShowCigar,
   offscreenMateMenuItems,
   rowSyncMenuItems,
+  scaleRowsMenuItems,
 } from './menus.ts'
 
 import type { CigarMode } from './cigarModes.ts'
-
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The three row-sync modes are mutually exclusive in substance, not just in
@@ -47,13 +47,16 @@ describe('rowSyncMenuItems', () => {
   test('exactly one mode is checked at a time', () => {
     const modes = [
       'Independent',
-      'Link scroll and zoom',
-      'Follow the matching region',
+      'Link - rows move together by pixels',
+      'Follow - rows move to what aligns to the anchor',
     ]
     for (const [state, expected] of [
       [{}, 'Independent'],
-      [{ linkViews: true }, 'Link scroll and zoom'],
-      [{ followSynteny: true }, 'Follow the matching region'],
+      [{ linkViews: true }, 'Link - rows move together by pixels'],
+      [
+        { followSynteny: true },
+        'Follow - rows move to what aligns to the anchor',
+      ],
     ] as const) {
       const { subMenu } = build(state)
       expect(modes.filter(m => labelled(subMenu, m)?.checked)).toEqual([
@@ -62,14 +65,16 @@ describe('rowSyncMenuItems', () => {
     }
   })
 
-  test('the two couplings say how they differ, since the labels do not', () => {
-    // by pixels vs by the alignment is the whole distinction, and "Link scroll
-    // and zoom" next to "Follow the matching region" does not carry it
+  test('the two couplings say how they differ in the label itself', () => {
+    // by pixels vs by the alignment is the whole distinction, and bare "Link"
+    // next to bare "Follow" does not carry it
     const { subMenu } = build()
-    expect(labelled(subMenu, 'Link scroll and zoom')?.subLabel).toMatch(/pixel/)
-    expect(labelled(subMenu, 'Follow the matching region')?.subLabel).toMatch(
-      /align/,
+    const labels = subMenu.flatMap(i =>
+      'label' in i && typeof i.label === 'string' ? [i.label] : [],
     )
+    expect(labels.find(l => l.startsWith('Link'))).toMatch(/pixel/)
+    expect(labels.find(l => l.startsWith('Follow'))).toMatch(/align/)
+    expect(subMenu.every(i => !('subLabel' in i && i.subLabel))).toBe(true)
   })
 
   test('the anchor rows are only offered while following', () => {
@@ -97,7 +102,10 @@ describe('rowSyncMenuItems', () => {
 
   test('picking a mode goes through the one setter that clears the other flag', () => {
     const { subMenu, calls } = build()
-    labelled(subMenu, 'Follow the matching region')?.onClick?.()
+    labelled(
+      subMenu,
+      'Follow - rows move to what aligns to the anchor',
+    )?.onClick?.()
     expect(calls).toEqual(['follow'])
   })
 
@@ -195,6 +203,59 @@ describe('offscreenMateMenuItems', () => {
     expect(items[0]).toMatchObject({ checked: true })
     ;(items[0] as { onClick: () => void }).onClick()
     expect(calls).toEqual([false])
+  })
+})
+
+// "Show all regions" is a navigation gesture, not a visibility toggle, so it
+// sits at the top level rather than in the "Show..." submenu it was filed under
+// by its first word — and its two variants nest under it, since the name they
+// share is most of what either one is called.
+describe('scaleRowsMenuItems', () => {
+  function build() {
+    const calls: string[] = []
+    const items = scaleRowsMenuItems({
+      squareView: () => calls.push('square'),
+      showAllRegions: () => calls.push('fit'),
+      showAllRegionsSameScale: () => calls.push('sameScale'),
+    })
+    return { items, calls }
+  }
+
+  function click(item?: MenuItem) {
+    if (item && 'onClick' in item) {
+      item.onClick()
+    }
+  }
+
+  test('the two zoom-outs nest under the name they share', () => {
+    const [square, showAll] = build().items
+    expect(square).toMatchObject({
+      label: 'Square view - average bp per pixel',
+    })
+    expect(showAll).toMatchObject({
+      label: 'Show all regions',
+      subMenu: [
+        { label: 'Each row fit to width' },
+        { label: 'Same bp per pixel' },
+      ],
+    })
+  })
+
+  test('each row runs a different command', () => {
+    const { items, calls } = build()
+    const [square, showAll] = items
+    click(square)
+    if (showAll && 'subMenu' in showAll) {
+      for (const item of showAll.subMenu) {
+        click(item)
+      }
+    }
+    expect(calls).toEqual(['square', 'fit', 'sameScale'])
+  })
+
+  test('nothing here is a toggle — these are one-shot commands, not state', () => {
+    const { items } = build()
+    expect(items.every(i => !('type' in i && i.type))).toBe(true)
   })
 })
 

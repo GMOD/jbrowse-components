@@ -1,7 +1,9 @@
 import { radioItems } from '@jbrowse/core/ui/menuItems'
+import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import RemoveIcon from '@mui/icons-material/Remove'
 import WarningIcon from '@mui/icons-material/WarningAmber'
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap'
 
 import { rowLabels } from '../LinearComparativeView/rowLabel.ts'
 import { CIGAR_MODE_OPTIONS } from './cigarModes.ts'
@@ -38,6 +40,63 @@ export function removeRowMenuItems(model: RemoveRowModel): MenuItem[] {
         },
       ]
     : []
+}
+
+interface ScaleRowsModel {
+  squareView: () => void
+  showAllRegions: () => void
+  showAllRegionsSameScale: () => void
+}
+
+/**
+ * The commands that set zoom across every row at once, together because they
+ * are only meaningful against each other: each one answers "what do the rows
+ * agree on" differently, and any of them read alone looks like the only way to
+ * zoom out.
+ *
+ * THE TWO ZOOM-OUTS NEST UNDER ONE "Show all regions", so the shared half of
+ * the name is said once and the submenu holds only what differs. Flat, both
+ * rows opened with the same four words and the reader had to get to the dash
+ * before either row said anything.
+ *
+ * LABELLED IN THE DOTPLOT'S STYLE — the quantity held equal — because that
+ * vocabulary already ships ("Square view - same bp per pixel"). Square view
+ * keeps its dash clause even alone at the top level: THIS view's squareView
+ * AVERAGES the rows' scales where the dotplot's EQUALIZES them, so a bare
+ * "Square view" in both places names two different operations.
+ *
+ * NOT under "Show...", despite the name: that submenu is visibility toggles and
+ * these are navigation gestures. Same call, and the same reasoning, as the
+ * LGV's scroll-zoom item.
+ */
+export function scaleRowsMenuItems(model: ScaleRowsModel): MenuItem[] {
+  return [
+    {
+      label: 'Square view - average bp per pixel',
+      icon: CropFreeIcon,
+      onClick: () => {
+        model.squareView()
+      },
+    },
+    {
+      label: 'Show all regions',
+      icon: ZoomOutMapIcon,
+      subMenu: [
+        {
+          label: 'Each row fit to width',
+          onClick: () => {
+            model.showAllRegions()
+          },
+        },
+        {
+          label: 'Same bp per pixel',
+          onClick: () => {
+            model.showAllRegionsSameScale()
+          },
+        },
+      ],
+    },
+  ]
 }
 
 interface AutoScaleModel {
@@ -131,18 +190,13 @@ interface RowSyncModel {
 
 const ROW_SYNC_MODES = [
   { value: 'independent', label: 'Independent' },
-  {
-    value: 'link',
-    label: 'Link scroll and zoom',
-    subLabel: 'Rows move together by pixels',
-  },
+  { value: 'link', label: 'Link - rows move together by pixels' },
   {
     // "matching", not "syntenic", because at whole-genome zoom a CIGAR-less
     // tier is interpolated across the block rather than walked — close enough
     // to follow by, not a base-level correspondence
     value: 'follow',
-    label: 'Follow the matching region',
-    subLabel: 'Rows move to what aligns to the anchor',
+    label: 'Follow - rows move to what aligns to the anchor',
   },
 ] as const
 
@@ -152,8 +206,9 @@ const ROW_SYNC_MODES = [
  * be. They are exclusive in substance, not just in presentation: a pixel lock
  * and a synteny follow disagree about where a row belongs the moment an indel
  * separates them, and with both on the row is placed twice per pan. The two
- * subLabels are what tell them apart — the whole difference is *by pixels* vs
- * *by the alignment*, and neither label says that on its own.
+ * couplings are told apart by their dash clauses and nothing else — the whole
+ * difference is *by pixels* vs *by the alignment*, which bare "Link" and
+ * "Follow" do not carry.
  *
  * ONE SUBMENU, ANCHOR ROWS INLINE UNDER A SUBHEADER, rather than a nested
  * "Anchor row" submenu: which row drives is half of what there is to set here,

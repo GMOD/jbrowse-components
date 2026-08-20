@@ -101,6 +101,18 @@ const DotplotControls = observer(function DotplotControls({
               ? 'Overridden while the aspect ratio is locked — the lock re-equalizes bp/px immediately after.'
               : 'Adjusts zoom levels proportionally so both views show the same total number of base pairs. This accounts for different view widths while maintaining the same total genomic span.',
           },
+          // top level, not under "Show...": that submenu is visibility toggles,
+          // and this is a navigation gesture, filed by its first word rather
+          // than by what it does. It belongs beside the two view-shape commands
+          // above, which are the other two ways of setting zoom across axes.
+          {
+            label: 'Show all regions',
+            onClick: () => {
+              model.showAllRegions()
+            },
+            helpText:
+              'Zooms out to display all genome assemblies in their entirety. Useful for getting a high-level overview or resetting the view after zooming into specific regions.',
+          },
           {
             label: 'Re-order chromosomes',
             icon: ShuffleIcon,
@@ -120,14 +132,6 @@ const DotplotControls = observer(function DotplotControls({
             label: 'Show...',
             icon: VisibilityIcon,
             subMenu: [
-              {
-                label: 'Show all regions',
-                onClick: () => {
-                  model.showAllRegions()
-                },
-                helpText:
-                  'Zooms out to display all genome assemblies in their entirety. Useful for getting a high-level overview or resetting the view after zooming into specific regions.',
-              },
               {
                 type: 'checkbox',
                 label: 'Draw CIGAR insertions/deletions',

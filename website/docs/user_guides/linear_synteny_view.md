@@ -207,8 +207,13 @@ The view's hamburger menu controls how the ribbons are drawn:
   and a gap inside a block is painted as though it matched across
 - Show location markers - continue the top panel's scalebar grid down through
   the ribbons, so each tick shows where a round coordinate up there lands below
-- Show all regions - fit both whole assemblies into view
-- Square view - equalize the horizontal scale of the two panels
+- Show all regions - zoom every row out to its whole assembly, two ways. **Each
+  row fit to width** gives each row its own scale so it fills its own pane;
+  **Same bp per pixel** puts all rows on one scale, so a smaller genome draws
+  proportionally shorter instead of being stretched to the same on-screen length
+  as a larger one
+- Square view - average bp per pixel - put every row on the average of the rows'
+  current scales, keeping each row's center
 - Add assembly row - compare three or more assemblies stacked vertically
 
 <Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length L1HS present in human is absent at the orthologous chimp intron, which the 'Colored indels' mode paints as a wedge in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />

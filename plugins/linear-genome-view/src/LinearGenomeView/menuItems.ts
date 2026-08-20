@@ -24,6 +24,7 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap'
 
 import {
   ExportSvgDialog,
@@ -62,6 +63,28 @@ export function scrollZoomMenuItem(self: LinearGenomeViewModel): MenuItem {
       self.setScrollZoom(!self.scrollZoom)
     },
     helpText: SCROLL_ZOOM_HELP,
+  }
+}
+
+/**
+ * Zoom all the way out, shared by the view menu and the header's zoom menu for
+ * the same reason `scrollZoomMenuItem` is — one definition so the two cannot
+ * drift in label, and the view menu is the only one of the two that survives
+ * `hideHeader`.
+ *
+ * The zoom menu earns it on the merits: this is the bottom of the same "Zoom
+ * out 100x" ladder, and it is where someone already zooming looks.
+ *
+ * The label is the import form's button text verbatim (`ImportForm.tsx`), which
+ * is where most people meet the phrase.
+ */
+export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
+  return {
+    label: 'Show all regions in assembly',
+    icon: ZoomOutMapIcon,
+    onClick: () => {
+      self.showAllRegionsInAssembly()
+    },
   }
 }
 
@@ -139,9 +162,13 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
     },
     // top level, not under "Show...": that submenu is visibility toggles, and
-    // this is a navigation gesture — the label was also the only thing naming
-    // it, so it was findable only by someone who already knew it existed
+    // these are navigation gestures. Scroll-to-zoom's label was also the only
+    // thing naming it, so it was findable only by someone who already knew it
+    // existed; "Show all regions in assembly" was filed by its first word
+    // rather than by what it does, among eight checkboxes it has nothing in
+    // common with.
     scrollZoomMenuItem(self),
+    showAllRegionsMenuItem(self),
     {
       label: 'Color CDS by reading frame',
       type: 'checkbox',
@@ -155,12 +182,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       label: 'Show...',
       icon: VisibilityIcon,
       subMenu: [
-        {
-          label: 'Show all regions in assembly',
-          onClick: () => {
-            self.showAllRegionsInAssembly()
-          },
-        },
         {
           label: 'Show center line',
           type: 'checkbox',

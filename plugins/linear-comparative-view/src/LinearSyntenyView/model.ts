@@ -11,7 +11,6 @@ import {
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
-import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import { observable } from 'mobx'
@@ -28,6 +27,7 @@ import {
   removeRowMenuItems,
   rowSyncMenuItems,
   rowViewMenuItems,
+  scaleRowsMenuItems,
 } from './menus.ts'
 
 import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
@@ -712,41 +712,32 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...superHeaderMenuItems(),
             ...rowViewMenuItems(self),
             { type: 'divider' },
-            {
-              label: 'Square view',
-              onClick: () => {
-                self.squareView()
-              },
-              icon: CropFreeIcon,
-            },
-            {
-              label: 'Show all regions',
-              onClick: () => {
-                self.showAllRegions()
-              },
-            },
-            {
-              label: 'Show all regions at same scale',
-              onClick: () => {
-                self.showAllRegionsSameScale()
-              },
-            },
+            ...scaleRowsMenuItems(self),
             ...autoScaleMenuItems(self),
             ...genomeViewsMenuItems(self),
             { type: 'divider' },
-            {
-              label: 'Add assembly row...',
-              icon: AddIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  AddRowDialog,
+            // A row is appended to the stack the user is looking at, so there
+            // is nothing to append to while the import form is up — that form
+            // is how the stack gets built, and the dialog anchored to a view
+            // with no rows offers datasets it cannot open on a level that does
+            // not exist.
+            ...(self.showImportForm
+              ? []
+              : [
                   {
-                    handleClose,
-                    model: self,
+                    label: 'Add assembly row...',
+                    icon: AddIcon,
+                    onClick: () => {
+                      getSession(self).queueDialog(handleClose => [
+                        AddRowDialog,
+                        {
+                          handleClose,
+                          model: self,
+                        },
+                      ])
+                    },
                   },
-                ])
-              },
-            },
+                ]),
             ...removeRowMenuItems(self),
             {
               label: 'Re-order chromosomes',
