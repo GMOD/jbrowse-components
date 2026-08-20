@@ -646,7 +646,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * belonging here and don't: they reframe the view, which is what
          * "Square view" does, so all three sit together a level up.
          */
-        showMenuItems() {
+        showMenuItems(): MenuItem[] {
           return [
             ...superShowMenuItems(),
             {
