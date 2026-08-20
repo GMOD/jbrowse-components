@@ -9,7 +9,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { Region, RpcStatus } from '@jbrowse/core/util'
+import type { Region, RpcStatus, StatusStream } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -33,10 +33,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // per flavor so none of them can forget the clear (a status left set outlives
 // the run and pins the chip up).
 //
-// It is `makeStatusCallback` rather than `setStatusMessage` for the same reason
-// the fetch path uses it: the throttle that keeps a per-iteration RPC progress
-// stream from writing MST (and re-rendering the chip) on every callback lives
-// there, and `setStatusMessage` is deliberately unthrottled. The extra
+// It is `openStatusStream` rather than `setStatusMessage` for the same reason
+// the fetch path uses it: a clustering run is one of the display's concurrent
+// operations, so it takes a slot on the field rather than writing it (ADR-081),
+// and the throttle that keeps a per-iteration RPC progress stream from writing
+// MST — and re-rendering the chip — on every callback lives there too. The extra
 // `applying` gate is this path's own: the status channel is out-of-band from the
 // call's return value, so a callback landing after the `finally` would otherwise
 // set a status with no run behind it and pin the chip up for good.
@@ -48,10 +49,7 @@ export function setupRunClusteringAutorun(
     clusterRegion?: string
     setRunClustering: (arg?: boolean) => void
     setClusterRegion?: (arg?: string) => void
-    setStatusMessage: (status?: RpcStatus) => void
-    makeStatusCallback: (
-      isCurrent: () => boolean,
-    ) => (status: RpcStatus) => void
+    openStatusStream: (isCurrent: () => boolean) => StatusStream
   },
   opts: {
     name: string
@@ -95,6 +93,12 @@ export function setupRunClusteringAutorun(
         }
         applying = true
         const stopToken = createStopToken()
+        // narrowed to this run rather than merely to the node being alive, so a
+        // status arriving after the run settles can't repaint the chip.
+        // Wrapping a callback in a second guarded sink said the same thing and
+        // also stacked a second throttle window on the model-wide one, delaying
+        // every status by up to two.
+        const stream = self.openStatusStream(() => applying && isAlive(self))
         try {
           const regions = await clusterRegions(self, view)
           await opts.run({
@@ -102,14 +106,7 @@ export function setupRunClusteringAutorun(
             sessionId: getRpcSessionId(self),
             regions,
             stopToken,
-            // narrowed to this run rather than merely to the node being alive,
-            // so a status arriving after the run settles can't repaint the
-            // chip. Wrapping `makeStatusCallback()` in a second guarded sink
-            // said the same thing and also stacked a second throttle window on
-            // the model-wide one, delaying every status by up to two.
-            statusCallback: self.makeStatusCallback(
-              () => applying && isAlive(self),
-            ),
+            statusCallback: stream.statusCallback,
           })
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {
@@ -123,8 +120,11 @@ export function setupRunClusteringAutorun(
           }
         } finally {
           stopStopToken(stopToken)
+          // this run's slot, retired: the display's viewport fetch may be
+          // running beside it, and blanking the field outright took its label
+          // with it (ADR-081)
+          stream.clear()
           if (isAlive(self)) {
-            self.setStatusMessage(undefined)
             // both halves of the trigger, since the region is its argument: a
             // saved session must not keep a locus that no run is coming for
             self.setRunClustering(undefined)

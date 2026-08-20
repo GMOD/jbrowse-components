@@ -84,12 +84,19 @@ describe('the status window', () => {
     rotation.dispose()
   })
 
-  test('each fetch reopens the window, so its first status lands at once', () => {
+  // The window reopens when the field goes idle, not on every supersede: a
+  // fetch starting after a lull is the case that would otherwise be charged a
+  // window it did nothing to earn, while a rapid pan superseding a fetch every
+  // few milliseconds is exactly the burst the throttle is for.
+  test('a fetch starting after a lull reports its first status at once', () => {
     const host = makeHost()
     const rotation = createStopTokenRotation(host, host)
-    rotation.begin().statusCallback('Downloading')
+    const first = rotation.begin()
+    first.statusCallback('Downloading')
     expect(host.statusMessage).toBe('Downloading')
-    // same tick: without the reset in begin() this would be thinned out
+    first.end()
+    // same tick, and the field is idle again, so this lands rather than waiting
+    // out the rest of the window the first fetch opened
     rotation.begin().statusCallback('Parsing')
     expect(host.statusMessage).toBe('Parsing')
     rotation.dispose()
@@ -97,7 +104,7 @@ describe('the status window', () => {
 
   // The guard makes a late write a no-op rather than a write to a dead node, but
   // the timer itself still stands for up to a window past teardown.
-  test('dispose() drops a queued trailing write', () => {
+  test('dispose() retires the open slot and drops a queued trailing write', () => {
     jest.useFakeTimers()
     const host = makeHost()
     const rotation = createStopTokenRotation(host, host)
@@ -105,11 +112,13 @@ describe('the status window', () => {
     statusCallback('Downloading')
     // same tick, so this one is queued on the trailing timer
     statusCallback('Parsing')
+    // a fetch in flight when the host is torn down never reaches its `finally`
     rotation.dispose()
+    expect(host.statusMessage).toBeUndefined()
     expect(jest.getTimerCount()).toBe(0)
     clock += 100
     jest.advanceTimersByTime(100)
-    expect(host.statusMessage).toBe('Downloading')
+    expect(host.statusMessage).toBeUndefined()
   })
 
   // A run that COMPLETES still holds the current token, so the token comparison
@@ -154,9 +163,13 @@ describe('the status window', () => {
   test('begin() keeps the superseded fetch label, and end() clears it', () => {
     const host = makeHost()
     const rotation = createStopTokenRotation(host, host)
-    rotation.begin().statusCallback('Downloading')
+    const first = rotation.begin()
+    first.statusCallback('Downloading')
     expect(host.statusMessage).toBe('Downloading')
     const second = rotation.begin()
+    // the superseded fetch's `finally`, a microtask behind the abort it unwinds
+    // on and so always after the replacement has opened its own slot
+    first.end()
     expect(host.statusMessage).toBe('Downloading')
     second.end()
     expect(host.statusMessage).toBeUndefined()
@@ -170,11 +183,13 @@ describe('the status window', () => {
     jest.useFakeTimers()
     const host = makeHost()
     const rotation = createStopTokenRotation(host, host)
-    const { statusCallback } = rotation.begin()
-    statusCallback('Downloading')
+    const first = rotation.begin()
+    first.statusCallback('Downloading')
     // same tick, so this one is queued on the trailing timer
-    statusCallback({ message: 'Downloading', current: 9, total: 10 })
-    rotation.begin().statusCallback('Parsing')
+    first.statusCallback({ message: 'Downloading', current: 9, total: 10 })
+    const second = rotation.begin()
+    first.end()
+    second.statusCallback('Parsing')
     clock += 100
     jest.advanceTimersByTime(100)
     expect(host.statusMessage).toBe('Parsing')
@@ -203,33 +218,90 @@ describe('createStatusChannel', () => {
 })
 
 // A host composing `FetchMixin` already owns a window over the same status
-// field. Lending it to the rotation keeps the two fetches thinning through one
-// window rather than two, which is the whole point of one-per-owner — and
+// field. Lending it to the rotation makes this fetch one slot beside the host's
+// others rather than a second writer, which is what one-per-owner is for — and
 // lending the window rather than a pair of callbacks is what makes reporting
-// through one and flushing another unspellable.
+// through one and clearing another unspellable.
+//
+// Shaped exactly like `FetchMixin`, down to the volatile initializer reaching
+// forward for an action three chain steps away, because that is the only host
+// that lends.
+const LendingModel = types
+  .model('LendingRotationHost', {})
+  .volatile(self => ({
+    statusMessage: undefined as RpcStatus | undefined,
+    statusWindow: createStatusWindow(status => {
+      ;(
+        self as unknown as { setStatusMessage: (status?: RpcStatus) => void }
+      ).setStatusMessage(status)
+    }),
+  }))
+  .actions(self => ({
+    setStatusMessage(status?: RpcStatus) {
+      self.statusMessage = status
+    },
+  }))
+
 describe('a host that owns its own window', () => {
-  test('reports and flushes through the host window, not a second one', () => {
-    const seen: (RpcStatus | undefined)[] = []
-    // stands in for FetchMixin, which opens its window in a volatile and hands
-    // the same object to every fetch on the display
-    const hostWindow = createStatusWindow()
-    const host = Model.volatile(() => ({ statusWindow: hostWindow })).create({})
-    const rotation = createStopTokenRotation(host, host)
-    const other = hostWindow.open({
-      isCurrent: () => true,
-      write: s => {
-        seen.push(s)
-      },
-    }).statusCallback
+  function lendingHost() {
+    const host = LendingModel.create({})
+    return { host, rotation: createStopTokenRotation(host, host) }
+  }
+
+  test('reports through the host window, not a second one', () => {
+    const { host, rotation } = lendingHost()
+    const other = host.statusWindow.open({ isCurrent: () => true })
     const fetch = rotation.begin()
-    // the rotation's own sink and a sibling on the same window share one stream:
-    // the sibling's write falls inside the window the rotation's just opened
+    // the rotation's own slot and a sibling on the same window share one
+    // throttle: the sibling's write falls inside the window this one just
+    // opened, and what lands is the two of them aggregated
     fetch.statusCallback('Downloading')
-    other('from the region fetches')
+    other.statusCallback('from the region fetches')
     expect(host.statusMessage).toBe('Downloading')
-    expect(seen).toEqual([])
     fetch.end()
-    // and the end-of-fetch clear lands through that window rather than racing it
+    other.clear()
+    rotation.dispose()
+  })
+
+  // The defect ADR-081 is about. `end()` used to blank the shared field
+  // outright, so a bare-autorun fetch finishing wiped the label the display's
+  // region fetches were still producing — and the overlay renders a missing
+  // label as its 'Loading' fallback, so it read as a flash of "Loading" inside
+  // a load that never stopped.
+  test('ending does not blank a label a sibling operation is still writing', () => {
+    const { host, rotation } = lendingHost()
+    const sibling = host.statusWindow.open({ isCurrent: () => true })
+    const fetch = rotation.begin()
+    sibling.statusCallback('Downloading features')
+    fetch.end()
+    expect(host.statusMessage).toBe('Downloading features')
+    // and the last operation to finish is the one that blanks it
+    sibling.clear()
+    expect(host.statusMessage).toBeUndefined()
+    rotation.dispose()
+  })
+
+  test('ending blanks the field when nothing else is reporting', () => {
+    const { host, rotation } = lendingHost()
+    const fetch = rotation.begin()
+    fetch.statusCallback('Downloading')
+    expect(host.statusMessage).toBe('Downloading')
+    fetch.end()
+    expect(host.statusMessage).toBeUndefined()
+    rotation.dispose()
+  })
+
+  // A superseded run reaches its `finally` too, and its slot goes on voting for
+  // the phase it stopped in until it retires. The replacement has opened its own
+  // slot by then, so the label survives the handover either way.
+  test('a superseded run retires its slot without blanking the field', () => {
+    const { host, rotation } = lendingHost()
+    const first = rotation.begin()
+    first.statusCallback('Downloading')
+    const second = rotation.begin()
+    first.end()
+    expect(host.statusMessage).toBe('Downloading')
+    second.end()
     expect(host.statusMessage).toBeUndefined()
     rotation.dispose()
   })

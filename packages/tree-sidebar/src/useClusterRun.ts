@@ -79,9 +79,8 @@ export function useClusterRun({
       //
       // One window per run, because a run is what it describes.
       let running = true
-      const { statusCallback, clear } = createStatusWindow().open({
+      const { statusCallback, clear } = createStatusWindow(setStatus).open({
         isCurrent: () => running && isAlive(model),
-        write: setStatus,
       })
       try {
         await run({ stopToken: token, statusCallback })

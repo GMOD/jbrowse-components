@@ -433,7 +433,7 @@ describe('FetchMixin: progress reporting', () => {
 describe('FetchMixin: status callback throttle', () => {
   it('drops rapid callback updates within the 100ms window, applies the first', () => {
     const m = makeModel()
-    const cb = m.makeStatusCallback(() => true)
+    const { statusCallback: cb } = m.openStatusStream(() => true)
     const now = jest.spyOn(Date, 'now')
 
     now.mockReturnValue(1000)
@@ -453,7 +453,7 @@ describe('FetchMixin: status callback throttle', () => {
 
   it('passes updates spaced beyond the window through unthrottled', () => {
     const m = makeModel()
-    const cb = m.makeStatusCallback(() => true)
+    const { statusCallback: cb } = m.openStatusStream(() => true)
     const now = jest.spyOn(Date, 'now')
 
     now.mockReturnValue(5000)
@@ -465,21 +465,25 @@ describe('FetchMixin: status callback throttle', () => {
     expect(m.statusMessage).toBe('two')
   })
 
-  it('resetStatus reopens the window so the next fetch reports immediately', () => {
+  // The window reopens when the field goes idle, which is what retiring the
+  // last slot does — the owner no longer resets by hand around a fetch.
+  it('the next operation after the last one retires reports immediately', () => {
     const m = makeModel()
-    const cb = m.makeStatusCallback(() => true)
+    const first = m.openStatusStream(() => true)
     const now = jest.spyOn(Date, 'now')
 
     now.mockReturnValue(2000)
-    cb('first')
+    first.statusCallback('first')
     expect(m.statusMessage).toBe('first')
 
-    m.resetStatus()
+    first.clear()
+    expect(m.statusMessage).toBeUndefined()
 
-    // only +50ms since the last write, but the reset cleared the throttle clock
+    // only +50ms since the last write, but retiring the last slot reopened the
+    // throttle
     now.mockReturnValue(2050)
-    cb('after reset')
-    expect(m.statusMessage).toBe('after reset')
+    m.openStatusStream(() => true).statusCallback('after the lull')
+    expect(m.statusMessage).toBe('after the lull')
   })
 })
 

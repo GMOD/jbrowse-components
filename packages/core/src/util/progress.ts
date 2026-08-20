@@ -151,76 +151,185 @@ export function statusFraction(status: RpcStatus | undefined) {
 
 /**
  * One operation's stream through a {@link StatusWindow}, and the last word that
- * ends it. They come back together because **every owner must clear its own
- * field when its work ends**: a fan-out cannot see the end of a batch and does
- * not guess at one (ADR-080), so a stream nobody closes leaves its last label on
- * screen for good.
+ * ends it. They come back together because **every operation must retire its
+ * own slot when its work ends**: neither a window nor a fan-out can see the end
+ * of a batch and neither guesses at one (ADR-080), so a stream nobody closes
+ * goes on voting for a phase that is over.
  */
 export interface StatusStream {
   /** The RPC `statusCallback` for this operation. */
   statusCallback: StatusCallback
   /**
-   * The owner's last word: blanks the field, lands whatever the window state,
-   * and drops what was queued behind it. Call it once, in the `finally` of the
-   * operation this stream describes.
+   * This operation's last word: retires its slot, re-derives the field from the
+   * operations still running, and blanks it when this was the last of them.
+   * Call it once, in the `finally` of the operation this stream describes.
    *
-   * It must land, because nothing else is coming to displace the last label of
-   * a fetch that is over, and it must supersede what is queued or the trailing
-   * timer puts that label back a window later. It is **not** guarded by
-   * `isCurrent`: a run that has just finished is no longer current, and closing
-   * the guard before clearing is how an owner stops a still-running sibling from
-   * writing over the clear. `write` decides whether the field can be touched.
+   * **Retiring, not blanking**, which is the difference a display with two
+   * concurrent operations turns on (ADR-081). The blank still lands unthrottled
+   * and drops what was queued behind it, because nothing is coming to displace
+   * the last label of a fetch that is over.
+   *
+   * It is not guarded by `isCurrent`: a run that has just finished is no longer
+   * current, and a superseded run must retire its slot too or it votes forever.
    */
   clear: () => void
 }
 
 /**
- * One owner's outlet for a progress stream: a throttle window, and the guarded
- * streams that share it.
+ * One owner's status field: the throttle window in front of it, the slot each
+ * concurrent operation writes into, and the aggregate that arbitrates between
+ * them.
  *
- * The two are one object so the cardinality rule has only one spelling: **one
- * window per owner, N streams on it**, which is what makes a display's parallel
- * per-region fetches thin to one flow between them rather than to N.
+ * All three are one object so the cardinality rule has only one spelling: **one
+ * window per owner, N streams on it, one field**. That is what makes a
+ * display's parallel per-region fetches thin to one flow between them rather
+ * than to N, and what stops its viewport fetch and its bare-autorun fetch
+ * clobbering each other (ADR-081).
  */
 export interface StatusWindow {
   /**
-   * Open a stream for one operation: a {@link StatusCallback} writing through
-   * `write`, thinned by this window and skipped entirely once `isCurrent()` goes
-   * false — a superseded fetch, or a torn-down model — plus the `clear` that
-   * ends it.
+   * Open a stream for one operation: a {@link StatusCallback} recording into
+   * this operation's own slot, skipped entirely once `isCurrent()` goes false —
+   * a superseded fetch, or a torn-down model — plus the `clear` that retires it.
    *
    * `isCurrent` is read twice on purpose. Once before the window, so a
    * superseded fetch's late status can't consume the slot a live one is waiting
-   * on; once inside, because a trailing write fires on a timer and the operation
-   * it belongs to can be gone by then. That second read is the load-bearing one
-   * — without it a trailing status lands on a destroyed MST node.
+   * on; once inside, because a trailing write fires on a timer and the
+   * operation it belongs to can be gone by then.
    *
-   * `write` takes the clear's `undefined` as well as a status, so **the field
-   * has exactly one writer**. Whatever guards it — `isAlive(self)`, a React
-   * `alive` flag — guards the clear too, by construction rather than by a second
-   * copy of the check at the `finally`.
+   * Opening on an idle window reopens the throttle, so the first operation to
+   * start after a lull reports at once rather than being charged a window it
+   * did nothing to earn. An owner therefore never resets by hand around a
+   * fetch; `reset` is for teardown.
    *
    * **Every status goes through the window, the `''` closing a phase
    * included** (ADR-071), so a phase that opens and closes inside one paints
    * nothing. The window holds a single pending write, so that `''` still
    * displaces the percentage queued behind it and a finished phase's progress
-   * cannot reappear; it lands on the trailing edge, where
-   * {@link StatusStream.clear} supersedes it in turn.
+   * cannot reappear.
    */
-  open: (args: {
-    isCurrent: () => boolean
-    write: (status: RpcStatus | undefined) => void
-  }) => StatusStream
+  open: (args: { isCurrent: () => boolean }) => StatusStream
   /**
-   * Reopen, so the next operation reports its first status at once, and drop any
-   * queued trailing write — a reset accompanies clearing the status, which a
-   * late write from the operation being reset would undo.
-   *
-   * Reopening is the half that is easy to leave out: an owner clears at the
-   * *start* of a fetch too, and charging that clear a full window would delay
-   * the new fetch's first real status by one.
+   * Drop the queued trailing write and reopen the throttle. For the owner's
+   * teardown, where the timer outlives everything that could make it a no-op —
+   * jest reports the surviving timer as a worker that will not exit.
    */
   reset: () => void
+}
+
+/**
+ * The shared state behind {@link createStatusFanOut} and {@link
+ * createStatusWindow}: N slots, the order the batch reached each phase in, and
+ * the last reading worth re-sending. Both of them are "several concurrent
+ * operations, one status" — the fan-out over the regions of one fetch, the
+ * window over the operations of one display — and the arbitration is the same
+ * either way, so it is written once.
+ *
+ * The two differ in what they do with the answer — the fan-out feeds a callback
+ * that has no way to say "nothing", the window owns a field it can blank — and
+ * in `holdLastReading`.
+ *
+ * **Hold only where the slots are raw reporters.** ADR-080's rule that a phase
+ * does not lose its bar because nothing is measuring it *this instant* is about
+ * one batch's peers sitting between reads. A slot fed by another aggregate has
+ * already had the rule applied to it: its bare label means "my children have no
+ * measurement", not "I am between reads", and holding over that puts back a
+ * percentage the child deliberately retired — the write ADR-071 exists to
+ * cancel. A window's slots are whole operations, and the commonest window has
+ * exactly one, where a held reading can only ever be older than what the slot
+ * just said.
+ */
+function createStatusAggregate({ holdLastReading = false } = {}) {
+  const slots: StatusSlot[] = []
+  // every phase this batch has reached, against the order it reached them in,
+  // so a tie between two slots in different phases resolves the same way twice
+  const phaseRank = new Map<string, number>()
+  // the current phase's last determinate reading — what a moment with nothing
+  // measuring it falls back to, rather than downgrading what we already know.
+  // Dropped the moment the batch is in some other phase, or in none.
+  let held: StatusWithProgress | undefined
+  // the last label of any kind, which outlives that: it is all there is to say
+  // once nothing is in flight, and saying it is what displaces the percentage
+  // queued behind the throttle
+  let lastMessage: string | undefined
+
+  /**
+   * The best available answer to "what is this batch doing", in order: a
+   * reading we trust, whatever the aggregate says, the last label we saw.
+   * Undefined only while no slot has ever reported.
+   */
+  const derive = () => {
+    const aggregate = aggregateStatus(slots, phaseRank)
+    const message = statusMessageText(aggregate)
+    // A held reading describes one phase, and survives exactly as long as the
+    // batch is still in it. "Nothing in flight" is not that phase either: an
+    // empty aggregate is a batch with no work outstanding, and re-sending a
+    // percentage for work that has ENDED is the write ADR-071 exists to cancel.
+    // Both cases are one comparison, because an empty aggregate names no phase.
+    if (held?.message !== message) {
+      held = undefined
+    }
+    if (
+      holdLastReading &&
+      typeof aggregate === 'object' &&
+      !readsComplete(aggregate)
+    ) {
+      held = aggregate
+    }
+    if (message !== undefined) {
+      lastMessage = message
+    }
+    return held ?? aggregate ?? lastMessage
+  }
+
+  return {
+    idle: () => slots.length === 0,
+    add() {
+      const slot: StatusSlot = { status: undefined, completed: new Map() }
+      slots.push(slot)
+      return slot
+    },
+    /**
+     * Retire a slot. Its finished phases go with it — one operation's bytes
+     * were never the denominator of another's, and a slot kept for its
+     * `completed` alone is the accumulation a long-lived aggregate cannot
+     * afford. Emptying resets the phase order too: idle is the batch boundary,
+     * and a rank recorded an hour ago has no business ordering today's phases.
+     */
+    remove(slot: StatusSlot) {
+      const index = slots.indexOf(slot)
+      if (index !== -1) {
+        slots.splice(index, 1)
+      }
+      // a held reading describes an aggregate this slot was part of
+      held = undefined
+      if (slots.length === 0) {
+        phaseRank.clear()
+        held = undefined
+        lastMessage = undefined
+      }
+    },
+    /** Record one slot's status, then re-derive the shared value. */
+    update(slot: StatusSlot, status: RpcStatus) {
+      // what this slot just finished, credited at the total it retired at —
+      // only its own channel ever saw that number
+      const previous = slot.status
+      if (typeof previous === 'object' && !continuesPhase(previous, status)) {
+        const { message, total } = previous
+        slot.completed.set(message, finished(slot, message) + total)
+      }
+      slot.status = status
+      // every label, not only the determinate ones: an indeterminate phase that
+      // ties with another has to rank somewhere too, and it is the first slot to
+      // say the words that dates the phase either way
+      const phase = statusMessageText(status)
+      if (phase !== undefined && !phaseRank.has(phase)) {
+        phaseRank.set(phase, phaseRank.size)
+      }
+      return derive()
+    },
+    derive,
+  }
 }
 
 // An RPC statusCallback fires per progress event (often ~40/s), and each write
@@ -231,18 +340,25 @@ export interface StatusWindow {
 const STATUS_THROTTLE_MS = 100
 
 /**
- * Open a {@link StatusWindow}: leading-edge, so sparse updates pass straight
- * through and dense bursts are thinned. Create **one per owner** — a display, a
- * dialog run, an assembly load — and take every one of that owner's status
- * callbacks off it.
+ * Open a {@link StatusWindow} over one status field. `write` is that field's
+ * **only** writer, statuses and the closing blank alike, so whatever guards it
+ * — `isAlive(self)`, a React `alive` flag — guards every one of them by
+ * construction rather than by a copy of the check at each `finally`.
+ *
+ * Leading-edge, so sparse updates pass straight through and dense bursts are
+ * thinned; trailing as well, so the last write of a phase always lands — it is
+ * the one that matters most and exactly the one a leading-edge-only gate drops.
+ *
+ * Create **one per owner** — a display, a dialog run, an assembly load — and
+ * take every one of that owner's status callbacks off it as a stream. The
+ * streams are slots in one aggregate, so the owner's two concurrent operations
+ * arbitrate for the field the same way one fetch's parallel regions do, and
+ * neither ends the other's label (ADR-081).
  *
  * Deliberately wraps only the *callback* path, never `setStatusMessage` itself
  * — a display writing a phase label by hand ("Downloading" → "Parsing") is a
  * sequence of distinct labels, and a trailing edge only guarantees the *last*
  * of a burst, not each one in turn.
- *
- * Trailing as well as leading, so the last write of a phase always lands: it is
- * the one that matters most and exactly the one a leading-edge-only gate drops.
  *
  * Both fetch families own one: `FetchMixin` for the LGV displays, and
  * `createStopTokenRotation` for the bare-autorun fetches (dotplot, synteny)
@@ -251,7 +367,9 @@ const STATUS_THROTTLE_MS = 100
  * rather than shared model state because the two families declare their status
  * fields separately and one set shadows the other — see ADR-041.
  */
-export function createStatusWindow(): StatusWindow {
+export function createStatusWindow(
+  write: (status: RpcStatus | undefined) => void,
+): StatusWindow {
   let lastMs = 0
   let pending: (() => void) | undefined
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -292,23 +410,56 @@ export function createStatusWindow(): StatusWindow {
     clearPending()
     lastMs = 0
   }
+  const aggregate = createStatusAggregate()
+  // never skipped: the value is `undefined` only before any slot has spoken,
+  // and a slot that has just spoken is one that has
+  const emit = (status: RpcStatus | undefined) => {
+    if (status !== undefined) {
+      write(status)
+    }
+  }
   return {
-    open({ isCurrent, write }) {
+    open({ isCurrent }) {
+      // an operation starting after a lull reports at once; one starting beside
+      // a running sibling waits its turn in the sibling's cadence
+      if (aggregate.idle()) {
+        reset()
+      }
+      const slot = aggregate.add()
+      let live = true
       return {
         statusCallback: status => {
-          if (isCurrent()) {
-            // re-read inside, because a trailing write fires on a timer and the
-            // operation it belongs to can be gone by then
+          if (live && isCurrent()) {
+            // recorded now, derived again when the write lands: a status that
+            // waited out the window would otherwise describe the slots as they
+            // were when it was queued, and a sibling may have retired since
+            aggregate.update(slot, status)
             run(() => {
+              // re-read inside, because a trailing write fires on a timer and
+              // the operation it belongs to can be gone by then — a run that
+              // has since been stopped must not restore the label "Stopping"
+              // has already replaced
               if (isCurrent()) {
-                write(status)
+                emit(aggregate.derive())
               }
             })
           }
         },
         clear() {
-          reset()
-          write(undefined)
+          if (!live) {
+            return
+          }
+          live = false
+          aggregate.remove(slot)
+          if (aggregate.idle()) {
+            // the owner's last word, and nothing is coming to displace it
+            reset()
+            write(undefined)
+          } else {
+            run(() => {
+              emit(aggregate.derive())
+            })
+          }
         },
       }
     },
@@ -601,57 +752,11 @@ export function aggregateStatus(
  * changes.
  */
 export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
-  const slots: StatusSlot[] = []
-  // every phase this batch has reached, against the order it reached them in,
-  // so a tie between two slots in different phases resolves the same way twice
-  const phaseRank = new Map<string, number>()
-  // the current phase's last determinate reading — what a moment with nothing
-  // measuring it falls back to, rather than downgrading what we already know.
-  // Dropped the moment the batch is in some other phase, or in none.
-  let held: StatusWithProgress | undefined
-  // the last label of any kind, which outlives that: it is all there is to say
-  // once nothing is in flight, and saying it is what displaces the percentage
-  // queued behind the throttle
-  let lastMessage: string | undefined
+  const aggregate = createStatusAggregate({ holdLastReading: true })
   return (): StatusCallback => {
-    const slot: StatusSlot = { status: undefined, completed: new Map() }
-    slots.push(slot)
+    const slot = aggregate.add()
     return status => {
-      // what this slot just finished, credited at the total it retired at —
-      // only its own channel ever saw that number
-      const previous = slot.status
-      if (typeof previous === 'object' && !continuesPhase(previous, status)) {
-        const { message, total } = previous
-        slot.completed.set(message, finished(slot, message) + total)
-      }
-      slot.status = status
-      // every label, not only the determinate ones: an indeterminate phase that
-      // ties with another has to rank somewhere too, and it is the first slot to
-      // say the words that dates the phase either way
-      const phase = statusMessageText(status)
-      if (phase !== undefined && !phaseRank.has(phase)) {
-        phaseRank.set(phase, phaseRank.size)
-      }
-      const aggregate = aggregateStatus(slots, phaseRank)
-      const message = statusMessageText(aggregate)
-      // A held reading describes one phase, and survives exactly as long as the
-      // batch is still in it. "Nothing in flight" is not that phase either: an
-      // empty aggregate is a batch with no work outstanding, and re-sending a
-      // percentage for work that has ENDED is the write ADR-071 exists to
-      // cancel. Both cases are one comparison, because an empty aggregate names
-      // no phase.
-      if (held?.message !== message) {
-        held = undefined
-      }
-      if (typeof aggregate === 'object' && !readsComplete(aggregate)) {
-        held = aggregate
-      }
-      if (message !== undefined) {
-        lastMessage = message
-      }
-      // the best available answer to "what is this batch doing", in order: a
-      // reading we trust, whatever the aggregate says, the last label we saw
-      const out = held ?? aggregate ?? lastMessage
+      const out = aggregate.update(slot, status)
       if (out !== undefined) {
         statusCallback?.(out)
       }

@@ -8,7 +8,7 @@ import {
 } from './progress.ts'
 import { createStopToken, stopStopToken } from './stopToken.ts'
 
-import type { RpcStatus, StatusWindow } from './progress.ts'
+import type { RpcStatus, StatusStream, StatusWindow } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -93,15 +93,19 @@ export interface ActiveFetch {
    */
   statusCallback: (status: RpcStatus) => void
   /**
-   * Call in the `finally` of the run that owns this fetch: closes
-   * `isCurrent`, drops the write queued behind the window, and clears the
-   * status field.
+   * Call in the `finally` of the run that owns this fetch: closes `isCurrent`
+   * and retires this fetch's status slot, which blanks the field only if no
+   * other operation on the host is still reporting.
    *
-   * All three together, because a caller doing it by hand gets a subset.
+   * Both together, because a caller doing it by hand gets a subset.
    * `isCurrent` is `token === current && isAlive`, and a run that *completes*
    * never rotates its own token — so without this the guard stays open past the
    * work and a trailing write lands on top of a hand-written
    * `setStatusMessage(undefined)` up to a window later.
+   *
+   * A **superseded** run calls it too, and must: its slot goes on voting for a
+   * phase that is over until it does. The run that replaced it has already
+   * opened its own slot by then, so the label the user is looking at survives.
    */
   end: () => void
 }
@@ -117,7 +121,7 @@ export interface ActiveFetch {
  * token by hand.
  *
  * `end()` in the run's `finally` is the other half, and for the same reason —
- * see {@link ActiveFetch.end} for the three things it does together.
+ * see {@link ActiveFetch.end} for the two things it does together.
  *
  * Owns the token mechanics and the status channel; the caller keeps its own
  * loading/error/commit side-effects in its autorun. Used by any bare-autorun
@@ -140,19 +144,21 @@ export function createStopTokenRotation(
 ) {
   let currentStopToken: StopToken | undefined
   // The host's window when it has one, so a display composing `FetchMixin` has
-  // one window rather than two writing one field; our own otherwise. Reopened
-  // per fetch so each new fetch reports its first status immediately — without
-  // that these displays wrote an observable per progress event where every
-  // mixin-based display thins to 10/s, and the overlay repainted faster than the
-  // view animated.
-  const statusWindow = report.statusWindow ?? createStatusWindow()
-  // the one place the field is touched, so the liveness check covers a stream's
-  // statuses and the clear that ends it alike
-  const write = (status: RpcStatus | undefined) => {
-    if (isAlive(self)) {
-      report.setStatusMessage(status)
-    }
-  }
+  // one window rather than two writing one field; our own otherwise. Lent means
+  // this fetch is one slot beside the host's others rather than a second writer
+  // (ADR-081), which is why `end()` no longer has to ask whether it owns the
+  // field.
+  const lent = report.statusWindow !== undefined
+  const statusWindow =
+    report.statusWindow ??
+    // the one place the field is touched, so the liveness check covers a
+    // stream's statuses and the clear that ends it alike
+    createStatusWindow((status: RpcStatus | undefined) => {
+      if (isAlive(self)) {
+        report.setStatusMessage(status)
+      }
+    })
+  let openStream: StatusStream | undefined
   return {
     begin(): ActiveFetch {
       if (currentStopToken) {
@@ -160,14 +166,6 @@ export function createStopTokenRotation(
       }
       const stopToken = createStopToken()
       currentStopToken = stopToken
-      // The window reopens; the label is deliberately left alone. A fetch being
-      // SUPERSEDED is the one case where the display does not stop loading, so
-      // clearing here flashes the overlay's `'Loading'` fallback between every
-      // pan and the phase the view was already in. The replacing fetch
-      // overwrites the label once it has one, and `end()` still clears on the
-      // fetch that actually stops. ADR-080; `FetchMixin.supersedeStatus` is the
-      // same decision for the LGV displays.
-      statusWindow.reset()
       // `ended` is the term a completed fetch has no other way to express: the
       // token comparison catches a SUPERSEDED one, but a fetch that simply
       // finished still holds the current token. The stream reads it as well as
@@ -175,21 +173,24 @@ export function createStopTokenRotation(
       let ended = false
       const isCurrent = () =>
         !ended && stopToken === currentStopToken && isAlive(self)
-      const stream = statusWindow.open({ isCurrent, write })
+      // Opened BEFORE the superseded run reaches its `finally`, which is what
+      // keeps the label the user is looking at from blanking between the two:
+      // the run being replaced is suspended at an await and resumes a microtask
+      // from now, by which point this slot is already voting. A fetch being
+      // SUPERSEDED is the one case where the display does not stop loading, so
+      // a gap there reads as the overlay's `'Loading'` fallback (ADR-080).
+      const stream = statusWindow.open({ isCurrent })
+      openStream = stream
       return {
         stopToken,
         isCurrent,
         statusCallback: stream.statusCallback,
         end() {
-          // Only the run that still owns the field clears it. A SUPERSEDED run
-          // reaches its `finally` too — it unwinds on the abort the rotation
-          // just raised — and clearing there would wipe the label the fetch
-          // that replaced it has already set.
-          const owned = isCurrent()
           ended = true
-          if (owned) {
-            stream.clear()
+          if (openStream === stream) {
+            openStream = undefined
           }
+          stream.clear()
         },
       }
     },
@@ -197,11 +198,18 @@ export function createStopTokenRotation(
       if (currentStopToken) {
         stopStopToken(currentStopToken)
       }
+      // a fetch in flight when the host is torn down never reaches its
+      // `finally`, and a slot nobody retires goes on voting
+      openStream?.clear()
+      openStream = undefined
       // the window outlives the token: a trailing write is queued on a timer,
       // and while the sink's `isCurrent` makes it a no-op rather than a write to
       // a dead node, the timer itself still stands for up to a window past
-      // teardown. `FetchMixin.resetStatus` resets for the same reason.
-      statusWindow.reset()
+      // teardown. Only ours — resetting a lent one drops a write the host's
+      // other operations are still owed.
+      if (!lent) {
+        statusWindow.reset()
+      }
     },
   }
 }

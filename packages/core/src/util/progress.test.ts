@@ -147,13 +147,12 @@ describe('createStatusWindow', () => {
   // stream, or by taking a callback without the clear that ends it
   function openStream() {
     const seen: (RpcStatus | undefined)[] = []
-    const statusWindow = createStatusWindow()
+    const statusWindow = createStatusWindow(s => {
+      seen.push(s)
+    })
     const guard = { current: true }
     const { statusCallback: report, clear } = statusWindow.open({
       isCurrent: () => guard.current,
-      write: s => {
-        seen.push(s)
-      },
     })
     return { seen, statusWindow, report, clear, guard }
   }
@@ -191,13 +190,12 @@ describe('createStatusWindow', () => {
   // the sinks come off the window rather than taking one as an argument
   it('thins every stream on one window to one flow between them', () => {
     const seen: (RpcStatus | undefined)[] = []
-    const statusWindow = createStatusWindow()
-    const isCurrent = () => true
-    const write = (s: RpcStatus | undefined) => {
+    const statusWindow = createStatusWindow(s => {
       seen.push(s)
-    }
-    const a = statusWindow.open({ isCurrent, write })
-    const b = statusWindow.open({ isCurrent, write })
+    })
+    const isCurrent = () => true
+    const a = statusWindow.open({ isCurrent })
+    const b = statusWindow.open({ isCurrent })
     a.statusCallback('from a')
     b.statusCallback('from b')
     expect(seen).toEqual(['from a'])
@@ -281,9 +279,12 @@ describe('createStatusWindow', () => {
       expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 10 }])
       clock += 100
       jest.advanceTimersByTime(100)
+      // the label alone, never the 9/10 again: the slot is between phases, and
+      // a window writes what its slots add up to rather than the `''` one of
+      // them ended on (ADR-080). The blank is the owner's to declare.
       expect(seen).toEqual([
         { message: 'Downloading', current: 1, total: 10 },
-        '',
+        'Downloading',
       ])
     } finally {
       jest.useRealTimers()
@@ -311,8 +312,9 @@ describe('createStatusWindow', () => {
       expect(seen).toEqual(['Downloading features'])
       clock += 100
       jest.advanceTimersByTime(100)
-      // one trailing write, and it is the newest — never the 0% bar
-      expect(seen).toEqual(['Downloading features', ''])
+      // one trailing write, and it is the last label — never the 0% bar, and
+      // never a blank the owner did not ask for
+      expect(seen).toEqual(['Downloading features', 'Collecting render data'])
     } finally {
       jest.useRealTimers()
     }
@@ -1211,15 +1213,12 @@ describe('a fan-out behind one window stream', () => {
   // queued write — a bare `setStatus(undefined)` beside a `throttle.run` fan-out
   // had neither half and neither fault was visible in the passing state.
   it('lands the final clear through the owner, not the retiring slots', () => {
-    const statusWindow = createStatusWindow()
     const seen: (RpcStatus | undefined)[] = []
-    let loading = true
-    const stream = statusWindow.open({
-      isCurrent: () => loading,
-      write: s => {
-        seen.push(s)
-      },
+    const statusWindow = createStatusWindow(s => {
+      seen.push(s)
     })
+    let loading = true
+    const stream = statusWindow.open({ isCurrent: () => loading })
     const slot = createStatusFanOut(stream.statusCallback)
     const a = slot()
     const b = slot()
@@ -1243,13 +1242,10 @@ describe('a fan-out behind one window stream', () => {
     try {
       const seen: (RpcStatus | undefined)[] = []
       let loading = true
-      const statusWindow = createStatusWindow()
-      const stream = statusWindow.open({
-        isCurrent: () => loading,
-        write: s => {
-          seen.push(s)
-        },
+      const statusWindow = createStatusWindow(s => {
+        seen.push(s)
       })
+      const stream = statusWindow.open({ isCurrent: () => loading })
       const slot = createStatusFanOut(stream.statusCallback)
       const failed = slot()
       const stillGoing = slot()
@@ -1279,14 +1275,11 @@ describe('a fan-out behind one window stream', () => {
     try {
       const seen: (RpcStatus | undefined)[] = []
       let alive = true
-      const statusWindow = createStatusWindow()
+      const statusWindow = createStatusWindow(s => {
+        seen.push(s)
+      })
       const slot = createStatusFanOut(
-        statusWindow.open({
-          isCurrent: () => alive,
-          write: s => {
-            seen.push(s)
-          },
-        }).statusCallback,
+        statusWindow.open({ isCurrent: () => alive }).statusCallback,
       )
       const load = slot()
       load({ message: 'Downloading', current: 1, total: 2 })

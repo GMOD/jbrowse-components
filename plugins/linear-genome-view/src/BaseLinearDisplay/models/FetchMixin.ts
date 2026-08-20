@@ -12,8 +12,13 @@ import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
-import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'
+import type {
+  RpcStatus,
+  StatusCallback,
+  StatusStream,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Every write to a display's status field, on the console, when
@@ -91,10 +96,18 @@ export interface FetchContext {
  * error capture, status reporting); consumers see only `runFetch`,
  * `cancelFetch`, `isLoading`, `error`, `statusMessage`, and `fetchGeneration`.
  */
+// What the window's write reaches forward for. `self` inside the volatile
+// initializer is the empty model the chain starts from, and `setStatusMessage`
+// arrives three steps later — the write runs long after that, so naming the one
+// member it calls is the whole of the cast.
+interface StatusWriter extends IStateTreeNode {
+  setStatusMessage: (status?: RpcStatus) => void
+}
+
 export default function FetchMixin() {
   return types
     .model('FetchMixin', {})
-    .volatile(() => ({
+    .volatile(self => ({
       /**
        * #volatile
        * stop token of the in-flight fetch, or undefined when idle
@@ -109,12 +122,27 @@ export default function FetchMixin() {
 
       /**
        * #volatile
-       * This display's one throttle window, shared by every status callback it
-       * hands out, so N parallel per-region fetches thin to one stream between
-       * them rather than N. Lent whole to `createStopTokenRotation` by a display
-       * that also runs a bare-autorun fetch — see `StatusReporter`.
+       * This display's status field, and the only thing that writes it: one
+       * throttle window, one slot per concurrent operation, so N parallel
+       * per-region fetches thin to one stream between them rather than N and a
+       * second operation cannot end the first one's label (ADR-081). Lent whole
+       * to `createStopTokenRotation` by a display that also runs a bare-autorun
+       * fetch — see `StatusReporter`.
        */
-      statusWindow: createStatusWindow(),
+      statusWindow: createStatusWindow(status => {
+        const model = self as unknown as StatusWriter
+        if (isAlive(model)) {
+          model.setStatusMessage(status)
+        }
+      }),
+
+      /**
+       * #volatile
+       * The in-flight fetch's slot, so a cancel can retire it now rather than
+       * whenever the worker gets around to noticing the stop token. `runFetch`
+       * retires it again in its `finally`; retiring twice is a no-op.
+       */
+      activeStatusStream: undefined as StatusStream | undefined,
 
       // error / statusMessage / statusProgress below duplicate BaseDisplay's,
       // so this mixin composes standalone (its own tests) as well as onto a
@@ -277,33 +305,27 @@ export default function FetchMixin() {
       },
       /**
        * #action
-       * Drop the active stop token and clear all status bookkeeping. Shared by
-       * both cancel paths and runFetch's cleanup.
+       * Drop the active stop token and retire the fetch's status slot. Shared
+       * by both cancel paths and runFetch's cleanup.
+       *
+       * Retiring, not blanking: the field goes blank only if this fetch was the
+       * last operation reporting on the display. A **superseded** fetch is the
+       * case that made it matter first — the one case where the display does
+       * not stop loading, and blanking there flashed the overlay's "Loading"
+       * fallback between every pan and the phase the view was already in — but
+       * a sources fetch or a clustering run beside it is the same problem
+       * without the timing coincidence to hide it (ADR-081).
        */
       resetStatus() {
-        self.statusWindow.reset()
         self.activeStopToken = undefined
-        self.statusMessage = undefined
-        self.statusProgress = undefined
-        // logged here rather than left to the neighbouring `fetch-end`: this
-        // is the write that BLANKS the field, and a blank is the symptom the
-        // channel exists to explain
-        debugStatus(self.fetchGeneration, 'status', '<blank>')
+        self.activeStatusStream?.clear()
+        self.activeStatusStream = undefined
       },
       /**
        * #action
-       * The same, minus the label: for a fetch being **superseded** by another
-       * starting this instant, which is the one case where the display does not
-       * stop loading. The overlay renders a missing label as its "Loading"
-       * fallback, so clearing it there flashed "Loading" between every refetch
-       * and the phase it was already in — and a pan or a linked-view resync
-       * supersedes often enough to read as a flicker. The incoming fetch
-       * overwrites the label as soon as it has one of its own, and the fetch
-       * that actually *ends* still clears through `resetStatus`.
        */
-      supersedeStatus() {
-        self.statusWindow.reset()
-        self.activeStopToken = undefined
+      setActiveStatusStream(stream?: StatusStream) {
+        self.activeStatusStream = stream
       },
     }))
     .actions(self => ({
@@ -321,12 +343,18 @@ export default function FetchMixin() {
       },
       /**
        * #action
-       * An RPC `statusCallback` bound to this display: forwards progress to the
-       * shared `statusMessage`, guarded so a callback that fires after the node
-       * is torn down (RPCs resolve their status stream asynchronously) is a safe
-       * no-op, and throttled through the display-wide window. Pass directly as
-       * the `statusCallback` RPC arg instead of re-inlining the guard at every
-       * call site.
+       * Open one operation's slot on the display's status field: an RPC
+       * `statusCallback` throttled through the display-wide window and guarded
+       * so a callback that fires after the node is torn down (RPCs resolve
+       * their status stream asynchronously) is a safe no-op, plus the `clear`
+       * that retires the slot when the operation ends.
+       *
+       * **Every operation on the display opens one**, and the two come back
+       * together because an operation that never retires goes on voting for a
+       * phase that is over. The viewport fetch (`runFetch`), the clustering run
+       * and a lent `createStopTokenRotation` are three of them on one field;
+       * before ADR-081 each blanked the field outright and the last one to
+       * finish decided what the other two were still saying.
        *
        * `isCurrent` is required and has no "node is alive" default, because
        * alive is not the interesting question: a *superseded* fetch is on a live
@@ -340,17 +368,8 @@ export default function FetchMixin() {
        * Declared this early only so `runFetch` can put one on every
        * `FetchContext`.
        */
-      makeStatusCallback(isCurrent: () => boolean) {
-        // off the model-wide window, so N of these thin to one stream between
-        // them rather than N. The stream's `clear` is not the one used here:
-        // `resetStatus` is the display's own clear and covers every fetch on the
-        // model, including the paths that end without a stream of their own.
-        return self.statusWindow.open({
-          isCurrent,
-          write: status => {
-            self.setStatusMessage(status)
-          },
-        }).statusCallback
+      openStatusStream(isCurrent: () => boolean) {
+        return self.statusWindow.open({ isCurrent })
       },
     }))
     .actions(self => ({
@@ -388,18 +407,18 @@ export default function FetchMixin() {
        */
       beforeDestroy() {
         self.stopActiveFetch()
-        // and the status window regardless of whether there was a fetch to
-        // stop: `stopActiveFetch` resets only when it finds a live token, so a
+        self.resetStatus()
+        // and the window regardless of whether there was a fetch to stop: a
         // display torn down BETWEEN fetches — the common case, since a fetch
-        // that finished cleared its own token — left its trailing write
-        // standing on a timer. The write itself is already a no-op (the sink
+        // that finished retired its own slot — left its trailing write standing
+        // on a timer. The write itself is already a no-op (the window's sink
         // re-reads `isAlive`), but the timer is not, and jest reports a worker
         // that will not exit rather than anything about a display.
         //
         // Third of three: `createStopTokenRotation.dispose` and `useFetch`'s
         // effect cleanup are the other two owners of a window, and both end it
         // with the thing that owns it.
-        self.resetStatus()
+        self.statusWindow.reset()
       },
       /**
        * #action
@@ -416,9 +435,6 @@ export default function FetchMixin() {
         noteFetchStarted(self)
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
-          // superseded, not ended: keep the label the overlay is showing until
-          // this fetch has one of its own
-          self.supersedeStatus()
           debugStatus(self.fetchGeneration, 'superseded')
         }
         debugStatus(self.fetchGeneration, 'fetch-start')
@@ -436,11 +452,18 @@ export default function FetchMixin() {
           self.fetchGeneration !== gen ||
           self.activeStopToken !== stopToken
 
+        // Opened before the superseded fetch retires its own, which is what
+        // keeps the label the overlay is showing alive across the handover: the
+        // fetch being replaced is suspended at an await and reaches its
+        // `finally` a microtask from now, by which point this slot is voting.
+        const stream = self.openStatusStream(() => !isStale())
+        self.setActiveStatusStream(stream)
+
         try {
           yield work({
             stopToken,
             isStale,
-            statusCallback: self.makeStatusCallback(() => !isStale()),
+            statusCallback: stream.statusCallback,
           })
         } catch (e) {
           if (!isAbortException(e)) {
@@ -450,6 +473,10 @@ export default function FetchMixin() {
             }
           }
         } finally {
+          // unconditional, unlike everything below it: a superseded fetch has to
+          // retire its slot too, or it goes on voting for the phase it stopped
+          // in for as long as the display lives
+          stream.clear()
           if (!isStale()) {
             // Release this fetch's stop token now that it has ended, which drops
             // the AbortSignal controllers taken against it — resetStatus only

@@ -56,14 +56,13 @@ export function useMateDiscovery({
     // One window per effect run, ended with it, so a trailing write cannot
     // outlive the discovery it describes — and one stream, cleared when the
     // discovery settles however it settles
-    const statusWindow = createStatusWindow()
+    const statusWindow = createStatusWindow(status => {
+      if (alive) {
+        setStatus(status)
+      }
+    })
     const { statusCallback, clear } = statusWindow.open({
       isCurrent: () => alive,
-      write: status => {
-        if (alive) {
-          setStatus(status)
-        }
-      },
     })
     discoverMatesFor(trackId)(stopToken, statusCallback)
       .then(result => {

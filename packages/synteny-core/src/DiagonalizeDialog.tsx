@@ -89,7 +89,9 @@ export default function DiagonalizeDialog({
     // One window per run, so the RPC's ~40/s download ticks don't drive a
     // React render each. Local to the run rather than a hook: its lifetime is
     // exactly this dialog run.
-    const statusWindow = createStatusWindow()
+    const statusWindow = createStatusWindow(status => {
+      setState(prev => (prev.phase === 'running' ? { ...prev, status } : prev))
+    })
     // a status arriving after the run was cancelled or finished must not
     // resurrect the running phase, or talk over "Stopping" — and the window's
     // own stream rather than a hand-written check ahead of it, because only
@@ -99,11 +101,6 @@ export default function DiagonalizeDialog({
     // the label it restored was the one "Stopping" had just replaced.
     const { statusCallback, clear } = statusWindow.open({
       isCurrent: () => !runRef.current.stopped,
-      write: status => {
-        setState(prev =>
-          prev.phase === 'running' ? { ...prev, status } : prev,
-        )
-      },
     })
     try {
       const stats = await run({

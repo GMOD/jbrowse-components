@@ -300,17 +300,16 @@ export default function assemblyFactory(
         // are in flight never runs the `finally`, so `loading` is still true
         // when the window's trailing timer fires and setStatus lands on a dead
         // node. That is the case this sink's second isCurrent read exists for.
-        const statusWindow = createStatusWindow()
+        // the one writer, so the clear below is guarded by the same `isAlive`
+        // its statuses are — it used to reach the field unguarded
+        const statusWindow = createStatusWindow(status => {
+          if (isAlive(self)) {
+            self.setStatus(status)
+          }
+        })
         let loading = true
         const stream = statusWindow.open({
           isCurrent: () => loading && isAlive(self),
-          // the one writer, so the clear below is guarded by the same `isAlive`
-          // its statuses are — it used to reach the field unguarded
-          write: status => {
-            if (isAlive(self)) {
-              self.setStatus(status)
-            }
-          },
         })
         const fanOut = createStatusFanOut(stream.statusCallback)
         const optsFor = (): BaseOptions => ({ statusCallback: fanOut() })

@@ -194,16 +194,15 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       // progress stream is: an RPC emits ~40 of these a second, and each one
       // re-renders the dialog holding this hook
       // one fetch is one stream, so the window is this effect run's
-      const statusWindow = createStatusWindow()
+      // the one writer, so the settle below clears through the same guard its
+      // statuses pass
+      const statusWindow = createStatusWindow(status => {
+        if (alive) {
+          setStatus(status)
+        }
+      })
       const { statusCallback, clear: clearStatus } = statusWindow.open({
         isCurrent: () => alive && !settled,
-        // the one writer, so the settle below clears through the same guard its
-        // statuses pass
-        write: status => {
-          if (alive) {
-            setStatus(status)
-          }
-        },
       })
       const args = [...keyArgs, stopToken, statusCallback]
       const call = fetcher as (...args: unknown[]) => Promise<Data>
