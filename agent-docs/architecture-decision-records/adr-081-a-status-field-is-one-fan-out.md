@@ -164,8 +164,10 @@ bug with an extra layer.
 - `createStatusWindow` taking its `write` at creation means `FetchMixin` builds
   it in a volatile initializer that reaches forward to an action three chain
   steps later — a cast, named `StatusWriter`, to the one member it calls.
-  Adding a `.volatile` after the actions instead would have been type-safe and
-  is the edit ADR-041 says not to make.
+  Declaring a second `.volatile` after the actions instead would have been
+  type-safe, at the cost of another `_OverrideProps` layer on every display that
+  composes the mixin. That is the inference budget ADR-041 ran out of; not
+  measured here, because the cast was cheaper than finding out.
 - **Renames.** `FetchMixin.makeStatusCallback` → `openStatusStream` (returns the
   stream, not the callback); `FetchMixin.supersedeStatus` deleted;
   `createStatusWindow()` → `createStatusWindow(write)` and
