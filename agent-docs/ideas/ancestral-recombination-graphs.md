@@ -170,6 +170,13 @@ reader written in TS (the format is small and the sweep is well specified), or
 tskit's C compiled to wasm. **Neither is research, and the first is the kind of
 thing this repo already does for a dozen formats.**
 
+That last sentence is a judgement, not a measurement. The cheap way to settle it
+is a spike: write the kastore reader, sweep the two index arrays, and diff the
+local trees against `tskit`'s own output on the same file. Whoever picks this up
+should do that first — the whole no-server half of the proposal rests on it, and
+2026-08-19 could not, having no `.trees` file to hand and no room on the box to
+install `tskit` and generate one.
+
 The scale caveat is real and cuts the other way. Lorax's Python backend exists
 because biobank-scale ARGs do not fit a browser, and its numba layout pass and
 adaptive sparsification are load-bearing at that size. A client-side reader
