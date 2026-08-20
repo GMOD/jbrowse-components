@@ -10,9 +10,8 @@ import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import {
-  createGuardedStatusSink,
   createStatusFanOut,
-  createStatusThrottle,
+  createStatusWindow,
   statusFraction,
   statusMessageText,
 } from '../util/progress.ts'
@@ -299,17 +298,16 @@ export default function assemblyFactory(
         // `isAlive` as well as `loading`, because neither implies the other and
         // the trailing write needs both: a tree destroyed WHILE the four loads
         // are in flight never runs the `finally`, so `loading` is still true
-        // when the throttle's trailing timer fires and setStatus lands on a dead
+        // when the window's trailing timer fires and setStatus lands on a dead
         // node. That is the case this sink's second isCurrent read exists for.
-        const throttle = createStatusThrottle()
+        const statusWindow = createStatusWindow()
         let loading = true
         const fanOut = createStatusFanOut(
-          createGuardedStatusSink({
+          statusWindow.sink({
             isCurrent: () => loading && isAlive(self),
-            sink: status => {
+            write: status => {
               self.setStatus(status)
             },
-            throttle,
           }),
         )
         const optsFor = (): BaseOptions => ({ statusCallback: fanOut() })
@@ -362,14 +360,14 @@ export default function assemblyFactory(
             geneticCodes,
           })
         } finally {
-          // `runNow`, not `run` and not a bare write: the clear has to land
-          // (inside a closed window `run` would only queue it) AND it has to
+          // `flush`, not a sink and not a bare write: the clear has to land
+          // (a sink inside a closed window would only queue it) AND it has to
           // drop what is queued behind it, or the trailing timer puts the last
           // "Downloading …" back on screen after the load has ended. Closing
           // the guard first is what stops a still-running sibling load from
           // writing over it — see the `loading` flag above.
           loading = false
-          throttle.runNow(() => {
+          statusWindow.flush(() => {
             self.setStatus(undefined)
           })
         }

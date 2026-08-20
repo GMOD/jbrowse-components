@@ -4,6 +4,7 @@ import {
   createStatusChannel,
   createStopTokenRotation,
 } from './createStopTokenRotation.ts'
+import { createStatusWindow } from './progress.ts'
 import { isStopped } from './stopToken.ts'
 
 import type { RpcStatus } from './progress.ts'
@@ -201,36 +202,34 @@ describe('createStatusChannel', () => {
   })
 })
 
-// A host composing `FetchMixin` already owns a throttle over the same status
-// field. Handing the rotation its pair keeps the two fetches thinning through
-// one window rather than two, which is the whole point of one-per-owner.
+// A host composing `FetchMixin` already owns a window over the same status
+// field. Lending it to the rotation keeps the two fetches thinning through one
+// window rather than two, which is the whole point of one-per-owner — and
+// lending the window rather than a pair of callbacks is what makes reporting
+// through one and flushing another unspellable.
 describe('a host that owns its own window', () => {
-  test('reports through the host callback rather than a second throttle', () => {
+  test('reports and flushes through the host window, not a second one', () => {
     const seen: RpcStatus[] = []
-    const flushed: string[] = []
-    // stands in for FetchMixin: the sink and the flush are the model's, and the
-    // rotation must reach for them instead of building its own
-    const host = Model.actions(() => ({
-      makeStatusCallback(isCurrent: () => boolean) {
-        return (status: RpcStatus) => {
-          if (isCurrent()) {
-            seen.push(status)
-          }
-        }
-      },
-      flushStatus(apply: () => void) {
-        flushed.push('flushed')
-        apply()
-      },
-    })).create({})
+    // stands in for FetchMixin, which opens its window in a volatile and hands
+    // the same object to every fetch on the display
+    const hostWindow = createStatusWindow()
+    const host = Model.volatile(() => ({ statusWindow: hostWindow })).create({})
     const rotation = createStopTokenRotation(host, host)
+    const other = hostWindow.sink({
+      isCurrent: () => true,
+      write: s => {
+        seen.push(s)
+      },
+    })
     const fetch = rotation.begin()
+    // the rotation's own sink and a sibling on the same window share one stream:
+    // the sibling's write falls inside the window the rotation's just opened
     fetch.statusCallback('Downloading')
-    fetch.statusCallback('Parsing')
-    // both landed: the host's window, not a second one thinning them here
-    expect(seen).toEqual(['Downloading', 'Parsing'])
+    other('from the region fetches')
+    expect(host.statusMessage).toBe('Downloading')
+    expect(seen).toEqual([])
     fetch.end()
-    expect(flushed.length).toBeGreaterThan(0)
+    // and the end-of-fetch clear lands through that window rather than racing it
     expect(host.statusMessage).toBeUndefined()
     rotation.dispose()
   })

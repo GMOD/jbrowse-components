@@ -2,37 +2,35 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction } from 'mobx'
 
 import {
-  createGuardedStatusSink,
-  createStatusThrottle,
+  createStatusWindow,
   statusFraction,
   statusMessageText,
 } from './progress.ts'
 import { createStopToken, stopStopToken } from './stopToken.ts'
 
-import type { RpcStatus } from './progress.ts'
+import type { RpcStatus, StatusWindow } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface StatusReporter {
   setStatusMessage: (status?: RpcStatus) => void
   /**
-   * `FetchMixin`'s model-wide guarded sink, present on any display composing
-   * the LGV fetch mixins. When it is, the rotation reports through it rather
-   * than opening a SECOND throttle window on the same status field — which is
-   * the thing one-window-per-owner exists to prevent, and which the
-   * multi-sample-variant sources fetch had done to a display whose region
-   * fetches were already thinning through the mixin's window.
+   * The host's own window, present on any display composing the LGV fetch
+   * mixins. When it is, the rotation reports and flushes through it rather than
+   * opening a SECOND on the same status field — which is the thing
+   * one-window-per-owner exists to prevent, and which the multi-sample-variant
+   * sources fetch had done to a display whose region fetches were already
+   * thinning through the mixin's.
+   *
+   * Lent whole rather than as the two callbacks it used to be. Reporting
+   * through one window and flushing another is a state nobody would choose, and
+   * as two independently-optional members it was one a caller could reach by
+   * supplying half.
    *
    * Optional because the displays this helper was written for (dotplot,
-   * synteny) compose no fetch mixin and have only the window below.
+   * synteny) compose no fetch mixin; the rotation opens its own for them.
    */
-  makeStatusCallback?: (isCurrent: () => boolean) => (status: RpcStatus) => void
-  /**
-   * `FetchMixin`'s `throttle.runNow` — the hand-written clear at a fetch
-   * boundary, so it lands on the same window `makeStatusCallback` reports
-   * through instead of racing it. Not a path the guarded sink uses; ADR-071.
-   */
-  flushStatus?: (apply: () => void) => void
+  statusWindow?: StatusWindow
 }
 
 /**
@@ -108,7 +106,7 @@ export interface ActiveFetch {
   statusCallback: (status: RpcStatus) => void
   /**
    * Call in the `finally` of the run that owns this fetch: closes
-   * `isCurrent`, drops the write queued behind the throttle, and clears the
+   * `isCurrent`, drops the write queued behind the window, and clears the
    * status field.
    *
    * All three, because a caller doing it by hand got some subset. `isCurrent`
@@ -133,9 +131,8 @@ export interface ActiveFetch {
  * token by hand.
  *
  * `end()` in the run's `finally` is the other half, and for the same reason:
- * ending a fetch means three things (close the guard, drop the throttle's
- * queued write, clear the status field) and a caller writing them out got a
- * subset. Both callers did — one cleared without dropping the queued write,
+ * ending a fetch means three things (close the guard, drop the window's queued
+ * write, clear the status field) and a caller writing them out got a subset. Both callers did — one cleared without dropping the queued write,
  * the other never cleared at all.
  *
  * Owns the token mechanics and the status channel; the caller keeps its own
@@ -148,7 +145,7 @@ export interface ActiveFetch {
  * `report` is passed rather than read off `self`, so where the status lands is
  * the caller's decision and not a shape this imposes. A display passes itself —
  * its status fields are part of its own API, and one composing `FetchMixin`
- * passes the model-wide window along with them (see `makeStatusCallback`).
+ * passes the model-wide window along with them (see `StatusReporter`).
  * Anything with one operation to narrate and no status vocabulary of its own
  * passes a {@link createStatusChannel}, which is one volatile instead of two
  * fields and an action.
@@ -158,37 +155,19 @@ export function createStopTokenRotation(
   report: StatusReporter,
 ) {
   let currentStopToken: StopToken | undefined
-  // One window for this display, reopened per fetch so each new fetch reports
-  // its first status immediately. Without it these displays wrote an observable
-  // per progress event where every mixin-based display thins to 10/s — the
-  // overlay repainted faster than the view animated.
-  //
-  // Unused on a display that composes `FetchMixin`: its window is the model's,
-  // so that display has one window rather than two writing one field.
-  const throttle = createStatusThrottle()
-  const flush = (apply: () => void) => {
-    if (report.flushStatus) {
-      report.flushStatus(apply)
-    } else {
-      throttle.runNow(apply)
-    }
-  }
+  // The host's window when it has one, so a display composing `FetchMixin` has
+  // one window rather than two writing one field; our own otherwise. Reopened
+  // per fetch so each new fetch reports its first status immediately — without
+  // that these displays wrote an observable per progress event where every
+  // mixin-based display thins to 10/s, and the overlay repainted faster than the
+  // view animated.
+  const statusWindow = report.statusWindow ?? createStatusWindow()
   const clearStatus = () => {
-    flush(() => {
+    statusWindow.flush(() => {
       if (isAlive(self)) {
         report.setStatusMessage(undefined)
       }
     })
-  }
-  // Reopen the window so the next fetch's first status lands at once, dropping
-  // the write the outgoing one left queued behind it. Both windows, because
-  // `makeStatusCallback` and `flushStatus` are independently optional: a
-  // reporter supplying one and not the other reports through one window and
-  // flushes the other, and resetting both is what makes this correct whichever
-  // pair it turns out to be.
-  const reopenWindow = () => {
-    throttle.reset()
-    flush(() => {})
   }
   return {
     begin(): ActiveFetch {
@@ -205,7 +184,7 @@ export function createStopTokenRotation(
       // it has one of its own, and `end()` still clears on the fetch that
       // actually stops. ADR-080; `FetchMixin.supersedeStatus` is the same
       // decision for the LGV displays.
-      reopenWindow()
+      statusWindow.reset()
       // `ended` is the term a completed fetch has no other way to express: a
       // SUPERSEDED one is caught by the token comparison, but a fetch that
       // simply finished still holds the current token, so without this its
@@ -218,15 +197,12 @@ export function createStopTokenRotation(
       return {
         stopToken,
         isCurrent,
-        statusCallback:
-          report.makeStatusCallback?.(isCurrent) ??
-          createGuardedStatusSink({
-            isCurrent,
-            sink: status => {
-              report.setStatusMessage(status)
-            },
-            throttle,
-          }),
+        statusCallback: statusWindow.sink({
+          isCurrent,
+          write: status => {
+            report.setStatusMessage(status)
+          },
+        }),
         end() {
           // Only the run that still owns the field clears it. A SUPERSEDED run
           // reaches its `finally` too — it unwinds on the abort the rotation
@@ -244,11 +220,11 @@ export function createStopTokenRotation(
       if (currentStopToken) {
         stopStopToken(currentStopToken)
       }
-      // the throttle outlives the token: a trailing write is queued on a timer,
+      // the window outlives the token: a trailing write is queued on a timer,
       // and while the sink's `isCurrent` makes it a no-op rather than a write to
       // a dead node, the timer itself still stands for up to a window past
       // teardown. `FetchMixin.resetStatus` resets for the same reason.
-      throttle.reset()
+      statusWindow.reset()
     },
   }
 }

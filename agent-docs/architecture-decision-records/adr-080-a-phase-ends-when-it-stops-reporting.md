@@ -192,3 +192,16 @@ and over steps it every time.
 - A slot can still be credited for a phase it *abandoned* (an aborted download
   counts at its full total), which is what `''` already did and is invisible: the
   stream ends with the fetch that aborted it.
+- **Renames, for anyone following an older ADR to a symbol that has gone.**
+  `createStatusThrottle` + `createGuardedStatusSink` became one
+  `createStatusWindow()`, whose `sink({isCurrent, write})` is the old guarded
+  sink, `flush` the old `runNow`, and `reset` the old `reset`; the sinks come off
+  the window rather than taking one as an argument, so the one-window-per-owner
+  rule that ADR-071 and ADR-041 argue for in prose has no way left to break.
+  `StatusReporter`'s `makeStatusCallback` + `flushStatus` pair became one
+  `statusWindow`, which is that same rule for a host lending its window — two
+  optional members that had to co-vary were two chances to supply half.
+  `aggregateStatus` and `StatusSlot` left `@jbrowse/core/util` for the module
+  they belong to: a caller cannot maintain a `StatusSlot` correctly without
+  reimplementing `continuesPhase`, so `createStatusFanOut` is the whole of what
+  the plugin surface offers. None of the three had shipped in a release.

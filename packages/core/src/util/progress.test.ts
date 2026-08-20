@@ -2,8 +2,7 @@ import {
   aggregateStatus,
   createProgressReporter,
   createStatusFanOut,
-  createGuardedStatusSink,
-  createStatusThrottle,
+  createStatusWindow,
   downloadStatus,
   progressLabel,
   statusFraction,
@@ -132,7 +131,7 @@ describe('createProgressReporter', () => {
   })
 })
 
-describe('createStatusThrottle', () => {
+describe('createStatusWindow', () => {
   let clock = 0
   beforeEach(() => {
     clock = 1_000_000
@@ -142,46 +141,73 @@ describe('createStatusThrottle', () => {
     jest.restoreAllMocks()
   })
 
-  it('applies the first update, drops the rest of a burst', () => {
-    const throttle = createStatusThrottle()
-    const applied: number[] = []
-    for (const n of [1, 2, 3]) {
-      throttle.run(() => applied.push(n))
+  // a live sink on a fresh window: the shape every one of these cases wants,
+  // and the shape a caller can no longer get wrong by opening a window per sink
+  function openSink() {
+    const seen: RpcStatus[] = []
+    const statusWindow = createStatusWindow()
+    const guard = { current: true }
+    const report = statusWindow.sink({
+      isCurrent: () => guard.current,
+      write: s => {
+        seen.push(s)
+      },
+    })
+    return { seen, statusWindow, report, guard }
+  }
+
+  it('writes the first status of a burst and drops the rest', () => {
+    const { seen, report } = openSink()
+    for (const n of ['1', '2', '3']) {
+      report(n)
     }
-    expect(applied).toEqual([1])
+    expect(seen).toEqual(['1'])
   })
 
-  it('passes updates spaced beyond the window', () => {
-    const throttle = createStatusThrottle()
-    const applied: number[] = []
-    throttle.run(() => applied.push(1))
+  it('passes statuses spaced beyond the window', () => {
+    const { seen, report } = openSink()
+    report('1')
     clock += 150
-    throttle.run(() => applied.push(2))
+    report('2')
     clock += 50
-    throttle.run(() => applied.push(3))
-    expect(applied).toEqual([1, 2])
+    report('3')
+    expect(seen).toEqual(['1', '2'])
   })
 
   it('reset reopens the window, so the next fetch reports at once', () => {
-    const throttle = createStatusThrottle()
-    const applied: number[] = []
-    throttle.run(() => applied.push(1))
+    const { seen, statusWindow, report } = openSink()
+    report('1')
     clock += 10
-    throttle.run(() => applied.push(2))
-    throttle.reset()
-    throttle.run(() => applied.push(3))
-    expect(applied).toEqual([1, 3])
+    report('2')
+    statusWindow.reset()
+    report('3')
+    expect(seen).toEqual(['1', '3'])
   })
 
-  // one window per display, not per callback: N parallel per-region fetches
-  // must thin to one stream between them rather than N
-  it('separate throttles keep independent windows', () => {
-    const a = createStatusThrottle()
-    const b = createStatusThrottle()
-    const applied: string[] = []
-    a.run(() => applied.push('a'))
-    b.run(() => applied.push('b'))
-    expect(applied).toEqual(['a', 'b'])
+  // one window per owner, not per callback: N parallel per-region fetches must
+  // thin to one stream between them rather than N, which is the whole reason
+  // the sinks come off the window rather than taking one as an argument
+  it('thins every sink on one window to one stream between them', () => {
+    const seen: RpcStatus[] = []
+    const statusWindow = createStatusWindow()
+    const isCurrent = () => true
+    const write = (s: RpcStatus) => {
+      seen.push(s)
+    }
+    const a = statusWindow.sink({ isCurrent, write })
+    const b = statusWindow.sink({ isCurrent, write })
+    a('from a')
+    b('from b')
+    expect(seen).toEqual(['from a'])
+  })
+
+  it('keeps separate windows independent', () => {
+    const a = openSink()
+    const b = openSink()
+    a.report('from a')
+    b.report('from b')
+    expect(a.seen).toEqual(['from a'])
+    expect(b.seen).toEqual(['from b'])
   })
 
   // The last write of a phase is the one that matters most and is exactly the
@@ -190,71 +216,53 @@ describe('createStatusThrottle', () => {
   it('delivers the last dropped write of a burst on the trailing edge', () => {
     jest.useFakeTimers()
     try {
-      const throttle = createStatusThrottle()
-      const applied: number[] = []
-      for (const n of [1, 2, 3]) {
-        throttle.run(() => applied.push(n))
+      const { seen, report } = openSink()
+      for (const n of ['1', '2', '3']) {
+        report(n)
       }
-      expect(applied).toEqual([1])
+      expect(seen).toEqual(['1'])
       clock += 100
       jest.advanceTimersByTime(100)
       // 3, not 2: an older progress value is never what the user wants to see
-      expect(applied).toEqual([1, 3])
+      expect(seen).toEqual(['1', '3'])
     } finally {
       jest.useRealTimers()
     }
   })
 
-  it('runNow lands immediately and cancels what was queued', () => {
+  it('flush lands immediately and cancels what was queued', () => {
     jest.useFakeTimers()
     try {
-      const throttle = createStatusThrottle()
-      const applied: (number | string)[] = []
-      throttle.run(() => applied.push(1))
-      throttle.run(() => applied.push(2))
-      throttle.runNow(() => applied.push('clear'))
-      expect(applied).toEqual([1, 'clear'])
+      const { seen, statusWindow, report } = openSink()
+      report('1')
+      report('2')
+      statusWindow.flush(() => {
+        seen.push('clear')
+      })
+      expect(seen).toEqual(['1', 'clear'])
       clock += 100
       jest.advanceTimersByTime(100)
       // the queued 2 is gone rather than landing after the clear
-      expect(applied).toEqual([1, 'clear'])
+      expect(seen).toEqual(['1', 'clear'])
     } finally {
       jest.useRealTimers()
     }
   })
-})
 
-// `''` is how every phase helper says "this phase is over", and it is throttled
-// like every other status. What has to hold is that it CANCELS the progress
-// value queued behind it, so a finished phase's percentage can never come back
-// on screen; landing on the leading edge was never part of that, and exempting
-// it is what left every phase boundary unthrottled.
-describe('createGuardedStatusSink', () => {
-  let clock = 1_000_000
-  beforeEach(() => {
-    clock = 1_000_000
-    jest.spyOn(Date, 'now').mockImplementation(() => clock)
-  })
-  afterEach(() => {
-    jest.restoreAllMocks()
-  })
-
+  // `''` is how every phase helper says "this phase is over", and it is thinned
+  // like every other status. What has to hold is that it CANCELS the progress
+  // value queued behind it, so a finished phase's percentage can never come back
+  // on screen; landing on the leading edge was never part of that, and exempting
+  // it is what left every phase boundary unthrottled.
   it('does not restore a queued progress value after the clear', () => {
     jest.useFakeTimers()
     try {
-      const seen: RpcStatus[] = []
-      const report = createGuardedStatusSink({
-        isCurrent: () => true,
-        sink: s => {
-          seen.push(s)
-        },
-        throttle: createStatusThrottle(),
-      })
+      const { seen, report } = openSink()
       report({ message: 'Downloading', current: 1, total: 10 })
       report({ message: 'Downloading', current: 9, total: 10 })
       report('')
       // the 9/10 and the '' both fell inside the first write's window, and the
-      // throttle holds exactly one pending write — so the '' displaced the
+      // window holds exactly one pending write — so the '' displaced the
       // percentage rather than queueing behind it
       expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 10 }])
       clock += 100
@@ -268,8 +276,8 @@ describe('createGuardedStatusSink', () => {
     }
   })
 
-  // The reason the clear is throttled with everything else. A phase boundary is
-  // a close immediately followed by the next phase's open, so a clear on the
+  // The reason the clear is thinned with everything else. A phase boundary is a
+  // close immediately followed by the next phase's open, so a clear on the
   // leading edge handed every boundary a free pass and the window applied to
   // nothing that mattered. `executeRenderFeatureData` closes three phases in the
   // last few ms of a warm fetch: the overlay repainted five times inside those
@@ -278,14 +286,7 @@ describe('createGuardedStatusSink', () => {
   it('paints nothing for phases that open and close inside one window', () => {
     jest.useFakeTimers()
     try {
-      const seen: RpcStatus[] = []
-      const report = createGuardedStatusSink({
-        isCurrent: () => true,
-        sink: s => {
-          seen.push(s)
-        },
-        throttle: createStatusThrottle(),
-      })
+      const { seen, report } = openSink()
       report('Downloading features')
       // the tail of a warm fetch, all of it inside the first write's window
       report('')
@@ -308,19 +309,11 @@ describe('createGuardedStatusSink', () => {
   it('drops a trailing write whose operation ended', () => {
     jest.useFakeTimers()
     try {
-      let current = true
-      const seen: RpcStatus[] = []
-      const report = createGuardedStatusSink({
-        isCurrent: () => current,
-        sink: s => {
-          seen.push(s)
-        },
-        throttle: createStatusThrottle(),
-      })
+      const { seen, report, guard } = openSink()
       report('Downloading')
       report('Parsing')
       expect(seen).toEqual(['Downloading'])
-      current = false
+      guard.current = false
       clock += 100
       jest.advanceTimersByTime(100)
       expect(seen).toEqual(['Downloading'])
@@ -1085,11 +1078,11 @@ describe('createStatusFanOut', () => {
 })
 
 // The shape `assembly.loadPre` runs on: a fan-out slot per concurrent file,
-// every slot behind ONE guarded sink, and a `runNow` clear at the end. The two
-// halves are separable and each fails on its own, so both are pinned here — a
-// hand-assembled `throttle.run` fan-out with a bare clear beside it had both
-// faults and neither was visible in the passing state.
-describe('a fan-out behind one guarded sink', () => {
+// every slot behind ONE of the window's sinks, and a `flush` clear at the end.
+// The two halves are separable and each fails on its own, so both are pinned
+// here — a hand-assembled fan-out with a bare clear beside it had both faults
+// and neither was visible in the passing state.
+describe('a fan-out behind one window sink', () => {
   let clock = 0
   beforeEach(() => {
     clock = 1_000_000
@@ -1102,20 +1095,19 @@ describe('a fan-out behind one guarded sink', () => {
   // The owner's `finally` is what lands the final clear, not the slots retiring:
   // every write after the first falls inside the same window, so the slots' `''`
   // is queued behind the throttle like any other status. `loadPre` closes its
-  // guard and then writes through `runNow`, which both lands and drops the
+  // guard and then writes through `flush`, which both lands and drops the
   // queued write — a bare `setStatus(undefined)` beside a `throttle.run` fan-out
   // had neither half and neither fault was visible in the passing state.
   it('lands the final clear through the owner, not the retiring slots', () => {
-    const throttle = createStatusThrottle()
+    const statusWindow = createStatusWindow()
     const seen: RpcStatus[] = []
     let loading = true
     const slot = createStatusFanOut(
-      createGuardedStatusSink({
+      statusWindow.sink({
         isCurrent: () => loading,
-        sink: s => {
+        write: s => {
           seen.push(s)
         },
-        throttle,
       }),
     )
     const a = slot()
@@ -1128,7 +1120,7 @@ describe('a fan-out behind one guarded sink', () => {
     expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 2 }])
     // the shape of `loadPre`'s finally
     loading = false
-    throttle.runNow(() => {
+    statusWindow.flush(() => {
       seen.push(undefined as unknown as RpcStatus)
     })
     expect(seen.at(-1)).toBeUndefined()
@@ -1142,14 +1134,13 @@ describe('a fan-out behind one guarded sink', () => {
     try {
       const seen: RpcStatus[] = []
       let loading = true
-      const throttle = createStatusThrottle()
+      const statusWindow = createStatusWindow()
       const slot = createStatusFanOut(
-        createGuardedStatusSink({
+        statusWindow.sink({
           isCurrent: () => loading,
-          sink: s => {
+          write: s => {
             seen.push(s)
           },
-          throttle,
         }),
       )
       const failed = slot()
@@ -1159,7 +1150,7 @@ describe('a fan-out behind one guarded sink', () => {
 
       // the `finally` of a load that threw: close the guard, then clear
       loading = false
-      throttle.runNow(() => {
+      statusWindow.flush(() => {
         seen.push('cleared')
       })
       stillGoing({ message: 'Downloading', current: 2, total: 2 })
@@ -1182,21 +1173,20 @@ describe('a fan-out behind one guarded sink', () => {
     try {
       const seen: RpcStatus[] = []
       let alive = true
-      const throttle = createStatusThrottle()
+      const statusWindow = createStatusWindow()
       const slot = createStatusFanOut(
-        createGuardedStatusSink({
+        statusWindow.sink({
           isCurrent: () => alive,
-          sink: s => {
+          write: s => {
             seen.push(s)
           },
-          throttle,
         }),
       )
       const load = slot()
       load({ message: 'Downloading', current: 1, total: 2 })
       expect(seen).toHaveLength(1)
 
-      // queued behind the throttle window, then the tree dies mid-load, with no
+      // queued behind the window, then the tree dies mid-load, with no
       // `finally` to close anything
       load({ message: 'Downloading', current: 2, total: 2 })
       alive = false

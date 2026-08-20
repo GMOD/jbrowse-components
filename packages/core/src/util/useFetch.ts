@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { createGuardedStatusSink, createStatusThrottle } from './progress.ts'
+import { createStatusWindow } from './progress.ts'
 import { createStopToken, stopStopToken } from './stopToken.ts'
 
 import type { RpcStatus, StatusCallback } from './progress.ts'
@@ -191,11 +191,10 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       // progress stream is: an RPC emits ~40 of these a second, and each one
       // re-renders the dialog holding this hook
       // one fetch is one stream, so the window is this effect run's
-      const throttle = createStatusThrottle()
-      const statusCallback = createGuardedStatusSink({
+      const statusWindow = createStatusWindow()
+      const statusCallback = statusWindow.sink({
         isCurrent: () => alive && !settled,
-        sink: setStatus,
-        throttle,
+        write: setStatus,
       })
       const args = [...keyArgs, stopToken, statusCallback]
       const call = fetcher as (...args: unknown[]) => Promise<Data>
@@ -229,7 +228,7 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
         // and the window's lifetime is too: `alive` already makes a queued
         // trailing write a no-op, but the timer behind it would otherwise stand
         // for up to a window past unmount
-        throttle.reset()
+        statusWindow.reset()
       }
     }
   }, [serialized, hasFetcher, nonce])

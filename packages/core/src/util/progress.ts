@@ -34,8 +34,8 @@ const openPhases = new WeakMap<StatusCallback, OpenPhase[]>()
  * rule waiting to be broken rather than one anybody could follow.
  *
  * `''` still closes the outermost phase, so nothing downstream changes: it is
- * how every consumer already reads "this phase is over", it is what
- * {@link createGuardedStatusSink} routes through `runNow`, and it is what
+ * how every consumer already reads "this phase is over", it is what a
+ * {@link StatusWindow} sink thins like any other status, and it is what
  * {@link aggregateStatus} reads as "not in flight".
  */
 function openPhase(cb: StatusCallback | undefined, label: string) {
@@ -147,6 +147,68 @@ export function statusFraction(status: RpcStatus | undefined) {
     : undefined
 }
 
+/**
+ * One owner's outlet for a progress stream: a throttle window, and the guarded
+ * callbacks that share it.
+ *
+ * The two are one object because they were never separable. Every owner of a
+ * status field wants the same pair — thin the stream, and drop what a
+ * superseded or torn-down operation writes — and the pairing carries a
+ * cardinality rule that two functions could not state: **one window per owner,
+ * N sinks on it**, which is what makes a display's parallel per-region fetches
+ * thin to one stream between them rather than to N. As a `throttle` argument
+ * that rule lived in a paragraph asking callers not to pass a fresh one; here
+ * the wrong thing has no spelling.
+ */
+export interface StatusWindow {
+  /**
+   * An {@link StatusCallback} writing to `write`, thinned through this window
+   * and skipped entirely once `isCurrent()` goes false — a superseded fetch, or
+   * a torn-down model.
+   *
+   * `isCurrent` is read twice on purpose. Once before the window, so a
+   * superseded fetch's late status can't consume the slot a live one is waiting
+   * on; once inside, because a trailing write fires on a timer and the operation
+   * it belongs to can be gone by then. That second read is the load-bearing one
+   * — without it a trailing status lands on a destroyed MST node.
+   *
+   * **Every status goes through the window, the `''` closing a phase
+   * included** — so a phase that opens and closes inside it paints nothing.
+   * ADR-071. The `''` still displaces the percentage queued behind it, because
+   * the window holds one pending write, so a finished phase's progress cannot
+   * reappear; it just lands on the trailing edge. Every owner ends its stream
+   * with a {@link StatusWindow.flush} clear of its own, so nothing waits on that
+   * write.
+   */
+  sink: (args: {
+    isCurrent: () => boolean
+    write: (status: RpcStatus) => void
+  }) => StatusCallback
+  /**
+   * Write now, dropping anything queued behind it, and reopen. For the
+   * **hand-written** clear an owner runs at the ends of its stream —
+   * `createStopTokenRotation`'s `clearStatus`, `assembly.loadPre`'s `finally`.
+   * Such a clear must land, because nothing else is coming to displace the last
+   * label of a fetch that is over, and must supersede whatever the window still
+   * holds from it.
+   *
+   * **Not for the `''` a phase helper closes with** — that goes through a sink
+   * like every other status, so a phase shorter than the window paints nothing.
+   * ADR-071.
+   */
+  flush: (apply: () => void) => void
+  /**
+   * Reopen, so the next fetch reports its first status at once, and drop any
+   * queued trailing write — a reset accompanies clearing the status, which a
+   * late write from the fetch being reset would undo.
+   *
+   * Reopening is the half that is easy to leave out: an owner clears at the
+   * *start* of a fetch too, and charging that clear a full window would delay
+   * the new fetch's first real status by one.
+   */
+  reset: () => void
+}
+
 // An RPC statusCallback fires per progress event (often ~40/s), and each write
 // to the observable statusMessage/statusProgress re-renders whatever loading
 // indicator is up (and repositions its MUI Tooltip/Popper) — re-renders were
@@ -155,10 +217,10 @@ export function statusFraction(status: RpcStatus | undefined) {
 const STATUS_THROTTLE_MS = 100
 
 /**
- * Leading-edge throttle for a display's RPC progress stream: sparse updates pass
- * straight through, dense bursts are thinned. Create **one per display** and
- * share it across that display's status callbacks, so N parallel per-region
- * fetches thin to one stream between them rather than N.
+ * Open a {@link StatusWindow}: leading-edge, so sparse updates pass straight
+ * through and dense bursts are thinned. Create **one per owner** — a display, a
+ * dialog run, an assembly load — and take every one of that owner's status
+ * callbacks off it.
  *
  * Deliberately wraps only the *callback* path, never `setStatusMessage` itself
  * — a display writing a phase label by hand ("Downloading" → "Parsing") is a
@@ -170,18 +232,16 @@ const STATUS_THROTTLE_MS = 100
  * determinate bar otherwise froze at whatever percentage happened to land on a
  * window boundary, and the `''` that {@link updateStatus}/{@link withProgress}
  * clear with — always the write closing a dense burst — left a finished phase's
- * label on screen until something else wrote. A trailing fire can land after
- * its own operation is torn down, so the guard on a sink has to be re-read
- * inside the throttled body; {@link createGuardedStatusSink} is that shape and
- * is what every owner should use rather than calling `run` directly.
+ * label on screen until something else wrote.
  *
  * Both fetch families own one: `FetchMixin` for the LGV displays, and
  * `createStopTokenRotation` for the bare-autorun fetches (dotplot, synteny)
- * that compose no fetch mixin. A plain function rather than shared model state
- * because the two families declare their status fields separately and one set
- * shadows the other — see ADR-041.
+ * that compose no fetch mixin — and a display that has both lends the mixin's
+ * to the rotation rather than opening a second on one field. A plain function
+ * rather than shared model state because the two families declare their status
+ * fields separately and one set shadows the other — see ADR-041.
  */
-export function createStatusThrottle() {
+export function createStatusWindow(): StatusWindow {
   let lastMs = 0
   let pending: (() => void) | undefined
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -192,114 +252,56 @@ export function createStatusThrottle() {
     }
     pending = undefined
   }
+  const run = (apply: () => void) => {
+    const now = Date.now()
+    const wait = STATUS_THROTTLE_MS - (now - lastMs)
+    if (wait <= 0) {
+      // a write passing on the leading edge supersedes anything queued behind
+      // it, so the trailing timer has nothing left to deliver
+      clearPending()
+      lastMs = now
+      apply()
+    } else {
+      // only the newest write of a burst survives — an older progress value
+      // is never what the user wants to be looking at
+      pending = apply
+      timer ??= setTimeout(() => {
+        timer = undefined
+        // a live timer always has a write behind it: it is scheduled in the
+        // line above, right after `pending` is set, and `clearPending` drops
+        // the two together. So this is an assertion rather than a fallback —
+        // a `if (run)` here reads as a case that can happen, and would
+        // silently skip the `lastMs` bump if it ever did
+        const queued = pending!
+        pending = undefined
+        lastMs = Date.now()
+        queued()
+      }, wait)
+    }
+  }
   return {
-    run(apply: () => void) {
-      const now = Date.now()
-      const wait = STATUS_THROTTLE_MS - (now - lastMs)
-      if (wait <= 0) {
-        // a write passing on the leading edge supersedes anything queued behind
-        // it, so the trailing timer has nothing left to deliver
-        clearPending()
-        lastMs = now
-        apply()
-      } else {
-        // only the newest write of a burst survives — an older progress value
-        // is never what the user wants to be looking at
-        pending = apply
-        timer ??= setTimeout(() => {
-          timer = undefined
-          // a live timer always has a write behind it: it is scheduled in the
-          // line above, right after `pending` is set, and `clearPending` drops
-          // the two together. So this is an assertion rather than a fallback —
-          // a `if (run)` here reads as a case that can happen, and would
-          // silently skip the `lastMs` bump if it ever did
-          const run = pending!
-          pending = undefined
-          lastMs = Date.now()
-          run()
-        }, wait)
+    sink({ isCurrent, write }) {
+      return status => {
+        if (isCurrent()) {
+          // re-read inside, because a trailing write fires on a timer and the
+          // operation it belongs to can be gone by then
+          run(() => {
+            if (isCurrent()) {
+              write(status)
+            }
+          })
+        }
       }
     },
-    /**
-     * Write now, dropping anything queued behind it, and reopen the window. For
-     * the **hand-written** clear an owner runs at the ends of its stream —
-     * `createStopTokenRotation`'s `clearStatus`, `assembly.loadPre`'s `finally`.
-     * Such a clear must land, because nothing else is coming to displace the last
-     * label of a fetch that is over, and must supersede whatever the throttle
-     * still holds from it.
-     *
-     * **Not for the `''` a phase helper closes with** — that goes through
-     * {@link run} like every other status, so a phase shorter than the window
-     * paints nothing. ADR-071.
-     *
-     * Reopening is the half that is easy to leave out: an owner clears at the
-     * *start* of a fetch too, and charging that clear a full window would delay
-     * the new fetch's first real status by one. Same reasoning as {@link reset}.
-     */
-    runNow(apply: () => void) {
+    flush(apply) {
       clearPending()
       lastMs = 0
       apply()
     },
-    /**
-     * Reopen the window, so the next fetch reports its first status at once, and
-     * drop any queued trailing write — a reset accompanies clearing the status,
-     * which a late write from the fetch being reset would undo.
-     */
     reset() {
       clearPending()
       lastMs = 0
     },
-  }
-}
-
-/**
- * The status sink every owner of a progress stream wants: `sink` is called with
- * each status, throttled to {@link createStatusThrottle}'s window and skipped
- * entirely once `isCurrent()` goes false — a superseded fetch, or a torn-down
- * model.
- *
- * `isCurrent` is read twice on purpose. Once before the throttle, so a
- * superseded fetch's late status can't consume the window a live one is waiting
- * on; once inside, because a trailing write fires on a timer and the operation
- * it belongs to can be gone by then. That second read is the load-bearing one —
- * without it a trailing status lands on a destroyed MST node.
- *
- * **Every status goes through the one window, the `''` closing a phase
- * included** — so a phase that opens and closes inside the window paints
- * nothing. ADR-071. The `''` still displaces the percentage queued behind it,
- * because the throttle holds one pending write, so a finished phase's progress
- * cannot reappear; it just lands on the trailing edge. Every owner ends its
- * stream with a `runNow` clear of its own, so nothing waits on that write.
- *
- * `throttle` is required, with no default, because whose window this is is the
- * decision the caller has to make and a default makes it silently. One window
- * per *owner*, shared across that owner's several callbacks, is what makes N
- * concurrent per-region fetches thin to one stream between them rather than N —
- * a per-sink default would quietly give you N, which is the thing
- * {@link createStatusThrottle} exists to prevent. An owner with a single stream
- * writes `createStatusThrottle()` at the call site and has said so;
- * `FetchMixin` passes its model-wide one through `throttleStatus`.
- */
-export function createGuardedStatusSink({
-  isCurrent,
-  sink,
-  throttle,
-}: {
-  isCurrent: () => boolean
-  sink: (status: RpcStatus) => void
-  throttle: { run: (apply: () => void) => void }
-}): StatusCallback {
-  return status => {
-    if (isCurrent()) {
-      // re-read inside, because a trailing write fires on a timer and the
-      // operation it belongs to can be gone by then
-      throttle.run(() => {
-        if (isCurrent()) {
-          sink(status)
-        }
-      })
-    }
   }
 }
 

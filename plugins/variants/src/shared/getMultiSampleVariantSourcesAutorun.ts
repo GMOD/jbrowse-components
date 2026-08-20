@@ -9,7 +9,7 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type { Source } from './types.ts'
-import type { RpcStatus } from '@jbrowse/core/util'
+import type { RpcStatus, StatusWindow } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -21,13 +21,10 @@ export function getMultiSampleVariantSourcesAutorun(
     setError: (error?: unknown) => void
     setStatusMessage: (status?: RpcStatus) => void
     // This display composes the LGV fetch mixins, so it already owns a status
-    // window; handing the pair to the rotation is what keeps this fetch and the
-    // region fetches thinning through ONE of them rather than two writing the
-    // same field.
-    makeStatusCallback: (
-      isCurrent: () => boolean,
-    ) => (status: RpcStatus) => void
-    flushStatus: (apply: () => void) => void
+    // window; lending it to the rotation is what keeps this fetch and the region
+    // fetches thinning through ONE of them rather than two writing the same
+    // field.
+    statusWindow: StatusWindow
     setSources: (sources: Source[]) => void
   },
 ) {

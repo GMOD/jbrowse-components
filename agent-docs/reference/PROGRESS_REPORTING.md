@@ -32,7 +32,7 @@ only.
 worker adapter → opts.statusCallback(status)
   → RPC drivers special-case statusCallback as out-of-band
     (message type `unknown`, so the object survives serialization)
-  → the display's status callback thins the stream (createStatusThrottle)
+  → the display's status callback thins the stream (its StatusWindow)
   → setStatusMessage splits it into statusMessage + statusProgress
   → DisplayLoadingOverlay draws a determinate bar + cancel, else a spinner
 ```
@@ -110,11 +110,12 @@ caller reports nothing still runs `toBytesWithProgress`.
   too; each retires its own entry, so the one still running keeps the channel.
 - `statusMessageText` / `statusFraction` / `statusProgressLabel` extract the
   parts back out.
-- `aggregateStatus` merges concurrent statuses into one `Σcurrent/Σtotal`.
-- `createStatusFanOut(cb)` is that aggregation as a transport: each `slot()` is
-  a `StatusCallback` remembering only its own value, and every write re-derives
-  the shared status from all slots. Hand a slot to each of N concurrent
-  operations sharing one status field.
+- `createStatusFanOut(cb)` merges concurrent statuses into one bar: each
+  `slot()` is a `StatusCallback` remembering its own value and how much of each
+  phase it has finished, and every write re-derives the shared status from all
+  slots. Hand a slot to each of N concurrent operations sharing one status
+  field. The arithmetic is `aggregateStatus`, which is internal to the module —
+  ADR-072 for what it sums and ADR-080 for how the phase is picked.
 
 `parseLineByLine` (flat-file adapters, `label` + `stopToken` opts) and
 `fetchAndMaybeUnzip` (bigwig/bigbed/hic/sequence) forward determinate progress
@@ -151,8 +152,8 @@ part of startup.
 
 `loadPre` now runs on the same transport: one `createStatusFanOut` slot per
 file (they are concurrent, so last-writer-wins would blank the label the moment
-the fastest of the four finished), every slot behind one
-`createGuardedStatusSink`, writing `assembly.statusMessage` /
+the fastest of the four finished), every slot behind one sink off the load's own
+`StatusWindow`, writing `assembly.statusMessage` /
 `assembly.statusProgress` — the same split as `BaseDisplayModel`, so
 `LoadingProgress` renders both.
 
@@ -249,8 +250,8 @@ queries), which nobody else is waiting on.
 A fetch generation can fan out into N parallel per-region RPCs that all write
 the same field. There is one answer on both sides of the RPC boundary:
 **`createStatusFanOut`, a slot per operation**, re-deriving the shared value
-through `aggregateStatus` on every write. N downloads then read as one honest
-bar instead of last-writer thrash.
+from every slot on every write. N downloads then read as one honest bar instead
+of last-writer thrash.
 
 On the main thread nobody calls it directly, because the fan-out helpers own it:
 `callEachRegion` — and `fetchEachRegion` through it — hands each region a copy of
@@ -279,19 +280,22 @@ completed.
 
 An adapter emits progress ~40/s and each observable write repaints the overlay
 (and repositions its MUI Popper) — measured outpacing the view's own animation.
-`createStatusThrottle()` (`@jbrowse/core/util`) is the one window (100ms),
-leading **and trailing**: the last write of a burst is the one that matters most
-and is exactly the one a leading-edge-only gate drops, which froze a determinate
-bar at whatever percentage happened to land on a boundary. Because a trailing
-write fires on a timer, its guard has to be re-read inside the throttled body —
-which is what `createGuardedStatusSink` is, and why every owner should build its
-callback with that rather than calling `run` directly.
+`createStatusWindow()` (`@jbrowse/core/util`) is the one window (100ms), leading
+**and trailing**: the last write of a burst is the one that matters most and is
+exactly the one a leading-edge-only gate drops, which froze a determinate bar at
+whatever percentage happened to land on a boundary. Because a trailing write
+fires on a timer, its guard has to be re-read inside the throttled body — which
+is what `window.sink({isCurrent, write})` does, and why nothing else builds a
+status callback by hand.
 
-**One per owner**, shared across its status callbacks so N parallel region
-fetches thin to one stream between them rather than N. `createGuardedStatusSink`
-takes it as a required argument with no default for that reason: a per-sink
-default would silently give you N. The owners, so progress cadence is uniform
-whichever path a status took:
+**One per owner**, and the sinks come off the window rather than taking one as
+an argument, so N parallel region fetches thin to one stream between them rather
+than N. That used to be a paragraph asking callers not to pass a fresh throttle
+per sink; a per-sink window now has no spelling short of
+`createStatusWindow().sink(…)`. `window.flush(apply)` is the escape for the
+hand-written clear an owner runs when its stream ends, and `window.reset()`
+reopens without writing. The owners, so progress cadence is uniform whichever
+path a status took:
 
 - `FetchMixin` — the LGV displays
 - `createStopTokenRotation` — the bare-autorun fetches (dotplot, synteny,

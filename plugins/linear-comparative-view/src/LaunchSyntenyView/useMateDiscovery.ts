@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import {
-  createGuardedStatusSink,
-  createStatusThrottle,
-  isAbortException,
-} from '@jbrowse/core/util'
+import { createStatusWindow, isAbortException } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 
 import { toPanelRows } from './panelOrder.ts'
@@ -59,11 +55,10 @@ export function useMateDiscovery({
     // RPC emits at download granularity and each write re-renders the dialog.
     // One window per effect run, ended with it, so a trailing write cannot
     // outlive the discovery it describes
-    const throttle = createStatusThrottle()
-    const statusCallback = createGuardedStatusSink({
+    const statusWindow = createStatusWindow()
+    const statusCallback = statusWindow.sink({
       isCurrent: () => alive,
-      sink: setStatus,
-      throttle,
+      write: setStatus,
     })
     discoverMatesFor(trackId)(stopToken, statusCallback)
       .then(result => {
@@ -82,7 +77,7 @@ export function useMateDiscovery({
       stopStopToken(stopToken)
       // the guard already makes a queued write a no-op; the timer behind it
       // would otherwise still stand for up to a window past unmount
-      throttle.reset()
+      statusWindow.reset()
     }
     // `region` whole rather than its assemblyName: the panels the worker
     // resolves are cut from all four of its fields. Stable for the dialog's life

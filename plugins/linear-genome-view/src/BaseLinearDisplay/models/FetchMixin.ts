@@ -1,7 +1,6 @@
 import { noteFetchStarted } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import {
-  createGuardedStatusSink,
-  createStatusThrottle,
+  createStatusWindow,
   isAbortException,
   localStorageGetBoolean,
   progressLabel,
@@ -108,10 +107,19 @@ export default function FetchMixin() {
        */
       fetchGeneration: 0,
 
+      /**
+       * #volatile
+       * This display's one throttle window, shared by every status callback it
+       * hands out, so N parallel per-region fetches thin to one stream between
+       * them rather than N. Lent whole to `createStopTokenRotation` by a display
+       * that also runs a bare-autorun fetch — see `StatusReporter`.
+       */
+      statusWindow: createStatusWindow(),
+
       // error / statusMessage / statusProgress below duplicate BaseDisplay's,
       // so this mixin composes standalone (its own tests) as well as onto a
       // display. In a real composition one set wins — which is exactly why the
-      // throttle policy lives in the shared `createStatusThrottle` and not in
+      // throttle policy lives in the shared `createStatusWindow` and not in
       // either `setStatusMessage` body. Don't "fix" the duplication by
       // extracting a mixin: see ADR-041, the compose layer breaks type
       // inference in unrelated display chains.
@@ -245,82 +253,59 @@ export default function FetchMixin() {
         return serializeRpcProps(self)
       },
     }))
-    .actions(self => {
-      // One window per display instance, shared by both callback factories
-      // below, so N parallel per-region fetches thin to one stream between them
-      // rather than N. The shared primitive is also what the non-mixin fetches
-      // (dotplot, synteny, via createStopTokenRotation) use.
-      const throttle = createStatusThrottle()
-      return {
-        /**
-         * #action
-         */
-        setError(error?: unknown) {
-          self.error = error
-        },
-        /**
-         * #action
-         * Unthrottled: a display writing a phase label by hand must see every
-         * write land. The high-frequency RPC stream is thinned one level up, in
-         * the callback factories.
-         */
-        setStatusMessage(status?: RpcStatus) {
-          self.statusMessage = statusMessageText(status)
-          self.statusProgress = statusFraction(status)
-          debugStatus(
-            self.fetchGeneration,
-            'status',
-            progressLabel(self.statusMessage, self.statusProgress) || '<blank>',
-          )
-        },
-        /**
-         * #action
-         * Run `apply` only if the throttle window has elapsed.
-         */
-        throttleStatus(apply: () => void) {
-          throttle.run(apply)
-        },
-        /**
-         * #action
-         * Run `apply` now, dropping any write queued behind it. The escape from
-         * `throttleStatus` for a write that must land and that supersedes what
-         * it was queued behind — the `''` closing a phase is both.
-         */
-        flushStatus(apply: () => void) {
-          throttle.runNow(apply)
-        },
-        /**
-         * #action
-         * Drop the active stop token and clear all status bookkeeping. Shared by
-         * both cancel paths and runFetch's cleanup.
-         */
-        resetStatus() {
-          throttle.reset()
-          self.activeStopToken = undefined
-          self.statusMessage = undefined
-          self.statusProgress = undefined
-          // logged here rather than left to the neighbouring `fetch-end`: this
-          // is the write that BLANKS the field, and a blank is the symptom the
-          // channel exists to explain
-          debugStatus(self.fetchGeneration, 'status', '<blank>')
-        },
-        /**
-         * #action
-         * The same, minus the label: for a fetch being **superseded** by another
-         * starting this instant, which is the one case where the display does not
-         * stop loading. The overlay renders a missing label as its "Loading"
-         * fallback, so clearing it there flashed "Loading" between every refetch
-         * and the phase it was already in — and a pan or a linked-view resync
-         * supersedes often enough to read as a flicker. The incoming fetch
-         * overwrites the label as soon as it has one of its own, and the fetch
-         * that actually *ends* still clears through `resetStatus`.
-         */
-        supersedeStatus() {
-          throttle.reset()
-          self.activeStopToken = undefined
-        },
-      }
-    })
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setError(error?: unknown) {
+        self.error = error
+      },
+      /**
+       * #action
+       * Unthrottled: a display writing a phase label by hand must see every
+       * write land. The high-frequency RPC stream is thinned one level up, by
+       * the sinks `self.statusWindow` hands out.
+       */
+      setStatusMessage(status?: RpcStatus) {
+        self.statusMessage = statusMessageText(status)
+        self.statusProgress = statusFraction(status)
+        debugStatus(
+          self.fetchGeneration,
+          'status',
+          progressLabel(self.statusMessage, self.statusProgress) || '<blank>',
+        )
+      },
+      /**
+       * #action
+       * Drop the active stop token and clear all status bookkeeping. Shared by
+       * both cancel paths and runFetch's cleanup.
+       */
+      resetStatus() {
+        self.statusWindow.reset()
+        self.activeStopToken = undefined
+        self.statusMessage = undefined
+        self.statusProgress = undefined
+        // logged here rather than left to the neighbouring `fetch-end`: this
+        // is the write that BLANKS the field, and a blank is the symptom the
+        // channel exists to explain
+        debugStatus(self.fetchGeneration, 'status', '<blank>')
+      },
+      /**
+       * #action
+       * The same, minus the label: for a fetch being **superseded** by another
+       * starting this instant, which is the one case where the display does not
+       * stop loading. The overlay renders a missing label as its "Loading"
+       * fallback, so clearing it there flashed "Loading" between every refetch
+       * and the phase it was already in — and a pan or a linked-view resync
+       * supersedes often enough to read as a flicker. The incoming fetch
+       * overwrites the label as soon as it has one of its own, and the fetch
+       * that actually *ends* still clears through `resetStatus`.
+       */
+      supersedeStatus() {
+        self.statusWindow.reset()
+        self.activeStopToken = undefined
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -356,19 +341,12 @@ export default function FetchMixin() {
        * `FetchContext`.
        */
       makeStatusCallback(isCurrent: () => boolean) {
-        return createGuardedStatusSink({
+        // off the model-wide window, so N of these thin to one stream between
+        // them rather than N
+        return self.statusWindow.sink({
           isCurrent,
-          sink: status => {
+          write: status => {
             self.setStatusMessage(status)
-          },
-          // the model-wide window, so N of these thin to one stream between them.
-          // `run` only: the sink throttles every status now, `''` included, so
-          // it has no use for `flushStatus` — that stays for the hand-written
-          // clears (`createStopTokenRotation`).
-          throttle: {
-            run: apply => {
-              self.throttleStatus(apply)
-            },
           },
         })
       },

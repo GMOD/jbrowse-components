@@ -2,8 +2,7 @@ import { useRef, useState } from 'react'
 
 import { Dialog, ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
 import {
-  createGuardedStatusSink,
-  createStatusThrottle,
+  createStatusWindow,
   statusFraction,
   statusProgressLabel,
 } from '@jbrowse/core/util'
@@ -90,7 +89,7 @@ export default function DiagonalizeDialog({
     // One window per run, so the RPC's ~40/s download ticks don't drive a
     // React render each. Local to the run rather than a hook: its lifetime is
     // exactly this dialog run.
-    const throttle = createStatusThrottle()
+    const statusWindow = createStatusWindow()
     try {
       const stats = await run({
         stopToken,
@@ -99,20 +98,19 @@ export default function DiagonalizeDialog({
         },
         // a status arriving after the run was cancelled or finished must not
         // resurrect the running phase, or talk over "Stopping" — and
-        // `createGuardedStatusSink` rather than a hand-written check ahead of
-        // the throttle because only it re-reads the guard INSIDE the throttled
-        // body. A write queued while the run was live fires on a timer, by which
-        // point Stop may have been pressed: the outer read said "not stopped"
-        // when the write was queued, and the label it restored was the one
-        // "Stopping" had just replaced.
-        statusCallback: createGuardedStatusSink({
+        // the window's own sink rather than a hand-written check ahead of it,
+        // because only that re-reads the guard INSIDE the throttled body. A
+        // write queued while the run was live fires on a timer, by which point
+        // Stop may have been pressed: the outer read said "not stopped" when the
+        // write was queued, and the label it restored was the one "Stopping" had
+        // just replaced.
+        statusCallback: statusWindow.sink({
           isCurrent: () => !runRef.current.stopped,
-          sink: status => {
+          write: status => {
             setState(prev =>
               prev.phase === 'running' ? { ...prev, status } : prev,
             )
           },
-          throttle,
         }),
       })
       setState({ phase: 'done', summary: summarize(stats) })
