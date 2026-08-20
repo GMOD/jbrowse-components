@@ -7,7 +7,7 @@
 // first, so one push clears the whole set.
 
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -16,8 +16,35 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 interface Validator {
   name: string
   argv: string[]
-  // Built before the validator runs, when `built` is missing.
-  needsBuild?: { built: string; argv: string[] }
+  // Built before the validator runs, when `built` is missing or older than
+  // anything under `sources`. A stale build is the worse of the two: the
+  // validator runs against last month's CLI and reports the docs as broken.
+  needsBuild?: { built: string; sources: string[]; argv: string[] }
+}
+
+function newestMtime(target: string): number {
+  const stat = statSync(target)
+  return stat.isDirectory()
+    ? readdirSync(target).reduce(
+        (max, entry) => Math.max(max, newestMtime(join(target, entry))),
+        0,
+      )
+    : stat.mtimeMs
+}
+
+function needsRebuild({
+  built,
+  sources,
+}: {
+  built: string
+  sources: string[]
+}) {
+  const builtPath = join(root, built)
+  return existsSync(builtPath)
+    ? sources.some(
+        source => newestMtime(join(root, source)) > newestMtime(builtPath),
+      )
+    : true
 }
 
 const web = (script: string, ...args: string[]) => [
@@ -126,6 +153,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-config-cli.ts'),
     needsBuild: {
       built: 'products/jbrowse-cli/dist/bin.js',
+      sources: [
+        'products/jbrowse-cli/src',
+        'products/jbrowse-cli/package.json',
+      ],
       argv: ['pnpm', '--filter', '@jbrowse/cli', 'build'],
     },
   },
@@ -225,9 +256,7 @@ const failed: string[] = []
 for (const { name, argv, needsBuild } of VALIDATORS) {
   console.log(`\n=== ${name}`)
   const buildFailed =
-    needsBuild &&
-    !existsSync(join(root, needsBuild.built)) &&
-    run(needsBuild.argv) !== 0
+    needsBuild && needsRebuild(needsBuild) && run(needsBuild.argv) !== 0
   if (buildFailed) {
     // Say so here rather than letting the validator fail on a missing binary,
     // which reads as a docs problem.
