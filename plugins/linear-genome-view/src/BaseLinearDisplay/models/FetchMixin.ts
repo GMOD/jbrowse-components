@@ -299,6 +299,10 @@ export default function FetchMixin() {
           self.activeStopToken = undefined
           self.statusMessage = undefined
           self.statusProgress = undefined
+          // logged here rather than left to the neighbouring `fetch-end`: this
+          // is the write that BLANKS the field, and a blank is the symptom the
+          // channel exists to explain
+          debugStatus(self.fetchGeneration, 'status', '<blank>')
         },
         /**
          * #action

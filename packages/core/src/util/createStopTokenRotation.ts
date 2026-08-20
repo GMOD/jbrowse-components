@@ -187,12 +187,21 @@ export function createStopTokenRotation(
       }
       const stopToken = createStopToken()
       currentStopToken = stopToken
+      // Reopen the window so the incoming fetch's first status lands at once,
+      // and drop the write the outgoing one left queued behind it. Through
+      // `flush` as well as the local `throttle`, so whichever window this
+      // rotation reports through is the one that reopens.
+      //
+      // The label is deliberately left alone. A fetch being SUPERSEDED is the
+      // one case where the display does not stop loading, and the loading
+      // overlay renders a missing label as its `'Loading'` fallback — so
+      // clearing here flashed "Loading" between every pan and the phase the
+      // view was already in. The replacing fetch overwrites the label as soon
+      // as it has one of its own, and `end()` still clears on the fetch that
+      // actually stops. ADR-080; `FetchMixin.supersedeStatus` is the same
+      // decision for the LGV displays.
       throttle.reset()
-      // The superseded fetch's last label describes work that is over, and
-      // nothing else drops it: the replacing fetch overwrites it only once its
-      // own first status arrives, which for an RPC is after a worker hop.
-      // `FetchMixin.runFetch` clears at the start for the same reason.
-      clearStatus()
+      flush(() => {})
       // `ended` is the term a completed fetch has no other way to express: a
       // SUPERSEDED one is caught by the token comparison, but a fetch that
       // simply finished still holds the current token, so without this its

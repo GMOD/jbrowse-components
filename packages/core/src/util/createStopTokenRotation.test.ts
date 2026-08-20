@@ -145,15 +145,38 @@ describe('the status window', () => {
     rotation.dispose()
   })
 
-  // The replacing fetch's first status is a worker hop away, and nothing else
-  // drops the label describing the work that was just abandoned.
-  test('begin() clears the superseded fetch label', () => {
+  // A superseded fetch is the one case where the display does not stop loading,
+  // and the loading overlay renders a missing label as its 'Loading' fallback —
+  // so clearing here flashed "Loading" between every pan and the phase the view
+  // was already in. The replacing fetch's first status is a worker hop away, and
+  // the phase it is about to re-enter is the one already on screen. ADR-080.
+  test('begin() keeps the superseded fetch label, and end() clears it', () => {
     const host = makeHost()
     const rotation = createStopTokenRotation(host, host)
     rotation.begin().statusCallback('Downloading')
     expect(host.statusMessage).toBe('Downloading')
-    rotation.begin()
+    const second = rotation.begin()
+    expect(host.statusMessage).toBe('Downloading')
+    second.end()
     expect(host.statusMessage).toBeUndefined()
+    rotation.dispose()
+  })
+
+  // The other half of not clearing: the outgoing fetch's queued trailing write
+  // must still be dropped, or a percentage from work that was abandoned lands
+  // on top of the incoming fetch's own first status a window later.
+  test('begin() drops the write the superseded fetch left queued', () => {
+    jest.useFakeTimers()
+    const host = makeHost()
+    const rotation = createStopTokenRotation(host, host)
+    const { statusCallback } = rotation.begin()
+    statusCallback('Downloading')
+    // same tick, so this one is queued on the trailing timer
+    statusCallback({ message: 'Downloading', current: 9, total: 10 })
+    rotation.begin().statusCallback('Parsing')
+    clock += 100
+    jest.advanceTimersByTime(100)
+    expect(host.statusMessage).toBe('Parsing')
     rotation.dispose()
   })
 })

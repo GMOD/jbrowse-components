@@ -378,12 +378,26 @@ export async function downloadStatus<T>(
 
 /**
  * One concurrent operation's contribution to a fan-out's shared status: what it
- * is reporting right now, plus the determinate phases it has already finished
+ * is reporting right now, plus how much of each phase it has already finished
  * (see {@link createStatusFanOut}, which is what records them).
+ *
+ * `completed` is a total per phase, not the phases themselves: a finished phase
+ * is charged to both halves of the fraction, so its own `current` was only ever
+ * its `total` written twice.
  */
 export interface StatusSlot {
   status: RpcStatus | undefined
-  completed: StatusWithProgress[]
+  completed: Map<string, number>
+}
+
+/** How much of `message` this slot has already finished. */
+function finished(slot: StatusSlot, message: string) {
+  return slot.completed.get(message) ?? 0
+}
+
+/** The phase a status names — its label, whatever shape it arrived in. */
+function phaseOf(status: RpcStatus) {
+  return typeof status === 'object' ? status.message : status
 }
 
 /**
@@ -394,24 +408,32 @@ export interface StatusSlot {
  *
  * **Only operations in the same phase are summed.** `current`/`total` are
  * additive within a phase — bytes with bytes, features with features — and
- * incommensurable across one, so the phase the most operations are *measuring*
- * wins and the rest are charged below. ADR-072; a plain Σcurrent/Σtotal put a
- * bar under whichever slot had the largest raw total. A fan-out whose slots
- * share one phase — the common case, and what the sum was written for — is
- * summed exactly as before.
+ * incommensurable across one, so one phase wins and the rest are charged below.
+ * ADR-072; a plain Σcurrent/Σtotal put a bar under whichever slot had the
+ * largest raw total. A fan-out whose slots share one phase — the common case,
+ * and what the sum was written for — is summed exactly as before.
  *
- * A tie goes to the phase that appeared first in `phaseOrder`, so the label
- * advances with the batch rather than flapping. Two regions, one downloading and
- * one already laying out, tie at one slot each; deciding that on slot order made
- * the label and the whole denominator under it swap on every write, because
- * which slot is measuring anything changes with every phase boundary either one
- * crosses. Deciding it on which phase the batch reached first means the label
- * leaves "Downloading features" when the last region does. `phaseOrder` is the
- * fan-out's record of first appearance; with none, every phase ranks the same
- * and the tie falls back to slot order.
+ * The phase that wins is the one the most operations are **in**, which is the
+ * phase they last reported and not the phase they happen to be measuring this
+ * instant. Voting on the measurement instead let a slot drop out of its own
+ * phase's count every time it sat between two reads reporting only the label:
+ * two regions, one laying out and one downloading, alternated 1-1 and 1-0, so
+ * the shared label and the whole denominator under it swapped back and forth
+ * several times a second (measured: "Computing layout 10%" → "Downloading
+ * features 67%" → "Computing layout 20%").
  *
- * Each slot is then priced against that phase on its own, which is the part that
- * has to be per-slot rather than a Σ over two flat lists:
+ * Ties break to the phase with something to measure, and then to the phase the
+ * batch reached first (`phaseOrder`). Both terms earn their place: without the
+ * first, a region still opening its index holds the label — and its bar — over
+ * a region already reporting bytes; without the second, two regions one phase
+ * apart flap, since which one is measuring changes at every phase boundary
+ * either one crosses. "Something to measure" counts finished work as well as a
+ * live reading, which is what separates the two cases — a phase this batch has
+ * already measured is one it is genuinely still in. With no order at all every
+ * phase ranks the same and the tie falls back to slot order.
+ *
+ * Each slot is then priced against the winning phase on its own, which is the
+ * part that has to be per-slot rather than a Σ over two flat lists:
  *
  * - measuring it: its own `current`/`total`, plus whatever it already finished
  *   of that phase in both halves.
@@ -427,55 +449,82 @@ export interface StatusSlot {
  *   where one region's response carried no Content-Length read 100% with that
  *   region still downloading.
  *
- * A retired slot (`''` or nothing yet) is not in flight and is never charged the
- * mean — charging it at zero is a bar that runs *backwards* as regions finish
- * (three done and one at half of its 1000 reading 500/4000 rather than
- * 500/1000), and it can win the label fallback below, blanking the label of a
- * region still working. Its finished work still counts, which is
- * the reason the bar no longer drops as the batch lands: 500/1000 becomes
- * 3500/4000 and the fraction only ever rises. Finished work cannot make the
- * result anything on its own — a batch whose every slot is done is a batch with
- * no bar, not a bar at 100%.
+ * A winning phase that nothing is measuring right now comes back as its label
+ * alone. Its finished work cannot stand in for a reading — every slot being
+ * between reads at that instant is exactly when it would, and summing what they
+ * retired at reads 100% for a batch that is still working. {@link
+ * createStatusFanOut} re-sends that phase's last real reading instead.
+ *
+ * A retired slot (`''` or nothing yet) is not in flight: it never votes and is
+ * never charged the mean — charging it at zero is a bar that runs *backwards* as
+ * regions finish (three done and one at half of its 1000 reading 500/4000 rather
+ * than 500/1000). Its finished work still counts, which is the reason the bar no
+ * longer drops as the batch lands: 500/1000 becomes 3500/4000 and the fraction
+ * only ever rises.
  */
 export function aggregateStatus(
   slots: StatusSlot[],
   phaseOrder: string[] = [],
 ): RpcStatus | undefined {
-  const inFlight = slots.filter(s => s.status !== undefined && s.status !== '')
-  const measuring = inFlight.filter(
-    (s): s is StatusSlot & { status: StatusWithProgress } =>
-      typeof s.status === 'object',
+  const inFlight = slots.filter(
+    (s): s is StatusSlot & { status: RpcStatus } =>
+      s.status !== undefined && s.status !== '',
   )
-  if (measuring.length === 0) {
-    return inFlight[0]?.status
+  if (inFlight.length === 0) {
+    return undefined
   }
-  const perPhase = new Map<string, number>()
-  for (const s of measuring) {
-    perPhase.set(s.status.message, (perPhase.get(s.status.message) ?? 0) + 1)
+  const votes = new Map<
+    string,
+    { message: string; slots: number; live: number }
+  >()
+  for (const slot of inFlight) {
+    const message = phaseOf(slot.status)
+    const live = typeof slot.status === 'object' ? 1 : 0
+    const vote = votes.get(message)
+    if (vote === undefined) {
+      votes.set(message, { message, slots: 1, live })
+    } else {
+      vote.slots++
+      vote.live += live
+    }
   }
-  // an unseen phase ranks last, and with no order at all every phase ranks the
-  // same — which leaves the reduce keeping its incumbent, the slot-order
-  // tie-break this had before
-  const rank = (m: string) => {
-    const at = phaseOrder.indexOf(m)
-    return at === -1 ? phaseOrder.length : at
+  const candidates = [...votes.values()].map(vote => {
+    // an unseen phase ranks last, and with no order at all every phase ranks
+    // the same — which leaves the reduce below keeping its incumbent, the
+    // slot-order tie-break this had before
+    const at = phaseOrder.indexOf(vote.message)
+    return {
+      ...vote,
+      rank: at === -1 ? phaseOrder.length : at,
+      measured: vote.live > 0 || slots.some(s => finished(s, vote.message) > 0),
+    }
+  })
+  type Candidate = (typeof candidates)[number]
+  const better = (a: Candidate, b: Candidate) =>
+    a.slots !== b.slots
+      ? a.slots > b.slots
+      : a.measured !== b.measured
+        ? a.measured
+        : a.rank < b.rank
+  const best = candidates.reduce((winner, c) =>
+    better(c, winner) ? c : winner,
+  )
+  const { message } = best
+  if (best.live === 0) {
+    return message
   }
-  const { message } = measuring.reduce((best, s) => {
-    const count = perPhase.get(s.status.message)!
-    const bestCount = perPhase.get(best.status.message)!
-    return count > bestCount ||
-      (count === bestCount &&
-        rank(s.status.message) < rank(best.status.message))
-      ? s
-      : best
-  }).status
-  const inPhase = measuring.filter(s => s.status.message === message)
-  const mean = sumTotals(inPhase.map(s => s.status)) / inPhase.length
+  let liveTotal = 0
+  for (const slot of inFlight) {
+    if (typeof slot.status === 'object' && slot.status.message === message) {
+      liveTotal += slot.status.total
+    }
+  }
+  const mean = liveTotal / best.live
 
   let current = 0
   let total = 0
   for (const slot of slots) {
-    const done = sumTotals(slot.completed.filter(c => c.message === message))
+    const done = finished(slot, message)
     const { status } = slot
     if (typeof status === 'object' && status.message === message) {
       current += status.current + done
@@ -490,18 +539,10 @@ export function aggregateStatus(
   return { message, current, total }
 }
 
-function sumTotals(statuses: StatusWithProgress[]) {
-  let out = 0
-  for (const s of statuses) {
-    out += s.total
-  }
-  return out
-}
-
 /**
  * Fan one status field out to several concurrent operations that would
  * otherwise fight over it. Each `slot()` returns a {@link StatusCallback}
- * remembering its own latest value and the determinate phases it has been
+ * remembering its own latest value and how much of each phase it has been
  * through; every write re-derives the shared status from all slots through
  * {@link aggregateStatus}, so N concurrent downloads read as one bar instead of
  * last-writer-wins — and the first one to finish (which writes the `''` every
@@ -534,8 +575,8 @@ function sumTotals(statuses: StatusWithProgress[]) {
  * queued behind the window would otherwise fire after the work it measured had
  * ended (ADR-071). Every owner of a status field clears it when its own work ends
  * (`runFetch`'s `resetStatus`, `assembly.loadPre`'s `finally`,
- * `createStopTokenRotation`'s `clearStatus`), and the end of the batch is theirs
- * to declare, not ours to guess.
+ * `createStopTokenRotation`'s `end`), and the end of the batch is theirs to
+ * declare, not ours to guess.
  *
  * **A phase does not lose its bar because nothing is measuring it this
  * instant.** Between a slot's reads it reports the label alone, and when every
@@ -557,19 +598,24 @@ export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
   let held: StatusWithProgress | undefined
   let lastMessage: string | undefined
   return (): StatusCallback => {
-    const slot: StatusSlot = { status: undefined, completed: [] }
+    const slot: StatusSlot = { status: undefined, completed: new Map() }
     slots.push(slot)
     return status => {
       const previous = slot.status
       if (typeof previous === 'object' && !continuesPhase(previous, status)) {
-        slot.completed.push({ ...previous, current: previous.total })
+        const { message, total } = previous
+        slot.completed.set(message, finished(slot, message) + total)
       }
-      if (typeof status === 'object' && !phaseOrder.includes(status.message)) {
-        phaseOrder.push(status.message)
+      // every label, not only the determinate ones: an indeterminate phase that
+      // ties with another has to rank somewhere too, and it is the first slot to
+      // say the words that dates the phase either way
+      const phase = phaseOf(status)
+      if (phase !== '' && !phaseOrder.includes(phase)) {
+        phaseOrder.push(phase)
       }
       slot.status = status
       const aggregate = aggregateStatus(slots, phaseOrder)
-      const message = aggregateMessage(aggregate)
+      const message = statusMessageText(aggregate)
       if (message !== undefined) {
         if (held?.message !== message) {
           held = undefined
@@ -596,17 +642,13 @@ export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
   }
 }
 
-/** The phase label an aggregate names, whichever shape it came back in. */
-function aggregateMessage(status: RpcStatus | undefined) {
-  return typeof status === 'object' ? status.message : status
-}
-
 /**
  * Does this reading say the work is finished? A fan-out's aggregate exists only
- * while a slot is in flight, so a full one is never the truth — every slot being
- * *between* its reads at that instant is what produces it, and the moment one
- * starts its next read the fraction falls back. Three blocks taking their
- * redispatch flanks made the bar toggle 100/98 nine times in two seconds.
+ * while a slot is in flight, so a full one is never the truth — a slot that has
+ * retired its read while another is still measuring is what produces it, and the
+ * moment the retired one opens its next read the fraction falls back. Three
+ * blocks taking their redispatch flanks made the bar toggle 100/98 nine times in
+ * two seconds.
  *
  * So it is neither held nor shown when there is a real reading to show instead;
  * the phase ending is what moves the label on. Not a clamp on the arithmetic —

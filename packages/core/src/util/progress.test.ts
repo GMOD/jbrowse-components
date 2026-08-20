@@ -623,7 +623,7 @@ describe('aggregateStatus', () => {
   // the slot shape with no finished phases: these cases are about the in-flight
   // reading, and the finished half is exercised through createStatusFanOut below
   const aggOf = (statuses: (RpcStatus | undefined)[]) =>
-    aggregateStatus(statuses.map(status => ({ status, completed: [] })))
+    aggregateStatus(statuses.map(status => ({ status, completed: new Map() })))
   it('returns undefined when nothing is in flight', () => {
     expect(aggOf([])).toBeUndefined()
     expect(aggOf([undefined, undefined])).toBeUndefined()
@@ -945,6 +945,80 @@ describe('createStatusFanOut', () => {
     expect(statusFraction(seen.at(-1))).toBeCloseTo(0.95)
     a({ message: 'Computing layout', current: 0, total: 50 })
     expect(statusFraction(seen.at(-1))).toBeCloseTo(0.95)
+  })
+
+  // Which phase a slot is IN is what it last reported; which phase it is
+  // MEASURING is empty for as long as it sits between two reads. Voting on the
+  // second let the downloading region drop out of its own phase's count every
+  // time it crossed a read boundary, so a two-region batch one phase apart tied
+  // 1-1 and then 1-0 and back — the label and the whole denominator under it
+  // swapping several times a second.
+  it('does not flap while one region lays out and the other is between reads', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading features', current: 0, total: 1000 })
+    b({ message: 'Downloading features', current: 0, total: 9000 })
+    a({ message: 'Downloading features', current: 1000, total: 1000 })
+    // a's download closes onto the enclosing label and a moves on to layout,
+    // while b keeps downloading with a gap between each read
+    a('Downloading features')
+    a({ message: 'Computing layout', current: 0, total: 50 })
+    b({ message: 'Downloading features', current: 4000, total: 9000 })
+    b('Downloading features')
+    a({ message: 'Computing layout', current: 10, total: 50 })
+    b({ message: 'Downloading features', current: 0, total: 5000 })
+    a({ message: 'Computing layout', current: 20, total: 50 })
+
+    const messages = seen.map(statusMessageText)
+    expect(messages.every(m => m === 'Downloading features')).toBe(true)
+    const fractions = seen.map(statusFraction).filter(f => f !== undefined)
+    for (const [i, f] of fractions.entries()) {
+      expect(f).toBeGreaterThanOrEqual(fractions[i - 1] ?? 0)
+    }
+  })
+
+  // The straggler holds the label only while it is half the batch. ADR-072's
+  // majority rule is unchanged — three regions downloading are not repriced by
+  // the one that has moved on, and the reverse holds too.
+  it('lets the majority phase win over one region left behind', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const slots = [slot(), slot(), slot(), slot()]
+    for (const s of slots) {
+      s({ message: 'Downloading features', current: 0, total: 1000 })
+    }
+    for (const s of slots.slice(0, 3)) {
+      s({ message: 'Downloading features', current: 1000, total: 1000 })
+      s('Downloading features')
+      s({ message: 'Computing layout', current: 1, total: 10 })
+    }
+    expect(statusMessageText(seen.at(-1))).toBe('Computing layout')
+  })
+
+  // What separates a phase a region is still working through from one it has
+  // merely announced: whether this batch has ever measured it. Ranking on first
+  // appearance alone would hand the label — and the bar under it — to the region
+  // still sizing its region, over the one already reporting bytes.
+  it('does not let a phase with nothing to measure hold the label', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const a = slot()
+    const b = slot()
+    a('Checking region size')
+    b('Checking region size')
+    a({ message: 'Downloading features', current: 100, total: 1000 })
+    expect(statusMessageText(seen.at(-1))).toBe('Downloading features')
+    // b is charged the mean rather than dropped, so one of two regions a tenth
+    // of the way through its bytes is not a bar at 10%
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(0.05)
   })
 
   // Assembled from the real helpers rather than hand-written statuses, because

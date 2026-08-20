@@ -45,9 +45,14 @@ export async function measureRegionBytes({
   // to be the one stretch of a fetch with no phase open at all: the display had
   // just cleared its status, so the overlay showed its `statusMessage ||
   // 'Loading'` fallback until the download phase opened. Every refetch flashed
-  // "Loading" for as long as the estimate took. A phase shorter than the
-  // throttle window paints nothing (ADR-071), so this says what is happening
-  // only when it is slow enough to be worth saying.
+  // "Loading" for as long as the estimate took.
+  //
+  // It does paint even when the estimate is instant, unlike a phase in the
+  // middle of a fetch: a fetch begins by reopening the throttle window, so its
+  // first status is always on a leading edge. What that buys is the label being
+  // true while it is up — an index read that has to go to the network is
+  // exactly the case the overlay used to call "Loading" — and the download
+  // phase's own first status displaces it a window later at the outside.
   const bytes = await updateStatus('Checking region size', statusCallback, () =>
     dataAdapter.getRegionByteSize([region], { stopToken, statusCallback }),
   )
