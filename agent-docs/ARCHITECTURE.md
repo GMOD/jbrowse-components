@@ -162,7 +162,7 @@ track-menu setting is a slot.
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
 | --- | --- | --- | --- | --- |
 | `LinearAlignmentsDisplay` | `plugins/alignments` | 47 | 2 | 17 |
-| `LinearBasicDisplay` | `plugins/canvas` | 25 | 8 | 12 |
+| `LinearBasicDisplay` | `plugins/canvas` | 25 | 8 | 13 |
 | `LinearMafDisplay` | `plugins/maf` | 18 | 2 | 8 |
 | `LDDisplay` | `plugins/variants` | 15 | 1 | 2 |
 | `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 11 | 4 | 2 |
@@ -179,7 +179,7 @@ track-menu setting is a slot.
 | `LinearMultiSampleVariantMatrixDisplay` | `plugins/variants` | 2 | 0 | 0 |
 | `LinearPairedArcDisplay` | `plugins/arc` | 2 | 2 | 0 |
 | `LinearSyntenyDisplay` | `plugins/linear-comparative-view` | 0 | 2 | 4 |
-| `LinearVariantDisplay` | `plugins/variants` | 0 | 1 | 1 |
+| `LinearVariantDisplay` | `plugins/variants` | 0 | 1 | 0 |
 <!-- END GENERATED DISPLAY_STATE_CENSUS -->
 
 Slots a display inherits are in the declaring schema's row, not in its own — the

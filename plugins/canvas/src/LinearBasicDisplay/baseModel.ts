@@ -1192,72 +1192,41 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * The `decimated` stack with its whitespace factor SOLVED to the track
-         * height. A name is kept only where the feature has at least `factor ×` its
-         * label width in neighbor whitespace (plus pinned/highlighted, always); the
-         * factor is binary-searched so the packed stack just fits `fitTargetHeight`.
-         * This fills the height with as many non-overlapping names as fit — rather
-         * than snapping between a few fixed rungs — because stack height is monotone
-         * in the factor (higher factor drops more names → shorter), so the search
-         * keeps the SMALLEST fitting factor, i.e. the MOST names. It decimates by
-         * isolation, not feature size/"importance" (no reliable importance signal —
-         * a tiny miRNA can outrank a large pseudogene), so it just maximizes how
-         * many readable names fit.
-         *
-         * The trial factors are measured by `createContentHeightProbe`, which runs
-         * the same pack over the same raw region data but skips the clone and the
-         * per-region Y rewrite that `computeLaidOutData` does (~4/5 of a layout) and
-         * hoists the factor-invariant preparation out of the probe loop (about half
-         * of what remains). Only the winning factor is laid out for real. Probe and
-         * commit therefore agree on the height by construction — identical packing
-         * over identical inputs, both unseeded — which is what lets the ladder trust
-         * that the stack it measured is the stack it renders.
-         *
-         * The commit goes through a memo of its own (`incrementalLayoutDecimated`,
-         * built with `seedPriorRows: false` so it stays unseeded) purely for
-         * reference stability: every pan settle and every drag-resize frame
-         * re-solves, and a solve that lands on the factor already committed hands
-         * the same stack back rather than re-packing it into new objects the GPU
-         * then has to re-upload.
-         *
-         * Known cost of staying unseeded: this is the one rung whose re-pack does
-         * not preserve top features' rows across a zoom the way the other three do.
-         * Measured, that cost is smaller than it sounds — over a 4-step zoom sweep
-         * of 80 crowded features this rung moved 24 rows where the self-seeded
-         * `labels` rung moved 203 — and seeding it from the `labels` rung (the one
-         * seed that is factor-independent, so probe and commit would still agree)
-         * was tried and moved exactly zero additional rows, because that seed's
-         * order and the `layoutStartBp` tiebreak it would replace already coincide.
-         * So the seeding is not what is missing here; don't re-add it without a
-         * measurement that says otherwise.
-         *
-         * When even the solve's most aggressive factor overflows (see
-         * `FIT_MAX_ROOM_FACTOR` in fitLadder.ts), the `labels` stack is returned
-         * — it overflows (that is why the ladder reached this rung), so
-         * `resolveFitLadder` descends to `bodies`, and reusing a stack already
-         * packed spares the solve one more pack that would only be discarded.
-         *
-         * With names off entirely there is nothing to decimate — every factor packs
-         * the `labels` stack (see keepFeatureLabel's `showLabels` guard) — so the
-         * solve is skipped and that stack reused, turning the probes this rung costs
-         * into zero on exactly the dense tracks where the auto density gate hides
-         * names and fit mode is most used.
-         */
-        /**
-         * #getter
-         * The whitespace factor the `decimated` rung committed at, or undefined
-         * when there is nothing to decimate (names off) or nothing fits. A
-         * memoized getter rather than the bare `solveLabelRoomFactor` call it
-         * replaces, so `rowGeometrySignature` can read the same answer the rung
-         * packed at without paying for a second bisection — the two callers must
-         * agree, and re-solving is ~9 packs.
+         * The whitespace factor the `decimated` rung commits at: the smallest
+         * one whose packed stack fits `fitTargetHeight`, so the most names are
+         * kept. Undefined when there is nothing to decimate (names off) or when
+         * even the most aggressive factor overflows.
          */
         get fitDecimatedFactor(): number | undefined {
+          // A memoized getter rather than the bare `solveLabelRoomFactor` call
+          // it replaces, so `rowGeometrySignature` reads the same answer the
+          // rung packed at without paying for a second bisection (~9 packs).
           return self.layoutReady && self.showLabels
             ? self.solveLabelRoomFactor(self.fitTargetHeight)
             : undefined
         },
+        /**
+         * #getter
+         * The `decimated` stack: names kept only on features with at least
+         * `fitDecimatedFactor ×` their label width in neighbour whitespace (plus
+         * pinned/highlighted, always). Filling the height with as many
+         * non-overlapping names as fit, rather than snapping between a few fixed
+         * rungs, is what this rung is for; it decimates by isolation, not by any
+         * notion of feature importance. Falls back to the `labels` stack when
+         * there is nothing to decimate or no factor fits.
+         */
         get fitDecimatedSolved(): Map<number, FeatureDataResult> {
+          // Probe and commit must pack identically or the committed stack
+          // overflows the height the solve fit, the ladder descends to `bodies`
+          // and every name vanishes on the tallest tracks. Hence
+          // `incrementalLayoutDecimated`, built with `seedPriorRows: false` to
+          // match the unseeded probe; the memo is there for reference stability
+          // across the re-solve every pan settle and drag frame triggers.
+          //
+          // Seeding this rung from the factor-independent `labels` stack was
+          // tried and moved zero rows — that seed's order and the
+          // `layoutStartBp` tiebreak it would replace already coincide. Don't
+          // re-add it without a measurement.
           const factor = this.fitDecimatedFactor
           return factor === undefined
             ? this.fitLabelsOnlyLayout
@@ -1266,13 +1235,6 @@ export default function baseStateModelFactory(
                 self.decimatedLayoutInputs(factor),
               )
         },
-        /**
-         * #getter
-         * Nothing reserved: bodies packed edge-to-edge (the tightest stack),
-         * labels hidden — the `bodies` stage's stack. With names already off this
-         * is what the `labels` rung packed, so reuse that stack by reference
-         * instead of re-packing it into a third memo.
-         */
         get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
           return self.showLabels
             ? self.fitLayoutAt(self.incrementalLayoutBodiesOnly, false, false)
@@ -1300,10 +1262,18 @@ export default function baseStateModelFactory(
          * isoform inside a gene is drawn at.
          *
          * Reads the `full` rung specifically because it is the stack the ladder
-         * always materializes; box heights don't vary across rungs (only the label
-         * reservation does), so any rung gives the same answer and this one costs
-         * nothing extra. Narrowed to `fitMeasureFeatureIds`, the same on-screen set
-         * every rung is measured over.
+         * always materializes, so it costs nothing extra. Box HEIGHTS don't vary
+         * across rungs (only the label reservation does), but the set of boxes
+         * counted can: `minDrawnBoxHeight` skips a feature the packer left
+         * unplaced, and `bodies` — the only rung a squeeze ever runs on — packs
+         * tighter and so places features `full` pushed past the row limit. On a
+         * stack deep enough to truncate at `full`, the floor is therefore
+         * measured over a subset and can allow a squeeze slightly past the
+         * MIN_FIT_BOX_PX promise. Reading it off `bodies` instead would be
+         * circular — that layout is chosen using this scale.
+         *
+         * Narrowed to `fitMeasureFeatureIds`, the same on-screen set every rung
+         * is measured over.
          */
         get fitSmallestBoxPx() {
           return minDrawnBoxHeight(
