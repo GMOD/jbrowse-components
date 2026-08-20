@@ -31,12 +31,10 @@ export function installWiggleRenderingBackend(
   self: WiggleLifecycleModel,
   backend: WiggleRenderingBackend,
 ) {
-  installPerRegionLifecycle(
-    self,
-    self.rpcDataMap,
-    backend,
-    data => buildSourceRenderData(data, self.gpuProps()),
-    (b, encoded) =>
+  installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+    inputs: () => self.gpuProps(),
+    encode: buildSourceRenderData,
+    render: (b, encoded) =>
       b.renderBlocks(self.renderBlocks, encoded, self.renderState),
-  )
+  })
 }

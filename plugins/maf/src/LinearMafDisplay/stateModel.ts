@@ -2194,29 +2194,33 @@ export default function stateModelFactory(
           // instance buffer on the main thread from raw region data + gpuProps,
           // so theme / showAllLetters / mismatchRendering changes re-encode
           // without an RPC roundtrip.
-          installPerRegionLifecycle(
-            self,
-            self.rpcDataMap,
-            backend,
-            regionData => {
+          installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+            // `basesRenderingActive` belongs in here with gpuProps, not read
+            // inside the encode: flipping modes has to re-encode every region,
+            // and only a declared input does that now.
+            inputs: () => ({
+              basesActive: self.basesRenderingActive,
+              gpu: self.gpuProps(),
+            }),
+            encode: (regionData, { basesActive, gpu }) => {
               // The render callback below draws no blocks unless the rows area
               // is in `bases` mode — the identity plot, codon view and
               // color-by-chromosome all paint the rows on sibling canvases.
               // Encoding anyway built and uploaded a buffer (tens of MB on a
               // wide region) that never reached a pixel. An empty payload skips
               // the encode *and* releases the GPU buffer (an empty pack deletes
-              // the pass's buffer); the autorun stays subscribed, so flipping
-              // back to `bases` re-encodes immediately.
-              if (!self.basesRenderingActive) {
+              // the pass's buffer); flipping back to `bases` re-encodes
+              // immediately.
+              if (!basesActive) {
                 return { instanceBuffer: new Uint32Array(0) }
               }
               const { buffer } = buildInstanceBuffer({
                 blocks: regionData.blocks,
-                ...self.gpuProps(),
+                ...gpu,
               })
               return { instanceBuffer: buffer }
             },
-            b => {
+            render: b => {
               // First-paint gate: no fetch has landed yet, so skip the tick
               // rather than flipping canvasDrawn on an empty frame. Zero sources
               // over a loaded region is NOT this state — see renderState.
@@ -2245,7 +2249,7 @@ export default function stateModelFactory(
                 return false
               }
             },
-          )
+          })
         },
       }))
       .actions(self => ({

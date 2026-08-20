@@ -47,13 +47,10 @@ test('N sequential region arrivals trigger N uploads, not N²', () => {
   const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionLifecycle(
-    model,
-    data,
-    backend,
-    value => ({ value, marker: 0 }),
-    () => true,
-  )
+  installPerRegionLifecycle(model, data, backend, {
+    encode: value => ({ value, marker: 0 }),
+    render: () => true,
+  })
 
   for (let key = 0; key < 5; key++) {
     runInAction(() => {
@@ -64,26 +61,45 @@ test('N sequential region arrivals trigger N uploads, not N²', () => {
   expect(uploads.map(u => u.key)).toEqual([0, 1, 2, 3, 4])
 })
 
-// Pins the retirement of ARCHITECTURAL_LIMITS "Every region arrival draws
-// twice": a render callback that does not observe rpcDataMap paints once per
-// arrival, because the per-key renderNow() and the outer upload autorun's
-// renderNow() land in the same reaction batch.
+// The other half of the same contract: N arrivals cost N encodes, not N². The
+// upload count alone cannot see a helper that re-encodes every loaded region on
+// each arrival and then diffs the identical payloads away.
+test('N sequential region arrivals trigger N encodes, not N²', () => {
+  const model = TestModel.create()
+  const { backend } = makeFakeRenderingBackend()
+  const data = observable.map<number, number>(undefined, { deep: false })
+  let encodes = 0
+
+  installPerRegionLifecycle(model, data, backend, {
+    encode: value => {
+      encodes++
+      return { value, marker: 0 }
+    },
+    render: () => true,
+  })
+
+  for (let key = 0; key < 5; key++) {
+    runInAction(() => {
+      data.set(key, key * 10)
+    })
+  }
+
+  expect(encodes).toBe(5)
+})
+
 test('a region arrival paints once when render does not read the data map', () => {
   const model = TestModel.create()
   const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
   let renders = 0
 
-  installPerRegionLifecycle(
-    model,
-    data,
-    backend,
-    value => ({ value, marker: 0 }),
-    () => {
+  installPerRegionLifecycle(model, data, backend, {
+    encode: value => ({ value, marker: 0 }),
+    render: () => {
       renders++
       return true
     },
-  )
+  })
 
   // one render at attach, before any data
   expect(renders).toBe(1)
@@ -98,28 +114,25 @@ test('a region arrival paints once when render does not read the data map', () =
   expect(renders).toBe(5)
 })
 
-// The mirror of the case above, and the mechanism behind ARCHITECTURAL_LIMITS
-// "A region arrival draws twice if the render callback reads the data map".
-// Observing the map subscribes the render autorun to the arrival itself, so it
-// runs once on the arrival (pre-upload state) and again on the renderNow()
-// bump. Any read reaching the map does this — a direct `.get()` here, a
-// computed chain in a real display — so it is not specific to a size gate.
-test('a region arrival draws twice when the render callback reads the data map', () => {
+// Retires ARCHITECTURAL_LIMITS "A region arrival draws twice wherever the render
+// autorun observes the data": a render callback that reads the map now paints
+// once per arrival, same as one that ignores it, and the paint it keeps is the
+// post-upload one. The upload happens inside the upload autorun's own run, so
+// there is no longer a pass where the map has the region and the backend does
+// not. `uploadOrder.test.ts` pins the ordering this count is a consequence of.
+test('a region arrival paints once even when the render callback reads the data map', () => {
   const model = TestModel.create()
   const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
   let renders = 0
 
-  installPerRegionLifecycle(
-    model,
-    data,
-    backend,
-    value => ({ value, marker: 0 }),
-    () => {
+  installPerRegionLifecycle(model, data, backend, {
+    encode: value => ({ value, marker: 0 }),
+    render: () => {
       renders++
       return data.size > 0
     },
-  )
+  })
 
   expect(renders).toBe(1)
 
@@ -130,22 +143,20 @@ test('a region arrival draws twice when the render callback reads the data map',
   }
 
   expect(uploads).toHaveLength(4)
-  expect(renders).toBe(9)
+  expect(renders).toBe(5)
 })
 
-test('encode-tracked observable change re-fires every per-key autorun', () => {
+test('a declared-input change re-encodes and re-uploads every region', () => {
   const model = TestModel.create()
   const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, string>(undefined, { deep: false })
   const markerBox = observable.box(0)
 
-  installPerRegionLifecycle(
-    model,
-    data,
-    backend,
-    () => ({ value: 0, marker: markerBox.get() }),
-    () => true,
-  )
+  installPerRegionLifecycle(model, data, backend, {
+    inputs: () => ({ marker: markerBox.get() }),
+    encode: (_data, props) => ({ value: 0, marker: props.marker }),
+    render: () => true,
+  })
 
   runInAction(() => {
     data.set(0, 'a')
@@ -166,6 +177,42 @@ test('encode-tracked observable change re-fires every per-key autorun', () => {
       .map(u => u.key)
       .sort(),
   ).toEqual([0, 1, 2])
+  expect(uploads.slice(3).map(u => u.payload.marker)).toEqual([1, 1, 1])
+})
+
+// The trap the declared inputs exist to defuse. An observable read inside
+// `encode` is still tracked — it runs in the upload autorun — so it re-runs the
+// diff, and the diff finds nothing changed. Before, that read re-encoded every
+// loaded region: a `renderState` read here rebuilt tens of MB of byte-identical
+// buffer on every frame of a height drag. Now the cost of getting it wrong is
+// an empty loop.
+test('an observable read inside encode re-runs the diff and encodes nothing', () => {
+  const model = TestModel.create()
+  const { backend, uploads } = makeFakeRenderingBackend()
+  const data = observable.map<number, number>(undefined, { deep: false })
+  const wideBox = observable.box(0)
+  let encodes = 0
+
+  installPerRegionLifecycle(model, data, backend, {
+    encode: value => {
+      encodes++
+      return { value, marker: wideBox.get() }
+    },
+    render: () => true,
+  })
+
+  runInAction(() => {
+    data.set(0, 10)
+    data.set(1, 20)
+  })
+  expect(encodes).toBe(2)
+
+  runInAction(() => {
+    wideBox.set(1)
+  })
+
+  expect(encodes).toBe(2)
+  expect(uploads).toHaveLength(2)
 })
 
 test('only the changed key re-uploads when its value mutates', () => {
@@ -173,13 +220,10 @@ test('only the changed key re-uploads when its value mutates', () => {
   const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionLifecycle(
-    model,
-    data,
-    backend,
-    value => ({ value, marker: 0 }),
-    () => true,
-  )
+  installPerRegionLifecycle(model, data, backend, {
+    encode: value => ({ value, marker: 0 }),
+    render: () => true,
+  })
 
   runInAction(() => {
     data.set(0, 10)
@@ -196,18 +240,15 @@ test('only the changed key re-uploads when its value mutates', () => {
   expect(uploads[uploads.length - 1]!.key).toBe(1)
 })
 
-test('removing a key disposes its autorun and prunes from active set', () => {
+test('removing a key forgets it and prunes from the active set', () => {
   const model = TestModel.create()
   const { backend, uploads, prunes } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionLifecycle(
-    model,
-    data,
-    backend,
-    value => ({ value, marker: 0 }),
-    () => true,
-  )
+  installPerRegionLifecycle(model, data, backend, {
+    encode: value => ({ value, marker: 0 }),
+    render: () => true,
+  })
 
   runInAction(() => {
     data.set(0, 1)
@@ -223,7 +264,8 @@ test('removing a key disposes its autorun and prunes from active set', () => {
   expect([...lastPrune].sort()).toEqual([0, 2])
 
   const baseline = uploads.length
-  // Re-adding key 1 spawns a new autorun (the prior one was disposed).
+  // Re-adding key 1 re-encodes it: the helper forgot the reference it was last
+  // encoded from, so a same-reference re-arrival still uploads.
   runInAction(() => {
     data.set(1, 999)
   })
@@ -232,19 +274,20 @@ test('removing a key disposes its autorun and prunes from active set', () => {
   expect(uploads[uploads.length - 1]!).toMatchObject({ key: 1 })
 })
 
-test('backend swap (context-loss recovery) routes uploads to new backend', () => {
+test('backend swap (context-loss recovery) re-uploads without re-encoding', () => {
   const model = TestModel.create()
   const a = makeFakeRenderingBackend()
   const b = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
+  let encodes = 0
 
-  installPerRegionLifecycle(
-    model,
-    data,
-    a.backend,
-    value => ({ value, marker: 0 }),
-    () => true,
-  )
+  installPerRegionLifecycle(model, data, a.backend, {
+    encode: value => {
+      encodes++
+      return { value, marker: 0 }
+    },
+    render: () => true,
+  })
 
   runInAction(() => {
     data.set(0, 1)
@@ -253,13 +296,17 @@ test('backend swap (context-loss recovery) routes uploads to new backend', () =>
 
   expect(a.uploads.map(u => u.key)).toEqual([0, 1])
   expect(b.uploads).toHaveLength(0)
+  expect(encodes).toBe(2)
 
   model.attachRenderingBackend<FakeRenderingBackend>(b.backend, {
     upload: () => {},
     render: () => false,
   })
 
+  // Only the GPU buffers were lost, so the payloads are re-uploaded as they
+  // stand.
   expect(b.uploads.map(u => u.key).sort()).toEqual([0, 1])
+  expect(encodes).toBe(2)
 })
 
 test('a throw in encode/upload routes to renderError instead of escaping', () => {
@@ -268,21 +315,18 @@ test('a throw in encode/upload routes to renderError instead of escaping', () =>
   const data = observable.map<number, number>(undefined, { deep: false })
 
   const err = new Error('bad region encode')
-  installPerRegionLifecycle(
-    model,
-    data,
-    backend,
-    () => {
+  installPerRegionLifecycle(model, data, backend, {
+    encode: () => {
       throw err
     },
-    () => false,
-  )
+    render: () => false,
+  })
 
   runInAction(() => {
     data.set(0, 10)
   })
 
-  // The per-key autorun's throw is caught and routed to renderError (the
+  // The upload autorun's throw is caught and routed to renderError (the
   // 'renderError' terminal phase) rather than escaping as an uncaught reaction
   // error that would strand the display on 'loading'; nothing was uploaded.
   expect(model.renderError).toBe(err)
@@ -295,16 +339,13 @@ test('render callback receives the cached encoded map', () => {
   const data = observable.map<number, number>(undefined, { deep: false })
   let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
 
-  installPerRegionLifecycle(
-    model,
-    data,
-    backend,
-    value => ({ value, marker: 0 }),
-    (_b, encoded) => {
+  installPerRegionLifecycle(model, data, backend, {
+    encode: value => ({ value, marker: 0 }),
+    render: (_b, encoded) => {
       lastEncoded = encoded
       return true
     },
-  )
+  })
 
   runInAction(() => {
     data.set(0, 100)
@@ -329,16 +370,14 @@ test('encode returning undefined leaves the cached encoded entry untouched', () 
   const ready = observable.box(true)
   let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
 
-  installPerRegionLifecycle(
-    model,
-    data,
-    backend,
-    value => (ready.get() ? { value, marker: 0 } : undefined),
-    (_b, encoded) => {
+  installPerRegionLifecycle(model, data, backend, {
+    inputs: () => ready.get(),
+    encode: (value, isReady) => (isReady ? { value, marker: 0 } : undefined),
+    render: (_b, encoded) => {
       lastEncoded = encoded
       return true
     },
-  )
+  })
 
   runInAction(() => {
     data.set(0, 10)
@@ -346,8 +385,8 @@ test('encode returning undefined leaves the cached encoded entry untouched', () 
   expect(uploads).toHaveLength(1)
   expect(lastEncoded?.get(0)).toEqual({ value: 10, marker: 0 })
 
-  // Toggle ready -> false; the autorun re-runs but encode returns undefined.
-  // Existing cached value stays, no new upload.
+  // Toggle ready -> false; the upload autorun re-runs but encode returns
+  // undefined. The existing cached value stays, and nothing new uploads.
   const baseline = uploads.length
   runInAction(() => {
     ready.set(false)
@@ -355,4 +394,11 @@ test('encode returning undefined leaves the cached encoded entry untouched', () 
   })
   expect(uploads.length).toBe(baseline)
   expect(lastEncoded?.get(0)).toEqual({ value: 10, marker: 0 })
+
+  // …and the skipped region encodes as soon as the input says it can, which is
+  // what makes returning undefined a deferral rather than a drop.
+  runInAction(() => {
+    ready.set(true)
+  })
+  expect(lastEncoded?.get(0)).toEqual({ value: 99, marker: 0 })
 })

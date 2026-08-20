@@ -651,18 +651,15 @@ export function stateModelFactory(
          * identity encode — RPC result is the upload payload
          */
         startRenderingBackend(backend: ManhattanRenderingBackend) {
-          installPerRegionLifecycle(
-            self,
-            self.rpcDataMap,
-            backend,
-            data => data,
-            b =>
+          installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+            encode: data => data,
+            render: b =>
               b.renderBlocks(
                 self.renderBlocks,
                 self.rpcDataMap,
                 self.renderState,
               ),
-          )
+          })
         },
       }))
       // Its own block, after `startRenderingBackend`: the export types `self` as

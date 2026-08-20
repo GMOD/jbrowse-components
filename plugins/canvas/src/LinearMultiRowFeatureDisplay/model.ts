@@ -1089,33 +1089,25 @@ export default function stateModelFactory(
        * #action
        */
       startRenderingBackend(backend: MultiRowRenderingBackend) {
-        installPerRegionLifecycle(
-          self,
-          self.rpcDataMap,
-          backend,
-          regionData => {
-            // read here, inside the per-region encode autorun, so a reorder /
-            // recolor / category toggle re-encodes without an RPC roundtrip.
-            //
-            // `featurePaintInputs`, never `renderState`: the encode is tracked,
-            // and the instance buffer holds {startBp,endBp,rowIndex,color} with
-            // no geometry in it — the row height and canvas box reach the shader
-            // as uniforms. Reading the wider getter here made a track-height
-            // drag or a window resize re-encode every region, every frame, to
-            // produce the same bytes.
-            const { buffer } = buildMultiRowInstanceBuffer(
-              regionData,
-              self.featurePaintInputs,
-            )
-            return { instanceBuffer: buffer }
-          },
-          b =>
+        installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+          // `featurePaintInputs`, never `renderState`: the instance buffer holds
+          // {startBp,endBp,rowIndex,color} and no geometry — the row height and
+          // canvas box reach the shader as uniforms, and both move on every
+          // frame of a track-height drag. Declaring the narrow one is what keeps
+          // a reorder / recolor / category toggle re-encoding without an RPC
+          // roundtrip while a resize re-encodes nothing.
+          inputs: () => self.featurePaintInputs,
+          encode: (regionData, paintInputs) => ({
+            instanceBuffer: buildMultiRowInstanceBuffer(regionData, paintInputs)
+              .buffer,
+          }),
+          render: b =>
             b.renderBlocks(
               self.renderBlocks,
               self.rpcDataMap,
               self.renderState,
             ),
-        )
+        })
       },
     }))
     .views(self => ({
