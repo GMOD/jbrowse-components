@@ -1556,7 +1556,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   showOffscreenMates: (value, { viewType }) =>
     typeof value === 'boolean' && viewType === 'LinearSyntenyView'
       ? {
-          path: 'Synteny view header → the checkbox naming how many alignments map to contigs not shown',
+          path: 'Synteny view header → View options → the checkbox naming how many alignments map to contigs not shown',
           note: 'The item names the count and the number of contigs, so its label differs per view. It is absent while the count is zero — both rows are showing every contig the alignments reach, and there is nothing to mark.',
         }
       : undefined,
@@ -1699,16 +1699,17 @@ export const viewFields: Record<string, FieldRecipe> = {
   drawCurves: value =>
     typeof value === 'boolean'
       ? {
-          path: `Synteny view menu → Show curved lines (${value ? 'checked' : 'unchecked'})`,
+          path: `Synteny view header → View options → Show... → Show curved lines (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  // An action rather than a checkbox (LinearSyntenyView's `showMenuItems`), so
-  // only a `true` has a click-path: it re-fits every row to one shared bp/px,
-  // and there is no un-checking it — you'd re-navigate instead.
+  // An action rather than a checkbox, so only a `true` has a click-path: it
+  // re-fits every row to one shared bp/px, and there is no un-checking it —
+  // you'd re-navigate instead. Beside "Square view" rather than under
+  // "Show...", with the other two commands that reframe the view.
   sameScale: value =>
     value === true
       ? {
-          path: 'Synteny view menu → Show all regions at same scale',
+          path: 'Synteny view header → View options → Show all regions at same scale',
           note: 'Row length becomes genome size, which is what makes the rows comparable.',
         }
       : undefined,
