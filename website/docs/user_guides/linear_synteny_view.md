@@ -201,7 +201,10 @@ The view's hamburger menu controls how the ribbons are drawn:
   connectors
 - CIGAR display mode - how per-base insertions and deletions inside each
   alignment are shown: **Colored indels** paints them, **Transparent indels**
-  leaves them as see-through gaps in the ribbon, and **None** draws blocks only
+  leaves them as see-through gaps in the ribbon, and **Off - don't draw CIGAR
+  indels** draws each alignment as one solid block. That last one is marked with
+  a warning: overlapping blocks run together with nothing to tell them apart,
+  and a gap inside a block is painted as though it matched across
 - Show location markers - continue the top panel's scalebar grid down through
   the ribbons, so each tick shows where a round coordinate up there lands below
 - Show all regions - fit both whole assemblies into view

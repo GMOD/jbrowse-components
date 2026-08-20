@@ -1,8 +1,11 @@
 import {
+  cigarModeMenuItems,
   displayCanShowCigar,
   offscreenMateMenuItems,
   rowSyncMenuItems,
 } from './menus.ts'
+
+import type { CigarMode } from './cigarModes.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -192,5 +195,67 @@ describe('offscreenMateMenuItems', () => {
     expect(items[0]).toMatchObject({ checked: true })
     ;(items[0] as { onClick: () => void }).onClick()
     expect(calls).toEqual([false])
+  })
+})
+
+// 'off' is not the low-detail end of one axis with the other two: it is the one
+// mode that paints a gap the same as a match, and overlapping blocks with it run
+// together. That is what the icon and the tooltip on that row are for, and both
+// are easy to drop in a label edit.
+interface CigarRow {
+  label: string
+  icon?: unknown
+  helpText?: string
+  checked?: boolean
+  onClick?: () => void
+}
+
+describe('cigarModeMenuItems', () => {
+  function rows(cigarMode: CigarMode = 'full') {
+    const calls: CigarMode[] = []
+    const items = cigarModeMenuItems({
+      hasCigarData: true,
+      cigarMode,
+      setCigarMode: mode => calls.push(mode),
+    })
+    // same shape the `labelled` helper above reads, plus what this row carries
+    return {
+      calls,
+      rows: (items[0] as { subMenu: CigarRow[] }).subMenu,
+    }
+  }
+
+  test('the section is absent when the data carries no CIGARs', () => {
+    expect(
+      cigarModeMenuItems({
+        hasCigarData: false,
+        cigarMode: 'full',
+        setCigarMode: () => {},
+      }),
+    ).toEqual([])
+  })
+
+  test('exactly one mode is checked at a time', () => {
+    for (const mode of ['full', 'matches', 'off'] as const) {
+      expect(rows(mode).rows.filter(r => r.checked).length).toBe(1)
+    }
+  })
+
+  test('only the off row is marked as the one that can mislead', () => {
+    const { rows: r, calls } = rows()
+    const marked = r.filter(row => row.icon !== undefined)
+    expect(marked.length).toBe(1)
+    expect(marked[0]!.helpText).toMatch(/overlapping features/)
+    // and the row it marks is the one that sets 'off'
+    marked[0]!.onClick?.()
+    expect(calls).toEqual(['off'])
+  })
+
+  test('the label says what the mode does, so it reads in a doc click path', () => {
+    // website/src/lib/spec-recipe/fields.ts prints these labels verbatim, which
+    // is why the warning is an icon and a tooltip rather than a ⚠ in the label
+    for (const row of rows().rows) {
+      expect(row.label).not.toMatch(/⚠/)
+    }
   })
 })

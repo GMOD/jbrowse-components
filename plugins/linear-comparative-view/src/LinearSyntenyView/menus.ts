@@ -1,6 +1,7 @@
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import LinkIcon from '@mui/icons-material/Link'
 import RemoveIcon from '@mui/icons-material/Remove'
+import WarningIcon from '@mui/icons-material/WarningAmber'
 
 import { rowLabels } from '../LinearComparativeView/rowLabel.ts'
 import { CIGAR_MODE_OPTIONS } from './cigarModes.ts'
@@ -304,12 +305,17 @@ export function cigarModeMenuItems(model: CigarModeModel): MenuItem[] {
     ? [
         {
           label: 'CIGAR display mode',
-          subMenu: CIGAR_MODE_OPTIONS.map(({ label, value: mode }) => ({
+          // Built here rather than with `radioItems` because one row differs:
+          // 'off' is the mode that can mislead, and the icon says so on the row
+          // instead of only in its tooltip.
+          subMenu: CIGAR_MODE_OPTIONS.map(({ value, label, ...rest }) => ({
             label,
+            ...rest,
+            icon: value === 'off' ? WarningIcon : undefined,
             type: 'radio' as const,
-            checked: model.cigarMode === mode,
+            checked: model.cigarMode === value,
             onClick: () => {
-              model.setCigarMode(mode)
+              model.setCigarMode(value)
             },
           })),
         },
