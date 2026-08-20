@@ -90,28 +90,28 @@ export default function DiagonalizeDialog({
     // React render each. Local to the run rather than a hook: its lifetime is
     // exactly this dialog run.
     const statusWindow = createStatusWindow()
+    // a status arriving after the run was cancelled or finished must not
+    // resurrect the running phase, or talk over "Stopping" — and the window's
+    // own stream rather than a hand-written check ahead of it, because only
+    // that re-reads the guard INSIDE the throttled body. A write queued while
+    // the run was live fires on a timer, by which point Stop may have been
+    // pressed: the outer read said "not stopped" when the write was queued, and
+    // the label it restored was the one "Stopping" had just replaced.
+    const { statusCallback, clear } = statusWindow.open({
+      isCurrent: () => !runRef.current.stopped,
+      write: status => {
+        setState(prev =>
+          prev.phase === 'running' ? { ...prev, status } : prev,
+        )
+      },
+    })
     try {
       const stats = await run({
         stopToken,
         onProgress: applied => {
           runRef.current.applied = applied
         },
-        // a status arriving after the run was cancelled or finished must not
-        // resurrect the running phase, or talk over "Stopping" — and
-        // the window's own sink rather than a hand-written check ahead of it,
-        // because only that re-reads the guard INSIDE the throttled body. A
-        // write queued while the run was live fires on a timer, by which point
-        // Stop may have been pressed: the outer read said "not stopped" when the
-        // write was queued, and the label it restored was the one "Stopping" had
-        // just replaced.
-        statusCallback: statusWindow.open({
-          isCurrent: () => !runRef.current.stopped,
-          write: status => {
-            setState(prev =>
-              prev.phase === 'running' ? { ...prev, status } : prev,
-            )
-          },
-        }).statusCallback,
+        statusCallback,
       })
       setState({ phase: 'done', summary: summarize(stats) })
     } catch (error) {
@@ -132,6 +132,11 @@ export default function DiagonalizeDialog({
       // failed owns a token nobody else will ever stop, and an unstopped string
       // token retains a blob URL and every AbortController taken against it
       stopStopToken(stopToken)
+      // and the stream ends with the run that owns it, like every other owner
+      // of one. The write itself is already inert — the branches above have all
+      // left `phase` terminal, and `write` only touches a running state — but
+      // the trailing timer behind it stands for up to a window either way.
+      clear()
     }
   }
 

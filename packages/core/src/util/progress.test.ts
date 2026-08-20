@@ -1133,6 +1133,54 @@ describe('createStatusFanOut', () => {
     )
   })
 
+  // The cancel path, which every other test here leaves out: they all drive
+  // regions to completion, and cancellation is where a slot is most likely to
+  // stop reporting without retiring. A slot's last word is what decides whether
+  // the batch has left a phase, so one region that unwinds holding a label —
+  // rather than the `''` — pins the shared label there for every region still
+  // running. Assembled from the real helpers, because a hand-written status
+  // cannot produce the shape: it comes from a phase that throws past its own
+  // close.
+  it('a cancelled region does not hold the batch in the phase it abandoned', async () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const stopToken = 'blob:one-region-cancelled'
+    markStopTokenStopped(stopToken)
+    const region = async (cb: StatusCallback, token?: string) => {
+      await updateStatus('Downloading features', cb, () =>
+        withProgress(
+          {
+            label: 'Computing layout',
+            total: 2,
+            statusCallback: cb,
+            stopToken: token,
+          },
+          async report => {
+            await Promise.resolve()
+            report()
+          },
+        ),
+      )
+      await updateStatus('Collecting render data', cb, () => Promise.resolve())
+    }
+    await Promise.all([
+      region(slot()),
+      // its token is stopped before it starts, so the layout phase throws on
+      // the stop check its opening `report(0)` makes
+      region(slot(), stopToken).catch(() => {}),
+      region(slot()),
+    ])
+    const messages = seen.map(statusMessageText)
+    // the two live regions reach the third phase and the batch says so. A slot
+    // stuck on "Computing layout" outranks it forever — that phase is one the
+    // batch can measure (both live regions retired a total in it) and the third
+    // is indeterminate, so rank never gets to decide.
+    expect(messages).toContain('Collecting render data')
+    expect(messages.at(-1)).toBe('Collecting render data')
+  })
+
   it('is inert without a downstream callback', () => {
     const slot = createStatusFanOut(undefined)
     expect(() => {

@@ -18,18 +18,14 @@ import type { RpcStatus } from '@jbrowse/core/util'
  * second button would claim an affordance the hook doesn't expose. It still gets
  * the same label and bar.
  *
- * The bar holds at 0 rather than going indeterminate for the sub-second
- * startup, before the first counts arrive. Every clustering phase reports
- * counts, so a sweep here says only "something is happening" during the one
- * moment that is never in doubt, and then hands over to a real fraction of a few
- * percent. The label leaves the percentage off until there's a real one.
+ * The bar holds at 0 rather than going indeterminate for the sub-second startup
+ * before the first counts arrive. Every clustering phase reports counts, so a
+ * sweep here says only "something is happening" during the one moment that is
+ * never in doubt. The label leaves the percentage off until there is a real one.
  *
- * The cost is that a determinate 0 announces "0 percent" for that moment, where
- * an indeterminate bar would announce nothing — worth revisiting if the startup
- * ever stops being sub-second. (The original reason was narrower and no longer
- * holds: MUI swept its indeterminate bar across the full width, which read as
- * ~100% and then appeared to drop backwards. `StatusProgressBar` sweeps one bar
- * 40% of the track wide and does not.)
+ * The cost is that a determinate 0 announces "0 percent" for that moment where
+ * an indeterminate bar would announce nothing. Revisit if the startup ever stops
+ * being sub-second.
  */
 export default function ClusterProgress({
   status,

@@ -426,7 +426,7 @@ interface PhaseVote {
   live: number
   /** Σ `total` over those, for the mean an unmeasured slot is charged */
   liveTotal: number
-  /** position in `phaseOrder`; an unseen phase ranks last */
+  /** position in `phaseRank`; an unseen phase ranks last */
   rank: number
   /** some slot has already finished part of it */
   anyFinished: boolean
@@ -462,7 +462,7 @@ function measurable(vote: PhaseVote) {
  *
  * Rank alone would hand the label to a phase with nothing to say, so a phase the
  * batch has anything to measure in — a reading now, or work already finished —
- * beats one it does not. `phaseOrder` is the fan-out's record of first
+ * beats one it does not. `phaseRank` is the fan-out's record of first
  * appearance; with none, every phase ranks the same and the choice falls back to
  * slot order.
  *
@@ -491,7 +491,7 @@ function measurable(vote: PhaseVote) {
  */
 export function aggregateStatus(
   slots: StatusSlot[],
-  phaseOrder: string[] = [],
+  phaseRank: Map<string, number> = new Map(),
 ): RpcStatus | undefined {
   const inFlight = slots.filter(
     (s): s is StatusSlot & { status: RpcStatus } =>
@@ -505,15 +505,14 @@ export function aggregateStatus(
     const message = phaseOf(slot.status)
     let vote = votes.get(message)
     if (vote === undefined) {
-      // an unseen phase ranks last, and with no order at all every phase ranks
+      // an unseen phase ranks last, and with no record at all every phase ranks
       // the same — which leaves the reduce below keeping its incumbent, the
-      // slot-order tie-break this had before
-      const at = phaseOrder.indexOf(message)
+      // slot-order tie-break
       vote = {
         message,
         live: 0,
         liveTotal: 0,
-        rank: at === -1 ? phaseOrder.length : at,
+        rank: phaseRank.get(message) ?? phaseRank.size,
         anyFinished: slots.some(s => finished(s, message) > 0),
       }
       votes.set(message, vote)
@@ -603,9 +602,9 @@ export function aggregateStatus(
  */
 export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
   const slots: StatusSlot[] = []
-  // the phases this batch has been through, in the order it reached them, so a
-  // tie between two slots in different phases resolves the same way twice
-  const phaseOrder: string[] = []
+  // every phase this batch has reached, against the order it reached them in,
+  // so a tie between two slots in different phases resolves the same way twice
+  const phaseRank = new Map<string, number>()
   // the current phase's last determinate reading — what a moment with nothing
   // measuring it falls back to, rather than downgrading what we already know.
   // Dropped the moment the batch is in some other phase, or in none.
@@ -630,10 +629,10 @@ export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
       // ties with another has to rank somewhere too, and it is the first slot to
       // say the words that dates the phase either way
       const phase = statusMessageText(status)
-      if (phase !== undefined && !phaseOrder.includes(phase)) {
-        phaseOrder.push(phase)
+      if (phase !== undefined && !phaseRank.has(phase)) {
+        phaseRank.set(phase, phaseRank.size)
       }
-      const aggregate = aggregateStatus(slots, phaseOrder)
+      const aggregate = aggregateStatus(slots, phaseRank)
       const message = statusMessageText(aggregate)
       // A held reading describes one phase, and survives exactly as long as the
       // batch is still in it. "Nothing in flight" is not that phase either: an
