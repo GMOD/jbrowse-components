@@ -96,9 +96,6 @@ export default function stateModelFactory(
       // reload is the natural reset boundary.
       geneGlyphNoticeDismissed: false,
 
-      // Same reset boundary for the declared color key's "×".
-      colorLegendDismissed: false,
-
       // The track height the isoform cap is computed against, debounced (see
       // afterAttach). `maxIsoforms` is an RPC cache key and the resize handle
       // writes the height every drag frame, so reading it live re-runs the
@@ -276,10 +273,6 @@ export default function stateModelFactory(
 
       setCoarseTrackHeight(height: number) {
         self.coarseTrackHeight = height
-      },
-
-      setColorLegendDismissed(value: boolean) {
-        self.colorLegendDismissed = value
       },
 
       setShowOnlyGenes(value: boolean) {

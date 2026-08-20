@@ -361,6 +361,14 @@ export default function baseStateModelFactory(
         rpcDataMap: regionDataMap<LoadedFeatureData>(),
         /**
          * #volatile
+         * Session-only acknowledgement of the color key's "×". Owned here
+         * rather than by each display that declares a `colorLegend`, since the
+         * hook, the drawing and the "Show legend" checkbox that reverses it are
+         * all the base's — see CanvasColorLegend.
+         */
+        colorLegendDismissed: false,
+        /**
+         * #volatile
          */
         featureIdUnderMouse: null as string | null,
         /**
@@ -1580,15 +1588,19 @@ export default function baseStateModelFactory(
         // (`onScreenFeatureIds`), so a pan re-measures once it settles. Fit mode
         // is already narrowed at the source — `settledMaxY` measures the kept
         // rung over `fitMeasureFeatureIds` and epsilon-snaps a scale's float
-        // slack — so it keeps `maxY` rather than re-walking the map unsnapped.
+        // slack — so it reuses that rather than re-walking the map unsnapped.
         //
-        // Not morph-aware, unlike `maxY`: the hold exists so a feature animating
-        // up from a deeper row isn't clipped, which is about what is drawn.
+        // `settledMaxY`, NOT the morph-aware `maxY`: the morph hold exists so a
+        // feature easing up from a deeper row isn't clipped, which is about what
+        // is DRAWN. `morphFromMaxY` is measured over the whole buffered pack, so
+        // reading it here put a scrollbar and a bottom shadow over blank canvas
+        // for the morph's 300ms — the exact defect the on-screen narrowing above
+        // exists to prevent, reached through the fit branch.
         get scrollExtentMaxY() {
           const ids = self.fitHeightToDisplay
             ? undefined
             : self.onScreenFeatureIds
-          return ids ? maxBottom(self.laidOutDataMap, ids) : this.maxY
+          return ids ? maxBottom(self.laidOutDataMap, ids) : this.settledMaxY
         },
 
         /**
@@ -2253,6 +2265,13 @@ export default function baseStateModelFactory(
            */
           setJexlFilters(filters?: string[]) {
             self.jexlFiltersSetting = cast(filters)
+          },
+
+          /**
+           * #action
+           */
+          setColorLegendDismissed(value: boolean) {
+            self.colorLegendDismissed = value
           },
 
           /**

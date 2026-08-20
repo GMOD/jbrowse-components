@@ -53,20 +53,6 @@ export default function stateModelFactory(
        */
       type: types.literal('LinearVariantDisplay'),
     })
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      colorLegendDismissed: false,
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setColorLegendDismissed(arg: boolean) {
-        self.colorLegendDismissed = arg
-      },
-    }))
     .views(self => {
       const superContextMenuItems = self.contextMenuItems
       return {

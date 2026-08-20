@@ -516,12 +516,36 @@ describe('canvas display fit-to-display-height', () => {
     // Simulate a morph animating up from a much deeper prior layout.
     display.beginYMorph(new Map(), settled + 500)
 
-    // Scroll extent honors the taller in-flight layout...
+    // The DRAWING height honors the taller in-flight layout, so a feature
+    // easing up from a deeper row isn't clipped...
     expect(display.maxY).toBe(settled + 500)
-    expect(display.scrollableHeight).toBeGreaterThan(0)
+    expect(display.contentHeight).toBe(settled + 500)
     // ...but the settled height and the grow target are unmoved.
     expect(display.settledMaxY).toBe(settled)
     expect(display.growTargetHeight).toBe(fitHeightBefore)
+  })
+
+  // The hold belongs to what is DRAWN, not to what a scroll can reach. It is
+  // measured over the whole buffered pack (`maxBottom(from)` in the layout
+  // autorun) while a fitted track's own height is measured over the on-screen
+  // set, so reading it in the scroll extent put a scrollbar and a bottom shadow
+  // over blank canvas for the morph's 300ms — the defect `scrollExtentMaxY`'s
+  // on-screen narrowing exists to prevent, reached through the fit branch.
+  it('keeps the morph hold out of the scroll extent', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, stackedRegionData(6, 20), ctgA)
+    display.setHeight(400)
+    display.setHeightMode('fit')
+    const settled = display.settledMaxY
+    expect(display.hasOverflow).toBe(false)
+
+    display.beginYMorph(new Map(), settled + 500)
+
+    expect(display.maxY).toBe(settled + 500)
+    expect(display.scrollExtentMaxY).toBe(settled)
+    expect(display.hasOverflow).toBe(false)
+    expect(display.scrollableHeight).toBe(0)
   })
 })
 
