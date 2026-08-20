@@ -69,13 +69,30 @@ export function morphOffset(
 // fitStage level boundary that drops descriptions or names — rescaling rows —
 // without either raw config flag changing, so keying on the raw flags would morph
 // across rescaled rows.
+//
+// The rendered flags alone do NOT separate every rung, which is why the fit
+// stage rides here too. `labels` and `decimated` both render names and drop
+// descriptions, and in normal display mode both scale to exactly 1 — so they
+// produced the identical key while the `decimated` rung strips a name row off
+// roughly half the features. `labelRoomFactor` is the same hazard one level in:
+// two `decimated` stacks at different factors keep different names, so the rung
+// alone is not enough (a fit drag-resize re-solves it every frame).
 export function rowGeometrySignature(g: {
   displayMode: string
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   fitScale: number
+  fitLevel: string
+  labelRoomFactor: number | undefined
 }) {
-  return `${g.displayMode}|${g.renderedShowLabels}|${g.renderedShowDescriptions}|${g.fitScale}`
+  return [
+    g.displayMode,
+    g.renderedShowLabels,
+    g.renderedShowDescriptions,
+    g.fitScale,
+    g.fitLevel,
+    g.labelRoomFactor,
+  ].join('|')
 }
 
 // Snapshot each on-screen feature's top by id. Used both as the start of a

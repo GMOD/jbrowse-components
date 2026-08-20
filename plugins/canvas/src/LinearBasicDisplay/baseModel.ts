@@ -1243,11 +1243,22 @@ export default function baseStateModelFactory(
          * into zero on exactly the dense tracks where the auto density gate hides
          * names and fit mode is most used.
          */
+        /**
+         * #getter
+         * The whitespace factor the `decimated` rung committed at, or undefined
+         * when there is nothing to decimate (names off) or nothing fits. A
+         * memoized getter rather than the bare `solveLabelRoomFactor` call it
+         * replaces, so `rowGeometrySignature` can read the same answer the rung
+         * packed at without paying for a second bisection — the two callers must
+         * agree, and re-solving is ~9 packs.
+         */
+        get fitDecimatedFactor(): number | undefined {
+          return self.layoutReady && self.showLabels
+            ? self.solveLabelRoomFactor(self.fitTargetHeight)
+            : undefined
+        },
         get fitDecimatedSolved(): Map<number, FeatureDataResult> {
-          if (!self.layoutReady || !self.showLabels) {
-            return this.fitLabelsOnlyLayout
-          }
-          const factor = self.solveLabelRoomFactor(self.fitTargetHeight)
+          const factor = this.fitDecimatedFactor
           return factor === undefined
             ? this.fitLabelsOnlyLayout
             : self.incrementalLayoutDecimated(
@@ -2851,11 +2862,18 @@ export default function baseStateModelFactory(
                 // level change, or a fit squeeze) and must snap. See
                 // rowGeometrySignature for why it reads the rendered, not raw,
                 // label/description flags.
+                const { level } = self.fitStage
                 const geometry = rowGeometrySignature({
                   displayMode: self.displayMode,
                   renderedShowLabels: self.renderedShowLabels,
                   renderedShowDescriptions: self.renderedShowDescriptions,
                   fitScale: self.fitScale,
+                  fitLevel: level,
+                  // Only where it selects rows: at any other rung the solve is
+                  // never run, and reading it would pay for a bisection to
+                  // discriminate stacks it had no hand in.
+                  labelRoomFactor:
+                    level === 'decimated' ? self.fitDecimatedFactor : undefined,
                 })
                 const scaleUnchanged = geometry === prevGeometry
                 const from = prevLayout

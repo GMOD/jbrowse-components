@@ -14,6 +14,7 @@ import type {
   FeatureDataResult,
   FeatureLabelData,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { TestDisplay } from './testEnv.ts'
 
 // Overlapping features so the packer stacks them into rows taller than the
 // track height, giving the fit something to shrink. Each spans 800bp (64px at the
@@ -239,6 +240,22 @@ const ctgA = {
   refName: 'ctgA',
   start: 0,
   end: 10_000,
+}
+
+// The morph gate's key, read off the display exactly as the CanvasYMorph
+// autorun reads it — so a field added to the signature is added in one place
+// and every test below sees it.
+function displaySignature(display: TestDisplay) {
+  const { level } = display.fitStage
+  return rowGeometrySignature({
+    displayMode: display.displayMode,
+    renderedShowLabels: display.renderedShowLabels,
+    renderedShowDescriptions: display.renderedShowDescriptions,
+    fitScale: display.fitScale,
+    fitLevel: level,
+    labelRoomFactor:
+      level === 'decimated' ? display.fitDecimatedFactor : undefined,
+  })
 }
 
 // State-machine coverage for fit-to-display-height mode (the "compress features
@@ -967,13 +984,7 @@ describe('canvas display fit escalation ladder', () => {
     display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
     display.setHeightMode('fit')
 
-    const signature = () =>
-      rowGeometrySignature({
-        displayMode: display.displayMode,
-        renderedShowLabels: display.renderedShowLabels,
-        renderedShowDescriptions: display.renderedShowDescriptions,
-        fitScale: display.fitScale,
-      })
+    const signature = () => displaySignature(display)
     const at = (h: number) => {
       display.setHeight(h)
       return { level: display.fitStage.level, sig: signature() }
@@ -1011,6 +1022,52 @@ describe('canvas display fit escalation ladder', () => {
     expect(squeezedA.level).toBe('bodies')
     expect(display.fitScale).toBeLessThan(1)
     expect(squeezedB.sig).not.toBe(squeezedA.sig)
+  })
+
+  // The two transitions the rendered flags cannot see, both reached here with
+  // descriptions off — the ordinary case, since 'auto' hides them at any real
+  // density. Names are drawn at every rung short of `bodies` and descriptions at
+  // none of them, so `renderedShowLabels`/`renderedShowDescriptions` hold still
+  // across the whole ladder, and in normal display mode a fitting rung always
+  // scales to exactly 1. On those alone the all-names rung and the `decimated`
+  // rung produced the identical key, and the morph played across a rung that
+  // strips a name row off half the features. Within `decimated` the same holds
+  // one level in: two stacks solved at different factors keep different names,
+  // which a fit drag-resize re-solves every frame.
+  //
+  // The fixture above cannot show either — its 800bp boxes are wider than their
+  // labels, so nothing decimates. This one uses the mixed-room data the
+  // decimated rung was built for.
+  it('snaps into and within the decimated rung', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setShowLabels('name')
+    display.setRpcData(0, mixedWidthRegionData(40), ctgA)
+    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+    expect(labelsH).toBeGreaterThan(bodiesH * 1.5)
+    display.setHeightMode('fit')
+
+    const at = (h: number) => {
+      display.setHeight(Math.round(h))
+      return { level: display.fitStage.level, sig: displaySignature(display) }
+    }
+
+    const allNames = at(labelsH + 20)
+    const decimated = at(bodiesH + (labelsH - bodiesH) * 0.5)
+    expect(decimated.level).toBe('decimated')
+    expect(display.fitScale).toBe(1)
+    // Every flag the signature used to read is identical across the two.
+    expect(display.renderedShowLabels).toBe(true)
+    expect(display.renderedShowDescriptions).toBe(false)
+    expect(decimated.sig).not.toBe(allNames.sig)
+
+    // Two heights that both stay on `decimated` but solve to different factors,
+    // so a different set of names survives — a fit drag-resize's per-frame case.
+    const looser = at(bodiesH + (labelsH - bodiesH) * 0.8)
+    expect(looser.level).toBe('decimated')
+    expect(display.fitScale).toBe(1)
+    expect(looser.sig).not.toBe(decimated.sig)
   })
 
   it('lays out under fit mode with a per-feature featureHeight callback', () => {
