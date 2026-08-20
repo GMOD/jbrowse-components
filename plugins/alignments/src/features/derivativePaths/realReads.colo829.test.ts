@@ -666,7 +666,7 @@ const NORMAL: SamRecordFixture[] = [
 
 function candidatesFor(records: SamRecordFixture[]) {
   const chains = computeReadChains(
-    new Map([[0, pileupDataFromSamRecords(records)]]),
+    [new Map([[0, pileupDataFromSamRecords(records)]])],
     [REGION],
   )
   return { chains, candidates: computeDerivativePaths({ chains }) }
@@ -760,7 +760,7 @@ describe('COLO829 der(3), tumour', () => {
       }))
     for (let by = 0; by < 20; by++) {
       const chains = computeReadChains(
-        new Map([[0, pileupDataFromSamRecords(shift(TUMOUR, by))]]),
+        [new Map([[0, pileupDataFromSamRecords(shift(TUMOUR, by))]])],
         [{ ...REGION, start: REGION.start + by, end: REGION.end + by }],
       )
       const candidates = computeDerivativePaths({ chains })
@@ -787,7 +787,7 @@ describe('COLO829BL matched normal, same window', () => {
     // conjuring the tumour's allele, i.e. the normal genuinely carries no
     // evidence for it and is not merely being filtered.
     const chains = computeReadChains(
-      new Map([[0, pileupDataFromSamRecords(NORMAL)]]),
+      [new Map([[0, pileupDataFromSamRecords(NORMAL)]])],
       [REGION],
     )
     const loose = computeDerivativePaths({ chains, minReads: 1 })

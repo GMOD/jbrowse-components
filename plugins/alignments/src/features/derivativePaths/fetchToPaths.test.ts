@@ -79,7 +79,7 @@ test('a fetch carries the SA tags the chain builder needs', () => {
   // stated separately.
   expect(data.readSuppAlignments).toBeDefined()
 
-  const chains = computeReadChains(new Map([[0, data]]), regions)
+  const chains = computeReadChains([new Map([[0, data]])], regions)
   expect(chains).toHaveLength(2)
   // Two segments: the fetched chr1 one, and the chr7 one no region covers.
   expect(chains[0]!.map(s => s.refName)).toEqual(['chr1', 'chr7'])
@@ -119,7 +119,7 @@ test('a read circling one locus keeps both passes and the junction between them'
     circlePassRead('r2', 0),
     circlePassRead('r2', 1),
   ])
-  const chains = computeReadChains(new Map([[0, data]]), regions)
+  const chains = computeReadChains([new Map([[0, data]])], regions)
   expect(chains).toHaveLength(2)
   // Two passes at one locus, separated only by where each sits in the read —
   // while each fetched record still collapses with the SA twin its sibling
@@ -137,7 +137,7 @@ test('a read circling one locus keeps both passes and the junction between them'
 test('the two reads rank as one off-screen derivative path', () => {
   const data = fetchResult([splitRead('r1', 1000), splitRead('r2', 1003)])
   const candidates = computeDerivativePaths({
-    chains: computeReadChains(new Map([[0, data]]), regions),
+    chains: computeReadChains([new Map([[0, data]])], regions),
   })
   expect(candidates).toHaveLength(1)
   expect(candidates[0]!.readCount).toBe(2)
@@ -145,4 +145,65 @@ test('the two reads rank as one off-screen derivative path', () => {
   // The half a single-region view cannot see for itself, and the half the
   // skipped tag walk removed.
   expect(candidates[0]!.extendsOffScreen).toBe(true)
+})
+
+// The same read, its two segments in two DISPLAY LANES, which is what "group by
+// strand" does to every read crossing an inversion — the segments are on
+// opposite strands by definition. The lanes are chained together rather than one
+// at a time because each lane can rebuild the whole chain on its own: it has one
+// segment as a fetched entry and reaches the rest through that segment's SA tag.
+// Chained per lane and concatenated, the two identical chains grouped and the
+// route claimed twice the support that exists, which is the only number the
+// picker ranks by and the only one it shows.
+function inversionRead(name: string, start: number) {
+  const [left, right] = [start, start + 55_000]
+  return [
+    new SimpleFeature({
+      uniqueId: `${name}-p`,
+      name,
+      refName: 'chr1',
+      start: left,
+      end: left + 5000,
+      strand: 1,
+      CIGAR: '5000M4000S',
+      flags: 0,
+      tags: { SA: `chr1,${right + 1},-,4000M5000S,60,0;` },
+    }),
+    new SimpleFeature({
+      uniqueId: `${name}-s`,
+      name,
+      refName: 'chr1',
+      start: right,
+      end: right + 4000,
+      strand: -1,
+      CIGAR: '4000M5000S',
+      flags: 2048,
+      tags: { SA: `chr1,${left + 1},+,5000M4000S,60,0;` },
+    }),
+  ]
+}
+
+test('a read split across two lanes is still one read', () => {
+  const reads = [...inversionRead('r1', 5000), ...inversionRead('r2', 5003)]
+  const ungrouped = computeDerivativePaths({
+    chains: computeReadChains(
+      [fetchResult(reads)].map(d => new Map([[0, d]])),
+      [{ refName: 'chr1', start: 0, end: 200_000, displayedRegionIndex: 0 }],
+    ),
+  })
+  const byStrand = computeDerivativePaths({
+    chains: computeReadChains(
+      [
+        fetchResult(reads.filter(f => f.get('strand') === 1)),
+        fetchResult(reads.filter(f => f.get('strand') === -1)),
+      ].map(d => new Map([[0, d]])),
+      [{ refName: 'chr1', start: 0, end: 200_000, displayedRegionIndex: 0 }],
+    ),
+  })
+  expect(ungrouped).toHaveLength(1)
+  expect(ungrouped[0]!.readCount).toBe(2)
+  expect(byStrand.map(c => c.readCount)).toEqual([2])
+  // and the partner segment is a drawn read rather than an SA record, so the row
+  // stops saying the path leaves a window both of its ends are in
+  expect(byStrand[0]!.extendsOffScreen).toBe(false)
 })

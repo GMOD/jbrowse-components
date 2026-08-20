@@ -361,7 +361,7 @@ const READS: SamRecordFixture[] = [
 
 function run() {
   const chains = computeReadChains(
-    new Map([[0, pileupDataFromSamRecords(READS)]]),
+    [new Map([[0, pileupDataFromSamRecords(READS)]])],
     [REGION],
   )
   return { chains, candidates: computeDerivativePaths({ chains }) }

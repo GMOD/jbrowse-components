@@ -224,16 +224,35 @@ export function unpairedReadChain(
  * genomic order across an inversion, and `unpairedReadChain` is where that is
  * already resolved.
  *
+ * EVERY LANE AT ONCE, which is why this takes a list of data maps rather than
+ * one. A display's grouping (by strand, by HP tag, by any tag) partitions reads
+ * for DRAWING and says nothing about which molecule carries which junction, so
+ * chaining one lane at a time and concatenating the results counts a read once
+ * per lane its segments landed in: each lane sees one segment as a fetched entry
+ * and the rest through that segment's own SA tag, so it emits a complete chain
+ * of its own and the identical chains group. Grouping by strand is the case that
+ * bites, because a read crossing an inversion has segments on both strands BY
+ * DEFINITION — the der(3) fold-back reported 4 reads for the 2 that exist.
+ * Bucketing every lane's entries under one QNAME first is also what puts the
+ * partner segment back on screen, so `extendsOffScreen` stops claiming a path
+ * leaves a window both of its ends are drawn in.
+ *
  * Chains of one segment are dropped: a read with no junction describes no
  * rearrangement.
  */
 export function computeReadChains(
-  rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
+  lanes: Iterable<ReadonlyMap<number, WorkerPileupData>>,
   regions: RegionInfo[],
   canonicalRefName: CanonicalRefName = refName => refName,
 ): SegAln[][] {
+  const readsByName = new Map<string, ReadEntry[]>()
+  for (const lane of lanes) {
+    for (const [name, entries] of groupReadsByName(lane, regions)) {
+      getOrCreate(readsByName, name, () => []).push(...entries)
+    }
+  }
   const chains: SegAln[][] = []
-  for (const entries of groupReadsByName(rpcDataMap, regions).values()) {
+  for (const entries of readsByName.values()) {
     chains.push(
       ...resolveReadGroup<ReadEntry, SegAln[]>(entries, {
         chainMate: segs => [unpairedReadChain(segs, canonicalRefName)],

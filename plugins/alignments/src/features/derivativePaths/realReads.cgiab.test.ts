@@ -2114,12 +2114,14 @@ const READS: Rec[] = [
 
 function run() {
   const chains = computeReadChains(
-    new Map(
-      REGIONS.map((region, idx) => [
-        idx,
-        pileupDataFromSamRecords(READS.filter(r => r.ref === region.refName)),
-      ]),
-    ),
+    [
+      new Map(
+        REGIONS.map((region, idx) => [
+          idx,
+          pileupDataFromSamRecords(READS.filter(r => r.ref === region.refName)),
+        ]),
+      ),
+    ],
     REGIONS,
   )
   return { chains, candidates: computeDerivativePaths({ chains }) }

@@ -2850,7 +2850,7 @@ function run() {
       pileupDataFromSamRecords(READS.filter(r => r.ref === region.refName)),
     ]),
   )
-  const chains = computeReadChains(rpcDataMap, REGIONS)
+  const chains = computeReadChains([rpcDataMap], REGIONS)
   return { chains, candidates: computeDerivativePaths({ chains }) }
 }
 

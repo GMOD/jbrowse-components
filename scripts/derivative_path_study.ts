@@ -547,9 +547,10 @@ function scoreLocus(
     r => r.pos - 1 < end && r.pos - 1 + refSpan(r.CIGAR) > start,
   )
   const data = pileupDataFromSamRecords(inWindow)
-  const chains = computeReadChains(new Map([[0, data]]), [
-    { refName: locus.refName, start, end, displayedRegionIndex: 0 },
-  ])
+  const chains = computeReadChains(
+    [new Map([[0, data]])],
+    [{ refName: locus.refName, start, end, displayedRegionIndex: 0 }],
+  )
   const candidates = computeDerivativePaths({ chains, ...opts })
   let rank = 0
   let distance = Infinity

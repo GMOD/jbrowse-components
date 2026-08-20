@@ -1795,13 +1795,13 @@ export default function stateModelFactory(
           if (!this.hasReadsForDerivativePaths) {
             return []
           }
-          // Per group, then concatenated. Grouping (by HP tag, by strand, ...)
-          // partitions reads for display and says nothing about which molecule
-          // carries which junction, so it must not partition the evidence: a
-          // path supported by four reads in two lanes is still supported by
-          // four. Chaining within a group loses nothing, because a segment
-          // sitting in another lane is named by the read's own SA tag and
-          // `unpairedReadChain` folds it in from there.
+          // Every lane handed over at once, not chained lane by lane and
+          // concatenated. Grouping (by HP tag, by strand, ...) partitions reads
+          // for display and says nothing about which molecule carries which
+          // junction, so it must not partition the evidence — and chaining per
+          // lane does worse than partition it, it DOUBLES it, because each lane
+          // rebuilds the whole chain from its own segment's SA tag.
+          // `computeReadChains` carries the measurement.
           //
           // A HIDDEN lane is not that question and is already gone from
           // `rawDataByGroup`: those reads aren't partitioned away from the
@@ -1812,14 +1812,13 @@ export default function stateModelFactory(
           // `canonicalRefName` is the same normalizer the arcs use: an SA tag
           // names refNames in the BAM's own spelling, and a path whose segments
           // disagree with the view's refNames navigates nowhere.
-          const chains = [...this.rawDataByGroup.values()].flatMap(byRegion =>
-            computeReadChains(
-              byRegion,
+          return computeDerivativePaths({
+            chains: computeReadChains(
+              this.rawDataByGroup.values(),
               this.loadedRegionInfos,
               this.canonicalRefName,
             ),
-          )
-          return computeDerivativePaths({ chains })
+          })
         },
       }))
       .views(self => ({
