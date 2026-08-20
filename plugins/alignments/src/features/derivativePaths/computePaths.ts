@@ -99,14 +99,34 @@ const DEFAULTS = {
   flank: 2000,
 }
 
-// The read enters a forward segment at its lower coordinate and a reverse one at
-// its higher. Read order is not genomic order, so every edge below is asked for
-// by ROLE (entry/exit along the read), never by min/max.
-function entryBp(seg: SegAln) {
+/**
+ * #api
+ * The reference coordinate the path ARRIVES at this segment by.
+ *
+ * The read enters a forward segment at its lower coordinate and a reverse one at
+ * its higher. Read order is not genomic order, so every edge here is asked for
+ * by ROLE (entry/exit along the read), never by min/max — and this pair is
+ * exported because the rule has a consumer outside the grouping: a drawing that
+ * opens one panel per segment has to point each panel at the junction that
+ * segment carries. Spelled a second time there, nothing held the two spellings
+ * against each other, and getting one backwards is invisible rather than loud —
+ * the panel opens a segment-length from where the reads land and simply draws no
+ * connections.
+ */
+export function segmentEntryBp(seg: {
+  start: number
+  end: number
+  strand: number
+}) {
   return seg.strand === -1 ? seg.end : seg.start
 }
 
-function exitBp(seg: SegAln) {
+/** #api The reference coordinate the path LEAVES this segment by. */
+export function segmentExitBp(seg: {
+  start: number
+  end: number
+  strand: number
+}) {
   return seg.strand === -1 ? seg.start : seg.end
 }
 
@@ -162,8 +182,8 @@ function junctionEndpoints(chain: SegAln[]) {
   for (let i = 0; i < chain.length - 1; i++) {
     const a = chain[i]!
     const b = chain[i + 1]!
-    out.push({ refName: a.refName, bp: exitBp(a) })
-    out.push({ refName: b.refName, bp: entryBp(b) })
+    out.push({ refName: a.refName, bp: segmentExitBp(a) })
+    out.push({ refName: b.refName, bp: segmentEntryBp(b) })
   }
   return out
 }
@@ -234,9 +254,9 @@ function pathSignature(chain: SegAln[], clusterOf: ClusterOf) {
     const a = chain[i]!
     const b = chain[i + 1]!
     parts.push(
-      `${a.refName}:${clusterOf(a.refName, exitBp(a))}:${a.strand}>${
+      `${a.refName}:${clusterOf(a.refName, segmentExitBp(a))}:${a.strand}>${
         b.refName
-      }:${clusterOf(b.refName, entryBp(b))}:${b.strand}`,
+      }:${clusterOf(b.refName, segmentEntryBp(b))}:${b.strand}`,
     )
   }
   return parts.join('|')

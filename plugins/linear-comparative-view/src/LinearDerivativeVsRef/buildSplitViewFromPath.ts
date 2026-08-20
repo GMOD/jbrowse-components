@@ -1,4 +1,5 @@
 import { stripTrackIds } from '@jbrowse/core/util'
+import { segmentEntryBp, segmentExitBp } from '@jbrowse/plugin-alignments'
 
 import { derivativePathLabel } from './buildDerivativeVsRefSpec.ts'
 
@@ -29,8 +30,11 @@ export const MAX_SPLIT_PANELS = 12
 
 // The read enters a forward segment at its lower coordinate and a reverse one at
 // its higher, so every edge here is asked for by ROLE — entry/exit along the
-// read — rather than by min/max. Getting that wrong is invisible rather than
-// loud: an inverted segment is crossed from its high coordinate to its low one,
+// read — rather than by min/max, and asked of `computePaths`, which groups the
+// reads by that same pair: the drawing and the grouping cannot disagree about
+// which edge of a reversed segment is a junction. Getting that wrong is
+// invisible rather than loud: an inverted segment is crossed from its high
+// coordinate to its low one,
 // so a path arriving at an inverted last segment arrives at `end`. Anchored on
 // `start` regardless, the panel opened a segment-length away from where the
 // reads actually land, and the curves into it had nothing on screen to attach to
@@ -47,8 +51,8 @@ function panelAnchor(
   count: number,
   windowSize: number,
 ) {
-  const entry = seg.strand === -1 ? seg.end : seg.start
-  const exit = seg.strand === -1 ? seg.start : seg.end
+  const entry = segmentEntryBp(seg)
+  const exit = segmentExitBp(seg)
   const middle = Math.floor((seg.start + seg.end) / 2)
   // The first segment leads into the path, so its junction is the end the path
   // LEAVES it by; the last is led into, so its junction is the end it ARRIVES

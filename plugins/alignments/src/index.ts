@@ -75,6 +75,10 @@ export type { ArcsUploadData } from './features/arcs/types.ts'
 export type { CrossRegionArc } from './features/arcs/arcTypes.ts'
 export type { ArcsByGroupResult } from './features/arcs/compute.ts'
 export type { CrossRegionArcShape } from './features/arcs/crossRegionOverlay.ts'
+export {
+  segmentEntryBp,
+  segmentExitBp,
+} from './features/derivativePaths/computePaths.ts'
 export type {
   DerivativeCandidate,
   DerivativeSegment,
