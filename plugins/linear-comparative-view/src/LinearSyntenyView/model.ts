@@ -19,7 +19,6 @@ import baseModel from '../LinearComparativeView/model.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import {
   autoScaleMenuItems,
-  bidirectionalFetchMenuItems,
   cigarModeMenuItems,
   displayCanShowCigar,
   genomeViewsMenuItems,
@@ -31,6 +30,7 @@ import {
 } from './menus.ts'
 
 import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
+import type { OffscreenMateMode } from './menus.ts'
 import type {
   CigarMode,
   ExportSvgOptions,
@@ -307,6 +307,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // a reader wants is about the view: a contig missing from two levels is
       // one contig to go add. The case for the whole feature, with the numbers,
       // is agent-docs/ideas/offscreen-synteny-mates.md.
+      /**
+       * #getter
+       * Which of the three the two properties are in. `both` implies marking,
+       * so a hand-written snapshot that fetches the lower row without drawing
+       * it reads as the mode it behaves like — the fetch is happening, and the
+       * count in the menu label is the half of it that shows.
+       */
+      get offscreenMateMode(): OffscreenMateMode {
+        return self.bidirectionalFetch
+          ? 'both'
+          : self.showOffscreenMates
+            ? 'query'
+            : 'off'
+      },
       get offscreenMateTally() {
         const totals = new Map<string, number>()
         for (const d of self.allSyntenyDisplays) {
@@ -576,6 +590,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * The two properties above as the one question a reader is actually
+       * answering — how much of what this view cannot draw to go and find.
+       *
+       * They stay two properties because they are two KINDS: marking is a
+       * repaint of what the worker already counted, and the second query is a
+       * fetch input. One control over both is what keeps the free half from
+       * costing a round trip, and it closes the combination nothing wanted —
+       * fetching the lower row and then not drawing what came back.
+       */
+      setOffscreenMateMode(mode: OffscreenMateMode) {
+        self.showOffscreenMates = mode !== 'off'
+        self.bidirectionalFetch = mode === 'both'
+      },
+      /**
+       * #action
        */
       setOverdrawPx(arg: number) {
         self.overdrawPx = arg
@@ -757,7 +786,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...cigarModeMenuItems(self),
             ...lodMenuItems(self),
             ...offscreenMateMenuItems(self),
-            ...bidirectionalFetchMenuItems(self),
             { type: 'divider' },
             exportSvgMenuItem,
           ]

@@ -3,14 +3,17 @@ import { observer } from 'mobx-react'
 
 import { offscreenMateCount } from './offscreenMateStrip.ts'
 
+import type { OffscreenMateSide } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateSource } from './offscreenMateStrip.ts'
 
 export interface OffscreenMateHover {
   refName: string
-  // the row a click would navigate, which is the one NOT displaying this contig
-  // — below for a mark on the query axis, above for one on the target axis
-  navRow: number
-  level: number
+  // Which strip the pointer is in, which answers two things at once: whose
+  // tally to count this contig against — the two lanes hold contigs of
+  // different assemblies — and which panel a click would move, since a mark on
+  // the query axis names a contig the panel BELOW is not showing and one on the
+  // target axis names a contig the panel ABOVE is not.
+  side: OffscreenMateSide
   clientX: number
   clientY: number
 }
@@ -42,7 +45,7 @@ const OffscreenMateTooltip = observer(function OffscreenMateTooltip({
   model: OffscreenMateSource
   hover: OffscreenMateHover
 }) {
-  const count = offscreenMateCount(model, hover.refName)
+  const count = offscreenMateCount(model, hover.refName, hover.side)
   return (
     <ComparativeTooltip
       clientPoint={{ x: hover.clientX, y: hover.clientY }}
@@ -50,12 +53,9 @@ const OffscreenMateTooltip = observer(function OffscreenMateTooltip({
         count > 0
           ? `${hover.refName} · ${count.toLocaleString()} alignments`
           : hover.refName,
-        // WHICH PANEL, because the band has a strip on each edge once the view
-        // is fetching both rows: a mark on the query axis names a contig the
-        // panel below is not showing, and one on the target axis names a contig
-        // the panel above is not. Naming the wrong one describes a click that
-        // then rewrites the other panel's regions.
-        hover.navRow > hover.level
+        // Naming the wrong panel describes a click that then rewrites the
+        // other one's regions, and `navToLocString` REPLACES them.
+        hover.side === 'top'
           ? 'Click to show it on the panel below'
           : 'Click to show it on the panel above',
       ]}

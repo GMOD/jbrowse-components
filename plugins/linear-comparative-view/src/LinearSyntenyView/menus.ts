@@ -282,12 +282,12 @@ export function displayCanShowCigar(display: {
   )
 }
 
-// Gated on data, not config: coarse-tier PIF and CIGAR-less PAF have no ops to
-// display, so the whole section would be inert.
+export type OffscreenMateMode = 'off' | 'query' | 'both'
+
 interface OffscreenMateModel {
-  showOffscreenMates: boolean
+  offscreenMateMode: OffscreenMateMode
   offscreenMateTally: { refName: string; count: number }[]
-  setShowOffscreenMates: (arg: boolean) => void
+  setOffscreenMateMode: (mode: OffscreenMateMode) => void
 }
 
 // Locale-grouped, because these run to five figures on a whole chromosome and
@@ -297,63 +297,69 @@ function formatCount(n: number) {
 }
 
 /**
- * The item's label IS the finding. A checkbox reading "Show unpaired
- * alignments" tells a reader nothing they can act on, where "2,767 alignments
- * map to 9 contigs not shown" is the whole point of the feature — a locus that
- * looks syntenic to nothing here is syntenic to something the view is not
- * displaying, and the contig names underneath are the rows worth adding.
+ * HOW HARD TO LOOK, as three steps of one question rather than two checkboxes
+ * of two. A reader is not choosing between "mark them" and "search both rows";
+ * they are deciding how much of what this view cannot draw they want to know
+ * about, and the second step costs a query where the first is free.
  *
- * GATED ON THERE BEING SOME, so a two-contig comparison with nothing hidden
- * carries no menu item claiming there might be. That also means the item
- * appears only once a fetch has landed, which is right: before then the honest
- * answer is not zero, it is unknown.
+ * ONE CONTROL, TWO PROPERTIES, which is what `rowSyncMenuItems` above does with
+ * `linkViews`/`followSynteny` and for the same reason. They stay separate
+ * properties because they are separate KINDS: `showOffscreenMates` is a
+ * repaint — the worker counted and placed those marks whichever way it sits —
+ * and `bidirectionalFetch` is a fetch input. Fusing them into one boolean would
+ * put the free half behind a network round trip, which is the mistake
+ * `drawLocationMarkers` was in the fetch key for.
+ *
+ * It also closes the state the pair could reach and nothing wanted: fetching
+ * the second row and then not drawing what it found.
+ */
+const OFFSCREEN_MATE_MODES = [
+  { value: 'off', label: 'Off' },
+  {
+    value: 'query',
+    label: 'Mark them',
+    subLabel: 'From the alignments this view already has',
+  },
+  {
+    value: 'both',
+    label: 'Mark them, searching both rows',
+    subLabel:
+      'A second query per row pair, and the only way to find the ones anchored below',
+  },
+] as const
+
+/**
+ * The group's label IS the finding. "Show unpaired alignments" tells a reader
+ * nothing they can act on, where "2,767 alignments map to 9 contigs not shown"
+ * is the whole point of the feature — a locus that looks syntenic to nothing
+ * here is syntenic to something the view is not displaying.
+ *
+ * NOT GATED ON THERE BEING SOME, unlike the checkbox this replaced. A count of
+ * zero is not the same as nothing to offer: `both` is the mode that would go
+ * and find out, and gating the control on the number it exists to change is a
+ * door that only opens once you are already through it. With no fetch landed
+ * yet the honest label is neither a number nor a zero, so it names the subject
+ * instead.
  */
 export function offscreenMateMenuItems(model: OffscreenMateModel): MenuItem[] {
   const { offscreenMateTally: tally } = model
-  if (tally.length === 0) {
-    return []
-  }
   const total = tally.reduce((sum, e) => sum + e.count, 0)
   const contigs = tally.length === 1 ? '1 contig' : `${tally.length} contigs`
   const alignments =
     total === 1 ? '1 alignment maps' : `${formatCount(total)} alignments map`
   return [
     {
-      label: `${alignments} to ${contigs} not shown`,
-      type: 'checkbox' as const,
-      checked: model.showOffscreenMates,
-      onClick: () => {
-        model.setShowOffscreenMates(!model.showOffscreenMates)
-      },
-    },
-  ]
-}
-
-interface BidirectionalFetchModel {
-  bidirectionalFetch: boolean
-  setBidirectionalFetch: (arg: boolean) => void
-}
-
-/**
- * Ask each level's adapter about its lower row as well as its upper one.
- *
- * NOT GATED ON A COUNT, unlike the item above, and it cannot be: what it turns
- * on is the fetch that would produce the count. A pair with nothing anchored on
- * the lower row and a pair that was never asked look identical from here, which
- * is exactly the state this exists to get out of.
- */
-export function bidirectionalFetchMenuItems(
-  model: BidirectionalFetchModel,
-): MenuItem[] {
-  return [
-    {
-      label: 'Search both rows for alignments',
-      subLabel: 'A second query per row pair',
-      type: 'checkbox' as const,
-      checked: model.bidirectionalFetch,
-      onClick: () => {
-        model.setBidirectionalFetch(!model.bidirectionalFetch)
-      },
+      label:
+        tally.length > 0
+          ? `${alignments} to ${contigs} not shown`
+          : 'Alignments this view cannot draw',
+      subMenu: radioItems(
+        OFFSCREEN_MATE_MODES,
+        model.offscreenMateMode,
+        mode => {
+          model.setOffscreenMateMode(mode)
+        },
+      ),
     },
   ]
 }

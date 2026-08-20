@@ -218,6 +218,7 @@ test('a pointer at the bottom edge answers the target axis, and the row above', 
   expect(offscreenMateHit(withBand(bothSides()), 1, 99)).toEqual({
     refName: 'fromTarget',
     navRow: 0,
+    side: 'bottom',
   })
 })
 
@@ -225,6 +226,7 @@ test('a pointer at the top edge still answers the query axis', () => {
   expect(offscreenMateHit(withBand(bothSides()), 1, 1)).toEqual({
     refName: 'fromQuery',
     navRow: 1,
+    side: 'top',
   })
 })
 
@@ -252,11 +254,11 @@ test('the count sums every display on the level', () => {
   expect(offscreenMateCount(both, 'other')).toBe(5)
 })
 
-// ...and both lanes, since which strip the pointer is in is not something the
-// count is told: a mark on the lower edge names a contig only the mirror lane
-// holds, and reading the query lane alone reported it as nothing at all.
-test('the count reads the mirror lane too', () => {
-  expect(offscreenMateCount(bothSides(), 'fromTarget')).toBe(1)
+// ...one lane at a time, named by the caller: the two hold contigs of different
+// assemblies, so a refName alone does not say which tally it belongs to.
+test('the count reads the lane it is asked for', () => {
+  expect(offscreenMateCount(bothSides(), 'fromTarget', 'bottom')).toBe(1)
+  expect(offscreenMateCount(bothSides(), 'fromTarget', 'top')).toBe(0)
 })
 
 test('a contig this band has nothing to say about counts zero', () => {

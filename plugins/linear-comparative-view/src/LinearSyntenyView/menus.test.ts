@@ -7,6 +7,7 @@ import {
 } from './menus.ts'
 
 import type { CigarMode } from './cigarModes.ts'
+import type { OffscreenMateMode } from './menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The three row-sync modes are mutually exclusive in substance, not just in
@@ -160,55 +161,74 @@ describe('displayCanShowCigar', () => {
   })
 })
 
-// The item's label IS the finding, so it is the part with something to get
-// wrong: a checkbox reading "Show unpaired alignments" tells a reader nothing,
+// The group's label IS the finding, so it is the part with something to get
+// wrong: a control reading "Show unpaired alignments" tells a reader nothing,
 // where a count and a contig number is the whole point of the feature.
 describe('offscreenMateMenuItems', () => {
   function build(
     tally: { refName: string; count: number }[],
-    showOffscreenMates = false,
+    offscreenMateMode: OffscreenMateMode = 'off',
   ) {
-    const calls: boolean[] = []
+    const calls: OffscreenMateMode[] = []
     const items = offscreenMateMenuItems({
       offscreenMateTally: tally,
-      showOffscreenMates,
-      setShowOffscreenMates: arg => calls.push(arg),
+      offscreenMateMode,
+      setOffscreenMateMode: mode => calls.push(mode),
     })
-    return { items, calls }
+    const group = items[0] as { label: string; subMenu: MenuItem[] }
+    return { items, group, calls }
+  }
+
+  function row(items: MenuItem[], label: string) {
+    return items.find(i => 'label' in i && i.label === label) as {
+      label: string
+      checked: boolean
+      onClick: () => void
+    }
   }
 
   test('the label reports the total and how many contigs it spans', () => {
-    const { items } = build([
+    const { group } = build([
       { refName: 'ctgB', count: 2000 },
       { refName: 'ctgC', count: 767 },
     ])
-    expect(items).toHaveLength(1)
-    expect(items[0]).toMatchObject({
-      label: '2,767 alignments map to 2 contigs not shown',
-      type: 'checkbox',
-      checked: false,
-    })
+    expect(group.label).toBe('2,767 alignments map to 2 contigs not shown')
   })
 
   test('one of each is not "1 alignments ... 1 contigs"', () => {
-    const { items } = build([{ refName: 'ctgB', count: 1 }])
-    expect(items[0]).toMatchObject({
-      label: '1 alignment maps to 1 contig not shown',
-    })
+    expect(build([{ refName: 'ctgB', count: 1 }]).group.label).toBe(
+      '1 alignment maps to 1 contig not shown',
+    )
   })
 
-  // Before a fetch lands the tally is empty, and the honest answer then is not
-  // zero but unknown — so the item is absent rather than claiming nothing is
-  // hidden. A two-contig comparison with everything drawn reads the same way.
-  test('nothing hidden carries no item at all', () => {
-    expect(build([]).items).toEqual([])
+  // The mode that would GO AND FIND some is in this group, so gating the group
+  // on the count is a door that only opens once you are already through it. A
+  // fetch that has not landed yet has no number to report and still has the
+  // question worth asking.
+  test('nothing counted still offers the modes, under a label with no number', () => {
+    const { group } = build([])
+    expect(group.label).toBe('Alignments this view cannot draw')
+    expect(group.subMenu).toHaveLength(3)
   })
 
-  test('the item toggles the marks the label counts', () => {
-    const { items, calls } = build([{ refName: 'ctgB', count: 3 }], true)
-    expect(items[0]).toMatchObject({ checked: true })
-    ;(items[0] as { onClick: () => void }).onClick()
-    expect(calls).toEqual([false])
+  // Three steps of one question rather than two checkboxes of two: the first is
+  // a repaint of what the worker already counted and the second costs a query,
+  // so what a reader is choosing is how hard to look.
+  test('the three modes are exclusive, and the current one is checked', () => {
+    const { group } = build([{ refName: 'ctgB', count: 3 }], 'query')
+    expect(group.subMenu.map(i => ('label' in i ? i.label : ''))).toEqual([
+      'Off',
+      'Mark them',
+      'Mark them, searching both rows',
+    ])
+    expect(row(group.subMenu, 'Mark them').checked).toBe(true)
+    expect(row(group.subMenu, 'Off').checked).toBe(false)
+  })
+
+  test('picking one sets that mode', () => {
+    const { group, calls } = build([{ refName: 'ctgB', count: 3 }], 'query')
+    row(group.subMenu, 'Mark them, searching both rows').onClick()
+    expect(calls).toEqual(['both'])
   })
 })
 

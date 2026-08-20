@@ -226,11 +226,11 @@ nothing for it — and a locus syntenic to a chromosome you did not stack then
 looks exactly like a locus syntenic to nothing.
 
 The hamburger menu says how many those are, naming the contigs they go to, and
-the same item turns on a strip of marks along the query axis. Each mark sits
-where the alignment is on the panel it does have, stopping short of the ribbons
-so it cannot be read as an alignment to whatever is directly below. A run of
-marks to one contig carries that contig's name; where several contigs cover the
-same stretch, their names stack.
+the same item is where **Mark them** turns on a strip of marks along the query
+axis. Each mark sits where the alignment is on the panel it does have, stopping
+short of the ribbons so it cannot be read as an alignment to whatever is
+directly below. A run of marks to one contig carries that contig's name; where
+several contigs cover the same stretch, their names stack.
 
 A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
 zoom is most of them. Hover any mark and it names the contig it points at, and
@@ -252,8 +252,8 @@ contig the lower panel is showing — whose other end is somewhere the upper pan
 is not — is never asked for at all. The same two genomes therefore report
 differently depending on which one you stacked on top.
 
-**Search both rows for alignments** adds that second query, and what it finds
-splits two ways.
+**Mark them, searching both rows** — the last step of that same menu item — adds
+the second query, and what it finds splits two ways.
 
 An alignment whose other end is on a contig the upper panel is not displaying at
 all has no second endpoint, so it is marked along the lower panel's axis,

@@ -31,12 +31,16 @@ function source(counts: Record<string, number>) {
   } as OffscreenMateSource
 }
 
-function draw(model: OffscreenMateSource, refName: string, navRow = 1) {
+function draw(
+  model: OffscreenMateSource,
+  refName: string,
+  side: 'top' | 'bottom' = 'top',
+) {
   const { getByRole } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <OffscreenMateTooltip
         model={model}
-        hover={{ refName, navRow, level: 0, clientX: 40, clientY: 12 }}
+        hover={{ refName, side, clientX: 40, clientY: 12 }}
       />
     </ThemeProvider>,
   )
@@ -70,9 +74,52 @@ test('and says what clicking it does', () => {
 // not showing, and a tooltip promising the one below describes a click that
 // then rewrites the other panel's regions.
 test('a mark on the target axis names the panel above instead', () => {
-  expect(draw(source({ ctgB: 1 }), 'ctgB', 0)).toContain(
+  expect(draw(source({ ctgB: 1 }), 'ctgB', 'bottom')).toContain(
     'Click to show it on the panel above',
   )
+})
+
+// The two lanes hold contigs of DIFFERENT assemblies, so a refName does not say
+// which tally it came from — and two haplotypes of one genome, which is what
+// this view is most used for, both spell a contig `chr1`. Counting both lanes
+// reported a lower-strip mark's own number plus the upper strip's.
+function bothLanes() {
+  return {
+    level: 0,
+    linearSyntenyDisplays: [
+      {
+        featureData: {
+          offscreenMates: {
+            mateRefNameDict: ['chr1'],
+            counts: Uint32Array.from([7]),
+            starts: Float64Array.from([0]),
+            ends: Float64Array.from([10]),
+            mateRefNameIds: new Uint32Array(1),
+          },
+          targetOffscreenMates: {
+            mateRefNameDict: ['chr1'],
+            counts: Uint32Array.from([3]),
+            starts: Float64Array.from([0]),
+            ends: Float64Array.from([10]),
+            mateRefNameIds: new Uint32Array(1),
+          },
+        },
+      },
+    ],
+    parentView: {
+      showOffscreenMates: true,
+      minAlignmentLength: 0,
+      views: [{ bpPerPx: 1, offsetPx: 0 }],
+    },
+  } as unknown as OffscreenMateSource
+}
+
+test('a contig named on both axes counts only the lane hovered', () => {
+  expect(draw(bothLanes(), 'chr1', 'top')).toContain('7 alignments')
+})
+
+test('...and the other lane on the other edge', () => {
+  expect(draw(bothLanes(), 'chr1', 'bottom')).toContain('3 alignments')
 })
 
 test('a contig no display counted is named without a number', () => {

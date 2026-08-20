@@ -1548,26 +1548,26 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'Re-order chromosomes is the opt-in, and this figure leaves it alone on purpose: the order along the axis is part of what the figure is showing.',
         }
   },
-  // The label IS the count, so there is no fixed string to click: the item reads
+  // The label IS the count, so there is no fixed string to click: the group reads
   // "2,767 alignments map to 9 contigs not shown" on the figure's own view and
-  // something else on anyone else's. It also appears only once a fetch has
-  // landed and only when the count is above zero, which is why the note says
-  // where to look rather than what it will say.
+  // something else on anyone else's, which is why the note says where to look
+  // rather than what it will say.
   showOffscreenMates: (value, { viewType }) =>
     typeof value === 'boolean' && viewType === 'LinearSyntenyView'
       ? {
-          path: 'Synteny view header → View options → the checkbox naming how many alignments map to contigs not shown',
-          note: 'The item names the count and the number of contigs, so its label differs per view. It is absent while the count is zero — both rows are showing every contig the alignments reach, and there is nothing to mark.',
+          path: `Synteny view header → View options → the submenu naming how many alignments map to contigs not shown → ${value ? 'Mark them' : 'Off'}`,
+          note: 'The submenu names the count and the number of contigs, so its label differs per view; with no fetch landed yet it reads "Alignments this view cannot draw".',
         }
       : undefined,
   // The one setting here that changes what is FETCHED rather than what is drawn,
-  // which is why the note says what it costs: the view queries each row pair's
-  // upper row, and this adds a query for the lower one.
+  // which is why it is the last step of the same submenu rather than a checkbox
+  // of its own: what a reader picks there is how hard to look, and only this
+  // step costs a query.
   bidirectionalFetch: (value, { viewType }) =>
     typeof value === 'boolean' && viewType === 'LinearSyntenyView'
       ? {
-          path: 'Synteny view header → View options → Search both rows for alignments',
-          note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. Turning this on costs a second query per row pair.',
+          path: `Synteny view header → View options → the submenu naming how many alignments map to contigs not shown → ${value ? 'Mark them, searching both rows' : 'Mark them'}`,
+          note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. This step costs a second query per row pair.',
         }
       : undefined,
   // Applied while the view is built (afterAttach sets scalebarOnly on any row

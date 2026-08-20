@@ -106,10 +106,13 @@ export function offscreenMateStrips(
 }
 
 // The mark under the pointer, as the level reports it: the contig it points at,
-// and the row that would have to show that contig for these to be ribbons.
+// the row that would have to show that contig for these to be ribbons, and
+// which strip answered — the last because the two lanes hold contigs of
+// DIFFERENT assemblies, so a name alone does not say which tally it came from.
 export interface OffscreenMateHit {
   refName: string
   navRow: number
+  side: OffscreenMateSide
 }
 
 /**
@@ -137,7 +140,7 @@ export function offscreenMateHit(
   for (const strip of offscreenMateStrips(model)) {
     const hit = offscreenMateAt({ ...strip, width, height: model.height }, x, y)
     if (hit) {
-      return { refName: hit.refName, navRow: strip.navRow }
+      return { refName: hit.refName, navRow: strip.navRow, side: strip.side }
     }
   }
   return undefined
@@ -152,25 +155,26 @@ export function offscreenMateHit(
  * band rather than the view, because the band is what the pointer is over — the
  * menu sums the levels instead.
  *
- * BOTH LANES, because the pointer reaches a name through whichever strip it is
- * in and the two hold contigs of different assemblies. A name is in one of them
- * unless the two assemblies spell a contig alike, and summing is what the menu
- * does with that case too.
+ * ONE LANE, NAMED BY THE CALLER, because the two hold contigs of DIFFERENT
+ * assemblies and a refName does not say which. Summing both looks harmless
+ * until the two rows are haplotypes of one genome — the case this whole view is
+ * most used for — where both spell a contig `chr1`, and a mark on the lower
+ * strip then reports its own count plus the upper strip's.
  */
 export function offscreenMateCount(
   model: OffscreenMateSource,
   refName: string,
+  side: OffscreenMateSide = 'top',
 ) {
   let total = 0
   for (const d of model.linearSyntenyDisplays) {
-    for (const data of [
-      d.featureData?.offscreenMates,
-      d.featureData?.targetOffscreenMates,
-    ]) {
-      const id = data?.mateRefNameDict.indexOf(refName) ?? -1
-      if (data && id >= 0) {
-        total += data.counts[id] ?? 0
-      }
+    const data =
+      side === 'top'
+        ? d.featureData?.offscreenMates
+        : d.featureData?.targetOffscreenMates
+    const id = data?.mateRefNameDict.indexOf(refName) ?? -1
+    if (data && id >= 0) {
+      total += data.counts[id] ?? 0
     }
   }
   return total
