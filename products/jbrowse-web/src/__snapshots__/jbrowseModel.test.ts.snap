@@ -2941,6 +2941,28 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "assemblyNames": [
           "volvox_del",
+          "volvox",
+        ],
+        "pafLocation": {
+          "uri": "volvox_offscreen_alias.paf",
+        },
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox_del",
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "name": "volvox_offscreen_alias.paf",
+      "trackId": "volvox_offscreen_alias.paf",
+      "type": "SyntenyTrack",
+    },
+    {
+      "adapter": {
+        "assemblyNames": [
+          "volvox_del",
           "vvx",
         ],
         "pafLocation": {

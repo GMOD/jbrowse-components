@@ -427,7 +427,7 @@ exports[`every registered schema slot default 1`] = `
     "showSashimiLabels": "maybeBoolean promotedBase false",
     "showSoftClipping": "maybeBoolean promotedBase false",
     "sortedBy": "frozen = null",
-    "symlogConstant": "number = 0",
+    "symlogConstant": "number = 1",
   },
   "display: LinearAlignmentsDisplay": {
     "arcColorByType": "stringEnum = "insertSizeAndOrientation" of ["insertSizeAndOrientation","insertSize","orientation"]",
@@ -483,7 +483,7 @@ exports[`every registered schema slot default 1`] = `
     "showSashimiLabels": "maybeBoolean promotedBase false",
     "showSoftClipping": "maybeBoolean promotedBase false",
     "sortedBy": "frozen = null",
-    "symlogConstant": "number = 0",
+    "symlogConstant": "number = 1",
   },
   "display: LinearArcDisplay": {
     "arcHeight": "number = "jexl:log10(get(feature,'end')-get(feature,'start'))*50"",
