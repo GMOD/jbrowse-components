@@ -7,6 +7,11 @@ import { createTimeGate } from './timeGate.ts'
 
 import type { StopToken, StopTokenChecker } from './stopToken.ts'
 
+// This ESM package builds without @types/node, but consuming bundlers
+// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
+// reference and give it a minimal module-scoped type for tsc.
+declare const process: { env: { NODE_ENV?: string } }
+
 // The out-of-band progress channel, from a worker's phase helpers to the one
 // status field a loading indicator reads. Why it is shaped this way:
 // ADR-071 (every status goes through the window), ADR-072 (only one phase at a
@@ -284,6 +289,7 @@ function createStatusAggregate({ holdLastReading = false } = {}) {
 
   return {
     idle: () => slots.length === 0,
+    size: () => slots.length,
     add() {
       const slot: StatusSlot = { status: undefined, completed: new Map() }
       slots.push(slot)
@@ -426,6 +432,7 @@ export function createStatusWindow(
         reset()
       }
       const slot = aggregate.add()
+      warnOnSlotLeak(aggregate.size())
       let live = true
       return {
         statusCallback: status => {
@@ -464,6 +471,28 @@ export function createStatusWindow(
       }
     },
     reset,
+  }
+}
+
+// An owner has a handful of concurrent operations at most — a display's three
+// are the widest case in the tree — so a window past this is an operation that
+// took a slot and never retired it, which pins a label up and goes on voting for
+// a phase that is over. Silent otherwise, and `ChordVariantDisplay` was in
+// exactly that shape from before ADR-081 gave the leak teeth.
+const SLOT_LEAK_THRESHOLD = 16
+let warnedSlotLeak = false
+
+function warnOnSlotLeak(open: number) {
+  if (process.env.NODE_ENV === 'production' || warnedSlotLeak) {
+    return
+  }
+  if (open > SLOT_LEAK_THRESHOLD) {
+    warnedSlotLeak = true
+    console.error(
+      `createStatusWindow: ${open} status streams open on one window. An ` +
+        `operation is not calling its stream's clear() — see ADR-081 and ` +
+        `agent-docs/reference/PROGRESS_REPORTING.md.`,
+    )
   }
 }
 

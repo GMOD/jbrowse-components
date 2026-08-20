@@ -201,6 +201,27 @@ describe('createStatusWindow', () => {
     expect(seen).toEqual(['from a'])
   })
 
+  // The failure ADR-081 trades for: an operation that takes a slot and never
+  // retires it pins a label up and goes on voting for a phase that is over,
+  // silently. `ChordVariantDisplay` had exactly that shape, one leaked slot per
+  // fetch, from before the slot model gave it teeth.
+  it('warns once when slots accumulate past what an owner can have', () => {
+    const errors: unknown[] = []
+    jest.spyOn(console, 'error').mockImplementation(e => {
+      errors.push(e)
+    })
+    const statusWindow = createStatusWindow(() => {})
+    for (let i = 0; i < 17; i++) {
+      statusWindow.open({ isCurrent: () => true })
+    }
+    expect(errors).toHaveLength(1)
+    expect(String(errors[0])).toContain('17 status streams open')
+    // once per process, not once per open: a leak reports the fault, not a log
+    // line per fetch for the rest of the session
+    statusWindow.open({ isCurrent: () => true })
+    expect(errors).toHaveLength(1)
+  })
+
   it('keeps separate windows independent', () => {
     const a = openStream()
     const b = openStream()

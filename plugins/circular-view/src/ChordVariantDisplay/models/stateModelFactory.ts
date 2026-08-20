@@ -266,7 +266,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
                 const adapter = getConf(self.parentTrack, 'adapter')
                 const { rpcManager, assemblyManager } = getSession(self)
 
-                const { stopToken, isCurrent, statusCallback } =
+                const { stopToken, isCurrent, statusCallback, end } =
                   rotation.begin()
                 // the two below run concurrently and would otherwise fight over
                 // the one status field, so each gets its own slot
@@ -301,6 +301,12 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
                     console.error(e)
                     self.setError(e)
                   }
+                } finally {
+                  // the clear this fetch never had. Its phases close onto `''`,
+                  // which no aggregate rewrites into a blank (ADR-080), so
+                  // without this the last label stayed up for good — and the
+                  // slot behind it went on voting for a phase that was over.
+                  end()
                 }
               },
               { name: 'ChordVariantDisplayFetch' },
