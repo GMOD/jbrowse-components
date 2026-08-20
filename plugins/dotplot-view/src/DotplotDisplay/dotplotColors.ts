@@ -6,7 +6,7 @@ import {
 
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { AttributeRange, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 // The color function itself is `createComparativeColorFunction` in
 // synteny-core — the palette, the chromosome-order laps, the ramp LUTs and the
@@ -27,6 +27,7 @@ export function createDotplotColorFunction(
   colorBy: SyntenyColorBy,
   data: DotplotRpcData,
   trackColor: string,
+  attributeRanges: Record<string, AttributeRange>,
   nameOrder?: readonly string[],
 ) {
   return createComparativeColorFunction({
@@ -34,6 +35,7 @@ export function createDotplotColorFunction(
     data,
     trackColor,
     nameOrder,
+    attributeRanges,
     defaultColor: POINT_COLOR,
   })
 }
@@ -50,6 +52,7 @@ export function computeDotplotColors({
   colorBy,
   trackColor,
   nameOrder,
+  attributeRanges,
 }: {
   instanceData: DotplotInstanceData
   rpcData: DotplotRpcData
@@ -59,12 +62,16 @@ export function computeDotplotColors({
   // Chromosome order of the axis assembly the painting mode keys on; see
   // `DotplotDisplay.paintedChromosomeOrder`.
   nameOrder?: readonly string[]
+  // The domain an `attribute:<name>` ramp scales to — the view's accumulated
+  // one, not this fetch's. See `createComparativeColorFunction`.
+  attributeRanges: Record<string, AttributeRange>
 }) {
   const { instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createDotplotColorFunction(
     colorBy,
     rpcData,
     trackColor,
+    attributeRanges,
     nameOrder,
   )
   const out = new Uint32Array(instanceCount)

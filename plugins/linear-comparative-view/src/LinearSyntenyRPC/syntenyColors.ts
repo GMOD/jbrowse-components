@@ -10,7 +10,11 @@ import {
   KIND_MARKER,
 } from '../LinearSyntenyDisplay/shaders/syntenyTypes.generated.ts'
 
-import type { ColorFunctionInputs, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  ColorFunctionInputs,
+  SyntenyColorBy,
+} from '@jbrowse/synteny-core'
 
 // Per-instance kind tag. Determines how the color for an instance is derived
 // from the parent feature's strand/refName/featureIdx and the current colorBy
@@ -77,6 +81,7 @@ export function computeSyntenyColors({
   opacityByIdentity,
   drawLocationMarkers,
   nameOrder,
+  attributeRanges,
 }: {
   instanceData: InstanceInputs
   featureData: ColorFunctionInputs
@@ -94,6 +99,9 @@ export function computeSyntenyColors({
   // Only the display knows it — the assembly's refName list is a session fact,
   // not something in the feature data — so it is passed in rather than derived.
   nameOrder?: readonly string[]
+  // The domain an `attribute:<name>` ramp scales to — the view's accumulated
+  // one, not this fetch's. See `createComparativeColorFunction`.
+  attributeRanges: Record<string, AttributeRange>
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createComparativeColorFunction({
@@ -101,6 +109,7 @@ export function computeSyntenyColors({
     data: featureData,
     trackColor,
     nameOrder,
+    attributeRanges,
     // a ribbon's unpainted state is the red match block
     defaultColor: MISSING_VALUE_COLOR,
   })

@@ -62,6 +62,7 @@ describe("computeSyntenyColors colorBy:'track'", () => {
     featureData,
     colorBy: 'track',
     trackColor: TRACK_COLOR,
+    attributeRanges: {},
   })
 
   test('base instances take the track color', () => {
@@ -90,6 +91,7 @@ describe("computeSyntenyColors colorBy:'track'", () => {
       featureData,
       colorBy: 'track',
       trackColor: TRACK_COLOR,
+      attributeRanges: {},
     })
     // opposite strands, different refNames, different identity — still flat
     expect(twoFeatures[0]).toBe(twoFeatures[1])
@@ -101,6 +103,7 @@ describe("computeSyntenyColors colorBy:'track'", () => {
       featureData,
       colorBy: 'track',
       trackColor: '#f28e2c',
+      attributeRanges: {},
     })
     expect(other[0]).not.toBe(colors[0])
   })
@@ -123,6 +126,7 @@ describe('the location-marker toggle', () => {
       colorBy: 'track',
       trackColor: TRACK_COLOR,
       drawLocationMarkers,
+      attributeRanges: {},
     })
 
   test('on: a tick is the fixed semi-transparent black, whatever colorBy says', () => {
@@ -135,6 +139,7 @@ describe('the location-marker toggle', () => {
         colorBy: 'strand',
         trackColor: TRACK_COLOR,
         drawLocationMarkers: true,
+        attributeRanges: {},
       })[1],
     ).toBe(on[1])
   })
@@ -173,6 +178,7 @@ describe('chromosome painting', () => {
           colorBy: 'query',
           trackColor: '#000',
           nameOrder,
+          attributeRanges: {},
         })[0]!,
     )
 
@@ -238,6 +244,7 @@ test('scaffolds after the chromosomes do not compress the palette', () => {
         colorBy: 'query',
         trackColor: '#000',
         nameOrder: withScaffolds,
+        attributeRanges: {},
       })[0]!,
   )
   expect(new Set(hues).size).toBe(12)

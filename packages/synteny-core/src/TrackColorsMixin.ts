@@ -9,6 +9,32 @@ import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 import type { ColorableTrack } from './trackColors.ts'
 
+// Widen `into` by `ranges`, returning `into` ITSELF when nothing moved: this is
+// read through a computed on every recolor, and a fresh object per fetch that
+// told it nothing new would re-run every downstream color pass.
+function widenRanges(
+  into: Record<string, AttributeRange>,
+  ranges: Record<string, AttributeRange>,
+) {
+  const grown = Object.entries(ranges).flatMap(([name, range]) => {
+    const prev = into[name]
+    return prev
+      ? range.min < prev.min || range.max > prev.max
+        ? ([
+            [
+              name,
+              {
+                min: Math.min(prev.min, range.min),
+                max: Math.max(prev.max, range.max),
+              },
+            ],
+          ] as const)
+        : []
+      : ([[name, range]] as const)
+  })
+  return grown.length === 0 ? into : { ...into, ...Object.fromEntries(grown) }
+}
+
 /**
  * #stateModel TrackColorsMixin
  *
@@ -49,6 +75,16 @@ export function TrackColorsMixin() {
        */
       showColorLegend: types.stripDefault(types.boolean, false),
     })
+    .volatile(() => ({
+      /**
+       * #volatile
+       * The widest span each numeric channel has been seen to cover, over every
+       * fetch this view has taken — what keeps an `attribute:<column>` ramp from
+       * re-scaling under a pan. Widened by `observeAttributeRanges`, read
+       * through `attributeRanges`, which is where the reasoning is.
+       */
+      seenAttributeRanges: {} as Record<string, AttributeRange>,
+    }))
     .views(() => ({
       /**
        * #method
@@ -98,29 +134,29 @@ export function TrackColorsMixin() {
       },
       /**
        * #getter
-       * The span each numeric channel covered, unioned over the loaded
-       * displays. An `attribute:<column>` mode has no declared domain, so this
-       * is what its ramp scales to and what the legend labels it with.
+       * The span each numeric channel covers: unioned over the loaded displays,
+       * and over every fetch this view has already taken (`seenAttributeRanges`).
+       * An `attribute:<column>` mode has no declared domain, so this is what its
+       * ramp scales to, what the legend labels it with, and — since it is the
+       * one domain — what the two cannot disagree about.
        *
-       * View-wide rather than per display because the floating legend is one
-       * box for the whole view: two displays labelling the same ramp from
-       * different spans would make that one legend lie. The renderers scale
-       * per display, so this is a labelling domain, not a painting one.
+       * MONOTONIC, which is the point. A fetch's payload reports the span of the
+       * slice it holds, and that slice is the snapped window: painting straight
+       * off it re-maps every feature onto the ramp each time a pan rolls the
+       * window over, so a ribbon in the middle of the ramp turns into one at the
+       * bottom while the reader is scrolling and its value has not changed. A
+       * domain that only ever widens still says what the reader is looking at —
+       * the legend prints the actual numbers — and settles instead of
+       * oscillating.
+       *
+       * View-wide rather than per display because the floating legend is one box
+       * for the whole view: two displays scaling the same ramp from different
+       * spans would make that one legend lie about one of them.
        */
       get attributeRanges(): Record<string, AttributeRange> {
-        const out: Record<string, AttributeRange> = {}
-        for (const ranges of self.loadedAttributeRanges()) {
-          for (const [name, range] of Object.entries(ranges)) {
-            const prev = out[name]
-            out[name] = prev
-              ? {
-                  min: Math.min(prev.min, range.min),
-                  max: Math.max(prev.max, range.max),
-                }
-              : range
-          }
-        }
-        return out
+        return self
+          .loadedAttributeRanges()
+          .reduce(widenRanges, self.seenAttributeRanges)
       },
       /**
        * #getter
@@ -203,6 +239,17 @@ export function TrackColorsMixin() {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * Fold one fetch's observed attribute spans into the domain this view
+       * paints and labels its ramps with. Called by each display as its fetch
+       * lands, because the accumulation has to outlive the payload it came from:
+       * the previous window's span is gone from `loadedAttributeRanges` the
+       * moment the next one commits.
+       */
+      observeAttributeRanges(ranges: Record<string, AttributeRange>) {
+        self.seenAttributeRanges = widenRanges(self.seenAttributeRanges, ranges)
+      },
       /**
        * #action
        * Set the view-wide mode. Clears every per-track override, so picking a

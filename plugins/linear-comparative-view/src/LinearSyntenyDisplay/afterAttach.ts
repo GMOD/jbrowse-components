@@ -208,6 +208,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       }
     },
     commit: ({ instanceData, ...featureData }, { fetchKey }) => {
+      // Before the data lands, because the accumulated domain has to outlive
+      // this payload: `attributeRanges` reports the span of the SLICE this
+      // window fetched, and the ramp an `attribute:<column>` mode paints would
+      // otherwise re-scale on every pan that rolls the window over.
+      self.view.observeAttributeRanges(featureData.attributeRanges)
       self.setRpcData(featureData, instanceData, fetchKey)
     },
   })

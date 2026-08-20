@@ -151,7 +151,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * Baking it in made every drag frame recompute this array, re-pack every
        * instance and re-upload the buffer.
        */
-      get computedColors() {
+      get computedColors(): Uint32Array | undefined {
         const { instanceData, rpcData } = self
         return instanceData && rpcData
           ? computeDotplotColors({
@@ -160,6 +160,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               colorBy: this.colorBy,
               trackColor: this.trackColor,
               nameOrder: this.paintedChromosomeOrder,
+              attributeRanges: this.view.attributeRanges,
             })
           : undefined
       },

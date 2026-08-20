@@ -48,7 +48,7 @@ const TRACK_COLOR = '#4e79a7'
 describe('createDotplotColorFunction', () => {
   test('strand picks two colors for +/-', () => {
     const data = fakeRpcData({ strands: new Int8Array([1, -1]) })
-    const fn = createDotplotColorFunction('strand', data, TRACK_COLOR)
+    const fn = createDotplotColorFunction('strand', data, TRACK_COLOR, {})
     expect(fn(0)).not.toBe(fn(1))
   })
 
@@ -57,14 +57,14 @@ describe('createDotplotColorFunction', () => {
   // off colorSchemes without any test noticing.
   test('strand colors come from the shared colorSchemes', () => {
     const data = fakeRpcData({ strands: new Int8Array([1, -1]) })
-    const fn = createDotplotColorFunction('strand', data, TRACK_COLOR)
+    const fn = createDotplotColorFunction('strand', data, TRACK_COLOR, {})
     expect(unpack(fn(0))).toMatchObject(rgbOfHex(colorSchemes.strand.posColor))
     expect(unpack(fn(1))).toMatchObject(rgbOfHex(colorSchemes.strand.negColor))
   })
 
   test('default returns the shared point color (black)', () => {
     const data = fakeRpcData()
-    const fn = createDotplotColorFunction('default', data, TRACK_COLOR)
+    const fn = createDotplotColorFunction('default', data, TRACK_COLOR, {})
     expect(unpack(fn(0))).toEqual({ r: 0, g: 0, b: 0, a: 255 })
     expect(unpack(fn(0))).toMatchObject(
       rgbOfHex(colorSchemes.default.pointColor),
@@ -78,7 +78,7 @@ describe('createDotplotColorFunction', () => {
     const data = fakeRpcData({
       attributes: { identity: new Float32Array([0, 0.25, 0.5, 0.75, 1]) },
     })
-    const fn = createDotplotColorFunction('identity', data, TRACK_COLOR)
+    const fn = createDotplotColorFunction('identity', data, TRACK_COLOR, {})
     const lum = (i: number) => {
       const { r, g, b } = unpack(fn(i))
       return 0.299 * r + 0.587 * g + 0.114 * b
@@ -94,13 +94,13 @@ describe('createDotplotColorFunction', () => {
     const data = fakeRpcData({
       attributes: { identity: new Float32Array([-1]) },
     })
-    const fn = createDotplotColorFunction('identity', data, TRACK_COLOR)
+    const fn = createDotplotColorFunction('identity', data, TRACK_COLOR, {})
     expect(unpack(fn(0))).toMatchObject({ r: 255, g: 0, b: 0 })
   })
 
   test('track paints the assigned track color', () => {
     const data = fakeRpcData({ strands: new Int8Array([1, -1]) })
-    const fn = createDotplotColorFunction('track', data, TRACK_COLOR)
+    const fn = createDotplotColorFunction('track', data, TRACK_COLOR, {})
     // flat: strand, identity and refName all ignored
     expect(fn(0)).toBe(fn(1))
     expect(unpack(fn(0))).toEqual({
@@ -118,7 +118,7 @@ describe('createDotplotColorFunction', () => {
     '%s packs a fully opaque color',
     colorBy => {
       const data = fakeRpcData()
-      const fn = createDotplotColorFunction(colorBy, data, TRACK_COLOR)
+      const fn = createDotplotColorFunction(colorBy, data, TRACK_COLOR, {})
       expect(unpack(fn(0)).a).toBe(255)
     },
   )
@@ -128,7 +128,7 @@ describe('createDotplotColorFunction', () => {
       refNameDict: ['chrX', 'chrY'],
       refNameIds: new Uint32Array([0, 0, 1]),
     })
-    const fn = createDotplotColorFunction('query', data, TRACK_COLOR)
+    const fn = createDotplotColorFunction('query', data, TRACK_COLOR, {})
     expect(fn(0)).toBe(fn(1))
   })
 
@@ -145,8 +145,8 @@ describe('createDotplotColorFunction', () => {
       refNameDict: ['chrY', 'chrX'],
       refNameIds: new Uint32Array([1]),
     })
-    expect(createDotplotColorFunction('query', first, TRACK_COLOR)(0)) //
-      .toBe(createDotplotColorFunction('query', second, TRACK_COLOR)(0))
+    expect(createDotplotColorFunction('query', first, TRACK_COLOR, {})(0)) //
+      .toBe(createDotplotColorFunction('query', second, TRACK_COLOR, {})(0))
   })
 })
 
@@ -189,10 +189,11 @@ describe('computeDotplotColors', () => {
       rpcData,
       colorBy: 'strand',
       trackColor: TRACK_COLOR,
+      attributeRanges: {},
     })
     // feature 0 walks 3 cigar ops, feature 1 walks 1
     expect([...instanceData.instanceFeatureIdx]).toEqual([0, 0, 0, 1])
-    const fn = createDotplotColorFunction('strand', rpcData, TRACK_COLOR)
+    const fn = createDotplotColorFunction('strand', rpcData, TRACK_COLOR, {})
     expect([...colors]).toEqual([fn(0), fn(0), fn(0), fn(1)])
   })
 
@@ -225,9 +226,10 @@ describe('computeDotplotColors', () => {
       rpcData,
       colorBy: 'strand',
       trackColor: TRACK_COLOR,
+      attributeRanges: {},
     })
     expect(colors[0]).toBe(
-      createDotplotColorFunction('strand', rpcData, TRACK_COLOR)(1),
+      createDotplotColorFunction('strand', rpcData, TRACK_COLOR, {})(1),
     )
   })
 })

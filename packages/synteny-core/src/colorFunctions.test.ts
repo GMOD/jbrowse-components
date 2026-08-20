@@ -17,7 +17,6 @@ function inputs(over: Partial<ColorFunctionInputs> = {}): ColorFunctionInputs {
     mateRefNameDict: ['chr1'],
     mateRefNameIds: new Uint32Array([0]),
     attributes: {},
-    attributeRanges: {},
     ...over,
   }
 }
@@ -87,12 +86,14 @@ describe('createComparativeColorFunction', () => {
       data,
       trackColor: '#123456',
       defaultColor: MISSING_VALUE_COLOR,
+      attributeRanges: {},
     })
     const point = createComparativeColorFunction({
       colorBy: 'default',
       data,
       trackColor: '#123456',
       defaultColor: 0xff000000,
+      attributeRanges: {},
     })
     expect(abgrToCssRgba(ribbon(0))).toBe('rgba(255,0,0,1)')
     expect(abgrToCssRgba(point(0))).toBe('rgba(0,0,0,1)')
@@ -104,12 +105,14 @@ describe('createComparativeColorFunction', () => {
         data,
         trackColor: '#123456',
         defaultColor: MISSING_VALUE_COLOR,
+        attributeRanges: {},
       })
       const b = createComparativeColorFunction({
         colorBy,
         data,
         trackColor: '#123456',
         defaultColor: 0xff000000,
+        attributeRanges: {},
       })
       expect(a(0)).toBe(b(0))
     }
@@ -123,7 +126,6 @@ describe('createComparativeColorFunction', () => {
   test('an out-of-domain continuous value stays inside the LUT', () => {
     const data = inputs({
       attributes: { identity: new Float32Array([0, 0.5, 1, 99]) },
-      attributeRanges: { identity: { min: 0, max: 1 } },
       strands: new Int8Array([1, 1, 1, 1]),
       refNameIds: new Uint32Array([0, 0, 0, 0]),
       mateRefNameIds: new Uint32Array([0, 0, 0, 0]),
@@ -133,6 +135,7 @@ describe('createComparativeColorFunction', () => {
       data,
       trackColor: '#123456',
       defaultColor: MISSING_VALUE_COLOR,
+      attributeRanges: {},
     })
     for (const i of [0, 1, 2, 3]) {
       expect(Number.isInteger(fn(i))).toBe(true)
@@ -144,7 +147,6 @@ describe('createComparativeColorFunction', () => {
   test('a missing value paints the missing color, not the ramp bottom', () => {
     const data = inputs({
       attributes: { identity: new Float32Array([-1, 0]) },
-      attributeRanges: { identity: { min: 0, max: 1 } },
       strands: new Int8Array([1, 1]),
       refNameIds: new Uint32Array([0, 0]),
       mateRefNameIds: new Uint32Array([0, 0]),
@@ -154,9 +156,41 @@ describe('createComparativeColorFunction', () => {
       data,
       trackColor: '#123456',
       defaultColor: 0xff000000,
+      attributeRanges: {},
     })
     expect(fn(0)).toBe(MISSING_VALUE_COLOR)
     expect(fn(1)).not.toBe(MISSING_VALUE_COLOR)
+  })
+
+  // The domain an `attribute:<name>` ramp scales to is the CALLER'S, which is
+  // what stops a pan from re-coloring what is already on screen: a fetch's
+  // payload only knows the span of the slice it holds, and the view accumulates
+  // one that settles. Two calls over the same values under two domains have to
+  // answer differently, or the domain is not being read.
+  test('an attribute ramp scales to the domain it is handed', () => {
+    const data = inputs({
+      attributes: { goc: new Float32Array([50]) },
+      strands: new Int8Array([1]),
+      refNameIds: new Uint32Array([0]),
+      mateRefNameIds: new Uint32Array([0]),
+    })
+    const at = (
+      attributeRanges: Record<string, { min: number; max: number }>,
+    ) =>
+      createComparativeColorFunction({
+        colorBy: 'attribute:goc',
+        data,
+        trackColor: '#123456',
+        defaultColor: 0,
+        attributeRanges,
+      })(0)
+    // top of a domain that ends at 50, middle of one that ends at 100
+    expect(at({ goc: { min: 0, max: 50 } })).not.toBe(
+      at({ goc: { min: 0, max: 100 } }),
+    )
+    expect(at({ goc: { min: 0, max: 50 } })).toBe(
+      at({ goc: { min: 0, max: 50 } }),
+    )
   })
 
   // 'reference' is a stacked-view mode each synteny level resolves before it
@@ -166,7 +200,12 @@ describe('createComparativeColorFunction', () => {
       refNameDict: ['chrA'],
       mateRefNameDict: ['chrB'],
     })
-    const args = { data, trackColor: '#123456', defaultColor: 0 }
+    const args = {
+      data,
+      trackColor: '#123456',
+      defaultColor: 0,
+      attributeRanges: {},
+    }
     expect(
       createComparativeColorFunction({ ...args, colorBy: 'reference' })(0),
     ).toBe(createComparativeColorFunction({ ...args, colorBy: 'query' })(0))

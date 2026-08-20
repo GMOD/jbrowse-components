@@ -691,6 +691,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           opacityByIdentity,
           drawLocationMarkers,
           nameOrder: this.paintedChromosomeOrder,
+          attributeRanges: this.view.attributeRanges,
         })
       },
       /**

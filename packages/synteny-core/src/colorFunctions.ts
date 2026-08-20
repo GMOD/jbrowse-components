@@ -140,7 +140,6 @@ export interface ColorFunctionInputs {
   // every numeric per-feature channel by name, which is what a continuous mode
   // indexes. The named presets are aliases into this, not separate arrays.
   attributes: Record<string, Float32Array>
-  attributeRanges: Record<string, AttributeRange>
 }
 
 /**
@@ -159,6 +158,7 @@ export function createComparativeColorFunction({
   trackColor,
   defaultColor,
   nameOrder,
+  attributeRanges,
 }: {
   colorBy: SyntenyColorBy
   data: ColorFunctionInputs
@@ -170,10 +170,19 @@ export function createComparativeColorFunction({
   // Only the display knows it — the assembly's refName list is a session fact,
   // not something in the feature data — so it is passed in rather than derived.
   nameOrder?: readonly string[]
+  // The domain an `attribute:<name>` ramp scales to. A VIEW-level input, like
+  // `nameOrder` and for the same reason: a fetch's payload knows only the span
+  // of the slice it holds, and painting from that re-maps every feature onto
+  // the ramp each time the window rolls over — a ribbon in the middle of the
+  // ramp turns into one at the bottom while the reader is scrolling, without
+  // its value having changed. The view accumulates the span it has seen
+  // (`TrackColorsMixin.attributeRanges`), which only ever widens, and hands it
+  // down here. The named presets carry their own fixed domains and ignore this.
+  attributeRanges: Record<string, AttributeRange>
 }): (index: number) => number {
   // Every continuous mode in one arm, preset or attribute, so the switch below
   // does not grow per measurement.
-  const continuous = resolveContinuousMode(colorBy, data.attributeRanges)
+  const continuous = resolveContinuousMode(colorBy, attributeRanges)
   if (continuous) {
     return makeContinuousColorFunction(continuous, data.attributes)
   }

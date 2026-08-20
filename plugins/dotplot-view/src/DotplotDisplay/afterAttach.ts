@@ -152,6 +152,9 @@ export function doAfterAttach(
       return { result, mismatched }
     },
     commit: ({ result, mismatched }, { fetchKey }) => {
+      // Before the data lands — see the synteny twin: the accumulated ramp
+      // domain has to outlive the payload whose span it was widened by.
+      self.view.observeAttributeRanges(result.attributeRanges)
       self.setRpcData(
         result,
         fetchKey,
