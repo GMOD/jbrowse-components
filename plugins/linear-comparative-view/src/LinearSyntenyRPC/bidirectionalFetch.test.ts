@@ -78,10 +78,14 @@ function run({
   fromQuery = [],
   fromTarget = [],
   targetFetchRegions,
+  queryDisplayed,
 }: {
   fromQuery?: Feature[]
   fromTarget?: Feature[]
   targetFetchRegions?: Region[]
+  // wider than what the query row FETCHED, which is the only place the ribbon
+  // class can be: displayed up there, outside the window asked for
+  queryDisplayed?: Region[]
 }) {
   const calls: Region[][] = []
   const getFeaturesInMultipleRegionsArray = jest.fn(
@@ -99,7 +103,10 @@ function run({
       pluginManager: {} as PluginManager,
       sessionId: 't1',
       adapterConfig: { type: 'PAFAdapter' },
-      queryView,
+      queryView: {
+        ...queryView,
+        displayedRegions: queryDisplayed ?? queryView.displayedRegions,
+      },
       targetView: { ...targetView, fetchRegions: targetFetchRegions },
     }),
   }
@@ -227,4 +234,58 @@ test('an alignment anchored outside the target row s regions is not counted', as
   const { targetOffscreenMates } = (await result).value
 
   expect(targetOffscreenMates.mateRefNameDict).toEqual([])
+})
+
+// The third class the second fetch finds: a query end on a contig the row above
+// IS displaying, merely outside the window it fetched. There is a second
+// endpoint, so this is a ribbon — and it is one no single-axis fetch could have
+// returned, because that fetch is scoped to a query window it is not in.
+test('an alignment whose query end is outside the fetched window becomes a ribbon', async () => {
+  const { result } = run({
+    // displayed is the whole contig; the window fetched is its first tenth
+    queryDisplayed: [region(QUERY_ASM, 'q1', 100000)],
+    targetFetchRegions: [region(TARGET_ASM, 't1')],
+    fromTarget: [
+      alignment({
+        id: 'far',
+        refName: 't1',
+        start: 500,
+        mateRefName: 'q1',
+        mateStart: 50000,
+      }),
+    ],
+  })
+  const { featureIds, refNameDict, starts, targetOffscreenMates } = (
+    await result
+  ).value
+
+  // drawn, once, and turned round: the query axis is where its refName is now
+  expect(featureIds).toEqual(['far'])
+  expect(refNameDict).toEqual(['q1'])
+  expect([...starts]).toEqual([50000])
+  // ...and not also counted as something with nowhere to land
+  expect(targetOffscreenMates.mateRefNameDict).toEqual([])
+})
+
+// Its mate is the end it was anchored on before the flip, which is what the
+// ribbon's far corners are drawn from — swapped one way and not the other is a
+// ribbon running to the wrong place on the wrong row.
+test('a recovered ribbon names the target row as its mate', async () => {
+  const { result } = run({
+    queryDisplayed: [region(QUERY_ASM, 'q1', 100000)],
+    targetFetchRegions: [region(TARGET_ASM, 't1')],
+    fromTarget: [
+      alignment({
+        id: 'far',
+        refName: 't1',
+        start: 500,
+        mateRefName: 'q1',
+        mateStart: 50000,
+      }),
+    ],
+  })
+  const { mateRefNameDict, mateStarts } = (await result).value
+
+  expect(mateRefNameDict).toEqual(['t1'])
+  expect([...mateStarts]).toEqual([500])
 })

@@ -25,6 +25,7 @@ export { flipCigar, swapIndelCigar } from './cigarReorient.ts'
 export { csToCigar } from './csToCigar.ts'
 export { flipCs, forEachCsMismatch, forEachCsOp } from './csOps.ts'
 export type { CsOp } from './csOps.ts'
+export { orientAlignment } from './orientAlignment.ts'
 export { pafIdentity } from './pafIdentity.ts'
 export {
   DELETION_TYPE,

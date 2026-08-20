@@ -244,10 +244,16 @@ contig the lower panel is showing — whose other end is somewhere the upper pan
 is not — is never asked for at all. The same two genomes therefore report
 differently depending on which one you stacked on top.
 
-**Search both rows for alignments** adds that second query. What it finds is
-marked along the lower panel's axis, mirroring the strip described above, and
-clicking one of those marks navigates the **upper** panel. The count in the menu
-item above it covers both directions once this is on.
+**Search both rows for alignments** adds that second query, and what it finds
+splits two ways. An alignment whose other end is on a contig the upper panel is
+displaying — just outside the window it is showing — becomes a ribbon, leaving
+the top of the band towards wherever it goes; the view has always drawn those in
+the other direction, and this is what makes the two directions agree. One whose
+other end is on a contig the upper panel is not displaying at all has no second
+endpoint, so it is marked along the lower panel's axis instead, mirroring the
+strip described above, and clicking one of those marks navigates the **upper**
+panel. The count in the menu item above it covers both directions once this is
+on.
 
 It is off by default: it is a second query per panel pair, and on a whole-genome
 alignment file that is real work rather than bookkeeping.

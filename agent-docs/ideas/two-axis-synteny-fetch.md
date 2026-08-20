@@ -1,6 +1,6 @@
 ---
 name: two-axis-synteny-fetch
-description: Restoring the both-rows synteny fetch. PARTLY SHIPPED 2026-08-19 behind `bidirectionalFetch`, off by default — the second query lands and the class with no second endpoint is marked on the target axis. The blocker this doc recorded (a perspective-stable `syntenyId` for PIF and all-vs-all) turned out not to be one: a disjointness predicate replaces the join. What is left is the RIBBON half, and this doc is now about that.
+description: Restoring the both-rows synteny fetch. SHIPPED 2026-08-19 behind `bidirectionalFetch`, off by default: the second query lands, its ribbons are flipped into the query perspective and drawn, and the class with no second endpoint is marked on the target axis. The blocker this doc recorded — a perspective-stable `syntenyId` for PIF and all-vs-all — turned out not to be one, and the rest is kept for the adapter behaviour it names.
 ---
 
 # Fetch both synteny axes again, joined on `syntenyId`
@@ -62,10 +62,18 @@ pitched and is no longer specific enough to justify it.
 
 **2026-08-19: the second fetch landed** behind `bidirectionalFetch` (a view
 property, off by default, a fetch-key input). `executeSyntenyFeaturesAndPositions`
-queries `v2.fetchRegions` alongside `v1.fetchRegions` and feeds what comes back
-to `targetOffscreenMates`, the mirror of
-[offscreen-synteny-mates](offscreen-synteny-mates.md)'s collector, drawn as a
-strip of marks on the TARGET axis with a click that navigates the row ABOVE.
+queries `v2.fetchRegions` alongside `v1.fetchRegions` and splits what comes back
+three ways by where the QUERY end lands:
+
+| query end | what it is | what happens |
+| --- | --- | --- |
+| inside `v1.fetchRegions` | the first fetch already returned it | dropped |
+| on a displayed v1 contig, outside that window | a ribbon no single-axis fetch could return | `flipSyntenyFeature` turns it round and it joins the pile |
+| on a contig v1 is not displaying | no second endpoint exists | `targetOffscreenMates`, marked on the target axis |
+
+The marks are the mirror of
+[offscreen-synteny-mates](offscreen-synteny-mates.md)'s collector, drawn on the
+TARGET axis with a click that navigates the row ABOVE.
 
 **The join was never needed.** Everything below about `syntenyId` assumed the two
 fetches have to be deduped against each other. They do not: they can be made
@@ -97,16 +105,26 @@ orients the row to it, and `orientAlignment` swaps the indel CIGAR
 (`swapIndelCigar` forward, `flipCigar` reverse). All-vs-all indexes
 `for (const flip of [true, false])`. Nothing in the adapters had to change.
 
-## What is left: the ribbon half
+## The flip, which is the part that can be wrong quietly
 
-An alignment anchored in the v2 window whose query end is on a v1 contig that IS
-displayed, merely outside the window, is a ribbon this pass drops. Recovering it
-needs the perspective flip — swap the ends and re-orient the CIGAR — and then
-merging into the same `decorated` array the query fetch fills. Two silent
-failure modes to test against, which is why it was not taken in the same pass:
-a mis-flipped CIGAR paints indels in the wrong place and looks plausible, and a
-hole in the predicate draws a ribbon twice at doubled alpha (the artifact
-`markReciprocalDuplicates` exists to remove).
+`flipSyntenyFeature` swaps the two ends and re-orients the CIGAR through
+`orientAlignment` — the same transform the adapters apply to a file row, moved
+to `@jbrowse/cigar-utils` so there is one of it. Both halves of it are their own
+inverse (`swapIndelCigar` swaps I against D, `flipCigar` reverses the ops as
+well), which is what lets it convert in either direction, and
+`flipSyntenyFeature.test.ts` pins that by flipping twice.
+
+Carrying the CIGAR across unchanged would paint every indel wedge on the wrong
+side of its block, which looks entirely plausible — as would a hole in the
+predicate, which draws one ribbon twice at doubled alpha (the artifact
+`markReciprocalDuplicates` exists to remove). Both have a sabotage in
+`bidirectionalFetch.test.ts`.
+
+**What a recovered ribbon looks like.** Its query end is at least a pan buffer
+off the edge by construction, so it draws as the steep sliver leaving the top of
+the band rather than as a full ribbon — which is exactly what this view has
+always drawn in the other direction, for an alignment anchored in the query
+window whose target end is far away. The asymmetry was the bug.
 
 ## The blocker as it was recorded — kept because it names real adapter behaviour
 
@@ -175,17 +193,24 @@ So the case for this is fetch **completeness**. The refName class dissolving is
 a bonus, and pitching it the other way round buys an architecture change with a
 bug that has a cheaper fix.
 
-## Costs to weigh
+## Costs, and which of them the shipped shape still pays
 
-- Two fetches per level instead of one, against a whole-genome PAF.
-- The dedupe moves from `f.id()` to `syntenyId`, which has to hold across
-  every adapter, not just the three that emit a joinable one today — and for PIF
-  that means a format change old files won't have.
-- **A wrong join is worse than no join**, and it fails silently in the direction
-  that looks fine. Two rows that should have merged draw one ribbon twice, which
-  is exactly the doubled-alpha artifact `markReciprocalDuplicates` exists to
-  remove ("the polygons are oddly darker than expected"); nothing errors, the
-  band just composites at 0.36 where every other figure sits at 0.2.
+- **Two fetches per level instead of one, against a whole-genome PAF.** Still
+  true, and the reason the setting is off by default. The in-memory adapters
+  share one `createSharedSetup` download, so there the second is a walk over
+  records the first already parsed; an indexed one pays a real second query,
+  scoped to the target row's own window.
+- ~~The dedupe moves from `f.id()` to `syntenyId`~~ — **not paid.** The two
+  fetches are made disjoint by where the query end lands, so `f.id()` still
+  dedupes within each and nothing compares ids across them. This is the whole
+  reason the PIF format change below is not needed.
+- ~~A wrong join is worse than no join~~ — **the failure mode moved.** There is
+  no join to mismatch; what can be wrong is the predicate, and it is tested
+  against the same region set the first fetch was handed. The doubled-alpha
+  artifact it would have produced ("the polygons are oddly darker than
+  expected") is what `bidirectionalFetch.test.ts`'s no-double-draw case exists
+  for.
 - Feature ids are already not comparable across a tiered PIF's two tiers
-  (`setRpcData`'s comment, and `lodMode` on the resolve RPC). A cross-perspective
-  key has to survive that too, or it reintroduces the same trap one level down.
+  (`setRpcData`'s comment, and `lodMode` on the resolve RPC). **Not paid
+  either**, for the same reason: both fetches run at one `lodMode`, and no id
+  crosses between them.

@@ -1,8 +1,7 @@
-import { pafIdentity } from '@jbrowse/cigar-utils'
+import { orientAlignment, pafIdentity } from '@jbrowse/cigar-utils'
 import { fetchAndMaybeUnzip, updateStatus } from '@jbrowse/core/util'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { orientAlignment } from '../orientAlignment.ts'
 import {
   collectLines,
   getOrCreate,

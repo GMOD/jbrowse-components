@@ -32,6 +32,7 @@ import {
   clipSyntenyFeature,
 } from './clipSyntenyFeature.ts'
 import { createOffscreenMateCollector } from './collectOffscreenMates.ts'
+import { flipSyntenyFeature } from './flipSyntenyFeature.ts'
 import { compareDrawOrder, drawTier } from './syntenyDrawOrder.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
@@ -198,7 +199,65 @@ export async function executeSyntenyFeaturesAndPositions({
   // label; otherwise the loading overlay keeps whatever the fetch phase last
   // showed while a large PAF sorts, which reads as a stuck bar.
   statusCallback?.('Preparing synteny features')
-  const deduped = dedupe(allFeatures, f => f.id())
+
+  /**
+   * What the second fetch found, split three ways by WHERE THE QUERY END LANDS.
+   *
+   * The adapter returns these anchored on the target row, which is the opposite
+   * of what everything downstream assumes, so each class is decided from the
+   * mate — the query end — and only the one that becomes a ribbon is turned
+   * round.
+   *
+   * - inside the regions the FIRST fetch asked for → that fetch already
+   *   returned it, drop. This is the whole of the dedupe between the two, and
+   *   it needs no shared key: PIF and all-vs-all give one record's two
+   *   perspectives unrelated ids on purpose, and a join that silently
+   *   mismatches draws one ribbon twice at doubled alpha.
+   * - on a query contig the row above IS displaying, outside that window → a
+   *   real ribbon the query-axis fetch could not have seen, so it is flipped
+   *   into the query perspective and joins the pile below. Its query end is at
+   *   least a pan buffer off the edge, so what it draws is the steep sliver
+   *   leaving the top of the band — the same picture this view has always drawn
+   *   in the other direction, for an alignment anchored in the query window
+   *   whose target end is far away.
+   * - on a contig the row above is not displaying at all → there is no second
+   *   endpoint to run a ribbon to, so it is counted and marked on the target
+   *   axis: the mirror of `offscreenMates` below.
+   */
+  const targetOffscreenMates = createOffscreenMateCollector(v2Index)
+  const flippedRibbons: Feature[] = []
+  if (targetAxisFeatures) {
+    // the FETCHED window, not the displayed regions: what makes the two sets
+    // disjoint is what the first fetch asked the adapter for
+    const v1FetchedIndex = buildBpRegionIndex({
+      bpPerPx: v1.bpPerPx,
+      displayedRegions: v1.fetchRegions,
+    })
+    for (const f of dedupe(targetAxisFeatures, f => f.id())) {
+      const refName = f.get('refName')
+      const mate = getMate(f)
+      if (!mate || !v2RefNames.has(refName)) {
+        continue
+      }
+      const lo = Math.min(mate.start, mate.end)
+      const hi = Math.max(mate.start, mate.end)
+      if (!v1RefNames.has(mate.refName)) {
+        targetOffscreenMates.add(
+          refName,
+          f.get('start'),
+          f.get('end'),
+          mate.refName,
+        )
+      } else if (!findRegionEntry(v1FetchedIndex, mate.refName, lo, hi)) {
+        const flipped = flipSyntenyFeature(f)
+        if (flipped) {
+          flippedRibbons.push(flipped)
+        }
+      }
+    }
+  }
+
+  const deduped = [...dedupe(allFeatures, f => f.id()), ...flippedRibbons]
 
   // Decorate with a deterministic total order so the worker's output never
   // depends on the adapter's block-arrival order — `compareDrawOrder` is the
@@ -242,44 +301,6 @@ export async function executeSyntenyFeaturesAndPositions({
     }
   }
   decorated.sort(compareDrawOrder)
-
-  /**
-   * The mirror class, and the whole reason the second fetch exists: an
-   * alignment anchored on a contig THIS row is displaying, whose query end is
-   * on a contig the row above is not. Counted per contig and placed on the
-   * TARGET axis, which is the only axis it has.
-   *
-   * The query-axis fetch cannot see one of these — it asks for v1 regions —
-   * so unlike `offscreenMates` above, no amount of bookkeeping in the decorate
-   * loop recovers it. That asymmetry is what made a synteny view's answer
-   * depend on which genome the user happened to stack on top.
-   *
-   * NO JOIN AGAINST THE FIRST FETCH, and none needed. An alignment whose query
-   * end lands on a displayed v1 contig is either already drawn or is the ribbon
-   * class this pass does not yet claim, and either way it is dropped here — so
-   * the two fetches contribute disjoint sets by construction, and nothing
-   * depends on `syntenyId` meaning the same thing from both perspectives (PIF
-   * and all-vs-all give one record's two rows unrelated ids on purpose).
-   *
-   * Deduped for the same reason the first fetch is: adjacent fetch regions
-   * return a block that straddles them twice, and here that would inflate a
-   * count rather than draw a ribbon twice.
-   */
-  const targetOffscreenMates = createOffscreenMateCollector(v2Index)
-  if (targetAxisFeatures) {
-    for (const f of dedupe(targetAxisFeatures, f => f.id())) {
-      const refName = f.get('refName')
-      const mate = getMate(f)
-      if (mate && v2RefNames.has(refName) && !v1RefNames.has(mate.refName)) {
-        targetOffscreenMates.add(
-          refName,
-          f.get('start'),
-          f.get('end'),
-          mate.refName,
-        )
-      }
-    }
-  }
 
   const count = decorated.length
   // cumBp (bpBefore + bpOffset, no padding) is whole-assembly cumulative-bp,

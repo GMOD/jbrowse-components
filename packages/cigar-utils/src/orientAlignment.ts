@@ -1,9 +1,6 @@
-import {
-  csToCigar,
-  flipCigar,
-  flipCs,
-  swapIndelCigar,
-} from '@jbrowse/cigar-utils'
+import { flipCigar, swapIndelCigar } from './cigarReorient.ts'
+import { flipCs } from './csOps.ts'
+import { csToCigar } from './csToCigar.ts'
 
 // Resolve a PAF row's alignment detail into the perspective the view is anchored
 // on. `flip` is set when viewing the query assembly. A cg CIGAR is used when
