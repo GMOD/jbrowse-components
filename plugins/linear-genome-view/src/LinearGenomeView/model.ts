@@ -1421,38 +1421,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * Place the viewport by the pair of PIXEL quantities it used to be stored
-       * as. Prefer `setWindow`: pixels mean nothing without the width they were
-       * measured at, so a round trip through here is only exact while the width
-       * holds still. Kept for callers that genuinely have pixels — a wheel
-       * gesture, a rubberband — and for reading old snapshots.
-       */
-      setNewView(bpPerPx: number, offsetPx: number) {
-        this.zoomTo(bpPerPx)
-        this.scrollTo(offsetPx)
-      },
-
-      /**
-       * #action
-       * Place the viewport by the pair it is actually STORED as: the window's
-       * width and left edge, both in bp. `setNewView`'s bp-space twin, and the
-       * right one for anything that captures a viewport and puts it back later
-       * (an Undo, a saved location) — those two moments can be a window resize
-       * apart, and this pair survives one where a pixel pair does not.
-       *
-       * Still clamped, by the same zoom and scroll limits as every other mover:
-       * the regions may have changed under it, and a window the new set can't
-       * hold is not restorable however it was spelled.
-       */
-      setWindow(windowWidthBp: number, windowStartBp: number) {
-        // via zoomTo (not a bare assignment) for its clamp; `width` cancels, so
-        // the bp width in is the bp width out at whatever width is current
-        this.zoomTo(windowWidthBp / self.width)
-        this.scrollToBp(windowStartBp)
-      },
-
-      /**
-       * #action
        */
       horizontallyFlip() {
         self.displayedRegions = cast(
@@ -2523,9 +2491,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setCoarseDynamicBlocks(blocks: BlockSet, bpPerPx: number) {
         // Consumers diff the coarse blocks by reference (the alignments and
         // wiggle fetch autoruns), so assigning an equivalent array would make
-        // them refetch. moveTo flushes these on a discrete jump and the
-        // debounced autorun then fires once more with the same blocks — that
-        // follow-up has to cost nothing. A block's key encodes its
+        // them refetch. `settleCoarseBlocks` flushes these on a discrete jump
+        // and the debounced autorun then fires once more with the same blocks —
+        // that follow-up has to cost nothing. A block's key encodes its
         // assembly/refName/start/end, so keys are enough to compare.
         const next = blocks.contentBlocks
         const same =
@@ -2550,16 +2518,78 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       moveTo(start?: BpOffset, end?: BpOffset) {
         moveTo(self, start, end)
-        // A jump to a location is discrete, so there is nothing to coalesce.
-        // Leaving it to the debounced coarse autorun leaves the location box —
-        // and every other coarse consumer — on the previous locus for up to
-        // 500ms after the view has already moved, which reads as a navigation
-        // that didn't happen. Continuous pan and zoom don't come through here,
-        // so this adds no per-frame work; the flush is idempotent, so the
-        // autorun's own follow-up run is a no-op.
+        this.settleCoarseBlocks()
+      },
+
+      /**
+       * #action
+       * Bring the coarse blocks to the viewport as it stands now, for a
+       * placement that JUMPED rather than travelled.
+       *
+       * The coarse blocks are a 500ms throttle, and every consumer trades
+       * freshness for not recomputing per animation frame — the location box,
+       * canvas's on-screen feature set, and the two per-bp scans behind
+       * `settledDynamicBlocks`. That trade is only sound while the answer is a
+       * few frames old. **A jump makes it unrelated instead**, because there is
+       * nothing to coalesce: the viewport left behind is not an approximation of
+       * the new one, it is a different place. Unsettled, the location box reads
+       * as a navigation that didn't happen, and wiggle's autoscale domain is
+       * computed over the window the user just left — measured at `[0,200]`
+       * against a correct `[0,300]` when a 40bp coarse window survived a jump to
+       * 4040bp on screen. Only the per-region fetch moving to the leading edge
+       * made that reachable: at 600ms the data never landed inside the hole.
+       *
+       * **The continuous paths deliberately do not come through here.** The
+       * spring zoom writes through `zoomTo` per frame and a drag through
+       * `scrollTo`, so this adds no per-frame work; the settle is idempotent
+       * (`setCoarseDynamicBlocks` compares block keys), so the debounced
+       * autorun's own follow-up run costs nothing.
+       *
+       * Nothing makes a new discrete placer call it. `index.test.ts` §"a jump
+       * settles the coarse blocks" is the list, on both sides.
+       */
+      settleCoarseBlocks() {
         if (self.initialized) {
           self.setCoarseDynamicBlocks(self.dynamicBlocks, self.bpPerPx)
         }
+      },
+
+      /**
+       * #action
+       * Place the viewport by the pair of PIXEL quantities it used to be stored
+       * as. Prefer `setWindow`: pixels mean nothing without the width they were
+       * measured at, so a round trip through here is only exact while the width
+       * holds still. Kept for callers that genuinely have pixels — a wheel
+       * gesture, a rubberband — and for reading old snapshots.
+       *
+       * Down here beside `moveTo` rather than with `zoomTo`/`scrollTo`, because
+       * it is a jump and so has to settle the coarse blocks, which reads
+       * `dynamicBlocks` — declared after that block.
+       */
+      setNewView(bpPerPx: number, offsetPx: number) {
+        self.zoomTo(bpPerPx)
+        self.scrollTo(offsetPx)
+        this.settleCoarseBlocks()
+      },
+
+      /**
+       * #action
+       * Place the viewport by the pair it is actually STORED as: the window's
+       * width and left edge, both in bp. `setNewView`'s bp-space twin, and the
+       * right one for anything that captures a viewport and puts it back later
+       * (an Undo, a saved location) — those two moments can be a window resize
+       * apart, and this pair survives one where a pixel pair does not.
+       *
+       * Still clamped, by the same zoom and scroll limits as every other mover:
+       * the regions may have changed under it, and a window the new set can't
+       * hold is not restorable however it was spelled.
+       */
+      setWindow(windowWidthBp: number, windowStartBp: number) {
+        // via zoomTo (not a bare assignment) for its clamp; `width` cancels, so
+        // the bp width in is the bp width out at whatever width is current
+        self.zoomTo(windowWidthBp / self.width)
+        self.scrollToBp(windowStartBp)
+        this.settleCoarseBlocks()
       },
 
       /**

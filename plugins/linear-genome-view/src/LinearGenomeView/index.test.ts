@@ -3039,6 +3039,113 @@ describe('coarse dynamic blocks', () => {
   })
 })
 
+// `settleCoarseBlocks` — the half `settledDynamicBlocks` cannot cover. That
+// getter answers "the coarse blocks do not exist yet"; these answer "they exist
+// and describe somewhere else". A jump is not a stale approximation of the new
+// viewport, so every discrete placer settles them, and the continuous paths
+// must not or the 500ms throttle stops throttling.
+describe('a jump settles the coarse blocks', () => {
+  function makeView() {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions(volvoxDisplayedRegions)
+    return model
+  }
+
+  const keys = (blocks: { key: string }[]) => blocks.map(b => b.key)
+
+  // Every placer that jumps. A new one belongs in this list AND in
+  // `settleCoarseBlocks`'s callers — nothing but this test connects the two.
+  const jumps: [string, (model: LGV) => void][] = [
+    [
+      'setNewView',
+      model => {
+        model.setNewView(5, 0)
+      },
+    ],
+    [
+      'setWindow',
+      model => {
+        model.setWindow(9000, 12_000)
+      },
+    ],
+    [
+      'moveTo',
+      model => {
+        model.moveTo(
+          { refName: 'ctgA', index: 0, offset: 1000, start: 0, end: 50000 },
+          { refName: 'ctgA', index: 0, offset: 2000, start: 0, end: 50000 },
+        )
+      },
+    ],
+  ]
+
+  test.each(jumps)('%s brings them to the new viewport', (_name, jump) => {
+    const model = makeView()
+    // the debounced autorun has not run, so nothing is settled yet
+    expect(model.coarseDynamicBlocks).toHaveLength(0)
+
+    jump(model)
+
+    expect(keys(model.coarseDynamicBlocks)).toEqual(
+      keys(model.dynamicBlocks.contentBlocks),
+    )
+    expect(model.coarseBpPerPx).toBe(model.bpPerPx)
+  })
+
+  // The regression in the terms it was found in: a bigwig track's autoscale
+  // domain is computed over `settledDynamicBlocks`, and a jump that left a 40bp
+  // coarse window standing over 4040bp on screen scaled every bar by 200/300.
+  // The fetch only started landing inside that window once it moved to the
+  // leading edge.
+  test.each(jumps)('%s leaves no per-bp scan on the old window', (_n, jump) => {
+    const model = makeView()
+    // settle at the starting viewport first, so the coarse blocks are non-empty
+    // and `settledDynamicBlocks` cannot fall through on emptiness alone
+    model.setCoarseDynamicBlocks(model.dynamicBlocks, model.bpPerPx)
+    const before = keys(model.settledDynamicBlocks)
+
+    jump(model)
+
+    expect(keys(model.settledDynamicBlocks)).toEqual(
+      keys(model.dynamicBlocks.contentBlocks),
+    )
+    expect(keys(model.settledDynamicBlocks)).not.toEqual(before)
+  })
+
+  // The other half, and the reason this is not simply "settle on every write":
+  // the spring zoom writes through `zoomTo` per frame and a drag through
+  // `scrollTo`, and settling there would recompute every coarse consumer per
+  // frame — which is the cost the coarse blocks exist to avoid.
+  const gestures: [string, (model: LGV) => void][] = [
+    [
+      'zoomTo',
+      model => {
+        model.zoomTo(model.bpPerPx * 2)
+      },
+    ],
+    [
+      'scrollTo',
+      model => {
+        model.scrollTo(model.offsetPx + 200)
+      },
+    ],
+  ]
+
+  test.each(gestures)('%s leaves them alone', (_name, gesture) => {
+    const model = makeView()
+    model.setCoarseDynamicBlocks(model.dynamicBlocks, model.bpPerPx)
+    const settled = model.coarseDynamicBlocks
+
+    gesture(model)
+
+    expect(model.coarseDynamicBlocks).toBe(settled)
+  })
+})
+
 describe('scalebar coordinate labels', () => {
   function makeView(regions: { refName: string; end: number }[]) {
     const { Session, LinearGenomeModel } = initialize()
