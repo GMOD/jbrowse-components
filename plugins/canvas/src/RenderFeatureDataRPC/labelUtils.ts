@@ -107,27 +107,19 @@ const SELF_LABELING_GLYPHS: Record<GlyphType, boolean> = {
 // float without reserving); the name is the feature's own name/id, never a
 // config-jexl slot, so this pass stays jexl-free.
 //
-// Answers a BOOLEAN rather than writing a height, and that is the whole point.
-// The row's height is the display mode's resolved label font size, and the
-// worker is deliberately mode-agnostic (so a compact toggle never refetches), so
-// the worker cannot know it. It used to write `height + LABEL_FONT_SIZE` into
-// `totalLayoutHeight`, which the main thread then scaled by HEIGHT_MULTIPLIERS
-// along with everything else — but the label is drawn at LABEL_FONT_MULTIPLIERS,
-// which is deliberately gentler, so the reserved slot came out smaller than the
-// text: 6.6px against 9.35px in compact, 3.3px against 7.7px in superCompact.
-// `below` labels lay across the next transcript, and the shortfall accumulated
-// down a gene's stack.
-//
-// No constant could fix that in the worker: clearing the drawn label in every
-// mode needs a reservation of `LABEL_FONT_SIZE × max(L/m)` = 2.33 ×, which is
-// 2.33 × too much in normal mode. So the row is COUNTED here and SPENT on the
+// Answers a BOOLEAN rather than a height, and that is the whole point. The row's
+// height is the display mode's resolved label font size, which the worker is
+// deliberately mode-agnostic about (so a compact toggle never refetches). No
+// constant works either: a reservation that clears the drawn label in every mode
+// is `LABEL_FONT_SIZE × max(labelMultiplier / heightMultiplier)` = 2.33×, which
+// is 2.33× too much in normal mode. So the row is COUNTED here and SPENT on the
 // main thread, where the mode is known (see `labelRowsAbove` on FeatureLayout).
 //
 // The same base-vs-drawn mismatch on the HORIZONTAL axis (baked `textWidth` at
-// LABEL_FONT_SIZE vs the narrower drawn text) is handled the other way, by
-// converting at the point of use (`renderedTextWidth`) — a width is one multiply
-// where it is read, while this height is folded into a running Y offset that
-// every following transcript inherits.
+// LABEL_FONT_SIZE vs the narrower drawn text) is converted at the point of use
+// (`renderedTextWidth`) instead — a width is one multiply where it is read,
+// while this height folds into a running Y offset every following transcript
+// inherits.
 export function reservesBelowLabelRow(args: {
   feature: Feature
   config: DisplayConfig

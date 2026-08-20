@@ -190,7 +190,6 @@ export function layoutChild(child: Feature, args: LayoutArgs): FeatureLayout {
     glyphType: 'Box',
     y: 0,
     height,
-    totalLayoutHeight: height,
     children: [],
   }
 }
@@ -214,7 +213,6 @@ export function layoutContainerGlyph(
     glyphType,
     y: 0,
     height: heightPx,
-    totalLayoutHeight: heightPx,
     children,
   }
 }

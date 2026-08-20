@@ -42,7 +42,6 @@ describe('sortByPosition', () => {
       glyphType: 'Box' as const,
       y: 0,
       height: 10,
-      totalLayoutHeight: 10,
       children: [],
     } satisfies FeatureLayout
   }

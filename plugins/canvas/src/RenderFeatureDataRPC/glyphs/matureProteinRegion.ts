@@ -101,7 +101,6 @@ export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
   for (const [i, child] of sortedChildren.entries()) {
     child.y = i * rowHeight + padding
     child.height = boxHeight
-    child.totalLayoutHeight = rowHeight
     // i products above this one, each having spent a label row
     child.labelRowsAbove = below ? i : 0
     child.ownsLabelRow = below
@@ -112,7 +111,6 @@ export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
     glyphType: 'MatureProteinRegion',
     y: 0,
     height: totalHeight,
-    totalLayoutHeight: totalHeight,
     children: sortedChildren,
     // propagates to the containing gene's row (and to this feature's own
     // flatbush extent when the CDS is top-level)

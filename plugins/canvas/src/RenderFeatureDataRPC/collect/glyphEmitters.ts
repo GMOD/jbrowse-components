@@ -35,6 +35,7 @@ import {
 } from './glyphColors.ts'
 import { aminoAcidsByFeature, aminoAcidsInRange } from './peptideMapping.ts'
 
+import type { TranscriptCoords } from '../rpcTypes.ts'
 import type { FeatureLayout, GlyphType } from '../types.ts'
 import type {
   Collector,
@@ -154,40 +155,21 @@ function processTranscriptLayout(
   // processFeatureRecord, so self-registering would double-draw the label and
   // shadow the feature's own mouseover tooltip. Mirrors emitBox's isRoot guard.
   if (!isRoot) {
-    const transcriptStart = transcriptFeature.get('start')
-    const transcriptEnd = transcriptFeature.get('end')
-    const transcriptType = transcriptFeature.get('type')
-    // Config-jexl name (falling back to plain name/id) so a custom `labels.name`
-    // drives transcript labels too, matching the mature-protein/repeat subparts.
-    const transcriptName = resolveSubfeatureLabel(transcriptFeature, ctx)
-
-    collector.subfeatureInfos.push({
-      kind: 'subfeature',
-      featureId: transcriptFeature.id(),
-      parentFeatureId: parentFeature.id(),
-      type: transcriptType,
-      startBp: transcriptStart,
-      endBp: transcriptEnd,
-      topPx: transcriptTopPx,
-      bottomPx: transcriptTopPx + transcript.totalLayoutHeight,
-      labelRowsAbove,
-      // when this transcript reserved a label row, the row falls below its body
-      // and the hit box covers it
-      ownsLabelRow: transcript.ownsLabelRow,
-      displayLabel: transcriptName,
-      transcript: transcriptCoords(transcript),
-    })
-
-    emitSubfeatureLabel(
+    registerSubfeature(
       {
-        featureId: transcriptFeature.id(),
-        displayLabel: transcriptName,
-        featureHeight: transcript.height,
-        minX: transcriptStart,
-        maxX: transcriptEnd,
-        topY: transcriptTopPx,
-        labelRowsAbove,
+        feature: transcriptFeature,
         parentFeatureId: parentFeature.id(),
+        type: transcriptFeature.get('type'),
+        topPx: transcriptTopPx,
+        heightPx: transcript.height,
+        labelRowsAbove,
+        // when this transcript reserved a label row, the row falls below its
+        // body and the hit box covers it
+        ownsLabelRow: transcript.ownsLabelRow,
+        // config-jexl name (falling back to plain name/id) so a custom
+        // `labels.name` drives transcript labels too
+        displayLabel: resolveSubfeatureLabel(transcriptFeature, ctx),
+        transcript: transcriptCoords(transcript),
       },
       ctx,
       collector,
@@ -209,24 +191,39 @@ function processTranscriptLayout(
 
 // Register a subfeature as both a hoverable/selectable hit-test entry and (when
 // subfeatureLabels is enabled) a floating label, keyed by the child's own
-// coordinates. Shared by the mature-protein and repeat-region glyph paths so the
-// recorded metadata can't drift between them.
+// coordinates.
+//
+// THE registration path — every glyph that registers a child goes through it, so
+// the recorded metadata cannot drift between them. It used to be shared by the
+// mature-protein and repeat-region paths only, while the transcript and box
+// paths each wrote the same two calls out by hand; `emitBox`'s copy is the one
+// that dropped `ownsLabelRow` and left a leaf child's hit box a label row short
+// of the row the packer had reserved. A field added here now reaches every
+// caller instead of three out of four.
+//
+// `transcript` is what the transcript path adds and the others have no answer
+// for: the exon/CDS geometry the hover needs to name a c./n. position.
 function registerSubfeature(
   args: {
     feature: Feature
     parentFeatureId: string
-    type: string
+    // `string | undefined` like the `HitItemBase` field it fills, not the
+    // `featureType()` spelling the other callers use — a glyph that resolved by
+    // type always has one, but the context menu's noun fallback keys on
+    // undefined, and `''` would defeat it.
+    type: string | undefined
     topPx: number
     heightPx: number
     labelRowsAbove: number
     ownsLabelRow?: boolean
     displayLabel: string | undefined
+    transcript?: TranscriptCoords
   },
   ctx: RenderContext,
   collector: Collector,
 ) {
   const { feature, parentFeatureId, type, topPx, heightPx, displayLabel } = args
-  const { labelRowsAbove, ownsLabelRow } = args
+  const { labelRowsAbove, ownsLabelRow, transcript } = args
   const startBp = feature.get('start')
   const endBp = feature.get('end')
   collector.subfeatureInfos.push({
@@ -241,6 +238,7 @@ function registerSubfeature(
     labelRowsAbove,
     ownsLabelRow,
     displayLabel,
+    transcript,
   })
   emitSubfeatureLabel(
     {

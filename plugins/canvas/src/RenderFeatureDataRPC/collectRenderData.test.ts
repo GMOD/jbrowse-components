@@ -44,7 +44,6 @@ function boxLayout(feature: Feature): FeatureLayout {
     glyphType: 'Box',
     y: 0,
     height: 10,
-    totalLayoutHeight: 10,
     children: [],
   }
 }
@@ -90,7 +89,6 @@ function twoExonTranscript() {
       glyphType: 'ProcessedTranscript' as const,
       y: 0,
       height: 10,
-      totalLayoutHeight: 10,
       children: [boxLayout(cds1), boxLayout(cds2)],
     },
   }
@@ -182,7 +180,6 @@ describe('collectRenderData peptide overlay', () => {
         glyphType: 'ProcessedTranscript',
         y: 0,
         height: 10,
-        totalLayoutHeight: 10,
         children: [boxLayout(cdsA), boxLayout(cdsDup)],
       },
       { peptideDataMap: new Map([['tx1', { protein: 'MFK' }]]) },
@@ -234,7 +231,6 @@ function polyproteinLayout(
     glyphType: 'MatureProteinRegion',
     y: 0,
     height: regions.length * 10,
-    totalLayoutHeight: regions.length * 10,
     children: matures.map((m, i) => ({ ...boxLayout(m), y: i * 10 })),
   }
   return {
@@ -243,7 +239,6 @@ function polyproteinLayout(
       glyphType: 'Subfeatures' as const,
       y: 0,
       height: matureLayout.height,
-      totalLayoutHeight: matureLayout.height,
       children: [matureLayout],
     },
   }
@@ -459,7 +454,6 @@ function geneWithTwoTranscripts() {
       glyphType: 'ProcessedTranscript' as const,
       y: topPx,
       height: 10,
-      totalLayoutHeight: 10,
       children: [
         { ...boxLayout(cds1), y: 0 },
         { ...boxLayout(cds2), y: 0 },
@@ -480,7 +474,6 @@ function geneWithTwoTranscripts() {
     glyphType: 'Subfeatures' as const,
     y: 0,
     height: 25,
-    totalLayoutHeight: 25,
     children: [tx1, tx2],
   }
 }
@@ -535,14 +528,12 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
       glyphType: 'Subfeatures',
       y: 0,
       height: 25,
-      totalLayoutHeight: 25,
       children: [
         {
           feature: mRNA,
           glyphType: 'ProcessedTranscript',
           y: 0,
           height: 10,
-          totalLayoutHeight: 10,
           children: [{ ...boxLayout(cds), y: 0 }],
         },
         { ...boxLayout(leaf), y: 15 },
@@ -584,7 +575,6 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
       glyphType: 'Subfeatures',
       y: 0,
       height: 10,
-      totalLayoutHeight: 10,
       children: [{ ...boxLayout(leaf), y: 0, ownsLabelRow: true }],
     }
     const result = collect(layout, {
@@ -629,14 +619,12 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
       glyphType: 'Subfeatures',
       y: 0,
       height: 20,
-      totalLayoutHeight: 20,
       children: [
         {
           feature: child,
           glyphType: 'Subfeatures',
           y: 0,
           height: 20,
-          totalLayoutHeight: 20,
           children: [{ ...boxLayout(grandchild), y: 10 }],
         },
       ],

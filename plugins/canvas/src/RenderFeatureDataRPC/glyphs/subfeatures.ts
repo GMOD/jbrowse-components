@@ -467,7 +467,6 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     glyphType: 'Subfeatures',
     y: 0,
     height: totalHeightPx,
-    totalLayoutHeight: totalHeightPx,
     children,
     // the gene's own row has to grow by every label row it contains; the main
     // thread spends them in bodyHeightPx, which is the one place both the fit

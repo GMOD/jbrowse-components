@@ -16,10 +16,10 @@ export interface FeatureLayout {
   // (`computeLaidOutData`) shifts it to its final track-relative value.
   y: number
   // height is config-driven (`config.featureHeight * heightMultiplier`),
-  // not bpPerPx-dependent.
+  // not bpPerPx-dependent. Label rows are NOT in it — they are counted in
+  // `labelRows` below and spent on the main thread, which is the only side that
+  // knows the display mode's label font size.
   height: number
-  // height + label space (label visibility depends on config, not bpPerPx).
-  totalLayoutHeight: number
   children: FeatureLayout[]
   // How many `below` subfeature-label rows are stacked ABOVE this layout inside
   // its parent, and (on a container) how many it contains in total.
