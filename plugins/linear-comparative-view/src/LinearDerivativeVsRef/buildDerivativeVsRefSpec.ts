@@ -292,8 +292,14 @@ export function buildDerivativeVsRefSpec(
       assemblyName: trackAssembly,
     })),
   )
-  // Size the reference panel from the regions it actually draws, so the merging
-  // and start-clamping gatherOverlaps applies is reflected exactly.
+  // Size the reference panel from the regions it actually draws rather than from
+  // the segments, so the clamp above and the merge below are both reflected
+  // exactly. `gatherOverlaps` merges per refName at its own 5 kb-per-side
+  // default on top of `windowSize`, so two visits to one chromosome up to 12 kb
+  // apart come back as one region spanning the reference between them — which is
+  // the panel a reader of a fold-back wants, and is why the padding is left at
+  // the default rather than zeroed the way a caller that has baked its own in
+  // normally would.
   const refLen = lgvRegions.reduce((a, r) => a + r.end - r.start, 0)
 
   return {

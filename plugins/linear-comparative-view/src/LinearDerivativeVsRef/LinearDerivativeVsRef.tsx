@@ -100,6 +100,21 @@ function refPanelTrackIds(view: { tracks?: ViewTrack[] }) {
     .map(t => t.configuration.trackId)
 }
 
+// The assembly both drawings resolve the path's refNames against. Named rather
+// than asserted at three call sites: a track with no `assemblyNames` would
+// otherwise reach `waitForAssembly(undefined)` and `navToLocString(loc,
+// undefined)`, which report a missing assembly and an `assemblyName:undefined`
+// region respectively. Same guard `launchLinearReadVsRef` has for the same
+// reason, and it must be read BEFORE either drawing replaces the view `track`
+// lives in, since replacing destroys it.
+function trackAssemblyName(track: AbstractTrackModel) {
+  const [name] = getConf(track, 'assemblyNames') as string[]
+  if (!name) {
+    throw new Error('track has no assembly')
+  }
+  return name
+}
+
 // Rows the picker draws. Enough that a real event's alternatives all fit, few
 // enough that a repeat-driven list does not become the dialog.
 const MAX_SHOWN = 10
@@ -295,7 +310,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     // Read BEFORE the replace below, like `drawSynteny` reads its carried
     // track list: replacing destroys the launching view, and `track` lives in
     // it.
-    const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
+    const trackAssembly = trackAssemblyName(track)
     // "Replace current view" is the destination this drawing is usually
     // wanted at, and the one the docs and figures take: unlike the synteny
     // reconstruction, the split view carries the launching view's OWN tracks
@@ -326,7 +341,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     await Promise.all(
       locStrings.map(async (loc, idx) => {
         try {
-          await created.views[idx]?.navToLocString(loc, trackAssembly!)
+          await created.views[idx]?.navToLocString(loc, trackAssembly)
         } catch (e) {
           session.notifyError(`Could not navigate to ${loc}`, e)
         }
@@ -340,17 +355,16 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     // Read off the launching view BEFORE it may be swapped out: replacing
     // destroys it, and this list is what the reference panel opens with.
     const carried = refPanelTrackIds(view)
-    const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
-    const assembly = await session.assemblyManager.waitForAssembly(
-      trackAssembly!,
-    )
+    const trackAssembly = trackAssemblyName(track)
+    const assembly =
+      await session.assemblyManager.waitForAssembly(trackAssembly)
     if (!assembly) {
       throw new Error('assembly not found')
     }
     const { segmentsTrack, segmentsDisplay, temporaryAssembly, viewSpec } =
       buildDerivativeVsRefSpec({
         candidate,
-        trackAssembly: trackAssembly!,
+        trackAssembly,
         sequenceTrackConf: getConf(assembly, 'sequence') as {
           trackId: string
         },
