@@ -16,6 +16,7 @@ import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { FetchContext } from './FetchMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 export type { FetchContext } from './FetchMixin.ts'
@@ -74,6 +75,25 @@ export { isBlockCovered, planRegionFetch } from './planRegionFetch.ts'
  * `run`/`commit` has nowhere to put it. Same invariant, two shapes, and the
  * reason they differ is that one dataset arrives once and N regions stream.
  */
+/**
+ * A region a fetch stored, and which fetch stored it.
+ *
+ * One value rather than a `Region` map beside a key map: every operation
+ * touched both — one `set`, one `delete`, one `clear` — so keeping them apart
+ * bought nothing and cost three places to keep in step, with no reader-side
+ * check to catch a slip. It is the same two-records-of-one-fact shape that made
+ * a refused region read as covered, one level down, and the fix is the same:
+ * store the fact once.
+ *
+ * Extending `Region` rather than wrapping one is what makes that free: the
+ * twenty-odd readers that want the span keep reading it directly, and only
+ * `isCacheValid` looks at the key.
+ */
+export interface LoadedRegion extends Region {
+  /** the `regionFetchKey` the fetch that stored this region was issued under */
+  fetchKey: string
+}
+
 export interface RegionFetchContext extends FetchContext {
   /**
    * Record that this region's data is now held. Over the span `fetchRegions`
@@ -82,6 +102,59 @@ export interface RegionFetchContext extends FetchContext {
    * guard the write has always had, moved to where the write happens.
    */
   commitRegion: (displayedRegionIndex: number) => void
+}
+
+/**
+ * The two dev-only checks on `commitRegion`'s contract, as a pair of no-ops in
+ * production — the same shape as `makeSettingsLoopGuard` beside it, and for the
+ * same reason: the mechanism reads as mechanism, and what a violation costs is
+ * stated once where the check is rather than inline where it fires.
+ *
+ * They cover the two directions a commit can be wrong, and only one of them is
+ * still reachable by construction:
+ *
+ * - **naming a region the fetch never asked for**, which has no honest span, so
+ *   the commit is dropped. Only a display doing its own bookkeeping can manage
+ *   it.
+ * - **never committing at all**, which spins rather than freezing: nothing reads
+ *   as covered, the plan asks again, the fetch ends, `fetchGeneration` bumps,
+ *   and the autorun re-fires. Loud in a network tab and invisible in a test,
+ *   which is the shape a check is worth having for.
+ *
+ * The second is counted rather than reported on sight: a fetch can legitimately
+ * store nothing while `regionTooLarge` is still false for one settled cycle,
+ * because the worker gates on the live `bpPerPx` and the main-thread verdict
+ * reads the debounced one. That resolves within a debounce; a missing call does
+ * not.
+ */
+function makeCommitChecks(self: IAnyStateTreeNode) {
+  if (process.env.NODE_ENV === 'production') {
+    return { unknownRegion: () => {}, fetchEnded: () => {} }
+  }
+  let emptyFetchRuns = 0
+  return {
+    unknownRegion(displayedRegionIndex: number, issued: Iterable<number>) {
+      console.error(
+        `[jbrowse display contract] commitRegion(${displayedRegionIndex}) names ` +
+          `a region this fetch did not ask for (it issued ` +
+          `${[...issued].join(', ') || 'none'}), so nothing was marked loaded. ` +
+          `See RegionFetchContext.`,
+      )
+    },
+    fetchEnded({ committed, gated }: { committed: number; gated: boolean }) {
+      emptyFetchRuns = committed === 0 && !gated ? emptyFetchRuns + 1 : 0
+      if (emptyFetchRuns === 3) {
+        console.error(
+          `[jbrowse display contract] ${getType(self).name}: three fetches in a ` +
+            `row stored data for no region and nothing is gating them, so the ` +
+            `plan will keep asking for the same regions. A work callback that ` +
+            `stores a payload must call ` +
+            `\`ctx.commitRegion(displayedRegionIndex)\` beside the store — see ` +
+            `RegionFetchContext.`,
+        )
+      }
+    },
+  }
 }
 
 /**
@@ -111,15 +184,7 @@ export default function MultiRegionDisplayMixin() {
          * displayedRegionIndex; populated only after the fetch work callback
          * returns
          */
-        loadedRegions: regionDataMap<Region>(),
-        /**
-         * #volatile
-         * The `regionFetchKey` each loaded region's fetch was issued under,
-         * keyed by displayedRegionIndex. Written by `setLoadedRegion` beside
-         * `loadedRegions`, so the two never disagree about a region, and read
-         * only by `isCacheValid`.
-         */
-        loadedFetchKeys: regionDataMap<string>(),
+        loadedRegions: regionDataMap<LoadedRegion>(),
         /**
          * #volatile
          * Bumped by `reload()` and read unconditionally by the fetch autorun,
@@ -395,18 +460,16 @@ export default function MultiRegionDisplayMixin() {
           region: Region,
           fetchKey = self.regionFetchKey,
         ) {
-          self.loadedRegions.set(displayedRegionIndex, region)
-          self.loadedFetchKeys.set(displayedRegionIndex, fetchKey)
+          self.loadedRegions.set(displayedRegionIndex, { ...region, fetchKey })
         },
 
         /**
          * #action
-         * Forget one region, both halves together, so a display pruning what has
-         * scrolled off screen cannot leave a key behind its data.
+         * Forget one region — for a display pruning what has scrolled off
+         * screen.
          */
         dropLoadedRegion(displayedRegionIndex: number) {
           self.loadedRegions.delete(displayedRegionIndex)
-          self.loadedFetchKeys.delete(displayedRegionIndex)
         },
 
         /**
@@ -428,7 +491,6 @@ export default function MultiRegionDisplayMixin() {
           self.cancelFetch()
           self.setError(undefined)
           self.loadedRegions.clear()
-          self.loadedFetchKeys.clear()
           self.clearDisplaySpecificData()
           self.resetCanvasDrawn()
         },
@@ -490,25 +552,14 @@ export default function MultiRegionDisplayMixin() {
         isCacheValid(displayedRegionIndex: number): boolean {
           return (
             self.regionHasData(displayedRegionIndex) &&
-            untracked(() => self.loadedFetchKeys.get(displayedRegionIndex)) ===
-              self.regionFetchKey
+            untracked(
+              () => self.loadedRegions.get(displayedRegionIndex)?.fetchKey,
+            ) === self.regionFetchKey
           )
         },
       }))
       .actions(self => {
-        // Dev-only, and the counter is why it is a closure: forgetting
-        // `ctx.commitRegion` is the one way left to get the rule wrong, and it
-        // spins rather than freezing — the region never reads as covered, so
-        // the plan asks again, the fetch ends, `fetchGeneration` bumps, and the
-        // autorun re-fires. Loud in a network tab and invisible in a test, which
-        // is the shape a check is worth having for.
-        //
-        // Consecutive, not the first occurrence: a fetch can legitimately store
-        // nothing while `regionTooLarge` is still false for a settled cycle,
-        // since the worker gates on the live `bpPerPx` and the main-thread
-        // verdict reads the debounced one. That resolves within a debounce; a
-        // missing call does not.
-        let emptyFetchRuns = 0
+        const checks = makeCommitChecks(self)
         return {
           /**
            * #action
@@ -548,42 +599,23 @@ export default function MultiRegionDisplayMixin() {
               await work({
                 ...ctx,
                 commitRegion: displayedRegionIndex => {
+                  // The span is the one this fetch asked for, looked up rather
+                  // than taken from the caller — see RegionFetchContext. An
+                  // index that is not in it has no span to be honest about, so
+                  // the commit is dropped: under-claiming costs a refetch, and
+                  // the alternative is the claim this mechanism exists to
+                  // prevent.
                   const region = issued.get(displayedRegionIndex)
                   if (region === undefined) {
-                    // Not one of the regions this fetch asked for, so there is no
-                    // span it could honestly be marked loaded over. Dropped rather
-                    // than guessed — under-claiming costs a refetch, and the
-                    // alternative is the claim this whole mechanism exists to
-                    // prevent. Reported because a display committing a region it
-                    // did not fetch is a bug in the display, not a state to
-                    // recover from.
-                    console.error(
-                      `[jbrowse display contract] commitRegion(${displayedRegionIndex}) ` +
-                        `names a region this fetch did not ask for (it issued ` +
-                        `${[...issued.keys()].join(', ') || 'none'}), so nothing was ` +
-                        `marked loaded. See RegionFetchContext.`,
-                    )
+                    checks.unknownRegion(displayedRegionIndex, issued.keys())
                   } else if (!ctx.isStale()) {
                     committed++
                     self.setLoadedRegion(displayedRegionIndex, region, fetchKey)
                   }
                 },
               })
-              if (process.env.NODE_ENV !== 'production' && !ctx.isStale()) {
-                emptyFetchRuns =
-                  committed === 0 && needed.length > 0 && !self.regionTooLarge
-                    ? emptyFetchRuns + 1
-                    : 0
-                if (emptyFetchRuns === 3) {
-                  console.error(
-                    `[jbrowse display contract] ${getType(self).name}: three fetches ` +
-                      `in a row stored data for no region and nothing is gating them, ` +
-                      `so the plan will keep asking for the same regions. A work ` +
-                      `callback that stores a payload must call ` +
-                      `\`ctx.commitRegion(displayedRegionIndex)\` beside the store — ` +
-                      `see RegionFetchContext.`,
-                  )
-                }
+              if (!ctx.isStale() && needed.length > 0) {
+                checks.fetchEnded({ committed, gated: self.regionTooLarge })
               }
             })
           },
