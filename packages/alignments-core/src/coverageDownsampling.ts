@@ -420,8 +420,15 @@ export interface CoverageStatsBins {
 // band's pan/zoom jank. Returns empty arrays (binSize 1) when the per-bp array
 // already fits `maxBins`: the main thread then scans per-bp for exact
 // visible-edge clipping — cheap at that zoom, and byte-identical to the old
-// path. Mirrors downsampleDenseMax's shape (same cap, same binSize formula) so
-// the stats bins and the GPU depth bars align bin-for-bin.
+// path.
+//
+// Same binSize formula and same already-fits sentinel as `downsampleDenseMax`,
+// so the two are read the same way — but NOT the same bins. The caps are the
+// callers' and deliberately differ (65536 here against the GPU path's 262144),
+// because these bins never reach the GPU: they back the main thread's autoscale
+// reduce, and nothing pairs a stats bin with a depth bar. This said they aligned
+// bin-for-bin, which is an invariant nobody holds and one a reader could be
+// tempted to "restore" by moving a cap.
 export function downsampleStatsBins(
   depths: Float32Array,
   maxBins: number,
