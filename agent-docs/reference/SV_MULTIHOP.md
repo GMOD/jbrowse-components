@@ -270,6 +270,36 @@ way back — and the walk turned round onto it, adding a panel a kilobase from o
 it already had. Anchoring on the junction actually crossed (`arrivedFrom`) is
 the reading that does not depend on how far the recorded stop drifted.
 
+**And the walk went forward only, so which record a reader clicked decided how
+much of the chain they were shown.** It extended past the starting record's MATE
+end and never past its own, which COLO829 cannot see: its der(3) is a closed
+triangle, so every record of it reaches the same three loci going one way round,
+and `walkBreakendChain.test.ts`'s "walks the same three from any record" duly
+passed. A LINEAR chain separates them. On `chr1 -j1- chr2 -j2- chr3 -j3- chr4`
+the first record returned four panels, the middle three and the last two, with
+nothing in the view saying the short answer was short — and every record of an
+event is equally the event, since a reader clicks whichever breakend the track
+drew under the cursor.
+
+It now extends both ways, forward first so the `maxStops` budget is spent
+exactly as before whenever the forward half fills it. Closed cycles are
+unmoved for the reason they hid the bug: the backward step's only candidate
+leads to a locus the forward walk already has, so `visited` closes it. `viaId`
+is which junction was crossed to ARRIVE at a stop, reading the list top to
+bottom, so a stop added to the FRONT takes over the one it displaced — nothing
+outside the test reads that field, which is the other half of why this went
+unnoticed.
+
+**One more parser trap, the same family as the ALT one above and one layer
+down.** `parseSvAlt` split the mate locstring at its first colon. A refName may
+contain one: GRCh38's full analysis set names its HLA contigs
+`HLA-A*01:01:01:01`, so a mate on one arrives as `HLA-A*01:01:01:01:1000` and
+came back as `HLA-A*01` at position 1 — a contig-and-locus the walk then went
+looking for. The last colon is the separator by construction, which is the rule
+`parseLocString` applies for exactly this reason. A non-numeric position now
+returns undefined instead of a NaN that reached a fetch region and a panel's
+`centerAt`, neither of which reports one.
+
 ## HG008-T, the reconstruction's second dataset
 
 The picker is checked against a second cancer on different chemistry, in
@@ -448,6 +478,55 @@ route's SHAPE — `derivativePathTestId`, refNames and orientations, which no
 coordinate moves — taking it only when it names exactly one row, since two
 routes of one shape at nearby loci is precisely what a fold-back locus offers
 and guessing between them draws the wrong allele under the right caption.
+
+### And the support count was doubled by a display setting
+
+`readCount` is the only number the picker ranks by, the only one it shows, and
+the one `minReads` filters on — and with the track GROUPED it counted a read
+once per lane that read's segments landed in.
+
+`derivativePathCandidates` chained each lane separately and concatenated the
+results, under a comment saying that lost nothing because a segment in another
+lane is named by the read's own SA tag and `unpairedReadChain` folds it in from
+there. It does, and that is the failure: every lane rebuilds the WHOLE chain on
+its own, from one fetched entry plus that entry's SA tag, so both lanes emit
+identical chains, they group, and the route claims twice its support.
+
+**Group by strand is the case that bites, and it is not a corner.** A read
+crossing an inversion has segments on both strands by definition, which is the
+whole shape a fold-back is made of, so exactly the alleles this feature exists
+for are the ones that double. Two synthetic reads over one inversion report 2
+ungrouped and 4 grouped by strand; grouping by an HP tag a supplementary record
+does not carry does the same thing. Nothing in the dialog says which reading it
+is giving you.
+
+`computeReadChains` now takes the LANES and buckets every one of them under a
+single QNAME map before `resolveReadGroup` sees them, which is the ungrouped
+answer by construction. It also puts the partner segment back on screen as a
+fetched entry rather than an SA record, so `extendsOffScreen` stops claiming a
+path leaves a window both of its ends are drawn in.
+`fetchToPaths.test.ts` pins both, through the real extractor, since every other
+suite under `derivativePaths/` hands the chain builder a single lane and cannot
+see this at all.
+
+### The split view's interior panel needs a junction, not a middle
+
+A `BreakpointSplitView` built from a route opens one panel per segment, each on
+the junction that segment carries: the first the one the path LEAVES by, the
+last the one it ARRIVES at, an interior one the centre between its two. The
+centre answers the question only while both junctions fit in the 10 kb window.
+COLO829's interiors are 199 bp and 183 bp and do; an interior ARM does not, so a
+centred window over a 30 kb segment showed NEITHER end — a panel of ordinary
+reference with no read crossing anything and no curve to either neighbour. It
+now anchors on the arrival junction past that length, keeping the connection to
+the panel above.
+
+Which reference coordinate a junction is depends on the strand, and
+`buildSplitViewFromPath` was spelling that rule a second time as a nested
+ternary nothing held against `computePaths`'s. The pair is exported as
+`segmentEntryBp`/`segmentExitBp` now, for the reason `splitJunctionArc` shares
+`connectionEndpointBps` with the entry path: getting it backwards draws no
+connections rather than wrong ones, so nothing reports it.
 
 ## The batch study, and what it settled
 
