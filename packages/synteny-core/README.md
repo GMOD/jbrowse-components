@@ -40,6 +40,22 @@ The colorBy string that paints a named feature attribute.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
+### blendOverWhite
+
+Composite a CSS color over white by `a`, returning an opaque `rgb(...)`. The
+synteny canvas draws every ribbon at the view's global alpha over the white page
+(shadeFill in syntenyTypes.slang / resolveInstanceFill in the Canvas2D
+renderer), so a full-saturation legend swatch reads wrong — a red match ribbon
+shows as salmon, a blue deletion as pale blue. Blending the legend chip the same
+way keeps the key matched to what's actually on screen.
+
+```js
+// type signature
+(color: string, a: number) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
+
 ### coerceColorBy
 
 Coerce a persisted colorBy string (stored as plain `types.string` for
@@ -132,14 +148,7 @@ reader named that column.
 
 ### ComparativeTrackModel
 
-Whether a track's adapter offers level-of-detail tiers to switch between —
-PAFAdapter and BlastTabularAdapter do not.
-
-Tested by the presence of the threshold slot rather than by a separate `'lod'`
-adapter capability, so there is one signal instead of two that can disagree: the
-display cannot resolve a tier without the threshold, so a capability flag on an
-adapter missing the slot would offer a menu whose 'auto' never switches. The
-slice of a track model a comparative view reads off its track list.
+The slice of a track model a comparative view reads off its track list.
 
 Annotated at every site that walks a synteny view's `levels[].tracks` or a
 dotplot's `tracks`, because those arrays type out as `any`: the level model is
@@ -154,13 +163,7 @@ compiler check those calls again.
 
 ### LEGEND_CHIP_ALPHA_FLOOR
 
-Composite a CSS color over white by `a`, returning an opaque `rgb(...)`. The
-synteny canvas draws every ribbon at the view's global alpha over the white page
-(shadeFill in syntenyTypes.slang / resolveInstanceFill in the Canvas2D
-renderer), so a full-saturation legend swatch reads wrong — a red match ribbon
-shows as salmon, a blue deletion as pale blue. Blending the legend chip the same
-way keeps the key matched to what's actually on screen. `blendOverWhite` for a
-legend chip, with a floor on the alpha.
+The alpha a legend chip is blended at however faint the ribbons are.
 
 Matching the chip to the composited ribbon is right down to a point and then
 inverts: the linear-synteny default alpha is 0.2, and at that value every chip
@@ -172,6 +175,17 @@ alpha.
 ```js
 // type signature
 0.45
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
+
+### legendChipColor
+
+blendOverWhite for a legend chip, floored at LEGEND_CHIP_ALPHA_FLOOR.
+
+```js
+// type signature
+(color: string, alpha: number) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)

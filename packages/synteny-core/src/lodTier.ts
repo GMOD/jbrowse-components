@@ -73,15 +73,6 @@ export function getCoarseBpPerPxThreshold(track: {
 }
 
 /**
- * Whether a track's adapter offers level-of-detail tiers to switch between —
- * PAFAdapter and BlastTabularAdapter do not.
- *
- * Tested by the presence of the threshold slot rather than by a separate `'lod'`
- * adapter capability, so there is one signal instead of two that can disagree:
- * the display cannot resolve a tier without the threshold, so a capability flag
- * on an adapter missing the slot would offer a menu whose 'auto' never switches.
- */
-/**
  * #api
  * The slice of a track model a comparative view reads off its track list.
  *
@@ -98,6 +89,15 @@ export interface ComparativeTrackModel {
   configuration: AnyConfigurationModel & { trackId: string; name: string }
 }
 
+/**
+ * Whether a track's adapter offers level-of-detail tiers to switch between —
+ * PAFAdapter and BlastTabularAdapter do not.
+ *
+ * Tested by the presence of the threshold slot rather than by a separate `'lod'`
+ * adapter capability, so there is one signal instead of two that can disagree:
+ * the display cannot resolve a tier without the threshold, so a capability flag
+ * on an adapter missing the slot would offer a menu whose 'auto' never switches.
+ */
 export function trackHasLodTiers(track: {
   configuration: AnyConfigurationModel
 }) {

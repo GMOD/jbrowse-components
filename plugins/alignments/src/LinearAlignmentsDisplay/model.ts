@@ -434,10 +434,6 @@ export default function stateModelFactory(
           /**
            * #volatile
            */
-
-          /**
-           * #volatile
-           */
           overCigarItem: false,
           /**
            * #volatile

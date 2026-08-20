@@ -134,16 +134,7 @@ export function coerceColorBy(value: string | undefined): SyntenyColorBy {
 
 /**
  * #api
- * Composite a CSS color over white by `a`, returning an opaque `rgb(...)`. The
- * synteny canvas draws every ribbon at the view's global alpha over the white
- * page (shadeFill in syntenyTypes.slang / resolveInstanceFill in the Canvas2D
- * renderer), so a full-saturation legend swatch reads wrong — a red match ribbon
- * shows as salmon, a blue deletion as pale blue. Blending the legend chip the
- * same way keeps the key matched to what's actually on screen.
- */
-/**
- * #api
- * `blendOverWhite` for a legend chip, with a floor on the alpha.
+ * The alpha a legend chip is blended at however faint the ribbons are.
  *
  * Matching the chip to the composited ribbon is right down to a point and then
  * inverts: the linear-synteny default alpha is 0.2, and at that value every
@@ -154,10 +145,24 @@ export function coerceColorBy(value: string | undefined): SyntenyColorBy {
  */
 export const LEGEND_CHIP_ALPHA_FLOOR = 0.45
 
+/**
+ * #api
+ * {@link blendOverWhite} for a legend chip, floored at
+ * {@link LEGEND_CHIP_ALPHA_FLOOR}.
+ */
 export function legendChipColor(color: string, alpha: number) {
   return blendOverWhite(color, Math.max(alpha, LEGEND_CHIP_ALPHA_FLOOR))
 }
 
+/**
+ * #api
+ * Composite a CSS color over white by `a`, returning an opaque `rgb(...)`. The
+ * synteny canvas draws every ribbon at the view's global alpha over the white
+ * page (shadeFill in syntenyTypes.slang / resolveInstanceFill in the Canvas2D
+ * renderer), so a full-saturation legend swatch reads wrong — a red match ribbon
+ * shows as salmon, a blue deletion as pale blue. Blending the legend chip the
+ * same way keeps the key matched to what's actually on screen.
+ */
 export function blendOverWhite(color: string, a: number) {
   if (a >= 1) {
     return color
