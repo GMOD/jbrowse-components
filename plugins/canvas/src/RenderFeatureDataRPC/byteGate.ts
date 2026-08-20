@@ -1,4 +1,5 @@
 import { overByteBudget } from '@jbrowse/core/rpc/byteBudget'
+import { updateStatus } from '@jbrowse/core/util'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import type { RegionTooLargeResult, RenderFeatureDataArgs } from './rpcTypes.ts'
@@ -40,10 +41,16 @@ export async function measureRegionBytes({
   if (byteLimit === undefined) {
     return {}
   }
-  const bytes = await dataAdapter.getRegionByteSize([region], {
-    stopToken,
-    statusCallback,
-  })
+  // Labelled, because this is the FIRST thing a feature fetch does and it used
+  // to be the one stretch of a fetch with no phase open at all: the display had
+  // just cleared its status, so the overlay showed its `statusMessage ||
+  // 'Loading'` fallback until the download phase opened. Every refetch flashed
+  // "Loading" for as long as the estimate took. A phase shorter than the
+  // throttle window paints nothing (ADR-071), so this says what is happening
+  // only when it is slow enough to be worth saying.
+  const bytes = await updateStatus('Checking region size', statusCallback, () =>
+    dataAdapter.getRegionByteSize([region], { stopToken, statusCallback }),
+  )
   checkStopTokenThrottled(stopTokenCheck)
   return overByteBudget(bytes, byteLimit)
     ? { bytes, tooLarge: { regionTooLarge: true, bytes } }

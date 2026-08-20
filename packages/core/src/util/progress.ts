@@ -529,19 +529,32 @@ function sumTotals(statuses: StatusWithProgress[]) {
  * instead is the last label alone, with no bar — indeterminate, which is exactly
  * what "still in this phase, nothing measuring it right now" is.
  *
- * The label alone rather than nothing at all, because a write that lands is also
- * how a phase's last progress value is *displaced*: statuses are throttled, so a
- * percentage queued behind the window would otherwise fire after the work it
- * measured had ended (ADR-071). Every owner of a status field clears it when its
- * own work ends (`runFetch`'s `resetStatus`, `assembly.loadPre`'s `finally`,
+ * Something rather than nothing, because a write that lands is also how a phase's
+ * last progress value is *displaced*: statuses are throttled, so a percentage
+ * queued behind the window would otherwise fire after the work it measured had
+ * ended (ADR-071). Every owner of a status field clears it when its own work ends
+ * (`runFetch`'s `resetStatus`, `assembly.loadPre`'s `finally`,
  * `createStopTokenRotation`'s `clearStatus`), and the end of the batch is theirs
  * to declare, not ours to guess.
+ *
+ * **A phase does not lose its bar because nothing is measuring it this
+ * instant.** Between a slot's reads it reports the label alone, and when every
+ * slot in a fan-out is between reads at once the aggregate has no measurement to
+ * report — so the determinate bar dropped to an indeterminate spinner and came
+ * back a tick later. Three blocks doing their redispatch flanks made that happen
+ * seven times in two seconds, which is what a "Downloading features" that blinks
+ * actually is. The phase's last reading is held and re-sent instead: it is the
+ * most recent true statement about that phase, and it stops being sent the moment
+ * the phase changes.
  */
 export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
   const slots: StatusSlot[] = []
   // the phases this batch has been through, in the order it reached them, so a
   // tie between two slots in different phases resolves the same way twice
   const phaseOrder: string[] = []
+  // the phase's last determinate reading, and its label — what a moment with
+  // nothing to measure falls back to, rather than downgrading what we know
+  let held: StatusWithProgress | undefined
   let lastMessage: string | undefined
   return (): StatusCallback => {
     const slot: StatusSlot = { status: undefined, completed: [] }
@@ -556,15 +569,53 @@ export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
       }
       slot.status = status
       const aggregate = aggregateStatus(slots, phaseOrder)
-      if (aggregate !== undefined) {
-        lastMessage =
-          typeof aggregate === 'string' ? aggregate : aggregate.message
-        statusCallback?.(aggregate)
-      } else if (lastMessage !== undefined) {
-        statusCallback?.(lastMessage)
+      const message = aggregateMessage(aggregate)
+      if (message !== undefined) {
+        if (held?.message !== message) {
+          held = undefined
+        }
+        lastMessage = message
+      }
+      const measured =
+        typeof aggregate === 'object' && !readsComplete(aggregate)
+      if (measured) {
+        held = aggregate
+      }
+      if (aggregate === undefined) {
+        // nothing in flight at all — not a gap between one slot's reads but a
+        // batch with no work outstanding, so its bar is over. Holding one here
+        // is a percentage re-sent for work that has ENDED, which is the write
+        // ADR-071 exists to cancel; the label alone is what goes out.
+        held = undefined
+      }
+      const out = measured ? aggregate : (held ?? aggregate ?? lastMessage)
+      if (out !== undefined) {
+        statusCallback?.(out)
       }
     }
   }
+}
+
+/** The phase label an aggregate names, whichever shape it came back in. */
+function aggregateMessage(status: RpcStatus | undefined) {
+  return typeof status === 'object' ? status.message : status
+}
+
+/**
+ * Does this reading say the work is finished? A fan-out's aggregate exists only
+ * while a slot is in flight, so a full one is never the truth — every slot being
+ * *between* its reads at that instant is what produces it, and the moment one
+ * starts its next read the fraction falls back. Three blocks taking their
+ * redispatch flanks made the bar toggle 100/98 nine times in two seconds.
+ *
+ * So it is neither held nor shown when there is a real reading to show instead;
+ * the phase ending is what moves the label on. Not a clamp on the arithmetic —
+ * {@link aggregateStatus} still reports what it computes, and a bar that falls
+ * because a region *joined* the batch still falls, which is a true statement
+ * about work that was not there before.
+ */
+function readsComplete(status: StatusWithProgress) {
+  return status.total > 0 && status.current >= status.total
 }
 
 /**

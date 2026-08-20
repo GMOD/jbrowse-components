@@ -829,10 +829,65 @@ describe('createStatusFanOut', () => {
     b('')
     a('')
     expect(seen.every(s => s !== '')).toBe(true)
-    // the label alone: still that phase, nothing measuring it. It displaces the
-    // percentage rather than blanking the field, and the owner's own clear is
-    // what ends the stream
+    // the label alone: nothing is in flight at all, so the bar is over — this is
+    // the case a held reading must NOT survive into, unlike the gap between one
+    // slot's reads below. It displaces the queued percentage rather than
+    // blanking the field, and the owner's own clear ends the stream
     expect(seen.at(-1)).toBe('Downloading')
+  })
+
+  // What a "Downloading features" that blinks actually is: between a slot's
+  // reads it reports the label alone, and when every slot is between reads at
+  // once the aggregate has no measurement — so the bar dropped to an
+  // indeterminate spinner and came back a tick later. Three blocks doing their
+  // redispatch flanks did that seven times in two seconds.
+  it('does not lose the bar when no slot is measuring the phase', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading features', current: 900, total: 1000 })
+    b({ message: 'Downloading features', current: 900, total: 1000 })
+    // both cross into their next read at once, reporting the enclosing label
+    a('Downloading features')
+    b('Downloading features')
+    // a's read is credited in full as it retires, so the last reading is 0.95 —
+    // the point is that there IS one, where the bar used to vanish
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(0.95)
+    expect(seen.every(s => typeof s === 'object')).toBe(true)
+  })
+
+  // Every slot between its reads at once is what makes a full aggregate, and the
+  // next read starting is what takes it away again — so the bar toggled 100/98.
+  it('does not read complete while a slot is still in flight', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading features', current: 500, total: 1000 })
+    b({ message: 'Downloading features', current: 1000, total: 1000 })
+    // a retires its read; both are now credited in full and nothing is measuring
+    a('Downloading features')
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(0.75)
+    // a's flank opens, and the fraction that comes back is not a step down from
+    // a 100% that was never true
+    a({ message: 'Downloading features', current: 0, total: 100 })
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(2000 / 2100)
+  })
+
+  it('drops the held bar when the phase changes', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const a = slot()
+    a({ message: 'Downloading features', current: 900, total: 1000 })
+    a('Computing layout')
+    expect(seen.at(-1)).toBe('Computing layout')
   })
 
   // The shape the canvas feature RPC actually runs: the adapter's byte-counted
@@ -935,7 +990,10 @@ describe('createStatusFanOut', () => {
     for (const [i, f] of fractions.entries()) {
       expect(f).toBeGreaterThanOrEqual(fractions[i - 1] ?? 0)
     }
-    expect(fractions.at(-1)).toBeCloseTo(1)
+    // never reads complete: the aggregate exists only while a slot is in flight,
+    // and every slot being between reads is what makes a full one
+    expect(fractions.at(-1)).toBeGreaterThan(0.8)
+    expect(fractions.every(f => f < 1)).toBe(true)
     // and the label moves forward with the batch: these two regions cross
     // together, so nothing reads as downloading once either is laying out
     const messages = seen.map(statusMessageText)

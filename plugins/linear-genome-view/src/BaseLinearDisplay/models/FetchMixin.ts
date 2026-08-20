@@ -3,6 +3,8 @@ import {
   createGuardedStatusSink,
   createStatusThrottle,
   isAbortException,
+  localStorageGetBoolean,
+  progressLabel,
   statusFraction,
   statusMessageText,
 } from '@jbrowse/core/util'
@@ -13,6 +15,28 @@ import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+/**
+ * Every write to a display's status field, on the console, when
+ * `localStorage.debugStatus = true`. For the report this cannot be reproduced
+ * from: a status field that flickers between a phase label and the overlay's
+ * `'Loading'` fallback says nothing on its own about *why*, and the two causes
+ * want opposite fixes. `gen` is the discriminator — a flicker inside one fetch
+ * holds one generation, while a fetch being superseded over and over (a pan, a
+ * linked view resyncing, an invalidating setting) steps it every time.
+ *
+ * Read from localStorage on every call rather than once, so it can be switched
+ * on mid-session from the console with no reload.
+ */
+function debugStatus(gen: number, event: string, detail = '') {
+  if (localStorageGetBoolean('debugStatus', false)) {
+    // a deliberate debug channel, off unless the key is set
+    // eslint-disable-next-line no-console
+    console.log(
+      `[jbrowse-status] ${Math.round(performance.now())}ms gen=${gen} ${event}${detail && ` ${JSON.stringify(detail)}`}`,
+    )
+  }
+}
 
 export interface FetchContext {
   stopToken: StopToken
@@ -243,6 +267,11 @@ export default function FetchMixin() {
         setStatusMessage(status?: RpcStatus) {
           self.statusMessage = statusMessageText(status)
           self.statusProgress = statusFraction(status)
+          debugStatus(
+            self.fetchGeneration,
+            'status',
+            progressLabel(self.statusMessage, self.statusProgress) || '<blank>',
+          )
         },
         /**
          * #action
@@ -270,6 +299,21 @@ export default function FetchMixin() {
           self.activeStopToken = undefined
           self.statusMessage = undefined
           self.statusProgress = undefined
+        },
+        /**
+         * #action
+         * The same, minus the label: for a fetch being **superseded** by another
+         * starting this instant, which is the one case where the display does not
+         * stop loading. The overlay renders a missing label as its "Loading"
+         * fallback, so clearing it there flashed "Loading" between every refetch
+         * and the phase it was already in — and a pan or a linked-view resync
+         * supersedes often enough to read as a flicker. The incoming fetch
+         * overwrites the label as soon as it has one of its own, and the fetch
+         * that actually *ends* still clears through `resetStatus`.
+         */
+        supersedeStatus() {
+          throttle.reset()
+          self.activeStopToken = undefined
         },
       }
     })
@@ -388,8 +432,12 @@ export default function FetchMixin() {
         noteFetchStarted(self)
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
-          self.resetStatus()
+          // superseded, not ended: keep the label the overlay is showing until
+          // this fetch has one of its own
+          self.supersedeStatus()
+          debugStatus(self.fetchGeneration, 'superseded')
         }
+        debugStatus(self.fetchGeneration, 'fetch-start')
         const stopToken = createStopToken()
         const gen = self.fetchGeneration
         self.activeStopToken = stopToken
@@ -428,6 +476,7 @@ export default function FetchMixin() {
             stopStopToken(stopToken)
             self.resetStatus()
             self.fetchGeneration++
+            debugStatus(self.fetchGeneration, 'fetch-end')
           }
         }
       }),

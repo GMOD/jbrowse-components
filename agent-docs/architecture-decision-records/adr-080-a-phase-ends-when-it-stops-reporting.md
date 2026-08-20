@@ -68,6 +68,26 @@ that state is. The label still has to be *written* rather than skipped: statuses
 are throttled, and a write that lands is what displaces a percentage queued
 behind the window (ADR-071).
 
+Three further rules, all of them about not throwing away what we already know,
+and all of them in the fan-out rather than in `aggregateStatus` — the arithmetic
+stays honest and separately tested:
+
+- **A phase does not lose its bar because nothing is measuring it this
+  instant.** Between a slot's reads it reports the enclosing label alone, and
+  when every slot is between reads at once the aggregate has no measurement — so
+  the determinate bar dropped to an indeterminate spinner and came back a tick
+  later, seven times in two seconds with three blocks taking their redispatch
+  flanks. The phase's last reading is held and re-sent instead. Held **only for
+  a gap between reads**, never once the aggregate is empty: nothing in flight at
+  all is a bar that is over, and re-sending a percentage for ended work is the
+  write ADR-071 exists to cancel.
+- **The bar does not read complete while a slot is in flight.** A full aggregate
+  is produced by every slot being between reads at that instant, and the next
+  read starting takes it away again — the bar toggled 100/98 nine times. The
+  phase ending is what moves the label on.
+The bar can still step back a point or two when a slot opens a read nobody knew
+was coming — see the rejected clamp below, which is where that stops.
+
 ## Rejected alternatives
 
 **Have the phase helpers close onto `''` rather than the enclosing label.** It
@@ -82,15 +102,46 @@ which is most of what is wanted, but a status queued behind the throttle then
 fires after the work it measured has ended — the bar comes back to 90% on a phase
 that is over. `FetchMixin.test.ts` pins that.
 
-**Clamp the shared fraction so it can never decrease.** Answers the complaint
-directly and lies about the rest: work genuinely discovered late would sit behind
-a frozen bar. The drops this removes are the accounting ones; a drop that means
-"there turned out to be more to do" stays — and the largest of those was not
-accounting at all. Tabix's redispatch re-read the *union* of the query and an
-overhanging feature's bounds, so a region that had just reported 100% doubled its
-own denominator and dropped to 50%. That is `readTabixLinesRedispatched` reading
-the query range twice, and it now reads only the flanks; the bar was reporting it
-correctly.
+**Clamp the shared fraction so it can never decrease.** Tried, measured, removed.
+It produced a visibly better stream — the browser trace went strictly monotone —
+and it cannot be made correct through composition, which is what settles it. A
+region *joining* a batch is work that was not there before and the shared bar
+must fall for it (`callEachRegion` and `FetchMixin` both pin that); the drops
+worth suppressing are a slot re-entering a phase it has already been measured in.
+Telling those apart at the writing slot works one level deep and fails the moment
+fan-outs nest — MAF wraps `callEachRegion` in a fan-out of its own, and the inner
+aggregate's legitimate drop arrives at the outer one looking exactly like a
+re-entry. A smoothing rule that silently lies in the nested case is worse than a
+bar that steps back a point.
+
+The largest of those drops was never accounting anyway. Tabix's redispatch
+re-read the *union* of the query and an overhanging feature's bounds, so a region
+that had just reported 100% doubled its own denominator and dropped to 50%. That
+is `readTabixLinesRedispatched` reading the query range twice, and it now reads
+only the flanks; the bar was reporting it correctly.
+
+## Two things outside the fan-out
+
+The same symptom had two sources the fan-out cannot reach, both of which blanked
+the label outright — and the loading overlay renders a missing label as its
+`'Loading'` fallback, so each one reads as a flash of "Loading" inside a load.
+
+- **The byte gate ran unlabelled.** It is the first thing a canvas feature fetch
+  does, and no phase was open for it, so every fetch showed "Loading" until the
+  download phase opened. It says `Checking region size` now; a phase shorter than
+  the throttle window still paints nothing (ADR-071), so it speaks only when it
+  is slow enough to be worth saying.
+- **A superseded fetch cleared the label.** `runFetch` called `resetStatus` when
+  another fetch replaced one in flight, which is the single case where the
+  display does not stop loading — so a pan, or a linked view resyncing, flashed
+  "Loading" between the phase it was in and the phase it was about to re-enter.
+  `supersedeStatus` keeps the label and drops only the token and the throttle
+  window; the fetch that actually *ends* still clears.
+
+`localStorage.debugStatus = true` prints every write to a display's status field
+with its fetch generation, which is the discriminator between these two families:
+a flicker inside one fetch holds one generation, while a fetch superseded over
+and over steps it every time.
 
 ## Consequences
 
