@@ -1714,12 +1714,13 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined,
   // An action rather than a checkbox, so only a `true` has a click-path: it
   // re-fits every row to one shared bp/px, and there is no un-checking it —
-  // you'd re-navigate instead. Beside "Square view" rather than under
-  // "Show...", with the other two commands that reframe the view.
+  // you'd re-navigate instead. In the reframe group beside "Square view", and
+  // inside "Show all regions" — the two zoom-outs share that name, so it is
+  // said once and the submenu carries only what differs between them.
   sameScale: value =>
     value === true
       ? {
-          path: 'Synteny view header → View options → Show all regions at same scale',
+          path: 'Synteny view header → View options → Show all regions → Same bp per pixel',
           note: 'Row length becomes genome size, which is what makes the rows comparable.',
         }
       : undefined,
