@@ -1715,9 +1715,15 @@ describe('canvas display scrolls over the visible window', () => {
 
   // Before the view has coarse blocks there is no window to measure, so the
   // extent is the whole pack — the behavior every consumer had.
+  //
+  // `unplacedView`, because that is the only way in now: every placement
+  // action settles the coarse blocks, so a measured view without them is one
+  // that was restored rather than placed, and the 500ms autorun is what ends the
+  // state.
   it('falls back to the whole pack with no coarse blocks', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
+    const { display, view } = createDisplay(undefined, { unplacedView: true })
+    expect(view.coarseDynamicBlocks).toHaveLength(0)
     display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     display.setHeight(97)
     expect(display.onScreenFeatureIds).toBeUndefined()

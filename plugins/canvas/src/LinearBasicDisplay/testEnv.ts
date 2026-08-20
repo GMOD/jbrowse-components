@@ -44,12 +44,16 @@ export function createTestEnvironment(opts?: {
       displaySnapshot?: Record<string, unknown>,
       // `unmeasuredView` leaves the view without a width, i.e. before
       // `view.initialized` — the window where every view-derived getter throws
-      // by design. Only a test driving that window wants it.
-      createOpts?: { unmeasuredView?: boolean },
+      // by design. `unplacedView` is measured but carries its regions in the
+      // SNAPSHOT, the way a restored session does, which is the only way to a
+      // view with no coarse blocks now that every placement settles them. Only
+      // a test driving one of those windows wants either.
+      createOpts?: { unmeasuredView?: boolean; unplacedView?: boolean },
     ) =>
       env.createDisplay({
         displaySnapshot,
         skipWidth: createOpts?.unmeasuredView,
+        regionsInSnapshot: createOpts?.unplacedView,
       }),
   }
 }

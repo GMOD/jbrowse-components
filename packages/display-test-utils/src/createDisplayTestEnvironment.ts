@@ -258,6 +258,7 @@ export function createDisplayTestEnvironment<T>({
     displayedRegions,
     displaySnapshot,
     skipWidth = false,
+    regionsInSnapshot = false,
   }: {
     displayedRegions?: Region[]
     displaySnapshot?: Record<string, unknown>
@@ -267,11 +268,30 @@ export function createDisplayTestEnvironment<T>({
      * `setDisplayedRegions` zooms, which reads the width, so it waits too.
      */
     skipWidth?: boolean
+    /**
+     * Put the regions in the view's SNAPSHOT rather than calling
+     * `setDisplayedRegions`, which is what a restored session does — and the
+     * only way to reach a measured view with no coarse blocks, since every
+     * placement action settles them now (`settleCoarseBlocks`). The 500ms
+     * `LGVCoarseDynamicBlocks` autorun is what ends this state in production, so
+     * a test wanting it must not advance timers past that.
+     */
+    regionsInSnapshot?: boolean
   } = {}) {
+    const viewRegions = displayedRegions ??
+      regions ?? [
+        {
+          assemblyName: 'volvox',
+          start: 0,
+          end: viewRegionEnd,
+          refName: 'ctgA',
+        },
+      ]
     const session = Session.create({ configuration: {} }, { pluginManager })
     const view = session.setView(
       ViewModel.create({
         type: 'LinearGenomeView',
+        ...(regionsInSnapshot ? { displayedRegions: viewRegions } : {}),
         tracks: [
           {
             type: trackType,
@@ -291,17 +311,9 @@ export function createDisplayTestEnvironment<T>({
     )
     if (!skipWidth) {
       view.setWidth(800)
-      view.setDisplayedRegions(
-        displayedRegions ??
-          regions ?? [
-            {
-              assemblyName: 'volvox',
-              start: 0,
-              end: viewRegionEnd,
-              refName: 'ctgA',
-            },
-          ],
-      )
+      if (!regionsInSnapshot) {
+        view.setDisplayedRegions(viewRegions)
+      }
       onViewReady?.(view)
     }
     // `displays[0]` is untyped; annotating it makes a getter that doesn't exist
