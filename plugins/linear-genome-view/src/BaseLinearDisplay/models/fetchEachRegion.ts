@@ -2,8 +2,8 @@ import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { createStatusFanOut } from '@jbrowse/core/util'
 
 import type { FetchContext } from './FetchMixin.ts'
-import type { RegionFetchContext } from './MultiRegionDisplayMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
+import type { RegionFetchContext } from './regionCommit.ts'
 import type { Region } from '@jbrowse/core/util'
 
 interface FetchEachRegionModel {

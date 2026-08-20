@@ -16,7 +16,7 @@
 import { fetchEachRegion } from './MultiRegionDisplayMixin.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
-import type { RegionFetchContext } from './MultiRegionDisplayMixin.ts'
+import type { RegionFetchContext } from './regionCommit.ts'
 
 const NEEDED = [
   {
