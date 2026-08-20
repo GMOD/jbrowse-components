@@ -35,6 +35,21 @@ import type { Page } from 'puppeteer'
 // freeze is pinned in jest, where the display's own data map is readable; what
 // is pinned here is the remount.
 //
+// AND IT IS NOT WORTH REACHING FOR THE MODEL TO FIX THAT, which is the obvious
+// next idea — `window.JBrowseSession` is right there, and several suites drive
+// it. Measured 2026-08-20: it does not give an assertion that discriminates.
+// The jest test compares the claimed span against the bp extent of the features
+// actually held, which works because its fixture stamps each payload with the
+// region it was fetched for. Real features do not fill their fetched span, so
+// that comparison has no meaning here. The neighbouring guess — "no claim may
+// cover a block the gate refused" — is not the invariant either, and the app
+// says so: with the banner up over `gff3tabix_genes`, `loadedRegions` claims
+// ctgA:0-33000 while the display holds 134 features spanning 0-50001. The claim
+// is fully backed; it came from an EARLIER SUCCESSFUL fetch, and a later
+// zoom-out tripped density over data the display legitimately had. Covering a
+// refused block is normal. Claiming a span with nothing behind it is the bug,
+// and only a stamped payload can tell the two apart.
+//
 // The density axis, not bytes, and that is load-bearing. Density per pixel is
 // features over pixels, so it falls as you zoom in and the verdict releases on
 // its own — a property of the viewport, not of a file's block layout. The byte
