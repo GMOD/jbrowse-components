@@ -84,7 +84,6 @@ export function stripState(segment: string) {
 export const PATH_ROOTS = new Set([
   'Track menu',
   'View menu',
-  'Synteny view menu',
   'Synteny view header',
   'Graph view menu',
   'Graph view toolbar',
@@ -102,7 +101,8 @@ export const PATH_ROOTS = new Set([
  *
  * Every entry is asserted to be in use below, so rewording one does not leave a
  * dead exemption covering nothing — the new wording gets checked, which is the
- * safe direction.
+ * safe direction. `pnpm check-spec-recipes` deletes the entry that stopped
+ * applying, and its comment with it when nothing else is under that comment.
  */
 export const PATH_PROSE = new Set([
   // a right-click on the canvas, at a column the reader picks

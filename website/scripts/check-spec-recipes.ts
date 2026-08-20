@@ -248,19 +248,85 @@ if (unrendered.size > 0) {
   )
   process.exit(1)
 }
+// Delete each of `entries` from the exemption sets in recipe-path-labels.ts,
+// and the comment above it once nothing that comment covers is left — a reason
+// standing over the next entry down reads as that entry's reason.
+//
+// Line-wise rather than through the TypeScript printer, which reprints the
+// whole file and drops its comments to remove one line.
+function dropExemptions(entries: string[]) {
+  const dead = new Set(entries)
+  const file = join(repoRoot, 'website/scripts/recipe-path-labels.ts')
+  const out: string[] = []
+  let comments: string[] = []
+  let kept: string[] = []
+  let sawEntry = false
+  let inSet = false
+  // One group: a comment block and the entries under it. Emitted whole, or not
+  // at all when every entry it covered was dead.
+  const flush = () => {
+    if (kept.length > 0) {
+      out.push(...comments, ...kept)
+    }
+    comments = []
+    kept = []
+    sawEntry = false
+  }
+  for (const line of readFileSync(file, 'utf8').split('\n')) {
+    const text = line.trim()
+    if (!inSet) {
+      out.push(line)
+      inSet = text.includes('new Set([')
+      continue
+    }
+    if (text.startsWith('//')) {
+      // a comment below entries opens the next group rather than joining theirs
+      if (sawEntry) {
+        flush()
+      }
+      comments.push(line)
+      continue
+    }
+    const literal = /^(['"])((?:\\.|[^\\])*?)\1,?$/.exec(text)
+    if (literal) {
+      sawEntry = true
+      if (!dead.has(literal[2]!.replaceAll(/\\(.)/g, '$1'))) {
+        kept.push(line)
+      }
+      continue
+    }
+    flush()
+    out.push(line)
+    inSet = !text.startsWith('])')
+  }
+  flush()
+  writeFileSync(file, out.join('\n'))
+}
+
 // An exemption covering nothing is the part of a check that rots: reword the
 // step and the entry silently stops applying, leaving the new wording unchecked
 // with nothing saying so.
+//
+// The bare run DELETES it rather than reporting it. Removing the line is the
+// whole remedy — the loop above has already checked the reworded step against
+// the app and passed it — so blocking a push over a deletion this script can
+// make itself buys nothing. `--check` still fails, having no commit to write
+// into.
 const deadExemptions = [...PATH_ROOTS, ...PATH_PROSE].filter(
   entry => !exemptionsUsed.has(entry),
 )
 if (deadExemptions.length > 0) {
-  console.error(
-    `\nExemptions in recipe-path-labels.ts that no path uses:\n${deadExemptions
-      .map(entry => `  ${JSON.stringify(entry)}`)
-      .join('\n')}\n\nDrop each one, or fix the step that used to match it.`,
-  )
-  process.exit(1)
+  const named = deadExemptions
+    .map(entry => `  ${JSON.stringify(entry)}`)
+    .join('\n')
+  if (check) {
+    console.error(
+      `\nExemptions in recipe-path-labels.ts that no path uses:\n${named}\n\nRun \`pnpm check-spec-recipes\` to drop them, or fix the step that used to match one.`,
+    )
+    process.exit(1)
+  }
+  dropExemptions(deadExemptions)
+  console.log(`dropped exemptions no path uses:\n${named}`)
 }
 console.log(
   `${recipePaths.size} recipe click path(s); every hand-written segment names a row the app renders${

@@ -465,10 +465,15 @@ if (crashed.length > 0) {
   )
 }
 if (stale.length > 0) {
+  const named = stale.map(n => `  - ${n}`).join('\n')
   console.error(
-    `\n${stale.length} generated artifact(s) out of date:\n${stale
-      .map(n => `  - ${n}`)
-      .join('\n')}\n\nRun 'pnpm autogen' and commit the result.`,
+    check
+      ? `\n${stale.length} generated artifact(s) out of date:\n${named}\n\nRun 'pnpm autogen' and commit the result.`
+      : // A REWRITE that exits nonzero is a generator refusing to write, not an
+        // artifact behind its sources — `pnpm autogen` is what just ran, so
+        // reporting it as staleness sends someone round a loop that cannot
+        // converge.
+        `\n${stale.length} generator(s) refused to write:\n${named}\n\nEach one's reason is above, inline. Re-running will not clear it.`,
   )
 }
 if (crashed.length > 0 || stale.length > 0) {
