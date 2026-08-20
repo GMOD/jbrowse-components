@@ -10,6 +10,7 @@ import {
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { untracked } from 'mobx'
 
 import { renameRegionsForAdapter } from './renameRegionsForAdapter.ts'
 
@@ -100,6 +101,14 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
   // tracking at its first await, so a read moved below one silently leaves the
   // dependency set — and every read that decides anything here is already above
   // the first await. Splitting says so structurally rather than by luck.
+  //
+  // Called from inside `untracked`, and that is the half the split alone does
+  // NOT give you: this is async but unawaited, so everything down to its first
+  // await — this prefix, and `run`'s own prefix — still executes inside the
+  // autorun's derivation. `FetchPhases.run` promises those reads are untracked,
+  // and on the LGV side they are for free (`FetchMixin.runFetch` is an MST flow,
+  // so an action, so untracked). Here nothing made it so: a `run` reading an
+  // observable above its first await widened the dependency set and refetched.
   async function runFetch(args: TArgs) {
     const { adapterConfig } = self
     const { stopToken, isCurrent, statusCallback, end } = fetch.begin()
@@ -164,7 +173,14 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
         return false
       }
       noteFetchAutorunRun('fetched')
-      void runFetch(args)
+      // Tracked deliberately, and the one read of it that survives the
+      // `untracked` below: an adapter edited in the config editor has to
+      // refetch. In the same position it was in — inside `runFetch`, reached
+      // only on a run that fetches — so the dependency set is unchanged.
+      void self.adapterConfig
+      untracked(() => {
+        void runFetch(args)
+      })
       // arms the debounce; the runs `prepare` bails on (pre-init, minimized)
       // return false and stay on the leading edge, so the first real fetch is
       // immediate while zoom/pan refetches debounce

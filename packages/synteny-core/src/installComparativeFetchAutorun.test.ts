@@ -201,6 +201,39 @@ describe('installComparativeFetchAutorun', () => {
     expect(prepared[1]!.fetchKey).toBe('k2')
   })
 
+  // `FetchPhases.run` promises nothing it reads is tracked, and `run` being
+  // async is not what buys that: it is CALLED synchronously, so its own prefix
+  // down to its first `await` runs wherever the caller was — here, inside the
+  // autorun's derivation, since the lifecycle is started unawaited. On the LGV
+  // side an MST flow hides it; this family has no action to hide behind, so it
+  // starts the lifecycle inside `untracked`. Without that, this refetches with
+  // identical args on a read `prepare` deliberately never made.
+  it('does not track what run reads before its first await', async () => {
+    let display: TestDisplayModel | undefined
+    const seen: number[] = []
+    const { prepared } = await setup({
+      // captured here because `run`'s closure needs the display and `setup`
+      // fires the first run before it returns one
+      prepare: d => {
+        display = d
+        return { fetchKey: d.fetchKey, geometry: 0 }
+      },
+      run: async () => {
+        seen.push(display!.geometry)
+        await Promise.resolve()
+        return 'r1'
+      },
+    })
+    await settle()
+    expect(prepared).toHaveLength(1)
+    expect(seen).toEqual([0])
+
+    display!.setGeometry(1)
+    await settle()
+
+    expect(prepared).toHaveLength(1)
+  })
+
   it('commits against the args its own prepare captured, not the live state', async () => {
     const gate = deferred<string>()
     const { display, committed } = await setup({ run: () => gate.promise })

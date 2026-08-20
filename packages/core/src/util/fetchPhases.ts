@@ -47,9 +47,14 @@ export interface FetchPhases<TArgs, TResult, TCtx> {
    * "nothing to commit", which is what a pre-flight that stopped this fetch
    * says.
    *
-   * Reached inside the fetch lifecycle rather than the autorun body, so nothing
-   * it reads is tracked: the payload it assembles cannot widen the autorun's
-   * dependency set the way calling `rpcProps()` in the body would.
+   * **Nothing it reads is tracked**, so the payload it assembles cannot widen
+   * the autorun's dependency set the way calling `rpcProps()` in the body would.
+   * Being async is not what buys that — `run` is *called* synchronously, so its
+   * own prefix down to its first `await` runs wherever the caller was. Each
+   * family arranges it: the global one reaches `run` through
+   * `FetchMixin.runFetch`, an MST flow and so an action, which MobX runs
+   * untracked; the comparative one calls its lifecycle inside `untracked`
+   * because it has no action to hide behind.
    */
   run: (args: TArgs, ctx: TCtx) => Promise<TResult | undefined>
   /**
