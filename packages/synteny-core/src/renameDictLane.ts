@@ -25,6 +25,13 @@ import { makeStringDict } from './stringDict.ts'
  * `ids` comes back untouched in the ordinary case: the interner hands out ids in
  * first-seen order, so they are unchanged unless a collapse actually happened,
  * and the per-feature pass is paid only by the file that needs it.
+ *
+ * `remap` is the old id -> new id map the collapse is applied through, handed
+ * back for the lanes this function cannot see. A payload can carry more than one
+ * array keyed by the dictionary's ids — `OffscreenMateData` has a per-contig
+ * `counts` beside its per-feature `mateRefNameIds` — and a collapse has to SUM
+ * those rather than reindex them, which is why they cannot just be passed in as
+ * a second `ids`.
  */
 export function renameDictLane({
   dict,
@@ -34,15 +41,15 @@ export function renameDictLane({
   dict: string[]
   ids: Uint32Array
   canonical: (refName: string) => string
-}): { dict: string[]; ids: Uint32Array } {
+}): { dict: string[]; ids: Uint32Array; remap: number[] } {
   const interned = makeStringDict()
   const remap = dict.map(name => interned.idFor(canonical(name)))
   if (interned.dict.length === dict.length) {
-    return { dict: interned.dict, ids }
+    return { dict: interned.dict, ids, remap }
   }
   const renamed = new Uint32Array(ids.length)
   for (let i = 0; i < ids.length; i++) {
     renamed[i] = remap[ids[i]!]!
   }
-  return { dict: interned.dict, ids: renamed }
+  return { dict: interned.dict, ids: renamed, remap }
 }

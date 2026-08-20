@@ -3,6 +3,7 @@ import { buildBpRegionIndex } from '@jbrowse/synteny-core'
 import {
   createOffscreenMateCollector,
   offscreenMateTally,
+  renameOffscreenMates,
 } from './collectOffscreenMates.ts'
 
 const index = buildBpRegionIndex({
@@ -76,6 +77,59 @@ test('nothing dropped is an empty tally, not a zero row', () => {
   expect(
     offscreenMateTally(createOffscreenMateCollector(index).finish()),
   ).toEqual([])
+})
+
+// The names here are the file's, and every reader they meet — the strip's
+// labels, the hamburger tally, `navToLocString` on a click — is canonical.
+const aliases = (map: Record<string, string>) => (name: string) =>
+  map[name] ?? name
+
+test('the mate contigs are renamed into the assembly namespace', () => {
+  const c = createOffscreenMateCollector(index)
+  c.add('chr1', 100, 200, '1')
+  const out = renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
+  expect(out.mateRefNameDict).toEqual(['grape1'])
+  expect([...out.mateRefNameIds]).toEqual([0])
+})
+
+// A file spelling one contig two ways leaves as one contig, so the strip labels
+// one stretch rather than two and the tally reports one row — the same
+// re-interning `renameDictLane` does for the per-feature lanes, plus the thing
+// only this lane has: a per-contig `counts` that has to be SUMMED, not
+// reindexed.
+test('two spellings of one contig collapse, and their counts add', () => {
+  const c = createOffscreenMateCollector(index)
+  c.add('chr1', 100, 200, 'grape1')
+  c.add('chr1', 300, 400, '1')
+  c.add('chr1', 500, 600, 'grape2')
+  const out = renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
+  expect(out.mateRefNameDict).toEqual(['grape1', 'grape2'])
+  expect([...out.counts]).toEqual([2, 1])
+  expect([...out.mateRefNameIds]).toEqual([0, 0, 1])
+  expect(offscreenMateTally(out)).toEqual([
+    { refName: 'grape1', count: 2 },
+    { refName: 'grape2', count: 1 },
+  ])
+})
+
+// The placed marks are untouched by any of this: a rename moves names, and the
+// geometry is what the strip draws.
+test('the placements survive the rename', () => {
+  const c = createOffscreenMateCollector(index)
+  c.add('chr1', 100, 200, 'grape1')
+  c.add('chr1', 300, 400, '1')
+  const out = renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
+  expect([...out.starts]).toEqual([100, 300])
+  expect([...out.lengths]).toEqual([100, 100])
+})
+
+test('a name the assembly does not know is left alone', () => {
+  const c = createOffscreenMateCollector(index)
+  c.add('chr1', 100, 200, 'grapeX')
+  expect(
+    renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
+      .mateRefNameDict,
+  ).toEqual(['grapeX'])
 })
 
 test('the tally is largest first, ties by name', () => {

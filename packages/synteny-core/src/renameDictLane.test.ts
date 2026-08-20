@@ -43,6 +43,30 @@ test('re-interns when an aliased spelling collapses onto one already present', (
   expect(dict.indexOf('1')).toBe(0)
 })
 
+// The map the collapse was applied through, for the lanes this function cannot
+// see: a payload can key more than one array by these ids, and one of them
+// (`OffscreenMateData.counts`) is per-contig rather than per-feature, so it has
+// to be SUMMED across a collapse rather than reindexed.
+test('reports the old id -> new id map', () => {
+  expect(
+    renameDictLane({
+      dict: ['chr1', '1', 'chr2'],
+      ids: new Uint32Array([0]),
+      canonical: canonicalizer({ chr1: '1', chr2: '2' }),
+    }).remap,
+  ).toEqual([0, 0, 1])
+})
+
+test('...and reports it when nothing collapsed too', () => {
+  expect(
+    renameDictLane({
+      dict: ['1', '2'],
+      ids: new Uint32Array([0, 1]),
+      canonical: canonicalizer({ '1': 'chr1' }),
+    }).remap,
+  ).toEqual([0, 1])
+})
+
 // The ids array is per-feature and this runs once per fetch, so the ordinary
 // case must not pay a pass over it. Ids are handed out in first-seen order, so
 // they are only disturbed by a collapse.

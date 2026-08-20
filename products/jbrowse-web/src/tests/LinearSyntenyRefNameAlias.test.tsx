@@ -36,6 +36,17 @@ const ALIASED = 'volvox_alias_query.paf'
 // missing CIGAR is the point rather than an omission.
 const ALIASED_TARGET = 'volvox_alias_target.paf'
 
+// THE SAME TWO NAMESPACES AGAIN, on the pair of lanes that name contigs neither
+// row is displaying. Three rows: one ordinary ribbon, one anchored on volvox_del
+// ctgA whose volvox mate is `B`, and one anchored on volvox ctgA whose
+// volvox_del mate is `B`. Narrow both rows to ctgA and the last two are what an
+// off-screen mate IS — an alignment with no second endpoint to run a ribbon to.
+//
+// `B` on BOTH sides on purpose. It is an alias of ctgB on volvox and nothing at
+// all on volvox_del, so one string tells the two resolvers apart: whichever lane
+// is resolved against the wrong assembly gets the other's answer.
+const OFFSCREEN_ALIAS = 'volvox_offscreen_alias.paf'
+
 // A THIRD namespace, not a third refName: this track's every refName is
 // canonical and only its second ASSEMBLY name is an alias (`vvx` for volvox,
 // which `test_data/volvox/config.json` already declared). It is a separate file
@@ -51,6 +62,8 @@ interface SyntenyDisplay {
     refNameDict: string[]
     mateRefNameDict: string[]
     mateAssemblyNameDict: string[]
+    offscreenMates: { mateRefNameDict: string[] }
+    targetOffscreenMates: { mateRefNameDict: string[] }
   }
 }
 
@@ -61,6 +74,7 @@ interface SyntenyView {
   followUnaligned: boolean
   setWidth: (n: number) => void
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
+  setBidirectionalFetch: (arg: boolean) => void
 }
 
 async function openWith(
@@ -178,6 +192,35 @@ test('the target axis is canonicalized against its own assembly', async () => {
   const { featureData } = view.levels[0]!.linearSyntenyDisplays[0]!
   expect(featureData!.refNameDict).toEqual(['ctgA'])
   expect(featureData!.mateRefNameDict).toEqual(['ctgA'])
+})
+
+// THE OFF-SCREEN MATE LANES, which name contigs nobody requested — so they are
+// the same class as `mateRefNameDict` and were the last of it left in the file's
+// spelling. Unrenamed, the strip labels its marks `B`, the hamburger item counts
+// `B` and `ctgB` as two contigs, and clicking a mark runs `navToLocString` on a
+// name the row's assembly may not know at all.
+//
+// THE TWO LANES TAKE OPPOSITE RESOLVERS, which is the half a shared one gets
+// wrong invisibly on any pair that spells its contigs alike: a query-axis mark
+// names a contig of the TARGET assembly, and a target-axis mark names one of the
+// QUERY assembly. Here `B` resolves to `ctgB` on volvox and to nothing on
+// volvox_del, so a swap moves both assertions at once.
+test('the off-screen mate contigs are canonicalized, each against its own row', async () => {
+  const view = await openWith(OFFSCREEN_ALIAS, ['volvox_del', 'volvox'])
+  const [del, volvox] = view.views
+  view.setBidirectionalFetch(true)
+  await del!.navToLocString('ctgA', 'volvox_del')
+  await volvox!.navToLocString('ctgA', 'volvox')
+
+  const display = view.levels[0]!.linearSyntenyDisplays[0]!
+  await waitFor(() => {
+    expect(display.featureData!.offscreenMates.mateRefNameDict).toEqual([
+      'ctgB',
+    ])
+  }, timeout)
+  expect(display.featureData!.targetOffscreenMates.mateRefNameDict).toEqual([
+    'B',
+  ])
 })
 
 // A DIFFERENT NAMESPACE IN THE SAME PAYLOAD, and the failure is the one this

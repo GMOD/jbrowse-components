@@ -7,6 +7,8 @@ import {
 } from '@jbrowse/synteny-core'
 import { untracked } from 'mobx'
 
+import { renameOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+
 import type { LinearSyntenyDisplayModel } from './model.ts'
 
 const RPC_DEBOUNCE_MS = 500
@@ -189,6 +191,20 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         mateRefNameIds: target.ids,
         mateAssemblyNameDict: mateAssembly.dict,
         mateAssemblyNameIds: mateAssembly.ids,
+        // THE MATE LANES OF THE OTHER TWO DICTIONARIES, and they take OPPOSITE
+        // resolvers: an off-screen mate names a contig on the far side of the
+        // band from the axis its mark is placed on, so the query-axis strip's
+        // names belong to the target assembly and the target-axis strip's to
+        // the query one. Sharing one resolver reads as working on any pair
+        // whose two assemblies spell a contig alike, which is most of them.
+        offscreenMates: renameOffscreenMates(
+          result.offscreenMates,
+          targetCanonical,
+        ),
+        targetOffscreenMates: renameOffscreenMates(
+          result.targetOffscreenMates,
+          queryCanonical,
+        ),
       }
     },
     commit: ({ instanceData, ...featureData }, { fetchKey }) => {

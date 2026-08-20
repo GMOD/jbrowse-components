@@ -2,6 +2,7 @@ import {
   cumBpInEntry,
   findRegionEntry,
   makeStringDict,
+  renameDictLane,
 } from '@jbrowse/synteny-core'
 
 import type { BpRegionIndex } from '@jbrowse/synteny-core'
@@ -91,6 +92,48 @@ export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
       }
     },
   }
+}
+
+/**
+ * Rewrite the mate contig names out of the adapter's namespace into the
+ * assembly's canonical one.
+ *
+ * THE SAME CLASS AS `mateRefNameDict`, and it was the one lane of it left
+ * adapter-space: these name contigs nobody requested — that is the definition of
+ * an off-screen mate — so they arrive spelled the way the file spells them,
+ * while everything they meet is canonical. A strip then labelled its marks `1`
+ * against an assembly calling that contig `chr1`, the hamburger item and the
+ * hover tally counted the two spellings as two contigs, and the click ran
+ * `navToLocString` on a name the row's assembly might not know at all.
+ * `agent-docs/reference/REFNAME_NAMESPACES.md` is the rule.
+ *
+ * WHICH RESOLVER IS THE WHOLE QUESTION, and the two lanes take opposite ones:
+ * `offscreenMates` holds mate contigs of the TARGET axis and
+ * `targetOffscreenMates` holds mate contigs of the QUERY axis. See the call
+ * site in `LinearSyntenyDisplay/afterAttach`.
+ *
+ * `counts` is keyed by dictionary id like `mateRefNameIds` is, but it is one
+ * entry per contig rather than one per alignment, so a collapse SUMS it where
+ * the per-feature lane reindexes. Both go through `renameDictLane`'s `remap`.
+ */
+export function renameOffscreenMates(
+  data: OffscreenMateData,
+  canonical: (refName: string) => string,
+): OffscreenMateData {
+  const { dict, ids, remap } = renameDictLane({
+    dict: data.mateRefNameDict,
+    ids: data.mateRefNameIds,
+    canonical,
+  })
+  if (dict.length === data.mateRefNameDict.length) {
+    return { ...data, mateRefNameDict: dict }
+  }
+  const counts = new Uint32Array(dict.length)
+  for (let i = 0; i < remap.length; i++) {
+    const to = remap[i]!
+    counts[to] = counts[to]! + (data.counts[i] ?? 0)
+  }
+  return { ...data, mateRefNameDict: dict, mateRefNameIds: ids, counts }
 }
 
 /**
