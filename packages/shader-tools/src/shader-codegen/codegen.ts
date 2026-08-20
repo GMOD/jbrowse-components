@@ -373,6 +373,18 @@ function instanceLayoutLines(attrs: InstanceAttr[]) {
 // .slang source updates the packing automatically — the hand-written interleave
 // functions this replaces chose the view by hand and could silently drift from
 // the shader.
+//
+// It takes one array per field indexed by the INSTANCE, and a caller whose
+// sources are indexed any other way — through a second array, as lanes of one
+// interleaved array, scaled on the way in — writes its own loop instead. That
+// boundary has been costed: a per-field `{src, index, stride, scale, bias}`
+// descriptor is 0.20-0.72x depending on how much of it is switched on, because
+// a per-field index loads its index array once per FIELD where a hand loop
+// hoists it once per record. A statically DECLARED group (one index, many
+// fields) is the only generated shape that is free, at 1.00-1.37x, and it was
+// designed and declined on the gain — 0.630ms against 0.632ms at a typical
+// pileup. `plugins/alignments/benches/instancePackDescriptor.bench.ts` has the
+// table; REJECTED_IDEAS.md has the reasoning. Don't re-derive it.
 function instancePackerLines(attrs: InstanceAttr[]) {
   const lines = [
     // #shaderExport InstanceArrays | one input array per instance field, the argument `packInstances` takes
