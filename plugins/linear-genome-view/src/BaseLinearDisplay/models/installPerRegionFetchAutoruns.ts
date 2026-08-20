@@ -144,14 +144,27 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
     { name: 'ClearBlockingStateOnViewportChange' },
   )
 
-  // Installed LAST, and that is load-bearing now the body runs on the leading
-  // edge: the three autoruns above each fire once at install, and two of them
-  // call `clearAllRpcData` when they do. Installed first, this one's immediate
-  // fetch was cancelled by `SettingsInvalidate`'s own first pass and reissued
-  // with identical arguments — a duplicate round trip per track, on every track
-  // open, invisible to everything but a call count. Under MobX's trailing-edge
-  // `{ delay }` the ordering could not matter, because nothing here ran until
-  // every install was long past.
+  // Installed last, which reads as though it mattered and does NOT — the thing
+  // that protects this is `leadingEdgeAutorun`'s first run being a microtask,
+  // which no synchronous install can precede. Cold-open RPC count on the canvas
+  // harness, all four combinations:
+  //
+  //   leading edge   installed   RPCs
+  //   synchronous    first       2
+  //   synchronous    last        1
+  //   microtask      first       1
+  //   microtask      last        1
+  //
+  // The duplicate was real while the leading edge was the install call itself:
+  // the three autoruns above each fire once at install, two of them call
+  // `clearAllRpcData`, and a fetch issued before them was cancelled by
+  // `SettingsInvalidate`'s first pass and reissued with identical arguments — a
+  // round trip per track on every track open that only a call count could see.
+  // The microtask retired that, in the same commit that moved this call. Left
+  // where it is because reading in install order is worth something; do not add
+  // a test pinning the position, and do not restore an ordering constraint here
+  // if the leading edge ever changes — fix the leading edge.
+  //
   // Fetch data when the visible viewport isn't covered by loaded data, with an
   // explicit buffer so scrolling doesn't blank the fringe.
   //

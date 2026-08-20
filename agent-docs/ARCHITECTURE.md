@@ -733,14 +733,28 @@ the general lesson is the one to carry: **anything downstream of a fetch that
 was only ever correct because the fetch was slower than it is a coupling, and
 the empty-versus-stale distinction is where it bites.**
 
-**`installPerRegionFetchAutoruns` installs `FetchVisibleRegions` last**, and that
-is load-bearing for the same reason: the three autoruns above it each fire once
-at install and two of them call `clearAllRpcData`. Installed first, the fetch
-autorun's immediate run was cancelled by `SettingsInvalidate`'s own first pass
-and reissued with identical arguments — a duplicate round trip per track on every
-track open, invisible to everything but a call count. Under the trailing-edge
-delay the ordering could not matter, because nothing ran until every install was
-long past.
+**The microtask is what makes install order stop mattering**, and it is worth
+knowing that it is the microtask and not the order.
+`installPerRegionFetchAutoruns` installs `FetchVisibleRegions` last, which reads
+as though it were a constraint. Cold-open RPC count on the canvas harness, all
+four combinations:
+
+<!-- prettier-ignore -->
+| Leading edge | `FetchVisibleRegions` installed | RPCs on a cold open |
+| --- | --- | --- |
+| the install call | first | **2** |
+| the install call | last | 1 |
+| a microtask | first | 1 |
+| a microtask | last | 1 |
+
+The duplicate was real while the leading edge was the install call itself: the
+three autoruns above it each fire once at install, two of them call
+`clearAllRpcData`, and a fetch issued before them was cancelled by
+`SettingsInvalidate`'s first pass and reissued with identical arguments — a round
+trip per track on every track open, invisible to everything but a call count.
+Yielding once retired it, in the same commit that moved the call, so only one of
+the two changes is doing work. **A fourth installer owes nothing to install
+order; it owes its first run to a microtask.**
 
 ### The global-fetch trigger list must be read unconditionally
 

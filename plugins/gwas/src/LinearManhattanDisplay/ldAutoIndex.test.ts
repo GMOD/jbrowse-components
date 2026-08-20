@@ -79,6 +79,34 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(mockRpcCall).toHaveBeenCalledTimes(4)
   })
 
+  // The other way in, and the one production actually uses: the track menu's
+  // "Color by LD" toggle, flipped on a display that has already loaded. Every
+  // other test here starts in LD mode because that is what a restored session
+  // does, and that shape cannot see a toggle whose write fails to reach the
+  // fetch — `setColorBy` writes a config slot, so it invalidates through
+  // `rpcPropsCacheKey` rather than through anything the display holds.
+  it('adopts the index when the user turns LD colouring on', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockImplementation(
+      (_sessionId: string, _method: string, args: { region: Region }) =>
+        Promise.resolve(makeResult(args.region)),
+    )
+    const { display } = createDisplay()
+
+    await settle(8)
+    // loaded, and with no index: nothing asked for one
+    expect(display.indexSnp).toBeUndefined()
+    const beforeToggle = mockRpcCall.mock.calls.length
+
+    display.setColorBy('ld')
+    await settle(8)
+
+    await waitFor(() => {
+      expect(display.indexSnp).toBe(TOP_SNP)
+    })
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(beforeToggle)
+  })
+
   // Exact ties at the top are routine (negLog10 clamps every underflowed p=0 to
   // the same ~323.3), and adopting the index refetches, which clears rpcDataMap
   // and refills it in RPC-resolution order. If topSnp broke ties by arrival
