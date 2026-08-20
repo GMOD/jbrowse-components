@@ -286,7 +286,6 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       startRenderingBackend(backend: ScoreRenderingBackend) {
         installPerRegionLifecycle(self, backend, {
           data: () => self.rpcDataMap,
-          encode: data => data,
           render: (b, regions) => {
             if (regions.size === 0) {
               return false // keep the loading overlay up until data lands
