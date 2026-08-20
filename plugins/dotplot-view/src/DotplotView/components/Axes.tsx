@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 
-import { stripAlpha } from '@jbrowse/core/util'
+import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -159,7 +159,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
         </Fragment>
       ))}
       <AxisTitle
-        title={hview.assemblyNames.join(',')}
+        title={`${hview.assemblyNames.join(',')} (${getBpDisplayStr(hview.currBp)})`}
         availablePx={viewWidth}
         y={borderY - 12}
         x={viewWidth / 2}
@@ -246,7 +246,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
         )
       })}
       <AxisTitle
-        title={vview.assemblyNames.join(',')}
+        title={`${vview.assemblyNames.join(',')} (${getBpDisplayStr(vview.currBp)})`}
         availablePx={viewHeight}
         y={viewHeight / 2}
         x={12}
