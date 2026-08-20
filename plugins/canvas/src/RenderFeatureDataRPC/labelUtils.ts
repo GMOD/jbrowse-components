@@ -70,8 +70,15 @@ export function readFeatureLabels(
 // Does this glyph's emitter register the feature ITSELF as a labeled subfeature
 // (processTranscriptLayout's `!isRoot` branch, and emitBox's)? The rest label
 // their CHILDREN instead — a polyprotein's cleavage products, a transposon's
-// subparts — and those rows are counted by the child layout's own `labelRows`,
-// not here.
+// subparts.
+//
+// For `MatureProteinRegion` those child rows are counted by the child layout's
+// own `labelRows` (layoutMatureProteinRegion sets `ownsLabelRow` per child).
+// `RepeatRegion` and `CrisprGuide` do NOT: their emitters register children
+// straight off the feature, and neither layout returns a `labelRows` or an
+// `ownsLabelRow`, so in `below` mode those labels draw into a row nothing
+// reserved. See TODO.md §"Repeat and CRISPR subpart labels draw into an
+// unreserved row".
 //
 // Keyed off the glyph the child actually resolved to, because the emitter is:
 // it was keyed off `transcriptTypes` instead, a seven-entry type list that does

@@ -25,6 +25,7 @@ before anyone noticed.
 
 | Item | Area | First move |
 | --- | --- | --- |
+| [Repeat and CRISPR subpart labels draw into an unreserved row](#repeat-and-crispr-subpart-labels-draw-into-an-unreserved-row) | canvas | decide: reserve a row per glyph, or say `below` is a transcript/box affordance |
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
@@ -91,6 +92,34 @@ before anyone noticed.
 | [Time a two-tier PIF to settled](#time-a-two-tier-pif-to-settled-in-a-browser) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
 
 ## Ready to build: small and self-contained
+
+### Repeat and CRISPR subpart labels draw into an unreserved row
+
+`SELF_LABELING_GLYPHS` (`plugins/canvas/src/RenderFeatureDataRPC/labelUtils.ts`)
+marks `RepeatRegion` and `CrisprGuide` as labelling their children rather than
+themselves, on the stated grounds that those rows are counted by each child
+layout's own `labelRows`. That holds for `MatureProteinRegion`
+(`layoutMatureProteinRegion` sets `ownsLabelRow` per child) and for neither of
+these two: `layoutRepeatRegion` is a bare `layoutContainerGlyph` and
+`layoutCrisprGuide` a bare `layoutChild`, and both emitters register their
+children straight off the feature in `glyphEmitters.ts` — the repeat's subparts
+at `:459`, the PAM at `:568`.
+
+So with **Subfeature labels → Below** on either track type, `emitSubfeatureLabel`
+draws text into a row `bodyHeightPx` never reserved. On a CRISPR guide the
+feature's own name lands at `featureBottom + 2` and "PAM" at `featureBottom + 0`,
+two 11px labels 2px apart, and the pair overhangs into the next feature's row.
+On a `repeat_region` every subpart shares one row by design, so all N subpart
+labels sit at the same y — fine where the subparts are side by side (the LTRs and
+TSDs), overlapping where they are not (the internal retrotransposon spans them).
+
+**First move: decide whether these two glyphs reserve or opt out.** Reserving is
+one line each — set `labelRows: 1` on the layout when `config.subfeatureLabels
+=== 'below'` and the glyph will register a labelled child — and it is what the
+transcript path already does. Opting out means saying `below` is a
+transcript/box affordance and having these two draw `overlay` regardless, which
+is cheaper but silently overrides a setting the user chose. The default is
+`none`, so nothing ships broken today.
 
 ### Let a dotplot click open the alignment it is on
 
