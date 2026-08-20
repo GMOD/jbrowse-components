@@ -5,6 +5,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { ComparativeAdapterBase } from './ComparativeAdapterBase.ts'
 import {
   getBlockRefNames,
+  indexBlockRows,
   makeBlockFeatures,
   readAnchorsPair,
 } from './mcscanUtil.ts'
@@ -57,7 +58,9 @@ export abstract class McscanAnchorsAdapterBase<
     const { anchors, parseRow } = this.anchorsSource()
     return {
       assemblyNames,
-      feats: await readAnchorsPair({ bed1, bed2, anchors }, opts, parseRow),
+      feats: indexBlockRows(
+        await readAnchorsPair({ bed1, bed2, anchors }, opts, parseRow),
+      ),
     }
   }
 

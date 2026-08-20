@@ -3,10 +3,14 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
-import { joinBedPair, makeBlockFeatures } from '../mcscanUtil.ts'
+import {
+  indexBlockRows,
+  joinBedPair,
+  makeBlockFeatures,
+} from '../mcscanUtil.ts'
 import { parseBed, readFiles } from '../util.ts'
 
-import type { BareFeature, BlockRow } from '../mcscanUtil.ts'
+import type { BareFeature, BlockRow, BlockRowIndex } from '../mcscanUtil.ts'
 import type { MCScanBlocksAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
@@ -239,7 +243,7 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
     // table once per chromosome per band — the same Map lookups and the same
     // row objects, thrown away and rebuilt on every pan. The pairs are bounded
     // by the column count, and each holds what the file already holds.
-    const pairRows = new Map<string, BlockRow[]>()
+    const pairRows = new Map<string, BlockRowIndex>()
     // parsed once per row rather than once per row per pair: the columns sit
     // past every gene column, so they say the same thing whichever pair is drawn
     const attributeColumns = this.getConf('attributeColumns')
@@ -274,7 +278,7 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
     let rows = pairRows.get(key)
     if (!rows) {
       const seen = new Set<string>()
-      rows = blockLines
+      const joined = blockLines
         .map((cols, rowNum): BlockRow | undefined => {
           const pair = joinBedPair(
             bedMaps[colA]!,
@@ -298,6 +302,7 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
           }
         })
         .filter(f => f !== undefined)
+      rows = indexBlockRows(joined)
       pairRows.set(key, rows)
     }
     return rows
@@ -352,7 +357,7 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
         assemblyName,
         targetAssemblyName,
       )) {
-        for (const { a } of this.pairRows(qcol, mcol, setup)) {
+        for (const { a } of this.pairRows(qcol, mcol, setup).rows) {
           set.add(a.refName)
         }
       }

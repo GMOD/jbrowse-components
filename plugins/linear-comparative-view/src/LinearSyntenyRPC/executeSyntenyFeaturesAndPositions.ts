@@ -18,7 +18,9 @@ import {
   dnDsRatio,
   findRegionEntry,
   makeStringDict,
+  readAttribute,
   syntenyPanBufferPx,
+  writeAttribute,
 } from '@jbrowse/synteny-core'
 
 import { getMate } from '../syntenyMate.ts'
@@ -379,7 +381,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const winCumHi = (v1Offset + viewWidth + bufferPx) * v1.bpPerPx
   const windowSpan = winCumHi - winCumLo
 
-  const channelNames = Object.keys(channels.arrays)
+  const channelList = channels.list
   const stopTokenChecker = createStopTokenChecker(stopToken)
   // report() runs the throttled stop-token check itself, so it replaces the
   // per-feature checkStopTokenThrottled while also advancing the bar over whole-genome
@@ -550,13 +552,13 @@ export async function executeSyntenyFeaturesAndPositions({
     startsArray[validCount] = start
     endsArray[validCount] = end
 
-    for (const name of channelNames) {
+    for (const channel of channelList) {
       // dnds is the one derived channel: it is a ratio of two attributes, not
       // an attribute, so nothing on the feature answers to the name
-      channels.write(
+      writeAttribute(
+        channel,
         validCount,
-        name,
-        name === 'dnds' ? dnDsRatio(f) : channels.read(f, name),
+        channel.name === 'dnds' ? dnDsRatio(f) : readAttribute(f, channel.name),
       )
     }
 

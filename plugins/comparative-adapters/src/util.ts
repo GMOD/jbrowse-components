@@ -310,25 +310,110 @@ export function indexRecordsByName<T>(
   return index
 }
 
+// A whole-number field, read off the text without slicing it out. BED
+// coordinates are integers, so the digit loop answers every real row; anything
+// else falls back to the slice-and-coerce the split-based parse always did.
+function bedNum(text: string, from: number, to: number) {
+  if (to <= from) {
+    return Number.NaN
+  }
+  let n = 0
+  for (let i = from; i < to; i++) {
+    const digit = text.charCodeAt(i) - 48
+    if (digit < 0 || digit > 9) {
+      return Number(text.slice(from, to))
+    }
+    n = n * 10 + digit
+  }
+  return n
+}
+
+// One BED line, given its bounds inside `text`. Tab offsets rather than
+// `line.split('\t')`: a gene BED is the largest thing an MCScan track parses
+// (jcvi's grape BED is 55,564 rows) and the split allocated a six-element array
+// plus six substrings per row to keep four of them.
+//
+// Interning column 1 was tried here and removed: 33 distinct scaffolds over
+// 55,564 rows sounds like it should pay, but the Map lookup per row cost 28%
+// (35.6ms -> 46.0ms) and saved no measurable heap, because the strings it
+// deduplicates are the short ones V8 allocates flat anyway.
+function parseBedLine(
+  result: Map<string, BareFeature>,
+  text: string,
+  pos: number,
+  lineEnd: number,
+) {
+  if (lineEnd <= pos || text.charCodeAt(pos) === 35 /* # */) {
+    return
+  }
+  const t1 = text.indexOf('\t', pos)
+  if (t1 <= pos || t1 >= lineEnd) {
+    return
+  }
+  const t2 = text.indexOf('\t', t1 + 1)
+  if (t2 <= t1 + 1 || t2 >= lineEnd) {
+    return
+  }
+  const t3 = text.indexOf('\t', t2 + 1)
+  if (t3 <= t2 + 1 || t3 >= lineEnd) {
+    return
+  }
+  let t4 = text.indexOf('\t', t3 + 1)
+  if (t4 === -1 || t4 > lineEnd) {
+    t4 = lineEnd
+  }
+  if (t4 <= t3 + 1) {
+    return
+  }
+  let t5 = t4 === lineEnd ? lineEnd : text.indexOf('\t', t4 + 1)
+  if (t5 === -1 || t5 > lineEnd) {
+    t5 = lineEnd
+  }
+  let t6 = t5 === lineEnd ? lineEnd : text.indexOf('\t', t5 + 1)
+  if (t6 === -1 || t6 > lineEnd) {
+    t6 = lineEnd
+  }
+  const name = text.slice(t3 + 1, t4)
+  // BED writes an absent score as `.` (and jcvi's BEDs often do), which
+  // coercing turned into a NaN that rode all the way out to the feature
+  const score = bedNum(text, t4 + 1, t5)
+  result.set(name, {
+    refName: text.slice(pos, t1),
+    start: bedNum(text, t1 + 1, t2),
+    end: bedNum(text, t2 + 1, t3),
+    score: Number.isFinite(score) ? score : 0,
+    name,
+    // the column is `-` and nothing else, so a `-` with anything after it is
+    // not a minus strand
+    strand: t6 - t5 === 2 && text.charCodeAt(t5 + 1) === 45 ? -1 : 1,
+  })
+}
+
 export function parseBed(text: string) {
   const result = new Map<string, BareFeature>()
-  for (const line of text.split(/\n|\r\n|\r/)) {
-    if (line && !line.startsWith('#')) {
-      const [refName, start, end, name, score, strand] = line.split('\t')
-      if (refName && start && end && name) {
-        // BED writes an absent score as `.` (and jcvi's BEDs often do), which
-        // `+score` turned into a NaN that rode all the way out to the feature
-        const numScore = Number(score)
-        result.set(name, {
-          refName,
-          start: +start,
-          end: +end,
-          score: Number.isFinite(numScore) ? numScore : 0,
-          name,
-          strand: strand === '-' ? -1 : 1,
-        })
-      }
+  // A file whose only terminator is a lone CR (classic Mac) splits first — it
+  // is rare enough not to be worth a second cursor in the walk, and scanning
+  // for the next CR from every line is quadratic when the file holds none.
+  if (!text.includes('\n') && text.includes('\r')) {
+    for (const line of text.split('\r')) {
+      parseBedLine(result, line, 0, line.length)
     }
+    return result
+  }
+  const len = text.length
+  let pos = 0
+  while (pos < len) {
+    let nl = text.indexOf('\n', pos)
+    if (nl === -1) {
+      nl = len
+    }
+    parseBedLine(
+      result,
+      text,
+      pos,
+      nl > pos && text.charCodeAt(nl - 1) === 13 /* \r */ ? nl - 1 : nl,
+    )
+    pos = nl + 1
   }
   return result
 }

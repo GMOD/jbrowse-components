@@ -99,7 +99,10 @@ export {
   PRESET_ATTRIBUTES,
   createAttributeChannels,
   declaredAttributes,
+  readAttribute,
+  writeAttribute,
 } from './attributeChannels.ts'
+export type { AttributeChannel } from './attributeChannels.ts'
 export {
   attributeTooltipLines,
   featureAttributes,

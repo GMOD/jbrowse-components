@@ -12,6 +12,8 @@ import {
   dnDsRatio,
   findRegionEntry,
   makeStringDict,
+  readAttribute,
+  writeAttribute,
 } from '@jbrowse/synteny-core'
 
 import { cigarWorthParsing } from './dotplotCigarDetail.ts'
@@ -170,7 +172,7 @@ export async function executeDotplotFeaturesAndPositions({
     [...PRESET_ATTRIBUTES, ...declaredAttributes(adapterConfig)],
     count,
   )
-  const channelNames = Object.keys(channels.arrays)
+  const channelList = channels.list
   const refNameIds = new Uint32Array(count)
   const mateRefNameIds = new Uint32Array(count)
   const nameIds = new Uint32Array(count)
@@ -272,12 +274,12 @@ export async function executeDotplotFeaturesAndPositions({
     p22[n] = c22
     strands[n] = strand
     alignmentLengths[n] = Math.abs(end - start)
-    for (const name of channelNames) {
+    for (const channel of channelList) {
       // dnds is derived from two attributes, so nothing answers to its name
-      channels.write(
+      writeAttribute(
+        channel,
         n,
-        name,
-        name === 'dnds' ? dnDsRatio(f) : channels.read(f, name),
+        channel.name === 'dnds' ? dnDsRatio(f) : readAttribute(f, channel.name),
       )
     }
     refNameIds[n] = hDict.idFor(refName)

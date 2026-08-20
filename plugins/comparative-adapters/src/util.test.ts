@@ -24,6 +24,83 @@ describe('parseBed', () => {
   test('reads a row with no score column as 0', () => {
     expect(parseBed('chr1\t10\t20\tgene1').get('gene1')?.score).toBe(0)
   })
+
+  // The parse walks tab offsets in the whole text rather than splitting it into
+  // lines and each line into columns, so every boundary the split used to
+  // handle for free is now this function's own business. These are the ones a
+  // real BED reaches: all three line terminators, a trailing newline, a
+  // truncated row, an empty column, and a strand column with something after
+  // the `-`.
+  // The minus strand is on the FIRST row of each pair, so the terminator falls
+  // immediately after the `-` that the last column has to read as a strand: a
+  // parse that leaves the `\r` on the line reads `-\r` and reports plus.
+  test.each([
+    ['\\n', 'chr1\t1\t2\tg1\t0\t-\nchr2\t3\t4\tg2\t0\t+'],
+    ['\\r\\n', 'chr1\t1\t2\tg1\t0\t-\r\nchr2\t3\t4\tg2\t0\t+'],
+    ['lone \\r', 'chr1\t1\t2\tg1\t0\t-\rchr2\t3\t4\tg2\t0\t+'],
+    ['trailing newline', 'chr1\t1\t2\tg1\t0\t-\nchr2\t3\t4\tg2\t0\t+\n'],
+    ['trailing \\r\\n', 'chr1\t1\t2\tg1\t0\t-\r\nchr2\t3\t4\tg2\t0\t+\r\n'],
+  ])('splits rows on %s', (_label, text) => {
+    const bed = parseBed(text)
+    expect(bed.size).toBe(2)
+    expect(bed.get('g1')).toEqual({
+      refName: 'chr1',
+      start: 1,
+      end: 2,
+      name: 'g1',
+      score: 0,
+      strand: -1,
+    })
+    expect(bed.get('g2')).toEqual({
+      refName: 'chr2',
+      start: 3,
+      end: 4,
+      name: 'g2',
+      score: 0,
+      strand: 1,
+    })
+  })
+
+  // the score is the last column here, so a CR left on the line lands inside
+  // it: `0\r` is not finite and falls back to the missing-value 0, which is
+  // what a `0` score reads as anyway. A non-zero one is what tells them apart.
+  test('reads the last column of a CRLF row without the CR', () => {
+    expect(parseBed('chr1\t1\t2\tg1\t55\r\n').get('g1')?.score).toBe(55)
+  })
+
+  test.each([
+    ['a comment', '#chr1\t1\t2\tg1\t0\t+'],
+    ['a blank line', '\n\n'],
+    ['no tabs', 'chr1'],
+    ['a row cut off before the name', 'chr1\t1\t2'],
+    ['an empty refName', '\t1\t2\tg1\t0\t+'],
+    ['an empty start', 'chr1\t\t2\tg1\t0\t+'],
+    ['an empty end', 'chr1\t1\t\tg1\t0\t+'],
+    ['an empty name', 'chr1\t1\t2\t\t0\t+'],
+  ])('skips %s', (_label, text) => {
+    expect(parseBed(text).size).toBe(0)
+  })
+
+  // a `-` is the minus strand; a column that merely starts with one is not
+  test('reads a strand column of `-x` as plus', () => {
+    expect(parseBed('chr1\t1\t2\tg1\t0\t-x').get('g1')?.strand).toBe(1)
+  })
+
+  // the columns past strand are thickStart/thickEnd/itemRgb, which say nothing
+  // about the strand column before them
+  test('reads a minus strand followed by more columns', () => {
+    expect(parseBed('chr1\t1\t2\tg1\t0\t-\t1\t2').get('g1')?.strand).toBe(-1)
+  })
+
+  // the coordinate columns take the digit fast path; a score that is not a
+  // whole number still has to coerce
+  test('reads a fractional score', () => {
+    expect(parseBed('chr1\t1\t2\tg1\t2.5\t+').get('g1')?.score).toBe(2.5)
+  })
+
+  test('reads a negative score', () => {
+    expect(parseBed('chr1\t1\t2\tg1\t-3\t+').get('g1')?.score).toBe(-3)
+  })
 })
 
 // The tier chooser for the all-vs-all indexed adapter (PairwiseIndexedPAFAdapter

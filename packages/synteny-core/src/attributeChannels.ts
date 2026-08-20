@@ -34,6 +34,50 @@ export function declaredAttributes(adapterConfig: Record<string, unknown>) {
 }
 
 /**
+ * One channel: its Float32Array, plus the range it has covered so far.
+ *
+ * The range rides on the channel rather than in a name-keyed map beside it
+ * because both workers write every channel of every feature, which makes this
+ * their innermost loop. Reaching a channel by name cost a dictionary lookup for
+ * the buffer and a `Map.get`/`Map.set` pair for each end of the range, per
+ * channel per feature — four preset channels over a whole-genome fetch is
+ * millions of hash lookups to write four floats.
+ */
+export interface AttributeChannel {
+  name: string
+  array: Float32Array
+  min: number
+  max: number
+}
+
+/** Read `name` off a feature as a number, -1 for anything that is not one. */
+export function readAttribute(feature: Feature, name: string) {
+  const value = feature.get(name)
+  return typeof value === 'number' && Number.isFinite(value) ? value : -1
+}
+
+/**
+ * Write one feature's value into a channel, tracking the range as it goes.
+ * Both workers call this per channel per feature, so it takes the resolved
+ * channel rather than its name.
+ */
+export function writeAttribute(
+  channel: AttributeChannel,
+  index: number,
+  value: number,
+) {
+  channel.array[index] = value
+  if (value >= 0) {
+    if (value < channel.min) {
+      channel.min = value
+    }
+    if (value > channel.max) {
+      channel.max = value
+    }
+  }
+}
+
+/**
  * Allocate one Float32Array per channel, fill it as features are visited, and
  * report the span each one actually covered.
  *
@@ -46,40 +90,25 @@ export function createAttributeChannels(
   names: readonly string[],
   count: number,
 ) {
-  const unique = [...new Set(names)]
-  const arrays = Object.fromEntries(
-    unique.map(name => [name, new Float32Array(count)]),
-  )
-  const lo = new Map(unique.map(name => [name, Number.POSITIVE_INFINITY]))
-  const hi = new Map(unique.map(name => [name, Number.NEGATIVE_INFINITY]))
+  const list: AttributeChannel[] = [...new Set(names)].map(name => ({
+    name,
+    array: new Float32Array(count),
+    min: Number.POSITIVE_INFINITY,
+    max: Number.NEGATIVE_INFINITY,
+  }))
   return {
-    arrays,
-    write(index: number, name: string, value: number) {
-      const array = arrays[name]
-      if (array) {
-        array[index] = value
-        if (value >= 0) {
-          lo.set(name, Math.min(lo.get(name)!, value))
-          hi.set(name, Math.max(hi.get(name)!, value))
-        }
-      }
-    },
-    /** Read `name` off a feature as a number, -1 for anything that is not one. */
-    read(feature: Feature, name: string) {
-      const value = feature.get(name)
-      return typeof value === 'number' && Number.isFinite(value) ? value : -1
-    },
+    /** The resolved channels, in declaration order — what the hot loop walks. */
+    list,
     /** Truncate to the features actually kept, and close out the ranges. */
     finish(validCount: number) {
       const attributes: Record<string, Float32Array> = {}
       const attributeRanges: Record<string, AttributeRange> = {}
-      for (const name of unique) {
-        attributes[name] = arrays[name]!.subarray(0, validCount)
-        const min = lo.get(name)!
+      for (const { name, array, min, max } of list) {
+        attributes[name] = array.subarray(0, validCount)
         // an attribute nothing carried has no range to report, and reporting
         // [Infinity, -Infinity] would make a legend label nonsense
         if (Number.isFinite(min)) {
-          attributeRanges[name] = { min, max: hi.get(name)! }
+          attributeRanges[name] = { min, max }
         }
       }
       return { attributes, attributeRanges }

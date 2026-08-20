@@ -136,16 +136,60 @@ function facingSides(
   )
 }
 
+/**
+ * A joined row set plus, per side, its rows bucketed by that side's refName.
+ *
+ * A query names one refName, and every MCScan format holds its whole file in
+ * memory, so without the buckets each query walked every row in the file to
+ * find the ones on one contig — once per region. A whole-genome synteny view
+ * asks for one region per displayed contig on each axis, which made the fetch
+ * quadratic in a file's own contig count: 29 grape regions against the 15,265
+ * joined rows of jcvi's grape/peach anchors is 442,685 row visits to emit
+ * 15,265 features.
+ *
+ * Built per side on first use rather than for both up front, since a pairwise
+ * track only ever queries the side its axis faces — both get built only for a
+ * self-alignment, or for the two-axis fetch, which do ask about both.
+ */
+export interface BlockRowIndex {
+  rows: BlockRow[]
+  bySide: (side: number) => Map<string, BlockRow[]>
+}
+
+export function indexBlockRows(rows: BlockRow[]): BlockRowIndex {
+  const sides: (Map<string, BlockRow[]> | undefined)[] = []
+  return {
+    rows,
+    bySide(side: number) {
+      let buckets = sides[side]
+      if (buckets === undefined) {
+        buckets = new Map()
+        for (const row of rows) {
+          const refName = side === 0 ? row.a.refName : row.b.refName
+          let bucket = buckets.get(refName)
+          if (bucket === undefined) {
+            bucket = []
+            buckets.set(refName, bucket)
+          }
+          bucket.push(row)
+        }
+        sides[side] = buckets
+      }
+      return buckets
+    },
+  }
+}
+
 // refNames of the given assembly across all links (the side that faces it).
 export function getBlockRefNames(
   assemblyNames: string[],
-  feats: BlockRow[],
+  index: BlockRowIndex,
   assemblyName: string | undefined,
 ) {
   const set = new Set<string>()
-  for (const idx of facingSides(assemblyNames, assemblyName)) {
-    for (const { a, b } of feats) {
-      set.add(idx === 0 ? a.refName : b.refName)
+  for (const side of facingSides(assemblyNames, assemblyName)) {
+    for (const refName of index.bySide(side).keys()) {
+      set.add(refName)
     }
   }
   return [...set]
@@ -160,19 +204,22 @@ export function getBlockRefNames(
 // are different links. Empty for a caller with only one pair to emit.
 export function makeBlockFeatures(
   assemblyNames: string[],
-  feats: BlockRow[],
+  index: BlockRowIndex,
   region: Region,
   idPrefix = '',
 ) {
   const out: Feature[] = []
-  for (const index of facingSides(assemblyNames, region.assemblyName)) {
-    const mateIndex = index === 0 ? 1 : 0
-    for (const { a, b, rowNum, strand, score, attrs } of feats) {
-      const [f1, f2] = index === 0 ? [a, b] : [b, a]
-      if (
-        f1.refName === region.refName &&
-        doesIntersect2(region.start, region.end, f1.start, f1.end)
-      ) {
+  for (const side of facingSides(assemblyNames, region.assemblyName)) {
+    const rows = index.bySide(side).get(region.refName)
+    if (rows === undefined) {
+      continue
+    }
+    const first = side === 0
+    const assemblyName = assemblyNames[side]!
+    const mateAssemblyName = assemblyNames[first ? 1 : 0]!
+    for (const { a, b, rowNum, strand, score, attrs } of rows) {
+      const f1 = first ? a : b
+      if (doesIntersect2(region.start, region.end, f1.start, f1.end)) {
         out.push(
           new SimpleFeature({
             // first, so a column named after one of the feature's own fields
@@ -180,14 +227,14 @@ export function makeBlockFeatures(
             // free to name its columns anything
             ...attrs,
             ...f1,
-            uniqueId: `${idPrefix}${index}-${rowNum}`,
+            uniqueId: `${idPrefix}${side}-${rowNum}`,
             syntenyId: rowNum,
             strand,
-            assemblyName: assemblyNames[index]!,
+            assemblyName,
             ...(score === undefined ? undefined : { score }),
             mate: {
-              ...f2,
-              assemblyName: assemblyNames[mateIndex]!,
+              ...(first ? b : a),
+              assemblyName: mateAssemblyName,
             },
           }),
         )

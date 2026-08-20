@@ -30,15 +30,31 @@ export interface StringDict {
 export function makeStringDict(): StringDict {
   const ids = new Map<string, number>()
   const dict: string[] = []
+  // The last value this lane saw, which is very often the next one too: a
+  // feature's assembly lane is one value for the whole fetch, and its refName
+  // lane changes only where the sort crosses a contig. Hitting this skips the
+  // string hash a `Map.get` costs — the workers call `idFor` five times per
+  // feature, which made it 7.8% of a whole-genome synteny fetch's profile.
+  //
+  // A `''` seed is not a false hit: `''` is a real value in these lanes (an
+  // unnamed feature) and `lastId` is only consulted after the first `idFor`
+  // has set it.
+  let lastValue: string | undefined
+  let lastId = 0
   return {
     dict,
     idFor(value: string) {
+      if (value === lastValue) {
+        return lastId
+      }
       let id = ids.get(value)
       if (id === undefined) {
         id = dict.length
         dict.push(value)
         ids.set(value, id)
       }
+      lastValue = value
+      lastId = id
       return id
     },
   }
