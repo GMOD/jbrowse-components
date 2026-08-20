@@ -1,16 +1,15 @@
 import { offscreenMateAt } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 
-import type { OffscreenMateSide } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
+import type {
+  OffscreenMateLane,
+  OffscreenMateSide,
+} from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
 // One row of marks: the off-screen mates every display on the level fetched for
-// one axis, and the ruler to place them against.
-export interface OffscreenMateStrip {
-  datasets: OffscreenMateData[]
-  bpPerPx: number
-  offsetPx: number
-  minAlignmentLength: number
-  side: OffscreenMateSide
+// one axis, and the ruler to place them against — plus the one thing the draw
+// has no use for and the pointer does.
+export interface OffscreenMateStrip extends OffscreenMateLane {
   // The row a click on one of these marks navigates: the one NOT displaying the
   // contig the mark names, which is the row on the far side of the band from the
   // ruler the mark was placed against.
@@ -138,9 +137,13 @@ export function offscreenMateHit(
 ): OffscreenMateHit | undefined {
   const width = model.parentView.width
   for (const strip of offscreenMateStrips(model)) {
-    const hit = offscreenMateAt({ ...strip, width, height: model.height }, x, y)
-    if (hit) {
-      return { refName: hit.refName, navRow: strip.navRow, side: strip.side }
+    const refName = offscreenMateAt(
+      { ...strip, width, height: model.height },
+      x,
+      y,
+    )
+    if (refName) {
+      return { refName, navRow: strip.navRow, side: strip.side }
     }
   }
   return undefined
@@ -164,7 +167,7 @@ export function offscreenMateHit(
 export function offscreenMateCount(
   model: OffscreenMateSource,
   refName: string,
-  side: OffscreenMateSide = 'top',
+  side: OffscreenMateSide,
 ) {
   let total = 0
   for (const d of model.linearSyntenyDisplays) {

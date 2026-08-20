@@ -13,6 +13,7 @@ function mates(n: number): OffscreenMateData {
     starts: Float64Array.from({ length: n }, (_, i) => i * 100),
     ends: Float64Array.from({ length: n }, (_, i) => i * 100 + 50),
     mateRefNameIds: new Uint32Array(n),
+    lengths: Float32Array.from({ length: n }, () => 50),
   }
 }
 
@@ -251,7 +252,7 @@ test('the count sums every display on the level', () => {
       },
     ],
   })
-  expect(offscreenMateCount(both, 'other')).toBe(5)
+  expect(offscreenMateCount(both, 'other', 'top')).toBe(5)
 })
 
 // ...one lane at a time, named by the caller: the two hold contigs of different
@@ -262,11 +263,11 @@ test('the count reads the lane it is asked for', () => {
 })
 
 test('a contig this band has nothing to say about counts zero', () => {
-  expect(offscreenMateCount(source(), 'ctgQ')).toBe(0)
+  expect(offscreenMateCount(source(), 'ctgQ', 'top')).toBe(0)
 })
 
 test('a display that has not fetched counts nothing rather than throwing', () => {
   expect(
-    offscreenMateCount(source({ linearSyntenyDisplays: [{}] }), 'other'),
+    offscreenMateCount(source({ linearSyntenyDisplays: [{}] }), 'other', 'top'),
   ).toBe(0)
 })

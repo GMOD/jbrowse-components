@@ -23,6 +23,11 @@ import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
  * unconditionally allocated a band-sized DPR-scaled backing store per level for
  * a strip nobody had asked for. The SVG export has always been gated this way.
  *
+ * ONE CALL FOR BOTH STRIPS, not one per strip: the band is the drawing unit.
+ * Its two strips share a fill and, more to the point, share the vertical room
+ * their labels stack into — drawn a strip at a time they overprinted each other
+ * on any band short enough for the two to meet (`placeLabels`).
+ *
  * `OverlayCanvas` rather than a `<canvas>` of its own, which is what this was
  * and is what got it wrong: a canvas is a REPLACED element, so `inset: 0` does
  * not stretch it the way it stretches a div — with no CSS width it takes its
@@ -47,7 +52,7 @@ const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
 }: {
   model: LinearSyntenyViewHelperModel
 }) {
-  const { color, haloColor } = offscreenMateColors(useTheme())
+  const colors = offscreenMateColors(useTheme())
   const width = model.parentView.width
   const height = model.height
   // read here rather than inside the draw: this is an observer, so what the
@@ -64,9 +69,7 @@ const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
       width={width}
       height={height}
       draw={ctx => {
-        for (const strip of strips) {
-          drawOffscreenMates(ctx, { ...strip, width, height, color, haloColor })
-        }
+        drawOffscreenMates(ctx, strips, { width, height, ...colors })
       }}
     />
   ) : null

@@ -42,6 +42,17 @@ test('a block straddling a region edge is clamped, not dropped', () => {
   expect([...out.ends]).toEqual([1000])
 })
 
+// ...and it keeps its OWN length through that clamp, because the length is what
+// `minAlignmentLength` culls on and the ribbons cull on the unclamped extent
+// (`alignmentLengths`, off `starts`/`ends` before `clipLargeBlockToWindow`).
+// Measured off the clamped span instead, raising Min length hid the mark for an
+// alignment whose ribbon the same setting kept.
+test('...and reports the block length, not the clamped one', () => {
+  const c = createOffscreenMateCollector(index)
+  c.add('chr1', 900, 1200, 'elsewhere')
+  expect([...c.finish().lengths]).toEqual([300])
+})
+
 // The count is what answers "how much is this view not showing you", so it has
 // to include the ones that could not be placed — otherwise the number shrinks
 // to whatever happened to be drawable, which is the omission all over again.

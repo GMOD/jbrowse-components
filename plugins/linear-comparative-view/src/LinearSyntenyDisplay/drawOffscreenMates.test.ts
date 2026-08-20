@@ -8,6 +8,10 @@ import {
 } from './drawOffscreenMates.ts'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+import type {
+  OffscreenMateBand,
+  OffscreenMateLane,
+} from './drawOffscreenMates.ts'
 
 interface Rect {
   x: number
@@ -19,6 +23,10 @@ interface Rect {
 // One char is 6px wide here, which is enough to make "does the label fit"
 // deterministic without a real text engine.
 const CHAR_PX = 6
+
+// What a label reaches above its baseline, which is what the row budget reserves
+// — the same 10px-font approximation `labelBaselines` works from.
+const LABEL_ASCENT_PX = 8
 
 function fakeCtx() {
   const rects: Rect[] = []
@@ -72,21 +80,45 @@ function data(
     starts: Float64Array.from(spans.map(s => s[0])),
     ends: Float64Array.from(spans.map(s => s[1])),
     mateRefNameIds: Uint32Array.from(names, n => dict.indexOf(n)),
+    // unclamped here, since these spans are already inside their region — what
+    // the two measure differently is `collectOffscreenMates`'s own test
+    lengths: Float32Array.from(spans.map(s => s[1] - s[0])),
   }
 }
 
+// Lane, band and colors in one object: every lane in these tests is drawn in the
+// band it is hit-tested against, and `offscreenMateAt` takes the union of the
+// two anyway.
 const params = {
   bpPerPx: 10,
   offsetPx: 0,
   width: 100,
   height: 50,
-  color: 'red',
+  side: 'top' as const,
+  minAlignmentLength: 0,
+  markColor: 'red',
+  labelColor: 'blue',
   haloColor: 'white',
+}
+
+// The band is the drawing unit, so the entry point takes every lane at once.
+// Overrides split the way the two arguments do: the ruler and the axis per lane,
+// the box and the colors per band.
+function draw(
+  ctx: CanvasRenderingContext2D,
+  lanes: (Partial<OffscreenMateLane> & { datasets: OffscreenMateData[] })[],
+  over: Partial<OffscreenMateBand> = {},
+) {
+  drawOffscreenMates(
+    ctx,
+    lanes.map(lane => ({ ...params, ...lane })),
+    { ...params, ...over },
+  )
 }
 
 test('a mark sits on the query axis at the alignment position', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, { ...params, datasets: [data([[100, 400]])] })
+  draw(ctx, [{ datasets: [data([[100, 400]])] }])
   expect(rects).toEqual([{ x: 10, y: 0, w: 30, h: OFFSCREEN_MATE_HEIGHT_PX }])
 })
 
@@ -94,90 +126,130 @@ test('a mark sits on the query axis at the alignment position', () => {
 // to whatever sits directly under it, which is what these do NOT know.
 test('a mark stops well short of the far row', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, { ...params, datasets: [data([[100, 400]])] })
+  draw(ctx, [{ datasets: [data([[100, 400]])] }])
   expect(rects[0]!.h).toBeLessThan(params.height / 2)
 })
 
 test('and takes at most a third of a band too short for its full height', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    height: 9,
-    datasets: [data([[100, 400]])],
-  })
+  draw(ctx, [{ datasets: [data([[100, 400]])] }], { height: 9 })
   expect(rects[0]!.h).toBe(3)
 })
 
 test('the pan offset moves it, as it moves a ribbon', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    offsetPx: 5,
-    datasets: [data([[100, 400]])],
-  })
+  draw(ctx, [{ offsetPx: 5, datasets: [data([[100, 400]])] }])
   expect(rects[0]!.x).toBe(5)
 })
 
 test('a sub-pixel alignment is still a mark', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, { ...params, datasets: [data([[100, 101]])] })
+  draw(ctx, [{ datasets: [data([[100, 101]])] }])
   expect(rects[0]!.w).toBe(MIN_OFFSCREEN_MATE_WIDTH_PX)
 })
 
 test('one off each side of the window is skipped, the one between is not', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    datasets: [
-      data([
-        [0, 50],
-        [400, 500],
-        [20000, 20100],
-      ]),
-    ],
-  })
+  draw(ctx, [
+    {
+      datasets: [
+        data([
+          [0, 50],
+          [400, 500],
+          [20000, 20100],
+        ]),
+      ],
+    },
+  ])
   expect(rects).toHaveLength(2)
   expect(rects.map(r => r.x)).toEqual([0, 40])
 })
 
 test('nothing to say draws nothing', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, { ...params, datasets: [data([])] })
+  draw(ctx, [{ datasets: [data([])] }])
   expect(rects).toHaveLength(0)
 })
 
 test('a collapsed band draws nothing rather than a zero-height row', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    height: 0,
-    datasets: [data([[100, 400]])],
-  })
+  draw(ctx, [{ datasets: [data([[100, 400]])] }], { height: 0 })
   expect(rects).toHaveLength(0)
 })
 
 test('the alignment-length floor hides a mark the ribbons would also hide', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    minAlignmentLength: 200,
-    datasets: [
-      data([
-        [100, 400],
-        [1000, 1100],
-      ]),
-    ],
-  })
+  draw(ctx, [
+    {
+      minAlignmentLength: 200,
+      datasets: [
+        data([
+          [100, 400],
+          [1000, 1100],
+        ]),
+      ],
+    },
+  ])
   expect(rects).toHaveLength(1)
   expect(rects[0]!.x).toBe(10)
 })
 
+// The floor is the block's own length, which the region clamp can make much
+// shorter than the span drawn for it — see collectOffscreenMates. Culling on
+// what is drawn hid the marks at a region's edges and nothing else.
+test('the floor reads the block length, not the span the clamp left', () => {
+  const { ctx, rects } = fakeCtx()
+  const clamped = data([[100, 200]])
+  draw(ctx, [
+    {
+      minAlignmentLength: 500,
+      datasets: [{ ...clamped, lengths: Float32Array.from([900]) }],
+    },
+  ])
+  expect(rects).toHaveLength(1)
+})
+
+// The marks are the background and the labels are the finding, so the greys are
+// not the same grey: a strip at full `text.secondary` read as the loudest thing
+// in a band of 0.2-alpha ribbons.
+test('the marks are painted fainter than the names over them', () => {
+  const styles: string[] = []
+  const { ctx } = fakeCtx()
+  const spy = new Proxy(ctx, {
+    set(target, prop, value: unknown) {
+      if (prop === 'fillStyle') {
+        styles.push(`${value}`)
+      }
+      return Reflect.set(target, prop, value)
+    },
+  })
+  draw(spy, [{ datasets: [data([[0, 1000]], ['ctgB'])] }], { width: 1000 })
+  expect(styles).toEqual([params.markColor, params.labelColor])
+})
+
+// Both lanes want the same rows whenever their stretches cover the same pixels,
+// which on a band this short is more rows than there are. Ordered by x alone the
+// top strip took every one of them and the bottom strip's marks were never
+// named at all, at any zoom.
+test('a short band names both strips rather than all of one', () => {
+  const { ctx, texts } = fakeCtx()
+  const wide = (name: string) => data([[0, 10000]], [name])
+  draw(
+    ctx,
+    [
+      { datasets: [wide('q1'), wide('q2'), wide('q3')] },
+      { side: 'bottom', datasets: [wide('t1'), wide('t2'), wide('t3')] },
+    ],
+    { width: 1000, height: 50 },
+  )
+  const named = texts.map(t => t.text)
+  expect(named.some(n => n.startsWith('q'))).toBe(true)
+  expect(named.some(n => n.startsWith('t'))).toBe(true)
+})
+
 test('a mark wide enough carries the contig it points at', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    datasets: [data([[0, 1000]], ['ctgB'])],
-  })
+  draw(ctx, [{ datasets: [data([[0, 1000]], ['ctgB'])] }])
   expect(texts).toEqual([{ text: 'ctgB', x: 38, y: 16 }])
 })
 
@@ -185,28 +257,26 @@ test('a mark wide enough carries the contig it points at', () => {
 // hold its name is the one whose neighbours would have overprinted it.
 test('a mark too narrow for the name goes unlabelled, and still drawn', () => {
   const { ctx, rects, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    datasets: [data([[100, 300]], ['ctgB'])],
-  })
+  draw(ctx, [{ datasets: [data([[100, 300]], ['ctgB'])] }])
   expect(rects).toHaveLength(1)
   expect(texts).toEqual([])
 })
 
 test('a run of marks to one contig says its name once, not per mark', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    datasets: [
-      data(
-        [
-          [0, 1000],
-          [1000, 2000],
-        ],
-        ['ctgB', 'ctgB'],
-      ),
-    ],
-  })
+  draw(ctx, [
+    {
+      datasets: [
+        data(
+          [
+            [0, 1000],
+            [1000, 2000],
+          ],
+          ['ctgB', 'ctgB'],
+        ),
+      ],
+    },
+  ])
   expect(texts).toHaveLength(1)
 })
 
@@ -216,10 +286,7 @@ test('a run of marks to one contig says its name once, not per mark', () => {
 // so the label passed it and drew where nothing could show it.
 test('a stretch wider than the window is named inside the window', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    datasets: [data([[0, 100000]], ['ctgB'])],
-  })
+  draw(ctx, [{ datasets: [data([[0, 100000]], ['ctgB'])] }])
   expect(texts).toHaveLength(1)
   expect(texts[0]!.x).toBeGreaterThanOrEqual(0)
   expect(texts[0]!.x + 'ctgB'.length * CHAR_PX).toBeLessThanOrEqual(
@@ -231,11 +298,7 @@ test('a stretch wider than the window is named inside the window', () => {
 // where the reader can see, by half of whatever fell off.
 test('a stretch running off one edge is named over the part in view', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    offsetPx: 50,
-    datasets: [data([[0, 1000]], ['ctgB'])],
-  })
+  draw(ctx, [{ offsetPx: 50, datasets: [data([[0, 1000]], ['ctgB'])] }])
   // 0..1000bp at 10bp/px panned 50px is -50..50, so the visible half is 0..50
   expect(texts).toEqual([{ text: 'ctgB', x: 13, y: 16 }])
 })
@@ -244,25 +307,21 @@ test('a stretch running off one edge is named over the part in view', () => {
 // sliver in view goes unlabelled rather than carrying a name wider than it.
 test('a stretch with only a sliver in view goes unlabelled', () => {
   const { ctx, rects, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    offsetPx: 95,
-    datasets: [data([[0, 1000]], ['ctgB'])],
-  })
+  draw(ctx, [{ offsetPx: 95, datasets: [data([[0, 1000]], ['ctgB'])] }])
   expect(rects).toHaveLength(1)
   expect(texts).toEqual([])
 })
 
 test('the hit test answers the contig under the pointer', () => {
   const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
-  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgB')
+  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgB')
 })
 
 // What the tooltip reports for the mark under the pointer: the per-contig tally
 // the menu's headline is summed from, not the number of marks drawn.
-test('the hit carries how many alignments go to that contig', () => {
+test('the hit is the contig alone, which is all the level asks for', () => {
   const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
-  expect(offscreenMateAt(layout, 20, 3)?.count).toBe(1)
+  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgB')
 })
 
 // Draw and hit test read one layout, so this is the shape the bug cannot take —
@@ -281,7 +340,7 @@ test('every drawn mark is hittable at its own left edge', () => {
       ),
     ],
   }
-  drawOffscreenMates(ctx, layout)
+  draw(ctx, [layout])
   expect(rects).toHaveLength(2)
   for (const r of rects) {
     expect(offscreenMateAt(layout, r.x + 0.5, 1)).toBeDefined()
@@ -360,26 +419,30 @@ test('where two overlap, the hit is the one drawn on top', () => {
       ),
     ],
   }
-  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgC')
+  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgC')
 })
 
 // The merge is per stretch, not per contig: grape chr5 syntenic to two separate
 // peach segments is two things a reader wants pointed at, not one.
 test('one contig in two separate places is named in both', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    width: 1000,
-    datasets: [
-      data(
-        [
-          [0, 1000],
-          [8000, 9000],
+  draw(
+    ctx,
+    [
+      {
+        datasets: [
+          data(
+            [
+              [0, 1000],
+              [8000, 9000],
+            ],
+            ['ctgB', 'ctgB'],
+          ),
         ],
-        ['ctgB', 'ctgB'],
-      ),
+      },
     ],
-  })
+    { width: 1000 },
+  )
   expect(texts.map(t => t.x)).toEqual([38, 838])
 })
 
@@ -387,19 +450,23 @@ test('one contig in two separate places is named in both', () => {
 // sorts before it walks. Same two stretches, handed over back to front.
 test('the stretches are found whatever order the anchors arrived in', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    width: 1000,
-    datasets: [
-      data(
-        [
-          [8000, 9000],
-          [0, 1000],
+  draw(
+    ctx,
+    [
+      {
+        datasets: [
+          data(
+            [
+              [8000, 9000],
+              [0, 1000],
+            ],
+            ['ctgB', 'ctgB'],
+          ),
         ],
-        ['ctgB', 'ctgB'],
-      ),
+      },
     ],
-  })
+    { width: 1000 },
+  )
   expect(texts.map(t => t.x)).toEqual([38, 838])
 })
 
@@ -409,10 +476,7 @@ test('the stretches are found whatever order the anchors arrived in', () => {
 // stroke rather than trusting the picture.
 test('a label is haloed before it is filled', () => {
   const { ctx, texts, strokes } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    datasets: [data([[0, 1000]], ['ctgB'])],
-  })
+  draw(ctx, [{ datasets: [data([[0, 1000]], ['ctgB'])] }])
   expect(strokes).toEqual(texts)
   expect(strokes).toHaveLength(1)
 })
@@ -423,11 +487,11 @@ test('a label is haloed before it is filled', () => {
 // no marks in it, and nothing else would report that.
 test('the same draw emits marks and labels through SvgCanvas', () => {
   const svg = new SvgCanvas()
-  drawOffscreenMates(svg, {
-    ...params,
-    width: 1000,
-    datasets: [data([[0, 1000]], ['ctgB'])],
-  })
+  drawOffscreenMates(
+    svg,
+    [{ ...params, datasets: [data([[0, 1000]], ['ctgB'])] }],
+    { ...params, width: 1000 },
+  )
   const out = svg.getSerializedSvg()
   // one path for the whole strip, not a <rect> per alignment
   expect(out).toContain('<path')
@@ -455,13 +519,11 @@ function interleaved(contigs: string[], n = 300) {
 
 test('three contigs over one stretch are named on three rows, not one', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    bpPerPx: 300,
-    width: 1500,
-    height: 100,
-    datasets: [interleaved(['ctgAAA', 'ctgBBB', 'ctgCCC'])],
-  })
+  draw(
+    ctx,
+    [{ bpPerPx: 300, datasets: [interleaved(['ctgAAA', 'ctgBBB', 'ctgCCC'])] }],
+    { width: 1500, height: 100 },
+  )
   expect(texts.map(t => t.text).sort()).toEqual(['ctgAAA', 'ctgBBB', 'ctgCCC'])
   expect(new Set(texts.map(t => t.y)).size).toBe(3)
 })
@@ -470,13 +532,16 @@ test('three contigs over one stretch are named on three rows, not one', () => {
 // over a name already there.
 test('a stretch with no free row goes unlabelled', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    bpPerPx: 300,
-    width: 1500,
-    height: 100,
-    datasets: [interleaved(['ctgAAA', 'ctgBBB', 'ctgCCC', 'ctgDDD'])],
-  })
+  draw(
+    ctx,
+    [
+      {
+        bpPerPx: 300,
+        datasets: [interleaved(['ctgAAA', 'ctgBBB', 'ctgCCC', 'ctgDDD'])],
+      },
+    ],
+    { width: 1500, height: 100 },
+  )
   expect(texts).toHaveLength(3)
   const boxes = texts.map(t => ({ ...t, w: t.text.length * CHAR_PX }))
   for (const a of boxes) {
@@ -492,13 +557,11 @@ test('a stretch with no free row goes unlabelled', () => {
 // into the view below.
 test('a short band keeps the labels on one row', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    bpPerPx: 300,
-    width: 1500,
-    height: 18,
-    datasets: [interleaved(['ctgAAA', 'ctgBBB', 'ctgCCC'])],
-  })
+  draw(
+    ctx,
+    [{ bpPerPx: 300, datasets: [interleaved(['ctgAAA', 'ctgBBB', 'ctgCCC'])] }],
+    { width: 1500, height: 18 },
+  )
   expect(new Set(texts.map(t => t.y)).size).toBe(1)
   expect(texts).toHaveLength(1)
 })
@@ -509,11 +572,11 @@ test('a short band keeps the labels on one row', () => {
 // caller's loop instead of through the geometry.
 test('two displays over one stretch are named on two rows, not one', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    width: 1000,
-    datasets: [data([[0, 1000]], ['ctgB']), data([[0, 1000]], ['ctgC'])],
-  })
+  draw(
+    ctx,
+    [{ datasets: [data([[0, 1000]], ['ctgB']), data([[0, 1000]], ['ctgC'])] }],
+    { width: 1000 },
+  )
   expect(texts.map(t => t.text)).toEqual(['ctgB', 'ctgC'])
   expect(new Set(texts.map(t => t.y)).size).toBe(2)
 })
@@ -525,7 +588,7 @@ test('where two displays overlap, the hit is the one drawn on top', () => {
     ...params,
     datasets: [data([[100, 400]], ['ctgB']), data([[150, 350]], ['ctgC'])],
   }
-  expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgC')
+  expect(offscreenMateAt(layout, 20, 3)).toBe('ctgC')
 })
 
 // A band with no room for the first baseline gets no labels rather than a row
@@ -533,11 +596,9 @@ test('where two displays overlap, the hit is the one drawn on top', () => {
 // keeping out of the view below.
 test('a band too short for a baseline is marks alone', () => {
   const { ctx, rects, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
+  draw(ctx, [{ datasets: [data([[0, 1000]], ['ctgB'])] }], {
     height: 12,
     width: 1000,
-    datasets: [data([[0, 1000]], ['ctgB'])],
   })
   expect(rects).toHaveLength(1)
   expect(texts).toEqual([])
@@ -549,11 +610,7 @@ test('a band too short for a baseline is marks alone', () => {
 // below it for the same reason the query strip does, in the other direction.
 test('a target-axis mark hangs off the bottom edge', () => {
   const { ctx, rects } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    side: 'bottom',
-    datasets: [data([[100, 400]])],
-  })
+  draw(ctx, [{ side: 'bottom', datasets: [data([[100, 400]])] }])
   expect(rects).toEqual([
     {
       x: 10,
@@ -568,11 +625,7 @@ test('a target-axis mark hangs off the bottom edge', () => {
 // in the middle of the band naming marks at the bottom of it.
 test('a target-axis label sits above its marks', () => {
   const { ctx, texts, rects } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    side: 'bottom',
-    datasets: [data([[0, 1000]], ['ctgB'])],
-  })
+  draw(ctx, [{ side: 'bottom', datasets: [data([[0, 1000]], ['ctgB'])] }])
   expect(texts).toHaveLength(1)
   expect(texts[0]!.y).toBeLessThan(rects[0]!.y)
 })
@@ -580,10 +633,58 @@ test('a target-axis label sits above its marks', () => {
 test('the two strips do not overlap in a band they share', () => {
   const { ctx, rects } = fakeCtx()
   const datasets = [data([[100, 400]])]
-  drawOffscreenMates(ctx, { ...params, datasets })
-  drawOffscreenMates(ctx, { ...params, side: 'bottom', datasets })
+  draw(ctx, [{ datasets }, { side: 'bottom', datasets }])
   const [top, bottom] = rects
   expect(top!.y + top!.h).toBeLessThan(bottom!.y)
+})
+
+// The marks cannot collide — they hang off opposite edges — but the LABELS stack
+// inward from those edges and meet in the middle. Placed a strip at a time they
+// were blind to each other: on this band both lanes offered the same three
+// baselines, so a query name and a target name landed on exactly the same
+// pixels and the second one's halo erased the first.
+test('a name from one strip never lands on a name from the other', () => {
+  const { ctx, texts } = fakeCtx()
+  const names = (prefix: string) =>
+    data(
+      Array.from({ length: 3 }, () => [0, 10000] as [number, number]),
+      [`${prefix}1`, `${prefix}2`, `${prefix}3`],
+    )
+  draw(
+    ctx,
+    [{ datasets: [names('q')] }, { side: 'bottom', datasets: [names('t')] }],
+    { width: 1000, height: 50 },
+  )
+  // every name that made it on is on its own row, whichever strip it came from
+  expect(new Set(texts.map(t => t.y)).size).toBe(texts.length)
+})
+
+// ...and the row budget is measured from the strip's OWN edge. Read off the top
+// strip's arithmetic, an 80px band — what a four-level stack auto-scales to —
+// put the two third rows 6px apart, and a 40px band put the bottom strip's third
+// row at y=6: above the band's own top edge, and over the OTHER strip's marks.
+test.each([40, 50, 80, 100])('...on a %ipx band too', height => {
+  const { ctx, texts, rects } = fakeCtx()
+  const names = (prefix: string) =>
+    data(
+      Array.from({ length: 3 }, () => [0, 10000] as [number, number]),
+      [`${prefix}1`, `${prefix}2`, `${prefix}3`],
+    )
+  draw(
+    ctx,
+    [{ datasets: [names('q')] }, { side: 'bottom', datasets: [names('t')] }],
+    { width: 1000, height },
+  )
+  expect(texts.length).toBeGreaterThan(0)
+  expect(new Set(texts.map(t => t.y)).size).toBe(texts.length)
+  for (const t of texts) {
+    // inside the band, and clear of every mark it could be printed over
+    expect(t.y).toBeLessThanOrEqual(height)
+    expect(t.y - LABEL_ASCENT_PX).toBeGreaterThanOrEqual(0)
+    for (const r of rects) {
+      expect(t.y - LABEL_ASCENT_PX >= r.y + r.h || t.y <= r.y).toBe(true)
+    }
+  }
 })
 
 test('the hit test answers inside the bottom strip and not above it', () => {
@@ -592,7 +693,7 @@ test('the hit test answers inside the bottom strip and not above it', () => {
     side: 'bottom' as const,
     datasets: [data([[100, 400]], ['ctgB'])],
   }
-  expect(offscreenMateAt(layout, 20, params.height - 1)?.refName).toBe('ctgB')
+  expect(offscreenMateAt(layout, 20, params.height - 1)).toBe('ctgB')
   expect(
     offscreenMateAt(layout, 20, params.height - OFFSCREEN_MATE_HEIGHT_PX - 2),
   ).toBeUndefined()
@@ -636,21 +737,25 @@ test('a hover above the bottom strip reads no alignment at all', () => {
 // are looking at.
 test('one block spread across the window is named once rather than not at all', () => {
   const { ctx, texts } = fakeCtx()
-  drawOffscreenMates(ctx, {
-    ...params,
-    width: 1000,
-    datasets: [
-      data(
-        [
-          [0, 200],
-          [600, 800],
-          [1200, 1400],
-          [1800, 2000],
+  draw(
+    ctx,
+    [
+      {
+        datasets: [
+          data(
+            [
+              [0, 200],
+              [600, 800],
+              [1200, 1400],
+              [1800, 2000],
+            ],
+            Array.from({ length: 4 }, () => 'ctgB'),
+          ),
         ],
-        Array.from({ length: 4 }, () => 'ctgB'),
-      ),
+      },
     ],
-  })
+    { width: 1000 },
+  )
   expect(texts).toEqual([{ text: 'ctgB', x: 88, y: 16 }])
 })
 
@@ -663,18 +768,18 @@ test('the merge tolerance scales with the name it is tolerating a gap for', () =
     [800, 1000],
   ]
   const short = fakeCtx()
-  drawOffscreenMates(short.ctx, {
-    ...params,
+  draw(short.ctx, [{ datasets: [data(spans, ['ctgB', 'ctgB'])] }], {
     width: 1000,
-    datasets: [data(spans, ['ctgB', 'ctgB'])],
   })
   expect(short.texts).toEqual([])
 
   const long = fakeCtx()
-  drawOffscreenMates(long.ctx, {
-    ...params,
-    width: 1000,
-    datasets: [data(spans, ['ctgBBBBBBBBB', 'ctgBBBBBBBBB'])],
-  })
+  draw(
+    long.ctx,
+    [{ datasets: [data(spans, ['ctgBBBBBBBBB', 'ctgBBBBBBBBB'])] }],
+    {
+      width: 1000,
+    },
+  )
   expect(long.texts.map(t => t.text)).toEqual(['ctgBBBBBBBBB'])
 })

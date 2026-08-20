@@ -128,6 +128,24 @@ means, and one label per *stretch* rather than per anchor, since a block is
 dozens of anchors a few px apart. Haloed, because the label sits below the mark
 over whatever the renderer painted.
 
+*2026-08-20:* the BAND is the drawing unit, not the strip. Class B put a second
+strip on the far edge, and the two were drawn one call each — so their marks
+could not collide (opposite edges) but their labels, which stack INWARD from
+those edges, were placed blind to each other and met in the middle. On a 50px
+band both lanes offered the same three baselines and a query name landed on
+exactly the pixels of a target name; on the 80px band a four-level stack
+auto-scales to, the two third rows landed 6px apart. One call now takes every
+lane, and one rule covers both cases — a name may not share a baseline, or come
+within a row of one, with an overlapping name already placed. Between stretches
+at the same x it takes one from each lane before a second from either, or the
+lane drawn first took every row a short band has.
+
+*2026-08-20:* the marks are the BACKGROUND and the label is the finding, so they
+are not the same grey. At full `text.secondary` the strip read as the loudest
+thing in a band of 0.2-alpha ribbons, which inverts what a reader should look at
+first; the marks are now that color at 0.35 alpha and the labels are not. The
+published figures in the user guide predate this.
+
 ## Behind a toggle, decided
 
 Colin, 2026-08-19: pursue this, with a switch to turn it on. Which settles the
@@ -200,22 +218,25 @@ reports nothing.
 
 |   marks | hover over ribbons | hover, before | hover in the strip | one repaint | SVG export layer |
 | ------: | -----------------: | ------------: | -----------------: | ----------: | ---------------: |
-|   2,767 |           <0.001ms |       0.034ms |            0.027ms |      0.21ms |            90 KB |
-|  50,000 |           <0.001ms |        1.06ms |              0.5ms |      3.08ms |         1.302 MB |
-| 250,000 |           <0.001ms |        5.97ms |             2.53ms |  **16.2ms** |         6.624 MB |
+|   2,767 |           <0.001ms |       0.038ms |            0.037ms |      0.25ms |            90 KB |
+|  50,000 |           <0.001ms |         1.3ms |             0.64ms |      4.78ms |         1.303 MB |
+| 250,000 |           <0.001ms |        7.54ms |             3.52ms |  **26.8ms** |         6.624 MB |
 
 <!-- END GENERATED MEASUREMENT offscreen-mate-overlay -->
 
-On the shape this was designed against the overlay is free: a repaint is a fifth
-of a millisecond, against the 12.5ms the pick engine's own warm hover costs on an
-all-vs-all PAF (`reference/SYNTENY_PICKING.md`).
+On the shape this was designed against the overlay is free: a repaint is a
+quarter of a millisecond, against the 12.5ms the pick engine's own warm hover
+costs on an all-vs-all PAF (`reference/SYNTENY_PICKING.md`). The 2026-08-20
+re-measurement ran on a loaded machine — `hover, before` is untouched code and
+moved with everything else, so read the columns against each other rather than
+against the numbers this table held before.
 
 **The hover is independent of the mark count, and deliberately.** The strip is a
 few pixels of a band ~100 tall, so nearly every pointer position `offscreenMateHit`
 is asked about is not in it — and it runs ahead of the ribbon pick on every
 mousemove. Testing the strip height before any alignment is what collapses that
 column; laying the level out first to answer "no" is what the `hover, before`
-column is, and at 250k marks it was 6ms of every frame the pointer moved.
+column is, and at 250k marks it was 7.5ms of every frame the pointer moved.
 
 **The strip is one path, not a fill per mark.** The mark color carries alpha, so
 filling each separately composites them against each other and the strip darkens

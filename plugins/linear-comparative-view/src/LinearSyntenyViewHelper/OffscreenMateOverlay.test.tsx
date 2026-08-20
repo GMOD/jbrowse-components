@@ -19,6 +19,7 @@ function level({ width = 800, height = 100, show = true } = {}) {
             starts: Float64Array.from([0]),
             ends: Float64Array.from([1000]),
             mateRefNameIds: Uint32Array.from([0]),
+            lengths: Float32Array.from([1000]),
           },
         },
       },

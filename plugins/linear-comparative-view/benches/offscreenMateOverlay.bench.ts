@@ -88,6 +88,7 @@ function fixture(n: number, contigs: number): OffscreenMateData {
     starts,
     ends,
     mateRefNameIds: ids,
+    lengths: Float32Array.from({ length: n }, () => GENOME_BP / n),
   }
 }
 
@@ -102,6 +103,8 @@ function layoutFor(data: OffscreenMateData): OffscreenMateLayout {
     datasets: [data],
     bpPerPx: GENOME_BP / WIDTH,
     offsetPx: 0,
+    side: 'top',
+    minAlignmentLength: 0,
     width: WIDTH,
     height: HEIGHT,
   }
@@ -215,7 +218,7 @@ function checkIdentity(layout: OffscreenMateLayout, name: string) {
   const step = n > 10_000 ? 97 : 7
   for (const y of ys) {
     for (let x = -20; x <= WIDTH + 20; x += step) {
-      const a = offscreenMateAt(layout, x, y)?.refName
+      const a = offscreenMateAt(layout, x, y)
       const b = hitOld(layout, x, y)
       if (a !== b) {
         const msg = `${name}: hit differs at (${x}, ${y}): ships ${a}, old ${b}`
@@ -227,6 +230,12 @@ function checkIdentity(layout: OffscreenMateLayout, name: string) {
       }
     }
   }
+}
+
+const COLORS = {
+  markColor: 'rgba(0, 0, 0, 0.35)',
+  labelColor: 'grey',
+  haloColor: 'white',
 }
 
 const HOVERS = 200
@@ -255,7 +264,7 @@ for (const { name, data } of FIXTURES) {
   for (let round = 0; round < ROUNDS; round++) {
     let t = performance.now()
     for (let i = 0; i < HOVERS; i++) {
-      keep(offscreenMateAt(layout, i % WIDTH, 60)?.refName)
+      keep(offscreenMateAt(layout, i % WIDTH, 60))
     }
     best.hoverRibbons = Math.min(best.hoverRibbons, performance.now() - t)
 
@@ -273,21 +282,17 @@ for (const { name, data } of FIXTURES) {
 
     t = performance.now()
     for (let i = 0; i < HOVERS; i++) {
-      keep(offscreenMateAt(layout, i % WIDTH, 3)?.refName)
+      keep(offscreenMateAt(layout, i % WIDTH, 3))
     }
     best.hoverStrip = Math.min(best.hoverStrip, performance.now() - t)
 
     t = performance.now()
-    drawOffscreenMates(ctx, { ...layout, color: 'grey', haloColor: 'white' })
+    drawOffscreenMates(ctx, [layout], { ...layout, ...COLORS })
     best.draw = Math.min(best.draw, performance.now() - t)
   }
 
   const svg = new SvgCanvas()
-  drawOffscreenMates(svg, {
-    ...layout,
-    color: 'grey',
-    haloColor: 'white',
-  })
+  drawOffscreenMates(svg, [layout], { ...layout, ...COLORS })
   const svgKb = svg.getSerializedSvg().length / 1024
 
   console.log(

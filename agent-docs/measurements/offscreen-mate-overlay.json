@@ -1,11 +1,11 @@
 {
   "id": "offscreen-mate-overlay",
-  "measured": "2026-08-19",
+  "measured": "2026-08-20",
   "published": false,
   "source": {
     "kind": "bench",
-    "repro": "node plugins/linear-comparative-view/benches/offscreenMateOverlay.bench.ts --rounds=25 \u2014 min of rounds, two samples, control 0.97-1.01. Node rather than jest: this is a Float64Array read in a loop, the shape BENCHMARKING.md measures jest inflating 6-30x (it read the 250k repaint as 84ms).",
-    "notes": "1500px band, 100px tall. demo-2767 is peach chr1 over grape chr1 in demos/grape_peach_cacao \u2014 2767 dropped anchors across 9 grape contigs. The stress rows are the query-whole-genome/target-one-contig state, which is what makes the mark count unbounded: nothing caps the fetch, and minAlignmentLength is applied at draw time. `hover, before` is the pre-2026-08-19 hit test, which laid out every mark before testing the pointer's y. The repaint column is LAYOUT and path building; the fake context's fill is a no-op, so rasterization is not in it. The SVG export layer column is what a figure carries: the strip serializes as one path element, a fifth of what a rect per alignment cost."
+    "repro": "node plugins/linear-comparative-view/benches/offscreenMateOverlay.bench.ts --rounds=25 — min of rounds, min of four samples, control 0.96-1.00. Node rather than jest: this is a Float64Array read in a loop, the shape BENCHMARKING.md measures jest inflating 6-30x (it read the 250k repaint as 84ms).",
+    "notes": "1500px band, 100px tall. demo-2767 is peach chr1 over grape chr1 in demos/grape_peach_cacao — 2767 dropped anchors across 9 grape contigs. The stress rows are the query-whole-genome/target-one-contig state, which is what makes the mark count unbounded: nothing caps the fetch, and minAlignmentLength is applied at draw time. `hover, before` is the pre-2026-08-19 hit test, which laid out every mark before testing the pointer's y. The repaint column is LAYOUT and path building; the fake context's fill is a no-op, so rasterization is not in it. The SVG export layer column is what a figure carries: the strip serializes as one path element, a fifth of what a rect per alignment cost.\n\nRE-MEASURED 2026-08-20 on a LOADED machine, and the whole table moved with it: `hover, before` is code this change did not touch and it reads 12% (demo) to 26% (250k) above the 2026-08-19 run. Read the repaint column against that column, not against the old absolute numbers. The 250k repaint additionally spread 26.8-38.9ms across the four samples where every other cell held within a few percent, so treat that one row as an order of magnitude rather than a number."
   },
   "columns": [
     {
@@ -50,9 +50,9 @@
       "values": {
         "marks": 2767,
         "hoverRibbons": "<0.001ms",
-        "hoverBefore": 0.034,
-        "hoverStrip": 0.027,
-        "repaint": 0.21,
+        "hoverBefore": 0.038,
+        "hoverStrip": 0.037,
+        "repaint": 0.25,
         "svgKb": 90
       }
     },
@@ -60,19 +60,19 @@
       "values": {
         "marks": 50000,
         "hoverRibbons": "<0.001ms",
-        "hoverBefore": 1.06,
-        "hoverStrip": 0.5,
-        "repaint": 3.08,
-        "svgKb": 1302
+        "hoverBefore": 1.3,
+        "hoverStrip": 0.64,
+        "repaint": 4.78,
+        "svgKb": 1303
       }
     },
     {
       "values": {
         "marks": 250000,
         "hoverRibbons": "<0.001ms",
-        "hoverBefore": 5.97,
-        "hoverStrip": 2.53,
-        "repaint": 16.2,
+        "hoverBefore": 7.54,
+        "hoverStrip": 3.52,
+        "repaint": 26.8,
         "svgKb": 6624
       },
       "emphasize": [

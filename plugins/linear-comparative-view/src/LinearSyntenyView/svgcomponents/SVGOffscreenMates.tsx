@@ -21,7 +21,8 @@ import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
  *
  * ONE LAYER FOR THE WHOLE LEVEL, after every display's ribbons, because on
  * screen these are a canvas stacked over all of them. Drawn per display it
- * would sit under the next display's band instead.
+ * would sit under the next display's band instead. Both strips go in one draw
+ * for the same reason the overlay does — see `placeLabels`.
  */
 export default function SVGOffscreenMates({
   level,
@@ -44,14 +45,11 @@ export default function SVGOffscreenMates({
       height={height}
       opts={opts}
       paint={ctx => {
-        for (const strip of strips) {
-          drawOffscreenMates(ctx, {
-            ...strip,
-            width,
-            height,
-            ...offscreenMateColors(theme),
-          })
-        }
+        drawOffscreenMates(ctx, strips, {
+          width,
+          height,
+          ...offscreenMateColors(theme),
+        })
       }}
     />
   ) : null

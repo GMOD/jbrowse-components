@@ -108,17 +108,24 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   // would mean every consumer of the hovered feature learning to expect
   // something with no feature id.
   const [hoveredContig, setHoveredContig] = useState<
-    OffscreenMateHover | undefined
+    (OffscreenMateHover & { bandTransformKey: string }) | undefined
   >(undefined)
   // The other axis of a stored hover's invalidation: the band moving under a
   // stationary cursor, which fires no pointer event — a wheel-zoom, or the pan
   // half of a drag. The level's own hover has `installClearHoverOnBandMove` for
-  // this; the contig is local state, so it needs the React twin or the tooltip
-  // goes on naming the contig the cursor used to be over.
+  // this; the contig is local state, so without it the tooltip goes on naming
+  // the contig the cursor used to be over.
+  //
+  // STAMPED AND COMPARED, not cleared by an effect. The hover is only ever
+  // valid for the transform it was picked under, so that is a property OF the
+  // stored value rather than a second piece of state to keep in step with it —
+  // an effect would render the stale name once and take it back on the commit
+  // after, which is the "you might not need an effect" case exactly.
   const { bandTransformKey } = model
-  useEffect(() => {
-    setHoveredContig(undefined)
-  }, [bandTransformKey])
+  const hover =
+    hoveredContig?.bandTransformKey === bandTransformKey
+      ? hoveredContig
+      : undefined
   // Coalesces hover picks to one per frame. A pick is under 0.1ms on collinear
   // data but ~12.5ms on an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse
   // reporting faster than the display would otherwise queue a pick per event
@@ -250,6 +257,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
               side: mate.side,
               clientX: at.clientX,
               clientY: at.clientY,
+              bandTransformKey: model.bandTransformKey,
             },
           )
           // a mark hovered is not a ribbon hovered, and leaving the old one lit
@@ -378,14 +386,11 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         style={{
           width,
           height,
-          cursor:
-            model.hoveringFeature || hoveredContig ? 'pointer' : 'default',
+          cursor: model.hoveringFeature || hover ? 'pointer' : 'default',
         }}
       />
       <OffscreenMateOverlay model={model} />
-      {hoveredContig ? (
-        <OffscreenMateTooltip model={model} hover={hoveredContig} />
-      ) : null}
+      {hover ? <OffscreenMateTooltip model={model} hover={hover} /> : null}
       {combinedError ? (
         // One banner stacks the GPU error and every display's fetch error, so
         // Retry has to undo whichever are present: `retry()` re-inits the

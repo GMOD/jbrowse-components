@@ -72,6 +72,7 @@ function emptyOffscreenMates(): SyntenyFeatureData['offscreenMates'] {
     starts: new Float64Array(0),
     ends: new Float64Array(0),
     mateRefNameIds: new Uint32Array(0),
+    lengths: new Float32Array(0),
   }
 }
 

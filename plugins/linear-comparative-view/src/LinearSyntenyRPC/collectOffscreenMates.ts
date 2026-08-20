@@ -33,6 +33,13 @@ export interface OffscreenMateData {
   starts: Float64Array
   ends: Float64Array
   mateRefNameIds: Uint32Array
+  // per PLACED alignment: the block's OWN bp length, before the clamp below.
+  // The `minAlignmentLength` cull reads this rather than `ends - starts`, for
+  // the same reason the ribbons' `alignmentLengths` is taken off the original
+  // block extent: a block straddling a displayed region's edge is clamped to
+  // the part in view, and culling on the clamped span hides a mark whose ribbon
+  // the same setting keeps.
+  lengths: Float32Array
 }
 
 /**
@@ -52,6 +59,7 @@ export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
   const starts: number[] = []
   const ends: number[] = []
   const mateRefNameIds: number[] = []
+  const lengths: number[] = []
 
   return {
     add(refName: string, start: number, end: number, mateRefName: string) {
@@ -70,6 +78,7 @@ export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
       starts.push(Math.min(a, b))
       ends.push(Math.max(a, b))
       mateRefNameIds.push(id)
+      lengths.push(hi - lo)
     },
     finish(): OffscreenMateData {
       return {
@@ -78,6 +87,7 @@ export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
         starts: Float64Array.from(starts),
         ends: Float64Array.from(ends),
         mateRefNameIds: Uint32Array.from(mateRefNameIds),
+        lengths: Float32Array.from(lengths),
       }
     },
   }
