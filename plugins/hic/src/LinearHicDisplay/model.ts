@@ -655,9 +655,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               // sits on a bare "Loading..." for the whole chain of range reads.
               //
               // `setStatusMessage` directly rather than `makeStatusCallback`:
-              // this emits a handful of phase labels, not a progress stream, so
-              // the throttle sized for ~40 events/s would swallow most of them —
-              // the final clearing write included, leaving the last label stuck.
+              // this emits a handful of distinct phase labels, not a progress
+              // stream, and a window sized for ~40 events/s only guarantees the
+              // LAST of a burst — the intermediate labels are exactly what this
+              // is here to show. (It does not lose the closing `''`: the window
+              // has had a trailing edge since ADR-071, so a clear that falls
+              // inside one lands a window later rather than never.)
               statusCallback: (status: RpcStatus) => {
                 if (isAlive(self)) {
                   self.setStatusMessage(status)

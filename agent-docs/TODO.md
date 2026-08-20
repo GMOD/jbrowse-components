@@ -838,17 +838,27 @@ this reason — see the comments on both in `FetchMixin`.
 **None of that blocks the feature**, which was the only user-visible thing the
 fold was buying:
 
-- `fetchCanceled` volatile + `cancelFetch`/`reload` actions on
-  `SyntenyFetchStateMixin` (`@jbrowse/synteny-core`), alongside the `fetching` /
-  `loadedFetchKey` / `assembliesSwapped` it already owns.
-- `installComparativeFetchAutorun` reads `void self.reloadCounter` in the same
-  place it reads `currentFetchKey`, and skips the run while `fetchCanceled` — the
-  unconditional-read rule from `installGlobalFetchAutorun` applies, or reload
-  dies the moment the gate goes false.
-- `LoadingOverlay` already takes `canceled` / `onCancel` / `onRetry`;
-  `LinearSyntenyRendering.tsx` passes none of them. Dotplot's
-  `DisplayStatusOverlays.tsx` renders a bare `LoadingProgress` and needs the
-  overlay proper, or its own buttons.
+**The retry half already landed** — `SyntenyFetchStateMixin` owns
+`reloadCounter` + `reload()`, `installComparativeFetchAutorun` reads it
+unconditionally at the top of the autorun, and both error banners reach it:
+dotplot's per-display one in `DisplayStatusOverlays.tsx`, and synteny's combined
+one in `LevelSyntenyCanvas.tsx`, which reloads every errored display on the
+level. What is left is the cancel:
+
+- `fetchCanceled` volatile + `cancelFetch` action on `SyntenyFetchStateMixin`
+  (`@jbrowse/synteny-core`), alongside the `fetching` / `loadedFetchKey` /
+  `assembliesSwapped` / `reloadCounter` it already owns.
+- `installComparativeFetchAutorun` skips the run while `fetchCanceled` — read it
+  beside `void self.reloadCounter`, under the unconditional-read rule from
+  `installGlobalFetchAutorun`, or reload dies the moment the gate goes false.
+- One render site, not two: both views draw their loading state through
+  `ComparativeFetchStatus` (`@jbrowse/synteny-core`), and the contract is
+  already wide enough — `DisplayLoadingOverlayModel` declares `fetchCanceled`,
+  `cancelFetchByUser` and `reload`, all optional, and `LoadingOverlay` renders
+  the buttons off them. Two edits: widen `ComparativeStatusModel` to declare
+  them, and forward them in the `muiStatus.Loading` binding, which passes only
+  `statusMessage`/`statusProgress` today. A host's own overlay set gets them
+  for free, since it reads the same model.
 
 **The loop to not write.** `prepare` must never read `self.error`. The skeleton
 already `setError(undefined)`s at the start of every fetch and `setError(e)`s on
