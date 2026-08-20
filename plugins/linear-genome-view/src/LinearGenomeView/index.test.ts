@@ -3014,6 +3014,29 @@ describe('coarse dynamic blocks', () => {
     expect(runs).toBe(1)
     dispose()
   })
+
+  // The window between a view initializing and the coarse autorun's first run.
+  // A debounced scan clipped to an EMPTY block list yields no entries, and no
+  // entries is not a stale domain but the fallback one — a blank wiggle plot.
+  test('settledDynamicBlocks is the live set until the coarse one exists', () => {
+    const model = makeView()
+    expect(model.coarseDynamicBlocks).toHaveLength(0)
+    expect(model.settledDynamicBlocks).toEqual(
+      model.dynamicBlocks.contentBlocks,
+    )
+    expect(model.settledDynamicBlocks.length).toBeGreaterThan(0)
+  })
+
+  test('settledDynamicBlocks is the coarse set once it exists', () => {
+    const model = makeView()
+    model.setCoarseDynamicBlocks(model.dynamicBlocks, model.bpPerPx)
+    expect(model.settledDynamicBlocks).toBe(model.coarseDynamicBlocks)
+
+    // and it stays the coarse one through a move, which is the whole point of
+    // the debounce: a stale answer, not a live one
+    model.scrollTo(model.offsetPx + model.width * 3)
+    expect(model.settledDynamicBlocks).toBe(model.coarseDynamicBlocks)
+  })
 })
 
 describe('scalebar coordinate labels', () => {

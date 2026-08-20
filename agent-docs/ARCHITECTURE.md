@@ -720,6 +720,19 @@ Two properties make it safe, and both were found by breaking them:
   sooner than the timer did. A change arriving after an `await` is a later
   decision and correctly costs a refetch.
 
+**What the 600 ms was hiding, and the thing to check for a fourth.** A fetch that
+could not land inside another debounce's first window was a coupling nobody had
+to state. The LGV's coarse blocks are on a 500 ms trailing-edge autorun, and two
+displays clip a per-bp scan to them so it does not recompute per animation frame
+— wiggle's autoscale domain and the alignments coverage scale. Over the *empty*
+initial block list both yield no entries, and no entries is not a stale domain
+but the fallback one, `[0,1]`: a bigwig line track drew blank and a density
+track solid. `settledDynamicBlocks` is the fix and the rule in one place — the
+coarse blocks once the view has settled once, the live ones before that — but
+the general lesson is the one to carry: **anything downstream of a fetch that
+was only ever correct because the fetch was slower than it is a coupling, and
+the empty-versus-stale distinction is where it bites.**
+
 **`installPerRegionFetchAutoruns` installs `FetchVisibleRegions` last**, and that
 is load-bearing for the same reason: the three autoruns above it each fire once
 at install and two of them call `clearAllRpcData`. Installed first, the fetch
