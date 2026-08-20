@@ -1,8 +1,5 @@
-import { useEffect, useRef } from 'react'
-
-import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
+import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { useTheme } from '@mui/material'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import {
@@ -22,51 +19,53 @@ import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
  * canvas is what a non-instance element costs, and it is cheap: these are
  * thousands of rects, not the millions the instance path exists for.
  *
+ * `OverlayCanvas` rather than a `<canvas>` of its own, which is what this was
+ * and is what got it wrong: a canvas is a REPLACED element, so `inset: 0` does
+ * not stretch it the way it stretches a div — with no CSS width it takes its
+ * intrinsic size, which `prepareCanvas` has just set to the DPR-scaled backing
+ * store. On a retina display that is twice the band, so every stub and label
+ * drew at twice its x and the right half of the level fell off the edge. It
+ * looked plausible: a strip of marks spanning the axis, just the wrong marks.
+ *
  * `pointerEvents: none`, so every hit test still reaches the level's canvas
  * underneath. A stub IS clickable, and that hit test lives in the level's own
  * pointer handlers (`offscreenMateHit`) rather than here: two hit paths over one
  * band is how a click comes to mean different things depending on which element
- * received it.
+ * received it. That also means the pointer used the level's geometry while the
+ * paint used the overlay's, so the bug above put the mark a reader saw and the
+ * stub their click resolved in different places.
  *
- * The SVG export runs the same draw through `SVGOffscreenMates`, so a figure
- * carries whatever this shows.
+ * The SVG export runs the same draw through `SVGOffscreenMates`, sized from the
+ * export's own width rather than from a canvas, so it was right throughout.
  */
 const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
   model,
 }: {
   model: LinearSyntenyViewHelperModel
 }) {
-  const ref = useRef<HTMLCanvasElement>(null)
   const { color, haloColor } = offscreenMateColors(useTheme())
-
-  useEffect(() => {
-    // autorun rather than a dep array: what this draws from is MST state
-    // reached through several getters, and a dep list over those is the thing
-    // that goes stale silently
-    return autorun(() => {
-      const { parentView } = model
-      const width = parentView.width
-      const height = model.height
-      // prepared first and unconditionally, since preparing is what CLEARS it —
-      // an empty plan has to wipe the last frame's stubs rather than leave them
-      const ctx = getPreparedCanvas2D(ref.current, width, height)
-      if (!ctx) {
-        return
-      }
-      for (const stub of offscreenMateStubs(model)) {
-        drawOffscreenMates(ctx, { ...stub, width, height, color, haloColor })
-      }
-    })
-  }, [model, color, haloColor])
+  const width = model.parentView.width
+  const height = model.height
+  // read here rather than inside the draw: this is an observer, so what the
+  // component reads while rendering is what re-renders it, and the draw closure
+  // then changes identity exactly when the marks do
+  const stubs = offscreenMateStubs(model)
 
   return (
-    <canvas
-      ref={ref}
+    <OverlayCanvas
       data-testid="offscreen_mate_overlay"
-      style={{
-        position: 'absolute',
-        inset: 0,
-        pointerEvents: 'none',
+      width={width}
+      height={height}
+      draw={ctx => {
+        for (const stub of stubs) {
+          drawOffscreenMates(ctx, {
+            ...stub,
+            width,
+            height,
+            color,
+            haloColor,
+          })
+        }
       }}
     />
   )

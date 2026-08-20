@@ -341,10 +341,18 @@ export function drawOffscreenMates(
     return
   }
   const { color, haloColor, data } = layout
+  // ONE PATH, NOT A FILL EACH. The stub color carries alpha, so overlapping
+  // stubs filled separately composite against each other and the strip darkens
+  // with density — at whole-chromosome zoom there are more stubs than pixels, so
+  // it saturates to near-black and reads as a solid ideogram rather than as
+  // marks. Filled as one path they take the color once. It is also what the SVG
+  // export wants: one `<path>` instead of a `<rect>` per alignment.
   ctx.fillStyle = color
+  ctx.beginPath()
   for (const r of rects) {
-    ctx.fillRect(r.x, 0, r.width, r.height)
+    ctx.rect(r.x, 0, r.width, r.height)
   }
+  ctx.fill()
 
   ctx.font = LABEL_FONT
   ctx.textBaseline = 'alphabetic'

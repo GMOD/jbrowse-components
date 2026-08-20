@@ -612,7 +612,81 @@ const HOMOEOLOG_GROUPS = {
   oat: ['4A', '4C', '4D', '5A', '5C', '5D', '7A', '7C', '7D'],
 }
 
+// Peach chr1 over grape chr1 from the grape/peach/cacao MCScan blocks, which is
+// the case the off-screen mate marks exist for. 3,796 anchors are anchored in the
+// visible peach window; 1,029 have a grape mate on grape chr1 and get a ribbon.
+// The other 2,767 go to nine other grape chromosomes — the gamma paleohexaploidy —
+// and a view that draws only ribbons says nothing about them at all.
+//
+// Two independent sessions rather than one capture driving the menu, so each
+// state stays an openable live link and the pair cannot drift from either.
+function peachGrapeChr1({ marks }: { marks?: boolean } = {}) {
+  return sessionSpec(
+    encodeURIComponent(
+      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+    ),
+    {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          // omitted rather than false in the off state, so that URL encodes
+          // byte-identically to one written without the parameter
+          ...(marks ? { showOffscreenMates: true } : {}),
+          // hideNoTracksActive on both rows: neither carries a track at
+          // whole-chromosome zoom, so each was painting the LGV's "No tracks
+          // active / OPEN TRACK SELECTOR" block — two dark call-to-action
+          // buttons in the middle of a figure whose subject is a strip of marks
+          // a few pixels tall.
+          views: [
+            {
+              assembly: 'peach',
+              loc: 'NC_034009.1',
+              hideNoTracksActive: true,
+            },
+            {
+              assembly: 'grape',
+              loc: 'NC_081805.1',
+              hideNoTracksActive: true,
+            },
+          ],
+          tracks: [['grape_peach_cacao_blocks']],
+        },
+      ],
+    },
+  )
+}
+
 export const syntenySpecs: ScreenshotSpec[] = [
+  // The two halves of the off-screen mate figure. Same view, same window; the
+  // second turns the marks on. Parts of `synteny_offscreen_mates`, so neither is
+  // referenced by a doc on its own.
+  {
+    mode: 'url',
+    name: 'synteny_offscreen_mates_off',
+    url: peachGrapeChr1(),
+    viewportWidth: 1400,
+    // sized off the run's own blank-below-the-content report
+    viewportHeight: 424,
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+  },
+  {
+    mode: 'url',
+    name: 'synteny_offscreen_mates_on',
+    url: peachGrapeChr1({ marks: true }),
+    viewportWidth: 1400,
+    viewportHeight: 424,
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+  },
+  {
+    mode: 'compose',
+    name: 'synteny_offscreen_mates',
+    parts: ['synteny_offscreen_mates_off', 'synteny_offscreen_mates_on'],
+  },
+
   // Human vs chimp synteny (hosted liftOver chain, zoomed to an RB1 intron with
   // a human-specific L1HS insertion). 'full' cigarMode paints the indel as a
   // colored wedge. Also guards the oversized-block viewport clip — a

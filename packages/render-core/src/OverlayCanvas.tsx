@@ -17,15 +17,24 @@ import { getPreparedCanvas2D } from './canvas2dUtils.ts'
  * over a rendering backend needs the same absolutely-positioned,
  * `pointerEvents: 'none'`, dpr-prepared canvas. MAF has seven such overlays;
  * alignments and canvas each had a hand-rolled copy.
+ *
+ * **The explicit CSS `width`/`height` are the load-bearing part.** A canvas is a
+ * replaced element, so `inset: 0` does not stretch it the way it stretches a
+ * div: with no CSS size it takes its INTRINSIC size, which `prepareCanvas` has
+ * just set to the DPR-scaled backing store. A hand-rolled copy that reached for
+ * `inset: 0` therefore drew everything at twice its x on a retina display and
+ * dropped the right half off the edge, while looking entirely plausible.
  */
 export default function OverlayCanvas({
   width,
   height,
   draw,
+  'data-testid': testId,
 }: {
   width: number
   height: number
   draw: (ctx: CanvasRenderingContext2D) => void
+  'data-testid'?: string
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -39,6 +48,7 @@ export default function OverlayCanvas({
   return (
     <canvas
       ref={canvasRef}
+      data-testid={testId}
       style={{
         position: 'absolute',
         top: 0,

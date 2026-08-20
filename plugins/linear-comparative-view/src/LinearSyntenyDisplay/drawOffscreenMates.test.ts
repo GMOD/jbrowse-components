@@ -24,6 +24,9 @@ function fakeCtx() {
   const rects: Rect[] = []
   const texts: { text: string; x: number; y: number }[] = []
   const strokes: { text: string; x: number; y: number }[] = []
+  // Recorded on fill(), not on rect(), so a path built and never filled records
+  // nothing — which is the whole failure mode of drawing the strip as one path.
+  let pending: Rect[] = []
   return {
     rects,
     texts,
@@ -35,8 +38,15 @@ function fakeCtx() {
       textBaseline: '',
       lineWidth: 0,
       lineJoin: '',
-      fillRect(x: number, y: number, w: number, h: number) {
-        rects.push({ x, y, w, h })
+      beginPath() {
+        pending = []
+      },
+      rect(x: number, y: number, w: number, h: number) {
+        pending.push({ x, y, w, h })
+      },
+      fill() {
+        rects.push(...pending)
+        pending = []
       },
       fillText(text: string, x: number, y: number) {
         texts.push({ text, x, y })
@@ -338,7 +348,9 @@ test('the same draw emits stubs and labels through SvgCanvas', () => {
     data: data([[0, 1000]], ['ctgB']),
   })
   const out = svg.getSerializedSvg()
-  expect(out).toContain('<rect')
+  // one path for the whole strip, not a <rect> per alignment
+  expect(out).toContain('<path')
+  expect(out).not.toContain('<rect')
   // haloed: the stroked copy under the filled one, as on screen
   expect(out.match(/<text/g)).toHaveLength(2)
   expect(out).toContain('ctgB')

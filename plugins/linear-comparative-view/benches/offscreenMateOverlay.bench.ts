@@ -27,7 +27,12 @@
 //                      A row whose control is far from 1.00 measured nothing.
 //   hover-strip        pointer IN the strip, which is the case neither shape can
 //                      answer without scanning, and the ceiling on this path.
-//   draw               one overlay repaint.
+//   draw               one overlay repaint — the LAYOUT and path building only.
+//                      The fake context's fill is a no-op, so rasterization is
+//                      not in this column and a change to how the strip is
+//                      painted will not move it.
+//   svg                bytes the SVG export's layer serializes to, which IS a
+//                      real output and is what a figure carries.
 //
 // FIXTURES: `demo-2767` is the shape the feature was measured on — peach chr1
 // over grape chr1 in demos/grape_peach_cacao, 2767 dropped anchors across 9 grape
@@ -39,6 +44,8 @@
 // WHAT IT SAYS: see agent-docs/measurements/offscreen-mate-overlay.json, which
 // is what the doc tables are generated from. Re-measure with this file and edit
 // the record; don't retype the numbers.
+
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import {
   drawOffscreenMates,
@@ -176,6 +183,9 @@ function fakeCtx() {
     lineWidth: 0,
     lineJoin: '',
     fillRect() {},
+    beginPath() {},
+    rect() {},
+    fill() {},
     fillText() {},
     strokeText() {},
     measureText(text: string) {
@@ -270,12 +280,20 @@ for (const { name, data } of FIXTURES) {
     best.draw = Math.min(best.draw, performance.now() - t)
   }
 
+  const svg = new SvgCanvas()
+  drawOffscreenMates(svg, {
+    ...layout,
+    color: 'grey',
+    haloColor: 'white',
+  })
+  const svgKb = svg.getSerializedSvg().length / 1024
+
   console.log(
     `${name.padEnd(12)} hover-ribbons ${fmt(best.hoverRibbons / HOVERS)}  old ${fmt(
       best.hoverRibbonsOld / HOVERS,
     )}  [ctl ${(best.control / best.hoverRibbonsOld).toFixed(2)}]  hover-strip ${fmt(
       best.hoverStrip / HOVERS,
-    )}  draw ${fmt(best.draw)}   (ms, per hover except draw)`,
+    )}  draw ${fmt(best.draw)}  svg ${svgKb.toFixed(0).padStart(5)}KB   (ms, per hover except draw)`,
   )
 }
 

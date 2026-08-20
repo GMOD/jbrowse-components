@@ -3,15 +3,46 @@
   "measured": "2026-08-19",
   "source": {
     "kind": "bench",
-    "repro": "node plugins/linear-comparative-view/benches/offscreenMateOverlay.bench.ts --rounds=25 — min of rounds, two samples, control 0.97-1.01. Node rather than jest: this is a Float64Array read in a loop, the shape BENCHMARKING.md measures jest inflating 6-30x (it read the 250k repaint as 84ms).",
-    "notes": "1500px band, 100px tall. demo-2767 is peach chr1 over grape chr1 in demos/grape_peach_cacao — 2767 dropped anchors across 9 grape contigs. The stress rows are the query-whole-genome/target-one-contig state, which is what makes the stub count unbounded: nothing caps the fetch, and minAlignmentLength is applied at draw time. `hover, before` is the pre-2026-08-19 hit test, which laid out every stub before testing the pointer's y."
+    "repro": "node plugins/linear-comparative-view/benches/offscreenMateOverlay.bench.ts --rounds=25 \u2014 min of rounds, two samples, control 0.97-1.01. Node rather than jest: this is a Float64Array read in a loop, the shape BENCHMARKING.md measures jest inflating 6-30x (it read the 250k repaint as 84ms).",
+    "notes": "1500px band, 100px tall. demo-2767 is peach chr1 over grape chr1 in demos/grape_peach_cacao \u2014 2767 dropped anchors across 9 grape contigs. The stress rows are the query-whole-genome/target-one-contig state, which is what makes the stub count unbounded: nothing caps the fetch, and minAlignmentLength is applied at draw time. `hover, before` is the pre-2026-08-19 hit test, which laid out every stub before testing the pointer's y. The repaint column is LAYOUT and path building; the fake context's fill is a no-op, so rasterization is not in it. The SVG export layer column is what a figure carries: the strip serializes as one path element, a fifth of what a rect per alignment cost."
   },
   "columns": [
-    { "key": "stubs", "label": "stubs", "format": "int", "align": "right" },
-    { "key": "hoverRibbons", "label": "hover over ribbons", "align": "right" },
-    { "key": "hoverBefore", "label": "hover, before", "format": "ms", "align": "right" },
-    { "key": "hoverStrip", "label": "hover in the strip", "format": "ms", "align": "right" },
-    { "key": "repaint", "label": "one repaint", "format": "ms", "align": "right" }
+    {
+      "key": "stubs",
+      "label": "stubs",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "hoverRibbons",
+      "label": "hover over ribbons",
+      "align": "right"
+    },
+    {
+      "key": "hoverBefore",
+      "label": "hover, before",
+      "format": "ms",
+      "align": "right"
+    },
+    {
+      "key": "hoverStrip",
+      "label": "hover in the strip",
+      "format": "ms",
+      "align": "right"
+    },
+    {
+      "key": "repaint",
+      "label": "one repaint",
+      "format": "ms",
+      "align": "right"
+    },
+    {
+      "key": "svgKb",
+      "label": "SVG export layer",
+      "format": "KB",
+      "align": "right",
+      "escalate": true
+    }
   ],
   "rows": [
     {
@@ -20,7 +51,8 @@
         "hoverRibbons": "<0.001ms",
         "hoverBefore": 0.034,
         "hoverStrip": 0.027,
-        "repaint": 0.18
+        "repaint": 0.21,
+        "svgKb": 90
       }
     },
     {
@@ -29,7 +61,8 @@
         "hoverRibbons": "<0.001ms",
         "hoverBefore": 1.06,
         "hoverStrip": 0.5,
-        "repaint": 3.08
+        "repaint": 3.08,
+        "svgKb": 1302
       }
     },
     {
@@ -38,9 +71,12 @@
         "hoverRibbons": "<0.001ms",
         "hoverBefore": 5.97,
         "hoverStrip": 2.53,
-        "repaint": 16.6
+        "repaint": 16.2,
+        "svgKb": 6624
       },
-      "emphasize": ["repaint"]
+      "emphasize": [
+        "repaint"
+      ]
     }
   ]
 }

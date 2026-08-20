@@ -181,11 +181,11 @@ reports nothing.
 
 <!-- BEGIN GENERATED MEASUREMENT offscreen-mate-overlay -->
 
-|   stubs | hover over ribbons | hover, before | hover in the strip | one repaint |
-| ------: | -----------------: | ------------: | -----------------: | ----------: |
-|   2,767 |           <0.001ms |       0.034ms |            0.027ms |      0.18ms |
-|  50,000 |           <0.001ms |        1.06ms |              0.5ms |      3.08ms |
-| 250,000 |           <0.001ms |        5.97ms |             2.53ms |  **16.6ms** |
+|   stubs | hover over ribbons | hover, before | hover in the strip | one repaint | SVG export layer |
+| ------: | -----------------: | ------------: | -----------------: | ----------: | ---------------: |
+|   2,767 |           <0.001ms |       0.034ms |            0.027ms |      0.21ms |            90 KB |
+|  50,000 |           <0.001ms |        1.06ms |              0.5ms |      3.08ms |         1.302 MB |
+| 250,000 |           <0.001ms |        5.97ms |             2.53ms |  **16.2ms** |         6.624 MB |
 
 <!-- END GENERATED MEASUREMENT offscreen-mate-overlay -->
 
@@ -200,13 +200,20 @@ mousemove. Testing the strip height before any alignment is what collapses that
 column; laying the level out first to answer "no" is what the `hover, before`
 column is, and at 250k stubs it was 6ms of every frame the pointer moved.
 
-**The repaint is the ceiling, and it is real at the top row.** 250k stubs is a
-frame and a half of `fillRect` calls. Reaching it takes a query row on the whole
-genome with the target row narrowed to one contig, and the toggle is off by
-default, so nothing pays this without asking — but a stub count is a stub count,
-and coalescing per pixel column is the fix if anyone lands there. It would change
-what overlapping stubs look like (their alpha compounds today), so it is a
-deliberate change rather than a free one.
+**The strip is one path, not a fill per stub.** The stub color carries alpha, so
+filling each separately composites them against each other and the strip darkens
+with density — at whole-chromosome zoom there are more stubs than pixels, so it
+saturated to near-black and read as a solid ideogram rather than as marks.
+Filling one path takes the color once. The export column is the same change seen
+from the other side: one `<path>` where a figure used to carry a `<rect>` per
+alignment.
+
+**The repaint column is layout and path building, not rasterization** — the
+bench's context is a stub, so nothing there measures what the GPU or Canvas2D
+does with the path. What it does bound is the per-frame JS, and at 250k stubs
+that alone is a frame. Reaching that takes a query row on the whole genome with
+the target row narrowed to one contig, and the toggle is off by default, so
+nothing pays it without asking.
 
 ## Cheaper thing this is not
 

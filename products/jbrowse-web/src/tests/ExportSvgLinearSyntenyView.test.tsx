@@ -324,10 +324,12 @@ test('export svg of synteny bakes in the off-screen mate stubs', async () => {
     })
     // the top row's ruler prints "ctgB" too, so this asks for the stub layer's
     // own marks: one tick per dropped alignment along the band's top edge, and
-    // ONE haloed label for the stretch they form
-    expect(
-      svg.match(/<rect x="[\d.]+" y="0" width="[\d.]+" height="6"/g),
-    ).toHaveLength(6)
+    // ONE haloed label for the stretch they form. The ticks are subpaths of a
+    // single <path> rather than a <rect> each — they carry alpha, so filling
+    // them separately would composite them against each other.
+    const strip = /<path d="((?:M[\d.]+,0h[\d.]+v6h-[\d.]+Z)+)"/.exec(svg)
+    expect(strip).toBeTruthy()
+    expect(strip![1]!.match(/v6h-/g)).toHaveLength(6)
     expect(svg.match(/stroke-linejoin="round"[^>]*>ctgB</g)).toHaveLength(1)
   })
 }, 45000)

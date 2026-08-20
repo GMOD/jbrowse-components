@@ -210,6 +210,25 @@ The view's hamburger menu controls how the ribbons are drawn:
 
 <Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length L1HS present in human is absent at the orthologous chimp intron, which the 'Colored indels' mode paints as a wedge in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />
 
+## Alignments the view cannot draw
+
+A ribbon needs both of its ends on screen. An alignment whose mate lands on a
+contig the facing panel is not displaying has only one end, so the view draws
+nothing for it — and a locus syntenic to a chromosome you did not stack then
+looks exactly like a locus syntenic to nothing.
+
+The hamburger menu says how many those are, naming the contigs they go to, and
+the same item turns on a strip of marks along the query axis. Each mark sits
+where the alignment is on the panel it does have, stopping short of the ribbons
+so it cannot be read as an alignment to whatever is directly below. A run of
+marks to one contig carries that contig's name; where several contigs cover the
+same stretch, their names stack.
+
+Clicking a mark navigates the facing panel to the contig it names, which is what
+turns those marks into ribbons.
+
+<Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. Above, the ribbons alone. Below, the same view marking the alignments it has no second endpoint for — most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
+
 ### How small an insertion still reads
 
 The same human/chimp synteny plus RepeatMasker resolves a lineage-specific
