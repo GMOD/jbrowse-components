@@ -24,6 +24,13 @@
 // the second fetch on afterwards and waits for it, which is the only way to see
 // the target-axis lane at all — no committed figure has it on, and what it
 // holds is the class no single-axis fetch can produce.
+//
+// `ZOOM=<startMb>-<endMb>` zooms the query row WITHIN the regions it already
+// displays, which is the only state the second fetch's ribbon half exists in. A
+// row navigated to a locus has that locus as its displayed region, so there is
+// nothing "displayed but outside the window" for it to recover — the class needs
+// a row showing part of what it displays, which is what a scroll or a wheel-zoom
+// leaves behind and what a session spec's `loc` does not.
 import {
   BASE_CHROME_ARGS,
   createTestServer,
@@ -64,11 +71,40 @@ try {
   await captureUrl(page, spec, PORT)
   await waitForAppSettled(page)
 
+  const ribbons = () =>
+    page.evaluate(
+      () =>
+        (window as any).JBrowseSession.views[0].levels[0]
+          .linearSyntenyDisplays[0].numFeats as number,
+    )
+
+  const zoom = process.env.ZOOM
+  if (zoom) {
+    const [from, to] = zoom.split('-').map(Number)
+    await page.evaluate(
+      (lo: number, hi: number) => {
+        const row = (window as any).JBrowseSession.views[0].views[0]
+        row.zoomTo((hi - lo) / row.width)
+        row.scrollTo(lo / row.bpPerPx)
+      },
+      from! * 1e6,
+      to! * 1e6,
+    )
+    await waitForAppSettled(page)
+  }
+
   if (process.env.BIDIRECTIONAL) {
+    const before = await ribbons()
     await page.evaluate(() => {
       ;(window as any).JBrowseSession.views[0].setBidirectionalFetch(true)
     })
     await waitForAppSettled(page)
+    // the ribbon half of the second fetch: alignments anchored on the target
+    // row whose query end is on a displayed contig outside the fetched window,
+    // which the query-axis fetch cannot return
+    console.log(`ribbons: ${before} -> ${await ribbons()}`)
+  } else {
+    console.log(`ribbons: ${await ribbons()}`)
   }
 
   for (const side of sides) {

@@ -126,6 +126,27 @@ the band rather than as a full ribbon — which is exactly what this view has
 always drawn in the other direction, for an alignment anchored in the query
 window whose target end is far away. The asymmetry was the bug.
 
+## The state this class lives in, which is easy to test your way out of
+
+**A row navigated to a locus has that locus as its displayed region**, so
+nothing is "displayed but outside the window" and the ribbon half recovers
+NOTHING — every alignment it finds is either already fetched or has no second
+endpoint. The class needs a row showing part of what it displays: a whole
+contig scrolled or wheel-zoomed into, which is what a user does and what a
+session spec's `loc` does not leave behind.
+
+Two probes on the same demo, both with the setting on, differ by exactly that:
+
+| query row | ribbons | recovered |
+| --- | --- | --- |
+| peach chr1 navigated to 18–22 Mb | 576 → 576 | none — the window IS the displayed region |
+| peach chr1 displayed whole, zoomed to 18–22 Mb | 576 → **1029** | 453, the anchors whose peach end is past the fetch window |
+
+    BIDIRECTIONAL=1 ZOOM=18-22 node website/scripts/probe-offscreen-mates.ts
+
+453 is also what the demo files say offline: 455 of grape chr1's 1029 peach-chr1
+anchors sit past 28.8 Mb, and the fetched window ends near there.
+
 ## The blocker as it was recorded — kept because it names real adapter behaviour
 
 `executeSyntenyFeaturesAndPositions.ts` used to say a two-axis fetch "can't
