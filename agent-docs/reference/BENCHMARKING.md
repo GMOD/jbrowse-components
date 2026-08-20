@@ -181,6 +181,26 @@ working — while a 300k loop doing four `Float64Array` reads takes 58ms, about
 than `jsdom`, so switching `testEnvironment` is not the fix); the arrays are
 realm-local to jest's vm context, and element access falls off V8's fast path.
 
+**Calls to global builtins are inflated the same way, and that reaches ordinary
+parsing code.** Measured 2026-08-20 on `parseBed`, 55,564 BED rows:
+
+| | jest | node |
+| --- | --- | --- |
+| `Number(s)` over the rows | 14.3ms | 0.95ms |
+| `+s` over the same rows | 1.3ms | 0.81ms |
+| `Number.isFinite(x)` x 55,564 | 13.1ms | 0.06ms |
+
+Under node `Number(s)` and `+s` are the same thing to within 17%, which is what
+the spec says they are. Under jest `Number(s)` is **11x** its own unary-plus and
+`Number.isFinite` is **218x** what node charges — same realm-locality, this time
+on the builtin rather than the array. A profile taken in jest therefore says
+`Number()` is a hotspot in any parser that calls it, and the obvious fix
+(rewrite every coercion as `+x`) is worth nothing at all in the browser.
+
+The parse this was found in *did* have a real 2x in it, and it was somewhere
+else entirely — the per-line `split('\t')`. Nothing about the jest profile
+pointed there.
+
 **What this cost:** a handoff reported `buildSyntenyGeometry` as "the largest
 single item, 105ms, and nobody has looked at it". It is 12.9ms in a browser and
 there is nothing there to find. A whole profile table was built on jest numbers

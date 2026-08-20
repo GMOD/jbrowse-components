@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 // What does walking tab offsets buy over `line.split('\t')` in `parseBed`?
 //
 //   node plugins/comparative-adapters/benches/mcscanParseBed.bench.ts --only=grape
@@ -31,6 +30,7 @@ import { readFileSync } from 'node:fs'
 // 55,564 rows — cost 28% (35.6ms -> 46.0ms) and saved no measurable heap. The
 // strings it deduplicates are short enough that V8 allocates them flat, so there
 // was nothing for a second reference to save.
+import { readFileSync } from 'node:fs'
 import { gunzipSync } from 'node:zlib'
 
 import { parseBed } from '../src/util.ts'

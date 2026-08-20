@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 // What does bucketing an MCScan file's joined rows by refName buy a fetch?
 //
 //   node plugins/comparative-adapters/benches/mcscanBlockFetch.bench.ts
@@ -35,12 +34,17 @@ import { readFileSync } from 'node:fs'
 //
 // The build is reported on its own line instead, next to the per-fetch saving,
 // so the payback is visible rather than assumed.
+import { readFileSync } from 'node:fs'
 import { gunzipSync } from 'node:zlib'
 
 import { SimpleFeature, doesIntersect2 } from '@jbrowse/core/util'
 
-import { indexBlockRows, makeBlockFeatures } from '../src/mcscanUtil.ts'
-import { anchorScore, joinBedPair } from '../src/mcscanUtil.ts'
+import {
+  anchorScore,
+  indexBlockRows,
+  joinBedPair,
+  makeBlockFeatures,
+} from '../src/mcscanUtil.ts'
 import { parseBed } from '../src/util.ts'
 
 import type { BlockRow } from '../src/mcscanUtil.ts'

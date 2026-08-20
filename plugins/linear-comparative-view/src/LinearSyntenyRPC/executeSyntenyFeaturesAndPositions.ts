@@ -341,10 +341,19 @@ export async function executeSyntenyFeaturesAndPositions({
   // Distinct values per feature, so a dictionary would cost the same clone plus
   // an index array — see `makeStringDict` for where the line is.
   const featureIds: string[] = []
-  // The five lanes whose cardinality is bounded by something other than the
-  // feature count: a gene symbol or nothing at all, a scaffold count, and (twice)
-  // the one assembly this level draws. Ids are written into arrays sized `count`
-  // and transferred; the dictionaries ride along as a few dozen strings.
+  // Five dictionary-encoded lanes: a name, a scaffold count, and (twice) the one
+  // assembly this level draws. Ids are written into arrays sized `count` and
+  // transferred; four of the dictionaries ride along as a few dozen strings.
+  //
+  // The NAME lane is the exception, and it is worth naming: a PAF puts nothing
+  // there, but an MCScan or ortholog-table track puts a distinct gene id on
+  // every feature, so its dictionary is as long as the fetch. That is the shape
+  // `makeStringDict` says dictionary encoding is NOT worth — it costs the same
+  // clone as a plain `string[]` plus a hash insert per feature, which is ~11% of
+  // this worker's profile on a 14,599-feature grape/peach fetch. An append-only
+  // lane for the high-cardinality case was prototyped and could not be shown to
+  // beat this on a loaded box; it also breaks the `dict.indexOf(name)` reading
+  // `stringDict.test.ts` pins. Left as it is on purpose, not by oversight.
   const nameIds = new Uint32Array(count)
   const refNameIds = new Uint32Array(count)
   const assemblyNameIds = new Uint32Array(count)

@@ -545,6 +545,36 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `xs`/`widths`/`ids` arrays for the whole lane — and that is a rewrite of
   `labelRuns` and `placeLabels`, which read the rects, not a draw-loop change.
 
+- **Interning the refName column in `parseBed`** — measured 2026-08-20 and
+  declined. jcvi's grape BED holds 33 distinct scaffold names over 55,564 rows,
+  which is the shape interning is supposed to be for, and it lost on both
+  counts: a `Map<string, string>` lookup per row cost 28% (35.6ms -> 46.0ms),
+  and the heap delta across four alternating measurements was noise in both
+  directions. The strings it deduplicates are short enough that V8 allocates
+  them flat, so a second reference to one saves nothing, and JS string equality
+  is by value — meaning the win it was supposed to hand downstream (a pointer
+  compare in the synteny worker's string dictionaries) is not observable from JS
+  at all. The reasoning is kept at the arm it is not, in
+  `plugins/comparative-adapters/benches/mcscanParseBed.bench.ts`.
+
+- **Fusing the synteny worker's `dedupe` into the decorate pass that follows
+  it** — measured 2026-08-20 and declined. The two passes read `id()` twice and
+  allocate two intermediate arrays the length of the fetch, so one pass over a
+  `Set` looked like free money. It measured **1.00-1.01x** on a 14,599-feature
+  whole-genome fetch against a control of 1.02-1.06x, i.e. nothing, and it moves
+  a subtle distinction into a loop body: only the query-axis fetch is
+  id-deduped, because PIF and all-vs-all give one record's two perspectives
+  unrelated ids on purpose and `flippedRibbons` must stay out of that set.
+  `plugins/linear-comparative-view/benches/syntenyRpc.bench.ts --base=<ref>` is
+  what measured it, and is the way to re-check any candidate here.
+
+  **The generalizable half**: at this scale, removing an allocation is not a
+  measurable win. The same session's two accepted changes both removed *work*
+  proportional to a product — rows x regions, and a hash per channel per feature
+  — and both showed up immediately. The off-screen-mate scratch above is the
+  same lesson from the other side: there the allocation removal was measurable
+  and still lost, because it moved the cost onto a hotter path.
+
 - **Consolidating the dotplot's cumBp -> px reconstruction behind a transform
   OBJECT, or behind a projector CLOSURE** — measured 2026-08-15 and both
   declined; the scalar-primitive form was taken instead. `(cumBp - viewBp) *
