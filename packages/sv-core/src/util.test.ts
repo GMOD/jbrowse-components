@@ -288,3 +288,36 @@ describe('hasBreakpointSplitView', () => {
     expect(hasBreakpointSplitView(child)).toBe(false)
   })
 })
+
+// A refName may contain a colon, so the separator is the LAST one. GRCh38's
+// full analysis set names its HLA contigs `HLA-A*01:01:01:01`, which reaches
+// here as `HLA-A*01:01:01:01:1000` — split at the first colon that read as
+// `HLA-A*01` at position 1, a contig-and-locus a panel then opened on.
+describe('parseSvAlt with a colon in the mate refName', () => {
+  test('keeps the whole contig name and the real position', () => {
+    const alt = 'C[HLA-A*01:01:01:01:1000['
+    const feature = createMockFeature({
+      ALT: [alt],
+      start: 123455,
+      refName: '13',
+    })
+    expect(parseSvAlt(feature as any, alt)).toEqual({
+      mateRefName: 'HLA-A*01:01:01:01',
+      matePos: 1000,
+      joinDirection: -1,
+      mateDirection: 1,
+    })
+  })
+
+  test('refuses a mate position that is not a number', () => {
+    // A NaN here reaches a fetch region and a panel's `centerAt`, neither of
+    // which says anything about it.
+    const alt = 'C[chr2:notaposition['
+    const feature = createMockFeature({
+      ALT: [alt],
+      start: 123455,
+      refName: '13',
+    })
+    expect(parseSvAlt(feature as any, alt)).toBeUndefined()
+  })
+})

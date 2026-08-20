@@ -99,13 +99,18 @@ export function parseSvAlt(
       matePos,
     }
   } else if (bnd !== undefined && mateLocString !== undefined) {
-    const [mateRefName, matePosStr] = mateLocString.split(':')
-    if (
-      mateRefName === undefined ||
-      mateRefName === '' ||
-      matePosStr === undefined ||
-      matePosStr === ''
-    ) {
+    // Split at the LAST colon, the same rule `parseLocString` applies and for
+    // the same reason: a refName may contain one. GRCh38's full analysis set
+    // names its HLA contigs `HLA-A*01:01:01:01`, so a mate on one arrives here
+    // as `HLA-A*01:01:01:01:1000` and splitting at the first colon read the
+    // chromosome as `HLA-A*01` and the position as 1.
+    const colon = mateLocString.lastIndexOf(':')
+    const mateRefName = mateLocString.slice(0, colon)
+    const matePos = Number(mateLocString.slice(colon + 1))
+    // A position that is not a number is not a location. Returning one anyway
+    // put a NaN through `svMateLocus` into a fetch region and a panel's
+    // `centerAt`, neither of which reports anything.
+    if (colon <= 0 || !Number.isFinite(matePos)) {
       return undefined
     }
     // `Join: 'right'` means the mate piece is joined to the RIGHT of the ref
@@ -115,7 +120,7 @@ export function parseSvAlt(
     // return.
     return {
       mateRefName,
-      matePos: +matePosStr,
+      matePos,
       mateDirection: bnd.MateDirection === 'left' ? -1 : 1,
       joinDirection: bnd.Join === 'left' ? 1 : -1,
     }
