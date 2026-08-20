@@ -391,9 +391,9 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMultiRowFeatureDisplay',
 ])
 
-// The synteny view's 'CIGAR display mode' radios, imported. Its submenu is one
-// of the header menu's top-level rows, gated on the data (coarse-tier PIF and
-// CIGAR-less PAF have no ops), not on config.
+// The synteny view's CIGAR modes, imported. Its row is in the header's settings
+// panel, gated on the data (coarse-tier PIF and CIGAR-less PAF have no ops), not
+// on config.
 const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
@@ -1478,10 +1478,11 @@ export const viewFields: Record<string, FieldRecipe> = {
   },
   cigarMode: (value, { viewType }) => {
     const label = typeof value === 'string' ? CIGAR_MODES[value] : undefined
-    return label && viewType === 'LinearSyntenyView'
+    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
+    return label && popover && viewType === 'LinearSyntenyView'
       ? {
-          path: `Synteny view header → View options → CIGAR display mode → ${label}`,
-          note: 'The submenu appears only when the alignments actually carry CIGAR ops — a coarse-tier PIF or a CIGAR-less PAF has none to draw.',
+          path: `${popover} (the sliders button in the view header) → CIGAR indels: → ${label}`,
+          note: 'The row appears only when the alignments actually carry CIGAR ops — a coarse-tier PIF or a CIGAR-less PAF has none to draw.',
         }
       : undefined
   },
@@ -1549,28 +1550,36 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'Re-order chromosomes is the opt-in, and this figure leaves it alone on purpose: the order along the axis is part of what the figure is showing.',
         }
   },
-  // The label IS the count, so there is no fixed string to click: the group reads
-  // "2,767 alignments map to 9 contigs not shown" on the figure's own view and
-  // something else on anyone else's, which is why the note says where to look
-  // rather than what it will say.
-  showOffscreenMates: (value, { viewType }) =>
-    typeof value === 'boolean' && viewType === 'LinearSyntenyView'
+  // One control over two properties, so both fields point at the same row and
+  // differ only in which step they name. The per-contig numbers are on the marks
+  // themselves — hover one and it names the contig and how many alignments on
+  // this band go there — rather than on the control that turns them on.
+  showOffscreenMates: (value, { viewType }) => {
+    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
+    return typeof value === 'boolean' &&
+      popover &&
+      viewType === 'LinearSyntenyView'
       ? {
-          path: `Synteny view header → View options → the submenu naming how many alignments map to contigs not shown → ${value ? 'Mark them' : 'Off'}`,
-          note: 'The submenu names the count and the number of contigs, so its label differs per view; with no fetch landed yet it reads "Alignments this view cannot draw".',
+          path: `${popover} (the sliders button in the view header) → Off-screen mates: → ${value ? 'Mark them' : 'Off'}`,
+          note: 'On by default. A locus syntenic to a contig the facing row is not displaying draws no ribbon, so without the marks it looks exactly like a locus syntenic to nothing.',
         }
-      : undefined,
+      : undefined
+  },
   // The one setting here that changes what is FETCHED rather than what is drawn,
-  // which is why it is the last step of the same submenu rather than a checkbox
-  // of its own: what a reader picks there is how hard to look, and only this
-  // step costs a query.
-  bidirectionalFetch: (value, { viewType }) =>
-    typeof value === 'boolean' && viewType === 'LinearSyntenyView'
+  // which is why it is the last step of the same row rather than a control of
+  // its own: what a reader picks there is how hard to look, and only this step
+  // costs a query.
+  bidirectionalFetch: (value, { viewType }) => {
+    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
+    return typeof value === 'boolean' &&
+      popover &&
+      viewType === 'LinearSyntenyView'
       ? {
-          path: `Synteny view header → View options → the submenu naming how many alignments map to contigs not shown → ${value ? 'Mark them, searching both rows' : 'Mark them'}`,
+          path: `${popover} (the sliders button in the view header) → Off-screen mates: → ${value ? 'Mark them, both rows' : 'Mark them'}`,
           note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. This step costs a second query per row pair.',
         }
-      : undefined,
+      : undefined
+  },
   // Applied while the view is built (afterAttach sets scalebarOnly on any row
   // the launch gave no tracks), so the control is the launch dialog's checkbox
   // rather than anything on the finished view.
@@ -1709,12 +1718,14 @@ export const viewFields: Record<string, FieldRecipe> = {
           path: `View menu → Show... → Show no tracks active button (${value ? 'unchecked' : 'checked'})`,
         }
       : undefined,
-  drawCurves: value =>
-    typeof value === 'boolean'
+  drawCurves: (value, { viewType }) => {
+    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
+    return typeof value === 'boolean' && popover
       ? {
-          path: `Synteny view header → View options → Show... → Show curved lines (${value ? 'checked' : 'unchecked'})`,
+          path: `${popover} (the sliders button in the view header) → Curved lines: → ${value ? 'On' : 'Off'}`,
         }
-      : undefined,
+      : undefined
+  },
   // An action rather than a checkbox, so only a `true` has a click-path: it
   // re-fits every row to one shared bp/px, and there is no un-checking it —
   // you'd re-navigate instead. Under "Navigation" with the rest of what points

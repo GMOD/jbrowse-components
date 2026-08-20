@@ -2955,23 +2955,21 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'genomes_synteny/ribbons_default',
     url: tnnt3Session(),
     // The top frame also has to answer "where are those two settings?", so it
-    // opens the header's View options menu and hovers Show... — 'Show curved
-    // lines' is in that submenu while 'CIGAR display mode' stays visible in the
-    // parent, so one frame carries both controls the section asks the reader to
-    // change. The live link still opens the plain default state.
+    // opens the header's settings panel: both rows the section asks the reader
+    // to change are in it, side by side, which is what this frame used to need
+    // an open menu plus an open submenu to show. The live link still opens the
+    // plain default state.
     actions: [
-      { type: 'click', selector: '[aria-label="View options"]' },
-      { type: 'hover', text: 'Show...' },
-      { type: 'waitForText', text: 'Show curved lines' },
-      // the submenu popper is settled in the DOM the moment that text appears,
-      // but it is its own compositor layer and swiftshader rasterizes it a frame
-      // or two late: the capture came out with the parent menu painted, the
-      // submenu blank, and the 'Show curved lines' box floating over the track
-      // behind it. Same race as bigwig/whole_genome_coverage, same fix.
+      { type: 'click', selector: '[aria-label="Synteny display settings"]' },
+      { type: 'waitForText', text: 'CIGAR indels:' },
+      // the popover is its own compositor layer and swiftshader rasterizes it a
+      // frame or two late: the capture came out with the panel blank and the
+      // boxes floating over the track behind it. Same race as
+      // bigwig/whole_genome_coverage, same fix.
       { type: 'delay', ms: 1000 },
     ],
     // box the two controls the section asks the reader to change, rather than
-    // labelling the frame "As it opens" (which said nothing about the menu)
+    // labelling the frame "As it opens" (which said nothing about the panel)
     annotations: [
       {
         type: 'text',
@@ -2980,8 +2978,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         fontSize: 22,
         text: 'Straight ribbons, colored indels',
       },
-      { type: 'box', anchor: { text: 'CIGAR display mode' } },
-      { type: 'box', anchor: { text: 'Show curved lines' } },
+      { type: 'box', anchor: { text: 'CIGAR indels:' } },
+      { type: 'box', anchor: { text: 'Curved lines:' } },
     ],
   },
   {

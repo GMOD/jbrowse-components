@@ -677,12 +677,12 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
 
   // The markers, in ONE frame with the menu that turned them on still open
   // (review: "ideally just show fig 4 with the menu from fig 3 open"). They were
-  // frames 3 and 4 of the four-up above -- a menu, then a ribbon -- and a
-  // checkbox row keeps CascadingMenu open, so the state right after the click IS
-  // both frames at once: the path is on screen, ticked, and what it drew is
+  // frames 3 and 4 of the four-up above -- a control, then a ribbon -- and the
+  // settings panel stays up until it is dismissed, so the state right after the
+  // click IS both frames at once: the row is on screen, set, and what it drew is
   // under it.
   //
-  // The menu opens from the view's own "View options" at the top RIGHT and the
+  // The panel opens from the view's own settings button at the top RIGHT and the
   // markers are drawn across the ribbon, so unlike the submenu in the old frame
   // 3 the two do not fight for the same pixels.
   //
@@ -700,10 +700,9 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       [CHAIN_BLOCKS],
     ),
     // the same height as the figure above, whose end state this continues from,
-    // plus the row the off-screen mate control adds to every synteny menu — the
-    // annotation anchors on a row near the bottom of the open menu, and at 445
-    // it landed 0.42px past the frame, and the "Show..." submenu it opens needs
-    // the room below that row as well
+    // plus the room the settings panel needs below the header: the annotation
+    // anchors on a row partway down it, and at 445 it landed 0.42px past the
+    // frame
     viewportHeight: 500,
     hideTooltip: true,
     actions: [
@@ -712,11 +711,14 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       // window, so this waits on a worker round trip and then on the moved
       // panel refetching at its new window
       { type: 'delay', ms: 10000 },
-      { type: 'click', selector: '[aria-label="View options"]' },
-      { type: 'waitForText', text: 'Show...' },
-      { type: 'hover', text: 'Show...' },
-      { type: 'waitForText', text: 'Show location markers' },
-      { type: 'click', text: 'Show location markers' },
+      { type: 'click', selector: '[aria-label="Synteny display settings"]' },
+      { type: 'waitForText', text: 'Location markers:' },
+      // by selector rather than by text: every toggle row in the panel has an
+      // "On", and the group's aria-label is what tells them apart
+      {
+        type: 'click',
+        selector: '[aria-label="Location markers"] [value="on"]',
+      },
       // the markers come back through the synteny RPC rather than from a repaint
       // of what is already on the GPU, so this waits on a refetch
       { type: 'delay', ms: 5000 },
@@ -735,13 +737,15 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
         fontSize: 22,
         text: 'Location markers pair a point on one panel with the point it maps to on the other',
       },
-      // Both levels are boxed, because the item's own name is not enough to find
-      // it -- it is two clicks down from a MoreVert.
-      { type: 'circle', anchor: { selector: '[aria-label="View options"]' } },
-      { type: 'box', anchor: { text: 'Show...' }, strokeWidth: 3 },
+      // The button is circled as well as the row, because the row's own name is
+      // not enough to find it -- it is one click down from a sliders icon.
+      {
+        type: 'circle',
+        anchor: { selector: '[aria-label="Synteny display settings"]' },
+      },
       {
         type: 'box',
-        anchor: { text: 'Show location markers' },
+        anchor: { text: 'Location markers:' },
         strokeWidth: 3,
       },
     ],

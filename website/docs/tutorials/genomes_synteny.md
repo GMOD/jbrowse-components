@@ -95,14 +95,14 @@ use it when more than one liftOver track is on. See
 
 ## Ribbon display settings
 
-Three settings change how the ribbons read. Two are on the synteny view's **View
-options** button:
+Three settings change how the ribbons read. Two are in the synteny view's
+settings panel, the sliders button in its header:
 
-- **Show...** → **Show curved lines** draws each ribbon as a curve instead of a
-  straight shear, so a block that lands far from where it started is easier to
-  follow across the gap.
-- **CIGAR display mode** → **Transparent indels** stops painting the insertions
-  and deletions inside each block, leaving them as see-through gaps. With strand
+- **Curved lines** → **On** draws each ribbon as a curve instead of a straight
+  shear, so a block that lands far from where it started is easier to follow
+  across the gap.
+- **CIGAR indels** → **Transparent indels** stops painting the insertions and
+  deletions inside each block, leaving them as see-through gaps. With strand
   coloring on, that keeps color meaning only one thing.
 
 The third is the palette button further along the same header, whose menu sets

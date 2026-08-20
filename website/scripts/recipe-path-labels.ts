@@ -114,11 +114,6 @@ export const PATH_PROSE = new Set([
   'drag the rows into order',
   "set each row's color",
   'untick the rows you do not want',
-  // the label IS the count ("2,767 alignments map to 9 contigs not shown"), so
-  // it reads differently on every view and there is no fixed string to check.
-  // The rows INSIDE it are fixed and are checked; only the group that opens
-  // them is prose.
-  'the submenu naming how many alignments map to contigs not shown',
 ])
 
 /**

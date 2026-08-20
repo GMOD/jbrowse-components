@@ -13,11 +13,11 @@ import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 /**
  * The marks for this level's off-screen mates, baked into the figure.
  *
- * `showOffscreenMates` is a menu setting, so an export taken with it on has to
- * carry it — the same rule the color-by legend follows. Without this a figure
- * of a view reporting "2,767 alignments map to 9 contigs not shown" showed the
- * ribbons alone, and the marks the reader turned on to see were the one thing
- * the file did not have.
+ * `showOffscreenMates` is a display setting, so an export taken with it on has
+ * to carry it — the same rule the color-by legend follows. Without this a
+ * figure of a view marking nine contigs it could not draw showed the ribbons
+ * alone, and the marks the reader turned on to see were the one thing the file
+ * did not have.
  *
  * ONE LAYER FOR THE WHOLE LEVEL, after every display's ribbons, because on
  * screen these are a canvas stacked over all of them. Drawn per display it

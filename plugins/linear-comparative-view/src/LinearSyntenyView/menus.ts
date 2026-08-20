@@ -2,12 +2,9 @@ import { radioItems } from '@jbrowse/core/ui/menuItems'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import ExploreIcon from '@mui/icons-material/Explore'
 import RemoveIcon from '@mui/icons-material/Remove'
-import WarningIcon from '@mui/icons-material/WarningAmber'
 
 import { rowLabels } from '../LinearComparativeView/rowLabel.ts'
-import { CIGAR_MODE_OPTIONS } from './cigarModes.ts'
 
-import type { CigarMode } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LodTier } from '@jbrowse/synteny-core'
 
@@ -227,20 +224,14 @@ export function rowViewMenuItems(model: RowMenusModel): MenuItem[] {
   ]
 }
 
-interface CigarModeModel {
-  hasCigarData: boolean
-  cigarMode: CigarMode
-  setCigarMode: (arg: CigarMode) => void
-}
-
 /**
  * Whether one synteny display could show CIGAR detail — the per-display half of
  * the view's `hasCigarData`. Three ways to answer "maybe", and the coarse one is
  * the subtle one: a display serving the coarse LOD tier reports `hasCigar` false
  * because that tier omits the CIGARs, NOT because the file lacks them. Reading
- * that as "no CIGAR data" retracted the whole CIGAR menu on zoom-out and put it
- * back on zoom-in — the tier switch, an implementation detail, made a menu
- * appear and disappear under the user.
+ * that as "no CIGAR data" retracted the whole CIGAR control on zoom-out and put
+ * it back on zoom-in — the tier switch, an implementation detail, made a
+ * setting appear and disappear under the user.
  */
 export function displayCanShowCigar(display: {
   lodTier: LodTier
@@ -253,109 +244,4 @@ export function displayCanShowCigar(display: {
     display.lodTier === 'coarse' ||
     display.featureData.hasCigar
   )
-}
-
-export type OffscreenMateMode = 'off' | 'query' | 'both'
-
-interface OffscreenMateModel {
-  offscreenMateMode: OffscreenMateMode
-  offscreenMateTally: { refName: string; count: number }[]
-  setOffscreenMateMode: (mode: OffscreenMateMode) => void
-}
-
-// Locale-grouped, because these run to five figures on a whole chromosome and
-// "2767" reads as a coordinate in a menu full of them.
-function formatCount(n: number) {
-  return n.toLocaleString()
-}
-
-/**
- * HOW HARD TO LOOK, as three steps of one question rather than two checkboxes
- * of two. A reader is not choosing between "mark them" and "search both rows";
- * they are deciding how much of what this view cannot draw they want to know
- * about, and the second step costs a query where the first is free.
- *
- * ONE CONTROL, TWO PROPERTIES, which is what `navigationMenuItems` above does with
- * `linkViews`/`followSynteny` and for the same reason. They stay separate
- * properties because they are separate KINDS: `showOffscreenMates` is a
- * repaint — the worker counted and placed those marks whichever way it sits —
- * and `bidirectionalFetch` is a fetch input. Fusing them into one boolean would
- * put the free half behind a network round trip, which is the mistake
- * `drawLocationMarkers` was in the fetch key for.
- *
- * It also closes the state the pair could reach and nothing wanted: fetching
- * the second row and then not drawing what it found.
- */
-const OFFSCREEN_MATE_MODES = [
-  { value: 'off', label: 'Off' },
-  {
-    value: 'query',
-    label: 'Mark them',
-    subLabel: 'From the alignments this view already has',
-  },
-  {
-    value: 'both',
-    label: 'Mark them, searching both rows',
-    subLabel:
-      'A second query per row pair, and the only way to find the ones anchored below',
-  },
-] as const
-
-/**
- * The group's label IS the finding. "Show unpaired alignments" tells a reader
- * nothing they can act on, where "2,767 alignments map to 9 contigs not shown"
- * is the whole point of the feature — a locus that looks syntenic to nothing
- * here is syntenic to something the view is not displaying.
- *
- * NOT GATED ON THERE BEING SOME, unlike the checkbox this replaced. A count of
- * zero is not the same as nothing to offer: `both` is the mode that would go
- * and find out, and gating the control on the number it exists to change is a
- * door that only opens once you are already through it. With no fetch landed
- * yet the honest label is neither a number nor a zero, so it names the subject
- * instead.
- */
-export function offscreenMateMenuItems(model: OffscreenMateModel): MenuItem[] {
-  const { offscreenMateTally: tally } = model
-  const total = tally.reduce((sum, e) => sum + e.count, 0)
-  const contigs = tally.length === 1 ? '1 contig' : `${tally.length} contigs`
-  const alignments =
-    total === 1 ? '1 alignment maps' : `${formatCount(total)} alignments map`
-  return [
-    {
-      label:
-        tally.length > 0
-          ? `${alignments} to ${contigs} not shown`
-          : 'Alignments this view cannot draw',
-      subMenu: radioItems(
-        OFFSCREEN_MATE_MODES,
-        model.offscreenMateMode,
-        mode => {
-          model.setOffscreenMateMode(mode)
-        },
-      ),
-    },
-  ]
-}
-
-export function cigarModeMenuItems(model: CigarModeModel): MenuItem[] {
-  return model.hasCigarData
-    ? [
-        {
-          label: 'CIGAR display mode',
-          // Built here rather than with `radioItems` because one row differs:
-          // 'off' is the mode that can mislead, and the icon says so on the row
-          // instead of only in its tooltip.
-          subMenu: CIGAR_MODE_OPTIONS.map(({ value, label, ...rest }) => ({
-            label,
-            ...rest,
-            icon: value === 'off' ? WarningIcon : undefined,
-            type: 'radio' as const,
-            checked: model.cigarMode === value,
-            onClick: () => {
-              model.setCigarMode(value)
-            },
-          })),
-        },
-      ]
-    : []
 }

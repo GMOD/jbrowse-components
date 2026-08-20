@@ -23,7 +23,7 @@ in the import form reverses it.
 How the two line up base by base is recorded per alignment as a **CIGAR**, a
 compact code where e.g. `120M3I45M` is 120 matching bases, 3 extra bases in one
 genome, then 45 more matches. It is what the ribbon tooltips report and what the
-CIGAR display modes paint, so an alignment file carrying no CIGARs can only be
+CIGAR indel modes paint, so an alignment file carrying no CIGARs can only be
 drawn as solid blocks. For which file formats carry one and which adapter reads
 each, see
 [the alignment format glossary](/docs/config_guides/synteny_track#alignment-format-glossary).
@@ -193,11 +193,47 @@ The settings button beside it has **Identity fade**, which modulates ribbon
 opacity by identity independently of the color mode, so low-identity blocks fade
 out without spending the color channel.
 
+## Display settings
+
+The sliders button in the header opens every setting that decides what the
+ribbons look like, in three groups — how one alignment is drawn, how much of it
+is loaded, and which alignments are drawn at all. The hamburger menu next to it
+is the other half of that division: it answers what the view _is_ — which
+genomes it stacks, where they point, what leaves it — and holds no render
+settings at all.
+
+**Ribbons** — **Opacity** for how much dense overlapping alignments show through
+each other; **Identity fade** and **Thin fade** described above and below;
+**Curved lines** draws ribbons as bezier curves instead of straight connectors,
+which reads far better at whole-genome scale where straight crossings stack into
+noise; **Location markers** continues the top panel's scalebar grid down through
+the ribbons, so each tick shows where a round coordinate up there lands below.
+
+**Detail** — how much of each alignment is loaded and painted. **CIGAR indels**
+is how per-base insertions and deletions inside one are shown: **Colored
+indels** paints them, **Transparent indels** leaves them as see-through gaps in
+the ribbon, and **Off - don't draw CIGAR indels** draws each alignment as one
+solid block. That last one carries a warning icon, in the list and on the closed
+control: overlapping blocks run together with nothing to tell them apart, and a
+gap inside a block is painted as though it matched across. **Level of detail**
+picks which stored tier is fetched.
+
+Both rows are gated on the data rather than shown inert: a CIGAR-less PAF has no
+indels to draw, and an adapter with one stored tier has nothing to switch
+between. A file that is both takes the whole section with it.
+
+**Scope** — which alignments make it into the picture at all. **Min length**
+hides ones shorter than it, which is what clears the hairball of short spurious
+chains at whole-genome zoom; **Off-screen mates** decides how hard to look for
+the ones this view cannot draw (below); and **Overdraw** is how many pixels
+beyond the visible area are still drawn, which is what keeps a ribbon reaching a
+long way off screen visible while you scroll.
+
 ## View options
 
-The view's hamburger menu keeps seven rows however many genomes are stacked.
-What varies with the stack is inside **Rows**, and what points the rows is
-inside **Navigation**:
+The view's hamburger menu keeps four rows however many genomes are stacked. What
+varies with the stack is inside **Rows**, and what points the rows is inside
+**Navigation**:
 
 - **Rows** - **Add assembly row** to compare three or more assemblies stacked
   vertically, **Remove bottom row**, **Re-order chromosomes**, and one entry per
@@ -211,16 +247,7 @@ inside **Navigation**:
   pixel** puts every row on the average of the rows' current scales, keeping
   each row's center. **Link views** decides whether panning one row pans the
   others, and by what — pixels, or the alignment
-- **CIGAR display mode** - how per-base insertions and deletions inside each
-  alignment are shown: **Colored indels** paints them, **Transparent indels**
-  leaves them as see-through gaps in the ribbon, and **Off - don't draw CIGAR
-  indels** draws each alignment as one solid block. That last one is marked with
-  a warning: overlapping blocks run together with nothing to tell them apart,
-  and a gap inside a block is painted as though it matched across
-- **Show...** - **Show curved lines** draws ribbons as bezier curves instead of
-  straight connectors, and **Show location markers** continues the top panel's
-  scalebar grid down through the ribbons, so each tick shows where a round
-  coordinate up there lands below
+- **Export SVG**, and **Show...** for the header's own search boxes
 
 <Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length L1HS present in human is absent at the orthologous chimp intron, which the 'Colored indels' mode paints as a wedge in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />
 
@@ -231,12 +258,12 @@ contig the facing panel is not displaying has only one end, so the view draws
 nothing for it — and a locus syntenic to a chromosome you did not stack then
 looks exactly like a locus syntenic to nothing.
 
-The hamburger menu says how many those are, naming the contigs they go to, and
-the same item is where **Mark them** turns on a strip of marks along the query
-axis. Each mark sits where the alignment is on the panel it does have, stopping
-short of the ribbons so it cannot be read as an alignment to whatever is
-directly below. A run of marks to one contig carries that contig's name; where
-several contigs cover the same stretch, their names stack.
+**Off-screen mates** in the settings panel is where **Mark them** turns on a
+strip of marks along the query axis, and it is on by default. Each mark sits
+where the alignment is on the panel it does have, stopping short of the ribbons
+so it cannot be read as an alignment to whatever is directly below. A run of
+marks to one contig carries that contig's name; where several contigs cover the
+same stretch, their names stack.
 
 A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
 zoom is most of them. Hover any mark and it names the contig it points at, and
@@ -258,14 +285,13 @@ contig the lower panel is showing — whose other end is somewhere the upper pan
 is not — is never asked for at all. The same two genomes therefore report
 differently depending on which one you stacked on top.
 
-**Mark them, searching both rows** — the last step of that same menu item — adds
-the second query, and what it finds splits two ways.
+**Mark them, both rows** — the last step of that same row — adds the second
+query, and what it finds splits two ways.
 
 An alignment whose other end is on a contig the upper panel is not displaying at
 all has no second endpoint, so it is marked along the lower panel's axis,
 mirroring the strip described above; clicking one of those marks navigates the
-**upper** panel. The count in the menu item above it covers both directions once
-this is on.
+**upper** panel.
 
 An alignment whose other end is on a contig the upper panel _is_ displaying,
 outside the window it is showing, becomes a ribbon — but a ribbon with one end

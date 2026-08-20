@@ -20,7 +20,7 @@ export default function SettingRow({
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '96px 1fr auto',
+        gridTemplateColumns: 'var(--setting-label-width, 96px) 1fr auto',
         alignItems: 'center',
         columnGap: 8,
         minHeight: 28,

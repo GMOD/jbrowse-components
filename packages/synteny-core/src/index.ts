@@ -30,6 +30,7 @@ export { regionSignature } from './regionSignature.ts'
 export { bucketBpPerPx } from './bpPerPxBucket.ts'
 export {
   getCoarseBpPerPxThreshold,
+  LOD_MODES,
   lodMenuItems,
   resolveLodTier,
   trackHasLodTiers,
@@ -149,6 +150,9 @@ export { launchSyntenyView } from './launchSyntenyView.ts'
 export { default as SettingsPopover } from './SettingsPopover.tsx'
 export { default as SettingRow } from './SettingRow.tsx'
 export { default as SettingToggleGroup } from './SettingToggleGroup.tsx'
+export { default as SettingSelect } from './SettingSelect.tsx'
+export type { SettingOption } from './SettingSelect.tsx'
+export { default as SettingSection } from './SettingSection.tsx'
 export { default as HelpTooltip } from './HelpTooltip.tsx'
 export { default as OpacitySlider } from './OpacitySlider.tsx'
 export { default as DiagonalizeLoadingScreen } from './DiagonalizeLoadingScreen.tsx'

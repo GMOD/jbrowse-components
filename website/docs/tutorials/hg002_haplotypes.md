@@ -152,12 +152,12 @@ matching region**, which does the same walk once.
 
 <Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks on each haplotype's own coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
 
-To check the alignment inside a ribbon rather than at its edges, turn on **View
-options → Show... → Show location markers**. It draws lines through the ribbon
-at regularly spaced positions, each joining a point on the top row to the point
-it maps to on the bottom.
+To check the alignment inside a ribbon rather than at its edges, turn on
+**Location markers** in the header's settings panel. It draws lines through the
+ribbon at regularly spaced positions, each joining a point on the top row to the
+point it maps to on the bottom.
 
-<Figure caption="The same pair of panels with location markers on, and the menu path that turned them on still open over it." src="/img/hg002_haplotypes_location_markers.png" />
+<Figure caption="The same pair of panels with location markers on, and the settings panel that turned them on still open over it." src="/img/hg002_haplotypes_location_markers.png" />
 
 ## See also
 

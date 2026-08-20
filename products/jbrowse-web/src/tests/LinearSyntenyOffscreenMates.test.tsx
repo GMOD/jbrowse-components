@@ -26,7 +26,6 @@ interface SyntenyView {
   setWidth: (n: number) => void
   setShowOffscreenMates: (arg: boolean) => void
   setOffscreenMateMode: (mode: 'off' | 'query' | 'both') => void
-  headerMenuItems: () => { label?: string }[]
 }
 
 async function openSyntenyView() {
@@ -52,13 +51,10 @@ async function openSyntenyView() {
 // claims nothing, whatever the setting says, so the default only changes the
 // views that WERE hiding something. What it draws in that state — nothing, for
 // want of a strip — is `offscreenMateStrip.test.ts`'s.
-test('both rows showing every contig hides nothing, and says nothing', async () => {
+test('both rows showing every contig hides nothing', async () => {
   const view = await openSyntenyView()
   expect(view.showOffscreenMates).toBe(true)
   expect(view.offscreenMateTally).toEqual([])
-  expect(view.headerMenuItems().some(i => i.label?.includes('not shown'))).toBe(
-    false,
-  )
 })
 
 // The complaint the feature answers: a locus syntenic to a contig you did not
@@ -77,7 +73,10 @@ test('a row narrowed to one contig reports what it can no longer pair', async ()
   expect(view.offscreenMateTally[0]!.count).toBeGreaterThan(0)
 })
 
-test('and marks them by default, naming the number in the label', async () => {
+// ON BY DEFAULT, which is the whole decision: a locus syntenic to a contig the
+// facing row is not showing looked exactly like a locus syntenic to nothing,
+// and a reader who never opened the settings panel never learned otherwise.
+test('and marks them by default', async () => {
   const view = await openSyntenyView()
   const [, target] = view.views
   await target!.navToLocString('ctgA')
@@ -85,14 +84,6 @@ test('and marks them by default, naming the number in the label', async () => {
     expect(view.offscreenMateTally.length).toBeGreaterThan(0)
   }, timeout)
 
-  const count = view.offscreenMateTally[0]!.count
-  const item = view.headerMenuItems().find(i => i.label?.includes('not shown'))
-  expect(item?.label).toBe(
-    `${count.toLocaleString()} alignments map to 1 contig not shown`,
-  )
-  // ON BY DEFAULT, which is the whole decision: a locus syntenic to a contig
-  // the facing row is not showing looked exactly like a locus syntenic to
-  // nothing, and a reader who never opens this menu never learned otherwise.
   expect(view.offscreenMateMode).toBe('query')
 })
 

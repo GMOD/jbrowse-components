@@ -7,7 +7,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
   TrackColorsMixin,
-  lodMenuItems,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
@@ -21,18 +20,16 @@ import { doAfterAttach } from './afterAttach.ts'
 import { FADE_AUTO_MIN_FEATURES, fadesThinAt } from './fadeThin.ts'
 import {
   autoScaleMenuItems,
-  cigarModeMenuItems,
   compactViewsMenuItems,
   displayCanShowCigar,
   navigationMenuItems,
-  offscreenMateMenuItems,
   removeRowMenuItems,
   rowMenuItems,
   rowViewMenuItems,
 } from './menus.ts'
 
 import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
-import type { OffscreenMateMode } from './menus.ts'
+import type { OffscreenMateMode } from './offscreenMateModes.ts'
 import type {
   CigarMode,
   ExportSvgOptions,
@@ -294,8 +291,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * True if any track on any level has an adapter with tiered storage. Used
-       * to gate the LOD menu — PAFAdapter, BlastTabularAdapter and friends have
-       * nothing to switch between.
+       * to gate the "Level of detail" row — PAFAdapter, BlastTabularAdapter and
+       * friends have nothing to switch between.
        */
       get hasLodCapableAdapter() {
         return self.levels
@@ -305,8 +302,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * True if any synteny display could show CIGAR detail — used to gate the
-       * CIGAR-related menu items, which a CIGAR-less PAF has nothing to put in.
-       * Optimistic while no display has finished a fetch yet, so the menu is
+       * CIGAR settings row, which a CIGAR-less PAF has nothing to put in.
+       * Optimistic while no display has finished a fetch yet, so the row is
        * there from the first render rather than popping in once data lands (the
        * common case: most synteny files carry CIGARs). A view with no synteny
        * tracks at all has nothing to gate, so it reports false.
@@ -316,21 +313,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The contigs this view has alignments to and cannot draw, largest first.
-       * A locus can be syntenic to a contig you did not stack, and a view
-       * showing no ribbon for it looks exactly like one where it is syntenic to
-       * nothing; this is what the header reports instead.
-       */
-      // Summed across levels rather than reported per level, because the answer
-      // a reader wants is about the view: a contig missing from two levels is
-      // one contig to go add. The case for the whole feature, with the numbers,
-      // is agent-docs/ideas/offscreen-synteny-mates.md.
-      /**
-       * #getter
-       * Which of the three the two properties are in. `both` implies marking,
-       * so a hand-written snapshot that fetches the lower row without drawing
-       * it reads as the mode it behaves like — the fetch is happening, and the
-       * count in the menu label is the half of it that shows.
+       * Which of the three steps the two properties are in. `both` implies
+       * marking, so a hand-written snapshot that fetches the lower row without
+       * drawing it reads as the mode it behaves like — the fetch is happening,
+       * and the marks are the half of it that shows.
        */
       get offscreenMateMode(): OffscreenMateMode {
         return self.bidirectionalFetch
@@ -339,15 +325,27 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ? 'query'
             : 'off'
       },
+      /**
+       * #getter
+       * The contigs this view has alignments to and cannot draw, largest first.
+       * A locus can be syntenic to a contig you did not stack, and a view
+       * showing no ribbon for it looks exactly like one where it is syntenic to
+       * nothing; the marks along the axis are what says so, and a mark's
+       * tooltip is where this contig's own number appears.
+       *
+       * Summed across levels rather than reported per level, because the answer
+       * a reader wants is about the view: a contig missing from two levels is
+       * one contig to go add. The case for the whole feature, with the numbers,
+       * is agent-docs/ideas/offscreen-synteny-mates.md.
+       */
       get offscreenMateTally() {
         const totals = new Map<string, number>()
         for (const d of self.allSyntenyDisplays) {
           // BOTH AXES. The second is empty without `bidirectionalFetch`, and
-          // with it the headline is about the view rather than about one row —
+          // with it the answer is about the view rather than about one row —
           // "what am I not being shown" has the same answer whichever end of an
           // alignment the file happened to anchor. Keyed by refName alone, so a
-          // contig name shared across the two assemblies merges: that moves the
-          // contig count in the label and nothing else.
+          // contig name shared across the two assemblies merges into one entry.
           for (const { refName, count } of [
             ...d.offscreenMateTally,
             ...d.targetOffscreenMateTally,
@@ -741,7 +739,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => {
       const superHeaderMenuItems = self.headerMenuItems
-      const superShowMenuItems = self.showMenuItems
       const superMenuItems = self.menuItems
       const exportSvgMenuItem = {
         label: 'Export SVG',
@@ -759,44 +756,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       return {
         /**
          * #method
-         * Visibility toggles only. The two "show all regions" commands read as
-         * belonging here and don't: they reframe the view, which is what
-         * "Square view" does, so all three sit together under "Navigation".
-         */
-        showMenuItems(): MenuItem[] {
-          return [
-            ...superShowMenuItems(),
-            {
-              label: 'Show curved lines',
-              type: 'checkbox',
-              checked: self.drawCurves,
-              onClick: () => {
-                self.setDrawCurves(!self.drawCurves)
-              },
-            },
-            {
-              label: 'Show location markers',
-              type: 'checkbox',
-              checked: self.drawLocationMarkers,
-              onClick: () => {
-                self.setDrawLocationMarkers(!self.drawLocationMarkers)
-              },
-            },
-          ]
-        },
-        /**
-         * #method
          * Still a subset of `menuItems()`: the full list is overwhelming.
          *
-         * SEVEN ROWS WHATEVER THE STACK HOLDS. What varies with row count —
-         * remove, auto-scale, compact-all, one entry per genome — varies inside
-         * the "Rows" group instead of growing the list a reader first sees, so
-         * a six-genome view opens the same menu a pairwise one does.
+         * FOUR ROWS WHATEVER THE STACK HOLDS, because the menu answers what the
+         * view IS — which genomes it stacks, where they point, what leaves it —
+         * and nothing about how the ribbons are drawn. Every render setting is
+         * in the header's settings panel next to the sliders that were always
+         * there, so a reader tuning the picture has one place to look rather
+         * than a panel for the continuous half and a menu for the discrete one.
+         * `SyntenySettingsPopover` states the division from the other side.
          *
-         * The three that stayed flat are the ones with nothing to pair with:
-         * CIGAR detail, the LOD tier and the off-screen mates are each a single
-         * radio group about a different thing, and a "Rendering" bucket over the
-         * three of them would have bought one row for a third popup level.
+         * What varies with row count — remove, auto-scale, compact-all, one
+         * entry per genome — varies inside the "Rows" group instead of growing
+         * the list a reader first sees, so a six-genome view opens the same menu
+         * a pairwise one does.
          */
         headerMenuItems(): MenuItem[] {
           return [
@@ -848,9 +821,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               ],
             },
             ...navigationMenuItems(self),
-            ...cigarModeMenuItems(self),
-            ...lodMenuItems(self),
-            ...offscreenMateMenuItems(self),
             exportSvgMenuItem,
           ]
         },

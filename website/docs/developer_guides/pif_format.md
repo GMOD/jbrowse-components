@@ -131,8 +131,9 @@ By default `make-pif` also writes a no-CIGAR "coarse" tier of the same
 alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom the view
 serves this tier automatically, drawing clean ribbons without parsing
 megabyte-scale CIGAR strings; zooming in switches back to the fine `t`/`q` tier.
-No configuration is needed: the "Level of detail" menu defaults to `auto`, and
-`fine`/`coarse` pin a tier.
+No configuration is needed: the "Level of detail" control defaults to `auto`,
+and `fine`/`coarse` pin a tier. It is a row in the synteny view's settings panel
+and a submenu on the dotplot and the LGV synteny track.
 
 A coarse row has no CIGAR, so it is drawn as a straight ribbon between its
 endpoints. To keep that honest, a row is split wherever its CIGAR contains an
