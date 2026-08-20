@@ -38,6 +38,7 @@ import type {
   LinearSyntenyViewCommands,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -625,34 +626,29 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       const superHeaderMenuItems = self.headerMenuItems
       const superShowMenuItems = self.showMenuItems
       const superMenuItems = self.menuItems
-      function openExportSvgDialog() {
-        getSession(self).queueDialog(handleClose => [
-          ExportSvgDialog,
-          {
-            model: self,
-            handleClose,
-          },
-        ])
+      const exportSvgMenuItem = {
+        label: 'Export SVG',
+        icon: PhotoCameraIcon,
+        onClick: () => {
+          getSession(self).queueDialog(handleClose => [
+            ExportSvgDialog,
+            {
+              model: self,
+              handleClose,
+            },
+          ])
+        },
       }
       return {
         /**
          * #method
+         * Visibility toggles only. The two "show all regions" commands read as
+         * belonging here and don't: they reframe the view, which is what
+         * "Square view" does, so all three sit together a level up.
          */
         showMenuItems() {
           return [
             ...superShowMenuItems(),
-            {
-              label: 'Show all regions',
-              onClick: () => {
-                self.showAllRegions()
-              },
-            },
-            {
-              label: 'Show all regions at same scale',
-              onClick: () => {
-                self.showAllRegionsSameScale()
-              },
-            },
             {
               label: 'Show curved lines',
               type: 'checkbox',
@@ -673,12 +669,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #method
-         * includes a subset of view menu options because the full list is a
-         * little overwhelming
+         * The header menu, in four divided groups — reach a row, reframe the
+         * view, restructure the stack, choose what the ribbons carry — because
+         * up to thirteen of these are live at once and an undivided list of
+         * that length is read by hunting rather than by looking.
+         *
+         * Still a subset of `menuItems()`: the full list is overwhelming.
          */
-        headerMenuItems() {
+        headerMenuItems(): MenuItem[] {
           return [
             ...superHeaderMenuItems(),
+            ...rowViewMenuItems(self),
+            { type: 'divider' },
             {
               label: 'Square view',
               onClick: () => {
@@ -686,6 +688,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               },
               icon: CropFreeIcon,
             },
+            {
+              label: 'Show all regions',
+              onClick: () => {
+                self.showAllRegions()
+              },
+            },
+            {
+              label: 'Show all regions at same scale',
+              onClick: () => {
+                self.showAllRegionsSameScale()
+              },
+            },
+            ...autoScaleMenuItems(self),
+            ...genomeViewsMenuItems(self),
+            { type: 'divider' },
             {
               label: 'Add assembly row...',
               icon: AddIcon,
@@ -713,35 +730,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               },
               icon: ShuffleIcon,
             },
-            ...autoScaleMenuItems(self),
-            ...genomeViewsMenuItems(self),
-            ...cigarModeMenuItems(self),
-            ...offscreenMateMenuItems(self),
-            ...lodMenuItems(self),
+            { type: 'divider' },
             ...rowSyncMenuItems(self),
-            {
-              label: 'Export SVG',
-              icon: PhotoCameraIcon,
-              onClick: () => {
-                openExportSvgDialog()
-              },
-            },
+            ...cigarModeMenuItems(self),
+            ...lodMenuItems(self),
+            ...offscreenMateMenuItems(self),
+            { type: 'divider' },
+            exportSvgMenuItem,
           ]
         },
         /**
          * #method
          */
-        menuItems() {
+        menuItems(): MenuItem[] {
           return [
             ...superMenuItems(),
             ...rowViewMenuItems(self),
-            {
-              label: 'Export SVG',
-              icon: PhotoCameraIcon,
-              onClick: () => {
-                openExportSvgDialog()
-              },
-            },
+            exportSvgMenuItem,
           ]
         },
       }

@@ -2,6 +2,8 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
 
+import { rowLabels } from '../rowLabel.ts'
+
 import type { LinearComparativeViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -13,39 +15,41 @@ interface TrackSelectorModel {
   activateTrackSelector: (level: number) => void
 }
 
-// Track selectors for each synteny level (between adjacent rows) and each
-// individual genome row. Shown flat for a two-genome view, grouped into
-// submenus once there are more rows.
+/**
+ * A track selector per synteny level (between adjacent rows) and one per genome
+ * row, under two subheaders.
+ *
+ * FLAT AT EVERY ROW COUNT. Grouping into submenus past two rows meant the
+ * labels had to carry their own group ("Row 2 track selector (mm39)") to stay
+ * legible in the flat case, which is the wording a genome row already has —
+ * `rowLabels`. Naming each row once, under a heading, is shorter than the
+ * submenu version at every size and is one shape rather than two.
+ */
 export function getTrackSelectorMenuItems(
   model: TrackSelectorModel,
 ): MenuItem[] {
   const { views } = model
-  const syntenySelectors = views.slice(0, -1).map((view, idx) => ({
-    label: `Row ${idx + 1} → ${idx + 2} (${view.assemblyNames.join(',')} → ${views[idx + 1]!.assemblyNames.join(',')})`,
-    onClick: () => {
-      model.activateTrackSelector(idx)
-    },
-  }))
-  const rowSelectors = views.map((view, idx) => ({
-    label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
-    onClick: () => {
-      view.activateTrackSelector()
-    },
-  }))
-  return views.length <= 2
-    ? [...syntenySelectors, ...rowSelectors]
-    : [
-        {
-          label: 'Synteny track selectors',
-          type: 'subMenu',
-          subMenu: syntenySelectors,
-        },
-        {
-          label: 'Row track selectors',
-          type: 'subMenu',
-          subMenu: rowSelectors,
-        },
-      ]
+  const labels = rowLabels(views)
+  return [
+    ...(views.length > 1
+      ? [
+          { type: 'subHeader' as const, label: 'Synteny tracks' },
+          ...labels.slice(0, -1).map((label, idx) => ({
+            label: `${label} → ${labels[idx + 1]!}`,
+            onClick: () => {
+              model.activateTrackSelector(idx)
+            },
+          })),
+        ]
+      : []),
+    { type: 'subHeader' as const, label: 'Genome row tracks' },
+    ...labels.map((label, idx) => ({
+      label,
+      onClick: () => {
+        views[idx]!.activateTrackSelector()
+      },
+    })),
+  ]
 }
 
 const TrackSelectorMenuButton = observer(function TrackSelectorMenuButton({

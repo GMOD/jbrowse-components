@@ -6,9 +6,14 @@ import { observer } from 'mobx-react'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 
+// No height, and `fontSize="small"` on the icons below: this is the same MUI
+// ToggleButton as ScrollZoomToggle beside it, which reaches 31px square — the
+// size of every other button in the bar — from `size="small"` and a small icon.
+// A pinned 44 and a default-size glyph made this the one control standing 13px
+// taller than its neighbours and 6px above their top edge, which reads as a
+// misalignment rather than as emphasis.
 const useStyles = makeStyles()({
   button: {
-    height: 44,
     border: 'none',
     textTransform: 'none',
   },
@@ -106,7 +111,11 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
         className={classes.button}
         size="small"
       >
-        {stalled ? <SyncProblemIcon /> : <SyncAltIcon />}
+        {stalled ? (
+          <SyncProblemIcon fontSize="small" />
+        ) : (
+          <SyncAltIcon fontSize="small" />
+        )}
       </ToggleButton>
     </Tooltip>
   )

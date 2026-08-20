@@ -2,6 +2,7 @@ import { radioItems } from '@jbrowse/core/ui/menuItems'
 import LinkIcon from '@mui/icons-material/Link'
 import RemoveIcon from '@mui/icons-material/Remove'
 
+import { rowLabels } from '../LinearComparativeView/rowLabel.ts'
 import { CIGAR_MODE_OPTIONS } from './cigarModes.ts'
 
 import type { CigarMode } from './types.ts'
@@ -16,14 +17,6 @@ import type { LodTier } from '@jbrowse/synteny-core'
 // Each takes the narrow structural slice it reads rather than the whole view
 // model: the model chain can then pass `self` with no cast, and each section
 // documents its own dependencies.
-
-// A row label that stays true whatever the assemblies are called: the assembly
-// name where there is one, and the row's position where a row is still loading.
-// Shared by the three sections that list the rows, so they can't drift into
-// naming the same row two different things in one menu.
-function rowLabel(view: { assemblyNames: string[] }, idx: number) {
-  return view.assemblyNames[0] ?? `View ${idx + 1}`
-}
 
 interface RemoveRowModel {
   views: unknown[]
@@ -93,8 +86,8 @@ export function genomeViewsMenuItems(model: GenomeViewsModel): MenuItem[] {
                 model.expandAllViews()
               },
             },
-            ...model.views.map((view, idx) => ({
-              label: rowLabel(view, idx),
+            ...rowLabels(model.views).map((label, idx) => ({
+              label,
               type: 'checkbox' as const,
               checked: !model.isViewCompact(idx),
               onClick: () => {
@@ -118,9 +111,9 @@ export function rowViewMenuItems(model: RowViewMenusModel): MenuItem[] {
   return [
     {
       label: 'Row view menus',
-      subMenu: model.views.map((view, idx) => ({
-        label: rowLabel(view, idx),
-        subMenu: view.menuItems(),
+      subMenu: rowLabels(model.views).map((label, idx) => ({
+        label,
+        subMenu: model.views[idx]!.menuItems(),
       })),
     },
   ]
@@ -186,9 +179,9 @@ export function rowSyncMenuItems(model: RowSyncModel): MenuItem[] {
           ? [
               { type: 'subHeader' as const, label: 'Anchor row' },
               ...radioItems(
-                model.views.map((view, idx) => ({
+                rowLabels(model.views).map((label, idx) => ({
                   value: `${idx}`,
-                  label: rowLabel(view, idx),
+                  label,
                 })),
                 `${followAnchorIndex}`,
                 idx => {

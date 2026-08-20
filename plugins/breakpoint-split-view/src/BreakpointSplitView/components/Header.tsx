@@ -1,14 +1,16 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { HeaderSearchBoxRow } from '@jbrowse/plugin-linear-genome-view'
+import {
+  HeaderSearchBoxRow,
+  searchBoxMenuItems,
+  useSearchBoxPrefs,
+} from '@jbrowse/plugin-linear-genome-view'
 import LinkIcon from '@mui/icons-material/Link'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import TuneIcon from '@mui/icons-material/Tune'
 import { ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { useSearchBoxPrefs } from './useSearchBoxPrefs.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 
@@ -34,8 +36,7 @@ const Header = observer(function Header({
 }) {
   const { classes } = useStyles()
   const { views } = model
-  const { showSearchBoxes, setShowSearchBoxes, sideBySide, setSideBySide } =
-    useSearchBoxPrefs(views.length)
+  const prefs = useSearchBoxPrefs('bsv', views.length)
   return (
     <div className={classes.header}>
       <div className={classes.buttons}>
@@ -63,46 +64,14 @@ const Header = observer(function Header({
         <CascadingMenuButton
           size="small"
           title="Display settings"
-          menuItems={() => [
-            {
-              label: 'Show search boxes',
-              type: 'checkbox',
-              checked: showSearchBoxes,
-              onClick: () => {
-                setShowSearchBoxes(!showSearchBoxes)
-              },
-            },
-            {
-              label: 'Search box orientation',
-              subMenu: [
-                {
-                  label: 'Side-by-side',
-                  type: 'radio',
-                  checked: sideBySide,
-                  onClick: () => {
-                    setSideBySide(true)
-                  },
-                },
-                {
-                  // matches the linear comparative view's menu; see
-                  // useSearchBoxPrefs.ts
-                  label: 'Stacked',
-                  type: 'radio',
-                  checked: !sideBySide,
-                  onClick: () => {
-                    setSideBySide(false)
-                  },
-                },
-              ],
-            },
-          ]}
+          menuItems={() => searchBoxMenuItems(prefs)}
         >
           <TuneIcon />
         </CascadingMenuButton>
       </div>
 
-      {showSearchBoxes ? (
-        <HeaderSearchBoxRow views={views} sideBySide={sideBySide} />
+      {prefs.showSearchBoxes ? (
+        <HeaderSearchBoxRow views={views} sideBySide={prefs.sideBySide} />
       ) : null}
     </div>
   )

@@ -9,11 +9,9 @@ function labeled(items: MenuItem[]) {
 }
 
 function labels(items: MenuItem[]) {
-  return labeled(items).map(i => i.label)
-}
-
-function subLabels(item: MenuItem | undefined) {
-  return item && 'subMenu' in item ? labels(item.subMenu) : []
+  return labeled(items).map(i =>
+    i.type === 'subHeader' ? `[${i.label}]` : i.label,
+  )
 }
 
 function click(items: MenuItem[], label: string) {
@@ -33,48 +31,80 @@ function makeModel(assemblyNamesPerView: string[][]) {
   }
 }
 
-test('two-genome view lists synteny + row selectors flat', () => {
+test('a two-genome view names each row once, under a heading', () => {
   const items = getTrackSelectorMenuItems(makeModel([['hg38'], ['mm39']]))
   expect(labels(items)).toEqual([
-    'Row 1 → 2 (hg38 → mm39)',
-    'Row 1 track selector (hg38)',
-    'Row 2 track selector (mm39)',
+    '[Synteny tracks]',
+    'hg38 → mm39',
+    '[Genome row tracks]',
+    'hg38',
+    'mm39',
   ])
-  expect(items.some(i => 'subMenu' in i)).toBe(false)
 })
 
-test('three+ genomes group the selectors into submenus', () => {
+test('more genomes stay in the same flat shape', () => {
+  // one shape at every row count: the submenu version this replaced forced
+  // every label to carry its own group name to stay legible when flattened
   const items = getTrackSelectorMenuItems(
     makeModel([['hg38'], ['mm39'], ['rn7']]),
   )
   expect(labels(items)).toEqual([
-    'Synteny track selectors',
-    'Row track selectors',
+    '[Synteny tracks]',
+    'hg38 → mm39',
+    'mm39 → rn7',
+    '[Genome row tracks]',
+    'hg38',
+    'mm39',
+    'rn7',
   ])
-  expect(subLabels(items[0])).toEqual([
-    'Row 1 → 2 (hg38 → mm39)',
-    'Row 2 → 3 (mm39 → rn7)',
-  ])
-  expect(subLabels(items[1])).toEqual([
-    'Row 1 track selector (hg38)',
-    'Row 2 track selector (mm39)',
-    'Row 3 track selector (rn7)',
+  expect(items.some(i => 'subMenu' in i)).toBe(false)
+})
+
+test('a single view carries no empty synteny heading', () => {
+  expect(labels(getTrackSelectorMenuItems(makeModel([['hg38']])))).toEqual([
+    '[Genome row tracks]',
+    'hg38',
   ])
 })
 
-test('single view stays flat with no empty synteny submenu', () => {
-  const items = getTrackSelectorMenuItems(makeModel([['hg38']]))
-  expect(labels(items)).toEqual(['Row 1 track selector (hg38)'])
+test('a row still loading its assembly is named by position', () => {
+  expect(labels(getTrackSelectorMenuItems(makeModel([['hg38'], []])))).toEqual([
+    '[Synteny tracks]',
+    'hg38 → Row 2',
+    '[Genome row tracks]',
+    'hg38',
+    'Row 2',
+  ])
 })
 
-test('clicking a synteny selector activates that level', () => {
+test('a stack holding one assembly twice numbers the repeat', () => {
+  // two rows on the same genome (two loci, or a read against its own reference)
+  // otherwise give two entries that open different selectors under one label
+  const items = getTrackSelectorMenuItems(
+    makeModel([['peach'], ['grape'], ['peach']]),
+  )
+  expect(labels(items)).toEqual([
+    '[Synteny tracks]',
+    'peach (row 1) → grape',
+    'grape → peach (row 3)',
+    '[Genome row tracks]',
+    'peach (row 1)',
+    'grape',
+    'peach (row 3)',
+  ])
+})
+
+test('clicking a synteny row activates that level', () => {
   const model = makeModel([['hg38'], ['mm39']])
-  click(getTrackSelectorMenuItems(model), 'Row 1 → 2 (hg38 → mm39)')
+  click(getTrackSelectorMenuItems(model), 'hg38 → mm39')
   expect(model.activateTrackSelector).toHaveBeenCalledWith(0)
 })
 
-test('clicking a row selector activates that view', () => {
+test('clicking a genome row activates that view', () => {
   const model = makeModel([['hg38'], ['mm39']])
-  click(getTrackSelectorMenuItems(model), 'Row 2 track selector (mm39)')
+  // the synteny entry above spells the same assembly names, so the row entry
+  // has to be the one matched — an `includes` here would fire the wrong one
+  click(getTrackSelectorMenuItems(model), 'mm39')
   expect(model.views[1]!.activateTrackSelector).toHaveBeenCalled()
+  expect(model.activateTrackSelector).not.toHaveBeenCalled()
 })

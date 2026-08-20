@@ -1,11 +1,20 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { searchBoxMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observer } from 'mobx-react'
 
 import type { LinearComparativeViewModel } from '../model.ts'
-import type { SearchBoxPrefs } from './useSearchBoxPrefs.ts'
+import type { SearchBoxPrefs } from '@jbrowse/plugin-linear-genome-view'
 
+/**
+ * The header's one menu. Its body is `headerMenuItems()`, so what a view offers
+ * is stated once on the model rather than half here and half there — this used
+ * to open with its own "Row view menus" submenu labelling the rows `View 1
+ * Menu`, next to a `rowViewMenuItems` that labelled the same rows by assembly.
+ * All that is left here is the search-box strip, whose state is React's rather
+ * than the model's.
+ */
 const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
   model,
   prefs,
@@ -13,59 +22,15 @@ const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
   model: LinearComparativeViewModel
   prefs: SearchBoxPrefs
 }) {
-  const { showSearchBoxes, setShowSearchBoxes, sideBySide, setSideBySide } =
-    prefs
   return (
     <CascadingMenuButton
       tooltip="View options"
       menuItems={() => [
-        {
-          label: 'Row view menus',
-          type: 'subMenu',
-          subMenu: model.views.map((view, idx) => ({
-            label: `View ${idx + 1} Menu`,
-            subMenu: view.menuItems(),
-          })),
-        },
         ...model.headerMenuItems(),
         {
           label: 'Show...',
           icon: VisibilityIcon,
-          subMenu: [
-            ...model.showMenuItems(),
-            {
-              label: 'Show search boxes',
-              type: 'checkbox' as const,
-              checked: showSearchBoxes,
-              onClick: () => {
-                setShowSearchBoxes(!showSearchBoxes)
-              },
-            },
-            {
-              label: 'Search box orientation',
-              subMenu: [
-                {
-                  label: 'Side-by-side',
-                  type: 'radio' as const,
-                  checked: sideBySide,
-                  onClick: () => {
-                    setSideBySide(true)
-                  },
-                },
-                {
-                  // "Stacked", not "Vertical": the breakpoint split view's menu
-                  // names the same state, and these two drifted. See
-                  // useSearchBoxPrefs.ts
-                  label: 'Stacked',
-                  type: 'radio' as const,
-                  checked: !sideBySide,
-                  onClick: () => {
-                    setSideBySide(false)
-                  },
-                },
-              ],
-            },
-          ],
+          subMenu: [...model.showMenuItems(), ...searchBoxMenuItems(prefs)],
         },
       ]}
     >

@@ -196,11 +196,17 @@ export {
 export { default as SearchBox } from './LinearGenomeView/components/SearchBox.tsx'
 // The same two consumers, one composition further on: a header stacking several
 // views draws one search box per row beside the span it is showing, and
-// `HeaderSearchBoxRow` is the whole strip of them. Where the side-by-side choice
-// is REMEMBERED stays with each container (`useSearchBoxPrefs`, one storage
-// prefix each), so the row takes it as a prop.
+// `HeaderSearchBoxRow` is the whole strip of them. `useSearchBoxPrefs` holds the
+// visibility/orientation choice and `searchBoxMenuItems` the rows that set it —
+// shared rather than copied, since the copies had already drifted on what to
+// call `sideBySide: false`. Only the storage prefix stays with each container.
 export { default as HeaderSearchBoxes } from './LinearGenomeView/components/HeaderSearchBoxes.tsx'
 export { default as HeaderSearchBoxRow } from './LinearGenomeView/components/HeaderSearchBoxRow.tsx'
+export {
+  searchBoxMenuItems,
+  useSearchBoxPrefs,
+} from './LinearGenomeView/components/useSearchBoxPrefs.ts'
+export type { SearchBoxPrefs } from './LinearGenomeView/components/useSearchBoxPrefs.ts'
 export { normalizeTrackInit } from '@jbrowse/core/util/tracks'
 export {
   linearGenomeViewPropKeys,
