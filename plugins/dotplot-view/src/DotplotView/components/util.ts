@@ -322,22 +322,29 @@ export interface TickLine {
   major: boolean
 }
 
-// Which of an axis' visible ticks earn a line across the plot.
+// Which of an axis' visible ticks earn a line across the plot: the axis' own
+// ticks in both weights, the way LinearGenomeView's gridlines carry its ruler
+// down over the tracks, so the grid and the ruler beside it agree by
+// construction rather than being two rules kept in step.
 //
-// Within a chromosome, the axis' own ticks in both weights — the way
-// LinearGenomeView's gridlines carry its ruler down over the tracks, so the grid
-// and the ruler beside it agree by construction rather than being two rules kept
-// in step.
+// ALL OF THEM OR NONE OF THEM, decided for the axis as a set. The same call
+// `truncateRefNames` makes about elision a few functions up, and for the same
+// reason: a grid over one chromosome's band and not its neighbour's reads as
+// arbitrary, whatever rule produced it — and the reader has no way to see that
+// the rule was about ruler legibility rather than about those two chromosomes.
 //
-// But only within a chromosome the axis actually NUMBERED. Pitch is chosen for
-// the whole axis, so at whole-genome zoom a short chromosome's band catches two
-// or three lines from a pitch far coarser than its own span: a mix of weights
-// with no major to key them to, ruling a square a few pixels wide into pieces
-// that measure nothing. That is the same thing `dropLoneTickLabels` already
-// decided about that chromosome's numbers, so it is decided the same way and
-// from the same evidence — no number in this region, no grid in it either. It
-// also means every gridline on the plot can be read back to a coordinate on the
-// axis beside it, which is the whole of what a grid is for.
+// The evidence for the axis is whether `thinTickPositions` could number ANY of
+// it. That is not a proxy for what a grid needs, it is the same question:
+// numbers survive only where a region holds enough of them to read as a ruler
+// (`dropLoneTickLabels`), which is exactly when a grid at that pitch measures
+// something. At whole-genome zoom nothing on either axis clears it — pitch comes
+// from the whole genome, so every chromosome's band catches at most a lone
+// coordinate — and the plot keeps only its chromosome boundaries, which is what
+// it had before there was a grid at all.
+//
+// It does mean a sliver of the previous chromosome at the viewport edge gets
+// gridlines off its own coordinate origin, at the shared pitch. That is what the
+// axis' tick marks under it already do, so the two still agree.
 //
 // Never doubled onto a region boundary, which draws its own stronger line at
 // that pixel: the two together read as one heavier boundary, and the gridline is
@@ -347,9 +354,6 @@ export function tickLines(
   toPx: (alongPx: number) => number,
   boundaries: AxisLine[],
 ) {
-  const numbered = new Set(
-    ticks.filter(t => t.labeled).map(t => tickRegion(t.tick)),
-  )
   const taken = new Set(
     boundaries.flatMap(({ px }) => [
       Math.floor(px) - 1,
@@ -362,13 +366,9 @@ export function tickLines(
   // `thinTickPositions` sorted these by alongPx, so one forward pass measures
   // real neighbours — ascending on the horizontal axis, descending once the
   // vertical axis' `toPx` mirrors them, hence the abs.
-  for (const { tick, alongPx } of ticks) {
+  for (const { tick, alongPx } of ticks.some(t => t.labeled) ? ticks : []) {
     const px = toPx(alongPx)
-    if (
-      numbered.has(tickRegion(tick)) &&
-      !taken.has(Math.floor(px)) &&
-      Math.abs(px - last) >= MIN_GRIDLINE_PX
-    ) {
+    if (!taken.has(Math.floor(px)) && Math.abs(px - last) >= MIN_GRIDLINE_PX) {
       out.push({ px, major: tick.type === 'major' })
       last = px
     }

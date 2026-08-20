@@ -171,7 +171,7 @@ const DotplotControls = observer(function DotplotControls({
                 },
                 {
                   helpText:
-                    "Carries each axis' ruler ticks across the plot as faint lines, in two weights, so a point can be read back to a coordinate without tracing to the axis. Only chromosomes the axis could number get them — at whole-genome zoom that is usually none — and a tick already marked by a chromosome boundary is left to the boundary.",
+                    "Carries each axis' ruler ticks across the plot as faint lines, in two weights, so a point can be read back to a coordinate without tracing to the axis. An axis with no room to number itself draws none at all, which at whole-genome zoom is both of them, and a tick already marked by a chromosome boundary is left to the boundary.",
                 },
               ),
             ],

@@ -726,8 +726,9 @@ export default function stateModelFactory(pm: PluginManager) {
          * #getter
          * The faint coordinate lines the horizontal ruler casts across the
          * plot, in its two weights. Empty when the setting is off, and empty
-         * with it on wherever no chromosome on this axis could be numbered —
-         * which at whole-genome zoom is usually the whole axis.
+         * with it on whenever this axis could not number itself anywhere —
+         * which at whole-genome zoom is the usual case. All or nothing per
+         * axis, never per chromosome; see `tickLines`.
          */
         get hGridlines() {
           return self.showGridlines
@@ -751,7 +752,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * #getter
          * The setting is on and neither axis has a ruler to cast — a ticked
          * checkbox doing nothing observable, which the menu says out loud
-         * rather than looking broken.
+         * rather than looking broken. The whole-genome view is this.
          */
         get gridlinesEmpty() {
           return (

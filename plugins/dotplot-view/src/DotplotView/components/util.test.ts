@@ -537,8 +537,8 @@ describe('tickLines', () => {
   })
   const same = (px: number) => px
 
-  // inside a numbered chromosome the grid carries the ruler the axis already
-  // drew, both weights, rather than being a second rule kept in step with it
+  // the grid carries the ruler the axis already drew, both weights, rather than
+  // being a second rule kept in step with it
   test('every visible tick earns a line, in its own weight', () => {
     const out = tickLines(
       [at(0, 'major'), at(15, 'minor'), at(30, 'minor'), at(60, 'major')],
@@ -553,20 +553,23 @@ describe('tickLines', () => {
     ])
   })
 
-  // The whole-genome case, and the reason this is gated on the numbers rather
-  // than on a line count: pitch comes from the whole axis, so a short
-  // chromosome's band catches a couple of lines from a pitch far coarser than
-  // its own span, ruling a few-pixel square into pieces that measure nothing.
-  test('a chromosome the axis could not number gets no grid', () => {
+  // The whole-genome case, and the reason this is gated on the numbers: pitch
+  // comes from the whole axis, so every chromosome's band catches a couple of
+  // lines from a pitch far coarser than its own span, ruling a few-pixel square
+  // into pieces that measure nothing. Nothing numbered, nothing drawn.
+  test('an axis with no numbers anywhere gets no grid', () => {
     const out = tickLines(
-      [at(0, 'minor', false, 1), at(20, 'minor', false, 1)],
+      [at(0, 'minor', false, 1), at(20, 'minor', false, 2)],
       same,
       [],
     )
     expect(out).toEqual([])
   })
 
-  test('the quorum is per chromosome, so a numbered neighbour keeps its own', () => {
+  // a grid over one chromosome's band and not its neighbour's reads as
+  // arbitrary, so the decision is the axis', not each region's — a sliver of the
+  // previous chromosome at the viewport edge is gridded like the rest
+  test('one numbered chromosome grids the whole axis, slivers included', () => {
     const out = tickLines(
       [
         at(0, 'minor', false, 1),
@@ -576,7 +579,7 @@ describe('tickLines', () => {
       same,
       [],
     )
-    expect(out.map(l => l.px)).toEqual([200, 260])
+    expect(out.map(l => l.px)).toEqual([0, 200, 260])
   })
 
   // chooseGridPitch targets 15px minors inside a region, so this only bites
