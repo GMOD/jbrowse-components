@@ -1,4 +1,8 @@
-import { offscreenMateHit, offscreenMateStrip } from './offscreenMateStrip.ts'
+import {
+  offscreenMateCount,
+  offscreenMateHit,
+  offscreenMateStrip,
+} from './offscreenMateStrip.ts'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
@@ -176,4 +180,34 @@ test('a second display on the level is asked too', () => {
       1,
     ),
   ).toBe('ctgQ')
+})
+
+// The number the hover reads, and the one the hamburger item reports for the
+// same contig — one tally behind both, so they cannot drift.
+test('the count sums every display on the level', () => {
+  const both = source({
+    linearSyntenyDisplays: [
+      {
+        featureData: {
+          offscreenMates: { ...mates(3), counts: Uint32Array.from([3]) },
+        },
+      },
+      {
+        featureData: {
+          offscreenMates: { ...mates(2), counts: Uint32Array.from([2]) },
+        },
+      },
+    ],
+  })
+  expect(offscreenMateCount(both, 'other')).toBe(5)
+})
+
+test('a contig this band has nothing to say about counts zero', () => {
+  expect(offscreenMateCount(source(), 'ctgQ')).toBe(0)
+})
+
+test('a display that has not fetched counts nothing rather than throwing', () => {
+  expect(
+    offscreenMateCount(source({ linearSyntenyDisplays: [{}] }), 'other'),
+  ).toBe(0)
 })

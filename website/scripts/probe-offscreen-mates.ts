@@ -13,6 +13,12 @@
 // wide enough to be named. It is what caught the overlay canvas laying out at
 // twice the band: the names in the figure sat at positions the data has no
 // stretches at.
+//
+// It then POINTS AT one, which is the other half nothing else covers: the
+// tooltip's own test hands `OffscreenMateTooltip` a hover, and turning a pointer
+// into one lives in `LevelSyntenyCanvas`, whose rendering backend no jsdom test
+// stands up. The hover is measured against the LEVEL canvas rather than the
+// overlay, so the two disagreeing shows up here as a miss.
 import {
   BASE_CHROME_ARGS,
   createTestServer,
@@ -133,6 +139,67 @@ try {
         `span=${String(s.span).padStart(5)}px ${s.named ? 'NAMED' : ''}`,
     )
   }
+
+  // The widest single mark on screen, which on this view is under 2px — so this
+  // is also the answer to "can a reader point at one at all".
+  const target = await page.evaluate(() => {
+    const view = (window as any).JBrowseSession.views[0]
+    const display = view.levels[0].linearSyntenyDisplays[0]
+    const data = display.featureData?.offscreenMates
+    const { bpPerPx, offsetPx } = view.views[0]
+    let best = { x: 0, span: 0, refName: '' }
+    for (let i = 0; i < (data?.starts.length ?? 0); i++) {
+      const x1 = data.starts[i] / bpPerPx - offsetPx
+      const span = Math.max(1.5, data.ends[i] / bpPerPx - offsetPx - x1)
+      if (x1 >= 0 && x1 + span <= view.width && span > best.span) {
+        best = {
+          x: x1 + span / 2,
+          span,
+          refName: data.mateRefNameDict[data.mateRefNameIds[i]],
+        }
+      }
+    }
+    const box = document
+      .querySelector('[data-testid="synteny_canvas"]')
+      ?.getBoundingClientRect()
+    return box
+      ? {
+          ...best,
+          clientX: box.left + best.x,
+          // inside the 6px strip, above every ribbon
+          clientY: box.top + 3,
+          belowStripY: box.top + 40,
+        }
+      : undefined
+  })
+  if (!target) {
+    throw new Error('no synteny canvas to point at')
+  }
+  const tooltip = () =>
+    page.evaluate(
+      () => document.querySelector('[role="tooltip"]')?.textContent ?? '(none)',
+    )
+  const settle = () => new Promise(resolve => setTimeout(resolve, 400))
+
+  console.log(
+    `widest mark: ${target.refName}, ${target.span.toFixed(1)}px wide`,
+  )
+  await page.mouse.move(target.clientX, target.clientY)
+  await settle()
+  console.log(`  on the mark:  ${JSON.stringify(await tooltip())}`)
+  // below the strip is the pick engine's, so a mark's hover must not answer there
+  await page.mouse.move(target.clientX, target.belowStripY)
+  await settle()
+  console.log(`  below it:     ${JSON.stringify(await tooltip())}`)
+  // the invalidation axis no pointer event covers: the band moving under a
+  // stationary cursor
+  await page.mouse.move(target.clientX, target.clientY)
+  await settle()
+  await page.evaluate(() => {
+    ;(window as any).JBrowseSession.views[0].views[0].horizontalScroll(300)
+  })
+  await settle()
+  console.log(`  after a pan:  ${JSON.stringify(await tooltip())}`)
 } finally {
   await browser.close()
   server.close()

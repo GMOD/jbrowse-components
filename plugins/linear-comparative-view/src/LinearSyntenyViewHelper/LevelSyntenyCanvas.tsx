@@ -12,10 +12,12 @@ import { observer } from 'mobx-react'
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
 import { syntenyWidgetFeature } from '../LinearSyntenyDisplay/syntenyWidgetFeature.ts'
 import OffscreenMateOverlay from './OffscreenMateOverlay.tsx'
+import OffscreenMateTooltip from './OffscreenMateTooltip.tsx'
 import { offscreenMateHit } from './offscreenMateStrip.ts'
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
+import type { OffscreenMateHover } from './OffscreenMateTooltip.tsx'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type React from 'react'
 
@@ -58,6 +60,13 @@ const CLICK_DRAG_THRESHOLD_PX = 5
 // MouseEvent.button for the left/primary button
 const PRIMARY_BUTTON = 0
 
+interface CanvasPoint {
+  x: number
+  y: number
+  clientX: number
+  clientY: number
+}
+
 function openSyntenyFeatureWidget(
   display: LinearSyntenyDisplayModel,
   instanceIndex: number,
@@ -93,19 +102,29 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const dragRef = useRef<
     { startX: number; lastX: number; panned: boolean } | undefined
   >(undefined)
-  // The contig under the pointer's mark, or undefined. Local rather than on the
-  // model beside `hoveredFeature`: nothing outside this canvas reads it, and a
-  // mark is not a feature — putting it there would mean every consumer of the
-  // hovered feature learning to expect something with no feature id.
-  const [hoveredContig, setHoveredContig] = useState<string | undefined>(
-    undefined,
-  )
+  // The contig under the pointer's mark and the pointer that found it, or
+  // undefined. Local rather than on the model beside `hoveredFeature`: nothing
+  // outside this canvas reads it, and a mark is not a feature — putting it there
+  // would mean every consumer of the hovered feature learning to expect
+  // something with no feature id.
+  const [hoveredContig, setHoveredContig] = useState<
+    OffscreenMateHover | undefined
+  >(undefined)
+  // The other axis of a stored hover's invalidation: the band moving under a
+  // stationary cursor, which fires no pointer event — a wheel-zoom, or the pan
+  // half of a drag. The level's own hover has `installClearHoverOnBandMove` for
+  // this; the contig is local state, so it needs the React twin or the tooltip
+  // goes on naming the contig the cursor used to be over.
+  const { bandTransformKey } = model
+  useEffect(() => {
+    setHoveredContig(undefined)
+  }, [bandTransformKey])
   // Coalesces hover picks to one per frame. A pick is under 0.1ms on collinear
   // data but ~12.5ms on an all-vs-all PAF (SYNTENY_PICKING.md), where a mouse
   // reporting faster than the display would otherwise queue a pick per event
   // and spend the whole frame budget on hovers nothing draws.
   const hoverRef = useRef<
-    { frame: number; at: { x: number; y: number } | undefined } | undefined
+    { frame: number; at: CanvasPoint | undefined } | undefined
   >(undefined)
   const cancelHover = useCallback(() => {
     if (hoverRef.current) {
@@ -159,12 +178,23 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const errors = [gpuError, model.displayError].filter(e => e != null)
   const combinedError = errors.length > 0 ? errors.join('\n') : undefined
 
-  function canvasCoords(evt: { clientX: number; clientY: number }) {
+  // The pointer in canvas coordinates, with the client point it came from: a
+  // tooltip is positioned against the viewport, so dropping it here would mean
+  // recovering it from the canvas rect a second time.
+  function canvasCoords(evt: {
+    clientX: number
+    clientY: number
+  }): CanvasPoint | undefined {
     const rect = canvas?.getBoundingClientRect()
     if (!rect) {
       return undefined
     }
-    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+    return {
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top,
+      clientX: evt.clientX,
+      clientY: evt.clientY,
+    }
   }
 
   function pickAt(coords: { x: number; y: number }) {
@@ -214,7 +244,11 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         hoverRef.current = undefined
         if (at) {
           const contig = offscreenMateHit(model, at.x, at.y)
-          setHoveredContig(contig)
+          setHoveredContig(
+            contig === undefined
+              ? undefined
+              : { refName: contig, clientX: at.clientX, clientY: at.clientY },
+          )
           // a mark hovered is not a ribbon hovered, and leaving the old one lit
           // says the pointer is somewhere it is not
           model.setHoveredFeature(contig === undefined ? pickAt(at) : undefined)
@@ -359,12 +393,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
           width,
           height,
           cursor:
-            model.hoveringFeature || hoveredContig !== undefined
-              ? 'pointer'
-              : 'default',
+            model.hoveringFeature || hoveredContig ? 'pointer' : 'default',
         }}
       />
       <OffscreenMateOverlay model={model} />
+      {hoveredContig ? (
+        <OffscreenMateTooltip model={model} hover={hoveredContig} />
+      ) : null}
       {combinedError ? (
         // One banner stacks the GPU error and every display's fetch error, so
         // Retry has to undo whichever are present: `retry()` re-inits the

@@ -91,3 +91,27 @@ export function offscreenMateHit(
       )?.refName
     : undefined
 }
+
+/**
+ * How many alignments on this band go to one contig.
+ *
+ * The tally's own number, so the hover and the menu item that reports the same
+ * contig cannot disagree: it counts every alignment pointed at that contig,
+ * INCLUDING the ones with no place on the query axis to draw a mark for. Scoped
+ * to this band rather than the view, because the band is what the pointer is
+ * over — the menu sums the levels instead.
+ */
+export function offscreenMateCount(
+  model: OffscreenMateSource,
+  refName: string,
+) {
+  let total = 0
+  for (const d of model.linearSyntenyDisplays) {
+    const data = d.featureData?.offscreenMates
+    const id = data?.mateRefNameDict.indexOf(refName) ?? -1
+    if (data && id >= 0) {
+      total += data.counts[id] ?? 0
+    }
+  }
+  return total
+}

@@ -224,8 +224,13 @@ so it cannot be read as an alignment to whatever is directly below. A run of
 marks to one contig carries that contig's name; where several contigs cover the
 same stretch, their names stack.
 
-Clicking a mark navigates the facing panel to the contig it names, which is what
-turns those marks into ribbons.
+A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
+zoom is most of them. Hover any mark and it names the contig it points at, and
+how many alignments on this band go there.
+
+Clicking a mark navigates the facing panel to that contig, which is what turns
+those marks into ribbons — so the hover is also how to see what a click will do
+before making it.
 
 <Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. Above, the ribbons alone. Below, the same view marking the alignments it has no second endpoint for — most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
 

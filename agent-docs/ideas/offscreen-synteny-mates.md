@@ -9,8 +9,9 @@ description: Showing alignments whose mate lands on a contig the facing view is 
 `collectOffscreenMates` tallies the drops per contig and places them on the
 query axis; `offscreenMateMenuItems` reports the count and the contigs;
 `showOffscreenMates` turns `OffscreenMateOverlay` on, which draws each as a mark
-at the top of the band, labelled with the contig it points at, and clicking one
-shows that contig on the facing row; an SVG export carries the same marks. The
+at the top of the band, labelled with the contig it points at; hovering one names
+that contig whether or not the run is wide enough to be labelled, and clicking
+one shows it on the facing row. An SVG export carries the same marks. The
 rest of this file is the case for it and the reasoning the implementation
 followed — kept because **class B is still open**, and because what it decided
 constrains what class B may do.
@@ -168,6 +169,17 @@ reports nothing.
   test share `offscreenMateRects`, so they cannot disagree the way the ribbons
   can — `syntenyPickRenderAgreement.test.ts` exists because those are two code
   paths.
+- **How a reader identifies an UNLABELLED run.** Settled 2026-08-19: by
+  hovering. A name goes on a stretch only when the stretch is wide enough to
+  hold it, and on `synteny_offscreen_mates_on` that is 5 of the 17 stretches on
+  screen — so the marks a reader most needs explained are the ones the strip
+  cannot explain. Until the hover the only way to identify one was to click it,
+  and the click runs `navToLocString`, which replaces the facing panel's
+  displayed regions: the destructive step was the only way to see what it would
+  do. `OffscreenMateTooltip` renders through `ComparativeTooltip`, the same
+  tooltip a ribbon hover uses, because a mark and a ribbon are two things in one
+  band. Its count comes off the tally the hamburger item reports from, scoped to
+  this band rather than the view.
 - **Whether the figure carries them.** Settled: yes. `showOffscreenMates` is a
   menu setting, so the same rule the color-by legend follows applies — an export
   taken with it on has to have it, or the figure of a view reporting what it
