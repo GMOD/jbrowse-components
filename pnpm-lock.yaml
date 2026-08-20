@@ -114,8 +114,8 @@ importers:
         specifier: ^0.2.6
         version: 0.2.6
       '@webgpu/types':
-        specifier: ^0.1.71
-        version: 0.1.71
+        specifier: ^0.1.72
+        version: 0.1.72
       babel-loader:
         specifier: ^10.1.1
         version: 10.1.1(@babel/core@8.0.1)(webpack@5.109.2)
@@ -434,8 +434,8 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
       dompurify:
-        specifier: ^3.4.13
-        version: 3.4.13
+        specifier: ^3.4.14
+        version: 3.4.14
       generic-filehandle2:
         specifier: ^2.3.1
         version: 2.3.1
@@ -2152,8 +2152,8 @@ importers:
         specifier: ^43.4.1
         version: 43.4.1(supports-color@8.1.1)
       electron-chromedriver:
-        specifier: ^43.4.0
-        version: 43.4.0(supports-color@8.1.1)
+        specifier: ^43.4.1
+        version: 43.4.1(supports-color@8.1.1)
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
@@ -6177,8 +6177,8 @@ packages:
   '@webassemblyjs/wast-printer@1.14.1':
     resolution: {integrity: sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw==}
 
-  '@webgpu/types@0.1.71':
-    resolution: {integrity: sha512-mMy8/ODcKhab808co15eW+yN+HgXoQxRQHTiBV9Mrvl1r0ufnid7YOcI+gi4eUWSWl9ezD6TW2KXccrL8HCh2A==}
+  '@webgpu/types@0.1.72':
+    resolution: {integrity: sha512-0cF7RFM2edNoiIS1ODJp0/Gzv4/xSXhwoR0YCza+OWpJWtn4wmo9DvK91aLlH9+uUnwIriP7ZiC3WitmyhuzBw==}
 
   '@xmldom/xmldom@0.9.11':
     resolution: {integrity: sha512-tW8bcK3hsG0/uqSnNz6TK4BkcuZSezoU7DlnYssILmZDktPnSHHuDJJFM0AJv+13gz2r0iGdrj6qqKeUnxXEDg==}
@@ -6949,8 +6949,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.4.13:
-    resolution: {integrity: sha512-2vmYIoqjze2d+kakP8S/nS5shfsl587kzwEjcGlTdiksUVgFHnFCsLYDVj/JNqJVOQZGSYBTmuycv0PodwmnMQ==}
+  dompurify@3.4.14:
+    resolution: {integrity: sha512-dVoH9z+MY+C9IilgGCk3YfFqjLi3fChm2OiKJMzh6axrJ5qwxqWaZamgmHrpv22CN/KdbZJuGEGgfQoL00LTdg==}
 
   domutils@2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
@@ -6975,8 +6975,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-chromedriver@43.4.0:
-    resolution: {integrity: sha512-RrWU1v/IMR+T1BRb4kqogwbr8AIhwNE2SOu+tOf8Dq+ReWlOPFCai7baBckdpTi3shaoyh0FGw3FqsShHTWshg==}
+  electron-chromedriver@43.4.1:
+    resolution: {integrity: sha512-qAJrqjPWiuvs9UxVSYPZvBlKSIy5oYd046LA/HTnejpUcq6E6D52envVPea8EKiPzfQYQkoC4vIIYN68d+ccnw==}
     engines: {node: '>=10.12.0'}
     hasBin: true
 
@@ -13951,7 +13951,7 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@xtuc/long': 4.2.2
 
-  '@webgpu/types@0.1.71': {}
+  '@webgpu/types@0.1.72': {}
 
   '@xmldom/xmldom@0.9.11': {}
 
@@ -14767,7 +14767,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.4.13:
+  dompurify@3.4.14:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -14800,7 +14800,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-chromedriver@43.4.0(supports-color@8.1.1):
+  electron-chromedriver@43.4.1(supports-color@8.1.1):
     dependencies:
       '@electron/get': 2.0.3(supports-color@8.1.1)
       extract-zip: 2.0.1(supports-color@8.1.1)
