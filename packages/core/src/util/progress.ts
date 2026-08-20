@@ -311,7 +311,6 @@ function createStatusAggregate({ holdLastReading = false } = {}) {
       held = undefined
       if (slots.length === 0) {
         phaseRank.clear()
-        held = undefined
         lastMessage = undefined
       }
     },
