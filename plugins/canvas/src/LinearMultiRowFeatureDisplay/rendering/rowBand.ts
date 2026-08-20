@@ -15,20 +15,14 @@ import {
 // packages the pair as a `RowBand` struct for its vertex stage; that struct is
 // the only part of this that isn't shared.
 //
-// MIN_DRAWN_ROW_PX is the thinnest a row is ever *painted*, however thin the row
-// itself is.
-//
-// Rows are allowed below a pixel: a few thousand of them in a fixed-height
-// display is a legitimate overview, and the alternative (refusing to fit, and
-// growing the track to a pixel a row) is a track thousands of pixels tall. But
-// below a pixel a rect stops being drawable — Canvas2D fades it towards nothing
-// and a GPU quad can miss every pixel center and vanish — so rows would thin out
-// and then silently drop out as they got denser.
-//
-// Painting them at a pixel instead makes neighbours overlap, so a pixel shows
-// one of the rows that share it rather than all of them. That is a real loss,
-// and it is why clustering matters at this density: with similar rows adjacent,
-// whichever one wins a pixel stands for its neighbours.
+// MIN_DRAWN_ROW_PX is the thinnest a row is ever PAINTED, however thin the row
+// itself is. Rows are
+// allowed below a pixel — a few thousand in a fixed-height display is a
+// legitimate overview, and refusing to fit means a track thousands of px tall —
+// but below a pixel a rect stops being drawable, so rows would thin out and then
+// silently drop out as they got denser. Painting them at a pixel instead makes
+// neighbours overlap, so a pixel shows one of the rows that share it; that is
+// why clustering matters at this density.
 export { MIN_DRAWN_ROW_PX }
 
 // Narrowest a cell is painted, the horizontal twin of the row floor above and

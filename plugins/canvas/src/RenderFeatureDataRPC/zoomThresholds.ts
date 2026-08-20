@@ -7,27 +7,21 @@ const PEPTIDE_BACKGROUND_MAX_BP_PER_PX = 1
 // rather than restate it.
 export const PEPTIDE_TEXT_MAX_BP_PER_PX = 1 / 8
 
-// Above this features-per-pixel density, floating labels are hidden in 'auto'
-// mode: too many labels to be individually readable, and React element
-// creation becomes a significant frame-budget cost (~70µs per label).
-// Low-density tracks stay labeled at any zoom — a sparse 5-feature track on a
-// whole chromosome produces ~5/screenPx ≈ 0.005 features/px, well below this.
-// At 0.2 features/px on a 1200px screen roughly 240 features are visible —
-// labels stay on through denser/closer zoom before hiding.
+// Above this features-per-pixel density 'auto' hides floating labels: too many
+// to read individually, and React element creation costs ~70us each. At 0.2 on
+// a 1200px screen roughly 240 features are visible; a sparse 5-feature track on
+// a whole chromosome sits near 0.005 and stays labeled at any zoom.
 export const MAX_LABEL_FEATURE_DENSITY = 0.2
 
 // Descriptions drop out of 'auto' before names do, mirroring the fit ladder's
-// `full` → `labels` rung (see fitStage): a description costs a second text row
-// per feature and is typically wider than the name, so its label-width overhang
-// pushes more features onto new rows. Degrading in two steps —
-// name + description → name → nothing — keeps 'auto' useful across a zoom range
-// where the single old threshold went straight from everything to nothing.
+// `full` -> `labels` rung: a description costs a second text row and is usually
+// wider than the name, so its overhang pushes more features onto new rows.
+// Degrading in two steps keeps 'auto' useful across a zoom range where one
+// threshold went straight from everything to nothing.
 //
-// Half the label threshold, so 'auto' has a real middle band (0.1–0.2, names
-// only) without stripping descriptions at ordinary working zooms: a 14kb view
-// of the volvox gene track sits at ~0.055 features/px, and descriptions are
-// still readable there. A quarter of the threshold cut them off at exactly that
-// view, which is the behavior 'auto' exists to avoid.
+// Half the label threshold, which leaves a real names-only band at 0.1-0.2
+// without stripping descriptions at working zooms — a 14kb view of the volvox
+// gene track sits at ~0.055, and a quarter-threshold cut them off there.
 export const MAX_DESCRIPTION_FEATURE_DENSITY = 0.1
 
 // At one pixel per base or finer the cursor resolves to a single base. Coarser
