@@ -1,6 +1,6 @@
 ---
 name: two-axis-synteny-fetch
-description: Restoring the original both-rows synteny fetch joined on `syntenyId`, which the single-axis fetch replaced. Recovers alignments anchored on the target axis, which are never requested today. Blocked on a perspective-stable id for two adapters, PIF and all-vs-all — now verified rather than inferred. Read offscreen-synteny-mates.md FIRST: the larger, cheaper half of the same user-visible problem needs no fetch change and this doc used to be the only home for it.
+description: Restoring the both-rows synteny fetch. PARTLY SHIPPED 2026-08-19 behind `bidirectionalFetch`, off by default — the second query lands and the class with no second endpoint is marked on the target axis. The blocker this doc recorded (a perspective-stable `syntenyId` for PIF and all-vs-all) turned out not to be one: a disjointness predicate replaces the join. What is left is the RIBBON half, and this doc is now about that.
 ---
 
 # Fetch both synteny axes again, joined on `syntenyId`
@@ -58,7 +58,49 @@ Read that one first. If it lands, the remaining case for a second fetch is
 narrower and better defined than "the fetch is incomplete", which is how this was
 pitched and is no longer specific enough to justify it.
 
-## The blocker — verified, and it is two adapters, not one
+## What shipped, and why the blocker below is not one
+
+**2026-08-19: the second fetch landed** behind `bidirectionalFetch` (a view
+property, off by default, a fetch-key input). `executeSyntenyFeaturesAndPositions`
+queries `v2.fetchRegions` alongside `v1.fetchRegions` and feeds what comes back
+to `targetOffscreenMates`, the mirror of
+[offscreen-synteny-mates](offscreen-synteny-mates.md)'s collector, drawn as a
+strip of marks on the TARGET axis with a click that navigates the row ABOVE.
+
+**The join was never needed.** Everything below about `syntenyId` assumed the two
+fetches have to be deduped against each other. They do not: they can be made
+disjoint by construction with a predicate on WHERE THE QUERY END LANDS.
+
+- query end inside `v1.fetchRegions` → the first fetch already returned it, drop
+- query end on a v1 contig outside the window → a real ribbon, and the half
+  still open (see below)
+- query end on a contig v1 is not displaying → no second endpoint exists, so it
+  is a mark, and that is what shipped
+
+No key, no adapter change, no PIF format change, and — unlike a join — a wrong
+predicate cannot silently draw one ribbon twice, because the thing it tests is
+the same region set the first fetch was handed. `bidirectionalFetch.test.ts`
+pins it, including the case a join would have had to catch: the same alignment
+returned from both perspectives with two unrelated ids.
+
+**The adapters already answer from either side.** `PairwiseAdapterBase.sideFor`
+picks the side off the queried region's own `assemblyName`, `orientPafRecord`
+orients the row to it, and `orientAlignment` swaps the indel CIGAR
+(`swapIndelCigar` forward, `flipCigar` reverse). All-vs-all indexes
+`for (const flip of [true, false])`. Nothing in the adapters had to change.
+
+## What is left: the ribbon half
+
+An alignment anchored in the v2 window whose query end is on a v1 contig that IS
+displayed, merely outside the window, is a ribbon this pass drops. Recovering it
+needs the perspective flip — swap the ends and re-orient the CIGAR — and then
+merging into the same `decorated` array the query fetch fills. Two silent
+failure modes to test against, which is why it was not taken in the same pass:
+a mis-flipped CIGAR paints indels in the wrong place and looks plausible, and a
+hole in the predicate draws a ribbon twice at doubled alpha (the artifact
+`markReciprocalDuplicates` exists to remove).
+
+## The blocker as it was recorded — kept because it names real adapter behaviour
 
 `executeSyntenyFeaturesAndPositions.ts` used to say a two-axis fetch "can't
 dedupe q- against t-perspective rows (PIF gives them distinct file offsets, hence

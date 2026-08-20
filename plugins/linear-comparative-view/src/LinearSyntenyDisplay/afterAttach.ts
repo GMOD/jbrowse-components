@@ -41,9 +41,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // offsetPx/width changes from refiring the fetch, while the worker
         // still sees the current axes.
         //
-        // Query axis (v0) drives the scoped single-axis fetch, so it alone
-        // carries the visible window + pan buffer and the cull width; the
-        // target axis (v1) only supplies its cumBp index + cull geometry.
+        // Query axis (v0) drives the scoped fetch, so it alone carries the cull
+        // width; the target axis (v1) supplies its cumBp index + cull geometry,
+        // and its own fetch window only when the view asked for the second
+        // query (`targetFetchRegions` is [] otherwise).
         return untracked(() => {
           const { view } = self
           return {
@@ -70,6 +71,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               bpPerPx: v1.bpPerPx,
               offsetPx: v1.offsetPx,
               displayedRegions: v1.displayedRegions,
+              fetchRegions: self.targetFetchRegions,
             },
           }
         })
@@ -95,9 +97,10 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         assemblyManager,
       },
     ) => {
-      // Query axis renames both its displayed regions and its scoped fetch
-      // window; the target axis has no fetch window (single-axis fetch), so
-      // only its displayed regions are renamed.
+      // Both axes rename their displayed regions; each renames its fetch window
+      // too, and the target's is empty unless the view asked for the second
+      // query — in which case the worker needs it in the adapter's spelling for
+      // exactly the reason the query axis does.
       const queryView = {
         ...rawQuery,
         displayedRegions: await rename(rawQuery.displayedRegions),
@@ -106,6 +109,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
       const targetView = {
         ...rawTarget,
         displayedRegions: await rename(rawTarget.displayedRegions),
+        fetchRegions: rawTarget.fetchRegions.length
+          ? await rename(rawTarget.fetchRegions)
+          : undefined,
       }
       const result = await getSession(self).rpcManager.call(
         sessionId,

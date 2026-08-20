@@ -20,10 +20,11 @@ import baseModel from '../LinearComparativeView/model.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import {
   autoScaleMenuItems,
+  bidirectionalFetchMenuItems,
   cigarModeMenuItems,
-  offscreenMateMenuItems,
   displayCanShowCigar,
   genomeViewsMenuItems,
+  offscreenMateMenuItems,
   removeRowMenuItems,
   rowSyncMenuItems,
   rowViewMenuItems,
@@ -129,6 +130,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // `drawLocationMarkers` above is in the fetch key's history for exactly
         // the mistake this avoids.
         showOffscreenMates: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * Ask each level's adapter for the alignments anchored on its LOWER row
+         * as well as its upper one.
+         *
+         * A synteny band queries its query axis — the upper row of the pair — so
+         * an alignment anchored on a lower-row contig whose other end is
+         * somewhere the upper row is not showing is never requested, and nothing
+         * downstream can recover it. Which genome a user stacked on top
+         * therefore decided what the view was able to report.
+         *
+         * A FETCH INPUT, unlike `showOffscreenMates` above, and off by default
+         * because it is a second query per level.
+         */
+        bidirectionalFetch: types.stripDefault(types.boolean, false),
         /**
          * #property
          * pixels beyond the visible viewport edge that synteny lines are still
@@ -294,7 +310,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get offscreenMateTally() {
         const totals = new Map<string, number>()
         for (const d of self.allSyntenyDisplays) {
-          for (const { refName, count } of d.offscreenMateTally) {
+          // BOTH AXES. The second is empty without `bidirectionalFetch`, and
+          // with it the headline is about the view rather than about one row —
+          // "what am I not being shown" has the same answer whichever end of an
+          // alignment the file happened to anchor. Keyed by refName alone, so a
+          // contig name shared across the two assemblies merges: that moves the
+          // contig count in the label and nothing else.
+          for (const { refName, count } of [
+            ...d.offscreenMateTally,
+            ...d.targetOffscreenMateTally,
+          ]) {
             totals.set(refName, (totals.get(refName) ?? 0) + count)
           }
         }
@@ -546,6 +571,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setBidirectionalFetch(arg: boolean) {
+        self.bidirectionalFetch = arg
+      },
+      /**
+       * #action
+       */
       setOverdrawPx(arg: number) {
         self.overdrawPx = arg
       },
@@ -735,6 +766,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...cigarModeMenuItems(self),
             ...lodMenuItems(self),
             ...offscreenMateMenuItems(self),
+            ...bidirectionalFetchMenuItems(self),
             { type: 'divider' },
             exportSvgMenuItem,
           ]

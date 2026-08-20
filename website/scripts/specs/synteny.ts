@@ -620,7 +620,11 @@ const HOMOEOLOG_GROUPS = {
 //
 // Two independent sessions rather than one capture driving the menu, so each
 // state stays an openable live link and the pair cannot drift from either.
-function peachGrapeChr1({ marks }: { marks?: boolean } = {}) {
+function peachGrapeChr1({
+  marks,
+  peachLoc = 'NC_034009.1',
+  grapeLoc = 'NC_081805.1',
+}: { marks?: boolean; peachLoc?: string; grapeLoc?: string } = {}) {
   return sessionSpec(
     encodeURIComponent(
       'https://jbrowse.org/demos/grape_peach_cacao/config.json',
@@ -640,12 +644,12 @@ function peachGrapeChr1({ marks }: { marks?: boolean } = {}) {
           views: [
             {
               assembly: 'peach',
-              loc: 'NC_034009.1',
+              loc: peachLoc,
               hideNoTracksActive: true,
             },
             {
               assembly: 'grape',
-              loc: 'NC_081805.1',
+              loc: grapeLoc,
               hideNoTracksActive: true,
             },
           ],
@@ -655,6 +659,17 @@ function peachGrapeChr1({ marks }: { marks?: boolean } = {}) {
     },
   )
 }
+
+// A window of peach chr1 where the stacked grape chromosome has NO anchors at
+// all and one other grape chromosome has every anchor in it. Zoomed to it the
+// band is empty, which is the reading the whole feature exists to correct — at
+// whole-chromosome scale the strip of marks sits beside ribbons and can be taken
+// for a fringe on them, and here there is nothing for it to be a fringe on.
+const PEACH_EMPTY_WINDOW = 'NC_034009.1:18,000,000-22,000,000'
+
+// The grape chromosome those anchors go to, and so the row a click on one of the
+// marks navigates to.
+const GRAPE_MATE_CHR = 'NC_081809.1'
 
 export const syntenySpecs: ScreenshotSpec[] = [
   // The two halves of the off-screen mate figure. Same view, same window; the
@@ -685,6 +700,50 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'synteny_offscreen_mates',
     parts: ['synteny_offscreen_mates_off', 'synteny_offscreen_mates_on'],
+  },
+
+  // What clicking a mark does, as the two states it moves between. Declared as
+  // two sessions for the same reason the pair above is: each stays an openable
+  // live link, where a capture that clicked its way to the second would leave
+  // the reader nothing to open.
+  //
+  // Zoomed to a window the stacked chromosome has no anchors in, so the first
+  // frame is a band with nothing but marks in it. The pair above is at whole
+  // chromosome, where the marks sit over a field of ribbons — this is the state
+  // a reader is actually in when the question arises, and it is also the one
+  // that exercises the label: a stretch running past both edges of the window is
+  // named over the part in view rather than centred on a midpoint off screen.
+  {
+    mode: 'url',
+    name: 'synteny_offscreen_mates_before_click',
+    url: peachGrapeChr1({ marks: true, peachLoc: PEACH_EMPTY_WINDOW }),
+    viewportWidth: 1400,
+    viewportHeight: 424,
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+  },
+  {
+    mode: 'url',
+    name: 'synteny_offscreen_mates_after_click',
+    url: peachGrapeChr1({
+      marks: true,
+      peachLoc: PEACH_EMPTY_WINDOW,
+      grapeLoc: GRAPE_MATE_CHR,
+    }),
+    viewportWidth: 1400,
+    viewportHeight: 424,
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+  },
+  {
+    mode: 'compose',
+    name: 'synteny_offscreen_mates_click',
+    parts: [
+      'synteny_offscreen_mates_before_click',
+      'synteny_offscreen_mates_after_click',
+    ],
   },
 
   // Human vs chimp synteny (hosted liftOver chain, zoomed to an RB1 intron with

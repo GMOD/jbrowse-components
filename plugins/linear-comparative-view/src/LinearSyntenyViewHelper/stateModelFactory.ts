@@ -354,14 +354,19 @@ export function linearSyntenyViewHelperModelFactory(
        * Show the contig an off-screen mate mark points at, on the row that is
        * not displaying it — what clicking a mark does.
        *
+       * `row` rather than `level + 1`, because a level has a strip on each edge:
+       * a mark on the query axis names a contig the row BELOW is not showing,
+       * and one on the target axis names a contig the row ABOVE is not. The
+       * caller resolved which strip it hit, and the hit carries the answer.
+       *
        * `navToLocString` REPLACES that row's displayed regions, which is exactly
        * the narrowing the synteny follow must never do to itself. Here it is the
        * whole request: the mark says "these go to ctgB", and the only thing that
-       * turns it into a ribbon is the row below showing ctgB. That row keeps its
-       * own header, so undoing it is "Show all regions".
+       * turns it into a ribbon is that row showing ctgB. The row keeps its own
+       * header, so undoing it is "Show all regions".
        */
-      showOffscreenMateContig(refName: string) {
-        self.parentView.views[self.level + 1]
+      showOffscreenMateContig(refName: string, row: number) {
+        self.parentView.views[row]
           ?.navToLocString(refName)
           .catch((e: unknown) => {
             getSession(self).notifyError(`${e}`, e)

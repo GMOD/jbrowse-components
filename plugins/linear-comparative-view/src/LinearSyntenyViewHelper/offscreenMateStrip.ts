@@ -1,14 +1,20 @@
 import { offscreenMateAt } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 
+import type { OffscreenMateSide } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
-// One level's row of marks: the off-screen mates every display on it fetched,
-// and the query-axis ruler to place them against.
+// One row of marks: the off-screen mates every display on the level fetched for
+// one axis, and the ruler to place them against.
 export interface OffscreenMateStrip {
   datasets: OffscreenMateData[]
   bpPerPx: number
   offsetPx: number
   minAlignmentLength: number
+  side: OffscreenMateSide
+  // The row a click on one of these marks navigates: the one NOT displaying the
+  // contig the mark names, which is the row on the far side of the band from the
+  // ruler the mark was placed against.
+  navRow: number
 }
 
 // The structural slice the overlay and the SVG export read, so what decides
@@ -17,7 +23,12 @@ export interface OffscreenMateStrip {
 export interface OffscreenMateSource {
   level: number
   linearSyntenyDisplays: {
-    featureData?: { offscreenMates: OffscreenMateData }
+    featureData?: {
+      offscreenMates: OffscreenMateData
+      // absent on a duck that predates the second fetch, and empty whenever the
+      // view has not asked for one
+      targetOffscreenMates?: OffscreenMateData
+    }
   }[]
   parentView: {
     showOffscreenMates: boolean
@@ -26,53 +37,93 @@ export interface OffscreenMateSource {
   }
 }
 
-/**
- * What this level has to mark, and the ruler to mark it against — or undefined
- * when it has nothing, so neither surface mounts a layer for an empty strip.
- *
- * THE LEVEL'S OWN INDEX IS THE QUERY ROW. A synteny level sits between rows
- * `level` and `level + 1`, and these are placed on the query axis because that
- * is the only axis they have — an off-screen mate is precisely an alignment with
- * no position on the row below. Reading the lower row here would draw every mark
- * against the wrong ruler, at a plausible-looking offset that nothing else in
- * the view disagrees with.
- *
- * Every display on the level in ONE value: they paint one strip, so the label
- * placement and the "on top" the pointer answers with have to run across all of
- * them at once.
- */
-export function offscreenMateStrip(
+type FeatureDataOf = NonNullable<
+  OffscreenMateSource['linearSyntenyDisplays'][number]['featureData']
+>
+
+// One lane across every display on the level: they paint one strip, so the
+// label placement and the "on top" the pointer answers with have to run across
+// all of them at once.
+function lane(
   model: OffscreenMateSource,
-): OffscreenMateStrip | undefined {
-  const { parentView } = model
-  const view = parentView.views[model.level]
-  if (!parentView.showOffscreenMates || !view) {
-    return undefined
-  }
-  const datasets = model.linearSyntenyDisplays
-    .map(d => d.featureData?.offscreenMates)
+  pick: (data: FeatureDataOf) => OffscreenMateData | undefined,
+) {
+  return model.linearSyntenyDisplays
+    .map(d => (d.featureData ? pick(d.featureData) : undefined))
     .filter(data => data !== undefined)
-    .filter(data => data.starts.length > 0)
-  if (datasets.length === 0) {
-    return undefined
-  }
-  return {
-    datasets,
-    bpPerPx: view.bpPerPx,
-    offsetPx: view.offsetPx,
-    minAlignmentLength: parentView.minAlignmentLength,
-  }
 }
 
 /**
- * The contig a pointer in the mark strip is over, or undefined.
+ * What this level has to mark and the rulers to mark it against — one strip per
+ * axis that has anything, so neither surface mounts a layer for an empty band.
+ *
+ * EACH AXIS OWNS ITS OWN STRIP, and the level's index is what tells them apart.
+ * A synteny level sits between rows `level` and `level + 1`. The query row's
+ * off-screen mates have no position on the row below — that is what they are —
+ * so they hang off the top edge against `views[level]`; the target row's are the
+ * mirror, arriving only from the second fetch, and hang off the bottom against
+ * `views[level + 1]`. Reading one against the other's ruler would draw every
+ * mark at a plausible-looking wrong offset that nothing else in the view
+ * disagrees with.
+ */
+export function offscreenMateStrips(
+  model: OffscreenMateSource,
+): OffscreenMateStrip[] {
+  const { parentView } = model
+  if (!parentView.showOffscreenMates) {
+    return []
+  }
+  const { minAlignmentLength, views } = parentView
+  const lanes = [
+    {
+      row: views[model.level],
+      datasets: lane(model, d => d.offscreenMates),
+      side: 'top' as const,
+      navRow: model.level + 1,
+    },
+    {
+      row: views[model.level + 1],
+      datasets: lane(model, d => d.targetOffscreenMates),
+      side: 'bottom' as const,
+      navRow: model.level,
+    },
+  ]
+  return lanes.flatMap(({ row, datasets, side, navRow }) => {
+    const drawable = datasets.filter(data => data.starts.length > 0)
+    return row && drawable.length > 0
+      ? [
+          {
+            datasets: drawable,
+            bpPerPx: row.bpPerPx,
+            offsetPx: row.offsetPx,
+            minAlignmentLength,
+            side,
+            navRow,
+          },
+        ]
+      : []
+  })
+}
+
+// The mark under the pointer, as the level reports it: the contig it points at,
+// and the row that would have to show that contig for these to be ribbons.
+export interface OffscreenMateHit {
+  refName: string
+  navRow: number
+}
+
+/**
+ * The mark a pointer in either strip is over, or undefined.
  *
  * ASKED BY THE LEVEL'S OWN HANDLERS, before the ribbon pick, and answered only
- * in the few pixels the marks occupy — which sit above where any ribbon is
- * drawn, so the pick engine loses nothing. The overlay stays
+ * in the few pixels the marks occupy — which sit above and below where any
+ * ribbon is drawn, so the pick engine loses nothing. The overlay stays
  * `pointerEvents: none` and does not answer this itself: two hit paths over one
  * band is how a click comes to mean different things depending on which element
  * happened to receive it.
+ *
+ * The two strips cannot both answer: they hang off opposite edges of the band,
+ * so a y is inside at most one of them.
  */
 export function offscreenMateHit(
   model: OffscreenMateSource & {
@@ -81,15 +132,15 @@ export function offscreenMateHit(
   },
   x: number,
   y: number,
-) {
-  const strip = offscreenMateStrip(model)
-  return strip
-    ? offscreenMateAt(
-        { ...strip, width: model.parentView.width, height: model.height },
-        x,
-        y,
-      )?.refName
-    : undefined
+): OffscreenMateHit | undefined {
+  const width = model.parentView.width
+  for (const strip of offscreenMateStrips(model)) {
+    const hit = offscreenMateAt({ ...strip, width, height: model.height }, x, y)
+    if (hit) {
+      return { refName: hit.refName, navRow: strip.navRow }
+    }
+  }
+  return undefined
 }
 
 /**
@@ -97,9 +148,14 @@ export function offscreenMateHit(
  *
  * The tally's own number, so the hover and the menu item that reports the same
  * contig cannot disagree: it counts every alignment pointed at that contig,
- * INCLUDING the ones with no place on the query axis to draw a mark for. Scoped
- * to this band rather than the view, because the band is what the pointer is
- * over — the menu sums the levels instead.
+ * INCLUDING the ones with no place on an axis to draw a mark for. Scoped to this
+ * band rather than the view, because the band is what the pointer is over — the
+ * menu sums the levels instead.
+ *
+ * BOTH LANES, because the pointer reaches a name through whichever strip it is
+ * in and the two hold contigs of different assemblies. A name is in one of them
+ * unless the two assemblies spell a contig alike, and summing is what the menu
+ * does with that case too.
  */
 export function offscreenMateCount(
   model: OffscreenMateSource,
@@ -107,10 +163,14 @@ export function offscreenMateCount(
 ) {
   let total = 0
   for (const d of model.linearSyntenyDisplays) {
-    const data = d.featureData?.offscreenMates
-    const id = data?.mateRefNameDict.indexOf(refName) ?? -1
-    if (data && id >= 0) {
-      total += data.counts[id] ?? 0
+    for (const data of [
+      d.featureData?.offscreenMates,
+      d.featureData?.targetOffscreenMates,
+    ]) {
+      const id = data?.mateRefNameDict.indexOf(refName) ?? -1
+      if (data && id >= 0) {
+        total += data.counts[id] ?? 0
+      }
     }
   }
   return total

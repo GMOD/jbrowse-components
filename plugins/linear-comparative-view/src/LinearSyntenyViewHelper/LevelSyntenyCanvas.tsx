@@ -243,15 +243,17 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         const at = hoverRef.current?.at
         hoverRef.current = undefined
         if (at) {
-          const contig = offscreenMateHit(model, at.x, at.y)
+          const mate = offscreenMateHit(model, at.x, at.y)
           setHoveredContig(
-            contig === undefined
-              ? undefined
-              : { refName: contig, clientX: at.clientX, clientY: at.clientY },
+            mate && {
+              refName: mate.refName,
+              clientX: at.clientX,
+              clientY: at.clientY,
+            },
           )
           // a mark hovered is not a ribbon hovered, and leaving the old one lit
           // says the pointer is somewhere it is not
-          model.setHoveredFeature(contig === undefined ? pickAt(at) : undefined)
+          model.setHoveredFeature(mate ? undefined : pickAt(at))
         }
       }),
     }
@@ -302,9 +304,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     // a feature — it stands for alignments this level cannot draw at all — so it
     // answers with a navigation rather than a selection, and must not fall
     // through to clear the clicked feature on its way.
-    const contig = offscreenMateHit(model, coords.x, coords.y)
-    if (contig !== undefined) {
-      model.showOffscreenMateContig(contig)
+    const mate = offscreenMateHit(model, coords.x, coords.y)
+    if (mate) {
+      model.showOffscreenMateContig(mate.refName, mate.navRow)
       return
     }
     // A release outside the band answers no hit (the pick engine rejects a y

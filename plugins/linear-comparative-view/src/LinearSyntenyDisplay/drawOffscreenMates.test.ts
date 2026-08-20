@@ -542,3 +542,139 @@ test('a band too short for a baseline is marks alone', () => {
   expect(rects).toHaveLength(1)
   expect(texts).toEqual([])
 })
+
+// The mirror strip: the alignments anchored on the TARGET row whose query end is
+// on a contig the row above is not showing. Same geometry against the other
+// row's ruler, hanging off the other edge — and it has to STOP short of the row
+// below it for the same reason the query strip does, in the other direction.
+test('a target-axis mark hangs off the bottom edge', () => {
+  const { ctx, rects } = fakeCtx()
+  drawOffscreenMates(ctx, {
+    ...params,
+    side: 'bottom',
+    datasets: [data([[100, 400]])],
+  })
+  expect(rects).toEqual([
+    {
+      x: 10,
+      y: params.height - OFFSCREEN_MATE_HEIGHT_PX,
+      w: 30,
+      h: OFFSCREEN_MATE_HEIGHT_PX,
+    },
+  ])
+})
+
+// Above its marks, not below them: a label at the top strip's offset would sit
+// in the middle of the band naming marks at the bottom of it.
+test('a target-axis label sits above its marks', () => {
+  const { ctx, texts, rects } = fakeCtx()
+  drawOffscreenMates(ctx, {
+    ...params,
+    side: 'bottom',
+    datasets: [data([[0, 1000]], ['ctgB'])],
+  })
+  expect(texts).toHaveLength(1)
+  expect(texts[0]!.y).toBeLessThan(rects[0]!.y)
+})
+
+test('the two strips do not overlap in a band they share', () => {
+  const { ctx, rects } = fakeCtx()
+  const datasets = [data([[100, 400]])]
+  drawOffscreenMates(ctx, { ...params, datasets })
+  drawOffscreenMates(ctx, { ...params, side: 'bottom', datasets })
+  const [top, bottom] = rects
+  expect(top!.y + top!.h).toBeLessThan(bottom!.y)
+})
+
+test('the hit test answers inside the bottom strip and not above it', () => {
+  const layout = {
+    ...params,
+    side: 'bottom' as const,
+    datasets: [data([[100, 400]], ['ctgB'])],
+  }
+  expect(offscreenMateAt(layout, 20, params.height - 1)?.refName).toBe('ctgB')
+  expect(
+    offscreenMateAt(layout, 20, params.height - OFFSCREEN_MATE_HEIGHT_PX - 2),
+  ).toBeUndefined()
+})
+
+// The same rejection the top strip makes, in the other direction: a pointer over
+// the ribbons is the overwhelmingly common case and must not lay out a mark to
+// find that out.
+test('a hover above the bottom strip reads no alignment at all', () => {
+  const only = data([[100, 400]], ['ctgB'])
+  let reads = 0
+  const watched = {
+    ...params,
+    side: 'bottom' as const,
+    datasets: [
+      {
+        ...only,
+        starts: new Proxy(only.starts, {
+          get(target, prop) {
+            if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+              reads++
+            }
+            return (target as unknown as Record<string, unknown>)[
+              prop as string
+            ]
+          },
+        }),
+      },
+    ],
+  }
+  expect(offscreenMateAt(watched, 20, 3)).toBeUndefined()
+  expect(reads).toBe(0)
+  offscreenMateAt(watched, 20, params.height - 1)
+  expect(reads).toBeGreaterThan(0)
+})
+
+// The zoom this rule exists for. One block of anchors spreads with the zoom, so
+// at a 4 Mb window its marks are tens of pixels apart — which a fixed 20px merge
+// broke into slivers, none of them wide enough to hold the contig name, and the
+// strip then named nothing at all at exactly the zoom a reader asks what they
+// are looking at.
+test('one block spread across the window is named once rather than not at all', () => {
+  const { ctx, texts } = fakeCtx()
+  drawOffscreenMates(ctx, {
+    ...params,
+    width: 1000,
+    datasets: [
+      data(
+        [
+          [0, 200],
+          [600, 800],
+          [1200, 1400],
+          [1800, 2000],
+        ],
+        Array.from({ length: 4 }, () => 'ctgB'),
+      ),
+    ],
+  })
+  expect(texts).toEqual([{ text: 'ctgB', x: 88, y: 16 }])
+})
+
+// ...and the tolerance is the NAME, not a number of pixels: the same two marks
+// at the same distance are one stretch for a name that could not have fitted
+// between them and two for a name that could. No fixed gap answers both.
+test('the merge tolerance scales with the name it is tolerating a gap for', () => {
+  const spans: [number, number][] = [
+    [0, 200],
+    [800, 1000],
+  ]
+  const short = fakeCtx()
+  drawOffscreenMates(short.ctx, {
+    ...params,
+    width: 1000,
+    datasets: [data(spans, ['ctgB', 'ctgB'])],
+  })
+  expect(short.texts).toEqual([])
+
+  const long = fakeCtx()
+  drawOffscreenMates(long.ctx, {
+    ...params,
+    width: 1000,
+    datasets: [data(spans, ['ctgBBBBBBBBB', 'ctgBBBBBBBBB'])],
+  })
+  expect(long.texts.map(t => t.text)).toEqual(['ctgBBBBBBBBB'])
+})

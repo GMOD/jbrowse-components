@@ -1560,6 +1560,16 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'The item names the count and the number of contigs, so its label differs per view. It is absent while the count is zero — both rows are showing every contig the alignments reach, and there is nothing to mark.',
         }
       : undefined,
+  // The one setting here that changes what is FETCHED rather than what is drawn,
+  // which is why the note says what it costs: the view queries each row pair's
+  // upper row, and this adds a query for the lower one.
+  bidirectionalFetch: (value, { viewType }) =>
+    typeof value === 'boolean' && viewType === 'LinearSyntenyView'
+      ? {
+          path: 'Synteny view header → View options → Search both rows for alignments',
+          note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. Turning this on costs a second query per row pair.',
+        }
+      : undefined,
   // Applied while the view is built (afterAttach sets scalebarOnly on any row
   // the launch gave no tracks), so the control is the launch dialog's checkbox
   // rather than anything on the finished view.

@@ -35,15 +35,34 @@ const LABEL_FONT = '10px sans-serif'
 // rest of the app's over-plot text uses.
 const LABEL_HALO_PX = 3
 
-// Clear of the mark above and the ribbons below. Tight, because the band
-// between two rows is the one place in this view with no vertical room to
-// spare.
+// Clear of the mark and the ribbons, measured from whichever band edge the
+// strip hangs off. Tight, because the band between two rows is the one place in
+// this view with no vertical room to spare.
+//
+// TWO NUMBERS RATHER THAN ONE MIRRORED. The top strip's label sits BELOW its
+// marks and the bottom strip's sits ABOVE them, so the second is the mark height
+// plus its clearance from the edge, not `height - 16`.
 const LABEL_BASELINE_PX = 16
+const LABEL_BASELINE_FROM_BOTTOM_PX = 10
 
-// Marks to one contig nearer than this are one stretch as far as a label is
-// concerned. A paleopolyploid block is dozens of anchors a few px apart, and a
-// label per anchor is a wall of the same word.
-const LABEL_MERGE_GAP_PX = 20
+// Marks to one contig closer together than this many of its own names are one
+// stretch as far as a label is concerned.
+//
+// MEASURED IN LABELS, NOT PIXELS, because what the gap has to be compared
+// against is the thing that would go in it: a break too small to hold a second
+// name is not a break a reader can see, so naming both sides of it repeats the
+// name rather than pointing at two things. A fixed 20px was the same tolerance
+// at every zoom, and a block of anchors spreads with the zoom — at
+// whole-chromosome scale its marks are a few px apart and at a 4 Mb window they
+// are tens, so the one block fragmented into fifteen slivers, none of them wide
+// enough to hold the contig name, and the strip named NOTHING at exactly the
+// zoom where a reader asks what it is looking at.
+//
+// Two names rather than one: at one the fragments each cleared the bar and the
+// same word landed three times across a band. Anything from two up gives the
+// same answer on the grape/peach demo at both zooms, so this is not a knife
+// edge.
+const LABEL_MERGE_GAP_LABELS = 2
 
 const LABEL_ROW_PX = 12
 
@@ -69,15 +88,23 @@ interface LabelRun {
   refName: string
   x: number
   end: number
+  // measured once per contig here, and read again by the fit test and the
+  // centring, so the gap the merge tolerates and the name it tolerates it for
+  // are the same number
+  textWidth: number
 }
 
 /**
- * The stretches worth naming: each contig's marks, joined where they sit close
- * together, so a run of anchors to one contig is one label rather than one per
- * anchor — and a contig appearing in two separate places is still named twice,
- * which naming each contig once would lose.
+ * The stretches worth naming: each contig's marks, joined where they sit closer
+ * together than a reader could tell apart, so a block of anchors to one contig
+ * is one label rather than one per anchor — and a contig appearing in two
+ * genuinely separate places is still named twice, which naming each contig once
+ * would lose.
  */
-function labelRuns(rects: OffscreenMateRect[]): LabelRun[] {
+function labelRuns(
+  rects: OffscreenMateRect[],
+  measure: (text: string) => number,
+): LabelRun[] {
   const byContig = new Map<string, OffscreenMateRect[]>()
   for (const r of rects) {
     const refName = offscreenMateRefName(r)
@@ -90,14 +117,16 @@ function labelRuns(rects: OffscreenMateRect[]): LabelRun[] {
   }
   const runs: LabelRun[] = []
   for (const [refName, list] of byContig) {
+    const textWidth = measure(refName)
+    const mergeGap = textWidth * LABEL_MERGE_GAP_LABELS
     // by x, since draw order is the adapter's and says nothing about position
     list.sort((a, b) => a.x - b.x)
     let run: LabelRun | undefined
     for (const r of list) {
-      if (run && r.x - run.end <= LABEL_MERGE_GAP_PX) {
+      if (run && r.x - run.end <= mergeGap) {
         run.end = Math.max(run.end, r.x + r.width)
       } else {
-        run = { refName, x: r.x, end: r.x + r.width }
+        run = { refName, x: r.x, end: r.x + r.width, textWidth }
         runs.push(run)
       }
     }
@@ -110,6 +139,11 @@ interface PlacedLabel {
   x: number
   y: number
 }
+
+// Which band edge a strip hangs off — the top for marks on the query axis, the
+// bottom for the target axis's. The two never overlap in y, which is what lets
+// one hit test answer for both without deciding between them.
+export type OffscreenMateSide = 'top' | 'bottom'
 
 /**
  * Where each stretch's name goes, on the first row it does not collide on.
@@ -132,9 +166,9 @@ interface PlacedLabel {
  */
 function placeLabels(
   runs: LabelRun[],
-  measure: (text: string) => number,
   width: number,
   height: number,
+  side: OffscreenMateSide,
 ): PlacedLabel[] {
   const maxRows = Math.min(
     MAX_LABEL_ROWS,
@@ -150,7 +184,7 @@ function placeLabels(
   for (const run of [...runs].sort((a, b) => a.x - b.x)) {
     const from = Math.max(run.x, 0)
     const to = Math.min(run.end, width)
-    const textWidth = measure(run.refName)
+    const { textWidth } = run
     if (textWidth + MIN_LABEL_PADDING_PX > to - from) {
       continue
     }
@@ -175,7 +209,12 @@ function placeLabels(
     placed.push({
       refName: run.refName,
       x,
-      y: LABEL_BASELINE_PX + row * LABEL_ROW_PX,
+      // rows stack away from the strip's own edge, so a second row is further
+      // into the band in both cases rather than further down in one of them
+      y:
+        side === 'top'
+          ? LABEL_BASELINE_PX + row * LABEL_ROW_PX
+          : height - LABEL_BASELINE_FROM_BOTTOM_PX - row * LABEL_ROW_PX,
     })
   }
   return placed
@@ -186,11 +225,15 @@ export interface OffscreenMateLayout {
   // they share a band, so labels that avoid each other within a display have to
   // avoid the neighbouring display's too
   datasets: OffscreenMateData[]
-  // the QUERY axis, which is the only axis these have
+  // the axis these are placed against, which is the only axis they have — the
+  // query row for a top strip, the target row for a bottom one
   bpPerPx: number
   offsetPx: number
   width: number
   height: number
+  // which band edge the marks hang off. Defaults to the query axis's, so a
+  // caller that predates the second strip keeps the geometry it had.
+  side?: OffscreenMateSide
   // The view-wide alignment-length floor, applied here for the same reason the
   // shader applies it to ribbons: a whole-genome hairball filtered down to its
   // real blocks should not keep a fringe of marks for the noise it just hid.
@@ -204,6 +247,11 @@ export interface OffscreenMateRect {
   data: OffscreenMateData
   index: number
   x: number
+  // the strip's own top edge: 0 for a top strip, and the band height less the
+  // mark height for a bottom one. Carried per rect rather than recomputed by
+  // each reader, for the same reason `x` is — draw and hit test cannot disagree
+  // about a number neither of them derives.
+  y: number
   width: number
   height: number
 }
@@ -244,10 +292,11 @@ export function offscreenMateRects(
     return []
   }
   const markHeight = offscreenMateMarkHeight(height)
+  const markY = offscreenMateMarkY(layout, markHeight)
   const out: OffscreenMateRect[] = []
   for (const data of datasets) {
     for (let i = 0; i < data.starts.length; i++) {
-      const rect = offscreenMateRectAt(layout, data, i, markHeight)
+      const rect = offscreenMateRectAt(layout, data, i, markHeight, markY)
       if (rect) {
         out.push(rect)
       }
@@ -266,6 +315,14 @@ function offscreenMateMarkHeight(height: number) {
   )
 }
 
+// ...and every mark in a strip shares its top edge, for the same reason.
+function offscreenMateMarkY(
+  { side, height }: OffscreenMateLayout,
+  markHeight: number,
+) {
+  return side === 'bottom' ? height - markHeight : 0
+}
+
 // The one place a mark's geometry is decided, so the array the canvas paints and
 // the scan the pointer runs cannot describe different rectangles.
 function offscreenMateRectAt(
@@ -273,6 +330,7 @@ function offscreenMateRectAt(
   data: OffscreenMateData,
   i: number,
   markHeight: number,
+  markY: number,
 ): OffscreenMateRect | undefined {
   const start = data.starts[i]!
   const end = data.ends[i]!
@@ -288,6 +346,7 @@ function offscreenMateRectAt(
     data,
     index: i,
     x: x1,
+    y: markY,
     width: Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1),
     height: markHeight,
   }
@@ -316,13 +375,14 @@ export function offscreenMateAt(
     return undefined
   }
   const markHeight = offscreenMateMarkHeight(height)
-  if (y < 0 || y > markHeight) {
+  const markY = offscreenMateMarkY(layout, markHeight)
+  if (y < markY || y > markY + markHeight) {
     return undefined
   }
   for (let d = datasets.length - 1; d >= 0; d--) {
     const data = datasets[d]!
     for (let i = data.starts.length - 1; i >= 0; i--) {
-      const rect = offscreenMateRectAt(layout, data, i, markHeight)
+      const rect = offscreenMateRectAt(layout, data, i, markHeight, markY)
       if (rect && x >= rect.x && x <= rect.x + rect.width) {
         return {
           refName: offscreenMateRefName(rect),
@@ -377,7 +437,7 @@ export function drawOffscreenMates(
   ctx.fillStyle = color
   ctx.beginPath()
   for (const r of rects) {
-    ctx.rect(r.x, 0, r.width, r.height)
+    ctx.rect(r.x, r.y, r.width, r.height)
   }
   ctx.fill()
 
@@ -387,10 +447,10 @@ export function drawOffscreenMates(
   ctx.lineJoin = 'round'
   ctx.strokeStyle = haloColor
   const labels = placeLabels(
-    labelRuns(rects),
-    text => ctx.measureText(text).width,
+    labelRuns(rects, text => ctx.measureText(text).width),
     layout.width,
     layout.height,
+    layout.side ?? 'top',
   )
   for (const { refName, x, y } of labels) {
     ctx.strokeText(refName, x, y)

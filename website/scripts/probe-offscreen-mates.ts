@@ -64,9 +64,10 @@ try {
     const ctx = document.createElement('canvas').getContext('2d')!
     ctx.font = '10px sans-serif'
 
-    // one stretch per run of nearby marks to one contig, the merge
-    // drawOffscreenMates does before it decides what to name
-    const MERGE_GAP_PX = 20
+    // one stretch per run of marks to one contig closer together than a couple
+    // of its own names — the merge drawOffscreenMates does before it decides
+    // what to name, in labels rather than pixels so it holds at every zoom
+    const MERGE_GAP_LABELS = 2
     const per = new Map<string, { x: number; end: number }[]>()
     for (let i = 0; i < (data?.starts.length ?? 0); i++) {
       const name = data.mateRefNameDict[data.mateRefNameIds[i]] as string
@@ -85,10 +86,11 @@ try {
     const stretches: { refName: string; x: number; span: number }[] = []
     for (const [name, list] of per) {
       list.sort((a, b) => a.x - b.x)
+      const mergeGap = ctx.measureText(name).width * MERGE_GAP_LABELS
       const runs: { x: number; end: number }[] = []
       for (const r of list) {
         const last = runs.at(-1)
-        if (last && r.x - last.end <= MERGE_GAP_PX) {
+        if (last && r.x - last.end <= mergeGap) {
           last.end = Math.max(last.end, r.end)
         } else {
           runs.push({ ...r })

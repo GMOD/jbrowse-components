@@ -270,6 +270,35 @@ export function offscreenMateMenuItems(model: OffscreenMateModel): MenuItem[] {
   ]
 }
 
+interface BidirectionalFetchModel {
+  bidirectionalFetch: boolean
+  setBidirectionalFetch: (arg: boolean) => void
+}
+
+/**
+ * Ask each level's adapter about its lower row as well as its upper one.
+ *
+ * NOT GATED ON A COUNT, unlike the item above, and it cannot be: what it turns
+ * on is the fetch that would produce the count. A pair with nothing anchored on
+ * the lower row and a pair that was never asked look identical from here, which
+ * is exactly the state this exists to get out of.
+ */
+export function bidirectionalFetchMenuItems(
+  model: BidirectionalFetchModel,
+): MenuItem[] {
+  return [
+    {
+      label: 'Search both rows for alignments',
+      subLabel: 'A second query per row pair',
+      type: 'checkbox' as const,
+      checked: model.bidirectionalFetch,
+      onClick: () => {
+        model.setBidirectionalFetch(!model.bidirectionalFetch)
+      },
+    },
+  ]
+}
+
 export function cigarModeMenuItems(model: CigarModeModel): MenuItem[] {
   return model.hasCigarData
     ? [

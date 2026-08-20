@@ -93,9 +93,12 @@ export function packSyntenyFeatureData(
     // of — an empty tally is the answer for a comparison where both rows show
     // every contig, and a suite that wants some builds them.
     offscreenMates = emptyOffscreenMates(),
+    // the mirror, which only a bidirectional fetch ever fills
+    targetOffscreenMates = emptyOffscreenMates(),
   }: {
     hasCigar?: boolean
     offscreenMates?: SyntenyFeatureData['offscreenMates']
+    targetOffscreenMates?: SyntenyFeatureData['offscreenMates']
   } = {},
 ): SyntenyFeatureData {
   const lane = (values: string[]) => {
@@ -111,6 +114,7 @@ export function packSyntenyFeatureData(
   const mateAssemblies = lane(blocks.map(b => b.mateAssembly ?? 'hg002pat'))
   return {
     offscreenMates,
+    targetOffscreenMates,
     strands: Int8Array.from(blocks, b => b.strand ?? 1),
     starts: Uint32Array.from(blocks, b => b.start),
     ends: Uint32Array.from(blocks, b => b.end),

@@ -234,6 +234,24 @@ before making it.
 
 <Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. Above, the ribbons alone. Below, the same view marking the alignments it has no second endpoint for — most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
 
+<Figure caption="A window of peach chromosome 1 where the grape chromosome stacked under it has no alignments at all. Above, the band is empty apart from the marks and the grape chromosome they name. Below, that chromosome is the one on the bottom panel, and the same alignments are ribbons." src="/img/synteny_offscreen_mates_click.png" />
+
+### Alignments anchored on the lower panel
+
+Everything above is about alignments the view already has. A synteny track is
+queried from the **upper** panel of each pair, so an alignment anchored on a
+contig the lower panel is showing — whose other end is somewhere the upper panel
+is not — is never asked for at all. The same two genomes therefore report
+differently depending on which one you stacked on top.
+
+**Search both rows for alignments** adds that second query. What it finds is
+marked along the lower panel's axis, mirroring the strip described above, and
+clicking one of those marks navigates the **upper** panel. The count in the menu
+item above it covers both directions once this is on.
+
+It is off by default: it is a second query per panel pair, and on a whole-genome
+alignment file that is real work rather than bookkeeping.
+
 ### How small an insertion still reads
 
 The same human/chimp synteny plus RepeatMasker resolves a lineage-specific

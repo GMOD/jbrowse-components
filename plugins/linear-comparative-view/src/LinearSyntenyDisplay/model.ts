@@ -99,6 +99,12 @@ export interface SyntenyFeatureData {
   // contig and placed on the query axis. Not a subset of anything above: no
   // entry here has a row in the per-feature lanes.
   offscreenMates: OffscreenMateData
+  // The same thing seen from the other row, and empty unless the view asked for
+  // the second fetch: alignments anchored on a target-axis contig whose query
+  // end is on a contig the row above is not displaying. The query-axis fetch
+  // never requests these, so this is the one class the view cannot report from
+  // one fetch. Placed on the TARGET axis.
+  targetOffscreenMates: OffscreenMateData
 }
 
 export interface FeatPos {
@@ -365,6 +371,19 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
+       * The same, for the row below: contigs of the QUERY assembly that the row
+       * above is not displaying, which alignments anchored on the target axis
+       * run to. Always empty without the bidirectional fetch, since those
+       * alignments are never requested.
+       */
+      get targetOffscreenMateTally() {
+        const { featureData } = self
+        return featureData
+          ? offscreenMateTally(featureData.targetOffscreenMates)
+          : []
+      },
+      /**
+       * #getter
        * Summed genomic length (axis 0) of every loaded alignment block. Zoom-
        * independent, so it recomputes only when featureData changes;
        * alignmentCoverageFraction derives the on-screen density from it.
@@ -540,6 +559,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           // lane — the same path colorBy takes to avoid an RPC.
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
+          // a second query per level, so it belongs here for the same reason the
+          // CIGAR options do: it changes what comes back, not how it is drawn
+          view.bidirectionalFetch,
           // the resolved tier, not view.lodMode: in 'auto' the mode is constant
           // while the tier flips, and the tier is what the fetch differs by
           this.lodTier,
@@ -853,6 +875,20 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       get fetchRegions() {
         const connected = this.connectedViews
         return connected ? syntenyFetchRegions(connected.v0) : []
+      },
+      /**
+       * #getter
+       * The target axis's (v1) fetch window, or [] unless the view asked for the
+       * bidirectional fetch — in which case the worker queries it too, and
+       * recovers the alignments anchored there whose query end is on a contig
+       * the row above is not displaying. Empty is the signal, so the RPC
+       * argument carries nothing when the setting is off.
+       */
+      get targetFetchRegions() {
+        const connected = this.connectedViews
+        return connected && this.view.bidirectionalFetch
+          ? syntenyFetchRegions(connected.v1)
+          : []
       },
       /**
        * #getter

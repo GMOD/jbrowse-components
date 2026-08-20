@@ -6,7 +6,7 @@ import {
   drawOffscreenMates,
   offscreenMateColors,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
-import { offscreenMateStrip } from './offscreenMateStrip.ts'
+import { offscreenMateStrips } from './offscreenMateStrip.ts'
 
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 
@@ -53,15 +53,20 @@ const OffscreenMateOverlay = observer(function OffscreenMateOverlay({
   // read here rather than inside the draw: this is an observer, so what the
   // component reads while rendering is what re-renders it, and the draw closure
   // then changes identity exactly when the marks do
-  const strip = offscreenMateStrip(model)
+  const strips = offscreenMateStrips(model)
 
-  return strip ? (
+  // ONE CANVAS FOR BOTH STRIPS, not one each: they are two edges of one band,
+  // and a second stacked canvas would be a second DPR-scaled backing store for
+  // a few pixels of marks.
+  return strips.length > 0 ? (
     <OverlayCanvas
       data-testid="offscreen_mate_overlay"
       width={width}
       height={height}
       draw={ctx => {
-        drawOffscreenMates(ctx, { ...strip, width, height, color, haloColor })
+        for (const strip of strips) {
+          drawOffscreenMates(ctx, { ...strip, width, height, color, haloColor })
+        }
       }}
     />
   ) : null

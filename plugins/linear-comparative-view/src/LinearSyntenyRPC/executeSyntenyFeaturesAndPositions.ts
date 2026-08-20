@@ -80,10 +80,14 @@ export interface SyntenyQueryViewSnap extends SyntenyViewSnapBase {
   fetchRegions: Region[]
 }
 
-// The target axis (v2) only contributes its cumBp index + cull geometry. The
-// fetch is single-axis (query only), so no fetchRegions/width here — carrying
-// them would ship dead bytes and pay a redundant refName rename per fetch.
-export type SyntenyTargetViewSnap = SyntenyViewSnapBase
+// The target axis (v2). It always contributes its cumBp index and cull
+// geometry; `fetchRegions` arrives only when the view asked for the second
+// fetch, because carrying it unasked would ship dead bytes and pay a redundant
+// refName rename per fetch. No `width` either way — the two stacked rows share
+// one, and it comes off the query snap.
+export interface SyntenyTargetViewSnap extends SyntenyViewSnapBase {
+  fetchRegions?: Region[]
+}
 
 export interface SyntenyRpcResult extends SyntenyFeatureData {
   instanceData: SyntenyGeometry
@@ -131,29 +135,20 @@ export async function executeSyntenyFeaturesAndPositions({
   // window below), so an indexed adapter downloads only the on-screen slice
   // while the cumBp index below still spans the whole displayedRegions.
   //
-  // The query is on v1 (the query axis) only — as it always has been, when it
-  // spanned the whole genome. Scoping it therefore drops one class the old
-  // whole-genome fetch happened to include: an alignment whose query coords sit
-  // outside this window but whose mate is on-screen in v2. That is inherent to a
-  // single-axis fetch.
+  // The query is on v1 (the query axis), which is what a synteny band has always
+  // asked for. That leaves a whole class it cannot see AT ALL: an alignment
+  // anchored on a v2 contig whose query end is somewhere v1 is not showing is
+  // never requested, so nothing downstream can recover it. `v2.fetchRegions`
+  // present is the view asking for that second half — see
+  // agent-docs/ideas/two-axis-synteny-fetch.md, and `targetOffscreenMates`
+  // below for what this pass does with the answer.
   //
-  // Restoring the second fetch is blocked on a join key, not on dedupe being
-  // impossible — `syntenyId` exists for exactly this and MCScan (`rowNum`),
-  // BLAST (`i`) and in-memory PAF (record index) all give one record's two
-  // perspectives the SAME one. Two adapters do not, for unrelated reasons:
-  // make-pif writes the q- and t-rows as separate lines and then sorts the whole
-  // file, so PIF's `syntenyId: fileOffset` is unrelated across perspectives; and
-  // AllVsAllPAFAdapter numbers them apart on purpose (`record * 2 + flip`)
-  // because there the two sides are separate drawables that
-  // `markReciprocalDuplicates` has already reconciled. See
-  // agent-docs/ideas/two-axis-synteny-fetch.md.
-  //
-  // Note this class is only HALF of what the view fails to draw, and the cheaper
-  // half is dropped further down rather than here — see the decorate loop's
-  // `v2RefNames.has` and agent-docs/ideas/offscreen-synteny-mates.md.
-  const allFeatures = await dataAdapter.getFeaturesInMultipleRegionsArray(
-    v1.fetchRegions,
-    {
+  // IN PARALLEL, and only the query fetch drives the bar: the two would
+  // otherwise fight over one determinate progress bar, and for the in-memory
+  // adapters they share one `createSharedSetup` download anyway, so the second
+  // is a walk over records the first already parsed.
+  const [allFeatures, targetAxisFeatures] = await Promise.all([
+    dataAdapter.getFeaturesInMultipleRegionsArray(v1.fetchRegions, {
       stopToken,
       bpPerPx: v1.bpPerPx,
       lodMode,
@@ -161,8 +156,22 @@ export async function executeSyntenyFeaturesAndPositions({
       // the assembly on the other side of this band; a multi-genome adapter
       // (AllVsAllPAFAdapter) uses it to keep only this pair's records
       targetAssemblyName: v2.displayedRegions[0]?.assemblyName,
-    },
-  )
+    }),
+    // Anchored on v2, so the pair's OTHER assembly is v1's — and the regions
+    // carry v2's own assemblyName, which is what tells a pairwise adapter which
+    // side of the file to index (`PairwiseAdapterBase.sideFor`). Every pairwise
+    // adapter answers from either side already, orienting the row it returns to
+    // the axis asked about, so nothing here has to know which column the file
+    // put this genome in.
+    v2.fetchRegions
+      ? dataAdapter.getFeaturesInMultipleRegionsArray(v2.fetchRegions, {
+          stopToken,
+          bpPerPx: v2.bpPerPx,
+          lodMode,
+          targetAssemblyName: v1.displayedRegions[0]?.assemblyName,
+        })
+      : undefined,
+  ])
   // Build the cumBp region indexes first: their refName-keyed maps double as the
   // visible-refName sets, which let us discard features on refNames not shown in
   // BOTH views BEFORE the O(n log n) dedupe/decorate/sort. Whole-genome PAF
@@ -178,9 +187,8 @@ export async function executeSyntenyFeaturesAndPositions({
   // against grape chr1 draws 1029 of its 3796 anchors and the other 2767 (73%)
   // run to nine other grape contigs in clean paleopolyploid blocks. Those go to
   // `collectOffscreenMates` in the loop below, which is what lets the view say
-  // so. The OTHER class — anchored on the target axis, mate outside the query
-  // window — is never requested at all; see
-  // agent-docs/ideas/two-axis-synteny-fetch.md.
+  // so. The mirror of that class, anchored on v2, needs the second fetch above;
+  // see `targetOffscreenMates`.
   const v1Index = buildBpRegionIndex(v1)
   const v2Index = buildBpRegionIndex(v2)
   const v1RefNames = v1Index.entries
@@ -234,6 +242,44 @@ export async function executeSyntenyFeaturesAndPositions({
     }
   }
   decorated.sort(compareDrawOrder)
+
+  /**
+   * The mirror class, and the whole reason the second fetch exists: an
+   * alignment anchored on a contig THIS row is displaying, whose query end is
+   * on a contig the row above is not. Counted per contig and placed on the
+   * TARGET axis, which is the only axis it has.
+   *
+   * The query-axis fetch cannot see one of these — it asks for v1 regions —
+   * so unlike `offscreenMates` above, no amount of bookkeeping in the decorate
+   * loop recovers it. That asymmetry is what made a synteny view's answer
+   * depend on which genome the user happened to stack on top.
+   *
+   * NO JOIN AGAINST THE FIRST FETCH, and none needed. An alignment whose query
+   * end lands on a displayed v1 contig is either already drawn or is the ribbon
+   * class this pass does not yet claim, and either way it is dropped here — so
+   * the two fetches contribute disjoint sets by construction, and nothing
+   * depends on `syntenyId` meaning the same thing from both perspectives (PIF
+   * and all-vs-all give one record's two rows unrelated ids on purpose).
+   *
+   * Deduped for the same reason the first fetch is: adjacent fetch regions
+   * return a block that straddles them twice, and here that would inflate a
+   * count rather than draw a ribbon twice.
+   */
+  const targetOffscreenMates = createOffscreenMateCollector(v2Index)
+  if (targetAxisFeatures) {
+    for (const f of dedupe(targetAxisFeatures, f => f.id())) {
+      const refName = f.get('refName')
+      const mate = getMate(f)
+      if (mate && v2RefNames.has(refName) && !v1RefNames.has(mate.refName)) {
+        targetOffscreenMates.add(
+          refName,
+          f.get('start'),
+          f.get('end'),
+          mate.refName,
+        )
+      }
+    }
+  }
 
   const count = decorated.length
   // cumBp (bpBefore + bpOffset, no padding) is whole-assembly cumulative-bp,
@@ -556,6 +602,7 @@ export async function executeSyntenyFeaturesAndPositions({
     mateAssemblyNameIds: mateAssemblyNameIds.subarray(0, validCount),
     hasCigar,
     offscreenMates: offscreenMates.finish(),
+    targetOffscreenMates: targetOffscreenMates.finish(),
   }
 
   // colorBy lives on the main thread; the worker emits geometry +

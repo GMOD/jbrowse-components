@@ -39,8 +39,9 @@ function assembly(name: string, refNames: string[]) {
 
 async function setup() {
   const session = createTestSession() as any
-  session.addAssemblyConf(assembly('volvox', ['ctgA']))
-  // two contigs, one row: ctgB is the contig the marks point at
+  // two contigs on each, one shown per row: ctgB is the contig the marks on
+  // either edge of the band point at
+  session.addAssemblyConf(assembly('volvox', ['ctgA', 'ctgB']))
   session.addAssemblyConf(assembly('volvox2', ['ctgA', 'ctgB']))
   const view = session.addView('LinearSyntenyView', {
     init: {
@@ -59,15 +60,27 @@ function refNames(view: LinearSyntenyViewModel, row: number) {
   return view.views[row]!.displayedRegions.map(r => r.refName)
 }
 
-test('a mark shows its contig on the row below the level', async () => {
+test('a query-axis mark shows its contig on the row below the level', async () => {
   const { view, level } = await setup()
 
-  level.showOffscreenMateContig('ctgB')
+  level.showOffscreenMateContig('ctgB', level.level + 1)
   await when(() => refNames(view, 1).join() === 'ctgB', { timeout: 5000 })
 
   // and only that row: the query row is where the marks were measured, so
   // rewriting it would move every mark out from under the pointer that clicked
   expect(refNames(view, 0)).toEqual(['ctgA'])
+}, 20000)
+
+// The mirror, which is why the row is an argument rather than `level + 1`: a
+// mark on the target axis names a contig the row ABOVE is not displaying, and
+// navigating the row below for it would move the wrong genome.
+test('a target-axis mark shows its contig on the row above the level', async () => {
+  const { view, level } = await setup()
+
+  level.showOffscreenMateContig('ctgB', level.level)
+  await when(() => refNames(view, 0).join() === 'ctgB', { timeout: 5000 })
+
+  expect(refNames(view, 1)).toEqual(['ctgA'])
 }, 20000)
 
 // A refName that resolves to nothing is ordinary here — the mate names come out
@@ -77,7 +90,7 @@ test('a mark shows its contig on the row below the level', async () => {
 test('a contig the row cannot resolve is reported, not thrown', async () => {
   const { session, view, level } = await setup()
 
-  level.showOffscreenMateContig('nope')
+  level.showOffscreenMateContig('nope', level.level + 1)
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   expect(session.snackbarMessages[0]!.level).toBe('error')

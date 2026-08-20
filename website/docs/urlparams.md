@@ -1101,6 +1101,7 @@ restores natively:
 | Property | What it does |
 | --- | --- |
 | [`alpha`](/docs/models/linearsyntenyview#property-alpha) | Per-feature opacity in [0,1]. The default is tuned for dense unfiltered hairballs; a whole-genome view with minAlignmentLength set can use a higher value (~0.4) for stronger color. |
+| [`bidirectionalFetch`](/docs/models/linearsyntenyview#property-bidirectionalfetch) | Ask each level's adapter for the alignments anchored on its LOWER row as well as its upper one.<br><br>A synteny band queries its query axis — the upper row of the pair — so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested, and nothing downstream can recover it. Which genome a user stacked on top therefore decided what the view was able to report.<br><br>A FETCH INPUT, unlike `showOffscreenMates` above, and off by default because it is a second query per level. |
 | [`cigarMode`](/docs/models/linearsyntenyview#property-cigarmode) | How per-base insertions and deletions inside each alignment are shown: 'full' paints indel wedges, 'matches' leaves them see-through, 'off' draws blocks only. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`drawCurves`](/docs/models/linearsyntenyview#property-drawcurves) | Render ribbons as bezier curves rather than straight chords. Reads much better at whole-genome scale, where straight crossings stack into noise. |

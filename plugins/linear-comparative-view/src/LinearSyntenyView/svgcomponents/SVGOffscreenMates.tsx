@@ -5,7 +5,7 @@ import {
   drawOffscreenMates,
   offscreenMateColors,
 } from '../../LinearSyntenyDisplay/drawOffscreenMates.ts'
-import { offscreenMateStrip } from '../../LinearSyntenyViewHelper/offscreenMateStrip.ts'
+import { offscreenMateStrips } from '../../LinearSyntenyViewHelper/offscreenMateStrip.ts'
 
 import type { OffscreenMateSource } from '../../LinearSyntenyViewHelper/offscreenMateStrip.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
@@ -35,21 +35,23 @@ export default function SVGOffscreenMates({
   opts?: PaintLayerOpts
 }) {
   const theme = useTheme()
-  const strip = offscreenMateStrip(level)
+  const strips = offscreenMateStrips(level)
   // nothing to mark, so no layer at all: the raster branch would otherwise put
   // a full-band transparent PNG in every level of every export
-  return strip ? (
+  return strips.length > 0 ? (
     <PaintLayer
       width={width}
       height={height}
       opts={opts}
       paint={ctx => {
-        drawOffscreenMates(ctx, {
-          ...strip,
-          width,
-          height,
-          ...offscreenMateColors(theme),
-        })
+        for (const strip of strips) {
+          drawOffscreenMates(ctx, {
+            ...strip,
+            width,
+            height,
+            ...offscreenMateColors(theme),
+          })
+        }
       }}
     />
   ) : null
