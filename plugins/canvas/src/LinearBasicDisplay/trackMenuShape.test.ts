@@ -238,6 +238,32 @@ describe('canvas track menu shape', () => {
       'Name + description — hidden while collapsed',
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
+    // The pin names the SETTING, not the row: PinAdornment writes it into
+    // "Make <label> the default for all tracks of this type" and into an
+    // aria-label, so a hint folded into the option before the pin is attached
+    // is read out as part of the setting's name.
+    expect(inert.pin?.label).toBe('Name + description')
+  })
+
+  // The two label groups sit adjacent in one submenu under the same
+  // suppression — `rpcProps` forces `subfeatureLabels` to 'none' whenever the
+  // display mode is collapsed, exactly as it drops the base group's — so one of
+  // them saying so and the other not read as the two behaving differently.
+  it('says so for the subfeature label rung too', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setSubfeatureLabels('below')
+    find(subMenuOf(display.trackMenuItems(), 'Show...'), 'Below')
+
+    display.setDisplayMode('collapsed')
+    const inert = find(
+      subMenuOf(display.trackMenuItems(), 'Show...'),
+      'Below — hidden while collapsed',
+    )
+    expect(inert.type === 'radio' && inert.checked).toBe(true)
+    expect(inert.pin?.label).toBe('Below')
+    // 'Off' is already describing the absence, so it never carries the note
+    find(subMenuOf(display.trackMenuItems(), 'Show...'), 'Off')
   })
 })
 

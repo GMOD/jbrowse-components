@@ -42,19 +42,32 @@ const RECOVERY_PRIORITY = -100
 // track menu while its siblings stayed put — and every option in the group gets
 // a pin, the `promotedBase` one included.
 //
-// `pin` is required rather than optional. Both promotable radio groups in this
-// plugin pass one, and an optional pin on a builder with a single caller is a
-// row that can silently go missing (`promotableRadioItems`' own note).
-function inlineRadioGroup<T extends string>(
+// `pin` is required rather than optional. Every promotable radio group in this
+// plugin passes one, and an optional pin on a builder is a row that can silently
+// go missing (`promotableRadioItems`' own note).
+//
+// `hint` names a row whose setting is real but currently inert (collapsed mode
+// paints no labels of any kind). It is applied to the ROW's label after the pin
+// is attached, never to the option handed to `promotableRadioItems`: that
+// builder copies the option's label into `pin.label`, which PinAdornment writes
+// into a tooltip and an aria-label naming the SETTING — so a hint folded in up
+// front reads out as "Make Name only — hidden while collapsed the default for
+// all tracks of this type".
+export function inlineRadioGroup<T extends string>(
   header: string,
   current: T,
   options: readonly { value: T; label: string }[],
   onSelect: (value: T) => void,
   pin: (value: T) => Pin,
+  hint?: (value: T) => string | undefined,
 ): MenuItem[] {
   return [
     { type: 'subHeader' as const, label: header },
-    ...promotableRadioItems(options, current, onSelect, pin),
+    ...promotableRadioItems(options, current, onSelect, pin).map((item, i) =>
+      hint
+        ? { ...item, label: withHint(item.label, hint(options[i]!.value)) }
+        : item,
+    ),
   ]
 }
 
@@ -147,19 +160,10 @@ export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
 // The radio groups of the "Show..." submenu, each a subHeader + inline radios.
 // Rendered after the checkboxes; subclasses override to append.
 export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
-  const inert = self.displayMode === 'collapsed'
   return inlineRadioGroup(
     'Labels',
     self.showLabelsMode,
-    SHOW_LABELS_OPTIONS.map(({ value, label }) => ({
-      value,
-      label: withHint(
-        label,
-        inert && value === self.showLabelsMode && value !== 'none'
-          ? 'hidden while collapsed'
-          : undefined,
-      ),
-    })),
+    SHOW_LABELS_OPTIONS,
     mode => {
       self.setShowLabels(mode)
     },
@@ -167,7 +171,26 @@ export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
     // all their feature tracks, pinning `auto` back is the only per-value way to
     // undo it from its own row.
     mode => makePin(self, 'showLabels', mode),
+    collapsedLabelHint(self, self.showLabelsMode),
   )
+}
+
+// The "hidden while collapsed" note, on the selected row of a label group only:
+// collapsed mode paints no label of any kind, so the chosen rung sits there
+// describing text nothing is drawing. Shared by the two label groups (this one
+// and LinearBasicDisplay's "Subfeature labels"), which sit adjacent in the same
+// submenu under the same suppression — one of them saying so and the other not
+// read as the two behaving differently.
+//
+// 'none' never carries it: that row is already describing the absence.
+export function collapsedLabelHint<T extends string>(
+  self: { displayMode: DisplayMode },
+  current: T,
+) {
+  return (value: T) =>
+    self.displayMode === 'collapsed' && value === current && value !== 'none'
+      ? 'hidden while collapsed'
+      : undefined
 }
 
 // The "Color by..." radio choices (solid/strand/attribute), shared so subclasses

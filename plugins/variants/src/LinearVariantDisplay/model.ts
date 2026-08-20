@@ -149,7 +149,8 @@ export default function stateModelFactory(
             }
           : undefined
       },
-
+    }))
+    .views(self => ({
       /**
        * #method
        */
@@ -158,6 +159,14 @@ export default function stateModelFactory(
       // one-click "consequence impact" (SnpEff ANN / VEP CSQ) and "SV type"
       // presets. The inherited colorMenuItems() wraps these in the same "Color
       // by..." entry.
+      //
+      // Its own block, after the two getters it reads, so it reaches them
+      // through `self`. This is a documented extension seam, and a subclass
+      // super-captures a seam by destructuring it — at which point `this` is
+      // undefined and the method throws. Same rule and same reason as
+      // `isGeneLike`'s (pluginFacingDisplayApi.test.ts) and the base's
+      // morphOffsetFor block; a getter is safe with `this` because it is always
+      // read through a receiver, a method is not.
       colorBySubMenuItems() {
         return [
           {
@@ -174,7 +183,7 @@ export default function stateModelFactory(
           {
             label: 'Consequence impact',
             type: 'radio' as const,
-            checked: this.colorsByConsequenceImpact,
+            checked: self.colorsByConsequenceImpact,
             onClick: () => {
               self.setColorLegendDismissed(false)
               self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
@@ -183,7 +192,7 @@ export default function stateModelFactory(
           {
             label: 'SV type',
             type: 'radio' as const,
-            checked: this.colorsBySvType,
+            checked: self.colorsBySvType,
             onClick: () => {
               self.setColorLegendDismissed(false)
               self.setFeatureColor(SV_TYPE_COLOR_JEXL)
@@ -194,8 +203,8 @@ export default function stateModelFactory(
             type: 'radio' as const,
             checked:
               self.colorByMode === 'attribute' &&
-              !this.colorsByConsequenceImpact &&
-              !this.colorsBySvType,
+              !self.colorsByConsequenceImpact &&
+              !self.colorsBySvType,
             keepMenuOpen: false,
             onClick: () => {
               self.openColorByAttributeDialog()

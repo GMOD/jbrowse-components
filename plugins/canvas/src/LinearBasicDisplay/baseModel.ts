@@ -3007,8 +3007,10 @@ export default function baseStateModelFactory(
         /**
          * #method
          * Color-related track menu entries: a single "Color by..." entry whose
-         * "Solid color..." choice opens the solid+UTR color picker. Subclasses
-         * (e.g. variants) override to drop the gene-oriented UTR picker.
+         * "Solid color..." choice opens the solid+UTR color picker. A subclass
+         * changing the choices overrides `colorBySubMenuItems` (variants swaps
+         * in its consequence-impact and SV-type presets); this wrapper reads
+         * that back off `self`, so it is not the seam to override.
          */
         colorMenuItems(): MenuItem[] {
           return colorMenuItems(self)

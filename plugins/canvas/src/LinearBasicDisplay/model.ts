@@ -6,7 +6,6 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import {
-  promotableRadioItems,
   promotableToggleItem,
   radioItems,
   toggleItem,
@@ -30,6 +29,7 @@ import {
 } from './collapseIntronsMenu.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 import { geneRowCostPx, isoformRowBudget } from './isoformBudget.ts'
+import { collapsedLabelHint, inlineRadioGroup } from './trackMenus.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
@@ -416,18 +416,22 @@ export default function stateModelFactory(
           ]
         },
         // Append the promotable "Subfeature labels" radio group after the base
-        // "Labels" group; each option carries a "make default" pin.
+        // "Labels" group, through the same builder so the two label groups keep
+        // the same shape, the same pin-per-option rule and the same
+        // collapsed-mode note — `rpcProps` forces this slot to 'none' whenever
+        // the display mode is collapsed, exactly as it drops the base group's.
         showSubmenuRadioGroups() {
           return [
             ...superShowSubmenuRadioGroups(),
-            { type: 'subHeader' as const, label: 'Subfeature labels' },
-            ...promotableRadioItems(
-              SUBFEATURE_LABEL_OPTIONS,
+            ...inlineRadioGroup(
+              'Subfeature labels',
               self.subfeatureLabels,
+              SUBFEATURE_LABEL_OPTIONS,
               mode => {
                 self.setSubfeatureLabels(mode)
               },
               mode => makePin(self, 'subfeatureLabels', mode),
+              collapsedLabelHint(self, self.subfeatureLabels),
             ),
           ]
         },
