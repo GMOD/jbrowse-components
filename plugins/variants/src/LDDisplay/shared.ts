@@ -18,6 +18,7 @@ import {
   TrackHeightMixin,
   computeTriangleYScalar,
 } from '@jbrowse/plugin-linear-genome-view'
+import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 
 import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
@@ -669,7 +670,7 @@ export default function sharedModelFactory(
        * input independent of the RPC result.)
        */
       startRenderingBackend(backend: LDRenderingBackend) {
-        self.attachRenderingBackend<LDRenderingBackend>(backend, {
+        installGlobalLifecycle<LDRenderingBackend>(self, backend, {
           upload: b => {
             const d = self.rpcData
             if (d) {

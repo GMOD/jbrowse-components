@@ -15,7 +15,7 @@ import {
   computeTriangleYScalar,
   installGlobalFetchAutorun,
 } from '@jbrowse/plugin-linear-genome-view'
-import { createGlobalUploadSync } from '@jbrowse/render-core/globalUploadSync'
+import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 import { autorun } from 'mobx'
 
 import { calcViewBlocks } from '../regionOffsets.ts'
@@ -465,20 +465,20 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * `attachRenderingBackend`.
        */
       startRenderingBackend(backend: HicRenderingBackend) {
-        // The matrix and the palette have independent inputs (RPC result vs
-        // config slot) but share the one mixin-owned upload autorun, so without
-        // per-slot diffing a palette flip re-pushed the whole contact matrix and
-        // a new fetch rebuilt the ramp texture. Both inputs stay read
-        // unconditionally so neither drops out of the autorun's dependency set.
-        const syncUpload = createGlobalUploadSync<HicRenderingBackend>()
-        self.attachRenderingBackend<HicRenderingBackend>(backend, {
-          upload: b => {
-            syncUpload(b, 'data', self.rpcData, (bb, data) => {
+        installGlobalLifecycle<HicRenderingBackend>(self, backend, {
+          // The matrix and the palette have independent inputs (RPC result vs
+          // config slot) but share the one mixin-owned upload autorun, so
+          // without per-slot diffing a palette flip re-pushed the whole contact
+          // matrix and a new fetch rebuilt the ramp texture. Both inputs stay
+          // read unconditionally so neither drops out of the autorun's
+          // dependency set.
+          upload: (b, slot) => {
+            slot('data', self.rpcData, (bb, data) => {
               if (data) {
                 bb.uploadData(data)
               }
             })
-            syncUpload(b, 'colorRamp', self.colorScheme, (bb, colorScheme) => {
+            slot('colorRamp', self.colorScheme, (bb, colorScheme) => {
               bb.uploadColorRamp(generateColorRamp(colorScheme))
             })
           },

@@ -83,11 +83,12 @@ is the result rather than a side effect.
 
 ## Where this sits
 
-Last of three render-path simplifications, and incrementally — one alignments
+Last of the render-path simplifications, and incrementally — one alignments
 feature at a time behind the parity suite, because it is the one that touches 46
-files. Take [one-upload-model-not-four](one-upload-model-not-four.md) first and
-[absolute-coordinates-for-hic-and-ld](absolute-coordinates-for-hic-and-ld.md)
-second.
+files. The upload-model collapse ahead of it is done (ADR-078, ADR-079) bar
+[retain-region-is-a-fifth-upload-mechanism](retain-region-is-a-fifth-upload-mechanism.md);
+take [absolute-coordinates-for-hic-and-ld](absolute-coordinates-for-hic-and-ld.md)
+before this one.
 
 It also upgrades the claim the architecture can make, from "we single-source
 shaders across two GPU APIs" — a toolchain claim — to "a display declares its

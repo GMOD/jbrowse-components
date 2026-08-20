@@ -1,6 +1,24 @@
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+/**
+ * The slice of a display an installer needs. Every display that paints composes
+ * {@link RenderLifecycleMixin} (directly or through `MultiRegionDisplayMixin` /
+ * `GlobalDataDisplayMixin`), so this is satisfied by construction; it exists so
+ * the installers can take `self` without importing a plugin's model type.
+ */
+export interface LifecycleHost extends IStateTreeNode {
+  attachRenderingBackend: <B>(
+    b: B,
+    setup: () => RenderingBackendCallbacks<B>,
+  ) => void
+  renderNow: () => void
+  setRenderError: (error: unknown) => void
+  currentRenderingBackend: unknown
+}
+
 export interface RenderingBackendCallbacks<B> {
   upload: (backend: B) => void
   /**
@@ -19,8 +37,14 @@ export interface RenderingBackendCallbacks<B> {
  *
  * Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
  * `GlobalDataDisplayMixin`) and call
- * `self.attachRenderingBackend(backend, { upload, render })` from their own
- * `startRenderingBackend(backend)` action. The mixin owns:
+ * `self.attachRenderingBackend(backend, () => ({ upload, render }))` from their
+ * own `startRenderingBackend(backend)` action. **The second argument is a thunk
+ * because it runs exactly once**, on the first attach: `startRenderingBackend`
+ * fires again on every context-loss recovery, and the autoruns keep the
+ * callbacks they were given first. Anything the callbacks close over — an
+ * upload sync's memo of what it last sent — is built inside it, so it lives as
+ * long as the callbacks that read it rather than being allocated per recovery
+ * and discarded. The mixin owns:
  *
  *  - `canvasDrawn` — observable flag read by test-selector `data-testid` attributes to detect first paint.
  *  - `currentRenderingBackend` — the backend reference, updated on context-loss
@@ -228,16 +252,21 @@ export function RenderLifecycleMixin() {
       /**
        * #action
        * attach a GPU/Canvas2D backend and install the upload + render autorun
-       * pair (idempotent — re-calling only swaps the backend)
+       * pair. Idempotent: re-calling swaps the backend and does not run `setup`
+       * again, so the callbacks and everything they close over are the first
+       * call's.
        */
-      // `cbs` is captured permanently by the autoruns on first call.
-      // Re-calling with a new backend (context-loss recovery) updates
-      // `currentRenderingBackend` only — `cbs` from the first call stay in effect.
-      attachRenderingBackend<B>(backend: B, cbs: RenderingBackendCallbacks<B>) {
+      attachRenderingBackend<B>(
+        backend: B,
+        setup: () => RenderingBackendCallbacks<B>,
+      ) {
         self.currentRenderingBackend = backend
         if (self.autorunsInstalled) {
           return
         }
+        // Before the flag, so a throw in `setup` leaves the display
+        // un-installed and the next backend can try again.
+        const cbs = setup()
         self.autorunsInstalled = true
         addDisposer(
           self,

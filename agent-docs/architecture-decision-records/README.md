@@ -88,4 +88,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [076](adr-076-a-shared-canvas-answers-readiness-twice.md) | Accepted | The comparative views answer readiness twice — a per-display phase for "still working" and the surface `settled` gate for "finished content" — because an error is terminal to one and not the other |
 | [077](adr-077-format-guessing-is-a-table-plus-the-adapter-registry.md) | Accepted | One format table both the app and the CLI read, and the adapter registry — not a per-plugin registration — decides whether a build can open a format |
 | [078](adr-078-one-upload-autorun-and-a-diff.md) | Accepted | Per-region streamed upload is one autorun over the map plus a reference diff, not an autorun per key |
+| [079](adr-079-a-display-installs-a-lifecycle.md) | Accepted | A display installs one of three rendering lifecycles; nothing outside render-core calls attachRenderingBackend, and the setup thunk is what makes the once-only semantics structural |
 <!-- END GENERATED ADR INDEX -->

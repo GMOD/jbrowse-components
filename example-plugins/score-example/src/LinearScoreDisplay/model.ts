@@ -110,7 +110,8 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       // the only part of the model that knows a backend exists, and it is
       // identical whether that backend is the GPU or the Canvas2D one.
       startRenderingBackend(backend: ScoreRenderingBackend) {
-        installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+        installPerRegionLifecycle(self, backend, {
+          data: () => self.rpcDataMap,
           encode: data => data,
           render: (b, regions) => {
             if (regions.size === 0) {

@@ -2,8 +2,7 @@ import { computed, observable } from 'mobx'
 
 import { createRegionUploadSync } from './regionUploadSync.ts'
 
-import type { RenderingBackendCallbacks } from './RenderLifecycleMixin.ts'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { LifecycleHost } from './RenderLifecycleMixin.ts'
 import type { ObservableMap } from 'mobx'
 
 /**
@@ -44,13 +43,6 @@ export function regionDataMap<T>(): ObservableMap<number, T> {
   return observable.map<number, T>(undefined, { deep: false })
 }
 
-export interface LifecycleHost extends IStateTreeNode {
-  attachRenderingBackend: <B>(b: B, cbs: RenderingBackendCallbacks<B>) => void
-  renderNow: () => void
-  setRenderError: (error: unknown) => void
-  currentRenderingBackend: unknown
-}
-
 interface UploadableRenderingBackend<Encoded> {
   uploadRegion(displayedRegionIndex: number, encoded: Encoded): void
   pruneRegions(active: Iterable<number>): void
@@ -70,6 +62,14 @@ export type PerRegionRender<B, Encoded> = (
 ) => boolean
 
 export interface PerRegionUpload<Data, Props, Encoded, B> {
+  /**
+   * The display's per-region payloads, keyed by `displayedRegionIndex` — an
+   * `rpcDataMap` built with {@link regionDataMap}, or the whole-map computed a
+   * cross-region layout produces (canvas's `renderDataMap`, the variant
+   * display's `perRegionCellMap`). Read inside the upload autorun, so a
+   * recompute re-runs the diff.
+   */
+  data: () => ReadonlyMap<number, Data>
   /**
    * Everything `encode` needs beyond the region's own data, as one value.
    * Omit it for an encode that needs nothing (an identity encode).
@@ -117,14 +117,13 @@ export interface PerRegionUpload<Data, Props, Encoded, B> {
  * It receives the encoded map so a stateless renderer (wiggle) can draw from it
  * without re-encoding; renderers that read `rpcDataMap` directly ignore it.
  *
- * **Only the first call's callbacks ever run.** Callers wire this from
- * `startRenderingBackend`, which fires again on every context-loss recovery,
- * and `attachRenderingBackend` keeps the callbacks it was given first. Recovery
- * still works: the upload autorun reads `self.currentRenderingBackend`, and the
- * diff re-uploads every region into a backend it has not seen — without
- * re-encoding, since the payloads are still good and only the GPU buffers are
- * gone. What does not work is *changing* an `encode` or a `render` by calling
- * again.
+ * **Calling again only swaps the backend.** Displays wire this from
+ * `startRenderingBackend`, which fires on every context-loss recovery, and the
+ * diff and the encode cache live in the setup thunk so they survive one rather
+ * than being rebuilt and dropped. Recovery re-uploads every region into a
+ * backend the diff has not seen, without re-encoding — the payloads are still
+ * good and only the GPU buffers are gone. What a second call cannot do is
+ * *change* an `encode` or a `render`.
  *
  * @see installPerRegionLifecycle.test.ts — pins the upload and encode counts
  * this helper exists for.
@@ -138,44 +137,46 @@ export function installPerRegionLifecycle<
   B extends UploadableRenderingBackend<Encoded>,
 >(
   self: LifecycleHost,
-  rpcDataMap: ObservableMap<number, Data>,
   backend: B,
-  { inputs, encode, render }: PerRegionUpload<Data, Props, Encoded, B>,
+  { data, inputs, encode, render }: PerRegionUpload<Data, Props, Encoded, B>,
 ) {
-  const encoded = new Map<number, Encoded>()
-  const encodedFrom = new Map<number, Data>()
-  const syncRegions = createRegionUploadSync<Encoded, B>()
-  // A computed, not a plain call: `inputs` is free to build a fresh object
-  // (`gpuProps()` does), and the identity of that object is what re-encodes
-  // every region. Memoized, it changes when what `inputs` reads changes, which
-  // is the invalidation the display means.
-  const props = inputs && computed(inputs)
-  let lastProps: Props | undefined
+  self.attachRenderingBackend<B>(backend, () => {
+    const encoded = new Map<number, Encoded>()
+    const encodedFrom = new Map<number, Data>()
+    const syncRegions = createRegionUploadSync<Encoded, B>()
+    // A computed, not a plain call: `inputs` is free to build a fresh object
+    // (`gpuProps()` does), and the identity of that object is what re-encodes
+    // every region. Memoized, it changes when what `inputs` reads changes,
+    // which is the invalidation the display means.
+    const props = inputs && computed(inputs)
+    let lastProps: Props | undefined
 
-  self.attachRenderingBackend<B>(backend, {
-    upload: b => {
-      const p = props ? props.get() : (undefined as Props)
-      if (p !== lastProps) {
-        lastProps = p
-        encodedFrom.clear()
-      }
-      for (const [key, data] of rpcDataMap) {
-        if (encodedFrom.get(key) !== data) {
-          const payload = encode(data, p)
-          if (payload !== undefined) {
-            encoded.set(key, payload)
-            encodedFrom.set(key, data)
+    return {
+      upload: b => {
+        const regions = data()
+        const p = props ? props.get() : (undefined as Props)
+        if (p !== lastProps) {
+          lastProps = p
+          encodedFrom.clear()
+        }
+        for (const [key, regionData] of regions) {
+          if (encodedFrom.get(key) !== regionData) {
+            const payload = encode(regionData, p)
+            if (payload !== undefined) {
+              encoded.set(key, payload)
+              encodedFrom.set(key, regionData)
+            }
           }
         }
-      }
-      for (const key of encoded.keys()) {
-        if (!rpcDataMap.has(key)) {
-          encoded.delete(key)
-          encodedFrom.delete(key)
+        for (const key of encoded.keys()) {
+          if (!regions.has(key)) {
+            encoded.delete(key)
+            encodedFrom.delete(key)
+          }
         }
-      }
-      syncRegions(b, encoded)
-    },
-    render: b => render(b, encoded),
+        syncRegions(b, encoded)
+      },
+      render: b => render(b, encoded),
+    }
   })
 }

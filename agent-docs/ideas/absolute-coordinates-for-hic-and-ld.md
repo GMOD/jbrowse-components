@@ -63,9 +63,11 @@ also unverified today, so do not scope the work before answering it.
 
 ## Where this sits
 
-Second of three render-path simplifications: two contained display rewrites that
-delete a mixin, a transform module and a staleness axis. Take
-[one-upload-model-not-four](one-upload-model-not-four.md) first, because it is
-smaller and its oracle is already written;
+Now the first of two remaining render-path simplifications: two contained
+display rewrites that delete a mixin, a transform module and a staleness axis.
+The upload-model collapse that used to come first is done (ADR-078, ADR-079)
+bar one piece,
+[retain-region-is-a-fifth-upload-mechanism](retain-region-is-a-fifth-upload-mechanism.md),
+which is smaller than this and answerable by reading;
 [one-mark-declaration-per-feature](one-mark-declaration-per-feature.md) last,
 because it touches 46 files.

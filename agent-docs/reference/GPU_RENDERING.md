@@ -685,12 +685,20 @@ shape, not the one your neighbour copied. **Every one of these contracts extends
 extending `GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` — see
 "Every backend extends a base" below for what happened to the three that didn't.
 
-| Pattern | Contract | Upload methods | Render | Use when | Examples |
-|---|---|---|---|---|---|
-| **Per-region streamed** | `PerRegionRenderingBackend` | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, regions, state)` | each region's data is independent, reactive per-region updates | canvas, wiggle, multi-wiggle, MAF, manhattan, multi-variant |
-| **Whole-map synced** | (its own; one consumer) | `sync(sources)` | `renderBlocks(blocks, state)` | per-region streams must rebuild coherently — main-thread cross-region Y layout | alignments, and only alignments |
-| **Monolithic** | `GlobalRenderingBackend` | `uploadX(data)` | `render(data, state)` (no blocks, no keys) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD (both `GlobalDataDisplayMixin`); multi-variant matrix (monolithic backend but `MultiRegionDisplayMixin` fetch) |
-| **Keyed shared-canvas** | `KeyedRenderingBackend` | `uploadGeometry(key, data)` + `deleteGeometry(key)` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | dotplot (key per display), multi-LGV synteny (key per level) |
+**The installer column is the whole wiring.** A display calls one of these three
+from its `startRenderingBackend` and nothing else; `attachRenderingBackend` is
+render-core's own and a lint rule says so ([ADR-079](../architecture-decision-records/adr-079-a-display-installs-a-lifecycle.md)).
+
+| Pattern | Installer | Contract | Upload methods | Render | Use when | Examples |
+|---|---|---|---|---|---|---|
+| **Per-region streamed** | `installPerRegionLifecycle` | `PerRegionRenderingBackend` | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, regions, state)` | each region's data is independent, reactive per-region updates | canvas, wiggle, multi-wiggle, MAF, manhattan, multi-variant |
+| **Whole-map synced** | `installGlobalLifecycle` | (its own; one consumer) | `sync(sources)` | `renderBlocks(blocks, state)` | per-region streams must rebuild coherently — main-thread cross-region Y layout | alignments, and only alignments |
+| **Monolithic** | `installGlobalLifecycle` | `GlobalRenderingBackend` | `uploadX(data)` | `render(data, state)` (no blocks, no keys) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD (both `GlobalDataDisplayMixin`); multi-variant matrix (monolithic backend but `MultiRegionDisplayMixin` fetch) |
+| **Keyed shared-canvas** | `installKeyedLifecycle` | `KeyedRenderingBackend` | `uploadGeometry(key, data)` + `deleteGeometry(key)` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | dotplot (key per display), multi-LGV synteny (key per level) |
+
+Four contracts and three installers, because the whole-map synced payload is one
+global slot: what separates it from monolithic is the backend's shape, not how
+the upload is driven.
 
 The last row keeps getting misfiled, and this table had it wrong in both
 directions: dotplot was listed as Monolithic — whose base class it does not
@@ -821,15 +829,14 @@ regions' features. For alignments that placement is settled by
 which also says what to attack instead when the main-thread pack shows up in a
 trace.
 
-The whole-map form still gets an incremental upload from
-`createRegionUploadSync` (`@jbrowse/render-core/regionUploadSync`): it diffs the
-computed map against the last upload **by reference**, so only regions whose data
-object actually changed re-upload, and it owns the prune plus the re-upload-all on
-backend swap (context-loss recovery hands over empty GPU buffers). Canvas and
-`LinearMultiSampleVariantDisplay` both use it — don't hand-roll the loop with a
-local `active[]`, which silently skips those two behaviors.
+The whole-map form takes the **same installer** as the streamed one, with the
+identity encode: `installPerRegionLifecycle(self, backend, { data: () =>
+self.renderDataMap, encode: data => data, render })`. It diffs the computed map
+against the last upload by reference, so only regions whose data object actually
+changed re-upload, and it owns the prune plus the re-upload-all on backend swap.
+Canvas and `LinearMultiSampleVariantDisplay` are the two.
 
-#### Monolithic: independently-keyed upload slots (`createGlobalUploadSync`)
+#### Monolithic and whole-map synced: named upload slots (`installGlobalLifecycle`)
 
 A monolithic display has no region map to diff, but it can still have **more than
 one upload slot** — and the mixin gives it exactly one upload autorun, so every
@@ -840,22 +847,18 @@ independent — HiC's palette is a config slot while its contact matrix comes fr
 the RPC, so a palette flip re-uploaded the whole matrix and every fetch rebuilt
 the ramp texture.
 
-`createGlobalUploadSync` (`@jbrowse/render-core/globalUploadSync`) is the
-monolithic counterpart to `createRegionUploadSync`: name each slot, and it skips
-the upload while that slot's input is reference-identical to its last, dropping
-every memo on a backend swap for the same context-loss reason.
+The installer hands `upload` a `slot` function for exactly that: name each slot,
+and it skips the upload while that slot's input is reference-identical to its
+last, dropping every memo on a backend swap for the same context-loss reason.
 
 ```ts
 startRenderingBackend(backend: HicRenderingBackend) {
-  // outside attachRenderingBackend — the mixin captures the callbacks from the
-  // first call only, so the closure has to outlive them
-  const syncUpload = createGlobalUploadSync<HicRenderingBackend>()
-  self.attachRenderingBackend(backend, {
-    upload: b => {
-      syncUpload(b, 'data', self.rpcData, (bb, data) => {
+  installGlobalLifecycle<HicRenderingBackend>(self, backend, {
+    upload: (b, slot) => {
+      slot('data', self.rpcData, (bb, data) => {
         if (data) { bb.uploadData(data) }
       })
-      syncUpload(b, 'colorRamp', self.colorScheme, (bb, scheme) => {
+      slot('colorRamp', self.colorScheme, (bb, scheme) => {
         bb.uploadColorRamp(generateColorRamp(scheme))
       })
     },
@@ -867,7 +870,9 @@ startRenderingBackend(backend: HicRenderingBackend) {
 Read every slot's input **unconditionally**, as above — a read moved behind an
 `if` drops out of the autorun's dependency set on the runs that skip it, the same
 hazard `installGlobalFetchAutorun` documents for its trigger list. Let the upload
-callback handle the empty case. A display with one slot (LD) doesn't need this.
+callback handle the empty case. A display whose uploads share one input (LD, the
+variant matrix, alignments' `sync`) ignores the `slot` argument: the autorun's
+whole dependency set is that field, so it cannot re-fire spuriously.
 
 `LinearBasicDisplay` recovers O(N) anyway via `createIncrementalLayout`
 (`plugins/canvas/src/LinearBasicDisplay/layout.ts`), which memoizes the pure

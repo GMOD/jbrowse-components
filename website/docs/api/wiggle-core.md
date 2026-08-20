@@ -136,7 +136,7 @@ can represent 0 and that is where a bar should sit from.
 
 ```js
 // type signature
-(scaleType: string) => 1 | 0
+(scaleType: string) => 0 | 1
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)

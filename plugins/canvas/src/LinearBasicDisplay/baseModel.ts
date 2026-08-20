@@ -38,8 +38,10 @@ import {
   installGrowExitBake,
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
-import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
-import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
+import {
+  installPerRegionLifecycle,
+  regionDataMap,
+} from '@jbrowse/render-core/installPerRegionLifecycle'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { toJS, untracked } from 'mobx'
@@ -1917,23 +1919,16 @@ export default function baseStateModelFactory(
          * #action
          */
         startRenderingBackend(backend: CanvasFeatureRenderingBackend) {
-          // Upload only regions whose laid-out data reference changed, so a
-          // new chromosome streaming in doesn't re-upload the ones already on
-          // the GPU. `laidOutDataMap` keeps stable references for unchanged
+          // Upload only regions whose laid-out data reference changed, so a new
+          // chromosome streaming in doesn't re-upload the ones already on the
+          // GPU. `laidOutDataMap` keeps stable references for unchanged
           // ref-groups (see createIncrementalLayout), making the diff
-          // meaningful; createRegionUploadSync owns the pruning + the
-          // context-loss reset.
-          const syncRegions = createRegionUploadSync<
-            FeatureDataResult,
-            CanvasFeatureRenderingBackend
-          >()
-          self.attachRenderingBackend<CanvasFeatureRenderingBackend>(backend, {
-            upload: b => {
-              // renderDataMap === laidOutDataMap when idle; during a Y morph it
-              // yields fresh per-frame region objects, so syncRegions re-uploads
-              // the interpolated rows each frame (and once more on settle).
-              syncRegions(b, self.renderDataMap)
-            },
+          // meaningful. `renderDataMap === laidOutDataMap` when idle; during a Y
+          // morph it yields fresh per-frame region objects, so the interpolated
+          // rows re-upload each frame (and once more on settle).
+          installPerRegionLifecycle(self, backend, {
+            data: () => self.renderDataMap,
+            encode: data => data,
             render: b =>
               b.renderBlocks(
                 self.renderBlocks,

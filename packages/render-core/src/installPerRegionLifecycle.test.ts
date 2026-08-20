@@ -47,7 +47,8 @@ test('N sequential region arrivals trigger N uploads, not N²', () => {
   const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: value => ({ value, marker: 0 }),
     render: () => true,
   })
@@ -70,7 +71,8 @@ test('N sequential region arrivals trigger N encodes, not N²', () => {
   const data = observable.map<number, number>(undefined, { deep: false })
   let encodes = 0
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: value => {
       encodes++
       return { value, marker: 0 }
@@ -93,7 +95,8 @@ test('a region arrival paints once when render does not read the data map', () =
   const data = observable.map<number, number>(undefined, { deep: false })
   let renders = 0
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: value => ({ value, marker: 0 }),
     render: () => {
       renders++
@@ -126,7 +129,8 @@ test('a region arrival paints once even when the render callback reads the data 
   const data = observable.map<number, number>(undefined, { deep: false })
   let renders = 0
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: value => ({ value, marker: 0 }),
     render: () => {
       renders++
@@ -152,7 +156,8 @@ test('a declared-input change re-encodes and re-uploads every region', () => {
   const data = observable.map<number, string>(undefined, { deep: false })
   const markerBox = observable.box(0)
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     inputs: () => ({ marker: markerBox.get() }),
     encode: (_data, props) => ({ value: 0, marker: props.marker }),
     render: () => true,
@@ -193,7 +198,8 @@ test('an observable read inside encode re-runs the diff and encodes nothing', ()
   const wideBox = observable.box(0)
   let encodes = 0
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: value => {
       encodes++
       return { value, marker: wideBox.get() }
@@ -220,7 +226,8 @@ test('only the changed key re-uploads when its value mutates', () => {
   const { backend, uploads } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: value => ({ value, marker: 0 }),
     render: () => true,
   })
@@ -245,7 +252,8 @@ test('removing a key forgets it and prunes from the active set', () => {
   const { backend, uploads, prunes } = makeFakeRenderingBackend()
   const data = observable.map<number, number>(undefined, { deep: false })
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: value => ({ value, marker: 0 }),
     render: () => true,
   })
@@ -281,7 +289,8 @@ test('backend swap (context-loss recovery) re-uploads without re-encoding', () =
   const data = observable.map<number, number>(undefined, { deep: false })
   let encodes = 0
 
-  installPerRegionLifecycle(model, data, a.backend, {
+  installPerRegionLifecycle(model, a.backend, {
+    data: () => data,
     encode: value => {
       encodes++
       return { value, marker: 0 }
@@ -298,10 +307,10 @@ test('backend swap (context-loss recovery) re-uploads without re-encoding', () =
   expect(b.uploads).toHaveLength(0)
   expect(encodes).toBe(2)
 
-  model.attachRenderingBackend<FakeRenderingBackend>(b.backend, {
+  model.attachRenderingBackend<FakeRenderingBackend>(b.backend, () => ({
     upload: () => {},
     render: () => false,
-  })
+  }))
 
   // Only the GPU buffers were lost, so the payloads are re-uploaded as they
   // stand.
@@ -315,7 +324,8 @@ test('a throw in encode/upload routes to renderError instead of escaping', () =>
   const data = observable.map<number, number>(undefined, { deep: false })
 
   const err = new Error('bad region encode')
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: () => {
       throw err
     },
@@ -339,7 +349,8 @@ test('render callback receives the cached encoded map', () => {
   const data = observable.map<number, number>(undefined, { deep: false })
   let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: value => ({ value, marker: 0 }),
     render: (_b, encoded) => {
       lastEncoded = encoded
@@ -370,7 +381,8 @@ test('encode returning undefined leaves the cached encoded entry untouched', () 
   const ready = observable.box(true)
   let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     inputs: () => ready.get(),
     encode: (value, isReady) => (isReady ? { value, marker: 0 } : undefined),
     render: (_b, encoded) => {

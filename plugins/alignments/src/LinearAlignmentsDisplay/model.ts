@@ -36,6 +36,7 @@ import {
   callEachRegion,
   installGrowExitBake,
 } from '@jbrowse/plugin-linear-genome-view'
+import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   ScoreScaleMixin,
@@ -3501,7 +3502,7 @@ export default function stateModelFactory(
          * #action
          */
         startRenderingBackend(backend: AlignmentsRenderingBackend) {
-          self.attachRenderingBackend<AlignmentsRenderingBackend>(backend, {
+          installGlobalLifecycle<AlignmentsRenderingBackend>(self, backend, {
             upload: b => {
               b.sync({
                 sections: self.sourceSections,

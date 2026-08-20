@@ -1,4 +1,5 @@
-import { createKeyedUploadSync, sharedBackendKey } from './keyedUploadSync.ts'
+import { sharedBackendKey } from './installKeyedLifecycle.ts'
+import { createKeyedUploadSync } from './keyedUploadSync.ts'
 
 interface Data {
   v: number

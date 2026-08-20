@@ -20,7 +20,7 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
-import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
+import { installKeyedLifecycle } from '@jbrowse/render-core/installKeyedLifecycle'
 import {
   DiagonalizeProgressMixin,
   TrackColorsMixin,
@@ -1050,24 +1050,20 @@ export default function stateModelFactory(pm: PluginManager) {
       .actions(self => ({
         startRenderingBackend(backend: DotplotRenderingBackend) {
           // One display committing new geometry re-fires the shared upload
-          // autorun for every track on the canvas, so diff by reference: only
-          // the track that actually changed re-uploads, and a departed track's
-          // buffer is deleted individually (an active-set prune would wipe the
-          // siblings).
-          const syncUpload = createKeyedUploadSync<
-            DotplotGeometryData,
-            DotplotRenderingBackend
-          >()
-          self.attachRenderingBackend<DotplotRenderingBackend>(backend, {
-            upload: b => {
-              syncUpload(b, self.geometryByDisplayKey)
+          // autorun for every track on the canvas, so the installer diffs by
+          // reference: only the track that actually changed re-uploads.
+          installKeyedLifecycle<DotplotGeometryData, DotplotRenderingBackend>(
+            self,
+            backend,
+            {
+              entries: () => self.geometryByDisplayKey,
+              render: b => {
+                b.resize(self.viewWidth, self.viewHeight)
+                b.render(self.dotplotRenderState)
+                return true
+              },
             },
-            render: b => {
-              b.resize(self.viewWidth, self.viewHeight)
-              b.render(self.dotplotRenderState)
-              return true
-            },
-          })
+          )
         },
       }))
       .actions(self => ({

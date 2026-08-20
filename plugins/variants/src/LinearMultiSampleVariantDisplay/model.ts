@@ -9,7 +9,7 @@ import { getSession } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
-import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
+import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
@@ -25,10 +25,7 @@ import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
 
 import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
 import type { Placed } from '../shared/placeVariantRows.ts'
-import type {
-  VariantRenderingBackend,
-  VariantUploadData,
-} from './components/variantRenderingBackendTypes.ts'
+import type { VariantRenderingBackend } from './components/variantRenderingBackendTypes.ts'
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -377,19 +374,12 @@ export function stateModelFactory(
       }))
       .actions(self => ({
         startRenderingBackend(backend: VariantRenderingBackend) {
-          // Same whole-map reference diff canvas uses, called directly rather
-          // than through installPerRegionLifecycle: perRegionCellMap is one MobX
-          // computed and its entries are the upload payload, so there is no
-          // encode step to declare inputs for. The helper owns the prune and the
-          // context-loss reset.
-          const syncRegions = createRegionUploadSync<
-            VariantUploadData,
-            VariantRenderingBackend
-          >()
-          self.attachRenderingBackend<VariantRenderingBackend>(backend, {
-            upload: b => {
-              syncRegions(b, self.perRegionCellMap)
-            },
+          // `perRegionCellMap` is one MobX computed and its entries are the
+          // upload payload, so the encode is the identity and there is nothing
+          // to declare `inputs` for.
+          installPerRegionLifecycle(self, backend, {
+            data: () => self.perRegionCellMap,
+            encode: data => data,
             render: b =>
               b.renderBlocks(
                 self.renderBlocks,

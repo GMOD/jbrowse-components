@@ -420,7 +420,8 @@ here is the render wiring:
 // the only part of the model that knows a backend exists, and it is
 // identical whether that backend is the GPU or the Canvas2D one.
 startRenderingBackend(backend: ScoreRenderingBackend) {
-  installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+  installPerRegionLifecycle(self, backend, {
+    data: () => self.rpcDataMap,
     encode: data => data,
     render: (b, regions) => {
       if (regions.size === 0) {
@@ -433,12 +434,15 @@ startRenderingBackend(backend: ScoreRenderingBackend) {
 },
 ```
 
-`installPerRegionLifecycle` wraps the lower-level
-[`attachRenderingBackend`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-core-contract)
-contract. It remembers what it last sent for each region and uploads only what
-changed, so N regions streaming in cost N uploads rather than N². Only displays
-that lay features into Y-rows _across_ regions (`LinearBasicDisplay`,
-alignments) need the whole-map `laidOutDataMap` form instead.
+`installPerRegionLifecycle` is one of three installers that wire the
+[render lifecycle](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-core-contract)
+for you — the other two are `installKeyedLifecycle`, for a canvas shared by
+sibling displays, and `installGlobalLifecycle`, for a display with one
+whole-view payload. This one remembers what it last sent for each region and
+uploads only what changed, so N regions streaming in cost N uploads rather than
+N². Only displays that lay features into Y-rows _across_ regions
+(`LinearBasicDisplay`, alignments) need the whole-map `laidOutDataMap` form
+instead.
 
 An encode that needs more than the region's own data — a color scheme, a scale —
 declares it as `inputs`, and a change there re-encodes every loaded region.

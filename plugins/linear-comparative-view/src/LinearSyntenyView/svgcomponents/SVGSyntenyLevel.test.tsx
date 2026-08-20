@@ -51,8 +51,8 @@ test('keeps the color-by legend outside the clip', () => {
 test('draws the off-screen mate stubs over the ribbons, inside the clip', () => {
   const { container } = renderLevel()
   const clipped = container.querySelector('g[clip-path]')
-  const ids = [...clipped!.querySelectorAll('[data-testid]')].map(e =>
-    e.getAttribute('data-testid'),
+  const ids = [...clipped!.querySelectorAll('[data-testid]')].map(
+    e => (e as HTMLElement).dataset.testid,
   )
   expect(ids).toEqual(['ribbons-a', 'ribbons-b', 'stubs'])
 })

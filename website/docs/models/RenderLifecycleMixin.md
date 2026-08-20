@@ -13,8 +13,14 @@ Owns the GPU draw lifecycle for any display that paints to a canvas.
 
 Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
 `GlobalDataDisplayMixin`) and call
-`self.attachRenderingBackend(backend, { upload, render })` from their own
-`startRenderingBackend(backend)` action. The mixin owns:
+`self.attachRenderingBackend(backend, () => ({ upload, render }))` from their
+own `startRenderingBackend(backend)` action. **The second argument is a thunk
+because it runs exactly once**, on the first attach: `startRenderingBackend`
+fires again on every context-loss recovery, and the autoruns keep the callbacks
+they were given first. Anything the callbacks close over — an upload sync's memo
+of what it last sent — is built inside it, so it lives as long as the callbacks
+that read it rather than being allocated per recovery and discarded. The mixin
+owns:
 
 - `canvasDrawn` — observable flag read by test-selector `data-testid` attributes
   to detect first paint.
@@ -64,4 +70,4 @@ yet computed or no regions loaded).
 | <span id="action-stoprenderingbackend">**stopRenderingBackend**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-rendernow">**renderNow**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setrendererror">**setRenderError**</span><br><code>(error: unknown) =&gt; void</code> | set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry. |
-| <span id="action-attachrenderingbackend">**attachRenderingBackend**</span><br><code>&lt;B&gt;(backend: B, cbs: RenderingBackendCallbacks&lt;B&gt;) =&gt; void</code> | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend) |
+| <span id="action-attachrenderingbackend">**attachRenderingBackend**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>&lt;B&gt;(backend: B, setup: () =&gt; RenderingBackendCallbacks&lt;B&gt;) =&gt; v…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>&lt;B&gt;(backend: B, setup: () =&gt; RenderingBackendCallbacks&lt;B&gt;) =&gt; void</code></pre></dialog></span> | attach a GPU/Canvas2D backend and install the upload + render autorun pair. Idempotent: re-calling swaps the backend and does not run `setup` again, so the callbacks and everything they close over are the first call's. |

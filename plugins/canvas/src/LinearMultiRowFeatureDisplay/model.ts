@@ -1089,7 +1089,8 @@ export default function stateModelFactory(
        * #action
        */
       startRenderingBackend(backend: MultiRowRenderingBackend) {
-        installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+        installPerRegionLifecycle(self, backend, {
+          data: () => self.rpcDataMap,
           // `featurePaintInputs`, never `renderState`: the instance buffer holds
           // {startBp,endBp,rowIndex,color} and no geometry — the row height and
           // canvas box reach the shader as uniforms, and both move on every

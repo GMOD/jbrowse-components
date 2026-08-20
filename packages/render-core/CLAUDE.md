@@ -4,8 +4,9 @@ The HAL, the draw-lifecycle mixin, backend base classes, clip/canvas geometry,
 React backend hooks.
 
 `agent-docs/ARCHITECTURE.md` ("What not to do") and `reference/GPU_RENDERING.md`
-(lifecycle, the four upload patterns, backend parity, HAL, shaders) own the
-rules those two state; don't restate them. What follows is this package's own.
+(lifecycle, the four upload patterns and the three installers that drive them,
+backend parity, HAL, shaders) own the rules those two state; don't restate them.
+What follows is this package's own.
 
 **@experimental** — third-party plugins should pin an exact version.
 
@@ -45,6 +46,19 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
 
 ## Upload
 
+- **A display installs a lifecycle; it never calls `attachRenderingBackend`.**
+  Three installers are the whole taxonomy — `installPerRegionLifecycle` (a keyed
+  map of per-region payloads, streamed or from a whole-map computed),
+  `installKeyedLifecycle` (one canvas shared by sibling displays) and
+  `installGlobalLifecycle` (one whole-view payload, with named slots when its
+  uploads have independent inputs). A display fitting none of them wants a
+  fourth installer here, not a hand-rolled attach. `noHandRolledAttach` in
+  `eslint.config.mjs` is the check; ADR-079 is the why.
+- **Whatever an installer's callbacks close over goes inside the setup thunk**,
+  which `attachRenderingBackend` runs once. A second call swaps the backend and
+  keeps the first call's callbacks, so state allocated outside it is rebuilt and
+  dropped on every context-loss recovery — silently, because the original copy
+  is still doing the work.
 - **`createInstanceCache` for a buffer reused across recolors.** Declare its
   options beside the `interleave` whose lanes they name, not in the renderer —
   the one way this breaks is a patch landing in a different lane than the pack.

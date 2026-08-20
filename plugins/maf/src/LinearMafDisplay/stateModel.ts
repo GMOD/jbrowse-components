@@ -2194,7 +2194,8 @@ export default function stateModelFactory(
           // instance buffer on the main thread from raw region data + gpuProps,
           // so theme / showAllLetters / mismatchRendering changes re-encode
           // without an RPC roundtrip.
-          installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+          installPerRegionLifecycle(self, backend, {
+            data: () => self.rpcDataMap,
             // `basesRenderingActive` belongs in here with gpuProps, not read
             // inside the encode: flipping modes has to re-encode every region,
             // and only a declared input does that now.

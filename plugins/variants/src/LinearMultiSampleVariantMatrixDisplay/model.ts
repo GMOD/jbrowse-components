@@ -1,6 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
@@ -212,7 +213,7 @@ export default function stateModelFactory(
          * #action
          */
         startRenderingBackend(backend: VariantMatrixRenderingBackend) {
-          self.attachRenderingBackend<VariantMatrixRenderingBackend>(backend, {
+          installGlobalLifecycle<VariantMatrixRenderingBackend>(self, backend, {
             upload: b => {
               const { placedMatrixData } = self
               if (placedMatrixData) {

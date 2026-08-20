@@ -188,6 +188,19 @@ const restrictedSyntax = [
 // both RPC-handle guards, in the two places most likely to call an RPC. Neither
 // scope violates them today, so nothing was reported; that is the point. A block
 // carving out one rule filters this list rather than rebuilding it.
+// A display installs a lifecycle; it does not wire the mixin's autorun pair
+// itself. `attachRenderingBackend` keeps the callbacks from its FIRST call, so
+// everything they close over has to be built inside the setup thunk — and eight
+// displays each hand-rolling the attach was eight places for that to go wrong
+// silently, since a later call just drops what it allocated. The three
+// installers are the whole taxonomy; a display fitting none of them wants a
+// fourth installer in render-core, not a hand-roll here. See ADR-079.
+const noHandRolledAttach = {
+  selector: "CallExpression[callee.property.name='attachRenderingBackend']",
+  message:
+    'Call installPerRegionLifecycle / installKeyedLifecycle / installGlobalLifecycle rather than attachRenderingBackend. The mixin keeps the callbacks from the first call only, so an upload diff’s memo has to live in the setup thunk — the installers own that, and a hand-rolled attach rebuilds and drops it on every context-loss recovery. See ADR-079 and packages/render-core/CLAUDE.md.',
+}
+
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
   noSetSlot,
@@ -197,6 +210,7 @@ const sourceRestrictedSyntax = [
   noUnreportedRpcCall,
   noUncancellableRpcCall,
   noNoOpStatusCallbackDefault,
+  noHandRolledAttach,
 ]
 
 export default defineConfig(
@@ -642,6 +656,17 @@ export default defineConfig(
     ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
     rules: {
       'no-restricted-syntax': ['error', ...sourceRestrictedSyntax],
+    },
+  },
+  // The three installers, which are what `attachRenderingBackend` exists for.
+  // The mixin declaring it needs no entry — a declaration is not a call.
+  {
+    files: ['packages/render-core/src/install*Lifecycle.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...sourceRestrictedSyntax.filter(s => s !== noHandRolledAttach),
+      ],
     },
   },
   // The one file allowed to read `trackWidthPx`: the getter that answers the

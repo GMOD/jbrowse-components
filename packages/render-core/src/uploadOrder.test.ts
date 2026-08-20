@@ -31,7 +31,8 @@ test('an arrival uploads before anything paints, whether or not render reads the
       pruneRegions() {},
     }
 
-    installPerRegionLifecycle(model, data, backend, {
+    installPerRegionLifecycle(model, backend, {
+      data: () => data,
       encode: (value: number) => ({ value }),
       render: (_b, encoded) => {
         log.push(`render:${encoded.size}`)
@@ -70,7 +71,8 @@ test('a render callback reaching the map through a computed chain also paints af
   const lanes = computed(() => [...data.keys()].map(k => k * 2))
   const renderState = computed(() => ({ laneCount: lanes.get().length }))
 
-  installPerRegionLifecycle(model, data, backend, {
+  installPerRegionLifecycle(model, backend, {
+    data: () => data,
     encode: (value: number) => ({ value }),
     render: (_b, encoded) => {
       log.push(`render:${renderState.get().laneCount}/${encoded.size}`)

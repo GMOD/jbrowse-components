@@ -21,7 +21,7 @@ test('attachRenderingBackend spawns one upload + render autorun and marks drawn'
 
   expect(model.canvasDrawn).toBe(false)
 
-  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: b => {
       b.uploads.push(-1)
       for (const k of data.keys()) {
@@ -35,7 +35,7 @@ test('attachRenderingBackend spawns one upload + render autorun and marks drawn'
       b.renders += 1
       return true
     },
-  })
+  }))
 
   // First fire: empty data → upload runs (pushes -1), render returns false,
   // canvasDrawn still false.
@@ -57,13 +57,13 @@ test('renderNow bumps renderTick so render autorun re-fires', () => {
   const model = TestModel.create()
   const backend: FakeRenderingBackend = { uploads: [], renders: 0 }
 
-  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => {},
     render: b => {
       b.renders += 1
       return true
     },
-  })
+  }))
 
   const before = backend.renders
 
@@ -77,7 +77,7 @@ test('stopRenderingBackend clears backend — autoruns idle', () => {
   const backend: FakeRenderingBackend = { uploads: [], renders: 0 }
   const data = observable.map<number, string>(undefined, { deep: false })
 
-  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: b => {
       for (const k of data.keys()) {
         b.uploads.push(k)
@@ -87,7 +87,7 @@ test('stopRenderingBackend clears backend — autoruns idle', () => {
       b.renders += 1
       return true
     },
-  })
+  }))
 
   const uploadsAtStop = backend.uploads.length
   const rendersAtStop = backend.renders
@@ -113,32 +113,41 @@ test('re-calling attachRenderingBackend swaps backend without re-installing auto
   const backend2: FakeRenderingBackend = { uploads: [], renders: 0 }
   const data = observable.map<number, string>(undefined, { deep: false })
 
-  const cbs = {
-    upload: (b: FakeRenderingBackend) => {
-      for (const k of data.keys()) {
-        b.uploads.push(k)
-      }
-    },
-    render: (b: FakeRenderingBackend) => {
-      b.renders += 1
-      return true
-    },
+  let setups = 0
+  const setup = () => {
+    setups++
+    return {
+      upload: (b: FakeRenderingBackend) => {
+        for (const k of data.keys()) {
+          b.uploads.push(k)
+        }
+      },
+      render: (b: FakeRenderingBackend) => {
+        b.renders += 1
+        return true
+      },
+    }
   }
 
-  model.attachRenderingBackend<FakeRenderingBackend>(backend1, cbs)
+  model.attachRenderingBackend<FakeRenderingBackend>(backend1, setup)
   runInAction(() => {
     data.set(0, 'a')
   })
 
   expect(backend1.uploads).toEqual([0])
   expect(backend1.renders).toBeGreaterThan(0)
+  expect(setups).toBe(1)
 
   // Context-loss recovery: install new backend.
-  model.attachRenderingBackend<FakeRenderingBackend>(backend2, cbs)
+  model.attachRenderingBackend<FakeRenderingBackend>(backend2, setup)
 
   // Autoruns re-fire against backend2 because currentRenderingBackend changed.
   expect(backend2.uploads).toEqual([0])
   expect(backend2.renders).toBeGreaterThan(0)
+  // …and the setup thunk did not run again, so whatever the callbacks close
+  // over — an upload sync's memo of what it last sent — survived the recovery
+  // rather than being rebuilt and dropped.
+  expect(setups).toBe(1)
 })
 
 test('a throw in the render callback sets renderError instead of escaping (no infinite loading)', () => {
@@ -148,12 +157,12 @@ test('a throw in the render callback sets renderError instead of escaping (no in
   expect(model.renderError).toBeUndefined()
 
   const err = new Error('Unknown wiggle rendering type: ')
-  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => {},
     render: () => {
       throw err
     },
-  })
+  }))
 
   // The throw is caught and routed to renderError (which drives the
   // 'renderError' display phase), and canvasDrawn never flips.
@@ -168,13 +177,13 @@ test('a throw in the upload callback sets renderError instead of escaping (no in
   expect(model.renderError).toBeUndefined()
 
   const err = new Error('malformed upload data')
-  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => {
       throw err
     },
     // upload never populated GPU buffers, so there is nothing to draw
     render: () => false,
-  })
+  }))
 
   // The upload throw is caught and routed to renderError (driving the
   // 'renderError' display phase) instead of escaping as an uncaught reaction
@@ -187,13 +196,13 @@ test('canvasDrawn resets to false when directly cleared (clearAllRpcData contrac
   const model = TestModel.create()
   const backend: FakeRenderingBackend = { uploads: [], renders: 0 }
 
-  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => {},
     render: b => {
       b.renders += 1
       return true
     },
-  })
+  }))
 
   expect(model.canvasDrawn).toBe(true)
 
@@ -262,10 +271,10 @@ test('painted tracks canvasDrawn for a display that does render one', () => {
   expect(model.rendersCanvas).toBe(true)
   expect(model.painted).toBe(false)
 
-  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => {},
     render: () => true,
-  })
+  }))
 
   expect(model.painted).toBe(true)
 

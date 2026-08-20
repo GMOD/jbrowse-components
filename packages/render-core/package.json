@@ -33,18 +33,17 @@
     "./createRenderingBackend": "./src/createRenderingBackend.ts",
     "./displayPhase": "./src/displayPhase.ts",
     "./globalRenderingBackend": "./src/globalRenderingBackend.ts",
-    "./globalUploadSync": "./src/globalUploadSync.ts",
     "./gpuDevice": "./src/gpuDevice.ts",
     "./graphicsCapabilities": "./src/graphicsCapabilities.ts",
     "./hal": "./src/hal/index.ts",
+    "./installGlobalLifecycle": "./src/installGlobalLifecycle.ts",
+    "./installKeyedLifecycle": "./src/installKeyedLifecycle.ts",
     "./installPerRegionLifecycle": "./src/installPerRegionLifecycle.ts",
     "./instanceCache": "./src/instanceCache.ts",
     "./instancePass": "./src/instancePass.ts",
     "./keyedRenderingBackend": "./src/keyedRenderingBackend.ts",
     "./OverlayCanvas": "./src/OverlayCanvas.tsx",
-    "./keyedUploadSync": "./src/keyedUploadSync.ts",
     "./perRegionRenderingBackend": "./src/perRegionRenderingBackend.ts",
-    "./regionUploadSync": "./src/regionUploadSync.ts",
     "./renderBlock": "./src/renderBlock.ts",
     "./renderingBackendBase": "./src/renderingBackendBase.ts",
     "./ScrollLockedOverlay": "./src/ScrollLockedOverlay.tsx",
@@ -109,10 +108,6 @@
         "types": "./esm/globalRenderingBackend.d.ts",
         "import": "./esm/globalRenderingBackend.js"
       },
-      "./globalUploadSync": {
-        "types": "./esm/globalUploadSync.d.ts",
-        "import": "./esm/globalUploadSync.js"
-      },
       "./gpuDevice": {
         "types": "./esm/gpuDevice.d.ts",
         "import": "./esm/gpuDevice.js"
@@ -124,6 +119,14 @@
       "./hal": {
         "types": "./esm/hal/index.d.ts",
         "import": "./esm/hal/index.js"
+      },
+      "./installGlobalLifecycle": {
+        "types": "./esm/installGlobalLifecycle.d.ts",
+        "import": "./esm/installGlobalLifecycle.js"
+      },
+      "./installKeyedLifecycle": {
+        "types": "./esm/installKeyedLifecycle.d.ts",
+        "import": "./esm/installKeyedLifecycle.js"
       },
       "./installPerRegionLifecycle": {
         "types": "./esm/installPerRegionLifecycle.d.ts",
@@ -145,17 +148,9 @@
         "types": "./esm/OverlayCanvas.d.ts",
         "import": "./esm/OverlayCanvas.js"
       },
-      "./keyedUploadSync": {
-        "types": "./esm/keyedUploadSync.d.ts",
-        "import": "./esm/keyedUploadSync.js"
-      },
       "./perRegionRenderingBackend": {
         "types": "./esm/perRegionRenderingBackend.d.ts",
         "import": "./esm/perRegionRenderingBackend.js"
-      },
-      "./regionUploadSync": {
-        "types": "./esm/regionUploadSync.d.ts",
-        "import": "./esm/regionUploadSync.js"
       },
       "./renderBlock": {
         "types": "./esm/renderBlock.d.ts",
@@ -232,9 +227,6 @@
         "globalRenderingBackend": [
           "esm/globalRenderingBackend.d.ts"
         ],
-        "globalUploadSync": [
-          "esm/globalUploadSync.d.ts"
-        ],
         "gpuDevice": [
           "esm/gpuDevice.d.ts"
         ],
@@ -243,6 +235,12 @@
         ],
         "hal": [
           "esm/hal/index.d.ts"
+        ],
+        "installGlobalLifecycle": [
+          "esm/installGlobalLifecycle.d.ts"
+        ],
+        "installKeyedLifecycle": [
+          "esm/installKeyedLifecycle.d.ts"
         ],
         "installPerRegionLifecycle": [
           "esm/installPerRegionLifecycle.d.ts"
@@ -259,14 +257,8 @@
         "OverlayCanvas": [
           "esm/OverlayCanvas.d.ts"
         ],
-        "keyedUploadSync": [
-          "esm/keyedUploadSync.d.ts"
-        ],
         "perRegionRenderingBackend": [
           "esm/perRegionRenderingBackend.d.ts"
-        ],
-        "regionUploadSync": [
-          "esm/regionUploadSync.d.ts"
         ],
         "renderBlock": [
           "esm/renderBlock.d.ts"

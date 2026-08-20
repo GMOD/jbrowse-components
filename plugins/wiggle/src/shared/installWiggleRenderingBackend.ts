@@ -3,7 +3,7 @@ import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegion
 import { buildSourceRenderData } from './buildSourceRenderData.ts'
 
 import type { WiggleGpuProps } from './buildSourceRenderData.ts'
-import type { LifecycleHost } from '@jbrowse/render-core/installPerRegionLifecycle'
+import type { LifecycleHost } from '@jbrowse/render-core/RenderLifecycleMixin'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
   WiggleDataResult,
@@ -31,7 +31,8 @@ export function installWiggleRenderingBackend(
   self: WiggleLifecycleModel,
   backend: WiggleRenderingBackend,
 ) {
-  installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+  installPerRegionLifecycle(self, backend, {
+    data: () => self.rpcDataMap,
     inputs: () => self.gpuProps(),
     encode: buildSourceRenderData,
     render: (b, encoded) =>

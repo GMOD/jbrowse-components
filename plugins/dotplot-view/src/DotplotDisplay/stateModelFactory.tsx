@@ -4,7 +4,7 @@ import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { types } from '@jbrowse/mobx-state-tree'
-import { sharedBackendKey } from '@jbrowse/render-core/keyedUploadSync'
+import { sharedBackendKey } from '@jbrowse/render-core/installKeyedLifecycle'
 import {
   SyntenyFetchStateMixin,
   comparativeDisplayPhase,

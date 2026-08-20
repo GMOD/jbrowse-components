@@ -373,7 +373,8 @@ export function modelFactory(
        * draws every frame from `renderState`.
        */
       startRenderingBackend(backend: Canvas2DSequenceRenderer) {
-        installPerRegionLifecycle(self, self.sequenceData, backend, {
+        installPerRegionLifecycle(self, backend, {
+          data: () => self.sequenceData,
           encode: data => data,
           render: (b, regions) =>
             self.rendersCanvas &&
