@@ -1030,10 +1030,53 @@ first ask and waits for nothing.
 recognized (`createHal.ts` + `getGpuDevice`): `canvas2d` / `canvas` force the
 Canvas2D backend, and `webgl` skips the WebGPU attempt. Omitted → auto-detect.
 
-**There is no value that pins WebGPU.** `?renderer=webgpu` is not recognized and
-behaves exactly like omitting the param — it still falls back to WebGL2 if
-WebGPU init fails. When a test or a bug report needs to prove which backend
-actually ran, assert on the HAL, don't infer it from the URL.
+**`?renderer=webgpu` pins that rung and does not fall past it.** A pinned
+renderer that silently substitutes another makes every comparison against it
+wrong, so `createGpuHal` fails visibly instead — a `renderError` naming the pin
+it could not honor, with the banner's "use Canvas2D" as the way out. This
+paragraph used to say the value was unrecognized and fell back like an omitted
+param; both halves are false. A test or bug report still proves which backend
+ran by asserting on the HAL rather than reading the URL.
+
+### A WebGPU canvas's configuration belongs to the element, not to the HAL
+
+`canvas.getContext('webgpu')` hands back the **same** `GPUCanvasContext` object
+every time, so the swap chain a HAL configures is per-element state. Two HALs can
+end up sharing one — a display whose `model` prop swaps under it, an init that
+overlaps the cancelled one before it — and then `WebGPUHal.dispose()`'s
+`unconfigure()` releases whatever is configured, which may be the live HAL's.
+Firefox answers every later frame with `InvalidStateError:
+GPUCanvasContext.getCurrentTexture: Canvas not configured`, and because there is
+**no context-lost event for it**, none of `useRenderingBackend`'s recovery ever
+runs: the throw leaves the render autorun, becomes `renderError`, and the display
+banners the raw DOMException until the tab is reloaded. Reported from a
+five-row pangenome synteny view, where every band showed it at once.
+
+Two guards, in `webgpuHal.ts`: `canvasConfiguredBy` (`canvasContext.ts`) records
+which HAL holds a canvas's configuration so `dispose()` releases only its own,
+and a frame that finds the swap chain gone rebuilds it and paints rather than
+throwing. A rebuild that does not restore it is reported once through the
+display's error handler — not retried, since every later frame would rebuild to
+no effect, and Retry is what builds a fresh HAL.
+
+**What actually drops a configuration, measured in Firefox Nightly** (the WebGPU
+browser here — `runner.ts --backend=webgpu` routes to it):
+
+| action | still configured? |
+| --- | --- |
+| `unconfigure()` | **no** |
+| `device.destroy()` | yes |
+| `canvas.remove()` (detached), then re-attached | yes |
+| `canvas.width = …` (resize) | yes |
+| ancestor `display: none` | yes |
+| tab hidden 1 / 3 / 10 s | yes |
+
+So `unconfigure()` is the only producer of that message, and reconfiguring
+recovers the context in full. `getCurrentTexture` is the only call that reports
+it. Reproduce the whole path against the built app with
+`products/jbrowse-web/browser-tests/swapchain-steal-probe.ts`, which steals a
+real band's swap chain and reads the canvas back: unguarded, the band goes to
+zero inked pixels and stays there under the banner.
 
 ### Renderers stay stateless
 
