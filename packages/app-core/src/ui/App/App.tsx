@@ -11,11 +11,14 @@ import AppReadyMarker from './AppReadyMarker.tsx'
 import AppToolbar from './AppToolbar.tsx'
 import DialogQueue from './DialogQueue.tsx'
 import ViewsContainer from './ViewsContainer.tsx'
+import { lazyChunk } from './lazyChunk.ts'
 
 import type { AppSession } from './types.ts'
 
 // lazies
-const DrawerWidget = lazy(() => import('./DrawerWidget.tsx'))
+const DrawerWidget = lazy(
+  lazyChunk('DrawerWidget', () => import('./DrawerWidget.tsx')),
+)
 
 const useStyles = makeStyles()(theme => ({
   root: {

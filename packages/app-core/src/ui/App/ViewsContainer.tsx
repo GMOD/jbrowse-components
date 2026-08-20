@@ -4,16 +4,26 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { isSessionWithWorkspaceLayout } from '../../WorkspaceLayout/model.ts'
+import { lazyChunk } from './lazyChunk.ts'
 
 import type { AppSession } from './types.ts'
 
-const ClassicViewsContainer = lazy(() => import('./ClassicViewsContainer.tsx'))
-const WorkspaceContainer = lazy(() =>
-  import('../../WorkspaceLayout/WorkspaceContainer.tsx').then(m => ({
-    default: m.WorkspaceContainer,
-  })),
+const ClassicViewsContainer = lazy(
+  lazyChunk(
+    'ClassicViewsContainer',
+    () => import('./ClassicViewsContainer.tsx'),
+  ),
 )
-const ViewLauncher = lazy(() => import('./ViewLauncher.tsx'))
+const WorkspaceContainer = lazy(
+  lazyChunk('WorkspaceContainer', () =>
+    import('../../WorkspaceLayout/WorkspaceContainer.tsx').then(m => ({
+      default: m.WorkspaceContainer,
+    })),
+  ),
+)
+const ViewLauncher = lazy(
+  lazyChunk('ViewLauncher', () => import('./ViewLauncher.tsx')),
+)
 
 const useStyles = makeStyles()({
   viewsContainer: {

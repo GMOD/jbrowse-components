@@ -88,6 +88,20 @@ export default async function startWebpack(config: webpack.Configuration) {
           protocol: wsProtocol,
         },
       },
+      // Nothing the dev server sends carries Cache-Control, an ETag or a
+      // Last-Modified, which makes every response heuristically cacheable with
+      // nothing to revalidate against — including the statuses a browser may
+      // cache heuristically, 404 among them. So a chunk that 404s once (the
+      // window before a newly added module has been compiled, a failed
+      // compile) can be replayed from cache indefinitely: curl sees 200, the
+      // browser never asks again, and restarting the dev server changes
+      // nothing, because the stale copy is on the client.
+      //
+      // Only the build output. `test_data` is served from the same origin and
+      // is where the multi-hundred-megabyte files live, so blanket no-store
+      // would re-download a BAM on every reload.
+      headers: (req): Record<string, string> =>
+        req.url.startsWith('/static/') ? { 'Cache-Control': 'no-store' } : {},
       static: {
         serveIndex: true,
         staticOptions: { dotfiles: 'allow' },
